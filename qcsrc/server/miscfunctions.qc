@@ -779,6 +779,9 @@ float g_ghost_items;
 entity get_weaponinfo(float w);
 
 float NixNex_CanChooseWeapon(float wpn);
+
+float g_explosive_weaponarena_limitammo;
+
 void readplayerstartcvars()
 {
     entity e;
@@ -794,6 +797,8 @@ void readplayerstartcvars()
     start_ammo_cells = 0;
     start_health = cvar("g_balance_health_start");
     start_armorvalue = cvar("g_balance_armor_start");
+
+	g_explosive_weaponarena_limitammo = cvar("g_explosive_weaponarena_limitammo");
 
     g_weaponarena = 0;
     s = cvar_string("g_weaponarena");
@@ -872,17 +877,29 @@ void readplayerstartcvars()
     else if (g_weaponarena)
     {
         start_weapons = g_weaponarena;
-		if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
-			start_ammo_rockets = 999;
-		if (g_weaponarena & WEPBIT_SHOTGUN)
-			start_ammo_shells = 999;
-		if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
-			start_ammo_cells = 999;
-		if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
-			start_ammo_nails = 999;
-		if (g_weaponarena & WEPBIT_HOOK)
-			start_ammo_fuel = 999;
-        start_items |= IT_UNLIMITED_AMMO;
+        
+        if(!g_explosive_weaponarena_limitammo)
+        {
+			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
+				start_ammo_rockets = 999;
+			if (g_weaponarena & WEPBIT_SHOTGUN)
+				start_ammo_shells = 999;
+			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+				start_ammo_cells = 999;
+			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
+				start_ammo_nails = 999;
+			if (g_weaponarena & WEPBIT_HOOK)
+				start_ammo_fuel = 999;
+			start_items |= IT_UNLIMITED_AMMO;
+		}
+		else
+		{
+			start_ammo_shells = cvar("g_start_ammo_shells");
+            start_ammo_nails = cvar("g_start_ammo_nails");
+            start_ammo_rockets = cvar("g_start_ammo_rockets");
+            start_ammo_cells = cvar("g_start_ammo_cells");
+            start_ammo_fuel = cvar("g_start_ammo_fuel");
+		}
     }
     else if (g_minstagib)
     {
@@ -927,6 +944,7 @@ void readplayerstartcvars()
             start_items |= IT_UNLIMITED_AMMO;
         }
 
+		if(!g_weaponarena)
         for (i = WEP_FIRST; i <= WEP_LAST; ++i)
         {
             e = get_weaponinfo(i);
@@ -1010,6 +1028,9 @@ void readplayerstartcvars()
 
     if (g_jetpack)
         start_items |= IT_JETPACK;
+
+	if(g_jetpack || g_grappling_hook)
+		g_handgrenades = 0;
 
     if (g_weapon_stay == 2)
     {
@@ -1103,6 +1124,7 @@ void readlevelcvars(void)
     g_footsteps = cvar("g_footsteps");
     g_grappling_hook = cvar("g_grappling_hook");
     g_jetpack = cvar("g_jetpack");
+    g_handgrenades = cvar("g_explosive_handgrenades");
     g_laserguided_missile = cvar("g_laserguided_missile");
     g_midair = cvar("g_midair");
     g_minstagib = cvar("g_minstagib");
@@ -1448,6 +1470,7 @@ void precache()
 	precache_sound (RM_SOUND_REBIRTH);
 	precache_sound (RM_SOUND_RECOVERY);
     precache_sound (RM_SOUND_KILL);
+    precache_sound ("misc/scream.wav");
     
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");
