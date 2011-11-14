@@ -278,6 +278,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
+		if(targ.hg_power > 0)
+		{
+			targ.hg_power = 0;
+			entity o;
+			o = self;
+			self = targ;
+			HG_Attack();
+			self = o;
+		}
+		targ.hg_ammo = 0;
+		
 		if (targ.classname == "corpse")
 			s = "A corpse";
 		else
