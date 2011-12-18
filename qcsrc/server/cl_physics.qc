@@ -112,7 +112,7 @@ void PlayerJump (void)
 
 	self.velocity_z = self.velocity_z + mjumpheight;
 	self.oldvelocity_z = self.velocity_z;
-	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks and such
+	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks/stairs/etc. right after the initial jump
 
 	self.flags &~= FL_ONGROUND;
 	self.flags &~= FL_JUMPRELEASED;
@@ -621,15 +621,16 @@ void SV_PlayerPhysics()
 		if (plane_normal != '0 0 0')
 		{
 			self.lastwj = time;
+			float wj_force = cvar ("g_explosive_walljump_force");
 			float wj_xy_factor = cvar ("g_explosive_walljump_velocity_xy_factor");
 			float wj_z_factor = cvar ("g_explosive_walljump_velocity_z_factor");
-			self.velocity_x += plane_normal_x * 313.37 / wj_xy_factor;
+			self.velocity_x += plane_normal_x * wj_force;
 			self.velocity_x /= wj_xy_factor;
-			self.velocity_y += plane_normal_y * 313.37 / wj_xy_factor;
+			self.velocity_y += plane_normal_y * wj_force;
 			self.velocity_y /= wj_xy_factor;
 			self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
 			self.oldvelocity = self.velocity;
-			pointparticles (particleeffectnum ("smoke_ring"), trace_endpos, plane_normal * 10, 10);
+			pointparticles (particleeffectnum ("smoke_ring"), trace_endpos, plane_normal, cvar ("g_explosive_walljump_smokeparticle_num"));
 			PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
 		}
 	}
