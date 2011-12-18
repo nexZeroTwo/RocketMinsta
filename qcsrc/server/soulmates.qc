@@ -52,7 +52,7 @@ void sm_Detach(entity host) {
 }
 
 void sm_SMEntThink() {
-	setorigin(self, self.owner.origin + '0 0 0.45' * self.owner.size_z);
+	setorigin(self, self.owner.origin + '0 0 0.49' * self.owner.size_z);
 	self.nextthink = time;
 }
 
