@@ -35,6 +35,8 @@ float sv_warsowbunny_backtosideratio;
 .float shtest_accumulator;
 .float doublejump_nextjumptime;
 
+.float lastwj;
+
 /*
 =============
 PlayerJump
@@ -516,6 +518,32 @@ void SpecialCommand()
 #endif
 }
 
+float PlayerTouchWall ()
+{
+	local float dist, max_normal;
+	local vector start, end;
+	dist = 10;
+	max_normal = 0.2;
+	start = self.origin;
+	end = start + v_forward * 100;
+	tracebox (start, self.mins, self.maxs, end, TRUE, self);
+	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
+		return 1;
+	end = start - v_forward * 100;
+	tracebox (start, self.mins, self.maxs, end, TRUE, self);
+	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
+		return 1;
+	end = start + v_right * 100;
+	tracebox (start, self.mins, self.maxs, end, TRUE, self);
+	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
+		return 1;
+	end = start - v_right * 100;
+	tracebox (start, self.mins, self.maxs, end, TRUE, self);
+	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
+		return 1;
+	return 0;
+}
+
 void SV_PlayerPhysics()
 {
 	local vector wishvel, wishdir, v;
@@ -584,6 +612,17 @@ void SV_PlayerPhysics()
 					self.movement_y = -0.70710678118654752440 * wishspeed;
 			}
 		}
+	}
+	else if (self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay") && PlayerTouchWall ())
+	{
+		self.lastwj = time;
+		float wj_xy_factor = cvar ("g_explosive_walljump_velocity_xy_factor");
+		float wj_z_factor = cvar ("g_explosive_walljump_velocity_z_factor");
+		self.velocity_x /= wj_xy_factor;
+		self.velocity_y /= wj_xy_factor;
+		self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
+		self.oldvelocity = self.velocity;
+		PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
 	}
 
 	self.race_movetime_frac += frametime;
