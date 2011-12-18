@@ -181,11 +181,14 @@ vector sm_SoulGemColormod2(float theteam)
 void sm_SoulGem_Touch() {
 	if(self.gem_pickedup)
 		return;
-		
+	
 	if(other.classname != "player")
 		return;
-		
+	
 	if(other.team != self.team)
+		return;
+	
+	if(other.sm_canattach)
 		return;
 		
 	self.colormod = sm_SoulGemColormod(-self.team);
