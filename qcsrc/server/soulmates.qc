@@ -27,7 +27,11 @@ void sm_Attach(entity host, entity slave) {
 		
 	centerprint_spec(slave, strcat("You are now ", host.netname, "^7's soulmate!"));
 	centerprint_spec(host, strcat(slave.netname, "^7 is now your soulmate!"));
-	bprint(slave.netname, " ^7 is now ", host.netname, "^7's soulmate!\n");
+	
+	string s = strcat(slave.netname, " ^7is now ", host.netname, "^7's soulmate!\n");
+	FOR_EACH_PLAYER(other)
+		centerprint_spec(other, s);
+	bprint(s, "\n");
 	
 	play2all("kh/capture.wav");
 }
@@ -190,6 +194,11 @@ void sm_SoulGem_Touch() {
 	
 	other.sm_canattach = 1;
 	play2all("kh/capture.wav");
+	
+	string s = strcat(other.netname, " ^2picked up a soul gem!");
+	FOR_EACH_PLAYER(other)
+		centerprint_spec(other, s);
+	bprint(s, "\n");
 }
 
 void sm_RemoveSoulGem(entity gem) {
