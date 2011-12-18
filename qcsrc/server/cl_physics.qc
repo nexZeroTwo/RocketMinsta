@@ -614,7 +614,7 @@ void SV_PlayerPhysics()
 			}
 		}
 	}
-	else if (self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay"))
+	else if (! self.hook && self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay"))
 	{
 		local vector plane_normal;
 		plane_normal = PlayerTouchWall ();
