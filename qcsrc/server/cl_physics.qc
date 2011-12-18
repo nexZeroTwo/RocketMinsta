@@ -112,6 +112,7 @@ void PlayerJump (void)
 
 	self.velocity_z = self.velocity_z + mjumpheight;
 	self.oldvelocity_z = self.velocity_z;
+	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks and such
 
 	self.flags &~= FL_ONGROUND;
 	self.flags &~= FL_JUMPRELEASED;
@@ -518,7 +519,7 @@ void SpecialCommand()
 #endif
 }
 
-float PlayerTouchWall ()
+vector PlayerTouchWall ()
 {
 	local float dist, max_normal;
 	local vector start, end;
@@ -528,20 +529,20 @@ float PlayerTouchWall ()
 	end = start + v_forward * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-		return 1;
+		return trace_plane_normal;
 	end = start - v_forward * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-		return 1;
+		return trace_plane_normal;
 	end = start + v_right * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-		return 1;
+		return trace_plane_normal;
 	end = start - v_right * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-		return 1;
-	return 0;
+		return trace_plane_normal;
+	return '0 0 0';
 }
 
 void SV_PlayerPhysics()
@@ -613,16 +614,24 @@ void SV_PlayerPhysics()
 			}
 		}
 	}
-	else if (self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay") && PlayerTouchWall ())
+	else if (self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay"))
 	{
-		self.lastwj = time;
-		float wj_xy_factor = cvar ("g_explosive_walljump_velocity_xy_factor");
-		float wj_z_factor = cvar ("g_explosive_walljump_velocity_z_factor");
-		self.velocity_x /= wj_xy_factor;
-		self.velocity_y /= wj_xy_factor;
-		self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
-		self.oldvelocity = self.velocity;
-		PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
+		local vector plane_normal;
+		plane_normal = PlayerTouchWall ();
+		if (plane_normal != '0 0 0')
+		{
+			self.lastwj = time;
+			float wj_xy_factor = cvar ("g_explosive_walljump_velocity_xy_factor");
+			float wj_z_factor = cvar ("g_explosive_walljump_velocity_z_factor");
+			self.velocity_x += plane_normal_x * 313.37 / wj_xy_factor;
+			self.velocity_x /= wj_xy_factor;
+			self.velocity_y += plane_normal_y * 313.37 / wj_xy_factor;
+			self.velocity_y /= wj_xy_factor;
+			self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
+			self.oldvelocity = self.velocity;
+			pointparticles (particleeffectnum ("smoke_ring"), trace_endpos, plane_normal * 10, 10);
+			PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
+		}
 	}
 
 	self.race_movetime_frac += frametime;
