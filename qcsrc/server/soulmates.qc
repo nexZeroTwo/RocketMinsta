@@ -94,6 +94,17 @@ void sm_Frame() {
 	}
 }
 
+void sm_SpawnSoulGems(float theteam) {
+	float count, gems, i;
+	
+	FOR_EACH_PLAYER(other) if(other.team == theteam)
+		++count;
+	gems = max(1, ceil(count / cvar("g_explosive_freezetag_soulmates_players_per_gem")));
+	
+	for(i = 0; i < gems; ++i)
+		sm_SpawnSoulGem(theteam);
+}
+
 void sm_Clear() {
 	DEPENDON(g_soulmates)
 	
@@ -107,14 +118,14 @@ void sm_Clear() {
 	FOR_EACH_PLAYER(other)
 		other.sm_canattach = 0;
 	
-	sm_SpawnSoulGem(COLOR_TEAM1);
-	sm_SpawnSoulGem(COLOR_TEAM2);
+	sm_SpawnSoulGems(COLOR_TEAM1);
+	sm_SpawnSoulGems(COLOR_TEAM2);
 	
 	if(ft_teams > 2)
-		sm_SpawnSoulGem(COLOR_TEAM3);
+		sm_SpawnSoulGems(COLOR_TEAM3);
 		
 	if(ft_teams > 3)
-		sm_SpawnSoulGem(COLOR_TEAM4);
+		sm_SpawnSoulGems(COLOR_TEAM4);
 }
 
 void sm_RemovePlayer() {
