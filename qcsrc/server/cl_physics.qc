@@ -529,22 +529,22 @@ vector PlayerTouchWall ()
 	end = start + v_forward * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!SUB_NoImpactCheck())
+	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		return trace_plane_normal;
 	end = start - v_forward * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!SUB_NoImpactCheck())
+	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		return trace_plane_normal;
 	end = start + v_right * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!SUB_NoImpactCheck())
+	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		return trace_plane_normal;
 	end = start - v_right * 100;
 	tracebox (start, self.mins, self.maxs, end, TRUE, self);
 	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!SUB_NoImpactCheck())
+	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		return trace_plane_normal;
 	return '0 0 0';
 }
