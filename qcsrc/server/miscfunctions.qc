@@ -3177,3 +3177,14 @@ void UpdateCTFBlacklist()
 	
 	cvar_set("_g_rm_oldmaplist", cvar_string("g_maplist"));
 }
+
+float TeamMask (float team) // not really needed since we're only using it for CTF at the moment, but it might be useful some time in the future... maybe
+{
+	switch (team)
+	{
+		case COLOR_TEAM1: return 1;
+		case COLOR_TEAM2: return 2;
+		case COLOR_TEAM3: return 4;
+		case COLOR_TEAM4: return 8;
+	}
+}

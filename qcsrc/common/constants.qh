@@ -372,6 +372,12 @@ const float STAT_HGAMMO = 115;
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
 
+// the following like should be in ctf.qc as per status quo, but ask me if I care
+// --ThexDarksider
+#define SP_CARRYING 9
+
+// no, really, ask me: irc.quakenet.org #thebadasschoobs
+
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 
 // this assignment must match menu/nexuiz/dialog_settings_misc.c!
