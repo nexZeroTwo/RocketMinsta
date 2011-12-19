@@ -614,7 +614,9 @@ void SV_PlayerPhysics()
 			}
 		}
 	}
-	else if (! self.hook && self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && cvar ("g_explosive_walljump") && (time - self.lastwj) > cvar ("g_explosive_walljump_delay"))
+
+	if (cvar ("g_explosive_walljump")) // check constantly so there's no need for map restart after setting the cvar
+	if ((! (g_race || g_cts) || cvar ("g_explosive_walljump_allowed_in_race")) && ! gameover && ! self.hook.state && self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && (time - self.lastwj) > cvar ("g_explosive_walljump_delay"))
 	{
 		local vector plane_normal;
 		plane_normal = PlayerTouchWall ();
@@ -629,6 +631,7 @@ void SV_PlayerPhysics()
 			self.velocity_y += plane_normal_y * wj_force;
 			self.velocity_y /= wj_xy_factor;
 			self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
+			if (self.crouch) self.velocity_z *= -1; // thanks Synap for the idea
 			self.oldvelocity = self.velocity;
 			pointparticles (particleeffectnum ("smoke_ring"), trace_endpos, plane_normal, cvar ("g_explosive_walljump_smokeparticle_num"));
 			PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
