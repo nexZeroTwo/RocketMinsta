@@ -9,10 +9,8 @@ void sm_Init() {
 void sm_Attach(entity host, entity slave) {
 	DEPENDON(g_soulmates)
 	
-	while(host.soulmate) {
-		bprint(host.netname, " ^7 ---> ", host.soulmate.netname, "\n");
+	while(host.soulmate)
 		host = host.soulmate;
-	}
 	
 	if(host == slave)
 		return;
