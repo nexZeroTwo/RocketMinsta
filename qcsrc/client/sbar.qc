@@ -472,7 +472,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
 		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -701,6 +701,15 @@ string Sbar_GetField(entity pl, float field)
 	sbar_field_icon2_alpha = 1;
 	switch(field)
 	{
+		case SP_CARRYING:
+			local string strToDraw = "";
+			local float stuff = pl.(scores [SP_CARRYING]);
+			if (stuff & 1) strToDraw = strcat (strToDraw, "^1", chr2str (139)); // red
+			if (stuff & 2) strToDraw = strcat (strToDraw, "^4", chr2str (139)); // blue
+// CTF doesn't use these, but leave them here if someone decides to make this work with KH
+//			if (stuff & 4) strToDraw = strcat (strToDraw, "^3", chr2str (139)); // yellow
+//			if (stuff & 8) strToDraw = strcat (strToDraw, "^6", chr2str (139)); // pink
+			return strToDraw;
 		case SP_CN_CHAR0:
 			local float char0 = pl.(scores[SP_CN_CHAR0]);
 			local float char1 = pl.(scores[SP_CN_CHAR1]);
@@ -966,6 +975,9 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
 			if(str != "")
 				drawpic(pos - tmp, strcat("gfx/flags/", str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+		} else if (field == SP_CARRYING) {
+			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
+			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 		} else {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
 			drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
