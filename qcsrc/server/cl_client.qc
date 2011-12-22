@@ -2822,7 +2822,7 @@ void PlayerPreThink (void)
 
 		self.prevorigin = self.origin;
 
-		if ((self.BUTTON_CROUCH && !self.hook.state) || self.health <= g_bloodloss)
+		if ((self.BUTTON_CROUCH && !self.hook.state) || self.health <= g_bloodloss || sm_IsSoulMate(self))
 		{
 			if (!self.crouch)
 			{
