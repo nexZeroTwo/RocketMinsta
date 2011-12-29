@@ -126,8 +126,8 @@ void sm_Frame() {
 		return;
 	} else if(self.soulmate) {
 		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
-			bprint(self.netname, " ^7has dropped ", self.soulmate, "\n");
-			centerprint_spec(self.soulmate, strcat("^7you have been dropped by ", self.netname));
+			bprint(self.netname, " ^7has dropped ", self.soulmate.netname, "\n");
+			centerprint_spec(self.soulmate, strcat("^7You have been dropped by ", self.netname));
 			
 			entity m = self.soulmate;
 			sm_Detach(self);
