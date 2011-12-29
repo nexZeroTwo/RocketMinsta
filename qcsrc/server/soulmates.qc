@@ -141,6 +141,14 @@ void sm_Frame() {
 		} else {
 			sprint(self, "^1You are not allowed to drop your soulmates on this server\n");
 		}
+	} else if(self.BUTTON_USE) if(self.sm_canattach) {
+		if(cvar("g_explosive_freezetag_soulmates_allow_gemdrop")) {
+			bprint(self.netname, " ^7has dropped their soulgem\n");
+			self.sm_canattach = 0;
+			sm_DropSoulGem();
+		} else {
+			sprint(self, "^1You are not allowed to drop your soulgem on this server\n");
+		}
 	}
 	
 	if(!self.sm_canattach)
@@ -345,6 +353,6 @@ void sm_DropSoulGem() {
 	gem.movetype = MOVETYPE_BOUNCE;
 	gem.origin = self.origin;
 	setorigin(gem, gem.origin + v_forward * 10);
-	gem.velocity = (v_forward + '0 0 1') * 200;
+	gem.velocity = (v_forward + '0 0 1') * (200 + vlen(self.velocity));
 	gem.sm_attachblock = time + 2;
 }
