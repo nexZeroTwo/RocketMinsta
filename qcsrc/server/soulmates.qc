@@ -96,8 +96,10 @@ void sm_Frame() {
 	
 	if(!self.sment)
 		sm_FixSMEnt(self);
-		
-	if(sm_IsSoulMate(self)) {
+	
+	float isSoulmate = sm_IsSoulMate(self);
+	
+	if(isSoulmate) {
 		if(!self.aiment) {	// some weird bug
 			self.aiment = self.smhost.sment;
 		}
@@ -105,6 +107,7 @@ void sm_Frame() {
 		if(self.BUTTON_USE) {
 			if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
 				bprint(self.netname, " ^7has detached from ", self.smhost.netname, "\n");
+				centerprint_spec(self.smhost, strcat(self.netname, " ^7has detached from you"));
 				
 				sm_Detach(self.smhost);
 				self.sm_canattach = 0;
@@ -121,6 +124,23 @@ void sm_Frame() {
 		}
 		
 		return;
+	} else if(self.soulmate) {
+		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
+			bprint(self.netname, " ^7has dropped ", self.soulmate, "\n");
+			centerprint_spec(self.soulmate, strcat("^7you have been dropped by ", self.netname));
+			
+			entity m = self.soulmate;
+			sm_Detach(self);
+			
+			m.sm_canattach = 1;
+			m.sm_attachblock = time + 2;
+			
+			makevectors(m.angles);
+			m.velocity = m.velocity - v_forward * 100;
+			m.velocity_z = 400;
+		} else {
+			sprint(self, "^1You are not allowed to drop your soulmates on this server\n");
+		}
 	}
 	
 	if(!self.sm_canattach)
