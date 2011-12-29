@@ -125,7 +125,7 @@ void sm_Frame() {
 		
 		return;
 	} else if(self.soulmate) {
-		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
+		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_drop")) {
 			bprint(self.netname, " ^7has dropped ", self.soulmate.netname, "\n");
 			centerprint_spec(self.soulmate, strcat("^7You have been dropped by ", self.netname));
 			
