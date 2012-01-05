@@ -667,7 +667,7 @@ string VoteNetname(entity e)
 string ValidateMap(string m, entity e)
 {
 	m = MapInfo_FixName(m);
-	if(!m)
+	if(!m || !ListContains(cvar_string("g_maplist"), m, " "))
 	{
 		print_to(e, "This map is not available on this server.");
 		return string_null;
