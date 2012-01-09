@@ -303,6 +303,13 @@ float RemapVote(string vote, string cmd, entity e)
 		
 		if(s != "")	// detected a gametype vote
 		{
+			// Gametype already being played?
+			if (s == GetGametype ())
+			{
+				sprint (e, strcat ("^1A game of ^2", GametypeFullNameFromType (game), " ^1is already being played!\n"));
+				return FALSE;
+			}
+
 			// Gametype overplayed?
 			// TODO: Get rid of this, if the gametype is overplayed a gametype voting screen should appear
 			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
@@ -653,7 +660,7 @@ string VoteNetname(entity e)
 string ValidateMap(string m, entity e)
 {
 	m = MapInfo_FixName(m);
-	if(!m)
+	if(!m || !ListContains(cvar_string("g_maplist"), m, " "))
 	{
 		print_to(e, "This map is not available on this server.");
 		return string_null;

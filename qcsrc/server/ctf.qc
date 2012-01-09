@@ -273,6 +273,9 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	}
 	bprint(p.netname, "^7 lost the ", e.netname, "\n");
 
+	p.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+	p.scorekeeper.(scores [SP_CARRYING]) = 0;
+
 	if(penalty_receiver)
 		UpdateFrags(penalty_receiver, -ctf_score_value("penalty_suicidedrop"));
 	else
@@ -489,6 +492,9 @@ void FlagTouch()
 		// give credit to the individual player
 		UpdateFrags(other, ctf_score_value("score_capture"));
 
+		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+		other.scorekeeper.(scores [SP_CARRYING]) = 0;
+
 		//<akari>
 		//Specially for Spook: restore health on flag capture
 		
@@ -532,6 +538,9 @@ void FlagTouch()
 		if (cvar("g_ctf_flag_pickup_effects")) // pickup effect
 			pointparticles(particleeffectnum("smoke_ring"), 0.5 * (self.absmin + self.absmax), '0 0 0', 1);
 			
+		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+		other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
+
 		// pick up
 		self.flagpickuptime = time; // used for timing runs
 		self.speedrunning = other.speedrunning; // if speedrunning, flag will self-return and teleport the owner back after the record
@@ -651,6 +660,9 @@ void FlagTouch()
 			WaypointSprite_AttachCarrier("flagcarrier", other);
 			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
 			
+			other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+			other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
+
 			hudflash_teamcolor_default_spec(other);
 		}
 	}
