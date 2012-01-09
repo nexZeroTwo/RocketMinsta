@@ -24,7 +24,19 @@ void W_Grenade_Explode2 (void)
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
-	RadiusDamage (self, self.owner, cvar("g_balance_grenadelauncher_secondary_damage"), cvar("g_balance_grenadelauncher_secondary_edgedamage"), cvar("g_balance_grenadelauncher_secondary_radius"), world, cvar("g_balance_grenadelauncher_secondary_force"), self.projectiledeathtype, other);
+	local float _damage, _edgedamage, _radius, _force;
+	_damage = cvar ("g_balance_grenadelauncher_secondary_damage");
+	_edgedamage = cvar ("g_balance_grenadelauncher_secondary_edgedamage");
+	_radius = cvar ("g_balance_grenadelauncher_secondary_radius");
+	_force = cvar ("g_balance_grenadelauncher_secondary_force");
+	if (self.classname == "grenade_n")
+	{
+		_damage /= 10;
+		_edgedamage /= 10;
+		_force /= 5;
+		HG_Napalm_Init ();
+	}
+	RadiusDamage (self, self.owner, _damage, _edgedamage, _radius, world, _force, self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -108,7 +120,7 @@ void W_Grenade_Attack (void)
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE, TRUE);	
 }
 
-void W_Grenade_Attack2_Real (float force, float inhand_explosion)
+void W_Grenade_Attack2_Real (float force, float inhand_explosion, float grenade_type)
 {
 	local entity gren;
 
@@ -121,7 +133,12 @@ void W_Grenade_Attack2_Real (float force, float inhand_explosion)
 
 	gren = spawn ();
 	gren.owner = self;
-	gren.classname = "grenade";
+	switch (grenade_type)
+	{
+		case HG_STICKY: gren.classname = "grenade_s"; break; // sticky
+		case HG_NAPALM: gren.classname = "grenade_n"; break; // napalm
+		default: gren.classname = "grenade"; break;
+	}
 	gren.bot_dodge = TRUE;
 	gren.bot_dodgerating = cvar("g_balance_grenadelauncher_secondary_damage");
 	gren.movetype = MOVETYPE_BOUNCE;
@@ -149,7 +166,7 @@ void W_Grenade_Attack2_Real (float force, float inhand_explosion)
 
 void W_Grenade_Attack2(void)
 {
-	W_Grenade_Attack2_Real(1, 0);
+	W_Grenade_Attack2_Real(1, 0, 0);
 }
 
 void spawnfunc_weapon_grenadelauncher (void)
