@@ -40,8 +40,7 @@ void HG_Napalm_Think ()
 	HG_Napalm_Burn (0.1, cvar ("g_explosive_napalm_burnradius"), cvar ("g_explosive_napalm_burndamage"), cvar ("g_explosive_napalm_edgeburndamage"), cvar ("g_explosive_napalm_burntime"));
 	if (time >= self.nextparticle)
 	{
-//		pointparticles (particleeffectnum ("fire_big"), self.org_explosion + (self.origin - self.org_explosion) * random (), '0 0 0', 1);
-		pointparticles (particleeffectnum (cvar_string ("g_explosive_napalm_particlename")), self.org_explosion + (self.origin - self.org_explosion) * random (), '0 0 0', 1);
+		pointparticles (particleeffectnum ("fire_big"), self.org_explosion + (self.origin - self.org_explosion) * random (), '0 0 0', 1);
 		self.nextparticle = time + 0.2 + random () * 0.2;
 	}
 

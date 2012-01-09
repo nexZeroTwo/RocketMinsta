@@ -31,9 +31,10 @@ void W_Grenade_Explode2 (void)
 	_force = cvar ("g_balance_grenadelauncher_secondary_force");
 	if (self.classname == "grenade_n")
 	{
-		_damage /= 10;
-		_edgedamage /= 10;
-		_force /= 5;
+		_damage *= cvar ("g_explosive_napalm_grenade_damage_factor");
+		_edgedamage *= cvar ("g_explosive_napalm_grenade_edgedamage_factor");
+		_radius *= cvar ("g_explosive_napalm_grenade_radius_factor");
+		_force *= cvar ("g_explosive_napalm_grenade_force_factor");
 		HG_Napalm_Init ();
 	}
 	RadiusDamage (self, self.owner, _damage, _edgedamage, _radius, world, _force, self.projectiledeathtype, other);
