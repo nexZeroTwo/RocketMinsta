@@ -8,7 +8,7 @@ void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float
 	float d;
 	vector p;
 
-	for(e = findradius(self.origin, dist); e; e = e.chain)
+	for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
 	//if(e != self.owner) if(e.takedamage == DAMAGE_AIM) if(e.classname != "player" || !self.owner || IsDifferentTeam(e, self))
 	{
 		p = e.origin;
@@ -44,6 +44,16 @@ void HG_Napalm_Think ()
 		self.nextparticle = time + 0.2 + random () * 0.2;
 	}
 
+	self.nextthink = time + 0.1;
+}
+
+void HG_Napalm_Middlefire_Think() {
+	if(time > self.pushltime) {
+		remove (self);
+		return;
+	}
+	
+	HG_Napalm_Burn(0.1, cvar("g_explosive_napalm_middleburnradius") * 1.5, cvar("g_explosive_napalm_burndamage"), cvar("g_explosive_napalm_edgeburndamage"), cvar("g_explosive_napalm_burntime"));
 	self.nextthink = time + 0.1;
 }
 
@@ -84,6 +94,16 @@ void HG_Napalm_Init (void)
 {
 	local float c;
 	for (c = 0; c < cvar ("g_explosive_napalm_numparticles"); c ++) HG_Napalm ();
+	
+	// since we have a ton of fire in the middle, let's make it a real fire
+	entity mid = spawn();
+	mid.owner = self.owner;
+	mid.origin = self.origin;
+	setorigin(mid, mid.origin);
+	mid.think = HG_Napalm_Middlefire_Think;
+	mid.nextthink = time;
+	mid.pushltime = time + cvar ("g_explosive_napalm_lifetime");
+	setsize(mid, '0 0 0', '0 0 0');
 }
 
 void HG_Attack()
@@ -92,6 +112,7 @@ void HG_Attack()
 		return;
 	
 	makevectors(self.v_angle);
+	self.hg_type = HG_NAPALM;
 	W_Grenade_Attack2_Real(self.hg_power, self.hg_power == 1, self.hg_type); // hack hack
 	if (self.hg_type == HG_NAPALM && self.hg_power == 1)
 		Damage (self, self, self, cvar ("g_explosive_napalm_kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
