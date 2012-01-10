@@ -53,7 +53,7 @@ void HG_Napalm_Middlefire_Think() {
 		return;
 	}
 	
-	HG_Napalm_Burn(0.1, cvar("g_explosive_napalm_middleburnradius") * 1.5, cvar("g_explosive_napalm_burndamage"), cvar("g_explosive_napalm_edgeburndamage"), cvar("g_explosive_napalm_burntime"));
+	HG_Napalm_Burn(0.1, cvar("g_explosive_napalm_middleburnradius"), cvar("g_explosive_napalm_burndamage"), cvar("g_explosive_napalm_edgeburndamage"), cvar("g_explosive_napalm_burntime"));
 	self.nextthink = time + 0.1;
 }
 
