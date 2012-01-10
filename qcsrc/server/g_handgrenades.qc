@@ -4,13 +4,32 @@
 
 void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float burntime)
 {
-	entity e;
-	float d;
+	entity e, o;
+	float d, df;
 	vector p;
+	
+	o = self.owner;
+	df = 1;
 
 	for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
-	//if(e != self.owner) if(e.takedamage == DAMAGE_AIM) if(e.classname != "player" || !self.owner || IsDifferentTeam(e, self))
 	{
+		if(o.team == e.team)
+		{
+			if(teamplay == 1)
+				continue;
+			else if(e != o)
+			{
+				if(teamplay == 3)
+					continue;
+				else if(teamplay == 4) {
+					df = cvar("g_friendlyfire");
+					
+					if(df == 0)
+						continue;
+				}
+			}
+		}
+		
 		p = e.origin;
 		p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
 		p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
@@ -24,7 +43,7 @@ void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float
 			e.fireball_impactvec = p;
 			d = vlen(self.origin - e.fireball_impactvec);
 			d = damage + (edgedamage - damage) * (d / dist);
-			Fire_AddDamage(e, self.owner, d * burntime, burntime, self.projectiledeathtype | HITTYPE_BOUNCE);
+			Fire_AddDamage(e, self.owner, d * burntime * df, burntime, self.projectiledeathtype | HITTYPE_BOUNCE);
 		}
 	}
 }
