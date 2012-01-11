@@ -1,13 +1,11 @@
 void HG_Frame();
 void HG_Attack();
 void HG_PlayerSpawn();
-void W_Grenade_Attack2_Real(float, float, float);
 
-#define HG_NORMAL 0
-#define HG_STICKY 1
-#define HG_NAPALM 2
+#define HG_NORMAL DEATH_HG_NORMAL
+#define HG_STICKY DEATH_HG_STICKY
+#define HG_NAPALM DEATH_HG_NAPALM
 
-void HG_Napalm_Init ();
 .vector org_explosion;
 .float nextparticle;
 
@@ -18,3 +16,5 @@ void HG_Napalm_Init ();
 .float hg_type;
 
 #define BUTTON_HG button6
+#define GRENVARNAME(t,v) strcat("g_explosive_handgrenades_", HG_TypeToName(t), "_", (v))
+#define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
