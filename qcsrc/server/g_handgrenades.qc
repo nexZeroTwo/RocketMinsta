@@ -100,7 +100,7 @@ void HG_Napalm (void)
 	kick_y = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
 	kick_z = random () * cvar ("g_explosive_handgrenades_napalm_spread_z");
 	proj.velocity = kick;
-	proj.pushltime = time + cvar ("g_explosive_handgrenades_napalm_lifetime");
+	proj.pushltime = time + cvar ("g_explosive_handgrenades_napalm_fire_lifetime");
 	W_SetupProjectileVelocity(proj);
 
 	proj.angles = vectoangles(proj.velocity);
@@ -121,7 +121,7 @@ void HG_Napalm_Explode (void)
 	setorigin(mid, mid.origin);
 	mid.think = HG_Napalm_Middlefire_Think;
 	mid.nextthink = time;
-	mid.pushltime = time + cvar ("g_explosive_handgrenades_napalm_lifetime");
+	mid.pushltime = time + cvar ("g_explosive_handgrenades_napalm_fire_lifetime");
 	setsize(mid, '0 0 0', '0 0 0');
 }
 
