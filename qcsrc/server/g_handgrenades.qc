@@ -134,6 +134,14 @@ string HG_TypeToName(float t) {
 	}
 }
 
+float HG_NameToType(string t) {
+	switch(t) {
+		case "napalm": return HG_NAPALM;
+	 // case "sticky": return HG_STICKY; // Not implemented yet
+		default		 : return HG_NORMAL;
+	}
+}
+
 #define GV(v) (GRENVAR(self.hg_type, v))
 void HG_Normal_Explode (void) {
 	float radius = GV("radius"), i;
@@ -170,7 +178,7 @@ void HG_Attack()
 	if(time < self.hg_next || !self.hg_ammo)
 		return;
 	
-	self.hg_type = HG_NAPALM;
+	self.hg_type = HG_NameToType(cvar_string("g_explosive_handgrenades_type"));
 	
 	makevectors(self.v_angle);
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
