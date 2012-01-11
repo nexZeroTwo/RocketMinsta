@@ -147,8 +147,12 @@ void HG_Normal_Explode (void) {
 	float radius = GV("radius"), i;
 	pointparticles(particleeffectnum("rocket_explode"), self.origin, '0 0 0', 1);
 	
-	for(i = 0; i < 100; ++i)
-		pointparticles(particleeffectnum(mod(i, 2)? "rocket_explode" : "fire_big"), self.origin + randomvec() * radius * random(), randomvec() * radius, 1);
+	for(i = 0; i < 40; ++i) {
+		vector v = randomvec();
+		float  r = random();
+		
+		pointparticles(particleeffectnum(mod(i, 2)? "rocket_explode" : "fire_big"), self.origin + v * radius * r, v * radius * r * 100, 1);
+	}
 }
 
 void HG_Grenade_Explode()
