@@ -1044,6 +1044,38 @@ void UpdateSelectedPlayer()
 		self.last_selected_player = self.selected_player;
 }
 
+string float2hex(float f) {
+	f = bound(0, floor(f * 16), 15);
+	return (f < 10)? ftos(f) : chr2str(str2chr("A", 0) + f - 10);
+}
+
+string color2hex(vector clr) {
+	return strcat("^x", float2hex(clr_x), float2hex(clr_y), float2hex(clr_z));
+}
+
+float colorflag;
+string colorizeMessage(string msg) {
+	float oldtime = time, i;
+	string c, newmsg;
+	msg = strdecolorize(msg);
+	
+	for(i = 0; i < strlen(msg); ++i) {
+		c = substring(msg, i, 1);
+		
+		if(c == " ") {
+			newmsg = strcat(newmsg, " ");
+			colorflag =! colorflag;
+			continue;
+		}
+		
+		newmsg = strcat(newmsg, color2hex(colormapPaletteColor(15, colorflag)), c);
+		time += i * 0.02;
+	}
+	
+	time = oldtime;
+	return newmsg;
+}
+
 .float muted; // to be used by prvm_edictset server playernumber muted 1
 void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
@@ -1058,6 +1090,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		if(substring(msgin, 0, 1) == " ")
 			msgin = substring(msgin, 1, strlen(msgin) - 1); // work around DP say bug (say_team does not have this!)
 
+	msgin = colorizeMessage(msgin);
 	msgin = formatmessage(msgin);
 
 	if(msgin == "")
