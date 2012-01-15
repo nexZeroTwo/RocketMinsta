@@ -897,10 +897,15 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 	float is_spec;
 	is_spec = (GetPlayerColor(pl.sv_entnum) == COLOR_SPECTATOR);
 
+	pos_x += sin(3.0 * time + pl_number * 3.14 /  5) * 3;
+	pos_y += cos(6.0 * time + pl_number * 3.14 / 10) * 3;
+
 	if((rgb == '1 1 1') && (!is_spec)) {
 		rgb_x = cvar("sbar_color_bg_r") + 0.5;
 		rgb_y = cvar("sbar_color_bg_g") + 0.5;
 		rgb_z = cvar("sbar_color_bg_b") + 0.5; }
+
+	rgb = rgb * 0.5 + colormapPaletteColor(15, mod(pl_number, 2)) * 0.5;
 
 	// Layout:
 	tmp_x = sbwidth;
@@ -922,10 +927,10 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 	}
 	*/
 	
-	if(is_self)
+	//if(is_self)
 		drawfill(pos - '1 1 0', tmp + '2 0 0', rgb, sbar_scoreboard_highlight_alpha_self, DRAWFLAG_NORMAL);
-	else if((sbar_scoreboard_highlight) && (!mod(pl_number,2)))
-		drawfill(pos - '1 1 0', tmp + '2 0 0', rgb, sbar_scoreboard_highlight_alpha, DRAWFLAG_NORMAL);
+	//else if((sbar_scoreboard_highlight) && (!mod(pl_number,2)))
+	//	drawfill(pos - '1 1 0', tmp + '2 0 0', rgb, sbar_scoreboard_highlight_alpha, DRAWFLAG_NORMAL);
 
 	tmp_y = 0;
 
@@ -1233,6 +1238,13 @@ void Sbar_DrawScoreboard()
 	pos_y += sbar_fontsize_y;
 
 	drawfont = sbar_font;
+
+	vector mrpos = '1 0 0' * vid_conwidth;
+	mrpos_y -= 500 * 0.5 * (1 - sbar_scoreboard_fade_alpha);
+	mrpos_y += 3 * cos(mrpos_y + 5 * time) - 5;
+	mrpos_x -= 513 * 0.5;
+	mrpos_x += 3 * cos(mrpos_x + 5 * time) + 5;
+	drawpic(mrpos, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', 1, DRAWFLAG_NORMAL);
 
 	// Draw the scoreboard
 	vector bg_size;
@@ -2800,6 +2812,9 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	//sectorpos_x -= 2;
 	//sectorsize_x += 4;
 	
+	sectorpos_x  += 5 * sin(time);
+	sectorsize_x -= 5 * sin(time) * 2;
+	
 	vector fillsize, fillpos;
 	fillpos = sectorpos;
 	fillsize = sectorsize;
@@ -3499,6 +3514,7 @@ void Sbar_Draw (void)
 	
 	vector base_teamcolor;
 	
+	/*
 	if(teamplay)
 		base_teamcolor = GetTeamRGB(myteam);
 	else
@@ -3507,9 +3523,14 @@ void Sbar_Draw (void)
 		base_teamcolor_y = cvar("sbar_color_bg_g");
 		base_teamcolor_z = cvar("sbar_color_bg_b");
 	}
+	*/
 	
-	vector sector_teamcolor = (base_teamcolor + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
-	vector border_teamcolor = (base_teamcolor + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
+	
+	vector sector_teamcolor;
+	vector border_teamcolor;
+	
+	sector_teamcolor = base_teamcolor = colormapPaletteColor(15, 0);
+	border_teamcolor = colormapPaletteColor(15, 1);
 
 	float bw_left, bw_right;
 	bw_left = HUDSkin_GetBorderWidth(BORDER_LEFT);
@@ -3625,9 +3646,12 @@ void Sbar_Draw (void)
 		// lol
 		if(!rm_oldhud)
 		{
-			bottom_y -= 10;
-			bottomleft_y -= 10;
-			bottomright_y -= 10;
+			bottom_y -= 10 + 5 * cos(time * 1.5);
+			bottom_x -= 5 * sin(time * 1.5);
+			bottomleft_x -= 5 * sin(time * 1.5);
+			bottomright_x += 5 * sin(time * 1.5);
+			bottomleft_y -= bottom_y;
+			bottomright_y -= bottom_y;
 		}
 
 		float armor, health;
@@ -3646,17 +3670,9 @@ void Sbar_Draw (void)
 		if(rm_oldhud)
 		{
 			if (cvar("viewsize") <= 100 && vid_conwidth <= 1600) {
-				if (teamplay)
-					color =  GetTeamRGB(myteam) * sbar_color_bg_team; // hud color = myteam color
-				else {
-					// allow for custom HUD colors in non-teamgames
-					color_x = cvar("sbar_color_bg_r");
-					color_y = cvar("sbar_color_bg_g");
-					color_z = cvar("sbar_color_bg_b");
-				}
-
+				color = colormapPaletteColor(15, 0);
 				HudFlash_Apply(color, sbar_alpha_bg, TRUE, 2, 1);
-				drawpic(bottom - '800 58 0', "gfx/hud/sbar", bg_size, hudflash_resultcolor, hudflash_resultalpha, DRAWFLAG_NORMAL);
+				drawpic(bottom - '800 58 0' + '0 10 0' * (sin(time) + 1) * 0.5, "gfx/hud/sbar", bg_size, hudflash_resultcolor, hudflash_resultalpha, DRAWFLAG_NORMAL);
 			}
 		}
 		else
@@ -4463,7 +4479,10 @@ void Sbar_Draw (void)
 			color = colormapPaletteColor(15, 0);
 
 			vector voteorigin; // = bottomright - '290 135 0';
-
+			vector votesize = '290 70 0';
+			votesize_x += sin(time) * 30;
+			votesize_y += cos(time * 1.1) * 30;
+			
 			if(vote_highlighted)
 			{
 				s = strcat(ftos(vote_needed), " votes required");
@@ -4472,14 +4491,13 @@ void Sbar_Draw (void)
 			else
 			{
 				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
-				voteorigin_x = vid_conwidth / 2 - 145;
-				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37;
+				voteorigin_x = vid_conwidth / 2 - votesize_x / 2;
+				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37 + (70 - votesize_y)/2;
 			}
 
-			vector votesize = '290 70 0';
+			
 			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
-
-
+			
 			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 			s = textShortenToWidth_svn(vote_called_vote, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
 			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);

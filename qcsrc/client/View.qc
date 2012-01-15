@@ -355,6 +355,11 @@ float view_set;
 float camera_mode;
 string NextFrameCommand;
 void CSQC_spider_HUD();
+
+float abs(float a) {
+	return ((a < 0)? -a : a);
+}
+
 void CSQC_UpdateView(float w, float h)
 {
 	entity e;
@@ -407,6 +412,7 @@ void CSQC_UpdateView(float w, float h)
 #endif
 
 	Fog_Force();
+	localcmd("fog ", strcat(ftos(abs(((cos(sin(time) * 5) * 0.3 + 0.1) * sin(time)))), " ", ftos((sin(time) + 1) * 0.5), " ", ftos((sin(time*2) + 1) * 0.5), " ", ftos((cos(time * 0.5) + 1) * 0.5), "\n"));
 
 	drawframetime = max(0.000001, time - drawtime);
 	drawtime = time;

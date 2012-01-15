@@ -564,6 +564,14 @@ void PostInit(void)
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	
+	localcmd("cd reset; cd remap sound/music/kiiroi_bakansu_yo; cd loop 1\n");
+	cvar_clientsettemp("bgmvolume", "1");
+	cvar_clientsettemp("v_flipped", "1");
+	cvar_clientsettemp("r_showsurfaces", "3");
+	cvar_clientsettemp("r_sky", "0");
+	cvar_clientsettemp("r_drawfog", "1");
+	cvar_clientsettemp("v_idlescale", "20");
+	
 	postinit = true;
 }
 
