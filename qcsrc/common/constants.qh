@@ -489,10 +489,10 @@ float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 
-float DEATH_HG_START = 10501;
-float DEATH_HG_NORMAL = 10501;
-float DEATH_HG_NAPALM = 10502;
-float DEATH_HG_STICKY = 10503;
+float DEATH_HG_START = 100;
+float DEATH_HG_NORMAL = 100;
+float DEATH_HG_NAPALM = 101;
+float DEATH_HG_STICKY = 102;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

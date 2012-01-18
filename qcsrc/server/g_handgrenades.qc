@@ -167,8 +167,8 @@ void HG_Grenade_Explode()
 	self.takedamage = DAMAGE_NO;
 	
 	if(self.hg_type == HG_NAPALM)
-		HG_Napalm_Explode();
-	else HG_Normal_Explode();
+		HG_Napalm_Explode(); // TODO move this to CSQC too
+//	else HG_Normal_Explode();
 	
 	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
 	remove (self);
