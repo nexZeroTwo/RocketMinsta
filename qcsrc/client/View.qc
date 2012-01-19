@@ -223,8 +223,10 @@ vector GetCurrentFov(float fov)
 	float frustumx, frustumy, fovx, fovy;
 	frustumy = tan(fov * 0.00872664625997164788) * 0.75 * current_viewzoom;
 	frustumx = frustumy * vid_width / vid_height / vid_pixelheight;
-	fovx = atan2(frustumx, 1) / 0.00872664625997164788 + 5 * sin(time);
-	fovy = atan2(frustumy, 1) / 0.00872664625997164788 + 5 * cos(time);
+	
+	float factor = max(6, vlen(pmove_vel) * 0.006);
+	fovx = atan2(frustumx, 1) / 0.00872664625997164788 + factor * sin(time) * cos(time * 2);
+	fovy = atan2(frustumy, 1) / 0.00872664625997164788 + factor * cos(time) * sin(time * 2);
 
 	return '1 0 0' * fovx + '0 1 0' * fovy;
 }
