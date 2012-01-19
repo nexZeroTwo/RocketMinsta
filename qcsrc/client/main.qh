@@ -287,3 +287,61 @@ float minstasbar_fixed;
 float gui_reloading;
 
 float rm_hidecountry;
+
+/*
+ *	Putting this crap here because I'm too lazy to add a new file
+ */
+
+float vx(vector v) { return v_x; }
+float vy(vector v) { return v_y; }
+
+#define SCREWSIZE(n,o,s) { float __s = s; vector n = (o) + '0.5 0 0' * cos(time * 1.2 + __s) * vx(o) + '0 0.5 0' * sin(time + __s) * vy(o) }
+
+float drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) {
+	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position));
+	float sw = stringwidth(text, TRUE);
+	
+	vector oldsize = sw * scale;
+	vector newsize = sw * newscale;
+	oldsize_y = scale_y;
+	newsize_y = newscale_y;
+	
+	vector half = oldsize * 0.5;
+	position_x -= newsize_x * 0.5 - half_x;
+	position_y -= newsize_y * 0.5 - half_y;
+	
+	return drawcolorcodedstring_real(position, text, newscale, alpha, flag);
+}
+
+float drawstring(vector position, string text, vector scale, vector rgb, float alpha, float flag) {
+	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position));
+	float sw = stringwidth(text, FALSE);
+	
+	vector oldsize = sw * scale;
+	vector newsize = sw * newscale;
+	oldsize_y = scale_y;
+	newsize_y = newscale_y;
+	
+	vector half = oldsize * 0.5;
+	position_x -= newsize_x * 0.5 - half_x;
+	position_y -= newsize_y * 0.5 - half_y;
+	
+	return drawstring_real(position, text, newscale, rgb, alpha, flag);
+}
+
+void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f, float rotscrew, float seed);
+float drawpic(vector position, string pic, vector size, vector rgb, float alpha, float flag) {
+	/*
+	SCREWSIZE(newsize, size, crc16(FALSE, pic) + vlen(position));
+	
+	vector half = size * 0.5;
+	position_x -= newsize_x * 0.5 - half_x;
+	position_y -= newsize_y * 0.5 - half_y;
+	
+	return drawpic_real(position, pic, newsize, rgb + colormapPaletteColor(15, 0) * sin(time * 2 + __s) * 0.4, alpha, flag);
+	*/
+	
+	float seed = crc16(FALSE, pic) + vlen(position);
+	_drawrotpic(position + size * 0.5, 0, pic, size, size * 0.5, rgb + colormapPaletteColor(15, 0) * sin(time * 2 + seed) * 0.4, alpha, flag, 0.1, seed);
+	return 0;
+}

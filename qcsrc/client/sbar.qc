@@ -1244,7 +1244,7 @@ void Sbar_DrawScoreboard()
 	mrpos_y += 3 * cos(mrpos_y + 5 * time) - 5;
 	mrpos_x -= 513 * 0.5;
 	mrpos_x += 3 * cos(mrpos_x + 5 * time) + 5;
-	drawpic(mrpos, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', 1, DRAWFLAG_NORMAL);
+	drawpic_real(mrpos, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', 1, DRAWFLAG_NORMAL);
 
 	// Draw the scoreboard
 	vector bg_size;
@@ -2523,18 +2523,21 @@ void Sbar_DrawAccuracyStats()
 
 void drawstringright(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
+	//SCREWSIZE(newsize, scale);
 	position_x -= 2 / 3 * strlen(text) * scale_x;
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawstringcenter(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
+	//SCREWSIZE(newsize, scale);
 	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x);
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
+	//SCREWSIZE(newsize, scale);
 	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
@@ -2627,14 +2630,14 @@ void Sbar_MorningRescue(void)
 	drawfill('0 0 0', bottomright, mrcolor, mralpha * random(), DRAWFLAG_ADDITIVE);
 
 	mrpos_y -= 200 * mralpha;
-	drawpic (mrpos, "gfx/morningrescue", '57 200 0', '1 1 1', mralpha, DRAWFLAG_NORMAL);
+	drawpic_real (mrpos, "gfx/morningrescue", '57 200 0', '1 1 1', mralpha, DRAWFLAG_NORMAL);
 
 	mrpos = topright;
 	mrpos_y -= 500 * 0.5 * (1 - mralpha);
 	offset_y = 3 * cos(mrpos_y + 5 * time) - 5;
 	mrpos_x -= 513 * 0.5;
 	offset_x = 3 * cos(mrpos_x + 5 * time) + 5;
-	drawpic (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
+	drawpic_real (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
 
 	local string mycolor;
 	local string mychar;

@@ -40,9 +40,16 @@ float SPRITE_HEALTHBAR_BORDER = 2;
 float SPRITE_HEALTHBAR_BORDERALPHA = 1;
 float SPRITE_HEALTHBAR_HEALTHALPHA = 0.5;
 
-void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f)
+void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f, float rotscrew, float seed)
 {
 	vector v1, v2, v3, v4;
+	
+	SCREWSIZE(newsize, sz, seed);
+	
+	vector half = sz * 0.5;
+	org_x -= newsize_x * 0.5 - half_x;
+	org_y -= newsize_y * 0.5 - half_y;
+	sz = newsize;
 
 	hotspot = -1 * hotspot;
 
@@ -52,13 +59,15 @@ void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, ve
 	v3 = hotspot + '1 0 0' * sz_x + '0 1 0' * sz_y;
 	v4 = hotspot                  + '0 1 0' * sz_y;
 
+	rot += sin(time + seed) * rotscrew;
+
 	// rotate them, and make them absolute
 	rot = -rot; // rotate by the opposite angle, as our coordinate system is reversed
 	v1 = rotate(v1, rot) + org;
 	v2 = rotate(v2, rot) + org;
 	v3 = rotate(v3, rot) + org;
 	v4 = rotate(v4, rot) + org;
-
+	
 	// draw them
 	R_BeginPolygon(pic, f);
 	R_PolygonVertex(v1, '0 0 0', rgb, a);
@@ -66,6 +75,10 @@ void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, ve
 	R_PolygonVertex(v3, '1 1 0', rgb, a);
 	R_PolygonVertex(v4, '0 1 0', rgb, a);
 	R_EndPolygon();
+}
+
+void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f) {
+	_drawrotpic(org, rot, pic, sz, hotspot, rgb, a, f, cos(time * 2), crc16(FALSE, pic));
 }
 
 void drawquad(vector o, vector ri, vector up, string pic, vector rgb, float a, float f)

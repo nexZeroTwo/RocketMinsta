@@ -92,12 +92,18 @@ string	precache_pic(string name, ...)	= #317;
 vector	drawgetimagesize(string pic) = #318;
 void	freepic(string name)		= #319;
 float	drawcharacter(vector position, float character, vector scale, vector rgb, float alpha, float flag) = #320;
-float	drawstring(vector position, string text, vector scale, vector rgb, float alpha, float flag) = #321;
-float	drawpic(vector position, string pic, vector size, vector rgb, float alpha, float flag) = #322;
+float	drawstring_real(vector position, string text, vector scale, vector rgb, float alpha, float flag) = #321;
+float	drawpic_real(vector position, string pic, vector size, vector rgb, float alpha, float flag) = #322;
 float	drawfill(vector position, vector size, vector rgb, float alpha, float flag) = #323;
 void	drawsetcliparea(float x, float y, float width, float height) = #324;
 void	drawresetcliparea(void) = #325;
-float	drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) = #326;
+float	drawcolorcodedstring_real(vector position, string text, vector scale, float alpha, float flag) = #326;
+
+float (float val)		sin = #60;
+float (float val)		cos = #61;
+float (float val)		sqrt = #62;
+float (float a, float b)	pow = #97;
+
 float	stringwidth(string text, float handleColors) = #327;
 float	drawsubpic(vector position, vector size, string pic, vector srcPosition, vector srcSize, vector rgb, float alpha, float flag) = #328;
 
@@ -179,11 +185,6 @@ float (float a, float b, float c, float d, float e, float f, float g, float h) m
 float (float minimum, float val, float maximum) bound = #96;
 
 vector () randomvec = #91;
-
-float (float val)		sin = #60;
-float (float val)		cos = #61;
-float (float val)		sqrt = #62;
-float (float a, float b)	pow = #97;
 
 void (vector org, string modelname, float startframe, float endframe, float framerate) effect = #404;
 
