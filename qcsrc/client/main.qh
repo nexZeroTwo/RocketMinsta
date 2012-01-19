@@ -326,7 +326,7 @@ float drawstring(vector position, string text, vector scale, vector rgb, float a
 	position_x -= newsize_x * 0.5 - half_x;
 	position_y -= newsize_y * 0.5 - half_y;
 	
-	return drawstring_real(position, text, newscale, rgb, alpha, flag);
+	return drawstring_real(position, text, newscale, rgb + colormapPaletteColor(15, 0) * sin(time * 2 + __s) * 0.4, alpha, flag);
 }
 
 void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f, float rotscrew, float seed);
