@@ -348,3 +348,5 @@ float drawpic(vector position, string pic, vector size, vector rgb, float alpha,
 
 // the server will set this
 float v_flipped;
+
+float abs(float);

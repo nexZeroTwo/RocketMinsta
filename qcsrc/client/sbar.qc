@@ -4536,21 +4536,22 @@ void Sbar_Draw (void)
 	}
 	#endif
 
-	if(!rm_hidewatermark)
+	//if(!rm_hidewatermark)
 	{
 		vector position;
 		position = '0 0 0';
-		position_y = vid_conheight - 8;
+		vector sz = '8 8 0' + '1.5 3 0' * (pow(2.718281828, sin(time * 5) * 3) / 20 + sin(time) - sin(time * 7)) * 0.5; //(sin(time * 2) * cos(time * 4) + 1) * 0.5;
+		position_y = vid_conheight - sz_y;
 
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
+		drawstring_real(position, rm_watermark, sz, '0.5 0.5 0.5' + '0.5 0 0' * sin(time * 3) * cos(time * 4) + '0 0 0.5' * cos(time * 3) * sin(time * 4), 0.3, DRAWFLAG_NORMAL);
 	}
 
 	if(tmpmadoka_fadetime >= time)
 	{
 		position_x = vid_conwidth;
 		position_y = vid_conheight;
-		drawfill('0 0 0', position, '1 0 0', bound(0, 1 - 4 * (time - (tmpmadoka_fadetime- 1)), 0.5), DRAWFLAG_ADDITIVE);
+		drawfill('0 0 0', position, '1 0 0', bound(0, 1 - 4 * (time - (tmpmadoka_fadetime - 1)), 0.5), DRAWFLAG_ADDITIVE);
 	}
 	
 	if(gui_reloading)
