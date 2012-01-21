@@ -1689,6 +1689,7 @@ void ClientConnect (void)
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
 	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
+	VFLIPPER_UPDATECLIENT(self);
 }
 
 /*

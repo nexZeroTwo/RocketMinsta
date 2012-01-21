@@ -415,7 +415,7 @@ void InfoMessages_Think()
 	self.nextthink = time + cvar("g_explosive_infomessages") * 60;
 }
 
-void InfoMessages_Init()
+void InfoMessages_Init(void)
 {
 	if(!cvar("g_explosive_infomessages"))
 		return;
@@ -429,6 +429,24 @@ void InfoMessages_Init()
 	e.nextthink = time + cvar("g_explosive_infomessages") * 60;
 }
 
+#define VFLIPPER_NEXTTHINK time + 40 + (random() - 0.5) * 20
+
+#define VFLIPPER_UPDATECLIENT(c) stuffcmd(c, strcat("prvm_globalset client v_flipped ", ftos(v_flipped), "\n"))
+
+void ViewportFlipper_Think(void) {
+	v_flipped =! v_flipped;
+	FOR_EACH_REALCLIENT(other) VFLIPPER_UPDATECLIENT(other);
+	self.nextthink = VFLIPPER_NEXTTHINK;
+}
+
+void ViewportFlipper_Init(void) {
+	v_flipped = 1;
+	
+	entity e = spawn();
+	e.think = ViewportFlipper_Think;
+	e.nextthink = VFLIPPER_NEXTTHINK;
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -437,6 +455,7 @@ void spawnfunc_worldspawn (void)
 	cvar = cvar_builtin;
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
+	
 	dprint_load(); // load dprint status from cvar
 
 	registercvar("g_freezetag", "0");
@@ -794,6 +813,8 @@ void spawnfunc_worldspawn (void)
 	UpdateCTFBlacklist();
 	
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+	
+	ViewportFlipper_Init();
 }
 
 void spawnfunc_light (void)

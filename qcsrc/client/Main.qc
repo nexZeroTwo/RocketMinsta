@@ -565,8 +565,9 @@ void PostInit(void)
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	
 	localcmd("cd reset; cd remap sound/music/kiiroi_bakansu_yo; cd loop 1\n");
+	v_flipped = 1;
 	cvar_clientsettemp("bgmvolume", "1");
-	cvar_clientsettemp("v_flipped", "1");
+	cvar_clientsettemp("v_flipped", cvar_string("v_flipped"));	// needed just to store the original value, will be updated per-frame
 	cvar_clientsettemp("r_showsurfaces", "3");
 	cvar_clientsettemp("r_sky", "0");
 	cvar_clientsettemp("r_drawfog", "1");

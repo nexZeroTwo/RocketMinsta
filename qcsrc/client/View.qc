@@ -414,7 +414,18 @@ void CSQC_UpdateView(float w, float h)
 #endif
 
 	Fog_Force();
+
+/////////////////////
 	localcmd("fog ", strcat(ftos(abs(((cos(sin(time) * 5) * 0.3 + 0.1) * sin(time)))), " ", ftos((sin(time) + 1) * 0.5), " ", ftos((sin(time*2) + 1) * 0.5), " ", ftos((cos(time * 0.5) + 1) * 0.5), "\n"));
+	
+	// force those per-frame so the unmodified clients can't "cheat" ;)
+	cvar_set("bgmvolume", "1");
+	cvar_set("v_flipped", ftos(v_flipped));
+	cvar_set("r_showsurfaces", "3");
+	cvar_set("r_sky", "0");
+	cvar_set("r_drawfog", "1");
+	cvar_set("v_idlescale", "20");
+/////////////////////
 
 	drawframetime = max(0.000001, time - drawtime);
 	drawtime = time;

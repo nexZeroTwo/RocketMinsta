@@ -673,3 +673,5 @@ float forbidrestart;
 .float rm_nokillsound;
 
 .float hidecountry;
+
+float v_flipped;
