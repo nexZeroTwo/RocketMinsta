@@ -537,13 +537,13 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						tail = "";
 						
 						if(cvar("g_explosive_extendfragmessages")) {
-							if(!DEATH_ISSPECIAL(deathtype)) 
-								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
-							else if(deathtype == DEATH_HG_NORMAL)
+							if(deathtype == DEATH_HG_NORMAL)
 								tail = "Grenade";
 							else if(deathtype == DEATH_HG_NAPALM)
 								tail = "Napalm Grenade";
-							
+							else 
+								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
+								
 							if(tail != "")
 								tail = strcat(" with ^7", tail);
 						}
@@ -833,6 +833,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	if (gameover || targ.killcount == -666)
 		return;
+
+	if(DEATH_ISHG(deathtype))
+		deathtype &~= DEATH_HITTYPEMASK;
 
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;

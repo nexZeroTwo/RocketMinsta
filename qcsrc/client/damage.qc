@@ -102,15 +102,18 @@ void Ent_DamageInfo(float isNew)
 
 		if (DEATH_ISHG(hittype))
 		{
-			if (! issilent)
+			if (!issilent) {
 				sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
+			}
+			
 			hittype &~= DEATH_HITTYPEMASK;
 			switch (hittype)
 			{
 				case DEATH_HG_NORMAL:
 					float radius = 250, i;
 					pointparticles (particleeffectnum ("rocket_explode"), self.origin, '0 0 0', 1);
-					for (i = 0; i < 10; i ++)
+					for (i = 0; i < 30; i ++)
 					{
 						vector v = randomvec ();
 						float r = random ();
