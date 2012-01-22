@@ -98,7 +98,14 @@ void HG_Napalm (void)
 	proj.damageforcescale = cvar ("g_explosive_handgrenades_napalm_damageforcescale");
 	kick_x = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
 	kick_y = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
-	kick_z = random () * cvar ("g_explosive_handgrenades_napalm_spread_z");
+	kick_z = max(
+						cvar("g_explosive_handgrenades_napalm_spread_z")
+					*	random(),
+					
+						cvar("g_explosive_handgrenades_napalm_spread_z_min")
+					+ 	cvar("g_explosive_handgrenades_napalm_spread_z_min_randomfactor")
+					*	(random() - 0.5) * 2
+				);
 	proj.velocity = kick;
 	proj.pushltime = time + cvar ("g_explosive_handgrenades_napalm_fire_lifetime");
 	W_SetupProjectileVelocity(proj);
