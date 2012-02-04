@@ -2837,9 +2837,11 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			break;
 		
 		case FILL_TILE:
-			size_left = hudskin_size_sector_fill_left;
-			size_right = hudskin_size_sector_fill_right;
-			size_center = hudskin_size_sector_fill_center;
+			vector screw = '50 0 0' * abs(sin(time * 6) * cos(time * 7)) + '0 50 0' * abs(cos(time * 6) * sin(time * 7));
+			size_left = hudskin_size_sector_fill_left + screw;
+			size_right = hudskin_size_sector_fill_right + screw;
+			size_center = hudskin_size_sector_fill_center + screw;
+			fillsize = fillsize + screw;
 			
 			// Autoscaling based on the center area
 			if(size_center_y > fillsize_y)

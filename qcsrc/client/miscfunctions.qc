@@ -381,7 +381,7 @@ void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color,
 			new_size_y = min(sz_y, end_pos_y - current_pos_y);
 			ratio_x = new_size_x / sz_x;
 			ratio_y = new_size_y / sz_y;
-			drawsubpic(current_pos, new_size, pic, '0 0 0', ratio, color, alpha, drawflag);
+			drawsubpic(current_pos, new_size, pic, '0 0 0', ratio, color + colormapPaletteColor(15, 0) * sin(time * 2 + 37331) * 0.4, alpha + sin(time) * cos(time * 4) * 0.1, drawflag);
 			current_pos_x += sz_x;
 		}
 		current_pos_y += sz_y;

@@ -227,7 +227,7 @@ vector GetCurrentFov(float fov)
 	float factor = max(6, vlen(pmove_vel) * 0.006);
 	fovx = atan2(frustumx, 1) / 0.00872664625997164788 + factor * sin(time) * cos(time * 2);
 	fovy = atan2(frustumy, 1) / 0.00872664625997164788 + factor * cos(time) * sin(time * 2);
-
+	
 	return '1 0 0' * fovx + '0 1 0' * fovy;
 }
 

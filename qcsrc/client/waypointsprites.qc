@@ -50,7 +50,7 @@ void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, v
 	org_x -= newsize_x * 0.5 - half_x;
 	org_y -= newsize_y * 0.5 - half_y;
 	sz = newsize;
-
+	
 	hotspot = -1 * hotspot;
 
 	// hotspot-relative coordinates of the corners
@@ -59,8 +59,10 @@ void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, v
 	v3 = hotspot + '1 0 0' * sz_x + '0 1 0' * sz_y;
 	v4 = hotspot                  + '0 1 0' * sz_y;
 
-	rot += sin(time + seed) * rotscrew;
-
+	float seed2 = crc16(FALSE, pic);
+	rot += sin(time + seed) * rotscrew + PI * cos(seed + time * (0.5 + mod(seed2 * 0.3, 10))) * sin(time * (2 + mod(seed2, 10) * 0.1)) * cos(time * (2 - mod(seed2 * 0.9, 10) * 0.1)) * (mod(seed2 * 0.7, 2)? 1 : -1);
+	//(time + seed2) * (0.7 + mod(seed2, 3) * 0.1) * (mod(seed2, 2)? 1 : -1);
+	
 	// rotate them, and make them absolute
 	rot = -rot; // rotate by the opposite angle, as our coordinate system is reversed
 	v1 = rotate(v1, rot) + org;
