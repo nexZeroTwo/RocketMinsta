@@ -682,6 +682,9 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_PINKALIVE, AS_INT, pinkalive_stat);
 		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
 		//addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+		
+		if(g_soulmates)
+			addstat(STAT_SM_HASGEM, AS_INT, sm_canattach);
 	}
 
     if(g_domination)
@@ -695,6 +698,12 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
 
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
+
+	if(g_handgrenades)
+	{
+		addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
+		addstat(STAT_HGAMMO, AS_INT, hg_ammo);
+	}
 
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);

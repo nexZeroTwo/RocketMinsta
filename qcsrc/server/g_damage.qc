@@ -278,6 +278,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
+		if(targ.hg_power > 0)
+		{
+			targ.hg_power = 0;
+			entity o;
+			o = self;
+			self = targ;
+			HG_Attack();
+			self = o;
+		}
+		targ.hg_ammo = 0;
+		
 		if (targ.classname == "corpse")
 			s = "A corpse";
 		else
@@ -966,10 +977,19 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			float armor_passthrough = cvar("g_explosive_armor_passthrough");
 
 			if(ex)
-			if(targ.ignore_next && DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
 			{
-				damage = 0;
-				targ.ignore_next = 0;
+				if(targ.ignore_next && DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+				{
+					damage = 0;
+					targ.ignore_next = 0;
+				}
+				
+				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
+				if(attacker != targ && cvar("g_explosive_splash_selfonly"))
+				{
+					damage = 0;
+					force = '0 0 0';
+				}
 			}
 
 			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_explosive_minsta_damage") <= 0))

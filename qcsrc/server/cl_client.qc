@@ -1191,6 +1191,9 @@ void PutClientInServer (void)
 		self.shownames.customizeentityforclient = shownames_customize;
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
+	
+	if(g_handgrenades)
+		HG_PlayerSpawn();
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1855,7 +1858,7 @@ void TeamBubbleThink()
 
 float TeamBubble_customizeentityforclient()
 {
-	return (self.owner != other && self.owner.team == other.team && other.killcount > -666);
+	return (self.owner.smhost != other && self.owner.soulmate != other && self.owner != other && self.owner.team == other.team && other.killcount > -666);
 }
 
 void UpdateTeamBubble()
@@ -2282,6 +2285,9 @@ void SpectateCopy(entity spectatee) {
 	self.fixangle = TRUE;
 	self.freezetag_frozen = spectatee.freezetag_frozen;
 	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
+	self.hg_power = spectatee.hg_power;
+	self.hg_ammo = spectatee.hg_ammo;
+	self.sm_canattach = spectatee.sm_canattach;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2716,6 +2722,8 @@ void PlayerPreThink (void)
 		if(frametime)
 			player_powerups();
 
+		HG_Frame();
+
 		if (self.deadflag != DEAD_NO)
 		{
 			float button_pressed, force_respawn;
@@ -2814,7 +2822,7 @@ void PlayerPreThink (void)
 
 		self.prevorigin = self.origin;
 
-		if ((self.BUTTON_CROUCH && !self.hook.state) || self.health <= g_bloodloss)
+		if ((self.BUTTON_CROUCH && !self.hook.state) || self.health <= g_bloodloss || sm_IsSoulMate(self))
 		{
 			if (!self.crouch)
 			{
@@ -2829,7 +2837,7 @@ void PlayerPreThink (void)
 			if (self.crouch)
 			{
 				tracebox(self.origin, PL_MIN, PL_MAX, self.origin, FALSE, self);
-				if (!trace_startsolid)
+				if (!trace_startsolid || self.soulmate /*&& self.soulmate == trace_ent*/)
 				{
 					self.crouch = FALSE;
 					self.view_ofs = PL_VIEW_OFS;

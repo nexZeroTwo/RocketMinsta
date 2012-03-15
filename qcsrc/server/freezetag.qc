@@ -57,6 +57,7 @@ void freezetag_EndRound()
     next_round = time + 5;
     e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
     update_playercount();
+    defer(5, sm_Clear);
 }
 
 void freezetag_UglyFreezetagWorkaround_Think()
@@ -119,6 +120,7 @@ void freezetag_Initialize()
 	uglyfreezetagworkaround.nextthink = time + 1;
 	
 	defer(0.1, freezetag_FixTeamSpawns);
+	defer(0.1, sm_Init);
 }
 
 void freezetag_CheckWinner()
@@ -354,9 +356,15 @@ void freezetag_Unfreeze(entity attacker)
 {
     DEPENDON(g_freezetag)
     
-    self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+    if(!self)
+		return;
     
+    if(self.scorekeeper)
+    {
+		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+	}
+	
 	self.freezetag_frozen = 0;
 	self.freezetag_revive_progress = 0;
 
@@ -375,6 +383,9 @@ void freezetag_Unfreeze(entity attacker)
 		WaypointSprite_Kill(self.waypointsprite_attached);
 	
 	self.disableclientprediction = 0;
+	
+	if(g_handgrenades)
+		HG_PlayerSpawn();
 }
 
 .vector ft_oldorigin;
@@ -384,6 +395,9 @@ void freezetag_Unfreeze(entity attacker)
 float freezetag_RemovePlayer()
 {
     DEPENDON_F(g_freezetag, 0)
+    
+    sm_RemovePlayer();
+    
 	if(self.freezetag_frozen == 0)
 	{
 		if(self.team == COLOR_TEAM1)
@@ -557,6 +571,7 @@ float freezetag_PlayerPreThink()
 		if(time - self.reviveupdatetime >= 0.01)
 			self.freezetag_revive_progress = 0;
 		
+		sm_Frame();
 		return 0;
 	}
     

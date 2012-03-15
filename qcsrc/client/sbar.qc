@@ -472,7 +472,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
 		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -701,6 +701,15 @@ string Sbar_GetField(entity pl, float field)
 	sbar_field_icon2_alpha = 1;
 	switch(field)
 	{
+		case SP_CARRYING:
+			local string strToDraw = "";
+			local float stuff = pl.(scores [SP_CARRYING]);
+			if (stuff & 1) strToDraw = strcat (strToDraw, "^1", chr2str (139)); // red
+			if (stuff & 2) strToDraw = strcat (strToDraw, "^4", chr2str (139)); // blue
+// CTF doesn't use these, but leave them here if someone decides to make this work with KH
+//			if (stuff & 4) strToDraw = strcat (strToDraw, "^3", chr2str (139)); // yellow
+//			if (stuff & 8) strToDraw = strcat (strToDraw, "^6", chr2str (139)); // pink
+			return strToDraw;
 		case SP_CN_CHAR0:
 			local float char0 = pl.(scores[SP_CN_CHAR0]);
 			local float char1 = pl.(scores[SP_CN_CHAR1]);
@@ -966,6 +975,9 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
 			if(str != "")
 				drawpic(pos - tmp, strcat("gfx/flags/", str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+		} else if (field == SP_CARRYING) {
+			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
+			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 		} else {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
 			drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
@@ -2899,8 +2911,8 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	vector score_color;
 	score_color = '1 1 1';
 
-	const float name_size = mySize_x*0.75;
-	const float spacing_size = mySize_x*0.04;
+	float name_size = mySize_x*0.75;
+	float spacing_size = mySize_x*0.04;
 	const float highlight_alpha = 0.2;
 	string s;
 
@@ -2936,6 +2948,18 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	}
 }
 
+void DrawProgress (vector cpos, vector size, float progress, float alpha, vector color)
+{
+	vector pos;
+	pos_x = cpos_x - size_x / 2;
+	pos_y = cpos_y - size_y / 2;
+	
+	vector fill = size;
+	fill_x *= progress;
+	
+	drawborderlines(1, pos, size, color, alpha, DRAWFLAG_NORMAL);
+	drawfill(pos, fill, color, alpha * 0.7, DRAWFLAG_NORMAL);
+}
 
 void Sbar_Draw (void)
 {
@@ -3144,6 +3168,20 @@ void Sbar_Draw (void)
 		else
 			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
     }
+
+	// handgrenade force meter
+	float hgstat = getstatf(STAT_HGFORCE);
+	
+	if(hgstat)
+	{
+		vector hgpos;
+		hgpos_x = vid_conwidth/2;
+		hgpos_y = vid_conheight - vid_conheight/4;
+		
+		vector hgcolor = '1 1 0';
+		hgcolor_y = hgcolor_y * 1 - hgstat;
+		DrawProgress(hgpos, '100 5', hgstat, 0.7, hgcolor);
+	}
 
 	local vector sv_pos;
 	sv_pos = bottomright;
@@ -4273,9 +4311,16 @@ void Sbar_Draw (void)
 			}
 		}
 
+		// TODO: make this less ugly
+		float hgammo = getstati(STAT_HGAMMO);
+		if(hgammo)
+		{
+			vector hgapos;
+			hgapos_y = vid_conheight - vid_conheight/7;
+			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+		}
+
 		// fuel ammo
-
-
 		if(rm_oldhud)
 		{
 			a = getstati(GetAmmoStat(4)); // how much fuel do we have?
