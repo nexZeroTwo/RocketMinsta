@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 18)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 19)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -28,6 +28,11 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames", "Show player names above their heads"));
 			OPTDEP("shownames")
+	me.setFirstColumn(me, me.firstColumn + 0.1);
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames_teamonly", "Only allies"));
+			OPTDEP("shownames")
+	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Teamcolored lasers"));
 			OPTDEP("teamlasers")

@@ -470,13 +470,15 @@ void PostInit(void)
 		case 31:
 			localcmd("seta rm_nokillsound 0; nokillsound 0\n");
 		case 32:
-			localcmd ("seta rm_hidecountry 0; hidecountry 0\n");
+			localcmd("seta rm_hidecountry 0; hidecountry 0\n");
 		case 33:
-			localcmd ("seta rm_showrankings 1; showrankings 1\n");
+			localcmd("seta rm_showrankings 1; showrankings 1\n");
         case 34:
+        case 35:
+			localcmd("seta rm_shownames_teamonly 0; shownames_teamonly 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 35\n");
+		localcmd("seta rm_initialized 36\n");
 		RM_OUTDATED
 		break;
 	}
@@ -501,6 +503,7 @@ void PostInit(void)
 	rm_althud = rm_althud_option;
 	rm_noflags = cvar("rm_noflags");
 	rm_showrankings = cvar("rm_showrankings");
+	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -526,6 +529,7 @@ void PostInit(void)
 	registercmd("nokillsound");
 	registercmd("hidecountry");
 	registercmd("showrankings");
+	registercmd("shownames_teamonly");
 	// -- //
 	registercmd("hudskin");
 	
@@ -661,7 +665,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2crosshealth^7: If enabled, the crosshair color will reflect current health (disabled by default)\n");
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
 		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
-		print("^2shownames^7: If enabled, names of players will be shown above their heads (enabled by default)\n");
+		print("^2shownames^7: If enabled, names of players will be shown above their heads (disabled by default)\n");
+		print("^2shownames_teamonly^7: If enabled, shownames will work only for allies (disabled by default)\n");
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
@@ -702,7 +707,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
-		strCmd == "showrankings"		 )
+		strCmd == "showrankings"		||
+		strCmd == "shownames_teamonly")
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -721,6 +727,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_althud_option = cvar("rm_althud");
 		rm_noflags = cvar("rm_noflags");
 		rm_showrankings = cvar("rm_showrankings");
+		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
