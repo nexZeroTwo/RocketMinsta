@@ -12,7 +12,7 @@ void Draw_ShowNames()
     local float oldfont;
     oldfont = drawfont;
 
-    if(self.sameteam || (!self.sameteam && autocvar_hud_shownames_enemies))
+    if(self.sameteam || (!self.sameteam && !rm_shownames_teamonly))
     {
         InterpolateOrigin_Do();
 
