@@ -219,6 +219,7 @@ float madokalockstate;
 
 float mr_appeartime;
 float mr_fadetime;
+string mr_globalstr;
 float morningrescue;
 
 float sbar_madokafont;

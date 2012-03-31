@@ -2625,9 +2625,10 @@ void Sbar_MorningRescue(void)
 		mralpha = bound(0, 1 - 2 * (time - (mr_fadetime - 1)), 1);
 
 	local vector mrcolor;
-	mrcolor_x = 1;
-	mrcolor_y = random();
-	drawfill('0 0 0', bottomright, mrcolor, mralpha * random(), DRAWFLAG_ADDITIVE);
+	mrcolor_x = random() * 0.7 + 0.3;
+	mrcolor_y = random() * 0.7 + 0.3;
+	mrcolor_z = random() * 0.7 + 0.3;
+	drawfill('0 0 0', bottomright, mrcolor, mralpha * random() * 0.2, DRAWFLAG_ADDITIVE);
 
 	mrpos_y -= 200 * mralpha;
 	drawpic_real (mrpos, "gfx/morningrescue", '57 200 0', '1 1 1', mralpha, DRAWFLAG_NORMAL);
@@ -2642,7 +2643,10 @@ void Sbar_MorningRescue(void)
 	local string mycolor;
 	local string mychar;
 	local float j;
-	local string mrstring = "^xFB0MMorning ^7Rescue";
+	local string mrstring = mr_globalstr; //"^xFB0MMorning ^7Rescue";
+
+	if(!mr_globalstr)
+		mrstring = "";
 
 	local float k;
 

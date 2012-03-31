@@ -1781,10 +1781,11 @@ void Net_VoteDialogReset() {
 	vote_active = 0;
 }
 
-entity my_balls;
+entity my_balls, lyrics_rotator;
 
 void ProtectMyBalls_End() {
 	KiiroiBakansuYo();
+	remove(lyrics_rotator);
 	remove(self);
 }
 
@@ -1799,6 +1800,31 @@ void ProtectMyBalls() {
 	my_balls.nextthink = time + 60;
 }
 
+#define ID(id) void _LFL_LYRICS_##id();
+#define LFL_LYRICSLINE(id,t,s,nextid) void _LFL_LYRICS_##id() { if(mr_globalstr) strunzone(mr_globalstr); mr_globalstr = strzone(s); self.nextthink = mr_appeartime + t; self.think = _LFL_LYRICS_##nextid; }
+ID(0) ID(1) ID(2) ID(3) ID(4) ID(5) ID(6) ID(7) ID(8) ID(9) ID(10) ID(11) ID(12) ID(13) ID(14) ID(15)
+
+// t is actually the time of the NEXT line
+LFL_LYRICSLINE(0,  5.7, 	"^1Subarashii ^2chinchin ^3mono", 1);
+LFL_LYRICSLINE(1,  8.9, 	"^5Kintama ^6no ^1kame ^2aru", 2);
+LFL_LYRICSLINE(2,  11.5, 	"^3Sore ^4no ^5oto ^6sarubobo", 3);
+LFL_LYRICSLINE(3,  14.9, 	"^1Iie! ^2Ninja ^3ga ^4imasu", 4);
+LFL_LYRICSLINE(4,  17.8, 	"^5Hey ^6hey ^1let's ^2go ^3kenka ^4suru", 5);
+LFL_LYRICSLINE(5,  20.8, 	"^5Taisetsu ^6na ^1mono ^2PROTECT ^3MY ^4BALLS!", 6);
+LFL_LYRICSLINE(6,  23.8, 	"^5Boku ^6ga ^1warui ^2so ^3let's ^4fighting", 7);
+LFL_LYRICSLINE(7,  30.0, 	"^5Let's ^6fighting ^1love!", 8);
+LFL_LYRICSLINE(8,  32.9, 	"^1Kono ^2uta ^3chotto ^4baka", 9);
+LFL_LYRICSLINE(9,  35.8, 	"^5Wake ^6ga ^1wakaranai", 10);
+LFL_LYRICSLINE(10, 38.7, 	"^2Eigo ^3ga ^4mechakucha", 11);
+LFL_LYRICSLINE(11, 41.9, 	"^5Daijobu! ^6We ^1do ^2it ^3all ^4the ^5time!", 12);
+LFL_LYRICSLINE(12, 45.0, 	"^6Hey ^1hey ^2let's ^3go ^4kenka ^5suru", 13);
+LFL_LYRICSLINE(13, 48.0, 	"^6Taisetsu ^1na ^2mono ^3PROTECT ^4MAI ^5BALLZ!", 14);
+LFL_LYRICSLINE(14, 51.0, 	"^6Boku ^1ga ^2warui ^3so ^4let's ^5fighting", 15);
+LFL_LYRICSLINE(15, 1337,	"^6Let's ^1fighting ^2love", 0);
+
+#undef ID
+#undef LFL_LYRICSLINE
+
 void Net_ReadMorningRescue()
 {
 	#ifdef RM_SUPPORT_MORNINGRESCUE
@@ -1809,7 +1835,18 @@ void Net_ReadMorningRescue()
 	ProtectMyBalls();
 	morningrescue = 1;
 	mr_appeartime = time;
-	mr_fadetime   = time + 9;
+	mr_fadetime   = time + 60;
+	
+	if(mr_globalstr)
+		strunzone(mr_globalstr);
+	mr_globalstr = strzone("");
+	
+	if(lyrics_rotator)
+		remove(lyrics_rotator);
+	lyrics_rotator = spawn();
+	lyrics_rotator.think = _LFL_LYRICS_0;
+	lyrics_rotator.nextthink = time + 2.9;
+	
 	#else
 	error("Server attempted a MorningRescue, but the mod has been built without RM_SUPPORT_MORNINGRESCUE! EVERYTHING IS FUCKED UP BIG TIME.");
 	#endif
