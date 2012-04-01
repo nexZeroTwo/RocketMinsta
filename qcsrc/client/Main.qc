@@ -394,6 +394,14 @@ void ReloadMenu()
 	e.nextthink = time + 1;
 }
 
+void ForceMusic(string file) {
+	localcmd(strcat("cd reset; cd remap sound/music/", file, "; cd loop 1\n"));
+}
+
+void KiiroiBakansuYo() {
+	ForceMusic("kiiroi_bakansu_yo");
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -568,7 +576,7 @@ void PostInit(void)
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	
-	localcmd("cd reset; cd remap sound/music/kiiroi_bakansu_yo; cd loop 1\n");
+	KiiroiBakansuYo();
 	v_flipped = 1;
 	cvar_clientsettemp("bgmvolume", "1");
 	cvar_clientsettemp("v_flipped", cvar_string("v_flipped"));	// needed just to store the original value, will be updated per-frame
@@ -1773,13 +1781,32 @@ void Net_VoteDialogReset() {
 	vote_active = 0;
 }
 
+entity my_balls;
+
+void ProtectMyBalls_End() {
+	KiiroiBakansuYo();
+	remove(self);
+}
+
+void ProtectMyBalls() {
+	ForceMusic("lfl");
+	
+	if(my_balls)
+		remove(my_balls);
+		
+	my_balls = spawn();
+	my_balls.think = ProtectMyBalls_End;
+	my_balls.nextthink = time + 60;
+}
+
 void Net_ReadMorningRescue()
 {
 	#ifdef RM_SUPPORT_MORNINGRESCUE
 	if(morningrescue)
 		return;
 	
-	localcmd("play2 sound/misc/morningrescue\n");
+	//localcmd("play2 sound/misc/morningrescue\n");
+	ProtectMyBalls();
 	morningrescue = 1;
 	mr_appeartime = time;
 	mr_fadetime   = time + 9;
