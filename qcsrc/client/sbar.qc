@@ -472,7 +472,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
 		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
