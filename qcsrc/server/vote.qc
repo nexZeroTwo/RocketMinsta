@@ -11,7 +11,7 @@ float VoteCheckNasty(string cmd)
 	return FALSE;
 }
 
-#define STUPID_VNO_STRINGS 8
+#define STUPID_VNO_STRINGS 10
 #define STUPID_VNO_PASSWORD 16645
 
 string GetStupidVNoString() {

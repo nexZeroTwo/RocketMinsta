@@ -1157,6 +1157,13 @@ void GameCommand(string msg)
 	{
 		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
+	else if(cmd == "crc16")
+	{
+		if(argc < 3)
+			print("Usage: crc16 bool:caseinsensitive string\n");
+		else
+			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
+	}
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
