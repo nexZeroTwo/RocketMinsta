@@ -779,17 +779,21 @@ string Sbar_GetField(entity pl, float field)
 			denom = pl.(scores[SP_DEATHS]);
 
 			if(denom == 0) {
-				sbar_field_rgb = '0 1 0';
-				str = ftos(num);
-			} else if(num <= 0) {
-				sbar_field_rgb = '1 0 0';
-				str = ftos(num/denom);
-			} else
-				str = ftos(num/denom);
-
-			tmp = strstrofs(str, ".", 0);
-			if(tmp > 0)
-				str = substring(str, 0, tmp+2);
+				sbar_field_rgb = '1 1 1';
+				str = "inf";
+			} else {
+				float ratio = num/denom;
+				
+				if(ratio < 1)
+					sbar_field_rgb = '1 0 0' + '0 1 0' * (ratio * ratio);
+				else if(ratio < 3)
+					sbar_field_rgb = '1 1 0' - '1 0 0' * (ratio - 1);
+				else
+					sbar_field_rgb = '0 1 0' + '0 0 1' * ((ratio - 2) * 0.125);
+				
+				str = strcat(ftos(rint(ratio * 100)), "%");
+			}
+			
 			return str;
 
 		default:
