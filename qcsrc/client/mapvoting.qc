@@ -18,6 +18,8 @@ float mv_maps_mask;
 float mv_starttime;
 float mv_gtvote_previewangle;
 
+#define PREVIEW_FROMSERVER 2
+
 vector mv_mousepos;
 float mv_selection;
 
@@ -189,6 +191,8 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 
 void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, string pic, float count, float id)
 {
+	//print("ENTERED MapVote_DrawMapItem(", pic, ")\n");
+	
 	vector img_size;
 	vector rgb;
 	vector txtpos;
@@ -198,6 +202,10 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	float alpha = 1 - pow(bound(0, (time - mv_starttime), 1) - 1, 2);
 	float angle = alpha * mv_drawangles[id];
 	float ha = mv_hoveralpha[id];
+	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
+	
+	if(fromserver)
+		angle = 0;
 
 	isize *= alpha + ha * 0.07;
 	isize -= sbar_fontsize_y; // respect the text when calculating the image size
@@ -224,7 +232,10 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	img_size -= (sbar_border_thickness * 2) * '1 1 0';
 	
 	if(pic != "") {
-		drawpic_rotated(pos, pic, img_size, '1 1 1', angle, alpha, DRAWFLAG_NORMAL);
+		if(!fromserver)
+			drawpic_rotated(pos, pic, img_size, '1 1 1', angle, alpha, DRAWFLAG_NORMAL);
+		else
+			drawpic(pos, pic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
 	}
 	
 	vector hs = img_size * 0.5;
@@ -241,6 +252,8 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 		//drawborderlines(sbar_border_thickness, pos, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
 		drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
 	}
+	
+	//print("EXITED MapVote_DrawMapItem(", pic, ")\n");
 }
 
 void MapVote_DrawAbstain(vector pos, float isize, float tsize, float count, float id)
@@ -364,8 +377,12 @@ void MapVote_Draw()
 
 		//drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
 		
-		if(mapvote_choosenmappic != "")
-			drawpic_rotated(o, mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * alpha, alpha, DRAWFLAG_NORMAL);
+		if(mapvote_choosenmappic != "") {
+			if(mv_gtvote_previewangle == 0)
+				drawpic(o, mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
+			else
+				drawpic_rotated(o, mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * alpha, alpha, DRAWFLAG_NORMAL);
+		}
 
 		o_y += img_size_y + 10;
 		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
@@ -491,7 +508,11 @@ void MapVote_CheckPic(string pic, string pk3, float id)
 	// never try to retrieve a pic for the "don't care" 'map'
 	if(mv_abstain && id == mv_num_maps - 1)
 		return;
-
+	
+	// never try to retrieve pics for gametype votes
+	if(gametypevote)
+		return;
+	
 	if(PreviewExists(pic))
 	{
 		mv_preview[id] = true;
@@ -531,7 +552,11 @@ void MapVote_Init()
 	{
 		print("^5Now decide the GAMETYPE!\n");
 		MapVote_RememberMap(ReadString());
-		mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
+		
+		if(PreviewExists(mapvote_choosenmap))
+			mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
+		else
+			mv_gtvote_previewangle = 0;
 	}
 
 	if(mv_num_maps <= 8)
@@ -652,7 +677,7 @@ void Net_MapVote_Picture()
 {
 	float type;
 	type = ReadByte();
-	mv_preview[type] = true;
+	mv_preview[type] = PREVIEW_FROMSERVER;
 	mv_pics[type] = strzone(ReadPicture());
 }
 
