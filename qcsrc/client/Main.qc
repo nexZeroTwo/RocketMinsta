@@ -1164,6 +1164,16 @@ void GameCommand(string msg)
 		else
 			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
 	}
+	else if(cmd == "danger") {
+		// dirty dirty hacks
+		// I love them
+		
+		string userbind = cvar_string("userbind7_press");
+		if(strstrofs(userbind, "g_waypointsprite_team_danger_p", 0) >= 0 && strstrofs(userbind, "%p", 0) >= 0)
+			localcmd("_userbind_call userbind7_press\n");
+		else
+			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
+	}
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");

@@ -1,5 +1,6 @@
 
 entity uglyfreezetagworkaround;
+.float danger_used;
 
 void update_playercount()
 {
@@ -576,6 +577,13 @@ float freezetag_PlayerPreThink()
 	}
     
     // frozen
+    
+	if(self.BUTTON_ATCK) {
+		if(!self.danger_used) {
+			stuffcmd(self, "cl_cmd danger\n");
+			self.danger_used = 1;
+		}
+	} else self.danger_used = 0;
     
 	FOR_EACH_PLAYER(other) if(self != other)
 	{
