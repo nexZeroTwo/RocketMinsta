@@ -1927,6 +1927,7 @@ void CSQC_Strength_Timer(vector sectorpos) {
 string centerprint_messages[CENTERPRINT_MAX_LINES];
 float centerprint_width[CENTERPRINT_MAX_LINES];
 float centerprint_expires[CENTERPRINT_MAX_LINES];
+float centerprint_posttime[CENTERPRINT_MAX_LINES];
 vector centerprint_start;
 float centerprint_expire;
 float centerprint_num;
@@ -2036,7 +2037,7 @@ void centerprint(string strRealMessage)
 						strunzone(centerprint_messages[i]);
 
 				centerprint_messages[i] = strzone(s);
-				centerprint_expires[i] = ((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
+				centerprint_expires[i] = exptime; //((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
 				centerprint_width[i] = stringwidth(s, TRUE);
 				++i;
 
@@ -2139,6 +2140,7 @@ void Sbar_DrawCenterPrint (void)
 	vector pos;
 	string ts;
 	float a;
+	float exptime;
 
 	pos = centerprint_start;
 
@@ -2153,7 +2155,8 @@ void Sbar_DrawCenterPrint (void)
 
 	for (i = 0; i<centerprint_num; i = i + 1)
 	{
-		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
+		exptime = centerprint_expires[i];
+		a = bound(0, 1 - 4 * (time - exptime), 1);
 
 		if(a <= 0)
 			continue;
@@ -2166,8 +2169,21 @@ void Sbar_DrawCenterPrint (void)
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 			if(rm_simpleeffects)
 				drawcolorcodedstring(pos, ts, centerprint_fontsize, a, DRAWFLAG_NORMAL);
-			else
-				drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
+			else {
+				vector sz = centerprint_fontsize * a;
+				float postedat = exptime - cvar("scr_centertime");
+				float a2 = 1 - bound(0, 3 * (time - postedat), 1);
+				
+				float oldy = pos_y;
+				pos_y += 3 * (centerprint_fontsize_y * ipol_swingInOut(1 - a2) - centerprint_fontsize_y);
+				drawcolorcodedstring(pos, ts, sz, a * ipol_pow2In(1 - a2), DRAWFLAG_NORMAL);
+				
+				float a3 = 1 + ipol_pow2In(1.0 - a2); 
+				sz = sz * a3;
+				pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (a3)) * 0.5;
+				drawcolorcodedstring(pos - centerprint_fontsize_y * '0 0.5 0' * (a3 - 1), ts, sz, a * a2, DRAWFLAG_NORMAL);
+				pos_y = oldy;
+			}
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
 			pos_y = pos_y + centerprint_fontsize_y * (rm_simpleeffects? 1 : a);
 		}
@@ -3242,7 +3258,7 @@ void Sbar_Draw (void)
 		if(bp_alpha > 0)
 		{
 			bp_pos = '0 1 0' * (vid_conheight/5);
-			bp_pos_y -= 24 * (rm_simpleeffects? 1 : (1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
+			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
 			if(rm_simpleeffects)
@@ -3314,8 +3330,10 @@ void Sbar_Draw (void)
 							drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 						}
 					}
-					else
-						drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+					else {
+						vector sz = '24 24 0' * (1.0 + ipol_powIn(3, 1.0 - bp_alpha));
+						drawcolorcodedstringcenter(bp_pos - sz * 0.25 * (1 - bp_alpha), bigprint_string, sz, bp_alpha, DRAWFLAG_NORMAL);
+					}
 				}
 
 				drawfont = sbar_font;

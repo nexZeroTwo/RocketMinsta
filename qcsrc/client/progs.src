@@ -10,6 +10,7 @@ csqc_builtins.qc
 ../common/util.qh
 ../common/items.qh
 ../common/ip2c.qh
+../common/interpolation.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -62,3 +63,4 @@ bgmscript.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
+../common/interpolation.qc
