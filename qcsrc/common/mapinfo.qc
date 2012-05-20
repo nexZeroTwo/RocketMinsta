@@ -197,6 +197,9 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 	MapInfo_count = 0;
 	for(i = 0, j = -1; i < _MapInfo_globcount; ++i)
 	{
+		// Chaiomanot  : I'm left here scratching my head wondering what in the world
+		// Feb 17 2012 : who ever made a mess of things here was thinking.
+		//             : My fix isn't so great, but at least things work now. O.o
 		/*
 		if(MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0) == 2) // if we generated one... BAIL OUT and let the caller continue in the next frame.
 			if(pAbortOnGenerate)
@@ -205,14 +208,14 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 				MapInfo_progress = i / _MapInfo_globcount;
 				return 0;
 			}
-		if((MapInfo_Map_supportedGametypes & pGametype) != 0)
 		*/
-		if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
-		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
-		if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
-			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
-			
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
+		if((pGametype & MAPINFO_TYPE_DEATHMATCH) ||
+		   (MapInfo_Map_supportedGametypes & pGametype) != 0)
+		//if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
+		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
+		//if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
+			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
 		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;
@@ -521,28 +524,6 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 	s = cdr(s);
 }
 
-float MapInfo_Type_FromString(string t)
-{
-	if     (t == "dm")      return MAPINFO_TYPE_DEATHMATCH;
-	else if(t == "tdm")     return MAPINFO_TYPE_TEAM_DEATHMATCH;
-	else if(t == "dom")     return MAPINFO_TYPE_DOMINATION;
-	else if(t == "ctf")     return MAPINFO_TYPE_CTF;
-	else if(t == "rune")    return MAPINFO_TYPE_RUNEMATCH;
-	else if(t == "lms")     return MAPINFO_TYPE_LMS;
-	else if(t == "arena")   return MAPINFO_TYPE_ARENA;
-	else if(t == "kh")      return MAPINFO_TYPE_KEYHUNT;
-	else if(t == "as")      return MAPINFO_TYPE_ASSAULT;
-	else if(t == "ons")     return MAPINFO_TYPE_ONSLAUGHT;
-	else if(t == "rc")      return MAPINFO_TYPE_RACE;
-	else if(t == "nexball") return MAPINFO_TYPE_NEXBALL;
-	else if(t == "cts")     return MAPINFO_TYPE_CTS;
-	else if(t == "all")     return MAPINFO_TYPE_ALL;
-	else if(t == "ft")		return MAPINFO_TYPE_CTF;
-    else if(t == "vip")     return MAPINFO_TYPE_CTF;
-	else if(t == "totaldom") return MAPINFO_TYPE_DOMINATION;
-	else                    return 0;
-}
-
 void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurse)
 {
 	string t;
@@ -747,7 +728,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		else if(t == "type")
 		{
 			t = car(s); s = cdr(s);
-			f = MapInfo_Type_FromString(t);
+			f = gametype_Name_to_MapID(t);
 			if(f)
 				_MapInfo_Map_ApplyGametype (s, pGametypeToSet, f);
 			else
@@ -787,7 +768,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		else if(t == "settemp_for_type")
 		{
 			t = car(s); s = cdr(s);
-			if((f = MapInfo_Type_FromString(t)))
+			if((f = gametype_Name_to_MapID(t)))
 			{
 				if(f & pGametypeToSet)
 				{
@@ -802,7 +783,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		else if(t == "clientsettemp_for_type")
 		{
 			t = car(s); s = cdr(s);
-			if((f = MapInfo_Type_FromString(t)))
+			if((f = gametype_Name_to_MapID(t)))
 			{
 				if(f & pGametypeToSet)
 				{
@@ -853,12 +834,15 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 	if(!MapInfo_Map_supportedGametypes)
 		_MapInfo_Map_ApplyGametype("30 20", pGametypeToSet, MAPINFO_TYPE_DEATHMATCH);
 
-	if(pGametypeToSet)
+	if(pGametypeToSet) if(pGametypeToSet != MAPINFO_TYPE_DEATHMATCH)
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
 		{
 			//error(strcat("Can't select the requested game type. Bailing out. pGametypeToSet = ", ftos(pGametypeToSet), "; MapInfo_Map_supportedGametypes = ", ftos(MapInfo_Map_supportedGametypes )));
 			#ifdef SVQC
 			bprint("^1Can't select the requested gametype, WTF?!\n");
+			// Chaiomanot: Jan 9th 2012: Rather just than asking YTF, and then _letting_ it potentially crash, do something about it! (+2 lines)
+			gametype_Set(GAME_NOTHING);
+			return 1;
 			#endif
 		}
 #endif
@@ -932,42 +916,6 @@ float MapInfo_CurrentFeatures()
 	return req;
 }
 
-float MapInfo_CurrentGametype()
-{
-	if(cvar("g_domination"))
-		return MAPINFO_TYPE_DOMINATION;
-	else if(cvar("g_total_domination"))
-		return MAPINFO_TYPE_DOMINATION;
-	else if(cvar("g_ctf"))
-		return MAPINFO_TYPE_CTF;
-	else if(cvar("g_runematch"))
-		return MAPINFO_TYPE_RUNEMATCH;
-	else if(cvar("g_tdm"))
-		return MAPINFO_TYPE_TEAM_DEATHMATCH;
-	else if(cvar("g_assault"))
-		return MAPINFO_TYPE_ASSAULT;
-	else if(cvar("g_lms"))
-		return MAPINFO_TYPE_LMS;
-	else if(cvar("g_arena"))
-		return MAPINFO_TYPE_ARENA;
-	else if(cvar("g_keyhunt"))
-		return MAPINFO_TYPE_KEYHUNT;
-	else if(cvar("g_onslaught"))
-		return MAPINFO_TYPE_ONSLAUGHT;
-	else if(cvar("g_race"))
-		return MAPINFO_TYPE_RACE;
-	else if(cvar("g_nexball"))
-		return MAPINFO_TYPE_NEXBALL;
-	else if(cvar("g_cts"))
-		return MAPINFO_TYPE_CTS;
-	else if(cvar("g_freezetag"))
-		return MAPINFO_TYPE_CTF;
-	else if(cvar("g_vip"))
-		return MAPINFO_TYPE_CTF;
-	else
-		return MAPINFO_TYPE_DEATHMATCH;
-}
-
 float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
 {
 	if(!MapInfo_Get_ByName(s, 1, 0))
@@ -975,7 +923,7 @@ float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with t
 	return 1;
 	
 	/*
-	if((MapInfo_Map_supportedGametypes & MapInfo_CurrentGametype()) == 0)
+	if((MapInfo_Map_supportedGametypes & gametype_ID_to_MapID(game)) == 0)
 		return 0;
 	if((MapInfo_Map_supportedFeatures & MapInfo_CurrentFeatures()) != MapInfo_CurrentFeatures())
 		return 0;
@@ -989,147 +937,6 @@ float MapInfo_CheckMap(string s) // returns 0 if the map can't be played with th
 	r = _MapInfo_CheckMap(s);
 	MapInfo_ClearTemps();
 	return r;
-}
-
-string MapInfo_GetGameTypeCvar(float t)
-{
-	switch(t)
-	{
-		case MAPINFO_TYPE_DEATHMATCH: return "g_dm";
-		case MAPINFO_TYPE_TEAM_DEATHMATCH: return "g_tdm";
-		case MAPINFO_TYPE_DOMINATION: return "g_domination";
-		case MAPINFO_TYPE_CTF: return "g_ctf";
-		case MAPINFO_TYPE_RUNEMATCH: return "g_runematch";
-		case MAPINFO_TYPE_LMS: return "g_lms";
-		case MAPINFO_TYPE_ARENA: return "g_arena";
-		case MAPINFO_TYPE_KEYHUNT: return "g_kh";
-		case MAPINFO_TYPE_ASSAULT: return "g_assault";
-		case MAPINFO_TYPE_ONSLAUGHT: return "g_onslaught";
-		case MAPINFO_TYPE_RACE: return "g_race";
-		case MAPINFO_TYPE_NEXBALL: return "g_nexball";
-		case MAPINFO_TYPE_CTS: return "g_cts";
-		default: return "";
-	}
-}
-
-void MapInfo_SwitchGameType(float t)
-{
-	cvar_set("gamecfg",      "0");
-	cvar_set("g_dm",         (t == MAPINFO_TYPE_DEATHMATCH)      ? "1" : "0");
-	cvar_set("g_tdm",        (t == MAPINFO_TYPE_TEAM_DEATHMATCH) ? "1" : "0");
-	cvar_set("g_domination", (t == MAPINFO_TYPE_DOMINATION)      ? "1" : "0");
-	cvar_set("g_total_domination", (t == MAPINFO_TYPE_DOMINATION)      ? "1" : "0");
-	cvar_set("g_ctf",        (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
-	cvar_set("g_runematch",  (t == MAPINFO_TYPE_RUNEMATCH)       ? "1" : "0");
-	cvar_set("g_lms",        (t == MAPINFO_TYPE_LMS)             ? "1" : "0");
-	cvar_set("g_arena",      (t == MAPINFO_TYPE_ARENA)           ? "1" : "0");
-	cvar_set("g_keyhunt",    (t == MAPINFO_TYPE_KEYHUNT)         ? "1" : "0");
-	cvar_set("g_assault",    (t == MAPINFO_TYPE_ASSAULT)         ? "1" : "0");
-	cvar_set("g_onslaught",  (t == MAPINFO_TYPE_ONSLAUGHT)       ? "1" : "0");
-	cvar_set("g_race",       (t == MAPINFO_TYPE_RACE)            ? "1" : "0");
-	cvar_set("g_nexball",    (t == MAPINFO_TYPE_NEXBALL)         ? "1" : "0");
-	cvar_set("g_cts",        (t == MAPINFO_TYPE_CTS)             ? "1" : "0");
-	cvar_set("g_freezetag",  (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
-    cvar_set("g_vip",        (t == MAPINFO_TYPE_CTF)             ? "1" : "0");
-}
-
-void MapInfo_SwitchGameType_String(string gtname)
-{
-	MapInfo_SwitchGameType(MapInfo_Type_FromString(gtname));
-
-	// TODO: remove this horrible mess
-
-	if(gtname == "kh")
-	{
-		cvar_set("g_ctf", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_total_domination", "0");
-		cvar_set("g_vip", "0");
-		cvar_set("g_dm", "0");
-		cvar_set("g_tdm", "0");
-        _is_key_hunt = 1;
-	}
-	else if(gtname == "ft")
-	{
-		cvar_set("g_ctf", "0");
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_total_domination", "0");
-		cvar_set("g_vip", "0");
-		cvar_set("g_dm", "0");
-		cvar_set("g_tdm", "0");
-        _is_key_hunt = 0;
-	}
-	else if(gtname == "ctf")
-	{
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_total_domination", "0");
-        cvar_set("g_vip", "0");
-        cvar_set("g_dm", "0");
-        cvar_set("g_tdm", "0");
-		_is_key_hunt = 0;
-	}
-	else if(gtname == "dom")
-	{
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_ctf", "0");
-		cvar_set("g_total_domination", "0");
-        cvar_set("g_vip", "0");
-        cvar_set("g_dm", "0");
-        cvar_set("g_tdm", "0");
-		_is_key_hunt = 0;
-	}
-	else if(gtname == "totaldom")
-	{
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_ctf", "0");
-		cvar_set("g_total_domination", "1");
-		cvar_set("g_domination", "1");
-        cvar_set("g_vip", "0");
-        cvar_set("g_dm", "0");
-        cvar_set("g_tdm", "0");
-		_is_key_hunt = 0;
-	}
-    else if(gtname == "vip")
-    {
-    	cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_ctf", "0");
-		cvar_set("g_total_domination", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_dm", "0");
-		cvar_set("g_tdm", "0");
-		_is_key_hunt = 0;
-    }
-    else if(gtname == "dm")
-    {
-		cvar_set("g_dm", "1");
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_ctf", "0");
-		cvar_set("g_total_domination", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_vip", "0");
-		cvar_set("g_tdm", "0");
-		_is_key_hunt = 0;
-	}
-	else if(gtname == "tdm")
-    {
-		cvar_set("g_tdm", "1");
-		cvar_set("g_dm", "0");
-		cvar_set("g_keyhunt", "0");
-		cvar_set("g_freezetag", "0");
-		cvar_set("g_ctf", "0");
-		cvar_set("g_total_domination", "0");
-		cvar_set("g_domination", "0");
-		cvar_set("g_vip", "0");
-		_is_key_hunt = 0;
-	}
 }
 
 void MapInfo_LoadMap(string s)
@@ -1150,7 +957,7 @@ string MapInfo_ListAllowedMaps(float pRequiredFlags, float pForbiddenFlags)
 
 	// to make absolutely sure:
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), pRequiredFlags, pForbiddenFlags, 0);
+	MapInfo_FilterGametype(gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), pRequiredFlags, pForbiddenFlags, 0);
 
 	out = "";
 	for(i = 0; i < MapInfo_count; ++i)
@@ -1191,7 +998,7 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 		print("Warning: _MapInfo_CheckMap failed\n");
 	#endif
 	cvar_settemp_restore();
-	MapInfo_Get_ByName(s, 1, MapInfo_CurrentGametype());
+	MapInfo_Get_ByName(s, 1, gametype_ID_to_MapID(gametype_GetMenu()));
 }
 
 void MapInfo_ClearTemps()
@@ -1243,4 +1050,4 @@ float MapInfo_RequiredFlags()
 		f |= MAPINFO_FLAG_FRUSTRATING;
 
 	return f;
-}
+} 
