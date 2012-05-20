@@ -427,7 +427,17 @@ void spawnfunc_worldspawn (void)
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
-
+	
+	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
+	registercvar("g_freezetag", "0");
+	registercvar("g_total_domination", "0");
+	registercvar("g_vip", "0");
+	registercvar("g_prec", "0");
+	registercvar("g_inf", "0");
+	registercvar("g_rps", "0");
+	registercvar("g_no", "0");
+	
+	
 /*
  - now unused
     registercvar("_sv_rm_lastgametype", "");
