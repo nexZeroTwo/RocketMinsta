@@ -61,20 +61,6 @@ void fillNexuizServerCreateTab(entity me)
 			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_nexball", "Nexball"));
 			if(e.checked) e0 = NULL;
-	me.TR(me);
-		n = 6;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_total_domination", "Total Dom"));
-			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_vip", "VIP"));
-			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_freezetag", "Freeze Tag"));
-			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_prec", "Precious"));
-			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_inf", "Infection"));
-			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_rps", "RPS"));
-			if(e.checked) e0 = NULL;
 		if(e0)
 		{
 			//print("NO CHECK\n");
@@ -213,7 +199,7 @@ void gameTypeChangeNotifyNexuizServerCreateTab(entity me)
 	// tell the map list to update
 	float gt;
 	entity e, l, l2;
-	gt = gametype_ID_to_MapID(gametype_GetMenu());
+	gt = MapInfo_CurrentGametype();
 	e = me.sliderFraglimit;
 	l = me.checkboxFraglimit;
 	l2 = me.checkboxFraglimitMapinfo;
@@ -234,4 +220,4 @@ void gameTypeChangeNotifyNexuizServerCreateTab(entity me)
 	me.mapListBox.refilter(me.mapListBox);
 }
 
-#endif 
+#endif

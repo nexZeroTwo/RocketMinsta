@@ -241,7 +241,7 @@ float GameCommand_Generic(string command)
 		else if(argv(1) == "cleanup")
 		{
 			MapInfo_Enumerate();
-			MapInfo_FilterGametype(gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
@@ -863,4 +863,4 @@ float GameCommand_Generic(string command)
 	}
 
 	return FALSE;
-} 
+}

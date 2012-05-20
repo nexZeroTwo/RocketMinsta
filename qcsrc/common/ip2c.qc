@@ -101,9 +101,6 @@ void IP2C_ExecCallbacks(string ip, string cn)
 
 void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity)
 {
-    if(!cvar("g_ip2c"))
-        return;
-
     local string res;
     res = IP2C_LookupCached(ip);
     

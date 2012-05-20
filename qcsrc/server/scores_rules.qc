@@ -84,7 +84,6 @@ void ScoreRules_ctf()
 	ScoreInfo_SetLabel_PlayerScore(SP_CTF_FCKILLS,  "fckills",   0);
 	ScoreInfo_SetLabel_PlayerScore(SP_CTF_RETURNS,  "returns",   0);
 	ScoreInfo_SetLabel_PlayerScore(SP_CTF_DROPS,    "drops",     SFL_LOWER_IS_BETTER);
-    ScoreInfo_SetLabel_PlayerScore (SP_CARRYING,    "fc",        0);
 	ScoreRules_basics_end();
 }
 

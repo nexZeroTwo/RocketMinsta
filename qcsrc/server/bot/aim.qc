@@ -100,10 +100,6 @@ float lag_additem(float t, float f1, float f2, entity e1, vector v1, vector v2, 
 
 float bot_shouldattack(entity e)
 {
-	if(g_prec) if(self.prec_rune.classname != "prec_rune")
-		if(e.prec_rune.classname != "prec_rune")
-			if(e.health + e.armorvalue > 20) return 0;
-
 	if (e.team == self.team)
 	{
 		if (e == self)
@@ -127,8 +123,7 @@ float bot_shouldattack(entity e)
 	if (e.deadflag)
 		return FALSE;
 	if (e.BUTTON_CHAT)
-		if(!g_prec || e.prec_rune.classname == "prec_rune")
-			return FALSE;
+		return FALSE;
 	if(g_minstagib)
 	if(e.items & IT_STRENGTH)
 		return FALSE;

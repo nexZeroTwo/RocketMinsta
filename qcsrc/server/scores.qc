@@ -182,8 +182,6 @@ void ScoreInfo_Init(float teams)
 		scores_initialized.classname = "ent_client_scoreinfo";
 		Net_LinkEntity(scores_initialized, FALSE, 0, ScoreInfo_SendEntity);
 	}
-	if(g_inf)
-		return;
 	if(teams >= 1)
 		TeamScore_Spawn(COLOR_TEAM1, "Red");
 	if(teams >= 2)
@@ -363,7 +361,7 @@ void WinningConditionHelper()
 	entity secondscorekeeper;
 	entity sk;
 
-	s = gametype_ID_to_Name(game);
+	s = GetGametype();
 	s = strcat(s, ":", cvar_string("g_nexuizversion"));
 	s = strcat(s, "::", GetPlayerScoreString(world, 2)); // make this 1 once we can
 

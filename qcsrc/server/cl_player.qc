@@ -18,7 +18,7 @@ void WeaponStats_Shutdown()
 	string prefix;
 	if(weaponstats_buffer < 0)
 		return;
-	prefix = strcat(cvar_string("hostname"), "\t", gametype_ID_to_Name(game), "_", GetMapname(), "\t");
+	prefix = strcat(cvar_string("hostname"), "\t", GetGametype(), "_", GetMapname(), "\t");
 	if(cvar_string("sv_weaponstats_killfile") != "")
 	{
 		fh = fopen(cvar_string("sv_weaponstats_killfile"), FILE_APPEND);
@@ -714,7 +714,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
 		DropAllRunes(self);
-		prec_player_die(self);
 		
 		if(deathtype == DEATH_HURTTRIGGER && g_freezetag)
 		{
@@ -777,11 +776,11 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			waves = cvar("g_respawn_mapsettings_waves");
 		}
 		if(!sdelay)
-			sdelay = cvar(strcat("g_", gametype_ID_to_Name(game), "_respawn_delay"));
+			sdelay = cvar(strcat("g_", GetGametype(), "_respawn_delay"));
 		if(!sdelay)
 			sdelay = cvar("g_respawn_delay");
 		if(!waves)
-			waves = cvar(strcat("g_", gametype_ID_to_Name(game), "_respawn_waves"));
+			waves = cvar(strcat("g_", GetGametype(), "_respawn_waves"));
 		if(!waves)
 			waves = cvar("g_respawn_waves");
 		if(waves)

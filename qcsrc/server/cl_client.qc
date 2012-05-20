@@ -1,5 +1,3 @@
-void inf_warmup();
-
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -266,24 +264,11 @@ entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exp
 	// weight of a point: bound(lower, mindisttoplayer, upper)^exponent
 	// multiplied by spot.cnt (useful if you distribute many spawnpoints in a small area)
 	local entity spot;
-	local float considerations;
-	considerations = 0;
 
 	RandomSelection_Init();
 	for(spot = firstspot; spot; spot = spot.chain)
-	{
-		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot)
-			RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
-		considerations += 1;
-	}
-	if(!considerations) // if we didn't like the options...
-		if(self.last_spawn_pt_1 == spot && spot.chain) // if we can, try to take 2nd opt.
-			RandomSelection_Add(firstspot.chain, 0, string_null, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
-		else
-			RandomSelection_Add(firstspot, 0, string_null, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
+		RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
 
-	self.last_spawn_pt_2 = self.last_spawn_pt_1;
-	self.last_spawn_pt_1 = RandomSelection_chosen_ent;
 	return RandomSelection_chosen_ent;
 }
 
@@ -357,7 +342,7 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
 	}
-	else if(teams_matter && !g_inf && closetoteam)
+	else if(teams_matter && closetoteam)
 	{
 		local entity md_point, md_player, md_tmp_point, md_tmp_player;
 		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
@@ -528,7 +513,7 @@ entity SelectSpawnPoint (float anypoint)
 			{
 				//error("Cannot find a spawn point - please fix the map!");
 				bprint("\x01^1* Cannot find a spawn point! ^7Forced endmatch.\n");
-				end_match(1);
+				localcmd("timelimit -1\n");
 				return world;
 			}
 		}
@@ -712,7 +697,6 @@ PutObserverInServer
 putting a client as observer in the server
 =============
 */
-void inf_player_leave(entity);
 void FixPlayermodel();
 void PutObserverInServer (void)
 {
@@ -738,8 +722,6 @@ void PutObserverInServer (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
-	prec_player_die(self);
-	inf_player_leave(self);
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -794,10 +776,6 @@ void PutObserverInServer (void)
 	self.nextthink = 0;
 	self.hook_time = 0;
 	self.runes = 0;
-	self.prec_rune = world;
-    self.prec_grudge = 0;
-    self.last_spawn_pt_1 = world;
-    self.last_spawn_pt_2 = world;
 	self.deadflag = DEAD_NO;
 	self.angles = spot.angles;
 	self.angles_z = 0;
@@ -1093,10 +1071,6 @@ void PutClientInServer (void)
 		self.metertime = 0;
 
 		self.runes = 0;
-	    self.prec_rune = world;
-	    self.prec_grudge = 0;
-		self.last_spawn_pt_1 = world;
-		self.last_spawn_pt_2 = world;
 
 		self.deadflag = DEAD_NO;
 
@@ -1756,7 +1730,6 @@ void ClientDisconnect (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
-	prec_player_die(self);
 	Portal_ClearAll(self);
 
 	if(self.flagcarried)
@@ -1994,8 +1967,6 @@ void player_powerups (void)
 	}
 
 	self.effects &~= (EF_RED | EF_BLUE | EF_ADDITIVE | EF_FULLBRIGHT | EF_FLAME);
-    self.glow_size = 0;
-    self.glow_trail = 0;
 
 	if(!self.modelindex || self.deadflag) // don't apply the flags if the player is gibbed
 		return;
@@ -2455,7 +2426,7 @@ void ShowRespawnCountdown()
 void LeaveSpectatorMode()
 {
 	if(isJoinAllowed()) {
-		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
+		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned"))) {
 			self.classname = "player";
 			if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force"))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -3264,7 +3235,6 @@ void PlayerPostThink (void)
 	*/
 
 	Arena_Warmup();
-	inf_warmup();
 
 	//pointparticles(particleeffectnum("machinegun_impact"), self.origin + self.view_ofs + '0 0 7', '0 0 0', 1);
 

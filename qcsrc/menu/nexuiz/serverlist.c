@@ -27,7 +27,6 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizServerList, filterShowEmpty, float, 1)
 	ATTRIB(NexuizServerList, filterShowFull, float, 1)
 	ATTRIB(NexuizServerList, filterShowOnlyRM, float, 0)
-	ATTRIB(NexuizServerList, filterShowOnlyEx, float, 0)
 	ATTRIB(NexuizServerList, filterString, string, string_null)
 	ATTRIB(NexuizServerList, controlledTextbox, entity, NULL)
 	ATTRIB(NexuizServerList, ipAddressBox, entity, NULL)
@@ -56,7 +55,6 @@ entity makeNexuizServerList();
 void ServerList_Connect_Click(entity btn, entity me);
 void ServerList_ShowEmpty_Click(entity box, entity me);
 void ServerList_ShowOnlyRM_Click(entity box, entity me);
-void ServerList_ShowOnlyEx_Click(entity box, entity me);
 void ServerList_ShowFull_Click(entity box, entity me);
 void ServerList_Filter_Change(entity box, entity me);
 void ServerList_Favorite_Click(entity btn, entity me);
@@ -219,12 +217,8 @@ void refreshServerListNexuizServerList(entity me, float mode)
 			sethostcachemasknumber(++m, SLIST_FIELD_NUMHUMANS, 1, SLIST_TEST_GREATEREQUAL);
 		if(typestr != "")
 			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, strcat(typestr, ":"), SLIST_TEST_STARTSWITH);
-		if(me.filterShowOnlyRM && me.filterShowOnlyEx) // not the best way of doing this
-			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_", SLIST_TEST_CONTAINS);
-		else if(me.filterShowOnlyRM)
+		if(me.filterShowOnlyRM)
 			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_rm-", SLIST_TEST_CONTAINS);
-		else if(me.filterShowOnlyEx)
-			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_ex_", SLIST_TEST_CONTAINS);
 		if(modstr != "")
 		{
 			if(substring(modstr, 0, 1) == "!")
@@ -367,21 +361,21 @@ void ServerList_TypeSort_Click(entity btn, entity me)
 
 	for(i = 1; ; ++i) // 20 modes ought to be enough for anyone
 	{
-		t = gametype_ID_to_Name(i);
+		t = GametypeNameFromType(i);
 		if(i > 1)
-			if(t == gametype_ID_to_Name(0)) // it repeats (default case)
+			if(t == GametypeNameFromType(0)) // it repeats (default case)
 			{
 				// no type was found
 				// choose the first one
 				s = t;
 				break;
 			}
-		if(s == gametype_ID_to_Name(i))
+		if(s == GametypeNameFromType(i))
 		{
 			// the type was found
 			// choose the next one
-			s = gametype_ID_to_Name(i + 1);
-			if(s == gametype_ID_to_Name(0))
+			s = GametypeNameFromType(i + 1);
+			if(s == GametypeNameFromType(0))
 				s = "";
 			break;
 		}
@@ -422,15 +416,6 @@ void ServerList_ShowEmpty_Click(entity box, entity me)
 void ServerList_ShowOnlyRM_Click(entity box, entity me)
 {
 	box.setChecked(box, me.filterShowOnlyRM = !me.filterShowOnlyRM);
-	me.refreshServerList(me, 0);
-
-	me.ipAddressBox.setText(me.ipAddressBox, "");
-	me.ipAddressBox.cursorPos = 0;
-	me.ipAddressBoxFocused = -1;
-}
-void ServerList_ShowOnlyEx_Click(entity box, entity me)
-{
-	box.setChecked(box, me.filterShowOnlyEx = !me.filterShowOnlyEx);
 	me.refreshServerList(me, 0);
 
 	me.ipAddressBox.setText(me.ipAddressBox, "");
@@ -597,20 +582,15 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	}
 
 	local string cn;
-    if(cvar("g_ip2c"))
+	local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
+	ip = substring(ip, 0, strstrofs(ip, ":", 0));
+	cn = db_get(me.ip2c_localdb, ip);
+	if(cn == "")
 	{
-		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
-		ip = substring(ip, 0, strstrofs(ip, ":", 0));
-		cn = db_get(me.ip2c_localdb, ip);
-		if(cn == "")
-		{
-			db_put(me.ip2c_localdb, ip, "--");
-			IP2C_Lookup(ip, ServerList_StoreCN, me);
-		}
+		db_put(me.ip2c_localdb, ip, "--");
+		IP2C_Lookup(ip, ServerList_StoreCN, me);
 	}
-	else
-		cn = "--";
-
+	
 	s = ftos(p);
 	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0);

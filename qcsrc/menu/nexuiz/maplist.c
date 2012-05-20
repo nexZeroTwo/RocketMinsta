@@ -200,7 +200,7 @@ void refilterNexuizMapList(entity me)
 	float i, j, n;
 	string s;
 	float gt, f;
-	gt = gametype_ID_to_MapID(gametype_GetMenu());
+	gt = MapInfo_CurrentGametype();
 	f = MapInfo_CurrentFeatures();
 	MapInfo_FilterGametype(gt, f, MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 	me.nItems = MapInfo_count;
@@ -350,4 +350,4 @@ float keyDownNexuizMapList(entity me, float scan, float ascii, float shift)
 	return 1;
 }
 
-#endif 
+#endif
