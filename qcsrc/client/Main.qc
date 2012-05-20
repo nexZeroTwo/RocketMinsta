@@ -152,7 +152,7 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = strzone(strcat("NexuizEx ", BUILD_VERSION, " ", BUILD_DATE));
+	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " ", RM_BUILD_DATE));
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");
@@ -345,7 +345,7 @@ void SetMadokaFont(float v)
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		default: case MDKF_AUTO:
-			if(madoprec_locked)
+			if(madoka_locked)
 			{
 				if(cvar("rm_specmadoka"))
 				{
@@ -354,7 +354,7 @@ void SetMadokaFont(float v)
 				}
 				/*else
 				{
-					madoprec_locked = 0;
+					madoka_locked = 0;
 				}*/
 			}
 			
@@ -371,7 +371,7 @@ void ReloadMenu_f()
 {
 	if(!self.cnt)
 	{
-		cvar_set("rm_loadedmenu", strcat("NexuizEx_", BUILD_VERSION, "_menu"));
+		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
 		localcmd("menu_restart\n");
 		self.cnt = 1;
 		self.nextthink = time + 1;
@@ -556,7 +556,7 @@ void PostInit(void)
 	fovlock = -1;
 	
 	registercvar("rm_loadedmenu", "");
-	if(cvar_string("rm_loadedmenu") != strcat("NexuizEx_", BUILD_VERSION, "_menu"))
+	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
@@ -754,7 +754,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		VALUEREQUIRED
 		
-		if(madoprec_locked && cvar("rm_specmadoka"))
+		if(madoka_locked && cvar("rm_specmadoka"))
 		{
 			print("^1Won't change madoka while spectating\n");
 			return true;
@@ -939,7 +939,7 @@ void ShotOrg_Spawn()
 
 #ifdef RM_SUPPORT_MADOKA
 .float oldspecmadoka;
-void TmpMadoprec_Think()
+void TmpMadoka_Think()
 {
 	//if(!cvar("rm_madoka"))
 	//	loadfont("user2", "vera-sans-big");
@@ -955,9 +955,9 @@ void madokaprint(string m, string c, float t)
 	
 	is_tmpmadoka = 1;
 	
-	tmpmadoprec_fadetime = time + t + 1;
-	tmpmadoka.think = TmpMadoprec_Think;
-	tmpmadoka.nextthink = tmpmadoprec_fadetime;
+	tmpmadoka_fadetime = time + t + 1;
+	tmpmadoka.think = TmpMadoka_Think;
+	tmpmadoka.nextthink = tmpmadoka_fadetime;
 	tmpmadoka.oldspecmadoka = cvar("rm_specmadoka");
 	cvar_set("rm_specmadoka", "0");
 	//loadfont("user2", "madoka-rune");
@@ -1078,7 +1078,7 @@ void GameCommand(string msg)
 		
 		if(cvar("rm_specmadoka"))
 		{
-			madoprec_locked = 1;
+			madoka_locked = 1;
 			madokalockstate = stof(argv(1));
 			SetMadokaFont(madokalockstate);
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));

@@ -234,4 +234,4 @@ void gameTypeChangeNotifyNexuizServerCreateTab(entity me)
 	me.mapListBox.refilter(me.mapListBox);
 }
 
-#endif 
+#endif

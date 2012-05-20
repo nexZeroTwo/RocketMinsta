@@ -210,15 +210,15 @@ float vote_active;
 float vote_highlighted;
 
 float is_tmpmadoka;
-//float tmpmadoprec_fadetime;
+float tmpmadoka_fadetime;
 
 float oldengine;
-//float madoprec_locked;
-//float madokalockstate;
+float madoka_locked;
+float madokalockstate;
 
 float mr_appeartime;
 float mr_fadetime;
-//float morningrescue;
+float morningrescue;
 
 float sbar_madokafont;
 
@@ -262,8 +262,8 @@ float hudflash_enabled;
 void hudflash(vector color, float staytime, float intensivity, float alph);
 
 float hudlocked;
-//float hudlock_old;
-//float hudlock_alt;
+float hudlock_old;
+float hudlock_alt;
 
 #define hudlocked_old hudlock_old
 #define hudlocked_alt hudlock_alt

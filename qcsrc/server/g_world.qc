@@ -765,7 +765,7 @@ void spawnfunc_worldspawn (void)
 	IP2C_Init();
 //	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
 
-	cvar_set("g_nexuizversion", strcat("2.5.2_ex_", BUILD_VERSION));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 
 	registercvar("g_endmatch", "0");
 }

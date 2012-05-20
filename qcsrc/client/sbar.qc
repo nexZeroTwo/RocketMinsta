@@ -2711,11 +2711,11 @@ void Sbar_MorningRescue(void)
 }
 
 float vote_active; // is there an active vote?
-/*
+
 float vote_prev; // previous state of vote_active to check for a change
 float vote_alpha;
 float vote_change; // "time" when vote_active changed
-*/
+
 
 string vote_statstring;
 

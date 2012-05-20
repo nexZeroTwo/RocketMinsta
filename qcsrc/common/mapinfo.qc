@@ -1050,4 +1050,4 @@ float MapInfo_RequiredFlags()
 		f |= MAPINFO_FLAG_FRUSTRATING;
 
 	return f;
-} 
+}
