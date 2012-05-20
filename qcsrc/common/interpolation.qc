@@ -31,5 +31,9 @@ IPOL_DEF(swingInOut) {
 	return x * x * ((scale + 1) * x + scale) / 2 + 1;
 }
 
-IPOL_SHORTDEF(swingOut, x * x * (3 * x + 2) + 1)
+IPOL_DEF(swingOut) {
+	x--;
+	return x * x * (3 * x + 2) + 1;
+}
+
 IPOL_SHORTDEF(swingIn, 	x * x * (3 * x - 2))

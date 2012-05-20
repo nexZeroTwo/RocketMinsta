@@ -159,7 +159,7 @@ string GameTypeVote_DescriptionByID(float id)
 
 #define drawGameTypeLine(s,c,sc,a) \
 drawstring(o, (s), sbar_fontsize * (sc), (c), a * alpha, DRAWFLAG_NORMAL); \
-o_y += sbar_fontsize_y * sc * (1 - pow(alpha - 1, 2))
+o_y += sbar_fontsize_y * sc *  (1 - pow(alpha - 1, 2))
 
 vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
 {
@@ -167,7 +167,7 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 	s = GameTypeVote_DescriptionByID(id);
 
 	float a, i, n = tokenizebyseparator(s, "\n");
-	float alpha = bound(0, time - mv_starttime, 1);
+	float alpha = bound(0, 0.5 * (time - mv_starttime), 1);
 	
 	if(mv_avail[id] != GTV_AVAILABLE)
 		a = 0.5;
@@ -175,7 +175,7 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 		a = 1;
 
 	float oldx = o_x;
-	o_x -= 10 * (1 - pow(mv_hoveralpha[id] - 1, 2));
+	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]); //(1 - pow(mv_hoveralpha[id] - 1, 2));
 	
 	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2, a);
 	for(i = 0; i < n; ++i)
@@ -201,7 +201,8 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 
 	float alpha = 1 - pow(bound(0, (time - mv_starttime), 1) - 1, 2);
 	float angle = alpha * mv_drawangles[id];
-	float ha = mv_hoveralpha[id];
+	float ha = 	ipol_swingInOut(mv_hoveralpha[id]);
+				//((id == mv_selection)? ipol_swingOut : ipol_swingIn)(mv_hoveralpha[id]);
 	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
 	
 	if(fromserver)
@@ -397,9 +398,9 @@ void MapVote_Draw()
 	{
 		float ha = mv_hoveralpha[i];
 		if(i == mv_selection)
-			ha = bound(0, ha + frametime * 2, 1);
+			ha = bound(0, ha + frametime, 1);
 		else
-			ha = bound(0, ha - frametime * 2, 1);
+			ha = bound(0, ha - frametime, 1);
 		mv_hoveralpha[i] = ha;
 		
 		if(!gametypevote && i == mv_selection)
