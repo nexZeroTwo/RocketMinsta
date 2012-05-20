@@ -261,7 +261,7 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_CTS:              return MAPINFO_TYPE_CTS;
 		case GAME_FREEZETAG:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_TOTAL_DOMINATION: return MAPINFO_TYPE_DOMINATION;
-		case GAME_VIP:              return MAPINFO_TYPE_CTF;
+		case GAME_VIP:              return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_PRECIOUS:         return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_RPS:              return MAPINFO_TYPE_DEATHMATCH;
@@ -310,8 +310,8 @@ float gametype_Name_to_ID (string l_typename)
 	else if(typename == "nexball" ) return GAME_NEXBALL;
 	else if(typename == "cts"     ) return GAME_CTS;
 	else if(typename == "ft"      ) return GAME_FREEZETAG;
-	else if(typename == "vip"     ) return GAME_TOTAL_DOMINATION;
-	else if(typename == "totaldom") return GAME_VIP;
+	else if(typename == "vip"     ) return GAME_VIP;
+	else if(typename == "totaldom") return GAME_TOTAL_DOMINATION;
 	else if(typename == "prec"    ) return GAME_PRECIOUS;
 	else if(typename == "inf"     ) return GAME_INFECTION;
 	else if(typename == "rps"     ) return GAME_RPS;
