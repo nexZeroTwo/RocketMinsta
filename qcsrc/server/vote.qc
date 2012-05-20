@@ -120,7 +120,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			
 			s = NormalizeGametypeName(argv(2));
-			if(!ListContains(cvar_string("g_explosive_gametypevote_options"), s, " ")) s = "";
+			if(!ListContainsEx(cvar_string("g_explosive_gametypevote_options"), s, " ", NormalizeGametypeName)) s = "";
 			
 			// ListContains tokenizes
 			vote_argc = tokenize_console(vote);
