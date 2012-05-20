@@ -132,7 +132,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			else if (! GameTypeFilter_Allowed (argv (1), s))
 			{
-				sprint (e, strcat ("^1", GametypeFullNameFromName (s), " is not allowed on the selected map\n"));
+				sprint (e, strcat ("^1", gametype_Name_to_LongName (s), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
@@ -146,16 +146,16 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
-			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 			
 			return TRUE;
 		}
 		else
 		{
-			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
+			if (! GameTypeFilter_Allowed (argv (1), gametype_ID_to_Name(game)))
 			{
 				// Moved from ValidateMap
-				sprint (e, strcat ("^1", GametypeFullNameFromType(game), " is not allowed on the selected map\n"));
+				sprint (e, strcat ("^1", gametype_ID_to_LongName(game), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
@@ -163,7 +163,7 @@ float RemapVote(string vote, string cmd, entity e)
 			
 			/*
 			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
-			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
+			if (GameTypeVote_AvailabilityStatus (gametype_ID_to_Name(game)) == GTV_OVERPLAYED)
 			{
 				sprint (e, "^1This gametype is currently overplayed.");
 				if (s == "ft")
@@ -318,7 +318,7 @@ float RemapVote(string vote, string cmd, entity e)
 			// Let's give this another shot
 			if (! GameTypeFilter_Allowed (mapname, s))
 			{
-				sprint (e, strcat ("^1", GametypeFullNameFromName(s), " is not allowed on the current map\n"));
+				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
 			}
 			if (! cvar ("g_explosive_gametypevote_call"))
@@ -327,7 +327,7 @@ float RemapVote(string vote, string cmd, entity e)
 				return FALSE;
 			}
 			RemapVote_vote = vote;
-			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 		}
 		else
 		{
@@ -671,10 +671,10 @@ string ValidateMap(string m, entity e)
 	}
 
 /*
-//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
-	if (! GameTypeFilter_Allowed (m, GetGametype ()))
+//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (gametype_ID_to_MapID(game))))
+	if (! GameTypeFilter_Allowed (m, gametype_ID_to_Name(game)))
 	{
-		print_to (e, strcat ("^2Invalid mode ^1", GametypeFullNameFromType (game), " ^2for map ^1", m));
+		print_to (e, strcat ("^2Invalid mode ^1", gametype_ID_to_LongName(game), " ^2for map ^1", m));
 		return string_null;
 	}
 	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't

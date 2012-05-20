@@ -3,7 +3,6 @@ string redirection_target;
 float world_initialized;
 
 string GetMapname();
-string GetGametype();
 void GotoNextMap();
 void ShuffleMaplist()
 float() DoNextMapOverride;
@@ -150,7 +149,7 @@ void GotoFirstMap()
 		cvar_set("g_maplist_index", ftos(n - 1)); // jump to map 0 in GotoNextMap
 
 		MapInfo_Enumerate();
-		MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 
 		if(!DoNextMapOverride())
 			GotoNextMap();
@@ -255,6 +254,8 @@ void cvar_changes_init()
 		BADCVAR("g_runematch");
 		BADCVAR("g_tdm");
 		BADCVAR("g_nexball");
+		BADCVAR("g_prec");
+		BADCVAR("g_no");
 		BADCVAR("teamplay");
 
 		// long
@@ -367,7 +368,7 @@ void spawnfunc___init_dedicated_server(void)
 	self.classname = "worldspawn"; // safeguard against various stuff ;)
 
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 }
 
 void Map_MarkAsRecent(string m);
@@ -377,18 +378,6 @@ void Nagger_Init();
 void ClientInit_Spawn();
 void WeaponStats_Init();
 void WeaponStats_Shutdown();
-
-void CTFCheck_Think()
-{
-	if(cvar("g_ctf")) if(!find(world, classname, "item_flag_team"))
-	{
-		bprint("\x01^2 * ^1This map is not CTF-compatible! ^7Forced endmatch.\n");
-		forbidrestart = 1;
-		localcmd("endmatch\n");
-	}
-	
-	remove(self);
-}
 
 string InfoMessages_Pick()
 {
@@ -439,9 +428,6 @@ void spawnfunc_worldspawn (void)
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
 
-	registercvar("g_freezetag", "0");
-	registercvar("g_total_domination", "0");
-    registercvar("g_vip", "0");
 /*
  - now unused
     registercvar("_sv_rm_lastgametype", "");
@@ -577,7 +563,7 @@ void spawnfunc_worldspawn (void)
 		s = strcat(s, ftos(random()));
 		matchid = strzone(s);
 
-		GameLogEcho(strcat(":gamestart:", GetGametype(), "_", GetMapname(), ":", s));
+		GameLogEcho(strcat(":gamestart:", gametype_ID_to_Name(game), "_", GetMapname(), ":", s));
 		s = ":gameinfo:mutators:LIST";
 		if(cvar("g_grappling_hook"))
 			s = strcat(s, ":grappling_hook");
@@ -619,7 +605,7 @@ void spawnfunc_worldspawn (void)
 	Ban_LoadBans();
 
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 
 	if(whichpack(strcat("maps/", mapname, ".cfg")) != "")
 	{
@@ -739,20 +725,15 @@ void spawnfunc_worldspawn (void)
 	ClientInit_Spawn();
 	RandomSeed_Spawn();
 
-	localcmd("\n_sv_hook_gamestart ", GetGametype(), ";");
+	localcmd("\n_sv_hook_gamestart ", gametype_ID_to_Name(game), ";");
 
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
 
 	world_initialized = 1;
-	
+
 	sys_frametime = (cvar("sys_ticrate") * cvar("slowmo"));
-	
-	// hack
-	local entity ctfcheck = spawn();
-	ctfcheck.think = CTFCheck_Think;
-	ctfcheck.nextthink = time + 3;
-	
+
 	if(g_explosive_speedaward_ownaccel)
 	{
 		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
@@ -772,9 +753,9 @@ void spawnfunc_worldspawn (void)
 
 /*
 	-- Not needed anymore --
-	if(cvar_string("_sv_rm_lastgametype") != GametypeNameFromType(game))
+	if(cvar_string("_sv_rm_lastgametype") != gametype_ID_to_Name(game))
 	{
-		cvar_set("_sv_rm_lastgametype", GametypeNameFromType(game));
+		cvar_set("_sv_rm_lastgametype", gametype_ID_to_Name(game));
 		cvar_set("_sv_rm_maprow", "0");
 	}
 */
@@ -782,9 +763,11 @@ void spawnfunc_worldspawn (void)
 //	cvar_set("_sv_rm_maprow", ftos(cvar("_sv_rm_maprow") + 1));
 	InfoMessages_Init();
 	IP2C_Init();
-	UpdateCTFBlacklist();
-	
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+//	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
+
+	cvar_set("g_nexuizversion", strcat("2.5.2_ex_", BUILD_VERSION));
+
+	registercvar("g_endmatch", "0");
 }
 
 void spawnfunc_light (void)
@@ -805,11 +788,6 @@ float TryFile( string pFilename )
 		return FALSE;
 	}
 };
-
-string GetGametype()
-{
-	return GametypeNameFromType(game);
-}
 
 string getmapname_stored;
 string GetMapname()
@@ -1258,7 +1236,7 @@ void DumpStats(float final)
 		s = ":scores:";
 	else
 		s = ":status:";
-	s = strcat(s, GetGametype(), "_", GetMapname(), ":", ftos(rint(time)));
+	s = strcat(s, gametype_ID_to_Name(game), "_", GetMapname(), ":", ftos(rint(time)));
 
 	if(to_console)
 		print(s, "\n");
@@ -1763,7 +1741,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
-	if(teams_matter)
+	if(teams_matter && !g_inf)
 	{
 		team1_score = TeamScore_GetCompareValue(COLOR_TEAM1);
 		team2_score = TeamScore_GetCompareValue(COLOR_TEAM2);
@@ -1789,7 +1767,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 	if(WinningConditionHelper_zeroisworst)
 		leadlimit = 0; // not supported in this mode
 
-	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
+	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball || g_prec)
 	// these modes always score in increments of 1, thus this makes sense
 	{
 		local string winmsg;
@@ -1975,6 +1953,13 @@ void CheckRules_World()
 			MapVote_Start();
 			// this will actually check the player count in the next frame
 			// again, but this shouldn't hurt
+		return;
+	}
+	
+	if(cvar("g_endmatch"))
+	{
+		cvar_set("g_endmatch", "0");
+		NextLevel();
 		return;
 	}
 
@@ -2194,7 +2179,7 @@ float DoNextMapOverride()
 			{
 				if(cvar("g_explosive_gametypevote")) if(cvar("g_explosive_gametypevote_overplayed_strict"))
 				{
-					if(GameTypeVote_AvailabilityStatus(GametypeNameFromType(gametypetoset)) != GTV_AVAILABLE)
+					if(GameTypeVote_AvailabilityStatus(gametype_ID_to_Name(gametypetoset)) != GTV_AVAILABLE)
 					{
 						choosenmap = strzone(cvar_string("nextmap"));
 						//GameTypeVote_Start();
@@ -2283,7 +2268,7 @@ float MapIsPlayable(string map_name)
 	if(!cvar("g_explosive_gametypevote"))
 		// if gametype voting isn't enabled, the server will stay on the current gametype
 		// so let's hide any map that isn't allowed in the current mode
-		return GameTypeFilter_Allowed(map_name, GetGametype());
+		return GameTypeFilter_Allowed(map_name, gametype_ID_to_Name(game));
 	
 	// Multigametype server: we'll hide the map if it supports none of gametypes that can be played
 	local float ret, i, n;
@@ -2424,21 +2409,23 @@ float MapVote_SendEntity(entity to, float sf)
 		WriteByte(MSG_ENTITY, mapvote_detail);
 		WriteCoord(MSG_ENTITY, mapvote_timeout);
 		WriteByte(MSG_ENTITY, gametypevote);
-		
+
 		if(gametypevote)
 			WriteString(MSG_ENTITY, choosenmap);
-		
+
 		if(mapvote_count <= 8)
 			WriteByte(MSG_ENTITY, MapVote_GetMapMask());
-		else
+		else if(mapvote_count <= 16)
 			WriteShort(MSG_ENTITY, MapVote_GetMapMask());
+		else
+			WriteLong(MSG_ENTITY, MapVote_GetMapMask());
 		for(i = 0; i < mapvote_count; ++i)
 			if(mapvote_maps[i] != "")
 			{
 				if(mapvote_abstain && i == mapvote_count - 1)
 				{
-					WriteString(MSG_ENTITY, ""); // abstain needs no text
-					WriteString(MSG_ENTITY, ""); // abstain needs no pack
+					WriteString(MSG_ENTITY, "."); // abstain needs no text
+					WriteString(MSG_ENTITY, "."); // abstain needs no pack
 				}
 				else
 				{
@@ -2464,8 +2451,10 @@ float MapVote_SendEntity(entity to, float sf)
 		// flag 2 == update of mask
 		if(mapvote_count <= 8)
 			WriteByte(MSG_ENTITY, MapVote_GetMapMask());
-		else
+		else if(mapvote_count <= 16)
 			WriteShort(MSG_ENTITY, MapVote_GetMapMask());
+		else
+			WriteLong(MSG_ENTITY, MapVote_GetMapMask());
 	}
 
 	if(sf & 4)
@@ -2557,11 +2546,12 @@ void MapVote_CheckRules_1()
 {
 	float i;
 
-	for(i = 0; i < mapvote_count; ++i) if(mapvote_maps[i] != "")
-	{
-		//dprint("Map ", ftos(i), ": "); dprint(mapvote_maps[i], "\n");
-		mapvote_votes[i] = 0;
-	}
+	for(i = 0; i < mapvote_count; ++i)
+		if(mapvote_maps[i] != "")
+		{
+			//dprint("Map ", ftos(i), ": "); dprint(mapvote_maps[i], "\n");
+			mapvote_votes[i] = 0;
+		}
 
 	mapvote_voters = 0;
 	FOR_EACH_REALCLIENT(other)
@@ -2598,7 +2588,7 @@ float MapVote_CheckRules_2()
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(mapvote_maps_availability[i] == GTV_AVAILABLE)
 			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
-	
+
 	firstPlace = RandomSelection_chosen_float;
 	firstPlaceVotes = RandomSelection_best_priority;
 	//dprint("First place: ", ftos(firstPlace), "\n");
@@ -2718,7 +2708,7 @@ void MapVote_Start()
 		return;
 
 	MapInfo_Enumerate();
-	if(MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
+	if(MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
 }
 
@@ -2776,10 +2766,10 @@ string GameTypeVote_GetOptions()
 	#ifdef 0
 	if not(cvar("g_explosive_gametypevote_maxmaps"))
 		return cvar_string("g_explosive_gametypevote_options");
-	
+
 	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
 		return cvar_string("g_explosive_gametypevote_options");
-	
+
 	local string result;
 	local float i, n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
 	local float first;
@@ -2787,7 +2777,7 @@ string GameTypeVote_GetOptions()
 	
 	for(i = 0; i < n; i++)
 	{
-		if(argv(i) == GametypeNameFromType(game))
+		if(argv(i) == gametype_ID_to_Name(game))
 			continue;
 		
 		if(first)
@@ -2842,6 +2832,9 @@ void GameTypeVote_Start()
 		mapvote_maps_availability[j] = GameTypeVote_AvailabilityStatus(argv(j));
 	}
 
+	// Chaiomanot: Jan 9th 2012: Bug fix: Not all gametype options will speed-vote (+1 line)
+	mapvote_count_real = mapvote_count;
+
 	if(cvar("g_explosive_gametypevote_shuffle"))
 	{
 		for(j = 0; j < mapvote_count * 3; ++j)
@@ -2868,7 +2861,7 @@ string GotoMap(string m)
 	if(!MapInfo_CheckMap(m))
 		return "The map you chose is not available on this server.";
 	cvar_set("nextmap", m);
-	cvar_set("timelimit", "-1");
+	end_match(1);
 	if(mapvote_initialized || alreadychangedlevel)
 	{
 		if(DoNextMapOverride())
@@ -2999,7 +2992,7 @@ void RestoreGame()
 	// Mapinfo
 	MapInfo_Shutdown();
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 	WeaponStats_Init();
 }
 
@@ -3047,4 +3040,14 @@ void SV_Shutdown()
 	{
 		print("NOTE: crashed before even initializing the world, not saving persistent data\n");
 	}
+}
+
+// Chaiomanot  : This unification was inspired by a bug that caused endmatch to not
+// Feb 15 2012 : work because onslought decides to take a timelimit of 0 or -1
+//             : in to it's own hands. Furthermore, it looks better when a premature
+//             : match end doesn't change the time remaining (at least, to me).
+void end_match(float type)
+{
+	// cvar_set("timelimit", "-1");
+	cvar_set("g_endmatch", "1");
 }

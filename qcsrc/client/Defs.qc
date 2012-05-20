@@ -1,3 +1,5 @@
+#define CLIENT_SIDE
+
 #pragma flag off fastarrays // make dp behave with new fteqcc versions. remove when dp bug with fteqcc fastarrays is fixed
 
 

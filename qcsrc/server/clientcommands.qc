@@ -1,3 +1,5 @@
+void inf_player_leave(entity);
+
 entity nagger;
 float readycount;
 float Nagger_SendEntity(entity to, float sendflags)
@@ -368,7 +370,7 @@ void SV_ParseClientCommand(string s) {
 			self.classname = "observer";
 			self.version_mismatch = 1;
 			PutClientInServer();
-		} else if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force")) {
+		} else if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force") || cvar("g_inf")) {
 			//JoinBestTeam(self, FALSE, TRUE);
 		} else if(teams_matter && !cvar("sv_spectate")) {
 			self.classname = "observer";
@@ -415,6 +417,8 @@ void SV_ParseClientCommand(string s) {
 			if(self.ballcarried)
 				DropBall(self.ballcarried, self.origin, self.velocity);
 			kh_Key_DropAll(self, TRUE);
+			prec_player_die(self);
+			inf_player_leave(self);
 			WaypointSprite_PlayerDead();
 			self.classname = "observer";
 			if(blockSpectators)
@@ -446,6 +450,8 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if( !teams_matter ) {
 			sprint( self, "selecteam can only be used in teamgames\n");
+		} else if(g_inf) {
+			//don't allow players to switch their team when playing infection
 		} else if(cvar("g_campaign")) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {

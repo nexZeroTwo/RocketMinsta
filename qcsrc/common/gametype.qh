@@ -1,0 +1,42 @@
+// Unified Gametype/Gamemode Control (Chaiomanot)
+
+const float GAME_DEATHMATCH	      = 1;
+const float GAME_TEAM_DEATHMATCH  = 2;
+const float GAME_DOMINATION       = 3;
+const float GAME_CTF              = 4;
+const float GAME_RUNEMATCH        = 5;
+const float GAME_LMS              = 6;
+const float GAME_ARENA            = 7;
+const float GAME_KEYHUNT          = 8;
+const float GAME_ASSAULT          = 9;
+const float GAME_ONSLAUGHT        = 10;
+const float GAME_RACE             = 11;
+const float GAME_NEXBALL          = 12;
+const float GAME_CTS              = 13;
+const float GAME_FREEZETAG        = 14;
+const float GAME_TOTAL_DOMINATION = 15;
+const float GAME_VIP              = 16;
+const float GAME_PRECIOUS         = 17;
+const float GAME_INFECTION        = 18;
+const float GAME_RPS              = 19;
+const float GAME_NOTHING          = 91;
+const float GAME_ALL              = 92;
+
+float gametype_GetMenu ();
+void gametype_SetMenu (float);
+#ifdef SERVER_SIDE
+float gametype_Extrapolate ();
+void gametype_Set (float);
+void gametype_Reset ();
+#endif
+float gametype_ID_to_MapID (float);
+float gametype_MapID_to_ID (float);
+float gametype_Name_to_ID (string);
+string gametype_ID_to_Name (float);
+string gametype_ID_to_LongName (float);
+string gametype_Name_to_Name (string);
+float gametype_Name_to_MapID (string);
+string gametype_MapID_to_Name (float);
+string gametype_Name_to_LongName (string);
+
+// end of file
