@@ -430,6 +430,15 @@ float ListContains(string source, string key, string sep)
 	return 0;
 }
 
+float ListContainsEx(string source, string key, string sep, string(string) transform)
+{
+	local float i;
+	local float n = tokenizebyseparator(source, sep);
+
+	for(i = 0; i < n; ++i)
+		if(transform(argv(i)) == key) return 1;
+	return 0;
+}
 
 string mmss(float tenths)
 {

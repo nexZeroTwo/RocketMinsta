@@ -326,7 +326,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "^1Gametype voting is not allowed.\n");
 				return FALSE;
 			}
-			RemapVote_vote = vote;
+			RemapVote_vote = s;
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 		}
 		else
@@ -725,7 +725,7 @@ float VoteAllowed(string votecommand, string cmd) {
 
 	if(cvar("g_explosive_gametypevote_call"))
 	if((s = NormalizeGametypeName(votecommand)) != "")
-	if(ListContains(cvar_string("g_explosive_gametypevote_options"), s, " "))
+	if(ListContainsEx(cvar_string("g_explosive_gametypevote_options"), s, " ", NormalizeGametypeName))
 		return TRUE;			// gametype alias
 
 	if(cmd == "vdo")
