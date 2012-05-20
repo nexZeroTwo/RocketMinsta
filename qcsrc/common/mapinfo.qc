@@ -195,6 +195,7 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 		_MapInfo_filtered = buf_create();
 	}
 	MapInfo_count = 0;
+	
 	for(i = 0, j = -1; i < _MapInfo_globcount; ++i)
 	{
 		// Chaiomanot  : I'm left here scratching my head wondering what in the world
@@ -209,13 +210,16 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 				return 0;
 			}
 		*/
+		
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
 		if((pGametype & MAPINFO_TYPE_DEATHMATCH) ||
 		   (MapInfo_Map_supportedGametypes & pGametype) != 0)
+
 		//if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
 		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
 		//if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
 			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+			
 		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;

@@ -470,12 +470,15 @@ void PostInit(void)
 		case 31:
 			localcmd("seta rm_nokillsound 0; nokillsound 0\n");
 		case 32:
-			localcmd ("seta rm_hidecountry 0; hidecountry 0\n");
+			localcmd("seta rm_hidecountry 0; hidecountry 0\n");
 		case 33:
-			localcmd ("seta rm_showrankings 1; showrankings 1\n");
+			localcmd("seta rm_showrankings 1; showrankings 1\n");
+        case 34:
+        case 35:
+			localcmd("seta rm_shownames_teamonly 0; shownames_teamonly 0\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 34\n");
+		localcmd("seta rm_initialized 36\n");
 		RM_OUTDATED
 		break;
 	}
@@ -500,6 +503,7 @@ void PostInit(void)
 	rm_althud = rm_althud_option;
 	rm_noflags = cvar("rm_noflags");
 	rm_showrankings = cvar("rm_showrankings");
+	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -525,6 +529,7 @@ void PostInit(void)
 	registercmd("nokillsound");
 	registercmd("hidecountry");
 	registercmd("showrankings");
+	registercmd("shownames_teamonly");
 	// -- //
 	registercmd("hudskin");
 	
@@ -652,15 +657,16 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2showspec^7: If enabled, you will see who is spectating you unless the server forbids it (enabled by default)\n");
 		print("^2showdamage^7: If enabled, you will see how much damage you deal or take on each hit unless the server forbids it (enabled by default)\n");
 		print("^2teamlasers^7: If enabled, laser projectiles will have a team specific color unless the server forbids it (enabled by default)\n");
-		print("^2nobigtext^7: If enabled, the top-center big messages (bigprings) will be redirected into the bottom centerprint area (disabled by default)\n");
+		print("^2nobigtext^7: If enabled, the top-center big messages (bigprints) will be redirected into the bottom centerprint area (disabled by default)\n");
 		print("^2hidebigcomments^7: If enabled, comments for bigprints will not be shown (disabled by default)\n");
 		print("^2legacyvote^7: If enabled, votes will be displayed in plaintext instead of a dialog (disabled by default)\n");
 		print("^2anonspec^7: Anonymous spectator mode. If enabled, players will not see when you're spectating them, unless the server forbids it (disabled by default)\n");
-		print("^2hidewatermark^7: If enabled, the RM watermark containing build information will not be drawn (disabled by default)\n");
-		print("^2crosshealth^7: If enabled, the crosshair color will depend on current health (disabled by default)\n");
+		print("^2hidewatermark^7: If enabled, the RM build information watermark will not be drawn (disabled by default)\n");
+		print("^2crosshealth^7: If enabled, the crosshair color will reflect current health (disabled by default)\n");
 		print("^2dontmesswithfonts^7: Deprecated, kept for compatibility\n");
 		print("^2simpleeffects^7: Enables simple fade effects for onscreen notifications instead of fancy ones (disabled by default)\n");
-		print("^2shownames^7: If enabled, names of players will be drawn above their heads (enabled by default)\n");
+		print("^2shownames^7: If enabled, names of players will be shown above their heads (disabled by default)\n");
+		print("^2shownames_teamonly^7: If enabled, shownames will work only for allies (disabled by default)\n");
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
@@ -701,7 +707,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
-		strCmd == "showrankings"		 )
+		strCmd == "showrankings"		||
+		strCmd == "shownames_teamonly")
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -720,6 +727,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_althud_option = cvar("rm_althud");
 		rm_noflags = cvar("rm_noflags");
 		rm_showrankings = cvar("rm_showrankings");
+		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -1148,6 +1156,23 @@ void GameCommand(string msg)
 	{
 		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
 	}
+	else if(cmd == "crc16")
+	{
+		if(argc < 3)
+			print("Usage: crc16 bool:caseinsensitive string\n");
+		else
+			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
+	}
+	else if(cmd == "danger") {
+		// dirty dirty hacks
+		// I love them
+		
+		string userbind = cvar_string("userbind7_press");
+		if(strstrofs(userbind, "g_waypointsprite_team_danger_p", 0) >= 0 && strstrofs(userbind, "%p", 0) >= 0)
+			localcmd("_userbind_call userbind7_press\n");
+		else
+			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
+	}
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
@@ -1167,7 +1192,7 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 	local float bSkipKey;
 	bSkipKey = false;
 
-	if (MapVote_InputEvent(bInputType, nPrimary, nSecondary))
+	if(MapVote_InputEvent(bInputType, nPrimary, nSecondary))
 		return true;
 
 	if(menu_visible)

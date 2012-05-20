@@ -476,7 +476,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
 		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -784,17 +784,21 @@ string Sbar_GetField(entity pl, float field)
 			denom = pl.(scores[SP_DEATHS]);
 
 			if(denom == 0) {
-				sbar_field_rgb = '0 1 0';
-				str = ftos(num);
-			} else if(num <= 0) {
-				sbar_field_rgb = '1 0 0';
-				str = ftos(num/denom);
-			} else
-				str = ftos(num/denom);
-
-			tmp = strstrofs(str, ".", 0);
-			if(tmp > 0)
-				str = substring(str, 0, tmp+2);
+				sbar_field_rgb = '1 1 1';
+				str = "inf";
+			} else {
+				float ratio = num/denom;
+				
+				if(ratio < 1)
+					sbar_field_rgb = '1 0 0' + '0 1 0' * (ratio * ratio);
+				else if(ratio < 3)
+					sbar_field_rgb = '1 1 0' - '1 0 0' * (ratio - 1);
+				else
+					sbar_field_rgb = '0 1 0' + '0 0 1' * ((ratio - 2) * 0.125);
+				
+				str = strcat(ftos(rint(ratio * 100)), "%");
+			}
+			
 			return str;
 
 		default:
@@ -1967,6 +1971,7 @@ void CSQC_Strength_Timer(vector sectorpos) {
 string centerprint_messages[CENTERPRINT_MAX_LINES];
 float centerprint_width[CENTERPRINT_MAX_LINES];
 float centerprint_expires[CENTERPRINT_MAX_LINES];
+float centerprint_posttime[CENTERPRINT_MAX_LINES];
 vector centerprint_start;
 float centerprint_expire;
 float centerprint_num;
@@ -2076,7 +2081,7 @@ void centerprint(string strRealMessage)
 						strunzone(centerprint_messages[i]);
 
 				centerprint_messages[i] = strzone(s);
-				centerprint_expires[i] = ((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
+				centerprint_expires[i] = exptime; //((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
 				centerprint_width[i] = stringwidth(s, TRUE);
 				++i;
 
@@ -2179,6 +2184,7 @@ void Sbar_DrawCenterPrint (void)
 	vector pos;
 	string ts;
 	float a;
+	float exptime;
 
 	pos = centerprint_start;
 
@@ -2193,7 +2199,8 @@ void Sbar_DrawCenterPrint (void)
 
 	for (i = 0; i<centerprint_num; i = i + 1)
 	{
-		a = bound(0, 1 - 4 * (time - centerprint_expires[i]), 1);
+		exptime = centerprint_expires[i];
+		a = bound(0, 1 - 4 * (time - exptime), 1);
 
 		if(a <= 0)
 			continue;
@@ -2206,8 +2213,21 @@ void Sbar_DrawCenterPrint (void)
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 			if(rm_simpleeffects)
 				drawcolorcodedstring(pos, ts, centerprint_fontsize, a, DRAWFLAG_NORMAL);
-			else
-				drawcolorcodedstring(pos, ts, centerprint_fontsize * a, a, DRAWFLAG_NORMAL);
+			else {
+				vector sz = centerprint_fontsize * a;
+				float postedat = exptime - cvar("scr_centertime");
+				float a2 = 1 - bound(0, 3 * (time - postedat), 1);
+				
+				float oldy = pos_y;
+				pos_y += 3 * (centerprint_fontsize_y * ipol_swingInOut(1 - a2) - centerprint_fontsize_y);
+				drawcolorcodedstring(pos, ts, sz, a * ipol_pow2In(1 - a2), DRAWFLAG_NORMAL);
+				
+				float a3 = 1 + ipol_pow2In(1.0 - a2); 
+				sz = sz * a3;
+				pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (a3)) * 0.5;
+				drawcolorcodedstring(pos - centerprint_fontsize_y * '0 0.5 0' * (a3 - 1), ts, sz, a * a2, DRAWFLAG_NORMAL);
+				pos_y = oldy;
+			}
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
 			pos_y = pos_y + centerprint_fontsize_y * (rm_simpleeffects? 1 : a);
 		}
@@ -3215,9 +3235,9 @@ void Sbar_Draw (void)
 			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
     }
 
-/*
 	// handgrenade force meter
 	float hgstat = getstatf(STAT_HGFORCE);
+	
 	if(hgstat)
 	{
 		vector hgpos;
@@ -3228,7 +3248,6 @@ void Sbar_Draw (void)
 		hgcolor_y = hgcolor_y * 1 - hgstat;
 		DrawProgress(hgpos, '100 5', hgstat, 0.7, hgcolor);
 	}
-*/
 
 	local vector sv_pos;
 	sv_pos = bottomright;
@@ -3285,7 +3304,7 @@ void Sbar_Draw (void)
 		if(bp_alpha > 0)
 		{
 			bp_pos = '0 1 0' * (vid_conheight/5);
-			bp_pos_y -= 24 * (rm_simpleeffects? 1 : (1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
+			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
 			if(rm_simpleeffects)
@@ -3319,7 +3338,6 @@ void Sbar_Draw (void)
 					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0', bp_alpha, DRAWFLAG_NORMAL);
 				else
 				{
-/*
 					if(tmpmadoka_fadetime >= time)
 					{
 						local string mycolor;
@@ -3358,9 +3376,10 @@ void Sbar_Draw (void)
 							drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
 						}
 					}
-					else
-*/
-						drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+					else {
+						vector sz = '24 24 0' * (1.0 + ipol_powIn(3, 1.0 - bp_alpha));
+						drawcolorcodedstringcenter(bp_pos - sz * 0.25 * (1 - bp_alpha), bigprint_string, sz, bp_alpha, DRAWFLAG_NORMAL);
+					}
 				}
 
 				drawfont = sbar_font;
@@ -4359,8 +4378,7 @@ void Sbar_Draw (void)
 				}
 			}
 		}
-
-/*
+		
 		// TODO: make this less ugly
 		float hgammo = getstati(STAT_HGAMMO);
 		if(hgammo)
@@ -4369,8 +4387,7 @@ void Sbar_Draw (void)
 			hgapos_y = vid_conheight - vid_conheight/7;
 			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
 		}
-*/
-
+		
 		// fuel ammo
 		if(rm_oldhud)
 		{

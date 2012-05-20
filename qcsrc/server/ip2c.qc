@@ -1,7 +1,7 @@
 
 void IP2C_SetCountry_Internal(entity player, string cn)
 {
-	if (player.hidecountry) cn = "xx";
+	if(player.hidecountry) cn = "xx";
 
     if(player.ip2c_country)
         strunzone(player.ip2c_country);
