@@ -1,7 +1,6 @@
 ../../menu.dat
 
 config.qh
-../common/gametype.qh
 ../common/util-pre.qh
 msys.qh
 mbuiltin.qh
@@ -13,6 +12,7 @@ oo/base.h
 ../common/campaign_common.qh
 ../common/items.qh
 ../common/ip2c.qh
+../common/gametype.qh
 
 gamecommand.qh
 menu.qh
