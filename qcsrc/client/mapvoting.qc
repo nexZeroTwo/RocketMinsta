@@ -120,7 +120,7 @@ string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 // not visually number-based voting in NeX
 //	if(id >= 9) pre = strcat(ftos(id+1), ". ");
 //	else pre = strcat("0", ftos(id+1), ". ");
-	if(mv_detail || count >= 0)
+	if(mv_detail && count >= 0)
 	{
 		if(count == 1)
 			post = strcat(" (1 vote)");
@@ -252,7 +252,7 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	//if(id < 9)
 	//	drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
 	// TODO: make more numbers > 9
-	drawstring(txtpos, label, sbar_fontsize, rgb * alpha, alpha, DRAWFLAG_NORMAL);
+	drawstring(txtpos, label, sbar_fontsize, rgb * alpha * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
 	
 	//print("EXITED MapVote_DrawMapItem(", pic, ")\n");
 }
