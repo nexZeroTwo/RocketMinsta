@@ -399,10 +399,12 @@ void MapVote_Draw()
 	for(i = 0; i < mv_num_maps; ++i)
 	{
 		float ha = mv_hoveralpha[i];
+		float ha_speed = 5;
+		
 		if(i == mv_selection)
-			ha = bound(0, ha + frametime, 1);
+			ha = bound(0, ha + frametime * ha_speed, 1);
 		else
-			ha = bound(0, ha - frametime, 1);
+			ha = bound(0, ha - frametime * ha_speed, 1);
 		mv_hoveralpha[i] = ha;
 		
 		if(!gametypevote && i == mv_selection)
