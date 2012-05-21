@@ -355,7 +355,7 @@ void sm_PlaceSoulGem(entity gem) {
 		if(!spot)	// just in case something is fucked
 			spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
 	} else
-		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+		spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
 	
 	setorigin(gem, spot.origin);
 	
