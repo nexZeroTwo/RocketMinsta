@@ -95,7 +95,7 @@ float GametypeVote_Selection()
 
 	for(i = 0; i < mv_num_maps; ++i) {
 		float size;
-		size = sbar_fontsize_y * 1.2 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
+		size = sbar_fontsize_y * 1.4 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
 
 		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + size)
 			r = i;
