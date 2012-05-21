@@ -9,6 +9,7 @@ float mv_votes[MAPVOTE_COUNT];
 float mv_avail[MAPVOTE_COUNT];
 float mv_drawangles[MAPVOTE_COUNT];
 float mv_hoveralpha[MAPVOTE_COUNT];
+float mv_removetime[MAPVOTE_COUNT];
 entity mv_pk3list;
 float mv_abstain;
 float mv_ownvote;
@@ -119,7 +120,7 @@ string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 // not visually number-based voting in NeX
 //	if(id >= 9) pre = strcat(ftos(id+1), ". ");
 //	else pre = strcat("0", ftos(id+1), ". ");
-	if(mv_detail)
+	if(mv_detail || count >= 0)
 	{
 		if(count == 1)
 			post = strcat(" (1 vote)");
@@ -207,6 +208,12 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 				//((id == mv_selection)? ipol_swingOut : ipol_swingIn)(mv_hoveralpha[id]);
 	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
 	
+	float alpha2;
+	alpha2 = 1;
+	
+	if(mv_votes[id] < 0)
+		alpha2 = 1 - bound(0, time - mv_removetime[id], 1) * 0.7;
+	
 	if(fromserver)
 		angle = 0;
 
@@ -236,9 +243,9 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	
 	if(pic != "") {
 		if(!fromserver)
-			drawpic_rotated(pos, pic, img_size, '1 1 1', angle, alpha, DRAWFLAG_NORMAL);
+			drawpic_rotated(pos, pic, img_size, '1 1 1' * alpha2, angle, alpha * alpha2, DRAWFLAG_NORMAL);
 		else
-			drawpic(pos, pic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
+			drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
 	}
 
 	vector hs = img_size * 0.5;
@@ -410,9 +417,9 @@ void MapVote_Draw()
 		if(!gametypevote && i == mv_selection)
 			continue;	// draw selection on top of everything else
 		
-		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
-		if(tmp < 0)
-			continue;
+		//tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
+		//if(tmp < 0)
+		//	continue;
 		map = mv_maps[i];
 		
 		if(gametypevote)
@@ -429,15 +436,15 @@ void MapVote_Draw()
 	}
 	
 	if(!gametypevote && mv_selection >= 0 && mv_selection < 16) {
-		tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
-		if(tmp >= 0) {
+		//tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
+		//if(tmp >= 0) {
 			map = mv_maps[mv_selection];
 			
 			if(mv_preview[mv_selection])
 				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, mv_pics[mv_selection], tmp, mv_selection);
 			else
 				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, "", tmp, mv_selection);
-		}
+		//}
 	}
 	
 	if(mv_abstain) {
@@ -642,8 +649,10 @@ void MapVote_UpdateMask()
 
 	// remove votes that no longer apply
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
-		if not(mv_maps_mask & power)
+		if not(mv_maps_mask & power) {
 			mv_votes[i] = -1;
+			mv_removetime[i] = time;
+		}
 }
 
 void MapVote_UpdateVotes()
