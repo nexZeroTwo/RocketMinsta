@@ -35,6 +35,7 @@ float gametype_Name_to_ID (string);
 string gametype_ID_to_Name (float);
 string gametype_ID_to_LongName (float);
 string gametype_Name_to_Name (string);
+string gametype_Name_to_Description (string);
 float gametype_Name_to_MapID (string);
 string gametype_MapID_to_Name (float);
 string gametype_Name_to_LongName (string);
