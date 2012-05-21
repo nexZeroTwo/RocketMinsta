@@ -417,7 +417,7 @@ void MapVote_Draw()
 		if(!gametypevote && i == mv_selection)
 			continue;	// draw selection on top of everything else
 		
-		//tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
+		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
 		//if(tmp < 0)
 		//	continue;
 		map = mv_maps[i];
@@ -436,7 +436,7 @@ void MapVote_Draw()
 	}
 	
 	if(!gametypevote && mv_selection >= 0 && mv_selection < 16) {
-		//tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
+		tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
 		//if(tmp >= 0) {
 			map = mv_maps[mv_selection];
 			
