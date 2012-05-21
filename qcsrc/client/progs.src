@@ -1,4 +1,4 @@
-../csprogs.dat
+../../csprogs.dat
 pre.qh
 
 Defs.qc
@@ -70,3 +70,4 @@ bgmscript.qc
 ../common/items.qc
 ../common/ip2c.qc
 ../common/interpolation.qc
+

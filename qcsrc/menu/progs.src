@@ -1,4 +1,4 @@
-../menu.dat
+../../menu.dat
 
 config.qh
 ../common/gametype.qh
@@ -41,3 +41,4 @@ nexuiz/util.qc
 ../common/items.qc
 ../common/ip2c.qc
 ../common/gametype.qc
+
