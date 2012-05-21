@@ -523,8 +523,8 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 		s = cdr(s);
 	}
 
-	sa = car(s); if(sa == "") sa = "0";
-	cvar_set("leadlimit", sa);
+	//sa = car(s); if(sa == "") sa = "0";
+	cvar_set("leadlimit", "0");
 	s = cdr(s);
 }
 
