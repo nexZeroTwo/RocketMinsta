@@ -348,7 +348,15 @@ void sm_PlaceSoulGem(entity gem) {
 	oldself = self;
 	self = gem;
 	
-	entity spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	entity spot;
+	
+	if(have_team_spawns) {
+		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1, gem.team);
+		if(!spot)	// just in case something is fucked
+			spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	} else
+		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	
 	setorigin(gem, spot.origin);
 	
 	if(!move_out_of_solid(gem))

@@ -261,7 +261,7 @@ entity Spawn_FilterOutBadSpots(entity firstspot, entity playerlist, float mindis
 	return spotlist;
 }
 
-entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exponent)
+entity Spawn_WeightedPoint_Team(entity firstspot, float lower, float upper, float exponent, float teem)
 {
 	// weight of a point: bound(lower, mindisttoplayer, upper)^exponent
 	// multiplied by spot.cnt (useful if you distribute many spawnpoints in a small area)
@@ -272,7 +272,7 @@ entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exp
 	RandomSelection_Init();
 	for(spot = firstspot; spot; spot = spot.chain)
 	{
-		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot)
+		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot && (teem < 0 || spot.team == teem))
 			RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
 		considerations += 1;
 	}
@@ -285,6 +285,10 @@ entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exp
 	self.last_spawn_pt_2 = self.last_spawn_pt_1;
 	self.last_spawn_pt_1 = RandomSelection_chosen_ent;
 	return RandomSelection_chosen_ent;
+}
+
+entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exponent) {
+	return Spawn_WeightedPoint_Team(firstspot, lower, upper, exponent, -1);
 }
 
 /*

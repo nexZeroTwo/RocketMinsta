@@ -121,7 +121,7 @@ void freezetag_Initialize()
 	uglyfreezetagworkaround.nextthink = time + 1;
 	
 	defer(0.1, freezetag_FixTeamSpawns);
-	defer(0.1, sm_Init);
+	defer(0.2, sm_Init);
 }
 
 void freezetag_CheckWinner()
