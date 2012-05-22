@@ -641,9 +641,9 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
 		
-		if(cvar("_g_balance_minstanex_explosive"))
-			bigprint("Accuracy statistics are disabled", "", 2);
-		else
+		//if(cvar("_g_balance_minstanex_explosive"))
+		//	bigprint("Accuracy statistics are disabled", "", 2);
+		//else
 			sb_showaccuracy = true;
 			
 		return true;
@@ -979,7 +979,6 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
-string GameTypeVote_GameTypeDescription(string);
 void GameCommand(string msg)
 {
 	float argc;
@@ -1572,7 +1571,7 @@ void Gamemode_Init()
 
 	if not(isdemo())
 	{
-		localcmd("\n_cl_hook_gamestart ", GametypeNameFromType(gametype), ";");
+		localcmd("\n_cl_hook_gamestart ", gametype_ID_to_Name(gametype), ";");
 		calledhooks |= HOOK_START;
 	}
 }

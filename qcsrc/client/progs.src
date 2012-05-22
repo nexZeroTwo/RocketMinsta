@@ -1,9 +1,13 @@
 ../../csprogs.dat
 pre.qh
 
+Defs.qc
+
+../common/gametype.qh
+
 ../common/rm_auto.qh
 ../common/util-pre.qh
-Defs.qc
+
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc
@@ -45,6 +49,8 @@ effects.qc
 wall.qc
 modeleffects.qc
 
+../common/gametype.qc
+
 //vehicles/spiderbot.qc
 shownames.qh
 shownames.qc
@@ -64,3 +70,4 @@ bgmscript.qc
 ../common/items.qc
 ../common/ip2c.qc
 ../common/interpolation.qc
+

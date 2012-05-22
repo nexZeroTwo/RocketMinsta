@@ -564,7 +564,7 @@ void make_mapinfo_Think()
 	if(MapInfo_FilterGametype(MAPINFO_TYPE_ALL, 0, 0, 0, 1))
 	{
 		print("Done rebuiling mapinfos.\n");
-		MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 		remove(self);
 	}
 	else
@@ -646,7 +646,7 @@ void GameCommand(string command)
 		if(argc > 2)
 		{
 			localcmd("gametype ", argv(2), "\n");
-			gametypetoset = GametypeIDFromName(argv(2));
+			gametypetoset = gametype_Name_to_ID(argv(2));
 		}
 		
 		print(GotoMap(argv(1)), "\n");
@@ -661,17 +661,17 @@ void GameCommand(string command)
 		
 		if(s == "")
 		{
-			print("^1Gametype '", argv(1), "' is either invalid or not supported by RocketMinsta\n");
+			print("^1Gametype '", argv(1), "' is either invalid or not supported\n");
 			return;
 		}
 		
-		t = MapInfo_Type_FromString(s);
-		tsave = MapInfo_CurrentGametype();
+		t = gametype_Name_to_ID(s);
+		tsave = game;
 		if(t)
 		{
 			//MapInfo_SwitchGameType(t);
-			MapInfo_SwitchGameType_String(s);
-			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			gametype_Set(gametype_Name_to_ID(s));
+			MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			if(MapInfo_count > 0)
 			{
 				bprint("Game type successfully switched to ", s, "\n");
@@ -679,8 +679,8 @@ void GameCommand(string command)
 			else
 			{
 				bprint("Cannot use this game type: no map for it found\n");
-				MapInfo_SwitchGameType(tsave);
-				MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+				gametype_Set(tsave);
+				MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			}
 		}
 		else

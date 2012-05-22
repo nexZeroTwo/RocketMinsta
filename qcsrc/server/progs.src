@@ -1,5 +1,6 @@
-
 ../../progs.dat // output filename
+
+
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
@@ -14,6 +15,8 @@ constants.qh
 ../common/items.qh
 
 defs.qh		// Should rename this, it has fields and globals
+
+../common/gametype.qh
 
 //// tZork Turrets ////
 tturrets/include/turrets_early.qh
@@ -30,8 +33,6 @@ csqceffects.qc
 portals.qh
 
 g_hook.qh
-g_handgrenades.qh
-soulmates.qh
 
 scores.qh
 
@@ -45,9 +46,15 @@ antilag.qh
 
 vote.qh
 
+soulmates.qh
+
+g_handgrenades.qh
+
 freezetag.qh
 
 vip.qh
+
+precious.qh
 
 scores_rules.qc
 
@@ -65,8 +72,11 @@ runematch.qc
 arena.qc
 
 dodging.qc
+g_handgrenades.qc
 freezetag.qc
 vip.qc
+
+precious.qc
 
 g_violence.qc
 g_damage.qc
@@ -129,8 +139,6 @@ domination.qc
 mode_onslaught.qc
 nexball.qc
 g_hook.qc
-g_handgrenades.qc
-soulmates.qc
 
 t_swamp.qc
 
@@ -138,6 +146,7 @@ clientcommands.qc
 
 vote.qc
 
+soulmates.qc
 campaign.qc
 ../common/campaign_file.qc
 ../common/campaign_setup.qc
@@ -163,6 +172,9 @@ t_quake.qc
 race.qc
 
 
+../common/gametype.qc
+
+
 //// tZork Turrets ////
 tturrets/include/turrets.qh
 vehicles/vehicles.qh
@@ -183,3 +195,4 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+

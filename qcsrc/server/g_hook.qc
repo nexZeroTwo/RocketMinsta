@@ -351,7 +351,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 				attacker.typehitsound += 1;
 			else
 				attacker.hitsound += 1;
-			
+
 			//Reflect the hook damage to it's owner
 			Damage(self.owner, inflictor, attacker, damage * cvar("g_explosive_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
 		}

@@ -1210,6 +1210,8 @@ void readlevelcvars(void)
 
     if not(inWarmupStage)
         game_starttime                 = cvar("g_start_delay");
+    if(g_inf)
+        game_starttime = cvar("g_inf_start_delay");
 
     readplayerstartcvars();
 }
@@ -2278,7 +2280,6 @@ void zcurveparticles_from_tracetoss(float effectno, vector start, vector end, ve
 	zcurveparticles(effectno, start, end, end_dz, vlen(vel));
 }
 
-string GetGametype(); // g_world.qc
 void write_recordmarker(entity pl, float tstart, float dt)
 {
     GameLogEcho(strcat(":recordset:", ftos(pl.playerid), ":", ftos(dt)));
@@ -2286,7 +2287,7 @@ void write_recordmarker(entity pl, float tstart, float dt)
     // also write a marker into demo files for demotc-race-record-extractor to find
     stuffcmd(pl,
              strcat(
-                 strcat("//", strconv(2, 0, 0, GetGametype()), " RECORD SET ", TIME_ENCODED_TOSTRING(TIME_ENCODE(dt))),
+                 strcat("//", strconv(2, 0, 0, gametype_ID_to_Name(game)), " RECORD SET ", TIME_ENCODED_TOSTRING(TIME_ENCODE(dt))),
                  " ", ftos(tstart), " ", ftos(dt), "\n"));
 }
 
@@ -3024,18 +3025,36 @@ float CountAFKClients()
     return r;
 }
 
-// do i have to use floats for everything?
-// --thexdarksider
-// (apparently yes i do, whatever) -- 27/05/11
+// Chaiomanot Feb 15 2012: game type disabling improved to support all
+//    game types, not just ctf. also, ctf-blacklist bloat has been removed
 float GameTypeFilter_Allowed (string map, string gametype)
 {
-	local string forbiddenModes;
-	local float fmCount, i;
-	forbiddenModes = cvar_string (strcat ("g_gametypefilter_", map));
-	fmCount = tokenizebyseparator (forbiddenModes, " ");
-	for (i = 0; i < fmCount; i ++)
-		if (argv (i) == gametype) return 0;
-	return 1;
+	local float fh;
+	local string s;
+
+	if(gametype_Name_to_ID(gametype) == GAME_RPS)
+		return 0; // rps isn't done yet
+
+	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
+		return 1; // maps always support dm-gametypes, even when they don't claim to
+
+	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
+	if(fh < 0)
+	{
+		print("^1Failed to open mapinfo for ^2", map, "^1: Defaulting to supported\n");
+		return 1;
+	}
+
+	while((s = fgets(fh)))
+	{
+		tokenize_console(s);
+		if(argv(0) == "type")
+			if(gametype_MapID_to_Name(gametype_Name_to_MapID(gametype)) ==
+			   gametype_MapID_to_Name(gametype_Name_to_MapID(argv(1))))
+				break;
+	}
+	fclose(fh);
+	return (s ? 1 : 0);
 }
 
 float Banning_IsNameBanned (string name)
@@ -3108,96 +3127,16 @@ string GetVoteList()
 
 void GameCommand(string);
 void ShuffleMaplist();
-void UpdateCTFBlacklist()
-{
-	registercvar("_g_rm_oldmaplist", "");
-	
-	if(cvar_string("g_maplist") == "")
-	{
-		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
-		if(cvar("g_maplist_shuffle"))
-			ShuffleMaplist();
-		localcmd("\nmenu_cmd sync\n");
-	}
-	
-	if(cvar_string("_g_rm_oldmaplist") == cvar_string("g_maplist"))
-		return;
-	
-	print("^5Maplist has changed, updating CTF blacklist...\n");
-	
-	local float n, i, fh, supported, race;
-	local string map_name, s, mlist;
-	
-	mlist = cvar_string("g_maplist");
-	n = tokenizebyseparator(mlist, " ");
-	
-	for(i = 0; i < n; ++i)
-	{
-		supported = race = FALSE;
-		map_name = argv(i);
-		
-		if(map_name == "")
-			continue;
-		
-		print(" -  processing ^2", map_name, "^7... ");
-		
-		fh = fopen(strcat("maps/", map_name, ".mapinfo"), FILE_READ);
-		if(fh < 0)
-		{
-			print("^1failed to open mapinfo\n");
-			continue;
-		}
-		
-		while((s = fgets(fh)))
-		{
-			tokenize_console(s);
-			
-			if(argv(0) != "type")
-				continue;
-			
-			if(argv(1) == "ctf")
-			{
-				print("^3supports CTF, not updating filter\n");
-				supported = TRUE;
-				break;
-			}
-			else if(argv(1) == "race" || argv(1) == "cts")
-				race = TRUE;
-		}
-		fclose(fh);
-		
-		if(!supported)
-		{
-			if(race)
-			{
-				print("^1is a race map, removing from maplist\n");
-				GameCommand(strcat("maplist remove ", map_name));
-				continue;
-			}
-			
-			registercvar(strcat("g_gametypefilter_", map_name), "ctf");
-			
-			//perhaps should be exported into another function?
-			GameCommand(strcat("addtolist g_gametypefilter_", map_name, " ctf"));
-			
-			print("^3does not support CTF, added to filter\n");
-		}
-		
-		// tokenize_console breaks this
-		n = tokenizebyseparator(mlist, " ");
-	}
-	
-	cvar_set("_g_rm_oldmaplist", cvar_string("g_maplist"));
-}
 
-float TeamMask (float team) // not really needed since we're only using it for CTF at the moment, but it might be useful some time in the future... maybe
+float TeamMask (float l_team) // not really needed since we're only using it for CTF at the moment, but it might be useful some time in the future... maybe
 {
-	switch (team)
+	switch (l_team)
 	{
 		case COLOR_TEAM1: return 1;
 		case COLOR_TEAM2: return 2;
 		case COLOR_TEAM3: return 4;
 		case COLOR_TEAM4: return 8;
 	}
+	
+	return 1; // play it safe: default to one
 }
