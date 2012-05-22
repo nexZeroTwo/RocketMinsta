@@ -3140,3 +3140,21 @@ float TeamMask (float l_team) // not really needed since we're only using it for
 	
 	return 1; // play it safe: default to one
 }
+
+string ResolveServer(string s) {
+	string r = cvar_string(strcat("g_explosive_serveralias_", s));
+	if(r != "")
+		return r;
+	return s;
+}
+
+string GetAllowedServers() {
+	return cvar_string("g_explosive_gotoserver_whitelist");
+}
+
+/// Does NOT accept server aliases
+float ServerIsAllowed(string s) {
+	string wl = GetAllowedServers();
+	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
+}
+

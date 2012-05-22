@@ -600,6 +600,8 @@ void GameCommand(string command)
 		print("  bbox\n");
 		print("  cvar_changes\n");
 		print("  find classname\n");
+		print("  redirect clientnum server\n");
+		print("  gotoserver server\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("  ^0walpurgis^7\n");
 		#endif
@@ -1205,6 +1207,37 @@ void GameCommand(string command)
 		cvar_set(newvar, argv(1));
 		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
 		return;
+	}
+	
+	if(argv(0) == "redirect") {
+		if(argc < 3) {
+			print("Usage: redirect clientnum server");
+			return;
+		}
+		
+		entno = stof(argv(1));
+		client = world;
+		if(entno <= maxclients)
+			client = edict_num(entno);
+		if(client.flags & FL_CLIENT)
+			stuffcmd(client, strcat("connect ", ResolveServer(argv(2)) ,"\n"));
+		else
+			print("Client not found\n");
+		return;
+	}
+	
+	if(argv(0) == "gotoserver") {
+		if(argc < 2) {
+			print("Usage: gotoserver server");
+			return;
+		}
+		
+		string s = ResolveServer(argv(1));
+		
+		bprint("^5Redirecting everyone to ^2", s, "\n");
+		
+		FOR_EACH_CLIENT(client)
+			stuffcmd(client, strcat("connect ", s,"\n"));
 	}
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");

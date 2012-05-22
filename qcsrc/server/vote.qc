@@ -332,7 +332,25 @@ float RemapVote(string vote, string cmd, entity e)
 		return FALSE;
 		#endif
 	}
-	else
+	else if(argv(0) == "gotoserver") {
+		if(vote_argc < 2) {
+			sprint(e, strcat("^1Go to WHICH server? ^1Allowed servers are: ^2", GetAllowedServers(), "\n"));
+			return FALSE;
+		}
+		
+		string srv = ResolveServer(argv(1));
+		if(!ServerIsAllowed(srv)) {
+			sprint(e, strcat("^1Allowed servers are: ^2", GetAllowedServers(), "\n"));
+			return FALSE;
+		}
+		
+		string tail;
+		if(argv(1) != srv)
+			tail = strcat(" (^5", srv, "^1)");
+		
+		RemapVote_vote = vote;
+		RemapVote_display = strzone(strcat("^1", vote, tail));
+	} else
 	{
 		s = NormalizeGametypeName(argv(0));
 		
