@@ -223,6 +223,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("shownames", "g_explosive_shownames")
 		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
 		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
+		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL

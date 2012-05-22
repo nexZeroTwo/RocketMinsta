@@ -476,9 +476,12 @@ void PostInit(void)
         case 34:
         case 35:
 			localcmd("seta rm_shownames_teamonly 0; shownames_teamonly 0\n");
+		case 36:
+			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
+			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		
 		//More to come here with each update
-		localcmd("seta rm_initialized 36\n");
+		localcmd("seta rm_initialized 37\n");
 		RM_OUTDATED
 		break;
 	}
@@ -530,6 +533,8 @@ void PostInit(void)
 	registercmd("hidecountry");
 	registercmd("showrankings");
 	registercmd("shownames_teamonly");
+	registercmd("freezetag_danger");
+	registercmd("freezetag_danger_silent");
 	// -- //
 	registercmd("hudskin");
 	
@@ -676,6 +681,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
+		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
@@ -708,7 +715,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
-		strCmd == "shownames_teamonly")
+		strCmd == "shownames_teamonly"  ||
+		strCmd == "freezetag_danger"	||
+		strCmd == "freezetag_danger_silent")
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -1164,6 +1173,14 @@ void GameCommand(string msg)
 			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
 	}
 	else if(cmd == "danger") {
+		if not(cvar("rm_freezetag_danger"))
+			return;
+		
+		if(cvar("rm_freezetag_danger_silent")) {
+			localcmd("g_waypointsprite_team_danger_p\n");
+			return;
+		}
+		
 		// dirty dirty hacks
 		// I love them
 		
