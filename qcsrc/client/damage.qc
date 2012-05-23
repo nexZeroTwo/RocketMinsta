@@ -100,31 +100,7 @@ void Ent_DamageInfo(float isNew)
 
 		setorigin(self, org + backoff * 2); // for sound() calls
 
-		if (DEATH_ISHG(hittype))
-		{
-			if (!issilent) {
-				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
-				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
-			}
-			
-			hittype &~= DEATH_HITTYPEMASK;
-			switch (hittype)
-			{
-				case DEATH_HG_NORMAL:
-					float radius = 250, i;
-					pointparticles (particleeffectnum ("rocket_explode"), self.origin, '0 0 0', 1);
-					for (i = 0; i < 30; i ++)
-					{
-						vector v = randomvec ();
-						float r = random ();
-						pointparticles (particleeffectnum (mod (i, 2) ? "rocket_explode" : "fire_big"), self.origin + v * radius * r, v * radius * r * 100, 1);
-					}
-				case DEATH_HG_STICKY:
-				case DEATH_HG_NAPALM:
-					break;
-			}
-		}
-		else switch (hitwep)
+		switch(hitwep)
 		{
 			case WEP_LASER:
 				org2 = org + backoff * 6;
