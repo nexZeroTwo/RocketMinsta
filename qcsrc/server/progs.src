@@ -72,7 +72,6 @@ runematch.qc
 arena.qc
 
 dodging.qc
-g_handgrenades.qc
 freezetag.qc
 vip.qc
 
@@ -122,6 +121,8 @@ w_hlac.qc
 w_campingrifle.qc
 w_tuba.qc
 w_fireball.qc
+
+g_handgrenades.qc
 
 t_items.qc
 cl_weapons.qc
