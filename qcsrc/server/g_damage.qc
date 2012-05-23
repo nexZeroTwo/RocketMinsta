@@ -565,10 +565,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						tail = "";
 						
 						if(cvar("g_explosive_extendfragmessages")) {
-							if(deathtype == DEATH_HG_NORMAL)
-								tail = "Grenade";
-							else if(deathtype == DEATH_HG_NAPALM)
-								tail = "Napalm Grenade";
+							if(DEATH_ISHG(deathtype))
+								tail = HG_TypeToExpandedName(deathtype);
 							else 
 								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
 								

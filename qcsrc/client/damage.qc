@@ -103,7 +103,7 @@ void Ent_DamageInfo(float isNew)
 		if (DEATH_ISHG(hittype))
 		{
 			if (!issilent) {
-				sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
 				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
 			}
 			

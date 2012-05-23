@@ -2,6 +2,20 @@
 // Handgrenades mutator
 // Intended for the Camping Rifle Arena mode
 
+void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
+	p.hg_bonus += amount;
+	p.hg_bonustype = hgtype;
+	p.hg_ammo += amount;
+	
+	string n = HG_TypeToExpandedName(hgtype);
+	entity e;
+	
+	FOR_EACH_PLAYER(e)
+		bigprint_spec(e, strcat("^3", p.netname), strcat("got a ^3", n, "^7 bonus (", reason, ")"), 3);
+	bprint(strcat("^3", p.netname, " ^7got a ^3", n, "^7 bonus (", reason, ")\n"));
+	play2all("kh/alarm.wav");
+}
+
 void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float burntime)
 {
 	entity e, o;
@@ -132,6 +146,15 @@ void HG_Napalm_Explode (void)
 	setsize(mid, '0 0 0', '0 0 0');
 }
 
+string HG_TypeToExpandedName(float t) {
+	switch(t) {
+		case HG_NORMAL: return "Grenade";
+		case HG_NAPALM: return "Napalm Grenade";
+		case HG_STICKY: return "Sticky Grenade";
+		default		  : return "Fuckoff Grenade";
+	}
+}
+
 string HG_TypeToName(float t) {
 	switch(t) {
 		case HG_NORMAL: return "normal";
@@ -184,12 +207,19 @@ void HG_Grenade_Explode()
 
 void HG_Attack()
 {
-	#define GV(v) (GRENVAR(self.hg_type, v))
+	#define GV(v) (GRENVAR(hgtype, v))
+	float hgtype;
 	
 	if(time < self.hg_next || !self.hg_ammo)
 		return;
 	
 	self.hg_type = HG_NameToType(cvar_string("g_explosive_handgrenades_type"));
+	
+	if(self.hg_bonus) {
+		hgtype = self.hg_bonustype;
+		self.hg_bonus--;
+	} else
+		hgtype = self.hg_type;
 	
 	makevectors(self.v_angle);
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
@@ -204,8 +234,8 @@ void HG_Attack()
 	gren.bot_dodgerating = GV("damage");
 	gren.movetype = MOVETYPE_BOUNCE;
 	PROJECTILE_MAKETRIGGER(gren);
-	gren.projectiledeathtype = self.hg_type;
-	gren.hg_type = self.hg_type;
+	gren.projectiledeathtype = hgtype;
+	gren.hg_type = hgtype;
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
 
@@ -225,7 +255,7 @@ void HG_Attack()
 	
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
 	
-	if (self.hg_type == HG_NAPALM && self.hg_power == 1)
+	if (hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 		
 	self.hg_next = time + cvar("g_explosive_handgrenades_mindelay");
@@ -275,4 +305,6 @@ void HG_PlayerSpawn()
 {
 	self.hg_power = 0;
 	self.hg_ammo = cvar("g_explosive_handgrenades_ammo");
+	self.hg_bonus = 0;
+	self.hg_bonustype = HG_NORMAL;
 }
