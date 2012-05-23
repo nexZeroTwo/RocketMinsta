@@ -473,6 +473,7 @@ float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;
 float DEATH_HG_NAPALM = 101;
 float DEATH_HG_STICKY = 102;
+float DEATH_HG_END = 102;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
@@ -488,7 +489,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
-#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START)
+#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
 
 #define FRAGS_PLAYER 0
 #define FRAGS_SPECTATOR -666
