@@ -344,15 +344,24 @@ entity sm_CreateSoulGem(float theteam) {
 }
 
 void sm_PlaceSoulGem(entity gem) {
-	entity spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	local entity oldself;
+	oldself = self;
+	self = gem;
+	
+	entity spot;
+	
+	if(have_team_spawns) {
+		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1, gem.team);
+		if(!spot)	// just in case something is fucked
+			spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	} else
+		spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	
 	setorigin(gem, spot.origin);
 	
 	if(!move_out_of_solid(gem))
 		bprint("\x01^1WARNING: ^7failed to move soulgem out of solid, expect weird shit and breakages\n");
 	
-	local entity oldself;
-	oldself = self;
-	self = gem;
 	droptofloor();
 	self = oldself;
 }

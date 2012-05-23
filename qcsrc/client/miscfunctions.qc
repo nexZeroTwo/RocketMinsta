@@ -366,7 +366,7 @@ void drawborderlines(float thickness, vector pos, vector dim, vector color, floa
 	drawfill(pos + (dim_y + thickness) * '0 1 0', line_dim, color, alpha, drawflag);
 }
 
-void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag)
+void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag, vector src_pos)
 {
 	vector current_pos, end_pos, new_size, ratio;
 	end_pos = pos + area;
@@ -381,7 +381,8 @@ void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color,
 			new_size_y = min(sz_y, end_pos_y - current_pos_y);
 			ratio_x = new_size_x / sz_x;
 			ratio_y = new_size_y / sz_y;
-			drawsubpic(current_pos, new_size, pic, '0 0 0', ratio, color, alpha, drawflag);
+			drawsubpic(current_pos, new_size, pic, src_pos, ratio,
+			           color, alpha, drawflag);
 			current_pos_x += sz_x;
 		}
 		current_pos_y += sz_y;
@@ -418,6 +419,16 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
+}
+
+void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
+
+void drawpic_rotated(vector position, string pic, vector size, vector rgb, float angle, float alpha, float flag) {
+	drawrotpic(position + size * 0.5, angle, pic, size, size * 0.5, rgb, alpha, flag);
+}
+
+void drawpic_rotated_ex(vector position, string pic, vector size, vector rgb, float angle, vector hotspot, float alpha, float flag) {
+	drawrotpic(position + hotspot, angle, pic, size, hotspot, rgb, alpha, flag);
 }
 
 void loadfont(string slot, string font)

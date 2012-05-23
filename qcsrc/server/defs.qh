@@ -1,3 +1,4 @@
+#define SERVER_SIDE
 #define INDEPENDENT_ATTACK_FINISHED
 
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
@@ -20,8 +21,9 @@ float ctf_score_value(string parameter);
 // derp
 #define g_total_domination g_totaldomination
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip;
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip, g_prec, g_rps, g_inf, g_no;
 float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss, g_handgrenades;
+
 float g_warmup_limit;
 float g_warmup_allguns;
 float g_warmup_allow_timeout;
@@ -673,3 +675,18 @@ float forbidrestart;
 .float rm_nokillsound;
 
 .float hidecountry;
+
+// precious
+.string netname2; // 2nd person netname
+.string netname3; // 3rd person netname
+.entity prec_rune;
+.float prec_grudge;
+.float prec_time;
+
+// Chaiomanot Feb 16 2012: Rather than fixing the spawn system,
+//                         I just _try_ make sure someone can't spawn in the same
+//                         place they did last 2 times
+.entity last_spawn_pt_1;
+.entity last_spawn_pt_2;
+
+void end_match(float);

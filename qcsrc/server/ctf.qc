@@ -540,7 +540,7 @@ void FlagTouch()
 			
 		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
 		other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
-
+		
 		// pick up
 		self.flagpickuptime = time; // used for timing runs
 		self.speedrunning = other.speedrunning; // if speedrunning, flag will self-return and teleport the owner back after the record
