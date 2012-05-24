@@ -282,7 +282,7 @@ void freezetag_Freeze(entity attacker)
 	ice.nextthink = time;
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
 	//ice.alpha = 0.6;
-	ice.effects |= EF_ADDITIVE;
+	//ice.effects |= EF_ADDITIVE;
 	if(cvar("g_explosive_freezetag_iceblocks_teamcolored"))
 	{
 		if(self.team == COLOR_TEAM1)
