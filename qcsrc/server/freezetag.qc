@@ -269,6 +269,7 @@ void freezetag_Freeze(entity attacker)
 	self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
 	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
 	
+	self.revivals_row = 0;
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
 	self.freezetag_freezetime = time;
@@ -423,6 +424,7 @@ float freezetag_RemovePlayer()
 		self.ft_forcespawn = TRUE;
 	}
 
+	self.revivals_row = 0;
 	freezetag_Unfreeze(world);
 	
 	update_playercount();
@@ -632,11 +634,22 @@ float freezetag_PlayerPreThink()
 						{
 							PlayerScore_Add(other, SP_FREEZETAG_REVIVALS, +1);
 							PlayerScore_Add(other, SP_SCORE, cvar("g_explosive_freezetag_score_revival"));
-                            other.health = max(other.health, 100);
-                            centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
-                            
-                            if(first)
-                            {
+							
+							other.health = max(other.health, 100);
+							centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
+							
+							other.revivals_row++;
+							if(cvar("g_explosive_freezetag_revive_bonusgrenade"))
+							if(other.revivals_row >= cvar("g_explosive_freezetag_revive_bonusgrenade_requirement")) {
+								HG_GiveBonus(other, HG_NameToType(cvar_string("g_explosive_freezetag_revive_bonusgrenade_type")), 1,
+											strcat(ftos(other.revivals_row), " revivals in a row")
+								);
+								other.revivals_row = 0;
+							}
+							
+							
+							if(first)
+							{
 								names = other.netname;
 								first = FALSE;
 							}

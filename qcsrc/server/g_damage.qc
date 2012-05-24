@@ -386,9 +386,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 unfairly eliminated himself\n");
 				else if (deathtype == DEATH_FIRE)
 					bprint ("^1",s, "^1 burned to death\n");
+				else if (deathtype == DEATH_HG_NAPALM)
+					bprint ("^1",s, "^1 played with fire\n");
 				else if (deathtype != DEATH_TEAMCHANGE)
 					bprint ("^1",s, "^1 couldn't resist the urge to self-destruct\n");
-
+					
 				if(deathtype != DEATH_TEAMCHANGE)
 				{
 					LogDeath("suicide", deathtype, targ, targ);
@@ -562,8 +564,15 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						local string tail;
 						tail = "";
 						
-						if(!DEATH_ISSPECIAL(deathtype)) if(cvar("g_explosive_extendfragmessages"))
-							tail = strcat(" with ^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+						if(cvar("g_explosive_extendfragmessages")) {
+							if(DEATH_ISHG(deathtype))
+								tail = HG_TypeToExpandedName(deathtype);
+							else 
+								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
+								
+							if(tail != "")
+								tail = strcat(" with ^7", tail);
+						}
 						
 						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, "^4", tail));
 						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a, "^1", tail));
@@ -620,8 +629,12 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint ("^1",s, "^1 was pushed into an accident by ^1", a, "\n");
 					else if(deathtype == DEATH_CHEAT)
 						bprint ("^1",s, "^1 was unfairly eliminated by ^1", a, "\n");
-					else if (deathtype == DEATH_FIRE)
+					else if(deathtype == DEATH_FIRE)
 						bprint ("^1",s, "^1 was burnt to death by ^1", a, "\n");
+					else if(deathtype == DEATH_HG_NORMAL)
+						bprint ("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
+					else if(deathtype == DEATH_HG_NAPALM)
+						bprint ("^1", s, "^1 was burnt to death by ", a, "^1's napalm grenade\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 
@@ -847,6 +860,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	if (gameover || targ.killcount == -666)
 		return;
+
+	if(DEATH_ISHG(deathtype))
+		deathtype &~= DEATH_HITTYPEMASK;
 
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
@@ -1226,6 +1242,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(targ != attacker)
 		{
 			if(targ.classname == "player")
+			if(!DEATH_ISHG(deathtype))
 			{
 				// HEAD SHOT:
 				// find height of hit on player axis
