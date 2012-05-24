@@ -1684,7 +1684,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								}
 							}
 
-							if(targ == directhitentity || DEATH_ISSPECIAL(deathtype))
+							if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
 								Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
 							else
 								Damage (targ, inflictor, attacker, finaldmg, deathtype | HITTYPE_SPLASH, nearest, force);

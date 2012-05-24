@@ -24,4 +24,3 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason);
 #define BUTTON_HG button6
 #define GRENVARNAME(t,v) strcat("g_explosive_handgrenades_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
-#define DEATH_ISHG(dt) ((dt) >= DEATH_HG_START && (dt) <= DEATH_HG_STICKY)

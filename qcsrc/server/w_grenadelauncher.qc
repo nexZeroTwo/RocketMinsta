@@ -58,6 +58,7 @@ void W_Grenade_Touch2 (void)
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
 		else
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+		
 		self.projectiledeathtype |= HITTYPE_BOUNCE;
 	}
 }

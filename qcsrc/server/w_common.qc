@@ -348,7 +348,7 @@ void W_BallisticBullet_Touch (void)
 		remove(self);
 		return;
 	}
-
+	
 	self.projectiledeathtype |= HITTYPE_BOUNCE;
 }
 

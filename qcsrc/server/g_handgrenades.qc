@@ -205,6 +205,32 @@ void HG_Grenade_Explode()
 }
 #undef GV
 
+void HG_Touch (void)
+{
+	PROJECTILE_TOUCH;
+	if (other.takedamage == DAMAGE_AIM)
+	{
+		self.use ();
+	}
+	else
+	{
+		float r;
+		r = random() * 6;
+		if(r < 1)
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce1.wav", VOL_BASE, ATTN_NORM);
+		else if(r < 2)
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce2.wav", VOL_BASE, ATTN_NORM);
+		else if(r < 3)
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce3.wav", VOL_BASE, ATTN_NORM);
+		else if(r < 4)
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce4.wav", VOL_BASE, ATTN_NORM);
+		else if(r < 5)
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
+		else
+			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+	}
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
@@ -242,7 +268,7 @@ void HG_Attack()
 	gren.nextthink = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime"));
 	gren.think = adaptor_think2use;
 	gren.use = HG_Grenade_Explode;
-	gren.touch = W_Grenade_Touch2;
+	gren.touch = HG_Touch;
 	gren.takedamage = DAMAGE_YES;
 	gren.health = GV("health");
 	gren.damageforcescale = GV("damageforcescale");
