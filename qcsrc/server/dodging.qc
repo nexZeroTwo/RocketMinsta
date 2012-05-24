@@ -95,6 +95,10 @@ float dodging_GetPressedKeys()
 	if(!cvar("g_explosive_dodging"))
 		return 0;
 
+	if(g_freezetag && self.freezetag_frozen)
+	if not(cvar("g_explosive_freezetag_dodging_frozen"))
+		return 0;
+
 	dodge_detected = 0;
     self.cvar_cl_dodging_timeout = 0.2;
 
@@ -182,17 +186,27 @@ float dodging_PlayerPhysics()
 	float new_velocity_gain;
 	float velocity_difference;
 	float clean_up_and_do_nothing;
+	float forcemod
+	forcemod = 1;
 
 	new_velocity_gain = 0;
 	clean_up_and_do_nothing = 0;
 
 	if(!cvar("g_explosive_dodging"))
 		clean_up_and_do_nothing = 1;
-
+	
 	// when swimming, no dodging allowed..
 	if (self.waterlevel >= WATERLEVEL_SWIMMING)
 		clean_up_and_do_nothing = 1;
-
+	
+	if(g_freezetag && self.freezetag_frozen) {
+		if(cvar("g_explosive_freezetag_dodging_frozen"))
+			forcemod = cvar("g_explosive_freezetag_dodging_frozen_forcefactor");
+		else
+			clean_up_and_do_nothing = 1;
+		
+	}
+	
 	if (clean_up_and_do_nothing != 0) {
 		self.dodging_action = 0;
 		self.dodging_direction_x = 0;
@@ -212,7 +226,7 @@ float dodging_PlayerPhysics()
 	if (common_factor > 1) 
 		common_factor = 1;
 
-	new_velocity_gain = self.dodging_velocity_gain - (common_factor * cvar("g_explosive_dodging_horiz_speed"));
+	new_velocity_gain = self.dodging_velocity_gain - (common_factor * cvar("g_explosive_dodging_horiz_speed") * forcemod);
 	if (new_velocity_gain < 0)
 		new_velocity_gain = 0;
 
@@ -237,7 +251,7 @@ float dodging_PlayerPhysics()
 
 		self.velocity = 
 			  self.velocity 
-			+ (cvar("g_explosive_dodging_up_speed") * v_up);
+			+ (cvar("g_explosive_dodging_up_speed") * forcemod * v_up);
 
 		if (cvar("g_explosive_dodging_sound") == 1)
 			PlayerSound(playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
