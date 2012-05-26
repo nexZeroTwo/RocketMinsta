@@ -28,12 +28,18 @@ void fillNexuizServerListTab(entity me)
 		me.TD(me, 1, 0.5, e = makeNexuizTextLabel(0, "Filter:"));
 		me.TD(me, 1, 0.5, btn = makeNexuizButton("Clear", '0 0 0'));
 			btn.onClick = InputBox_Clear_Click;
-		me.TD(me, 1, me.columns - 2.9, e = makeNexuizInputBox(0, string_null));
+		me.TD(me, 1, me.columns - 3.1, e = makeNexuizInputBox(0, string_null));
 			e.onChange = ServerList_Filter_Change;
 			e.onChangeEntity = slist;
 			btn.onClickEntity = e;
 			slist.controlledTextbox = e;
-		me.TD(me, 1, 0.5, e = makeNexuizCheckBox(0, "menu_slist_showonlyrm", "Only RM"));
+		/*
+		me.TD(me, 1, 0.35, e = makeNexuizCheckBox(0, "menu_slist_showonlyex", "Ex"));
+			slist.filterShowEmpty = e.checked;
+			e.onClickEntity = slist;
+			e.onClick = ServerList_ShowOnlyEx_Click;
+		*/
+		me.TD(me, 1, 0.6, e = makeNexuizCheckBox(0, "menu_slist_showonlyrm", "Only RM"));
 			slist.filterShowEmpty = e.checked;
 			e.onClickEntity = slist;
 			e.onClick = ServerList_ShowOnlyRM_Click;

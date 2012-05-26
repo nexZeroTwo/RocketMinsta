@@ -1004,12 +1004,12 @@ float weapon_prepareattack(float secondary, float attacktime)
 {
 	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
 	//if all players readied up and the countdown is running
-	if(time < game_starttime || time < self.race_penalty) {
+	if((time < game_starttime && !g_inf) || time < self.race_penalty) {
 		return FALSE;
 	}
 
 	if(g_freezetag)
-	if(self.freezetag_frozen)
+	if(self.freezetag_frozen) 
 		return FALSE;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)

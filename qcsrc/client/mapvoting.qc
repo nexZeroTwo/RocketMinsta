@@ -9,6 +9,7 @@ float mv_votes[MAPVOTE_COUNT];
 float mv_avail[MAPVOTE_COUNT];
 float mv_drawangles[MAPVOTE_COUNT];
 float mv_hoveralpha[MAPVOTE_COUNT];
+float mv_removetime[MAPVOTE_COUNT];
 entity mv_pk3list;
 float mv_abstain;
 float mv_ownvote;
@@ -17,6 +18,13 @@ float mv_timeout;
 float mv_maps_mask;
 float mv_starttime;
 float mv_gtvote_previewangle;
+
+#define PREVIEW_FROMSERVER 2
+
+vector mv_mousepos;
+float mv_selection;
+
+string GameTypeVote_DescriptionByID(float id);
 
 vector mv_mousepos;
 float mv_selection;
@@ -52,6 +60,7 @@ float MapVote_Selection(vector topleft, vector cellsize, float rows, float colum
 	return cell;
 }
 
+/*
 float GametypeVote_Selection()
 {
 	float r;
@@ -60,15 +69,41 @@ float GametypeVote_Selection()
 	r = -1;
 	
 	for(i = 0; i < mv_num_maps; ++i) {
-		float size;
-		size = sbar_fontsize_y * 1.2 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
-		
-		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + size)
+		float l_size;
+		float lines;
+		if(GameTypeVote_DescriptionByID(i) == "")
+			lines = 0;
+		else
+			lines = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
+		l_size = sbar_fontsize_y * 1.4 + lines * sbar_fontsize_y; // 1.2
+
+		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + l_size)
 			r = i;
 			
-		offset += size + sbar_fontsize_y;
+		offset += l_size + (sbar_fontsize_y * 0.5);
 	}
 	
+	return r;
+}
+*/
+
+float GametypeVote_Selection()
+{
+	float r;
+	float offset = sbar_fontsize_y * 10;
+	float i;
+	r = -1;
+
+	for(i = 0; i < mv_num_maps; ++i) {
+		float size;
+		size = sbar_fontsize_y * 1.4 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
+
+		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + size)
+			r = i;
+
+		offset += size + sbar_fontsize_y;
+	}
+
 	return r;
 }
 
@@ -82,8 +117,10 @@ void MapVote_RememberMap(string mname)
 string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 {
 	string pre, post;
-	pre = strcat(ftos(id+1), ". ");
-	if(mv_detail)
+// not visually number-based voting in NeX
+//	if(id >= 9) pre = strcat(ftos(id+1), ". ");
+//	else pre = strcat("0", ftos(id+1), ". ");
+	if(mv_detail && count >= 0)
 	{
 		if(count == 1)
 			post = strcat(" (1 vote)");
@@ -107,42 +144,12 @@ vector MapVote_RGB(float id)
 		return '1 1 1';
 }
 
-string GameTypeVote_GameTypeName(string gtype)
-{
-	return GametypeFullNameFromName(gtype);
-}
-
-string GameTypeVote_GameTypeDescription(string gtype)
-{
-	switch(gtype)
-	{
-		case "ctf":
-			return "Each team has a flag located in its base.\nYou must steal the enemy flag and bring it to yours to score.";
-		case "kh":
-			return "Every team begins the round with one key.\nSteal all the keys and bring them together to score.";
-		case "ft":
-			return "Frag your opponents to turn them into ice blocks.\nFreeze the entire opposite team to win the round.\nYou can unfreeze your frozen teammates by standing next to them.";
-		case "dom":
-			return "Several control points are placed around the map.\nWalk over a control point to capture it.\nWhile captured, control points keep adding to your score until the limit is reached.";
-		case "totaldom":
-			return "A round-based Domination spin-off.\nYou must take over ALL of the control points on the map to win the round.";
-		case "vip":
-			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
-		case "dm":
-			return "Free-for-all: the player who gets the most frags wins.";
-		case "tdm":
-			return "Team-based deathmatch: the team that gets the most frags wins.";
-	}
-
-	return "No description is available for this gametype";
-}
-
 string GameTypeVote_DescriptionByID(float id)
 {
 	switch(mv_avail[id])
 	{
 		case GTV_AVAILABLE:
-			return GameTypeVote_GameTypeDescription(mv_maps[id]);
+			return gametype_Name_to_Description(mv_maps[id]);
 
 		case GTV_OVERPLAYED:
 			return "This gametype is currently overplayed.";
@@ -157,7 +164,7 @@ string GameTypeVote_DescriptionByID(float id)
 
 #define drawGameTypeLine(s,c,sc,a) \
 drawstring(o, (s), sbar_fontsize * (sc), (c), a * alpha, DRAWFLAG_NORMAL); \
-o_y += sbar_fontsize_y * sc * (1 - pow(alpha - 1, 2))
+o_y += sbar_fontsize_y * sc *  (1 - pow(alpha - 1, 2))
 
 vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
 {
@@ -165,30 +172,30 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 	s = GameTypeVote_DescriptionByID(id);
 
 	float a, i, n = tokenizebyseparator(s, "\n");
-	float alpha = bound(0, time - mv_starttime, 1);
+	float alpha = bound(0, 0.5 * (time - mv_starttime), 1);
 	
 	if(mv_avail[id] != GTV_AVAILABLE)
-		a = 0.5;
+		a = 0.3; //0.5
 	else
 		a = 1;
 
 	float oldx = o_x;
-	o_x -= 10 * (1 - pow(mv_hoveralpha[id] - 1, 2));
+	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]); //(1 - pow(mv_hoveralpha[id] - 1, 2));
 	
-	drawGameTypeLine(MapVote_FormatMapItem(id, GameTypeVote_GameTypeName(gtype), count, 500), MapVote_RGB(id), 1.2, a);
-	for(i = 0; i < n; ++i)
-	{
+	drawGameTypeLine(MapVote_FormatMapItem(id, gametype_Name_to_LongName(gtype), count, 500), MapVote_RGB(id), 1.4, a); // 1.2
+	if(s != "") for(i = 0; i < n; ++i) {
 		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
 
-	drawGameTypeLine("", '1 1 1', 1, 1);
-	
+	drawGameTypeLine("", '1 1 1', 01, 1);
 	o_x = oldx;
 	return o;
 }
 
 void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, string pic, float count, float id)
 {
+	//print("ENTERED MapVote_DrawMapItem(", pic, ")\n");
+	
 	vector img_size;
 	vector rgb;
 	vector txtpos;
@@ -197,7 +204,18 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 
 	float alpha = 1 - pow(bound(0, (time - mv_starttime), 1) - 1, 2);
 	float angle = alpha * mv_drawangles[id];
-	float ha = mv_hoveralpha[id];
+	float ha = 	ipol_swingInOut(mv_hoveralpha[id]);
+				//((id == mv_selection)? ipol_swingOut : ipol_swingIn)(mv_hoveralpha[id]);
+	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
+	
+	float alpha2;
+	alpha2 = 1;
+	
+	if(mv_votes[id] < 0)
+		alpha2 = 1 - bound(0, time - mv_removetime[id], 1) * 0.7;
+	
+	if(fromserver)
+		angle = 0;
 
 	isize *= alpha + ha * 0.07;
 	isize -= sbar_fontsize_y; // respect the text when calculating the image size
@@ -224,23 +242,19 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	img_size -= (sbar_border_thickness * 2) * '1 1 0';
 	
 	if(pic != "") {
-		drawpic_rotated(pos, pic, img_size, '1 1 1', angle, alpha, DRAWFLAG_NORMAL);
+		if(!fromserver)
+			drawpic_rotated(pos, pic, img_size, '1 1 1' * alpha2, angle, alpha * alpha2, DRAWFLAG_NORMAL);
+		else
+			drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
 	}
-	
+
 	vector hs = img_size * 0.5;
-	drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
-	drawstring(txtpos, label, sbar_fontsize, rgb * alpha, alpha, DRAWFLAG_NORMAL);
+	//if(id < 9)
+	//	drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
+	// TODO: make more numbers > 9
+	drawstring(txtpos, label, sbar_fontsize, rgb * alpha * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
 	
-	if(id == mv_ownvote || pic == "")
-	{
-		//drawborderlines(sbar_border_thickness, pos, img_size, rgb, 1, DRAWFLAG_NORMAL);
-		drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', rgb, angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
-	}
-	else
-	{
-		//drawborderlines(sbar_border_thickness, pos, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
-		drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
-	}
+	//print("EXITED MapVote_DrawMapItem(", pic, ")\n");
 }
 
 void MapVote_DrawAbstain(vector pos, float isize, float tsize, float count, float id)
@@ -324,9 +338,9 @@ void MapVote_Draw()
 	if(mv_abstain)
 		mv_num_maps -= 1;
 
-	if(mv_num_maps > 3)
+	if(mv_num_maps > 4)
 	{
-		columns = 3;
+		columns = 4;
 	} else {
 		columns = mv_num_maps;
 	}
@@ -351,6 +365,12 @@ void MapVote_Draw()
 		float alpha = bound(0, (time - mv_starttime), 1);
 
 		vector img_size;
+/*
+<<<<<<< HEAD
+		img_size_y = (isize * 3);
+		img_size_x = (isize * 3) / 0.75;
+//=======
+*/
 		img_size_y = isize;
 		img_size_x = isize / 0.75;
 		img_size *= alpha;
@@ -359,13 +379,19 @@ void MapVote_Draw()
 			vid_conwidth * 0.5 + (sbar_fontsize_x * gametypevote_longest) * 0.25,
 			vid_conwidth - sbar_fontsize_x - img_size_x
 		);
+//>>>>>>> unstable
 
+		//o_x = vid_conwidth - (sbar_fontsize_x * 2) - img_size_x;
 		o_y = sbar_fontsize_y * 10;
 
 		//drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
 		
-		if(mapvote_choosenmappic != "")
-			drawpic_rotated(o, mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * alpha, alpha, DRAWFLAG_NORMAL);
+		if(mapvote_choosenmappic != "") {
+			if(mv_gtvote_previewangle == 0)
+				drawpic(o, mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
+			else
+				drawpic_rotated(o, mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * alpha, alpha, DRAWFLAG_NORMAL);
+		}
 
 		o_y += img_size_y + 10;
 		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
@@ -374,23 +400,26 @@ void MapVote_Draw()
 	}
 
 	o_x = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);
+	//o_x = sbar_fontsize_x * 2;
 	o_y = sbar_fontsize_y * 10;
 
 	for(i = 0; i < mv_num_maps; ++i)
 	{
 		float ha = mv_hoveralpha[i];
+		float ha_speed = 5;
+		
 		if(i == mv_selection)
-			ha = bound(0, ha + frametime * 2, 1);
+			ha = bound(0, ha + frametime * ha_speed, 1);
 		else
-			ha = bound(0, ha - frametime * 2, 1);
+			ha = bound(0, ha - frametime * ha_speed, 1);
 		mv_hoveralpha[i] = ha;
 		
 		if(!gametypevote && i == mv_selection)
 			continue;	// draw selection on top of everything else
 		
 		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
-		if(tmp < 0)
-			continue;
+		//if(tmp < 0)
+		//	continue;
 		map = mv_maps[i];
 		
 		if(gametypevote)
@@ -406,26 +435,24 @@ void MapVote_Draw()
 		}
 	}
 	
-	if(!gametypevote && mv_selection >= 0 && mv_selection < 9) {
+	if(!gametypevote && mv_selection >= 0 && mv_selection < 16) {
 		tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
-		if(tmp >= 0) {
+		//if(tmp >= 0) {
 			map = mv_maps[mv_selection];
 			
 			if(mv_preview[mv_selection])
 				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, mv_pics[mv_selection], tmp, mv_selection);
 			else
 				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, "", tmp, mv_selection);
-		}
+		//}
 	}
 	
-	if(mv_abstain)
-		++mv_num_maps;
-
-	if(mv_abstain && i < mv_num_maps) {
+	if(mv_abstain) {
 		tmp = mv_votes[i];
 		pos_y = ymax + isize - sbar_fontsize_y;
 		pos_x = (xmax+xmin)*0.5;
 		MapVote_DrawAbstain(pos, isize, xmax - xmin, tmp, i);
+		++mv_num_maps;
 	}
 	
 	drawpic(mv_mousepos, strcat("gfx/menu/", cvar_string("menu_skin"), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -491,7 +518,11 @@ void MapVote_CheckPic(string pic, string pk3, float id)
 	// never try to retrieve a pic for the "don't care" 'map'
 	if(mv_abstain && id == mv_num_maps - 1)
 		return;
-
+	
+	// never try to retrieve pics for gametype votes
+	if(gametypevote)
+		return;
+	
 	if(PreviewExists(pic))
 	{
 		mv_preview[id] = true;
@@ -531,13 +562,19 @@ void MapVote_Init()
 	{
 		print("^5Now decide the GAMETYPE!\n");
 		MapVote_RememberMap(ReadString());
-		mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
+		
+		if(PreviewExists(mapvote_choosenmap))
+			mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
+		else
+			mv_gtvote_previewangle = 0;
 	}
 
 	if(mv_num_maps <= 8)
 		mv_maps_mask = ReadByte();
-	else
+	else if(mv_num_maps <= 16)
 		mv_maps_mask = ReadShort();
+	else
+		mv_maps_mask = ReadLong();
 
 	// Assume mv_pk3list is NULL, there should only be 1 mapvote per round
 	mv_pk3list = NULL; // I'm still paranoid!
@@ -565,7 +602,6 @@ void MapVote_Init()
 			if(gametypevote)
 			{
 				mv_avail[i] = ReadByte();
-
 				map = mv_maps[i];
 				n = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
 				for(j = 0; j < n; ++j)
@@ -585,6 +621,8 @@ void MapVote_Init()
 			mv_avail[i] = false;
 		}
 	}
+	if(mv_abstain)
+		mv_votes[i] = 0;
 
 	// do we NEED this, or can we handle key presses directly in CSQC?
 	localcmd("\nin_bind 7 1 \"impulse 1\"; in_bind 7 2 \"impulse 2\"; in_bind 7 3 \"impulse 3\"; in_bind 7 4 \"impulse 4\"; in_bind 7 5 \"impulse 5\"; in_bind 7 6 \"impulse 6\"; in_bind 7 7 \"impulse 7\"; in_bind 7 8 \"impulse 8\"; in_bind 7 9 \"impulse 9\"; in_bind 7 0 \"impulse 10\"; in_bind 7 KP_1 \"impulse 1\"; in_bind 7 KP_2 \"impulse 2\"; in_bind 7 KP_3 \"impulse 3\"; in_bind 7 KP_4 \"impulse 4\"; in_bind 7 KP_5 \"impulse 5\"; in_bind 7 KP_6 \"impulse 6\"; in_bind 7 KP_7 \"impulse 7\"; in_bind 7 KP_8 \"impulse 8\"; in_bind 7 KP_9 \"impulse 9\"; in_bind 7 KP_0 \"impulse 10\"; in_bindmap 7 0\n");
@@ -600,8 +638,10 @@ void MapVote_UpdateMask()
 	oldmask = mv_maps_mask;
 	if(mv_num_maps <= 8)
 		mv_maps_mask = ReadByte();
-	else
+	else if(mv_num_maps <= 16)
 		mv_maps_mask = ReadShort();
+	else
+		mv_maps_mask = ReadLong();
 
 	if(oldmask & mv_maps_mask != oldmask)
 		if(oldmask & mv_maps_mask == mv_maps_mask)
@@ -609,8 +649,10 @@ void MapVote_UpdateMask()
 
 	// remove votes that no longer apply
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
-		if not(mv_maps_mask & power)
+		if not(mv_maps_mask & power) {
 			mv_votes[i] = -1;
+			mv_removetime[i] = time;
+		}
 }
 
 void MapVote_UpdateVotes()
@@ -652,7 +694,7 @@ void Net_MapVote_Picture()
 {
 	float type;
 	type = ReadByte();
-	mv_preview[type] = true;
+	mv_preview[type] = PREVIEW_FROMSERVER;
 	mv_pics[type] = strzone(ReadPicture());
 }
 
@@ -668,6 +710,7 @@ float MapVote_InputEvent(float bInputType, float nPrimary, float nSecondary)
 
 	if ('0' <= nPrimary && nPrimary <= '9')
 	{
+		// number-based voting is not prefered in NeX - but still possible manually using impulse
 		imp = nPrimary - '0';
 		if (imp == 0) imp = 10;
 		localcmd(strcat("\nimpulse ", ftos(imp), "\n"));

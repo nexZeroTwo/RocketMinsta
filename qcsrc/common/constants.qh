@@ -23,25 +23,6 @@
 // Revision 22: hook shot origin
 #define CSQC_REVISION 22
 
-// probably put these in common/
-// so server/ and client/ can be synced better
-const float GAME_DEATHMATCH		= 1;
-const float GAME_TEAM_DEATHMATCH	= 2;
-const float GAME_DOMINATION		= 3;
-const float GAME_CTF			= 4;
-const float GAME_RUNEMATCH		= 5;
-const float GAME_LMS			= 6;
-const float GAME_ARENA		= 7;
-const float GAME_KEYHUNT		= 8;
-const float GAME_ASSAULT		= 9;
-const float GAME_ONSLAUGHT	= 10;
-const float GAME_RACE	= 11;
-const float GAME_NEXBALL = 12;
-const float GAME_CTS = 13;
-const float GAME_FREEZETAG = 14;
-const float GAME_TOTAL_DOMINATION = 15;
-const float GAME_VIP = 16;
-
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
 const float AS_FLOAT_TRUNCATED	= 2;
@@ -313,7 +294,7 @@ const float STAT_SM_HASGEM = 116;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
-#define MAPVOTE_COUNT 10
+#define MAPVOTE_COUNT 24
 
 /**
  * Lower scores are better (e.g. suicides)
@@ -376,7 +357,6 @@ const float STAT_SM_HASGEM = 116;
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
 #define SP_CARRYING 9
-
 // no, really, ask me: irc.quakenet.org #thebadasschoobs
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
@@ -489,6 +469,12 @@ float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 
+float DEATH_HG_START = 100;
+float DEATH_HG_NORMAL = 100;
+float DEATH_HG_NAPALM = 101;
+float DEATH_HG_STICKY = 102;
+float DEATH_HG_END = 102;
+
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
 float HITTYPE_SECONDARY = 0x100;
@@ -503,6 +489,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
+#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
 
 #define FRAGS_PLAYER 0
 #define FRAGS_SPECTATOR -666

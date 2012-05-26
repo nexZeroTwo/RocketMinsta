@@ -58,6 +58,7 @@ void W_Grenade_Touch2 (void)
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
 		else
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+		
 		self.projectiledeathtype |= HITTYPE_BOUNCE;
 	}
 }
@@ -108,7 +109,7 @@ void W_Grenade_Attack (void)
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE, TRUE);	
 }
 
-void W_Grenade_Attack2_Real (float force, float inhand_explosion)
+void W_Grenade_Attack2 (void)
 {
 	local entity gren;
 
@@ -130,7 +131,7 @@ void W_Grenade_Attack2_Real (float force, float inhand_explosion)
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
 
-	gren.nextthink = (inhand_explosion? time+0.01 : time + cvar("g_balance_grenadelauncher_secondary_lifetime"));
+	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode2;
 	gren.touch = W_Grenade_Touch2;
@@ -138,18 +139,13 @@ void W_Grenade_Attack2_Real (float force, float inhand_explosion)
 	gren.health = cvar("g_balance_grenadelauncher_secondary_health");
 	gren.damageforcescale = cvar("g_balance_grenadelauncher_secondary_damageforcescale");
 	gren.event_damage = W_Grenade_Damage;
-	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_secondary_speed")*force + v_up * cvar("g_balance_grenadelauncher_secondary_speed_up")*force;
+	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_secondary_speed") + v_up * cvar("g_balance_grenadelauncher_secondary_speed_up");
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
-}
-
-void W_Grenade_Attack2(void)
-{
-	W_Grenade_Attack2_Real(1, 0);
 }
 
 void spawnfunc_weapon_grenadelauncher (void)

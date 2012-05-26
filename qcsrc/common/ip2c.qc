@@ -50,6 +50,7 @@ void IP2C_ClearCache()
 
 string IP2C_LookupCached(string ip)
 {
+	if(IP_IS_WEEABOO(ip)) return GRORIOUS_NIPPON;
     return db_get(IPCacheDB, ip);
 }
 
@@ -110,6 +111,9 @@ void IP2C_ExecCallbacks(string ip, string cn)
 
 void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity)
 {
+    if(!cvar("g_ip2c"))
+        return;
+
     local string res;
     res = IP2C_LookupCached(ip);
     

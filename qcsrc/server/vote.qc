@@ -11,7 +11,7 @@ float VoteCheckNasty(string cmd)
 	return FALSE;
 }
 
-#define STUPID_VNO_STRINGS 8
+#define STUPID_VNO_STRINGS 10
 #define STUPID_VNO_PASSWORD 16645
 
 string GetStupidVNoString() {
@@ -155,7 +155,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			
 			s = NormalizeGametypeName(argv(2));
-			if(!ListContains(cvar_string("g_explosive_gametypevote_options"), s, " ")) s = "";
+			if(!ListContainsEx(cvar_string("g_explosive_gametypevote_options"), s, " ", NormalizeGametypeName)) s = "";
 			
 			// ListContains tokenizes
 			vote_argc = tokenize_console(vote);
@@ -167,7 +167,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 			else if (! GameTypeFilter_Allowed (argv (1), s))
 			{
-				sprint (e, strcat ("^1", GametypeFullNameFromName (s), " is not allowed on the selected map\n"));
+				sprint (e, strcat ("^1", gametype_Name_to_LongName (s), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
@@ -181,16 +181,16 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
-			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 			
 			return TRUE;
 		}
 		else
 		{
-			if (! GameTypeFilter_Allowed (argv (1), GetGametype ()))
+			if (! GameTypeFilter_Allowed (argv (1), gametype_ID_to_Name(game)))
 			{
 				// Moved from ValidateMap
-				sprint (e, strcat ("^1", GametypeFullNameFromType(game), " is not allowed on the selected map\n"));
+				sprint (e, strcat ("^1", gametype_ID_to_LongName(game), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
 			// In case freezefags decide to vcall gotomap on the last round just so they can continue fapping on -20°C
@@ -198,7 +198,7 @@ float RemapVote(string vote, string cmd, entity e)
 			
 			/*
 			if(!cvar("g_explosive_gametypevote_overplayed_allowcall"))
-			if (GameTypeVote_AvailabilityStatus (GetGametype ()) == GTV_OVERPLAYED)
+			if (GameTypeVote_AvailabilityStatus (gametype_ID_to_Name(game)) == GTV_OVERPLAYED)
 			{
 				sprint (e, "^1This gametype is currently overplayed.");
 				if (s == "ft")
@@ -332,16 +332,34 @@ float RemapVote(string vote, string cmd, entity e)
 		return FALSE;
 		#endif
 	}
-	else
+	else if(argv(0) == "gotoserver") {
+		if(vote_argc < 2) {
+			sprint(e, strcat("^1Go to WHICH server? ^1Allowed servers are: ^2", GetAllowedServers(), "\n"));
+			return FALSE;
+		}
+		
+		string srv = ResolveServer(argv(1));
+		if(!ServerIsAllowed(srv)) {
+			sprint(e, strcat("^1Allowed servers are: ^2", GetAllowedServers(), "\n"));
+			return FALSE;
+		}
+		
+		string tail;
+		if(argv(1) != srv)
+			tail = strcat(" (^5", srv, "^1)");
+		
+		RemapVote_vote = vote;
+		RemapVote_display = strzone(strcat("^1", vote, tail));
+	} else
 	{
 		s = NormalizeGametypeName(argv(0));
 		
 		if(s != "")	// detected a gametype vote
 		{
 			// Gametype already being played?
-			if (s == GetGametype ())
+			if (s == gametype_ID_to_Name(game))
 			{
-				sprint (e, strcat ("^1A game of ^2", GametypeFullNameFromType (game), " ^1is already being played!\n"));
+				sprint (e, strcat ("^1A game of ^2", gametype_Name_to_LongName(s), " ^1is already being played!\n"));
 				return FALSE;
 			}
 
@@ -360,7 +378,7 @@ float RemapVote(string vote, string cmd, entity e)
 			// Let's give this another shot
 			if (! GameTypeFilter_Allowed (mapname, s))
 			{
-				sprint (e, strcat ("^1", GametypeFullNameFromName(s), " is not allowed on the current map\n"));
+				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
 			}
 			if (! cvar ("g_explosive_gametypevote_call"))
@@ -368,8 +386,8 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "^1Gametype voting is not allowed.\n");
 				return FALSE;
 			}
-			RemapVote_vote = vote;
-			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", GametypeFullNameFromName(s), "^7)"));
+			RemapVote_vote = s;
+			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 		}
 		else
 		{
@@ -715,10 +733,10 @@ string ValidateMap(string m, entity e)
 	}
 
 /*
-//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (MapInfo_CurrentGametype ())))
-	if (! GameTypeFilter_Allowed (m, GetGametype ()))
+//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (gametype_ID_to_MapID(game))))
+	if (! GameTypeFilter_Allowed (m, gametype_ID_to_Name(game)))
 	{
-		print_to (e, strcat ("^2Invalid mode ^1", GametypeFullNameFromType (game), " ^2for map ^1", m));
+		print_to (e, strcat ("^2Invalid mode ^1", gametype_ID_to_LongName(game), " ^2for map ^1", m));
 		return string_null;
 	}
 	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't
@@ -769,7 +787,7 @@ float VoteAllowed(string votecommand, string cmd) {
 
 	if(cvar("g_explosive_gametypevote_call"))
 	if((s = NormalizeGametypeName(votecommand)) != "")
-	if(ListContains(cvar_string("g_explosive_gametypevote_options"), s, " "))
+	if(ListContainsEx(cvar_string("g_explosive_gametypevote_options"), s, " ", NormalizeGametypeName))
 		return TRUE;			// gametype alias
 
 	if(cmd == "vdo")

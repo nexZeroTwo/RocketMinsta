@@ -413,102 +413,11 @@ void buf_save(float buf, string pFilename)
 	fclose(fh);
 }
 
-string GametypeNameFromType(float g)
-{
-	if      (g == GAME_DEATHMATCH) return "dm";
-	else if (g == GAME_TEAM_DEATHMATCH) return "tdm";
-	else if (g == GAME_DOMINATION) return "dom";
-	else if (g == GAME_TOTAL_DOMINATION) return "totaldom";
-	else if (g == GAME_CTF) return "ctf";
-	else if (g == GAME_RUNEMATCH) return "rune";
-	else if (g == GAME_LMS) return "lms";
-	else if (g == GAME_ARENA) return "arena";
-	else if (g == GAME_KEYHUNT) return "kh";
-	else if (g == GAME_ONSLAUGHT) return "ons";
-	else if (g == GAME_ASSAULT) return "as";
-	else if (g == GAME_RACE) return "rc";
-	else if (g == GAME_NEXBALL) return "nexball";
-	else if (g == GAME_CTS) return "cts";
-	else if (g == GAME_FREEZETAG) return "ft";
-    else if (g == GAME_VIP) return "vip";
-	return "";
-}
-
-string GametypeFullNameFromType(float g)
-{
-	if      (g == GAME_DEATHMATCH) return "Deathmatch";
-	else if (g == GAME_TEAM_DEATHMATCH) return "Team Deathmatch";
-	else if (g == GAME_DOMINATION) return "Domination";
-	else if (g == GAME_TOTAL_DOMINATION) return "Total Domination";
-	else if (g == GAME_CTF) return "Capture the Flag";
-	else if (g == GAME_RUNEMATCH) return "Rune Match";
-	else if (g == GAME_LMS) return "Last Man Standing";
-	else if (g == GAME_ARENA) return "Arena";
-	else if (g == GAME_KEYHUNT) return "Key Hunt";
-	else if (g == GAME_ONSLAUGHT) return "Onslaught";
-	else if (g == GAME_ASSAULT) return "Assault";
-	else if (g == GAME_RACE) return "Race";
-	else if (g == GAME_NEXBALL) return "Nexball";
-	else if (g == GAME_CTS) return "CTS";
-	else if (g == GAME_FREEZETAG) return "Freeze Tag";
-    else if (g == GAME_VIP) return "VIP";
-	return "Unknown";
-}
-
-float GametypeIDFromName(string gtname)
-{
-	local string s;
-	local float i;
-	i = GAME_DEATHMATCH;
-
-	do
-	{
-		s = GametypeNameFromType(i);
-		if(gtname == s) return i;
-		++i;
-	} while(s != "");
-
-	return -1;
-}
-
-string GametypeFullNameFromName(string gtname)
-{
-	return(GametypeFullNameFromType(GametypeIDFromName(gtname)));
-}
-
 // this function expands possible aliases to real gametype names.
 // Update this code when adding new gametypes and/or builtin aliases to existing ones
 string NormalizeGametypeName(string gtname)
 {
-	switch(gtname)
-	{
-		case "ft": case "freezetag":
-			return "ft";
-
-		case "kh": case "keyhunt":
-			return "kh";
-
-		case "ctf":
-			return "ctf";
-
-		case "dom": case "domination":
-			return "dom";
-
-		case "totaldom": case "tdom": case "totaldomination":
-			return "totaldom";
-
-		case "vip":
-			return "vip";
-
-		case "dm": case "deathmatch":
-			return "dm";
-
-		case "tdm": case "teamdeathmatch": case "teamdm":
-			return "tdm";
-
-		default:
-			return "";
-	}
+	return gametype_Name_to_Name(gtname);
 }
 
 float ListContains(string source, string key, string sep)
@@ -521,6 +430,15 @@ float ListContains(string source, string key, string sep)
 	return 0;
 }
 
+float ListContainsEx(string source, string key, string sep, string(string) transform)
+{
+	local float i;
+	local float n = tokenizebyseparator(source, sep);
+
+	for(i = 0; i < n; ++i)
+		if(transform(argv(i)) == key) return 1;
+	return 0;
+}
 
 string mmss(float tenths)
 {
@@ -1419,7 +1337,7 @@ string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 float isGametypeInFilter(float gt, float tp, string pattern)
 {
 	string subpattern, subpattern2, subpattern3;
-	subpattern = strcat(",", GametypeNameFromType(gt), ",");
+	subpattern = strcat(",", gametype_ID_to_Name(gt), ",");
 	if(tp)
 		subpattern2 = ",teams,";
 	else

@@ -366,7 +366,7 @@ void drawborderlines(float thickness, vector pos, vector dim, vector color, floa
 	drawfill(pos + (dim_y + thickness) * '0 1 0', line_dim, color, alpha, drawflag);
 }
 
-void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag)
+void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag, vector src_pos)
 {
 	vector current_pos, end_pos, new_size, ratio;
 	end_pos = pos + area;
