@@ -174,14 +174,14 @@ float HG_NameToType(string t) {
 
 #define GV(v) (GRENVAR(self.hg_type, v))
 void HG_Normal_Explode (void) {
-	float radius = GV("radius"), i;
+	float rad = GV("radius"), i;
 	pointparticles(particleeffectnum("rocket_explode"), self.origin, '0 0 0', 1);
 	
 	for(i = 0; i < 40; ++i) {
 		vector v = randomvec();
 		float  r = random();
 		
-		pointparticles(particleeffectnum(mod(i, 2)? "rocket_explode" : "fire_big"), self.origin + v * radius * r, v * radius * r * 100, 1);
+		pointparticles(particleeffectnum(mod(i, 2)? "rocket_explode" : "fire_big"), self.origin + v * rad * r, v * rad * r * 100, 1);
 	}
 }
 
@@ -243,7 +243,7 @@ void HG_Attack()
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
-		self.hg_bonus--;
+		self.hg_bonus -= 1;
 	} else
 		hgtype = self.hg_type;
 	

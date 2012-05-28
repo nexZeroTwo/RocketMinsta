@@ -1232,8 +1232,7 @@ void GameCommand(string command)
 			return;
 		}
 		
-		string s = ResolveServer(argv(1));
-		
+		s = ResolveServer(argv(1));
 		bprint("^5Redirecting everyone to ^2", s, "\n");
 		
 		FOR_EACH_CLIENT(client)

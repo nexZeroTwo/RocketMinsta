@@ -310,7 +310,7 @@ Additionally it moves players back into the past before the trace and restores t
 void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
 {
 	local entity player;
-	local float oldsolid;
+	local float _oldsolid;
 
 	// check whether antilagged traces are enabled
 	if (lag < 0.001)
@@ -321,7 +321,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	// change shooter to SOLID_BBOX so the shot can hit corpses
 	if(source)
 	{
-		oldsolid = source.dphitcontentsmask;
+		_oldsolid = source.dphitcontentsmask;
 		source.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	}
 
@@ -352,7 +352,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 
 	// restore shooter solid type
 	if(source)
-		source.dphitcontentsmask = oldsolid;
+		source.dphitcontentsmask = _oldsolid;
 }
 void traceline_antilag_force (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
 {

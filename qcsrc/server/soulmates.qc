@@ -182,11 +182,11 @@ void sm_Frame() {
 }
 
 void sm_SpawnSoulGems(float theteam) {
-	float count, gems, i;
+	float _count, gems, i;
 	
 	FOR_EACH_PLAYER(other) if(other.team == theteam)
-		++count;
-	gems = max(1, ceil(count / cvar("g_explosive_freezetag_soulmates_players_per_gem")));
+		++_count;
+	gems = max(1, ceil(_count / cvar("g_explosive_freezetag_soulmates_players_per_gem")));
 	
 	for(i = 0; i < gems; ++i)
 		sm_SpawnSoulGem(theteam);
@@ -353,7 +353,7 @@ void sm_PlaceSoulGem(entity gem) {
 	if(have_team_spawns) {
 		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1, gem.team);
 		if(!spot)	// just in case something is fucked
-			spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+			spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
 	} else
 		spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
 	

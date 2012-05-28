@@ -186,7 +186,7 @@ float dodging_PlayerPhysics()
 	float new_velocity_gain;
 	float velocity_difference;
 	float clean_up_and_do_nothing;
-	float forcemod
+	float forcemod;
 	forcemod = 1;
 
 	new_velocity_gain = 0;

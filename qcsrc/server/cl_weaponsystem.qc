@@ -130,9 +130,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 {
 	float nudge = 1; // added to traceline target and subtracted from result
 	local vector trueaimpoint;
-	local float oldsolid;
+	local float _oldsolid;
 	vector vecs, dv;
-	oldsolid = ent.dphitcontentsmask;
+	_oldsolid = ent.dphitcontentsmask;
 	if(ent.weapon == WEP_CAMPINGRIFLE)
 		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	else
@@ -294,7 +294,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	}
 #endif
 
-	ent.dphitcontentsmask = oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
+	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
