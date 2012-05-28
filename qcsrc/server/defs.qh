@@ -690,7 +690,4 @@ float forbidrestart;
 .entity last_spawn_pt_2;
 
 void end_match(float);
-
-void weapon_debug(entity plr, string s);
-void weapon_traceback(entity plr, string s);
 .float isdeveloper;

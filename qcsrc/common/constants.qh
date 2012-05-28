@@ -485,11 +485,11 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
-#define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
-#define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 #define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
+#define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
+#define DEATH_ISWEAPON(t,w)           (!DEATH_ISHG(t) && !DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
+#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
 #define FRAGS_SPECTATOR -666

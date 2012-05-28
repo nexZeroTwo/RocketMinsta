@@ -861,8 +861,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	if (gameover || targ.killcount == -666)
 		return;
 
-	if(DEATH_ISHG(deathtype))
-		deathtype &~= DEATH_HITTYPEMASK;
+	//if(DEATH_ISHG(deathtype))
+	//	deathtype &~= DEATH_HITTYPEMASK;
 
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
