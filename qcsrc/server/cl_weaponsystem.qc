@@ -998,6 +998,23 @@ void weapon_setup(float windex)
 	self.bulletcounter = 0;
 };
 
+string weapon_debug_string(entity plr, string msg) {
+	return strcat("^1WEAPON SYSTEM: ^7[^3", plr.netname, "^7] ^5", msg, "\n");
+}
+
+void weapon_debug(entity plr, string msg) {
+	string m = weapon_debug_string(plr, msg);
+	
+	entity dev;
+	FOR_EACH_DEVELOPER(dev)
+		sprint(dev, m);
+}
+
+void weapon_traceback(entity plr, string msg) {
+	weapon_debug(plr, msg);
+	backtrace(weapon_debug_string(plr, msg));
+}
+
 // perform weapon to attack (weaponstate and attack_finished check is here)
 .float race_penalty;
 float weapon_prepareattack(float secondary, float attacktime)
@@ -1029,11 +1046,15 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished
-		if (ATTACK_FINISHED(self) > time + frametime * 0.5)
+		if (ATTACK_FINISHED(self) > time + frametime * 0.5) {
+			weapon_debug(self, strcat("time until next attack: ", ftos((ATTACK_FINISHED(self)) - time)));
 			return FALSE;
+		}
 		// don't fire while changing weapon
-		if (self.weaponentity.state != WS_READY)
+		if (self.weaponentity.state != WS_READY) {
+			weapon_debug(self, strcat("self.weaponentity.state = ", ftos(self.weaponentity.state)));
 			return FALSE;
+		}
 	}
 	self.weaponentity.state = WS_INUSE;
 
@@ -1046,11 +1067,13 @@ float weapon_prepareattack(float secondary, float attacktime)
 		{
 			ATTACK_FINISHED(self) = time;
 			//dprint("resetting attack finished to ", ftos(time), "\n");
+			weapon_debug(self, strcat("resetting attack finished to ", ftos(time)));
 		}
 		ATTACK_FINISHED(self) = ATTACK_FINISHED(self) + attacktime * W_WeaponRateFactor();
 	}
 	self.bulletcounter += 1;
 	//dprint("attack finished ", ftos(ATTACK_FINISHED(self)), "\n");
+	weapon_debug(self, strcat("attack finished = ", ftos(ATTACK_FINISHED(self))));
 	return TRUE;
 };
 
