@@ -3161,3 +3161,16 @@ float ServerIsAllowed(string s) {
 	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
 }
 
+float ShouldForceFog() {
+	string s = cvar_string("g_explosive_forcefog");
+	if(s != "")
+		return TRUE;
+	return world.fog != "";
+}
+
+string GetForcedFog() {
+	string s = cvar_string("g_explosive_forcefog");
+	if(s != "")
+		return s;
+	return world.fog;
+}

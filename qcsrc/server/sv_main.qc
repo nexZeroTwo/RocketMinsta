@@ -130,6 +130,9 @@ Called before each frame by the server
 */
 void RuneMatchGivePoints();
 float RedirectionThink();
+
+string oldfog;
+
 entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
@@ -238,6 +241,35 @@ void StartFrame (void)
 
 	FOR_EACH_PLAYER(self)
 		self.porto_forbidden = max(0, self.porto_forbidden - 1);
+	
+	if(ShouldForceFog()) {
+		string newfog = GetForcedFog();
+		
+		if(newfog != oldfog) {
+			print("Fog settings updated\n");
+			
+			if(oldfog)
+				strunzone(oldfog);
+			oldfog = strzone(newfog);
+			
+			FOR_EACH_REALCLIENT(self) {
+				if(sv_foginterval)
+					stuffcmd(self, strcat("prvm_globalset client forcefog \"", newfog, "\"\n"));
+				else
+					stuffcmd(self, strcat("fog ", newfog, "\n"));
+			}
+		}
+	} else if(oldfog) {
+		print("Fog disabled\n");
+		strunzone(oldfog);
+		oldfog = string_null;
+		
+		FOR_EACH_REALCLIENT(self) {
+			if(sv_foginterval)
+				stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
+			stuffcmd(self, "defer 0 \"fog 0\"\n");
+		}
+	}
 }
 
 .vector originjitter;

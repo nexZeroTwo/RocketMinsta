@@ -1242,8 +1242,8 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
 	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
 
-	if(sv_foginterval && world.fog != "")
-		WriteString(MSG_ENTITY, world.fog);
+	if(sv_foginterval && ShouldForceFog())
+		WriteString(MSG_ENTITY, GetForcedFog());
 	else
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
@@ -1685,8 +1685,8 @@ void ClientConnect (void)
 		}
 	}
 
-	if(!sv_foginterval && world.fog != "")
-		stuffcmd(self, strcat("\nfog ", world.fog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+	if(!sv_foginterval && ShouldForceFog())
+		stuffcmd(self, strcat("\nfog ", GetForcedFog(), "\nr_fog_exp2 0\nr_drawfog 1\n"));
 
 	SoundEntity_Attach(self);
 
