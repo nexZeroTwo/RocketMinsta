@@ -1121,7 +1121,6 @@ void readlevelcvars(void)
     sv_clones = cvar("sv_clones");
     sv_cheats = cvar("sv_cheats");
     sv_gentle = cvar("sv_gentle");
-    sv_foginterval = cvar("sv_foginterval");
     g_cloaked = cvar("g_cloaked");
     g_jump_grunt = cvar("g_jump_grunt");
     g_footsteps = cvar("g_footsteps");
@@ -1182,9 +1181,9 @@ void readlevelcvars(void)
     g_pickup_rockets_max               = cvar("g_pickup_rockets_max");
     g_pickup_cells                     = cvar("g_pickup_cells");
     g_pickup_cells_max                 = cvar("g_pickup_cells_max");
-    g_pickup_fuel                     = cvar("g_pickup_fuel");
-    g_pickup_fuel_jetpack             = cvar("g_pickup_fuel_jetpack");
-    g_pickup_fuel_max                 = cvar("g_pickup_fuel_max");
+    g_pickup_fuel                      = cvar("g_pickup_fuel");
+    g_pickup_fuel_jetpack              = cvar("g_pickup_fuel_jetpack");
+    g_pickup_fuel_max                  = cvar("g_pickup_fuel_max");
     g_pickup_armorsmall                = cvar("g_pickup_armorsmall");
     g_pickup_armorsmall_max            = cvar("g_pickup_armorsmall_max");
     g_pickup_armormedium               = cvar("g_pickup_armormedium");

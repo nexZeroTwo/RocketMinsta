@@ -252,12 +252,8 @@ void StartFrame (void)
 				strunzone(oldfog);
 			oldfog = strzone(newfog);
 			
-			FOR_EACH_REALCLIENT(self) {
-				if(sv_foginterval)
-					stuffcmd(self, strcat("prvm_globalset client forcefog \"", newfog, "\"\n"));
-				else
-					stuffcmd(self, strcat("fog ", newfog, "\n"));
-			}
+			FOR_EACH_REALCLIENT(self)
+				stuffcmd(self, strcat("prvm_globalset client forcefog \"", newfog, "\"\n"));
 		}
 	} else if(oldfog) {
 		print("Fog disabled\n");
@@ -265,8 +261,7 @@ void StartFrame (void)
 		oldfog = string_null;
 		
 		FOR_EACH_REALCLIENT(self) {
-			if(sv_foginterval)
-				stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
+			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
 			stuffcmd(self, "defer 0 \"fog 0\"\n");
 		}
 	}

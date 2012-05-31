@@ -1242,7 +1242,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
 	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
 
-	if(sv_foginterval && ShouldForceFog())
+	if(ShouldForceFog())
 		WriteString(MSG_ENTITY, GetForcedFog());
 	else
 		WriteString(MSG_ENTITY, "");
@@ -1684,9 +1684,6 @@ void ClientConnect (void)
 			self.frags = FRAGS_SPECTATOR;
 		}
 	}
-
-	if(!sv_foginterval && ShouldForceFog())
-		stuffcmd(self, strcat("\nfog ", GetForcedFog(), "\nr_fog_exp2 0\nr_drawfog 1\n"));
 
 	SoundEntity_Attach(self);
 

@@ -49,7 +49,6 @@ float g_jetpack;
 float sv_clones;
 float sv_cheats;
 float sv_gentle;
-float sv_foginterval;
 
 entity	activator;
 string	string_null;
