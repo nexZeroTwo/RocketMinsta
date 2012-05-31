@@ -602,7 +602,7 @@ void spawnfunc_worldspawn (void)
 	}
 	else
 		matchid = strzone(ftos(random()));
-
+	
 	cvar_set("nextmap", "");
 
 	SetDefaultAlpha();
@@ -787,6 +787,7 @@ void spawnfunc_worldspawn (void)
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 
 	registercvar("g_endmatch", "0");
+	cvar_set("g_endmatch", "0");
 }
 
 void spawnfunc_light (void)
@@ -1978,6 +1979,7 @@ void CheckRules_World()
 	if(cvar("g_endmatch"))
 	{
 		cvar_set("g_endmatch", "0");
+		print("^1Endmatching the game\n");
 		NextLevel();
 		return;
 	}
@@ -2725,7 +2727,7 @@ void MapVote_Start()
 {
 	if(mapvote_run)
 		return;
-
+		
 	MapInfo_Enumerate();
 	if(MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;

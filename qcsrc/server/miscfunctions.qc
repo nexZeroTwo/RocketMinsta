@@ -602,6 +602,7 @@ float fexists(string f)
     return TRUE;
 }
 
+void GameCommand(string);
 void backtrace(string msg)
 {
     float dev, war;
@@ -617,6 +618,7 @@ void backtrace(string msg)
     dprint("\n--- CUT UNTIL HERE ---\n");
     cvar_set("developer", ftos(dev));
     cvar_set("prvm_backtraceforwarnings", ftos(war));
+    GameCommand("time");
 }
 
 string Team_ColorCode(float teamid)
