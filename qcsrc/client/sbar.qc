@@ -1216,7 +1216,7 @@ void Sbar_DrawScoreboard()
 		sbar_woulddrawscoreboard_prev = sbar_woulddrawscoreboard;
 	}
 
-	float scoreboard_fadeinspeed = 10;
+	float scoreboard_fadeinspeed = 5;
 	float scoreboard_fadeoutspeed = 5;
 	if(sbar_woulddrawscoreboard) {
 		//if (scoreboard_fadeinspeed)
@@ -1232,7 +1232,10 @@ void Sbar_DrawScoreboard()
 
 	if not(sbar_scoreboard_fade_alpha)
 		return;
-		
+	
+	vector sbar_fontsize_old = sbar_fontsize;
+	sbar_fontsize = sbar_fontsize * ipol_swingOut(sbar_scoreboard_fade_alpha);
+	
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg") * sbar_scoreboard_fade_alpha;
 	sbar_scoreboard_alpha_fg = 1.0 * sbar_scoreboard_fade_alpha;
 	sbar_scoreboard_highlight = cvar("sbar_scoreboard_highlight");
@@ -1418,6 +1421,8 @@ void Sbar_DrawScoreboard()
 		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
 		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
 	}
+	
+	sbar_fontsize = sbar_fontsize_old;
 }
 
 string MakeRaceString(float cp, float mytime, float histime, float lapdelta, string hisname)
