@@ -562,3 +562,5 @@ const vector eZ = '0 0 1';
 #define GTV_FORBIDDEN 2
 
 float(string url, float id) uri_get = #513;
+
+#define abs(f) fabs(f)

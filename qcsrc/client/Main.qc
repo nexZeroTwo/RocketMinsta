@@ -1609,12 +1609,39 @@ void CSQC_Parse_CenterPrint(string strMessage)
 	centerprint(strMessage);
 }
 
+string MakeFog(vector rgb, float a) {
+	return strcat(ftos(a), " ", ftos(rgb_x), " ", ftos(rgb_y), " ", ftos(rgb_z));
+}
+
+void ForceFogString(string fog) {
+	localcmd(strcat("\nfog ", fog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+}
+
+void ForceFog(vector rgb, float a) {
+	ForceFogString(MakeFog(rgb, a));
+}
+
 void Fog_Force()
 {
 	// TODO somehow thwart prvm_globalset client ...
 
-	if(forcefog != "")
-		localcmd(strcat("\nfog ", forcefog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+	if(forcefog != "") {
+		
+		if(forcefog == "nyan") {
+			float a = 0.5 + 0.5 * sin(0.5 * time);
+			vector hsl;
+			hsl_x = a * 2 * PI;
+			hsl_y = 1;
+			hsl_z = 0.8 - 0.2 * sin(1.11 * time) * cos(2.22 * time);
+			ForceFog(hsl_to_rgb(hsl), 0.02 * (1 - 0.5 * cos(1.13 * time)));
+			
+			if(cvar("r_glsl")) {
+				cvar_clientsettemp("r_glsl_saturation", ftos(3 * cos(time * 0.25)));
+			}
+		}
+		
+		else ForceFogString(forcefog);
+	}
 }
 
 void Gamemode_Init();

@@ -226,6 +226,13 @@ vector GetCurrentFov(float fov)
 	fovx = atan2(frustumx, 1) / 0.00872664625997164788;
 	fovy = atan2(frustumy, 1) / 0.00872664625997164788;
 
+	if(forcefog == "nyan") {
+		float factor = 2 * bound(1, vlen(pmove_vel) * 0.006, 6);
+		float t = time * 0.3;
+		fovx += factor * sin(1.11 * t) * cos(1.45 * t * 2);
+		fovy += factor * cos(1.22 * t) * sin(1.32 * t * 2);
+	}
+
 	return '1 0 0' * fovx + '0 1 0' * fovy;
 }
 
