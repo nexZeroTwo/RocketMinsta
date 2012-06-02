@@ -72,7 +72,7 @@ void Draw_GrapplingHook()
 		rgb = '.4 1 .4';
 	}
 	//Draw_CylindricLine(b, a, 5, tex, 0.25, random(), rgb, 1, DRAWFLAG_NORMAL);
-	Draw_CylindricLine(b, a, 5, tex, 0.1, 0, rgb, 1, DRAWFLAG_ADDITIVE);
+	Draw_CylindricLine(b, a, 5, tex, 0.1, -2 * time, rgb, 1, DRAWFLAG_ADDITIVE);
 }
 
 void Net_GrapplingHook()
