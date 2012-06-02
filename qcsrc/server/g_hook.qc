@@ -389,7 +389,6 @@ float CustomCRAHookButton(entity e) {
 	
 	if(!e.BUTTON_USE || e.soulmate || e.smhost || !g_freezetag)
 		return FALSE;
-	sprint(e, "USE\n");
 	return TRUE;
 }
 
