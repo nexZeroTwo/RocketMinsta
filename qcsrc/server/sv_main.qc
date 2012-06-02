@@ -120,6 +120,16 @@ void CreatureFrame (void)
 	self = oldself;
 }
 
+// This returns the player who's been afk for the longest amount of time
+entity GetAFKKickVictim() {
+	entity v, e;
+	
+	FOR_EACH_REALCLIENT(e) if(e.is_away)
+		if(!v || v.parm_idlesince > e.parm_idlesince)
+			v = e;
+	
+	return v;
+}
 
 /*
 =============
@@ -263,6 +273,15 @@ void StartFrame (void)
 		FOR_EACH_REALCLIENT(self) {
 			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
 			stuffcmd(self, "defer 0 \"fog 0\"\n");
+		}
+	}
+	
+	if(totalclients >= maxclients) if(cvar("g_explosive_autokickafk")) {
+		entity v = GetAFKKickVictim();
+		
+		if(v) {
+			bprint("^3", v.netname, " ^7has been kicked for being AFK for ", ftos(floor((time - v.parm_idlesince) / 60)), " minutes while the server is full\n");
+			dropclient(v);
 		}
 	}
 }

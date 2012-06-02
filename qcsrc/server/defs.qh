@@ -692,3 +692,5 @@ void end_match(float);
 .float isdeveloper;
 
 float shooting_forbidden;
+
+float totalclients;
