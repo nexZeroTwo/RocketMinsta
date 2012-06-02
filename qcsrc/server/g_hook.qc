@@ -240,7 +240,7 @@ void GrapplingHookThink()
 					}
 				}
 
-				//self.owner.flags &~= FL_ONGROUND;
+				self.owner.flags &~= FL_ONGROUND;
 			}
 		}
 		else
