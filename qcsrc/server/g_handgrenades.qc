@@ -292,10 +292,11 @@ void HG_Attack()
 
 void HG_Frame()
 {
-	if(!g_handgrenades)
+	if(!g_handgrenades || time < game_starttime)
 		return;
 	
 	float mayfire = (!g_grappling_hook || (!self.crouch && !self.hook)) || self.hg_power;
+	
 	float held;
 	held = self.BUTTON_HG;
 	
@@ -307,6 +308,7 @@ void HG_Frame()
 		bigprint_spec(self, "out of grenades", "", 1);
 	
 	if(held && time >= self.hg_next && self.hg_ammo && mayfire)
+		// NOTE: shooting_forbidden doesn't go here. Shooting is forbidden, by charging isn't ;)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
 			cvar("g_explosive_handgrenades_speed"),
@@ -318,11 +320,11 @@ void HG_Frame()
 			cvar("g_explosive_handgrenades_clearspeed"),
 		1);
 		
-		if(self.hg_state && mayfire)
+		if(self.hg_state && mayfire && !shooting_forbidden)
 			HG_Attack();
 	}
 	
-	if(self.hg_power == 1)
+	if(self.hg_power == 1 && mayfire && !shooting_forbidden)
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;

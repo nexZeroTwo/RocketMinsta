@@ -26,7 +26,6 @@ void freezetag_EndRound_Think()
         return;
     }
     
-    shooting_forbidden = TRUE;
     update_playercount();
     
     if(timeleft <= cvar("g_explosive_freezetag_warmup"))
@@ -44,6 +43,7 @@ void freezetag_EndRound_Think()
             return;
         }
         
+		shooting_forbidden = TRUE;
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);

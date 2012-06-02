@@ -70,11 +70,14 @@ void tdom_EndRound_Think()
                 bigprint_spec(e, "^5Begin!", "", 1);
                 tdom_maycap = 1;
             }
+            
+            shooting_forbidden = FALSE;
             remove(self);
             return;
         }
         
-        
+		shooting_forbidden = TRUE;
+		
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);

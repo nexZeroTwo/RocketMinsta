@@ -296,7 +296,6 @@ void vip_EndRound_Think()
     }
     
     update_playercount();
-    shooting_forbidden = TRUE;
     
     if(timeleft <= cvar("g_explosive_vip_warmup"))
     {
@@ -319,6 +318,8 @@ void vip_EndRound_Think()
         vip_started = 0;
         vip_ended = 0;
         
+		shooting_forbidden = TRUE;
+		
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
