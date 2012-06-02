@@ -969,7 +969,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			else
 			{
 				if(pl.(scores[SP_FREEZETAG_FROZENSTATUS]))
-					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a*0.5, DRAWFLAG_NORMAL);
+					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a * 0.3, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			}
