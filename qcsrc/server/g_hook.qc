@@ -116,7 +116,7 @@ void GrapplingHook_Stop()
 .float last_dmg;
 void GrapplingHookThink()
 {
-	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch;
+	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch, dontpull, dontpull_limit;
 	vector dir, org, end, v0, dv;
 	if(self.owner.health <= 0 || self.owner.hook != self)	// how did that happen?
 	{														// well, better fix it anyway
@@ -185,6 +185,9 @@ void GrapplingHookThink()
 		// while hanging on the rope, this friction component will help you a
 		// bit to control the rope
 
+		dontpull = cvar("g_explosive_hook_dontpull");
+		dontpull_limit = cvar("g_explosive_hook_dontpull_limit");
+
 		dir = self.origin - org;
 		dist = vlen(dir);
 		dir = normalize(dir);
@@ -192,7 +195,7 @@ void GrapplingHookThink()
 		if(cvar("g_grappling_hook_tarzan"))
 		{
 			v0 = self.owner.velocity;
-
+			
 			// first pull the rope...
 			if(self.owner.hook_state & HOOK_PULLING)
 			{
@@ -203,7 +206,7 @@ void GrapplingHookThink()
 				{
 					newlength = dist - ropestretch;
 					if(self.owner.velocity * dir < 0) // only if not already moving in hook direction
-						self.owner.velocity = self.owner.velocity + frametime * dir * rubberforce_overstretch;
+						self.owner.velocity = self.owner.velocity + frametime * (dontpull? (dir_x * '1 0 0' + dir_y * '0 1 0') : dir) * rubberforce_overstretch;
 				}
 
 				self.hook_length = newlength;
@@ -218,23 +221,27 @@ void GrapplingHookThink()
 			{
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
-				self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
-				self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+				
+				if(!dontpull || (dontpull_limit && self.hook_length >= dontpull_limit)) {
+					sprint(self.owner, "PULL\n");
+					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
+					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+				}
 
 				dv = ((self.owner.velocity - v0) * dir) * dir;
 				if(cvar("g_grappling_hook_tarzan") >= 2)
 				{
 					if(self.aiment.movetype == MOVETYPE_WALK)
 					{
-						self.owner.velocity = self.owner.velocity - dv * 0.5;
-						self.aiment.velocity = self.aiment.velocity - dv * 0.5;
+						//self.owner.velocity = self.owner.velocity - dv * 0.5;
+						self.aiment.velocity = self.aiment.velocity - dv; //* 0.5;
 						self.aiment.flags &~= FL_ONGROUND;
 						self.aiment.pusher = self.owner;
 						self.aiment.pushltime = time + cvar("g_maxpushtime");
 					}
 				}
 
-				self.owner.flags &~= FL_ONGROUND;
+				//self.owner.flags &~= FL_ONGROUND;
 			}
 		}
 		else
@@ -389,6 +396,10 @@ void FireGrapplingHook (void)
 	if(self.freezetag_frozen)
 		return;
 
+	if(g_handgrenades)
+	if(self.hg_ammo)
+		return;
+
 	makevectors(self.v_angle);
 
 	// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds
@@ -401,7 +412,7 @@ void FireGrapplingHook (void)
 	self.hook = missile;
 	missile.classname = "grapplinghook";
 
-	missile.movetype = MOVETYPE_FLY;
+	missile.movetype = (cvar("g_explosive_hook_gravity")? MOVETYPE_TOSS : MOVETYPE_FLY);
 	PROJECTILE_MAKETRIGGER(missile);
 
 	setmodel (missile, "models/hook.md3"); // precision set below

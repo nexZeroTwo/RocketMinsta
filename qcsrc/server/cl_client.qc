@@ -2891,7 +2891,6 @@ void PlayerPreThink (void)
 		}
 
 		FixPlayermodel();
-
 		GrapplingHookFrame();
 
 		if(frametime)

@@ -1032,7 +1032,7 @@ void readplayerstartcvars()
     if (g_jetpack)
         start_items |= IT_JETPACK;
 
-	if(g_jetpack || g_grappling_hook)
+	if(g_jetpack /*|| g_grappling_hook*/)
 		g_handgrenades = 0;
 
     if (g_weapon_stay == 2)
