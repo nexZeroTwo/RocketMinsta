@@ -295,7 +295,7 @@ void HG_Frame()
 	if(!g_handgrenades || time < game_starttime)
 		return;
 	
-	float mayfire = (!g_grappling_hook || (!self.crouch && !self.hook)) || self.hg_power;
+	float mayfire = (!g_grappling_hook || (!self.crouch && !self.hook && !CustomCRAHookButton(self))) || self.hg_power;
 	
 	float held;
 	held = self.BUTTON_HG;
