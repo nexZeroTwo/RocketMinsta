@@ -1,4 +1,6 @@
 
+IPOL_SHORTDEF(linear, x)
+
 float ipol_powIn(float p, float x) {
 	return pow(x, p);
 }

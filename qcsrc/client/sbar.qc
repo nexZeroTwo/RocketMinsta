@@ -1216,7 +1216,7 @@ void Sbar_DrawScoreboard()
 		sbar_woulddrawscoreboard_prev = sbar_woulddrawscoreboard;
 	}
 
-	float scoreboard_fadeinspeed = 5;
+	float scoreboard_fadeinspeed = 15;
 	float scoreboard_fadeoutspeed = 5;
 	if(sbar_woulddrawscoreboard) {
 		//if (scoreboard_fadeinspeed)
@@ -1234,7 +1234,7 @@ void Sbar_DrawScoreboard()
 		return;
 	
 	vector sbar_fontsize_old = sbar_fontsize;
-	sbar_fontsize = sbar_fontsize * ipol_swingOut(sbar_scoreboard_fade_alpha);
+	sbar_fontsize = sbar_fontsize * (sbar_woulddrawscoreboard? ipol_linear : ipol_swingOut)(sbar_scoreboard_fade_alpha);
 	
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg") * sbar_scoreboard_fade_alpha;
 	sbar_scoreboard_alpha_fg = 1.0 * sbar_scoreboard_fade_alpha;
@@ -2596,6 +2596,18 @@ void drawcolorcodedstringcenter(vector position, string text, vector scale, floa
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
+void drawstringcenter_offset(vector position, string text, vector scale, vector rgb, float alpha, float flag, float offs)
+{
+	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x) - offs;
+	drawstring(position, text, scale, rgb, alpha, flag);
+}
+
+void drawcolorcodedstringcenter_offset(vector position, string text, vector scale, float alpha, float flag, float offs)
+{
+	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x) - offs;
+	drawcolorcodedstring(position, text, scale, alpha, flag);
+}
+
 float GetAmmoStat(float i)
 {
 	switch(i)
@@ -3032,6 +3044,13 @@ void DrawProgress (vector cpos, vector l_size, float progress, float alpha, vect
 	drawfill(pos, fill, l_color, alpha * 0.7, DRAWFLAG_NORMAL);
 }
 
+float rev_visual;
+float rev_alpha;
+float rev_old;
+
+float hg_visual;
+float hg_alpha;
+
 void Sbar_Draw (void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3126,8 +3145,22 @@ void Sbar_Draw (void)
 	}
 
 	local float rev;
-    rev = getstatf(STAT_REVIVE_PROGRESS);
-
+	rev = getstatf(STAT_REVIVE_PROGRESS);
+	
+	if(rev) {
+		rev_visual = approach(rev_visual, rev, drawframetime);
+		rev_alpha = approach(rev_alpha, 1, drawframetime * 5);
+	} else {
+		rev_alpha = approach(rev_alpha, 0, drawframetime * 5);
+		if(!rev_alpha)
+			rev_visual = 0;
+		if(rev_old > 0.9)
+			rev_visual = 1;	// This is _most likely_ a completed revival, so let's display it as such
+	}
+	
+	rev_old = rev;
+	rev = rev_visual;
+	
 	if(getstati(STAT_FROZEN))
 	{
 		revfadetime = 0;
@@ -3234,16 +3267,42 @@ void Sbar_Draw (void)
 
         drawfont = sbar_font;
 
+		string s2;
         if(gametype == GAME_FREEZETAG)
-			drawcolorcodedstringcenter(revpos, strcat("Revival progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
+			s = "Revival progress:";
 		else
-			drawcolorcodedstringcenter(revpos, strcat("Capture progress: ^5", ftos(floor(rev * 100)), "%"), sbar_fontsize, 1.0, DRAWFLAG_NORMAL);
+			s = "Capture progress:";
+		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
+		s2 = strcat(ftos(floor(rev * 100)), "%");
+		
+		vector c;
+		if(rev <= 0.5)
+			c = '0 1 1' + '2 0 0' * rev;
+		else
+			c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
+			
+		drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth_svn(s2, FALSE, sbar_fontsize) * 0.5);
+		drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth_svn(s, FALSE, sbar_fontsize) * 0.5);
+		
+		revpos_y += sbar_fontsize_y + 5;
+		revpos_x = vid_conwidth/2;
+		
+		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
-
+    
 	// handgrenade force meter
 	float hgstat = getstatf(STAT_HGFORCE);
 	
-	if(hgstat)
+	if(hgstat) {
+		hg_alpha = approach(hg_alpha, 1, 5 * drawframetime);
+	} else {
+		hg_alpha = approach(hg_alpha, 0, 5 * drawframetime);
+	}
+	
+	hg_visual = approach(hg_visual, hgstat, drawframetime);
+	hgstat = hg_visual;
+	
+	if(hg_alpha)
 	{
 		vector hgpos;
 		hgpos_x = vid_conwidth/2;
@@ -3251,7 +3310,7 @@ void Sbar_Draw (void)
 		
 		vector hgcolor = '1 1 0';
 		hgcolor_y = hgcolor_y * 1 - hgstat;
-		DrawProgress(hgpos, '100 5', hgstat, 0.7, hgcolor);
+		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, hgcolor);
 	}
 
 	local vector sv_pos;
