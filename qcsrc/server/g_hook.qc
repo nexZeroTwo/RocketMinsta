@@ -223,7 +223,6 @@ void GrapplingHookThink()
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
 				
 				if(!dontpull || (dontpull_limit && self.hook_length >= dontpull_limit)) {
-					sprint(self.owner, "PULL\n");
 					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
 					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
 				}
