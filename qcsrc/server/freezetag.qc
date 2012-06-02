@@ -14,7 +14,7 @@ void freezetag_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
     local entity e;
-
+    
     //bprint("next_round = ", ftos(next_round), "\n");
     //bprint("time = ", ftos(time), "\n");
     //bprint("timeleft = ", ftos(timeleft), "\n");
@@ -26,6 +26,7 @@ void freezetag_EndRound_Think()
         return;
     }
     
+    shooting_forbidden = TRUE;
     update_playercount();
     
     if(timeleft <= cvar("g_explosive_freezetag_warmup"))
@@ -37,7 +38,9 @@ void freezetag_EndRound_Think()
                 bigprint_clear_spec(e);
                 bigprint_spec(e, "^5Begin!", "", 1);
             }
+            
             remove(self);
+            shooting_forbidden = FALSE;
             return;
         }
         

@@ -690,3 +690,5 @@ float forbidrestart;
 
 void end_match(float);
 .float isdeveloper;
+
+float shooting_forbidden;

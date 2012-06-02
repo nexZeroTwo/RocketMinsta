@@ -112,6 +112,8 @@ void vip_SoulGem_touch()
 			bigprint_clear_spec(e);
 			bigprint_spec(e, "^5Begin!", "", 1);
 			
+			shooting_forbidden = FALSE;
+			
 			local entity oldself;
 			oldself = self;
 			self = e;
@@ -277,6 +279,7 @@ void vip_init()
 		precache_model("models/runematch/curse.mdl");
 		precache_model("models/runematch/rune.mdl");
 	}
+	
 	precache_sound("kh/capture.wav");
 	InitializeEntity(world, vip_delayedinit, INITPRIO_GAMETYPE);
 }
@@ -293,6 +296,7 @@ void vip_EndRound_Think()
     }
     
     update_playercount();
+    shooting_forbidden = TRUE;
     
     if(timeleft <= cvar("g_explosive_vip_warmup"))
     {
@@ -303,8 +307,11 @@ void vip_EndRound_Think()
                 bigprint_clear_spec(e);
                 bigprint_spec(e, "^5Begin!", "", 1);
             }
+            
             vip_started = 1;
             vip_AssignVIPs();
+            
+            shooting_forbidden = FALSE;
             remove(self);
             return;
         }
