@@ -396,7 +396,7 @@ void FireGrapplingHook (void)
 		return;
 
 	if(g_handgrenades)
-	if(self.hg_ammo)
+	if(self.hg_ammo && !self.crouch)
 		return;
 
 	makevectors(self.v_angle);
