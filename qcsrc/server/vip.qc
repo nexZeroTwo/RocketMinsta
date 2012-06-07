@@ -648,6 +648,24 @@ void vip_PlayerPreThink()
 	if(!ISVIP(self))
 		return;
 	
+	if(!self.waypointsprite_attached)
+	switch(self.team)
+		{
+			case COLOR_TEAM1:
+				
+				WaypointSprite_Spawn("redvip", 0, 0, self, '0 0 64', world, 0, self, waypointsprite_attached, TRUE);
+				if(self.waypointsprite_attached)
+					WaypointSprite_UpdateTeamRadar(self.waypointsprite_attached, RADARICON_WAYPOINT, '1 0 0');
+				break;
+			
+			case COLOR_TEAM2:
+
+				WaypointSprite_Spawn("bluevip", 0, 0, self, '0 0 64', world, 0, self, waypointsprite_attached, TRUE);
+				if(self.waypointsprite_attached)
+					WaypointSprite_UpdateTeamRadar(self.waypointsprite_attached, RADARICON_WAYPOINT, '0 0 1');
+				break;
+		}
+	
 	if(self.vip_updatestate_f)
 		self.vip_updatestate_f();
 	else
