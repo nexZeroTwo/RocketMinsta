@@ -750,6 +750,7 @@ float commodity_pickupevalfunc(entity player, entity item)
 .float is_item;
 void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, float defaultrespawntimejitter, string itemname, float itemid, float weaponid, float itemflags, float(entity player, entity item) pickupevalfunc, float pickupbasevalue)
 {
+	bprint(self.classname, ": StartItem\n");
 	startitem_failed = FALSE;
 
 	// is it a dropped weapon?
@@ -862,8 +863,17 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 			remove(self);
 			return;
 		}
-		else if (g_weaponarena && ((weaponid & WEPBIT_ALL) || (itemid & IT_AMMO)))
+		else if (g_weaponarena && ((weaponid & WEPBIT_ALL) || (itemid & IT_AMMO)) && !self.spawninarena)
 		{
+			bprint(self.classname, ": NOPE 1\n");
+			startitem_failed = TRUE;
+			remove(self);
+			return;
+		}
+		else if (!g_weaponarena && ((weaponid & WEPBIT_ALL) || (itemid & IT_AMMO)) && self.spawninarena == 2)
+		{
+			// if spawninarena is 2, this item can be spawned ONLY in weaponarena mode.
+			bprint(self.classname, ": NOPE 2\n");
 			startitem_failed = TRUE;
 			remove(self);
 			return;
@@ -1103,6 +1113,8 @@ void weapon_defaultspawnfunc(float wpn)
 	float i, j;
 
 	// set the respawntime in advance (so replaced weapons can copy it)
+	
+	bprint(self.classname, ": weapon_defaultspawnfunc\n");
 
 	if(!self.respawntime)
 	{
