@@ -435,6 +435,7 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_prec", "0");
 	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
+	registercvar("g_jailbreak", "0");
 	registercvar("g_no", "0");
 	
 	

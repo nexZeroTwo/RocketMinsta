@@ -842,12 +842,17 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
 		{
 			//error(strcat("Can't select the requested game type. Bailing out. pGametypeToSet = ", ftos(pGametypeToSet), "; MapInfo_Map_supportedGametypes = ", ftos(MapInfo_Map_supportedGametypes )));
+			
+			// Commented out temporarily. Probably.
+			
+			/*
 			#ifdef SVQC
 			bprint("^1Can't select the requested gametype, WTF?!\n");
 			// Chaiomanot: Jan 9th 2012: Rather just than asking YTF, and then _letting_ it potentially crash, do something about it! (+2 lines)
 			gametype_Set(GAME_NOTHING);
 			return 1;
 			#endif
+			*/
 		}
 #endif
 	MapInfo_Cache_Store();
