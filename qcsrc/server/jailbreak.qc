@@ -28,7 +28,17 @@ void JB_Imprison(entity attacker) {
 	else
 		et = JB_GetEnemyTeamOf(self.team);
 	
-	setorigin(self, JB_ChooseJailSpawnpoint(et).origin);
+	entity spot = JB_ChooseJailSpawnpoint(et);
+	setorigin(self, spot.origin);
+	self.angles = spot.angles;
+	self.angles_z = 0; // never spawn tilted even if the spot says to
+	self.fixangle = TRUE; // turn this way immediately
+	self.velocity = '0 0 0';
+	self.avelocity = '0 0 0';
+	self.punchangle = '0 0 0';
+	self.punchvector = '0 0 0';
+	self.oldvelocity = self.velocity;
+	
 	self.jb_isprisoned = TRUE;
 	bigprint_spec(self, "you're in a jail, prisoner!", (attacker? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
