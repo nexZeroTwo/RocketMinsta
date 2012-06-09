@@ -994,7 +994,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		}
 
 		if((g_vip && vip_soulgem && !vip_started) ||
-		   (g_freezetag && warmup >= time))
+		   ((g_freezetag || g_jailbreak) && warmup >= time))
 		if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;
