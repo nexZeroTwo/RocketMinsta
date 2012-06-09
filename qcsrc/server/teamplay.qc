@@ -259,6 +259,15 @@ void InitGameplayMode()
 		freezetag_Initialize();
 	}
 
+	if(g_jailbreak)
+	{
+		ActivateTeamplay();
+		fraglimit_override = cvar("g_explosive_jailbreak_point_limit");
+		leadlimit_override = cvar("g_explosive_jailbreak_point_leadlimit");
+		timelimit_override = cvar("g_explosive_jailbreak_timelimit");
+		JB_Init();
+	}
+
 	if(g_assault)
 	{
 		ActivateTeamplay();

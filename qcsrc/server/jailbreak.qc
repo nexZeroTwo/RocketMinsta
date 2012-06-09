@@ -1,0 +1,4 @@
+
+void JB_Init() {
+	
+}

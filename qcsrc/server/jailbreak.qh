@@ -1,0 +1,4 @@
+void JB_Init();
+
+.float jb_unlock_progress;
+.float jb_isprisoned;
