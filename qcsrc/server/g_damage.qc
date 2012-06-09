@@ -938,6 +938,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if (!targ.isbot)
 				if (attacker.isbot)
 					damage = damage * bound(0.1, (skill + 5) * 0.1, 1);
+			
+			if(g_jailbreak) if(targ.jb_isprisoned || attacker.jb_isprisoned && targ != attacker && !DEATH_ISSPECIAL(deathtype))
+				damage = 0;
 		}
 
 		// nullify damage if teamplay is on
