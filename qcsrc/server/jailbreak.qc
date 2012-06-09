@@ -60,7 +60,7 @@ void JB_Imprison(entity attacker) {
 	
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
-	bigprint_spec(self, "you're in a jail, prisoner!", ((attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
+	bigprint_spec(self, "you're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
 		self.hg_ammo = 0;
