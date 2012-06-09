@@ -742,6 +742,7 @@ void PutObserverInServer (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	inf_player_leave(self);
 	Portal_ClearAll(self);
@@ -1202,6 +1203,7 @@ void PutClientInServer (void)
 		self = oldself;
 		
 		freezetag_PlayerSpawn();
+		JB_PlayerSpawn();
 		
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
@@ -1767,6 +1769,7 @@ void ClientDisconnect (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	Portal_ClearAll(self);
 

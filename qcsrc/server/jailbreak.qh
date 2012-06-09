@@ -1,4 +1,11 @@
 void JB_Init();
+entity JB_ChooseJailSpawnpoint(float);
+float JB_GetEnemyTeamOf(float);
+void JB_CountPlayers();
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
+.entity jb_prisonedby;
+
+// TODO: Replace this placeholder with a check if a round is in progress
+#define JB_GAME_ACTIVE (TRUE)

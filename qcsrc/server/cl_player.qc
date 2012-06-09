@@ -732,7 +732,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		
 		if(vip_PlayerDies(deathtype))
 			return;
-			
+		
+		if(JB_PlayerDies())
+			return;
+		
 		if(self == attacker)
 			kh_Key_DropAll(self, TRUE);
 		else if(attacker.classname == "player" || attacker.classname == "gib")
