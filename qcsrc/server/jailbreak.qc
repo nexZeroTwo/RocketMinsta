@@ -59,6 +59,7 @@ void JB_Imprison(entity attacker) {
 	self.oldvelocity = self.velocity;
 	
 	self.jb_isprisoned = TRUE;
+	self.jb_prisontime = time;
 	bigprint_spec(self, "you're in a jail, prisoner!", ((attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
@@ -93,6 +94,7 @@ void JB_Release(entity saviour) {
 	}
 	
 	self.jb_isprisoned = FALSE;
+	bprint(self.netname, "^3 has broken free!\n");
 	
 	if(g_handgrenades)
 		HG_PlayerSpawn();
@@ -195,6 +197,19 @@ void JB_RemovePlayer() {
 		JB_Release(world);
 }
 
+void JB_PlayerPreThink() {
+	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
+	
+	if not(self.jb_isprisoned)
+		return;
+		
+	if(time - self.jb_prisontime < 1)
+		return;
+	
+	if(time - self.jb_jail_lasttouch >= max(0.1, frametime))
+		JB_Release(self.jb_saviour);
+}
+
 //
 //	Round logic
 //	TODO: Generalize this, also see freezetag.qc and domination.qc
@@ -274,11 +289,6 @@ float JB_GetEnemyTeamOf(float t) {
 	return ((t == COLOR_TEAM1)? COLOR_TEAM2 : COLOR_TEAM1);
 }
 
-void JB_SetupJailSpawnpoint() {
-	self.classname = "info_jailbreak_jailspawn";
-	bprint("JB_SetupJailSpawn() for team ", ftos(self.team), " at ", vtos(self.origin), "\n");
-}
-
 float JB_TotalPlayersOnTeam(float theteam) {
 	JB_CountPlayers();	// just in case ;)
 	
@@ -288,6 +298,38 @@ float JB_TotalPlayersOnTeam(float theteam) {
 	}
 	
 	return -1;	// wtf? wrong team dude.
+}
+
+//
+//	Setup functions
+//
+
+void JB_SetupJailSpawnpoint() {
+	self.classname = "info_jailbreak_jailspawn";
+	bprint("JB_SetupJailSpawn() for team ", ftos(self.team), " at ", vtos(self.origin), "\n");
+}
+
+void JB_Jail_Touch() {
+	//JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
+	
+	if not(other.jb_isprisoned) {
+		other.velocity = other.velocity * -1.5;
+		return;
+	}
+	
+	if(other.team == self.team)
+		return;
+	
+	other.jb_jail_lasttouch = time;
+}
+
+void JB_SetupJail() {
+	if not(g_jailbreak)
+		remove(self);
+	
+	self.classname = "func_jailbreak_jail";
+	self.touch = JB_Jail_Touch;
+	EXACTTRIGGER_INIT;
 }
 
 //
@@ -302,4 +344,14 @@ void spawnfunc_info_jailbreak_jailspawn_red() {
 void spawnfunc_info_jailbreak_jailspawn_blue() {
 	self.team = COLOR_TEAM2;
 	JB_SetupJailSpawnpoint();
+}
+
+void spawnfunc_func_jailbreak_jail_red() {
+	self.team = COLOR_TEAM1;
+	JB_SetupJail();
+}
+
+void spawnfunc_func_jailbreak_jail_blue() {
+	self.team = COLOR_TEAM2;
+	JB_SetupJail();
 }

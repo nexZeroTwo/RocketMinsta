@@ -5,11 +5,15 @@ void JB_CountPlayers();
 void JB_EndRound();
 void JB_Frame();
 float JB_TotalPlayersOnTeam(float);
+void JB_PlayerPreThink();
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
+.float jb_jail_lasttouch;
+.float jb_prisontime;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
+.entity jb_saviour;
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;
