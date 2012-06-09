@@ -312,6 +312,9 @@ void JB_SetupJailSpawnpoint() {
 void JB_Jail_Touch() {
 	//JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
 	
+	if(other.classname != "player")
+		return;
+	
 	if not(other.jb_isprisoned) {
 		other.velocity = other.velocity * -1.5;
 		return;
