@@ -2911,6 +2911,9 @@ else
     if(g_keyhunt)
         kh_FinishRound();
 else
+	if(g_jailbreak)
+		JB_EndRound();
+else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
 
@@ -2919,7 +2922,8 @@ float EndRound_Allowed()
     return( g_freezetag
          || g_vip
          || g_totaldomination
-         || g_keyhunt );
+         || g_keyhunt
+         || g_jailbreak);
 }
 
 void SendSpeedRecord(entity e)

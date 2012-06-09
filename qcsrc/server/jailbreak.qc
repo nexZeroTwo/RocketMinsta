@@ -4,7 +4,15 @@
 //
 
 void JB_Init() {
+	if(inWarmupStage)
+		warmup = time;
+	else
+		warmup = time + cvar("g_start_delay");
 	
+	precache_sound("ctf/red_capture.wav");
+	precache_sound("ctf/blue_capture.wav");
+	
+	JB_CountPlayers();
 }
 
 void JB_Log(string s) {
@@ -22,6 +30,8 @@ void JB_Imprison(entity attacker) {
 		JB_Log(strcat("Tried to imprison a prisoned player (", self.netname, ")"));
 		return;
 	}
+	
+	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
 	
 	if(attacker)
 		et = attacker.team;
@@ -80,8 +90,13 @@ void JB_CountPlayers() {
 		}
 	}
 	
+	FOR_EACH_REALCLIENT(p) {
+		p.redalive_stat = redalive;
+		p.bluealive_stat = bluealive;
+	}
+	
 	DEPENDON(JB_GAME_ACTIVE)
-	// TODO: Check for virtory here
+	// TODO: Check for victory here
 }
 
 //
@@ -112,6 +127,60 @@ void JB_PlayerSpawn() {
 void JB_RemovePlayer() {
 	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
 	JB_Release(world);
+}
+
+//
+//	Round logic
+//	TODO: Generalize this, also see freezetag.qc and domination.qc
+//
+
+void JB_EndRound_Think()
+{
+	local float timeleft = rint(self.cnt - time);
+	local entity e;
+	
+	if(intermission_running)
+	{
+		remove(self);
+		return;
+	}
+	
+	JB_CountPlayers();
+	
+	if(timeleft <= cvar("g_explosive_jailbreak_warmup"))
+	{
+		if(timeleft <= 0)
+		{
+			FOR_EACH_PLAYER(e)
+			{
+				bigprint_clear_spec(e);
+				bigprint_spec(e, "^5Begin!", "", 1);
+				defer(0.1, JB_CountPlayers);
+			}
+			
+			remove(self);
+			shooting_forbidden = FALSE;
+			return;
+		}
+		
+		shooting_forbidden = TRUE;
+		FOR_EACH_PLAYER(e)
+		{
+			bigprint_clear_spec(e);
+			bigprint_spec(e, strcat("jailbreak starts in: ", ftos(timeleft)), "", 1);
+		}
+	}
+	self.nextthink = time + 1;
+}
+
+void JB_EndRound()
+{
+	local entity e = spawn();
+	e.think = JB_EndRound_Think;
+	e.nextthink = time + 1;
+	next_round = time + 5;
+	e.cnt = cvar("g_explosive_jailbreak_warmup") + next_round;
+	JB_CountPlayers();
 }
 
 //
