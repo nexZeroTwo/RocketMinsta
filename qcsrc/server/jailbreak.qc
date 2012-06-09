@@ -12,7 +12,10 @@ void JB_Init() {
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
 	
-	JB_CountPlayers();
+	entity e = spawn();
+	e.classname = "jailbreak_logic";
+	e.think = JB_Frame;
+	e.nextthink = time;
 }
 
 void JB_Log(string s) {
@@ -22,6 +25,11 @@ void JB_Log(string s) {
 //
 //	Gametype logic
 //
+
+void JB_Frame() {
+	JB_CountPlayers();
+	self.nextthink = time + 0.1;
+}
 
 void JB_Imprison(entity attacker) {
 	float et;
@@ -33,13 +41,14 @@ void JB_Imprison(entity attacker) {
 	
 	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
 	
-	if(attacker)
+	if(attacker && attacker.team != self.team)
 		et = attacker.team;
 	else
 		et = JB_GetEnemyTeamOf(self.team);
 	
 	entity spot = JB_ChooseJailSpawnpoint(et);
-	setorigin(self, spot.origin);
+	self.origin = spot.origin;
+	setorigin(self, self.origin);
 	self.angles = spot.angles;
 	self.angles_z = 0; // never spawn tilted even if the spot says to
 	self.fixangle = TRUE; // turn this way immediately
@@ -50,7 +59,7 @@ void JB_Imprison(entity attacker) {
 	self.oldvelocity = self.velocity;
 	
 	self.jb_isprisoned = TRUE;
-	bigprint_spec(self, "you're in a jail, prisoner!", (attacker? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
+	bigprint_spec(self, "you're in a jail, prisoner!", ((attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
 		self.hg_ammo = 0;
@@ -58,6 +67,23 @@ void JB_Imprison(entity attacker) {
 	}
 	
 	JB_CountPlayers();
+}
+
+void JB_ImprisonLater_Think() {
+	entity oldself = self, attacker = self.jb_prisoned_by;
+	self = self.enemy;
+	JB_Imprison(attacker);
+	self = oldself;
+	remove(self);
+}
+
+// Imprison in the next frame
+void JB_ImprisonLater(entity attacker) {
+	entity e = spawn();
+	e.jb_prisoned_by = attacker;
+	e.enemy = self;
+	e.think = JB_ImprisonLater_Think;
+	e.nextthink = time;
 }
 
 void JB_Release(entity saviour) {
@@ -108,7 +134,7 @@ float JB_PlayerDies() {
 	
 	if(!self.jb_isprisoned) {
 		self.health = 100;
-		JB_Imprison(frag_attacker);
+		JB_ImprisonLater(frag_attacker);
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
@@ -127,6 +153,10 @@ void JB_PlayerSpawn() {
 void JB_RemovePlayer() {
 	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
 	JB_Release(world);
+}
+
+void JB_TeamWins(float theteam) {
+	
 }
 
 //
