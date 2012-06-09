@@ -31,6 +31,7 @@ void JB_Frame() {
 	self.nextthink = time + 0.1;
 }
 
+void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
 void JB_Imprison(entity attacker) {
 	float et;
 	
@@ -47,8 +48,10 @@ void JB_Imprison(entity attacker) {
 		et = JB_GetEnemyTeamOf(self.team);
 	
 	entity spot = JB_ChooseJailSpawnpoint(et);
-	self.origin = spot.origin;
-	setorigin(self, self.origin);
+	//self.origin = spot.origin;
+	//setorigin(self, self.origin);
+	
+	TeleportPlayer(spot, self, spot.origin, spot.angles, '0 0 0', '0 0 0', '0 0 0');
 	self.angles = spot.angles;
 	self.angles_z = 0; // never spawn tilted even if the spot says to
 	self.fixangle = TRUE; // turn this way immediately
@@ -107,7 +110,7 @@ void JB_TeamWins(float theteam) {
 	
 	switch(theteam) {
 		case COLOR_TEAM1:	teamname = "^1red";		play2all("ctf/red_capture.wav");	break;
-		case COLOR_TEAM2:	teamname = "^2blue";	play2all("ctf/blue_capture.wav");	break;
+		case COLOR_TEAM2:	teamname = "^4blue";	play2all("ctf/blue_capture.wav");	break;
 	}
 	
 	teamname_full = ColoredTeamName(theteam);
