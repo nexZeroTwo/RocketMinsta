@@ -100,19 +100,47 @@ void JB_Release(entity saviour) {
 	JB_CountPlayers();
 }
 
+void JB_TeamWins(float theteam) {
+	string teamname, teamname_full;
+	
+	switch(theteam) {
+		case COLOR_TEAM1:	teamname = "^1red";		play2all("ctf/red_capture.wav");	break;
+		case COLOR_TEAM2:	teamname = "^2blue";	play2all("ctf/blue_capture.wav");	break;
+	}
+	
+	teamname_full = ColoredTeamName(theteam);
+	
+	entity e; FOR_EACH_PLAYER(e) {
+		bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are imprisoned", 5);
+		
+		if(e.team == theteam)
+			hudflash_teamcolor_default_spec(e);
+	}
+	
+	bprint(teamname_full, "^5 wins the round since all their opponents are in a jail\n");
+	TeamScore_AddToTeam(theteam, ST_SCORE, +1);
+	
+	JB_EndRound();
+}
+
 void JB_CountPlayers() {
 	entity p;
 	
-	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
+	jb_totalred = jb_totalblue = totalalive = redalive = bluealive = 0;
 	
-	FOR_EACH_PLAYER(p) if(!p.jb_isprisoned && p.health > 0) {
-		totalalive++;
-		
+	FOR_EACH_PLAYER(p) { 
 		switch(p.team) {
-			case COLOR_TEAM1:	redalive++; 	break;
-			case COLOR_TEAM2:	bluealive++; 	break;
-			case COLOR_TEAM3:	yellowalive++;	break;
-			case COLOR_TEAM4:	pinkalive++;	break;
+			case COLOR_TEAM1:	jb_totalred++;		break;
+			case COLOR_TEAM2:	jb_totalblue++;		break;
+		}
+		
+		if(!p.jb_isprisoned && p.health > 0) {
+			totalalive++;
+			
+			switch(p.team) {
+				case COLOR_TEAM1:	redalive++; 	break;
+				case COLOR_TEAM2:	bluealive++; 	break;
+			}
 		}
 	}
 	
@@ -122,7 +150,14 @@ void JB_CountPlayers() {
 	}
 	
 	DEPENDON(JB_GAME_ACTIVE)
-	// TODO: Check for victory here
+	
+	if(jb_totalred < 1 || jb_totalblue < 1)
+		return;
+	
+	if(!redalive)
+		JB_TeamWins(COLOR_TEAM2);
+	else if(!bluealive)
+		JB_TeamWins(COLOR_TEAM1);
 }
 
 //
@@ -145,18 +180,19 @@ float JB_PlayerDies() {
 
 void JB_PlayerSpawn() {
 	DEPENDON(g_jailbreak)
+	
 	self.jb_isprisoned = FALSE;
 	DEPENDON(JB_GAME_ACTIVE)
-	JB_Imprison(world);
+	
+	if(JB_TotalPlayersOnTeam(self.team))	// allow to spawn non-prisoned if there are no players on that team
+		JB_Imprison(world);
 }
 
 void JB_RemovePlayer() {
-	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
-	JB_Release(world);
-}
-
-void JB_TeamWins(float theteam) {
+	DEPENDON(g_jailbreak)
 	
+	if(self.jb_isprisoned)
+		JB_Release(world);
 }
 
 //
@@ -185,6 +221,7 @@ void JB_EndRound_Think()
 			{
 				bigprint_clear_spec(e);
 				bigprint_spec(e, "^5Begin!", "", 1);
+				jb_roundover = FALSE;
 				defer(0.1, JB_CountPlayers);
 			}
 			
@@ -210,6 +247,7 @@ void JB_EndRound()
 	e.nextthink = time + 1;
 	next_round = time + 5;
 	e.cnt = cvar("g_explosive_jailbreak_warmup") + next_round;
+	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
 
@@ -239,6 +277,17 @@ float JB_GetEnemyTeamOf(float t) {
 void JB_SetupJailSpawnpoint() {
 	self.classname = "info_jailbreak_jailspawn";
 	bprint("JB_SetupJailSpawn() for team ", ftos(self.team), " at ", vtos(self.origin), "\n");
+}
+
+float JB_TotalPlayersOnTeam(float theteam) {
+	JB_CountPlayers();	// just in case ;)
+	
+	switch(theteam) {
+		case COLOR_TEAM1: return jb_totalred;
+		case COLOR_TEAM2: return jb_totalblue;
+	}
+	
+	return -1;	// wtf? wrong team dude.
 }
 
 //

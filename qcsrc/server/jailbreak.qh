@@ -4,11 +4,14 @@ float JB_GetEnemyTeamOf(float);
 void JB_CountPlayers();
 void JB_EndRound();
 void JB_Frame();
+float JB_TotalPlayersOnTeam(float);
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 
-// TODO: Replace this placeholder with a check if a round is in progress
-#define JB_GAME_ACTIVE (warmup < time)
+float jb_totalred, jb_totalblue;
+float jb_roundover;
+
+#define JB_GAME_ACTIVE (warmup < time && !jb_roundover)
