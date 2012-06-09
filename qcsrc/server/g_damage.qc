@@ -180,7 +180,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip)
+	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
 	{
 		f = 0;
 	}
