@@ -498,17 +498,15 @@ void CSQC_UpdateView(float w, float h)
 	else
 		R_SetView(VF_FOV, GetCurrentFov(fov));
 
-	if(time < jb_camera_expiretime) {
+	if(time < jb_camera_expiretime && jb_chasecam_locked) {
 		R_SetView(VF_ORIGIN, jb_camera_origin);
-		cvar_set("chase_active", "1");
+		cvar_clientsettemp("chase_active", "1");
 		//R_SetView(VF_ANGLES, jb_camera_angles);
 	} else if(jb_chasecam_locked) {
 		jb_chasecam_locked = false;
+		chase_active_backup = jb_chasecam_backup;
 		cvar_set("chase_active", ftos(jb_chasecam_backup));
-	}
-	
-	// Camera for demo playback
-	if(camera_active)
+	} else if(camera_active) // Camera for demo playback
 	{
 		if(cvar("camera_enable"))
 			CSQC_Demo_Camera();
@@ -532,7 +530,7 @@ void CSQC_UpdateView(float w, float h)
 		camera_active = TRUE;
 		camera_mode = FALSE;
 	}
-
+	
 	// Draw the Crosshair
 	float scoreboard_active;
 	scoreboard_active = Sbar_WouldDrawScoreboard();

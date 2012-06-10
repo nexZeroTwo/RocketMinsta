@@ -1,3 +1,6 @@
+
+typedef void() jb_torture_logic;
+
 void JB_Init();
 entity JB_ChooseJailSpawnpoint(float);
 float JB_GetEnemyTeamOf(float);
@@ -7,6 +10,11 @@ void JB_Frame();
 float JB_TotalPlayersOnTeam(float);
 void JB_PlayerPreThink();
 void JB_ActivateCamera(float, float);
+void JB_TorturePrisoners(float);
+void JB_TorturePrisonersLater(float, float);
+void JB_Torture_Register(jb_torture_logic);
+void JB_Torture_RegisterAll();
+void JB_Torture_Start(entity);
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
@@ -18,5 +26,11 @@ void JB_ActivateCamera(float, float);
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;
+
+.float jb_torture_force;
+.float jb_torture_force_jitter;
+.float jb_torture_delay;
+.float jb_torture_delay_jitter;
+.float jb_torture_suggestedforce;
 
 #define JB_GAME_ACTIVE (warmup < time && !jb_roundover)

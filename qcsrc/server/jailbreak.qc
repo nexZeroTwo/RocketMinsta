@@ -12,6 +12,8 @@ void JB_Init() {
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
 	
+	JB_Torture_RegisterAll();
+	
 	entity e = spawn();
 	e.classname = "jailbreak_logic";
 	e.think = JB_Frame;
@@ -90,6 +92,18 @@ void JB_ImprisonLater(entity attacker) {
 	e.nextthink = time;
 }
 
+void JB_TorturePrisonersLater_Think() {
+	JB_TorturePrisoners(self.team);
+	remove(self);
+}
+
+void JB_TorturePrisonersLater(float theteam, float thedelay) {
+	entity e = spawn();
+	e.team = theteam;
+	e.think = JB_TorturePrisonersLater_Think;
+	e.nextthink = time + thedelay;
+}
+
 void JB_Release(entity saviour) {
 	if(!self.jb_isprisoned) {
 		JB_Log(strcat("Tried to release a free player (", self.netname, ")"));
@@ -116,7 +130,7 @@ void JB_TeamWins(float theteam) {
 	teamname_full = ColoredTeamName(theteam);
 	
 	entity e; FOR_EACH_PLAYER(e) {
-		bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are imprisoned", 5);
+		bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are imprisoned", 15);
 		
 		if(e.team == theteam)
 			hudflash_teamcolor_default_spec(e);
@@ -125,7 +139,8 @@ void JB_TeamWins(float theteam) {
 	bprint(teamname_full, "^5 wins the round since all their opponents are in a jail\n");
 	TeamScore_AddToTeam(theteam, ST_SCORE, +1);
 	
-	JB_ActivateCamera(theteam, 5);
+	JB_ActivateCamera(theteam, 15);
+	JB_TorturePrisonersLater(theteam, 3);
 	JB_EndRound();
 }
 
@@ -165,6 +180,109 @@ void JB_CountPlayers() {
 	else if(!bluealive)
 		JB_TeamWins(COLOR_TEAM1);
 }
+
+void JB_TorturePrisoners(float theteam) {
+	entity spot;
+	
+	for(;(spot = find(spot, classname, "info_jailbreak_torturespawn"));)
+		if(spot.team == theteam)
+			JB_Torture_Start(spot);
+}
+
+//
+//	Torture logic
+//
+
+#define JITTER(v,j) (v) + (j) * 2 * (random() - 0.5)
+
+jb_torture_logic JB_Torture_PickFunction() {
+	entity e;
+	
+	RandomSelection_Init();
+	for(;(e = find(e, classname, "jailbreak_torture_logic"));)
+		RandomSelection_Add(e, 0, string_null, 1, 1);
+	return RandomSelection_chosen_ent.use;
+}
+
+void JB_Torture_Think() {
+	makevectors(self.angles);
+	self.nextthink = time + JITTER(self.jb_torture_delay, self.jb_torture_delay_jitter);
+	self.jb_torture_suggestedforce = JITTER(self.jb_torture_force, self.jb_torture_force_jitter);
+	
+	var jb_torture_logic logic;
+	logic = JB_Torture_PickFunction();
+	
+	if(!logic) {
+		JB_Log("Failed to pick torture logic!");
+		remove(self);
+		return;
+	}
+	
+	logic();
+}
+
+void JB_Torture_Start(entity spot) {
+	entity e = spawn();
+	e.classname = "jailbreak_torture";
+	e.reset = SUB_Remove;
+	e.reset2 = e.reset;
+	e.think = JB_Torture_Think;
+	e.angles = spot.angles;
+	e.jb_torture_delay = spot.jb_torture_delay;
+	e.jb_torture_delay_jitter = spot.jb_torture_delay_jitter;
+	e.jb_torture_force = spot.jb_torture_force;
+	e.jb_torture_force_jitter = spot.jb_torture_force_jitter;
+	e.owner = spot;
+	setorigin(e, spot.origin);
+	e.nextthink = time + JITTER(0, e.jb_torture_delay_jitter);
+}
+
+void JB_Torture_Register(jb_torture_logic logic) {
+	entity e = spawn();
+	e.classname = "jailbreak_torture_logic";
+	e.use = logic;
+}
+
+void W_Firemine_Touch();
+void HG_Napalm_Think();
+.float pushltime;
+void W_SetupProjectileVelocity(entity);
+
+void JB_Torture_Napalm() {
+	local entity proj;
+	local vector kick;
+
+	proj = spawn ();
+	proj.owner = self;
+	proj.classname = "jb_torture_napalm";
+	proj.movetype = MOVETYPE_BOUNCE;
+	proj.projectiledeathtype = DEATH_HG_NAPALM;
+	proj.touch = W_Firemine_Touch;
+	PROJECTILE_MAKETRIGGER(proj);
+	setsize (proj, '0 0 0', '0 0 0');
+	setorigin (proj, self.origin);
+	proj.org_explosion = self.origin;
+	proj.think = HG_Napalm_Think;
+	proj.nextthink = time;
+	proj.damageforcescale = 1;
+	kick_z = self.jb_torture_suggestedforce;
+	kick_x = (random () - 0.5) * 2 * kick_z;
+	kick_y = (random () - 0.5) * 2 * kick_z;
+	proj.velocity = kick;
+	proj.pushltime = time + 3;
+	W_SetupProjectileVelocity(proj);
+
+	proj.angles = vectoangles(proj.velocity);
+	proj.flags = FL_PROJECTILE;
+
+	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
+}
+
+void JB_Torture_RegisterAll() {
+	JB_Torture_Register(JB_Torture_Napalm);
+}
+
+#undef JITTER
 
 //
 //	Callbacks
@@ -264,7 +382,7 @@ void JB_EndRound()
 	local entity e = spawn();
 	e.think = JB_EndRound_Think;
 	e.nextthink = time + 1;
-	next_round = time + 5;
+	next_round = time + 15;
 	e.cnt = cvar("g_explosive_jailbreak_warmup") + next_round;
 	jb_roundover = TRUE;
 	JB_CountPlayers();
@@ -337,8 +455,8 @@ void JB_ActivateCamera(float theteam, float timeout) {
 	jb_ce_trace = cvar("sv_cullentities_trace");
 	
 	// without this we won't be able to watch them burn!
-	cvar_set("sv_cullentities_pvs", "0");
-	cvar_set("sv_cullentities_trace", "0");
+	cvar_settemp("sv_cullentities_pvs", "0");
+	cvar_settemp("sv_cullentities_trace", "0");
 	
 	entity e = spawn();
 	e.think = JB_RestoreCullEntities;
@@ -351,15 +469,13 @@ void JB_ActivateCamera(float theteam, float timeout) {
 		
 		WriteByte(MSG_ONE, SVC_TEMPENTITY);
 		WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-		WriteAngle(MSG_ONE, cam.angles_x);
-		WriteAngle(MSG_ONE, cam.angles_y);
-		WriteAngle(MSG_ONE, cam.angles_z);
 		WriteShort(MSG_ONE, cam.origin_x);
 		WriteShort(MSG_ONE, cam.origin_y);
 		WriteShort(MSG_ONE, cam.origin_z);
 		WriteShort(MSG_ONE, timeout);
 		
 		p.angles = cam.angles;
+		p.angles_z = 0;
 		p.fixangle = TRUE;
 		
 		//if(p.team == theteam) {
@@ -419,6 +535,27 @@ void JB_SetupJailCamera() {
 	self.classname = "info_jailbreak_jailcamera";
 }
 
+void JB_SetupTortureSpawnpoint() {
+	if not(g_jailbreak) {
+		remove(self);
+		return;
+	}
+	
+	self.classname = "info_jailbreak_torturespawn";
+	
+	if(!self.jb_torture_force)
+		self.jb_torture_force = 400;
+	
+	if(!self.jb_torture_force_jitter)
+		self.jb_torture_force_jitter = self.jb_torture_force * 0.1;
+	
+	if(!self.jb_torture_delay)
+		self.jb_torture_delay = 3;
+	
+	if(!self.jb_torture_delay_jitter)
+		self.jb_torture_delay_jitter = self.jb_torture_delay * 0.25;
+}
+
 //
 //	Spawn functions
 //
@@ -433,3 +570,6 @@ JB_SPAWNFUNC(func_jailbreak_jail_blue, JB_SetupJail, COLOR_TEAM2)
 
 JB_SPAWNFUNC(info_jailbreak_jailcamera_red, JB_SetupJailCamera, COLOR_TEAM1)
 JB_SPAWNFUNC(info_jailbreak_jailcamera_blue, JB_SetupJailCamera, COLOR_TEAM2)
+
+JB_SPAWNFUNC(info_jailbreak_torturespawn_red, JB_SetupTortureSpawnpoint, COLOR_TEAM1)
+JB_SPAWNFUNC(info_jailbreak_torturespawn_blue, JB_SetupTortureSpawnpoint, COLOR_TEAM2)

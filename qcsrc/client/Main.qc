@@ -1912,15 +1912,20 @@ void Net_ReadVIPInfo(float teem)
 }
 
 void Net_Camera() {
-	jb_camera_angles_x = ReadShort();
-	jb_camera_angles_y = ReadShort();
-	jb_camera_angles_z = ReadShort();
+	float wtf = time <= jb_camera_expiretime || jb_chasecam_locked;
+	
 	jb_camera_origin_x = ReadShort();
 	jb_camera_origin_y = ReadShort();
 	jb_camera_origin_z = ReadShort();
 	jb_camera_expiretime = time + ReadShort();
-	jb_chasecam_locked = true;
-	jb_chasecam_backup = cvar("chase_active");
+	
+	if(wtf)
+		print("Warning: Net_Camera while a camera is still active\n");
+	else {
+		jb_chasecam_backup = cvar("chase_active");
+		jb_chasecam_locked = true;
+	}
+	
 	setorigin(self, self.origin);
 }
 
