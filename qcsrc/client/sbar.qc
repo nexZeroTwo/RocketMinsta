@@ -477,10 +477,10 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
-		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
+		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
+		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank +vip/vipkills +vip/survivals ",
+		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks ",
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
@@ -964,7 +964,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawfont = sbar_madokafont;
 			#endif
 
-			if(gametype != GAME_FREEZETAG)
+			if(gametype != GAME_FREEZETAG && gametype != GAME_JAILBREAK)
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			else
 			{

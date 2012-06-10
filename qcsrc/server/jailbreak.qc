@@ -13,6 +13,7 @@ void JB_Init() {
 	precache_sound("ctf/blue_capture.wav");
 	precache_sound("kh/alarm.wav");
 	
+	ScoreRules_JB();
 	JB_Torture_RegisterAll();
 	
 	entity e = spawn();
@@ -73,6 +74,11 @@ void JB_Imprison(entity attacker) {
 		self.hg_bonus = 0;
 	}
 	
+	if(self.scorekeeper) {
+		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+	}
+	
 	JB_CountPlayers();
 }
 
@@ -116,6 +122,11 @@ void JB_Release(entity saviour) {
 	
 	if(g_handgrenades)
 		HG_PlayerSpawn();
+	
+	if(self.scorekeeper) {
+		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+	}
 	
 	JB_CountPlayers();
 }
@@ -316,10 +327,26 @@ float JB_PlayerDies() {
 	
 	if(!self.jb_isprisoned) {
 		self.health = 100;
+	
+		if(frag_attacker == self || !frag_attacker)
+			PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_death"));
+		else if(frag_attacker.classname == "player") {
+			if(frag_attacker.team != self.team) {
+				PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_death"));
+				PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_jailbreak_score_imprison"));
+			}
+			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_teamkill"));
+		}
+		
 		JB_ImprisonLater(frag_attacker);
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
+		
+		if(self.scorekeeper) {
+			self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+			self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+		}
 	}
 	
 	return 1;
@@ -329,6 +356,11 @@ void JB_PlayerSpawn() {
 	DEPENDON(g_jailbreak)
 	
 	self.jb_isprisoned = FALSE;
+	if(self.scorekeeper) {
+		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+	}
+	
 	DEPENDON(JB_GAME_ACTIVE)
 	
 	if(JB_TotalPlayersOnTeam(self.team))	// allow to spawn non-prisoned if there are no players on that team
@@ -639,6 +671,8 @@ void JB_ControlPoint_Capture(entity player) {
 	}
 	
 	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
+	PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_jailbreak_score_jbreak"));
+	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
 	play2all("kh/alarm.wav");
 }
 
