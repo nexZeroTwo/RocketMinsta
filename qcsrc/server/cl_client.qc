@@ -2784,7 +2784,10 @@ void PlayerPreThink (void)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || cvar("g_forced_respawn"));
-				if (self.deadflag == DEAD_DYING)
+				
+				if (jb_roundover) {
+					// lol no respawn for ya
+				} else if (self.deadflag == DEAD_DYING)
 				{
 					if(force_respawn)
 						self.deadflag = DEAD_RESPAWNING;
