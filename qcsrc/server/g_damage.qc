@@ -100,7 +100,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	float w;
 
 	// TODO route through PlayerScores instead
-	if(gameover) return;
+	if(gameover || jb_roundover) return;
 
 	if(!prec_check_aggression(attacker, inflictor, targ)) return;
 
@@ -813,10 +813,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 needs a restart\n");
 				else
 					bprint ("^1",s, "^1 died\n");
-			GiveFrags(targ, inflictor, targ, -1);
-			if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
-				announce(targ, "announcer/male/botlike.wav");
-				bigprint_spec(targ, "^0bot^7like!", "", 1);
+			
+			if(!jb_roundover) {
+				GiveFrags(targ, inflictor, targ, -1);
+					
+				if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
+					announce(targ, "announcer/male/botlike.wav");
+					bigprint_spec(targ, "^0bot^7like!", "", 1);
+				}
 			}
 
 			if (targ.killcount > 2)
