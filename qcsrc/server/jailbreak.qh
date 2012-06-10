@@ -6,6 +6,7 @@ void JB_EndRound();
 void JB_Frame();
 float JB_TotalPlayersOnTeam(float);
 void JB_PlayerPreThink();
+void JB_ActivateCamera(float, float);
 
 .float jb_unlock_progress;
 .float jb_isprisoned;

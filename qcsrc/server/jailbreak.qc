@@ -125,6 +125,7 @@ void JB_TeamWins(float theteam) {
 	bprint(teamname_full, "^5 wins the round since all their opponents are in a jail\n");
 	TeamScore_AddToTeam(theteam, ST_SCORE, +1);
 	
+	JB_ActivateCamera(theteam, 5);
 	JB_EndRound();
 }
 
@@ -277,7 +278,7 @@ entity JB_ChooseJailSpawnpoint(float theteam) {
 	entity spot;
 	
 	RandomSelection_Init();
-	for(;spot = find(spot, classname, "info_jailbreak_jailspawn");) if(spot.team == theteam) {
+	for(;(spot = find(spot, classname, "info_jailbreak_jailspawn"));) if(spot.team == theteam) {
 		RandomSelection_Add(spot, 0, string_null, 1, 1);
 	}
 	
@@ -303,13 +304,82 @@ float JB_TotalPlayersOnTeam(float theteam) {
 	return -1;	// wtf? wrong team dude.
 }
 
+entity JB_FindCamera(float theteam) {
+	RandomSelection_Init();
+	
+	entity e;
+	for(;(e = find(e, classname, "info_jailbreak_jailcamera"));) if(e.team == theteam)
+		RandomSelection_Add(e, 0, string_null, 1, 1);
+	
+	return RandomSelection_chosen_ent;
+}
+
+//float SVC_SETVIEWPORT = 5;   
+//float SVC_SETVIEWANGLES = 10;
+
+float jb_ce_pvs, jb_ce_trace;
+
+void JB_RestoreCullEntities() {
+	cvar_set("sv_cullentities_pvs", ftos(jb_ce_pvs));
+	cvar_set("sv_cullentities_trace", ftos(jb_ce_trace));
+	remove(self);
+}
+
+void JB_ActivateCamera(float theteam, float timeout) {
+	entity cam = JB_FindCamera(theteam);
+	
+	if(!cam) {
+		JB_Log(strcat("JB_ActivateCamera: the ", ColoredTeamName(theteam), "^7 has no camera entities, mapper sucks!"));
+		return;
+	}
+	
+	jb_ce_pvs = cvar("sv_cullentities_pvs");
+	jb_ce_trace = cvar("sv_cullentities_trace");
+	
+	// without this we won't be able to watch them burn!
+	cvar_set("sv_cullentities_pvs", "0");
+	cvar_set("sv_cullentities_trace", "0");
+	
+	entity e = spawn();
+	e.think = JB_RestoreCullEntities;
+	e.nextthink = time + timeout;
+	
+	entity p; FOR_EACH_REALPLAYER(p) {
+		msg_entity = p;
+		//WriteByte(MSG_ONE, SVC_SETVIEW);
+		//WriteEntity(MSG_ONE, cam);
+		
+		WriteByte(MSG_ONE, SVC_TEMPENTITY);
+		WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+		WriteAngle(MSG_ONE, cam.angles_x);
+		WriteAngle(MSG_ONE, cam.angles_y);
+		WriteAngle(MSG_ONE, cam.angles_z);
+		WriteShort(MSG_ONE, cam.origin_x);
+		WriteShort(MSG_ONE, cam.origin_y);
+		WriteShort(MSG_ONE, cam.origin_z);
+		WriteShort(MSG_ONE, timeout);
+		
+		p.angles = cam.angles;
+		p.fixangle = TRUE;
+		
+		//if(p.team == theteam) {
+		//	p.movetype = MOVETYPE_NONE;
+		//	setorigin(p, cam.origin);
+		//}
+	}
+}
+
 //
 //	Setup functions
 //
 
 void JB_SetupJailSpawnpoint() {
+	if not(g_jailbreak) {
+		remove(self);
+		return;
+	}
+	
 	self.classname = "info_jailbreak_jailspawn";
-	bprint("JB_SetupJailSpawn() for team ", ftos(self.team), " at ", vtos(self.origin), "\n");
 }
 
 void JB_Jail_Touch() {
@@ -330,34 +400,36 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-	if not(g_jailbreak)
+	if not(g_jailbreak) {
 		remove(self);
+		return;
+	}
 	
 	self.classname = "func_jailbreak_jail";
 	self.touch = JB_Jail_Touch;
 	EXACTTRIGGER_INIT;
 }
 
+void JB_SetupJailCamera() {
+	if not(g_jailbreak) {
+		remove(self);
+		return;
+	}
+	
+	self.classname = "info_jailbreak_jailcamera";
+}
+
 //
 //	Spawn functions
 //
 
-void spawnfunc_info_jailbreak_jailspawn_red() {
-	self.team = COLOR_TEAM1;
-	JB_SetupJailSpawnpoint();
-}
+#define JB_SPAWNFUNC(e,s,t) void spawnfunc_##e() { self.team = t; s(); }
 
-void spawnfunc_info_jailbreak_jailspawn_blue() {
-	self.team = COLOR_TEAM2;
-	JB_SetupJailSpawnpoint();
-}
+JB_SPAWNFUNC(info_jailbreak_jailspawn_red, JB_SetupJailSpawnpoint, COLOR_TEAM1)
+JB_SPAWNFUNC(info_jailbreak_jailspawn_blue, JB_SetupJailSpawnpoint, COLOR_TEAM2)
 
-void spawnfunc_func_jailbreak_jail_red() {
-	self.team = COLOR_TEAM1;
-	JB_SetupJail();
-}
+JB_SPAWNFUNC(func_jailbreak_jail_red, JB_SetupJail, COLOR_TEAM1)
+JB_SPAWNFUNC(func_jailbreak_jail_blue, JB_SetupJail, COLOR_TEAM2)
 
-void spawnfunc_func_jailbreak_jail_blue() {
-	self.team = COLOR_TEAM2;
-	JB_SetupJail();
-}
+JB_SPAWNFUNC(info_jailbreak_jailcamera_red, JB_SetupJailCamera, COLOR_TEAM1)
+JB_SPAWNFUNC(info_jailbreak_jailcamera_blue, JB_SetupJailCamera, COLOR_TEAM2)

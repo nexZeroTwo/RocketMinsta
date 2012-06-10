@@ -498,6 +498,15 @@ void CSQC_UpdateView(float w, float h)
 	else
 		R_SetView(VF_FOV, GetCurrentFov(fov));
 
+	if(time < jb_camera_expiretime) {
+		R_SetView(VF_ORIGIN, jb_camera_origin);
+		cvar_set("chase_active", "1");
+		//R_SetView(VF_ANGLES, jb_camera_angles);
+	} else if(jb_chasecam_locked) {
+		jb_chasecam_locked = false;
+		cvar_set("chase_active", ftos(jb_chasecam_backup));
+	}
+	
 	// Camera for demo playback
 	if(camera_active)
 	{
@@ -632,6 +641,7 @@ void CSQC_UpdateView(float w, float h)
                 CSQC_common_hud();
 
         // crosshair goes VERY LAST
+        if(time >= jb_camera_expiretime)
         if(spectatee_status != -1)
         if(!scoreboard_active && !ons_showmap && !camera_active) {
 			// TrueAim check

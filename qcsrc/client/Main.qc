@@ -1911,6 +1911,19 @@ void Net_ReadVIPInfo(float teem)
 	print("^5 -> ", ftos(ReadShort()), "\n");
 }
 
+void Net_Camera() {
+	jb_camera_angles_x = ReadShort();
+	jb_camera_angles_y = ReadShort();
+	jb_camera_angles_z = ReadShort();
+	jb_camera_origin_x = ReadShort();
+	jb_camera_origin_y = ReadShort();
+	jb_camera_origin_z = ReadShort();
+	jb_camera_expiretime = time + ReadShort();
+	jb_chasecam_locked = true;
+	jb_chasecam_backup = cvar("chase_active");
+	setorigin(self, self.origin);
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -1995,6 +2008,10 @@ float CSQC_Parse_TempEntity()
 			break;
 		case TE_CSQC_VIPINFO:
 			Net_ReadVIPInfo(ReadByte());
+			bHandled = true;
+			break;
+		case TE_CSQC_CAMERA:
+			Net_Camera();
 			bHandled = true;
 			break;
 		default:

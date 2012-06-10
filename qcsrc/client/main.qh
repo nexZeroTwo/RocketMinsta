@@ -288,3 +288,9 @@ float minstasbar_fixed;
 float gui_reloading;
 
 float rm_hidecountry;
+
+vector jb_camera_origin;
+vector jb_camera_angles;
+float jb_camera_expiretime;
+float jb_chasecam_locked;
+float jb_chasecam_backup;
