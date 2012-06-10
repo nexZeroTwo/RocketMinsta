@@ -604,7 +604,7 @@ void CSQC_UpdateView(float w, float h)
 			)
 		)
 	)
-		teamradar_view();
+		if(time >= jb_camera_expiretime) teamradar_view();
 
 	// draw sbar
  	if(cvar("r_letterbox") == 0) {
@@ -636,7 +636,7 @@ void CSQC_UpdateView(float w, float h)
     {
         if(cvar("r_letterbox") == 0)
             if(cvar("viewsize") < 120)
-                CSQC_common_hud();
+				CSQC_common_hud();
 
         // crosshair goes VERY LAST
         if(time >= jb_camera_expiretime)

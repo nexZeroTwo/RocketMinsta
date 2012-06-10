@@ -481,7 +481,9 @@ string gametype_Name_to_Description(string typename) {
 			return "Free-for-all: the player who gets the most frags wins.";
 		case "tdm":
 			return "Team-based deathmatch: the team that gets the most frags wins.";
-			
+		case "jb":
+			return "Frag the enemy team to send them into a jail!\nCapture their controlpoint to release your imprisoned teammates.\nLock all of your opponents to win the round.";
+		
 		// TODO: Describe other gametypes
 	}
 
