@@ -11,6 +11,7 @@ void JB_Init() {
 	
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
+	precache_sound("kh/alarm.wav");
 	
 	JB_Torture_RegisterAll();
 	
@@ -638,6 +639,7 @@ void JB_ControlPoint_Capture(entity player) {
 	}
 	
 	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
+	play2all("kh/alarm.wav");
 }
 
 void JB_ControlPoint_Touch() {
