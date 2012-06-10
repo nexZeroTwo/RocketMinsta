@@ -278,8 +278,30 @@ void JB_Torture_Napalm() {
 	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
 }
 
+void W_Electro_Attack();
+void W_Electro_Attack2();
+
+void JB_Torture_Plasma() {
+	float i;
+	
+	vector oldangles = self.angles;
+	for(i = 0; i < 4; ++i) {
+		self.angles_y -= 30 * random();
+		self.angles_x += JITTER(0, 20);
+		self.angles_z += JITTER(0, 20);
+		
+		if(i)
+			W_Electro_Attack2();
+		else
+			W_Electro_Attack();
+		
+		self.angles = oldangles;
+	}
+}
+
 void JB_Torture_RegisterAll() {
 	JB_Torture_Register(JB_Torture_Napalm);
+	JB_Torture_Register(JB_Torture_Plasma);
 }
 
 #undef JITTER
