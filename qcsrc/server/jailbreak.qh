@@ -20,6 +20,8 @@ void JB_Torture_Start(entity);
 .float jb_isprisoned;
 .float jb_jail_lasttouch;
 .float jb_prisontime;
+.float jb_capturetime;
+.float jb_capturestate;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;

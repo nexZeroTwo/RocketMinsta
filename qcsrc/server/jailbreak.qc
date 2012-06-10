@@ -341,8 +341,12 @@ void JB_RemovePlayer() {
 		JB_Release(world);
 }
 
+.float pointupdatetime;
 void JB_PlayerPreThink() {
 	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
+	
+	if(time - self.pointupdatetime >= 0.01)
+		self.jb_unlock_progress = 0;
 	
 	if not(self.jb_isprisoned)
 		return;
@@ -443,6 +447,18 @@ float JB_TotalPlayersOnTeam(float theteam) {
 	
 	return -1;	// wtf? wrong team dude.
 }
+
+float JB_AlivePlayersOnTeam(float theteam) {
+	JB_CountPlayers();	// just in case ;)
+	
+	switch(theteam) {
+		case COLOR_TEAM1: return redalive;
+		case COLOR_TEAM2: return bluealive;
+	}
+	
+	return -1;	// wtf? wrong team dude.
+}
+
 
 entity JB_FindCamera(float theteam) {
 	RandomSelection_Init();
@@ -578,6 +594,114 @@ void JB_SetupTortureSpawnpoint() {
 		self.jb_torture_delay_jitter = self.jb_torture_delay * 0.25;
 }
 
+.entity sprite;
+void AnimateDomPoint();
+
+void JB_ControlPoint_Think() {
+	self.nextthink = time + 0.1;
+	AnimateDomPoint();
+	
+	if(self.jb_unlock_progress == 1) {
+		if(!self.jb_capturestate) {
+			self.jb_capturestate = TRUE;
+			setmodel(self, "models/domination/dom_unclaimed.md3");
+		}
+		
+		if(time - self.jb_capturetime >= cvar("g_explosive_jailbreak_controlpoint_idletime"))
+			self.jb_unlock_progress = 0;
+		
+		return;
+	} else if(self.jb_capturestate) {
+		self.jb_capturestate = FALSE;
+		setmodel(self, ((self.team == COLOR_TEAM1)? "models/domination/dom_red.md3" : "models/domination/dom_blue.md3"));
+	}
+}
+
+void JB_ControlPoint_Capture(entity player) {
+	activator = self;
+	SUB_UseTargets();
+	
+	string teamname;
+	switch(player.team) {
+		case COLOR_TEAM1: teamname = "^1reds"	; break ;
+		case COLOR_TEAM2: teamname = "^4blues"	; break ;
+		default			: teamname = "^6fags"	; break ;
+	}
+	
+	entity e; FOR_EACH_PLAYER(e) {
+		bigprint_spec(e, 	strcat("jailbreak! The ", teamname, " ^7are escaping!"),
+							strcat("Unlocked by ", player.netname), 5);
+		
+		if(e.jb_isprisoned && e.team != self.team)
+			bigprint_spec(e, strcat("you're free! Run away!"),
+							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
+	}
+	
+	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5are escaping!\n");
+}
+
+void JB_ControlPoint_Touch() {
+	if(other.team == self.team)
+		return;
+
+	if(other.health < 1)
+		return;
+	
+	if(self.jb_unlock_progress == 1)
+		return;
+	
+	if(other.classname != "player")
+		return;
+		
+	if(JB_TotalPlayersOnTeam(other.team) == JB_AlivePlayersOnTeam(other.team))
+		return;	// no imprisoned players on team - sorta makes no sense to jailbreak
+	
+	if(time - self.pointupdatetime >= 0.1)
+		self.jb_unlock_progress = 0;
+	
+	self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_explosive_jailbreak_controlpoint_unlock_speed"), 1);
+	self.pointupdatetime = time;
+	other.pointupdatetime = time;
+	other.jb_unlock_progress = self.jb_unlock_progress;
+	
+	if(self.jb_unlock_progress >= 1) {
+		self.jb_capturetime = time;
+		JB_ControlPoint_Capture(other);
+	}
+}
+
+void JB_SetupControlPoint() {
+	if not(g_jailbreak) {
+		remove(self);
+		return;
+	}
+	
+	self.classname = "jailbreak_controlpoint";
+	
+	setmodel(self, ((self.team == COLOR_TEAM1)? "models/domination/dom_red.md3" : "models/domination/dom_blue.md3"));
+	self.skin = 0;
+	
+	if(!self.t_width)
+		self.t_width = 0.02; // frame animation rate
+	if(!self.t_length)
+		self.t_length = 239; // maximum frame
+		
+	self.think = JB_ControlPoint_Think;
+	self.nextthink = time;
+	self.touch = JB_ControlPoint_Touch;
+	self.solid = SOLID_TRIGGER;
+	self.flags = FL_ITEM;
+	setsize(self, '-32 -32 -32', '32 32 32');
+	setorigin(self, self.origin + '0 0 20');
+	droptofloor();
+	
+	waypoint_spawnforitem_force(self, self.origin);
+	self.nearestwaypointtimeout = 0; // activate waypointing again
+	self.basewaypoint = self.nearestwaypoint;
+	WaypointSprite_SpawnFixed(((self.team == COLOR_TEAM1)? "redbase" : "bluebase"), self.origin + '0 0 37', self, sprite);
+	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+}
+
 //
 //	Spawn functions
 //
@@ -595,3 +719,6 @@ JB_SPAWNFUNC(info_jailbreak_jailcamera_blue, JB_SetupJailCamera, COLOR_TEAM2)
 
 JB_SPAWNFUNC(info_jailbreak_torturespawn_red, JB_SetupTortureSpawnpoint, COLOR_TEAM1)
 JB_SPAWNFUNC(info_jailbreak_torturespawn_blue, JB_SetupTortureSpawnpoint, COLOR_TEAM2)
+
+JB_SPAWNFUNC(jailbreak_controlpoint_red, JB_SetupControlPoint, COLOR_TEAM1)
+JB_SPAWNFUNC(jailbreak_controlpoint_blue, JB_SetupControlPoint, COLOR_TEAM2)
