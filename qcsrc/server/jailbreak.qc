@@ -22,7 +22,7 @@ void JB_Init() {
 }
 
 void JB_Log(string s) {
-	bprint(strcat("Jailbreak: ", s, "\n"));
+	print(strcat("Jailbreak: ", s, "\n"));
 }
 
 //
