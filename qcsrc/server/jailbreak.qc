@@ -637,7 +637,7 @@ void JB_ControlPoint_Capture(entity player) {
 							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
 	}
 	
-	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5are escaping!\n");
+	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
 }
 
 void JB_ControlPoint_Touch() {
