@@ -3696,7 +3696,7 @@ void Sbar_Draw (void)
 	{
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else //if(!spectatee_status || sb_showscores || intermission)
+  		else
 			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)

@@ -699,6 +699,7 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
 		addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
 		addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
+		addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
 	}
 
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);

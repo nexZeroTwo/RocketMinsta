@@ -294,6 +294,7 @@ const float STAT_HGAMMO = 115;
 const float STAT_SM_HASGEM = 116;
 const float STAT_UNLOCK_PROGRESS = 117;
 const float STAT_PRISONED = 118;
+const float STAT_ROUNDLOST = 119;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P

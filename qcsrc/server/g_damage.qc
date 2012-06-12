@@ -284,6 +284,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	float _hfrag;
 
+	if(g_jailbreak)
+	if(jb_roundover)
+	if(targ.jb_roundlost) {
+		targ.angles = jb_activecamera.angles;
+		targ.angles_z = 0;
+		targ.fixangle = TRUE;
+	}
+
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
 		if(targ.hg_power > 0)

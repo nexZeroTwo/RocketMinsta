@@ -365,6 +365,8 @@ void JB_PlayerSpawn() {
 	
 	if(JB_TotalPlayersOnTeam(self.team))	// allow to spawn non-prisoned if there are no players on that team
 		JB_Imprison(world);
+	
+	self.jb_roundlost = FALSE;
 }
 
 void JB_RemovePlayer() {
@@ -372,6 +374,8 @@ void JB_RemovePlayer() {
 	
 	if(self.jb_isprisoned)
 		JB_Release(world);
+	
+	self.jb_roundlost = FALSE;
 }
 
 .float pointupdatetime;
@@ -442,6 +446,7 @@ void JB_EndRound()
 	e.think = JB_EndRound_Think;
 	e.nextthink = time + 1;
 	next_round = time + 15;
+	defer(15, JB_ClearCameraForAll);
 	e.cnt = cvar("g_explosive_jailbreak_warmup") + next_round;
 	jb_roundover = TRUE;
 	JB_CountPlayers();
@@ -514,6 +519,28 @@ void JB_RestoreCullEntities() {
 	remove(self);
 }
 
+void JB_SetCamera(entity player, entity cam, float timeout) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, TRUE);
+	WriteShort(MSG_ONE, cam.origin_x);
+	WriteShort(MSG_ONE, cam.origin_y);
+	WriteShort(MSG_ONE, cam.origin_z);
+	WriteShort(MSG_ONE, timeout);
+}
+
+void JB_ClearCamera(entity player) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, FALSE);
+}
+
+void JB_ClearCameraForAll() {
+	entity p; FOR_EACH_REALPLAYER(p) JB_ClearCamera(p);
+}
+
 void JB_ActivateCamera(float theteam, float timeout) {
 	entity cam = JB_FindCamera(theteam);
 	
@@ -534,26 +561,16 @@ void JB_ActivateCamera(float theteam, float timeout) {
 	e.nextthink = time + timeout;
 	
 	entity p; FOR_EACH_REALPLAYER(p) {
-		msg_entity = p;
-		//WriteByte(MSG_ONE, SVC_SETVIEW);
-		//WriteEntity(MSG_ONE, cam);
+		JB_SetCamera(p, cam, timeout);
 		
-		WriteByte(MSG_ONE, SVC_TEMPENTITY);
-		WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-		WriteShort(MSG_ONE, cam.origin_x);
-		WriteShort(MSG_ONE, cam.origin_y);
-		WriteShort(MSG_ONE, cam.origin_z);
-		WriteShort(MSG_ONE, timeout);
-		
-		p.angles = cam.angles;
-		p.angles_z = 0;
-		p.fixangle = TRUE;
-		
-		//if(p.team == theteam) {
-		//	p.movetype = MOVETYPE_NONE;
-		//	setorigin(p, cam.origin);
-		//}
+		if(p.team == theteam) {
+			p.angles = cam.angles;
+			p.angles_z = 0;
+			p.fixangle = TRUE;
+		} else p.jb_roundlost = TRUE;
 	}
+	
+	jb_activecamera = cam;
 }
 
 //

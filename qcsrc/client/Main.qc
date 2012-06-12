@@ -1912,21 +1912,23 @@ void Net_ReadVIPInfo(float teem)
 }
 
 void Net_Camera() {
-	float wtf = time <= jb_camera_expiretime || jb_chasecam_locked;
+	if(!ReadByte()) {
+		jb_camera_expiretime = -1;
+		return;
+	}
 	
 	jb_camera_origin_x = ReadShort();
 	jb_camera_origin_y = ReadShort();
 	jb_camera_origin_z = ReadShort();
-	jb_camera_expiretime = time + ReadShort();
 	
-	if(wtf)
-		print("Warning: Net_Camera while a camera is still active\n");
+	if(time <= jb_camera_expiretime || jb_chasecam_locked)
+		dprint("Warning: Net_Camera while a camera is still active\n");
 	else {
 		jb_chasecam_backup = cvar("chase_active");
 		jb_chasecam_locked = true;
 	}
 	
-	setorigin(self, self.origin);
+	jb_camera_expiretime = time + ReadShort();
 }
 
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.

@@ -15,6 +15,9 @@ void JB_TorturePrisonersLater(float, float);
 void JB_Torture_Register(jb_torture_logic);
 void JB_Torture_RegisterAll();
 void JB_Torture_Start(entity);
+void JB_SetCamera(entity, entity, float);
+void JB_ClearCamera(entity);
+void JB_ClearCameraForAll();
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
@@ -22,12 +25,14 @@ void JB_Torture_Start(entity);
 .float jb_prisontime;
 .float jb_capturetime;
 .float jb_capturestate;
+.float jb_roundlost;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;
+entity jb_activecamera;
 
 .float jb_torture_force;
 .float jb_torture_force_jitter;

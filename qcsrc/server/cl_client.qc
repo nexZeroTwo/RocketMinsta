@@ -2329,6 +2329,7 @@ void SpectateCopy(entity spectatee) {
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
 	self.sm_canattach = spectatee.sm_canattach;
+	self.jb_roundlost = spectatee.jb_roundlost;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2430,6 +2431,10 @@ float SpectateNext() {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self.enemy);
+		
+		if(g_jailbreak)
+		if(jb_roundover)
+			JB_SetCamera(self, jb_activecamera, 15);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
