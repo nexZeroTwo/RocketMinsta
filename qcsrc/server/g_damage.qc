@@ -253,6 +253,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	if(g_prec) if(inflictor.classname == "prec_rune") {
 		prec_check_aggression(attacker, inflictor, targ); return; }
 
+	if(g_jailbreak)
+	if(jb_roundover) {
+		attacker = world;
+		
+		if(targ.jb_roundlost) {
+			targ.angles = jb_activecamera.angles;
+			targ.angles_z = 0;
+			targ.fixangle = TRUE;
+		}
+	}
+
 	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
 	{
@@ -283,14 +294,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	}
 
 	float _hfrag;
-
-	if(g_jailbreak)
-	if(jb_roundover)
-	if(targ.jb_roundlost) {
-		targ.angles = jb_activecamera.angles;
-		targ.angles_z = 0;
-		targ.fixangle = TRUE;
-	}
 
 	if (targ.classname == "player" || targ.classname == "corpse")
 	{
