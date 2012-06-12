@@ -587,13 +587,14 @@ void JB_ActivateCamera(float theteam, float timeout) {
 	e.nextthink = time + timeout;
 	
 	entity p; FOR_EACH_REALPLAYER(p) {
-		JB_SetCamera(p, cam, timeout);
-		
 		if(p.team == theteam) {
 			p.angles = cam.angles;
 			p.angles_z = 0;
 			p.fixangle = TRUE;
+			p.jb_roundlost = FALSE;
 		} else p.jb_roundlost = TRUE;
+		
+		JB_SetCamera(p, cam, timeout);
 	}
 	
 	jb_activecamera = cam;

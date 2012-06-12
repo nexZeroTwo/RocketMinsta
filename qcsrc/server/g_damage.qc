@@ -819,7 +819,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 felt a little hot\n");
 				else
 					bprint ("^1",s, "^1 burnt to death\n");
-			else
+			else if(!jb_roundover)
 				if(sv_gentle)
 					bprint ("^1",s, "^1 needs a restart\n");
 				else
