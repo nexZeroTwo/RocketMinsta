@@ -55,7 +55,11 @@ void JB_Imprison(entity attacker) {
 	//self.origin = spot.origin;
 	//setorigin(self, self.origin);
 	
-	TeleportPlayer(spot, self, spot.origin, spot.angles, '0 0 0', '0 0 0', '0 0 0');
+	entity oldself = self;
+	self = spot;
+	TeleportPlayer(spot, oldself, spot.origin, spot.angles, '0 0 0', '0 0 0', '0 0 0');
+	self = oldself;
+	
 	self.angles = spot.angles;
 	self.angles_z = 0; // never spawn tilted even if the spot says to
 	self.fixangle = TRUE; // turn this way immediately
