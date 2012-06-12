@@ -879,6 +879,11 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	//if(DEATH_ISHG(deathtype))
 	//	deathtype &~= DEATH_HITTYPEMASK;
 
+	if(g_jailbreak)
+	if(jb_roundover)
+	if(targ.classname == "player")
+		damage = damage * cvar("g_explosive_jailbreak_torture_damagefactor");
+
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
 

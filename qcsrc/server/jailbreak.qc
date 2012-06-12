@@ -222,7 +222,14 @@ jb_torture_logic JB_Torture_PickFunction() {
 
 void JB_Torture_Think() {
 	makevectors(self.angles);
-	self.nextthink = time + JITTER(self.jb_torture_delay, self.jb_torture_delay_jitter);
+	//self.nextthink = time + JITTER(self.jb_torture_delay, self.jb_torture_delay_jitter);
+	
+	float j = self.jb_torture_delay - JITTER(self.jb_torture_delay, self.jb_torture_delay_jitter);
+	
+	if(j > 0)
+		j = 0.5 * j;
+	
+	self.nextthink = time + max(0.1, self.jb_torture_delay + j);
 	self.jb_torture_suggestedforce = JITTER(self.jb_torture_force, self.jb_torture_force_jitter);
 	
 	var jb_torture_logic logic;
@@ -296,6 +303,8 @@ void JB_Torture_Napalm() {
 
 void W_Electro_Attack();
 void W_Electro_Attack2();
+void W_Crylink_Attack();
+void W_Crylink_Attack2();
 
 void JB_Torture_Plasma() {
 	float i;
@@ -310,6 +319,19 @@ void JB_Torture_Plasma() {
 			W_Electro_Attack2();
 		else
 			W_Electro_Attack();
+			
+		if(random() < 0.5)
+		{
+			self.angles = oldangles;
+			self.angles_y += JITTER(0, 20);
+			self.angles_x += JITTER(0, 25);
+			self.angles_z += JITTER(0, 25);
+			
+			if(random() < 0.5)
+				W_Crylink_Attack();
+			else
+				W_Crylink_Attack2();
+		}
 		
 		self.angles = oldangles;
 	}
@@ -642,10 +664,10 @@ void JB_SetupTortureSpawnpoint() {
 		self.jb_torture_force_jitter = self.jb_torture_force * 0.1;
 	
 	if(!self.jb_torture_delay)
-		self.jb_torture_delay = 3;
+		self.jb_torture_delay = 2;
 	
 	if(!self.jb_torture_delay_jitter)
-		self.jb_torture_delay_jitter = self.jb_torture_delay * 0.25;
+		self.jb_torture_delay_jitter = self.jb_torture_delay * 0.5;
 }
 
 .entity sprite;
