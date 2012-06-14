@@ -387,7 +387,7 @@ float CustomCRAHookButton(entity e) {
 	// this function sucks
 	// and so does it's name
 	
-	if(!e.BUTTON_USE || e.soulmate || e.smhost || !g_freezetag)
+	if(!e.BUTTON_USE || e.soulmate || e.smhost || !(g_freezetag || g_jailbreak))
 		return FALSE;
 	return TRUE;
 }

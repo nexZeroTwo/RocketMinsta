@@ -54,6 +54,8 @@ freezetag.qh
 
 vip.qh
 
+jailbreak.qh
+
 precious.qh
 
 scores_rules.qc
@@ -72,9 +74,10 @@ runematch.qc
 arena.qc
 
 dodging.qc
+
 freezetag.qc
 vip.qc
-
+jailbreak.qc
 precious.qc
 
 g_violence.qc

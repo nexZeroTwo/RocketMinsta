@@ -732,7 +732,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		
 		if(vip_PlayerDies(deathtype))
 			return;
-			
+		
+		if(JB_PlayerDies())
+			return;
+		
 		if(self == attacker)
 			kh_Key_DropAll(self, TRUE);
 		else if(attacker.classname == "player" || attacker.classname == "gib")
@@ -754,12 +757,17 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		// clear waypoints
 		WaypointSprite_PlayerDead();
 		// make the corpse upright (not tilted)
-		self.angles_x = 0;
-		self.angles_z = 0;
+		
+		if(!jb_roundover) {
+			self.angles_x = 0;
+			self.angles_z = 0;
+		}
+		
 		// don't spin
 		self.avelocity = '0 0 0';
 		// view from the floor
-		self.view_ofs = '0 0 -8';
+		if(!jb_roundover)
+			self.view_ofs = '0 0 -8';
 		// toss the corpse
 		self.movetype = MOVETYPE_TOSS;
 		// shootable corpse
@@ -814,7 +822,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			if(self.weaponentity.lasertarget)
 				remove(self.weaponentity.lasertarget);
 
-		if(clienttype(self) == CLIENTTYPE_REAL)
+		if(clienttype(self) == CLIENTTYPE_REAL && !jb_roundover)
 		{
 			self.fixangle = TRUE;
 			//msg_entity = self;

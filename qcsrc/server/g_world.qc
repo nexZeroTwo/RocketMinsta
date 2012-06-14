@@ -435,6 +435,7 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_prec", "0");
 	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
+	registercvar("g_jailbreak", "0");
 	registercvar("g_no", "0");
 	
 	
@@ -692,6 +693,14 @@ void spawnfunc_worldspawn (void)
 
 	if(g_freezetag || g_domination)
 		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+
+	if(g_jailbreak) {
+		addstat(STAT_REDALIVE, AS_INT, redalive_stat);
+		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
+		addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
+		addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
+		addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
+	}
 
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 

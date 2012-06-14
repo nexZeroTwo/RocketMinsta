@@ -742,6 +742,7 @@ void PutObserverInServer (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	inf_player_leave(self);
 	Portal_ClearAll(self);
@@ -1202,6 +1203,7 @@ void PutClientInServer (void)
 		self = oldself;
 		
 		freezetag_PlayerSpawn();
+		JB_PlayerSpawn();
 		
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
@@ -1767,6 +1769,7 @@ void ClientDisconnect (void)
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	Portal_ClearAll(self);
 
@@ -2326,6 +2329,7 @@ void SpectateCopy(entity spectatee) {
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
 	self.sm_canattach = spectatee.sm_canattach;
+	self.jb_roundlost = spectatee.jb_roundlost;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2427,6 +2431,10 @@ float SpectateNext() {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self.enemy);
+		
+		if(g_jailbreak)
+		if(jb_roundover)
+			JB_SetCamera(self, jb_activecamera, 15);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
@@ -2723,6 +2731,7 @@ void PlayerPreThink (void)
 	freezetag_PlayerPreThink();
 	domination_PlayerPreThink();
 	vip_PlayerPreThink();
+	JB_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")
@@ -2780,7 +2789,10 @@ void PlayerPreThink (void)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || cvar("g_forced_respawn"));
-				if (self.deadflag == DEAD_DYING)
+				
+				if (jb_roundover) {
+					// lol no respawn for ya
+				} else if (self.deadflag == DEAD_DYING)
 				{
 					if(force_respawn)
 						self.deadflag = DEAD_RESPAWNING;

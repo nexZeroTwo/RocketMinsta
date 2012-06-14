@@ -100,7 +100,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	float w;
 
 	// TODO route through PlayerScores instead
-	if(gameover) return;
+	if(gameover || jb_roundover) return;
 
 	if(!prec_check_aggression(attacker, inflictor, targ)) return;
 
@@ -180,7 +180,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip)
+	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
 	{
 		f = 0;
 	}
@@ -252,6 +252,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	if(g_prec) if(inflictor.classname == "prec_rune") {
 		prec_check_aggression(attacker, inflictor, targ); return; }
+
+	if(g_jailbreak)
+	if(jb_roundover) {
+		attacker = world;
+		
+		if(targ.jb_roundlost) {
+			targ.angles = jb_activecamera.angles;
+			targ.angles_z = 0;
+			targ.fixangle = TRUE;
+		}
+	}
 
 	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
@@ -808,15 +819,19 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 felt a little hot\n");
 				else
 					bprint ("^1",s, "^1 burnt to death\n");
-			else
+			else if(!jb_roundover)
 				if(sv_gentle)
 					bprint ("^1",s, "^1 needs a restart\n");
 				else
 					bprint ("^1",s, "^1 died\n");
-			GiveFrags(targ, inflictor, targ, -1);
-			if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
-				announce(targ, "announcer/male/botlike.wav");
-				bigprint_spec(targ, "^0bot^7like!", "", 1);
+			
+			if(!jb_roundover) {
+				GiveFrags(targ, inflictor, targ, -1);
+					
+				if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
+					announce(targ, "announcer/male/botlike.wav");
+					bigprint_spec(targ, "^0bot^7like!", "", 1);
+				}
 			}
 
 			if (targ.killcount > 2)
@@ -863,6 +878,11 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	//if(DEATH_ISHG(deathtype))
 	//	deathtype &~= DEATH_HITTYPEMASK;
+
+	if(g_jailbreak)
+	if(jb_roundover)
+	if(targ.classname == "player")
+		damage = damage * cvar("g_explosive_jailbreak_torture_damagefactor");
 
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
@@ -938,6 +958,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if (!targ.isbot)
 				if (attacker.isbot)
 					damage = damage * bound(0.1, (skill + 5) * 0.1, 1);
+			
+			if(g_jailbreak) if(targ.jb_isprisoned || attacker.jb_isprisoned && targ != attacker && !DEATH_ISSPECIAL(deathtype))
+				damage = 0;
 		}
 
 		// nullify damage if teamplay is on
@@ -991,7 +1014,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		}
 
 		if((g_vip && vip_soulgem && !vip_started) ||
-		   (g_freezetag && warmup >= time))
+		   ((g_freezetag || g_jailbreak) && warmup >= time))
 		if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;

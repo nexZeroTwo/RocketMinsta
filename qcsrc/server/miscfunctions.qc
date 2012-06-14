@@ -214,7 +214,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak)
         if (self.team)
             have_team_spawns = 1;
 
@@ -2911,6 +2911,9 @@ else
     if(g_keyhunt)
         kh_FinishRound();
 else
+	if(g_jailbreak)
+		JB_EndRound();
+else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
 
@@ -2919,7 +2922,8 @@ float EndRound_Allowed()
     return( g_freezetag
          || g_vip
          || g_totaldomination
-         || g_keyhunt );
+         || g_keyhunt
+         || g_jailbreak);
 }
 
 void SendSpeedRecord(entity e)

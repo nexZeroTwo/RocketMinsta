@@ -477,10 +477,10 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		strcat("ping pl", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
-		" +ft/kills +ft/deaths +ft/suicides +ft/revivals "),
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft/frags ", // tdm already has this in "score"
+		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
+		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank +vip/vipkills +vip/survivals ",
+		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks ",
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
@@ -964,7 +964,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawfont = sbar_madokafont;
 			#endif
 
-			if(gametype != GAME_FREEZETAG)
+			if(gametype != GAME_FREEZETAG && gametype != GAME_JAILBREAK)
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			else
 			{
@@ -3145,7 +3145,7 @@ void Sbar_Draw (void)
 	}
 
 	local float rev;
-	rev = getstatf(STAT_REVIVE_PROGRESS);
+	rev = getstatf((gametype == GAME_JAILBREAK)? STAT_UNLOCK_PROGRESS : STAT_REVIVE_PROGRESS);
 	
 	if(rev) {
 		rev_visual = approach(rev_visual, rev, drawframetime);
@@ -3270,6 +3270,8 @@ void Sbar_Draw (void)
 		string s2;
         if(gametype == GAME_FREEZETAG)
 			s = "Revival progress:";
+		else if(gametype == GAME_JAILBREAK)
+			s = "Unlocking the jail:";
 		else
 			s = "Capture progress:";
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
@@ -3694,7 +3696,7 @@ void Sbar_Draw (void)
 	{
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else //if(!spectatee_status || sb_showscores || intermission)
+  		else
 			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)
@@ -4503,7 +4505,7 @@ void Sbar_Draw (void)
 			CSQC_kh_hud(teamhud_pos);
 		else if(gametype == GAME_CTF)
 			CSQC_ctf_hud(teamhud_pos);
-		else if(gametype == GAME_FREEZETAG)
+		else if(gametype == GAME_FREEZETAG || gametype == GAME_JAILBREAK)
 			CSQC_ft_hud(teamhud_pos);
         else if(gametype == GAME_DOMINATION)
             CSQC_dom_hud(teamhud_pos);
@@ -5163,8 +5165,13 @@ void CSQC_ft_hud(vector hudpos)
 
 	redalive = getstati(STAT_REDALIVE);
 	bluealive = getstati(STAT_BLUEALIVE);
-	yellowalive = getstati(STAT_YELLOWALIVE);
-	pinkalive = getstati(STAT_PINKALIVE);
+	
+	if(gametype == GAME_JAILBREAK)
+		yellowalive = pinkalive = -1;
+	else {
+		yellowalive = getstati(STAT_YELLOWALIVE);
+		pinkalive = getstati(STAT_PINKALIVE);
+	}
 
 	teamhud_enabled = 1;
 
@@ -5181,7 +5188,7 @@ void CSQC_ft_hud(vector hudpos)
 		position_y += sbar_fontsize_y;
 		dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 		drawcolorcodedstring(position, strcat("^4Blue alive^7: ", ftos(bluealive)), sbar_fontsize, 1, DRAWFLAG_NORMAL);
-
+		
 		if(yellowalive < 0)
 			return;
 		

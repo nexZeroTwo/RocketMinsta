@@ -35,6 +35,7 @@ float gametype_GetMenu ()
 	if(cvar("g_prec"))             return GAME_PRECIOUS;
 	if(cvar("g_inf"))              return GAME_INFECTION;
 	if(cvar("g_rps"))              return GAME_RPS;
+	if(cvar("g_jailbreak"))        return GAME_JAILBREAK;
 	if(cvar("g_no"))               return GAME_NOTHING;
 	return 0;
 }
@@ -63,6 +64,7 @@ void gametype_SetMenu (float l_id)
 	cvar_set_ifeq(l_id, "g_prec",             GAME_PRECIOUS);
 	cvar_set_ifeq(l_id, "g_inf",              GAME_INFECTION);
 	cvar_set_ifeq(l_id, "g_rps",              GAME_RPS);
+	cvar_set_ifeq(l_id, "g_jailbreak",        GAME_JAILBREAK);
 	cvar_set_ifeq(l_id, "g_no",               GAME_NOTHING);
 }
 
@@ -129,6 +131,9 @@ float gametype_Extrapolate ()
 	if(cvar("g_rps") || g_rps) {
 		if(game_new) return 0;
 		game_new = GAME_RPS; }
+	if(cvar("g_jailbreak") || g_jailbreak) {
+		if(game_new) return 0;
+		game_new = GAME_JAILBREAK; }
 	if(cvar("g_no") || g_no) {
 		if(game_new) return 0;
 		game_new = GAME_NOTHING; }
@@ -200,6 +205,9 @@ void gametype_Set (float gametype)
 		case GAME_RPS:
 			cvar_set("g_rps", "1"); g_rps = 1;
 			break;
+		case GAME_JAILBREAK:
+			cvar_set("g_jailbreak", "1"); g_jailbreak = 1;
+			break;
 		case GAME_NOTHING:
 			cvar_set("g_no", "1"); g_no = 1;
 			break;
@@ -231,6 +239,7 @@ void gametype_Reset ()
 	cvar_set("g_prec",             "0"); g_prec             = 0;
 	cvar_set("g_inf",              "0"); g_inf              = 0;
 	cvar_set("g_rps",              "0"); g_rps              = 0;
+	cvar_set("g_jailbreak",        "0"); g_jailbreak        = 0;
 	cvar_set("g_no",               "0"); g_no               = 0;
 
 	cvar_set("gamecfg", "0");
@@ -265,6 +274,7 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_PRECIOUS:         return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_RPS:              return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
 		case GAME_NOTHING:          return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_ALL:              return MAPINFO_TYPE_ALL;
 		default:                    return 0;
@@ -288,6 +298,7 @@ float gametype_MapID_to_ID (float l_maptype)
 		case MAPINFO_TYPE_RACE:            return GAME_RACE;
 		case MAPINFO_TYPE_NEXBALL:         return GAME_NEXBALL;
 		case MAPINFO_TYPE_CTS:             return GAME_CTS;
+		case MAPINFO_TYPE_JAILBREAK:       return GAME_JAILBREAK;
 		case MAPINFO_TYPE_ALL:             return GAME_ALL;
 		default:                           return 0;
 	}
@@ -315,6 +326,7 @@ float gametype_Name_to_ID (string l_typename)
 	else if(typename == "prec"    ) return GAME_PRECIOUS;
 	else if(typename == "inf"     ) return GAME_INFECTION;
 	else if(typename == "rps"     ) return GAME_RPS;
+	else if(typename == "jb"      ) return GAME_JAILBREAK;
 	else if(typename == "no"      ) return GAME_NOTHING;
 	else if(typename == "all"     ) return GAME_ALL;
 	else                            return 0;
@@ -343,6 +355,7 @@ string gametype_ID_to_Name (float l_gametype)
 		case GAME_PRECIOUS:         return "prec";
 		case GAME_INFECTION:        return "inf";
 		case GAME_RPS:              return "rps";
+		case GAME_JAILBREAK:        return "jb";
 		case GAME_NOTHING:          return "no";
 		default:                    return "";
 	}
@@ -371,6 +384,7 @@ string gametype_ID_to_LongName (float l_gametype)
 		case GAME_PRECIOUS:         return "Precious";
 		case GAME_INFECTION:        return "Infection";
 		case GAME_RPS:              return "Rock Paper Scissors";
+		case GAME_JAILBREAK:        return "Jailbreak";
 		case GAME_NOTHING:          return "Nothing";
 		case GAME_ALL:              return "All";
 		default:                    return "Unknown";
@@ -436,6 +450,8 @@ string gametype_Name_to_Name (string typename)
 		case "rps": case "Rock Paper Scissors":
 		case "rockpaperscissors": case "RPS": case "Rock-paper-scissors":
 			return "rps";
+		case "jb": case "jailbreak": case "jbreak": case "jail": case "Jailbreak":
+			return "jb";
 		case "no": case "Nothing":
 		case "nothing": case "none":
 			return "no";
@@ -465,7 +481,9 @@ string gametype_Name_to_Description(string typename) {
 			return "Free-for-all: the player who gets the most frags wins.";
 		case "tdm":
 			return "Team-based deathmatch: the team that gets the most frags wins.";
-			
+		case "jb":
+			return "Frag the enemy team to send them into a jail!\nCapture their controlpoint to release your imprisoned teammates.\nLock all of your opponents to win the round.";
+		
 		// TODO: Describe other gametypes
 	}
 
