@@ -586,6 +586,7 @@ void PostInit(void)
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
+	DPRM_Start();
 	
 	postinit = true;
 }
