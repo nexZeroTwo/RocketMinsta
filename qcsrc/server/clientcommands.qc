@@ -345,7 +345,12 @@ void SV_ParseClientCommand(string s) {
 		if(!self) return;
 		self.speczoom_speed = stof(argv(1));
 		self.speczoom_factor = stof(argv(2));
-		WriteSpectatorInfo(self);
+		WriteSpectatorInfo(self); 
+	} else if(cmd == "fpsreport") {
+		if(!self) return;
+		if(!self.scorekeeper) return;
+		
+		PlayerScore_Set(self, SP_FPS, stof(argv(1)));
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));

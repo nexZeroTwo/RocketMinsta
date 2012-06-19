@@ -293,3 +293,5 @@ vector jb_camera_origin;
 float jb_camera_expiretime;
 float jb_chasecam_locked;
 float jb_chasecam_backup;
+
+float cl_fps;

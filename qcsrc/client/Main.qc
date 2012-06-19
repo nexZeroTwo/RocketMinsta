@@ -394,6 +394,19 @@ void ReloadMenu()
 	e.nextthink = time + 1;
 }
 
+#define FPSREPORTER_DELAY 3
+
+void FPSReporter_Think() {
+	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
+	self.nextthink = time + FPSREPORTER_DELAY;
+}
+
+void FPSReporter_Init() {
+	entity e = spawn();
+	e.think = FPSReporter_Think;
+	e.nextthink = time + FPSREPORTER_DELAY;
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -572,6 +585,7 @@ void PostInit(void)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
+	FPSReporter_Init();
 	
 	postinit = true;
 }
@@ -1290,9 +1304,12 @@ void Ent_ReadPlayerScore()
 #if MAX_SCORE <= 8
 	sf = ReadByte();
 	lf = ReadByte();
-#else
+#elif MAX_SCORE <= 16
 	sf = ReadShort();
 	lf = ReadShort();
+#else
+	sf = ReadInt24_t();
+	lf = ReadInt24_t();
 #endif
 	float p;
 	

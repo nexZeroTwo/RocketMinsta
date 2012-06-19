@@ -339,9 +339,7 @@ const float STAT_ROUNDLOST = 119;
  * Score indices
  */
  
-//<akari>
-#define MAX_SCORE 17
-//</akari>
+#define MAX_SCORE 18
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -357,6 +355,7 @@ const float STAT_ROUNDLOST = 119;
 #define SP_JOINTIME 14
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
+#define SP_FPS 17
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider

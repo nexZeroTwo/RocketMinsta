@@ -214,9 +214,12 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 #if MAX_SCORE <= 8
 	WriteByte(MSG_ENTITY, sendflags);
 	WriteByte(MSG_ENTITY, longflags);
-#else
+#elif MAX_SCORE <= 16
 	WriteShort(MSG_ENTITY, sendflags);
 	WriteShort(MSG_ENTITY, longflags);
+#else
+	WriteInt24_t(MSG_ENTITY, sendflags);
+	WriteInt24_t(MSG_ENTITY, longflags);
 #endif
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
 		if(sendflags & p)
@@ -327,6 +330,28 @@ float PlayerScore_Add(entity player, float scorefield, float score)
 		if(scores_label[scorefield] != "")
 			s.SendFlags |= pow(2, scorefield);
 	return (s.(scores[scorefield]) += score);
+}
+
+float PlayerScore_Set(entity player, float scorefield, float score) {
+	if(!scores_initialized)	return 0;
+	
+	entity s = player.scorekeeper;
+	
+	if(!s) {
+		if(gameover)
+			return 0;
+		error("Setting score of unknown player!");
+	}
+	
+	float old = s.(scores[scorefield]);
+	
+	if(old == score)
+		return old;
+	
+	s.SendFlags |= pow(2, scorefield);
+	s.(scores[scorefield]) = score;
+	
+	return score;
 }
 
 float PlayerTeamScore_Add(entity player, float pscorefield, float tscorefield, float score)

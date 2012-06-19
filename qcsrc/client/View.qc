@@ -349,6 +349,20 @@ float TrueAimCheck()
 	return SHOTTYPE_HITWORLD;
 }
 
+float fps_start;
+float fps_frames;
+
+// FIXME: make it unaffected by slowmo
+void FPSCounter_Update() {
+	if(time - fps_start >= 1) {
+		cl_fps = fps_frames;
+		fps_frames = 0;
+		fps_start = time;
+	}
+	
+	fps_frames++;
+}
+
 void CSQC_common_hud(void);
 
 float oldfov;
@@ -851,7 +865,9 @@ void CSQC_UpdateView(float w, float h)
 		cvar_set("vid_conwidth", w0);
 		cvar_set("vid_conheight", h0);
 	}
-
+	
+	FPSCounter_Update();
+	
 	// be safe against triggerbots until everyone has the fixed engine
 	// this call is meant to overwrite the trace globals by something
 	// unsuspicious
