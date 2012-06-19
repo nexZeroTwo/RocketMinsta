@@ -797,6 +797,8 @@ void spawnfunc_worldspawn (void)
 
 	registercvar("g_endmatch", "0");
 	cvar_set("g_endmatch", "0");
+	
+	DPRM_Start();
 }
 
 void spawnfunc_light (void)

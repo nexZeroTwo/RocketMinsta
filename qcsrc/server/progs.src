@@ -21,6 +21,7 @@ defs.qh		// Should rename this, it has fields and globals
 //// tZork Turrets ////
 tturrets/include/turrets_early.qh
 
+../common/dprm.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
@@ -175,6 +176,7 @@ t_quake.qc
 race.qc
 
 
+../common/dprm.qc
 ../common/gametype.qc
 
 
