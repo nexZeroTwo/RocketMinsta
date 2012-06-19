@@ -16,6 +16,7 @@ csqc_builtins.qc
 ../common/ip2c.qh
 ../common/interpolation.qh
 ../common/dprm.qh
+dprm.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -66,6 +67,7 @@ prandom.qc
 bgmscript.qc
 
 ../common/dprm.qc
+dprm.qc
 ../common/util.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc

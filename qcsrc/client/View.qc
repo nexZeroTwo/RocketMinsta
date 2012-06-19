@@ -832,7 +832,9 @@ void CSQC_UpdateView(float w, float h)
 		else
 			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
 	}
-
+	
+	DPRM_Draw2D();
+	
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
