@@ -17,5 +17,5 @@ void DPRM_Draw2D() {
 }
 
 #else
-	#influde "dprm_stub.qc"
+	#include "dprm_stub.qc"
 #endif
