@@ -2,7 +2,7 @@
 #ifdef USE_DPRM
 
 void DPRM_Draw2D() {
-	if not(DPRM_VersionIsSuitable())
+	if(DPRM_VersionIsSuitable())
 		return;
 	
 	float t_alpha = bound(0, time * 0.05, 1);
