@@ -390,6 +390,128 @@ string NearestLocation(vector p)
     return ret;
 }
 
+#define MAXREPS 32
+string reptable_src[MAXREPS];
+string reptable_rep[MAXREPS];
+float reptable_srclen[MAXREPS];
+float reptable_replen[MAXREPS];
+float reptable_count;
+float reptable_init;
+float reptable_maxsrclen;
+float reptable_minsrclen;
+
+#define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
+
+string getsrc(string id) {
+	string s = cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_src"));
+	if(!s || s == "")	// no src defined? Assume id is the src
+		return id;
+	return s;
+}
+
+string getrep(string id) {
+	//return strcat(rgb_to_hexcolor('1 0 0' * random() + '0 1 0' * random() + '0 0 1' * random()), getsrc(id), "^7");
+	
+	return cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_rep"));
+}
+
+string getrepids() {
+	return cvar_string("g_explosive_chat_autoreplace_order");
+}
+
+void reptable_free() {
+	reptable_init = FALSE;
+	float i;
+	for(i = 0; i < reptable_count; ++i) {
+		strunzone(reptable_src[i]);
+		strunzone(reptable_rep[i]);
+		reptable_srclen[i] = 0;
+		reptable_replen[i] = 0;
+	}
+	reptable_count = 0;
+	reptable_maxsrclen = 0;
+	reptable_minsrclen = 0;
+}
+
+void reptable_make(string replacements) {
+	if(reptable_init)
+		reptable_free();
+	
+	reptable_init = TRUE;
+	reptable_count = bound(0, tokenizebyseparator(replacements, " "), MAXREPS);
+	
+	float i;
+	for(i = 0; i < reptable_count; ++i) {
+		string id = argv(i);
+		string src = strzone(getsrc(id));
+		string rep = strzone(getrep(id));
+		float srclen = strlen(src);
+		float replen = strlen(rep);
+		
+		reptable_src[i] = src;
+		reptable_rep[i] = rep;
+		reptable_srclen[i] = strlen(src);
+		reptable_replen[i] = strlen(rep);
+		
+		if(srclen > reptable_maxsrclen)
+			reptable_maxsrclen = srclen;
+			
+		if(!reptable_minsrclen || srclen < reptable_minsrclen)
+			reptable_maxsrclen = srclen;
+	}
+	
+	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
+}
+
+string apply_autoreplace(string msg) {
+	string reps = getrepids();
+	
+	if not(cvar("g_explosive_chat_autoreplace"))
+		return msg;
+	
+	if(reps == "")
+		return msg;
+	
+	if not(reptable_init)
+		reptable_make(reps);
+	
+	float i, len;
+	len = strlen(msg);
+	
+	if(len < reptable_minsrclen)
+		return msg;		// no point
+		
+	for(i = 0; i < len; ++i) {
+		print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
+		
+		FOR_EACH_REPID(id) {
+			float slen = reptable_srclen[id];
+			
+			if(len - i < slen)
+				continue;
+			
+			string p = strtolower(substring(msg, i, slen));
+			print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
+			
+			if(p == reptable_src[id]) {
+				print("apply_autoreplace: success\n");
+				
+				string head = substring(msg, 0, i);
+				string tail = substring(msg, i + slen, len);
+				msg = strcat(head, reptable_rep[id], tail);
+				
+				float rlen = reptable_replen[id];
+				i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
+				len += rlen - slen;
+				
+				break;
+			}
+		}
+	}
+	
+	return msg;
+}
+
 string formatmessage(string msg)
 {
     float p, p1, p2;
@@ -398,6 +520,9 @@ string formatmessage(string msg)
     string replacement;
     p = 0;
     n = 7;
+    
+    msg = apply_autoreplace(msg);
+    
     while (1)
     {
         if (n < 1)
