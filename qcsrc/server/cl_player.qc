@@ -1057,15 +1057,21 @@ void UpdateSelectedPlayer()
 void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
-	float flood, privatemsgprefixlen;
+	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
 	if(Ban_MaybeEnforceBan(source))
 		return;
 
-	if(!teamsay && !privatesay)
+	if(!teamsay && !privatesay) {
 		if(substring(msgin, 0, 1) == " ")
 			msgin = substring(msgin, 1, strlen(msgin) - 1); // work around DP say bug (say_team does not have this!)
+		
+		if(!strstrofs(msgin, "/me ", 0)) {
+			slashme = TRUE;
+			msgin = strdecolorize(substring(msgin, 4, strlen(msgin) - 4));
+		}
+	}
 
 	msgin = formatmessage(msgin);
 
@@ -1102,8 +1108,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	else
 		namestr = source.netname;
 
-	if(privatesay)
-	{
+	if(privatesay) {
 		msgstr = strcat("\{1}\{13}* ^3", namestr, "^3 tells you: ^7");
 		privatemsgprefixlen = strlen(msgstr);
 		msgstr = strcat(msgstr, msgin);
@@ -1113,13 +1118,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		else
 			privatemsgprefix = strcat("\{1}\{13}* ^3You tell ", privatesay.netname, ": ^7");
 	}
-	else if(teamsay)
-	{
+	else if(teamsay) {
 		msgstr = strcat("\{1}\{13}", colorstr, "(^3", namestr, colorstr, ") ^7", msgin);
 		cmsgstr = strcat(colorstr, "(^3", namestr, colorstr, ")\n^7", msgin);
-	}
-	else
-	{
+	} else if(slashme) {
+		msgstr = strcat("\{1} ^5~ ^3", namestr, " ^5", msgin);
+	} else {
 		msgstr = strcat("\{1}", namestr, "^7: ", msgin);
 		cmsgstr = "";
 	}
