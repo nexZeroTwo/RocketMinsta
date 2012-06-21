@@ -687,11 +687,15 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 			error("... but I just wrote it!");
 	}
 
+	//print("MAPINFO: ^5", pFilename, "\n");
+
 	_MapInfo_Map_Reset();
 	for(;;)
 	{
 		if not((s = fgets(fh)))
 			break;
+
+		//print("MAPINFO: ", s, "\n");
 
 		// catch different sorts of comments
 		if(s == "")                    // empty lines
@@ -787,9 +791,10 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		else if(t == "clientsettemp_for_type")
 		{
 			t = car(s); s = cdr(s);
+			
 			if((f = gametype_Name_to_MapID(t)))
 			{
-				if(f & pGametypeToSet)
+				if(f & pGametypeToSet || t == "all")
 				{
 					t = car(s); s = cdr(s);
 					if not(cvar_value_issafe(t))
