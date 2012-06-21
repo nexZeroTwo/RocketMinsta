@@ -798,6 +798,14 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_endmatch", "0");
 	cvar_set("g_endmatch", "0");
 	
+	if(cvar_string("g_maplist") == "") {
+		bprint("Empty maplist: resetting to default.\n" );
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		if(cvar("g_maplist_shuffle"))
+			ShuffleMaplist();
+		localcmd("\nmenu_cmd sync\n");
+	}
+	
 	DPRM_Start();
 }
 
