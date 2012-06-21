@@ -1,11 +1,13 @@
 RocketMinsta is a major game modification for Nexuiz 2.5.2 servers.
 
-The RocketMinsta mod ("RM") extends the MinstaGib + Grappling Hook mutators by modifying the minsta gun, adding new play modes (Freeze Tag, VIP, and Total Domination) to the standard ones (Capture the Flag, Key Hunt, and Domination), and including significant HUD improvements for connected Nexuiz clients.  It also fixes several Nexuiz bugs and includes certain features from Xonotic and nexuiz-svn. Classic Nexuiz and the standard MinstaGib mode are still supported for server operators who just want the benefits of the fixes.
+The RocketMinsta mod ("RM") extends the MinstaGib, Grappling Hook, and "Camping" Rifle mutators of the Nexuiz 2.5.2 server. It modifies the behavior of the minsta gun, adds several new play modes (Freeze Tag, VIP, and Total Domination), and includes significant HUD improvements for connected Nexuiz clients.  RM also fixes several Nexuiz bugs and includes certain features from Xonotic and nexuiz-svn. Classic Nexuiz and the standard MinstaGib and Rifle modes are still supported for server operators who just want the benefits of the fixes.
+
+There are two ways to get the RM mod running on your server. You can install the current pre-compiled binary from http://rocketminsta.net/ or you can compile the source code yourself using the instructions that follow.
 
 
  -- Basic Installation --
 
-To get the RM mod running on your server, you will need a QuakeC compiler installed.  (We recommend "fteqcc" from this repository: git://git.xonotic.org/xonotic/fteqcc.git ).
+The RocketMinsta mod is written in QuakeC. If you have not already done so, you will need to install a QuakeC compiler.  (We recommend "fteqcc" from this repository: git://git.xonotic.org/xonotic/fteqcc.git ).
 
 Once you have built or installed a QuakeC compiler, then duplicate and rename the RocketMinsta file "EXAMPLE_config.sh" to "config.sh".  This file is the configuration file for build.sh, which is used to compile and install the mod.  Open this new file in your preferred text editor.
 
