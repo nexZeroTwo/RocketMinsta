@@ -221,11 +221,15 @@ void freezetag_CheckWinner()
 			teamname = "^3yellow";
             teamname_full = "^3Yellow team";
         }
-		else
+		else if(winner.team == COLOR_TEAM4)
         {
 			teamname = "^6pink";
             teamname_full = "^6Pink team";
-        }
+        } else {
+			bprint("^1BUG: ^7An invalid team somehow won! Aborting the round to prevent a crash\n");
+			freezetag_EndRound();
+			return;
+		}
         
         if(ft_teams > 2)
 			play2all("kh/capture.wav");
