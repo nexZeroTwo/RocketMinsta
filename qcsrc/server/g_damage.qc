@@ -948,6 +948,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				{
 					attacker.typehitsound += 1;
 					mirrordamage = damage * cvar("g_prec_mirrordamage");
+					bigprint_spec(attacker, "", "^1You have to shoot the rune carrier!", 2);
 				}
 			
 			if(g_inf)

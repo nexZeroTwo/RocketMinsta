@@ -478,7 +478,7 @@ string Sbar_DefaultColumnLayout()
 	return strcat( // fteqcc sucks
 		strcat("ping pl fps", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip/frags ", // tdm already has this in "score"
+		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
 		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks ",
 		"+kh/caps +kh/pickups +kh/kckills ",
