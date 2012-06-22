@@ -464,16 +464,15 @@ void reptable_make(string replacements) {
 }
 
 string apply_autoreplace(string msg) {
-	string reps = getrepids();
-	
 	if not(cvar("g_explosive_chat_autoreplace"))
 		return msg;
 	
-	if(reps == "")
-		return msg;
-	
-	if not(reptable_init)
+	if not(reptable_init) {
+		string reps = getrepids();
+		if(reps == "")
+			return msg;
 		reptable_make(reps);
+	}
 	
 	float i, len;
 	len = strlen(msg);
