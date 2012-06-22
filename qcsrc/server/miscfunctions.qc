@@ -482,7 +482,7 @@ string apply_autoreplace(string msg) {
 		return msg;		// no point
 		
 	for(i = 0; i < len; ++i) {
-		print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
+		//print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
 		
 		FOR_EACH_REPID(id) {
 			float slen = reptable_srclen[id];
@@ -491,10 +491,10 @@ string apply_autoreplace(string msg) {
 				continue;
 			
 			string p = strtolower(substring(msg, i, slen));
-			print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
+			//print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
 			
 			if(p == reptable_src[id]) {
-				print("apply_autoreplace: success\n");
+				//print("apply_autoreplace: success\n");
 				
 				string head = substring(msg, 0, i);
 				string tail = substring(msg, i + slen, len);
