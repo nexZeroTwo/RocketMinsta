@@ -212,15 +212,36 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 		*/
 		
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
-		if((pGametype & MAPINFO_TYPE_DEATHMATCH) ||
-		   (MapInfo_Map_supportedGametypes & pGametype) != 0)
-
+		
+		float ok = FALSE;
+		
+		if((pGametype & MAPINFO_TYPE_CTS) == MAPINFO_TYPE_CTS || (pGametype & MAPINFO_TYPE_RACE) == MAPINFO_TYPE_RACE) {
+			if((MapInfo_Map_supportedGametypes & pGametype) == pGametype)
+			if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
+			if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired) {
+				bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+				ok = TRUE;
+			}
+		} else {
+			if not((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTS) == MAPINFO_TYPE_CTS)
+			//if not((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RACE) == MAPINFO_TYPE_RACE)
+			if((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DEATHMATCH) == MAPINFO_TYPE_DEATHMATCH ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTF) == MAPINFO_TYPE_CTF ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DOMINATION) == MAPINFO_TYPE_DOMINATION ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ONSLAUGHT) == MAPINFO_TYPE_ONSLAUGHT ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ASSAULT) == MAPINFO_TYPE_ASSAULT ||
+			   (MapInfo_Map_supportedGametypes & pGametype) == pGametype)
+			if((MapInfo_Map_flags & pFlagsForbidden) == 0) {
+				bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+				ok = TRUE;
+			}
+		}
+		
+		if not(ok)
+			print("^1 *** ", MapInfo_Map_bspname, " filtered\n");
+		
 		//if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
-		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
 		//if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
-			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
-			
-		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;
 	MapInfo_ClearTemps();
