@@ -26,6 +26,10 @@ void JB_Log(string s) {
 	print(strcat("Jailbreak: ", s, "\n"));
 }
 
+void JB_BLog(string s) {
+	bprint(strcat("Jailbreak: ", s, "\n"));
+}
+
 //
 //	Gametype logic
 //
@@ -52,6 +56,20 @@ void JB_Imprison(entity attacker) {
 		et = JB_GetEnemyTeamOf(self.team);
 	
 	entity spot = JB_ChooseJailSpawnpoint(et);
+	
+	float tries;
+	tries = 3;
+	
+	while(!spot && tries) {
+		spot = JB_ChooseJailSpawnpoint(et);
+		tries--;
+	}
+	
+	if(!spot) {
+		JB_BLog(strcat("Failed to pick a jail spawnpoint for ", self.netname, "^7, cannot imprison!"));
+		return;
+	}
+	
 	//self.origin = spot.origin;
 	//setorigin(self, self.origin);
 	
