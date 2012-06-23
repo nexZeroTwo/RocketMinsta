@@ -50,7 +50,7 @@ void JB_Imprison(entity attacker) {
 	
 	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
 	
-	if(attacker && attacker.team != self.team)
+	if(attacker && attacker.team && attacker.team != self.team)
 		et = attacker.team;
 	else
 		et = JB_GetEnemyTeamOf(self.team);
