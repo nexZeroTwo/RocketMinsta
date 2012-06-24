@@ -197,8 +197,5 @@ ip2c.qc
 monsters/defs.qc
 monsters/fight.qc
 monsters/ai.qc
-monsters/m_monsters.qc
-monsters/beastiary.autogen.qc
 
 csqcprojectile.qc
-

@@ -17,8 +17,20 @@ MENUSUM=""
 
 function list-monsters
 {
-	for i in $(ls qcsrc/server/monsters/beastiary)
+	for i in $(ls $QCSOURCE/server/monsters/beastiary)
 		do echo ${i%%.qc}
+	done
+}
+
+function make-server-srclist
+{
+	# This function should be called fuck-you-fteqcc or something
+	cat $QCSOURCE/server/progs.raw.src
+	
+	echo "monsters/m_monsters.qc"
+	echo "monsters/beastiary.autogen.qc"
+	for monster in $(list-monsters); do
+		echo "monsters/beastiary/$monster.qc"
 	done
 }
 
@@ -63,16 +75,6 @@ done)
 	objerror("Attempted to spawn an unknown monster");
 	return world;
 }
-
-// These are not #includes because FTEQCC is an asshole
-
-$(for monster in $(list-monsters); do cat <<EOB
-#message Beastiary: compilling $monster 
-$(cat qcsrc/server/monsters/beastiary/$monster.qc)
-#message Beastiary: compilled $monster 
-EOB
-done)
-
 EOF
 }
 
@@ -103,6 +105,7 @@ function buildall
 	done
 
 	make-beastiary > "$QCSOURCE"/server/monsters/beastiary.autogen.qc || exit 1
+	make-server-srclist > "$QCSOURCE"/server/progs.src || exit 1
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -115,7 +118,7 @@ function buildall
     makedata menu "$1" "$2"
     rm -v "menu.pk3dir"/*.dat
 
-    rm -v "$QCSOURCE"/common/rm.autogen.qh "$QCSOURCE"/server/monsters/beastiary.autogen.qc
+    rm -v "$QCSOURCE"/common/rm.autogen.qh "$QCSOURCE"/server/monsters/beastiary.autogen.qc "$QCSOURCE"/server/progs.src
 }
 
 function tocompress
@@ -263,7 +266,12 @@ function buildqc
     local sum=""
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
-        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        
+		if [ "progname" = "progs" ]; then
+			sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | grep -v "progs.src" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+		else
+			sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+		fi
         
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
