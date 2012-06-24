@@ -154,6 +154,7 @@ void() monster_wanderpaththink =
 			v1 = v;
 		}
 	}
+	
 	setorigin(self, v1 + self.owner.origin);
 	self.owner.ideal_yaw = vectoyaw(self.origin - self.owner.origin);
 };
@@ -165,6 +166,8 @@ void() monster_wanderpathtouch =
 	if (other.movetarget != self)
 		return;
 
+	bprint("monster_wanderpathtouch()\n");
+
 	if (other.enemy)
 		return;		// fighting, not following a path
 
@@ -175,13 +178,18 @@ void() monster_wanderpathtouch =
 
 void() monster_spawnwanderpath =
 {
+	bprint("monster_spawnwanderpath()\n");
+	
+	if(self.movetarget.classname == "monster_wanderpath")
+		return;
+	
 	newmis = spawn();
 	newmis.classname = "monster_wanderpath";
 	newmis.solid = SOLID_TRIGGER;
 	newmis.touch = monster_wanderpathtouch;
 	setsize (newmis, '-8 -8 -8', '8 8 8');
 	newmis.think = monster_wanderpaththink;
-	newmis.nextthink = time + random() * 10 + 1;
+	newmis.nextthink = time /*+ random() * 10*/ + 1;
 	newmis.owner = self;
 	self.goalentity = self.movetarget = newmis;
 };

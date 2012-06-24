@@ -465,16 +465,3 @@ void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha
 	SET_POS_AND_SZ_Y_ASPECT(TRUE)
 	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
 }
-
-float approach(float v, float t, float d) {
-	if(v < t) {
-		v += d;
-		if(v > t)
-			return t;
-	} else if(v > t) {
-		v -= d;
-		if(v < t)
-			return t;
-	}
-	return v;
-}

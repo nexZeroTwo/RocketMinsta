@@ -1666,3 +1666,16 @@ void WriteInt24_t(float dest, float val)
 }
 #endif
 #endif
+
+float approach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	return v;
+}

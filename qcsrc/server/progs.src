@@ -2,7 +2,7 @@
 
 
 
-../common/rm_auto.qh
+../common/rm.autogen.qh
 ../common/util-pre.qh
 sys.qh
 pre-builtins.qh
@@ -198,6 +198,7 @@ monsters/defs.qc
 monsters/fight.qc
 monsters/ai.qc
 monsters/m_monsters.qc
+monsters/beastiary.autogen.qc
 
 csqcprojectile.qc
 

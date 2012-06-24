@@ -10,6 +10,8 @@
 //		<code>
 // };
 
+#define dprint bprint
+
 .float ismonster;
 
 .float modelindex2;
@@ -226,7 +228,8 @@ void() walkmonster_start_go =
 		{
 			if ((self.spawnflags & MONSTER_WANDER) && (!self.monsterawaitingteleport) && (self.spawnflags & 3) == 0 && (world.model != "maps/e1m7.bsp"))
 			{
-				monster_spawnwanderpath();
+				//if(!self.movetarget)
+					monster_spawnwanderpath();
 				self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin);
 				self.th_walk ();
 			}
@@ -241,7 +244,8 @@ void() walkmonster_start_go =
 	{
 		if ((self.spawnflags & MONSTER_WANDER) && (!self.monsterawaitingteleport) && (self.spawnflags & 3) == 0 && (world.model != "maps/e1m7.bsp"))
 		{
-			monster_spawnwanderpath();
+			//if(!self.movetarget)
+				monster_spawnwanderpath();
 			self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin);
 			self.th_walk ();
 		}
@@ -465,4 +469,26 @@ void(vector org, float bodydamage, float armordamage, vector force, float damgty
                 te_spark(org, v, armordamage * 3);
         if (bodydamage > 0)
                 te_blood(org, v, bodydamage);
+}
+
+typedef void() monster_setup_f;
+typedef entity() monster_spawn_f;
+
+monster_setup_f monster_setup_common = {
+	self.solid = SOLID_SLIDEBOX;
+	self.movetype = MOVETYPE_WALK;
+}
+
+monster_setup_f monster_getsetupfunc(string);
+
+entity monster_spawn_ex(string clsname, monster_setup_f setupfunc) {
+	entity imp = spawn();
+	imp.classname = clsname;
+	
+	entity oldself = self;
+	self = imp;
+	setupfunc();
+	self = oldself;
+	
+	return imp;
 }

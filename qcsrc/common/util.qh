@@ -195,3 +195,5 @@ void WriteInt24_t(float dest, float val);
 #endif
 
 string mmss(float tenths);
+
+float approach(float v, float t, float d);
