@@ -157,7 +157,6 @@ void() monster_wanderpaththink =
 	
 	setorigin(self, v1 + self.owner.origin);
 	self.owner.ideal_yaw = vectoyaw(self.origin - self.owner.origin);
-	bprint("yaw update: ", ftos(self.owner.ideal_yaw), "\n");
 };
 
 void() monster_wanderpathtouch =

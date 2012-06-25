@@ -50,7 +50,10 @@ entity monster_${monster}_spawn() {
 }
 
 void spawnfunc_monster_$monster() {
+	monster_prespawn();
 	monster_${monster}_setup();
+	self.mon_setupfunc = monster_${monster}_setup;
+	self.reset = monster_reset;
 }
 
 EOB

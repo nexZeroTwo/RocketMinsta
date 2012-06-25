@@ -8,6 +8,8 @@ const float  IMP_MODELSCALE = 3;
 #define IMP_ANIM_STILL 0
 #define IMP_ANIM_WALK 1
 #define IMP_ANIM_ATTACK 2
+#define IMP_ANIM_PAIN 3
+#define IMP_ANIM_DEATH 4
 
 void monster_imp_stand() {
 	self.frame = IMP_ANIM_STILL;
@@ -71,11 +73,17 @@ void imp_missle_fire() {
 
 void monster_imp_missile() {
 	self.jb_torture_suggestedforce = 1000;
-	ATTACK_FINISHED(self) = time + 6/7 + 1;
+	ATTACK_FINISHED(self) = time + 6/7 + 5;
 	self.cnt = time + 6/7;
 	self.frame = IMP_ANIM_ATTACK;
 	monster_stop();
 	imp_missle_fire();
+}
+
+void monster_imp_die() {
+	self.frame = IMP_ANIM_DEATH;
+	self.imphand.frame = self.frame;
+	SUB_SetFade(self.imphand, time + 3, 3);
 }
 
 void imp_hand_think() {
@@ -83,8 +91,9 @@ void imp_hand_think() {
 	self.nextthink = time;
 }
 
-void imp_damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-	print("IMP DAMAGE\n");
+float monster_imp_pain(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	self.frame = IMP_ANIM_PAIN;
+	return FALSE;
 }
 
 monster_setup_f monster_imp_setup = {
@@ -98,13 +107,18 @@ monster_setup_f monster_imp_setup = {
 	setsize(self, IMP_MINS, IMP_MAXS);
 	droptofloor();
 	
-	entity hand = spawn();
-	setmodel(hand, "models/imp_hand.md2");
-	hand.owner = self;
-	hand.think = imp_hand_think;
-	hand.nextthink = time;
-	self.imphand = hand;
-	setattachment(hand, self, "");
+	if(self.imphand.alpha < 1)
+		remove(self.imphand);
+	
+	if(!self.imphand) {
+		entity hand = spawn();
+		setmodel(hand, "models/imp_hand.md2");
+		hand.owner = self;
+		hand.think = imp_hand_think;
+		hand.nextthink = time;
+		self.imphand = hand;
+		setattachment(hand, self, "");
+	}
 	
 	self.mon_speed = 50;
 	self.mon_runspeed = 150;
@@ -112,9 +126,13 @@ monster_setup_f monster_imp_setup = {
 	self.th_walk = monster_imp_walk;
 	self.th_stand = monster_imp_stand;
 	self.th_missile = monster_imp_missile;
-	self.event_damage = imp_damage;
+	self.th_pain = monster_imp_pain;
+	self.th_die = monster_imp_die;
 	self.damageforcescale = 1;
 	self.mon_drunkenness = 10;
+	self.mon_paintime = 2/7;
 	
 	walkmonster_start();
+	
+	bprint("IMP SETUP DONE for ", self.classname, "\n");
 }

@@ -198,6 +198,17 @@ void() walkmonster_start_go =
 
 	//self.cantrigger = TRUE;
 
+	if(time < game_starttime) {
+		self.th_stand();
+		self.nextthink = time + 1;
+		return;
+	}
+
+	if(time < self.pain_finished) {
+		self.nextthink = random() * 0.5 + 0.1;
+		return;
+	}
+
 	self.takedamage = DAMAGE_AIM;
 
 	//self.ideal_yaw = self.angles * '0 1 0';
@@ -305,6 +316,17 @@ void() flymonster_start_go =
 		monsterinwall();
 	}
 
+	if(time < game_starttime) {
+		self.th_stand();
+		self.nextthink = time + 1;
+		return;
+	}
+
+	if(time < self.pain_finished) {
+		self.nextthink = random() * 0.5 + 0.1;
+		return;
+	}
+	
 	//self.cantrigger = TRUE;
 
 	if (monsterwander)
@@ -398,6 +420,17 @@ void() swimmonster_start_go =
 	if (monsterwander)
 		self.spawnflags = self.spawnflags | MONSTER_WANDER;
 
+	if(time < game_starttime) {
+		self.th_stand();
+		self.nextthink = time + 1;
+		return;
+	}
+
+	if(time < self.pain_finished) {
+		self.nextthink = random() * 0.5 + 0.1;
+		return;
+	}
+
 	if (self.target)
 	{
 		self.goalentity = self.movetarget = find(world, targetname, self.target);
@@ -461,6 +494,7 @@ void() swimmonster_start =
 	monster_setalpha(0);
 };
 
+/*
 void(vector org, float bodydamage, float armordamage, vector force, float damgtype) genericbleedfunc =
 {
         local vector v;
@@ -470,6 +504,67 @@ void(vector org, float bodydamage, float armordamage, vector force, float damgty
         if (bodydamage > 0)
                 te_blood(org, v, bodydamage);
 }
+*/
+
+void genericbleedfunc(entity attacker, vector org, float damage, vector force, float deathtype) {
+	Violence_GibSplash_At(org + randomvec() * 10, force + randomvec() * 20, 2, bound(0, damage * 0.1, 20), self, attacker);
+}
+
+// I'd rather not use self here...
+void monster_kill(entity m, entity inflictor, entity attacker, float dt) {
+	m.event_damage = SUB_Null;
+	m.takedamage = DAMAGE_NO;
+	m.solid = SOLID_CORPSE;
+	m.th_stand();
+	monster_stop();
+	entity oldself = self;
+	self = m;
+	m.th_die(inflictor, attacker, dt);
+	self = oldself;
+	SUB_MonsterSetFade(m, time + 3, 3);
+}
+
+void monster_suidice() {
+	monster_kill(self, self, self, DEATH_KILL);
+}
+
+void monster_damage_common(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	if(self.th_pain(inflictor, attacker, damage, deathtype, hitloc, force))
+		return;
+	
+	self.pain_finished = time + self.mon_paintime;
+	
+	self.health -= damage;
+	self.bleedfunc(attacker, hitloc, damage, force, deathtype);
+	
+	if(self.health < 1)
+		monster_kill(self, inflictor, attacker, deathtype);
+}
+
+// only for spawnfuncs
+void monster_prespawn() {
+	self.mon_spawnorigin = self.origin;
+	self.mon_spawnangles = self.angles;
+	self.mon_spawnclassname = self.classname;
+}
+
+void monster_reset() {
+	if(!self.mon_setupfunc)
+		error("monster_reset but no mon_spawnfunc. WTF are you doing?");
+	
+	self.classname = self.mon_spawnclassname;
+	setorigin(self, self.mon_spawnorigin);
+	self.angles = self.mon_spawnangles;
+	
+	self.enemy = world;
+	self.oldenemy = world;
+	self.movetarget = world;
+	self.velocity = '0 0 0';
+	self.ideal_yaw = 0;
+	
+	self.mon_setupfunc();
+	self.reset = monster_reset;
+}
 
 monster_setup_f monster_setup_common = {
 	self.solid = SOLID_SLIDEBOX;
@@ -477,9 +572,13 @@ monster_setup_f monster_setup_common = {
 	self.takedamage = DAMAGE_AIM;
 	self.th_checkattack = GenericCheckAttack;
 	self.spawnflags = self.spawnflags | MONSTER_WANDER;
-	self.mon_mass = 3;
+	self.mon_mass = 30;
 	self.yaw_speed = 5;
 	self.mon_randseed = random();
+	self.event_damage = monster_damage_common;
+	
+	// this gets overriden by spawnfuncs: if a monster entity was spawned by a mapper, then it will respawn on reset.
+	self.reset = SUB_Remove;
 }
 
 monster_setup_f monster_getsetupfunc(string);
@@ -522,7 +621,6 @@ void monster_run() {
 }
 
 void monster_walk() {
-	bprint("ideal_yaw = ", ftos(self.ideal_yaw), "\n");
 	monster_move(self.mon_speed);
 }
 

@@ -8,6 +8,8 @@
 .void()         th_melee;
 //.void(entity attacker, float damage, float damgtype, string dethtype)           th_pain; // TODO Nexuiz uses event_damage
 //.void()         th_die; // TODO never called directly by Nexuiz
+.float(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) th_pain;
+.void(entity inflictor, entity attacker, float hittype) th_die;
 .entity         oldenemy;               // mad at this player before taking damage
 entity  newmis;                 // launch_spike sets this after spawning it
 
@@ -49,8 +51,8 @@ float monsterwander;
 
 .float candrown;
 
-.void(vector org, float bodydamage, float armordamage, vector vel, float damgtype) bleedfunc;
-void(vector org, float bodydamage, float armordamage, vector vel, float damgtype) genericbleedfunc;
+.void(entity attacker, vector org, float bodydamage, vector vel, float damgtype) bleedfunc;
+void(entity attacker, vector org, float bodydamage, vector vel, float damgtype) genericbleedfunc;
 
 typedef void() monster_setup_f;
 typedef entity() monster_spawn_f;
@@ -61,3 +63,11 @@ typedef entity() monster_spawn_f;
 .float mon_mass;
 .float mon_drunkenness;
 .float mon_curyaw;
+.float mon_paintime;
+
+.vector mon_spawnorigin;
+.vector mon_spawnangles;
+.monster_setup_f mon_setupfunc;
+.string mon_spawnclassname;
+
+void monster_stop();

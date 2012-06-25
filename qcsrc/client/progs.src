@@ -5,7 +5,7 @@ Defs.qc
 
 ../common/gametype.qh
 
-../common/rm_auto.qh
+../common/rm.autogen.qh
 ../common/util-pre.qh
 
 csqc_constants.qc

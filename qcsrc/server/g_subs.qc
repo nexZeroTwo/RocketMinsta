@@ -112,9 +112,14 @@ SUB_VanishOrRemove
 Makes client invisible or removes non-client
 ==================
 */
+
+.void() vanish;
+
 void SUB_VanishOrRemove (entity ent)
 {
-	if (ent.flags & FL_CLIENT)
+	if(ent.vanish)
+		ent.vanish();
+	else if (ent.flags & FL_CLIENT)
 	{
 		// vanish
 		ent.model = "";
@@ -155,6 +160,29 @@ void SUB_SetFade (entity ent, float when, float fadetime)
 	ent.fade_time = when;
 	ent.think = SUB_SetFade_Think;
 	ent.nextthink = when;
+}
+
+void SUB_Monster_Vanish() {
+	self.model = "";
+	self.effects = 0;
+	self.glow_size = 0;
+	self.pflags = 0;
+	self.solid = SOLID_NOT;
+	self.alpha = 0;
+	self.takedamage = DAMAGE_NO;
+	self.event_damage = SUB_Null;
+	self.use = SUB_Null;
+	self.touch = SUB_Null;
+	self.classname = "vanished_monster";
+	self.iscreature = FALSE;
+	self.think = SUB_Null;
+	setsize(self, '0 0 0', '0 0 0');
+}
+
+void SUB_MonsterSetFade(entity ent, float when, float fadetime) {
+	if(ent.reset)	// monster may respawn - we must not really remove it, but hide the entity
+		ent.vanish = SUB_Monster_Vanish;
+	SUB_SetFade(ent, when, fadetime);
 }
 
 /*
