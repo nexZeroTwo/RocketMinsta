@@ -172,6 +172,13 @@ float HG_NameToType(string t) {
 	}
 }
 
+float HG_TypeToCSQCProjType(float t) {
+	switch(t) {
+		case HG_NAPALM:	return PROJECTILE_HG_NAPALM;
+		default:		return PROJECTILE_HG_GENERIC;
+	}
+}
+
 #define GV(v) (GRENVAR(self.hg_type, v))
 void HG_Normal_Explode (void) {
 	float rad = GV("radius"), i;
@@ -279,7 +286,7 @@ void HG_Attack()
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 	
-	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
+	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
 	
 	if (hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
