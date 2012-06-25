@@ -53,7 +53,7 @@ vector movelib_inertmove(vector new_vel,float new_bias)
 }
 
 .float  movelib_lastupdate;
-void movelib_move(vector force,float max_velocity,float drag,float mass,float breakforce)
+void movelib_move(vector force, float max_velocity, float drag, float mass, float breakforce)
 {
     float deltatime;
     float acceleration;
@@ -98,7 +98,7 @@ void movelib_move(vector force,float max_velocity,float drag,float mass,float br
 
     if (max_velocity)
         if (mspeed > max_velocity)
-            self.velocity = normalize(self.velocity) * (mspeed - 50);//* max_velocity;
+            self.velocity = normalize(self.velocity) * max_velocity; //* (mspeed - 50);
 }
 
 /*

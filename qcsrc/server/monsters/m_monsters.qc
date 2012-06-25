@@ -200,7 +200,7 @@ void() walkmonster_start_go =
 
 	self.takedamage = DAMAGE_AIM;
 
-	self.ideal_yaw = self.angles * '0 1 0';
+	//self.ideal_yaw = self.angles * '0 1 0';
 	if (!self.yaw_speed)
 		self.yaw_speed = 20;
 	self.view_ofs = '0 0 25';
@@ -228,7 +228,7 @@ void() walkmonster_start_go =
 		{
 			if ((self.spawnflags & MONSTER_WANDER) && (!self.monsterawaitingteleport) && (self.spawnflags & 3) == 0 && (world.model != "maps/e1m7.bsp"))
 			{
-				//if(!self.movetarget)
+				if(!self.movetarget)
 					monster_spawnwanderpath();
 				self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin);
 				self.th_walk ();
@@ -244,7 +244,7 @@ void() walkmonster_start_go =
 	{
 		if ((self.spawnflags & MONSTER_WANDER) && (!self.monsterawaitingteleport) && (self.spawnflags & 3) == 0 && (world.model != "maps/e1m7.bsp"))
 		{
-			//if(!self.movetarget)
+			if(!self.movetarget)
 				monster_spawnwanderpath();
 			self.ideal_yaw = vectoyaw(self.goalentity.origin - self.origin);
 			self.th_walk ();
@@ -471,12 +471,15 @@ void(vector org, float bodydamage, float armordamage, vector force, float damgty
                 te_blood(org, v, bodydamage);
 }
 
-typedef void() monster_setup_f;
-typedef entity() monster_spawn_f;
-
 monster_setup_f monster_setup_common = {
 	self.solid = SOLID_SLIDEBOX;
 	self.movetype = MOVETYPE_WALK;
+	self.takedamage = DAMAGE_AIM;
+	self.th_checkattack = GenericCheckAttack;
+	self.spawnflags = self.spawnflags | MONSTER_WANDER;
+	self.mon_mass = 3;
+	self.yaw_speed = 5;
+	self.mon_randseed = random();
 }
 
 monster_setup_f monster_getsetupfunc(string);
@@ -491,4 +494,38 @@ entity monster_spawn_ex(string clsname, monster_setup_f setupfunc) {
 	self = oldself;
 	
 	return imp;
+}
+
+//		ok, the monster code is a mess
+//		so I'll add some wrapper (and non-wrapper) functions here
+//		to make it more messy
+
+#define APPLYDRUNKNESS self.angles_y = self.mon_curyaw + sin(time + 2 * PI * self.mon_randseed) * self.mon_drunkenness
+
+void monster_turntogoal(float changeangles, vector goal) {
+	self.ideal_yaw = vectoyaw(goal - self.origin);
+	self.mon_curyaw = approach(self.mon_curyaw, self.ideal_yaw, self.yaw_speed);
+	if(changeangles)
+		ChangeYaw();
+}
+
+void monster_move(float spd) {
+	monster_turntogoal(FALSE, self.movetarget.origin);
+	APPLYDRUNKNESS;
+	makevectors(self.angles);
+	movelib_move(v_forward * self.mon_runspeed, self.mon_runspeed, 0, self.mon_mass, 0);
+}
+
+void monster_run() {
+	ai_run(0);
+	monster_move(self.mon_runspeed);
+}
+
+void monster_walk() {
+	bprint("ideal_yaw = ", ftos(self.ideal_yaw), "\n");
+	monster_move(self.mon_speed);
+}
+
+void monster_stop() {
+	self.velocity = '0 0 0';
 }

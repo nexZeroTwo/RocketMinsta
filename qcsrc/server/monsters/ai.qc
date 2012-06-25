@@ -157,6 +157,7 @@ void() monster_wanderpaththink =
 	
 	setorigin(self, v1 + self.owner.origin);
 	self.owner.ideal_yaw = vectoyaw(self.origin - self.owner.origin);
+	bprint("yaw update: ", ftos(self.owner.ideal_yaw), "\n");
 };
 
 void() monster_wanderpathtouch =
@@ -165,8 +166,6 @@ void() monster_wanderpathtouch =
 		return;
 	if (other.movetarget != self)
 		return;
-
-	bprint("monster_wanderpathtouch()\n");
 
 	if (other.enemy)
 		return;		// fighting, not following a path
@@ -178,8 +177,6 @@ void() monster_wanderpathtouch =
 
 void() monster_spawnwanderpath =
 {
-	bprint("monster_spawnwanderpath()\n");
-	
 	if(self.movetarget.classname == "monster_wanderpath")
 		return;
 	
@@ -888,6 +885,8 @@ void(float dist) ai_run =
 	}
 
 	// head straight in
-	movetogoal (dist);		// done in C code...
+	//movetogoal (dist);		// done in C code...
+	
+	// movement handled in monster_
 };
 

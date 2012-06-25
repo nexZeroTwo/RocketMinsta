@@ -51,3 +51,13 @@ float monsterwander;
 
 .void(vector org, float bodydamage, float armordamage, vector vel, float damgtype) bleedfunc;
 void(vector org, float bodydamage, float armordamage, vector vel, float damgtype) genericbleedfunc;
+
+typedef void() monster_setup_f;
+typedef entity() monster_spawn_f;
+
+.float mon_randseed;
+.float mon_speed;
+.float mon_runspeed;
+.float mon_mass;
+.float mon_drunkenness;
+.float mon_curyaw;
