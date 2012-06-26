@@ -424,7 +424,7 @@ void JB_Torture_Grenades() {
 	gren.health = 1;
 	gren.damageforcescale = 4;
 	gren.event_damage = W_Grenade_Damage;
-	gren.velocity = w_shotdir * self.jb_torture_suggestedforce + v_up * sin(self.jb_torture_suggestedforce);
+	gren.velocity = w_shotdir * self.jb_torture_suggestedforce + v_up * (self.jb_torture_suggestedforce + crandom() * 0.2 * self.jb_torture_suggestedforce);
 	W_SetupProjectileVelocity(gren);
 	
 	gren.angles = vectoangles (gren.velocity);
@@ -472,8 +472,8 @@ void JB_Torture_Zap() {
 }
 
 void JB_Torture_RegisterAll() {
-	JB_Torture_Register(JB_Torture_Napalm);
-	JB_Torture_Register(JB_Torture_Plasma);
+	//JB_Torture_Register(JB_Torture_Napalm);
+	//JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
 }
