@@ -36,7 +36,7 @@ void sm_Attach(entity host, entity slave) {
 	slave.sm_canattach = 0;
 	
 	FOR_EACH_PLAYER(other) if(other.team != slave.team)
-		bigprint_spec(other, "^1warning!", strcat(slave.netname, " ^7 is now ", host.netname, "^7's soulmate!"), 2);
+		bigprint_spec(other, "^1Warning!", strcat(slave.netname, " ^7 is now ", host.netname, "^7's soulmate!"), 2);
 		
 	centerprint_spec(slave, strcat("You are now ", host.netname, "^7's soulmate!"));
 	centerprint_spec(host, strcat(slave.netname, "^7 is now your soulmate!"));
@@ -102,7 +102,7 @@ void sm_Frame() {
 	}
 	
 	if(self.sm_canattach && !sm_IsSoulMate(self) && time > self.sm_nextnotify) {
-		bigprint_spec(self, "you've got a soul gem!", "Collide with a teammate to connect!", 2);
+		bigprint_spec(self, "You've got a Soul Gem!", "Collide with a teammate to connect!", 2);
 		self.sm_nextnotify = time + 5;
 	}
 	

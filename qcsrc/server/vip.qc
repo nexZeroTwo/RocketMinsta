@@ -323,7 +323,7 @@ void vip_EndRound_Think()
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("vip starts in: ", ftos(timeleft)), "", 1);
+            bigprint_spec(e, strcat("VIP starts in: ", ftos(timeleft)), "", 1);
         }
     }
     self.nextthink = time + 1;
@@ -365,9 +365,9 @@ void vip_SoulGem_StartRound_Think()
 			bigprint_clear_spec(e);
 			
 			if((e.team == COLOR_TEAM1 && redvip) || (e.team == COLOR_TEAM2 && bluevip))
-				bigprint_spec(e, "waiting for an enemy VIP", "", 5);
+				bigprint_spec(e, "Waiting for an enemy VIP", "", 5);
 			else
-				bigprint_spec(e, "waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
+				bigprint_spec(e, "Waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
 		}
 		
 		self.nextthink = time + 5;
@@ -612,7 +612,7 @@ void vip_MakePlayerVIP(entity pl)
 	switch(pl.team)
 	{
 		case COLOR_TEAM1:
-			bigprint_spec(pl, "you are the ^1red^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^1RED^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^1RED^7 VIP!\n");
 			
 			WaypointSprite_Spawn("redvip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -621,7 +621,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		case COLOR_TEAM2:
-			bigprint_spec(pl, "you are the ^4blue^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^4BLUE^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^4BLUE^7 VIP!\n");
 			
 			WaypointSprite_Spawn("bluevip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -630,7 +630,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		default:
-			bigprint_spec(pl, "you are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
+			bigprint_spec(pl, "You are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
 			bprint(pl.netname, " ^7screwed everything up\n");
 			break;
 	}
@@ -822,7 +822,7 @@ void vip_RedVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^4blue^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^4Blue ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM2)
 			hudflash_teamcolor_default_spec(e);
@@ -845,7 +845,7 @@ void vip_BlueVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^1red^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^1Red ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM1)
 			hudflash_teamcolor_default_spec(e);

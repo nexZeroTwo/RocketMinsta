@@ -1824,17 +1824,17 @@ float WinningCondition_Scores(float limit, float leadlimit)
 			if (leaderfrags == limit - 1)
 			{
 				play2all("announcer/robotic/1fragleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "one frag remains", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "One frag remains!", winmsg, 2);
 			}
 			else if (leaderfrags == limit - 2)
 			{
 				play2all("announcer/robotic/2fragsleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "two frags remain", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "Two frags remain!", winmsg, 2);
 			}
 			else if (leaderfrags == limit - 3)
 			{
 				play2all("announcer/robotic/3fragsleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "three frags remain", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "Three frags remain!", winmsg, 2);
 			}
 		}
 	}

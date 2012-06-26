@@ -469,8 +469,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						//blood_message = "^1First blood\n";
 						//victim_message = "^1First victim\n";  // or First casualty
 
-						bigprint_spec(attacker, "^7first^1blood", "", 1);
-						bigprint_spec(targ, "^7first^0victim", "", 1);
+						bigprint_spec(attacker, "^7First ^1Blood", "", 1);
+						bigprint_spec(targ, "^7First ^0Victim", "", 1);
 					}
 				}
 
@@ -516,7 +516,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 							}
 
 							play2(attacker, "announcer/male/awesome.wav");
-							bigprint_spec(attacker, "holy^1shit", "Awesome frag", 1);
+							bigprint_spec(attacker, "Holy ^1Shit", "Awesome frag", 1);
 					                if(prec_check_aggression(attacker, inflictor, targ))
 						        	PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
 						}
@@ -699,7 +699,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 unleashes ^1RAGE\n");
 						announce(attacker, "announcer/male/05kills.wav");
-						bigprint_spec(attacker, "^xFA0rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xFA0Rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 10)
@@ -709,7 +709,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 starts the ^1MASSACRE!\n");
 						announce(attacker, "announcer/male/10kills.wav");
-						bigprint_spec(attacker, "^xF80massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF80Massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 15)
@@ -719,7 +719,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 executes ^1MAYHEM!\n");
 						announce(attacker, "announcer/male/15kills.wav");
-						bigprint_spec(attacker, "^xF60mayhem!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF60Mayhem!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 20)
@@ -729,7 +729,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 is a ^1BERSERKER!\n");
 						announce(attacker, "announcer/male/20kills.wav");
-						bigprint_spec(attacker, "^xF40berserker!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF40Berserker!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 25)
@@ -739,7 +739,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 inflicts ^1CARNAGE!\n");
 						announce(attacker, "announcer/male/25kills.wav");
-						bigprint_spec(attacker, "^xF20carnage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^xF20Carnage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 				else if (attacker.killcount == 30)
@@ -749,7 +749,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					} else {
 						bprint (a,"^7 unleashes ^1ARMAGEDDON!\n");
 						announce(attacker, "announcer/male/30kills.wav");
-						bigprint_spec(attacker, "^1armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
+						bigprint_spec(attacker, "^1Armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
 					}
 				}
 
@@ -830,7 +830,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					
 				if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
 					announce(targ, "announcer/male/botlike.wav");
-					bigprint_spec(targ, "^0bot^7like!", "", 1);
+					bigprint_spec(targ, "^0Bot^7like!", "", 1);
 				}
 			}
 

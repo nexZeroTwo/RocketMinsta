@@ -11,7 +11,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	entity e;
 	
 	FOR_EACH_PLAYER(e)
-		bigprint_spec(e, strcat("^3", p.netname), strcat("got a ^3", n, "^7 bonus (", reason, ")"), 3);
+		bigprint_spec(e, strcat("^3", p.netname), strcat("Got a ^3", n, "^7 bonus (", reason, ")"), 3);
 	bprint(strcat("^3", p.netname, " ^7got a ^3", n, "^7 bonus (", reason, ")\n"));
 	play2all("kh/alarm.wav");
 }
@@ -312,7 +312,7 @@ void HG_Frame()
 			held = 0;
 	
 	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
-		bigprint_spec(self, "out of grenades", "", 1);
+		bigprint_spec(self, "Out of Grenades", "", 1);
 	
 	if(held && time >= self.hg_next && self.hg_ammo && mayfire)
 		self.hg_power = bound(0,

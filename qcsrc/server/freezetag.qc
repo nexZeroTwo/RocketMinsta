@@ -47,7 +47,7 @@ void freezetag_EndRound_Think()
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("freezetag starts in: ", ftos(timeleft)), "", 1);
+            bigprint_spec(e, strcat("FreezeTag starts in: ", ftos(timeleft)), "", 1);
         }
     }
     self.nextthink = time + 1;
@@ -206,24 +206,24 @@ void freezetag_CheckWinner()
 	{
 		if(winner.team == COLOR_TEAM1)
         {
-			teamname = "^1red";
+			teamname = "^1Red";
             teamname_full = "^1Red team";
             if(ft_teams < 3) play2all("ctf/red_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
-			teamname = "^4blue";
+			teamname = "^4Blue";
             teamname_full = "^4Blue team";
             if(ft_teams < 3) play2all("ctf/blue_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
-			teamname = "^3yellow";
+			teamname = "^3Yellow";
             teamname_full = "^3Yellow team";
         }
 		else if(winner.team == COLOR_TEAM4)
         {
-			teamname = "^6pink";
+			teamname = "^6Pink";
             teamname_full = "^6Pink team";
         } else {
 			bprint("^1BUG: ^7An invalid team somehow won! Aborting the round to prevent a crash\n");
@@ -236,7 +236,7 @@ void freezetag_CheckWinner()
         
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
-            bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
+            bigprint_spec(e, strcat(teamname, " ^7scores!"), "All opponents are frozen", 5);
             
             if(e.team == winner.team)
 				hudflash_teamcolor_default_spec(e);

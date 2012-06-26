@@ -101,7 +101,7 @@ void JB_Imprison(entity attacker) {
 	
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
-	bigprint_spec(self, "you're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
+	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
 		self.hg_ammo = 0;
@@ -169,14 +169,14 @@ void JB_TeamWins(float theteam) {
 	string teamname, teamname_full;
 	
 	switch(theteam) {
-		case COLOR_TEAM1:	teamname = "^1red";		play2all("ctf/red_capture.wav");	break;
-		case COLOR_TEAM2:	teamname = "^4blue";	play2all("ctf/blue_capture.wav");	break;
+		case COLOR_TEAM1:	teamname = "^1Red";		play2all("ctf/red_capture.wav");	break;
+		case COLOR_TEAM2:	teamname = "^4Blue";	play2all("ctf/blue_capture.wav");	break;
 	}
 	
 	teamname_full = ColoredTeamName(theteam);
 	
 	entity e; FOR_EACH_PLAYER(e) {
-		bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are imprisoned", 15);
+		bigprint_spec(e, strcat(teamname, "^7 Scores!"), "All opponents are imprisoned", 15);
 		
 		if(e.team == theteam)
 			hudflash_teamcolor_default_spec(e);
@@ -598,7 +598,7 @@ void JB_EndRound_Think()
 		FOR_EACH_PLAYER(e)
 		{
 			bigprint_clear_spec(e);
-			bigprint_spec(e, strcat("jailbreak starts in: ", ftos(timeleft)), "", 1);
+			bigprint_spec(e, strcat("Jailbreak starts in: ", ftos(timeleft)), "", 1);
 		}
 	}
 	self.nextthink = time + 1;
@@ -847,11 +847,11 @@ void JB_ControlPoint_Capture(entity player) {
 	}
 	
 	entity e; FOR_EACH_PLAYER(e) {
-		bigprint_spec(e, 	strcat("jailbreak! The ", teamname, " ^7are escaping!"),
+		bigprint_spec(e, 	strcat("Jailbreak! The ", teamname, " ^7are escaping!"),
 							strcat("Unlocked by ", player.netname), 5);
 		
 		if(e.jb_isprisoned && e.team != self.team)
-			bigprint_spec(e, "you're free! Run away!",
+			bigprint_spec(e, "You're free! Run away!",
 							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
 	}
 	

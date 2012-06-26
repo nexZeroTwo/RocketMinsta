@@ -629,11 +629,11 @@ void kh_Key_Think()  // runs all the time
 		{
 			if(head.team == kh_interferemsg_team)
 				if(head.kh_next)
-					bigprint_spec(head, "^2all keys are in your team's hands!", "Meet the other key carriers ^1NOW^7!", 2);
+					bigprint_spec(head, "^2All keys are in YOUR team's hands!", "Meet the other key carriers ^1NOW^7!", 2);
 				else
-					bigprint_spec(head, "^2all keys are in your team's hands!", "Help the key carriers to meet!", 2);
+					bigprint_spec(head, "^2All keys are in YOUR team's hands!", "Help the key carriers to meet!", 2);
 			else
-				bigprint_spec(head, strcat("^xFB0all keys are in the ", ColoredTeamName(kh_interferemsg_team), "^xFB0's hands!"), "Interfere ^1NOW^7!", 2);
+				bigprint_spec(head, strcat("^xFB0All keys are in the ", ColoredTeamName(kh_interferemsg_team), "^xFB0's hands!"), "Interfere ^1NOW^7!", 2);
 		}
 	}
 
@@ -689,16 +689,16 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 	switch(teem)
 	{
 		case COLOR_TEAM1:
-			bigstring = "^1red^7scores!";
+			bigstring = "^1Red^ 7Scores!";
 			break;
 		case COLOR_TEAM2:
-			bigstring = "^4blue^7scores!";
+			bigstring = "^4Blue ^7Scores!";
 			break;
 		case COLOR_TEAM3:
-			bigstring = "^3yellow^7scores!";
+			bigstring = "^3Yellow ^7Scores!";
 			break;
 		case COLOR_TEAM4:
-			bigstring = "^6pink^7scores!";
+			bigstring = "^6Pink ^7Scores!";
 			break;
 	}
 	FOR_EACH_REALCLIENT(e) 
@@ -939,7 +939,7 @@ void kh_StartRound()  // runs at the start of each round
 		PutClientInServer();
 		self = oldself;*/
 		
-		bigprint_spec(player, "^2keys spawned!", "", 1);
+		bigprint_spec(player, "^2Keys spawned!", "", 1);
 	}
 
 	for(i = 0; i < kh_teams; ++i)

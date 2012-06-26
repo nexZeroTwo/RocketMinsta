@@ -81,7 +81,7 @@ void tdom_EndRound_Think()
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("total domination starts in: ", ftos(timeleft)), "", 1);
+            bigprint_spec(e, strcat("Total Domination starts in: ", ftos(timeleft)), "", 1);
         }
     }
     self.nextthink = time + 1;
@@ -122,7 +122,7 @@ void tdom_checkwinner()
 		//bprint("^5Total domination: ^1RED WINS\n");
 		FOR_EACH_PLAYER(e)
 		{
-			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
+			bigprint_spec(e, "^1Red ^7Scores!", "All control points have been captured", 5);
 			
 			if(e.team == COLOR_TEAM1)
 				hudflash_teamcolor_default_spec(e);
@@ -138,7 +138,7 @@ void tdom_checkwinner()
 		//bprint("^5Total domination: ^4BLUE WINS\n");
 		FOR_EACH_PLAYER(e)
 		{
-			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
+			bigprint_spec(e, "^4Blue ^7Scores!", "All control points have been captured", 5);
 				
 			if(e.team == COLOR_TEAM2)
 				hudflash_teamcolor_default_spec(e);
