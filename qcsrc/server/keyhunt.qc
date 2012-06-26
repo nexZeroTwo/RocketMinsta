@@ -689,7 +689,7 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 	switch(teem)
 	{
 		case COLOR_TEAM1:
-			bigstring = "^1Red^ 7Scores!";
+			bigstring = "^1Red ^7Scores!";
 			break;
 		case COLOR_TEAM2:
 			bigstring = "^4Blue ^7Scores!";
