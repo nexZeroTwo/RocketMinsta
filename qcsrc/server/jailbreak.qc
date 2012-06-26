@@ -51,6 +51,7 @@ void JB_Imprison(entity attacker) {
 	attacker.jb_fragrow += 1;
 	
 	if(attacker.classname == "player")
+	if(attacker.team != self.team)
 	if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
 	if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
 		HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
@@ -226,27 +227,46 @@ void JB_CountPlayers() {
 		JB_TeamWins(COLOR_TEAM1);
 }
 
-void JB_TorturePrisoners(float theteam) {
-	entity spot;
-	
-	for(;(spot = find(spot, classname, "info_jailbreak_torturespawn"));)
-		if(spot.team == theteam)
-			JB_Torture_Start(spot);
-}
 
 //
 //	Torture logic
 //
 
+var jb_torture_logic jb_torture_logic1;
+var jb_torture_logic jb_torture_logic2;
+
 #define JITTER(v,j) (v) + (j) * 2 * (random() - 0.5)
 
 jb_torture_logic JB_Torture_PickFunction() {
+	/*
 	entity e;
 	
 	RandomSelection_Init();
 	for(;(e = find(e, classname, "jailbreak_torture_logic"));)
 		RandomSelection_Add(e, 0, string_null, 1, 1);
 	return RandomSelection_chosen_ent.use;
+	*/
+	
+	return ((random() < 0.5)? jb_torture_logic1 : jb_torture_logic2);
+}
+
+void JB_TorturePrisoners(float theteam) {
+	entity spot, logic;
+	
+	//	Here we will choose two random torture logics to run at the same time
+	RandomSelection_Init();
+	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
+		RandomSelection_Add(logic, 0, string_null, 1, 1);
+	jb_torture_logic1 = RandomSelection_chosen_ent.use;
+	RandomSelection_Init();
+	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
+		if(logic.use != jb_torture_logic1)
+			RandomSelection_Add(logic, 0, string_null, 1, 1);
+	jb_torture_logic2 = RandomSelection_chosen_ent.use;
+	
+	for(;(spot = find(spot, classname, "info_jailbreak_torturespawn"));)
+		if(spot.team == theteam)
+			JB_Torture_Start(spot);
 }
 
 void JB_Torture_Think() {
@@ -266,7 +286,7 @@ void JB_Torture_Think() {
 	
 	if(!logic) {
 		JB_Log("Failed to pick torture logic!");
-		remove(self);
+		//remove(self);
 		return;
 	}
 	
@@ -368,9 +388,17 @@ void JB_Torture_Plasma() {
 	}
 }
 
+void JB_Torture_Grenade_Explode (void)
+{
+	self.event_damage = SUB_Null;
+	self.takedamage = DAMAGE_NO;
+	RadiusDamage (self, self.owner, 100, 100, 250, world, 700, self.projectiledeathtype, other);
+	remove (self);
+}
+
 void JB_Torture_Grenades() {
 	makevectors(self.angles + randomvec() * 30);
-	W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 300);
+	W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 100);
 	w_shotdir = v_forward;
 	w_shotorg = self.origin;
 	
@@ -390,7 +418,7 @@ void JB_Torture_Grenades() {
 
 	gren.nextthink = time + 3;
 	gren.think = adaptor_think2use;
-	gren.use = HG_Grenade_Explode;
+	gren.use = JB_Torture_Grenade_Explode; //HG_Grenade_Explode;
 	gren.touch = HG_Touch;
 	gren.takedamage = DAMAGE_YES;
 	gren.health = 1;
@@ -421,6 +449,7 @@ void JB_Torture_Zap() {
 	
 	if(!unlucky_guy) {
 		// nobody left alive? shoot the corpses / death origins
+		RandomSelection_Init();
 		FOR_EACH_PLAYER(p) if(p.team != self.team)
 			RandomSelection_Add(p, 0, string_null, 1, 1);
 		unlucky_guy = RandomSelection_chosen_ent;
