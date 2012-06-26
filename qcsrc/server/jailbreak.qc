@@ -472,8 +472,8 @@ void JB_Torture_Zap() {
 }
 
 void JB_Torture_RegisterAll() {
-	//JB_Torture_Register(JB_Torture_Napalm);
-	//JB_Torture_Register(JB_Torture_Plasma);
+	JB_Torture_Register(JB_Torture_Napalm);
+	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
 }
