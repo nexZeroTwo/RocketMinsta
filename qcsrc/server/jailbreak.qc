@@ -221,6 +221,9 @@ void JB_CountPlayers() {
 	if(jb_totalred < 1 || jb_totalblue < 1)
 		return;
 	
+	if(gameover && !redalive && !bluealive)
+		return;
+	
 	if(!redalive)
 		JB_TeamWins(COLOR_TEAM2);
 	else if(!bluealive)
@@ -270,6 +273,11 @@ void JB_TorturePrisoners(float theteam) {
 }
 
 void JB_Torture_Think() {
+	if(gameover) {
+		remove(self);
+		return;
+	}
+	
 	makevectors(self.angles);
 	//self.nextthink = time + JITTER(self.jb_torture_delay, self.jb_torture_delay_jitter);
 	
@@ -841,9 +849,9 @@ void JB_ControlPoint_Capture(entity player) {
 	
 	string teamname;
 	switch(player.team) {
-		case COLOR_TEAM1: teamname = "^1reds"	; break ;
-		case COLOR_TEAM2: teamname = "^4blues"	; break ;
-		default			: teamname = "^6fags"	; break ;
+		case COLOR_TEAM1: teamname = "^1REDS"	; break ;
+		case COLOR_TEAM2: teamname = "^4BLUES"	; break ;
+		default			: teamname = "^6FAGS"	; break ;
 	}
 	
 	entity e; FOR_EACH_PLAYER(e) {

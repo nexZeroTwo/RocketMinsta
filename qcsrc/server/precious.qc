@@ -198,7 +198,7 @@ void prec_rune_destroy (entity rune, float desired)
         if(pi == self.killindicator && !desired)
 			centerprint_spec(pi, strcat("^7You broke ", rune.netname2));
         else
-			centerprint_spec(pi, strcat(des_msg));
+			centerprint_spec(pi, des_msg);
     }
     play2all(kh_sound_destroy);
 

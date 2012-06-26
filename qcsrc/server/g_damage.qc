@@ -872,18 +872,18 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	float armordamage;
 	armordamage = 0;
-
-	if (gameover || targ.killcount == -666)
+	
+	if(gameover || targ.killcount == -666)
 		return;
 
-	//if(DEATH_ISHG(deathtype))
-	//	deathtype &~= DEATH_HITTYPEMASK;
+	// I just feel like there are WAY too many checks for these in this function
+	// By the way, this function is one of the messiest pieces of code here, it could compete with vip.qc ;)
+	float targ_is_player = (targ.classname == "player");
+	float attacker_is_player = (attacker.classname == "player");
 
-	if(g_jailbreak)
-	if(jb_roundover)
-	if(targ.classname == "player")
+	if(g_jailbreak && jb_roundover && targ_is_player)
 		damage = damage * cvar("g_explosive_jailbreak_torture_damagefactor");
-
+		
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
 
@@ -897,7 +897,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 	local float took_extra;
 
-	if(targ.classname == "player")
+	if(targ_is_player)
 		if(targ.hook)
 			if(targ.hook.aiment)
 				if(targ.hook.aiment == attacker)
@@ -906,7 +906,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	// special rule: gravity bomb does not hit team mates (other than for disconnecting the hook)
 	if(DEATH_ISWEAPON(deathtype, WEP_HOOK) || DEATH_ISWEAPON(deathtype, WEP_TUBA))
 	{
-		if(targ.classname == "player")
+		if(targ_is_player)
 			if not(IsDifferentTeam(targ, attacker))
 			{
 				self = oldself;
@@ -941,7 +941,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	}
 	else
 	{
-		if(targ.classname == "player") if(attacker.classname == "player")
+		if(targ_is_player) if(attacker_is_player)
 		{
 			if(targ != attacker)
 				if(!prec_check_aggression(attacker, inflictor, targ))
@@ -966,9 +966,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 
 		// nullify damage if teamplay is on
 		if(deathtype != DEATH_TELEFRAG)
-		if(attacker.classname == "player")
+		if(attacker_is_player)
 		{
-			if(targ.classname == "player" && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))
+			if(targ_is_player && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))
 			{
 				damage = 0;
 				force = '0 0 0';
@@ -983,7 +983,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 						damage = 0;
 					else if(teamplay == 4)
 					{
-						if(targ.classname == "player" && targ.deadflag == DEAD_NO)
+						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
 							teamdamage0 = max(attacker.dmg_team, cvar("g_teamdamage_threshold"));
 							attacker.dmg_team = attacker.dmg_team + damage;
@@ -1006,8 +1006,8 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			}
 		}
 
-		if(targ.classname == "player")
-		if(attacker.classname == "player")
+		if(targ_is_player)
+		if(attacker_is_player)
 		if(attacker != targ)
 		{
 			targ.lms_traveled_distance = cvar("g_lms_campcheck_distance");
@@ -1024,7 +1024,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			{
 				force = '0 0 0';
 
-				if(attacker.classname == "player") if(targ.classname == "player")
+				if(attacker_is_player) if(targ_is_player)
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
 
@@ -1042,7 +1042,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			*/
 		}
 
-		if(targ.classname == "player")
+		if(targ_is_player)
 		if (g_minstagib)
 		{
 			if ((deathtype == DEATH_FALL)  ||
@@ -1152,7 +1152,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 					damage = 0;
 					if (targ != attacker)
 					{
-						if (targ.classname == "player")
+						if (targ_is_player)
 							bigprint_spec(attacker, "", "^1Secondary fire inflicts no damage!", 1);
 						damage = 0;
 						mirrordamage = 0;
@@ -1265,7 +1265,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-			if(targ.classname == "player")
+			if(targ_is_player)
 			if(!DEATH_ISHG(deathtype))
 			{
 				// HEAD SHOT:
@@ -1287,7 +1287,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
 
-			if(targ.classname == "player")
+			if(targ_is_player)
 			{
 				if(IsDifferentTeam(targ, attacker))
 				{
@@ -1375,7 +1375,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(took_extra)
 			armordamage = 100;
 
-		if(attacker.classname == "player")
+		if(attacker_is_player)
 		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
 		{
 			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
@@ -1434,13 +1434,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if(!cvar("g_explosive_extendfragmessages"))
 					wpnstring = "";
 				
-				if(attacker.classname == "player") if(attacker != targ)
+				if(attacker_is_player) if(attacker != targ)
 				{
 					if(targ.netname)
 						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
 				}
 				
-				if(targ.classname == "player")
+				if(targ_is_player)
 				{
 					if(attacker.netname)
 					{
@@ -1462,7 +1462,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		damage = olddamage;
 	}
 
-	if(targ.classname == "player" && attacker.classname == "player" && attacker != targ && attacker.health > 2)
+	if(targ_is_player && attacker_is_player && attacker != targ && attacker.health > 2)
 	{
 		// Savage: vampire mode
 		if (g_vampire)
