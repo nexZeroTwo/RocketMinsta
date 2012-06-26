@@ -78,7 +78,6 @@ dodging.qc
 
 freezetag.qc
 vip.qc
-jailbreak.qc
 precious.qc
 
 g_violence.qc
@@ -144,6 +143,8 @@ nexball.qc
 g_hook.qc
 g_handgrenades.qc
 soulmates.qc
+
+jailbreak.qc
 
 t_swamp.qc
 

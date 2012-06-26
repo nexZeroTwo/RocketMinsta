@@ -285,6 +285,7 @@ void JB_Torture_Start(entity spot) {
 	e.jb_torture_force = spot.jb_torture_force;
 	e.jb_torture_force_jitter = spot.jb_torture_force_jitter;
 	e.owner = spot;
+	e.team = e.owner.team;
 	setorigin(e, spot.origin);
 	e.nextthink = time + JITTER(0, e.jb_torture_delay_jitter);
 }
@@ -294,11 +295,6 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.classname = "jailbreak_torture_logic";
 	e.use = logic;
 }
-
-void W_Firemine_Touch();
-void HG_Napalm_Think();
-.float pushltime;
-void W_SetupProjectileVelocity(entity);
 
 void JB_Torture_Napalm_Touch() {
 	self.cnt -= 1;
@@ -340,11 +336,6 @@ void JB_Torture_Napalm() {
 	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
 }
 
-void W_Electro_Attack();
-void W_Electro_Attack2();
-void W_Crylink_Attack();
-void W_Crylink_Attack2();
-
 void JB_Torture_Plasma() {
 	float i, j;
 	
@@ -377,9 +368,85 @@ void JB_Torture_Plasma() {
 	}
 }
 
+void JB_Torture_Grenades() {
+	makevectors(self.angles + randomvec() * 30);
+	W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 300);
+	w_shotdir = v_forward;
+	w_shotorg = self.origin;
+	
+	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
+	
+	entity gren = spawn();
+	gren.owner = self;
+	gren.classname = "jb_torture_copypasta_from_g_handgrenades";
+	gren.bot_dodge = TRUE;
+	gren.bot_dodgerating = 300;
+	gren.movetype = MOVETYPE_BOUNCE;
+	PROJECTILE_MAKETRIGGER(gren);
+	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
+	gren.hg_type = DEATH_HG_NORMAL;		// HG_Grenade_Explode and such use this -- I don't feel like copypasting them too
+	setsize(gren, '0 0 -3', '0 0 -3');
+	setorigin(gren, w_shotorg);
+
+	gren.nextthink = time + 3;
+	gren.think = adaptor_think2use;
+	gren.use = HG_Grenade_Explode;
+	gren.touch = HG_Touch;
+	gren.takedamage = DAMAGE_YES;
+	gren.health = 1;
+	gren.damageforcescale = 4;
+	gren.event_damage = W_Grenade_Damage;
+	gren.velocity = w_shotdir * self.jb_torture_suggestedforce + v_up * sin(self.jb_torture_suggestedforce);
+	W_SetupProjectileVelocity(gren);
+	
+	gren.angles = vectoangles (gren.velocity);
+	gren.flags = FL_PROJECTILE;
+	
+	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
+}
+
+void JB_Torture_Zap_AimAt(vector org, entity targ) {
+	vector shotanle = vectoangles(org - targ.origin);
+	shotanle_y += 180;
+	makevectors(shotanle);
+}
+
+void JB_Torture_Zap() {
+	entity unlucky_guy, p;
+
+	RandomSelection_Init();
+	FOR_EACH_PLAYER(p) if(p.team != self.team) if(p.deadflag == DEAD_NO)
+		RandomSelection_Add(p, 0, string_null, 1, 1);
+	unlucky_guy = RandomSelection_chosen_ent;
+	
+	if(!unlucky_guy) {
+		// nobody left alive? shoot the corpses / death origins
+		FOR_EACH_PLAYER(p) if(p.team != self.team)
+			RandomSelection_Add(p, 0, string_null, 1, 1);
+		unlucky_guy = RandomSelection_chosen_ent;
+	}
+	
+	// this should not happen, but just in case...
+	if(!unlucky_guy)
+		return;
+
+	JB_Torture_Zap_AimAt(self.origin, unlucky_guy);
+	sound(self, CHAN_WEAPON, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM);
+	
+	FireRailgunBullet (self.origin, self.origin + v_forward * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
+	w_shotorg = self.origin;	// needed for the beam to appear correctly
+	SendCSQCNexBeamParticle();
+	
+	// flash and burn the wall
+	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
+		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * v_forward, WEP_NEX, self);
+}
+
 void JB_Torture_RegisterAll() {
 	JB_Torture_Register(JB_Torture_Napalm);
 	JB_Torture_Register(JB_Torture_Plasma);
+	JB_Torture_Register(JB_Torture_Grenades);
+	JB_Torture_Register(JB_Torture_Zap);
 }
 
 #undef JITTER
@@ -755,7 +822,7 @@ void JB_ControlPoint_Capture(entity player) {
 							strcat("Unlocked by ", player.netname), 5);
 		
 		if(e.jb_isprisoned && e.team != self.team)
-			bigprint_spec(e, strcat("you're free! Run away!"),
+			bigprint_spec(e, "you're free! Run away!",
 							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
 	}
 	

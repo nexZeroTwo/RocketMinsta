@@ -19,6 +19,10 @@ void JB_SetCamera(entity, entity, float);
 void JB_ClearCamera(entity);
 void JB_ClearCameraForAll();
 
+float JB_PlayerDies();
+void JB_PlayerSpawn();
+void JB_RemovePlayer();
+
 .float jb_unlock_progress;
 .float jb_isprisoned;
 .float jb_jail_lasttouch;
