@@ -53,8 +53,8 @@ void JB_Imprison(entity attacker) {
 	if(attacker.classname == "player")
 	if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
 	if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
-		HG_GiveBonus(other, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
-							strcat(ftos(attacker.jb_fragrow), " frags in a row")
+		HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
+							   strcat(ftos(attacker.jb_fragrow), " frags in a row")
 		);
 		attacker.jb_fragrow = 0;
 	}
