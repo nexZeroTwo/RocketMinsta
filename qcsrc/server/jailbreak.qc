@@ -300,6 +300,15 @@ void HG_Napalm_Think();
 .float pushltime;
 void W_SetupProjectileVelocity(entity);
 
+void JB_Torture_Napalm_Touch() {
+	self.cnt -= 1;
+	
+	if(!self.cnt)
+		remove(self);
+	
+	W_Firemine_Touch();
+}
+
 void JB_Torture_Napalm() {
 	local entity proj;
 	local vector kick;
@@ -309,7 +318,7 @@ void JB_Torture_Napalm() {
 	proj.classname = "jb_torture_napalm";
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
-	proj.touch = W_Firemine_Touch;
+	proj.touch = JB_Torture_Napalm_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
 	setsize (proj, '0 0 0', '0 0 0');
 	setorigin (proj, self.origin);
@@ -317,6 +326,7 @@ void JB_Torture_Napalm() {
 	proj.think = HG_Napalm_Think;
 	proj.nextthink = time;
 	proj.damageforcescale = 1;
+	proj.cnt = 3; //	max bounces
 	kick_z = self.jb_torture_suggestedforce;
 	kick_x = (random () - 0.5) * 2 * kick_z;
 	kick_y = (random () - 0.5) * 2 * kick_z;
@@ -336,10 +346,10 @@ void W_Crylink_Attack();
 void W_Crylink_Attack2();
 
 void JB_Torture_Plasma() {
-	float i;
+	float i, j;
 	
 	vector oldangles = self.angles;
-	for(i = 0; i < 4; ++i) {
+	for(i = 0; i < 2; ++i) {
 		self.angles_y -= 30 * random();
 		self.angles_x += JITTER(0, 20);
 		self.angles_z += JITTER(0, 20);
@@ -348,18 +358,19 @@ void JB_Torture_Plasma() {
 			W_Electro_Attack2();
 		else
 			W_Electro_Attack();
-			
-		if(random() < 0.5)
-		{
-			self.angles = oldangles;
-			self.angles_y += JITTER(0, 20);
-			self.angles_x += JITTER(0, 25);
-			self.angles_z += JITTER(0, 25);
-			
-			if(random() < 0.5)
-				W_Crylink_Attack();
-			else
-				W_Crylink_Attack2();
+		
+		for(j = 0; j < 2; ++j) {
+			if(random() < 0.5) {
+				self.angles = oldangles;
+				self.angles_y += JITTER(0, 20);
+				self.angles_x += JITTER(0, 25);
+				self.angles_z += JITTER(0, 25);
+				
+				if(random() < 0.5)
+					W_Crylink_Attack();
+				else
+					W_Crylink_Attack2();
+			}
 		}
 		
 		self.angles = oldangles;
