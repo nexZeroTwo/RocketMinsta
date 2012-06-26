@@ -49,6 +49,7 @@ void JB_Imprison(entity attacker) {
 	}
 	
 	attacker.jb_fragrow += 1;
+	self.jb_fragrow = 0;
 	
 	if(attacker.classname == "player")
 	if(attacker.team != self.team)
