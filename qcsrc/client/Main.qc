@@ -372,7 +372,7 @@ void ReloadMenu_f()
 	if(!self.cnt)
 	{
 		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
-		localcmd("menu_restart\n");
+		localcmd("menu_restart; r_restart\n");
 		self.cnt = 1;
 		self.nextthink = time + 1;
 	}
