@@ -26,6 +26,7 @@ void JB_ClearCameraForAll();
 .float jb_capturetime;
 .float jb_capturestate;
 .float jb_roundlost;
+.float jb_fragrow;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;

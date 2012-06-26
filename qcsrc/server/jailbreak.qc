@@ -48,6 +48,17 @@ void JB_Imprison(entity attacker) {
 		return;
 	}
 	
+	attacker.jb_fragrow += 1;
+	
+	if(attacker.classname == "player")
+	if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
+	if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
+		HG_GiveBonus(other, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
+							strcat(ftos(attacker.jb_fragrow), " frags in a row")
+		);
+		attacker.jb_fragrow = 0;
+	}
+	
 	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
 	
 	if(attacker && attacker.team && attacker.team != self.team)
@@ -405,6 +416,8 @@ void JB_PlayerSpawn() {
 		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
 	}
 	
+	self.jb_fragrow = 0;
+	
 	DEPENDON(JB_GAME_ACTIVE)
 	
 	if(JB_TotalPlayersOnTeam(self.team))	// allow to spawn non-prisoned if there are no players on that team
@@ -582,7 +595,7 @@ void JB_ClearCamera(entity player) {
 }
 
 void JB_ClearCameraForAll() {
-	entity p; FOR_EACH_REALPLAYER(p) JB_ClearCamera(p);
+	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
 }
 
 void JB_ActivateCamera(float theteam, float timeout) {
@@ -604,15 +617,18 @@ void JB_ActivateCamera(float theteam, float timeout) {
 	e.think = JB_RestoreCullEntities;
 	e.nextthink = time + timeout;
 	
-	entity p; FOR_EACH_REALPLAYER(p) {
-		if(p.team == theteam) {
-			p.angles = cam.angles;
-			p.angles_z = 0;
-			p.fixangle = TRUE;
-			p.jb_roundlost = FALSE;
-		} else p.jb_roundlost = TRUE;
+	entity p; FOR_EACH_PLAYER(p) {
+		if(clienttype(p) == CLIENTTYPE_REAL) {
+			if(p.team == theteam) {
+				p.angles = cam.angles;
+				p.angles_z = 0;
+				p.fixangle = TRUE;
+				p.jb_roundlost = FALSE;
+			} else p.jb_roundlost = TRUE;
+		}
 		
-		JB_SetCamera(p, cam, timeout);
+		entity s; FOR_EACH_REALCLIENT(s) if(s == p || (s.classname == "spectator" && s.enemy == p))
+			JB_SetCamera(s, cam, timeout);
 	}
 	
 	jb_activecamera = cam;
