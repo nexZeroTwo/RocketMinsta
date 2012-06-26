@@ -236,7 +236,7 @@ void freezetag_CheckWinner()
         
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
-            bigprint_spec(e, strcat(teamname, " ^7scores!"), "All opponents are frozen", 5);
+            bigprint_spec(e, strcat(teamname, " ^7Scores!"), "All opponents are frozen", 5);
             
             if(e.team == winner.team)
 				hudflash_teamcolor_default_spec(e);
