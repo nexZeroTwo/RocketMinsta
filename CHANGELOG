@@ -4,7 +4,7 @@ Contributors of a change are specified in brackets after the change description,
 Contributors are listen in descending order of importance/amount of work related to the change.
 A question mark following a contributor's name means that I don't remember/exactly know the name of the contributor and just guessing. Probably because I shamelessly stole that certain feature from Xonotic.
 
-=== v1.5.2 -> v1.6.0 ===
+=== v1.5.2 -> v1.6.0 (UPCOMING) ===
 
 * Added kill/death ratio to the scoreboard by default [Akari]
 * Animated the map/gametype vote screen [Akari]
