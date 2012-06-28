@@ -57,3 +57,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * Fixed a DumpStats bug which made it incompatible with rcon2irc, preventing it from reporting when a match is finished [Akari]
 * Added a custom loading picture [Akari]
 * Added a changelog [Akari]
+* Added an option which makes players drop their powerups upon death (g_explosive_droppowerups). Default on CRA [Akari]

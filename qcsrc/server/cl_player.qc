@@ -429,6 +429,44 @@ void PlayerCorpseDamage (entity inflictor, entity attacker, float damage, float 
 
 void ClientKill_Now_TeamChange();
 
+spawnfunc_t GetPowerupSpawnfunc(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	return spawnfunc_item_strength;
+		case IT_INVINCIBLE:	return spawnfunc_item_invincible;
+	}
+	
+	bprint("WARNING: Tried to drop an unknown powerup, please debug this!\n");
+	return func_null;
+}
+
+void DropPowerup(float id, vector force) {
+	var spawnfunc_t spawnfunc;
+	spawnfunc = GetPowerupSpawnfunc(id);
+	if(!spawnfunc) return;
+	
+	entity oldself = self;
+	entity p = self = spawn();
+	p.droppedpowerup = TRUE;
+	spawnfunc();
+	self = oldself;
+	if(!p) return;
+	p.movetype = MOVETYPE_BOUNCE;
+	makevectors(self.angles);
+	setorigin(p, self.origin + v_up * 50 + v_forward * 10);
+	// I don't know if this toss really works
+	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
+	p.reset = SUB_Remove;
+}
+
+void DropPowerups(vector force) {
+	DEPENDON(cvar("g_explosive_droppowerups"))
+	
+	if(self.items & IT_STRENGTH)
+		DropPowerup(IT_STRENGTH);
+	if(self.items & IT_INVINCIBLE)
+		DropPowerup(IT_INVINCIBLE);
+}
+
 void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
@@ -727,6 +765,9 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_attacker = attacker;
 		frag_inflictor = inflictor;
 		frag_target = self;
+		
+		DropPowerups();
+		
 		if(freezetag_PlayerDies())
 			return;
 		

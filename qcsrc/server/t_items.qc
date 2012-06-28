@@ -555,7 +555,7 @@ void Item_Touch (void)
 
 	pointparticles(particleeffectnum("item_pickup"), self.origin, '0 0 0', 1);
 
-	if (self.classname == "droppedweapon")
+	if (self.classname == "droppedweapon" || self.droppedpowerup)
 		remove (self);
 	else if not(self.spawnshieldtime)
 		return;
@@ -976,7 +976,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 		self.effects = self.effects | EF_NODRAW; // marker for item team search
 		InitializeEntity(self, Item_FindTeam, INITPRIO_FINDTARGET);
 	}
-	else if(self.flags & FL_POWERUP) // do not spawn powerups initially!
+	else if(self.flags & FL_POWERUP && !self.droppedpowerup) // do not spawn powerups initially!
 		Item_ScheduleInitialRespawn(self);
 }
 
