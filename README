@@ -1,6 +1,6 @@
-RocketMinsta is a major game modification for Nexuiz 2.5.2 servers.
+RocketMinsta is a major game modification for Nexuiz, a Free and Open Source fast-paced first-person arena shooter.
 
-The RocketMinsta mod ("RM") extends the MinstaGib, Grappling Hook, and "Camping" Rifle mutators of the Nexuiz 2.5.2 server. It modifies the behavior of the minsta gun, adds several new play modes (Freeze Tag, VIP, and Total Domination), and includes significant HUD improvements for connected Nexuiz clients.  RM also fixes several Nexuiz bugs and includes certain features from Xonotic and nexuiz-svn. Classic Nexuiz and the standard MinstaGib and Weapon Arena modes are still supported for server operators who just want the benefits of the fixes. The popular Camping Rifle Arena mod (CRA) is also powered by RM.
+The RocketMinsta mod (also known as RM) originated as a small modification of the MinstaGib and GrapplingHook mutators (hence the name). Over time it grew into something much bigger: It adds several new play modes (Freeze Tag, VIP, Jailbreak, Total Domination and more), includes significant HUD improvements for connected Nexuiz clients, fixes several Nexuiz bugs and includes certain features from Xonotic and nexuiz-svn. Classic Nexuiz and the standard MinstaGib and Weapon Arena modes are still supported for server operators who just want the benefits of the fixes. The popular Camping Rifle Arena mod (CRA) is also powered by RM.
 
 There are two ways to get the RM mod running on your server. You can install the current pre-compiled binary from http://rocketminsta.net/ or you can compile the source code yourself using the instructions that follow.
 

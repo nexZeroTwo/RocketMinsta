@@ -420,6 +420,7 @@ if [ "$1" = "release" ]; then
     fi
     
     cp -v CHANGELOG "$NEXDATA/CHANGELOG.rmrelease"
+    cp -v COPYING "$NEXDATA/COPYING.rmrelease"
     cat <<EOF > "$NEXDATA/README.rmrelease"
 
 This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
