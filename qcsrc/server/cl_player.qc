@@ -452,8 +452,7 @@ void DropPowerup(float id, vector force) {
 	if(!p) return;
 	p.movetype = MOVETYPE_BOUNCE;
 	makevectors(self.angles);
-	setorigin(p, self.origin + v_up * 50 + v_forward * 10);
-	// I don't know if this toss really works
+	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
 	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
 	p.reset = SUB_Remove;
 }
@@ -462,9 +461,9 @@ void DropPowerups(vector force) {
 	DEPENDON(cvar("g_explosive_droppowerups"))
 	
 	if(self.items & IT_STRENGTH)
-		DropPowerup(IT_STRENGTH);
+		DropPowerup(IT_STRENGTH, force);
 	if(self.items & IT_INVINCIBLE)
-		DropPowerup(IT_INVINCIBLE);
+		DropPowerup(IT_INVINCIBLE, force);
 }
 
 void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
@@ -766,7 +765,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_inflictor = inflictor;
 		frag_target = self;
 		
-		DropPowerups();
+		DropPowerups(force);
 		
 		sm_PlayerDies();
 		
