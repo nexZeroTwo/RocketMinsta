@@ -58,3 +58,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added a custom loading picture [Akari]
 * Added a changelog [Akari]
 * Added an option which makes players drop their powerups upon death (g_explosive_droppowerups). Default on CRA [Akari]
+* Players now drop their soulgems when they get frozen if the Soulmates mutator is active [Akari]

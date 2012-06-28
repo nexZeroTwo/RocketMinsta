@@ -15,6 +15,7 @@ void sm_Detach(entity host);
 void sm_Frame();
 void sm_Clear();
 void sm_RemovePlayer();
+void sm_PlayerDies();
 float sm_IsSoulMate(entity p);
 
 void sm_SoulGem_Touch();

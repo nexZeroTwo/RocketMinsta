@@ -216,6 +216,8 @@ void sm_Clear() {
 }
 
 void sm_RemovePlayer() {
+	DEPENDON(g_soulmates)
+	
 	if(self.smhost)
 		sm_DropSoulGem();
 	
@@ -226,6 +228,15 @@ void sm_RemovePlayer() {
 	
 	sm_Detach(self);
 	self.sm_canattach = 0;
+}
+
+void sm_PlayerDies() {
+	DEPENDON(g_soulmates)
+	
+	if(!self.smhost && self.sm_canattach) {
+		sm_DropSoulGem();
+		self.sm_canattach = 0;
+	}
 }
 
 float sm_IsSoulMate(entity p) {

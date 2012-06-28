@@ -768,6 +768,8 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		
 		DropPowerups();
 		
+		sm_PlayerDies();
+		
 		if(freezetag_PlayerDies())
 			return;
 		
