@@ -4684,15 +4684,12 @@ void Sbar_Draw (void)
 		position_y = vid_conheight;
 		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);
 		
-		position_x = 0;
-		position_y = vid_conheight / 3;
-		drawcolorcodedstringcenter(
-			position,
-			"Reloading GUI, this will take some time... Please be patient.",
-			sbar_fontsize * 1.5,
-			1,
-			DRAWFLAG_NORMAL
-		);
+		vector lpic;
+		lpic = drawgetimagesize("gfx/loading.tga");
+		vector lpos;
+		lpos_x = (vid_conwidth  - lpic_x) * 0.5;
+		lpos_y = (vid_conheight - lpic_y) * 0.5;
+		drawpic(lpos, "gfx/loading.tga", lpic, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
 	
 	return;
