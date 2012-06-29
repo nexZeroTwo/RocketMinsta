@@ -22,6 +22,7 @@ float sbar_hudselector;
 float sbar_hud_accuracy;
 float sbar_scoreboard_alpha_name;
 float sbar_scoreboard_alpha_name_self;
+float sbar_info_pos;
 
 float ps_primary, ps_secondary;
 float ts_primary, ts_secondary;
@@ -2993,6 +2994,8 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	if(!rm_showrankings)
 		return;
 	
+	pos_y -= sbar_info_pos;
+	
 	entity pl, tm;
 #define SCOREPANEL_MAX_ENTRIES 6
 #define SCOREPANEL_ASPECTRATIO 2
@@ -3093,6 +3096,7 @@ void Sbar_Draw (void)
 	sbar_color_bg_team = cvar("sbar_color_bg_team");
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg");
 	sbar_scoreboard_highlight = cvar("sbar_scoreboard_highlight");
+	sbar_info_pos = max(0, cvar("sbar_info_pos"));
 
 	float i;
 	float weapon_stats;
@@ -3329,7 +3333,7 @@ void Sbar_Draw (void)
 
 	local vector sv_pos;
 	sv_pos = bottomright;
-	sv_pos_y -= 100;
+	sv_pos_y -= 100 + sbar_info_pos;
 	
 	if(!rm_showrankings)
 		sv_pos_y += 40;

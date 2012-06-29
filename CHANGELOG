@@ -61,5 +61,6 @@ A question mark following a contributor's name means that I don't remember/exact
 * Players now drop their soulgems when they get frozen if the Soulmates mutator is active [Akari]
 * Added a new "bigfont" (can be disable in RM options) [Akari]
 * Fixed incorrect centering of bigprints [Akari]
-* Optimized rmcfg reports [Akari]
+* Optimized initial rmcfg reports [Akari]
 * Fixed a memory leak in rmcfg reports [Akari]
+* Improved the appearance of sbar info strings (such as fps, time, date, speed, etc) [Akari]

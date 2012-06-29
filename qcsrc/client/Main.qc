@@ -580,6 +580,7 @@ void PostInit(void)
 	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
 	localcmd("loadfont user3 gfx/madoka-rune\n");
 	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
+	localcmd("loadfont infobar gfx/vera-sans-big\n");
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
