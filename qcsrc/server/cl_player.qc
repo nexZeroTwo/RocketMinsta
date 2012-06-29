@@ -439,6 +439,13 @@ spawnfunc_t GetPowerupSpawnfunc(float id) {
 	return func_null;
 }
 
+void ClearPowerup(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	self.strength_finished 		= 0; break;
+		case IT_INVINCIBLE:	self.invincible_finished 	= 0; break;
+	}
+}
+
 void DropPowerup(float id, vector force) {
 	var spawnfunc_t spawnfunc;
 	spawnfunc = GetPowerupSpawnfunc(id);
@@ -455,6 +462,7 @@ void DropPowerup(float id, vector force) {
 	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
 	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
 	p.reset = SUB_Remove;
+	ClearPowerup(id);
 }
 
 void DropPowerups(vector force) {

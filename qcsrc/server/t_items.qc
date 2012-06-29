@@ -208,7 +208,7 @@ void Item_RespawnCountdown (void)
 
 void Item_ScheduleRespawnIn(entity e, float t)
 {
-	if(e.flags & FL_POWERUP)
+	if(e.flags & FL_POWERUP && !self.droppedpowerup)
 	{
 		e.think = Item_RespawnCountdown;
 		e.nextthink = time + max(0, t - ITEM_RESPAWN_TICKS);
@@ -230,7 +230,10 @@ void Item_ScheduleRespawn(entity e)
 void Item_ScheduleInitialRespawn(entity e)
 {
 	Item_Show(e, 0);
-	Item_ScheduleRespawnIn(e, game_starttime - time + ITEM_RESPAWNTIME_INITIAL(e));
+	if(self.droppedpowerup)
+		Item_ScheduleRespawnIn(e, cvar("g_explosive_droppowerups_activatedelay"));
+	else
+		Item_ScheduleRespawnIn(e, game_starttime - time + ITEM_RESPAWNTIME_INITIAL(e));
 }
 
 float Item_GiveTo(entity item, entity player)
@@ -976,7 +979,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 		self.effects = self.effects | EF_NODRAW; // marker for item team search
 		InitializeEntity(self, Item_FindTeam, INITPRIO_FINDTARGET);
 	}
-	else if(self.flags & FL_POWERUP && !self.droppedpowerup) // do not spawn powerups initially!
+	else if(self.flags & FL_POWERUP) // do not spawn powerups initially!
 		Item_ScheduleInitialRespawn(self);
 }
 
