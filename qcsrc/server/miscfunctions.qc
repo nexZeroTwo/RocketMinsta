@@ -2989,33 +2989,6 @@ void hudflash_teamcolor_default_spec(entity e)
     hudflash_teamcolor_spec(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
 }
 
-void defer_think()
-{
-    entity oself;
-
-    oself           = self;
-    self            = self.owner;
-    oself.think     = SUB_Remove;
-    oself.nextthink = time;
-
-    oself.use();
-}
-
-/*
-    Execute func() after time + fdelay.
-    self when func is executed = self when defer is called
-*/
-void defer(float fdelay, void() func)
-{
-    entity e;
-
-    e           = spawn();
-    e.owner     = self;
-    e.use       = func;
-    e.think     = defer_think;
-    e.nextthink = time + fdelay;
-}
-
 // universal endround for all supported gametypes
 void freezetag_EndRound();
 void vip_EndRound();

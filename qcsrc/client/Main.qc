@@ -334,7 +334,6 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	print("^6", ftos(rm_oldbigfont), "? ", ftos(sbar_bigfont), " : ", ftos(sbar_rmbigfont), "\n");
 	return (rm_oldbigfont? sbar_bigfont_real : sbar_rmbigfont);
 }
 
@@ -368,7 +367,6 @@ void SetMadokaFont(float v)
 			}
 			
 			sbar_bigfont = (rm_madoka? sbar_madokafont : GetBigfont());
-			print("^5sbar_bigfont is now ", ftos(sbar_bigfont), "\n");
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
@@ -415,6 +413,11 @@ void FPSReporter_Init() {
 	entity e = spawn();
 	e.think = FPSReporter_Think;
 	e.nextthink = time + FPSREPORTER_DELAY;
+}
+
+void EnableRMCFGReport() {
+	rmconfig_initialized = TRUE;
+	SendRMCFGReport();
 }
 
 void PostInit(void)
@@ -568,8 +571,7 @@ void PostInit(void)
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
-	rmconfig_initialized = TRUE;
-	SendRMCFGReport();
+	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
 	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
