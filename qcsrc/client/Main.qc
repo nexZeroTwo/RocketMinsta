@@ -324,6 +324,8 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
+float rmconfig_initialized;
+
 void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
@@ -331,8 +333,15 @@ void SendRMCFGReport();
 entity tmpmadoka;
 #endif
 
+float GetBigfont() {
+	print("^6", ftos(rm_oldbigfont), "? ", ftos(sbar_bigfont), " : ", ftos(sbar_rmbigfont), "\n");
+	return (rm_oldbigfont? sbar_bigfont_real : sbar_rmbigfont);
+}
+
 void SetMadokaFont(float v)
 {
+	print("SetMadokaFont()\n");
+	
 	#ifdef RM_SUPPORT_MADOKA
 	switch(v)
 	{
@@ -341,7 +350,7 @@ void SetMadokaFont(float v)
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		case MDKF_UNSET:
-			sbar_bigfont = sbar_bigfont_real;
+			sbar_bigfont = GetBigfont();
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		default: case MDKF_AUTO:
@@ -349,7 +358,7 @@ void SetMadokaFont(float v)
 			{
 				if(cvar("rm_specmadoka"))
 				{
-					sbar_bigfont = (madokalockstate? sbar_madokafont : sbar_bigfont_real);
+					sbar_bigfont = (madokalockstate? sbar_madokafont : GetBigfont());
 					return;
 				}
 				/*else
@@ -358,12 +367,13 @@ void SetMadokaFont(float v)
 				}*/
 			}
 			
-			sbar_bigfont = (rm_madoka? sbar_madokafont : sbar_bigfont_real);
+			sbar_bigfont = (rm_madoka? sbar_madokafont : GetBigfont());
+			print("^5sbar_bigfont is now ", ftos(sbar_bigfont), "\n");
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
 	#else
-	sbar_bigfont = sbar_bigfont_real;
+	sbar_bigfont = GetBigfont();
 	#endif
 }
 
@@ -492,9 +502,11 @@ void PostInit(void)
 		case 36:
 			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
-		
+		case 37:
+			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+			
 		//More to come here with each update
-		localcmd("seta rm_initialized 37\n");
+		localcmd("seta rm_initialized 38\n");
 		RM_OUTDATED
 		break;
 	}
@@ -520,6 +532,7 @@ void PostInit(void)
 	rm_noflags = cvar("rm_noflags");
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
+	rm_oldbigfont = cvar("rm_oldbigfont");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -546,6 +559,7 @@ void PostInit(void)
 	registercmd("hidecountry");
 	registercmd("showrankings");
 	registercmd("shownames_teamonly");
+	registercmd("oldbigfont");
 	registercmd("freezetag_danger");
 	registercmd("freezetag_danger_silent");
 	// -- //
@@ -554,6 +568,7 @@ void PostInit(void)
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
+	rmconfig_initialized = TRUE;
 	SendRMCFGReport();
 	#ifdef RM_SUPPORT_MADOKA
 	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
@@ -562,6 +577,7 @@ void PostInit(void)
 	//loadfont("user3", "gfx/madoka-rune");
 	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
 	localcmd("loadfont user3 gfx/madoka-rune\n");
+	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
@@ -603,6 +619,9 @@ void SendRMCFGReport()
 	float h, n, i;
 	string k, res;
 	
+	if(!rmconfig_initialized)
+		return;
+	
 	h = buf_create();
 	buf_cvarlist(h, "rm_", "");
 	n = buf_getsize(h);
@@ -614,6 +633,7 @@ void SendRMCFGReport()
 	}
 	
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
+	buf_del(h);
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
@@ -696,6 +716,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
@@ -731,6 +752,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
 		strCmd == "shownames_teamonly"  ||
+		strCmd == "oldbigfont"			||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -752,6 +774,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_noflags = cvar("rm_noflags");
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
+		rm_oldbigfont = cvar("rm_oldbigfont");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -770,6 +793,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 		
+		SetMadokaFont(MDKF_AUTO);
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;

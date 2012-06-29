@@ -59,3 +59,7 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added a changelog [Akari]
 * Added an option which makes players drop their powerups upon death (g_explosive_droppowerups). Default on CRA [Akari]
 * Players now drop their soulgems when they get frozen if the Soulmates mutator is active [Akari]
+* Added a new "bigfont" (can be disable in RM options) [Akari]
+* Fixed incorrect centering of bigprints [Akari]
+* Optimized rmcfg reports [Akari]
+* Fixed a memory leak in rmcfg reports [Akari]

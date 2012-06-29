@@ -2602,7 +2602,9 @@ void drawstringcenter(vector position, string text, vector scale, vector rgb, fl
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x);
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x);
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 

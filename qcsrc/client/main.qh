@@ -83,6 +83,7 @@ float sbar_num_fields;
 
 float sbar_font;
 float sbar_bigfont;
+float sbar_rmbigfont;
 
 string scores_label[MAX_SCORE];
 float scores_flags[MAX_SCORE];
@@ -203,6 +204,7 @@ float rm_showrankings;
 float rm_oldhud;
 float rm_althud;
 float rm_oldflags;
+float rm_oldbigfont;
 
 float vote_yescount;
 float vote_nocount;
@@ -295,3 +297,4 @@ float jb_chasecam_locked;
 float jb_chasecam_backup;
 
 float cl_fps;
+
