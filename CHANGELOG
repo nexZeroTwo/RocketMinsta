@@ -64,3 +64,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * Optimized initial rmcfg reports [Akari]
 * Fixed a memory leak in rmcfg reports [Akari]
 * Improved the appearance of sbar info strings (such as fps, time, date, speed, etc) [Akari]
+* The average ping is now displayed for each team on the scoreboard [Akari]

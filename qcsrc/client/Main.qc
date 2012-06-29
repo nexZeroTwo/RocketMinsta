@@ -339,8 +339,6 @@ float GetBigfont() {
 
 void SetMadokaFont(float v)
 {
-	print("SetMadokaFont()\n");
-	
 	#ifdef RM_SUPPORT_MADOKA
 	switch(v)
 	{

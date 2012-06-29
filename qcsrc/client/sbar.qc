@@ -1181,15 +1181,35 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 
 	// fill the table and draw the rows
 	i = 0;
-	if (teamplay)
+	if (teamplay) {
+		float plrs;
+		float countping = !tm.avg_ping;
+		
 		for(pl = players.sort_next; pl; pl = pl.sort_next)
 		{
 			if(pl.team != tm.team && pl.team != tm2.team)
 				continue;
+				
 			Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), i);
+			
+			if(countping) {
+				float theping = stof(getplayerkey(pl.sv_entnum, "ping")) 
+				
+				if(theping) {			// bots don't count
+					tm.avg_ping += theping;
+					++plrs;
+				}
+			}
+			
 			pos_y += 1.25 * sbar_fontsize_y;
 			++i;
 		}
+		
+		if(countping) {
+			tm.avg_ping = rint(tm.avg_ping / plrs);
+			tm.avg_ping_next = time + 1;
+		}
+	}
 	else
 		for(pl = players.sort_next; pl; pl = pl.sort_next)
 		{
@@ -1308,12 +1328,21 @@ void Sbar_DrawScoreboard()
 				continue;
 
 			rgb = GetTeamRGB(tm.team);
-
+			
 			Sbar_DrawXNum(pos - '6.5 0 0' * sbar_fontsize_y + '0 1 0' * sbar_fontsize_y, tm.(teamscores[ts_primary]), 4, 0, sbar_fontsize_y * 1.5, rgb, 0, 1, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
-
+			
 			if(ts_primary != ts_secondary)
 				Sbar_DrawXNum(pos - '4.5 0 0' * sbar_fontsize_y + '0 2.5 0' * sbar_fontsize_y, tm.(teamscores[ts_secondary]), 4, 0, sbar_fontsize_y * 1, rgb, 0, 1, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
-
+			
+			if(tm.avg_ping) {
+				drawstringright(pos - '1 0 0' * sbar_fontsize_x, ftos(tm.avg_ping), sbar_fontsize,
+								'1 1 1' - '0 1 1' * (max(0, min(220, tm.avg_ping - 80)) / 220),
+				1, DRAWFLAG_NORMAL);
+				
+				if(tm.avg_ping_next < time)
+					tm.avg_ping = 0;
+			}
+				
 			pos = Sbar_Scoreboard_MakeTable(pos, tm, rgb, bg_size, tm);
 		}
 	}

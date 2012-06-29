@@ -298,3 +298,5 @@ float jb_chasecam_backup;
 
 float cl_fps;
 
+.float avg_ping;
+.float avg_ping_next;
