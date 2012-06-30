@@ -1332,8 +1332,6 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		}
 	}
 
-	bprint("FUCKING DAMAGE\n");
-
 	// apply push
 	if (self.damageforcescale)
 	if (vlen(force))
