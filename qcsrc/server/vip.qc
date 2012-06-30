@@ -83,6 +83,22 @@ vector vip_SoulGemColormod2(float theteam)
 	}
 }
 
+float vip_SoulGemGlow(float theteam) {
+	switch(theteam) {
+		case COLOR_TEAM1:
+			return 251;
+		case COLOR_TEAM2:
+			return 210;
+		default:
+			return 0;
+	}
+}
+
+void vip_SoulGem_think() {
+	self.glow_size = 256 + cos(time * 2) * 64;
+	self.nextthink = time + 0.1;
+}
+
 void vip_SoulGem_touch()
 {
 	if(other.classname != "player")
@@ -169,11 +185,17 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.team = theteam;
 	e.movetype = MOVETYPE_NONE;
 	e.touch = vip_SoulGem_touch;
+	e.think = vip_SoulGem_think;
+	e.nextthink = time + random();
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
 	e.reset2 = vip_SoulGem_reset;
 	setmodel(e, "models/runematch/rune.mdl");
 	setsize(e, '0 0 -35', '0 0 0');
+	
+	e.glow_size = 256;
+	e.glow_color = vip_SoulGemGlow(theteam);
+	e.glow_trail = 1;
 	
 	e.enemy = spawn();
 	e.enemy.enemy = e;

@@ -65,3 +65,6 @@ A question mark following a contributor's name means that I don't remember/exact
 * Fixed a memory leak in rmcfg reports [Akari]
 * Improved the appearance of sbar info strings (such as fps, time, date, speed, etc) [Akari]
 * The average ping is now displayed for each team on the scoreboard [Akari]
+* Improved visuals of soulgems in the soulmates mutator and VIP [Akari]:
+	Gems now glow with their team's color
+	Gems now fly around their carrier in the soulmates mutator

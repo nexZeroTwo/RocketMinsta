@@ -3,6 +3,7 @@ float g_soulmates;
 .entity soulmate;
 .entity sment;
 .entity smhost;
+.entity sm_gemcarried;
 .float sm_canattach;
 .float sm_nextnotify;
 .float sm_attachblock;
