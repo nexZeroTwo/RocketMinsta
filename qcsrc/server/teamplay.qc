@@ -771,7 +771,7 @@ void CheckAllowedTeams (entity for_whom)
 			head = find(head, classname, teament_name);
 		}
 	}
-
+	
 	// TODO: Balance quantity of bots across > 2 teams when bot_vs_human is set (and remove next line)
 	if(c3==-1&&c4==-1)
 	if(cvar("bot_vs_human") && for_whom)

@@ -252,8 +252,18 @@ void ScoreRules_vip()
 void ScoreRules_JB()
 {
 	CheckAllowedTeams(world);
-	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
 	ScoreInfo_SetLabel_PlayerScore(SP_JB_JBREAKS,		"jbreaks",		SFL_SORT_PRIO_SECONDARY);
+	ScoreRules_basics_end();
+}
+
+// Precious stuff
+#define SP_PREC_CARRIERKILLS 4
+#define SP_PREC_PICKUPS 5
+void ScoreRules_Prec()
+{
+	ScoreRules_basics(0, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreInfo_SetLabel_PlayerScore(SP_PREC_CARRIERKILLS,	"rckills",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_PREC_PICKUPS,			"pickups",		0);
 	ScoreRules_basics_end();
 }

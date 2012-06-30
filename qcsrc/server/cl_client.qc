@@ -735,7 +735,9 @@ void PutObserverInServer (void)
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self);
 	}
-
+	
+	frag_attacker = world;
+	
 	remove(self.shownames);
 	self.shownames = world;
 	DropAllRunes(self);
@@ -1764,6 +1766,8 @@ void ClientDisconnect (void)
 	bprint ("^4 disconnected\n");
 
 	SoundEntity_Detach(self);
+
+	frag_attacker = world;
 
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);

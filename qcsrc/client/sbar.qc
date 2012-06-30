@@ -481,7 +481,7 @@ string Sbar_DefaultColumnLayout()
 		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks ",
+		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks +prec/pickups +prec/rckills ",
 		"+kh/caps +kh/pickups +kh/kckills ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
