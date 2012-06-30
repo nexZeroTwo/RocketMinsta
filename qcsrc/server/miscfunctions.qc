@@ -1614,6 +1614,8 @@ void precache()
         turrets_precash();
 #endif
 
+	precache_model("models/boob.mdl");
+
     // Precache all player models if desired
     if (cvar("sv_precacheplayermodels"))
     {

@@ -1,4 +1,5 @@
 void inf_warmup();
+void Boobs_Clear();
 
 float ClientData_Send(entity to, float sf)
 {
@@ -748,7 +749,8 @@ void PutObserverInServer (void)
 	prec_player_die(self);
 	inf_player_leave(self);
 	Portal_ClearAll(self);
-
+	Boobs_Clear();
+	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
 	if(self.ballcarried)
@@ -953,6 +955,105 @@ void PlayerTouchExplode(entity p1, entity p2)
 	RadiusDamage(e, world, g_touchexplode_damage, g_touchexplode_edgedamage, g_touchexplode_radius, world, g_touchexplode_force, DEATH_TOUCHEXPLODE, world);
 	remove(e);
 }
+
+// ======================================== //
+
+.entity boob_left, boob_right;
+
+#define BOOBS_SIZE 4
+#define BOOBS_POS 	'6.5 0 30'
+#define BOOBS_DIST 	'2 5 0'
+
+void Boobs_DropBoob(entity boob, vector force) {
+	setattachment(boob, world, "");
+	setorigin(boob, boob.owner.origin + boob.oldorigin);
+	boob.velocity = 100 * ('1 0 0' * crandom() + '0 1 0' * crandom() + '0 0 2' + '0 0 1' * random()) + force * 2;
+	boob.movetype = MOVETYPE_BOUNCE;
+	boob.avelocity = randomvec();
+	boob.owner = world;
+}
+
+void Boobs_ClearFor(entity plr, vector force) {
+	if(plr.boob_left)		Boobs_DropBoob(self.boob_left, force);
+	if(plr.boob_right)		Boobs_DropBoob(self.boob_right, force);
+	plr.boob_left = plr.boob_right = world;
+}
+
+void Boobs_Clear() {
+	Boobs_ClearFor(self, '0 0 0');
+}
+
+void Boobs_DropAll(vector force) {
+	Boobs_ClearFor(self, force);
+}
+
+void Boob_Think() {
+	if(self.owner) {
+		self.alpha = self.owner.alpha;
+		if(self.owner.movement_x || self.owner.movement_y)
+			setorigin(self, self.oldorigin + '0 0 1' * sin(time * 10 + self.cnt));
+	} else if(self.velocity_x || self.velocity_y || self.velocity_z) {
+		self.avelocity = normalize(self.avelocity) * vlen(self.velocity);
+	} else {
+		SUB_SetFade(self, time + 10, 2);
+		return;
+	}
+	
+	self.nextthink = time + 0.1;
+}
+
+void Boob_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	self.velocity_z += vlen(force) * 0.7;
+}
+
+entity Boobs_SpawnBoob(entity p, float dir) {
+	entity boob = spawn();
+	boob.classname = "boob";
+	boob.modelscale = boob.scale = BOOBS_SIZE;
+	boob.model = "models/boob.mdl";
+	boob.alpha = 1;
+	boob.owner = p;
+	boob.angles = vectoangles('0 0 -0.5');
+	boob.think = Boob_Think;
+	boob.nextthink = time;
+	boob.cnt = dir;
+	//boob.glow_color = 11;
+	//boob.glow_size = 32;
+	boob.effects = EF_NOSHADOW | EF_LOWPRECISION;
+	boob.takedamage = DAMAGE_AIM;
+	boob.solid = SOLID_CORPSE;
+	boob.event_damage = Boob_Damage;
+	boob.damageforcescale = 3;
+	
+	setattachment(boob, p, "");
+	setorigin	 (boob, BOOBS_POS + BOOBS_DIST * dir);
+	setmodel(boob, boob.model);
+	boob.mins_z = -5;
+	boob.maxs_z = +5;
+	boob.mins_x = boob.mins_y = -5;
+	boob.maxs_x = boob.maxs_y = +5;
+	boob.oldorigin = boob.origin;
+	
+	return boob;
+}
+
+void Boobs_Attach() {
+	if(self.boob_left)	remove(self.boob_left);
+	if(self.boob_right)	remove(self.boob_right);
+	
+	if not(cvar("g_explosive_boobs"))
+		return;
+	
+	self.boob_left  = Boobs_SpawnBoob(self, -1);
+	self.boob_right = Boobs_SpawnBoob(self, +1);
+}
+
+void Boobs_DropAllAndRespawn(vector force) {
+	Boobs_DropAll(force);
+	Boobs_Attach();
+}
+
+// ======================================== //
 
 /*
 =============
@@ -1207,6 +1308,7 @@ void PutClientInServer (void)
 		freezetag_PlayerSpawn();
 		JB_PlayerSpawn();
 		
+		Boobs_Attach();
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1776,6 +1878,7 @@ void ClientDisconnect (void)
 	JB_RemovePlayer();
 	prec_player_die(self);
 	Portal_ClearAll(self);
+	Boobs_Clear();
 
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);

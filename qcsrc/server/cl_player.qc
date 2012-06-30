@@ -474,6 +474,9 @@ void DropPowerups(vector force) {
 		DropPowerup(IT_INVINCIBLE, force);
 }
 
+void Boobs_Clear();
+void Boobs_DropAll(vector);
+
 void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
@@ -771,6 +774,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_attacker = attacker;
 		frag_inflictor = inflictor;
 		frag_target = self;
+		frag_force = force;
 		
 		prec_player_die(self);
 		
@@ -813,6 +817,8 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			self.angles_x = 0;
 			self.angles_z = 0;
 		}
+		
+		Boobs_DropAll(force);
 		
 		// don't spin
 		self.avelocity = '0 0 0';

@@ -509,6 +509,7 @@ float JB_PlayerDies() {
 			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_teamkill"));
 		}
 		
+		Boobs_DropAllAndRespawn(frag_force);
 		JB_ImprisonLater(frag_attacker);
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));

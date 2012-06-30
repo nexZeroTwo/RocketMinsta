@@ -462,7 +462,8 @@ float freezetag_PlayerDies()
 		else if(self.team == COLOR_TEAM4)
 			--pinkalive;
 		--totalalive;
-
+		
+		Boobs_DropAllAndRespawn(frag_force);
         freezetag_Freeze(frag_attacker);
 	}
 
