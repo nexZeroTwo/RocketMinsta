@@ -376,7 +376,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			// Let's give this another shot
-			if (! GameTypeFilter_Allowed (cvar_string("sv_worldbasename"), s))
+			if (! GameTypeFilter_Allowed ((DPRM_IsDPRMEngine()? cvar_string("sv_worldbasename") : mapname), s))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
