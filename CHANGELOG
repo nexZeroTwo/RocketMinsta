@@ -69,3 +69,4 @@ A question mark following a contributor's name means that I don't remember/exact
 	Gems now glow with their team's color
 	Gems now fly around their carrier in the soulmates mutator
 * Added boobs [Akari, Artefact]
+* Fixed bugged g_explosive_gametypevote_shuffle - availability statuses now get properly updated too [Akari]

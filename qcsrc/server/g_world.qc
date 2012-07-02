@@ -2884,11 +2884,17 @@ void GameTypeVote_Start()
 			idx2 = min(mapvote_count-1, floor(random() * mapvote_count));
 			
 			string temp1, temp2;
+			float atemp1, atemp2;
+			
 			temp1 = mapvote_maps[idx1];
 			temp2 = mapvote_maps[idx2];
+			atemp1 = mapvote_maps_availability[idx1];
+			atemp2 = mapvote_maps_availability[idx2];
 			
 			mapvote_maps[idx1] = temp2;
 			mapvote_maps[idx2] = temp1;
+			mapvote_maps_availability[idx2] = atemp1;
+			mapvote_maps_availability[idx1] = atemp2;
 		}
 	}
 	
