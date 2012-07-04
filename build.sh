@@ -419,6 +419,8 @@ if [ "$1" = "release" ]; then
         sed -i "/exec rocketminsta.cfg/d" "$NEXDATA/rocketminsta.cfg" # Without this, a recursive include will occur
     fi
     
+    cp -v CHANGELOG "$NEXDATA/CHANGELOG.rmrelease"
+    cp -v COPYING "$NEXDATA/COPYING.rmrelease"
     cat <<EOF > "$NEXDATA/README.rmrelease"
 
 This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
@@ -451,7 +453,7 @@ EOF
 
     cat <<EOF >> "$NEXDATA/README.rmrelease"
 
-RocketMinsta project: https://github.com/nexAkari/RocketMinsta
+RocketMinsta project: http://rocketminsta.net/
 
 EOF
 

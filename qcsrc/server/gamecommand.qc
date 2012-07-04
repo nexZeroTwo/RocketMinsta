@@ -655,7 +655,7 @@ void GameCommand(string command)
 		return;
 	}
 
-	if(argv(0) == "gametype") if(argc == 2)
+	if(argv(0) == "gametype" || argv(0) == "forcegametype") if(argc == 2)
 	{
 		float t, tsave;
 		s = argv(1);
@@ -673,16 +673,16 @@ void GameCommand(string command)
 		{
 			//MapInfo_SwitchGameType(t);
 			gametype_Set(gametype_Name_to_ID(s));
-			MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			if(MapInfo_count > 0)
-			{
+			MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			
+			if(MapInfo_count > 0) {
 				bprint("Game type successfully switched to ", s, "\n");
-			}
-			else
-			{
+			} else if(argv(0) == "forcegametype") {
+				bprint("Not map found for ", s ,", switch forced!\n");
+			} else {
 				bprint("Cannot use this game type: no map for it found\n");
 				gametype_Set(tsave);
-				MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+				MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			}
 		}
 		else
@@ -1174,7 +1174,7 @@ void GameCommand(string command)
     if(argv(0) == "endround")
     {
         FOR_EACH_PLAYER(e)
-            bigprint_spec(e, "round aborted", "", 5);
+            bigprint_spec(e, "Round Aborted", "", 5);
 
         if(!EndRound_Allowed())
         {
@@ -1232,8 +1232,7 @@ void GameCommand(string command)
 			return;
 		}
 		
-		string s = ResolveServer(argv(1));
-		
+		s = ResolveServer(argv(1));
 		bprint("^5Redirecting everyone to ^2", s, "\n");
 		
 		FOR_EACH_CLIENT(client)

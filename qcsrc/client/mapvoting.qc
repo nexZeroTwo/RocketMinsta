@@ -95,13 +95,13 @@ float GametypeVote_Selection()
 	r = -1;
 
 	for(i = 0; i < mv_num_maps; ++i) {
-		float size;
-		size = sbar_fontsize_y * 1.4 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
+		float sz;
+		sz = sbar_fontsize_y * 1.4 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
 
-		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + size)
+		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + sz)
 			r = i;
 
-		offset += size + sbar_fontsize_y;
+		offset += sz + sbar_fontsize_y;
 	}
 
 	return r;
@@ -362,41 +362,40 @@ void MapVote_Draw()
 	if(gametypevote)
 	{
 		// draws the picked map
-		float alpha = bound(0, (time - mv_starttime), 1);
+		float rawalpha = bound(0, (time - mv_starttime), 1);
+		float alpha = ipol_swingOut(rawalpha);
 
 		vector img_size;
-/*
-<<<<<<< HEAD
-		img_size_y = (isize * 3);
-		img_size_x = (isize * 3) / 0.75;
-//=======
-*/
+		vector img_fullsize;
+
 		img_size_y = isize;
 		img_size_x = isize / 0.75;
+		img_fullsize = img_size;
 		img_size *= alpha;
 
 		o_x = min(
 			vid_conwidth * 0.5 + (sbar_fontsize_x * gametypevote_longest) * 0.25,
 			vid_conwidth - sbar_fontsize_x - img_size_x
 		);
-//>>>>>>> unstable
-
-		//o_x = vid_conwidth - (sbar_fontsize_x * 2) - img_size_x;
+		
 		o_y = sbar_fontsize_y * 10;
 
 		//drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
 		
 		if(mapvote_choosenmappic != "") {
 			if(mv_gtvote_previewangle == 0)
-				drawpic(o, mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
+				drawpic(o + 0.5 * (img_fullsize - img_size), mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
 			else
-				drawpic_rotated(o, mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * alpha, alpha, DRAWFLAG_NORMAL);
+				drawpic_rotated(o + 0.5 * (img_fullsize - img_size), mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * rawalpha, alpha, DRAWFLAG_NORMAL);
 		}
 
+		vector sz = sbar_fontsize * alpha;
+		img_size = img_fullsize;
+		
 		o_y += img_size_y + 10;
-		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sbar_fontsize_x);
-
-		drawstring(o, mapvote_choosenmap, sbar_fontsize, '1 1 1', alpha, DRAWFLAG_NORMAL);
+		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sz_x);
+		
+		drawstring(o, mapvote_choosenmap, sz, '1 1 1' * alpha * alpha, alpha * alpha, DRAWFLAG_NORMAL);
 	}
 
 	o_x = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);

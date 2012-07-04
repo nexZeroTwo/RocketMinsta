@@ -20,7 +20,6 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
-float next_round;
 float redalive, bluealive, yellowalive, pinkalive;
 float totalalive;
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
@@ -43,6 +42,8 @@ void reset_map(float dorespawn)
 	}
 	else if(g_freezetag)
 		warmup = time + cvar("g_explosive_freezetag_warmup");
+	else if(g_jailbreak)
+		warmup = time + cvar("g_explosive_jailbreak_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
@@ -98,7 +99,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf)
+			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak)
 			{
 				if(self.classname == "player")
 					PutClientInServer();
@@ -343,7 +344,7 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip)
+	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
 	{
 		if((next_round && next_round < time))
 		{

@@ -14,3 +14,5 @@ IPOL_DEF(pow2InOut);
 IPOL_DEF(swingIn);
 IPOL_DEF(swingOut);
 IPOL_DEF(swingInOut);
+
+IPOL_DEF(linear);

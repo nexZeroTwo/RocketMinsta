@@ -11,7 +11,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	entity e;
 	
 	FOR_EACH_PLAYER(e)
-		bigprint_spec(e, strcat("^3", p.netname), strcat("got a ^3", n, "^7 bonus (", reason, ")"), 3);
+		bigprint_spec(e, strcat("^3", p.netname), strcat("Got a ^3", n, "^7 bonus (", reason, ")"), 3);
 	bprint(strcat("^3", p.netname, " ^7got a ^3", n, "^7 bonus (", reason, ")\n"));
 	play2all("kh/alarm.wav");
 }
@@ -27,6 +27,10 @@ void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float
 
 	for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
 	{
+		if(g_freezetag)
+		if(e.freezetag_frozen)
+			continue;
+		
 		if(o.team == e.team)
 		{
 			if(teamplay == 1)
@@ -109,6 +113,7 @@ void HG_Napalm (void)
 	proj.org_explosion = self.origin;
 	proj.think = HG_Napalm_Think;
 	proj.nextthink = time;
+	proj.reset = SUB_Remove;
 	proj.damageforcescale = cvar ("g_explosive_handgrenades_napalm_damageforcescale");
 	kick_x = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
 	kick_y = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
@@ -172,18 +177,14 @@ float HG_NameToType(string t) {
 	}
 }
 
-#define GV(v) (GRENVAR(self.hg_type, v))
-void HG_Normal_Explode (void) {
-	float radius = GV("radius"), i;
-	pointparticles(particleeffectnum("rocket_explode"), self.origin, '0 0 0', 1);
-	
-	for(i = 0; i < 40; ++i) {
-		vector v = randomvec();
-		float  r = random();
-		
-		pointparticles(particleeffectnum(mod(i, 2)? "rocket_explode" : "fire_big"), self.origin + v * radius * r, v * radius * r * 100, 1);
+float HG_TypeToCSQCProjType(float t) {
+	switch(t) {
+		case HG_NAPALM:	return PROJECTILE_HG_NAPALM;
+		default:		return PROJECTILE_HG_GENERIC;
 	}
 }
+
+#define GV(v) (GRENVAR(self.hg_type, v))
 
 void HG_Grenade_Explode()
 {
@@ -243,7 +244,7 @@ void HG_Attack()
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
-		self.hg_bonus--;
+		self.hg_bonus -= 1;
 	} else
 		hgtype = self.hg_type;
 	
@@ -279,7 +280,7 @@ void HG_Attack()
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 	
-	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
+	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
 	
 	if (hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
@@ -292,8 +293,10 @@ void HG_Attack()
 
 void HG_Frame()
 {
-	if(!g_handgrenades)
+	if(!g_handgrenades || time < game_starttime)
 		return;
+	
+	float mayfire = (!g_grappling_hook || (!self.hook && !CustomCRAHookButton(self))) || self.hg_power;
 	
 	float held;
 	held = self.BUTTON_HG;
@@ -302,10 +305,10 @@ void HG_Frame()
 	   (g_freezetag && self.freezetag_frozen))
 			held = 0;
 	
-	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
-		bigprint_spec(self, "out of grenades", "", 1);
+	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
+		bigprint_spec(self, "Out of Grenades", "", 1);
 	
-	if(held && time >= self.hg_next && self.hg_ammo)
+	if(held && time >= self.hg_next && self.hg_ammo && mayfire)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
 			cvar("g_explosive_handgrenades_speed"),
@@ -317,11 +320,11 @@ void HG_Frame()
 			cvar("g_explosive_handgrenades_clearspeed"),
 		1);
 		
-		if(self.hg_state)
+		if(self.hg_state && mayfire)
 			HG_Attack();
 	}
 	
-	if(self.hg_power == 1)
+	if(self.hg_power == 1 && mayfire)
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;

@@ -12,9 +12,9 @@ entity prec_rune_create ()
     local entity rune;
     rune = spawn();
     rune.classname = "prec_rune";
-    rune.netname   = "Precious";
-    rune.netname2  = "your precious";
-    rune.netname3  = "his precious";
+    rune.netname   = "The Precious";
+    rune.netname2  = "your Precious";
+    rune.netname3  = "his Precious";
     rune.movetype  = MOVETYPE_BOUNCE;
     rune.solid     = SOLID_BBOX;
     rune.flags     = FL_ITEM;
@@ -68,7 +68,7 @@ entity prec_rune_create ()
     WaypointSprite_Spawn("pointer_cyan", 0, 0, rune, '0 0 32', world, 0, rune, waypointsprite_attached, 1);
 
     // hand it to the caller, all prepared
-    rune.pain_finished = cvar("g_prec_rune_patients");
+    rune.pain_finished = cvar("g_prec_rune_patience");
     rune.nextthink = time + 0.1;
     return rune;
 }
@@ -93,16 +93,24 @@ void prec_rune_collect (entity rune, entity player)
 
     // announce the rune's new carrier
     local string pickup_msg;
-	pickup_msg = strcat("^7", rune.owner.netname, "^7 took ", rune.netname);
+	pickup_msg = strcat("^7", rune.owner.netname, "^7 took ", rune.netname, "!");
     bprint(strcat(pickup_msg, "\n"));
+    
     local entity pi;
-    FOR_EACH_PLAYER(pi)
-    {
-        if(pi == rune.owner)
+    FOR_EACH_PLAYER(pi) {
+		/*
+		if(pi == rune.owner)
 			centerprint_spec(pi, strcat(NEWLINES, "^7You took ", rune.netname));
-        else
+		else
 			centerprint_spec(pi, strcat(NEWLINES, pickup_msg));
-    }
+		*/
+		
+		if(pi == rune.owner)
+			bigprint_spec(pi, strcat("^7You took ", rune.netname, "!"), "", 5);
+		else
+			bigprint_spec(pi, "", pickup_msg, 5);
+	}
+    
     // we don't want the collection sound to interfere with the revenge sound
     if(player.prec_grudge <= 0)
 		play2all(kh_sound_collect);
@@ -111,11 +119,16 @@ void prec_rune_collect (entity rune, entity player)
 	// give or take the player points for pickup up the rune
 	if(cvar("g_prec_points_rune_collect"))
 		PlayerScore_Add(player, SP_SCORE, cvar("g_prec_points_rune_collect"));
-	//PlayerScore_Add(player, 7, 1);
+	PlayerScore_Add(player, SP_PREC_PICKUPS, 1);
 
     // update it's waypoint
     WaypointSprite_Kill(rune.waypointsprite_attached);
 	WaypointSprite_Spawn("pointer_red", 0, 0, rune.owner, '0 0 64', world, 0, rune, waypointsprite_attached, 1);
+	
+	player.health = max(player.health, 200);
+	player.armorvalue = max(player.armorvalue, 200);
+	if(g_handgrenades)
+		player.hg_ammo = max(player.hg_ammo, cvar("g_explosive_handgrenades_ammo") * 2);
 }
 
 void prec_rune_drop (entity rune, float deliberate)
@@ -124,7 +137,7 @@ void prec_rune_drop (entity rune, float deliberate)
     if(rune.owner.classname != "player")
         return;
 
-	// give or take the player points for pickup up the rune
+	// give or take the player points for dropping the rune
 	if(cvar("g_prec_points_rune_drop"))
 		PlayerScore_Add(rune.owner, SP_SCORE, cvar("g_prec_points_rune_drop"));
 
@@ -139,9 +152,9 @@ void prec_rune_drop (entity rune, float deliberate)
     FOR_EACH_PLAYER(pi) {
         if(pi == rune.owner) {
 			if(!deliberate)
-				centerprint_spec(pi, strcat(NEWLINES, "^7You lost ", rune.netname2));
+				centerprint_spec(pi, strcat("^7You lost ", rune.netname2));
         } else
-			centerprint_spec(pi, strcat(NEWLINES, drop_msg));
+			centerprint_spec(pi, drop_msg);
     }
     if(rune.killsound)
 		play2all(kh_sound_drop);
@@ -155,7 +168,7 @@ void prec_rune_drop (entity rune, float deliberate)
     rune.solid = SOLID_TRIGGER;
     rune.owner.prec_rune = world;
     rune.owner = world;
-    rune.pain_finished = cvar("g_prec_rune_patients");
+    rune.pain_finished = cvar("g_prec_rune_patience");
 
     // update it's waypoint
     WaypointSprite_Kill(rune.waypointsprite_attached);
@@ -183,9 +196,9 @@ void prec_rune_destroy (entity rune, float desired)
     local entity pi;
     FOR_EACH_PLAYER(pi) {
         if(pi == self.killindicator && !desired)
-			centerprint_spec(pi, strcat(NEWLINES, "^7You broke ", rune.netname2));
+			centerprint_spec(pi, strcat("^7You broke ", rune.netname2));
         else
-			centerprint_spec(pi, strcat(NEWLINES, des_msg));
+			centerprint_spec(pi, des_msg);
     }
     play2all(kh_sound_destroy);
 
@@ -239,8 +252,8 @@ void prec_rune_think ()
 			bprint(strcat(rev_msg, "\n"));
 			local entity pi;
 			FOR_EACH_PLAYER(pi) {
-				if(pi == self.owner) centerprint_spec(pi, strcat(NEWLINES, "^7Apparently ", self.netname2, "^7 remembers you"));
-				else centerprint_spec(pi, strcat(NEWLINES, rev_msg));
+				if(pi == self.owner) centerprint_spec(pi, strcat("^7Apparently ", self.netname2, "^7 remembers you"));
+				else centerprint_spec(pi, rev_msg);
 			}
 
 			// zap the player
@@ -288,10 +301,16 @@ void prec_player_die (entity player)
 {
     // if we're not playing ka, don't interfere with the caller's natural routine
     if(!g_prec) return;
- 
+	
     // is the dieing player holding a rune that needs to be dropped?
-    if(player.prec_rune.classname == "prec_rune")
+    if(player.prec_rune.classname == "prec_rune") {
         prec_rune_drop(player.prec_rune, 0);
+        
+        if(frag_attacker.classname == "player" && frag_attacker != self) {
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_prec_points_rckill"));
+			PlayerScore_Add(frag_attacker, SP_PREC_CARRIERKILLS, 1);
+		}
+	}
 }
 
 float prec_check_aggression (entity attacker, entity inflictor, entity targ)
@@ -362,5 +381,7 @@ void prec_init ()
     prec_controller.nextthink = time + 0.1;
     prec_controller.think     = prec_controller_think;
     prec_controller.pain_finished = 0.1;
+    
+    ScoreRules_Prec();
 }
 

@@ -10,53 +10,9 @@ void update_playercount()
 	self = oldself;
 }
 
-void freezetag_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-
-    //bprint("next_round = ", ftos(next_round), "\n");
-    //bprint("time = ", ftos(time), "\n");
-    //bprint("timeleft = ", ftos(timeleft), "\n");
-    
-    if(intermission_running)
-    {
-        //bprint("Freezetag: GAME OVER\n");
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_freezetag_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            remove(self);
-            return;
-        }
-        
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("freezetag starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
-}
-
 void freezetag_EndRound()
 {
-    local entity e = spawn();
-    e.think = freezetag_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
+    G_EndRound("FreezeTag", 5, cvar("g_explosive_freezetag_warmup"), update_playercount, func_null, func_null);
     update_playercount();
     defer(5, sm_Clear);
 }
@@ -203,33 +159,37 @@ void freezetag_CheckWinner()
 	{
 		if(winner.team == COLOR_TEAM1)
         {
-			teamname = "^1red";
+			teamname = "^1Red";
             teamname_full = "^1Red team";
             if(ft_teams < 3) play2all("ctf/red_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
-			teamname = "^4blue";
+			teamname = "^4Blue";
             teamname_full = "^4Blue team";
             if(ft_teams < 3) play2all("ctf/blue_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
-			teamname = "^3yellow";
+			teamname = "^3Yellow";
             teamname_full = "^3Yellow team";
         }
-		else
+		else if(winner.team == COLOR_TEAM4)
         {
-			teamname = "^6pink";
+			teamname = "^6Pink";
             teamname_full = "^6Pink team";
-        }
+        } else {
+			bprint("^1BUG: ^7An invalid team somehow won! Aborting the round to prevent a crash\n");
+			freezetag_EndRound();
+			return;
+		}
         
         if(ft_teams > 2)
 			play2all("kh/capture.wav");
         
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
-            bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
+            bigprint_spec(e, strcat(teamname, " ^7Scores!"), "All opponents are frozen", 5);
             
             if(e.team == winner.team)
 				hudflash_teamcolor_default_spec(e);
@@ -455,7 +415,8 @@ float freezetag_PlayerDies()
 		else if(self.team == COLOR_TEAM4)
 			--pinkalive;
 		--totalalive;
-
+		
+		Boobs_DropAllAndRespawn(frag_force);
         freezetag_Freeze(frag_attacker);
 	}
 

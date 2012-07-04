@@ -259,6 +259,15 @@ void InitGameplayMode()
 		freezetag_Initialize();
 	}
 
+	if(g_jailbreak)
+	{
+		ActivateTeamplay();
+		fraglimit_override = cvar("g_explosive_jailbreak_point_limit");
+		leadlimit_override = cvar("g_explosive_jailbreak_point_leadlimit");
+		timelimit_override = cvar("g_explosive_jailbreak_timelimit");
+		JB_Init();
+	}
+
 	if(g_assault)
 	{
 		ActivateTeamplay();
@@ -762,7 +771,7 @@ void CheckAllowedTeams (entity for_whom)
 			head = find(head, classname, teament_name);
 		}
 	}
-
+	
 	// TODO: Balance quantity of bots across > 2 teams when bot_vs_human is set (and remove next line)
 	if(c3==-1&&c4==-1)
 	if(cvar("bot_vs_human") && for_whom)

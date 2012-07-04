@@ -454,6 +454,7 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_prec", "0");
 	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
+	registercvar("g_jailbreak", "0");
 	registercvar("g_no", "0");
 	
 	
@@ -621,7 +622,7 @@ void spawnfunc_worldspawn (void)
 	}
 	else
 		matchid = strzone(ftos(random()));
-
+	
 	cvar_set("nextmap", "");
 
 	SetDefaultAlpha();
@@ -711,6 +712,14 @@ void spawnfunc_worldspawn (void)
 
 	if(g_freezetag || g_domination)
 		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
+
+	if(g_jailbreak) {
+		addstat(STAT_REDALIVE, AS_INT, redalive_stat);
+		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
+		addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
+		addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
+		addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
+	}
 
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
@@ -806,6 +815,17 @@ void spawnfunc_worldspawn (void)
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
 	ViewportFlipper_Init();
 	registercvar("g_endmatch", "0");
+	cvar_set("g_endmatch", "0");
+	
+	if(cvar_string("g_maplist") == "") {
+		bprint("Empty maplist: resetting to default.\n" );
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		if(cvar("g_maplist_shuffle"))
+			ShuffleMaplist();
+		localcmd("\nmenu_cmd sync\n");
+	}
+	
+	DPRM_Start();
 }
 
 void spawnfunc_light (void)
@@ -1823,17 +1843,17 @@ float WinningCondition_Scores(float limit, float leadlimit)
 			if (leaderfrags == limit - 1)
 			{
 				play2all("announcer/robotic/1fragleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "one frag remains", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "One frag remains!", winmsg, 2);
 			}
 			else if (leaderfrags == limit - 2)
 			{
 				play2all("announcer/robotic/2fragsleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "two frags remain", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "Two frags remain!", winmsg, 2);
 			}
 			else if (leaderfrags == limit - 3)
 			{
 				play2all("announcer/robotic/3fragsleft.wav");
-				FOR_EACH_PLAYER(e) bigprint_spec(e, "three frags remain", winmsg, 2);
+				FOR_EACH_PLAYER(e) bigprint_spec(e, "Three frags remain!", winmsg, 2);
 			}
 		}
 	}
@@ -1997,6 +2017,7 @@ void CheckRules_World()
 	if(cvar("g_endmatch"))
 	{
 		cvar_set("g_endmatch", "0");
+		print("^1Endmatching the game\n");
 		NextLevel();
 		return;
 	}
@@ -2364,7 +2385,7 @@ void MapVote_Init()
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
 		{
-			m = GetNextMap();
+			local string m = GetNextMap();
 			if(!MapIsPlayable(m))
 				continue;
 			
@@ -2744,7 +2765,7 @@ void MapVote_Start()
 {
 	if(mapvote_run)
 		return;
-
+		
 	MapInfo_Enumerate();
 	if(MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
@@ -2882,11 +2903,17 @@ void GameTypeVote_Start()
 			idx2 = min(mapvote_count-1, floor(random() * mapvote_count));
 			
 			string temp1, temp2;
+			float atemp1, atemp2;
+			
 			temp1 = mapvote_maps[idx1];
 			temp2 = mapvote_maps[idx2];
+			atemp1 = mapvote_maps_availability[idx1];
+			atemp2 = mapvote_maps_availability[idx2];
 			
 			mapvote_maps[idx1] = temp2;
 			mapvote_maps[idx2] = temp1;
+			mapvote_maps_availability[idx2] = atemp1;
+			mapvote_maps_availability[idx1] = atemp2;
 		}
 	}
 	

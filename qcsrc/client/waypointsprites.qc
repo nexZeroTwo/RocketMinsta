@@ -44,7 +44,7 @@ void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, v
 {
 	vector v1, v2, v3, v4;
 	
-	SCREWSIZE(newsize, sz, seed);
+	SCREWSIZE(newsize, sz, seed)
 	
 	vector half = sz * 0.5;
 	org_x -= newsize_x * 0.5 - half_x;

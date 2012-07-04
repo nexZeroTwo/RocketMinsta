@@ -192,6 +192,7 @@ float ReadInt24_t();
 #else
 void WriteInt24_t(float dest, float val);
 #endif
+void defer(float fdelay, void() func);
 #endif
 
 string mmss(float tenths);

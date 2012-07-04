@@ -103,6 +103,7 @@ string STR_OBSERVER = "observer";
 #define FOR_EACH_REALCLIENT(v) FOR_EACH_CLIENT(v) if(clienttype(v) == CLIENTTYPE_REAL)
 #define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.classname == STR_PLAYER)
 #define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.classname == STR_PLAYER)
+#define FOR_EACH_DEVELOPER(v) FOR_EACH_REALCLIENT(v) if(v.isdeveloper)
 #endif
 
 // copies a string to a tempstring (so one can strunzone it)
@@ -213,7 +214,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak)
         if (self.team)
             have_team_spawns = 1;
 
@@ -389,6 +390,127 @@ string NearestLocation(vector p)
     return ret;
 }
 
+#define MAXREPS 32
+string reptable_src[MAXREPS];
+string reptable_rep[MAXREPS];
+float reptable_srclen[MAXREPS];
+float reptable_replen[MAXREPS];
+float reptable_count;
+float reptable_init;
+float reptable_maxsrclen;
+float reptable_minsrclen;
+
+#define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
+
+string getsrc(string id) {
+	string s = cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_src"));
+	if(!s || s == "")	// no src defined? Assume id is the src
+		return id;
+	return s;
+}
+
+string getrep(string id) {
+	//return strcat(rgb_to_hexcolor('1 0 0' * random() + '0 1 0' * random() + '0 0 1' * random()), getsrc(id), "^7");
+	
+	return cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_rep"));
+}
+
+string getrepids() {
+	return cvar_string("g_explosive_chat_autoreplace_order");
+}
+
+void reptable_free() {
+	reptable_init = FALSE;
+	float i;
+	for(i = 0; i < reptable_count; ++i) {
+		strunzone(reptable_src[i]);
+		strunzone(reptable_rep[i]);
+		reptable_srclen[i] = 0;
+		reptable_replen[i] = 0;
+	}
+	reptable_count = 0;
+	reptable_maxsrclen = 0;
+	reptable_minsrclen = 0;
+}
+
+void reptable_make(string replacements) {
+	if(reptable_init)
+		reptable_free();
+	
+	reptable_init = TRUE;
+	reptable_count = bound(0, tokenizebyseparator(replacements, " "), MAXREPS);
+	
+	float i;
+	for(i = 0; i < reptable_count; ++i) {
+		string id = argv(i);
+		string src = strzone(getsrc(id));
+		string rep = strzone(getrep(id));
+		float srclen = strlen(src);
+		float replen = strlen(rep);
+		
+		reptable_src[i] = src;
+		reptable_rep[i] = rep;
+		reptable_srclen[i] = strlen(src);
+		reptable_replen[i] = strlen(rep);
+		
+		if(srclen > reptable_maxsrclen)
+			reptable_maxsrclen = srclen;
+			
+		if(!reptable_minsrclen || srclen < reptable_minsrclen)
+			reptable_maxsrclen = srclen;
+	}
+	
+	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
+}
+
+string apply_autoreplace(string msg) {
+	if not(cvar("g_explosive_chat_autoreplace"))
+		return msg;
+	
+	if not(reptable_init) {
+		string reps = getrepids();
+		if(reps == "")
+			return msg;
+		reptable_make(reps);
+	}
+	
+	float i, len;
+	len = strlen(msg);
+	
+	if(len < reptable_minsrclen)
+		return msg;		// no point
+		
+	for(i = 0; i < len; ++i) {
+		//print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
+		
+		FOR_EACH_REPID(id) {
+			float slen = reptable_srclen[id];
+			
+			if(len - i < slen)
+				continue;
+			
+			string p = strtolower(substring(msg, i, slen));
+			//print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
+			
+			if(p == reptable_src[id]) {
+				//print("apply_autoreplace: success\n");
+				
+				string head = substring(msg, 0, i);
+				string tail = substring(msg, i + slen, len);
+				msg = strcat(head, reptable_rep[id], tail);
+				
+				float rlen = reptable_replen[id];
+				i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
+				len += rlen - slen;
+				
+				break;
+			}
+		}
+	}
+	
+	return msg;
+}
+
 string formatmessage(string msg)
 {
     float p, p1, p2;
@@ -397,6 +519,9 @@ string formatmessage(string msg)
     string replacement;
     p = 0;
     n = 7;
+    
+    msg = apply_autoreplace(msg);
+    
     while (1)
     {
         if (n < 1)
@@ -601,6 +726,7 @@ float fexists(string f)
     return TRUE;
 }
 
+void GameCommand(string);
 void backtrace(string msg)
 {
     float dev, war;
@@ -616,6 +742,7 @@ void backtrace(string msg)
     dprint("\n--- CUT UNTIL HERE ---\n");
     cvar_set("developer", ftos(dev));
     cvar_set("prvm_backtraceforwarnings", ftos(war));
+    GameCommand("time");
 }
 
 string Team_ColorCode(float teamid)
@@ -1029,7 +1156,7 @@ void readplayerstartcvars()
     if (g_jetpack)
         start_items |= IT_JETPACK;
 
-	if(g_jetpack || g_grappling_hook)
+	if(g_jetpack /*|| g_grappling_hook*/)
 		g_handgrenades = 0;
 
     if (g_weapon_stay == 2)
@@ -1118,7 +1245,6 @@ void readlevelcvars(void)
     sv_clones = cvar("sv_clones");
     sv_cheats = cvar("sv_cheats");
     sv_gentle = cvar("sv_gentle");
-    sv_foginterval = cvar("sv_foginterval");
     g_cloaked = cvar("g_cloaked");
     g_jump_grunt = cvar("g_jump_grunt");
     g_footsteps = cvar("g_footsteps");
@@ -1179,9 +1305,9 @@ void readlevelcvars(void)
     g_pickup_rockets_max               = cvar("g_pickup_rockets_max");
     g_pickup_cells                     = cvar("g_pickup_cells");
     g_pickup_cells_max                 = cvar("g_pickup_cells_max");
-    g_pickup_fuel                     = cvar("g_pickup_fuel");
-    g_pickup_fuel_jetpack             = cvar("g_pickup_fuel_jetpack");
-    g_pickup_fuel_max                 = cvar("g_pickup_fuel_max");
+    g_pickup_fuel                      = cvar("g_pickup_fuel");
+    g_pickup_fuel_jetpack              = cvar("g_pickup_fuel_jetpack");
+    g_pickup_fuel_max                  = cvar("g_pickup_fuel_max");
     g_pickup_armorsmall                = cvar("g_pickup_armorsmall");
     g_pickup_armorsmall_max            = cvar("g_pickup_armorsmall_max");
     g_pickup_armormedium               = cvar("g_pickup_armormedium");
@@ -1487,6 +1613,8 @@ void precache()
     if (cvar("g_turrets"))
         turrets_precash();
 #endif
+
+	precache_model("models/boob.mdl");
 
     // Precache all player models if desired
     if (cvar("sv_precacheplayermodels"))
@@ -2863,33 +2991,6 @@ void hudflash_teamcolor_default_spec(entity e)
     hudflash_teamcolor_spec(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
 }
 
-void defer_think()
-{
-    entity oself;
-
-    oself           = self;
-    self            = self.owner;
-    oself.think     = SUB_Remove;
-    oself.nextthink = time;
-
-    oself.use();
-}
-
-/*
-    Execute func() after time + fdelay.
-    self when func is executed = self when defer is called
-*/
-void defer(float fdelay, void() func)
-{
-    entity e;
-
-    e           = spawn();
-    e.owner     = self;
-    e.use       = func;
-    e.think     = defer_think;
-    e.nextthink = time + fdelay;
-}
-
 // universal endround for all supported gametypes
 void freezetag_EndRound();
 void vip_EndRound();
@@ -2909,6 +3010,9 @@ else
     if(g_keyhunt)
         kh_FinishRound();
 else
+	if(g_jailbreak)
+		JB_EndRound();
+else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
 
@@ -2917,7 +3021,8 @@ float EndRound_Allowed()
     return( g_freezetag
          || g_vip
          || g_totaldomination
-         || g_keyhunt );
+         || g_keyhunt
+         || g_jailbreak);
 }
 
 void SendSpeedRecord(entity e)
@@ -3158,3 +3263,93 @@ float ServerIsAllowed(string s) {
 	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
 }
 
+float ShouldForceFog() {
+	string s = cvar_string("g_explosive_forcefog");
+	if(s != "")
+		return TRUE;
+	return world.fog != "";
+}
+
+string GetForcedFog() {
+	string s = cvar_string("g_explosive_forcefog");
+	if(s != "")
+		return s;
+	return world.fog;
+}
+
+// ========================================== //
+
+.string endround_typename;
+.float endround_warmuptime;
+.float endround_announced;
+.void() endround_think;
+.void() endround_think2;
+.void() endround_finalize;
+
+void G_EndRound_Think()
+{
+    local float timeleft = rint(self.cnt - time);
+    local entity e;
+    
+    if(intermission_running) {
+        remove(self);
+        return;
+    }
+    
+    if(self.endround_think)
+		self.endround_think();
+    
+    if(timeleft <= self.endround_warmuptime)
+    {
+		if(!self.endround_announced) {
+			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
+			self.endround_announced = TRUE;
+		}
+		
+        if(timeleft <= 0)
+        {
+            FOR_EACH_PLAYER(e)
+            {
+                bigprint_clear_spec(e);
+                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", 1);
+            }
+            
+			sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+            if(self.endround_finalize)
+				self.endround_finalize();
+            strunzone(self.endround_typename);
+            remove(self);
+            shooting_forbidden = FALSE;
+            return;
+        }
+        
+		if(self.endround_think2)
+			self.endround_think2();
+		shooting_forbidden = TRUE;
+        
+        FOR_EACH_PLAYER(e)
+        {
+            bigprint_clear_spec(e);
+            bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
+        }
+        
+        if(timeleft <= 3)
+			sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+    }
+    self.nextthink = time + 1;
+}
+
+void G_EndRound(string tname, float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
+{
+    local entity e = spawn();
+    e.think = G_EndRound_Think;
+    e.nextthink = time + 1;
+    e.endround_typename = strzone(tname);
+    e.endround_think = callback;
+    e.endround_finalize = callbackfin;
+    e.endround_warmuptime = warmuptime;
+    next_round = time + thedelay;
+    e.cnt = warmuptime + next_round;
+}
+
+// ========================================== //

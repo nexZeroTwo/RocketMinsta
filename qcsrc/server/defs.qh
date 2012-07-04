@@ -21,7 +21,7 @@ float ctf_score_value(string parameter);
 // derp
 #define g_total_domination g_totaldomination
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip, g_prec, g_rps, g_inf, g_no;
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip, g_prec, g_rps, g_inf, g_jailbreak, g_no;
 float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss, g_handgrenades;
 
 float g_warmup_limit;
@@ -49,7 +49,6 @@ float g_jetpack;
 float sv_clones;
 float sv_cheats;
 float sv_gentle;
-float sv_foginterval;
 
 entity	activator;
 string	string_null;
@@ -692,3 +691,18 @@ float v_flipped;
 .entity last_spawn_pt_2;
 
 void end_match(float);
+.float isdeveloper;
+
+float shooting_forbidden;
+
+float totalclients;
+.float spawninarena;
+
+typedef void() spawnfunc_t;
+.float droppedpowerup;
+
+vector frag_force;
+
+void Boobs_DropAllAndRespawn(vector);
+
+float next_round;

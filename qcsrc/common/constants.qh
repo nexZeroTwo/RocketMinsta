@@ -45,6 +45,7 @@ const float TE_CSQC_SPEEDRECORD = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
+const float TE_CSQC_CAMERA = 117;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -291,6 +292,9 @@ const float STAT_MINSTA = 113;
 const float STAT_HGFORCE = 114;
 const float STAT_HGAMMO = 115;
 const float STAT_SM_HASGEM = 116;
+const float STAT_UNLOCK_PROGRESS = 117;
+const float STAT_PRISONED = 118;
+const float STAT_ROUNDLOST = 119;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -335,9 +339,7 @@ const float STAT_SM_HASGEM = 116;
  * Score indices
  */
  
-//<akari>
-#define MAX_SCORE 17
-//</akari>
+#define MAX_SCORE 18
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -353,6 +355,7 @@ const float STAT_SM_HASGEM = 116;
 #define SP_JOINTIME 14
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
+#define SP_FPS 17
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
@@ -438,6 +441,9 @@ float PROJECTILE_RM_LASER_BLUE = 23;
 float PROJECTILE_RM_LASER_YELLOW = 24;
 float PROJECTILE_RM_LASER_PINK = 25;
 
+float PROJECTILE_HG_GENERIC = 26;
+float PROJECTILE_HG_NAPALM = 27;
+
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
 float SPECIES_ALIEN        =  2;
@@ -485,11 +491,11 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
-#define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
-#define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 #define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
+#define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
+#define DEATH_ISWEAPON(t,w)           (!DEATH_ISHG(t) && !DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
+#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
 #define FRAGS_SPECTATOR -666
@@ -562,3 +568,5 @@ const vector eZ = '0 0 1';
 #define GTV_FORBIDDEN 2
 
 float(string url, float id) uri_get = #513;
+
+#define abs(f) fabs(f)

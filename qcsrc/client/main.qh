@@ -83,6 +83,7 @@ float sbar_num_fields;
 
 float sbar_font;
 float sbar_bigfont;
+float sbar_rmbigfont;
 
 string scores_label[MAX_SCORE];
 float scores_flags[MAX_SCORE];
@@ -203,6 +204,7 @@ float rm_showrankings;
 float rm_oldhud;
 float rm_althud;
 float rm_oldflags;
+float rm_oldbigfont;
 
 float vote_yescount;
 float vote_nocount;
@@ -297,10 +299,10 @@ float rm_hidecountry;
 float vx(vector v) { return v_x; }
 float vy(vector v) { return v_y; }
 
-#define SCREWSIZE(n,o,s) { float __s = s; vector n = (o) + '0.5 0 0' * cos(time * 1.2 + __s) * vx(o) + '0 0.5 0' * sin(time + __s) * vy(o) }
+#define SCREWSIZE(n,o,s) float __s = s; vector n = (o) + '0.5 0 0' * cos(time * 1.2 + __s) * vx(o) + '0 0.5 0' * sin(time + __s) * vy(o);
 
 float drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) {
-	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position));
+	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position))
 	float sw = stringwidth(text, TRUE);
 	
 	vector oldsize = sw * scale;
@@ -316,7 +318,7 @@ float drawcolorcodedstring(vector position, string text, vector scale, float alp
 }
 
 float drawstring(vector position, string text, vector scale, vector rgb, float alpha, float flag) {
-	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position));
+	SCREWSIZE(newscale, scale, crc16(FALSE, text) + vlen(position))
 	float sw = stringwidth(text, FALSE);
 	
 	vector oldsize = sw * scale;
@@ -332,7 +334,7 @@ float drawstring(vector position, string text, vector scale, vector rgb, float a
 }
 
 void _drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f, float rotscrew, float seed);
-float drawpic(vector position, string pic, vector size, vector rgb, float alpha, float flag) {
+float drawpic(vector position, string pic, vector sz, vector rgb, float alpha, float flag) {
 	/*
 	SCREWSIZE(newsize, size, crc16(FALSE, pic) + vlen(position));
 	
@@ -344,11 +346,19 @@ float drawpic(vector position, string pic, vector size, vector rgb, float alpha,
 	*/
 	
 	float seed = crc16(FALSE, pic) + vlen(position);
-	_drawrotpic(position + size * 0.5, 0, pic, size, size * 0.5, rgb + colormapPaletteColor(15, 0) * sin(time * 2 + seed) * 0.4, alpha, flag, 0.1, seed);
+	_drawrotpic(position + sz * 0.5, 0, pic, sz, sz * 0.5, rgb + colormapPaletteColor(15, 0) * sin(time * 2 + seed) * 0.4, alpha, flag, 0.1, seed);
 	return 0;
 }
 
 // the server will set this
 float v_flipped;
 
-float abs(float);
+vector jb_camera_origin;
+float jb_camera_expiretime;
+float jb_chasecam_locked;
+float jb_chasecam_backup;
+
+float cl_fps;
+
+.float avg_ping;
+.float avg_ping_next;

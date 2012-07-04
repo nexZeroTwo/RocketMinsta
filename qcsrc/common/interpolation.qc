@@ -1,4 +1,6 @@
 
+IPOL_SHORTDEF(linear, x)
+
 float ipol_powIn(float p, float x) {
 	return pow(x, p);
 }
@@ -20,15 +22,15 @@ IPOL_SHORTDEF(pow2Out, 		ipol_powOut(2, x))
 IPOL_SHORTDEF(pow2InOut, 	ipol_powInOut(2, x))
 
 IPOL_DEF(swingInOut) {
-	float scale = 3;
+	float scl = 3;
 	
 	if(x <= 0.5f) {
 		x *= 2;
-		return x * x * ((scale + 1) * x - scale) / 2;
+		return x * x * ((scl + 1) * x - scl) / 2;
 	}
 	x--;
 	x *= 2;
-	return x * x * ((scale + 1) * x + scale) / 2 + 1;
+	return x * x * ((scl + 1) * x + scl) / 2 + 1;
 }
 
 IPOL_DEF(swingOut) {

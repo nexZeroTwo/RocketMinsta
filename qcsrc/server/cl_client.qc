@@ -1,4 +1,5 @@
 void inf_warmup();
+void Boobs_Clear();
 
 float ClientData_Send(entity to, float sf)
 {
@@ -735,17 +736,21 @@ void PutObserverInServer (void)
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self);
 	}
-
+	
+	frag_attacker = world;
+	
 	remove(self.shownames);
 	self.shownames = world;
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	inf_player_leave(self);
 	Portal_ClearAll(self);
-
+	Boobs_Clear();
+	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
 	if(self.ballcarried)
@@ -950,6 +955,105 @@ void PlayerTouchExplode(entity p1, entity p2)
 	RadiusDamage(e, world, g_touchexplode_damage, g_touchexplode_edgedamage, g_touchexplode_radius, world, g_touchexplode_force, DEATH_TOUCHEXPLODE, world);
 	remove(e);
 }
+
+// ======================================== //
+
+.entity boob_left, boob_right;
+
+#define BOOBS_SIZE 4
+#define BOOBS_POS 	'6.5 0 30'
+#define BOOBS_DIST 	'2 5 0'
+
+void Boobs_DropBoob(entity boob, vector force) {
+	setattachment(boob, world, "");
+	setorigin(boob, boob.owner.origin + boob.oldorigin);
+	boob.velocity = 100 * ('1 0 0' * crandom() + '0 1 0' * crandom() + '0 0 2' + '0 0 1' * random()) + force * 2;
+	boob.movetype = MOVETYPE_BOUNCE;
+	boob.avelocity = randomvec();
+	boob.owner = world;
+}
+
+void Boobs_ClearFor(entity plr, vector force) {
+	if(plr.boob_left)		Boobs_DropBoob(self.boob_left, force);
+	if(plr.boob_right)		Boobs_DropBoob(self.boob_right, force);
+	plr.boob_left = plr.boob_right = world;
+}
+
+void Boobs_Clear() {
+	Boobs_ClearFor(self, '0 0 0');
+}
+
+void Boobs_DropAll(vector force) {
+	Boobs_ClearFor(self, force);
+}
+
+void Boob_Think() {
+	if(self.owner) {
+		self.alpha = self.owner.alpha;
+		if(self.owner.movement_x || self.owner.movement_y)
+			setorigin(self, self.oldorigin + '0 0 1' * sin(time * 10 + self.cnt));
+	} else if(self.velocity_x || self.velocity_y || self.velocity_z) {
+		self.avelocity = normalize(self.avelocity) * vlen(self.velocity);
+	} else {
+		SUB_SetFade(self, time + 10, 2);
+		return;
+	}
+	
+	self.nextthink = time + 0.1;
+}
+
+void Boob_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	self.velocity_z += vlen(force) * 0.7;
+}
+
+entity Boobs_SpawnBoob(entity p, float dir) {
+	entity boob = spawn();
+	boob.classname = "boob";
+	boob.modelscale = boob.scale = BOOBS_SIZE;
+	boob.model = "models/boob.mdl";
+	boob.alpha = 1;
+	boob.owner = p;
+	boob.angles = vectoangles('0 0 -0.5');
+	boob.think = Boob_Think;
+	boob.nextthink = time;
+	boob.cnt = dir;
+	//boob.glow_color = 11;
+	//boob.glow_size = 32;
+	boob.effects = EF_NOSHADOW | EF_LOWPRECISION;
+	boob.takedamage = DAMAGE_AIM;
+	boob.solid = SOLID_CORPSE;
+	boob.event_damage = Boob_Damage;
+	boob.damageforcescale = 3;
+	
+	setattachment(boob, p, "");
+	setorigin	 (boob, BOOBS_POS + BOOBS_DIST * dir);
+	setmodel(boob, boob.model);
+	boob.mins_z = -5;
+	boob.maxs_z = +5;
+	boob.mins_x = boob.mins_y = -5;
+	boob.maxs_x = boob.maxs_y = +5;
+	boob.oldorigin = boob.origin;
+	
+	return boob;
+}
+
+void Boobs_Attach() {
+	if(self.boob_left)	remove(self.boob_left);
+	if(self.boob_right)	remove(self.boob_right);
+	
+	if not(cvar("g_explosive_boobs"))
+		return;
+	
+	self.boob_left  = Boobs_SpawnBoob(self, -1);
+	self.boob_right = Boobs_SpawnBoob(self, +1);
+}
+
+void Boobs_DropAllAndRespawn(vector force) {
+	Boobs_DropAll(force);
+	Boobs_Attach();
+}
+
+// ======================================== //
 
 /*
 =============
@@ -1202,7 +1306,9 @@ void PutClientInServer (void)
 		self = oldself;
 		
 		freezetag_PlayerSpawn();
+		JB_PlayerSpawn();
 		
+		Boobs_Attach();
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1242,8 +1348,8 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
 	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
 
-	if(sv_foginterval && world.fog != "")
-		WriteString(MSG_ENTITY, world.fog);
+	if(ShouldForceFog())
+		WriteString(MSG_ENTITY, GetForcedFog());
 	else
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
@@ -1685,9 +1791,6 @@ void ClientConnect (void)
 		}
 	}
 
-	if(!sv_foginterval && world.fog != "")
-		stuffcmd(self, strcat("\nfog ", world.fog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
-
 	SoundEntity_Attach(self);
 
 	if(cvar("g_hitplots") || strstrofs(strcat(" ", cvar_string("g_hitplots_individuals"), " "), strcat(" ", self.netaddress, " "), 0) >= 0)
@@ -1725,6 +1828,8 @@ void ClientConnect (void)
 	
 	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
 	VFLIPPER_UPDATECLIENT(self);
+	
+	totalclients++;
 }
 
 /*
@@ -1765,12 +1870,16 @@ void ClientDisconnect (void)
 
 	SoundEntity_Detach(self);
 
+	frag_attacker = world;
+
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
 	prec_player_die(self);
 	Portal_ClearAll(self);
+	Boobs_Clear();
 
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
@@ -1829,6 +1938,7 @@ void ClientDisconnect (void)
 
 	// free cvars
 	GetCvars(-1);
+	totalclients--;
 }
 
 .float BUTTON_CHAT;
@@ -2327,6 +2437,7 @@ void SpectateCopy(entity spectatee) {
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
 	self.sm_canattach = spectatee.sm_canattach;
+	self.jb_roundlost = spectatee.jb_roundlost;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2339,17 +2450,12 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	//if(clienttype(of) != CLIENTTYPE_REAL)
-	//	return;
-	
 	if(!cvar("g_explosive_showspecs"))
 		return;
 	
 	if(player == of)
 	if(player.classname == "spectator") // What the fuck?
 		return;
-	
-	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
 	
 	local entity spec;
 	local float specs;
@@ -2360,7 +2466,7 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteShort(MSG_ONE, specs);
+	WriteByte(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
 		//WriteString(MSG_ONE, spec.netname);
@@ -2375,7 +2481,7 @@ void ResetSpectatorInfo(entity player)
     msg_entity = player;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-    WriteShort(MSG_ONE, 0);
+    WriteByte(MSG_ONE, 0);
 }
 
 void WriteSpectatorInfo(entity player)
@@ -2428,6 +2534,10 @@ float SpectateNext() {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self.enemy);
+		
+		if(g_jailbreak)
+		if(jb_roundover)
+			JB_SetCamera(self, jb_activecamera, 15);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
@@ -2724,6 +2834,7 @@ void PlayerPreThink (void)
 	freezetag_PlayerPreThink();
 	domination_PlayerPreThink();
 	vip_PlayerPreThink();
+	JB_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")
@@ -2781,7 +2892,10 @@ void PlayerPreThink (void)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || cvar("g_forced_respawn"));
-				if (self.deadflag == DEAD_DYING)
+				
+				if (jb_roundover) {
+					// lol no respawn for ya
+				} else if (self.deadflag == DEAD_DYING)
 				{
 					if(force_respawn)
 						self.deadflag = DEAD_RESPAWNING;
@@ -2895,7 +3009,6 @@ void PlayerPreThink (void)
 		}
 
 		FixPlayermodel();
-
 		GrapplingHookFrame();
 
 		if(frametime)

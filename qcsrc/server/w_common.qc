@@ -212,13 +212,13 @@ void W_BallisticBullet_Hit (void)
 			if(headshot)
 			{
 				announce(self.owner, "announcer/male/headshot.wav");
-				bigprint_spec(self.owner, "^1head^7shot!", "", 1);
+				bigprint_spec(self.owner, "^1Head^7Shot!", "", 1);
 			}
 			
 			if(yoda)
 			{
 				announce(self.owner, "announcer/male/awesome.wav");
-				bigprint_spec(self.owner, "^5awesome!", "", 1);
+				bigprint_spec(self.owner, "^5Awesome!", "", 1);
 			}
 		}
 
@@ -281,7 +281,7 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 	float dt, dst, velfactor, v0, vs;
 	float maxdist;
 	float E0_m, Es_m;
-
+	
 	// outside the world? forget it
 	if(self.origin_x > world.maxs_x || self.origin_y > world.maxs_y || self.origin_z > world.maxs_z || self.origin_x < world.mins_x || self.origin_y < world.mins_y || self.origin_z < world.mins_z)
 		return 0;
@@ -298,6 +298,10 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 		return 0;
 
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
+
+	if not(cvar("g_explosive_ballisticbullet_gothroughsolid"))
+	if not(trace_ent)
+		return 0;
 
 	if(trace_fraction == 1) // 1: we never got out of solid
 		return 0;

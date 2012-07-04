@@ -212,15 +212,36 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 		*/
 		
 		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
-		if((pGametype & MAPINFO_TYPE_DEATHMATCH) ||
-		   (MapInfo_Map_supportedGametypes & pGametype) != 0)
-
+		
+		float ok = FALSE;
+		
+		if((pGametype & MAPINFO_TYPE_CTS) == MAPINFO_TYPE_CTS || (pGametype & MAPINFO_TYPE_RACE) == MAPINFO_TYPE_RACE) {
+			if((MapInfo_Map_supportedGametypes & pGametype) == pGametype)
+			if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
+			if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired) {
+				bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+				ok = TRUE;
+			}
+		} else {
+			if not((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTS) == MAPINFO_TYPE_CTS)
+			//if not((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RACE) == MAPINFO_TYPE_RACE)
+			if((MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DEATHMATCH) == MAPINFO_TYPE_DEATHMATCH ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTF) == MAPINFO_TYPE_CTF ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DOMINATION) == MAPINFO_TYPE_DOMINATION ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ONSLAUGHT) == MAPINFO_TYPE_ONSLAUGHT ||
+			   (MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ASSAULT) == MAPINFO_TYPE_ASSAULT ||
+			   (MapInfo_Map_supportedGametypes & pGametype) == pGametype)
+			if((MapInfo_Map_flags & pFlagsForbidden) == 0) {
+				bufstr_set(_MapInfo_filtered, ++j, ftos(i));
+				ok = TRUE;
+			}
+		}
+		
+		if not(ok)
+			print("^1 *** ", MapInfo_Map_bspname, " filtered\n");
+		
 		//if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
-		if((MapInfo_Map_flags & pFlagsForbidden) == 0)
 		//if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
-			bufstr_set(_MapInfo_filtered, ++j, ftos(i));
-			
-		//print("^5Adding map: ^7", _MapInfo_GlobItem(i), "\n");
 	}
 	MapInfo_count = j + 1;
 	MapInfo_ClearTemps();
@@ -687,11 +708,15 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 			error("... but I just wrote it!");
 	}
 
+	//print("MAPINFO: ^5", pFilename, "\n");
+
 	_MapInfo_Map_Reset();
 	for(;;)
 	{
 		if not((s = fgets(fh)))
 			break;
+
+		//print("MAPINFO: ", s, "\n");
 
 		// catch different sorts of comments
 		if(s == "")                    // empty lines
@@ -787,9 +812,10 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		else if(t == "clientsettemp_for_type")
 		{
 			t = car(s); s = cdr(s);
+			
 			if((f = gametype_Name_to_MapID(t)))
 			{
-				if(f & pGametypeToSet)
+				if(f & pGametypeToSet || t == "all")
 				{
 					t = car(s); s = cdr(s);
 					if not(cvar_value_issafe(t))
@@ -842,12 +868,17 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		if(!(MapInfo_Map_supportedGametypes & pGametypeToSet))
 		{
 			//error(strcat("Can't select the requested game type. Bailing out. pGametypeToSet = ", ftos(pGametypeToSet), "; MapInfo_Map_supportedGametypes = ", ftos(MapInfo_Map_supportedGametypes )));
+			
+			// Commented out temporarily. Probably.
+			
+			/*
 			#ifdef SVQC
 			bprint("^1Can't select the requested gametype, WTF?!\n");
 			// Chaiomanot: Jan 9th 2012: Rather just than asking YTF, and then _letting_ it potentially crash, do something about it! (+2 lines)
 			gametype_Set(GAME_NOTHING);
 			return 1;
 			#endif
+			*/
 		}
 #endif
 	MapInfo_Cache_Store();
