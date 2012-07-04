@@ -483,6 +483,8 @@ string gametype_Name_to_Description(string typename) {
 			return "Team-based deathmatch: the team that gets the most frags wins.";
 		case "jb":
 			return "Frag the enemy team to send them into a jail!\nCapture their controlpoint to release your imprisoned teammates.\nLock all of your opponents to win the round.";
+		case "prec":
+			return "Deathmatch-like gametype.\nYou have to capture and hold the Precious rune in order to gain frag points.";
 		
 		// TODO: Describe other gametypes
 	}

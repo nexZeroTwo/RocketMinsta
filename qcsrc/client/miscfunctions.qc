@@ -14,7 +14,7 @@ void restartAnnouncer_Think() {
 		//gamestart_status = -1;
 		//gamestart_fadetime = time + 1;
 		
-		bigprint("^xFB0Begin!", "It's time to kick some ass", 1);
+		bigprint("^xFB0Begin!", "It's time to kick some ass!", 1);
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
@@ -34,7 +34,7 @@ void restartAnnouncer_Think() {
 		//gamestart_fadetime = time + 0.5;
 		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
 		bigprint(" ", "", 1);
-		bigprint(strcat("game starts in: ", ftos(countdown_rounded)), "", 1);
+		bigprint(strcat("Game starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
@@ -214,6 +214,7 @@ void CSQC_CheckEngine()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
+	sbar_rmbigfont = FONT_USER+4;
 	
 	#ifdef RM_SUPPORT_MADOKA
 	sbar_madokafont = FONT_USER+3;
@@ -423,12 +424,12 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
 
-void drawpic_rotated(vector position, string pic, vector size, vector rgb, float angle, float alpha, float flag) {
-	drawrotpic(position + size * 0.5, angle, pic, size, size * 0.5, rgb, alpha, flag);
+void drawpic_rotated(vector position, string pic, vector sz, vector rgb, float angle, float alpha, float flag) {
+	drawrotpic(position + sz * 0.5, angle, pic, sz, sz * 0.5, rgb, alpha, flag);
 }
 
-void drawpic_rotated_ex(vector position, string pic, vector size, vector rgb, float angle, vector hotspot, float alpha, float flag) {
-	drawrotpic(position + hotspot, angle, pic, size, hotspot, rgb, alpha, flag);
+void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, float angle, vector hotspot, float alpha, float flag) {
+	drawrotpic(position + hotspot, angle, pic, sz, hotspot, rgb, alpha, flag);
 }
 
 void loadfont(string slot, string font)

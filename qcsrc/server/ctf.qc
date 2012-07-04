@@ -445,10 +445,10 @@ void FlagTouch()
 		
 		local entity _pl;
 		if (other.team == COLOR_TEAM1) { // red team scores
-			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1red^7scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1Red ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		if (other.team == COLOR_TEAM2) { // blue team scores
-			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4blue^7scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		
 		if(cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1) // at most one human
@@ -472,7 +472,7 @@ void FlagTouch()
 			}
 			else if (t < flagcaptimerecord)
 			{
-				bigprint_spec(other, "^2record^7set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
+				bigprint_spec(other, "^2Record ^7Set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
 				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds\n"));
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));

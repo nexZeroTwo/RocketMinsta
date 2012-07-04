@@ -83,6 +83,22 @@ vector vip_SoulGemColormod2(float theteam)
 	}
 }
 
+float vip_SoulGemGlow(float theteam) {
+	switch(theteam) {
+		case COLOR_TEAM1:
+			return 251;
+		case COLOR_TEAM2:
+			return 210;
+		default:
+			return 0;
+	}
+}
+
+void vip_SoulGem_think() {
+	self.glow_size = 256 + cos(time * 2) * 64;
+	self.nextthink = time + 0.1;
+}
+
 void vip_SoulGem_touch()
 {
 	if(other.classname != "player")
@@ -169,11 +185,17 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.team = theteam;
 	e.movetype = MOVETYPE_NONE;
 	e.touch = vip_SoulGem_touch;
+	e.think = vip_SoulGem_think;
+	e.nextthink = time + random();
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
 	e.reset2 = vip_SoulGem_reset;
 	setmodel(e, "models/runematch/rune.mdl");
 	setsize(e, '0 0 -35', '0 0 0');
+	
+	e.glow_size = 256;
+	e.glow_color = vip_SoulGemGlow(theteam);
+	e.glow_trail = 1;
 	
 	e.enemy = spawn();
 	e.enemy.enemy = e;
@@ -284,49 +306,14 @@ void vip_init()
 	InitializeEntity(world, vip_delayedinit, INITPRIO_GAMETYPE);
 }
 
-void vip_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-    
-    if(intermission_running)
-    {
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_vip_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            
-            vip_started = 1;
-            vip_AssignVIPs();
-            
-            shooting_forbidden = FALSE;
-            remove(self);
-            return;
-        }
-        
-        vip_started = 0;
-        vip_ended = 0;
-        
-		shooting_forbidden = TRUE;
-		
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("vip starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
+void vip_EndRound_Finalize() {
+	vip_started = TRUE;
+	vip_AssignVIPs();
+}
+
+void vip_EndRound_Think() {
+	vip_started = 0;
+    vip_ended = 0;
 }
 
 void vip_EndRound()
@@ -339,6 +326,8 @@ void vip_EndRound()
 		e.think = vip_EndRound_Think;
 		e.nextthink = time + 1;
 		e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+		
+		G_EndRound("VIP", 5, cvar("g_explosive_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
 	}
 	else
 		defer(5.1, vip_SoulGem_StartRound);
@@ -365,9 +354,9 @@ void vip_SoulGem_StartRound_Think()
 			bigprint_clear_spec(e);
 			
 			if((e.team == COLOR_TEAM1 && redvip) || (e.team == COLOR_TEAM2 && bluevip))
-				bigprint_spec(e, "waiting for an enemy VIP", "", 5);
+				bigprint_spec(e, "Waiting for an enemy VIP", "", 5);
 			else
-				bigprint_spec(e, "waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
+				bigprint_spec(e, "Waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
 		}
 		
 		self.nextthink = time + 5;
@@ -612,7 +601,7 @@ void vip_MakePlayerVIP(entity pl)
 	switch(pl.team)
 	{
 		case COLOR_TEAM1:
-			bigprint_spec(pl, "you are the ^1red^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^1RED^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^1RED^7 VIP!\n");
 			
 			WaypointSprite_Spawn("redvip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -621,7 +610,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		case COLOR_TEAM2:
-			bigprint_spec(pl, "you are the ^4blue^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^4BLUE^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^4BLUE^7 VIP!\n");
 			
 			WaypointSprite_Spawn("bluevip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -630,7 +619,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		default:
-			bigprint_spec(pl, "you are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
+			bigprint_spec(pl, "You are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
 			bprint(pl.netname, " ^7screwed everything up\n");
 			break;
 	}
@@ -822,7 +811,7 @@ void vip_RedVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^4blue^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^4Blue ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM2)
 			hudflash_teamcolor_default_spec(e);
@@ -845,7 +834,7 @@ void vip_BlueVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^1red^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^1Red ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM1)
 			hudflash_teamcolor_default_spec(e);

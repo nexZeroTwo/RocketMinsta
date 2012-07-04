@@ -1665,6 +1665,40 @@ void WriteInt24_t(float dest, float val)
 	WriteByte(dest, val - v * 256); // 0..255
 }
 #endif
+
+void remove(entity);
+.entity owner;
+
+void defer_remove() {
+	remove(self);
+}
+
+void defer_think()
+{
+    entity oself;
+
+    oself           = self;
+    self            = self.owner;
+    oself.think     = defer_remove;
+    oself.nextthink = time;
+
+    oself.use();
+}
+
+/*
+    Execute func() after time + fdelay.
+    self when func is executed = self when defer is called
+*/
+void defer(float fdelay, void() func)
+{
+    entity e;
+
+    e           = spawn();
+    e.owner     = self;
+    e.use       = func;
+    e.think     = defer_think;
+    e.nextthink = time + fdelay;
+}
 #endif
 
 float approach(float v, float t, float d) {

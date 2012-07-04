@@ -1174,7 +1174,7 @@ void GameCommand(string command)
     if(argv(0) == "endround")
     {
         FOR_EACH_PLAYER(e)
-            bigprint_spec(e, "round aborted", "", 5);
+            bigprint_spec(e, "Round Aborted", "", 5);
 
         if(!EndRound_Allowed())
         {

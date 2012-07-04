@@ -429,6 +429,54 @@ void PlayerCorpseDamage (entity inflictor, entity attacker, float damage, float 
 
 void ClientKill_Now_TeamChange();
 
+spawnfunc_t GetPowerupSpawnfunc(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	return spawnfunc_item_strength;
+		case IT_INVINCIBLE:	return spawnfunc_item_invincible;
+	}
+	
+	bprint("WARNING: Tried to drop an unknown powerup, please debug this!\n");
+	return func_null;
+}
+
+void ClearPowerup(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	self.strength_finished 		= 0; break;
+		case IT_INVINCIBLE:	self.invincible_finished 	= 0; break;
+	}
+}
+
+void DropPowerup(float id, vector force) {
+	var spawnfunc_t spawnfunc;
+	spawnfunc = GetPowerupSpawnfunc(id);
+	if(!spawnfunc) return;
+	
+	entity oldself = self;
+	entity p = self = spawn();
+	p.droppedpowerup = TRUE;
+	spawnfunc();
+	self = oldself;
+	if(!p) return;
+	p.movetype = MOVETYPE_BOUNCE;
+	makevectors(self.angles);
+	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
+	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
+	p.reset = SUB_Remove;
+	ClearPowerup(id);
+}
+
+void DropPowerups(vector force) {
+	DEPENDON(cvar("g_explosive_droppowerups"))
+	
+	if(self.items & IT_STRENGTH)
+		DropPowerup(IT_STRENGTH, force);
+	if(self.items & IT_INVINCIBLE)
+		DropPowerup(IT_INVINCIBLE, force);
+}
+
+void Boobs_Clear();
+void Boobs_DropAll(vector);
+
 void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
@@ -714,7 +762,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
 		DropAllRunes(self);
-		prec_player_die(self);
 		
 		if(deathtype == DEATH_HURTTRIGGER && g_freezetag)
 		{
@@ -727,6 +774,14 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_attacker = attacker;
 		frag_inflictor = inflictor;
 		frag_target = self;
+		frag_force = force;
+		
+		prec_player_die(self);
+		
+		DropPowerups(force);
+		
+		sm_PlayerDies();
+		
 		if(freezetag_PlayerDies())
 			return;
 		
@@ -762,6 +817,8 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			self.angles_x = 0;
 			self.angles_z = 0;
 		}
+		
+		Boobs_DropAll(force);
 		
 		// don't spin
 		self.avelocity = '0 0 0';
@@ -1134,12 +1191,13 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	// FLOOD CONTROL
 	flood = 0;
+	var .float flood_field;
+		
 	if(floodcontrol)
 	{
 		float flood_spl;
 		float flood_burst;
 		float flood_lmax;
-		var .float flood_field;
 		float lines;
 		if(privatesay)
 		{

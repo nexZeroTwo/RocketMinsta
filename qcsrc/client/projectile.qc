@@ -86,7 +86,7 @@ void Projectile_DrawTrail(vector to)
 			else
 				trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-		case PROJECTILE_GRENADE_BOUNCING:
+		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
 		case PROJECTILE_PORTO_RED:
@@ -110,7 +110,7 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_BULLET_GLOWING:
 			trailparticles(self, particleeffectnum("tr_rifle"), from, to);
 			break;
-		case PROJECTILE_FIREMINE:
+		case PROJECTILE_FIREMINE: case PROJECTILE_HG_NAPALM:
 			trailparticles(self, particleeffectnum("firemine"), from, to);
 			break;
 		case PROJECTILE_FIREBALL:
@@ -164,6 +164,9 @@ void Projectile_Draw()
 				rot = '-2000 0 0'; // forward
 				break;
 			*/
+			
+			case PROJECTILE_HG_GENERIC:
+			case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
 				break;
@@ -183,6 +186,8 @@ void Projectile_Draw()
 	{
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
+		case PROJECTILE_HG_GENERIC:
+		case PROJECTILE_HG_NAPALM:
 			trailorigin += v_right * 1 + v_forward * -10;
 			break;
 		default:
@@ -324,6 +329,7 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -364,6 +370,8 @@ void Ent_Projectile()
 				self.maxs = '0 0 -3';
 				break;
 			case PROJECTILE_GRENADE_BOUNCING:
+			case PROJECTILE_HG_GENERIC:
+			case PROJECTILE_HG_NAPALM:
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';
 				self.move_movetype = MOVETYPE_BOUNCE;

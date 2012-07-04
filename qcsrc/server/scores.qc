@@ -590,16 +590,16 @@ string GetPlayerScoreString(entity pl, float shortString)
 	{
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_PRIMARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		if(shortString < 2)
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_SECONDARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		if(shortString < 1)
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_PRIMARY)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_SECONDARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		out = substring(out, 0, strlen(out) - 1);
 	}
 	return out;

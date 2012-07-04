@@ -134,11 +134,14 @@ void SUB_VanishOrRemove (entity ent)
 	}
 }
 
+.float glow_size_original;
+
 void SUB_SetFade_Think (void)
 {
 	self.think = SUB_SetFade_Think;
 	self.nextthink = self.fade_time;
 	self.alpha = 1 - (time - self.fade_time) * self.fade_rate;
+	self.glow_size = self.glow_size_original * self.alpha;
 	if (self.alpha < 0.01)
 		SUB_VanishOrRemove(self);
 	self.alpha = bound(0.01, self.alpha, 1);
@@ -160,6 +163,7 @@ void SUB_SetFade (entity ent, float when, float fadetime)
 	ent.fade_time = when;
 	ent.think = SUB_SetFade_Think;
 	ent.nextthink = when;
+	ent.glow_size_original = ent.glow_size;
 }
 
 void SUB_Monster_Vanish() {

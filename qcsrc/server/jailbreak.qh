@@ -18,6 +18,11 @@ void JB_Torture_Start(entity);
 void JB_SetCamera(entity, entity, float);
 void JB_ClearCamera(entity);
 void JB_ClearCameraForAll();
+void JB_HandleProjectile(entity);
+
+float JB_PlayerDies();
+void JB_PlayerSpawn();
+void JB_RemovePlayer();
 
 .float jb_unlock_progress;
 .float jb_isprisoned;
@@ -26,6 +31,8 @@ void JB_ClearCameraForAll();
 .float jb_capturetime;
 .float jb_capturestate;
 .float jb_roundlost;
+.float jb_fragrow;
+.float jb_proj_ownerstate;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;
@@ -41,3 +48,7 @@ entity jb_activecamera;
 .float jb_torture_suggestedforce;
 
 #define JB_GAME_ACTIVE (warmup < time && !jb_roundover)
+
+#define JB_PROJ_OWNERSTATE_UNDEFINED 0
+#define JB_PROJ_OWNERSTATE_IMPRISONED 1
+#define JB_PROJ_OWNERSTATE_FREE 2

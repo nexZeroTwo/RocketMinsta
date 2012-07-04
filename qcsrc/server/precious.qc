@@ -119,7 +119,7 @@ void prec_rune_collect (entity rune, entity player)
 	// give or take the player points for pickup up the rune
 	if(cvar("g_prec_points_rune_collect"))
 		PlayerScore_Add(player, SP_SCORE, cvar("g_prec_points_rune_collect"));
-	//PlayerScore_Add(player, 7, 1);
+	PlayerScore_Add(player, SP_PREC_PICKUPS, 1);
 
     // update it's waypoint
     WaypointSprite_Kill(rune.waypointsprite_attached);
@@ -198,7 +198,7 @@ void prec_rune_destroy (entity rune, float desired)
         if(pi == self.killindicator && !desired)
 			centerprint_spec(pi, strcat("^7You broke ", rune.netname2));
         else
-			centerprint_spec(pi, strcat(des_msg));
+			centerprint_spec(pi, des_msg);
     }
     play2all(kh_sound_destroy);
 
@@ -301,10 +301,16 @@ void prec_player_die (entity player)
 {
     // if we're not playing ka, don't interfere with the caller's natural routine
     if(!g_prec) return;
- 
+	
     // is the dieing player holding a rune that needs to be dropped?
-    if(player.prec_rune.classname == "prec_rune")
+    if(player.prec_rune.classname == "prec_rune") {
         prec_rune_drop(player.prec_rune, 0);
+        
+        if(frag_attacker.classname == "player" && frag_attacker != self) {
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_prec_points_rckill"));
+			PlayerScore_Add(frag_attacker, SP_PREC_CARRIERKILLS, 1);
+		}
+	}
 }
 
 float prec_check_aggression (entity attacker, entity inflictor, entity targ)
@@ -375,5 +381,7 @@ void prec_init ()
     prec_controller.nextthink = time + 0.1;
     prec_controller.think     = prec_controller_think;
     prec_controller.pain_finished = 0.1;
+    
+    ScoreRules_Prec();
 }
 

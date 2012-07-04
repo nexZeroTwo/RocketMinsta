@@ -695,3 +695,12 @@ float shooting_forbidden;
 
 float totalclients;
 .float spawninarena;
+
+typedef void() spawnfunc_t;
+.float droppedpowerup;
+
+vector frag_force;
+
+void Boobs_DropAllAndRespawn(vector);
+
+float next_round;
