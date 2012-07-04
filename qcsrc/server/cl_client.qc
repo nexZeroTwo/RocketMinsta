@@ -2449,17 +2449,12 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	//if(clienttype(of) != CLIENTTYPE_REAL)
-	//	return;
-	
 	if(!cvar("g_explosive_showspecs"))
 		return;
 	
 	if(player == of)
 	if(player.classname == "spectator") // What the fuck?
 		return;
-	
-	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
 	
 	local entity spec;
 	local float specs;
@@ -2470,7 +2465,7 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteShort(MSG_ONE, specs);
+	WriteByte(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
 		//WriteString(MSG_ONE, spec.netname);
@@ -2485,7 +2480,7 @@ void ResetSpectatorInfo(entity player)
     msg_entity = player;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-    WriteShort(MSG_ONE, 0);
+    WriteByte(MSG_ONE, 0);
 }
 
 void WriteSpectatorInfo(entity player)

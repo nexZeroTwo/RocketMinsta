@@ -1841,7 +1841,7 @@ void Net_ReadMadokaPrint()
 void Net_ReadSpecInfo()
 {
 	local float i;
-	num_spectators = ReadShort();
+	num_spectators = ReadByte();
 
 	for(i = 0; i < num_spectators; ++i)
 	{
