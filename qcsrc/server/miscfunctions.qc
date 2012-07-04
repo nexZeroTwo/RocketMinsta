@@ -3302,8 +3302,7 @@ void G_EndRound_Think()
     if(timeleft <= self.endround_warmuptime)
     {
 		if(!self.endround_announced) {
-			FOR_EACH_REALPLAYER(e)
-				sound(e, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
+			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
 			self.endround_announced = TRUE;
 		}
 		
@@ -3313,10 +3312,9 @@ void G_EndRound_Think()
             {
                 bigprint_clear_spec(e);
                 bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", 1);
-                if(clienttype(e) == CLIENTTYPE_REAL) 
-					sound(e, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
             }
             
+			sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
             if(self.endround_finalize)
 				self.endround_finalize();
             strunzone(self.endround_typename);
@@ -3334,9 +3332,11 @@ void G_EndRound_Think()
             bigprint_clear_spec(e);
             bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
             
-            if(clienttype(e) == CLIENTTYPE_REAL) if(timeleft <= 3)
-				sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+            
         }
+        
+        if(timeleft <= 3)
+			sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
     }
     self.nextthink = time + 1;
 }
