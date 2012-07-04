@@ -3331,8 +3331,6 @@ void G_EndRound_Think()
         {
             bigprint_clear_spec(e);
             bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
-            
-            
         }
         
         if(timeleft <= 3)
