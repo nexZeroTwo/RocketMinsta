@@ -1774,6 +1774,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 			// print("adding a fire burner to ", e.classname, "\n");
 			e.fire_burner = spawn();
 			e.fire_burner.classname = "fireburner";
+			e.fire_burner.reset = SUB_Remove;
 			e.fire_burner.think = fireburner_think;
 			e.fire_burner.nextthink = time;
 			e.fire_burner.owner = e;
