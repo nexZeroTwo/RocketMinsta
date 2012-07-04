@@ -3276,3 +3276,82 @@ string GetForcedFog() {
 		return s;
 	return world.fog;
 }
+
+// ========================================== //
+
+.string endround_typename;
+.float endround_warmuptime;
+.float endround_announced;
+.void() endround_think;
+.void() endround_think2;
+.void() endround_finalize;
+
+void G_EndRound_Think()
+{
+    local float timeleft = rint(self.cnt - time);
+    local entity e;
+    
+    if(intermission_running) {
+        remove(self);
+        return;
+    }
+    
+    if(self.endround_think)
+		self.endround_think();
+    
+    if(timeleft <= self.endround_warmuptime)
+    {
+		if(!self.endround_announced) {
+			FOR_EACH_REALPLAYER(e)
+				sound(e, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
+			self.endround_announced = TRUE;
+		}
+		
+        if(timeleft <= 0)
+        {
+            FOR_EACH_PLAYER(e)
+            {
+                bigprint_clear_spec(e);
+                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", 1);
+                if(clienttype(e) == CLIENTTYPE_REAL) 
+					sound(e, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+            }
+            
+            if(self.endround_finalize)
+				self.endround_finalize();
+            strunzone(self.endround_typename);
+            remove(self);
+            shooting_forbidden = FALSE;
+            return;
+        }
+        
+		if(self.endround_think2)
+			self.endround_think2();
+		shooting_forbidden = TRUE;
+        
+        FOR_EACH_PLAYER(e)
+        {
+            bigprint_clear_spec(e);
+            bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
+            
+            if(clienttype(e) == CLIENTTYPE_REAL) if(timeleft <= 3)
+				sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+        }
+    }
+    self.nextthink = time + 1;
+}
+
+void G_EndRound(string tname, float wait, float warmuptime, void() callback, void() callback2, void() callbackfin)
+{
+    local entity e = spawn();
+    e.think = G_EndRound_Think;
+    e.nextthink = time + 1;
+    e.endround_typename = strzone(tname);
+    e.endround_think = callback;
+    e.endround_finalize = callbackfin;
+    e.endround_warmuptime = warmuptime;
+    next_round = time + wait;
+    e.cnt = warmuptime + next_round;
+}
+
+// ========================================== //

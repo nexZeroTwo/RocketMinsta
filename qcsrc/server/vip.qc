@@ -306,49 +306,14 @@ void vip_init()
 	InitializeEntity(world, vip_delayedinit, INITPRIO_GAMETYPE);
 }
 
-void vip_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-    
-    if(intermission_running)
-    {
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_vip_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            
-            vip_started = 1;
-            vip_AssignVIPs();
-            
-            shooting_forbidden = FALSE;
-            remove(self);
-            return;
-        }
-        
-        vip_started = 0;
-        vip_ended = 0;
-        
-		shooting_forbidden = TRUE;
-		
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("VIP starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
+void vip_EndRound_Finalize() {
+	vip_started = TRUE;
+	vip_AssignVIPs();
+}
+
+void vip_EndRound_Think() {
+	vip_started = 0;
+    vip_ended = 0;
 }
 
 void vip_EndRound()
@@ -361,6 +326,8 @@ void vip_EndRound()
 		e.think = vip_EndRound_Think;
 		e.nextthink = time + 1;
 		e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+		
+		G_EndRound("VIP", 5, cvar("g_explosive_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
 	}
 	else
 		defer(5.1, vip_SoulGem_StartRound);

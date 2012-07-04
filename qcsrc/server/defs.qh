@@ -702,3 +702,5 @@ typedef void() spawnfunc_t;
 vector frag_force;
 
 void Boobs_DropAllAndRespawn(vector);
+
+float next_round;

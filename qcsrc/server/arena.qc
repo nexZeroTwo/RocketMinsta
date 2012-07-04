@@ -20,7 +20,6 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
-float next_round;
 float redalive, bluealive, yellowalive, pinkalive;
 float totalalive;
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;

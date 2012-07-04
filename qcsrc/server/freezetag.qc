@@ -10,56 +10,9 @@ void update_playercount()
 	self = oldself;
 }
 
-void freezetag_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-    
-    //bprint("next_round = ", ftos(next_round), "\n");
-    //bprint("time = ", ftos(time), "\n");
-    //bprint("timeleft = ", ftos(timeleft), "\n");
-    
-    if(intermission_running)
-    {
-        //bprint("Freezetag: GAME OVER\n");
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_freezetag_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            
-            remove(self);
-            shooting_forbidden = FALSE;
-            return;
-        }
-        
-		shooting_forbidden = TRUE;
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("FreezeTag starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
-}
-
 void freezetag_EndRound()
 {
-    local entity e = spawn();
-    e.think = freezetag_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
+    G_EndRound("FreezeTag", 5, cvar("g_explosive_freezetag_warmup"), update_playercount, func_null, func_null);
     update_playercount();
     defer(5, sm_Clear);
 }

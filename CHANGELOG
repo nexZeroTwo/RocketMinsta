@@ -71,3 +71,5 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added boobs [Akari, Artefact]
 * Fixed bugged g_explosive_gametypevote_shuffle - availability statuses now get properly updated too [Akari]
 * Fixed the rankings display [Akari]
+* Improved the EndRound code [Akari]
+* Added announcer sounds during warmups in round-based gametypes [Akari]

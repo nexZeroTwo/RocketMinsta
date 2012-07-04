@@ -581,57 +581,15 @@ void JB_PlayerPreThink() {
 
 //
 //	Round logic
-//	TODO: Generalize this, also see freezetag.qc and domination.qc
 //
 
-void JB_EndRound_Think()
-{
-	local float timeleft = rint(self.cnt - time);
-	local entity e;
-	
-	if(intermission_running)
-	{
-		remove(self);
-		return;
-	}
-	
-	JB_CountPlayers();
-	
-	if(timeleft <= cvar("g_explosive_jailbreak_warmup"))
-	{
-		if(timeleft <= 0)
-		{
-			FOR_EACH_PLAYER(e)
-			{
-				bigprint_clear_spec(e);
-				bigprint_spec(e, "^5Begin!", "", 1);
-				jb_roundover = FALSE;
-				defer(0.1, JB_CountPlayers);
-			}
-			
-			remove(self);
-			shooting_forbidden = FALSE;
-			return;
-		}
-		
-		shooting_forbidden = TRUE;
-		FOR_EACH_PLAYER(e)
-		{
-			bigprint_clear_spec(e);
-			bigprint_spec(e, strcat("Jailbreak starts in: ", ftos(timeleft)), "", 1);
-		}
-	}
-	self.nextthink = time + 1;
+void JB_EndRound_Finalize() {
+	jb_roundover = FALSE;
+	defer(0.1, JB_CountPlayers);
 }
 
-void JB_EndRound()
-{
-	local entity e = spawn();
-	e.think = JB_EndRound_Think;
-	e.nextthink = time + 1;
-	next_round = time + 15;
-	defer(15, JB_ClearCameraForAll);
-	e.cnt = cvar("g_explosive_jailbreak_warmup") + next_round;
+void JB_EndRound() {
+	G_EndRound("Jailbreak", 15, cvar("g_explosive_jailbreak_warmup"), JB_CountPlayers, func_null, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
