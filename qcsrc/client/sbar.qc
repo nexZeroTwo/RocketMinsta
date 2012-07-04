@@ -3062,10 +3062,10 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 				
 			if (teamplay)
 				score_color = GetTeamRGB(pl.team) * 0.8;
-				
+			
 			s = textShortenToWidth_svn(GetPlayerName(pl.sv_entnum), name_size, fontsize, stringwidth_colors_svn);
 			drawcolorcodedstring(pos + eX * (name_size - stringwidth_svn(s, TRUE, fontsize)), s, fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL);
-			drawstring(pos + eX * (name_size + spacing_size), ftos(pl.(scores[ps_primary])), fontsize, score_color, sbar_alpha_bg, DRAWFLAG_NORMAL);
+			drawstring(pos + eX * (name_size + spacing_size), ftos(pl.(scores[ps_primary])), fontsize, score_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
 			pos_y += fontsize_y;
 			++i;
 		}
