@@ -231,6 +231,16 @@ void JB_CountPlayers() {
 		JB_TeamWins(COLOR_TEAM1);
 }
 
+void JB_HandleProjectile(entity proj) {
+	DEPENDON(g_jailbreak)
+	
+	if(proj.owner.classname == "player" || proj.owner.classname == "corpse") {
+		if(proj.owner.jb_isprisoned)
+			proj.jb_proj_ownerstate = JB_PROJ_OWNERSTATE_IMPRISONED;
+		else
+			proj.jb_proj_ownerstate = JB_PROJ_OWNERSTATE_FREE;
+	}
+}
 
 //
 //	Torture logic

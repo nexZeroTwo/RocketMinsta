@@ -960,8 +960,25 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if (attacker.isbot)
 					damage = damage * bound(0.1, (skill + 5) * 0.1, 1);
 			
-			if(g_jailbreak) if(targ.jb_isprisoned || attacker.jb_isprisoned && targ != attacker && !DEATH_ISSPECIAL(deathtype))
-				damage = 0;
+			if(g_jailbreak)
+			if not(DEATH_ISSPECIAL(deathtype)) {
+				if(targ.jb_isprisoned)
+					damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_take");
+				
+				switch(inflictor.jb_proj_ownerstate) {
+					case JB_PROJ_OWNERSTATE_IMPRISONED:
+						damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_deal");
+						break;
+						
+					case JB_PROJ_OWNERSTATE_FREE:
+						break;
+						
+					case JB_PROJ_OWNERSTATE_UNDEFINED: default:
+						if(attacker.jb_isprisoned)
+							damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_deal");
+						break;
+				}
+			}
 		}
 
 		// nullify damage if teamplay is on
