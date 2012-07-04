@@ -73,3 +73,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * Fixed the rankings display [Akari]
 * Improved the EndRound code [Akari]
 * Added announcer sounds during warmups in round-based gametypes [Akari]
+* New rm-custom config: FastCRA [Akari]
