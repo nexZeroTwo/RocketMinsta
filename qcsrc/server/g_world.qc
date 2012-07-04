@@ -2366,7 +2366,7 @@ void MapVote_Init()
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
 		{
-			m = GetNextMap();
+			local string m = GetNextMap();
 			if(!MapIsPlayable(m))
 				continue;
 			

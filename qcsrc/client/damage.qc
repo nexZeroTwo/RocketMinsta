@@ -116,7 +116,7 @@ void Ent_DamageInfo(float isNew)
 					for (i = 0; i < 20; i ++)
 					{
 						vector v = randomvec ();
-						float r = random ();
+						r = random ();
 						pointparticles (particleeffectnum (mod(i, 4)? "rocket_explode" : "TE_TEI_BIGEXPLOSION"), self.origin + v * radius * r, v * radius * r * 100, 1);
 					}
 				case DEATH_HG_STICKY:

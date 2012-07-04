@@ -424,12 +424,12 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
 
-void drawpic_rotated(vector position, string pic, vector size, vector rgb, float angle, float alpha, float flag) {
-	drawrotpic(position + size * 0.5, angle, pic, size, size * 0.5, rgb, alpha, flag);
+void drawpic_rotated(vector position, string pic, vector sz, vector rgb, float angle, float alpha, float flag) {
+	drawrotpic(position + sz * 0.5, angle, pic, sz, sz * 0.5, rgb, alpha, flag);
 }
 
-void drawpic_rotated_ex(vector position, string pic, vector size, vector rgb, float angle, vector hotspot, float alpha, float flag) {
-	drawrotpic(position + hotspot, angle, pic, size, hotspot, rgb, alpha, flag);
+void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, float angle, vector hotspot, float alpha, float flag) {
+	drawrotpic(position + hotspot, angle, pic, sz, hotspot, rgb, alpha, flag);
 }
 
 void loadfont(string slot, string font)

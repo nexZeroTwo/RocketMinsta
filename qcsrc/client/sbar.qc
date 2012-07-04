@@ -1193,7 +1193,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 			Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), i);
 			
 			if(countping) {
-				float theping = stof(getplayerkey(pl.sv_entnum, "ping")) 
+				float theping = stof(getplayerkey(pl.sv_entnum, "ping"));
 				
 				if(theping) {			// bots don't count
 					tm.avg_ping += theping;
@@ -3307,7 +3307,7 @@ void Sbar_Draw (void)
 
     if(rev)
     {
-        local vector revpos;
+        local vector revpos, c;
         revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
@@ -3322,7 +3322,6 @@ void Sbar_Draw (void)
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
 		s2 = strcat(ftos(floor(rev * 100)), "%");
 		
-		vector c;
 		if(rev <= 0.5)
 			c = '0 1 1' + '2 0 0' * rev;
 		else
@@ -3454,6 +3453,7 @@ void Sbar_Draw (void)
 						local string mycolor;
 						local string mychar;
 						local vector offset;
+						local float j;
 
 						bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
 						for(j = 0; j < strlen(bigprint_string); ++j)
@@ -3719,6 +3719,7 @@ void Sbar_Draw (void)
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
 	float ammosector_pos, next_sector;
+	vector powerup_pos, teamhud_pos;
 
 	if (intermission == 2) // map voting screen
 	{
@@ -3821,7 +3822,9 @@ void Sbar_Draw (void)
 
 		vector bg_size; // hud background size
 		bg_size = '1600 58 0';
-
+		
+		vector s_health;
+		
 		if(rm_oldhud)
 		{
 			if (cvar("viewsize") <= 100 && vid_conwidth <= 1600) {
@@ -3844,8 +3847,6 @@ void Sbar_Draw (void)
 			hudline_pos_y = bottom_y - 24;
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
-
-			vector s_health, teamhud_pos, powerup_pos;
 
 			if(teamhud_enabled != th_state)
 			{
@@ -4368,7 +4369,7 @@ void Sbar_Draw (void)
 		
 		for (i = 0; i < 4; ++i)
 		{
-			a = getstati(GetAmmoStat(i));
+			float a = getstati(GetAmmoStat(i));
 			if(stat_items & GetAmmoItemCode(i) || a <= 0)
 				++a_unused;
 		}
@@ -4376,7 +4377,7 @@ void Sbar_Draw (void)
 		a_unused = 4 - a_unused;
 		
 		for (i = 0; i < 4; ++i) {
-			a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
+			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
 
 			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 			
@@ -4502,7 +4503,7 @@ void Sbar_Draw (void)
 		// fuel ammo
 		if(rm_oldhud)
 		{
-			a = getstati(GetAmmoStat(4)); // how much fuel do we have?
+			float a = getstati(GetAmmoStat(4)); // how much fuel do we have?
 
 			if (a > 0) { // if we have fuel, draw the amount
 				float invincibility_time, dt;
@@ -4628,7 +4629,7 @@ void Sbar_Draw (void)
 		if(vote_alpha) {
 			//print("DRAWING VOTE, alpha = ", ftos(vote_alpha), "\n");
 
-			a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
+			float a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
 
 			/*
 			if (teamplay)
@@ -4715,9 +4716,7 @@ void Sbar_Draw (void)
 
 	if(gui_reloading)
 	{
-		position_x = vid_conwidth;
-		position_y = vid_conheight;
-		drawfill('0 0 0', position, '0 0 0', 1, DRAWFLAG_NORMAL);
+		drawfill('0 0 0', '1 0 0' * vid_conwidth + '0 1 0' * vid_conheight, '0 0 0', 1, DRAWFLAG_NORMAL);
 		
 		vector lpic;
 		lpic = drawgetimagesize("gfx/loading.tga");

@@ -1191,12 +1191,13 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	// FLOOD CONTROL
 	flood = 0;
+	var .float flood_field;
+		
 	if(floodcontrol)
 	{
 		float flood_spl;
 		float flood_burst;
 		float flood_lmax;
-		var .float flood_field;
 		float lines;
 		if(privatesay)
 		{

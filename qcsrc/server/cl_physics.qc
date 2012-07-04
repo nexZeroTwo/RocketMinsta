@@ -218,10 +218,10 @@ void RaceCarPhysics()
 	self.angles_z = 0;
 	makevectors(self.angles); // new forward direction!
 
+	float myspeed, upspeed, steerfactor, accelfactor;
+
 	if(self.flags & FL_ONGROUND || g_bugrigs_air_steering)
 	{
-		float myspeed, upspeed, steerfactor, accelfactor;
-
 		myspeed = self.velocity * v_forward;
 		upspeed = self.velocity * v_up;
 
