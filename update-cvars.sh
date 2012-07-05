@@ -1,9 +1,16 @@
 #!/bin/bash
 
-TARGET="."
 if [ "x$1" != "x" ]; then
 	TARGET="$1"
+else
+	cat <<EOF
+Usage: $0 targetfile
+
+Upgrades references to RM cvars in targetfile, which may be either a single file or a directory, in which case all files withing that directory will be converted recursively.
+EOF
+	exit 1
 fi
+
 TARGET="$(readlink -m "$TARGET")"
 
 if [ -d "$TARGET" ]; then
