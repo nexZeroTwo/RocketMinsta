@@ -74,3 +74,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * Improved the EndRound code [Akari]
 * Added announcer sounds during warmups in round-based gametypes [Akari]
 * New rm-custom config: FastCRA [Akari]
+* Added a QuakeC config for the Geany IDE [Akari]
