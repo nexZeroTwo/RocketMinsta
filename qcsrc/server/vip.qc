@@ -294,7 +294,7 @@ void vip_init()
     precache_sound("ctf/blue_capture.wav");
     ScoreRules_vip();
 	
-	vip_soulgem = cvar("g_explosive_vip_soulgem");
+	vip_soulgem = cvar("g_vip_soulgem");
 	
 	if(vip_soulgem)
 	{
@@ -325,9 +325,9 @@ void vip_EndRound()
 		local entity e = spawn();
 		e.think = vip_EndRound_Think;
 		e.nextthink = time + 1;
-		e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+		e.cnt = cvar("g_vip_warmup") + next_round;
 		
-		G_EndRound("VIP", 5, cvar("g_explosive_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
+		G_EndRound("VIP", 5, cvar("g_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
 	}
 	else
 		defer(5.1, vip_SoulGem_StartRound);
@@ -489,35 +489,35 @@ float vip_EnemiesMultiplier(entity pl, string cvarname)
 
 void vip_RegenerateHealth()
 {
-	self.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self, "g_explosive_vip_health_dependonenemies");
+	self.vip_maxhealth = cvar("g_vip_health") * vip_EnemiesMultiplier(self, "g_vip_health_dependonenemies");
 	
-	self.health = max(self.health, min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
+	self.health = max(self.health, min(self.health + cvar("g_vip_regenerate_health_amount"),
 		self.vip_maxhealth
 	));
 	
-	self.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_health_delay");
+	self.vip_healthregen_next = time + cvar("g_vip_regenerate_health_delay");
 }
 
 void vip_RegenerateArmor()
 {
-	self.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self, "g_explosive_vip_armor_dependonenemies");
+	self.vip_maxarmor = cvar("g_vip_armor") * vip_EnemiesMultiplier(self, "g_vip_armor_dependonenemies");
 	
-	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_vip_regenerate_armor_amount"),
 		self.vip_maxarmor
 	));
 	
-	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
+	self.vip_armorregen_next = time + cvar("g_vip_regenerate_armor_delay");
 }
 
 void vip_RegenerateExtra()
 {
-	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
+	self.vip_maxarmor = cvar("g_vip_extralives") * vip_EnemiesMultiplier(self, "g_vip_extralives_dependonenemies");
 	
-	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_vip_regenerate_extra_amount"),
 		self.vip_maxarmor
 	));
 	
-	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+	self.vip_armorregen_next = time + cvar("g_vip_regenerate_extra_delay");
 }
 
 void vip_UpdateState_Health()
@@ -528,8 +528,8 @@ void vip_UpdateState_Health()
 void vip_UpdateState_Armor()
 {
 	vip_SendVIPInfo(
-		self.vip_maxhealth * cvar("g_explosive_armor_factor") + self.vip_maxarmor,
-		self.health * cvar("g_explosive_armor_factor") + self.armorvalue
+		self.vip_maxhealth * cvar("g_rocketminsta_armor_factor") + self.vip_maxarmor,
+		self.health * cvar("g_rocketminsta_armor_factor") + self.armorvalue
 	);
 }
 
@@ -549,27 +549,27 @@ void vip_MakePlayerVIP(entity pl)
 	// causes the state updater to re-send the VIP info no matter what
 	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
 
-	if(!g_minstagib || cvar("g_balance_minstanex_explosive"))
+	if(!g_minstagib || cvar("g_rocketminsta"))
 	{
-		pl.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(pl, "g_explosive_vip_health_dependonenemies");
+		pl.vip_maxhealth = cvar("g_vip_health") * vip_EnemiesMultiplier(pl, "g_vip_health_dependonenemies");
 		
-		if(cvar("g_explosive_vip_regenerate_health"))
+		if(cvar("g_vip_regenerate_health"))
 		{
 			pl.vip_regenhealth_f = vip_RegenerateHealth;
 			pl.vip_healthregentime = time;
-			pl.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+			pl.vip_healthregen_next = time + cvar("g_vip_regenerate_extra_delay");
 		}
 	}
 	
-	if(!g_minstagib || (cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor")))
+	if(!g_minstagib || (cvar("g_rocketminsta") && cvar("g_rocketminsta_armor")))
 	{
-		pl.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(pl, "g_explosive_vip_armor_dependonenemies");
+		pl.vip_maxarmor = cvar("g_vip_armor") * vip_EnemiesMultiplier(pl, "g_vip_armor_dependonenemies");
 		
-		if(cvar("g_explosive_vip_regenerate_armor"))
+		if(cvar("g_vip_regenerate_armor"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateArmor;
 			pl.vip_armorregentime = time;
-			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
+			pl.vip_armorregen_next = time + cvar("g_vip_regenerate_armor_delay");
 		}
 		
 		pl.vip_updatestate_f = vip_UpdateState_Armor;
@@ -577,22 +577,22 @@ void vip_MakePlayerVIP(entity pl)
 	else // in minstagib, we will just give him a bunch of extralives
 	{
 		pl.vip_maxhealth = 100;
-		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
+		pl.vip_maxarmor = cvar("g_vip_extralives") * vip_EnemiesMultiplier(pl, "g_vip_extralives_dependonenemies");
 		
 		if(pl.vip_maxarmor)
 			pl.vip_updatestate_f = vip_UpdateState_Extras;
 		else
 			pl.vip_updatestate_f = vip_UpdateState_Health;
 		
-		if(cvar("g_explosive_vip_regenerate_extra"))
+		if(cvar("g_vip_regenerate_extra"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateExtra;
 			pl.vip_armorregentime = time;
-			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+			pl.vip_armorregen_next = time + cvar("g_vip_regenerate_extra_delay");
 		}
 	}
 	
-	pl.vip_grenregen_next = time + cvar("g_explosive_vip_regenerate_grenades_delay");
+	pl.vip_grenregen_next = time + cvar("g_vip_regenerate_grenades_delay");
 	vip_ResetHealthArmor(pl);
 
 	local entity e, oldself;
@@ -676,12 +676,12 @@ void vip_PlayerPreThink()
 		//	bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
 	}
 	
-	if(cvar("g_explosive_vip_regenerate_grenades"))
-	if(self.hg_ammo < cvar("g_explosive_handgrenades_ammo"))
+	if(cvar("g_vip_regenerate_grenades"))
+	if(self.hg_ammo < cvar("g_handgrenades_ammo"))
 	if(time >= self.vip_grenregen_next)
 	{
-		self.hg_ammo += cvar("g_explosive_vip_regenerate_grenades_amount");
-		self.vip_grenregen_next = time + cvar("g_explosive_vip_regenerate_grenades_delay");
+		self.hg_ammo += cvar("g_vip_regenerate_grenades_amount");
+		self.vip_grenregen_next = time + cvar("g_vip_regenerate_grenades_delay");
 	}
 }
 
@@ -823,7 +823,7 @@ void vip_RedVIPDown()
 	if(bluevip && bluevip.classname == "player")
 	{
 		PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
 	}
 	
 	vip_EndRound();
@@ -846,7 +846,7 @@ void vip_BlueVIPDown()
 	if(redvip && redvip.classname == "player")
 	{
 		PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
 	}
 	vip_EndRound();
 }
@@ -886,9 +886,9 @@ float vip_PlayerDies(float deathtype)
 		PlayerScore_Add(frag_attacker, SP_VIP_VIPKILLS, 1);
 		
 		if(DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_HURTTRIGGER)
-			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill_special"));
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_vip_score_vipkill_special"));
 		else
-			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill"));
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_vip_score_vipkill"));
 	}
 	
 	if(ISREDVIP(frag_target))

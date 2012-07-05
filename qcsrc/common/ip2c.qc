@@ -94,7 +94,7 @@ void IP2C_AddCallback(string ip, ip2c_callback_t callback, entity callbackentity
     cb.ip2c_callbackentity = callbackentity;
     cb.ip2c_callbackfunction = callback;
     cb.think = IP2C_RequestTimeout;
-    cb.nextthink = time + cvar("g_explosive_ip2country_timeout");
+    cb.nextthink = time + cvar("sv_ip2country_timeout");
     cb.ip2c_requested_at = time;
 }
 
@@ -111,7 +111,7 @@ void IP2C_ExecCallbacks(string ip, string cn)
 
 void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity)
 {
-    if(!cvar("g_ip2c"))
+    if(!cvar("sv_ip2country"))
         return;
 
     local string res;
@@ -125,15 +125,15 @@ void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity)
         return;
     }
     
-    if(cvar_string("g_explosive_ip2country_server") == "")
+    if(cvar_string("sv_ip2country_server") == "")
     {
-        IP2C_Log(strcat("Can't lookup ip ", ip, ", g_explosive_ip2country_server is not set"));
+        IP2C_Log(strcat("Can't lookup ip ", ip, ", sv_ip2country_server is not set"));
         return;
     }
     
     IP2C_Log(strcat("IP ", ip, " is not cached, requesting from the server"));
     uri_get(strcat(
-        cvar_string("g_explosive_ip2country_server"), ip
+        cvar_string("sv_ip2country_server"), ip
     ), URI_GET_IP2C);
     return;
 }

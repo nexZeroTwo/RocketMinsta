@@ -682,7 +682,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
 		
-		//if(cvar("_g_balance_minstanex_explosive"))
+		//if(cvar("_g_rocketminsta"))
 		//	bigprint("Accuracy statistics are disabled", "", 2);
 		//else
 			sb_showaccuracy = true;

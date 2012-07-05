@@ -318,8 +318,8 @@ entity SelectSpawnPoint (float anypoint)
 	local entity spot, firstspot, playerlist;
 
 	local float randspawns, closetoteam_cvar;
-	randspawns = cvar("g_explosive_randomspawns");
-	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
+	randspawns = cvar("sv_randomspawns");
+	closetoteam_cvar = cvar("g_spawnclosetoteam");
 	
 	if(!global_spawnpoint)
 		global_spawnpoint = spawn();
@@ -369,8 +369,8 @@ entity SelectSpawnPoint (float anypoint)
 		mdst = -1;
 		local float i;
 		
-		local float cvar_mindist_team = cvar("g_explosive_spawnclosetoteam_mindist_team");
-		local float cvar_mindist_enemies = cvar("g_explosive_spawnclosetoteam_mindist_enemies");
+		local float cvar_mindist_team = cvar("g_spawnclosetoteam_mindist_team");
+		local float cvar_mindist_enemies = cvar("g_spawnclosetoteam_mindist_enemies");
 
 		for(i = 0; i < 2; ++i)
 		{
@@ -1041,7 +1041,7 @@ void Boobs_Attach() {
 	if(self.boob_left)	remove(self.boob_left);
 	if(self.boob_right)	remove(self.boob_right);
 	
-	if not(cvar("g_explosive_boobs"))
+	if not(cvar("g_boobs"))
 		return;
 	
 	self.boob_left  = Boobs_SpawnBoob(self, -1);
@@ -1316,7 +1316,7 @@ void PutClientInServer (void)
 	//if(g_ctf)
 	//	ctf_playerchanged();
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	if(self.classname == "player")
 	if(self.shownames == world)
 	{
@@ -1804,7 +1804,7 @@ void ClientConnect (void)
 	if(clienttype(self) == CLIENTTYPE_REAL)
 		defer(5, ServerTopic);
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	{
 		self.shownames = spawn();
 		self.shownames.owner = self;
@@ -1826,7 +1826,7 @@ void ClientConnect (void)
 	else
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
-	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
+	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
 	
 	totalclients++;
 }
@@ -2449,7 +2449,7 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	if(!cvar("g_explosive_showspecs"))
+	if(!cvar("sv_showspecs"))
 		return;
 	
 	if(player == of)
@@ -2458,7 +2458,7 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	
 	local entity spec;
 	local float specs;
-	local float a = cvar("g_explosive_anonspecs");
+	local float a = cvar("sv_anonspecs");
 	
 	FOR_EACH_SPECOF(of, spec, a) specs++;
 
@@ -2485,7 +2485,7 @@ void ResetSpectatorInfo(entity player)
 
 void WriteSpectatorInfo(entity player)
 {
-    if(cvar("g_explosive_showspecs_hidefromplayers"))
+    if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
     	WriteSpectatorInfoOf(player, player);

@@ -652,7 +652,7 @@ string highest_velocity_name;
 .float killsound;
 .float instakillsound;
 
-float g_explosive_speedaward_ownaccel;
+float sv_speedaward_ownaccel;
 
 .float hud_old;
 .float hud_alt;

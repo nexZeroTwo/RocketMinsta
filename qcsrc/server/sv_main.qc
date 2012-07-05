@@ -276,7 +276,7 @@ void StartFrame (void)
 		}
 	}
 	
-	if(totalclients >= maxclients) if(cvar("g_explosive_autokickafk")) {
+	if(totalclients >= maxclients) if(cvar("sv_autoaway_kick")) {
 		entity v = GetAFKKickVictim();
 		
 		if(v) {
