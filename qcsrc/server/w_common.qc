@@ -299,7 +299,7 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
 
-	if not(cvar("g_explosive_ballisticbullet_gothroughsolid"))
+	if not(cvar("g_ballistics_gothroughsolid"))
 	if not(trace_ent)
 		return 0;
 

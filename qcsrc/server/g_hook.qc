@@ -185,8 +185,8 @@ void GrapplingHookThink()
 		// while hanging on the rope, this friction component will help you a
 		// bit to control the rope
 
-		dontpull = cvar("g_explosive_hook_dontpull");
-		dontpull_limit = cvar("g_explosive_hook_dontpull_limit");
+		dontpull = cvar("g_balance_grapplehook_dontpull");
+		dontpull_limit = cvar("g_balance_grapplehook_dontpull_limit");
 
 		dir = self.origin - org;
 		dist = vlen(dir);
@@ -264,7 +264,7 @@ void GrapplingHookThink()
 	if not(g_freezetag && (self.aiment.freezetag_frozen || warmup >= time))
 	if not(g_vip && vip_soulgem && !vip_started)
 	if(!teams_matter || self.owner.team != self.aiment.team)
-	if(cvar("g_balance_minstanex_explosive"))
+	if(cvar("g_rocketminsta"))
 	{
 		self.last_dmg = time + 0.1;
 		self.owner.hitsound += 1;
@@ -318,11 +318,11 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 	if(self.health > 0)
 	{
 		//<akari>
-		if(cvar("g_balance_minstanex_explosive") || cvar("g_explosive_hook_forcerules"))
+		if(cvar("g_rocketminsta") || cvar("g_rocketminsta_hook_forcerules"))
 		{	// If the explosive mode is activated or new hook rules are forced, use them.
 		
 			//If the hook is not breakable, do nothing
-			if(!cvar("g_explosive_hook_breakable"))
+			if(!cvar("g_rocketminsta_hook_breakable"))
 			{
 				//bprint("The hook is not breakable!\n");
 				return;
@@ -330,7 +330,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 			
 			//If we shoot our own hook
 			if(self.owner == attacker)
-			if(!cvar("g_explosive_hook_breakable_self"))
+			if(!cvar("g_rocketminsta_hook_breakable_self"))
 			{
 				//bprint("Own hook is not breakable!\n");
 				return;
@@ -338,7 +338,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 			
 			//If we shoot a teammate's hook
 			else if(self.owner.team == attacker.team)
-			if(!cvar("g_explosive_hook_breakable_team"))
+			if(!cvar("g_rocketminsta_hook_breakable_team"))
 			{
 				//bprint("Team hook is not breakable!\n");
 				return;
@@ -359,7 +359,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 				attacker.hitsound += 1;
 
 			//Reflect the hook damage to it's owner
-			Damage(self.owner, inflictor, attacker, damage * cvar("g_explosive_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
+			Damage(self.owner, inflictor, attacker, damage * cvar("g_rocketminsta_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
 		}
 		else
 		{	//Otherwise, act normally
@@ -420,7 +420,7 @@ void FireGrapplingHook (void)
 	self.hook = missile;
 	missile.classname = "grapplinghook";
 
-	missile.movetype = (cvar("g_explosive_hook_gravity")? MOVETYPE_TOSS : MOVETYPE_FLY);
+	missile.movetype = (cvar("g_balance_grapplehook_gravity")? MOVETYPE_TOSS : MOVETYPE_FLY);
 	PROJECTILE_MAKETRIGGER(missile);
 
 	setmodel (missile, "models/hook.md3"); // precision set below

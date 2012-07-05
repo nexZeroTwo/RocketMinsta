@@ -1,6 +1,6 @@
 
 void sm_Init() {
-	g_soulmates = cvar("g_explosive_freezetag_soulmates");
+	g_soulmates = cvar("g_freezetag_soulmates");
 	DEPENDON(g_soulmates)
 	sm_Clear();
 	precache_sound("kh/capture.wav");
@@ -117,7 +117,7 @@ void sm_Frame() {
 		}
 		
 		if(self.BUTTON_USE) {
-			if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
+			if(cvar("g_freezetag_soulmates_allow_detach")) {
 				bprint(self.netname, " ^7has detached from ", self.smhost.netname, "\n");
 				centerprint_spec(self.smhost, strcat(self.netname, " ^7has detached from you"));
 				
@@ -137,7 +137,7 @@ void sm_Frame() {
 		
 		return;
 	} else if(self.soulmate) {
-		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_drop")) {
+		if(self.BUTTON_USE) if(cvar("g_freezetag_soulmates_allow_drop")) {
 			bprint(self.netname, " ^7has dropped ", self.soulmate.netname, "\n");
 			centerprint_spec(self.soulmate, strcat("^7You have been dropped by ", self.netname));
 			
@@ -154,7 +154,7 @@ void sm_Frame() {
 			sprint(self, "^1You are not allowed to drop your soulmates on this server\n");
 		}
 	} else if(self.BUTTON_USE) if(self.sm_canattach) {
-		if(cvar("g_explosive_freezetag_soulmates_allow_gemdrop")) {
+		if(cvar("g_freezetag_soulmates_allow_gemdrop")) {
 			bprint(self.netname, " ^7has dropped their soulgem\n");
 			self.sm_canattach = 0;
 			sm_DropSoulGem();
@@ -186,7 +186,7 @@ void sm_SpawnSoulGems(float theteam) {
 	
 	FOR_EACH_PLAYER(other) if(other.team == theteam)
 		++_count;
-	gems = max(1, ceil(_count / cvar("g_explosive_freezetag_soulmates_players_per_gem")));
+	gems = max(1, ceil(_count / cvar("g_freezetag_soulmates_players_per_gem")));
 	
 	for(i = 0; i < gems; ++i)
 		sm_SpawnSoulGem(theteam);

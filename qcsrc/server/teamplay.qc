@@ -253,18 +253,18 @@ void InitGameplayMode()
 	if(g_freezetag)
 	{
 		ActivateTeamplay();
-		fraglimit_override = cvar("g_explosive_freezetag_point_limit");
-		leadlimit_override = cvar("g_explosive_freezetag_point_leadlimit");
-		timelimit_override = cvar("g_explosive_freezetag_timelimit");
+		fraglimit_override = cvar("g_freezetag_point_limit");
+		leadlimit_override = cvar("g_freezetag_point_leadlimit");
+		timelimit_override = cvar("g_freezetag_timelimit");
 		freezetag_Initialize();
 	}
 
 	if(g_jailbreak)
 	{
 		ActivateTeamplay();
-		fraglimit_override = cvar("g_explosive_jailbreak_point_limit");
-		leadlimit_override = cvar("g_explosive_jailbreak_point_leadlimit");
-		timelimit_override = cvar("g_explosive_jailbreak_timelimit");
+		fraglimit_override = cvar("g_jailbreak_point_limit");
+		leadlimit_override = cvar("g_jailbreak_point_leadlimit");
+		timelimit_override = cvar("g_jailbreak_timelimit");
 		JB_Init();
 	}
 
@@ -311,9 +311,9 @@ void InitGameplayMode()
 
     if(g_vip)
     {
-        fraglimit_override = cvar("g_explosive_vip_point_limit");
-        leadlimit_override = cvar("g_explosive_vip_lead_limit");
-        timelimit_override = cvar("g_explosive_vip_time_limit");
+        fraglimit_override = cvar("g_vip_point_limit");
+        leadlimit_override = cvar("g_vip_lead_limit");
+        timelimit_override = cvar("g_vip_time_limit");
         ActivateTeamplay();
         vip_init();
     }
@@ -413,7 +413,7 @@ void InitGameplayMode()
 
 	
 	// More robust freezefag detector
-	local float __i, __j = tokenizebyseparator (cvar_string ("g_explosive_gametypevote_options") /* GameTypeVote_GetOptions () */ , " ");
+	local float __i, __j = tokenizebyseparator (cvar_string ("sv_vote_gametype_options") /* GameTypeVote_GetOptions () */ , " ");
 	local string gtype, gtype_cvar, gtype_cvar_other;
 	for (__i = 0; __i < __j; __i ++)
 	{
@@ -428,11 +428,11 @@ void InitGameplayMode()
 		
 		if (cvar (gtype_cvar) > 0 && gtype != gametype_ID_to_Name(game))
 		{
-			if(cvar("g_explosive_gametypevote_overplayed_strict"))
+			if(cvar("sv_vote_gametype_overplayed_strict"))
 			{
 				cvar_set(gtype_cvar_other, ftos(cvar(gtype_cvar_other) + 1));
 				
-				if(cvar(gtype_cvar_other) >= cvar("g_explosive_gametypevote_overplayed_strict_minmaps"))
+				if(cvar(gtype_cvar_other) >= cvar("sv_vote_gametype_overplayed_strict_minmaps"))
 				{
 					// not overplayed anymore, unlock this gametype
 					
@@ -441,7 +441,7 @@ void InitGameplayMode()
 				}
 				
 				// Only decrease the counter if it didn't go beyond bounds of sanity.
-				if(cvar(gtype_cvar) < cvar("g_explosive_gametypevote_maxmaps"))
+				if(cvar(gtype_cvar) < cvar("sv_vote_gametype_maxmaps"))
 					cvar_set (gtype_cvar, ftos(max(0, cvar(gtype_cvar) - 1)));
 			}
 			else // emulate the old behaviour: reset the counter
@@ -545,7 +545,7 @@ void PrintWelcomeMessage(entity pl)
 	}
 
 :normal
-	//if(cvar("g_balance_minstanex_explosive"))
+	//if(cvar("g_rocketminsta"))
 	{
 		RM_WelcomeMessage(pl);
 		return;
@@ -592,19 +592,19 @@ void PrintWelcomeMessage(entity pl)
 	//<akari>
 	//Infroms about explosive stuff
 	
-	if(cvar("g_balance_minstanex_explosive"))
+	if(cvar("g_rocketminsta"))
 		modifications = strcat(modifications, ", Explosive");
 	
-	if(cvar("g_explosive_hook_breakable"))
+	if(cvar("g_rocketminsta_hook_breakable"))
 		modifications = strcat(modifications, ", Hookbreak");
 	
-	if(cvar("g_explosive_ctf_capheals"))
+	if(cvar("g_ctf_capheals"))
 		modifications = strcat(modifications, ", Cap heals");
 	
-	if(cvar("g_explosive_health_overflow"))
+	if(cvar("g_rocketminsta_health_overflow"))
 		modifications = strcat(modifications, ", Health overflow");
 	
-	if(cvar("g_explosive_health_drain"))
+	if(cvar("g_rocketminsta_health_drain"))
 		modifications = strcat(modifications, ", Health draining");
 	
 	//</akari>

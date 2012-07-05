@@ -54,9 +54,9 @@ void JB_Imprison(entity attacker) {
 	if(attacker.team != self.team) {
 		attacker.jb_fragrow += 1;
 		
-		if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
-		if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
-			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
+		if(cvar("g_jailbreak_frag_bonusgrenade"))
+		if(attacker.jb_fragrow >= cvar("g_jailbreak_frag_bonusgrenade_requirement")) {
+			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_jailbreak_frag_bonusgrenade_type")), 1,
 								   strcat(ftos(attacker.jb_fragrow), " frags in a row")
 			);
 			attacker.jb_fragrow = 0;
@@ -512,13 +512,13 @@ float JB_PlayerDies() {
 		self.health = 100;
 	
 		if(frag_attacker == self || !frag_attacker)
-			PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_death"));
+			PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));
 		else if(frag_attacker.classname == "player") {
 			if(frag_attacker.team != self.team) {
-				PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_death"));
-				PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_jailbreak_score_imprison"));
+				PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));
+				PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_jailbreak_score_imprison"));
 			}
-			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_explosive_jailbreak_penalty_teamkill"));
+			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_jailbreak_penalty_teamkill"));
 		}
 		
 		Boobs_DropAllAndRespawn(frag_force);
@@ -591,7 +591,7 @@ void JB_EndRound_Finalize() {
 }
 
 void JB_EndRound() {
-	G_EndRound("Jailbreak", 15, cvar("g_explosive_jailbreak_warmup"), JB_CountPlayers, func_null, JB_EndRound_Finalize);
+	G_EndRound("Jailbreak", 15, cvar("g_jailbreak_warmup"), JB_CountPlayers, func_null, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
@@ -805,7 +805,7 @@ void JB_ControlPoint_Think() {
 			setmodel(self, "models/domination/dom_unclaimed.md3");
 		}
 		
-		if(time - self.jb_capturetime >= cvar("g_explosive_jailbreak_controlpoint_idletime"))
+		if(time - self.jb_capturetime >= cvar("g_jailbreak_controlpoint_idletime"))
 			self.jb_unlock_progress = 0;
 		
 		return;
@@ -836,7 +836,7 @@ void JB_ControlPoint_Capture(entity player) {
 	}
 	
 	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
-	PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_jailbreak_score_jbreak"));
+	PlayerScore_Add(player, SP_SCORE, cvar("g_jailbreak_score_jbreak"));
 	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
 	play2all("kh/alarm.wav");
 }
@@ -860,7 +860,7 @@ void JB_ControlPoint_Touch() {
 	if(time - self.pointupdatetime >= 0.1)
 		self.jb_unlock_progress = 0;
 	
-	self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_explosive_jailbreak_controlpoint_unlock_speed"), 1);
+	self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_jailbreak_controlpoint_unlock_speed"), 1);
 	self.pointupdatetime = time;
 	other.pointupdatetime = time;
 	other.jb_unlock_progress = self.jb_unlock_progress;

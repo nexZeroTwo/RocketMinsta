@@ -43,7 +43,7 @@ void dodging_Initialize() {
 
 // returns 1 if the player is close to a wall
 float check_close_to_wall(float threshold) {
-	if (cvar("g_explosive_dodging_wall_dodging") == 0)
+	if (cvar("g_dodging_wall_dodging") == 0)
 		return 0;
 
 	vector trace_start;
@@ -92,22 +92,22 @@ float dodging_GetPressedKeys()
 	tap_direction_y = 0;
 
 	float dodge_detected;
-	if(!cvar("g_explosive_dodging"))
+	if(!cvar("g_dodging"))
 		return 0;
 
 	if(g_freezetag && self.freezetag_frozen)
-	if not(cvar("g_explosive_freezetag_dodging_frozen"))
+	if not(cvar("g_freezetag_dodging_frozen"))
 		return 0;
 
 	dodge_detected = 0;
     self.cvar_cl_dodging_timeout = 0.2;
 
 	// first check if the last dodge is far enough back in time so we can dodge again
-	if ((time - self.last_dodging_time) < cvar("g_explosive_dodging_delay"))
+	if ((time - self.last_dodging_time) < cvar("g_dodging_delay"))
 		return 0;
 
-	if (check_close_to_ground(cvar("g_explosive_dodging_height_threshold")) != 1 
-		&& check_close_to_wall(cvar("g_explosive_dodging_wall_distance_threshold")) != 1)
+	if (check_close_to_ground(cvar("g_dodging_height_threshold")) != 1 
+		&& check_close_to_wall(cvar("g_dodging_wall_distance_threshold")) != 1)
 		return 0;
 
 	if (self.movement_x > 0) {
@@ -162,7 +162,7 @@ float dodging_GetPressedKeys()
 		self.dodging_action = 1;
 		self.dodging_single_action = 1;
 
-		self.dodging_velocity_gain = cvar("g_explosive_dodging_horiz_speed");
+		self.dodging_velocity_gain = cvar("g_dodging_horiz_speed");
 
 		self.dodging_direction_x = tap_direction_x;
 		self.dodging_direction_y = tap_direction_y;
@@ -192,7 +192,7 @@ float dodging_PlayerPhysics()
 	new_velocity_gain = 0;
 	clean_up_and_do_nothing = 0;
 
-	if(!cvar("g_explosive_dodging"))
+	if(!cvar("g_dodging"))
 		clean_up_and_do_nothing = 1;
 	
 	// when swimming, no dodging allowed..
@@ -200,8 +200,8 @@ float dodging_PlayerPhysics()
 		clean_up_and_do_nothing = 1;
 	
 	if(g_freezetag && self.freezetag_frozen) {
-		if(cvar("g_explosive_freezetag_dodging_frozen"))
-			forcemod = cvar("g_explosive_freezetag_dodging_frozen_forcefactor");
+		if(cvar("g_freezetag_dodging_frozen"))
+			forcemod = cvar("g_freezetag_dodging_frozen_forcefactor");
 		else
 			clean_up_and_do_nothing = 1;
 		
@@ -220,13 +220,13 @@ float dodging_PlayerPhysics()
 	// if we have e.g. 0.5 sec ramptime and a frametime of 0.25, then the ramp code 
 	// will be called ramp_time/frametime times = 2 times. so, we need to 
 	// add 0.5 * the total speed each frame until the dodge action is done..
-	common_factor = sys_frametime / cvar("g_explosive_dodging_ramp_time");
+	common_factor = sys_frametime / cvar("g_dodging_ramp_time");
 
 	// if ramp time is smaller than frametime we get problems ;D
 	if (common_factor > 1) 
 		common_factor = 1;
 
-	new_velocity_gain = self.dodging_velocity_gain - (common_factor * cvar("g_explosive_dodging_horiz_speed") * forcemod);
+	new_velocity_gain = self.dodging_velocity_gain - (common_factor * cvar("g_dodging_horiz_speed") * forcemod);
 	if (new_velocity_gain < 0)
 		new_velocity_gain = 0;
 
@@ -251,9 +251,9 @@ float dodging_PlayerPhysics()
 
 		self.velocity = 
 			  self.velocity 
-			+ (cvar("g_explosive_dodging_up_speed") * forcemod * v_up);
+			+ (cvar("g_dodging_up_speed") * forcemod * v_up);
 
-		if (cvar("g_explosive_dodging_sound") == 1)
+		if (cvar("g_dodging_sound") == 1)
 			PlayerSound(playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
 
 		setanim(self, self.anim_jump, TRUE, FALSE, TRUE);
@@ -262,7 +262,7 @@ float dodging_PlayerPhysics()
 	}
 
 	// are we done with the dodging ramp yet?
-	if((self.dodging_action == 1) && ((time - self.last_dodging_time) > cvar("g_explosive_dodging_ramp_time")))
+	if((self.dodging_action == 1) && ((time - self.last_dodging_time) > cvar("g_dodging_ramp_time")))
 	{
 		// reset state so next dodge can be done correctly
 		self.dodging_action = 0;

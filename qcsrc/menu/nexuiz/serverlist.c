@@ -597,7 +597,7 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	}
 
 	local string cn;
-    if(cvar("g_ip2c"))
+    if(cvar("sv_ip2country"))
 	{
 		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
 		ip = substring(ip, 0, strstrofs(ip, ":", 0));

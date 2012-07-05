@@ -485,9 +485,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						{
 							play2(attacker, "announcer/male/awesome.wav");
 					                if(prec_check_aggression(attacker, inflictor, targ))
-						                PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_laserfrag"));
+						                PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_laserfrag"));
 							
-							if(cvar("g_explosive_extendfragmessages"))
+							if(cvar("sv_extendfragmessages"))
 							{
 								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
@@ -502,9 +502,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						{
 							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
 					                if(prec_check_aggression(attacker, inflictor, targ))
-						        	PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+						        	PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_hookfrag"));
 
-							if(cvar("g_explosive_extendfragmessages"))
+							if(cvar("sv_extendfragmessages"))
 							{
 								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
@@ -522,7 +522,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						}
 						else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 						{
-							if(cvar("g_explosive_extendfragmessages"))
+							if(cvar("sv_extendfragmessages"))
 							{
 								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
@@ -533,7 +533,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
 							}
 
-							if(!g_dm && !g_tdm) if(g_minstagib) if(cvar("g_balance_minstanex_explosive"))
+							if(!g_dm && !g_tdm) if(g_minstagib) if(cvar("g_rocketminsta"))
 					                        if(prec_check_aggression(attacker, inflictor, targ))
 							        	PlayerScore_Add(attacker, SP_SCORE, 1);
 						}
@@ -542,10 +542,10 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						{
 							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
 					                if(prec_check_aggression(attacker, inflictor, targ))
-							        PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_score_hookfrag"));
+							        PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_hookfrag"));
 							        //centerprint(attacker, "^7Hookfrag!");
 
-							if(cvar("g_explosive_extendfragmessages"))
+							if(cvar("sv_extendfragmessages"))
 							{
 								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
@@ -575,7 +575,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						local string tail;
 						tail = "";
 						
-						if(cvar("g_explosive_extendfragmessages")) {
+						if(cvar("sv_extendfragmessages")) {
 							if(DEATH_ISHG(deathtype))
 								tail = HG_TypeToExpandedName(deathtype);
 							else 
@@ -882,7 +882,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	float attacker_is_player = (attacker.classname == "player");
 
 	if(g_jailbreak && jb_roundover && targ_is_player)
-		damage = damage * cvar("g_explosive_jailbreak_torture_damagefactor");
+		damage = damage * cvar("g_jailbreak_torture_damagefactor");
 		
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
@@ -963,11 +963,11 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(g_jailbreak)
 			if not(DEATH_ISSPECIAL(deathtype)) {
 				if(targ.jb_isprisoned)
-					damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_take");
+					damage = damage * cvar("g_jailbreak_prisonerdamagefactor_take");
 				
 				switch(inflictor.jb_proj_ownerstate) {
 					case JB_PROJ_OWNERSTATE_IMPRISONED:
-						damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_deal");
+						damage = damage * cvar("g_jailbreak_prisonerdamagefactor_deal");
 						break;
 						
 					case JB_PROJ_OWNERSTATE_FREE:
@@ -975,7 +975,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 						
 					case JB_PROJ_OWNERSTATE_UNDEFINED: default:
 						if(attacker.jb_isprisoned)
-							damage = damage * cvar("g_explosive_jailbreak_prisonerdamagefactor_deal");
+							damage = damage * cvar("g_jailbreak_prisonerdamagefactor_deal");
 						break;
 				}
 			}
@@ -1071,9 +1071,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				return;
 			}
 
-			local float ex = cvar("g_balance_minstanex_explosive");
-			local float ex_armor = cvar("g_explosive_armor");
-			float armor_passthrough = cvar("g_explosive_armor_passthrough");
+			local float ex = cvar("g_rocketminsta");
+			local float ex_armor = cvar("g_rocketminsta_armor");
+			float armor_passthrough = cvar("g_rocketminsta_armor_passthrough");
 
 			if(ex)
 			{
@@ -1084,14 +1084,14 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				}
 				
 				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-				if(attacker != targ && cvar("g_explosive_splash_selfonly"))
+				if(attacker != targ && cvar("g_rocketminsta_splash_selfonly"))
 				{
 					damage = 0;
 					force = '0 0 0';
 				}
 			}
 
-			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_explosive_minsta_damage") <= 0))
+			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_balance_minstanex_damage") <= 0))
 			{
 				if(!ex || !ex_armor)
 				{
@@ -1113,7 +1113,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 					else if(armor_passthrough)
 					{
 						armordamage = targ.armorvalue;
-						damage = (100 - targ.armorvalue) * cvar("g_explosive_armor_factor");
+						damage = (100 - targ.armorvalue) * cvar("g_rocketminsta_armor_factor");
 						targ.armorvalue = 0;
 					}
 
@@ -1136,10 +1136,10 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				if(damage)
 				if(ex_armor)
 				if(targ.armorvalue)
-				if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_explosive_minsta_damage") >= 0))
+				if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_balance_minstanex_damage") >= 0))
 				if not(DEATH_ISSPECIAL(deathtype))
 				{
-					armordamage = damage * cvar("g_explosive_armor_factor");
+					armordamage = damage * cvar("g_rocketminsta_armor_factor");
 					
 					if(targ == attacker)
 						armordamage *= cvar("g_balance_selfdamagepercent");
@@ -1192,9 +1192,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		if(g_freezetag) if(targ.freezetag_frozen)
 		{
 			damage = 0;
-			force = force * cvar("g_explosive_freezetag_frozen_force");
+			force = force * cvar("g_freezetag_frozen_force");
 
-			if(targ.team != attacker.team || cvar("g_explosive_freezetag_melt_teamdamage"))
+			if(targ.team != attacker.team || cvar("g_freezetag_melt_teamdamage"))
 			{
 				targ.freezetag_meltprogress = 0;
 				targ.freezetag_freezetime = time;
@@ -1356,13 +1356,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 		self.velocity = self.velocity + self.damageforcescale * force;
 
 		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-			self.velocity = self.velocity * cvar("g_explosive_splash_velocity_influence");
+			self.velocity = self.velocity * cvar("g_rocketminsta_splash_velocity_influence");
 		else if(DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-			self.velocity = self.velocity * cvar("g_explosive_laser_velocity_influence");
+			self.velocity = self.velocity * cvar("g_rocketminsta_laser_velocity_influence");
 		else
-			self.velocity = self.velocity * cvar("g_explosive_default_velocity_influence");
+			self.velocity = self.velocity * cvar("g_balance_push_velocityinfluence");
 
-		if(g_explosive_speedaward_ownaccel)
+		if(sv_speedaward_ownaccel)
 		if(attacker == targ)
 		if(self.classname == "player")
 		{
@@ -1400,13 +1400,13 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			if(took_extra)
 				PlayerScore_Add(attacker, SP_SCORE, (armordamage * 0.1));
 			else
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_explosive_armor_factor")) * 0.1);
+				PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_rocketminsta_armor_factor")) * 0.1);
 
 			if(attacker != targ) if(damage || armordamage)
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("g_explosive_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
 		{
 			float i;
 			
@@ -1448,7 +1448,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 				else 
 					wpnstring = "^0unknown";
 				
-				if(!cvar("g_explosive_extendfragmessages"))
+				if(!cvar("sv_extendfragmessages"))
 					wpnstring = "";
 				
 				if(attacker_is_player) if(attacker != targ)
@@ -1523,7 +1523,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	}
 
 	// apply mirror damage if any
-	if not(g_minstagib && cvar("g_balance_minstanex_explosive"))
+	if not(g_minstagib && cvar("g_rocketminsta"))
 	if(mirrordamage > 0 || mirrorforce > 0)
 	{
 		attacker = attacker_save;

@@ -23,5 +23,5 @@ void HG_Napalm();
 .float hg_bonustype;
 
 #define BUTTON_HG button6
-#define GRENVARNAME(t,v) strcat("g_explosive_handgrenades_", HG_TypeToName(t), "_", (v))
+#define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
