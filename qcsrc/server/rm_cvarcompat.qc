@@ -4,7 +4,7 @@
 //	DO NOT LOOK, EITHER
 //
 
-#define COMPATVAR_ACTIVE(v,n) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS) && cvar_string(v) != cvar_string(n) && cvar_string(v) != "__COMPATVAR_DISABLED__")
+#define COMPATVAR_ACTIVE(v) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS) && cvar_string(v) != "__COMPATVAR_DISABLED__")
 
 void RM_CvarCompat() {
 	float corrections;
@@ -17,7 +17,7 @@ void RM_CvarCompat() {
 	
 	// g_balance_minstanex_explosive ---> g_rocketminsta
 	
-	if COMPATVAR_ACTIVE("g_balance_minstanex_explosive", "g_rocketminsta") {
+	if COMPATVAR_ACTIVE("g_balance_minstanex_explosive") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_balance_minstanex_explosive^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta", cvar_string("g_balance_minstanex_explosive"));
 		if(mode == 2)
@@ -27,7 +27,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_allow_fakeflag ---> sv_fakeflag
 	
-	if COMPATVAR_ACTIVE("g_explosive_allow_fakeflag", "sv_fakeflag") {
+	if COMPATVAR_ACTIVE("g_explosive_allow_fakeflag") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_allow_fakeflag^7. Will _TRY_ to stay compatible by updating ^3sv_fakeflag^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_fakeflag", cvar_string("g_explosive_allow_fakeflag"));
 		if(mode == 2)
@@ -37,7 +37,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_allow_hidecountry ---> sv_hidecountry
 	
-	if COMPATVAR_ACTIVE("g_explosive_allow_hidecountry", "sv_hidecountry") {
+	if COMPATVAR_ACTIVE("g_explosive_allow_hidecountry") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_allow_hidecountry^7. Will _TRY_ to stay compatible by updating ^3sv_hidecountry^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_hidecountry", cvar_string("g_explosive_allow_hidecountry"));
 		if(mode == 2)
@@ -47,7 +47,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_allowmadoka ---> sv_madoka
 	
-	if COMPATVAR_ACTIVE("g_explosive_allowmadoka", "sv_madoka") {
+	if COMPATVAR_ACTIVE("g_explosive_allowmadoka") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_allowmadoka^7. Will _TRY_ to stay compatible by updating ^3sv_madoka^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_madoka", cvar_string("g_explosive_allowmadoka"));
 		if(mode == 2)
@@ -57,7 +57,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_anonspecs ---> sv_anonspecs
 	
-	if COMPATVAR_ACTIVE("g_explosive_anonspecs", "sv_anonspecs") {
+	if COMPATVAR_ACTIVE("g_explosive_anonspecs") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_anonspecs^7. Will _TRY_ to stay compatible by updating ^3sv_anonspecs^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_anonspecs", cvar_string("g_explosive_anonspecs"));
 		if(mode == 2)
@@ -67,7 +67,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_armor ---> g_rocketminsta_armor
 	
-	if COMPATVAR_ACTIVE("g_explosive_armor", "g_rocketminsta_armor") {
+	if COMPATVAR_ACTIVE("g_explosive_armor") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_armor^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_armor^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_armor", cvar_string("g_explosive_armor"));
 		if(mode == 2)
@@ -77,7 +77,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_armor_factor ---> g_rocketminsta_armor_factor
 	
-	if COMPATVAR_ACTIVE("g_explosive_armor_factor", "g_rocketminsta_armor_factor") {
+	if COMPATVAR_ACTIVE("g_explosive_armor_factor") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_armor_factor^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_armor_factor^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_armor_factor", cvar_string("g_explosive_armor_factor"));
 		if(mode == 2)
@@ -87,7 +87,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_armor_max ---> g_rocketminsta_armor_max
 	
-	if COMPATVAR_ACTIVE("g_explosive_armor_max", "g_rocketminsta_armor_max") {
+	if COMPATVAR_ACTIVE("g_explosive_armor_max") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_armor_max^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_armor_max^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_armor_max", cvar_string("g_explosive_armor_max"));
 		if(mode == 2)
@@ -97,7 +97,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_armor_overflow ---> g_rocketminsta_armor_overflow
 	
-	if COMPATVAR_ACTIVE("g_explosive_armor_overflow", "g_rocketminsta_armor_overflow") {
+	if COMPATVAR_ACTIVE("g_explosive_armor_overflow") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_armor_overflow^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_armor_overflow^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_armor_overflow", cvar_string("g_explosive_armor_overflow"));
 		if(mode == 2)
@@ -107,7 +107,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_armor_passthrough ---> g_rocketminsta_armor_passthrough
 	
-	if COMPATVAR_ACTIVE("g_explosive_armor_passthrough", "g_rocketminsta_armor_passthrough") {
+	if COMPATVAR_ACTIVE("g_explosive_armor_passthrough") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_armor_passthrough^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_armor_passthrough^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_armor_passthrough", cvar_string("g_explosive_armor_passthrough"));
 		if(mode == 2)
@@ -117,7 +117,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_autoaway ---> sv_autoaway
 	
-	if COMPATVAR_ACTIVE("g_explosive_autoaway", "sv_autoaway") {
+	if COMPATVAR_ACTIVE("g_explosive_autoaway") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_autoaway^7. Will _TRY_ to stay compatible by updating ^3sv_autoaway^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_autoaway", cvar_string("g_explosive_autoaway"));
 		if(mode == 2)
@@ -127,7 +127,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_autokickafk ---> sv_autoaway_kick
 	
-	if COMPATVAR_ACTIVE("g_explosive_autokickafk", "sv_autoaway_kick") {
+	if COMPATVAR_ACTIVE("g_explosive_autokickafk") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_autokickafk^7. Will _TRY_ to stay compatible by updating ^3sv_autoaway_kick^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_autoaway_kick", cvar_string("g_explosive_autokickafk"));
 		if(mode == 2)
@@ -137,7 +137,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_ballisticbullet_gothroughsolid ---> g_ballistics_gothroughsolid
 	
-	if COMPATVAR_ACTIVE("g_explosive_ballisticbullet_gothroughsolid", "g_ballistics_gothroughsolid") {
+	if COMPATVAR_ACTIVE("g_explosive_ballisticbullet_gothroughsolid") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_ballisticbullet_gothroughsolid^7. Will _TRY_ to stay compatible by updating ^3g_ballistics_gothroughsolid^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_ballistics_gothroughsolid", cvar_string("g_explosive_ballisticbullet_gothroughsolid"));
 		if(mode == 2)
@@ -147,7 +147,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_boobs ---> g_boobs
 	
-	if COMPATVAR_ACTIVE("g_explosive_boobs", "g_boobs") {
+	if COMPATVAR_ACTIVE("g_explosive_boobs") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_boobs^7. Will _TRY_ to stay compatible by updating ^3g_boobs^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_boobs", cvar_string("g_explosive_boobs"));
 		if(mode == 2)
@@ -157,7 +157,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_chat_autoreplace ---> sv_chat_autoreplace
 	
-	if COMPATVAR_ACTIVE("g_explosive_chat_autoreplace", "sv_chat_autoreplace") {
+	if COMPATVAR_ACTIVE("g_explosive_chat_autoreplace") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_chat_autoreplace^7. Will _TRY_ to stay compatible by updating ^3sv_chat_autoreplace^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_chat_autoreplace", cvar_string("g_explosive_chat_autoreplace"));
 		if(mode == 2)
@@ -167,7 +167,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_chat_autoreplace_order ---> sv_chat_autoreplace_order
 	
-	if COMPATVAR_ACTIVE("g_explosive_chat_autoreplace_order", "sv_chat_autoreplace_order") {
+	if COMPATVAR_ACTIVE("g_explosive_chat_autoreplace_order") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_chat_autoreplace_order^7. Will _TRY_ to stay compatible by updating ^3sv_chat_autoreplace_order^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_chat_autoreplace_order", cvar_string("g_explosive_chat_autoreplace_order"));
 		if(mode == 2)
@@ -177,7 +177,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_ctf_capheals ---> g_ctf_capheals
 	
-	if COMPATVAR_ACTIVE("g_explosive_ctf_capheals", "g_ctf_capheals") {
+	if COMPATVAR_ACTIVE("g_explosive_ctf_capheals") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_ctf_capheals^7. Will _TRY_ to stay compatible by updating ^3g_ctf_capheals^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_ctf_capheals", cvar_string("g_explosive_ctf_capheals"));
 		if(mode == 2)
@@ -187,7 +187,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_default_velocity_influence ---> g_balance_push_velocityinfluence
 	
-	if COMPATVAR_ACTIVE("g_explosive_default_velocity_influence", "g_balance_push_velocityinfluence") {
+	if COMPATVAR_ACTIVE("g_explosive_default_velocity_influence") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_default_velocity_influence^7. Will _TRY_ to stay compatible by updating ^3g_balance_push_velocityinfluence^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_push_velocityinfluence", cvar_string("g_explosive_default_velocity_influence"));
 		if(mode == 2)
@@ -197,7 +197,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging ---> g_dodging
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging", "g_dodging") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging^7. Will _TRY_ to stay compatible by updating ^3g_dodging^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging", cvar_string("g_explosive_dodging"));
 		if(mode == 2)
@@ -207,7 +207,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_delay ---> g_dodging_delay
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_delay", "g_dodging_delay") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_delay") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_delay^7. Will _TRY_ to stay compatible by updating ^3g_dodging_delay^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_delay", cvar_string("g_explosive_dodging_delay"));
 		if(mode == 2)
@@ -217,7 +217,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_height_threshold ---> g_dodging_height_threshold
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_height_threshold", "g_dodging_height_threshold") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_height_threshold") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_height_threshold^7. Will _TRY_ to stay compatible by updating ^3g_dodging_height_threshold^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_height_threshold", cvar_string("g_explosive_dodging_height_threshold"));
 		if(mode == 2)
@@ -227,7 +227,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_horiz_speed ---> g_dodging_horiz_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_horiz_speed", "g_dodging_horiz_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_horiz_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_horiz_speed^7. Will _TRY_ to stay compatible by updating ^3g_dodging_horiz_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_horiz_speed", cvar_string("g_explosive_dodging_horiz_speed"));
 		if(mode == 2)
@@ -237,7 +237,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_ramp_time ---> g_dodging_ramp_time
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_ramp_time", "g_dodging_ramp_time") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_ramp_time") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_ramp_time^7. Will _TRY_ to stay compatible by updating ^3g_dodging_ramp_time^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_ramp_time", cvar_string("g_explosive_dodging_ramp_time"));
 		if(mode == 2)
@@ -247,7 +247,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_sound ---> g_dodging_sound
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_sound", "g_dodging_sound") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_sound") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_sound^7. Will _TRY_ to stay compatible by updating ^3g_dodging_sound^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_sound", cvar_string("g_explosive_dodging_sound"));
 		if(mode == 2)
@@ -257,7 +257,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_up_speed ---> g_dodging_up_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_up_speed", "g_dodging_up_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_up_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_up_speed^7. Will _TRY_ to stay compatible by updating ^3g_dodging_up_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_up_speed", cvar_string("g_explosive_dodging_up_speed"));
 		if(mode == 2)
@@ -267,7 +267,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_wall_distance_threshold ---> g_dodging_wall_distance_threshold
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_wall_distance_threshold", "g_dodging_wall_distance_threshold") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_wall_distance_threshold") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_wall_distance_threshold^7. Will _TRY_ to stay compatible by updating ^3g_dodging_wall_distance_threshold^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_wall_distance_threshold", cvar_string("g_explosive_dodging_wall_distance_threshold"));
 		if(mode == 2)
@@ -277,7 +277,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_dodging_wall_dodging ---> g_dodging_wall_dodging
 	
-	if COMPATVAR_ACTIVE("g_explosive_dodging_wall_dodging", "g_dodging_wall_dodging") {
+	if COMPATVAR_ACTIVE("g_explosive_dodging_wall_dodging") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_dodging_wall_dodging^7. Will _TRY_ to stay compatible by updating ^3g_dodging_wall_dodging^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_dodging_wall_dodging", cvar_string("g_explosive_dodging_wall_dodging"));
 		if(mode == 2)
@@ -287,7 +287,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_domination_capture_clearspeed ---> g_domination_capture_clearspeed
 	
-	if COMPATVAR_ACTIVE("g_explosive_domination_capture_clearspeed", "g_domination_capture_clearspeed") {
+	if COMPATVAR_ACTIVE("g_explosive_domination_capture_clearspeed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_domination_capture_clearspeed^7. Will _TRY_ to stay compatible by updating ^3g_domination_capture_clearspeed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_domination_capture_clearspeed", cvar_string("g_explosive_domination_capture_clearspeed"));
 		if(mode == 2)
@@ -297,7 +297,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_domination_capture_speed ---> g_domination_capture_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_domination_capture_speed", "g_domination_capture_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_domination_capture_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_domination_capture_speed^7. Will _TRY_ to stay compatible by updating ^3g_domination_capture_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_domination_capture_speed", cvar_string("g_explosive_domination_capture_speed"));
 		if(mode == 2)
@@ -307,7 +307,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_domination_removeitems ---> g_domination_removeitems
 	
-	if COMPATVAR_ACTIVE("g_explosive_domination_removeitems", "g_domination_removeitems") {
+	if COMPATVAR_ACTIVE("g_explosive_domination_removeitems") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_domination_removeitems^7. Will _TRY_ to stay compatible by updating ^3g_domination_removeitems^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_domination_removeitems", cvar_string("g_explosive_domination_removeitems"));
 		if(mode == 2)
@@ -317,7 +317,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_domination_spawnpoints ---> g_domination_spawnpoints
 	
-	if COMPATVAR_ACTIVE("g_explosive_domination_spawnpoints", "g_domination_spawnpoints") {
+	if COMPATVAR_ACTIVE("g_explosive_domination_spawnpoints") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_domination_spawnpoints^7. Will _TRY_ to stay compatible by updating ^3g_domination_spawnpoints^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_domination_spawnpoints", cvar_string("g_explosive_domination_spawnpoints"));
 		if(mode == 2)
@@ -327,7 +327,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_droppowerups ---> g_droppowerups
 	
-	if COMPATVAR_ACTIVE("g_explosive_droppowerups", "g_droppowerups") {
+	if COMPATVAR_ACTIVE("g_explosive_droppowerups") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_droppowerups^7. Will _TRY_ to stay compatible by updating ^3g_droppowerups^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_droppowerups", cvar_string("g_explosive_droppowerups"));
 		if(mode == 2)
@@ -337,7 +337,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_droppowerups_activatedelay ---> g_droppowerups_activatedelay
 	
-	if COMPATVAR_ACTIVE("g_explosive_droppowerups_activatedelay", "g_droppowerups_activatedelay") {
+	if COMPATVAR_ACTIVE("g_explosive_droppowerups_activatedelay") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_droppowerups_activatedelay^7. Will _TRY_ to stay compatible by updating ^3g_droppowerups_activatedelay^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_droppowerups_activatedelay", cvar_string("g_explosive_droppowerups_activatedelay"));
 		if(mode == 2)
@@ -347,7 +347,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_extendfragmessages ---> sv_extendfragmessages
 	
-	if COMPATVAR_ACTIVE("g_explosive_extendfragmessages", "sv_extendfragmessages") {
+	if COMPATVAR_ACTIVE("g_explosive_extendfragmessages") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_extendfragmessages^7. Will _TRY_ to stay compatible by updating ^3sv_extendfragmessages^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_extendfragmessages", cvar_string("g_explosive_extendfragmessages"));
 		if(mode == 2)
@@ -357,7 +357,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote ---> sv_vote_gametype
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote", "sv_vote_gametype") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype", cvar_string("g_explosive_gametypevote"));
 		if(mode == 2)
@@ -367,7 +367,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_call ---> sv_vote_gametype_call
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_call", "sv_vote_gametype_call") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_call") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_call^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_call^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_call", cvar_string("g_explosive_gametypevote_call"));
 		if(mode == 2)
@@ -377,7 +377,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_maxmaps ---> sv_vote_gametype_maxmaps
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_maxmaps", "sv_vote_gametype_maxmaps") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_maxmaps") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_maxmaps^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_maxmaps^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_maxmaps", cvar_string("g_explosive_gametypevote_maxmaps"));
 		if(mode == 2)
@@ -387,7 +387,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_options ---> sv_vote_gametype_options
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_options", "sv_vote_gametype_options") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_options") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_options^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_options^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_options", cvar_string("g_explosive_gametypevote_options"));
 		if(mode == 2)
@@ -397,7 +397,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_overplayed_allowcall ---> sv_vote_gametype_overplayed_allowcall
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_allowcall", "sv_vote_gametype_overplayed_allowcall") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_allowcall") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_overplayed_allowcall^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_overplayed_allowcall^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_overplayed_allowcall", cvar_string("g_explosive_gametypevote_overplayed_allowcall"));
 		if(mode == 2)
@@ -407,7 +407,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_overplayed_strict ---> sv_vote_gametype_overplayed_strict
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_strict", "sv_vote_gametype_overplayed_strict") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_strict") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_overplayed_strict^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_overplayed_strict^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_overplayed_strict", cvar_string("g_explosive_gametypevote_overplayed_strict"));
 		if(mode == 2)
@@ -417,7 +417,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_overplayed_strict_minmaps ---> sv_vote_gametype_overplayed_strict_minmaps
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_strict_minmaps", "sv_vote_gametype_overplayed_strict_minmaps") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_overplayed_strict_minmaps") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_overplayed_strict_minmaps^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_overplayed_strict_minmaps^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_overplayed_strict_minmaps", cvar_string("g_explosive_gametypevote_overplayed_strict_minmaps"));
 		if(mode == 2)
@@ -427,7 +427,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_shuffle ---> sv_vote_gametype_shuffle
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_shuffle", "sv_vote_gametype_shuffle") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_shuffle") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_shuffle^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_shuffle^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_shuffle", cvar_string("g_explosive_gametypevote_shuffle"));
 		if(mode == 2)
@@ -437,7 +437,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gametypevote_timeout ---> sv_vote_gametype_timeout
 	
-	if COMPATVAR_ACTIVE("g_explosive_gametypevote_timeout", "sv_vote_gametype_timeout") {
+	if COMPATVAR_ACTIVE("g_explosive_gametypevote_timeout") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gametypevote_timeout^7. Will _TRY_ to stay compatible by updating ^3sv_vote_gametype_timeout^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_gametype_timeout", cvar_string("g_explosive_gametypevote_timeout"));
 		if(mode == 2)
@@ -447,7 +447,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_gotoserver_whitelist ---> sv_gotoserver_whitelist
 	
-	if COMPATVAR_ACTIVE("g_explosive_gotoserver_whitelist", "sv_gotoserver_whitelist") {
+	if COMPATVAR_ACTIVE("g_explosive_gotoserver_whitelist") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_gotoserver_whitelist^7. Will _TRY_ to stay compatible by updating ^3sv_gotoserver_whitelist^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_gotoserver_whitelist", cvar_string("g_explosive_gotoserver_whitelist"));
 		if(mode == 2)
@@ -457,7 +457,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades ---> g_handgrenades
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades", "g_handgrenades") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades", cvar_string("g_explosive_handgrenades"));
 		if(mode == 2)
@@ -467,7 +467,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_ammo ---> g_handgrenades_ammo
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_ammo", "g_handgrenades_ammo") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_ammo") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_ammo^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_ammo^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_ammo", cvar_string("g_explosive_handgrenades_ammo"));
 		if(mode == 2)
@@ -477,7 +477,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_clearspeed ---> g_handgrenades_clearspeed
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_clearspeed", "g_handgrenades_clearspeed") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_clearspeed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_clearspeed^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_clearspeed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_clearspeed", cvar_string("g_explosive_handgrenades_clearspeed"));
 		if(mode == 2)
@@ -487,7 +487,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_mindelay ---> g_handgrenades_mindelay
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_mindelay", "g_handgrenades_mindelay") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_mindelay") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_mindelay^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_mindelay^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_mindelay", cvar_string("g_explosive_handgrenades_mindelay"));
 		if(mode == 2)
@@ -497,7 +497,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_burndamage ---> g_handgrenades_napalm_burndamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burndamage", "g_handgrenades_napalm_burndamage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burndamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_burndamage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_burndamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_burndamage", cvar_string("g_explosive_handgrenades_napalm_burndamage"));
 		if(mode == 2)
@@ -507,7 +507,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_burnradius ---> g_handgrenades_napalm_burnradius
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burnradius", "g_handgrenades_napalm_burnradius") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burnradius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_burnradius^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_burnradius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_burnradius", cvar_string("g_explosive_handgrenades_napalm_burnradius"));
 		if(mode == 2)
@@ -517,7 +517,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_burntime ---> g_handgrenades_napalm_burntime
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burntime", "g_handgrenades_napalm_burntime") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_burntime") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_burntime^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_burntime^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_burntime", cvar_string("g_explosive_handgrenades_napalm_burntime"));
 		if(mode == 2)
@@ -527,7 +527,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_damage ---> g_handgrenades_napalm_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_damage", "g_handgrenades_napalm_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_damage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_damage", cvar_string("g_explosive_handgrenades_napalm_damage"));
 		if(mode == 2)
@@ -537,7 +537,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_damageforcescale ---> g_handgrenades_napalm_damageforcescale
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_damageforcescale", "g_handgrenades_napalm_damageforcescale") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_damageforcescale") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_damageforcescale^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_damageforcescale^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_damageforcescale", cvar_string("g_explosive_handgrenades_napalm_damageforcescale"));
 		if(mode == 2)
@@ -547,7 +547,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_edgeburndamage ---> g_handgrenades_napalm_edgeburndamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_edgeburndamage", "g_handgrenades_napalm_edgeburndamage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_edgeburndamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_edgeburndamage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_edgeburndamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_edgeburndamage", cvar_string("g_explosive_handgrenades_napalm_edgeburndamage"));
 		if(mode == 2)
@@ -557,7 +557,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_edgedamage ---> g_handgrenades_napalm_edgedamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_edgedamage", "g_handgrenades_napalm_edgedamage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_edgedamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_edgedamage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_edgedamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_edgedamage", cvar_string("g_explosive_handgrenades_napalm_edgedamage"));
 		if(mode == 2)
@@ -567,7 +567,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_fire_lifetime ---> g_handgrenades_napalm_fire_lifetime
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_fire_lifetime", "g_handgrenades_napalm_fire_lifetime") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_fire_lifetime") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_fire_lifetime^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_fire_lifetime^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_fire_lifetime", cvar_string("g_explosive_handgrenades_napalm_fire_lifetime"));
 		if(mode == 2)
@@ -577,7 +577,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_force ---> g_handgrenades_napalm_force
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_force", "g_handgrenades_napalm_force") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_force") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_force^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_force^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_force", cvar_string("g_explosive_handgrenades_napalm_force"));
 		if(mode == 2)
@@ -587,7 +587,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_health ---> g_handgrenades_napalm_health
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_health", "g_handgrenades_napalm_health") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_health") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_health^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_health^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_health", cvar_string("g_explosive_handgrenades_napalm_health"));
 		if(mode == 2)
@@ -597,7 +597,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_kamikaze_damage ---> g_handgrenades_napalm_kamikaze_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_kamikaze_damage", "g_handgrenades_napalm_kamikaze_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_kamikaze_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_kamikaze_damage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_kamikaze_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_kamikaze_damage", cvar_string("g_explosive_handgrenades_napalm_kamikaze_damage"));
 		if(mode == 2)
@@ -607,7 +607,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_lifetime ---> g_handgrenades_napalm_lifetime
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_lifetime", "g_handgrenades_napalm_lifetime") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_lifetime") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_lifetime^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_lifetime^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_lifetime", cvar_string("g_explosive_handgrenades_napalm_lifetime"));
 		if(mode == 2)
@@ -617,7 +617,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_middleburnradius ---> g_handgrenades_napalm_middleburnradius
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_middleburnradius", "g_handgrenades_napalm_middleburnradius") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_middleburnradius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_middleburnradius^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_middleburnradius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_middleburnradius", cvar_string("g_explosive_handgrenades_napalm_middleburnradius"));
 		if(mode == 2)
@@ -627,7 +627,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_numparticles ---> g_handgrenades_napalm_numparticles
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_numparticles", "g_handgrenades_napalm_numparticles") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_numparticles") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_numparticles^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_numparticles^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_numparticles", cvar_string("g_explosive_handgrenades_napalm_numparticles"));
 		if(mode == 2)
@@ -637,7 +637,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_radius ---> g_handgrenades_napalm_radius
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_radius", "g_handgrenades_napalm_radius") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_radius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_radius^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_radius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_radius", cvar_string("g_explosive_handgrenades_napalm_radius"));
 		if(mode == 2)
@@ -647,7 +647,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_speed ---> g_handgrenades_napalm_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_speed", "g_handgrenades_napalm_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_speed^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_speed", cvar_string("g_explosive_handgrenades_napalm_speed"));
 		if(mode == 2)
@@ -657,7 +657,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_speed_up ---> g_handgrenades_napalm_speed_up
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_speed_up", "g_handgrenades_napalm_speed_up") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_speed_up") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_speed_up^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_speed_up^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_speed_up", cvar_string("g_explosive_handgrenades_napalm_speed_up"));
 		if(mode == 2)
@@ -667,7 +667,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_spread_xy ---> g_handgrenades_napalm_spread_xy
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_xy", "g_handgrenades_napalm_spread_xy") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_xy") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_spread_xy^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_spread_xy^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_spread_xy", cvar_string("g_explosive_handgrenades_napalm_spread_xy"));
 		if(mode == 2)
@@ -677,7 +677,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_spread_z ---> g_handgrenades_napalm_spread_z
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z", "g_handgrenades_napalm_spread_z") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_spread_z^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_spread_z^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_spread_z", cvar_string("g_explosive_handgrenades_napalm_spread_z"));
 		if(mode == 2)
@@ -687,7 +687,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_spread_z_min ---> g_handgrenades_napalm_spread_z_min
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z_min", "g_handgrenades_napalm_spread_z_min") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z_min") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_spread_z_min^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_spread_z_min^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_spread_z_min", cvar_string("g_explosive_handgrenades_napalm_spread_z_min"));
 		if(mode == 2)
@@ -697,7 +697,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_napalm_spread_z_min_randomfactor ---> g_handgrenades_napalm_spread_z_min_randomfactor
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z_min_randomfactor", "g_handgrenades_napalm_spread_z_min_randomfactor") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_napalm_spread_z_min_randomfactor") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_napalm_spread_z_min_randomfactor^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_napalm_spread_z_min_randomfactor^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_napalm_spread_z_min_randomfactor", cvar_string("g_explosive_handgrenades_napalm_spread_z_min_randomfactor"));
 		if(mode == 2)
@@ -707,7 +707,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_damage ---> g_handgrenades_normal_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_damage", "g_handgrenades_normal_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_damage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_damage", cvar_string("g_explosive_handgrenades_normal_damage"));
 		if(mode == 2)
@@ -717,7 +717,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_damageforcescale ---> g_handgrenades_normal_damageforcescale
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_damageforcescale", "g_handgrenades_normal_damageforcescale") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_damageforcescale") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_damageforcescale^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_damageforcescale^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_damageforcescale", cvar_string("g_explosive_handgrenades_normal_damageforcescale"));
 		if(mode == 2)
@@ -727,7 +727,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_edgedamage ---> g_handgrenades_normal_edgedamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_edgedamage", "g_handgrenades_normal_edgedamage") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_edgedamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_edgedamage^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_edgedamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_edgedamage", cvar_string("g_explosive_handgrenades_normal_edgedamage"));
 		if(mode == 2)
@@ -737,7 +737,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_force ---> g_handgrenades_normal_force
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_force", "g_handgrenades_normal_force") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_force") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_force^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_force^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_force", cvar_string("g_explosive_handgrenades_normal_force"));
 		if(mode == 2)
@@ -747,7 +747,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_health ---> g_handgrenades_normal_health
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_health", "g_handgrenades_normal_health") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_health") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_health^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_health^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_health", cvar_string("g_explosive_handgrenades_normal_health"));
 		if(mode == 2)
@@ -757,7 +757,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_lifetime ---> g_handgrenades_normal_lifetime
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_lifetime", "g_handgrenades_normal_lifetime") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_lifetime") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_lifetime^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_lifetime^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_lifetime", cvar_string("g_explosive_handgrenades_normal_lifetime"));
 		if(mode == 2)
@@ -767,7 +767,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_radius ---> g_handgrenades_normal_radius
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_radius", "g_handgrenades_normal_radius") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_radius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_radius^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_radius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_radius", cvar_string("g_explosive_handgrenades_normal_radius"));
 		if(mode == 2)
@@ -777,7 +777,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_speed ---> g_handgrenades_normal_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_speed", "g_handgrenades_normal_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_speed^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_speed", cvar_string("g_explosive_handgrenades_normal_speed"));
 		if(mode == 2)
@@ -787,7 +787,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_normal_speed_up ---> g_handgrenades_normal_speed_up
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_speed_up", "g_handgrenades_normal_speed_up") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_normal_speed_up") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_normal_speed_up^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_normal_speed_up^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_normal_speed_up", cvar_string("g_explosive_handgrenades_normal_speed_up"));
 		if(mode == 2)
@@ -797,7 +797,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_speed ---> g_handgrenades_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_speed", "g_handgrenades_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_speed^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_speed", cvar_string("g_explosive_handgrenades_speed"));
 		if(mode == 2)
@@ -807,7 +807,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_handgrenades_type ---> g_handgrenades_type
 	
-	if COMPATVAR_ACTIVE("g_explosive_handgrenades_type", "g_handgrenades_type") {
+	if COMPATVAR_ACTIVE("g_explosive_handgrenades_type") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_handgrenades_type^7. Will _TRY_ to stay compatible by updating ^3g_handgrenades_type^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_handgrenades_type", cvar_string("g_explosive_handgrenades_type"));
 		if(mode == 2)
@@ -817,7 +817,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_health_drain ---> g_rocketminsta_health_drain
 	
-	if COMPATVAR_ACTIVE("g_explosive_health_drain", "g_rocketminsta_health_drain") {
+	if COMPATVAR_ACTIVE("g_explosive_health_drain") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_health_drain^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_health_drain^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_health_drain", cvar_string("g_explosive_health_drain"));
 		if(mode == 2)
@@ -827,7 +827,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_health_max ---> g_rocketminsta_health_max
 	
-	if COMPATVAR_ACTIVE("g_explosive_health_max", "g_rocketminsta_health_max") {
+	if COMPATVAR_ACTIVE("g_explosive_health_max") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_health_max^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_health_max^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_health_max", cvar_string("g_explosive_health_max"));
 		if(mode == 2)
@@ -837,7 +837,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_health_min ---> g_rocketminsta_health_min
 	
-	if COMPATVAR_ACTIVE("g_explosive_health_min", "g_rocketminsta_health_min") {
+	if COMPATVAR_ACTIVE("g_explosive_health_min") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_health_min^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_health_min^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_health_min", cvar_string("g_explosive_health_min"));
 		if(mode == 2)
@@ -847,7 +847,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_health_overflow ---> g_rocketminsta_health_overflow
 	
-	if COMPATVAR_ACTIVE("g_explosive_health_overflow", "g_rocketminsta_health_overflow") {
+	if COMPATVAR_ACTIVE("g_explosive_health_overflow") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_health_overflow^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_health_overflow^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_health_overflow", cvar_string("g_explosive_health_overflow"));
 		if(mode == 2)
@@ -857,7 +857,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hidedamage ---> sv_hidedamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_hidedamage", "sv_hidedamage") {
+	if COMPATVAR_ACTIVE("g_explosive_hidedamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hidedamage^7. Will _TRY_ to stay compatible by updating ^3sv_hidedamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_hidedamage", cvar_string("g_explosive_hidedamage"));
 		if(mode == 2)
@@ -867,7 +867,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_breakable ---> g_rocketminsta_hook_breakable
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_breakable", "g_rocketminsta_hook_breakable") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_breakable") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_breakable^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_hook_breakable^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_hook_breakable", cvar_string("g_explosive_hook_breakable"));
 		if(mode == 2)
@@ -877,7 +877,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_breakable_self ---> g_rocketminsta_hook_breakable_self
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_breakable_self", "g_rocketminsta_hook_breakable_self") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_breakable_self") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_breakable_self^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_hook_breakable_self^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_hook_breakable_self", cvar_string("g_explosive_hook_breakable_self"));
 		if(mode == 2)
@@ -887,7 +887,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_breakable_team ---> g_rocketminsta_hook_breakable_team
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_breakable_team", "g_rocketminsta_hook_breakable_team") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_breakable_team") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_breakable_team^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_hook_breakable_team^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_hook_breakable_team", cvar_string("g_explosive_hook_breakable_team"));
 		if(mode == 2)
@@ -897,7 +897,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_damagefactor ---> g_rocketminsta_hook_damagefactor
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_damagefactor", "g_rocketminsta_hook_damagefactor") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_damagefactor") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_damagefactor^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_hook_damagefactor^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_hook_damagefactor", cvar_string("g_explosive_hook_damagefactor"));
 		if(mode == 2)
@@ -907,7 +907,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_dontpull ---> g_balance_grapplehook_dontpull
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_dontpull", "g_balance_grapplehook_dontpull") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_dontpull") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_dontpull^7. Will _TRY_ to stay compatible by updating ^3g_balance_grapplehook_dontpull^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_grapplehook_dontpull", cvar_string("g_explosive_hook_dontpull"));
 		if(mode == 2)
@@ -917,7 +917,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_dontpull_limit ---> g_balance_grapplehook_dontpull_limit
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_dontpull_limit", "g_balance_grapplehook_dontpull_limit") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_dontpull_limit") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_dontpull_limit^7. Will _TRY_ to stay compatible by updating ^3g_balance_grapplehook_dontpull_limit^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_grapplehook_dontpull_limit", cvar_string("g_explosive_hook_dontpull_limit"));
 		if(mode == 2)
@@ -927,7 +927,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_forcerules ---> g_rocketminsta_hook_forcerules
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_forcerules", "g_rocketminsta_hook_forcerules") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_forcerules") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_forcerules^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_hook_forcerules^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_hook_forcerules", cvar_string("g_explosive_hook_forcerules"));
 		if(mode == 2)
@@ -937,7 +937,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_hook_gravity ---> g_balance_grapplehook_gravity
 	
-	if COMPATVAR_ACTIVE("g_explosive_hook_gravity", "g_balance_grapplehook_gravity") {
+	if COMPATVAR_ACTIVE("g_explosive_hook_gravity") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_hook_gravity^7. Will _TRY_ to stay compatible by updating ^3g_balance_grapplehook_gravity^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_grapplehook_gravity", cvar_string("g_explosive_hook_gravity"));
 		if(mode == 2)
@@ -947,7 +947,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_infomessages ---> sv_infomessages
 	
-	if COMPATVAR_ACTIVE("g_explosive_infomessages", "sv_infomessages") {
+	if COMPATVAR_ACTIVE("g_explosive_infomessages") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_infomessages^7. Will _TRY_ to stay compatible by updating ^3sv_infomessages^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_infomessages", cvar_string("g_explosive_infomessages"));
 		if(mode == 2)
@@ -957,7 +957,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_ip2country_server ---> sv_ip2country_server
 	
-	if COMPATVAR_ACTIVE("g_explosive_ip2country_server", "sv_ip2country_server") {
+	if COMPATVAR_ACTIVE("g_explosive_ip2country_server") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_ip2country_server^7. Will _TRY_ to stay compatible by updating ^3sv_ip2country_server^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_ip2country_server", cvar_string("g_explosive_ip2country_server"));
 		if(mode == 2)
@@ -967,7 +967,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_ip2country_timeout ---> sv_ip2country_timeout
 	
-	if COMPATVAR_ACTIVE("g_explosive_ip2country_timeout", "sv_ip2country_timeout") {
+	if COMPATVAR_ACTIVE("g_explosive_ip2country_timeout") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_ip2country_timeout^7. Will _TRY_ to stay compatible by updating ^3sv_ip2country_timeout^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_ip2country_timeout", cvar_string("g_explosive_ip2country_timeout"));
 		if(mode == 2)
@@ -977,7 +977,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_keyhunt_capheals ---> g_keyhunt_capheals
 	
-	if COMPATVAR_ACTIVE("g_explosive_keyhunt_capheals", "g_keyhunt_capheals") {
+	if COMPATVAR_ACTIVE("g_explosive_keyhunt_capheals") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_keyhunt_capheals^7. Will _TRY_ to stay compatible by updating ^3g_keyhunt_capheals^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_keyhunt_capheals", cvar_string("g_explosive_keyhunt_capheals"));
 		if(mode == 2)
@@ -987,7 +987,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_count ---> g_rocketminsta_laser_count
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_count", "g_rocketminsta_laser_count") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_count") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_count^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_count^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_count", cvar_string("g_explosive_laser_count"));
 		if(mode == 2)
@@ -997,7 +997,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_damage ---> g_rocketminsta_laser_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_damage", "g_rocketminsta_laser_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_damage^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_damage", cvar_string("g_explosive_laser_damage"));
 		if(mode == 2)
@@ -1007,7 +1007,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_force ---> g_rocketminsta_laser_force
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_force", "g_rocketminsta_laser_force") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_force") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_force^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_force^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_force", cvar_string("g_explosive_laser_force"));
 		if(mode == 2)
@@ -1017,7 +1017,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_lifetime ---> g_rocketminsta_laser_lifetime
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_lifetime", "g_rocketminsta_laser_lifetime") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_lifetime") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_lifetime^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_lifetime^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_lifetime", cvar_string("g_explosive_laser_lifetime"));
 		if(mode == 2)
@@ -1027,7 +1027,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_new ---> g_rocketminsta_laser_new
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_new", "g_rocketminsta_laser_new") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_new") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_new^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_new^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_new", cvar_string("g_explosive_laser_new"));
 		if(mode == 2)
@@ -1037,7 +1037,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_radius ---> g_rocketminsta_laser_radius
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_radius", "g_rocketminsta_laser_radius") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_radius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_radius^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_radius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_radius", cvar_string("g_explosive_laser_radius"));
 		if(mode == 2)
@@ -1047,7 +1047,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_rapid ---> g_rocketminsta_laser_rapid
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_rapid", "g_rocketminsta_laser_rapid") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_rapid") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_rapid^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_rapid^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_rapid", cvar_string("g_explosive_laser_rapid"));
 		if(mode == 2)
@@ -1057,7 +1057,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_rapid_delay ---> g_rocketminsta_laser_rapid_delay
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_rapid_delay", "g_rocketminsta_laser_rapid_delay") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_rapid_delay") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_rapid_delay^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_rapid_delay^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_rapid_delay", cvar_string("g_explosive_laser_rapid_delay"));
 		if(mode == 2)
@@ -1067,7 +1067,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_rapid_refire ---> g_rocketminsta_laser_rapid_refire
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_rapid_refire", "g_rocketminsta_laser_rapid_refire") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_rapid_refire") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_rapid_refire^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_rapid_refire^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_rapid_refire", cvar_string("g_explosive_laser_rapid_refire"));
 		if(mode == 2)
@@ -1077,7 +1077,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_refire ---> g_rocketminsta_laser_refire
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_refire", "g_rocketminsta_laser_refire") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_refire") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_refire^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_refire^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_refire", cvar_string("g_explosive_laser_refire"));
 		if(mode == 2)
@@ -1087,7 +1087,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_speed ---> g_rocketminsta_laser_speed
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_speed", "g_rocketminsta_laser_speed") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_speed") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_speed^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_speed^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_speed", cvar_string("g_explosive_laser_speed"));
 		if(mode == 2)
@@ -1097,7 +1097,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_spread ---> g_rocketminsta_laser_spread
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_spread", "g_rocketminsta_laser_spread") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_spread") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_spread^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_spread^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_spread", cvar_string("g_explosive_laser_spread"));
 		if(mode == 2)
@@ -1107,7 +1107,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_spread_randomize ---> g_rocketminsta_laser_spread_randomize
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_spread_randomize", "g_rocketminsta_laser_spread_randomize") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_spread_randomize") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_spread_randomize^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_spread_randomize^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_spread_randomize", cvar_string("g_explosive_laser_spread_randomize"));
 		if(mode == 2)
@@ -1117,7 +1117,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_teamcolor ---> g_rocketminsta_laser_teamcolor
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_teamcolor", "g_rocketminsta_laser_teamcolor") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_teamcolor") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_teamcolor^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_teamcolor^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_teamcolor", cvar_string("g_explosive_laser_teamcolor"));
 		if(mode == 2)
@@ -1127,7 +1127,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_velocity_influence ---> g_rocketminsta_laser_velocity_influence
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_velocity_influence", "g_rocketminsta_laser_velocity_influence") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_velocity_influence") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_velocity_influence^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_velocity_influence^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_velocity_influence", cvar_string("g_explosive_laser_velocity_influence"));
 		if(mode == 2)
@@ -1137,7 +1137,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_laser_zspread ---> g_rocketminsta_laser_zspread
 	
-	if COMPATVAR_ACTIVE("g_explosive_laser_zspread", "g_rocketminsta_laser_zspread") {
+	if COMPATVAR_ACTIVE("g_explosive_laser_zspread") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_laser_zspread^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_laser_zspread^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_laser_zspread", cvar_string("g_explosive_laser_zspread"));
 		if(mode == 2)
@@ -1147,7 +1147,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_minsta_damage ---> g_balance_minstanex_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_minsta_damage", "g_balance_minstanex_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_minsta_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_minsta_damage^7. Will _TRY_ to stay compatible by updating ^3g_balance_minstanex_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_minstanex_damage", cvar_string("g_explosive_minsta_damage"));
 		if(mode == 2)
@@ -1157,7 +1157,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_minsta_force ---> g_balance_minstanex_force
 	
-	if COMPATVAR_ACTIVE("g_explosive_minsta_force", "g_balance_minstanex_force") {
+	if COMPATVAR_ACTIVE("g_explosive_minsta_force") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_minsta_force^7. Will _TRY_ to stay compatible by updating ^3g_balance_minstanex_force^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_minstanex_force", cvar_string("g_explosive_minsta_force"));
 		if(mode == 2)
@@ -1167,7 +1167,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_norecoil ---> g_rocketminsta_norecoil
 	
-	if COMPATVAR_ACTIVE("g_explosive_norecoil", "g_rocketminsta_norecoil") {
+	if COMPATVAR_ACTIVE("g_explosive_norecoil") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_norecoil^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_norecoil^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_norecoil", cvar_string("g_explosive_norecoil"));
 		if(mode == 2)
@@ -1177,7 +1177,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_oldnexmodel ---> sv_oldnexmodel
 	
-	if COMPATVAR_ACTIVE("g_explosive_oldnexmodel", "sv_oldnexmodel") {
+	if COMPATVAR_ACTIVE("g_explosive_oldnexmodel") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_oldnexmodel^7. Will _TRY_ to stay compatible by updating ^3sv_oldnexmodel^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_oldnexmodel", cvar_string("g_explosive_oldnexmodel"));
 		if(mode == 2)
@@ -1187,7 +1187,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_oldnexsound ---> sv_oldnexsound
 	
-	if COMPATVAR_ACTIVE("g_explosive_oldnexsound", "sv_oldnexsound") {
+	if COMPATVAR_ACTIVE("g_explosive_oldnexsound") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_oldnexsound^7. Will _TRY_ to stay compatible by updating ^3sv_oldnexsound^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_oldnexsound", cvar_string("g_explosive_oldnexsound"));
 		if(mode == 2)
@@ -1197,7 +1197,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_powerupsonbases ---> g_balance_powerupsonbases
 	
-	if COMPATVAR_ACTIVE("g_explosive_powerupsonbases", "g_balance_powerupsonbases") {
+	if COMPATVAR_ACTIVE("g_explosive_powerupsonbases") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_powerupsonbases^7. Will _TRY_ to stay compatible by updating ^3g_balance_powerupsonbases^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_balance_powerupsonbases", cvar_string("g_explosive_powerupsonbases"));
 		if(mode == 2)
@@ -1207,7 +1207,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_randomspawns ---> sv_randomspawns
 	
-	if COMPATVAR_ACTIVE("g_explosive_randomspawns", "sv_randomspawns") {
+	if COMPATVAR_ACTIVE("g_explosive_randomspawns") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_randomspawns^7. Will _TRY_ to stay compatible by updating ^3sv_randomspawns^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_randomspawns", cvar_string("g_explosive_randomspawns"));
 		if(mode == 2)
@@ -1217,7 +1217,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_rmcustom_votable ---> sv_rmcustom_votable
 	
-	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable", "sv_rmcustom_votable") {
+	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_rmcustom_votable^7. Will _TRY_ to stay compatible by updating ^3sv_rmcustom_votable^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_rmcustom_votable", cvar_string("g_explosive_rmcustom_votable"));
 		if(mode == 2)
@@ -1227,7 +1227,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_rmcustom_votable_restrict ---> sv_rmcustom_votable_restrict
 	
-	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable_restrict", "sv_rmcustom_votable_restrict") {
+	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable_restrict") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_rmcustom_votable_restrict^7. Will _TRY_ to stay compatible by updating ^3sv_rmcustom_votable_restrict^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_rmcustom_votable_restrict", cvar_string("g_explosive_rmcustom_votable_restrict"));
 		if(mode == 2)
@@ -1237,7 +1237,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_rmcustom_votable_restrictions ---> sv_rmcustom_votable_restrictions
 	
-	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable_restrictions", "sv_rmcustom_votable_restrictions") {
+	if COMPATVAR_ACTIVE("g_explosive_rmcustom_votable_restrictions") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_rmcustom_votable_restrictions^7. Will _TRY_ to stay compatible by updating ^3sv_rmcustom_votable_restrictions^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_rmcustom_votable_restrictions", cvar_string("g_explosive_rmcustom_votable_restrictions"));
 		if(mode == 2)
@@ -1247,7 +1247,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_10hp ---> g_rocketminsta_score_10hp
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_10hp", "g_rocketminsta_score_10hp") {
+	if COMPATVAR_ACTIVE("g_explosive_score_10hp") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_10hp^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_10hp^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_10hp", cvar_string("g_explosive_score_10hp"));
 		if(mode == 2)
@@ -1257,7 +1257,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_1hp ---> g_rocketminsta_score_1hp
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_1hp", "g_rocketminsta_score_1hp") {
+	if COMPATVAR_ACTIVE("g_explosive_score_1hp") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_1hp^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_1hp^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_1hp", cvar_string("g_explosive_score_1hp"));
 		if(mode == 2)
@@ -1267,7 +1267,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_20hp ---> g_rocketminsta_score_20hp
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_20hp", "g_rocketminsta_score_20hp") {
+	if COMPATVAR_ACTIVE("g_explosive_score_20hp") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_20hp^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_20hp^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_20hp", cvar_string("g_explosive_score_20hp"));
 		if(mode == 2)
@@ -1277,7 +1277,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_30hp ---> g_rocketminsta_score_30hp
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_30hp", "g_rocketminsta_score_30hp") {
+	if COMPATVAR_ACTIVE("g_explosive_score_30hp") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_30hp^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_30hp^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_30hp", cvar_string("g_explosive_score_30hp"));
 		if(mode == 2)
@@ -1287,7 +1287,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_hookfrag ---> g_rocketminsta_score_hookfrag
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_hookfrag", "g_rocketminsta_score_hookfrag") {
+	if COMPATVAR_ACTIVE("g_explosive_score_hookfrag") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_hookfrag^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_hookfrag^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_hookfrag", cvar_string("g_explosive_score_hookfrag"));
 		if(mode == 2)
@@ -1297,7 +1297,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_score_laserfrag ---> g_rocketminsta_score_laserfrag
 	
-	if COMPATVAR_ACTIVE("g_explosive_score_laserfrag", "g_rocketminsta_score_laserfrag") {
+	if COMPATVAR_ACTIVE("g_explosive_score_laserfrag") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_score_laserfrag^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_score_laserfrag^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_score_laserfrag", cvar_string("g_explosive_score_laserfrag"));
 		if(mode == 2)
@@ -1307,7 +1307,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_secretvotes ---> sv_vote_secretcommands
 	
-	if COMPATVAR_ACTIVE("g_explosive_secretvotes", "sv_vote_secretcommands") {
+	if COMPATVAR_ACTIVE("g_explosive_secretvotes") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_secretvotes^7. Will _TRY_ to stay compatible by updating ^3sv_vote_secretcommands^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_secretcommands", cvar_string("g_explosive_secretvotes"));
 		if(mode == 2)
@@ -1317,7 +1317,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_secretvotes_enabled ---> sv_vote_secretcommands_enabled
 	
-	if COMPATVAR_ACTIVE("g_explosive_secretvotes_enabled", "sv_vote_secretcommands_enabled") {
+	if COMPATVAR_ACTIVE("g_explosive_secretvotes_enabled") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_secretvotes_enabled^7. Will _TRY_ to stay compatible by updating ^3sv_vote_secretcommands_enabled^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_secretcommands_enabled", cvar_string("g_explosive_secretvotes_enabled"));
 		if(mode == 2)
@@ -1327,7 +1327,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_shownames ---> sv_shownames
 	
-	if COMPATVAR_ACTIVE("g_explosive_shownames", "sv_shownames") {
+	if COMPATVAR_ACTIVE("g_explosive_shownames") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_shownames^7. Will _TRY_ to stay compatible by updating ^3sv_shownames^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_shownames", cvar_string("g_explosive_shownames"));
 		if(mode == 2)
@@ -1337,7 +1337,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_showspecs ---> sv_showspecs
 	
-	if COMPATVAR_ACTIVE("g_explosive_showspecs", "sv_showspecs") {
+	if COMPATVAR_ACTIVE("g_explosive_showspecs") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_showspecs^7. Will _TRY_ to stay compatible by updating ^3sv_showspecs^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_showspecs", cvar_string("g_explosive_showspecs"));
 		if(mode == 2)
@@ -1347,7 +1347,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_showspecs_hidefromplayers ---> sv_showspecs_hidefromplayers
 	
-	if COMPATVAR_ACTIVE("g_explosive_showspecs_hidefromplayers", "sv_showspecs_hidefromplayers") {
+	if COMPATVAR_ACTIVE("g_explosive_showspecs_hidefromplayers") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_showspecs_hidefromplayers^7. Will _TRY_ to stay compatible by updating ^3sv_showspecs_hidefromplayers^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_showspecs_hidefromplayers", cvar_string("g_explosive_showspecs_hidefromplayers"));
 		if(mode == 2)
@@ -1357,7 +1357,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_spawnclosetoteam ---> g_spawnclosetoteam
 	
-	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam", "g_spawnclosetoteam") {
+	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_spawnclosetoteam^7. Will _TRY_ to stay compatible by updating ^3g_spawnclosetoteam^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_spawnclosetoteam", cvar_string("g_explosive_spawnclosetoteam"));
 		if(mode == 2)
@@ -1367,7 +1367,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_spawnclosetoteam_mindist_enemies ---> g_spawnclosetoteam_mindist_enemies
 	
-	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam_mindist_enemies", "g_spawnclosetoteam_mindist_enemies") {
+	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam_mindist_enemies") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_spawnclosetoteam_mindist_enemies^7. Will _TRY_ to stay compatible by updating ^3g_spawnclosetoteam_mindist_enemies^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_spawnclosetoteam_mindist_enemies", cvar_string("g_explosive_spawnclosetoteam_mindist_enemies"));
 		if(mode == 2)
@@ -1377,7 +1377,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_spawnclosetoteam_mindist_team ---> g_spawnclosetoteam_mindist_team
 	
-	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam_mindist_team", "g_spawnclosetoteam_mindist_team") {
+	if COMPATVAR_ACTIVE("g_explosive_spawnclosetoteam_mindist_team") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_spawnclosetoteam_mindist_team^7. Will _TRY_ to stay compatible by updating ^3g_spawnclosetoteam_mindist_team^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_spawnclosetoteam_mindist_team", cvar_string("g_explosive_spawnclosetoteam_mindist_team"));
 		if(mode == 2)
@@ -1387,7 +1387,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_speedaward_ownaccel ---> sv_speedaward_ownaccel
 	
-	if COMPATVAR_ACTIVE("g_explosive_speedaward_ownaccel", "sv_speedaward_ownaccel") {
+	if COMPATVAR_ACTIVE("g_explosive_speedaward_ownaccel") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_speedaward_ownaccel^7. Will _TRY_ to stay compatible by updating ^3sv_speedaward_ownaccel^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_speedaward_ownaccel", cvar_string("g_explosive_speedaward_ownaccel"));
 		if(mode == 2)
@@ -1397,7 +1397,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_damage ---> g_rocketminsta_splash_damage
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_damage", "g_rocketminsta_splash_damage") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_damage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_damage^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_damage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_damage", cvar_string("g_explosive_splash_damage"));
 		if(mode == 2)
@@ -1407,7 +1407,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_edgedamage ---> g_rocketminsta_splash_edgedamage
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_edgedamage", "g_rocketminsta_splash_edgedamage") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_edgedamage") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_edgedamage^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_edgedamage^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_edgedamage", cvar_string("g_explosive_splash_edgedamage"));
 		if(mode == 2)
@@ -1417,7 +1417,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_force ---> g_rocketminsta_splash_force
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_force", "g_rocketminsta_splash_force") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_force") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_force^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_force^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_force", cvar_string("g_explosive_splash_force"));
 		if(mode == 2)
@@ -1427,7 +1427,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_radius ---> g_rocketminsta_splash_radius
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_radius", "g_rocketminsta_splash_radius") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_radius") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_radius^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_radius^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_radius", cvar_string("g_explosive_splash_radius"));
 		if(mode == 2)
@@ -1437,7 +1437,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_selfonly ---> g_rocketminsta_splash_selfonly
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_selfonly", "g_rocketminsta_splash_selfonly") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_selfonly") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_selfonly^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_selfonly^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_selfonly", cvar_string("g_explosive_splash_selfonly"));
 		if(mode == 2)
@@ -1447,7 +1447,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_splash_velocity_influence ---> g_rocketminsta_splash_velocity_influence
 	
-	if COMPATVAR_ACTIVE("g_explosive_splash_velocity_influence", "g_rocketminsta_splash_velocity_influence") {
+	if COMPATVAR_ACTIVE("g_explosive_splash_velocity_influence") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_splash_velocity_influence^7. Will _TRY_ to stay compatible by updating ^3g_rocketminsta_splash_velocity_influence^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_rocketminsta_splash_velocity_influence", cvar_string("g_explosive_splash_velocity_influence"));
 		if(mode == 2)
@@ -1457,7 +1457,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_vote_anonymous ---> sv_vote_anonymous
 	
-	if COMPATVAR_ACTIVE("g_explosive_vote_anonymous", "sv_vote_anonymous") {
+	if COMPATVAR_ACTIVE("g_explosive_vote_anonymous") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_vote_anonymous^7. Will _TRY_ to stay compatible by updating ^3sv_vote_anonymous^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_anonymous", cvar_string("g_explosive_vote_anonymous"));
 		if(mode == 2)
@@ -1467,7 +1467,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_vote_mindelay ---> sv_vote_mindelay
 	
-	if COMPATVAR_ACTIVE("g_explosive_vote_mindelay", "sv_vote_mindelay") {
+	if COMPATVAR_ACTIVE("g_explosive_vote_mindelay") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_vote_mindelay^7. Will _TRY_ to stay compatible by updating ^3sv_vote_mindelay^7, but no stability is guaranteed at this point!\n");
 		cvar_set("sv_vote_mindelay", cvar_string("g_explosive_vote_mindelay"));
 		if(mode == 2)
@@ -1477,7 +1477,7 @@ void RM_CvarCompat() {
 	
 	// g_explosive_weaponarena_limitammo ---> g_weaponarena_limitammo
 	
-	if COMPATVAR_ACTIVE("g_explosive_weaponarena_limitammo", "g_weaponarena_limitammo") {
+	if COMPATVAR_ACTIVE("g_explosive_weaponarena_limitammo") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_weaponarena_limitammo^7. Will _TRY_ to stay compatible by updating ^3g_weaponarena_limitammo^7, but no stability is guaranteed at this point!\n");
 		cvar_set("g_weaponarena_limitammo", cvar_string("g_explosive_weaponarena_limitammo"));
 		if(mode == 2)

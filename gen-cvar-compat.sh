@@ -8,7 +8,7 @@ function gen-qc {
 //	DO NOT LOOK, EITHER
 //
 
-#define COMPATVAR_ACTIVE(v,n) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS) && cvar_string(v) != cvar_string(n) && cvar_string(v) != "__COMPATVAR_DISABLED__")
+#define COMPATVAR_ACTIVE(v) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS) && cvar_string(v) != "__COMPATVAR_DISABLED__")
 
 void RM_CvarCompat() {
 	float corrections;
@@ -26,7 +26,7 @@ $(cat cvars.compat | while read line; do
 cat <<EOB
 	// $old ---> $new
 	
-	if COMPATVAR_ACTIVE("$old", "$new") {
+	if COMPATVAR_ACTIVE("$old") {
 		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3$old^7. Will _TRY_ to stay compatible by updating ^3$new^7, but no stability is guaranteed at this point!\n");
 		cvar_set("$new", cvar_string("$old"));
 		if(mode == 2)
