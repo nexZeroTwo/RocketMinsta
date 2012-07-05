@@ -48,17 +48,19 @@ void JB_Imprison(entity attacker) {
 		return;
 	}
 	
-	attacker.jb_fragrow += 1;
 	self.jb_fragrow = 0;
 	
 	if(attacker.classname == "player")
-	if(attacker.team != self.team)
-	if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
-	if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
-		HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
-							   strcat(ftos(attacker.jb_fragrow), " frags in a row")
-		);
-		attacker.jb_fragrow = 0;
+	if(attacker.team != self.team) {
+		attacker.jb_fragrow += 1;
+		
+		if(cvar("g_explosive_jailbreak_frag_bonusgrenade"))
+		if(attacker.jb_fragrow >= cvar("g_explosive_jailbreak_frag_bonusgrenade_requirement")) {
+			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_explosive_jailbreak_frag_bonusgrenade_type")), 1,
+								   strcat(ftos(attacker.jb_fragrow), " frags in a row")
+			);
+			attacker.jb_fragrow = 0;
+		}
 	}
 	
 	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
