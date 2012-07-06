@@ -15,7 +15,7 @@ TARGET="$(readlink -m "$TARGET")"
 
 if [ -d "$TARGET" ]; then
 	echo " --- Entering $TARGET --- "
-	ls "$TARGET" | while read line; do
+	ls "$TARGET" | grep -v '\.tmp$' | while read line; do
 		$0 "$TARGET/$line"
 	done
 	exit 0
