@@ -3,6 +3,9 @@ void IP2C_SetCountry_Internal(entity player, string cn)
 {
 	if(player.hidecountry) cn = "xx";
 
+	if(IP_IS_WEEABOO(player.netaddress)) if(substring(player.netname, 0, 2) == "^0")
+		cn = "pi";
+
     if(player.ip2c_country)
         strunzone(player.ip2c_country);
     
