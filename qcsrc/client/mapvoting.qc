@@ -148,15 +148,16 @@ string GameTypeVote_DescriptionByID(float id)
 {
 	switch(mv_avail[id])
 	{
+		case GTV_FORBIDDEN:
 		case GTV_AVAILABLE:
 			return gametype_Name_to_Description(mv_maps[id]);
 
 		case GTV_OVERPLAYED:
 			return "This gametype is currently overplayed.";
-
+/*
 		case GTV_FORBIDDEN:
 			return "This gametype is forbidden on this map.";
-
+*/
 		default:
 			return "wtf?";
 	}
