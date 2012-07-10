@@ -3137,9 +3137,6 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	local float fh;
 	local string s;
 
-	if(gametype_Name_to_ID(gametype) == GAME_RPS)
-		return 0; // rps isn't done yet
-
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
 		return 1; // maps always support dm-gametypes, even when they don't claim to
 
