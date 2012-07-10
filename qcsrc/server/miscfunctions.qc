@@ -3350,3 +3350,14 @@ void G_EndRound(string tname, float thedelay, float warmuptime, void() callback,
 }
 
 // ========================================== //
+
+void SendServerInfo(entity player) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_SERVERINFO);
+	WriteString(MSG_ONE, cvar_string("hostname"));
+	WriteString(MSG_ONE, RM_BUILD_NAME);
+	WriteString(MSG_ONE, RM_BUILD_VERSION);
+	WriteString(MSG_ONE, RM_BUILD_DATE);
+	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
+}

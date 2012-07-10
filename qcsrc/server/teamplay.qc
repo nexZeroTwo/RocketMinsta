@@ -474,6 +474,11 @@ string GetClientVersionMessage() {
 	return versionmsg;
 }
 
+//
+//	This MOTD code is a piece of crap
+//
+
+#if 0
 void RM_WelcomeMessage(entity pl)
 {
 	string s, motd;
@@ -650,7 +655,7 @@ void PrintWelcomeMessage(entity pl)
 	centerprint(pl, s);
 */
 }
-
+#endif
 
 void SetPlayerColors(entity pl, float _color)
 {

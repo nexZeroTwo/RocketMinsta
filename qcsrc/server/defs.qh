@@ -256,8 +256,6 @@ float alreadychangedlevel;
 
 .float runes;
 
-
-.float welcomemessage_time;
 .float version;
 
 // Laser target for laser-guided weapons

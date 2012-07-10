@@ -1714,8 +1714,6 @@ void ClientConnect (void)
 
 	bprint("\n");
 
-	self.welcomemessage_time = 0;
-
 	stuffcmd(self, strcat(clientstuff, "\n"));
 	stuffcmd(self, strcat("exec maps/", mapname, ".cfg\n"));
 	stuffcmd(self, "cl_particles_reloadeffects\n");
@@ -1827,6 +1825,7 @@ void ClientConnect (void)
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
+	SendServerInfo(self);
 	
 	totalclients++;
 }
@@ -2686,11 +2685,9 @@ void ObserverThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2708,18 +2705,16 @@ void ObserverThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 }
 
 void SpectatorThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2729,7 +2724,6 @@ void SpectatorThink()
 			}
 			WriteSpectatorInfo(self.enemy);
 		} else if (self.BUTTON_ATCK2) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.classname = "observer";
 			PutClientInServer();
@@ -2748,7 +2742,7 @@ void SpectatorThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 	self.flags |= FL_CLIENT | FL_NOTARGET;
 }
 
@@ -2787,6 +2781,7 @@ void PlayerPreThink (void)
 	}
 
 	// version nagging
+#if 0
 	if(self.version_nagtime)
 		if(self.cvar_g_nexuizversion)
 			if(time > self.version_nagtime)
@@ -2817,6 +2812,7 @@ void PlayerPreThink (void)
 				}
 				self.version_nagtime = 0;
 			}
+#endif
 
 	// GOD MODE info
 	if(!(self.flags & FL_GODMODE)) if(self.max_armorvalue)
@@ -2841,7 +2837,7 @@ void PlayerPreThink (void)
 
 		CheckRules_Player();
 
-		PrintWelcomeMessage(self);
+//		PrintWelcomeMessage(self);
 
 		if (intermission_running)
 		{

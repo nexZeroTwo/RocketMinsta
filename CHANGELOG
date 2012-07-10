@@ -75,3 +75,4 @@ A question mark following a contributor's name means that I don't remember/exact
 * New rm-custom config: FastCRA [Akari]
 * Added a QuakeC config for the Geany IDE [Akari]
 * Renamed all of the RM cvars [Akari]
+* New serverinfo and MOTD display [Akari]

@@ -1974,103 +1974,89 @@ void Net_Camera() {
 	jb_camera_expiretime = time + ReadShort();
 }
 
+void Net_ServerInfo() {
+	sv_hostname = strzone(ReadString());
+	sv_rm_build = strzone(ReadString());
+	sv_rm_version = strzone(ReadString());
+	sv_rm_date = strzone(ReadString());
+	sv_motd = strzone(ReadString());
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
 float CSQC_Parse_TempEntity()
 {
-	local float bHandled;
-		bHandled  = true;
 	// Acquire TE ID
 	local float nTEID;
-		nTEID = ReadByte();
+	nTEID = ReadByte();
 
-		// NOTE: Could just do return instead of break...
 	switch(nTEID)
 	{
 		case TE_CSQC_PICTURE:
 			Net_MapVote_Picture();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_RACE:
 			Net_ReadRace();
-			bHandled = true;
-			break;
+			return TRUE;
 		case 13: // TE_BEAM
 			Net_GrapplingHook();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPAWN:
 			Net_ReadSpawn();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_ZCURVEPARTICLES:
 			Net_ReadZCurveParticles();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_NEXGUNBEAMPARTICLE:
 			Net_ReadNexgunBeamParticle();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_LIGHTNINGARC:
             Net_ReadLightningarc();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPECINFO:
 			Net_ReadSpecInfo();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTE:
 			Net_VoteDialog(ReadByte());
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTERESET:
 			Net_VoteDialogReset();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MADOKAPRINT:
 			Net_ReadMadokaPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MORNINGRESCUE:
 			Net_ReadMorningRescue();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_CLEARBIGPRINT:
             Net_ReadClearBigPrint();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_SPEEDRECORD:
 			Net_ReadSpeedRecord();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH:
 			Net_ReadHudFlash(FALSE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VIPINFO:
 			Net_ReadVIPInfo(ReadByte());
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_CAMERA:
 			Net_Camera();
-			bHandled = true;
-			break;
-		default:
-			// No special logic for this temporary entity; return 0 so the engine can handle it
-			bHandled = false;
-			break;
+			return TRUE;
+		case TE_CSQC_SERVERINFO:
+			Net_ServerInfo();
+			return TRUE;
 	}
 
-	return bHandled;
+	// pass to the engine
+	return FALSE;
 }
 
 string getcommandkey(string text, string command)

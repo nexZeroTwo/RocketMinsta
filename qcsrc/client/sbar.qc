@@ -2626,7 +2626,9 @@ void drawstringright(vector position, string text, vector scale, vector rgb, flo
 
 void drawstringcenter(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x);
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x);
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x);
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
@@ -2640,13 +2642,17 @@ void drawcolorcodedstringcenter(vector position, string text, vector scale, floa
 
 void drawstringcenter_offset(vector position, string text, vector scale, vector rgb, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x) - offs;
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x) - offs;
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x) - offs;
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter_offset(vector position, string text, vector scale, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x) - offs;
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x) - offs;
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x) - offs;
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
@@ -2787,6 +2793,57 @@ void Sbar_MorningRescue(void)
 			drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
 		}
 	}
+}
+
+float movealpha;
+
+void Sbar_ServerInfo() {
+	if(spectatee_status != -1)
+		return;
+	
+	if(pmove_vel_x || pmove_vel_y || pmove_vel_z)
+		movealpha = approach(movealpha, 1, 3 * drawframetime);
+	else
+		movealpha = approach(movealpha, 0, 3 * drawframetime);
+	
+	vector pos = '0 0.6 0' * vid_conheight;
+	float a = 0.5 * (1 - sbar_scoreboard_fade_alpha - movealpha);
+	
+	if(a <= 0)
+		return;
+	
+	vector sz_big  = sbar_fontsize_spec * a * 2;
+	vector sz_norm = sbar_fontsize * a * 2;
+	
+	drawfont = sbar_bigfont;
+	drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+	pos_y += sz_big_y + sz_norm_y * 0.5;
+	drawfont = sbar_font;
+	
+	drawstringcenter(pos, strcat(sv_rm_build, " (", sv_rm_version, ")"), sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
+	pos_y += sz_norm_y;
+	drawstringcenter(pos, sv_rm_date, sz_norm, '1 1 1', a, DRAWFLAG_NORMAL);
+	pos_y += sz_norm_y * 1.5;
+	drawcolorcodedstringcenter(pos, strcat("Playing ^5", gametype_ID_to_LongName(gametype), " ^7on ^2", shortmapname), sz_norm, a, DRAWFLAG_NORMAL);
+	
+	if(sv_motd == "")
+		return;
+	
+	pos_y += sz_big_y * 1.5;
+	drawfont = sbar_bigfont;
+	drawcolorcodedstringcenter(pos, "Message of The Day", sz_big, a, DRAWFLAG_NORMAL);
+	pos_y += sz_big_y + sz_norm_y * 0.5;
+	drawfont = sbar_font;
+	
+	float n = tokenizebyseparator(sv_motd, "\n");
+	float i;
+	
+	for(i = 0; i < n; ++i) {
+		drawcolorcodedstringcenter(pos, argv(i), sz_norm, a, DRAWFLAG_NORMAL);
+		pos_y += sz_norm_y;
+	}
+	
+	drawfont = sbar_font;
 }
 
 float vote_active; // is there an active vote?
@@ -4694,6 +4751,8 @@ void Sbar_Draw (void)
 		}
 	}
 	#endif
+
+	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)
 	{
