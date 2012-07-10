@@ -1,13 +1,11 @@
 *.swp
 *.dat
 *.lno
+*.log
 config.sh
 updconfig.sh
 releaseconfig.sh
 releaseconfig_*.sh
-qcsrc/client/fteqcc.log
-qcsrc/server/fteqcc.log
-qcsrc/menu/fteqcc.log
 qcsrc/common/rm_auto.qh
 release/*
 !release/.*

@@ -9,7 +9,7 @@ CSPROGS="$NEXDATA/rocketminsta_cl.dat"
 
 # List of QuakeC compillers the script will attempt to use
 # Full and relative paths are allowed
-QCC=("fteqcc" "qcc" "$HOME/bin/fteqcc" "$HOME/bin/qcc")
+QCC=("rmqcc" "fteqcc" "qcc" "$HOME/bin/rmqcc" "$HOME/bin/fteqcc" "$HOME/bin/qcc")
 
 # Additional flags to pass to the QuakeC compiller
 QCCFLAGS="-O3"
