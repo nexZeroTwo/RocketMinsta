@@ -12,7 +12,6 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added some new HUD/scoreboard animations [Akari]
 * Integrated features and fixes from NexuizEx 0.3.1, a RocketMinsta v1.5.0 fork: http://naqua.net/p/nex/ [Blitter, Akari]:
 	New, more reliable system for handling gametypes and mapinfo [Blitter, Akari]
-	The Infection gametype [Blitter, Akari]		-- TODO: Fix this gametype!
 	The Precious gametype [Blitter, Akari]
 	Increased the g_maplist_votable limit up to 16 [Blitter]
 	An option to disable the ip2c support without clearing the ip2c server URL [Blitter]
