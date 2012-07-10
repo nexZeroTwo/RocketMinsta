@@ -6,12 +6,14 @@ else
 	cat <<EOF
 Usage: $0 targetfile
 
-Upgrades references to RM cvars in targetfile, which may be either a single file or a directory, in which case all files withing that directory will be converted recursively.
+Upgrades references to RM cvars to v1.6.0 format in targetfile, which may be either a single file or a directory, in which case all files withing that directory will be converted recursively.
 EOF
 	exit 1
 fi
 
-TARGET="$(readlink -m "$TARGET")"
+TARGET="$(readlink -f "$TARGET")"
+BASEDIR="$(readlink -f "$0" | sed -e 's@/[^/]*$@@')"
+RAND="$RANDOM"
 
 if [ -d "$TARGET" ]; then
 	echo " --- Entering $TARGET --- "
@@ -22,4 +24,5 @@ if [ -d "$TARGET" ]; then
 fi
 
 echo "ALTERING: $TARGET"
-./cvars.sed "$TARGET" > "$TARGET.tmp" && mv "$TARGET.tmp" "$TARGET"
+"$BASEDIR"/cvars.sed "$TARGET" > "$TARGET.$RAND.tmp" && mv "$TARGET.$RAND.tmp" "$TARGET"
+rm -fv "$TARGET.$RAND.tmp"
