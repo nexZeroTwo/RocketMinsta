@@ -1355,6 +1355,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_oldfag);
 	return TRUE;
 }
 

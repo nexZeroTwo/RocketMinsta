@@ -175,6 +175,9 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 	float a, i, n = tokenizebyseparator(s, "\n");
 	float alpha = bound(0, 0.5 * (time - mv_starttime), 1);
 	
+	if(sv_oldfag)
+		alpha = 1;
+	
 	if(mv_avail[id] != GTV_AVAILABLE)
 		a = 0.3; //0.5
 	else
@@ -217,7 +220,14 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	
 	if(fromserver)
 		angle = 0;
-
+	
+	if(sv_oldfag) {
+		alpha = 1;
+		
+		if(alpha2 != 1)
+			alpha2 = 0.3;
+	}
+	
 	isize *= alpha + ha * 0.07;
 	isize -= sbar_fontsize_y; // respect the text when calculating the image size
 
@@ -239,9 +249,12 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	pos_x = pos_x + text_size*0.5 - img_size_x*0.5;
 	pos_y = pos_y - img_size_y;
 
-	pos += sbar_border_thickness * '1 1 0';
-	img_size -= (sbar_border_thickness * 2) * '1 1 0';
-	
+	if(sv_oldfag) {
+		pos += sbar_border_thickness * '1 1 0';
+		img_size -= (sbar_border_thickness * 2) * '1 1 0';
+		drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
+	}
+
 	if(pic != "") {
 		if(!fromserver)
 			drawpic_rotated(pos, pic, img_size, '1 1 1' * alpha2, angle, alpha * alpha2, DRAWFLAG_NORMAL);
@@ -369,6 +382,9 @@ void MapVote_Draw()
 		float rawalpha = bound(0, (time - mv_starttime), 1);
 		float alpha = ipol_swingOut(rawalpha);
 
+		if(sv_oldfag)
+			rawalpha = alpha = 1;
+
 		vector img_size;
 		vector img_fullsize;
 
@@ -415,6 +431,10 @@ void MapVote_Draw()
 			ha = bound(0, ha + frametime * ha_speed, 1);
 		else
 			ha = bound(0, ha - frametime * ha_speed, 1);
+		
+		if(sv_oldfag)
+			ha = 0;
+		
 		mv_hoveralpha[i] = ha;
 		
 		if(!gametypevote && i == mv_selection)
@@ -566,7 +586,7 @@ void MapVote_Init()
 		print("^5Now decide the GAMETYPE!\n");
 		MapVote_RememberMap(ReadString());
 		
-		if(PreviewExists(mapvote_choosenmap))
+		if(!sv_oldfag && PreviewExists(mapvote_choosenmap))
 			mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
 		else
 			mv_gtvote_previewangle = 0;
@@ -586,7 +606,8 @@ void MapVote_Init()
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
 	{
 		mv_votes[i] = 0;
-		mv_drawangles[i] = PI * 0.15 * (random() - 0.5);
+		if(!sv_oldfag)
+			mv_drawangles[i] = PI * 0.15 * (random() - 0.5);
 
 		if(mv_maps_mask & power)
 		{

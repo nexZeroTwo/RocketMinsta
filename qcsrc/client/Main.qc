@@ -334,7 +334,7 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	return (rm_oldbigfont? sbar_bigfont_real : sbar_rmbigfont);
+	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
 }
 
 void SetMadokaFont(float v)
@@ -1734,6 +1734,7 @@ void Ent_Init()
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
+	sv_oldfag = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -2160,8 +2161,12 @@ void bigprint(string bigstr, string comment, float staytime)
 		local string s;
 		s = bigstr;
 		
-		if(comment != "")
-			s = strcat(s, "\n", comment);
+		if(comment != "") {
+			if(s == "")
+				s = comment;
+			else
+				s = strcat(s, "\n", comment);
+		}
 		
 		centerprint(s);
 		return;
@@ -2251,6 +2256,9 @@ void score_visual(float score)
 
 void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
+	if(sv_oldfag)
+		return;
+	
 	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

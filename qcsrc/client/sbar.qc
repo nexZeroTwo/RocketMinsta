@@ -1250,16 +1250,16 @@ void Sbar_DrawScoreboard()
 	float scoreboard_fadeinspeed = 15;
 	float scoreboard_fadeoutspeed = 5;
 	if(sbar_woulddrawscoreboard) {
-		//if (scoreboard_fadeinspeed)
+		if not(sv_oldfag)
 			sbar_scoreboard_fade_alpha = bound (0, (time - sbar_woulddrawscoreboard_change) * scoreboard_fadeinspeed, 1);
-		//else
-			//sbar_scoreboard_fade_alpha = 1;
+		else
+			sbar_scoreboard_fade_alpha = 1;
 	}
 	else
-		//if (scoreboard_fadeoutspeed)
+		if not(sv_oldfag)
 			sbar_scoreboard_fade_alpha = bound (0, (1/scoreboard_fadeoutspeed - (time - sbar_woulddrawscoreboard_change)) * scoreboard_fadeoutspeed, 1);
-		//else
-			//sbar_scoreboard_fade_alpha = 0;
+		else
+			sbar_scoreboard_fade_alpha = 0;
 
 	if not(sbar_scoreboard_fade_alpha)
 		return;
@@ -1397,7 +1397,7 @@ void Sbar_DrawScoreboard()
 	else
 	{
 		if(tl > 0)
-			str = strcat(str, " for ^1", ftos(tl), " minutes^7");
+			str = strcat(str, " up to ^1", ftos(tl), " minutes^7");
 		if(fl > 0)
 		{
 			if(tl > 0)
@@ -1456,7 +1456,7 @@ void Sbar_DrawScoreboard()
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
 
-	if(speedrecord_string)
+	if(speedrecord_string && !sv_oldfag)
 	{
 		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
 		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
@@ -2056,8 +2056,19 @@ void centerprint(string strRealMessage)
 			return;
 
 		strRealMessage = substring(strRealMessage, 2, strlen(strRealMessage) - 2);
+	} else if(substring(strRealMessage, 0, 1) == "\x01") {	// player name spam
+		if(rm_shownames)
+			return;
+		
+		strRealMessage = substring(strRealMessage, 1, strlen(strRealMessage));
+		
+		for(i = 0; i < centerprint_msgnum; ++i)
+			if(centerprint_msgs[i])
+				strunzone(centerprint_msgs[i]);
+			
+		centerprint_msgnum = 0;
 	}
-
+	
 	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
 
@@ -2072,20 +2083,9 @@ void centerprint(string strRealMessage)
 		centerprint_msgnum--;
 	}
 
-
-
-	if(substring(strRealMessage, 0, 1) == "\x01")
-	{
-		centerprint_msgs[0] = strzone(strRealMessage);
-		centerprint_msgexpires[0] = time + scrtime;
-		centerprint_msgnum = 1;
-	}
-	else
-	{
-		centerprint_msgs[centerprint_msgnum] = strzone(strRealMessage);
-		centerprint_msgexpires[centerprint_msgnum] = time + scrtime;
-		centerprint_msgnum++;
-	}
+	centerprint_msgs[centerprint_msgnum] = strzone(strRealMessage);
+	centerprint_msgexpires[centerprint_msgnum] = time + scrtime;
+	centerprint_msgnum++;
 
 	i = hcount = 0;
 
@@ -3183,7 +3183,16 @@ void Sbar_Draw (void)
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg");
 	sbar_scoreboard_highlight = cvar("sbar_scoreboard_highlight");
 	sbar_info_pos = max(0, cvar("sbar_info_pos"));
-
+	
+	if(sv_oldfag) {
+		rm_oldhud = TRUE;
+		rm_showrankings = FALSE;
+		rm_visualscore = FALSE;
+		rm_hidewatermark = TRUE;
+		rm_simpleeffects = TRUE;
+		rm_nobigtext = TRUE;
+	}
+	
 	float i;
 	float weapon_stats;
 	float x, fade;

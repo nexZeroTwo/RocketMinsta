@@ -455,6 +455,7 @@ void spawnfunc_worldspawn (void)
 	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
+	sv_oldfag = cvar("sv_oldfag");
 	
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -2930,6 +2931,9 @@ void EndFrame()
 	float altime;
 	FOR_EACH_REALCLIENT(self)
 	{
+		if(sv_oldfag)
+			self.rm_nokillsound = TRUE;
+			
 		if(self.classname == "spectator")
 		{
 			if(self.enemy.typehitsound)
