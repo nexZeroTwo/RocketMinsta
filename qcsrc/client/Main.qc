@@ -400,17 +400,18 @@ void ReloadMenu()
 	e.nextthink = time + 1;
 }
 
-#define FPSREPORTER_DELAY 3
-
 void FPSReporter_Think() {
 	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
-	self.nextthink = time + FPSREPORTER_DELAY;
+	self.nextthink = time + sv_showfps;
 }
 
 void FPSReporter_Init() {
+	if not(sv_showfps)
+		return;
+	
 	entity e = spawn();
 	e.think = FPSReporter_Think;
-	e.nextthink = time + FPSREPORTER_DELAY;
+	e.nextthink = time + 1;
 }
 
 void EnableRMCFGReport() {
@@ -1732,6 +1733,7 @@ void Ent_Init()
 
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
+	sv_showfps = ReadByte();
 
 	if(!postinit)
 		PostInit();

@@ -454,7 +454,8 @@ void spawnfunc_worldspawn (void)
 
 	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
-
+	sv_showfps = cvar("sv_showfps");
+	
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
