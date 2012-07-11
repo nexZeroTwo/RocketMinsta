@@ -2923,6 +2923,9 @@ void hudflash(entity e, vector flashcolor, float staytime, float intensivity, fl
     if(e.classname == "")
         return;
     
+    if not(cvar("sv_hudflash"))
+		return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
@@ -2945,6 +2948,9 @@ void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
     if(e.classname == "")
         return;
     
+    if not(cvar("sv_hudflash"))
+		return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_HUDFLASH_TEAMCOLOR);
@@ -2955,6 +2961,9 @@ void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
 
 void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivity, float alph)
 {
+	if not(cvar("sv_hudflash"))
+		return;
+	
     local entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
@@ -2964,6 +2973,9 @@ void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivi
 
 void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
 {
+	if not(cvar("sv_hudflash"))
+		return;
+	
     local entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))

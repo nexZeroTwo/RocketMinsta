@@ -76,3 +76,5 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added a QuakeC config for the Geany IDE [Akari]
 * Renamed all of the RM cvars [Akari]
 * New serverinfo and MOTD display [Akari]
+* Optimized spectator info [Akari]
+* Made hudflash effects optional [Akari]
