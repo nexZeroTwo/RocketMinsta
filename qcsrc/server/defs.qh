@@ -702,3 +702,5 @@ vector frag_force;
 void Boobs_DropAllAndRespawn(vector);
 
 float next_round;
+
+float sv_showspecs_extra;

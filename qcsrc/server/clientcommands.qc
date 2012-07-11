@@ -167,6 +167,9 @@ void SV_ParseClientCommand(string s) {
 	vector start, end;
 	entity e, oldself;
 
+	if(cvar("sv_printclientcommands"))
+		print("Clientcommand by ", self.netname, ": ", s, "\n");
+
 	tokens = tokenize_console(s);
 
 	cmd = argv(0);

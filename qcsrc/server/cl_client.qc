@@ -1065,7 +1065,7 @@ Called when a client spawns in the server
 //void() ctf_playerchanged;
 
 void WriteSpectatorInfo(entity);
-void WriteSpectatorInfoOf(entity, entity);
+void WriteSpectatorInfoOf(entity, entity, float);
 void PutClientInServer (void)
 {
 	WriteSpectatorInfo(self);
@@ -1353,6 +1353,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	else
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
+	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	return TRUE;
 }
 
@@ -2443,12 +2444,17 @@ void SpectateCopy(entity spectatee) {
 
 #define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((spec).classname == "spectator") if((e).enemy == p) if(!(a) || !(e).anonspec)
 
-void WriteSpectatorInfoOf(entity player, entity of)
+void WriteSpectatorInfoOf(entity player, entity of, float lock)
 {
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	if(!cvar("sv_showspecs"))
+	float sv_showspecs = cvar("sv_showspecs");
+	
+	if(!sv_showspecs_extra)
+		lock = FALSE;
+	
+	if(!sv_showspecs && !lock)
 		return;
 	
 	if(player == of)
@@ -2464,6 +2470,23 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+	WriteByte(MSG_ONE, lock);
+	
+	if(lock) {
+		WriteByte(MSG_ONE, of.madoka);
+		WriteByte(MSG_ONE, of.hud_old);
+		WriteByte(MSG_ONE, of.hud_alt);
+		WriteString(MSG_ONE, of.hudskin);
+		WriteByte(MSG_ONE, of.clientfov);
+		WriteByte(MSG_ONE, of.speczoom_speed * 10);
+		WriteByte(MSG_ONE, of.speczoom_factor * 10);
+	}
+	
+	if(!sv_showspecs) {
+		WriteByte(MSG_ONE, 0);
+		return;
+	}
+	
 	WriteByte(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
@@ -2487,19 +2510,11 @@ void WriteSpectatorInfo(entity player)
     if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
-    	WriteSpectatorInfoOf(player, player);
+    	WriteSpectatorInfoOf(player, player, FALSE);
 	
 	local entity spec;
 	FOR_EACH_SPECOF(player, spec, 0)
-	{
-		#ifdef RM_SUPPORT_MADOKA
-		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
-		#endif
-		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), " ", player.hudskin, "\n"));
-		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
-		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
-		WriteSpectatorInfoOf(spec, player);
-	}
+		WriteSpectatorInfoOf(spec, player, TRUE);
 }
 
 float SpectateUpdate() {

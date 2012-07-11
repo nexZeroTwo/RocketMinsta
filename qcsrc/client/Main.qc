@@ -571,7 +571,8 @@ void PostInit(void)
 	
 	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
-	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
 	
 	//loadfont("user3", "gfx/madoka-rune");
@@ -582,7 +583,8 @@ void PostInit(void)
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
-	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
@@ -823,7 +825,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
-		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		RMSETTINGREPORT
 		return true;
 		#else
@@ -893,7 +896,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			cvar_set("rm_hudskin", hudskin_name);
 			SendRMCFGReport();
 			localcmd("menu_cmd update_rmvars\n");
-			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+			if(sv_showspecs_extra)
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 		}
 		else
 		{
@@ -1141,6 +1145,7 @@ void GameCommand(string msg)
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
+	/*
 	else if(cmd == "lockhud")
 	{
 		hudlocked = 1;
@@ -1162,6 +1167,7 @@ void GameCommand(string msg)
 		speczoom_speed = stof(argv(1));
 		speczoom_factor = stof(argv(2));
 	}
+	*/
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -1725,6 +1731,7 @@ void Ent_Init()
 	forcefog = strzone(ReadString());
 
 	armorblockpercent = ReadByte() / 255.0;
+	sv_showspecs_extra = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -1841,8 +1848,30 @@ void Net_ReadMadokaPrint()
 void Net_ReadSpecInfo()
 {
 	local float i;
+	
+	if(ReadByte()) {
+		float md = ReadByte();
+		
+		if(cvar("rm_specmadoka")) {
+			madoka_locked = TRUE;
+			madokalockstate = md;
+			SetMadokaFont(madokalockstate);
+		}
+		
+		hudlocked = TRUE;
+		rm_oldhud = hudlocked_old = ReadByte();
+		rm_althud = hudlocked_alt = ReadByte();
+		
+		string skin = ReadString();
+		if(skin != hudskin_name)
+			HUDSkin_Load(skin);
+		
+		fovlock = ReadByte();
+		speczoom_speed  = ReadByte() * 0.1;
+		speczoom_factor = ReadByte() * 0.1;
+	}
+	
 	num_spectators = ReadByte();
-
 	for(i = 0; i < num_spectators; ++i)
 	{
 		local float slot = ReadByte();

@@ -452,7 +452,8 @@ void CSQC_UpdateView(float w, float h)
 	
 	if(fov != oldfov)
 	{
-		localcmd("cmd fovreport ", ftos(fov), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd fovreport ", ftos(fov), "\n");
 		oldfov = fov;
 	}
 	

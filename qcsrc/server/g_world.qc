@@ -453,6 +453,7 @@ void spawnfunc_worldspawn (void)
 	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
 
 	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
+	sv_showspecs_extra = cvar("sv_showspecs_extra");
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
