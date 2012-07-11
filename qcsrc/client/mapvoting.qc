@@ -341,7 +341,10 @@ void MapVote_Draw()
 
 	if(mv_num_maps > 4)
 	{
-		columns = 4;
+		if not(mod(mv_num_maps, 4))
+			columns = 4;
+		else
+			columns = 3;
 	} else {
 		columns = mv_num_maps;
 	}
