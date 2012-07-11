@@ -451,7 +451,7 @@ void FlagTouch()
 			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		
-		if(cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1) // at most one human
+		if((!cvar("g_rocketminsta") || !cvar("g_rocketminsta_ctf_nocapturerecord")) && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
 		{
 			t = time - other.flagcarried.flagpickuptime;
 			s = ftos_decimals(t, 2);
