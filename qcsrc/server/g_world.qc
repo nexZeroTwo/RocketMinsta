@@ -489,7 +489,7 @@ void spawnfunc_worldspawn (void)
 	if(sv_cheats)
 		ServerProgsDB = db_create();
 	else
-		ServerProgsDB = db_load("server.db");
+		ServerProgsDB = db_load(strcat("server.db", cvar_string("sessionid")));
 
 	TemporaryDB = db_create();
 
@@ -3003,7 +3003,7 @@ void RestoreGame()
 	if(sv_cheats)
 		ServerProgsDB = db_create();
 	else
-		ServerProgsDB = db_load("server.db");
+		ServerProgsDB = db_load(strcat("server.db", cvar_string("sessionid")));
 
 	// Mapinfo
 	MapInfo_Shutdown();
@@ -3038,11 +3038,11 @@ void SV_Shutdown()
 				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
 			}
-			db_save(ServerProgsDB, "server.db");
+			db_save(ServerProgsDB, strcat("server.db", cvar_string("sessionid")));
 		}
 		IP2C_Shutdown();
 		if(cvar("developer"))
-			db_save(TemporaryDB, "server-temp.db");
+			db_save(TemporaryDB, strcat("server-temp.db", cvar_string("sessionid")));
 		db_close(ServerProgsDB);
 		db_close(TemporaryDB);
 		print("done!\n");
