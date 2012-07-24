@@ -3380,11 +3380,11 @@ void Sbar_Draw (void)
 
 		string s2;
         if(gametype == GAME_FREEZETAG)
-			s = "Revival progress:";
+			s = "Revival progress: ";
 		else if(gametype == GAME_JAILBREAK)
-			s = "Unlocking the jail:";
+			s = "Unlocking the jail: ";
 		else
-			s = "Capture progress:";
+			s = "Capture progress: ";
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
 		s2 = strcat(ftos(floor(rev * 100)), "%");
 		

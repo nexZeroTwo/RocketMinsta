@@ -1865,9 +1865,9 @@ void Net_ReadSpecInfo()
 		rm_oldhud = hudlocked_old = ReadByte();
 		rm_althud = hudlocked_alt = ReadByte();
 		
-		string skin = ReadString();
-		if(skin != hudskin_name)
-			HUDSkin_Load(skin);
+		string skn = ReadString();
+		if(skn != hudskin_name)
+			HUDSkin_Load(skn);
 		
 		fovlock = ReadByte();
 		speczoom_speed  = ReadByte() * 0.1;
