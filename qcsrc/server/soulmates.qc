@@ -421,8 +421,6 @@ void sm_SpawnSoulGem(float theteam) {
 }
 
 void sm_DropSoulGem() {
-	bprint("sm_DropSoulGem\n");
-	
 	//entity gem = sm_CreateSoulGem(self.team);
 	entity gem = self.sm_gemcarried;
 	makevectors(self.v_angle);
