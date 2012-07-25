@@ -1,10 +1,9 @@
 
-All changes are in the _chronological_ order, not in order of importance.
-Contributors of a change are specified in brackets after the change description, comma-separated.
-Contributors are listed in descending order of importance/amount of work related to the change.
+All changes are in the *chronological* order, not in order of importance.
+People who have contributed to a particular change are listed in brackets after the change description in descending order of importance/amount of work done.
 A question mark following a contributor's name means that I don't remember/exactly know the name of the contributor and just guessing. Probably because I shamelessly stole that certain feature from Xonotic.
 
-=== v1.5.2 -> v1.6.0 (UPCOMING) ===
+=== v1.5.2 -> v1.6.0 ===
 
 * Added kill/death ratio to the scoreboard by default [Akari]
 * Animated the map/gametype vote screen [Akari]
