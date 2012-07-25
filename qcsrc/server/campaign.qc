@@ -52,7 +52,7 @@ float Campaign_Invalid()
 	string thismapname, wantedmapname;
 	thismapname = GetMapname();
 	wantedmapname = campaign_gametype[0];
-	if(MapInfo_CurrentGametype() != MapInfo_Type_FromString(wantedmapname))
+	if(game != gametype_Name_to_ID(wantedmapname))
 		return CampaignBailout("wrong game type!");
 	wantedmapname = campaign_mapname[0];
 	if(wantedmapname != thismapname)
@@ -94,10 +94,9 @@ void CampaignPreInit()
 	cvar_set = cvar_set_campaignwrapper;
 
 	cvar_set("g_campaign", "1");
-	cvar_set("g_dm", "0");
 	cvar_set("skill", ftos(baseskill));
 	cvar_set("bot_number", ftos(campaign_bots[0]));
-	MapInfo_SwitchGameType(MapInfo_Type_FromString(campaign_gametype[0]));
+	gametype_Set(gametype_Name_to_ID(campaign_gametype[0]));
 
 	// copy sv_gravity cvar, as the engine needs it too (sorry, this will mess
 	// with the menu a little still...)
@@ -119,9 +118,10 @@ void CampaignPostInit()
 	if(Campaign_Invalid())
 		return;
 	cvar_set("fraglimit", ftos(campaign_fraglimit[0]));
-	cvar_set("timelimit", "0");
-	cvar_set_builtin("fraglimit", ftos(campaign_fraglimit[0]));
-	cvar_set_builtin("timelimit", "0");
+	cvar_set("timelimit", "0"); // end_match() isn't appropriate here
+	// Chaiomanot: why twice??? (cvar_set_builtin = cvar_set)
+	//cvar_set_builtin("fraglimit", ftos(campaign_fraglimit[0]));
+	//cvar_set_builtin("timelimit", "0");
 }
 
 void CampaignSaveCvar(string cvarname, float value)

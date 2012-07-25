@@ -263,7 +263,7 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 	w = self.weapon;
 	if (w == 0)
 		return; // just in case
-	if (g_weaponarena && !g_explosive_weaponarena_limitammo)
+	if (g_weaponarena && !g_weaponarena_limitammo)
 		return;
 	if (g_lms)
 		return;
@@ -299,7 +299,7 @@ void W_WeaponFrame()
 {
 	vector fo, ri, up;
 
-	if((arena_roundbased && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
+	if((arena_roundbased && time < warmup) || ((time < game_starttime && !g_inf) && !cvar("sv_ready_restart_after_countdown")))
 		return;
 
 	if (!self.weaponentity || self.health < 1)

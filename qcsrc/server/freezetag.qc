@@ -1,5 +1,6 @@
 
 entity uglyfreezetagworkaround;
+.float danger_used;
 
 void update_playercount()
 {
@@ -9,53 +10,9 @@ void update_playercount()
 	self = oldself;
 }
 
-void freezetag_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-
-    //bprint("next_round = ", ftos(next_round), "\n");
-    //bprint("time = ", ftos(time), "\n");
-    //bprint("timeleft = ", ftos(timeleft), "\n");
-    
-    if(intermission_running)
-    {
-        //bprint("Freezetag: GAME OVER\n");
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_freezetag_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            remove(self);
-            return;
-        }
-        
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("freezetag starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
-}
-
 void freezetag_EndRound()
 {
-    local entity e = spawn();
-    e.think = freezetag_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_explosive_freezetag_warmup") + next_round;
+    G_EndRound("FreezeTag", 5, cvar("g_freezetag_warmup"), update_playercount, func_null, func_null);
     update_playercount();
     defer(5, sm_Clear);
 }
@@ -93,9 +50,9 @@ void freezetag_FixTeamSpawns()
 void freezetag_Initialize()
 {
 	// Akari: BD131, wtf is this? well I'll just leave it this way.
-	ft_teams = cvar("g_explosive_freezetag_teams_override");
+	ft_teams = cvar("g_freezetag_teams_override");
 	if(ft_teams < 2)
-		ft_teams = cvar("g_explosive_freezetag_teams");
+		ft_teams = cvar("g_freezetag_teams");
 	ft_teams = bound(2, ft_teams, 4);
 
 	precache_model("models/ice/ice_blue.md3");
@@ -120,7 +77,7 @@ void freezetag_Initialize()
 	uglyfreezetagworkaround.nextthink = time + 1;
 	
 	defer(0.1, freezetag_FixTeamSpawns);
-	defer(0.1, sm_Init);
+	defer(0.2, sm_Init);
 }
 
 void freezetag_CheckWinner()
@@ -135,7 +92,7 @@ void freezetag_CheckWinner()
 	if(time <= game_starttime) // game didn't even start yet! nobody can win in that case.
 		return;
 
-	if(next_round || (time > warmup - cvar("g_explosive_freezetag_warmup") && time < warmup))
+	if(next_round || (time > warmup - cvar("g_freezetag_warmup") && time < warmup))
 		return; // already waiting for next round to start
 
     /*
@@ -202,33 +159,37 @@ void freezetag_CheckWinner()
 	{
 		if(winner.team == COLOR_TEAM1)
         {
-			teamname = "^1red";
+			teamname = "^1Red";
             teamname_full = "^1Red team";
             if(ft_teams < 3) play2all("ctf/red_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM2)
         {
-			teamname = "^4blue";
+			teamname = "^4Blue";
             teamname_full = "^4Blue team";
             if(ft_teams < 3) play2all("ctf/blue_capture.wav");
         }
 		else if(winner.team == COLOR_TEAM3)
         {
-			teamname = "^3yellow";
+			teamname = "^3Yellow";
             teamname_full = "^3Yellow team";
         }
-		else
+		else if(winner.team == COLOR_TEAM4)
         {
-			teamname = "^6pink";
+			teamname = "^6Pink";
             teamname_full = "^6Pink team";
-        }
+        } else {
+			bprint("^1BUG: ^7An invalid team somehow won! Aborting the round to prevent a crash\n");
+			freezetag_EndRound();
+			return;
+		}
         
         if(ft_teams > 2)
 			play2all("kh/capture.wav");
         
 		FOR_EACH_PLAYER(e) {
 			//centerprint(e, strcat(teamname, "^5 wins the round, all other teams were frozen.\n"));
-            bigprint_spec(e, strcat(teamname, "^7scores!"), "All opponents are frozen", 5);
+            bigprint_spec(e, strcat(teamname, " ^7Scores!"), "All opponents are frozen", 5);
             
             if(e.team == winner.team)
 				hudflash_teamcolor_default_spec(e);
@@ -268,6 +229,7 @@ void freezetag_Freeze(entity attacker)
 	self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
 	self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
 	
+	self.revivals_row = 0;
 	self.freezetag_frozen = 1;
 	self.freezetag_revive_progress = 0;
 	self.freezetag_freezetime = time;
@@ -282,7 +244,7 @@ void freezetag_Freeze(entity attacker)
 	ice.frame = floor(random() * 21); // ice model has 20 different looking frames
 	//ice.alpha = 0.6;
 	ice.effects |= EF_ADDITIVE;
-	if(cvar("g_explosive_freezetag_iceblocks_teamcolored"))
+	if(cvar("g_freezetag_iceblocks_teamcolored"))
 	{
 		if(self.team == COLOR_TEAM1)
 		{
@@ -314,7 +276,7 @@ void freezetag_Freeze(entity attacker)
 
 	update_playercount();
 
-	if(cvar("g_explosive_freezetag_freezesound"))
+	if(cvar("g_freezetag_freezesound"))
 		sound (self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
 
 	// add waypoint
@@ -328,7 +290,7 @@ void freezetag_Freeze(entity attacker)
 	{
 		// you froze your own dumb self
 		// counted as "suicide" already
-		PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
+		PlayerScore_Add(self, SP_SCORE, -cvar("g_freezetag_penalty_death"));
 	}
 	else if(attacker.classname == "player")
 	{
@@ -337,12 +299,12 @@ void freezetag_Freeze(entity attacker)
 		
 		if(attacker.team != self.team)
 		{
-			PlayerScore_Add(self, SP_SCORE, -cvar("g_explosive_freezetag_penalty_death"));
-			PlayerScore_Add(attacker, SP_SCORE, cvar("g_explosive_freezetag_score_freeze"));
+			PlayerScore_Add(self, SP_SCORE, -cvar("g_freezetag_penalty_death"));
+			PlayerScore_Add(attacker, SP_SCORE, cvar("g_freezetag_score_freeze"));
 		}
 		else // teamkill
 		{
-			PlayerScore_Add(attacker, SP_SCORE, -cvar("g_explosive_freezetag_penalty_teamkill"));
+			PlayerScore_Add(attacker, SP_SCORE, -cvar("g_freezetag_penalty_teamkill"));
 		}
 		
 	}
@@ -422,6 +384,7 @@ float freezetag_RemovePlayer()
 		self.ft_forcespawn = TRUE;
 	}
 
+	self.revivals_row = 0;
 	freezetag_Unfreeze(world);
 	
 	update_playercount();
@@ -452,7 +415,8 @@ float freezetag_PlayerDies()
 		else if(self.team == COLOR_TEAM4)
 			--pinkalive;
 		--totalalive;
-
+		
+		Boobs_DropAllAndRespawn(frag_force);
         freezetag_Freeze(frag_attacker);
 	}
 
@@ -494,7 +458,7 @@ float freezetag_PlayerSpawn()
 	self.freezetag_meltprogress = 0;
 
 	if(totalspawned == 1 && time > game_starttime) // only one player active on server, start a new match immediately
-	if(!next_round && warmup && (time < warmup - cvar("g_explosive_freezetag_warmup") || time > warmup)) // not awaiting next round
+	if(!next_round && warmup && (time < warmup - cvar("g_freezetag_warmup") || time > warmup)) // not awaiting next round
 	{
 		next_round = time;
 		return 1;
@@ -530,7 +494,7 @@ float freezetag_PlayerPreThink()
 {
 	vector revive_extra_size;
     DEPENDON_F(g_freezetag, 0)
-	revive_extra_size = '1 1 1' * cvar("g_explosive_freezetag_revive_extra_size");
+	revive_extra_size = '1 1 1' * cvar("g_freezetag_revive_extra_size");
 
 	entity o, oPrev;
 	o = world;
@@ -577,6 +541,13 @@ float freezetag_PlayerPreThink()
     
     // frozen
     
+	if(self.BUTTON_ATCK) {
+		if(!self.danger_used) {
+			stuffcmd(self, "cl_cmd danger\n");
+			self.danger_used = 1;
+		}
+	} else self.danger_used = 0;
+    
 	FOR_EACH_PLAYER(other) if(self != other)
 	{
 		if(!other.freezetag_frozen)
@@ -601,7 +572,7 @@ float freezetag_PlayerPreThink()
 	if(o) // OK, there is at least one teammate reviving us
 	{
 		self.rev_finished = 0;
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_freezetag_revive_speed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_freezetag_revive_speed"), 1);
 
 		if(self.freezetag_revive_progress >= 1)
 		{
@@ -623,12 +594,23 @@ float freezetag_PlayerPreThink()
 						if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
 						{
 							PlayerScore_Add(other, SP_FREEZETAG_REVIVALS, +1);
-							PlayerScore_Add(other, SP_SCORE, cvar("g_explosive_freezetag_score_revival"));
-                            other.health = max(other.health, 100);
-                            centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
-                            
-                            if(first)
-                            {
+							PlayerScore_Add(other, SP_SCORE, cvar("g_freezetag_score_revival"));
+							
+							other.health = max(other.health, 100);
+							centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
+							
+							other.revivals_row++;
+							if(cvar("g_freezetag_revive_bonusgrenade"))
+							if(other.revivals_row >= cvar("g_freezetag_revive_bonusgrenade_requirement")) {
+								HG_GiveBonus(other, HG_NameToType(cvar_string("g_freezetag_revive_bonusgrenade_type")), 1,
+											strcat(ftos(other.revivals_row), " revivals in a row")
+								);
+								other.revivals_row = 0;
+							}
+							
+							
+							if(first)
+							{
 								names = other.netname;
 								first = FALSE;
 							}
@@ -664,16 +646,16 @@ float freezetag_PlayerPreThink()
 	}
 	else if(self.rev_finished)
 	{
-		if(cvar("g_explosive_freezetag_melt"))
+		if(cvar("g_freezetag_melt"))
 		{
 			local entity h;
 			for(h = world; (h = find(h, classname, "grapplinghook")); )
 				if(h.aiment == self)
 					return 1;
 			
-			if(self.freezetag_freezetime + cvar("g_explosive_freezetag_melt_delay") <= time)
+			if(self.freezetag_freezetime + cvar("g_freezetag_melt_delay") <= time)
 			{
-				self.freezetag_meltprogress = bound(0, self.freezetag_meltprogress + frametime * cvar("g_explosive_freezetag_melt_speed"), 1);
+				self.freezetag_meltprogress = bound(0, self.freezetag_meltprogress + frametime * cvar("g_freezetag_melt_speed"), 1);
 				
 				if(self.freezetag_meltprogress >= 1)
 				{
@@ -693,7 +675,7 @@ float freezetag_PlayerPreThink()
 	}
 	else // only if no teammate is nearby will we reset
 	{
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_freezetag_revive_clearspeed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_freezetag_revive_clearspeed"), 1);
 		self.freezetag_meltprogress = self.freezetag_revive_progress;
 		
 		if(!self.freezetag_revive_progress)
@@ -708,11 +690,11 @@ float freezetag_PlayerPhysics()
     DEPENDON_F(g_freezetag, 0)
 	if(self.freezetag_frozen)
 	{
-		local float s = cvar("g_explosive_freezetag_frozen_movespeed");
+		local float s = cvar("g_freezetag_frozen_movespeed");
 		
 		if(s > 0)
 		{
-			if(cvar("g_explosive_freezetag_frozen_movespeed_dependonmelt"))
+			if(cvar("g_freezetag_frozen_movespeed_dependonmelt"))
 				s *= self.freezetag_revive_progress;
 			
 			self.movement_x = (

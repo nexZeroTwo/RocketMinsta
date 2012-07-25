@@ -120,6 +120,16 @@ void CreatureFrame (void)
 	self = oldself;
 }
 
+// This returns the player who's been afk for the longest amount of time
+entity GetAFKKickVictim() {
+	entity v, e;
+	
+	FOR_EACH_REALCLIENT(e) if(e.is_away)
+		if(!v || v.parm_idlesince > e.parm_idlesince)
+			v = e;
+	
+	return v;
+}
 
 /*
 =============
@@ -130,6 +140,9 @@ Called before each frame by the server
 */
 void RuneMatchGivePoints();
 float RedirectionThink();
+
+string oldfog;
+
 entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
@@ -238,21 +251,47 @@ void StartFrame (void)
 
 	FOR_EACH_PLAYER(self)
 		self.porto_forbidden = max(0, self.porto_forbidden - 1);
+	
+	if(ShouldForceFog()) {
+		string newfog = GetForcedFog();
+		
+		if(newfog != oldfog) {
+			print("Fog settings updated\n");
+			
+			if(oldfog)
+				strunzone(oldfog);
+			oldfog = strzone(newfog);
+			
+			FOR_EACH_REALCLIENT(self)
+				stuffcmd(self, strcat("prvm_globalset client forcefog \"", newfog, "\"\n"));
+		}
+	} else if(oldfog) {
+		print("Fog disabled\n");
+		strunzone(oldfog);
+		oldfog = string_null;
+		
+		FOR_EACH_REALCLIENT(self) {
+			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
+			stuffcmd(self, "defer 0 \"fog 0\"\n");
+		}
+	}
+	
+	if(totalclients >= maxclients) if(cvar("sv_autoaway_kick")) {
+		entity v = GetAFKKickVictim();
+		
+		if(v) {
+			bprint("^3", v.netname, " ^7has been kicked for being AFK for ", ftos(floor((time - v.parm_idlesince) / 60)), " minutes while the server is full\n");
+			dropclient(v);
+		}
+	}
 }
 
 .vector originjitter;
 .vector anglesjitter;
 .float anglejitter;
-.string gametypefilter;
 .string cvarfilter;
 void SV_OnEntityPreSpawnFunction()
 {
-	if(self.gametypefilter != "")
-	if not(isGametypeInFilter(game, teams_matter, self.gametypefilter))
-	{
-		remove(self);
-		return;
-	}
 	if(self.cvarfilter != "")
 	{
 		float n, i, o, inv;

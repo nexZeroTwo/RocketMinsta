@@ -226,6 +226,13 @@ vector GetCurrentFov(float fov)
 	fovx = atan2(frustumx, 1) / 0.00872664625997164788;
 	fovy = atan2(frustumy, 1) / 0.00872664625997164788;
 
+	if(forcefog == "nyan") {
+		float factor = 2 * bound(1, vlen(pmove_vel) * 0.006, 6);
+		float t = time * 0.3;
+		fovx += factor * sin(1.11 * t) * cos(1.45 * t * 2);
+		fovy += factor * cos(1.22 * t) * sin(1.32 * t * 2);
+	}
+
 	return '1 0 0' * fovx + '0 1 0' * fovy;
 }
 
@@ -342,6 +349,20 @@ float TrueAimCheck()
 	return SHOTTYPE_HITWORLD;
 }
 
+float fps_start;
+float fps_frames;
+
+// FIXME: make it unaffected by slowmo
+void FPSCounter_Update() {
+	if(time - fps_start >= 1) {
+		cl_fps = fps_frames;
+		fps_frames = 0;
+		fps_start = time;
+	}
+	
+	fps_frames++;
+}
+
 void CSQC_common_hud(void);
 
 float oldfov;
@@ -431,7 +452,8 @@ void CSQC_UpdateView(float w, float h)
 	
 	if(fov != oldfov)
 	{
-		localcmd("cmd fovreport ", ftos(fov), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd fovreport ", ftos(fov), "\n");
 		oldfov = fov;
 	}
 	
@@ -490,9 +512,30 @@ void CSQC_UpdateView(float w, float h)
 		R_SetView(VF_FOV, GetCurrentFov(fovlock));
 	else
 		R_SetView(VF_FOV, GetCurrentFov(fov));
-
-	// Camera for demo playback
-	if(camera_active)
+	
+	if(spectatee_status < 0)
+		jb_camera_expiretime = -1;
+	
+	float jbcamera = time < jb_camera_expiretime;
+	
+	if(getstati(STAT_ROUNDLOST))
+	if(getstati(STAT_HEALTH) > 0)
+		jbcamera = FALSE;
+	
+	if(jbcamera) {
+		if(!jb_chasecam_locked) {
+			jb_chasecam_locked = TRUE;
+			jb_chasecam_backup = cvar("chase_active");
+		}
+		
+		R_SetView(VF_ORIGIN, jb_camera_origin);
+		cvar_clientsettemp("chase_active", "1");
+		//R_SetView(VF_ANGLES, jb_camera_angles);
+	} else if(jb_chasecam_locked) {
+		jb_chasecam_locked = FALSE;
+		chase_active_backup = jb_chasecam_backup;
+		cvar_set("chase_active", ftos(jb_chasecam_backup));
+	} else if(camera_active) // Camera for demo playback
 	{
 		if(cvar("camera_enable"))
 			CSQC_Demo_Camera();
@@ -516,7 +559,7 @@ void CSQC_UpdateView(float w, float h)
 		camera_active = TRUE;
 		camera_mode = FALSE;
 	}
-
+	
 	// Draw the Crosshair
 	float scoreboard_active;
 	scoreboard_active = Sbar_WouldDrawScoreboard();
@@ -590,7 +633,7 @@ void CSQC_UpdateView(float w, float h)
 			)
 		)
 	)
-		teamradar_view();
+		if not(jbcamera) teamradar_view();
 
 	// draw sbar
  	if(cvar("r_letterbox") == 0) {
@@ -622,9 +665,10 @@ void CSQC_UpdateView(float w, float h)
     {
         if(cvar("r_letterbox") == 0)
             if(cvar("viewsize") < 120)
-                CSQC_common_hud();
+				CSQC_common_hud();
 
         // crosshair goes VERY LAST
+        if not(jbcamera)
         if(spectatee_status != -1)
         if(!scoreboard_active && !ons_showmap && !camera_active) {
 			// TrueAim check
@@ -789,7 +833,9 @@ void CSQC_UpdateView(float w, float h)
 		else
 			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
 	}
-
+	
+	DPRM_Draw2D();
+	
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
@@ -822,7 +868,9 @@ void CSQC_UpdateView(float w, float h)
 		cvar_set("vid_conwidth", w0);
 		cvar_set("vid_conheight", h0);
 	}
-
+	
+	FPSCounter_Update();
+	
 	// be safe against triggerbots until everyone has the fixed engine
 	// this call is meant to overwrite the trace globals by something
 	// unsuspicious

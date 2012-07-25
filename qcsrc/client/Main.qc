@@ -324,12 +324,18 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
+float rmconfig_initialized;
+
 void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
 #ifdef RM_SUPPORT_MADOKA
 entity tmpmadoka;
 #endif
+
+float GetBigfont() {
+	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
+}
 
 void SetMadokaFont(float v)
 {
@@ -341,7 +347,7 @@ void SetMadokaFont(float v)
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		case MDKF_UNSET:
-			sbar_bigfont = sbar_bigfont_real;
+			sbar_bigfont = GetBigfont();
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		default: case MDKF_AUTO:
@@ -349,7 +355,7 @@ void SetMadokaFont(float v)
 			{
 				if(cvar("rm_specmadoka"))
 				{
-					sbar_bigfont = (madokalockstate? sbar_madokafont : sbar_bigfont_real);
+					sbar_bigfont = (madokalockstate? sbar_madokafont : GetBigfont());
 					return;
 				}
 				/*else
@@ -358,12 +364,12 @@ void SetMadokaFont(float v)
 				}*/
 			}
 			
-			sbar_bigfont = (rm_madoka? sbar_madokafont : sbar_bigfont_real);
+			sbar_bigfont = (rm_madoka? sbar_madokafont : GetBigfont());
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
 	#else
-	sbar_bigfont = sbar_bigfont_real;
+	sbar_bigfont = GetBigfont();
 	#endif
 }
 
@@ -372,7 +378,7 @@ void ReloadMenu_f()
 	if(!self.cnt)
 	{
 		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
-		localcmd("menu_restart\n");
+		localcmd("menu_restart; r_restart\n");
 		self.cnt = 1;
 		self.nextthink = time + 1;
 	}
@@ -392,6 +398,25 @@ void ReloadMenu()
 	entity e = spawn();
 	e.think = ReloadMenu_f;
 	e.nextthink = time + 1;
+}
+
+void FPSReporter_Think() {
+	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
+	self.nextthink = time + sv_showfps;
+}
+
+void FPSReporter_Init() {
+	if not(sv_showfps)
+		return;
+	
+	entity e = spawn();
+	e.think = FPSReporter_Think;
+	e.nextthink = time + 1;
+}
+
+void EnableRMCFGReport() {
+	rmconfig_initialized = TRUE;
+	SendRMCFGReport();
 }
 
 void PostInit(void)
@@ -476,9 +501,14 @@ void PostInit(void)
         case 34:
         case 35:
 			localcmd("seta rm_shownames_teamonly 0; shownames_teamonly 0\n");
-		
+		case 36:
+			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
+			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
+		case 37:
+			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+			
 		//More to come here with each update
-		localcmd("seta rm_initialized 36\n");
+		localcmd("seta rm_initialized 38\n");
 		RM_OUTDATED
 		break;
 	}
@@ -504,6 +534,7 @@ void PostInit(void)
 	rm_noflags = cvar("rm_noflags");
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
+	rm_oldbigfont = cvar("rm_oldbigfont");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -530,24 +561,31 @@ void PostInit(void)
 	registercmd("hidecountry");
 	registercmd("showrankings");
 	registercmd("shownames_teamonly");
+	registercmd("oldbigfont");
+	registercmd("freezetag_danger");
+	registercmd("freezetag_danger_silent");
 	// -- //
 	registercmd("hudskin");
 	
 	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
-	SendRMCFGReport();
+	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
-	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
 	
 	//loadfont("user3", "gfx/madoka-rune");
 	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
 	localcmd("loadfont user3 gfx/madoka-rune\n");
+	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
+	localcmd("loadfont infobar gfx/vera-sans-big\n");
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
-	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
@@ -567,6 +605,8 @@ void PostInit(void)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
 	localcmd("cmd menu_request\n"); // workaround against restarts
+	FPSReporter_Init();
+	DPRM_Start();
 	
 	postinit = true;
 }
@@ -583,6 +623,9 @@ void SendRMCFGReport()
 	float h, n, i;
 	string k, res;
 	
+	if(!rmconfig_initialized)
+		return;
+	
 	h = buf_create();
 	buf_cvarlist(h, "rm_", "");
 	n = buf_getsize(h);
@@ -594,6 +637,7 @@ void SendRMCFGReport()
 	}
 	
 	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
+	buf_del(h);
 }
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
@@ -641,9 +685,9 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
 		
-		if(cvar("_g_balance_minstanex_explosive"))
-			bigprint("Accuracy statistics are disabled", "", 2);
-		else
+		//if(cvar("_g_rocketminsta"))
+		//	bigprint("Accuracy statistics are disabled", "", 2);
+		//else
 			sb_showaccuracy = true;
 			
 		return true;
@@ -676,6 +720,9 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
+		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
+		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
@@ -708,7 +755,10 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
-		strCmd == "shownames_teamonly")
+		strCmd == "shownames_teamonly"  ||
+		strCmd == "oldbigfont"			||
+		strCmd == "freezetag_danger"	||
+		strCmd == "freezetag_danger_silent")
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
@@ -728,6 +778,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_noflags = cvar("rm_noflags");
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
+		rm_oldbigfont = cvar("rm_oldbigfont");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -746,6 +797,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 		
+		SetMadokaFont(MDKF_AUTO);
 		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
@@ -774,7 +826,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
-		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		RMSETTINGREPORT
 		return true;
 		#else
@@ -844,7 +897,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			cvar_set("rm_hudskin", hudskin_name);
 			SendRMCFGReport();
 			localcmd("menu_cmd update_rmvars\n");
-			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+			if(sv_showspecs_extra)
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 		}
 		else
 		{
@@ -979,7 +1033,6 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
-string GameTypeVote_GameTypeDescription(string);
 void GameCommand(string msg)
 {
 	float argc;
@@ -1093,6 +1146,7 @@ void GameCommand(string msg)
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
+	/*
 	else if(cmd == "lockhud")
 	{
 		hudlocked = 1;
@@ -1114,6 +1168,7 @@ void GameCommand(string msg)
 		speczoom_speed = stof(argv(1));
 		speczoom_factor = stof(argv(2));
 	}
+	*/
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -1156,6 +1211,31 @@ void GameCommand(string msg)
 	else if(cmd == "hudskin_eval")
 	{
 		HUDSkin_Eval(substring(msg, strlen(cmd) + 1, strlen(msg)));
+	}
+	else if(cmd == "crc16")
+	{
+		if(argc < 3)
+			print("Usage: crc16 bool:caseinsensitive string\n");
+		else
+			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
+	}
+	else if(cmd == "danger") {
+		if not(cvar("rm_freezetag_danger"))
+			return;
+		
+		if(cvar("rm_freezetag_danger_silent")) {
+			localcmd("g_waypointsprite_team_danger_p\n");
+			return;
+		}
+		
+		// dirty dirty hacks
+		// I love them
+		
+		string userbind = cvar_string("userbind7_press");
+		if(strstrofs(userbind, "g_waypointsprite_team_danger_p", 0) >= 0 && strstrofs(userbind, "%p", 0) >= 0)
+			localcmd("_userbind_call userbind7_press\n");
+		else
+			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
 	}
 	else
 	{
@@ -1257,9 +1337,12 @@ void Ent_ReadPlayerScore()
 #if MAX_SCORE <= 8
 	sf = ReadByte();
 	lf = ReadByte();
-#else
+#elif MAX_SCORE <= 16
 	sf = ReadShort();
 	lf = ReadShort();
+#else
+	sf = ReadInt24_t();
+	lf = ReadInt24_t();
 #endif
 	float p;
 	
@@ -1555,7 +1638,7 @@ void Gamemode_Init()
 
 	if not(isdemo())
 	{
-		localcmd("\n_cl_hook_gamestart ", GametypeNameFromType(gametype), ";");
+		localcmd("\n_cl_hook_gamestart ", gametype_ID_to_Name(gametype), ";");
 		calledhooks |= HOOK_START;
 	}
 }
@@ -1576,12 +1659,39 @@ void CSQC_Parse_CenterPrint(string strMessage)
 	centerprint(strMessage);
 }
 
+string MakeFog(vector rgb, float a) {
+	return strcat(ftos(a), " ", ftos(rgb_x), " ", ftos(rgb_y), " ", ftos(rgb_z));
+}
+
+void ForceFogString(string fog) {
+	localcmd(strcat("\nfog ", fog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+}
+
+void ForceFog(vector rgb, float a) {
+	ForceFogString(MakeFog(rgb, a));
+}
+
 void Fog_Force()
 {
 	// TODO somehow thwart prvm_globalset client ...
 
-	if(forcefog != "")
-		localcmd(strcat("\nfog ", forcefog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
+	if(forcefog != "") {
+		
+		if(forcefog == "nyan") {
+			float a = 0.5 + 0.5 * sin(0.5 * time);
+			vector hsl;
+			hsl_x = a * 2 * PI;
+			hsl_y = 1;
+			hsl_z = 0.8 - 0.2 * sin(1.11 * time) * cos(2.22 * time);
+			ForceFog(hsl_to_rgb(hsl), 0.02 * (1 - 0.5 * cos(1.13 * time)));
+			
+			if(cvar("r_glsl")) {
+				cvar_clientsettemp("r_glsl_saturation", ftos(3 * cos(time * 0.25)));
+			}
+		}
+		
+		else ForceFogString(forcefog);
+	}
 }
 
 void Gamemode_Init();
@@ -1622,6 +1732,9 @@ void Ent_Init()
 	forcefog = strzone(ReadString());
 
 	armorblockpercent = ReadByte() / 255.0;
+	sv_showspecs_extra = ReadByte();
+	sv_showfps = ReadByte();
+	sv_oldfag = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -1738,8 +1851,30 @@ void Net_ReadMadokaPrint()
 void Net_ReadSpecInfo()
 {
 	local float i;
-	num_spectators = ReadShort();
-
+	
+	if(ReadByte()) {
+		float md = ReadByte();
+		
+		if(cvar("rm_specmadoka")) {
+			madoka_locked = TRUE;
+			madokalockstate = md;
+			SetMadokaFont(madokalockstate);
+		}
+		
+		hudlocked = TRUE;
+		rm_oldhud = hudlocked_old = ReadByte();
+		rm_althud = hudlocked_alt = ReadByte();
+		
+		string skn = ReadString();
+		if(skn != hudskin_name)
+			HUDSkin_Load(skn);
+		
+		fovlock = ReadByte();
+		speczoom_speed  = ReadByte() * 0.1;
+		speczoom_factor = ReadByte() * 0.1;
+	}
+	
+	num_spectators = ReadByte();
 	for(i = 0; i < num_spectators; ++i)
 	{
 		local float slot = ReadByte();
@@ -1851,99 +1986,109 @@ void Net_ReadVIPInfo(float teem)
 	print("^5 -> ", ftos(ReadShort()), "\n");
 }
 
+void Net_Camera() {
+	if(!ReadByte()) {
+		jb_camera_expiretime = -1;
+		return;
+	}
+	
+	jb_camera_origin_x = ReadShort();
+	jb_camera_origin_y = ReadShort();
+	jb_camera_origin_z = ReadShort();
+	
+	if(time <= jb_camera_expiretime || jb_chasecam_locked)
+		dprint("Warning: Net_Camera while a camera is still active\n");
+	else {
+		jb_chasecam_backup = cvar("chase_active");
+		jb_chasecam_locked = true;
+	}
+	
+	jb_camera_expiretime = time + ReadShort();
+}
+
+void Net_ServerInfo() {
+	sv_hostname = strzone(ReadString());
+	sv_rm_build = strzone(ReadString());
+	sv_rm_version = strzone(ReadString());
+	sv_rm_date = strzone(ReadString());
+	sv_motd = strzone(ReadString());
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
 float CSQC_Parse_TempEntity()
 {
-	local float bHandled;
-		bHandled  = true;
 	// Acquire TE ID
 	local float nTEID;
-		nTEID = ReadByte();
+	nTEID = ReadByte();
 
-		// NOTE: Could just do return instead of break...
 	switch(nTEID)
 	{
 		case TE_CSQC_PICTURE:
 			Net_MapVote_Picture();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_RACE:
 			Net_ReadRace();
-			bHandled = true;
-			break;
+			return TRUE;
 		case 13: // TE_BEAM
 			Net_GrapplingHook();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPAWN:
 			Net_ReadSpawn();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_ZCURVEPARTICLES:
 			Net_ReadZCurveParticles();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_NEXGUNBEAMPARTICLE:
 			Net_ReadNexgunBeamParticle();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_LIGHTNINGARC:
             Net_ReadLightningarc();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPECINFO:
 			Net_ReadSpecInfo();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTE:
 			Net_VoteDialog(ReadByte());
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTERESET:
 			Net_VoteDialogReset();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MADOKAPRINT:
 			Net_ReadMadokaPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MORNINGRESCUE:
 			Net_ReadMorningRescue();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_CLEARBIGPRINT:
             Net_ReadClearBigPrint();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_SPEEDRECORD:
 			Net_ReadSpeedRecord();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH:
 			Net_ReadHudFlash(FALSE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VIPINFO:
 			Net_ReadVIPInfo(ReadByte());
-			bHandled = true;
-			break;
-		default:
-			// No special logic for this temporary entity; return 0 so the engine can handle it
-			bHandled = false;
-			break;
+			return TRUE;
+		case TE_CSQC_CAMERA:
+			Net_Camera();
+			return TRUE;
+		case TE_CSQC_SERVERINFO:
+			Net_ServerInfo();
+			return TRUE;
 	}
 
-	return bHandled;
+	// pass to the engine
+	return FALSE;
 }
 
 string getcommandkey(string text, string command)
@@ -2016,8 +2161,12 @@ void bigprint(string bigstr, string comment, float staytime)
 		local string s;
 		s = bigstr;
 		
-		if(comment != "")
-			s = strcat(s, "\n", comment);
+		if(comment != "") {
+			if(s == "")
+				s = comment;
+			else
+				s = strcat(s, "\n", comment);
+		}
 		
 		centerprint(s);
 		return;
@@ -2107,6 +2256,9 @@ void score_visual(float score)
 
 void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
+	if(sv_oldfag)
+		return;
+	
 	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

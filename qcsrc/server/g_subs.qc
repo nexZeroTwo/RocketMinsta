@@ -129,11 +129,14 @@ void SUB_VanishOrRemove (entity ent)
 	}
 }
 
+.float glow_size_original;
+
 void SUB_SetFade_Think (void)
 {
 	self.think = SUB_SetFade_Think;
 	self.nextthink = self.fade_time;
 	self.alpha = 1 - (time - self.fade_time) * self.fade_rate;
+	self.glow_size = self.glow_size_original * self.alpha;
 	if (self.alpha < 0.01)
 		SUB_VanishOrRemove(self);
 	self.alpha = bound(0.01, self.alpha, 1);
@@ -155,6 +158,7 @@ void SUB_SetFade (entity ent, float when, float fadetime)
 	ent.fade_time = when;
 	ent.think = SUB_SetFade_Think;
 	ent.nextthink = when;
+	ent.glow_size_original = ent.glow_size;
 }
 
 /*
@@ -310,7 +314,7 @@ Additionally it moves players back into the past before the trace and restores t
 void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
 {
 	local entity player;
-	local float oldsolid;
+	local float _oldsolid;
 
 	// check whether antilagged traces are enabled
 	if (lag < 0.001)
@@ -321,7 +325,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	// change shooter to SOLID_BBOX so the shot can hit corpses
 	if(source)
 	{
-		oldsolid = source.dphitcontentsmask;
+		_oldsolid = source.dphitcontentsmask;
 		source.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	}
 
@@ -352,7 +356,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 
 	// restore shooter solid type
 	if(source)
-		source.dphitcontentsmask = oldsolid;
+		source.dphitcontentsmask = _oldsolid;
 }
 void traceline_antilag_force (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
 {

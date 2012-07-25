@@ -48,50 +48,14 @@ void dom_recountpoints()
     }
 }
 
-void tdom_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-	local entity e;
-	
-    if(intermission_running)
-    {
-        remove(self);
-        return;
-    }
-    
-    if(timeleft <= cvar("g_totaldomination_warmup"))
-    {
-        dom_recountpoints();
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-                tdom_maycap = 1;
-            }
-            remove(self);
-            return;
-        }
-        
-        
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("total domination starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
+void tdom_EndRound_Finalize() {
+	tdom_maycap = TRUE;
 }
 
 void tdom_EndRound()
 {
-    local entity e = spawn();
-    e.think = tdom_EndRound_Think;
-    e.nextthink = time + 1;
-    next_round = time + 5;
-    e.cnt = cvar("g_totaldomination_warmup") + next_round;
-    tdom_maycap = 0;
+	G_EndRound("Total Domination", 5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, tdom_EndRound_Finalize);
+    tdom_maycap = FALSE;
 }
 
 void() dom_controlpoint_setup;
@@ -119,7 +83,7 @@ void tdom_checkwinner()
 		//bprint("^5Total domination: ^1RED WINS\n");
 		FOR_EACH_PLAYER(e)
 		{
-			bigprint_spec(e, "^1red^7scores!", "All control points have been captured", 5);
+			bigprint_spec(e, "^1Red ^7Scores!", "All control points have been captured", 5);
 			
 			if(e.team == COLOR_TEAM1)
 				hudflash_teamcolor_default_spec(e);
@@ -135,7 +99,7 @@ void tdom_checkwinner()
 		//bprint("^5Total domination: ^4BLUE WINS\n");
 		FOR_EACH_PLAYER(e)
 		{
-			bigprint_spec(e, "^4blue^7scores!", "All control points have been captured", 5);
+			bigprint_spec(e, "^4Blue ^7Scores!", "All control points have been captured", 5);
 				
 			if(e.team == COLOR_TEAM2)
 				hudflash_teamcolor_default_spec(e);
@@ -269,7 +233,7 @@ void dompointthink()
 	self.nextthink = time + 0.1;
 
     if(time - self.pointupdatetime > 0.1)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
@@ -332,7 +296,7 @@ void dompointtouch()
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
+	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_domination_capture_speed"), 1);
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
 
@@ -384,7 +348,7 @@ float domination_PlayerPreThink()
 	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	return 1;
 }
@@ -821,11 +785,11 @@ void dom_delayedinit()
 	{
 		//dom_removeall("dom_controlpoint");
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_spawnpoints"), " ");
 		for(j = 0; j < n; ++j)
 			i += dom_spawnpointsfor(argv(j));
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 		
@@ -835,7 +799,7 @@ void dom_delayedinit()
 	{
 		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 	}

@@ -1,5 +1,6 @@
-
 ../../progs.dat // output filename
+
+
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
@@ -15,9 +16,12 @@ constants.qh
 
 defs.qh		// Should rename this, it has fields and globals
 
+../common/gametype.qh
+
 //// tZork Turrets ////
 tturrets/include/turrets_early.qh
 
+../common/dprm.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
@@ -30,8 +34,6 @@ csqceffects.qc
 portals.qh
 
 g_hook.qh
-g_handgrenades.qh
-soulmates.qh
 
 scores.qh
 
@@ -45,9 +47,17 @@ antilag.qh
 
 vote.qh
 
+soulmates.qh
+
+g_handgrenades.qh
+
 freezetag.qh
 
 vip.qh
+
+jailbreak.qh
+
+precious.qh
 
 scores_rules.qc
 
@@ -65,8 +75,10 @@ runematch.qc
 arena.qc
 
 dodging.qc
+
 freezetag.qc
 vip.qc
+precious.qc
 
 g_violence.qc
 g_damage.qc
@@ -81,6 +93,7 @@ movelib.qc
 steerlib.qc
 pathlib/pathlib.qh
 
+rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
@@ -132,6 +145,8 @@ g_hook.qc
 g_handgrenades.qc
 soulmates.qc
 
+jailbreak.qc
+
 t_swamp.qc
 
 clientcommands.qc
@@ -163,6 +178,10 @@ t_quake.qc
 race.qc
 
 
+../common/dprm.qc
+../common/gametype.qc
+
+
 //// tZork Turrets ////
 tturrets/include/turrets.qh
 vehicles/vehicles.qh
@@ -183,3 +202,4 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+

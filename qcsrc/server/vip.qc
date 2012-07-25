@@ -83,6 +83,22 @@ vector vip_SoulGemColormod2(float theteam)
 	}
 }
 
+float vip_SoulGemGlow(float theteam) {
+	switch(theteam) {
+		case COLOR_TEAM1:
+			return 251;
+		case COLOR_TEAM2:
+			return 210;
+		default:
+			return 0;
+	}
+}
+
+void vip_SoulGem_think() {
+	self.glow_size = 256 + cos(time * 2) * 64;
+	self.nextthink = time + 0.1;
+}
+
 void vip_SoulGem_touch()
 {
 	if(other.classname != "player")
@@ -111,6 +127,8 @@ void vip_SoulGem_touch()
 		{
 			bigprint_clear_spec(e);
 			bigprint_spec(e, "^5Begin!", "", 1);
+			
+			shooting_forbidden = FALSE;
 			
 			local entity oldself;
 			oldself = self;
@@ -167,11 +185,17 @@ void vip_SpawnSoulGem(vector orig, float theteam)
 	e.team = theteam;
 	e.movetype = MOVETYPE_NONE;
 	e.touch = vip_SoulGem_touch;
+	e.think = vip_SoulGem_think;
+	e.nextthink = time + random();
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
 	e.reset2 = vip_SoulGem_reset;
 	setmodel(e, "models/runematch/rune.mdl");
 	setsize(e, '0 0 -35', '0 0 0');
+	
+	e.glow_size = 256;
+	e.glow_color = vip_SoulGemGlow(theteam);
+	e.glow_trail = 1;
 	
 	e.enemy = spawn();
 	e.enemy.enemy = e;
@@ -270,55 +294,26 @@ void vip_init()
     precache_sound("ctf/blue_capture.wav");
     ScoreRules_vip();
 	
-	vip_soulgem = cvar("g_explosive_vip_soulgem");
+	vip_soulgem = cvar("g_vip_soulgem");
 	
 	if(vip_soulgem)
 	{
 		precache_model("models/runematch/curse.mdl");
 		precache_model("models/runematch/rune.mdl");
 	}
+	
 	precache_sound("kh/capture.wav");
 	InitializeEntity(world, vip_delayedinit, INITPRIO_GAMETYPE);
 }
 
-void vip_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-    
-    if(intermission_running)
-    {
-        remove(self);
-        return;
-    }
-    
-    update_playercount();
-    
-    if(timeleft <= cvar("g_explosive_vip_warmup"))
-    {
-        if(timeleft <= 0)
-        {
-            FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^5Begin!", "", 1);
-            }
-            vip_started = 1;
-            vip_AssignVIPs();
-            remove(self);
-            return;
-        }
-        
-        vip_started = 0;
-        vip_ended = 0;
-        
-        FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat("vip starts in: ", ftos(timeleft)), "", 1);
-        }
-    }
-    self.nextthink = time + 1;
+void vip_EndRound_Finalize() {
+	vip_started = TRUE;
+	vip_AssignVIPs();
+}
+
+void vip_EndRound_Think() {
+	vip_started = 0;
+    vip_ended = 0;
 }
 
 void vip_EndRound()
@@ -330,7 +325,9 @@ void vip_EndRound()
 		local entity e = spawn();
 		e.think = vip_EndRound_Think;
 		e.nextthink = time + 1;
-		e.cnt = cvar("g_explosive_vip_warmup") + next_round;
+		e.cnt = cvar("g_vip_warmup") + next_round;
+		
+		G_EndRound("VIP", 5, cvar("g_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
 	}
 	else
 		defer(5.1, vip_SoulGem_StartRound);
@@ -357,9 +354,9 @@ void vip_SoulGem_StartRound_Think()
 			bigprint_clear_spec(e);
 			
 			if((e.team == COLOR_TEAM1 && redvip) || (e.team == COLOR_TEAM2 && bluevip))
-				bigprint_spec(e, "waiting for an enemy VIP", "", 5);
+				bigprint_spec(e, "Waiting for an enemy VIP", "", 5);
 			else
-				bigprint_spec(e, "waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
+				bigprint_spec(e, "Waiting for VIPs", "Pickup your Soul Gem to become a VIP", 5);
 		}
 		
 		self.nextthink = time + 5;
@@ -492,35 +489,35 @@ float vip_EnemiesMultiplier(entity pl, string cvarname)
 
 void vip_RegenerateHealth()
 {
-	self.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(self, "g_explosive_vip_health_dependonenemies");
+	self.vip_maxhealth = cvar("g_vip_health") * vip_EnemiesMultiplier(self, "g_vip_health_dependonenemies");
 	
-	self.health = max(self.health, min(self.health + cvar("g_explosive_vip_regenerate_health_amount"),
+	self.health = max(self.health, min(self.health + cvar("g_vip_regenerate_health_amount"),
 		self.vip_maxhealth
 	));
 	
-	self.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_health_delay");
+	self.vip_healthregen_next = time + cvar("g_vip_regenerate_health_delay");
 }
 
 void vip_RegenerateArmor()
 {
-	self.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(self, "g_explosive_vip_armor_dependonenemies");
+	self.vip_maxarmor = cvar("g_vip_armor") * vip_EnemiesMultiplier(self, "g_vip_armor_dependonenemies");
 	
-	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_armor_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_vip_regenerate_armor_amount"),
 		self.vip_maxarmor
 	));
 	
-	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
+	self.vip_armorregen_next = time + cvar("g_vip_regenerate_armor_delay");
 }
 
 void vip_RegenerateExtra()
 {
-	self.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(self, "g_explosive_vip_extralives_dependonenemies");
+	self.vip_maxarmor = cvar("g_vip_extralives") * vip_EnemiesMultiplier(self, "g_vip_extralives_dependonenemies");
 	
-	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_explosive_vip_regenerate_extra_amount"),
+	self.armorvalue = max(self.armorvalue, min(self.armorvalue + cvar("g_vip_regenerate_extra_amount"),
 		self.vip_maxarmor
 	));
 	
-	self.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+	self.vip_armorregen_next = time + cvar("g_vip_regenerate_extra_delay");
 }
 
 void vip_UpdateState_Health()
@@ -531,8 +528,8 @@ void vip_UpdateState_Health()
 void vip_UpdateState_Armor()
 {
 	vip_SendVIPInfo(
-		self.vip_maxhealth * cvar("g_explosive_armor_factor") + self.vip_maxarmor,
-		self.health * cvar("g_explosive_armor_factor") + self.armorvalue
+		self.vip_maxhealth * cvar("g_rocketminsta_armor_factor") + self.vip_maxarmor,
+		self.health * cvar("g_rocketminsta_armor_factor") + self.armorvalue
 	);
 }
 
@@ -552,27 +549,27 @@ void vip_MakePlayerVIP(entity pl)
 	// causes the state updater to re-send the VIP info no matter what
 	pl.vip_maxarmor_old = pl.vip_maxarmor_old = pl.vip_armor_old = pl.vip_health_old = -1;
 
-	if(!g_minstagib || cvar("g_balance_minstanex_explosive"))
+	if(!g_minstagib || cvar("g_rocketminsta"))
 	{
-		pl.vip_maxhealth = cvar("g_explosive_vip_health") * vip_EnemiesMultiplier(pl, "g_explosive_vip_health_dependonenemies");
+		pl.vip_maxhealth = cvar("g_vip_health") * vip_EnemiesMultiplier(pl, "g_vip_health_dependonenemies");
 		
-		if(cvar("g_explosive_vip_regenerate_health"))
+		if(cvar("g_vip_regenerate_health"))
 		{
 			pl.vip_regenhealth_f = vip_RegenerateHealth;
 			pl.vip_healthregentime = time;
-			pl.vip_healthregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+			pl.vip_healthregen_next = time + cvar("g_vip_regenerate_extra_delay");
 		}
 	}
 	
-	if(!g_minstagib || (cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor")))
+	if(!g_minstagib || (cvar("g_rocketminsta") && cvar("g_rocketminsta_armor")))
 	{
-		pl.vip_maxarmor = cvar("g_explosive_vip_armor") * vip_EnemiesMultiplier(pl, "g_explosive_vip_armor_dependonenemies");
+		pl.vip_maxarmor = cvar("g_vip_armor") * vip_EnemiesMultiplier(pl, "g_vip_armor_dependonenemies");
 		
-		if(cvar("g_explosive_vip_regenerate_armor"))
+		if(cvar("g_vip_regenerate_armor"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateArmor;
 			pl.vip_armorregentime = time;
-			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_armor_delay");
+			pl.vip_armorregen_next = time + cvar("g_vip_regenerate_armor_delay");
 		}
 		
 		pl.vip_updatestate_f = vip_UpdateState_Armor;
@@ -580,22 +577,22 @@ void vip_MakePlayerVIP(entity pl)
 	else // in minstagib, we will just give him a bunch of extralives
 	{
 		pl.vip_maxhealth = 100;
-		pl.vip_maxarmor = cvar("g_explosive_vip_extralives") * vip_EnemiesMultiplier(pl, "g_explosive_vip_extralives_dependonenemies");
+		pl.vip_maxarmor = cvar("g_vip_extralives") * vip_EnemiesMultiplier(pl, "g_vip_extralives_dependonenemies");
 		
 		if(pl.vip_maxarmor)
 			pl.vip_updatestate_f = vip_UpdateState_Extras;
 		else
 			pl.vip_updatestate_f = vip_UpdateState_Health;
 		
-		if(cvar("g_explosive_vip_regenerate_extra"))
+		if(cvar("g_vip_regenerate_extra"))
 		{
 			pl.vip_regenarmor_f = vip_RegenerateExtra;
 			pl.vip_armorregentime = time;
-			pl.vip_armorregen_next = time + cvar("g_explosive_vip_regenerate_extra_delay");
+			pl.vip_armorregen_next = time + cvar("g_vip_regenerate_extra_delay");
 		}
 	}
 	
-	pl.vip_grenregen_next = time + cvar("g_explosive_vip_regenerate_grenades_delay");
+	pl.vip_grenregen_next = time + cvar("g_vip_regenerate_grenades_delay");
 	vip_ResetHealthArmor(pl);
 
 	local entity e, oldself;
@@ -604,7 +601,7 @@ void vip_MakePlayerVIP(entity pl)
 	switch(pl.team)
 	{
 		case COLOR_TEAM1:
-			bigprint_spec(pl, "you are the ^1red^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^1RED^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^1RED^7 VIP!\n");
 			
 			WaypointSprite_Spawn("redvip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -613,7 +610,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		case COLOR_TEAM2:
-			bigprint_spec(pl, "you are the ^4blue^7 vip!", "Survive or your team will lose!", 2);
+			bigprint_spec(pl, "You are the ^4BLUE^7 vip!", "Survive or your team will lose!", 2);
 			bprint(pl.netname, " ^7is now the ^4BLUE^7 VIP!\n");
 			
 			WaypointSprite_Spawn("bluevip", 0, 0, pl, '0 0 64', world, 0, pl, waypointsprite_attached, TRUE);
@@ -622,7 +619,7 @@ void vip_MakePlayerVIP(entity pl)
 			break;
 		
 		default:
-			bigprint_spec(pl, "you are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
+			bigprint_spec(pl, "You are... wtf?!?!?", "^1THE MOD IS B0RKED", 2);
 			bprint(pl.netname, " ^7screwed everything up\n");
 			break;
 	}
@@ -639,6 +636,24 @@ void vip_PlayerPreThink()
 	DEPENDON(g_vip)
 	if(!ISVIP(self))
 		return;
+	
+	if(!self.waypointsprite_attached)
+	switch(self.team)
+		{
+			case COLOR_TEAM1:
+				
+				WaypointSprite_Spawn("redvip", 0, 0, self, '0 0 64', world, 0, self, waypointsprite_attached, TRUE);
+				if(self.waypointsprite_attached)
+					WaypointSprite_UpdateTeamRadar(self.waypointsprite_attached, RADARICON_WAYPOINT, '1 0 0');
+				break;
+			
+			case COLOR_TEAM2:
+
+				WaypointSprite_Spawn("bluevip", 0, 0, self, '0 0 64', world, 0, self, waypointsprite_attached, TRUE);
+				if(self.waypointsprite_attached)
+					WaypointSprite_UpdateTeamRadar(self.waypointsprite_attached, RADARICON_WAYPOINT, '0 0 1');
+				break;
+		}
 	
 	if(self.vip_updatestate_f)
 		self.vip_updatestate_f();
@@ -661,12 +676,12 @@ void vip_PlayerPreThink()
 		//	bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
 	}
 	
-	if(cvar("g_explosive_vip_regenerate_grenades"))
-	if(self.hg_ammo < cvar("g_explosive_handgrenades_ammo"))
+	if(cvar("g_vip_regenerate_grenades"))
+	if(self.hg_ammo < cvar("g_handgrenades_ammo"))
 	if(time >= self.vip_grenregen_next)
 	{
-		self.hg_ammo += cvar("g_explosive_vip_regenerate_grenades_amount");
-		self.vip_grenregen_next = time + cvar("g_explosive_vip_regenerate_grenades_delay");
+		self.hg_ammo += cvar("g_vip_regenerate_grenades_amount");
+		self.vip_grenregen_next = time + cvar("g_vip_regenerate_grenades_delay");
 	}
 }
 
@@ -796,7 +811,7 @@ void vip_RedVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^4blue^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^4Blue ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM2)
 			hudflash_teamcolor_default_spec(e);
@@ -808,7 +823,7 @@ void vip_RedVIPDown()
 	if(bluevip && bluevip.classname == "player")
 	{
 		PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
 	}
 	
 	vip_EndRound();
@@ -819,7 +834,7 @@ void vip_BlueVIPDown()
 	local entity e;
 	FOR_EACH_PLAYER(e)
 	{
-		bigprint_spec(e, "^1red^7scores!", "The enemy VIP is down", 5);
+		bigprint_spec(e, "^1Red ^7Scores!", "The enemy VIP is down", 5);
 		
 		if(e.team == COLOR_TEAM1)
 			hudflash_teamcolor_default_spec(e);
@@ -831,7 +846,7 @@ void vip_BlueVIPDown()
 	if(redvip && redvip.classname == "player")
 	{
 		PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_explosive_vip_score_survival_soulgem" : "g_explosive_vip_score_survival")));
+		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
 	}
 	vip_EndRound();
 }
@@ -871,9 +886,9 @@ float vip_PlayerDies(float deathtype)
 		PlayerScore_Add(frag_attacker, SP_VIP_VIPKILLS, 1);
 		
 		if(DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_HURTTRIGGER)
-			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill_special"));
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_vip_score_vipkill_special"));
 		else
-			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_explosive_vip_score_vipkill"));
+			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_vip_score_vipkill"));
 	}
 	
 	if(ISREDVIP(frag_target))

@@ -182,6 +182,8 @@ void ScoreInfo_Init(float teams)
 		scores_initialized.classname = "ent_client_scoreinfo";
 		Net_LinkEntity(scores_initialized, FALSE, 0, ScoreInfo_SendEntity);
 	}
+	if(g_inf)
+		return;
 	if(teams >= 1)
 		TeamScore_Spawn(COLOR_TEAM1, "Red");
 	if(teams >= 2)
@@ -212,9 +214,12 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 #if MAX_SCORE <= 8
 	WriteByte(MSG_ENTITY, sendflags);
 	WriteByte(MSG_ENTITY, longflags);
-#else
+#elif MAX_SCORE <= 16
 	WriteShort(MSG_ENTITY, sendflags);
 	WriteShort(MSG_ENTITY, longflags);
+#else
+	WriteInt24_t(MSG_ENTITY, sendflags);
+	WriteInt24_t(MSG_ENTITY, longflags);
 #endif
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
 		if(sendflags & p)
@@ -327,6 +332,28 @@ float PlayerScore_Add(entity player, float scorefield, float score)
 	return (s.(scores[scorefield]) += score);
 }
 
+float PlayerScore_Set(entity player, float scorefield, float score) {
+	if(!scores_initialized)	return 0;
+	
+	entity s = player.scorekeeper;
+	
+	if(!s) {
+		if(gameover)
+			return 0;
+		error("Setting score of unknown player!");
+	}
+	
+	float old = s.(scores[scorefield]);
+	
+	if(old == score)
+		return old;
+	
+	s.SendFlags |= pow(2, scorefield);
+	s.(scores[scorefield]) = score;
+	
+	return score;
+}
+
 float PlayerTeamScore_Add(entity player, float pscorefield, float tscorefield, float score)
 {
 	float r;
@@ -361,7 +388,7 @@ void WinningConditionHelper()
 	entity secondscorekeeper;
 	entity sk;
 
-	s = GetGametype();
+	s = gametype_ID_to_Name(game);
 	s = strcat(s, ":", cvar_string("g_nexuizversion"));
 	s = strcat(s, "::", GetPlayerScoreString(world, 2)); // make this 1 once we can
 
@@ -563,16 +590,16 @@ string GetPlayerScoreString(entity pl, float shortString)
 	{
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_PRIMARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		if(shortString < 2)
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_SECONDARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		if(shortString < 1)
 		for(i = 0; i < MAX_SCORE; ++i)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_PRIMARY)
 			if(scores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_SECONDARY)
-				out = strcat(out, ftos(sk.(scores[i])), ",");
+				out = strcat(out, ftos(floor(sk.(scores[i]))), ",");
 		out = substring(out, 0, strlen(out) - 1);
 	}
 	return out;

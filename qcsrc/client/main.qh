@@ -83,13 +83,14 @@ float sbar_num_fields;
 
 float sbar_font;
 float sbar_bigfont;
+float sbar_rmbigfont;
 
 string scores_label[MAX_SCORE];
 float scores_flags[MAX_SCORE];
 string teamscores_label[MAX_SCORE];
 float teamscores_flags[MAX_SCORE];
-.float scores[MAX_SCORE]; FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(scores);
-.float teamscores[MAX_TEAMSCORE]; FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(teamscores);
+.float scores[MAX_SCORE];
+.float teamscores[MAX_TEAMSCORE];
 
 #define IS_INCREASING(x) ( (x)&SFL_LOWER_IS_BETTER )
 #define IS_DECREASING(x) ( !((x)&SFL_LOWER_IS_BETTER) )
@@ -203,6 +204,7 @@ float rm_showrankings;
 float rm_oldhud;
 float rm_althud;
 float rm_oldflags;
+float rm_oldbigfont;
 
 float vote_yescount;
 float vote_nocount;
@@ -288,3 +290,23 @@ float minstasbar_fixed;
 float gui_reloading;
 
 float rm_hidecountry;
+
+vector jb_camera_origin;
+float jb_camera_expiretime;
+float jb_chasecam_locked;
+float jb_chasecam_backup;
+
+float cl_fps;
+
+.float avg_ping;
+.float avg_ping_next;
+
+string sv_hostname;
+string sv_rm_build;
+string sv_rm_version;
+string sv_rm_date;
+string sv_motd;
+
+float sv_showspecs_extra;
+float sv_showfps;
+float sv_oldfag;

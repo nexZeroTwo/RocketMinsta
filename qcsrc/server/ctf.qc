@@ -445,13 +445,13 @@ void FlagTouch()
 		
 		local entity _pl;
 		if (other.team == COLOR_TEAM1) { // red team scores
-			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1red^7scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1Red ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		if (other.team == COLOR_TEAM2) { // blue team scores
-			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4blue^7scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		
-		if(cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1) // at most one human
+		if((!cvar("g_rocketminsta") || !cvar("g_rocketminsta_ctf_nocapturerecord")) && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
 		{
 			t = time - other.flagcarried.flagpickuptime;
 			s = ftos_decimals(t, 2);
@@ -472,7 +472,7 @@ void FlagTouch()
 			}
 			else if (t < flagcaptimerecord)
 			{
-				bigprint_spec(other, "^2record^7set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
+				bigprint_spec(other, "^2Record ^7Set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
 				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds\n"));
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
@@ -498,8 +498,8 @@ void FlagTouch()
 		//<akari>
 		//Specially for Spook: restore health on flag capture
 		
-		if(cvar("g_balance_minstanex_explosive"))
-		if(cvar("g_explosive_ctf_capheals"))
+		if(cvar("g_rocketminsta"))
+		if(cvar("g_ctf_capheals"))
 		if(other.health < 100)
 			other.health = 100;
 		
@@ -540,7 +540,7 @@ void FlagTouch()
 			
 		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
 		other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
-
+		
 		// pick up
 		self.flagpickuptime = time; // used for timing runs
 		self.speedrunning = other.speedrunning; // if speedrunning, flag will self-return and teleport the owner back after the record
@@ -806,7 +806,7 @@ void spawnfunc_item_flag_team1()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -926,7 +926,7 @@ void spawnfunc_item_flag_team2()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);

@@ -564,7 +564,7 @@ void make_mapinfo_Think()
 	if(MapInfo_FilterGametype(MAPINFO_TYPE_ALL, 0, 0, 0, 1))
 	{
 		print("Done rebuiling mapinfos.\n");
-		MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 		remove(self);
 	}
 	else
@@ -600,6 +600,8 @@ void GameCommand(string command)
 		print("  bbox\n");
 		print("  cvar_changes\n");
 		print("  find classname\n");
+		print("  redirect clientnum server\n");
+		print("  gotoserver server\n");
 		#ifdef RM_SUPPORT_MADOKA
 		print("  ^0walpurgis^7\n");
 		#endif
@@ -646,14 +648,14 @@ void GameCommand(string command)
 		if(argc > 2)
 		{
 			localcmd("gametype ", argv(2), "\n");
-			gametypetoset = GametypeIDFromName(argv(2));
+			gametypetoset = gametype_Name_to_ID(argv(2));
 		}
 		
 		print(GotoMap(argv(1)), "\n");
 		return;
 	}
 
-	if(argv(0) == "gametype") if(argc == 2)
+	if(argv(0) == "gametype" || argv(0) == "forcegametype") if(argc == 2)
 	{
 		float t, tsave;
 		s = argv(1);
@@ -661,26 +663,26 @@ void GameCommand(string command)
 		
 		if(s == "")
 		{
-			print("^1Gametype '", argv(1), "' is either invalid or not supported by RocketMinsta\n");
+			print("^1Gametype '", argv(1), "' is either invalid or not supported\n");
 			return;
 		}
 		
-		t = MapInfo_Type_FromString(s);
-		tsave = MapInfo_CurrentGametype();
+		t = gametype_Name_to_ID(s);
+		tsave = game;
 		if(t)
 		{
 			//MapInfo_SwitchGameType(t);
-			MapInfo_SwitchGameType_String(s);
-			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			if(MapInfo_count > 0)
-			{
+			gametype_Set(gametype_Name_to_ID(s));
+			MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			
+			if(MapInfo_count > 0) {
 				bprint("Game type successfully switched to ", s, "\n");
-			}
-			else
-			{
+			} else if(argv(0) == "forcegametype") {
+				bprint("Not map found for ", s ,", switch forced!\n");
+			} else {
 				bprint("Cannot use this game type: no map for it found\n");
-				MapInfo_SwitchGameType(tsave);
-				MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+				gametype_Set(tsave);
+				MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			}
 		}
 		else
@@ -1172,7 +1174,7 @@ void GameCommand(string command)
     if(argv(0) == "endround")
     {
         FOR_EACH_PLAYER(e)
-            bigprint_spec(e, "round aborted", "", 5);
+            bigprint_spec(e, "Round Aborted", "", 5);
 
         if(!EndRound_Allowed())
         {
@@ -1199,12 +1201,42 @@ void GameCommand(string command)
 
 	if(argv(0) == "addinfo")
 	{
-		float c = cvar("_g_explosive_infomessages_count");
-		string newvar = strcat("_g_explosive_infomessages_", ftos(c));
+		float c = cvar("_sv_infomessages_count");
+		string newvar = strcat("_sv_infomessages_", ftos(c));
 		registercvar(newvar, "");
 		cvar_set(newvar, argv(1));
-		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
+		cvar_set("_sv_infomessages_count", ftos(c + 1));
 		return;
+	}
+	
+	if(argv(0) == "redirect") {
+		if(argc < 3) {
+			print("Usage: redirect clientnum server");
+			return;
+		}
+		
+		entno = stof(argv(1));
+		client = world;
+		if(entno <= maxclients)
+			client = edict_num(entno);
+		if(client.flags & FL_CLIENT)
+			stuffcmd(client, strcat("connect ", ResolveServer(argv(2)) ,"\n"));
+		else
+			print("Client not found\n");
+		return;
+	}
+	
+	if(argv(0) == "gotoserver") {
+		if(argc < 2) {
+			print("Usage: gotoserver server");
+			return;
+		}
+		
+		s = ResolveServer(argv(1));
+		bprint("^5Redirecting everyone to ^2", s, "\n");
+		
+		FOR_EACH_CLIENT(client)
+			stuffcmd(client, strcat("connect ", s,"\n"));
 	}
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");

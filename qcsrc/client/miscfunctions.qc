@@ -14,7 +14,7 @@ void restartAnnouncer_Think() {
 		//gamestart_status = -1;
 		//gamestart_fadetime = time + 1;
 		
-		bigprint("^xFB0Begin!", "It's time to kick some ass", 1);
+		bigprint("^xFB0Begin!", "It's time to kick some ass!", 1);
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
@@ -34,7 +34,7 @@ void restartAnnouncer_Think() {
 		//gamestart_fadetime = time + 0.5;
 		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
 		bigprint(" ", "", 1);
-		bigprint(strcat("game starts in: ", ftos(countdown_rounded)), "", 1);
+		bigprint(strcat("Game starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
@@ -214,6 +214,7 @@ void CSQC_CheckEngine()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
+	sbar_rmbigfont = FONT_USER+4;
 	
 	#ifdef RM_SUPPORT_MADOKA
 	sbar_madokafont = FONT_USER+3;
@@ -366,7 +367,7 @@ void drawborderlines(float thickness, vector pos, vector dim, vector color, floa
 	drawfill(pos + (dim_y + thickness) * '0 1 0', line_dim, color, alpha, drawflag);
 }
 
-void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag)
+void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag, vector src_pos)
 {
 	vector current_pos, end_pos, new_size, ratio;
 	end_pos = pos + area;
@@ -381,7 +382,8 @@ void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color,
 			new_size_y = min(sz_y, end_pos_y - current_pos_y);
 			ratio_x = new_size_x / sz_x;
 			ratio_y = new_size_y / sz_y;
-			drawsubpic(current_pos, new_size, pic, '0 0 0', ratio, color, alpha, drawflag);
+			drawsubpic(current_pos, new_size, pic, src_pos, ratio,
+			           color, alpha, drawflag);
 			current_pos_x += sz_x;
 		}
 		current_pos_y += sz_y;
@@ -420,6 +422,16 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
 }
 
+void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
+
+void drawpic_rotated(vector position, string pic, vector sz, vector rgb, float angle, float alpha, float flag) {
+	drawrotpic(position + sz * 0.5, angle, pic, sz, sz * 0.5, rgb, alpha, flag);
+}
+
+void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, float angle, vector hotspot, float alpha, float flag) {
+	drawrotpic(position + hotspot, angle, pic, sz, hotspot, rgb, alpha, flag);
+}
+
 void loadfont(string slot, string font)
 {
 	/*if(cvar("rm_dontmesswithfonts"))
@@ -453,4 +465,17 @@ void drawstring_aspect(vector pos, string text, vector sz, vector color, float a
 void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha, float drawflag) {
 	SET_POS_AND_SZ_Y_ASPECT(TRUE)
 	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
+}
+
+float approach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	return v;
 }

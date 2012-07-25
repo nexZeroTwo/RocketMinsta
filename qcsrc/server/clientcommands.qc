@@ -1,3 +1,5 @@
+void inf_player_leave(entity);
+
 entity nagger;
 float readycount;
 float Nagger_SendEntity(entity to, float sendflags)
@@ -165,6 +167,9 @@ void SV_ParseClientCommand(string s) {
 	vector start, end;
 	entity e, oldself;
 
+	if(cvar("sv_printclientcommands"))
+		print("Clientcommand by ", self.netname, ": ", s, "\n");
+
 	tokens = tokenize_console(s);
 
 	cmd = argv(0);
@@ -214,19 +219,20 @@ void SV_ParseClientCommand(string s) {
 		#define OPTAVAIL(o,v) OPTAVAIL_RAW(o, ftos(cvar(v)))
 		#define OPTAVAIL_NOT(o,v) OPTAVAIL_RAW(o, ftos(!cvar(v)))
 		
-		OPTAVAIL	("anonspec", "g_explosive_anonspecs")
-		OPTAVAIL	("showspec", "g_explosive_showspecs")
-		//OPTAVAIL	("teamlasers", "g_explosive_laser_teamcolor")
-		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
-		OPTAVAIL	("shownames", "g_explosive_shownames")
-		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
-		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
+		OPTAVAIL	("anonspec", "sv_anonspecs")
+		OPTAVAIL	("showspec", "sv_showspecs")
+		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
+		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
+		OPTAVAIL	("shownames", "sv_shownames")
+		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
+		OPTAVAIL	("hidecountry", "sv_hidecountry")
+		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
 		
-		stuffcmd(self, strcat("set _g_balance_minstanex_explosive ", ftos(cvar("g_balance_minstanex_explosive")), "\n"));
+		stuffcmd(self, strcat("set _g_rocketminsta ", ftos(cvar("g_rocketminsta")), "\n"));
 		
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
@@ -251,7 +257,7 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "anonspec") {
 		local string val = argv(1);
 		
-		if(!cvar("g_explosive_anonspecs"))
+		if(!cvar("sv_anonspecs"))
 		{
 			sprint(self, "^1Anonymous spectators are not allowed on this server!\n");
 			return;
@@ -283,7 +289,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(cvar("g_explosive_allowmadoka"))
+		if(cvar("sv_madoka"))
 			self.madoka = stof(argv(1));
 		else
 			self.madoka = 0;
@@ -319,7 +325,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(!cvar("g_explosive_allow_fakeflag"))
+		if(!cvar("sv_fakeflag"))
 		{
 			sprint(self, "^1'fakeflag' is forbidden on this server.");
 			
@@ -342,7 +348,15 @@ void SV_ParseClientCommand(string s) {
 		if(!self) return;
 		self.speczoom_speed = stof(argv(1));
 		self.speczoom_factor = stof(argv(2));
-		WriteSpectatorInfo(self);
+		WriteSpectatorInfo(self); 
+	} else if(cmd == "fpsreport") {
+		if not(sv_showfps)
+			return;
+		
+		if(!self) return;
+		if(!self.scorekeeper) return;
+		
+		PlayerScore_Set(self, SP_FPS, stof(argv(1)));
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));
@@ -368,7 +382,7 @@ void SV_ParseClientCommand(string s) {
 			self.classname = "observer";
 			self.version_mismatch = 1;
 			PutClientInServer();
-		} else if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force")) {
+		} else if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force") || cvar("g_inf")) {
 			//JoinBestTeam(self, FALSE, TRUE);
 		} else if(teams_matter && !cvar("sv_spectate")) {
 			self.classname = "observer";
@@ -415,6 +429,8 @@ void SV_ParseClientCommand(string s) {
 			if(self.ballcarried)
 				DropBall(self.ballcarried, self.origin, self.velocity);
 			kh_Key_DropAll(self, TRUE);
+			prec_player_die(self);
+			inf_player_leave(self);
 			WaypointSprite_PlayerDead();
 			self.classname = "observer";
 			if(blockSpectators)
@@ -446,6 +462,8 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if( !teams_matter ) {
 			sprint( self, "selecteam can only be used in teamgames\n");
+		} else if(g_inf) {
+			//don't allow players to switch their team when playing infection
 		} else if(cvar("g_campaign")) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
@@ -864,7 +882,7 @@ void SV_ParseClientCommand(string s) {
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
 	} else if (cmd == "hidecountry") {
 		if (! self) return;
-		if (! cvar ("g_explosive_allow_hidecountry"))
+		if (! cvar ("sv_hidecountry"))
 		{
 			sprint (self, "^1hidecountry is not allowed on this server.\n");
 			return;

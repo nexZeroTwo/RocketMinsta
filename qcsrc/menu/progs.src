@@ -12,6 +12,8 @@ oo/base.h
 ../common/campaign_common.qh
 ../common/items.qh
 ../common/ip2c.qh
+../common/gametype.qh
+../common/dprm.qh
 
 gamecommand.qh
 menu.qh
@@ -34,8 +36,11 @@ menu.qc
 draw.qc
 nexuiz/util.qc
 
+../common/dprm.qc
 ../common/campaign_file.qc
 ../common/campaign_setup.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
+../common/gametype.qc
+

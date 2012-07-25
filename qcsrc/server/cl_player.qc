@@ -18,7 +18,7 @@ void WeaponStats_Shutdown()
 	string prefix;
 	if(weaponstats_buffer < 0)
 		return;
-	prefix = strcat(cvar_string("hostname"), "\t", GetGametype(), "_", GetMapname(), "\t");
+	prefix = strcat(cvar_string("hostname"), "\t", gametype_ID_to_Name(game), "_", GetMapname(), "\t");
 	if(cvar_string("sv_weaponstats_killfile") != "")
 	{
 		fh = fopen(cvar_string("sv_weaponstats_killfile"), FILE_APPEND);
@@ -429,6 +429,54 @@ void PlayerCorpseDamage (entity inflictor, entity attacker, float damage, float 
 
 void ClientKill_Now_TeamChange();
 
+spawnfunc_t GetPowerupSpawnfunc(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	return spawnfunc_item_strength;
+		case IT_INVINCIBLE:	return spawnfunc_item_invincible;
+	}
+	
+	bprint("WARNING: Tried to drop an unknown powerup, please debug this!\n");
+	return func_null;
+}
+
+void ClearPowerup(float id) {
+	switch(id) {
+		case IT_STRENGTH: 	self.strength_finished 		= 0; break;
+		case IT_INVINCIBLE:	self.invincible_finished 	= 0; break;
+	}
+}
+
+void DropPowerup(float id, vector force) {
+	var spawnfunc_t spawnfunc;
+	spawnfunc = GetPowerupSpawnfunc(id);
+	if(!spawnfunc) return;
+	
+	entity oldself = self;
+	entity p = self = spawn();
+	p.droppedpowerup = TRUE;
+	spawnfunc();
+	self = oldself;
+	if(!p) return;
+	p.movetype = MOVETYPE_BOUNCE;
+	makevectors(self.angles);
+	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
+	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
+	p.reset = SUB_Remove;
+	ClearPowerup(id);
+}
+
+void DropPowerups(vector force) {
+	DEPENDON(cvar("g_droppowerups"))
+	
+	if(self.items & IT_STRENGTH)
+		DropPowerup(IT_STRENGTH, force);
+	if(self.items & IT_INVINCIBLE)
+		DropPowerup(IT_INVINCIBLE, force);
+}
+
+void Boobs_Clear();
+void Boobs_DropAll(vector);
+
 void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
@@ -611,7 +659,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("g_explosive_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
 		{
 			float i;
 			
@@ -637,7 +685,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				}
 				
 				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
-				if(!cvar("g_explosive_extendfragmessages")) wpnstring = "";
+				if(!cvar("sv_extendfragmessages")) wpnstring = "";
 				
 				if(attacker.classname == "player") if(attacker != targ)
 				{
@@ -726,12 +774,23 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		frag_attacker = attacker;
 		frag_inflictor = inflictor;
 		frag_target = self;
+		frag_force = force;
+		
+		prec_player_die(self);
+		
+		DropPowerups(force);
+		
+		sm_PlayerDies();
+		
 		if(freezetag_PlayerDies())
 			return;
 		
 		if(vip_PlayerDies(deathtype))
 			return;
-			
+		
+		if(JB_PlayerDies())
+			return;
+		
 		if(self == attacker)
 			kh_Key_DropAll(self, TRUE);
 		else if(attacker.classname == "player" || attacker.classname == "gib")
@@ -753,12 +812,19 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		// clear waypoints
 		WaypointSprite_PlayerDead();
 		// make the corpse upright (not tilted)
-		self.angles_x = 0;
-		self.angles_z = 0;
+		
+		if(!jb_roundover) {
+			self.angles_x = 0;
+			self.angles_z = 0;
+		}
+		
+		Boobs_DropAll(force);
+		
 		// don't spin
 		self.avelocity = '0 0 0';
 		// view from the floor
-		self.view_ofs = '0 0 -8';
+		if(!jb_roundover)
+			self.view_ofs = '0 0 -8';
 		// toss the corpse
 		self.movetype = MOVETYPE_TOSS;
 		// shootable corpse
@@ -776,11 +842,11 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			waves = cvar("g_respawn_mapsettings_waves");
 		}
 		if(!sdelay)
-			sdelay = cvar(strcat("g_", GetGametype(), "_respawn_delay"));
+			sdelay = cvar(strcat("g_", gametype_ID_to_Name(game), "_respawn_delay"));
 		if(!sdelay)
 			sdelay = cvar("g_respawn_delay");
 		if(!waves)
-			waves = cvar(strcat("g_", GetGametype(), "_respawn_waves"));
+			waves = cvar(strcat("g_", gametype_ID_to_Name(game), "_respawn_waves"));
 		if(!waves)
 			waves = cvar("g_respawn_waves");
 		if(waves)
@@ -813,7 +879,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			if(self.weaponentity.lasertarget)
 				remove(self.weaponentity.lasertarget);
 
-		if(clienttype(self) == CLIENTTYPE_REAL)
+		if(clienttype(self) == CLIENTTYPE_REAL && !jb_roundover)
 		{
 			self.fixangle = TRUE;
 			//msg_entity = self;
@@ -1048,15 +1114,21 @@ void UpdateSelectedPlayer()
 void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
-	float flood, privatemsgprefixlen;
+	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
 	if(Ban_MaybeEnforceBan(source))
 		return;
 
-	if(!teamsay && !privatesay)
+	if(!teamsay && !privatesay) {
 		if(substring(msgin, 0, 1) == " ")
 			msgin = substring(msgin, 1, strlen(msgin) - 1); // work around DP say bug (say_team does not have this!)
+		
+		if(!strstrofs(msgin, "/me ", 0)) {
+			slashme = TRUE;
+			msgin = strdecolorize(substring(msgin, 4, strlen(msgin) - 4));
+		}
+	}
 
 	msgin = formatmessage(msgin);
 
@@ -1093,8 +1165,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	else
 		namestr = source.netname;
 
-	if(privatesay)
-	{
+	if(privatesay) {
 		msgstr = strcat("\{1}\{13}* ^3", namestr, "^3 tells you: ^7");
 		privatemsgprefixlen = strlen(msgstr);
 		msgstr = strcat(msgstr, msgin);
@@ -1104,13 +1175,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		else
 			privatemsgprefix = strcat("\{1}\{13}* ^3You tell ", privatesay.netname, ": ^7");
 	}
-	else if(teamsay)
-	{
+	else if(teamsay) {
 		msgstr = strcat("\{1}\{13}", colorstr, "(^3", namestr, colorstr, ") ^7", msgin);
 		cmsgstr = strcat(colorstr, "(^3", namestr, colorstr, ")\n^7", msgin);
-	}
-	else
-	{
+	} else if(slashme) {
+		msgstr = strcat("\{1} ^5~ ^3", namestr, " ^5", msgin);
+	} else {
 		msgstr = strcat("\{1}", namestr, "^7: ", msgin);
 		cmsgstr = "";
 	}
@@ -1121,12 +1191,13 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	// FLOOD CONTROL
 	flood = 0;
+	var .float flood_field;
+		
 	if(floodcontrol)
 	{
 		float flood_spl;
 		float flood_burst;
 		float flood_lmax;
-		var .float flood_field;
 		float lines;
 		if(privatesay)
 		{

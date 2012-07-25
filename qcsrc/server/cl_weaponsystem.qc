@@ -130,9 +130,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 {
 	float nudge = 1; // added to traceline target and subtracted from result
 	local vector trueaimpoint;
-	local float oldsolid;
+	local float _oldsolid;
 	vector vecs, dv;
-	oldsolid = ent.dphitcontentsmask;
+	_oldsolid = ent.dphitcontentsmask;
 	if(ent.weapon == WEP_CAMPINGRIFLE)
 		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	else
@@ -294,7 +294,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	}
 #endif
 
-	ent.dphitcontentsmask = oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
+	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
@@ -1004,12 +1004,14 @@ float weapon_prepareattack(float secondary, float attacktime)
 {
 	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
 	//if all players readied up and the countdown is running
-	if(time < game_starttime || time < self.race_penalty) {
+	if((time < game_starttime && !g_inf) || time < self.race_penalty)
 		return FALSE;
-	}
+
+	if(shooting_forbidden && self.weapon != WEP_LASER)
+		return FALSE;
 
 	if(g_freezetag)
-	if(self.freezetag_frozen)
+	if(self.freezetag_frozen) 
 		return FALSE;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
@@ -1025,12 +1027,13 @@ float weapon_prepareattack(float secondary, float attacktime)
 	// do not even think about shooting if switching
 	if(self.switchweapon != self.weapon)
 		return FALSE;
-
+	
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished
-		if (ATTACK_FINISHED(self) > time + frametime * 0.5)
+		if (ATTACK_FINISHED(self) > time + frametime * 0.5) 
 			return FALSE;
+			
 		// don't fire while changing weapon
 		if (self.weaponentity.state != WS_READY)
 			return FALSE;

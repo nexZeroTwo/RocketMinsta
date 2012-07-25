@@ -1,6 +1,6 @@
 
 void sm_Init() {
-	g_soulmates = cvar("g_explosive_freezetag_soulmates");
+	g_soulmates = cvar("g_freezetag_soulmates");
 	DEPENDON(g_soulmates)
 	sm_Clear();
 	precache_sound("kh/capture.wav");
@@ -36,7 +36,7 @@ void sm_Attach(entity host, entity slave) {
 	slave.sm_canattach = 0;
 	
 	FOR_EACH_PLAYER(other) if(other.team != slave.team)
-		bigprint_spec(other, "^1warning!", strcat(slave.netname, " ^7 is now ", host.netname, "^7's soulmate!"), 2);
+		bigprint_spec(other, "^1Warning!", strcat(slave.netname, " ^7 is now ", host.netname, "^7's soulmate!"), 2);
 		
 	centerprint_spec(slave, strcat("You are now ", host.netname, "^7's soulmate!"));
 	centerprint_spec(host, strcat(slave.netname, "^7 is now your soulmate!"));
@@ -102,7 +102,7 @@ void sm_Frame() {
 	}
 	
 	if(self.sm_canattach && !sm_IsSoulMate(self) && time > self.sm_nextnotify) {
-		bigprint_spec(self, "you've got a soul gem!", "Collide with a teammate to connect!", 2);
+		bigprint_spec(self, "You've got a Soul Gem!", "Collide with a teammate to connect!", 2);
 		self.sm_nextnotify = time + 5;
 	}
 	
@@ -117,7 +117,7 @@ void sm_Frame() {
 		}
 		
 		if(self.BUTTON_USE) {
-			if(cvar("g_explosive_freezetag_soulmates_allow_detach")) {
+			if(cvar("g_freezetag_soulmates_allow_detach")) {
 				bprint(self.netname, " ^7has detached from ", self.smhost.netname, "\n");
 				centerprint_spec(self.smhost, strcat(self.netname, " ^7has detached from you"));
 				
@@ -137,7 +137,7 @@ void sm_Frame() {
 		
 		return;
 	} else if(self.soulmate) {
-		if(self.BUTTON_USE) if(cvar("g_explosive_freezetag_soulmates_allow_drop")) {
+		if(self.BUTTON_USE) if(cvar("g_freezetag_soulmates_allow_drop")) {
 			bprint(self.netname, " ^7has dropped ", self.soulmate.netname, "\n");
 			centerprint_spec(self.soulmate, strcat("^7You have been dropped by ", self.netname));
 			
@@ -154,7 +154,7 @@ void sm_Frame() {
 			sprint(self, "^1You are not allowed to drop your soulmates on this server\n");
 		}
 	} else if(self.BUTTON_USE) if(self.sm_canattach) {
-		if(cvar("g_explosive_freezetag_soulmates_allow_gemdrop")) {
+		if(cvar("g_freezetag_soulmates_allow_gemdrop")) {
 			bprint(self.netname, " ^7has dropped their soulgem\n");
 			self.sm_canattach = 0;
 			sm_DropSoulGem();
@@ -182,11 +182,11 @@ void sm_Frame() {
 }
 
 void sm_SpawnSoulGems(float theteam) {
-	float count, gems, i;
+	float _count, gems, i;
 	
 	FOR_EACH_PLAYER(other) if(other.team == theteam)
-		++count;
-	gems = max(1, ceil(count / cvar("g_explosive_freezetag_soulmates_players_per_gem")));
+		++_count;
+	gems = max(1, ceil(_count / cvar("g_freezetag_soulmates_players_per_gem")));
 	
 	for(i = 0; i < gems; ++i)
 		sm_SpawnSoulGem(theteam);
@@ -216,7 +216,9 @@ void sm_Clear() {
 }
 
 void sm_RemovePlayer() {
-	if(self.smhost)
+	DEPENDON(g_soulmates)
+	
+	if(self.smhost || self.sm_canattach)
 		sm_DropSoulGem();
 	
 	if(self.soulmate) {
@@ -226,6 +228,15 @@ void sm_RemovePlayer() {
 	
 	sm_Detach(self);
 	self.sm_canattach = 0;
+}
+
+void sm_PlayerDies() {
+	DEPENDON(g_soulmates)
+	
+	if(!self.smhost && self.sm_canattach) {
+		sm_DropSoulGem();
+		self.sm_canattach = 0;
+	}
 }
 
 float sm_IsSoulMate(entity p) {
@@ -266,6 +277,31 @@ vector sm_SoulGemColormod2(float theteam)
 	}
 }
 
+float sm_SoulGemGlow(float theteam) {
+	switch(theteam) {
+		case COLOR_TEAM1:
+			return 251;
+		case COLOR_TEAM2:
+			return 210;
+		default:
+			return 0;
+	}
+}
+
+void sm_SoulGem_Think() {
+	self.glow_size = 256 + cos(time * 2) * 64;
+	
+	if(self.owner) {
+		vector ang;
+		ang_y = mod(time * 90, 360);
+		makevectors(ang);
+		setorigin(self, v_forward * 64 * sin(time * 5) + 16 * (v_up + v_up * sin(0.5 * time)));
+		self.velocity = '0 0 0';
+	}
+	
+	self.nextthink = time + 0.1;
+}
+
 void sm_SoulGem_Touch() {
 	if(self.gem_pickedup)
 		return;
@@ -285,19 +321,26 @@ void sm_SoulGem_Touch() {
 	if(sm_IsSoulMate(other))
 		return;
 		
-	self.colormod = sm_SoulGemColormod(-self.team);
-	self.enemy.colormod = sm_SoulGemColormod2(-self.team);
+	//self.colormod = sm_SoulGemColormod(-self.team);
+	//self.enemy.colormod = sm_SoulGemColormod2(-self.team);
 	self.gem_pickedup = 1;
 	
 	other.sm_canattach = 1;
 	play2all("kh/capture.wav");
 	
 	string s = strcat(other.netname, " ^2picked up a soul gem!");
-	FOR_EACH_PLAYER(other)
-		centerprint_spec(other, s);
+	entity p; FOR_EACH_PLAYER(p)
+		centerprint_spec(p, s);
 	bprint(s, "\n");
 	
-	sm_RemoveSoulGem(self);
+	self.solid = SOLID_NOT;
+	self.velocity = '0 0 0';
+	self.owner = other;
+	other.sm_gemcarried = self;
+	setattachment(self, other, "");
+	setorigin(self, self.origin);
+	
+	//sm_RemoveSoulGem(self);
 }
 
 void sm_RemoveSoulGem(entity gem) {
@@ -308,6 +351,7 @@ void sm_RemoveSoulGem(entity gem) {
 
 void sm_SoulGem_Reset() {
 	self.gem_pickedup = 0;
+	self.solid = SOLID_TRIGGER;
 	self.alpha = self.enemy.alpha = 0.8;
 	self.colormod = sm_SoulGemColormod(self.team);
 	self.enemy.colormod = sm_SoulGemColormod2(self.team);
@@ -321,11 +365,17 @@ entity sm_CreateSoulGem(float theteam) {
 	e.team = theteam;
 	e.movetype = MOVETYPE_NONE;
 	e.touch = sm_SoulGem_Touch;
+	e.think = sm_SoulGem_Think;
+	e.nextthink = time + random();
 	e.solid = SOLID_TRIGGER;
 	e.flags = FL_ITEM;
 	e.reset2 = sm_SoulGem_Reset;
 	setmodel(e, "models/runematch/rune.mdl");
 	setsize(e, '0 0 -35', '0 0 0');
+	
+	e.glow_size = 256;
+	e.glow_color = sm_SoulGemGlow(theteam);
+	e.glow_trail = 1;
 	
 	e.enemy = spawn();
 	e.enemy.enemy = e;
@@ -338,21 +388,30 @@ entity sm_CreateSoulGem(float theteam) {
 	e.enemy.colormod = sm_SoulGemColormod2(theteam);
 
 	e.alpha = e.enemy.alpha = 0.8;
-	e.effects = e.enemy.effects = (EF_ADDITIVE | EF_FULLBRIGHT);
+	e.effects = e.enemy.effects = (EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION);
 	
 	return e;
 }
 
 void sm_PlaceSoulGem(entity gem) {
-	entity spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	local entity oldself;
+	oldself = self;
+	self = gem;
+	
+	entity spot;
+	
+	if(have_team_spawns) {
+		spot = Spawn_WeightedPoint_Team(findchain(classname, "info_player_deathmatch"), 1, 1, 1, gem.team);
+		if(!spot)	// just in case something is fucked
+			spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	} else
+		spot = Spawn_WeightedPoint(findchain(classname, "info_player_deathmatch"), 1, 1, 1);
+	
 	setorigin(gem, spot.origin);
 	
 	if(!move_out_of_solid(gem))
 		bprint("\x01^1WARNING: ^7failed to move soulgem out of solid, expect weird shit and breakages\n");
 	
-	local entity oldself;
-	oldself = self;
-	self = gem;
 	droptofloor();
 	self = oldself;
 }
@@ -362,12 +421,17 @@ void sm_SpawnSoulGem(float theteam) {
 }
 
 void sm_DropSoulGem() {
-	entity gem = sm_CreateSoulGem(self.team);
+	//entity gem = sm_CreateSoulGem(self.team);
+	entity gem = self.sm_gemcarried;
 	makevectors(self.v_angle);
 	
+	self.sm_gemcarried = gem.owner = world;
 	gem.movetype = MOVETYPE_BOUNCE;
-	gem.origin = self.origin;
-	setorigin(gem, gem.origin + v_forward * 10);
+	gem.solid = SOLID_TRIGGER;
+	setattachment(gem, world, "");
+	setorigin(gem, self.origin + v_forward * 10);
 	gem.velocity = (v_forward + '0 0 1') * (200 + vlen(self.velocity));
 	gem.sm_attachblock = time + 2;
+	gem.gem_pickedup = FALSE;
+	gem.owner = world;
 }

@@ -23,25 +23,6 @@
 // Revision 22: hook shot origin
 #define CSQC_REVISION 22
 
-// probably put these in common/
-// so server/ and client/ can be synced better
-const float GAME_DEATHMATCH		= 1;
-const float GAME_TEAM_DEATHMATCH	= 2;
-const float GAME_DOMINATION		= 3;
-const float GAME_CTF			= 4;
-const float GAME_RUNEMATCH		= 5;
-const float GAME_LMS			= 6;
-const float GAME_ARENA		= 7;
-const float GAME_KEYHUNT		= 8;
-const float GAME_ASSAULT		= 9;
-const float GAME_ONSLAUGHT	= 10;
-const float GAME_RACE	= 11;
-const float GAME_NEXBALL = 12;
-const float GAME_CTS = 13;
-const float GAME_FREEZETAG = 14;
-const float GAME_TOTAL_DOMINATION = 15;
-const float GAME_VIP = 16;
-
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
 const float AS_FLOAT_TRUNCATED	= 2;
@@ -64,6 +45,8 @@ const float TE_CSQC_SPEEDRECORD = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
+const float TE_CSQC_CAMERA = 117;
+const float TE_CSQC_SERVERINFO = 118;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -310,10 +293,13 @@ const float STAT_MINSTA = 113;
 const float STAT_HGFORCE = 114;
 const float STAT_HGAMMO = 115;
 const float STAT_SM_HASGEM = 116;
+const float STAT_UNLOCK_PROGRESS = 117;
+const float STAT_PRISONED = 118;
+const float STAT_ROUNDLOST = 119;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
-#define MAPVOTE_COUNT 10
+#define MAPVOTE_COUNT 24
 
 /**
  * Lower scores are better (e.g. suicides)
@@ -354,9 +340,7 @@ const float STAT_SM_HASGEM = 116;
  * Score indices
  */
  
-//<akari>
-#define MAX_SCORE 17
-//</akari>
+#define MAX_SCORE 18
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -372,11 +356,11 @@ const float STAT_SM_HASGEM = 116;
 #define SP_JOINTIME 14
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
+#define SP_FPS 17
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
 #define SP_CARRYING 9
-
 // no, really, ask me: irc.quakenet.org #thebadasschoobs
 
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
@@ -458,6 +442,9 @@ float PROJECTILE_RM_LASER_BLUE = 23;
 float PROJECTILE_RM_LASER_YELLOW = 24;
 float PROJECTILE_RM_LASER_PINK = 25;
 
+float PROJECTILE_HG_GENERIC = 26;
+float PROJECTILE_HG_NAPALM = 27;
+
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
 float SPECIES_ALIEN        =  2;
@@ -489,6 +476,12 @@ float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 
+float DEATH_HG_START = 100;
+float DEATH_HG_NORMAL = 100;
+float DEATH_HG_NAPALM = 101;
+float DEATH_HG_STICKY = 102;
+float DEATH_HG_END = 102;
+
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
 float HITTYPE_SECONDARY = 0x100;
@@ -499,9 +492,10 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
+#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define DEATH_ISWEAPON(t,w)           (!DEATH_ISHG(t) && !DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
+#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
@@ -525,7 +519,7 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA (cvar("g_explosive_oldnexsound")? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_MINSTA ((cvar("sv_oldnexsound") || sv_oldfag)? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
 	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"
@@ -575,3 +569,5 @@ const vector eZ = '0 0 1';
 #define GTV_FORBIDDEN 2
 
 float(string url, float id) uri_get = #513;
+
+#define abs(f) fabs(f)

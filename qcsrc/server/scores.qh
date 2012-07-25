@@ -22,6 +22,14 @@ void PlayerScore_Detach(entity player);
 float PlayerScore_Add(entity player, float scorefield, float score);
 
 /**
+ * Sets the player's scorefield to an absolute value.
+ * NEVER call this if PlayerScore_Attach has not been called yet!
+ * Means: FIXME make players unable to join the game when not called ClientConnect yet.
+ * Returns the new score.
+ */
+float PlayerScore_Set(entity player, float scorefield, float score);
+
+/**
  * Initialize the score of this player if needed.
  * Does nothing in teamplay.
  * Use that when a spectator becomes a player.

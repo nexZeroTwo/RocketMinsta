@@ -1,3 +1,6 @@
+void inf_warmup();
+void Boobs_Clear();
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -259,17 +262,34 @@ entity Spawn_FilterOutBadSpots(entity firstspot, entity playerlist, float mindis
 	return spotlist;
 }
 
-entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exponent)
+entity Spawn_WeightedPoint_Team(entity firstspot, float lower, float upper, float exponent, float teem)
 {
 	// weight of a point: bound(lower, mindisttoplayer, upper)^exponent
 	// multiplied by spot.cnt (useful if you distribute many spawnpoints in a small area)
 	local entity spot;
+	local float considerations;
+	considerations = 0;
 
 	RandomSelection_Init();
 	for(spot = firstspot; spot; spot = spot.chain)
-		RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
+	{
+		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot && (teem < 0 || spot.team == teem))
+			RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
+		considerations += 1;
+	}
+	if(!considerations) // if we didn't like the options...
+		if(self.last_spawn_pt_1 == spot && spot.chain) // if we can, try to take 2nd opt.
+			RandomSelection_Add(firstspot.chain, 0, string_null, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
+		else
+			RandomSelection_Add(firstspot, 0, string_null, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
 
+	self.last_spawn_pt_2 = self.last_spawn_pt_1;
+	self.last_spawn_pt_1 = RandomSelection_chosen_ent;
 	return RandomSelection_chosen_ent;
+}
+
+entity Spawn_WeightedPoint(entity firstspot, float lower, float upper, float exponent) {
+	return Spawn_WeightedPoint_Team(firstspot, lower, upper, exponent, -1);
 }
 
 /*
@@ -298,8 +318,8 @@ entity SelectSpawnPoint (float anypoint)
 	local entity spot, firstspot, playerlist;
 
 	local float randspawns, closetoteam_cvar;
-	randspawns = cvar("g_explosive_randomspawns");
-	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
+	randspawns = cvar("sv_randomspawns");
+	closetoteam_cvar = cvar("g_spawnclosetoteam");
 	
 	if(!global_spawnpoint)
 		global_spawnpoint = spawn();
@@ -342,15 +362,15 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
 	}
-	else if(teams_matter && closetoteam)
+	else if(teams_matter && !g_inf && closetoteam)
 	{
 		local entity md_point, md_player, md_tmp_point, md_tmp_player;
 		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
 		mdst = -1;
 		local float i;
 		
-		local float cvar_mindist_team = cvar("g_explosive_spawnclosetoteam_mindist_team");
-		local float cvar_mindist_enemies = cvar("g_explosive_spawnclosetoteam_mindist_enemies");
+		local float cvar_mindist_team = cvar("g_spawnclosetoteam_mindist_team");
+		local float cvar_mindist_enemies = cvar("g_spawnclosetoteam_mindist_enemies");
 
 		for(i = 0; i < 2; ++i)
 		{
@@ -513,7 +533,7 @@ entity SelectSpawnPoint (float anypoint)
 			{
 				//error("Cannot find a spawn point - please fix the map!");
 				bprint("\x01^1* Cannot find a spawn point! ^7Forced endmatch.\n");
-				localcmd("timelimit -1\n");
+				end_match(1);
 				return world;
 			}
 		}
@@ -697,6 +717,7 @@ PutObserverInServer
 putting a client as observer in the server
 =============
 */
+void inf_player_leave(entity);
 void FixPlayermodel();
 void PutObserverInServer (void)
 {
@@ -715,15 +736,21 @@ void PutObserverInServer (void)
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self);
 	}
-
+	
+	frag_attacker = world;
+	
 	remove(self.shownames);
 	self.shownames = world;
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
+	prec_player_die(self);
+	inf_player_leave(self);
 	Portal_ClearAll(self);
-
+	Boobs_Clear();
+	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
 	if(self.ballcarried)
@@ -776,6 +803,10 @@ void PutObserverInServer (void)
 	self.nextthink = 0;
 	self.hook_time = 0;
 	self.runes = 0;
+	self.prec_rune = world;
+    self.prec_grudge = 0;
+    self.last_spawn_pt_1 = world;
+    self.last_spawn_pt_2 = world;
 	self.deadflag = DEAD_NO;
 	self.angles = spot.angles;
 	self.angles_z = 0;
@@ -925,6 +956,105 @@ void PlayerTouchExplode(entity p1, entity p2)
 	remove(e);
 }
 
+// ======================================== //
+
+.entity boob_left, boob_right;
+
+#define BOOBS_SIZE 4
+#define BOOBS_POS 	'6.5 0 30'
+#define BOOBS_DIST 	'2 5 0'
+
+void Boobs_DropBoob(entity boob, vector force) {
+	setattachment(boob, world, "");
+	setorigin(boob, boob.owner.origin + boob.oldorigin);
+	boob.velocity = 100 * ('1 0 0' * crandom() + '0 1 0' * crandom() + '0 0 2' + '0 0 1' * random()) + force * 2;
+	boob.movetype = MOVETYPE_BOUNCE;
+	boob.avelocity = randomvec();
+	boob.owner = world;
+}
+
+void Boobs_ClearFor(entity plr, vector force) {
+	if(plr.boob_left)		Boobs_DropBoob(self.boob_left, force);
+	if(plr.boob_right)		Boobs_DropBoob(self.boob_right, force);
+	plr.boob_left = plr.boob_right = world;
+}
+
+void Boobs_Clear() {
+	Boobs_ClearFor(self, '0 0 0');
+}
+
+void Boobs_DropAll(vector force) {
+	Boobs_ClearFor(self, force);
+}
+
+void Boob_Think() {
+	if(self.owner) {
+		self.alpha = self.owner.alpha;
+		if(self.owner.movement_x || self.owner.movement_y)
+			setorigin(self, self.oldorigin + '0 0 1' * sin(time * 10 + self.cnt));
+	} else if(self.velocity_x || self.velocity_y || self.velocity_z) {
+		self.avelocity = normalize(self.avelocity) * vlen(self.velocity);
+	} else {
+		SUB_SetFade(self, time + 10, 2);
+		return;
+	}
+	
+	self.nextthink = time + 0.1;
+}
+
+void Boob_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	self.velocity_z += vlen(force) * 0.7;
+}
+
+entity Boobs_SpawnBoob(entity p, float dir) {
+	entity boob = spawn();
+	boob.classname = "boob";
+	boob.modelscale = boob.scale = BOOBS_SIZE;
+	boob.model = "models/boob.mdl";
+	boob.alpha = 1;
+	boob.owner = p;
+	boob.angles = vectoangles('0 0 -0.5');
+	boob.think = Boob_Think;
+	boob.nextthink = time;
+	boob.cnt = dir;
+	//boob.glow_color = 11;
+	//boob.glow_size = 32;
+	boob.effects = EF_NOSHADOW | EF_LOWPRECISION;
+	boob.takedamage = DAMAGE_AIM;
+	boob.solid = SOLID_CORPSE;
+	boob.event_damage = Boob_Damage;
+	boob.damageforcescale = 3;
+	
+	setattachment(boob, p, "");
+	setorigin	 (boob, BOOBS_POS + BOOBS_DIST * dir);
+	setmodel(boob, boob.model);
+	boob.mins_z = -5;
+	boob.maxs_z = +5;
+	boob.mins_x = boob.mins_y = -5;
+	boob.maxs_x = boob.maxs_y = +5;
+	boob.oldorigin = boob.origin;
+	
+	return boob;
+}
+
+void Boobs_Attach() {
+	if(self.boob_left)	remove(self.boob_left);
+	if(self.boob_right)	remove(self.boob_right);
+	
+	if not(cvar("g_boobs"))
+		return;
+	
+	self.boob_left  = Boobs_SpawnBoob(self, -1);
+	self.boob_right = Boobs_SpawnBoob(self, +1);
+}
+
+void Boobs_DropAllAndRespawn(vector force) {
+	Boobs_DropAll(force);
+	Boobs_Attach();
+}
+
+// ======================================== //
+
 /*
 =============
 PutClientInServer
@@ -935,7 +1065,7 @@ Called when a client spawns in the server
 //void() ctf_playerchanged;
 
 void WriteSpectatorInfo(entity);
-void WriteSpectatorInfoOf(entity, entity);
+void WriteSpectatorInfoOf(entity, entity, float);
 void PutClientInServer (void)
 {
 	WriteSpectatorInfo(self);
@@ -1071,6 +1201,10 @@ void PutClientInServer (void)
 		self.metertime = 0;
 
 		self.runes = 0;
+	    self.prec_rune = world;
+	    self.prec_grudge = 0;
+		self.last_spawn_pt_1 = world;
+		self.last_spawn_pt_2 = world;
 
 		self.deadflag = DEAD_NO;
 
@@ -1172,7 +1306,9 @@ void PutClientInServer (void)
 		self = oldself;
 		
 		freezetag_PlayerSpawn();
+		JB_PlayerSpawn();
 		
+		Boobs_Attach();
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1180,7 +1316,7 @@ void PutClientInServer (void)
 	//if(g_ctf)
 	//	ctf_playerchanged();
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	if(self.classname == "player")
 	if(self.shownames == world)
 	{
@@ -1194,6 +1330,11 @@ void PutClientInServer (void)
 	
 	if(g_handgrenades)
 		HG_PlayerSpawn();
+	
+	if(self.fire_burner) {
+		remove(self.fire_burner);
+		self.fire_burner = world;
+	}
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1207,11 +1348,14 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
 	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
 
-	if(sv_foginterval && world.fog != "")
-		WriteString(MSG_ENTITY, world.fog);
+	if(ShouldForceFog())
+		WriteString(MSG_ENTITY, GetForcedFog());
 	else
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
+	WriteByte(MSG_ENTITY, sv_showspecs_extra);
+	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_oldfag);
 	return TRUE;
 }
 
@@ -1573,8 +1717,6 @@ void ClientConnect (void)
 
 	bprint("\n");
 
-	self.welcomemessage_time = 0;
-
 	stuffcmd(self, strcat(clientstuff, "\n"));
 	stuffcmd(self, strcat("exec maps/", mapname, ".cfg\n"));
 	stuffcmd(self, "cl_particles_reloadeffects\n");
@@ -1650,9 +1792,6 @@ void ClientConnect (void)
 		}
 	}
 
-	if(!sv_foginterval && world.fog != "")
-		stuffcmd(self, strcat("\nfog ", world.fog, "\nr_fog_exp2 0\nr_drawfog 1\n"));
-
 	SoundEntity_Attach(self);
 
 	if(cvar("g_hitplots") || strstrofs(strcat(" ", cvar_string("g_hitplots_individuals"), " "), strcat(" ", self.netaddress, " "), 0) >= 0)
@@ -1666,7 +1805,7 @@ void ClientConnect (void)
 	if(clienttype(self) == CLIENTTYPE_REAL)
 		defer(5, ServerTopic);
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	{
 		self.shownames = spawn();
 		self.shownames.owner = self;
@@ -1688,7 +1827,10 @@ void ClientConnect (void)
 	else
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
-	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
+	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
+	SendServerInfo(self);
+	
+	totalclients++;
 }
 
 /*
@@ -1729,11 +1871,16 @@ void ClientDisconnect (void)
 
 	SoundEntity_Detach(self);
 
+	frag_attacker = world;
+
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
 	vip_RemovePlayer();
+	JB_RemovePlayer();
+	prec_player_die(self);
 	Portal_ClearAll(self);
+	Boobs_Clear();
 
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
@@ -1792,6 +1939,7 @@ void ClientDisconnect (void)
 
 	// free cvars
 	GetCvars(-1);
+	totalclients--;
 }
 
 .float BUTTON_CHAT;
@@ -1970,6 +2118,8 @@ void player_powerups (void)
 	}
 
 	self.effects &~= (EF_RED | EF_BLUE | EF_ADDITIVE | EF_FULLBRIGHT | EF_FLAME);
+    self.glow_size = 0;
+    self.glow_trail = 0;
 
 	if(!self.modelindex || self.deadflag) // don't apply the flags if the player is gibbed
 		return;
@@ -2288,6 +2438,7 @@ void SpectateCopy(entity spectatee) {
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
 	self.sm_canattach = spectatee.sm_canattach;
+	self.jb_roundlost = spectatee.jb_roundlost;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2295,33 +2446,50 @@ void SpectateCopy(entity spectatee) {
 
 #define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((spec).classname == "spectator") if((e).enemy == p) if(!(a) || !(e).anonspec)
 
-void WriteSpectatorInfoOf(entity player, entity of)
+void WriteSpectatorInfoOf(entity player, entity of, float lock)
 {
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	//if(clienttype(of) != CLIENTTYPE_REAL)
-	//	return;
+	float sv_showspecs = cvar("sv_showspecs");
 	
-	if(!cvar("g_explosive_showspecs"))
+	if(!sv_showspecs_extra)
+		lock = FALSE;
+	
+	if(!sv_showspecs && !lock)
 		return;
 	
 	if(player == of)
 	if(player.classname == "spectator") // What the fuck?
 		return;
 	
-	print("^2Writing specinfo of ^3", of.netname, "^2 to ^3", player.netname, "\n");
-	
 	local entity spec;
 	local float specs;
-	local float a = cvar("g_explosive_anonspecs");
+	local float a = cvar("sv_anonspecs");
 	
 	FOR_EACH_SPECOF(of, spec, a) specs++;
 
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteShort(MSG_ONE, specs);
+	WriteByte(MSG_ONE, lock);
+	
+	if(lock) {
+		WriteByte(MSG_ONE, of.madoka);
+		WriteByte(MSG_ONE, of.hud_old);
+		WriteByte(MSG_ONE, of.hud_alt);
+		WriteString(MSG_ONE, of.hudskin);
+		WriteByte(MSG_ONE, of.clientfov);
+		WriteByte(MSG_ONE, of.speczoom_speed * 10);
+		WriteByte(MSG_ONE, of.speczoom_factor * 10);
+	}
+	
+	if(!sv_showspecs) {
+		WriteByte(MSG_ONE, 0);
+		return;
+	}
+	
+	WriteByte(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
 		//WriteString(MSG_ONE, spec.netname);
@@ -2336,27 +2504,19 @@ void ResetSpectatorInfo(entity player)
     msg_entity = player;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-    WriteShort(MSG_ONE, 0);
+    WriteByte(MSG_ONE, 0);
 }
 
 void WriteSpectatorInfo(entity player)
 {
-    if(cvar("g_explosive_showspecs_hidefromplayers"))
+    if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
-    	WriteSpectatorInfoOf(player, player);
+    	WriteSpectatorInfoOf(player, player, FALSE);
 	
 	local entity spec;
 	FOR_EACH_SPECOF(player, spec, 0)
-	{
-		#ifdef RM_SUPPORT_MADOKA
-		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
-		#endif
-		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), " ", player.hudskin, "\n"));
-		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
-		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
-		WriteSpectatorInfoOf(spec, player);
-	}
+		WriteSpectatorInfoOf(spec, player, TRUE);
 }
 
 float SpectateUpdate() {
@@ -2389,6 +2549,10 @@ float SpectateNext() {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self.enemy);
+		
+		if(g_jailbreak)
+		if(jb_roundover)
+			JB_SetCamera(self, jb_activecamera, 15);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
@@ -2432,7 +2596,7 @@ void ShowRespawnCountdown()
 void LeaveSpectatorMode()
 {
 	if(isJoinAllowed()) {
-		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned"))) {
+		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
 			self.classname = "player";
 			if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force"))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -2538,11 +2702,9 @@ void ObserverThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2560,18 +2722,16 @@ void ObserverThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 }
 
 void SpectatorThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2581,7 +2741,6 @@ void SpectatorThink()
 			}
 			WriteSpectatorInfo(self.enemy);
 		} else if (self.BUTTON_ATCK2) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.classname = "observer";
 			PutClientInServer();
@@ -2600,7 +2759,7 @@ void SpectatorThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 	self.flags |= FL_CLIENT | FL_NOTARGET;
 }
 
@@ -2639,6 +2798,7 @@ void PlayerPreThink (void)
 	}
 
 	// version nagging
+#if 0
 	if(self.version_nagtime)
 		if(self.cvar_g_nexuizversion)
 			if(time > self.version_nagtime)
@@ -2669,6 +2829,7 @@ void PlayerPreThink (void)
 				}
 				self.version_nagtime = 0;
 			}
+#endif
 
 	// GOD MODE info
 	if(!(self.flags & FL_GODMODE)) if(self.max_armorvalue)
@@ -2685,6 +2846,7 @@ void PlayerPreThink (void)
 	freezetag_PlayerPreThink();
 	domination_PlayerPreThink();
 	vip_PlayerPreThink();
+	JB_PlayerPreThink();
 
 	if(self.classname == "player") {
 //		if(self.netname == "Wazat")
@@ -2692,7 +2854,7 @@ void PlayerPreThink (void)
 
 		CheckRules_Player();
 
-		PrintWelcomeMessage(self);
+//		PrintWelcomeMessage(self);
 
 		if (intermission_running)
 		{
@@ -2742,7 +2904,10 @@ void PlayerPreThink (void)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || cvar("g_forced_respawn"));
-				if (self.deadflag == DEAD_DYING)
+				
+				if (jb_roundover) {
+					// lol no respawn for ya
+				} else if (self.deadflag == DEAD_DYING)
 				{
 					if(force_respawn)
 						self.deadflag = DEAD_RESPAWNING;
@@ -2856,7 +3021,6 @@ void PlayerPreThink (void)
 		}
 
 		FixPlayermodel();
-
 		GrapplingHookFrame();
 
 		if(frametime)
@@ -3243,6 +3407,7 @@ void PlayerPostThink (void)
 	*/
 
 	Arena_Warmup();
+	inf_warmup();
 
 	//pointparticles(particleeffectnum("machinegun_impact"), self.origin + self.view_ofs + '0 0 7', '0 0 0', 1);
 
