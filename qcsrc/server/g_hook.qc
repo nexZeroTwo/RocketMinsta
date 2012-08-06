@@ -423,7 +423,14 @@ void FireGrapplingHook (void)
 	missile.movetype = (cvar("g_balance_grapplehook_gravity")? MOVETYPE_TOSS : MOVETYPE_FLY);
 	PROJECTILE_MAKETRIGGER(missile);
 
-	setmodel (missile, "models/hook.md3"); // precision set below
+	if (cvar("g_rocketminsta_newhook"))
+	{
+		setmodel (missile, "models/bd131hook.md3");
+	}
+	else
+	{
+		setmodel (missile, "models/hook.md3"); // precision set below
+	}
 	setsize (missile, '-3 -3 -3', '3 3 3');
 	setorigin (missile, org);
 
