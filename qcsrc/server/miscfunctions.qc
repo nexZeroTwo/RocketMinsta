@@ -403,7 +403,7 @@ float reptable_minsrclen;
 #define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
 
 string getsrc(string id) {
-	string s = cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_src"));
+	string s = cvar_string(strcat("sv_chat_autoreplace_", id, "_src"));
 	if(!s || s == "")	// no src defined? Assume id is the src
 		return id;
 	return s;
@@ -412,11 +412,11 @@ string getsrc(string id) {
 string getrep(string id) {
 	//return strcat(rgb_to_hexcolor('1 0 0' * random() + '0 1 0' * random() + '0 0 1' * random()), getsrc(id), "^7");
 	
-	return cvar_string(strcat("g_explosive_chat_autoreplace_", id, "_rep"));
+	return cvar_string(strcat("sv_chat_autoreplace_", id, "_rep"));
 }
 
 string getrepids() {
-	return cvar_string("g_explosive_chat_autoreplace_order");
+	return cvar_string("sv_chat_autoreplace_order");
 }
 
 void reptable_free() {
@@ -464,7 +464,7 @@ void reptable_make(string replacements) {
 }
 
 string apply_autoreplace(string msg) {
-	if not(cvar("g_explosive_chat_autoreplace"))
+	if not(cvar("sv_chat_autoreplace"))
 		return msg;
 	
 	if not(reptable_init) {
@@ -907,7 +907,7 @@ entity get_weaponinfo(float w);
 
 float NixNex_CanChooseWeapon(float wpn);
 
-float g_explosive_weaponarena_limitammo;
+float g_weaponarena_limitammo;
 
 void readplayerstartcvars()
 {
@@ -925,7 +925,7 @@ void readplayerstartcvars()
     start_health = cvar("g_balance_health_start");
     start_armorvalue = cvar("g_balance_armor_start");
 
-	g_explosive_weaponarena_limitammo = cvar("g_explosive_weaponarena_limitammo");
+	g_weaponarena_limitammo = cvar("g_weaponarena_limitammo");
 
     g_weaponarena = 0;
     s = cvar_string("g_weaponarena");
@@ -1005,7 +1005,7 @@ void readplayerstartcvars()
     {
         start_weapons = g_weaponarena;
         
-        if(!g_explosive_weaponarena_limitammo)
+        if(!g_weaponarena_limitammo)
         {
 			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
 				start_ammo_rockets = 999;
@@ -1250,7 +1250,7 @@ void readlevelcvars(void)
     g_footsteps = cvar("g_footsteps");
     g_grappling_hook = cvar("g_grappling_hook");
     g_jetpack = cvar("g_jetpack");
-    g_handgrenades = cvar("g_explosive_handgrenades");
+    g_handgrenades = cvar("g_handgrenades");
     g_laserguided_missile = cvar("g_laserguided_missile");
     g_midair = cvar("g_midair");
     g_minstagib = cvar("g_minstagib");
@@ -2923,6 +2923,9 @@ void hudflash(entity e, vector flashcolor, float staytime, float intensivity, fl
     if(e.classname == "")
         return;
     
+    if not(cvar("sv_hudflash"))
+		return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
@@ -2945,6 +2948,9 @@ void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
     if(e.classname == "")
         return;
     
+    if not(cvar("sv_hudflash"))
+		return;
+    
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_HUDFLASH_TEAMCOLOR);
@@ -2955,6 +2961,9 @@ void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
 
 void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivity, float alph)
 {
+	if not(cvar("sv_hudflash"))
+		return;
+	
     local entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
@@ -2964,6 +2973,9 @@ void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivi
 
 void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
 {
+	if not(cvar("sv_hudflash"))
+		return;
+	
     local entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
@@ -3137,9 +3149,6 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	local float fh;
 	local string s;
 
-	if(gametype_Name_to_ID(gametype) == GAME_RPS)
-		return 0; // rps isn't done yet
-
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
 		return 1; // maps always support dm-gametypes, even when they don't claim to
 
@@ -3188,7 +3197,7 @@ float Banning_UnbanPlayerByName (string name)
 
 string GetVoteList_All()
 {
-	if(!cvar("g_explosive_gametypevote_call"))
+	if(!cvar("sv_vote_gametype_call"))
 		return cvar_string("sv_vote_commands");
 	
 	local string votes;
@@ -3200,7 +3209,7 @@ string GetVoteList_All()
 			votes = strcat(votes, argv(i), " ");
 	}
 	
-	return strcat(votes, cvar_string("g_explosive_gametypevote_options"));
+	return strcat(votes, cvar_string("sv_vote_gametype_options"));
 }
 
 string GetVoteList_Filtered()
@@ -3210,7 +3219,7 @@ string GetVoteList_Filtered()
 	
 	for(i = 0; i < n; ++i)
 	{
-		float c = ListContains(cvar_string("g_explosive_secretvotes"), argv(i), " ");
+		float c = ListContains(cvar_string("sv_vote_secretcommands"), argv(i), " ");
 		
 		// ListContains tokenizes
 		n = tokenizebyseparator(GetVoteList_All(), " ");
@@ -3224,7 +3233,7 @@ string GetVoteList_Filtered()
 
 string GetVoteList()
 {
-	if(cvar("g_explosive_secretvotes_enabled"))
+	if(cvar("sv_vote_secretcommands_enabled"))
 		return GetVoteList_All();
 	else
 		return GetVoteList_Filtered();
@@ -3247,14 +3256,14 @@ float TeamMask (float l_team) // not really needed since we're only using it for
 }
 
 string ResolveServer(string s) {
-	string r = cvar_string(strcat("g_explosive_serveralias_", s));
+	string r = cvar_string(strcat("sv_serveralias_", s));
 	if(r != "")
 		return r;
 	return s;
 }
 
 string GetAllowedServers() {
-	return cvar_string("g_explosive_gotoserver_whitelist");
+	return cvar_string("sv_gotoserver_whitelist");
 }
 
 /// Does NOT accept server aliases
@@ -3264,14 +3273,14 @@ float ServerIsAllowed(string s) {
 }
 
 float ShouldForceFog() {
-	string s = cvar_string("g_explosive_forcefog");
+	string s = cvar_string("g_rocketminsta_forcefog");
 	if(s != "")
 		return TRUE;
 	return world.fog != "";
 }
 
 string GetForcedFog() {
-	string s = cvar_string("g_explosive_forcefog");
+	string s = cvar_string("g_rocketminsta_forcefog");
 	if(s != "")
 		return s;
 	return world.fog;
@@ -3339,7 +3348,7 @@ void G_EndRound_Think()
     self.nextthink = time + 1;
 }
 
-void G_EndRound(string tname, float wait, float warmuptime, void() callback, void() callback2, void() callbackfin)
+void G_EndRound(string tname, float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
 {
     local entity e = spawn();
     e.think = G_EndRound_Think;
@@ -3348,8 +3357,19 @@ void G_EndRound(string tname, float wait, float warmuptime, void() callback, voi
     e.endround_think = callback;
     e.endround_finalize = callbackfin;
     e.endround_warmuptime = warmuptime;
-    next_round = time + wait;
+    next_round = time + thedelay;
     e.cnt = warmuptime + next_round;
 }
 
 // ========================================== //
+
+void SendServerInfo(entity player) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_SERVERINFO);
+	WriteString(MSG_ONE, cvar_string("hostname"));
+	WriteString(MSG_ONE, RM_BUILD_NAME);
+	WriteString(MSG_ONE, RM_BUILD_VERSION);
+	WriteString(MSG_ONE, RM_BUILD_DATE);
+	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
+}

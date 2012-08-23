@@ -7,7 +7,7 @@ There are two ways to get the RM mod running on your server. You can install the
 
  -- Basic Installation --
 
-The RocketMinsta mod is written in QuakeC. If you have not already done so, you will need to install a QuakeC compiler.  (We recommend "fteqcc" from this repository: git://git.xonotic.org/xonotic/fteqcc.git ).
+The RocketMinsta mod is written in QuakeC. If you have not already done so, you will need to install a QuakeC compiler.  (We recommend "rmqcc" from this repository: git://github.com/nexAkari/rmqcc.git since fteqcc became incompatible. rmqcc is an fteqcc fork that is guaranteed to maintain Nexuiz/RM compatibility).
 
 Once you have built or installed a QuakeC compiler, then duplicate and rename the RocketMinsta file "EXAMPLE_config.sh" to "config.sh".  This file is the configuration file for build.sh, which is used to compile and install the mod.  Open this new file in your preferred text editor.
 

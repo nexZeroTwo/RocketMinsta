@@ -334,7 +334,7 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	return (rm_oldbigfont? sbar_bigfont_real : sbar_rmbigfont);
+	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
 }
 
 void SetMadokaFont(float v)
@@ -400,17 +400,18 @@ void ReloadMenu()
 	e.nextthink = time + 1;
 }
 
-#define FPSREPORTER_DELAY 3
-
 void FPSReporter_Think() {
 	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
-	self.nextthink = time + FPSREPORTER_DELAY;
+	self.nextthink = time + sv_showfps;
 }
 
 void FPSReporter_Init() {
+	if not(sv_showfps)
+		return;
+	
 	entity e = spawn();
 	e.think = FPSReporter_Think;
-	e.nextthink = time + FPSREPORTER_DELAY;
+	e.nextthink = time + 1;
 }
 
 void EnableRMCFGReport() {
@@ -571,7 +572,8 @@ void PostInit(void)
 	
 	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
-	localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 	tmpmadoka = spawn();
 	
 	//loadfont("user3", "gfx/madoka-rune");
@@ -582,7 +584,8 @@ void PostInit(void)
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
-	localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
+	if(sv_showspecs_extra)
+		localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
@@ -682,7 +685,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
 		
-		//if(cvar("_g_balance_minstanex_explosive"))
+		//if(cvar("_g_rocketminsta"))
 		//	bigprint("Accuracy statistics are disabled", "", 2);
 		//else
 			sb_showaccuracy = true;
@@ -823,7 +826,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		SetMadokaFont(MDKF_AUTO);
 		
 		SendRMCFGReport();
-		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		RMSETTINGREPORT
 		return true;
 		#else
@@ -893,7 +897,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			cvar_set("rm_hudskin", hudskin_name);
 			SendRMCFGReport();
 			localcmd("menu_cmd update_rmvars\n");
-			localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+			if(sv_showspecs_extra)
+				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
 		}
 		else
 		{
@@ -1141,6 +1146,7 @@ void GameCommand(string msg)
 			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
+	/*
 	else if(cmd == "lockhud")
 	{
 		hudlocked = 1;
@@ -1162,6 +1168,7 @@ void GameCommand(string msg)
 		speczoom_speed = stof(argv(1));
 		speczoom_factor = stof(argv(2));
 	}
+	*/
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -1725,6 +1732,9 @@ void Ent_Init()
 	forcefog = strzone(ReadString());
 
 	armorblockpercent = ReadByte() / 255.0;
+	sv_showspecs_extra = ReadByte();
+	sv_showfps = ReadByte();
+	sv_oldfag = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -1841,8 +1851,30 @@ void Net_ReadMadokaPrint()
 void Net_ReadSpecInfo()
 {
 	local float i;
+	
+	if(ReadByte()) {
+		float md = ReadByte();
+		
+		if(cvar("rm_specmadoka")) {
+			madoka_locked = TRUE;
+			madokalockstate = md;
+			SetMadokaFont(madokalockstate);
+		}
+		
+		hudlocked = TRUE;
+		rm_oldhud = hudlocked_old = ReadByte();
+		rm_althud = hudlocked_alt = ReadByte();
+		
+		string skn = ReadString();
+		if(skn != hudskin_name)
+			HUDSkin_Load(skn);
+		
+		fovlock = ReadByte();
+		speczoom_speed  = ReadByte() * 0.1;
+		speczoom_factor = ReadByte() * 0.1;
+	}
+	
 	num_spectators = ReadByte();
-
 	for(i = 0; i < num_spectators; ++i)
 	{
 		local float slot = ReadByte();
@@ -1974,103 +2006,89 @@ void Net_Camera() {
 	jb_camera_expiretime = time + ReadShort();
 }
 
+void Net_ServerInfo() {
+	sv_hostname = strzone(ReadString());
+	sv_rm_build = strzone(ReadString());
+	sv_rm_version = strzone(ReadString());
+	sv_rm_date = strzone(ReadString());
+	sv_motd = strzone(ReadString());
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
 float CSQC_Parse_TempEntity()
 {
-	local float bHandled;
-		bHandled  = true;
 	// Acquire TE ID
 	local float nTEID;
-		nTEID = ReadByte();
+	nTEID = ReadByte();
 
-		// NOTE: Could just do return instead of break...
 	switch(nTEID)
 	{
 		case TE_CSQC_PICTURE:
 			Net_MapVote_Picture();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_RACE:
 			Net_ReadRace();
-			bHandled = true;
-			break;
+			return TRUE;
 		case 13: // TE_BEAM
 			Net_GrapplingHook();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPAWN:
 			Net_ReadSpawn();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_ZCURVEPARTICLES:
 			Net_ReadZCurveParticles();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_NEXGUNBEAMPARTICLE:
 			Net_ReadNexgunBeamParticle();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_LIGHTNINGARC:
             Net_ReadLightningarc();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_SPECINFO:
 			Net_ReadSpecInfo();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTE:
 			Net_VoteDialog(ReadByte());
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VOTERESET:
 			Net_VoteDialogReset();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MADOKAPRINT:
 			Net_ReadMadokaPrint();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_MORNINGRESCUE:
 			Net_ReadMorningRescue();
-			bHandled = true;
-			break;
+			return TRUE;
         case TE_CSQC_CLEARBIGPRINT:
             Net_ReadClearBigPrint();
-            bHandled = true;
-            break;
+			return TRUE;
         case TE_CSQC_SPEEDRECORD:
 			Net_ReadSpeedRecord();
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH:
 			Net_ReadHudFlash(FALSE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_VIPINFO:
 			Net_ReadVIPInfo(ReadByte());
-			bHandled = true;
-			break;
+			return TRUE;
 		case TE_CSQC_CAMERA:
 			Net_Camera();
-			bHandled = true;
-			break;
-		default:
-			// No special logic for this temporary entity; return 0 so the engine can handle it
-			bHandled = false;
-			break;
+			return TRUE;
+		case TE_CSQC_SERVERINFO:
+			Net_ServerInfo();
+			return TRUE;
 	}
 
-	return bHandled;
+	// pass to the engine
+	return FALSE;
 }
 
 string getcommandkey(string text, string command)
@@ -2143,8 +2161,12 @@ void bigprint(string bigstr, string comment, float staytime)
 		local string s;
 		s = bigstr;
 		
-		if(comment != "")
-			s = strcat(s, "\n", comment);
+		if(comment != "") {
+			if(s == "")
+				s = comment;
+			else
+				s = strcat(s, "\n", comment);
+		}
 		
 		centerprint(s);
 		return;
@@ -2234,6 +2256,9 @@ void score_visual(float score)
 
 void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
+	if(sv_oldfag)
+		return;
+	
 	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

@@ -381,16 +381,16 @@ void WeaponStats_Shutdown();
 
 string InfoMessages_Pick()
 {
-	local float c = cvar("_g_explosive_infomessages_count");
+	local float c = cvar("_sv_infomessages_count");
 	local float r = floor(random() * c);
 	
 	if(!c) return "";
-	return cvar_string(strcat("_g_explosive_infomessages_", ftos(r)));
+	return cvar_string(strcat("_sv_infomessages_", ftos(r)));
 }
 
 void InfoMessages_Think()
 {
-	if(!cvar("g_explosive_infomessages"))
+	if(!cvar("sv_infomessages"))
 	{
 		remove(self);
 		return;
@@ -401,12 +401,12 @@ void InfoMessages_Think()
 	FOR_EACH_REALCLIENT(e)
 		sprint(e, strcat("\x01^5 * ^7", msg, "\n"));
 	
-	self.nextthink = time + cvar("g_explosive_infomessages") * 60;
+	self.nextthink = time + cvar("sv_infomessages") * 60;
 }
 
 void InfoMessages_Init()
 {
-	if(!cvar("g_explosive_infomessages"))
+	if(!cvar("sv_infomessages"))
 		return;
 	
 	print("Initializing the built-in infomessage system\n");
@@ -415,7 +415,7 @@ void InfoMessages_Init()
 	e = spawn();
 	e.classname = "rm_info";
 	e.think = InfoMessages_Think;
-	e.nextthink = time + cvar("g_explosive_infomessages") * 60;
+	e.nextthink = time + cvar("sv_infomessages") * 60;
 }
 
 void spawnfunc_worldspawn (void)
@@ -427,6 +427,8 @@ void spawnfunc_worldspawn (void)
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
+	
+	RM_CvarCompat();
 	
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
@@ -444,14 +446,17 @@ void spawnfunc_worldspawn (void)
     registercvar("_sv_rm_lastgametype", "");
     registercvar("_sv_rm_maprow", "0");
 */
-    registercvar("_g_explosive_infomessages_count", "0");
+    registercvar("_sv_infomessages_count", "0");
 
 	registercvar ("_sv_rm_lastvote", "0");
 	registercvar ("_sv_rm_lastservertime", "0");
 	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
 
-	g_explosive_speedaward_ownaccel = cvar("g_explosive_speedaward_ownaccel");
-
+	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
+	sv_showspecs_extra = cvar("sv_showspecs_extra");
+	sv_showfps = cvar("sv_showfps");
+	sv_oldfag = cvar("sv_oldfag");
+	
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
@@ -762,7 +767,7 @@ void spawnfunc_worldspawn (void)
 
 	sys_frametime = (cvar("sys_ticrate") * cvar("slowmo"));
 
-	if(g_explosive_speedaward_ownaccel)
+	if(sv_speedaward_ownaccel)
 	{
 		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
 		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel")));
@@ -2217,7 +2222,7 @@ float DoNextMapOverride()
 			
 			if(mapvote_initialized)
 			{
-				if(cvar("g_explosive_gametypevote")) if(cvar("g_explosive_gametypevote_overplayed_strict"))
+				if(cvar("sv_vote_gametype")) if(cvar("sv_vote_gametype_overplayed_strict"))
 				{
 					if(GameTypeVote_AvailabilityStatus(gametype_ID_to_Name(gametypetoset)) != GTV_AVAILABLE)
 					{
@@ -2305,7 +2310,7 @@ string GameTypeVote_GetOptions();
 float GameTypeVote_AvailabilityStatus_ForMap(string, string);
 float MapIsPlayable(string map_name)
 {
-	if(!cvar("g_explosive_gametypevote"))
+	if(!cvar("sv_vote_gametype"))
 		// if gametype voting isn't enabled, the server will stay on the current gametype
 		// so let's hide any map that isn't allowed in the current mode
 		return GameTypeFilter_Allowed(map_name, gametype_ID_to_Name(game));
@@ -2559,7 +2564,7 @@ float MapVote_Finished(float mappos)
 		FixClientCvars(other);
 
 
-	if(!cvar("g_explosive_gametypevote"))
+	if(!cvar("sv_vote_gametype"))
 	{
 		Map_Goto_SetStr(mapvote_maps[mappos]);
 		Map_Goto();
@@ -2757,10 +2762,10 @@ float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 	if (! GameTypeFilter_Allowed (map_name, gtname))
 		return GTV_FORBIDDEN;
 	
-	if not(cvar("g_explosive_gametypevote_maxmaps"))
+	if not(cvar("sv_vote_gametype_maxmaps"))
 		return GTV_AVAILABLE;
 	
-	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("g_explosive_gametypevote_maxmaps"))
+	if(cvar(strcat("_sv_rm_maprow_", gtname)) >= cvar("sv_vote_gametype_maxmaps"))
 		return GTV_OVERPLAYED;
 	
 	return GTV_AVAILABLE;
@@ -2804,14 +2809,14 @@ void MapVote_Think()
 string GameTypeVote_GetOptions()
 {
 	#ifdef 0
-	if not(cvar("g_explosive_gametypevote_maxmaps"))
-		return cvar_string("g_explosive_gametypevote_options");
+	if not(cvar("sv_vote_gametype_maxmaps"))
+		return cvar_string("sv_vote_gametype_options");
 
-	if not(cvar("_sv_rm_maprow") >= cvar("g_explosive_gametypevote_maxmaps"))
-		return cvar_string("g_explosive_gametypevote_options");
+	if not(cvar("_sv_rm_maprow") >= cvar("sv_vote_gametype_maxmaps"))
+		return cvar_string("sv_vote_gametype_options");
 
 	local string result;
-	local float i, n = tokenizebyseparator(cvar_string("g_explosive_gametypevote_options"), " ");
+	local float i, n = tokenizebyseparator(cvar_string("sv_vote_gametype_options"), " ");
 	local float first;
 	first = 1;
 	
@@ -2830,7 +2835,7 @@ string GameTypeVote_GetOptions()
 	
 	return result;
 	#else
-	return cvar_string("g_explosive_gametypevote_options");
+	return cvar_string("sv_vote_gametype_options");
 	#endif
 }
 
@@ -2858,7 +2863,7 @@ void GameTypeVote_Start()
 				strunzone(mapvote_maps[j]);
 	
 	mapvote_count = 0;
-	mapvote_timeout = time + cvar("g_explosive_gametypevote_timeout");
+	mapvote_timeout = time + cvar("sv_vote_gametype_timeout");
 	mapvote_abstain = 0;
 	
 	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
@@ -2875,7 +2880,7 @@ void GameTypeVote_Start()
 	// Chaiomanot: Jan 9th 2012: Bug fix: Not all gametype options will speed-vote (+1 line)
 	mapvote_count_real = mapvote_count;
 
-	if(cvar("g_explosive_gametypevote_shuffle"))
+	if(cvar("sv_vote_gametype_shuffle"))
 	{
 		for(j = 0; j < mapvote_count * 3; ++j)
 		{
@@ -2926,6 +2931,9 @@ void EndFrame()
 	float altime;
 	FOR_EACH_REALCLIENT(self)
 	{
+		if(sv_oldfag)
+			self.rm_nokillsound = TRUE;
+			
 		if(self.classname == "spectator")
 		{
 			if(self.enemy.typehitsound)
@@ -3059,7 +3067,7 @@ void SV_Shutdown()
 		Ban_SaveBans();
 		if(!sv_cheats)
 		{
-			if(g_explosive_speedaward_ownaccel)
+			if(sv_speedaward_ownaccel)
 			{
 				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel"), ftos(highest_velocity));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel"), highest_velocity_name);

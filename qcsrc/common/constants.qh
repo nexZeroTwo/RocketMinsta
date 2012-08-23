@@ -46,6 +46,7 @@ const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
+const float TE_CSQC_SERVERINFO = 118;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -518,7 +519,7 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA (cvar("g_explosive_oldnexsound")? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_MINSTA ((cvar("sv_oldnexsound") || sv_oldfag)? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
 	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"

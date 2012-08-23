@@ -231,7 +231,7 @@ void Item_ScheduleInitialRespawn(entity e)
 {
 	Item_Show(e, 0);
 	if(self.droppedpowerup)
-		Item_ScheduleRespawnIn(e, cvar("g_explosive_droppowerups_activatedelay"));
+		Item_ScheduleRespawnIn(e, cvar("g_droppowerups_activatedelay"));
 	else
 		Item_ScheduleRespawnIn(e, game_starttime - time + ITEM_RESPAWNTIME_INITIAL(e));
 }
@@ -276,10 +276,10 @@ float Item_GiveTo(entity item, entity player)
 				pickedup = TRUE;
 				// play some cool sounds ;)
 				//centerprint(player, "\n");
-				if (clienttype(player) == CLIENTTYPE_REAL && cvar("g_balance_minstanex_explosive"))
+				if (clienttype(player) == CLIENTTYPE_REAL && cvar("g_rocketminsta"))
 				{
 					//<akari>
-					if(!cvar("g_balance_minstanex_explosive"))
+					if(!cvar("g_rocketminsta"))
 					{
 						if(player.health <= 5)
 							play2(player, "announcer/robotic/lastsecond.wav");
@@ -297,7 +297,7 @@ float Item_GiveTo(entity item, entity player)
 							bigprint_spec(player, "^7Morning^xfb0Rescue", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 
 							if(!g_dm && !g_tdm)
-								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_1hp"));
+								PlayerScore_Add(player, SP_SCORE, cvar("g_rocketminsta_score_1hp"));
 							play2(player, RM_SOUND_MORNINGRESCUE);
 						}
 						else if(player.health <= 10)
@@ -305,7 +305,7 @@ float Item_GiveTo(entity item, entity player)
 							//centerprint(player, "^xF60P^xF40H^xF20O^1E^xF20N^xF40I^xF60X");
 							bigprint_spec(player, "^xf20Phoenix", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							if(!g_dm && !g_tdm)
-								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_10hp"));
+								PlayerScore_Add(player, SP_SCORE, cvar("g_rocketminsta_score_10hp"));
 							play2(player, RM_SOUND_PHOENIX);
 						}
 						else if(player.health <= 20)
@@ -313,7 +313,7 @@ float Item_GiveTo(entity item, entity player)
 							//centerprint(player, "^x06FR^x04FE^x02FB^4I^x02FR^x04FT^x06FH");
 							bigprint_spec(player, "^x06FRebirth", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							if(!g_dm && !g_tdm)
-								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_20hp"));
+								PlayerScore_Add(player, SP_SCORE, cvar("g_rocketminsta_score_20hp"));
 							play2(player, RM_SOUND_REBIRTH);
 						}
 						else if(player.health <= 30)
@@ -321,7 +321,7 @@ float Item_GiveTo(entity item, entity player)
 							//centerprint(player, "^xCCCR^xDDDE^xEEEC^7OV^xEEEE^xDDDR^xCCCY");
 							bigprint_spec(player, "^7Recovery", strcat("Recovered from ", ftos(rint(player.health)), " hp"), 1);
 							if(!g_dm && !g_tdm)
-								PlayerScore_Add(player, SP_SCORE, cvar("g_explosive_score_30hp"));
+								PlayerScore_Add(player, SP_SCORE, cvar("g_rocketminsta_score_30hp"));
 							play2(player, RM_SOUND_RECOVERY);
 						}
 					}
@@ -336,13 +336,13 @@ float Item_GiveTo(entity item, entity player)
 				if (item.ammo_cells)
 					player.ammo_cells = min (player.ammo_cells + cvar("g_minstagib_ammo_drop"), 999);
 
-				if(cvar("g_balance_minstanex_explosive"))
+				if(cvar("g_rocketminsta"))
 				{
 					if(player.health < 100)
 						player.health = 100;
-					else if(cvar("g_explosive_health_overflow"))
-						if(!cvar("g_explosive_health_max") || player.health < cvar("g_explosive_health_max"))
-							player.health += cvar("g_explosive_health_overflow");
+					else if(cvar("g_rocketminsta_health_overflow"))
+						if(!cvar("g_rocketminsta_health_max") || player.health < cvar("g_rocketminsta_health_max"))
+							player.health += cvar("g_rocketminsta_health_overflow");
 				}
 				else player.health = 100;
 
@@ -391,7 +391,7 @@ float Item_GiveTo(entity item, entity player)
 				if(player.armorvalue < 100)
 					player.armorvalue = 100;
 				else if(player.armorvalue < item.max_armorvalue)
-					player.armorvalue = min(item.max_armorvalue, player.armorvalue + cvar("g_explosive_armor_overflow"));
+					player.armorvalue = min(item.max_armorvalue, player.armorvalue + cvar("g_rocketminsta_armor_overflow"));
 			}
 			//</akari>
 		}
@@ -997,7 +997,7 @@ void RocketMinsta_SpawnArmor()
 	if(!self.armorvalue)
 		self.armorvalue = 100;
 	if(!self.max_armorvalue)
-		self.max_armorvalue = cvar("g_explosive_armor_max");
+		self.max_armorvalue = cvar("g_rocketminsta_armor_max");
 	//if(!self.pickup_anyway)
 	//	self.pickup_anyway = 1;
 
@@ -1033,7 +1033,7 @@ void minstagib_items (float itemid)
 		self.ammo_cells = 1;
 
 		//<akari>
-		if(cvar("g_balance_minstanex_explosive"))
+		if(cvar("g_rocketminsta"))
 			StartItem ("models/items/g_h50.md3",
 				"misc/mediumhealth.wav", 45, 0,
 				"Nex Ammo", IT_CELLS, 0, 0, generic_pickupevalfunc, 100);
@@ -1056,7 +1056,7 @@ void minstagib_items (float itemid)
 		itemid = IT_INVINCIBLE;
 
 	//<akari>
-	if(cvar("g_balance_minstanex_explosive") && cvar("g_explosive_armor"))
+	if(cvar("g_rocketminsta") && cvar("g_rocketminsta_armor"))
 	{
 			 if (itemid == IT_STRENGTH) 	RocketMinsta_SpawnArmor();
 		else if (itemid == IT_NAILS) 		RocketMinsta_SpawnArmor();
@@ -1201,7 +1201,7 @@ void weapon_defaultspawnfunc(float wpn)
 	string _model;
 	string _sound;
 
-	if(wpn == WEP_MINSTANEX && cvar("g_balance_minstanex_explosive") && g_minstagib)
+	if(wpn == WEP_MINSTANEX && cvar("g_rocketminsta") && g_minstagib)
 	{
 		_model = "models/items/g_h50.md3";
 		_sound = "misc/mediumhealth.wav";
@@ -1437,8 +1437,8 @@ void spawnfunc_item_health100() { spawnfunc_item_health_mega(); }
 void spawnfunc_item_strength (void) {
 	//<akari>
 	if(g_minstagib)
-	if(cvar("g_balance_minstanex_explosive"))
-	if(cvar("g_explosive_armor"))
+	if(cvar("g_rocketminsta"))
+	if(cvar("g_rocketminsta_armor"))
 	{
 		minstagib_items(IT_STRENGTH);
 		return;
@@ -1463,8 +1463,8 @@ void spawnfunc_item_strength (void) {
 void spawnfunc_item_invincible (void) {
 	//<akari>
 	if(g_minstagib)
-	if(cvar("g_balance_minstanex_explosive"))
-	if(cvar("g_explosive_armor"))
+	if(cvar("g_rocketminsta"))
+	if(cvar("g_rocketminsta_armor"))
 	{
 		minstagib_items(IT_INVINCIBLE);
 		return;
@@ -1488,8 +1488,8 @@ void spawnfunc_item_invincible (void) {
 void spawnfunc_item_minst_cells (void) {
 	//<akari>
 	if(g_minstagib)
-	if(cvar("g_balance_minstanex_explosive"))
-	if(cvar("g_explosive_armor"))
+	if(cvar("g_rocketminsta"))
+	if(cvar("g_rocketminsta_armor"))
 	{
 		minstagib_items(IT_CELLS);
 		return;

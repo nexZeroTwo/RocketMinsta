@@ -41,9 +41,9 @@ void reset_map(float dorespawn)
 			warmup = time + cvar("g_arena_warmup");
 	}
 	else if(g_freezetag)
-		warmup = time + cvar("g_explosive_freezetag_warmup");
+		warmup = time + cvar("g_freezetag_warmup");
 	else if(g_jailbreak)
-		warmup = time + cvar("g_explosive_jailbreak_warmup");
+		warmup = time + cvar("g_jailbreak_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;

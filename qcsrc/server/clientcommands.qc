@@ -167,6 +167,9 @@ void SV_ParseClientCommand(string s) {
 	vector start, end;
 	entity e, oldself;
 
+	if(cvar("sv_printclientcommands"))
+		print("Clientcommand by ", self.netname, ": ", s, "\n");
+
 	tokens = tokenize_console(s);
 
 	cmd = argv(0);
@@ -216,20 +219,20 @@ void SV_ParseClientCommand(string s) {
 		#define OPTAVAIL(o,v) OPTAVAIL_RAW(o, ftos(cvar(v)))
 		#define OPTAVAIL_NOT(o,v) OPTAVAIL_RAW(o, ftos(!cvar(v)))
 		
-		OPTAVAIL	("anonspec", "g_explosive_anonspecs")
-		OPTAVAIL	("showspec", "g_explosive_showspecs")
-		//OPTAVAIL	("teamlasers", "g_explosive_laser_teamcolor")
-		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_explosive_laser_teamcolor") && g_minstagib && cvar("g_balance_minstanex_explosive")))
-		OPTAVAIL	("shownames", "g_explosive_shownames")
-		OPTAVAIL_NOT("showdamage", "g_explosive_hidedamage")
-		OPTAVAIL	("hidecountry", "g_explosive_allow_hidecountry")
+		OPTAVAIL	("anonspec", "sv_anonspecs")
+		OPTAVAIL	("showspec", "sv_showspecs")
+		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
+		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
+		OPTAVAIL	("shownames", "sv_shownames")
+		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
+		OPTAVAIL	("hidecountry", "sv_hidecountry")
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
 		
-		stuffcmd(self, strcat("set _g_balance_minstanex_explosive ", ftos(cvar("g_balance_minstanex_explosive")), "\n"));
+		stuffcmd(self, strcat("set _g_rocketminsta ", ftos(cvar("g_rocketminsta")), "\n"));
 		
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
@@ -254,7 +257,7 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "anonspec") {
 		local string val = argv(1);
 		
-		if(!cvar("g_explosive_anonspecs"))
+		if(!cvar("sv_anonspecs"))
 		{
 			sprint(self, "^1Anonymous spectators are not allowed on this server!\n");
 			return;
@@ -286,7 +289,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(cvar("g_explosive_allowmadoka"))
+		if(cvar("sv_madoka"))
 			self.madoka = stof(argv(1));
 		else
 			self.madoka = 0;
@@ -322,7 +325,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(!cvar("g_explosive_allow_fakeflag"))
+		if(!cvar("sv_fakeflag"))
 		{
 			sprint(self, "^1'fakeflag' is forbidden on this server.");
 			
@@ -347,6 +350,9 @@ void SV_ParseClientCommand(string s) {
 		self.speczoom_factor = stof(argv(2));
 		WriteSpectatorInfo(self); 
 	} else if(cmd == "fpsreport") {
+		if not(sv_showfps)
+			return;
+		
 		if(!self) return;
 		if(!self.scorekeeper) return;
 		
@@ -876,7 +882,7 @@ void SV_ParseClientCommand(string s) {
 			sprint(self, "Usage: sv_cheats 1; restart; cmd dragbox_clear\n");
 	} else if (cmd == "hidecountry") {
 		if (! self) return;
-		if (! cvar ("g_explosive_allow_hidecountry"))
+		if (! cvar ("sv_hidecountry"))
 		{
 			sprint (self, "^1hidecountry is not allowed on this server.\n");
 			return;

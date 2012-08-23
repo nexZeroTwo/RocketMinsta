@@ -74,7 +74,7 @@ void HG_Napalm_Think ()
 		return;
 	}
 
-	HG_Napalm_Burn (0.1, cvar ("g_explosive_handgrenades_napalm_burnradius"), cvar ("g_explosive_handgrenades_napalm_burndamage"), cvar ("g_explosive_handgrenades_napalm_edgeburndamage"), cvar ("g_explosive_handgrenades_napalm_burntime"));
+	HG_Napalm_Burn (0.1, cvar ("g_handgrenades_napalm_burnradius"), cvar ("g_handgrenades_napalm_burndamage"), cvar ("g_handgrenades_napalm_edgeburndamage"), cvar ("g_handgrenades_napalm_burntime"));
 	if (time >= self.nextparticle)
 	{
 		pointparticles (particleeffectnum ("fire_big"), self.org_explosion + (self.origin - self.org_explosion) * random (), '0 0 0', 1);
@@ -90,7 +90,7 @@ void HG_Napalm_Middlefire_Think() {
 		return;
 	}
 	
-	HG_Napalm_Burn(0.1, cvar("g_explosive_handgrenades_napalm_middleburnradius"), cvar("g_explosive_handgrenades_napalm_burndamage"), cvar("g_explosive_handgrenades_napalm_edgeburndamage"), cvar("g_explosive_handgrenades_napalm_burntime"));
+	HG_Napalm_Burn(0.1, cvar("g_handgrenades_napalm_middleburnradius"), cvar("g_handgrenades_napalm_burndamage"), cvar("g_handgrenades_napalm_edgeburndamage"), cvar("g_handgrenades_napalm_burntime"));
 	self.nextthink = time + 0.1;
 }
 
@@ -103,7 +103,7 @@ void HG_Napalm (void)
 	proj.owner = self.owner;
 	proj.classname = "grenade";
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar ("g_explosive_handgrenades_napalm_burndamage");
+	proj.bot_dodgerating = cvar ("g_handgrenades_napalm_burndamage");
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = W_Firemine_Touch;
@@ -114,19 +114,19 @@ void HG_Napalm (void)
 	proj.think = HG_Napalm_Think;
 	proj.nextthink = time;
 	proj.reset = SUB_Remove;
-	proj.damageforcescale = cvar ("g_explosive_handgrenades_napalm_damageforcescale");
-	kick_x = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
-	kick_y = (random () - 0.5) * 2 * cvar ("g_explosive_handgrenades_napalm_spread_xy");
+	proj.damageforcescale = cvar ("g_handgrenades_napalm_damageforcescale");
+	kick_x = (random () - 0.5) * 2 * cvar ("g_handgrenades_napalm_spread_xy");
+	kick_y = (random () - 0.5) * 2 * cvar ("g_handgrenades_napalm_spread_xy");
 	kick_z = max(
-						cvar("g_explosive_handgrenades_napalm_spread_z")
+						cvar("g_handgrenades_napalm_spread_z")
 					*	random(),
 					
-						cvar("g_explosive_handgrenades_napalm_spread_z_min")
-					+ 	cvar("g_explosive_handgrenades_napalm_spread_z_min_randomfactor")
+						cvar("g_handgrenades_napalm_spread_z_min")
+					+ 	cvar("g_handgrenades_napalm_spread_z_min_randomfactor")
 					*	(random() - 0.5) * 2
 				);
 	proj.velocity = kick;
-	proj.pushltime = time + cvar ("g_explosive_handgrenades_napalm_fire_lifetime");
+	proj.pushltime = time + cvar ("g_handgrenades_napalm_fire_lifetime");
 	W_SetupProjectileVelocity(proj);
 
 	proj.angles = vectoangles(proj.velocity);
@@ -138,7 +138,7 @@ void HG_Napalm (void)
 void HG_Napalm_Explode (void)
 {
 	local float c;
-	for (c = 0; c < cvar ("g_explosive_handgrenades_napalm_numparticles"); c ++) HG_Napalm ();
+	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Napalm ();
 	
 	// since we have a ton of fire in the middle, let's make it a real fire
 	entity mid = spawn();
@@ -147,7 +147,7 @@ void HG_Napalm_Explode (void)
 	setorigin(mid, mid.origin);
 	mid.think = HG_Napalm_Middlefire_Think;
 	mid.nextthink = time;
-	mid.pushltime = time + cvar ("g_explosive_handgrenades_napalm_fire_lifetime");
+	mid.pushltime = time + cvar ("g_handgrenades_napalm_fire_lifetime");
 	setsize(mid, '0 0 0', '0 0 0');
 }
 
@@ -240,7 +240,7 @@ void HG_Attack()
 	if(time < self.hg_next || !self.hg_ammo)
 		return;
 	
-	self.hg_type = HG_NameToType(cvar_string("g_explosive_handgrenades_type"));
+	self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
@@ -285,7 +285,7 @@ void HG_Attack()
 	if (hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 		
-	self.hg_next = time + cvar("g_explosive_handgrenades_mindelay");
+	self.hg_next = time + cvar("g_handgrenades_mindelay");
 	self.hg_ammo -= 1;
 	
 	#undef GV
@@ -311,13 +311,13 @@ void HG_Frame()
 	if(held && time >= self.hg_next && self.hg_ammo && mayfire)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
-			cvar("g_explosive_handgrenades_speed"),
+			cvar("g_handgrenades_speed"),
 		1);
 	else
 	{
 		self.hg_power = bound(0,
 			self.hg_power - frametime *
-			cvar("g_explosive_handgrenades_clearspeed"),
+			cvar("g_handgrenades_clearspeed"),
 		1);
 		
 		if(self.hg_state && mayfire)
@@ -333,7 +333,7 @@ void HG_Frame()
 void HG_PlayerSpawn()
 {
 	self.hg_power = 0;
-	self.hg_ammo = cvar("g_explosive_handgrenades_ammo");
+	self.hg_ammo = cvar("g_handgrenades_ammo");
 	self.hg_bonus = 0;
 	self.hg_bonustype = HG_NORMAL;
 }

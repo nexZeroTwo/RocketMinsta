@@ -466,7 +466,7 @@ void DropPowerup(float id, vector force) {
 }
 
 void DropPowerups(vector force) {
-	DEPENDON(cvar("g_explosive_droppowerups"))
+	DEPENDON(cvar("g_droppowerups"))
 	
 	if(self.items & IT_STRENGTH)
 		DropPowerup(IT_STRENGTH, force);
@@ -659,7 +659,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("g_explosive_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
 		{
 			float i;
 			
@@ -685,7 +685,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				}
 				
 				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
-				if(!cvar("g_explosive_extendfragmessages")) wpnstring = "";
+				if(!cvar("sv_extendfragmessages")) wpnstring = "";
 				
 				if(attacker.classname == "player") if(attacker != targ)
 				{

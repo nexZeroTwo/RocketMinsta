@@ -477,7 +477,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl fps", (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_balance_minstanex_explosive"))? " hfrags" : ""),
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -1250,16 +1250,16 @@ void Sbar_DrawScoreboard()
 	float scoreboard_fadeinspeed = 15;
 	float scoreboard_fadeoutspeed = 5;
 	if(sbar_woulddrawscoreboard) {
-		//if (scoreboard_fadeinspeed)
+		if not(sv_oldfag)
 			sbar_scoreboard_fade_alpha = bound (0, (time - sbar_woulddrawscoreboard_change) * scoreboard_fadeinspeed, 1);
-		//else
-			//sbar_scoreboard_fade_alpha = 1;
+		else
+			sbar_scoreboard_fade_alpha = 1;
 	}
 	else
-		//if (scoreboard_fadeoutspeed)
+		if not(sv_oldfag)
 			sbar_scoreboard_fade_alpha = bound (0, (1/scoreboard_fadeoutspeed - (time - sbar_woulddrawscoreboard_change)) * scoreboard_fadeoutspeed, 1);
-		//else
-			//sbar_scoreboard_fade_alpha = 0;
+		else
+			sbar_scoreboard_fade_alpha = 0;
 
 	if not(sbar_scoreboard_fade_alpha)
 		return;
@@ -1397,7 +1397,7 @@ void Sbar_DrawScoreboard()
 	else
 	{
 		if(tl > 0)
-			str = strcat(str, " for ^1", ftos(tl), " minutes^7");
+			str = strcat(str, " up to ^1", ftos(tl), " minutes^7");
 		if(fl > 0)
 		{
 			if(tl > 0)
@@ -1456,7 +1456,7 @@ void Sbar_DrawScoreboard()
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
 
-	if(speedrecord_string)
+	if(speedrecord_string && !sv_oldfag)
 	{
 		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
 		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
@@ -2056,8 +2056,19 @@ void centerprint(string strRealMessage)
 			return;
 
 		strRealMessage = substring(strRealMessage, 2, strlen(strRealMessage) - 2);
+	} else if(substring(strRealMessage, 0, 1) == "\x01") {	// player name spam
+		if(rm_shownames)
+			return;
+		
+		strRealMessage = substring(strRealMessage, 1, strlen(strRealMessage));
+		
+		for(i = 0; i < centerprint_msgnum; ++i)
+			if(centerprint_msgs[i])
+				strunzone(centerprint_msgs[i]);
+			
+		centerprint_msgnum = 0;
 	}
-
+	
 	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
 
@@ -2072,20 +2083,9 @@ void centerprint(string strRealMessage)
 		centerprint_msgnum--;
 	}
 
-
-
-	if(substring(strRealMessage, 0, 1) == "\x01")
-	{
-		centerprint_msgs[0] = strzone(strRealMessage);
-		centerprint_msgexpires[0] = time + scrtime;
-		centerprint_msgnum = 1;
-	}
-	else
-	{
-		centerprint_msgs[centerprint_msgnum] = strzone(strRealMessage);
-		centerprint_msgexpires[centerprint_msgnum] = time + scrtime;
-		centerprint_msgnum++;
-	}
+	centerprint_msgs[centerprint_msgnum] = strzone(strRealMessage);
+	centerprint_msgexpires[centerprint_msgnum] = time + scrtime;
+	centerprint_msgnum++;
 
 	i = hcount = 0;
 
@@ -2626,7 +2626,9 @@ void drawstringright(vector position, string text, vector scale, vector rgb, flo
 
 void drawstringcenter(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x);
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x);
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x);
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
@@ -2640,13 +2642,17 @@ void drawcolorcodedstringcenter(vector position, string text, vector scale, floa
 
 void drawstringcenter_offset(vector position, string text, vector scale, vector rgb, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x) - offs;
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlen(text) * scale_x) - offs;
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x) - offs;
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter_offset(vector position, string text, vector scale, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x) - offs;
+	//position_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(text) * scale_x) - offs;
+	
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x) - offs;
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
@@ -2787,6 +2793,57 @@ void Sbar_MorningRescue(void)
 			drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
 		}
 	}
+}
+
+float movealpha;
+
+void Sbar_ServerInfo() {
+	if(spectatee_status != -1)
+		return;
+	
+	if(pmove_vel_x || pmove_vel_y || pmove_vel_z)
+		movealpha = approach(movealpha, 1, 3 * drawframetime);
+	else
+		movealpha = approach(movealpha, 0, 3 * drawframetime);
+	
+	vector pos = '0 0.6 0' * vid_conheight;
+	float a = 0.5 * (1 - sbar_scoreboard_fade_alpha - movealpha);
+	
+	if(a <= 0)
+		return;
+	
+	vector sz_big  = sbar_fontsize_spec * a * 2;
+	vector sz_norm = sbar_fontsize * a * 2;
+	
+	drawfont = sbar_bigfont;
+	drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+	pos_y += sz_big_y + sz_norm_y * 0.5;
+	drawfont = sbar_font;
+	
+	drawstringcenter(pos, strcat(sv_rm_build, " (", sv_rm_version, ")"), sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
+	pos_y += sz_norm_y;
+	drawstringcenter(pos, sv_rm_date, sz_norm, '1 1 1', a, DRAWFLAG_NORMAL);
+	pos_y += sz_norm_y * 1.5;
+	drawcolorcodedstringcenter(pos, strcat("Playing ^5", gametype_ID_to_LongName(gametype), " ^7on ^2", shortmapname), sz_norm, a, DRAWFLAG_NORMAL);
+	
+	if(sv_motd == "")
+		return;
+	
+	pos_y += sz_big_y * 1.5;
+	drawfont = sbar_bigfont;
+	drawcolorcodedstringcenter(pos, "Message of The Day", sz_big, a, DRAWFLAG_NORMAL);
+	pos_y += sz_big_y + sz_norm_y * 0.5;
+	drawfont = sbar_font;
+	
+	float n = tokenizebyseparator(sv_motd, "\n");
+	float i;
+	
+	for(i = 0; i < n; ++i) {
+		drawcolorcodedstringcenter(pos, argv(i), sz_norm, a, DRAWFLAG_NORMAL);
+		pos_y += sz_norm_y;
+	}
+	
+	drawfont = sbar_font;
 }
 
 float vote_active; // is there an active vote?
@@ -3126,7 +3183,16 @@ void Sbar_Draw (void)
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg");
 	sbar_scoreboard_highlight = cvar("sbar_scoreboard_highlight");
 	sbar_info_pos = max(0, cvar("sbar_info_pos"));
-
+	
+	if(sv_oldfag) {
+		rm_oldhud = TRUE;
+		rm_showrankings = FALSE;
+		rm_visualscore = FALSE;
+		rm_hidewatermark = TRUE;
+		rm_simpleeffects = TRUE;
+		rm_nobigtext = TRUE;
+	}
+	
 	float i;
 	float weapon_stats;
 	float x, fade;
@@ -3314,11 +3380,11 @@ void Sbar_Draw (void)
 
 		string s2;
         if(gametype == GAME_FREEZETAG)
-			s = "Revival progress:";
+			s = "Revival progress: ";
 		else if(gametype == GAME_JAILBREAK)
-			s = "Unlocking the jail:";
+			s = "Unlocking the jail: ";
 		else
-			s = "Capture progress:";
+			s = "Capture progress: ";
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
 		s2 = strcat(ftos(floor(rev * 100)), "%");
 		
@@ -4694,6 +4760,8 @@ void Sbar_Draw (void)
 		}
 	}
 	#endif
+
+	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)
 	{

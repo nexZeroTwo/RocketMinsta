@@ -451,7 +451,7 @@ void FlagTouch()
 			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		
-		if(cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1) // at most one human
+		if((!cvar("g_rocketminsta") || !cvar("g_rocketminsta_ctf_nocapturerecord")) && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
 		{
 			t = time - other.flagcarried.flagpickuptime;
 			s = ftos_decimals(t, 2);
@@ -498,8 +498,8 @@ void FlagTouch()
 		//<akari>
 		//Specially for Spook: restore health on flag capture
 		
-		if(cvar("g_balance_minstanex_explosive"))
-		if(cvar("g_explosive_ctf_capheals"))
+		if(cvar("g_rocketminsta"))
+		if(cvar("g_ctf_capheals"))
 		if(other.health < 100)
 			other.health = 100;
 		
@@ -806,7 +806,7 @@ void spawnfunc_item_flag_team1()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -926,7 +926,7 @@ void spawnfunc_item_flag_team2()
 			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
 			remove(self);
 		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_explosive_powerupsonbases"))
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);

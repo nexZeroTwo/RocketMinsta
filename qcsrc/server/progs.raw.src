@@ -93,6 +93,7 @@ movelib.qc
 steerlib.qc
 pathlib/pathlib.qh
 
+rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
