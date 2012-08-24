@@ -57,9 +57,9 @@ void imp_missle_fire() {
 	makevectors(self.angles);
 	setorigin(proj, self.origin + v_up * 90 + v_right * 30);
 	
-	vector shotanle = vectoangles(proj.origin - self.enemy.origin);
-	shotanle_y += 180;
-	makevectors(shotanle);
+	vector shotangle = vectoangles(proj.origin - self.enemy.origin);
+	shotangle_y += 180;
+	makevectors(shotangle);
 	proj.velocity = v_forward * 400;
 	
 	proj.pushltime = time + 3;
