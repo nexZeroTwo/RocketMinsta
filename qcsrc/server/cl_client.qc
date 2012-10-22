@@ -1571,6 +1571,8 @@ void ClientConnect (void)
 		bprint(ColoredTeamName(self.team));
 	}
 
+	StatsPushVoid("connect", self);
+
 	bprint("\n");
 
 	self.welcomemessage_time = 0;
@@ -2438,8 +2440,10 @@ void LeaveSpectatorMode()
 			if(cvar("g_campaign"))
 				campaign_bots_may_start = 1;
 			PutClientInServer();
-			if(self.classname == "player")
+			if(self.classname == "player") {
 				bprint ("^4", self.netname, "^4 is playing now\n");
+				StatsPushVoid("join", self);
+			}
 			if(!cvar("g_campaign"))
 				centerprint(self,""); // clear MOTD
 			return;

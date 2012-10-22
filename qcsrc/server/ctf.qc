@@ -487,6 +487,7 @@ void FlagTouch()
 		else
 			bprint(other.netname, "^7 captured the ", other.flagcarried.netname, "\n");
 
+		StatsPushString("capture", other, other.flagcarried.netname);
 		PlayerTeamScore_Add(other, SP_CTF_CAPS, ST_CTF_CAPS, 1);
 		LogCTF("capture", other.flagcarried.team, other);
 		// give credit to the individual player
@@ -554,6 +555,7 @@ void FlagTouch()
 		self.cnt = FLAG_CARRY;
 		self.angles = '0 0 0';
 		bprint(other.netname, "^7 got the ", self.netname, "\n");
+		StatsPushString("pickup", other, self.netname);
 		UpdateFrags(other, ctf_score_value("score_pickup_base"));
 		self.dropperid = other.playerid;
 		PlayerScore_Add(other, SP_CTF_PICKUPS, 1);
@@ -584,6 +586,7 @@ void FlagTouch()
 		{
 			// return flag
 			bprint(other.netname, "^7 returned the ", self.netname, "\n");
+			StatsPushString("return", other, self.netname);
 
 			// punish the player who last had it
 			FOR_EACH_PLAYER(player)
@@ -633,6 +636,7 @@ void FlagTouch()
 			other.flagcarried = self;
 			self.cnt = FLAG_CARRY;
 			bprint(other.netname, "^7 picked up the ", self.netname, "\n");
+			StatsPushString("pickup", other, self.netname);
 
 			float f;
 			f = bound(0, (self.pain_finished - time) / cvar("g_ctf_flag_returntime"), 1);
