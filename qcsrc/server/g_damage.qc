@@ -106,6 +106,7 @@ void GiveFrags (entity attacker, entity targ, float f)
 		{
 			// suicide
 			PlayerScore_Add(attacker, SP_SUICIDES, 1);
+			StatsPushVoid("suicide", attacker);
 		}
 		else
 		{
@@ -606,9 +607,16 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					PlayerScore_Add(attacker, SP_CTF_FCKILLS, 1);
 					hudflash_teamcolor_default_spec(attacker);
 					GiveFrags(attacker, targ, 0); // for logging
+					StatsPushPlayer("fckill", attacker, targ);
+					StatsPushPlayer("kill", attacker, targ);
+					StatsPushPlayer("death", targ, attacker);
 				}
 				else
+				{
 					GiveFrags(attacker, targ, 1);
+					StatsPushPlayer("kill", attacker, targ);
+					StatsPushPlayer("death", targ, attacker);
+				}
 
 				if (targ.killcount > 2) {
 					if(sv_gentle)

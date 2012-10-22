@@ -1,0 +1,7 @@
+// Part of NEXSTAT Mod
+
+void StatsPushPlayer(string type, entity player, entity param);
+
+void StatsPushString(string type, entity player, string param);
+
+void StatsPushVoid(string type, entity player);

@@ -29,6 +29,8 @@ csqceffects.qc
 
 portals.qh
 
+nexstat.qh
+
 g_hook.qh
 g_handgrenades.qh
 soulmates.qh
@@ -60,6 +62,8 @@ bot/bot.qc
 g_subs.qc
 
 g_tetris.qc
+
+nexstat.qc
 
 runematch.qc
 arena.qc

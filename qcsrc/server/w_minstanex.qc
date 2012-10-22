@@ -140,6 +140,8 @@ void W_MinstaNex_Attack (void)
 					   cvar("g_explosive_minsta_force"), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
+	StatsPushVoid("shot", self);
+
 	if(g_minstagib)
 	{
 		if(yoda)
