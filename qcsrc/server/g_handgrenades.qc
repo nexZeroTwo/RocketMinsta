@@ -341,12 +341,18 @@ void HG_Frame()
 	self.hg_state = held;
     self.hg_regenpaused = time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause");
     
-    if(cvar("g_handgrenades_regen_time") && !(g_freezetag && self.freezetag_frozen)) {
+    if(cvar("g_handgrenades_regen_time")) {
         float mx = cvar("g_handgrenades_regen_max");
         if(mx <= 0) mx = cvar("g_handgrenades_ammo");
         
         if(self.hg_ammo < mx && !self.hg_regenpaused) {
-            self.hg_regentime -= frametime;
+            float rate;
+            rate = frametime;
+            
+            if(g_freezetag && self.freezetag_frozen)
+                rate *= cvar("g_handgrenades_regen_frozenfactor");
+            
+            self.hg_regentime -= rate;
             
             if(self.hg_regentime <= 0) {
                 self.hg_ammo += 1;
