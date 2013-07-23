@@ -21,6 +21,8 @@ void HG_Napalm();
 .float hg_type;
 .float hg_bonus;
 .float hg_bonustype;
+.float hg_regentime;
+.float hg_regenstat; // for hud only
 
 #define BUTTON_HG button6
 #define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))

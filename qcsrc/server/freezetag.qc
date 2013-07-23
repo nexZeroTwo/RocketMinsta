@@ -346,7 +346,7 @@ void freezetag_Unfreeze(entity attacker)
 	
 	self.disableclientprediction = 0;
 	
-	if(g_handgrenades)
+	if(g_handgrenades && cvar("g_handgrenades_regen_time"))
 		HG_PlayerSpawn();
 }
 

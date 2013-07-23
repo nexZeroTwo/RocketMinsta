@@ -232,10 +232,15 @@ void HG_Touch (void)
 	}
 }
 
+float HG_RegenTime(entity e) {
+    return cvar("g_handgrenades_regen_time") + pow(e.hg_ammo, cvar("g_handgrenades_regen_power")) * cvar("g_handgrenades_regen_time") * cvar("g_handgrenades_regen_factor");
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
 	float hgtype;
+    float freebonus;
 	
 	if(time < self.hg_next || !self.hg_ammo)
 		return;
@@ -245,6 +250,7 @@ void HG_Attack()
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
 		self.hg_bonus -= 1;
+        freebonus = cvar("g_handgrenades_bunus_free");
 	} else
 		hgtype = self.hg_type;
 	
@@ -286,7 +292,12 @@ void HG_Attack()
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 		
 	self.hg_next = time + cvar("g_handgrenades_mindelay");
-	self.hg_ammo -= 1;
+    
+    if(!freebonus) {
+        self.hg_ammo -= 1;
+        self.hg_regentime = HG_RegenTime(self);
+        sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
+    }
 	
 	#undef GV
 }
@@ -328,6 +339,23 @@ void HG_Frame()
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;
+    
+    if(cvar("g_handgrenades_regen_time") && !(g_freezetag && self.freezetag_frozen)) {
+        float mx = cvar("g_handgrenades_regen_max");
+        if(mx <= 0) mx = cvar("g_handgrenades_ammo");
+        
+        if(self.hg_ammo < mx && time - self.lastdamage > cvar("g_handgrenades_regen_damagepause")) {
+            self.hg_regentime -= frametime;
+            
+            if(self.hg_regentime <= 0) {
+                self.hg_ammo += 1;
+                self.hg_regentime = HG_RegenTime(self);
+                sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
+            }
+        }
+        
+        self.hg_regenstat = bound(0, self.hg_regentime / HG_RegenTime(self), 1);
+    }
 }
 
 void HG_PlayerSpawn()
@@ -336,4 +364,5 @@ void HG_PlayerSpawn()
 	self.hg_ammo = cvar("g_handgrenades_ammo");
 	self.hg_bonus = 0;
 	self.hg_bonustype = HG_NORMAL;
+    self.hg_regentime = HG_RegenTime(self);
 }

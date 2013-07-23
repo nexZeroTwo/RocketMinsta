@@ -676,6 +676,8 @@ void vip_PlayerPreThink()
 		//	bprint("^1URGENT: ^7", self.netname, " has no vip_regenhealth_f! Everything is fucked up!\n");
 	}
 	
+    // XXX: this code needs an update for the new grenade regen mechanics
+    if(!cvar("g_handgrenades_regen_time"))
 	if(cvar("g_vip_regenerate_grenades"))
 	if(self.hg_ammo < cvar("g_handgrenades_ammo"))
 	if(time >= self.vip_grenregen_next)

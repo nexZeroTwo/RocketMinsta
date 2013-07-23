@@ -4559,13 +4559,21 @@ void Sbar_Draw (void)
 		
 		// TODO: make this less ugly
 		float hgammo = getstati(STAT_HGAMMO);
-		if(hgammo)
-		{
-			vector hgapos;
-			hgapos_y = vid_conheight - vid_conheight/7;
+        vector hgapos;
+        hgapos_y = vid_conheight - vid_conheight/7;
+		if(hgammo) {
 			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
 		}
 		
+        float hgregen = getstatf(STAT_HGREGEN);
+        if(hgregen && hgregen != 1) {
+            vector hgrsize = '70 3 0';
+            hgapos_y += 10;
+            hgapos_x = (vid_conwidth - hgrsize_x) * 0.5;
+            hgrsize_x *= hgregen;
+            drawfill(hgapos, hgrsize, '1 1 1', 0.5, DRAWFLAG_NORMAL);
+        }
+        
 		// fuel ammo
 		if(rm_oldhud)
 		{
