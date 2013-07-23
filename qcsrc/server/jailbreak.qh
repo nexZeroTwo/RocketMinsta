@@ -30,6 +30,7 @@ void JB_RemovePlayer();
 .float jb_prisontime;
 .float jb_capturetime;
 .float jb_capturestate;
+.float jb_capturecount;
 .float jb_roundlost;
 .float jb_fragrow;
 .float jb_proj_ownerstate;

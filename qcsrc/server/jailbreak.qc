@@ -797,6 +797,10 @@ void JB_SetupTortureSpawnpoint() {
 .entity sprite;
 void AnimateDomPoint();
 
+float JB_ControlPoint_Cooldown(entity e) {
+    return cvar("g_jailbreak_controlpoint_idletime") + pow(e.jb_capturecount, cvar("g_jailbreak_controlpoint_idletime_power")) * cvar("g_jailbreak_controlpoint_idletime_factor") * cvar("g_jailbreak_controlpoint_idletime");
+}
+
 void JB_ControlPoint_Think() {
 	self.nextthink = time + 0.1;
 	AnimateDomPoint();
@@ -807,13 +811,21 @@ void JB_ControlPoint_Think() {
 			setmodel(self, "models/domination/dom_unclaimed.md3");
 		}
 		
-		if(time - self.jb_capturetime >= cvar("g_jailbreak_controlpoint_idletime"))
+        float cd;
+        cd = JB_ControlPoint_Cooldown(self);
+        
+        WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, cd);
+        WaypointSprite_UpdateHealth(self.waypointsprite_attached, time - self.jb_capturetime);
+        
+		if(time - self.jb_capturetime >= JB_ControlPoint_Cooldown(self))
 			self.jb_unlock_progress = 0;
-		
+        
 		return;
 	} else if(self.jb_capturestate) {
 		self.jb_capturestate = FALSE;
 		setmodel(self, ((self.team == COLOR_TEAM1)? "models/domination/dom_red.md3" : "models/domination/dom_blue.md3"));
+        WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
+        WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
 	}
 }
 
@@ -869,8 +881,17 @@ void JB_ControlPoint_Touch() {
 	
 	if(self.jb_unlock_progress >= 1) {
 		self.jb_capturetime = time;
+        self.jb_capturecount += 1;
 		JB_ControlPoint_Capture(other);
 	}
+}
+
+void JB_ControlPoint_Reset() {
+    self.jb_capturetime = 0;
+    self.jb_capturecount = 0;
+    self.jb_unlock_progress = 0;
+    WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
+    WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
 }
 
 void JB_SetupControlPoint() {
@@ -894,6 +915,7 @@ void JB_SetupControlPoint() {
 	self.touch = JB_ControlPoint_Touch;
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
+    self.reset = JB_ControlPoint_Reset;
 	setsize(self, '-32 -32 -32', '32 32 32');
 	setorigin(self, self.origin + '0 0 20');
 	droptofloor();
@@ -901,8 +923,8 @@ void JB_SetupControlPoint() {
 	waypoint_spawnforitem_force(self, self.origin);
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
-	WaypointSprite_SpawnFixed(((self.team == COLOR_TEAM1)? "redbase" : "bluebase"), self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+	self.waypointsprite_attached = WaypointSprite_SpawnFixed(((self.team == COLOR_TEAM1)? "redbase" : "bluebase"), self.origin + '0 0 37', self, sprite);
+	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
 }
 
 //
