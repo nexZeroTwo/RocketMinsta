@@ -889,7 +889,9 @@ void JB_ControlPoint_Touch() {
 void JB_ControlPoint_Reset() {
     self.jb_capturetime = 0;
     self.jb_capturecount = 0;
-    self.jb_unlock_progress = 0;
+    self.jb_unlock_progress = 1;
+    self.jb_capturetime = time;
+    self.jb_capturestate = FALSE;
     WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
     WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
 }
@@ -916,6 +918,9 @@ void JB_SetupControlPoint() {
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
     self.reset = JB_ControlPoint_Reset;
+    self.jb_unlock_progress = 1;
+    self.jb_capturetime = time;
+    self.jb_capturestate = FALSE;
 	setsize(self, '-32 -32 -32', '32 32 32');
 	setorigin(self, self.origin + '0 0 20');
 	droptofloor();
