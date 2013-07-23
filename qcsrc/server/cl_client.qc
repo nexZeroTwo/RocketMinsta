@@ -2437,6 +2437,8 @@ void SpectateCopy(entity spectatee) {
 	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
+    self.hg_regenstat = spectatee.hg_regenstat;
+    self.hg_regenpaused = spectatee.hg_regenpaused;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
 	setorigin(self, spectatee.origin);
