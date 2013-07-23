@@ -296,7 +296,7 @@ void HG_Attack()
     if(!freebonus) {
         self.hg_ammo -= 1;
         self.hg_regentime = HG_RegenTime(self);
-        sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
+        //sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
     }
 	
 	#undef GV
@@ -357,7 +357,7 @@ void HG_Frame()
             if(self.hg_regentime <= 0) {
                 self.hg_ammo += 1;
                 self.hg_regentime = HG_RegenTime(self);
-                sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
+                //sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
             }
         }
         
