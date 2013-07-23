@@ -4571,7 +4571,7 @@ void Sbar_Draw (void)
             hgapos_y += 10;
             hgapos_x = (vid_conwidth - hgrsize_x) * 0.5;
             hgrsize_x *= hgregen;
-            drawfill(hgapos, hgrsize, '1 1 1', 0.5, DRAWFLAG_NORMAL);
+            drawfill(hgapos, hgrsize, '1 1 1' - '0 0.5 0.5' * getstati(STAT_HGREGENPAUSED), 0.5, DRAWFLAG_NORMAL);
         }
         
 		// fuel ammo

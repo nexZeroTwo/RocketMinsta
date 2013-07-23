@@ -339,12 +339,13 @@ void HG_Frame()
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;
+    self.hg_regenpaused = time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause");
     
     if(cvar("g_handgrenades_regen_time") && !(g_freezetag && self.freezetag_frozen)) {
         float mx = cvar("g_handgrenades_regen_max");
         if(mx <= 0) mx = cvar("g_handgrenades_ammo");
         
-        if(self.hg_ammo < mx && time - self.lastdamage > cvar("g_handgrenades_regen_damagepause")) {
+        if(self.hg_ammo < mx && !self.hg_regenpaused) {
             self.hg_regentime -= frametime;
             
             if(self.hg_regentime <= 0) {

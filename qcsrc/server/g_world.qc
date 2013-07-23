@@ -714,6 +714,7 @@ void spawnfunc_worldspawn (void)
 		addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
 		addstat(STAT_HGAMMO, AS_INT, hg_ammo);
 		addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
+		addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
 	}
 
 	next_pingtime = time + 5;
