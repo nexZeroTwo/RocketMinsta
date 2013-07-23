@@ -306,7 +306,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			HG_Attack();
 			self = o;
 		}
-		targ.hg_ammo = 0;
+        
+        if(!g_freezetag)
+            targ.hg_ammo = 0;
 		
 		if (targ.classname == "corpse")
 			s = "A corpse";

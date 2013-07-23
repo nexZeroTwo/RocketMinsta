@@ -107,7 +107,8 @@ void JB_Imprison(entity attacker) {
 	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
-		self.hg_ammo = 0;
+        if(!cvar("g_handgrenades_regen_time"))
+            self.hg_ammo = 0;
 		self.hg_bonus = 0;
 	}
 	
@@ -158,6 +159,7 @@ void JB_Release(entity saviour) {
 	bprint(self.netname, "^3 has broken free!\n");
 	
 	if(g_handgrenades)
+    if(!cvar("g_handgrenades_regen_time"))
 		HG_PlayerSpawn();
 	
 	if(self.scorekeeper) {
