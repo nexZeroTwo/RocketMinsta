@@ -389,6 +389,9 @@ void HG_Frame()
 
 void HG_PlayerSpawn()
 {
+    if(g_freezetag && self.freezetag_frozen)
+        return;
+    
 	self.hg_power = 0;
 	self.hg_ammo = cvar("g_handgrenades_ammo");
 	self.hg_bonus = 0;
