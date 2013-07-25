@@ -2,6 +2,17 @@
 // Handgrenades mutator
 // Intended for the Camping Rifle Arena mode
 
+void HG_Precache() {
+    precache_sound("hk/alarm.wav");
+    precache_sound("weapons/grenade_bounce1.wav");
+    precache_sound("weapons/grenade_bounce2.wav");
+    precache_sound("weapons/grenade_bounce3.wav");
+    precache_sound("weapons/grenade_bounce4.wav");
+    precache_sound("weapons/grenade_bounce5.wav");
+    precache_sound("weapons/grenade_bounce6.wav");
+    precache_sound("weapons/grenade_fire.wav");
+}
+
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;

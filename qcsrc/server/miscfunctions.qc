@@ -1764,10 +1764,14 @@ void precache()
     precache_sound ("weapons/weapon_switch.wav");
     precache_sound ("weapons/weaponpickup.wav");
     precache_sound ("weapons/unavailable.wav");
-    if (g_grappling_hook)
-    {
+    
+    if(g_grappling_hook) {
         precache_sound ("weapons/hook_fire.wav"); // hook
         precache_sound ("weapons/hook_impact.wav"); // hook
+    }
+
+    if(g_handgrenades) {
+        HG_Precache();
     }
 
     if (cvar("sv_precacheweapons") || g_nixnex)
