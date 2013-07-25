@@ -7,6 +7,7 @@ float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason);
 void HG_Napalm();
+float HG_PlayerMayFire(entity p);
 
 #define HG_NORMAL DEATH_HG_NORMAL
 #define HG_STICKY DEATH_HG_STICKY

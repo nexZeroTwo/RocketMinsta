@@ -403,9 +403,9 @@ void FireGrapplingHook (void)
 	if(g_freezetag)
 	if(self.freezetag_frozen)
 		return;
-
+        
 	if(g_handgrenades)
-	if(self.hg_ammo && !CustomCRAHookButton(self))
+	if(HG_PlayerMayFire(self) && !CustomCRAHookButton(self))
 		return;
 
 	makevectors(self.v_angle);

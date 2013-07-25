@@ -16,7 +16,9 @@ void HG_Precache() {
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
-	p.hg_ammo += amount;
+    
+    if(!cvar("g_handgrenades_bonus_free"))
+        p.hg_ammo += amount;
 	
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
@@ -247,24 +249,30 @@ float HG_RegenTime(entity e) {
     return cvar("g_handgrenades_regen_time") + pow(e.hg_ammo, cvar("g_handgrenades_regen_power")) * cvar("g_handgrenades_regen_time") * cvar("g_handgrenades_regen_factor");
 }
 
+float HG_PlayerMayFire(entity p) {
+    return p.hg_ammo || (p.hg_bonus && cvar("g_handgrenades_bonus_free"));
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
 	float hgtype;
     float freebonus;
 	
-	if(time < self.hg_next || !self.hg_ammo)
+	if(time < self.hg_next)
 		return;
 	
 	self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
-		self.hg_bonus -= 1;
-        freebonus = cvar("g_handgrenades_bunus_free");
+        freebonus = cvar("g_handgrenades_bonus_free");
 	} else
 		hgtype = self.hg_type;
 	
+    if(!freebonus && !self.hg_ammo)
+        return;
+    
 	makevectors(self.v_angle);
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
 	w_shotdir = v_forward;
@@ -309,6 +317,9 @@ void HG_Attack()
         self.hg_regentime = HG_RegenTime(self);
         //sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
     }
+    
+    if(self.hg_bonus)
+		self.hg_bonus -= 1;
 	
 	#undef GV
 }
@@ -330,7 +341,7 @@ void HG_Frame()
 	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
 		bigprint_spec(self, "Out of Grenades", "", 1);
 	
-	if(held && time >= self.hg_next && self.hg_ammo && mayfire)
+	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
 			cvar("g_handgrenades_speed"),
