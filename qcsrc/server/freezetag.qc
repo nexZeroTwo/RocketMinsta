@@ -346,8 +346,13 @@ void freezetag_Unfreeze(entity attacker)
 	
 	self.disableclientprediction = 0;
 	
-	if(g_handgrenades && cvar("g_handgrenades_regen_time"))
-		HG_PlayerSpawn();
+	if(g_handgrenades) {
+        if(cvar("g_handgrenades_regen_time")) {
+            self.hg_bonus = 0;
+            self.hg_bonustype = HG_NORMAL;
+            self.hg_power = 0;
+        } else HG_PlayerSpawn();
+    }
 }
 
 .vector ft_oldorigin;
