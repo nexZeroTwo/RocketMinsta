@@ -1090,6 +1090,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
 
+    self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -2441,6 +2442,8 @@ void SpectateCopy(entity spectatee) {
     self.hg_regenpaused = spectatee.hg_regenpaused;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
+    self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
+    self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);

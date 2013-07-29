@@ -675,6 +675,7 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
+	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
 
 	if(g_freezetag)
 	{

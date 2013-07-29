@@ -4444,7 +4444,10 @@ void Sbar_Draw (void)
 		
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
-
+            
+            if(activeweapon == WEP_CAMPINGRIFLE && a == 999)
+                a = getstati(STAT_BULLETS_LOADED);
+            
 			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 			
 			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
