@@ -635,6 +635,8 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	if(IsDifferentTeam(self, attacker))
 		valid_damage_for_weaponstats = 1;
 	
+    DPS_Record(attacker, self, take);
+    
 	// Print damage to players
 	local float olddamage, armordamage;
 	local entity targ;

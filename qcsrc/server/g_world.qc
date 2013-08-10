@@ -814,6 +814,8 @@ void spawnfunc_worldspawn (void)
 		localcmd("\nmenu_cmd sync\n");
 	}
 	
+    sv_dps = cvar("sv_dps");
+    
 	DPRM_Start();
 }
 

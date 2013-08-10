@@ -709,3 +709,5 @@ float sv_showfps;
 float sv_oldfag;
 
 .float lastdamage;
+
+float sv_dps;

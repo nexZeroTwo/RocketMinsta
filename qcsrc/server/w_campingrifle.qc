@@ -3,6 +3,8 @@
 //** In fully automatic mode some of the gas is used to extract and reload the next cartrige, thus there is less power and range.
 
 .float campingrifle_accumulator;
+.float campingrifle_streak;
+.float campingrifle_lastburst;
 
 float W_CampingRifle_CheckMaxBullets()
 {
@@ -106,7 +108,21 @@ void W_CampingRifle_Attack()
 
 void W_CampingRifle_Attack2()
 {
-	W_CampingRifle_FireBullet(cvar("g_balance_campingrifle_secondary_spread"), cvar("g_balance_campingrifle_secondary_damage"), cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
+    float sprd;
+    float add;
+    
+    sprd = cvar("g_balance_campingrifle_secondary_spread");
+    add  = cvar("g_balance_campingrifle_secondary_spread_addedperbullet");
+    
+    if(add) {
+        if(time - self.campingrifle_lastburst > cvar("g_balance_campingrifle_secondary_spread_resettime"))
+            self.campingrifle_streak = 0;
+        sprd = sprd + add * self.campingrifle_streak;
+        self.campingrifle_streak += 1;
+        self.campingrifle_lastburst = time;
+    }
+    
+	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage"), cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
 }
 
 void spawnfunc_weapon_campingrifle (void)

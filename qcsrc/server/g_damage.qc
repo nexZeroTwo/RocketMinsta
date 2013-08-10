@@ -3,6 +3,70 @@
 .float dmg_force;
 .float dmg_radius;
 
+.entity dps_target;
+.float dps_starttime;
+.float dps_damage;
+.float dps_hits;
+
+void DPS_Message(entity p, string s) {
+    sprint(p, strcat("^2DPS: ^7", s, "\n"));
+}
+
+void DPS_Finish(entity plr) {
+    if(!sv_dps)
+        return;
+    
+    if(!plr)
+        return;
+    
+    if(!plr.dps_target) {
+        DPS_Message(plr, "No previous target");
+        return;
+    }
+    
+    float killtime = time - plr.dps_starttime;
+    float avgdps = plr.dps_damage / killtime;
+    DPS_Message(plr, strcat("Average DPS against ", plr.dps_target.netname, " ^7: ", ftos(avgdps), ". Kill scored in ", ftos(killtime), strcat(" seconds, ", ftos(plr.dps_hits), " hits")));
+    
+    plr.dps_target = world;
+    plr.dps_hits = 0;
+    plr.dps_damage = 0;
+    plr.dps_starttime = 0;
+}
+
+void DPS_Record(entity plr, entity targ, float damage) {
+    if(!sv_dps)
+        return;
+    
+    if(!plr || !targ)
+        return;
+    
+    if(plr.dps_target != targ)
+        DPS_Finish(plr);
+    
+    if(!plr.dps_target) {
+        DPS_Message(plr, strcat("Recording DPS against ", targ.netname));
+        plr.dps_target = targ;
+        plr.dps_starttime = time;
+    }
+    
+    plr.dps_hits += 1;
+    plr.dps_damage += damage;
+}
+
+void DPS_FinishForTarget(entity targ) {
+    if(!sv_dps)
+        return;
+    
+    if(!targ)
+        return;
+    
+    entity plr; FOR_EACH_PLAYER(plr) {
+        if(plr.dps_target == targ)
+            DPS_Finish(plr);
+    }
+}
+
 void inf_infect_player(entity, entity);
 
 float Damage_DamageInfo_SendEntity(entity to, float sf)
@@ -263,6 +327,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			targ.fixangle = TRUE;
 		}
 	}
+
+    DPS_Finish(targ);
+    if(attacker.dps_target == targ)
+        DPS_Finish(attacker);
+    DPS_FinishForTarget(targ);
 
 	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
