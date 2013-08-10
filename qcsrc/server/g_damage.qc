@@ -376,6 +376,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			self = o;
 		}
         
+        HG_DetonateAll(targ);
+        
         if(!g_freezetag)
             targ.hg_ammo = 0;
 		

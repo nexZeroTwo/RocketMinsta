@@ -4562,8 +4562,15 @@ void Sbar_Draw (void)
 		
 		// TODO: make this less ugly
 		float hgammo = getstati(STAT_HGAMMO);
+        float hgdetons = getstati(STTA_HGDETONABLES);
+        
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;
+        
+        if(hgdetons) {
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        }
+        
 		if(hgammo) {
 			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
 		}

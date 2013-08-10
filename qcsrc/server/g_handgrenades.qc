@@ -11,6 +11,7 @@ void HG_Precache() {
     precache_sound("weapons/grenade_bounce5.wav");
     precache_sound("weapons/grenade_bounce6.wav");
     precache_sound("weapons/grenade_fire.wav");
+    precache_sound("weapons/rm_nadebeep.wav");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
@@ -198,7 +199,6 @@ float HG_TypeToCSQCProjType(float t) {
 }
 
 #define GV(v) (GRENVAR(self.hg_type, v))
-
 void HG_Grenade_Explode()
 {
 	if(other.takedamage == DAMAGE_AIM)
@@ -253,6 +253,43 @@ float HG_PlayerMayFire(entity p) {
     return p.hg_ammo || (p.hg_bonus && cvar("g_handgrenades_bonus_free"));
 }
 
+void HG_Detonate(entity nade) {
+    if(!nade || !nade.hg_detonable || nade.hg_detonatetime)
+        return;
+    nade.hg_detonatetime = time + nade.hg_detonatedelay;
+}
+
+void HG_DetonateAll(entity plr) {    
+    entity nade;
+    for(;(nade = find(nade, classname, "hg_grenade"));)
+        if(nade.owner == plr)
+            HG_Detonate(nade);
+}
+
+void HG_Grenade_Think() {
+	#define GV(v) (GRENVAR(self.hg_type, v))
+    
+    if(time >= self.hg_deathtime) {
+        self.use();
+        return;
+    }
+    
+    if(self.hg_detonable && self.hg_detonatetime) {
+        if(time >= self.hg_detonatetime) {
+            self.use();
+            return;
+        } else if(time >= self.hg_nextsnd) {
+            spamsound(self, CHAN_PROJECTILE, "weapons/rm_nadebeep.wav", VOL_BASE * 0.5, ATTN_NORM * 2);
+            self.hg_sndcount += 1;
+            self.hg_nextsnd = time + max((self.hg_detonatedelay * 0.3) / (pow(self.hg_sndcount, 1.2)), 0.1);
+        }
+    }
+    
+    self.nextthink = time;
+    
+    #undef GV
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
@@ -281,18 +318,21 @@ void HG_Attack()
 	
 	entity gren = spawn ();
 	gren.owner = self;
-	gren.classname = "go_to_bed_samual";
+	gren.classname = "hg_grenade";
 	gren.bot_dodge = TRUE;
 	gren.bot_dodgerating = GV("damage");
 	gren.movetype = MOVETYPE_BOUNCE;
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;
 	gren.hg_type = hgtype;
+    gren.hg_detonable = GV("detonable");
+    gren.hg_detonatedelay = GV("detonate_delay");
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
 
-	gren.nextthink = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime"));
-	gren.think = adaptor_think2use;
+	gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime"));
+	gren.think = HG_Grenade_Think;
+    gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
 	gren.touch = HG_Touch;
 	gren.takedamage = DAMAGE_YES;
@@ -324,11 +364,22 @@ void HG_Attack()
 	#undef GV
 }
 
+void HG_UpdateDetonables() {
+    entity nade;
+    self.hg_detonables = 0;
+    
+    for(;(nade = find(nade, classname, "hg_grenade"));)
+        if(nade.owner == self && !nade.hg_detonatetime && nade.hg_detonable)
+            self.hg_detonables += 1;
+}
+
 void HG_Frame()
 {
 	if(!g_handgrenades || time < game_starttime)
 		return;
 	
+    HG_UpdateDetonables();
+    
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomCRAHookButton(self))) || self.hg_power;
 	
 	float held;

@@ -744,6 +744,7 @@ void PutObserverInServer (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+    HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
 	prec_player_die(self);
@@ -1877,6 +1878,7 @@ void ClientDisconnect (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+    HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
 	prec_player_die(self);
@@ -2438,6 +2440,7 @@ void SpectateCopy(entity spectatee) {
 	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
+    self.hg_detonables = spectatee.hg_detonables;
     self.hg_regenstat = spectatee.hg_regenstat;
     self.hg_regenpaused = spectatee.hg_regenpaused;
 	self.sm_canattach = spectatee.sm_canattach;
