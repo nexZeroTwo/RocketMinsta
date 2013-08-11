@@ -1,11 +1,15 @@
+void HG_Precache();
 void HG_Frame();
 void HG_Attack();
 void HG_PlayerSpawn();
 string HG_TypeToName(float);
 float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
-void HG_GiveBonus(entity p, float hgtype, float amount, string reason);
+void HG_GiveBonus(entity, float, float, string);
 void HG_Napalm();
+float HG_PlayerMayFire(entity);
+void HG_Detonate(entity);
+void HG_DetonateAll(entity);
 
 #define HG_NORMAL DEATH_HG_NORMAL
 #define HG_STICKY DEATH_HG_STICKY
@@ -21,7 +25,17 @@ void HG_Napalm();
 .float hg_type;
 .float hg_bonus;
 .float hg_bonustype;
+.float hg_regentime;
+.float hg_regenpaused;
+.float hg_deathtime;
+.float hg_detonable;
+.float hg_detonatetime;
+.float hg_detonatedelay;
+.float hg_detonables;
+.float hg_nextsnd;
+.float hg_sndcount;
+.float hg_regenstat; // for hud only
 
 #define BUTTON_HG button6
-#define GRENVARNAME(t,v) strcat("g_explosive_handgrenades_", HG_TypeToName(t), "_", (v))
+#define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))

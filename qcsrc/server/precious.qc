@@ -128,7 +128,7 @@ void prec_rune_collect (entity rune, entity player)
 	player.health = max(player.health, 200);
 	player.armorvalue = max(player.armorvalue, 200);
 	if(g_handgrenades)
-		player.hg_ammo = max(player.hg_ammo, cvar("g_explosive_handgrenades_ammo") * 2);
+		player.hg_ammo = max(player.hg_ammo, cvar("g_handgrenades_ammo") * 2);
 }
 
 void prec_rune_drop (entity rune, float deliberate)

@@ -256,8 +256,6 @@ float alreadychangedlevel;
 
 .float runes;
 
-
-.float welcomemessage_time;
 .float version;
 
 // Laser target for laser-guided weapons
@@ -615,6 +613,7 @@ float client_cefc_accumulatortime;
 #endif
 
 .float campingrifle_bulletcounter;
+.float campingrifle_bulletlimit;
 
 #define PROJECTILE_MAKETRIGGER(e) (e).solid = SOLID_CORPSE; (e).dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
 // when doing this, hagar can go through clones
@@ -652,7 +651,7 @@ string highest_velocity_name;
 .float killsound;
 .float instakillsound;
 
-float g_explosive_speedaward_ownaccel;
+float sv_speedaward_ownaccel;
 
 .float hud_old;
 .float hud_alt;
@@ -706,3 +705,11 @@ vector frag_force;
 void Boobs_DropAllAndRespawn(vector);
 
 float next_round;
+
+float sv_showspecs_extra;
+float sv_showfps;
+float sv_oldfag;
+
+.float lastdamage;
+
+float sv_dps;

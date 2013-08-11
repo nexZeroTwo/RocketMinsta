@@ -28,7 +28,7 @@ void W_Laser_Attack (float issecondary)
 	local float lasr_recoil;
 	lasr_recoil = 3;
 	
-	if(cvar("g_explosive_norecoil"))
+	if(cvar("g_rocketminsta_norecoil"))
 		lasr_recoil = 0;
 	
 	if(issecondary)

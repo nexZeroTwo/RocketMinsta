@@ -1201,11 +1201,11 @@ void GameCommand(string command)
 
 	if(argv(0) == "addinfo")
 	{
-		float c = cvar("_g_explosive_infomessages_count");
-		string newvar = strcat("_g_explosive_infomessages_", ftos(c));
+		float c = cvar("_sv_infomessages_count");
+		string newvar = strcat("_sv_infomessages_", ftos(c));
 		registercvar(newvar, "");
 		cvar_set(newvar, argv(1));
-		cvar_set("_g_explosive_infomessages_count", ftos(c + 1));
+		cvar_set("_sv_infomessages_count", ftos(c + 1));
 		return;
 	}
 	

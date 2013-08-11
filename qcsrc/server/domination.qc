@@ -233,7 +233,7 @@ void dompointthink()
 	self.nextthink = time + 0.1;
 
     if(time - self.pointupdatetime > 0.1)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
@@ -296,7 +296,7 @@ void dompointtouch()
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_explosive_domination_capture_speed"), 1);
+	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_domination_capture_speed"), 1);
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
 
@@ -348,7 +348,7 @@ float domination_PlayerPreThink()
 	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_explosive_domination_capture_clearspeed"), 1);
+		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	return 1;
 }
@@ -785,11 +785,11 @@ void dom_delayedinit()
 	{
 		//dom_removeall("dom_controlpoint");
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_spawnpoints"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_spawnpoints"), " ");
 		for(j = 0; j < n; ++j)
 			i += dom_spawnpointsfor(argv(j));
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 		
@@ -799,7 +799,7 @@ void dom_delayedinit()
 	{
 		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
 		
-		n = tokenizebyseparator(cvar_string("g_explosive_domination_removeitems"), " ");
+		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 	}

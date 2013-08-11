@@ -463,7 +463,8 @@ void CSQC_UpdateView(float w, float h)
 	
 	if(fov != oldfov)
 	{
-		localcmd("cmd fovreport ", ftos(fov), "\n");
+		if(sv_showspecs_extra)
+			localcmd("cmd fovreport ", ftos(fov), "\n");
 		oldfov = fov;
 	}
 	
@@ -800,14 +801,15 @@ void CSQC_UpdateView(float w, float h)
                 wcross_size_y *= wcross_sizefloat;
 				
 				// ring around crosshair representing bullets left in camping rifle clip
+                float bullet, maxbullets, distance = 14;
+                maxbullets = getstati(STAT_BULLETS_MAX);
 				if (activeweapon == WEP_CAMPINGRIFLE)
 				{
-					ring_scale = cvar("crosshair_campingrifle_ring_size");
-					bullets = bound(0, getstati(STAT_BULLETS_LOADED), 8);
+					ring_scale = cvar("crosshair_campingrifle_ring_size") * (10 / 128);
+					bullets = bound(0, getstati(STAT_BULLETS_LOADED), maxbullets);
 				}
 				else
 					bullets = 0;
-				
 				wcross_color = wcross_color + colormapPaletteColor(15, 1) * cos(time * 2 + 1337) * 0.5;
 				
                 if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && cvar("crosshair_hittest_blur") && !cvar("chase_active")))
@@ -819,12 +821,37 @@ void CSQC_UpdateView(float w, float h)
 							if (bullets)
 								drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j), strcat("gfx/hud/rifle_ring_", ftos(bullets)), wcross_size * ring_scale, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                             drawpic_real(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+							if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                                float b_angle = PI*2*(bullet/maxbullets);
+								drawpic
+                                (
+                                    distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                                    wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j),
+                                    "gfx/hud/rifle_ring",
+                                    wcross_size * ring_scale,
+                                    wcross_color,
+                                    wcross_alpha,
+                                    DRAWFLAG_NORMAL
+                                );
+                            }
+                            drawpic_real(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
 						}
                 }
                 else
                 {
-					if (bullets)
-						drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale), strcat("gfx/hud/rifle_ring_", ftos(bullets)), wcross_size * ring_scale, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+					if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                        float b_angle = PI*2*(bullet/maxbullets);
+						drawpic
+                        (
+                            distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                            wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale),
+                            "gfx/hud/rifle_ring",
+                            wcross_size * ring_scale,
+                            wcross_color,
+                            wcross_alpha,
+                            DRAWFLAG_NORMAL
+                        );
+                    }
                     drawpic_real(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                 }
             }

@@ -196,3 +196,7 @@ void defer(float fdelay, void() func);
 #endif
 
 string mmss(float tenths);
+
+#ifdef MENUQC
+float sv_oldfag;		// just to make it compile
+#endif

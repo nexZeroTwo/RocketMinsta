@@ -283,6 +283,7 @@ function listcustom()
 function finalize-install
 {
     cp -v "rocketminsta.cfg" "$NEXDATA"
+    cp -v "rocketminsta-compat.cfg" "$NEXDATA"
 
     cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
 rm_clearpkgs

@@ -1,10 +1,9 @@
 
-All changes are in the _chronological_ order, not in order of importance.
-Contributors of a change are specified in brackets after the change description, comma-separated.
-Contributors are listed in descending order of importance/amount of work related to the change.
+All changes are in the *chronological* order, not in order of importance.
+People who have contributed to a particular change are listed in brackets after the change description in descending order of importance/amount of work done.
 A question mark following a contributor's name means that I don't remember/exactly know the name of the contributor and just guessing. Probably because I shamelessly stole that certain feature from Xonotic.
 
-=== v1.5.2 -> v1.6.0 (UPCOMING) ===
+=== v1.5.2 -> v1.6.0 ===
 
 * Added kill/death ratio to the scoreboard by default [Akari]
 * Animated the map/gametype vote screen [Akari]
@@ -12,7 +11,6 @@ A question mark following a contributor's name means that I don't remember/exact
 * Added some new HUD/scoreboard animations [Akari]
 * Integrated features and fixes from NexuizEx 0.3.1, a RocketMinsta v1.5.0 fork: http://naqua.net/p/nex/ [Blitter, Akari]:
 	New, more reliable system for handling gametypes and mapinfo [Blitter, Akari]
-	The Infection gametype [Blitter, Akari]		-- TODO: Fix this gametype!
 	The Precious gametype [Blitter, Akari]
 	Increased the g_maplist_votable limit up to 16 [Blitter]
 	An option to disable the ip2c support without clearing the ip2c server URL [Blitter]
@@ -74,3 +72,8 @@ A question mark following a contributor's name means that I don't remember/exact
 * Improved the EndRound code [Akari]
 * Added announcer sounds during warmups in round-based gametypes [Akari]
 * New rm-custom config: FastCRA [Akari]
+* Added a QuakeC config for the Geany IDE [Akari]
+* Renamed all of the RM cvars [Akari]
+* New serverinfo and MOTD display [Akari]
+* Optimized spectator info [Akari]
+* Made hudflash effects optional [Akari]

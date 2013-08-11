@@ -318,8 +318,8 @@ entity SelectSpawnPoint (float anypoint)
 	local entity spot, firstspot, playerlist;
 
 	local float randspawns, closetoteam_cvar;
-	randspawns = cvar("g_explosive_randomspawns");
-	closetoteam_cvar = cvar("g_explosive_spawnclosetoteam");
+	randspawns = cvar("sv_randomspawns");
+	closetoteam_cvar = cvar("g_spawnclosetoteam");
 	
 	if(!global_spawnpoint)
 		global_spawnpoint = spawn();
@@ -369,8 +369,8 @@ entity SelectSpawnPoint (float anypoint)
 		mdst = -1;
 		local float i;
 		
-		local float cvar_mindist_team = cvar("g_explosive_spawnclosetoteam_mindist_team");
-		local float cvar_mindist_enemies = cvar("g_explosive_spawnclosetoteam_mindist_enemies");
+		local float cvar_mindist_team = cvar("g_spawnclosetoteam_mindist_team");
+		local float cvar_mindist_enemies = cvar("g_spawnclosetoteam_mindist_enemies");
 
 		for(i = 0; i < 2; ++i)
 		{
@@ -744,6 +744,7 @@ void PutObserverInServer (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+    HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
 	prec_player_die(self);
@@ -1041,7 +1042,7 @@ void Boobs_Attach() {
 	if(self.boob_left)	remove(self.boob_left);
 	if(self.boob_right)	remove(self.boob_right);
 	
-	if not(cvar("g_explosive_boobs"))
+	if not(cvar("g_boobs"))
 		return;
 	
 	self.boob_left  = Boobs_SpawnBoob(self, -1);
@@ -1065,7 +1066,7 @@ Called when a client spawns in the server
 //void() ctf_playerchanged;
 
 void WriteSpectatorInfo(entity);
-void WriteSpectatorInfoOf(entity, entity);
+void WriteSpectatorInfoOf(entity, entity, float);
 void PutClientInServer (void)
 {
 	WriteSpectatorInfo(self);
@@ -1090,6 +1091,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
 
+    self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -1316,7 +1318,7 @@ void PutClientInServer (void)
 	//if(g_ctf)
 	//	ctf_playerchanged();
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	if(self.classname == "player")
 	if(self.shownames == world)
 	{
@@ -1353,6 +1355,9 @@ float ClientInit_SendEntity(entity to, float sf)
 	else
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, cvar("g_balance_armor_blockpercent") * 255.0);
+	WriteByte(MSG_ENTITY, sv_showspecs_extra);
+	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_oldfag);
 	return TRUE;
 }
 
@@ -1714,8 +1719,6 @@ void ClientConnect (void)
 
 	bprint("\n");
 
-	self.welcomemessage_time = 0;
-
 	stuffcmd(self, strcat(clientstuff, "\n"));
 	stuffcmd(self, strcat("exec maps/", mapname, ".cfg\n"));
 	stuffcmd(self, "cl_particles_reloadeffects\n");
@@ -1804,7 +1807,7 @@ void ClientConnect (void)
 	if(clienttype(self) == CLIENTTYPE_REAL)
 		defer(5, ServerTopic);
 	
-	if(cvar("g_explosive_shownames"))
+	if(cvar("sv_shownames"))
 	{
 		self.shownames = spawn();
 		self.shownames.owner = self;
@@ -1826,8 +1829,9 @@ void ClientConnect (void)
 	else
 		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
 	
-	stuffcmd(self, strcat("seta _g_balance_minstanex_explosive ", ftos(g_minstagib && cvar("g_balance_minstanex_explosive")), "\n"));
 	VFLIPPER_UPDATECLIENT(self);
+	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
+	SendServerInfo(self);
 	
 	totalclients++;
 }
@@ -1875,6 +1879,7 @@ void ClientDisconnect (void)
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
 	freezetag_RemovePlayer();
+    HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
 	prec_player_die(self);
@@ -2436,8 +2441,13 @@ void SpectateCopy(entity spectatee) {
 	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
+    self.hg_detonables = spectatee.hg_detonables;
+    self.hg_regenstat = spectatee.hg_regenstat;
+    self.hg_regenpaused = spectatee.hg_regenpaused;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
+    self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
+    self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2445,12 +2455,17 @@ void SpectateCopy(entity spectatee) {
 
 #define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((spec).classname == "spectator") if((e).enemy == p) if(!(a) || !(e).anonspec)
 
-void WriteSpectatorInfoOf(entity player, entity of)
+void WriteSpectatorInfoOf(entity player, entity of, float lock)
 {
 	if(clienttype(player) != CLIENTTYPE_REAL)
 		return;
 	
-	if(!cvar("g_explosive_showspecs"))
+	float sv_showspecs = cvar("sv_showspecs");
+	
+	if(!sv_showspecs_extra)
+		lock = FALSE;
+	
+	if(!sv_showspecs && !lock)
 		return;
 	
 	if(player == of)
@@ -2459,13 +2474,30 @@ void WriteSpectatorInfoOf(entity player, entity of)
 	
 	local entity spec;
 	local float specs;
-	local float a = cvar("g_explosive_anonspecs");
+	local float a = cvar("sv_anonspecs");
 	
 	FOR_EACH_SPECOF(of, spec, a) specs++;
 
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+	WriteByte(MSG_ONE, lock);
+	
+	if(lock) {
+		WriteByte(MSG_ONE, of.madoka);
+		WriteByte(MSG_ONE, of.hud_old);
+		WriteByte(MSG_ONE, of.hud_alt);
+		WriteString(MSG_ONE, of.hudskin);
+		WriteByte(MSG_ONE, of.clientfov);
+		WriteByte(MSG_ONE, of.speczoom_speed * 10);
+		WriteByte(MSG_ONE, of.speczoom_factor * 10);
+	}
+	
+	if(!sv_showspecs) {
+		WriteByte(MSG_ONE, 0);
+		return;
+	}
+	
 	WriteByte(MSG_ONE, specs);
 	
 	FOR_EACH_SPECOF(of, spec, a)
@@ -2486,22 +2518,14 @@ void ResetSpectatorInfo(entity player)
 
 void WriteSpectatorInfo(entity player)
 {
-    if(cvar("g_explosive_showspecs_hidefromplayers"))
+    if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
-    	WriteSpectatorInfoOf(player, player);
+    	WriteSpectatorInfoOf(player, player, FALSE);
 	
 	local entity spec;
 	FOR_EACH_SPECOF(player, spec, 0)
-	{
-		#ifdef RM_SUPPORT_MADOKA
-		stuffcmd(spec, strcat("cl_cmd lockmadoka ", ftos(player.madoka), "\n"));
-		#endif
-		stuffcmd(spec, strcat("cl_cmd lockhud ", ftos(player.hud_old), " ", ftos(player.hud_alt), " ", player.hudskin, "\n"));
-		stuffcmd(spec, strcat("cl_cmd lockfov ", ftos(player.clientfov), "\n"));
-		stuffcmd(spec, strcat("cl_cmd speczoom ", ftos(player.speczoom_speed), " ", ftos(player.speczoom_factor), "\n"));
-		WriteSpectatorInfoOf(spec, player);
-	}
+		WriteSpectatorInfoOf(spec, player, TRUE);
 }
 
 float SpectateUpdate() {
@@ -2687,11 +2711,9 @@ void ObserverThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2709,18 +2731,16 @@ void ObserverThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 }
 
 void SpectatorThink()
 {
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -2730,7 +2750,6 @@ void SpectatorThink()
 			}
 			WriteSpectatorInfo(self.enemy);
 		} else if (self.BUTTON_ATCK2) {
-			self.welcomemessage_time = 0;
 			self.flags &~= FL_JUMPRELEASED;
 			self.classname = "observer";
 			PutClientInServer();
@@ -2749,7 +2768,7 @@ void SpectatorThink()
 			}
 		}
 	}
-	PrintWelcomeMessage(self);
+//	PrintWelcomeMessage(self);
 	self.flags |= FL_CLIENT | FL_NOTARGET;
 }
 
@@ -2788,6 +2807,7 @@ void PlayerPreThink (void)
 	}
 
 	// version nagging
+#if 0
 	if(self.version_nagtime)
 		if(self.cvar_g_nexuizversion)
 			if(time > self.version_nagtime)
@@ -2818,6 +2838,7 @@ void PlayerPreThink (void)
 				}
 				self.version_nagtime = 0;
 			}
+#endif
 
 	// GOD MODE info
 	if(!(self.flags & FL_GODMODE)) if(self.max_armorvalue)
@@ -2842,7 +2863,7 @@ void PlayerPreThink (void)
 
 		CheckRules_Player();
 
-		PrintWelcomeMessage(self);
+//		PrintWelcomeMessage(self);
 
 		if (intermission_running)
 		{
