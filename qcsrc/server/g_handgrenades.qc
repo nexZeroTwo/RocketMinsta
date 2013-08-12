@@ -290,6 +290,16 @@ void HG_Grenade_Think() {
     #undef GV
 }
 
+void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+	if(self.health <= 0)
+		return;
+	self.health = self.health - damage;
+	if(self.health <= 0) {
+        self.owner = attacker;
+        self.hg_deathtime = time;
+	}
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
@@ -310,8 +320,18 @@ void HG_Attack()
     if(!freebonus && !self.hg_ammo)
         return;
     
+    vector hitmins, hitmaxs;
+    
+    if(cvar("g_handgrenades_oldhitboxes")) {
+        hitmins = '0 0 -3';
+        hitmaxs = '0 0 -3';
+    } else {
+        hitmins = '-8 -4 -3';
+        hitmaxs = ' 8  4  3';
+    }
+    
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
+	W_SetupShot_ProjectileSize (self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
 	w_shotdir = v_forward;
 	
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -327,7 +347,7 @@ void HG_Attack()
 	gren.hg_type = hgtype;
     gren.hg_detonable = GV("detonable");
     gren.hg_detonatedelay = GV("detonate_delay");
-	setsize(gren, '0 0 -3', '0 0 -3');
+    setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
 	gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime"));
@@ -335,10 +355,17 @@ void HG_Attack()
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
 	gren.touch = HG_Touch;
-	gren.takedamage = DAMAGE_YES;
+    
+    if(GV("takedamage")) {
+        gren.takedamage = DAMAGE_AIM;
+        gren.event_damage = HG_Grenade_Damage;
+    } else {
+        gren.takedamage = DAMAGE_NO;
+        gren.event_damage = SUB_Null;
+    }
+    
 	gren.health = GV("health");
 	gren.damageforcescale = GV("damageforcescale");
-	gren.event_damage = W_Grenade_Damage;
 	gren.velocity = w_shotdir * GV("speed") * self.hg_power + v_up * GV("speed_up") * self.hg_power;
 	W_SetupProjectileVelocity(gren);
 	
