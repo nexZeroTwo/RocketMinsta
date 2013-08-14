@@ -795,7 +795,7 @@ string Sbar_GetField(entity pl, float field)
 			denom = pl.(scores[SP_DEATHS]);
 
 			if(denom == 0) {
-				sbar_field_rgb = '1 1 1';
+				sbar_field_rgb = '0 1 1';
 				str = "inf";
 			} else {
 				float ratio = max(0, num/denom);
