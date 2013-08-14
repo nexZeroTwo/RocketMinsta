@@ -10,6 +10,7 @@ void HG_Napalm();
 float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
 void HG_DetonateAll(entity);
+float HG_PlayerMayDetonate(entity);
 
 #define HG_NORMAL DEATH_HG_NORMAL
 #define HG_STICKY DEATH_HG_STICKY

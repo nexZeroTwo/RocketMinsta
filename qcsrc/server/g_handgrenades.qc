@@ -253,6 +253,12 @@ float HG_PlayerMayFire(entity p) {
     return p.hg_ammo || (p.hg_bonus && cvar("g_handgrenades_bonus_free"));
 }
 
+float HG_PlayerMayDetonate(entity p) {
+    if(cvar("g_handgrenades_detonate_on_death"))
+        return TRUE;
+    return (p.health >= 1) && !(g_freezetag && p.freezetag_frozen);
+}
+
 void HG_Detonate(entity nade) {
     if(!nade || !nade.hg_detonable || nade.hg_detonatetime)
         return;
@@ -261,6 +267,10 @@ void HG_Detonate(entity nade) {
 
 void HG_DetonateAll(entity plr) {    
     entity nade;
+    
+    if(!HG_PlayerMayDetonate(plr))
+        return;
+    
     for(;(nade = find(nade, classname, "hg_grenade"));)
         if(nade.owner == plr)
             HG_Detonate(nade);
