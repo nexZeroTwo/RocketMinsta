@@ -1,6 +1,8 @@
 void inf_warmup();
 void Boobs_Clear();
 
+.entity specdelay_ent;
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -1938,7 +1940,11 @@ void ClientDisconnect (void)
 	self.playerid = 0;
 	ReadyCount();
 
-	remove(self.shownames);
+    if(self.shownames)
+        remove(self.shownames);
+
+    if(self.specdelay_ent)
+        remove(self.specdelay_ent);
 
 	// free cvars
 	GetCvars(-1);
@@ -2407,6 +2413,64 @@ void GetPressedKeys(void) {
 spectate mode routines
 ======================
 */
+
+void EnterSpectatorMode() {
+    if(self.flagcarried)
+        DropFlag(self.flagcarried, world, world);
+    if(self.ballcarried)
+        DropBall(self.ballcarried, self.origin, self.velocity);
+    kh_Key_DropAll(self, TRUE);
+    prec_player_die(self);
+    inf_player_leave(self);
+    WaypointSprite_PlayerDead();
+    self.classname = "observer";
+    if(blockSpectators)
+        sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
+    PutClientInServer();
+}
+
+void SpectateDelay_Think() {
+    if(!self.owner || self.owner.classname != "player") {
+        self.owner.specdelay_ent = world;
+        remove(self);
+        return;
+    }
+    
+    if(self.cnt <= 0) {
+        entity o = self;
+        self = self.owner;
+        EnterSpectatorMode();
+        self = o;
+        self.owner.specdelay_ent = world;
+        remove(self);
+        return;
+    }
+    
+    bigprint_spec(self.owner, "", strcat("Spectating in ^1", ftos(self.cnt), " ^7seconds"), 1);
+    self.nextthink = time + 1;
+    self.cnt -= 1;
+}
+
+void EnterSpectatorModeDelayed(float dlay) {
+    dlay = floor(dlay);
+    
+    if(dlay <= 0) {
+        EnterSpectatorMode();
+        return;
+    }
+    
+    if(self.specdelay_ent)
+        return;
+    
+    entity e = spawn();
+    e.think = SpectateDelay_Think;
+    e.nextthink = time;
+    e.owner = self;
+    e.cnt = dlay;
+    
+    self.specdelay_ent = e;
+}
+
 void SpectateCopy(entity spectatee) {
 	self.kh_state = spectatee.kh_state;
 	self.armortype = spectatee.armortype;

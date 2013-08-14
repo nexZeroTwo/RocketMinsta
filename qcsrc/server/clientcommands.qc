@@ -424,18 +424,7 @@ void SV_ParseClientCommand(string s) {
 			}
 		}
 		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			if(self.flagcarried)
-				DropFlag(self.flagcarried, world, world);
-			if(self.ballcarried)
-				DropBall(self.ballcarried, self.origin, self.velocity);
-			kh_Key_DropAll(self, TRUE);
-			prec_player_die(self);
-			inf_player_leave(self);
-			WaypointSprite_PlayerDead();
-			self.classname = "observer";
-			if(blockSpectators)
-				sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
-			PutClientInServer();
+			EnterSpectatorModeDelayed(cvar("sv_spectate_delay"));
 		}
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
