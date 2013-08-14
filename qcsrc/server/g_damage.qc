@@ -378,7 +378,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
         
         HG_DetonateAll(targ);
         
-        if(!g_freezetag)
+        if(!g_freezetag && !g_jailbreak)
             targ.hg_ammo = 0;
 		
 		if (targ.classname == "corpse")

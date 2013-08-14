@@ -481,8 +481,9 @@ void HG_PlayerSpawn()
         return;
     
 	self.hg_power = 0;
-	self.hg_ammo = cvar("g_handgrenades_ammo");
+	self.hg_ammo = (self.hg_clearammo? 0 : cvar("g_handgrenades_ammo"));
 	self.hg_bonus = 0;
 	self.hg_bonustype = HG_NORMAL;
     self.hg_regentime = HG_RegenTime(self);
+    self.hg_clearammo = 0;
 }

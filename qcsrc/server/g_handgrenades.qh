@@ -35,6 +35,7 @@ float HG_PlayerMayDetonate(entity);
 .float hg_detonables;
 .float hg_nextsnd;
 .float hg_sndcount;
+.float hg_clearammo;
 .float hg_regenstat; // for hud only
 
 #define BUTTON_HG button6

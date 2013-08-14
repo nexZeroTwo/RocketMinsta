@@ -65,7 +65,6 @@ void W_Grenade_Touch2 (void)
 
 void W_Grenade_Damage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-    bprint("W_Grenade_Damage: ", ftos(damage), "\n");
 	if (self.health <= 0)
 		return;
 	self.health = self.health - damage;

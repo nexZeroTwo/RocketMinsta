@@ -472,6 +472,7 @@ float freezetag_PlayerSpawn()
 	{
 		centerprint_spec(self, "^5You spawned after the round started, you'll spawn frozen\n");
 		freezetag_Freeze(world);
+        self.hg_ammo = 0;
 	}
 
 	// Prevents frozen players from "teleporting" around

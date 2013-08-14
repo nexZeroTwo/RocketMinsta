@@ -90,6 +90,7 @@ void reset_map(float dorespawn)
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
+        self.hg_clearammo = 0;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
 			if(g_arena)
