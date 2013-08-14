@@ -187,7 +187,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		PlayerScore_Add(attacker, SP_KILLS, 1);
 	}
 
-	if(targ != attacker)
+	//if(targ != attacker)
 		PlayerScore_Add(targ, SP_DEATHS, 1);
 
 	if(g_arena)
