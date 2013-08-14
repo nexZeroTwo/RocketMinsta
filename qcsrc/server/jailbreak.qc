@@ -856,6 +856,9 @@ void JB_ControlPoint_Capture(entity player) {
 }
 
 void JB_ControlPoint_Touch() {
+    if(jb_roundover)
+        return;
+    
 	if(other.team == self.team)
 		return;
 
