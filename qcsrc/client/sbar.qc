@@ -798,7 +798,7 @@ string Sbar_GetField(entity pl, float field)
 				sbar_field_rgb = '1 1 1';
 				str = "inf";
 			} else {
-				float ratio = num/denom;
+				float ratio = max(0, num/denom);
 				
 				if(ratio < 1)
 					sbar_field_rgb = '1 0 0' + '0 1 0' * (ratio * ratio);
@@ -808,6 +808,9 @@ string Sbar_GetField(entity pl, float field)
 					sbar_field_rgb = '0 1 0' + '0 0 1' * ((ratio - 2) * 0.125);
 				
 				str = strcat(ftos(rint(ratio * 100)), "%");
+                
+                if(substring(str, 0, 1) == "-")
+                    str = substring(str, 1, strlen(str)-1);
 			}
 			
 			return str;
