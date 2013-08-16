@@ -309,6 +309,9 @@ void Ent_Projectile()
 	if(f & 2)
 	{
 		self.cnt = ReadByte();
+        self.team = ReadByte() - 1;
+        
+        print("ProjTeam: ", ftos(self.team), "\n");
 
 		self.silent = (self.cnt & 0x80);
 		self.cnt = (self.cnt & 0x7F);
@@ -329,7 +332,12 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: switch(self.team) {
+                case COLOR_TEAM2:   setmodel(self, "models/grenademodel_team2.md3"); break;
+                case COLOR_TEAM3:   setmodel(self, "models/grenademodel_team3.md3"); break;
+                case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
+                default         :   setmodel(self, "models/grenademodel.md3");       break;
+            } break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -441,6 +449,9 @@ void Projectile_Precache()
 	precache_model("models/ebomb.mdl");
 	precache_model("models/elaser.mdl");
 	precache_model("models/grenademodel.md3");
+	precache_model("models/grenademodel_team2.md3");
+	precache_model("models/grenademodel_team3.md3");
+	precache_model("models/grenademodel_team4.md3");
 	precache_model("models/hagarmissile.mdl");
 	precache_model("models/hlac_bullet.md3");
 	precache_model("models/laser.mdl");

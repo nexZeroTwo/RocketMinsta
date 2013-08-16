@@ -29,8 +29,10 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 		}
 	}
 
-	if(sf & 2)
+	if(sf & 2) {
 		WriteByte(MSG_ENTITY, self.csqcprojectile_type); // TODO maybe put this into sf?
+        WriteByte(MSG_ENTITY, self.team);
+    }
 
 	return 1;
 }

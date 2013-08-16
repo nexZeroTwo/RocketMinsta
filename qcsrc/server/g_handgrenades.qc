@@ -365,6 +365,7 @@ void HG_Attack()
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
 	gren.touch = HG_Touch;
+    gren.team = self.team;
     
     if(GV("takedamage")) {
         gren.takedamage = DAMAGE_AIM;
