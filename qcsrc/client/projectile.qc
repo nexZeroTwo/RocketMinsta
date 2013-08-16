@@ -310,8 +310,6 @@ void Ent_Projectile()
 	{
 		self.cnt = ReadByte();
         self.team = ReadByte() - 1;
-        
-        print("ProjTeam: ", ftos(self.team), "\n");
 
 		self.silent = (self.cnt & 0x80);
 		self.cnt = (self.cnt & 0x7F);
