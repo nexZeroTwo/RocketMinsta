@@ -1450,8 +1450,9 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 	// apply damage
 	if (damage != 0 || (self.damageforcescale && vlen(force)))
 	if (self.event_damage) {
-        self.lastdamage = time;
 		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
+        if(t_oldhealth > self.health)
+            self.lastdamage = time;
     }
 	self = oldself;
 
