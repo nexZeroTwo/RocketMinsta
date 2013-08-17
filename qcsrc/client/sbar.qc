@@ -3169,6 +3169,9 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
         invert = 1;
     }
     
+    if(prog <= 0.01)
+        prog = 0;
+    
     switch(hudskin_progress_mode) {
         case 0: { // Use the whole sector as both the background and the bar
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
@@ -3213,7 +3216,13 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
     hpos_y = sector_clip_pos_y;
     hpos_x = sector_clip_pos_x + sector_clip_size_x*(invert? 1-prog : prog) - hsize_x * 0.5;
     
-    drawpic(hpos, hudskin_image_progress_head, hsize, hudskin_progress_head_color, hudskin_progress_head_alpha, DRAWFLAG_NORMAL);
+    float a = hudskin_progress_head_alpha;
+    if(prog > 0.90)
+        a *= (1 - prog) / 0.10;
+    else if(prog < 0.10)
+        a *= 1 - (0.10 - prog) / 0.10;
+    
+    if(a) drawpic(hpos, hudskin_image_progress_head, hsize, hudskin_progress_head_color, a, DRAWFLAG_NORMAL);
 }
 
 float ammonotifytime;
