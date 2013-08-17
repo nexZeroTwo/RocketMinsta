@@ -1563,7 +1563,7 @@ void Sbar_Score()
 
 	vector rpos, rsize = '100 100 0';
 	rpos = bottomright;
-	rpos_y -= 100;
+	rpos_y -= 150;
 	rpos_x -= 105;
 
 	if((scores_flags[ps_primary] & SFL_TIME) && !teamplay) { // race/cts record display on HUD
@@ -3569,7 +3569,8 @@ void Sbar_Draw (void)
 
 	local vector sv_pos;
 	sv_pos = bottomright;
-	sv_pos_y -= 100 + sbar_info_pos;
+	sv_pos_y -= 200;
+    sv_pos_x -= 15;
 	
 	if(!rm_showrankings)
 		sv_pos_y += 40;
@@ -3606,7 +3607,7 @@ void Sbar_Draw (void)
 			local float a2 = (j? bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) : a);
 
 			drawfont = sbar_bigfont_real; // bypass madoka, as many numeric characters are missing
-			drawstringright(mypos, s, '24 24 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
+			drawstringright(mypos, s, '30 30 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
 			drawfont = sbar_font;
 		}
 	}
