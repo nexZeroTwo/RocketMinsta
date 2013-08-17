@@ -30,3 +30,8 @@ flash_sector_imod 1
 flash_sector_amod 1
 flash_border_imod 1
 flash_border_amod 1
+progress_bgalpha 0.3
+progress_mode 1
+extern_image_progress_head gfx/hud/progress_head
+progress_head_color 1 1 1
+progress_head_alpha 0.7

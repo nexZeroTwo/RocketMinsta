@@ -1735,6 +1735,7 @@ void Ent_Init()
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
+	g_handgrenades = ReadByte();
 
 	if(!postinit)
 		PostInit();

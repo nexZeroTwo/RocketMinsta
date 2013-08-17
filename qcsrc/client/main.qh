@@ -310,3 +310,5 @@ string sv_motd;
 float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
+
+float g_handgrenades;

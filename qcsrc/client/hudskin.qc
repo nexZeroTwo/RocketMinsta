@@ -9,6 +9,7 @@ void HUDSkin_Unload()
     FREE(hudskin_image_sector_fill_left)
     FREE(hudskin_image_sector_fill_center)
     FREE(hudskin_image_sector_fill_right)
+    FREE(hudskin_image_progress_head)
     
     hudskin_size_border_left = '0 0 0';
     hudskin_size_border_right = '0 0 0';
@@ -60,6 +61,16 @@ void HUDSkin_Unload()
     hudskin_size_sector_fill_left = '0 0 0';
     hudskin_size_sector_fill_right = '0 0 0';
     hudskin_line_padding = '0 0 0';
+    hudskin_progress_bgalpha = 0;
+    hudskin_progress_sector_colormode = 0;
+    hudskin_progress_sector_color = '0 0 0';
+    hudskin_progress_sector_alpha = 0;
+    hudskin_progress_border_colormode = 0;
+    hudskin_progress_border_color = '0 0 0';
+    hudskin_progress_border_alpha = 0;
+    hudskin_progress_head_color = '0 0 0';
+    hudskin_progress_head_alpha = 0;
+    hudskin_progress_head_teamcolor = 0;
     
     print("Unloaded HUD skin\n");
     
@@ -378,6 +389,12 @@ float HUDSkin_Eval(string cmd)
             hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_left);
             return TRUE;
         
+        case "extern_image_progress_head":
+            FREE(hudskin_image_progress_head)
+            hudskin_image_progress_head = strzone(argv(1));
+            hudskin_size_progress_head = drawgetimagesize(hudskin_image_progress_head);
+            return TRUE;
+        
         case "sector_fill":
 			hudskin_sector_fill = HUDSkin_ReadFillMode();
             
@@ -395,14 +412,81 @@ float HUDSkin_Eval(string cmd)
 			hudskin_line_padding_y = stof(argv(2));
 			return TRUE;
         
+        case "progress_bgalpha":
+            hudskin_progress_bgalpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_mode":
+            hudskin_progress_mode = stof(argv(1));
+            
+            if(hudskin_progress_mode < 0 || hudskin_progress_mode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_mode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_sector_colormode":
+            hudskin_progress_sector_colormode = stof(argv(1));
+            
+            if(hudskin_progress_sector_colormode < 0 || hudskin_progress_sector_colormode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_sector_colormode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_border_colormode":
+            hudskin_progress_border_colormode = stof(argv(1));
+            
+            if(hudskin_progress_border_colormode < 0 || hudskin_progress_border_colormode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_border_colormode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_sector_color":
+            hudskin_progress_sector_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_border_color":
+            hudskin_progress_border_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_sector_alpha":
+            hudskin_progress_sector_alpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_border_alpha":
+            hudskin_progress_border_alpha = stof(argv(1));
+            return TRUE;
+        
+        case "progress_head_alpha":
+            hudskin_progress_head_alpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_head_color":
+            hudskin_progress_head_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_head_teamcolor":
+            hudskin_progress_head_teamcolor = stof(argv(1));
+            return TRUE;
+        
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
     }
 }
 
+
 float HUDSkin_Load(string skin_name)
 {
+#define SKINIMAGE(i) strzone(strcat("gfx/hud/skins/", skin_name, "/" i))
     HUDSkin_Unload();
     
     local float fh, err;
@@ -424,12 +508,13 @@ float HUDSkin_Load(string skin_name)
         }
     }
     
-    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin_name, "/border_left"));
-    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin_name, "/border_right"));
-    hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin_name, "/line_fill"));
-    hudskin_image_sector_fill_left = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_left"));
-    hudskin_image_sector_fill_center = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_center"));
-    hudskin_image_sector_fill_right = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_right"));
+    hudskin_image_border_left = SKINIMAGE("border_left");
+    hudskin_image_border_right = SKINIMAGE("border_right");
+    hudskin_image_line_fill = SKINIMAGE("line_fill");
+    hudskin_image_sector_fill_left = SKINIMAGE("sector_fill_left");
+    hudskin_image_sector_fill_center = SKINIMAGE("sector_fill_center");
+    hudskin_image_sector_fill_right = SKINIMAGE("sector_fill_right");
+    hudskin_image_progress_head = SKINIMAGE("progress_head");
     
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
@@ -445,12 +530,14 @@ float HUDSkin_Load(string skin_name)
     hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_center);
     hudskin_size_sector_fill_left = drawgetimagesize(hudskin_image_sector_fill_left);
     hudskin_size_sector_fill_right = drawgetimagesize(hudskin_image_sector_fill_right);
+    hudskin_size_progress_head = drawgetimagesize(hudskin_image_progress_head);
     
     print("Loaded HUD skin '", skin_name, "'\n");
     hudskin_name = strzone(skin_name);
     localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", hudskin_name, "\n");
     
     return TRUE;
+#undef SKINIMAGE
 }
 
 float HUDSkin_GetBorderWidth(float border)

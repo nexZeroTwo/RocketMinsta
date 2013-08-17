@@ -16,3 +16,8 @@ flash_sector_imod 2
 flash_sector_amod 0
 flash_border_imod 0
 flash_border_amod 0
+progress_bgalpha 1
+progress_sector_colormode 2
+progress_sector_alpha 0.3
+progress_sector_color 1 0.5 0
+progress_mode 2
