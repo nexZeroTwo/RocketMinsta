@@ -3163,12 +3163,18 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 }
 
 void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector, vector c_sector, vector c_border, float a_sector, float a_border, vector c_sector_p, vector c_border_p, float a_sector_p, float a_border_p, float sector_alphamod, float hud_sector_drawflag) {
+    float invert;
+    if(prog < 0) {
+        prog *= -1;
+        invert = 1;
+    }
+    
     switch(hudskin_progress_mode) {
         case 0: { // Use the whole sector as both the background and the bar
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
             DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
             GetSectorFullClipArea(hud_sector_pos, hud_sector);
-            drawsetcliparea(sector_clip_pos_x, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
             DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
             drawresetcliparea();
@@ -3179,7 +3185,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod, c_sector, hud_sector_drawflag);
             DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
             GetSectorBorderClipArea(hud_sector_pos, hud_sector);
-            drawsetcliparea(sector_clip_pos_x, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
             DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
             drawresetcliparea();
             break;
@@ -3189,7 +3195,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
             DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod, c_border);
             GetSectorClipArea(hud_sector_pos, hud_sector);
-            drawsetcliparea(sector_clip_pos_x, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
             drawresetcliparea();
         }
@@ -3205,7 +3211,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
     hsize_y = sector_clip_size_y;
     hsize_x *= 0.5;
     hpos_y = sector_clip_pos_y;
-    hpos_x = sector_clip_pos_x + sector_clip_size_x*prog - hsize_x * 0.5;
+    hpos_x = sector_clip_pos_x + sector_clip_size_x*(invert? 1-prog : prog) - hsize_x * 0.5;
     
     drawpic(hpos, hudskin_image_progress_head, hsize, hudskin_progress_head_color, hudskin_progress_head_alpha, DRAWFLAG_NORMAL);
 }
@@ -3293,6 +3299,8 @@ float hg_visual;
 float hg_alpha;
 
 float hgregen;
+
+float ammo_useprogress;
 
 void Sbar_Draw (void)
 {
@@ -4151,11 +4159,16 @@ void Sbar_Draw (void)
 				})
 
 				// ammo
-				HUDLINE_SECTOR({
-					ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
-					hud_sector_x = SECWIDTH_NORMAL;
-					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+                ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
+                hud_sector_x = SECWIDTH_NORMAL;
+                sector_mod = '0 0 0';
+                
+                if(ammo_useprogress)
+                    DrawProgressBarSector(bound(0.01, getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX), 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
                 if(g_handgrenades && vid_conwidth >= 1124) {
                     // ammo | nades
@@ -4361,12 +4374,17 @@ void Sbar_Draw (void)
 				})
 
 				// ammo
-				HUDLINE_SECTOR({
-					ammosector_pos = hud_sector_pos_x = next_sector;
-					hud_sector_x = SECWIDTH_NORMAL;
-					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-				
+                ammosector_pos = hud_sector_pos_x = next_sector;
+                hud_sector_x = SECWIDTH_NORMAL;
+                sector_mod = '0 0 0';
+                
+                if(ammo_useprogress)
+                    DrawProgressBarSector(-bound(0.01, getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX), 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
+                
 				// ammo | health-armor
 				HUDLINE_SLICE({
 					hudline_x = 8 - bw_left - bw_right;
@@ -4616,7 +4634,8 @@ void Sbar_Draw (void)
             if(activeweapon == WEP_CAMPINGRIFLE && a == 999) {
                 a = getstati(STAT_BULLETS_LOADED);
                 isrifle = TRUE;
-            }
+                ammo_useprogress = TRUE;
+            } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
             
 			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 			
