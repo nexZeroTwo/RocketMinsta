@@ -1,3 +1,4 @@
+#version 1
 extern_image_sector_fill_left gfx/hud/skins/default/sector_fill_left
 extern_image_sector_fill_right gfx/hud/skins/default/sector_fill_right
 extern_image_sector_fill_center gfx/hud/skins/default/sector_fill_center

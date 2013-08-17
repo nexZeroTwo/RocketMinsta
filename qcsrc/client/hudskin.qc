@@ -483,6 +483,19 @@ float HUDSkin_Eval(string cmd)
     }
 }
 
+float HUDSkin_LoadError(string skin_name, string errstr) {
+    if(skin_name == HUDSKIN_DEFAULT)
+    {
+        print("Failed to load skininfo for the default HUD skin '", skin_name, "': ", errstr, ". Something is really screwed up\n");
+        return FALSE;
+    }
+    else
+    {
+        print("Failed to load skininfo for HUD skin '", skin_name, "': ", errstr, ". Falling back to '", HUDSKIN_DEFAULT, "'\n");
+        HUDSkin_Load(HUDSKIN_DEFAULT);
+        return FALSE;
+    }
+}
 
 float HUDSkin_Load(string skin_name)
 {
@@ -494,19 +507,10 @@ float HUDSkin_Load(string skin_name)
     
     fh = fopen(strcat("gfx/hud/skins/", skin_name, "/skininfo"), FILE_READ);
     if(fh < 0)
-    {
-        if(skin_name == HUDSKIN_DEFAULT)
-        {
-            print("Failed to load skininfo for the default HUD skin '", skin_name, "', something is really screwed up\n");
-            return FALSE;
-        }
-        else
-        {
-            print("Failed to load skininfo for HUD skin '", skin_name, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
-            HUDSkin_Load(HUDSKIN_DEFAULT);
-            return FALSE;
-        }
-    }
+        return HUDSkin_LoadError(skin_name, "fopen failed");
+    
+    if(fgets(fh) != "#version " HUDSKIN_VERSION)
+        return HUDSkin_LoadError(skin_name, "version mismatch");
     
     hudskin_image_border_left = SKINIMAGE("border_left");
     hudskin_image_border_right = SKINIMAGE("border_right");

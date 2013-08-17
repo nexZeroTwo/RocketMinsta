@@ -1,3 +1,4 @@
+#version 1
 border_simple 2
 sector_teamcolor some
 sector_teamcolor_brightness 0.5

@@ -1,3 +1,4 @@
+#version 1
 border_left_scale 0.11
 border_right_scale 0.11
 border_left_offset -15 0

@@ -1,3 +1,4 @@
+#version 1
 line_color 0.5 0.5 0.5
 line_alpha 0
 line_full true
