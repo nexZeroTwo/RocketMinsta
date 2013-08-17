@@ -4164,7 +4164,7 @@ void Sbar_Draw (void)
                 sector_mod = '0 0 0';
                 
                 if(ammo_useprogress)
-                    DrawProgressBarSector(bound(0.01, getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX), 1), hud_sector_pos, hud_sector,
+                    DrawProgressBarSector(bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
@@ -4379,7 +4379,7 @@ void Sbar_Draw (void)
                 sector_mod = '0 0 0';
                 
                 if(ammo_useprogress)
-                    DrawProgressBarSector(-bound(0.01, getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX), 1), hud_sector_pos, hud_sector,
+                    DrawProgressBarSector(-bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
