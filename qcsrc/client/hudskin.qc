@@ -483,15 +483,44 @@ float HUDSkin_Eval(string cmd)
     }
 }
 
+void HUDSkin_LoadBuiltinFallback() {
+    // This matches the "classic" skin
+    
+    hudskin_border_simple = 2;
+    hudskin_sector_teamcolor = TC_SOME;
+    hudskin_sector_teamcolor_brightness = 0.2;
+    hudskin_sector_color = '0.2 0.2 0.2';
+    hudskin_border_color = '0 0 0';
+    hudskin_sector_alpha = 0.5;
+    hudskin_border_alpha = 0.8;
+    hudskin_line_color = '0.5 0.5 0.5';
+    hudskin_line_alpha = 0.2;
+    hudskin_flash_alphamod = 1;
+    hudskin_flash_intmod = 1;
+    hudskin_border_drawflag = DRAWFLAG_NORMAL;
+    hudskin_flash_line_imod = 1;
+    hudskin_flash_line_amod = 1;
+    hudskin_flash_sector_imod = 2;
+    hudskin_flash_sector_amod = 0;
+    hudskin_flash_border_imod = 0;
+    hudskin_flash_border_amod = 0;
+    hudskin_progress_bgalpha = 1;
+    hudskin_progress_sector_colormode = 2;
+    hudskin_progress_sector_alpha = 0.3;
+    hudskin_progress_sector_color = '1 0.5 0';
+    hudskin_progress_mode = 2;
+}
+
 float HUDSkin_LoadError(string skin_name, string errstr) {
     if(skin_name == HUDSKIN_DEFAULT)
     {
-        print("Failed to load skininfo for the default HUD skin '", skin_name, "': ", errstr, ". Something is really screwed up\n");
+        print("Failed to load skininfo for the default HUD skin '", skin_name, "': ", errstr, ". Loading builtin fallback.\n");
+        HUDSkin_LoadBuiltinFallback();
         return FALSE;
     }
     else
     {
-        print("Failed to load skininfo for HUD skin '", skin_name, "': ", errstr, ". Falling back to '", HUDSKIN_DEFAULT, "'\n");
+        print("Failed to load skininfo for HUD skin '", skin_name, "': ", errstr, ". Falling back to '", HUDSKIN_DEFAULT, "'.\n");
         HUDSkin_Load(HUDSKIN_DEFAULT);
         return FALSE;
     }
