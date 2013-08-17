@@ -509,8 +509,10 @@ float HUDSkin_Load(string skin_name)
     if(fh < 0)
         return HUDSkin_LoadError(skin_name, "fopen failed");
     
-    if(fgets(fh) != "#version " HUDSKIN_VERSION)
+    if(fgets(fh) != "#version " HUDSKIN_VERSION) {
+        fclose(fh);
         return HUDSkin_LoadError(skin_name, "version mismatch");
+    }
     
     hudskin_image_border_left = SKINIMAGE("border_left");
     hudskin_image_border_right = SKINIMAGE("border_right");
