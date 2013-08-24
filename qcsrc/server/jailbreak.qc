@@ -971,8 +971,10 @@ void JB_ControlPoint_Touch() {
 		JB_ControlPoint_Capture(other);
         
         JB_ControlPoint_Deactivate(self, JB_ControlPoint_Cooldown(self));
-        entity e; for(;(e = find(e, classname, "jailbreak_controlpoint"));)
-            if((e.team == JB_TEAM_NEUTRAL || e.team == JB_GetEnemyTeamOf(other.team)) && e != self)
+        entity e; for(;(e = find(e, classname, "jailbreak_controlpoint"));) if(e != self)
+            if(e.team == other.team)
+                JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global_own"));
+            else if(e.team == JB_TEAM_NEUTRAL || e.team == JB_GetEnemyTeamOf(other.team))
                 JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global"));
                 
         self.jb_capturecount += 1;
