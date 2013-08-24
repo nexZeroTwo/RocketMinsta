@@ -31,7 +31,7 @@ match (string)self.target and call their .use function
 
 ==============================
 */
-void SUB_UseTargets()
+void SUB_UseTargets_Ex(float preventReuse)
 {
 	local entity t, stemp, otemp, act;
 	string s;
@@ -97,15 +97,18 @@ void SUB_UseTargets()
 		}
 		if (s != "")
 		{
-			for(t = world; (t = find(t, targetname, s)); )
-			if(t.use)
-			{
-				//print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
-				self = t;
-				other = stemp;
-				activator = act;
-				self.use();
-			}
+			for(t = world; (t = find(t, targetname, s)); ) {
+                if(t.use && (!t.sub_target_used || !preventReuse))
+                {
+                    //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
+                    self = t;
+                    other = stemp;
+                    activator = act;
+                    self.use();
+                    if(preventReuse)
+                        self.sub_target_used = TRUE;
+                }
+            }
 		}
 	}
 
@@ -114,6 +117,13 @@ void SUB_UseTargets()
 	other = otemp;
 };
 
+void SUB_UseTargets() {
+    SUB_UseTargets_Ex(FALSE);
+}
+
+void SUB_UseTargets_PreventReuse() {
+    SUB_UseTargets_Ex(TRUE);
+}
 
 //=============================================================================
 

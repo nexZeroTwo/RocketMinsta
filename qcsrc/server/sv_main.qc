@@ -146,6 +146,8 @@ string oldfog;
 entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
+    entity e;
+    
 	remove = remove_unsafely; // not during spawning!
 	serverprevtime = servertime;
 	servertime = time;
@@ -176,8 +178,7 @@ void StartFrame (void)
 #endif
 
 	dprint_load(); // load dprint status from cvar
-
-	entity e;
+    
 	for(e = world; (e = findfloat(e, csqcprojectile_clientanimate, 1)); )
 		CSQCProjectile_Check(e);
 
@@ -284,6 +285,9 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+    
+    for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
+        e.sub_target_used = FALSE;
 }
 
 .vector originjitter;

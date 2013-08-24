@@ -711,3 +711,5 @@ float sv_oldfag;
 .float lastdamage;
 
 float sv_dps;
+
+.float sub_target_used;

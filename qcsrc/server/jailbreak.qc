@@ -799,41 +799,100 @@ void JB_SetupTortureSpawnpoint() {
 .entity sprite;
 void AnimateDomPoint();
 
+string JB_ControlPoint_ModelForTeam(float t) {
+    switch(t) {
+        case COLOR_TEAM1:       return "models/domination/dom_red.md3";
+        case COLOR_TEAM2:       return "models/domination/dom_blue.md3";
+        default:                return "models/domination/dom_yellow.md3";
+    }
+}
+
+string JB_ControlPoint_WaypointForTeam(float t) {
+    switch(t) {
+        case COLOR_TEAM1:       return "dom-red";
+        case COLOR_TEAM2:       return "dom-blue";
+        default:                return "dom-yellow";
+    }
+}
+
 float JB_ControlPoint_Cooldown(entity e) {
-    return cvar("g_jailbreak_controlpoint_idletime") + pow(e.jb_capturecount, cvar("g_jailbreak_controlpoint_idletime_power")) * cvar("g_jailbreak_controlpoint_idletime_factor") * cvar("g_jailbreak_controlpoint_idletime");
+    float base, pw, f, c;
+    
+    c = e.jb_capturecount;
+    
+    if(e.team == JB_TEAM_NEUTRAL) {
+        base = cvar("g_jailbreak_controlpoint_idletime");
+        pw   = cvar("g_jailbreak_controlpoint_idletime_power");
+        f    = cvar("g_jailbreak_controlpoint_idletime_factor");
+    } else {
+        base = cvar("g_jailbreak_controlpoint_idletime_neutral");
+        pw   = cvar("g_jailbreak_controlpoint_idletime_neutral_power");
+        f    = cvar("g_jailbreak_controlpoint_idletime_neutral_factor");
+    }
+    
+    return base + pow(c, pw) * f * base;
+}
+
+float JB_ControlPoint_InitialCooldown(entity e) {
+    return cvar((e.team == JB_TEAM_NEUTRAL)? "g_jailbreak_controlpoint_idletime_neutral_initial" : "g_jailbreak_controlpoint_idletime_initial");
+}
+
+void JB_ControlPoint_Activate(entity e) {
+    e.jb_active = TRUE;
+    e.jb_cooldown = 0;
+    e.jb_cooldown_max = 0;
+    setmodel(e, JB_ControlPoint_ModelForTeam(e.team));
+    WaypointSprite_UpdateMaxHealth(e.waypointsprite_attached, 0);
+    WaypointSprite_UpdateHealth(e.waypointsprite_attached, 0);
+}
+
+void JB_ControlPoint_Deactivate(entity e, float cooldown) {
+    e.jb_cooldown_max = max(e.jb_cooldown_max, cooldown);
+    e.jb_cooldown     = max(e.jb_cooldown,     cooldown);
+    
+    if(e.jb_active && e.jb_cooldown > 0) {
+        setmodel(e, "models/domination/dom_unclaimed.md3");
+        e.jb_active = FALSE;
+    }
+}
+
+void JB_ControlPoint_UpdateCooldownProgress(entity e) {
+    WaypointSprite_UpdateMaxHealth(e.waypointsprite_attached, e.jb_cooldown_max);
+    WaypointSprite_UpdateHealth(e.waypointsprite_attached, e.jb_cooldown_max - e.jb_cooldown);
 }
 
 void JB_ControlPoint_Think() {
-	self.nextthink = time + 0.1;
-	AnimateDomPoint();
-	
-	if(self.jb_unlock_progress == 1) {
-		if(!self.jb_capturestate) {
-			self.jb_capturestate = TRUE;
-			setmodel(self, "models/domination/dom_unclaimed.md3");
-		}
-		
-        float cd;
-        cd = JB_ControlPoint_Cooldown(self);
-        
-        WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, cd);
-        WaypointSprite_UpdateHealth(self.waypointsprite_attached, time - self.jb_capturetime);
-        
-		if(time - self.jb_capturetime >= JB_ControlPoint_Cooldown(self))
-			self.jb_unlock_progress = 0;
-        
-		return;
-	} else if(self.jb_capturestate) {
-		self.jb_capturestate = FALSE;
-		setmodel(self, ((self.team == COLOR_TEAM1)? "models/domination/dom_red.md3" : "models/domination/dom_blue.md3"));
-        WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
-        WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
-	}
+    self.nextthink = time;
+    AnimateDomPoint();
+    
+    if(time < game_starttime || jb_roundover)
+        return;
+    
+    if(self.jb_cooldown) {
+        JB_ControlPoint_UpdateCooldownProgress(self);
+    } else if(!self.jb_active) {
+        JB_ControlPoint_Activate(self);
+    }
+    
+    self.jb_cooldown = max(0, self.jb_cooldown - frametime);
 }
 
 void JB_ControlPoint_Capture(entity player) {
+    entity e, o;
+    
 	activator = self;
-	SUB_UseTargets();
+    
+    if(self.team == JB_TEAM_NEUTRAL) {
+        float et = JB_GetEnemyTeamOf(player.team);
+        for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));) {
+            if(e.team == et) {
+                o = self;
+                self = e;
+                SUB_UseTargets_PreventReuse();
+                self = o;
+            }
+        }
+    } else SUB_UseTargets();
 	
 	string teamname;
 	switch(player.team) {
@@ -842,7 +901,7 @@ void JB_ControlPoint_Capture(entity player) {
 		default			: teamname = "^6FAGS"	; break ;
 	}
 	
-	entity e; FOR_EACH_PLAYER(e) {
+	FOR_EACH_PLAYER(e) {
 		bigprint_spec(e, 	strcat("Jailbreak! The ", teamname, " ^7are escaping!"),
 							strcat("Unlocked by ", player.netname), 5);
 		
@@ -867,9 +926,9 @@ void JB_ControlPoint_Touch() {
 	if(other.health < 1)
 		return;
 	
-	if(self.jb_unlock_progress == 1)
-		return;
-	
+    if(!self.jb_active)
+        return;
+    
 	if(other.classname != "player")
 		return;
 		
@@ -885,18 +944,22 @@ void JB_ControlPoint_Touch() {
 	other.jb_unlock_progress = self.jb_unlock_progress;
 	
 	if(self.jb_unlock_progress >= 1) {
-		self.jb_capturetime = time;
         self.jb_capturecount += 1;
 		JB_ControlPoint_Capture(other);
+        
+        JB_ControlPoint_Deactivate(self, JB_ControlPoint_Cooldown(self));
+        entity e; for(;(e = find(e, classname, "jailbreak_controlpoint"));)
+            if((e.team == JB_TEAM_NEUTRAL || e.team == JB_GetEnemyTeamOf(other.team)) && e != self)
+                JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global"));
 	}
 }
 
 void JB_ControlPoint_Reset() {
-    self.jb_capturetime = 0;
     self.jb_capturecount = 0;
-    self.jb_unlock_progress = 1;
-    self.jb_capturetime = time;
-    self.jb_capturestate = FALSE;
+    self.jb_active = TRUE;
+    self.jb_cooldown = 0;
+    self.jb_cooldown_max = 0;
+    JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
     WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
     WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
 }
@@ -909,7 +972,7 @@ void JB_SetupControlPoint() {
 	
 	self.classname = "jailbreak_controlpoint";
 	
-	setmodel(self, ((self.team == COLOR_TEAM1)? "models/domination/dom_red.md3" : "models/domination/dom_blue.md3"));
+	setmodel(self, JB_ControlPoint_ModelForTeam(self.team));
 	self.skin = 0;
 	
 	if(!self.t_width)
@@ -923,9 +986,9 @@ void JB_SetupControlPoint() {
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
     self.reset = JB_ControlPoint_Reset;
-    self.jb_unlock_progress = 1;
-    self.jb_capturetime = time;
-    self.jb_capturestate = FALSE;
+    self.jb_capturecount = 0;
+    self.jb_active = TRUE;
+    JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
 	setsize(self, '-32 -32 -32', '32 32 32');
 	setorigin(self, self.origin + '0 0 20');
 	droptofloor();
@@ -933,7 +996,7 @@ void JB_SetupControlPoint() {
 	waypoint_spawnforitem_force(self, self.origin);
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
-	self.waypointsprite_attached = WaypointSprite_SpawnFixed(((self.team == COLOR_TEAM1)? "redbase" : "bluebase"), self.origin + '0 0 37', self, sprite);
+	self.waypointsprite_attached = WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, sprite);
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
 }
 
@@ -957,3 +1020,4 @@ JB_SPAWNFUNC(info_jailbreak_torturespawn_blue, JB_SetupTortureSpawnpoint, COLOR_
 
 JB_SPAWNFUNC(jailbreak_controlpoint_red, JB_SetupControlPoint, COLOR_TEAM1)
 JB_SPAWNFUNC(jailbreak_controlpoint_blue, JB_SetupControlPoint, COLOR_TEAM2)
+JB_SPAWNFUNC(jailbreak_controlpoint_neutral, JB_SetupControlPoint, JB_TEAM_NEUTRAL)
