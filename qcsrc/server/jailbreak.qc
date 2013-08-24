@@ -20,6 +20,8 @@ void JB_Init() {
 	e.classname = "jailbreak_logic";
 	e.think = JB_Frame;
 	e.nextthink = time;
+    
+    g_jailbreak_claim = cvar("g_jailbreak_controlpoint_claim");
 }
 
 void JB_Log(string s) {
@@ -879,22 +881,36 @@ void JB_ControlPoint_Think() {
     self.jb_cooldown = max(0, self.jb_cooldown - frametime);
 }
 
+void JB_ControlPoint_SwitchTeam(entity e, float t) {
+    e.team = t;
+    
+    if(e.waypointsprite_attached)
+        WaypointSprite_Kill(e.waypointsprite_attached);
+    
+    e.waypointsprite_attached = WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(e.team), e.origin + '0 0 37', e, sprite);
+    WaypointSprite_UpdateTeamRadar(e.sprite, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
+}
+
+void JB_TriggerTeamControlPoints(float t) {
+    entity e, o;
+    for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));) {
+        if(e.jb_team_initial == t) {
+            o = self;
+            self = e;
+            SUB_UseTargets_PreventReuse();
+            self = o;
+        }
+    }
+}
+
 void JB_ControlPoint_Capture(entity player) {
     entity e, o;
     
 	activator = self;
     
-    if(self.team == JB_TEAM_NEUTRAL) {
-        float et = JB_GetEnemyTeamOf(player.team);
-        for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));) {
-            if(e.team == et) {
-                o = self;
-                self = e;
-                SUB_UseTargets_PreventReuse();
-                self = o;
-            }
-        }
-    } else SUB_UseTargets();
+    if(self.team == JB_TEAM_NEUTRAL || g_jailbreak_claim)
+        JB_TriggerTeamControlPoints(JB_GetEnemyTeamOf(player.team));
+    else SUB_UseTargets();
 	
 	string teamname;
 	switch(player.team) {
@@ -916,6 +932,12 @@ void JB_ControlPoint_Capture(entity player) {
 	PlayerScore_Add(player, SP_SCORE, cvar("g_jailbreak_score_jbreak"));
 	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
 	play2all("kh/alarm.wav");
+    
+    if(cvar("g_jailbreak_controlpoint_claim_noneutral"))
+    if(self.team == JB_TEAM_NEUTRAL)
+        return;
+    
+    JB_ControlPoint_SwitchTeam(self, player.team);
 }
 
 void JB_ControlPoint_Touch() {
@@ -965,6 +987,7 @@ void JB_ControlPoint_Reset() {
     JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
     WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
     WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
+    JB_ControlPoint_SwitchTeam(self, cvar("g_jailbreak_controlpoint_claim_allneutral")? JB_TEAM_NEUTRAL : self.jb_team_initial);
 }
 
 void JB_SetupControlPoint() {
@@ -974,6 +997,10 @@ void JB_SetupControlPoint() {
 	}
 	
 	self.classname = "jailbreak_controlpoint";
+    self.jb_team_initial = self.team;
+    
+    if(cvar("g_jailbreak_controlpoint_claim_allneutral"))
+        self.team = JB_TEAM_NEUTRAL;
 	
 	setmodel(self, JB_ControlPoint_ModelForTeam(self.team));
 	self.skin = 0;

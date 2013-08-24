@@ -1,4 +1,5 @@
 
+float g_jailbreak_claim;
 typedef void() jb_torture_logic;
 
 void JB_Init();
@@ -38,6 +39,7 @@ void JB_RemovePlayer();
 .float jb_roundlost;
 .float jb_fragrow;
 .float jb_proj_ownerstate;
+.float jb_team_initial;
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;
