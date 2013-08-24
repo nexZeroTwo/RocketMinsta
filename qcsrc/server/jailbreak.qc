@@ -821,13 +821,13 @@ float JB_ControlPoint_Cooldown(entity e) {
     c = e.jb_capturecount;
     
     if(e.team == JB_TEAM_NEUTRAL) {
-        base = cvar("g_jailbreak_controlpoint_idletime");
-        pw   = cvar("g_jailbreak_controlpoint_idletime_power");
-        f    = cvar("g_jailbreak_controlpoint_idletime_factor");
-    } else {
         base = cvar("g_jailbreak_controlpoint_idletime_neutral");
         pw   = cvar("g_jailbreak_controlpoint_idletime_neutral_power");
         f    = cvar("g_jailbreak_controlpoint_idletime_neutral_factor");
+    } else {
+        base = cvar("g_jailbreak_controlpoint_idletime");
+        pw   = cvar("g_jailbreak_controlpoint_idletime_power");
+        f    = cvar("g_jailbreak_controlpoint_idletime_factor");
     }
     
     return base + pow(c, pw) * f * base;
@@ -849,6 +849,8 @@ void JB_ControlPoint_Activate(entity e) {
 void JB_ControlPoint_Deactivate(entity e, float cooldown) {
     e.jb_cooldown_max = max(e.jb_cooldown_max, cooldown);
     e.jb_cooldown     = max(e.jb_cooldown,     cooldown);
+    
+    JB_Log(strcat(etos(e), ": ", ftos(e.jb_cooldown), "s cooldown. Team: ", ftos(e.team), ", Caps: ", ftos(e.jb_capturecount)));
     
     if(e.jb_active && e.jb_cooldown > 0) {
         setmodel(e, "models/domination/dom_unclaimed.md3");
@@ -944,13 +946,14 @@ void JB_ControlPoint_Touch() {
 	other.jb_unlock_progress = self.jb_unlock_progress;
 	
 	if(self.jb_unlock_progress >= 1) {
-        self.jb_capturecount += 1;
 		JB_ControlPoint_Capture(other);
         
         JB_ControlPoint_Deactivate(self, JB_ControlPoint_Cooldown(self));
         entity e; for(;(e = find(e, classname, "jailbreak_controlpoint"));)
             if((e.team == JB_TEAM_NEUTRAL || e.team == JB_GetEnemyTeamOf(other.team)) && e != self)
                 JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global"));
+                
+        self.jb_capturecount += 1;
 	}
 }
 
