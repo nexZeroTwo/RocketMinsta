@@ -923,7 +923,7 @@ void JB_ControlPoint_Capture(entity player) {
 		bigprint_spec(e, 	strcat("Jailbreak! The ", teamname, " ^7are escaping!"),
 							strcat("Unlocked by ", player.netname), 5);
 		
-		if(e.jb_isprisoned && e.team != self.team)
+		if(e.jb_isprisoned && e.team == player.team)
 			bigprint_spec(e, "You're free! Run away!",
 							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
 	}
