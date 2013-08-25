@@ -903,8 +903,22 @@ void JB_TriggerTeamControlPoints(float t) {
     }
 }
 
+string JB_ControlPoint_Name(entity p) {
+    string clr, tm;
+    
+    switch(p.team) {
+        case COLOR_TEAM1:   clr = "^1"; tm = "Red"; break;
+        case COLOR_TEAM2:   clr = "^4"; tm = "Blue"; break;
+        default:            clr = "^3"; tm = "Neutral"; break;
+    }
+    
+    if(!p.netname)
+        return strcat(clr, tm, " Control Point");
+    return strcat(clr, strdecolorize(p.netname));
+}
+
 void JB_ControlPoint_Capture(entity player) {
-    entity e, o;
+    entity e;
     
 	activator = self;
     
@@ -912,23 +926,24 @@ void JB_ControlPoint_Capture(entity player) {
         JB_TriggerTeamControlPoints(JB_GetEnemyTeamOf(player.team));
     else SUB_UseTargets();
 	
-	string teamname;
+	string teamname, cpname;
 	switch(player.team) {
 		case COLOR_TEAM1: teamname = "^1REDS"	; break ;
 		case COLOR_TEAM2: teamname = "^4BLUES"	; break ;
 		default			: teamname = "^6FAGS"	; break ;
 	}
-	
+    
+    cpname = JB_ControlPoint_Name(self);
+    
 	FOR_EACH_PLAYER(e) {
 		bigprint_spec(e, 	strcat("Jailbreak! The ", teamname, " ^7are escaping!"),
-							strcat("Unlocked by ", player.netname), 5);
+							strcat(cpname, "^7 captured by ^3", player.netname), 5);
 		
 		if(e.jb_isprisoned && e.team == player.team)
-			bigprint_spec(e, "You're free! Run away!",
-							 strcat("And don't forget to give ", player.netname, " ^7a tight hug!"), 5);
+			bigprint_spec(e, "You're free! Run away!", "", 5);
 	}
 	
-	bprint(player.netname, " ^5unlocked the enemy jail! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
+	bprint(player.netname, " ^5has captured the ", cpname, "^5! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
 	PlayerScore_Add(player, SP_SCORE, cvar("g_jailbreak_score_jbreak"));
 	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
 	play2all("kh/alarm.wav");
