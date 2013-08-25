@@ -4766,7 +4766,7 @@ void Sbar_Draw (void)
         float hgdetons = getstati(STTA_HGDETONABLES);
         
         if(hgdetons) {
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades (^2", ftos(hgdetons), "^3)"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
         }
         
         if(nadesector_pos) {

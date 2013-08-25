@@ -376,12 +376,28 @@ float view_set;
 float camera_mode;
 string NextFrameCommand;
 void CSQC_spider_HUD();
+
+float hg_nadecount;
+float hg_nadecount_firstframepassed;
+
+void HG_NadeGainSound() {
+    float c = getstati(STAT_HGAMMO);
+    
+    if(c > hg_nadecount && hg_nadecount_firstframepassed)
+        localcmd("play2 misc/poweroff\n");
+    
+    hg_nadecount_firstframepassed = TRUE;
+    hg_nadecount = c;
+}
+
 void CSQC_UpdateView(float w, float h)
 {
 	entity e;
 	float fov;
 	float f, i, j;
 	vector v;
+
+    HG_NadeGainSound();
 
 	dprint_load();
 	WaypointSprite_Load();
