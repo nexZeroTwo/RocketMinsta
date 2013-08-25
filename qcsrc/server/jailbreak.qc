@@ -842,7 +842,7 @@ float JB_ControlPoint_InitialCooldown(entity e) {
 void JB_ControlPoint_Activate(entity e) {
     e.jb_active = TRUE;
     e.jb_cooldown = 0;
-    e.jb_cooldown_max = 0;
+    //e.jb_cooldown_max = 0;
     setmodel(e, JB_ControlPoint_ModelForTeam(e.team));
     WaypointSprite_UpdateMaxHealth(e.waypointsprite_attached, 0);
     WaypointSprite_UpdateHealth(e.waypointsprite_attached, 0);
