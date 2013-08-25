@@ -4179,7 +4179,7 @@ void Sbar_Draw (void)
                                             sector_alphamod, hud_sector_drawflag);
 				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
-                if(g_handgrenades && vid_conwidth >= 1124) {
+                if(g_handgrenades && vid_conwidth >= 678) {
                     // ammo | nades
                     HUDLINE_SLICE({
                         hudline_x = 10 - bw_right - bw_left;
@@ -4201,7 +4201,7 @@ void Sbar_Draw (void)
 				// separator slice:
 				//		ammo/nades | teamhud
 
-				if(vid_conwidth < 800)
+				if(vid_conwidth < 800 || g_handgrenades && vid_conwidth <= 1024)
 					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
 				else if(teamhud_wide)
 				{
@@ -4318,7 +4318,7 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
-				float low2 = vid_conwidth < 677;
+				float low2 = vid_conwidth < 675;
 				
 				if(hudskin_line_full)
 				{
