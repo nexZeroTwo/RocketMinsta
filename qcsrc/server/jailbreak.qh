@@ -40,12 +40,14 @@ void JB_RemovePlayer();
 .float jb_fragrow;
 .float jb_proj_ownerstate;
 .float jb_team_initial;
+.float jb_defendthink_next;
+
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;
 .entity jb_waypoint;
 .entity jb_waypoint_defend;
-.float jb_defendthink_next;
+.entity jb_capturingplayer;
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;

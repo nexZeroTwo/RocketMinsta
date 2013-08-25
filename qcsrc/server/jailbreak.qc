@@ -1006,11 +1006,16 @@ void JB_ControlPoint_Touch() {
 	if(JB_TotalPlayersOnTeam(other.team) == JB_AlivePlayersOnTeam(other.team))
 		return;	// no imprisoned players on team - sorta makes no sense to jailbreak
 	
-	if(time - self.pointupdatetime >= 0.1)
+	if(time - self.pointupdatetime >= 0.1) {
 		self.jb_unlock_progress = 0;
+        self.jb_capturingplayer = world;
+    } else if(self.jb_capturingplayer && self.jb_capturingplayer != other) {
+        return;
+    }
 	
 	self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_jailbreak_controlpoint_unlock_speed"), 1);
 	self.pointupdatetime = time;
+    self.jb_capturingplayer = other;
 	other.pointupdatetime = time;
 	other.jb_unlock_progress = self.jb_unlock_progress;
 	
