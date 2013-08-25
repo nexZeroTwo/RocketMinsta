@@ -43,6 +43,9 @@ void JB_RemovePlayer();
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
 .entity jb_saviour;
+.entity jb_waypoint;
+.entity jb_waypoint_defend;
+.float jb_defendthink_next;
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;

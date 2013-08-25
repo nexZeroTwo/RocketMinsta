@@ -844,8 +844,8 @@ void JB_ControlPoint_Activate(entity e) {
     e.jb_cooldown = 0;
     //e.jb_cooldown_max = 0;
     setmodel(e, JB_ControlPoint_ModelForTeam(e.team));
-    WaypointSprite_UpdateMaxHealth(e.waypointsprite_attached, 0);
-    WaypointSprite_UpdateHealth(e.waypointsprite_attached, 0);
+    WaypointSprite_UpdateMaxHealth(e.jb_waypoint, 0);
+    WaypointSprite_UpdateHealth(e.jb_waypoint, 0);
 }
 
 void JB_ControlPoint_Deactivate(entity e, float cooldown) {
@@ -861,13 +861,45 @@ void JB_ControlPoint_Deactivate(entity e, float cooldown) {
 }
 
 void JB_ControlPoint_UpdateCooldownProgress(entity e) {
-    WaypointSprite_UpdateMaxHealth(e.waypointsprite_attached, e.jb_cooldown_max);
-    WaypointSprite_UpdateHealth(e.waypointsprite_attached, e.jb_cooldown_max - e.jb_cooldown);
+    WaypointSprite_UpdateMaxHealth(e.jb_waypoint, e.jb_cooldown_max);
+    WaypointSprite_UpdateHealth(e.jb_waypoint, e.jb_cooldown_max - e.jb_cooldown);
+}
+
+void JB_ControlPoint_DefendWaypoint() {
+    entity plr;
+    float detected;
+    float rng;
+    
+    if(time < self.jb_defendthink_next)
+        return;
+    
+    rng = cvar("g_jailbreak_controlpoint_detect_enemies");
+    
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team) {
+        if(vlen(self.origin - plr.origin) < rng)
+        if(checkpvs(self.origin, plr)) {
+            detected = TRUE;
+            break;
+        }
+    }
+    
+    if(detected) {
+        if(!self.jb_waypoint_defend) {
+            WaypointSprite_SpawnFixed("defend", self.origin + '0 0 70', self, jb_waypoint_defend);
+            self.jb_waypoint_defend.team = self.team;
+        }
+    } else {
+        if(self.jb_waypoint_defend)
+            WaypointSprite_Kill(self.jb_waypoint_defend);
+    }
+    
+    self.jb_defendthink_next = time + 0.1;
 }
 
 void JB_ControlPoint_Think() {
     self.nextthink = time;
     AnimateDomPoint();
+    JB_ControlPoint_DefendWaypoint();
     
     if(time < game_starttime || jb_roundover)
         return;
@@ -884,11 +916,11 @@ void JB_ControlPoint_Think() {
 void JB_ControlPoint_SwitchTeam(entity e, float t) {
     e.team = t;
     
-    if(e.waypointsprite_attached)
-        WaypointSprite_Kill(e.waypointsprite_attached);
+    if(e.jb_waypoint)
+        WaypointSprite_Kill(e.jb_waypoint);
     
-    e.waypointsprite_attached = WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(e.team), e.origin + '0 0 37', e, sprite);
-    WaypointSprite_UpdateTeamRadar(e.sprite, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
+    WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(e.team), e.origin + '0 0 37', e, jb_waypoint);
+    WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
 }
 
 void JB_TriggerTeamControlPoints(float t) {
@@ -1002,8 +1034,8 @@ void JB_ControlPoint_Reset() {
     self.jb_cooldown = 0;
     self.jb_cooldown_max = 0;
     JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
-    WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, 0);
-    WaypointSprite_UpdateHealth(self.waypointsprite_attached, 0);
+    WaypointSprite_UpdateMaxHealth(self.jb_waypoint, 0);
+    WaypointSprite_UpdateHealth(self.jb_waypoint, 0);
     JB_ControlPoint_SwitchTeam(self, cvar("g_jailbreak_controlpoint_claim_allneutral")? JB_TEAM_NEUTRAL : self.jb_team_initial);
 }
 
@@ -1043,8 +1075,8 @@ void JB_SetupControlPoint() {
 	waypoint_spawnforitem_force(self, self.origin);
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
-	self.waypointsprite_attached = WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
+	WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, jb_waypoint);
+	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
 }
 
 //
