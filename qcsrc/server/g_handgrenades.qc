@@ -260,7 +260,7 @@ float HG_PlayerMayDetonate(entity p) {
 }
 
 void HG_Detonate(entity nade) {
-    if(!nade || !nade.hg_detonable || nade.hg_detonatetime)
+    if(!nade || !nade.hg_detonable || nade.hg_detonatetime || nade.hg_detonateready > time)
         return;
     nade.hg_detonatetime = time + nade.hg_detonatedelay;
 }
@@ -357,6 +357,7 @@ void HG_Attack()
 	gren.hg_type = hgtype;
     gren.hg_detonable = GV("detonable");
     gren.hg_detonatedelay = GV("detonate_delay");
+    gren.hg_detonateready = time + GV("detonate_threshold");
     setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
@@ -407,7 +408,7 @@ void HG_UpdateDetonables() {
     self.hg_detonables = 0;
     
     for(;(nade = find(nade, classname, "hg_grenade"));)
-        if(nade.owner == self && !nade.hg_detonatetime && nade.hg_detonable)
+        if(nade.owner == self && !nade.hg_detonatetime && nade.hg_detonable && nade.hg_detonateready <= time)
             self.hg_detonables += 1;
 }
 

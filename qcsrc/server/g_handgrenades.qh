@@ -32,6 +32,7 @@ float HG_PlayerMayDetonate(entity);
 .float hg_detonable;
 .float hg_detonatetime;
 .float hg_detonatedelay;
+.float hg_detonateready;
 .float hg_detonables;
 .float hg_nextsnd;
 .float hg_sndcount;
