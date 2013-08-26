@@ -438,11 +438,7 @@ void HG_Frame()
 		1);
 	else
 	{
-		self.hg_power = bound(0,
-			self.hg_power - frametime *
-			cvar("g_handgrenades_clearspeed"),
-		1);
-		
+		self.hg_power = 0;
 		if(self.hg_state && mayfire)
 			HG_Attack();
 	}
