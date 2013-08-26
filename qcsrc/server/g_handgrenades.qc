@@ -319,7 +319,10 @@ void HG_Attack()
 	if(time < self.hg_next)
 		return;
 	
-	self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
+    if(!self.hg_type) {
+        print("Player ", self.netname, " ^7doesn't have a grenade type - fixing\n");
+        self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
+    }
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
@@ -389,7 +392,7 @@ void HG_Attack()
 	if (hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 		
-	self.hg_next = time + cvar("g_handgrenades_mindelay");
+	self.hg_next = time + GV("cooldown");
     
     if(!freebonus) {
         self.hg_ammo -= 1;
@@ -434,13 +437,13 @@ void HG_Frame()
 	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire)
 		self.hg_power = bound(0,
 			self.hg_power + frametime *
-			cvar("g_handgrenades_speed"),
+			GRENVAR(HG_PLAYERNADETYPE(self), "launchspeed"),
 		1);
 	else
 	{
-		self.hg_power = 0;
 		if(self.hg_state && mayfire)
 			HG_Attack();
+		self.hg_power = 0;
 	}
 	
 	if(self.hg_power == 1 && mayfire)
@@ -484,4 +487,5 @@ void HG_PlayerSpawn()
 	self.hg_bonustype = HG_NORMAL;
     self.hg_regentime = HG_RegenTime(self);
     self.hg_clearammo = 0;
+    self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
 }

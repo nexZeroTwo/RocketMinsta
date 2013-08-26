@@ -42,3 +42,4 @@ float HG_PlayerMayDetonate(entity);
 #define BUTTON_HG button6
 #define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
+#define HG_PLAYERNADETYPE(p) (p.hg_bonus? p.hg_bonustype : p.hg_type)
