@@ -381,7 +381,10 @@ void HG_Attack()
     
 	gren.health = GV("health");
 	gren.damageforcescale = GV("damageforcescale");
-	gren.velocity = w_shotdir * GV("speed") * self.hg_power + v_up * GV("speed_up") * self.hg_power;
+    if(GV("launchspeed"))
+        gren.velocity = w_shotdir * GV("speed") * self.hg_power + v_up * GV("speed_up") * self.hg_power;
+    else
+        gren.velocity = w_shotdir * GV("speed") + v_up * GV("speed_up");
 	W_SetupProjectileVelocity(gren);
 	
 	gren.angles = vectoangles (gren.velocity);
@@ -434,12 +437,16 @@ void HG_Frame()
 	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
 		bigprint_spec(self, "Out of Grenades", "", 1);
 	
-	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire)
-		self.hg_power = bound(0,
-			self.hg_power + frametime *
-			GRENVAR(HG_PLAYERNADETYPE(self), "launchspeed"),
-		1);
-	else
+	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire) {
+        float ls = GRENVAR(HG_PLAYERNADETYPE(self), "launchspeed");
+        
+        if(ls)
+            self.hg_power = bound(0, self.hg_power + frametime * ls, 1);
+        else {
+            self.hg_power = 0;
+            HG_Attack();
+        }
+	} else
 	{
 		if(self.hg_state && mayfire)
 			HG_Attack();
