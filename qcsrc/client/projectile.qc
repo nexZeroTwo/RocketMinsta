@@ -89,6 +89,9 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
+        case PROJECTILE_HG_PLASMA:
+            trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+            break;
 		case PROJECTILE_PORTO_RED:
 			trailparticles(self, particleeffectnum("TR_WIZSPIKE"), from, to);
 			break;
@@ -167,6 +170,7 @@ void Projectile_Draw()
 			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
+			//case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
 				break;
@@ -187,6 +191,7 @@ void Projectile_Draw()
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
 		case PROJECTILE_HG_GENERIC:
+        case PROJECTILE_HG_PLASMA:
 		case PROJECTILE_HG_NAPALM:
 			trailorigin += v_right * 1 + v_forward * -10;
 			break;
@@ -330,7 +335,7 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: switch(self.team) {
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: switch(self.team) {
                 case COLOR_TEAM2:   setmodel(self, "models/grenademodel_team2.md3"); break;
                 case COLOR_TEAM3:   setmodel(self, "models/grenademodel_team3.md3"); break;
                 case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
@@ -377,6 +382,7 @@ void Ent_Projectile()
 				break;
 			case PROJECTILE_GRENADE_BOUNCING:
 			case PROJECTILE_HG_GENERIC:
+            case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';

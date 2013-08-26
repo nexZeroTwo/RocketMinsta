@@ -448,6 +448,7 @@ float PROJECTILE_RM_LASER_PINK = 25;
 
 float PROJECTILE_HG_GENERIC = 26;
 float PROJECTILE_HG_NAPALM = 27;
+float PROJECTILE_HG_PLASMA = 28;
 
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
@@ -484,7 +485,9 @@ float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;
 float DEATH_HG_NAPALM = 101;
 float DEATH_HG_REMOTE = 102;
-float DEATH_HG_END = 102;
+float DEATH_HG_PLASMA = 103;
+float DEATH_HG_PLASMA_SHARD = 104;
+float DEATH_HG_END = 104;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

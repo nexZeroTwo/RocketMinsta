@@ -149,8 +149,7 @@ void HG_Napalm (void)
 	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
 }
 
-void HG_Napalm_Explode (void)
-{
+void HG_Napalm_Explode() {
 	local float c;
 	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Napalm ();
 	
@@ -165,21 +164,109 @@ void HG_Napalm_Explode (void)
 	setsize(mid, '0 0 0', '0 0 0');
 }
 
+void HG_Plasma_Projectile_Explode() {
+	self.event_damage = SUB_Null;
+	self.takedamage = DAMAGE_NO;
+	RadiusDamage(self, self.owner, cvar("g_handgrenades_plasma_projectile_damage"), cvar("g_handgrenades_plasma_projectile_edgedamage"), cvar("g_handgrenades_plasma_projectile_radius"), world, cvar("g_handgrenades_plasma_projectile_force"), self.projectiledeathtype, other);
+	remove(self);
+}
+
+void HG_Plasma_Projectile_Think() {
+    entity e;
+    float dps, rng;
+    
+    if(time >= self.hg_detonatetime) {
+        HG_Plasma_Projectile_Explode();
+        return;
+    }
+    
+    dps = cvar("g_handgrenades_plasma_projectile_dps");
+    rng = cvar("g_handgrenades_plasma_projectile_dps_range");
+    
+    FOR_EACH_PLAYER(e) if(vlen(e.origin - self.origin) <= rng)
+        Damage(e, self, self.owner, dps * frametime, self.projectiledeathtype, '0 0 0', '0 0 0');
+    
+    self.nextthink = time;
+}
+
+void HG_Plasma_Projectile_Touch()
+{
+	PROJECTILE_TOUCH;
+	if (other.takedamage == DAMAGE_AIM) {
+		HG_Plasma_Projectile_Explode();
+	} else {
+		spamsound (self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
+	}
+}
+
+void HG_Plasma_Projectile() {
+	local entity proj;
+    vector kick;
+
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", cvar("g_balance_electro_secondary_damage"));
+	w_shotdir = v_forward; // no TrueAim for grenades please
+
+	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
+
+	proj = spawn();
+	proj.classname = "plasma";
+	proj.owner = self.owner;
+	proj.use = HG_Plasma_Projectile_Explode;
+	proj.think = HG_Plasma_Projectile_Think;
+    proj.nextthink = time;
+	proj.bot_dodge = TRUE;
+	proj.bot_dodgerating = cvar("g_handgrenades_plasma_projectile_damage");
+    proj.hg_detonatetime = time + cvar("g_handgrenades_plasma_projectile_lifetime") + random() * cvar("g_handgrenades_plasma_projectile_lifetime_randomfactor");
+	PROJECTILE_MAKETRIGGER(proj);
+	proj.projectiledeathtype = HG_PLASMA_SHARD;
+	setorigin(proj, w_shotorg);
+    
+	proj.movetype = MOVETYPE_BOUNCE;
+    kick_x = (random () - 0.5) * 2 * cvar("g_handgrenades_plasma_spread_xy");
+	kick_y = (random () - 0.5) * 2 * cvar("g_handgrenades_plasma_spread_xy");
+	kick_z = max(
+						cvar("g_handgrenades_plasma_spread_z")
+					*	random(),
+					
+						cvar("g_handgrenades_plasma_spread_z_min")
+					+ 	cvar("g_handgrenades_plasma_spread_z_min_randomfactor")
+					*	(random() - 0.5) * 2
+				);
+    proj.velocity = kick;
+	W_SetupProjectileVelocity(proj);
+	proj.touch = HG_Plasma_Projectile_Touch;
+	setsize(proj, '0 0 -3', '0 0 -3');
+	proj.takedamage = DAMAGE_NO;
+	proj.event_damage = W_Plasma_Damage;
+	proj.flags = FL_PROJECTILE;
+    
+	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
+}
+
+void HG_Plasma_Explode() {
+    local float c;
+	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Plasma_Projectile();
+}
+
 string HG_TypeToExpandedName(float t) {
 	switch(t) {
-		case HG_NORMAL: return "Grenade";
-		case HG_NAPALM: return "Napalm Grenade";
-		case HG_REMOTE: return "Remote Grenade";
-		default		  : return "Fuckoff Grenade";
+		case HG_NORMAL:         return "Grenade";
+		case HG_NAPALM:         return "Napalm Grenade";
+		case HG_REMOTE:         return "Remote Mine";
+        case HG_PLASMA:         return "Plasma Bomb";
+        case HG_PLASMA_SHARD:   return "Plasma Bomb";
+		default		  :         return "Fuckoff Grenade";
 	}
 }
 
 string HG_TypeToName(float t) {
 	switch(t) {
-		case HG_NORMAL: return "normal";
-		case HG_NAPALM: return "napalm";
-		case HG_REMOTE: return "remote";
-		default		  : return "fuckoff";
+		case HG_NORMAL:         return "normal";
+		case HG_NAPALM:         return "napalm";
+		case HG_REMOTE:         return "remote";
+        case HG_PLASMA:         return "plasma";
+        case HG_PLASMA_SHARD:   return "plasma";
+		default		  :         return "fuckoff";
 	}
 }
 
@@ -187,6 +274,7 @@ float HG_NameToType(string t) {
 	switch(t) {
 		case "napalm": return HG_NAPALM;
         case "remote": return HG_REMOTE;
+        case "plasma": return HG_PLASMA;
 		default		 : return HG_NORMAL;
 	}
 }
@@ -194,6 +282,7 @@ float HG_NameToType(string t) {
 float HG_TypeToCSQCProjType(float t) {
 	switch(t) {
 		case HG_NAPALM:	return PROJECTILE_HG_NAPALM;
+		case HG_PLASMA:	return PROJECTILE_HG_PLASMA;
 		default:		return PROJECTILE_HG_GENERIC;
 	}
 }
@@ -211,8 +300,9 @@ void HG_Grenade_Explode()
 	self.takedamage = DAMAGE_NO;
 	
 	if(self.hg_type == HG_NAPALM)
-		HG_Napalm_Explode(); // TODO move this to CSQC too
-//	else HG_Normal_Explode();
+		HG_Napalm_Explode();
+    else if(self.hg_type == HG_PLASMA)
+        HG_Plasma_Explode();
 	
 	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
 	remove (self);

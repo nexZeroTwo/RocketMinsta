@@ -3569,7 +3569,7 @@ void Sbar_Draw (void)
 	} else {
 		hg_alpha = approach(hg_alpha, 0, 5 * drawframetime);
 	}
-	
+    
 	hg_visual = approach(hg_visual, hgstat, drawframetime);
 	hgstat = hg_visual;
 	
@@ -3583,7 +3583,8 @@ void Sbar_Draw (void)
 		hgcolor_y = hgcolor_y * 1 - hgstat;
 		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, hgcolor);
 	}
-
+    
+    
 	local vector sv_pos;
 	sv_pos = bottomright;
 	sv_pos_y -= 200;

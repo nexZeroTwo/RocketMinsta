@@ -721,6 +721,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint ("^1", s, "^1 was burnt to ashes by ", a, "^1's napalm grenade\n");
                     else if(deathtype == DEATH_HG_REMOTE)
                         bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
+                    else if(deathtype == DEATH_HG_PLASMA || deathtype == DEATH_HG_PLASMA_SHARD)
+                        bprint ("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 				}
@@ -934,7 +936,7 @@ entity damage_attacker;
 .float ignore_next;
 //</akari>
 
-void Damage (entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
+void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	float mirrordamage;
 	float mirrorforce;
@@ -1807,7 +1809,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 									stat_maxdamage += coredamage;
 								}
 							}
-
 							if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
 								Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
 							else
