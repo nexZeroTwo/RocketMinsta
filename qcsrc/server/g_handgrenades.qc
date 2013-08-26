@@ -245,7 +245,7 @@ void HG_Plasma_Projectile() {
 
 void HG_Plasma_Explode() {
     local float c;
-	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Plasma_Projectile();
+	for (c = 0; c < cvar ("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
 }
 
 float HG_TypeToCSQCProjType(float t) {
