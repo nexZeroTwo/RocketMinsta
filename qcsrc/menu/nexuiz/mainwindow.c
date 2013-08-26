@@ -10,6 +10,7 @@ CLASS(MainWindow) EXTENDS(ModalController)
 	ATTRIB(MainWindow, radarDialog, entity, NULL)
 	ATTRIB(MainWindow, rmDialog, entity, NULL)
 	ATTRIB(MainWindow, gameMenuDialog, entity, NULL)
+	ATTRIB(MainWindow, nadeMenuDialog, entity, NULL)
 	ATTRIB(MainWindow, vcallDialog, entity, NULL)
 	ATTRIB(MainWindow, serverInfoDialog, entity, NULL)
 	ATTRIB(MainWindow, cvarsDialog, entity, NULL)
@@ -41,6 +42,11 @@ void configureMainWindowMainWindow(entity me)
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 
 	me.gameMenuDialog = i = spawnNexuizGameMenuDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+    print("FIUCFAS IOH IUPOSIJOIJUHDESAFSJBHGFEGFDddfvcfxdfdrferfrtfgfgftgfbvgtgy");
+    me.nadeMenuDialog = i = spawnNexuizNadeMenuDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 

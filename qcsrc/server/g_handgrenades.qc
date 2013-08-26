@@ -248,37 +248,6 @@ void HG_Plasma_Explode() {
 	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Plasma_Projectile();
 }
 
-string HG_TypeToExpandedName(float t) {
-	switch(t) {
-		case HG_NORMAL:         return "Grenade";
-		case HG_NAPALM:         return "Napalm Grenade";
-		case HG_REMOTE:         return "Remote Mine";
-        case HG_PLASMA:         return "Plasma Bomb";
-        case HG_PLASMA_SHARD:   return "Plasma Bomb";
-		default		  :         return "Fuckoff Grenade";
-	}
-}
-
-string HG_TypeToName(float t) {
-	switch(t) {
-		case HG_NORMAL:         return "normal";
-		case HG_NAPALM:         return "napalm";
-		case HG_REMOTE:         return "remote";
-        case HG_PLASMA:         return "plasma";
-        case HG_PLASMA_SHARD:   return "plasma";
-		default		  :         return "fuckoff";
-	}
-}
-
-float HG_NameToType(string t) {
-	switch(t) {
-		case "napalm": return HG_NAPALM;
-        case "remote": return HG_REMOTE;
-        case "plasma": return HG_PLASMA;
-		default		 : return HG_NORMAL;
-	}
-}
-
 float HG_TypeToCSQCProjType(float t) {
 	switch(t) {
 		case HG_NAPALM:	return PROJECTILE_HG_NAPALM;
@@ -403,6 +372,29 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 	}
 }
 
+float HG_PlayerGrenadeType(entity e) {
+    float def = HG_NameToType(cvar_string("g_handgrenades_type"));
+    float argc = tokenize_console(cvar_string("g_handgrenades_type_selectable"));
+    float i;
+    
+    if(argc)
+        for(i = 0; i < argc; ++i)
+            if(e.hg_type_picked == HG_NameToType(argv(i)))
+                return e.hg_type_picked;
+    
+    e.hg_type_picked = def;
+    return def;
+}
+
+void HG_SetGrenadeType(entity p, float t) {
+    p.hg_type = t;
+    
+    if(p.scorekeeper) {
+        p.scorekeeper.SendFlags |= pow(2, SP_NADEMODE);
+        p.scorekeeper.(scores[SP_NADEMODE]) = t;
+    }
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
@@ -414,7 +406,7 @@ void HG_Attack()
 	
     if(!self.hg_type) {
         print("Player ", self.netname, " ^7doesn't have a grenade type - fixing\n");
-        self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
+        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
     }
 	
 	if(self.hg_bonus) {
@@ -579,6 +571,9 @@ void HG_Frame()
 
 void HG_PlayerSpawn()
 {
+    if(self.classname != "player")
+        return;
+    
     if(g_freezetag && self.freezetag_frozen)
         return;
     
@@ -588,5 +583,14 @@ void HG_PlayerSpawn()
 	self.hg_bonustype = HG_NORMAL;
     self.hg_regentime = HG_RegenTime(self);
     self.hg_clearammo = 0;
-    self.hg_type = HG_NameToType(cvar_string("g_handgrenades_type"));
+    HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+}
+
+float HG_ShowMenu() {
+    if(g_handgrenades && cvar_string("g_handgrenades_type_selectable") != "" && !self.hg_type_picked) {
+        stuffcmd(self, strcat("set _nade_options \"", cvar_string("g_handgrenades_type_selectable"), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
+        return TRUE;
+    }
+    
+    return FALSE;
 }

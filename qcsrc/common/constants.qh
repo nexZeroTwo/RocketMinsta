@@ -344,7 +344,7 @@ const float STTA_HGDETONABLES = 122;
  * Score indices
  */
  
-#define MAX_SCORE 18
+#define MAX_SCORE 19
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -361,6 +361,7 @@ const float STTA_HGDETONABLES = 122;
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
 #define SP_FPS 17
+#define SP_NADEMODE 18
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider

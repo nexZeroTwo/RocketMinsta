@@ -775,9 +775,10 @@ void PutObserverInServer (void)
 	}
 
 	PlayerScore_Clear(self); // clear scores when needed
-
+    
+    self.hg_type_picked = 0;
 	self.spectatortime = time;
-
+    
 	self.classname = "observer";
 	self.iscreature = FALSE;
 	self.health = -666;
@@ -2670,6 +2671,9 @@ void LeaveSpectatorMode()
 {
 	if(isJoinAllowed()) {
 		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
+            if(HG_ShowMenu())
+                return;
+            
 			self.classname = "player";
 			if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force"))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -2682,7 +2686,7 @@ void LeaveSpectatorMode()
 				centerprint(self,""); // clear MOTD
 			return;
 		} else {
-			stuffcmd(self,"menu_showteamselect\n");
+			stuffcmd(self, "menu_showteamselect\n");
 			return;
 		}
 	}

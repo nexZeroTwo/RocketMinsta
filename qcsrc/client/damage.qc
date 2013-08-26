@@ -120,7 +120,7 @@ void Ent_DamageInfo(float isNew)
 						r = random ();
 						pointparticles (particleeffectnum (mod(i, 4)? "rocket_explode" : "TE_TEI_BIGEXPLOSION"), self.origin + v * radius * r, v * radius * r * 100, 1);
 					}
-                
+                    break;
                 case DEATH_HG_PLASMA_SHARD:
                     org2 = org + backoff * 6;
                     pointparticles(particleeffectnum("electro_ballexplode"), org2, '0 0 0', 1);

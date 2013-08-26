@@ -433,6 +433,9 @@ void SV_ParseClientCommand(string s) {
 		if (self.classname != "player" && !lockteams)
 		{
 			if(isJoinAllowed()) {
+                if(HG_ShowMenu())
+                    return;
+                
 				self.classname = "player";
 				PlayerScore_Clear(self);
 				bprint ("^4", self.netname, "^4 is playing now\n");
@@ -470,7 +473,28 @@ void SV_ParseClientCommand(string s) {
 		} else {
 			sprint( self, strcat( "selectteam none/red/blue/yellow/pink/auto - \"", argv(1), "\" not recognised\n" ) );
 		}
-	} else if(cmd == "ready") {
+	} else if(cmd == "picknade") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        if(!g_handgrenades)
+            return;
+        
+        float t = HG_NameToType(argv(1));
+        float i;
+        float argc = tokenize_console(cvar_string("g_handgrenades_type_selectable"));
+        
+        if(argc)
+            for(i = 0; i < argc; ++i)
+                if(t == HG_NameToType(argv(i))) {
+                    sprint(self, strcat("^1Your grenade type has been set to ^2", HG_TypeToExpandedName(t), "\n"));
+                    self.hg_type_picked = t;
+                    return;
+                }
+                
+        sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
+        return;
+    } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;
 

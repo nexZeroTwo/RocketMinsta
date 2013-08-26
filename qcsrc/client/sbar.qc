@@ -481,7 +481,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", (g_handgrenades? " nade" : ""), " kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -566,6 +566,8 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_PING;
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
+        } else if(str == "nade") {
+            sbar_field[sbar_num_fields] = SP_NADEMODE;
 		} else if(str == "fps") {
 			sbar_field[sbar_num_fields] = SP_FPS;
 		} else if(str == "kd" || str == "kdr" || str == "kdratio" || str == "k/d") {
@@ -818,7 +820,37 @@ string Sbar_GetField(entity pl, float field)
 			}
 			
 			return str;
-
+        
+        case SP_NADEMODE:
+            switch(pl.(scores[SP_NADEMODE])) {
+                case HG_NORMAL:
+                    sbar_field_rgb = '1 0.5 0';
+                    str = "Gr ";
+                    break;
+                
+                case HG_NAPALM:
+                    sbar_field_rgb = '1 0 0';
+                    str = "Na ";
+                    break;
+                
+                case HG_REMOTE:
+                    sbar_field_rgb = '0 1 0';
+                    str = "Re ";
+                    break;
+                
+                case HG_PLASMA:
+                    sbar_field_rgb = '0 1 1';
+                    str = "Pl ";
+                    break;
+                
+                default:
+                    sbar_field_rgb = '0.5 0.5 0.5';
+                    str = "?? ";
+                    break;
+            }
+            
+            return str;
+        
 		default:
 			tmp = pl.(scores[field]);
 			f = scores_flags[field];

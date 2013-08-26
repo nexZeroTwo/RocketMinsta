@@ -27,6 +27,7 @@ campaign.qh
 ../common/mapinfo.qh
 ../common/util.qc
 ../common/ip2c.qh
+../common/handgrenades.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qc
@@ -195,6 +196,7 @@ func_breakable.qc
 
 ../common/items.qc
 ../common/ip2c.qc
+../common/handgrenades.qc
 ip2c.qc
 monsters/defs.qc
 monsters/fight.qc
