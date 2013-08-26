@@ -357,7 +357,7 @@ void HG_Attack()
 	gren.classname = "hg_grenade";
 	gren.bot_dodge = TRUE;
 	gren.bot_dodgerating = GV("damage");
-	gren.movetype = MOVETYPE_BOUNCE;
+	gren.movetype = GV("movetype");
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;
 	gren.hg_type = hgtype;
