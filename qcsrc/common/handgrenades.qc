@@ -16,7 +16,7 @@ string HG_TypeToName(float t) {
 		case HG_NAPALM:         return "napalm";
 		case HG_REMOTE:         return "remote";
         case HG_PLASMA:         return "plasma";
-		default		  :         return "fuckoff";
+		default		  :         return strcat("fuckoff", ftos(t));
 	}
 }
 

@@ -524,7 +524,8 @@ void HG_Frame()
 		bigprint_spec(self, "Out of Grenades", "", 1);
 	
 	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire) {
-        float ls = GRENVAR(HG_PLAYERNADETYPE(self), "launchspeed");
+        float t = HG_PLAYERNADETYPE(self);
+        float ls = GRENVAR(t, "launchspeed");
         
         if(ls)
             self.hg_power = bound(0, self.hg_power + frametime * ls, 1);
