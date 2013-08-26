@@ -1304,6 +1304,10 @@ void Sbar_DrawScoreboard()
 		return;
 	
 	vector sbar_fontsize_old = sbar_fontsize;
+    if(sbar_fontsize_x > 9)
+        sbar_fontsize_x = 9;
+    if(sbar_fontsize_y > 9)
+        sbar_fontsize_y = 9;
 	sbar_fontsize = sbar_fontsize * (sbar_woulddrawscoreboard? ipol_linear : ipol_swingOut)(sbar_scoreboard_fade_alpha);
 	
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg") * sbar_scoreboard_fade_alpha;
