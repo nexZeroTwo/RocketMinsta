@@ -169,7 +169,7 @@ string HG_TypeToExpandedName(float t) {
 	switch(t) {
 		case HG_NORMAL: return "Grenade";
 		case HG_NAPALM: return "Napalm Grenade";
-		case HG_STICKY: return "Sticky Grenade";
+		case HG_REMOTE: return "Remote Grenade";
 		default		  : return "Fuckoff Grenade";
 	}
 }
@@ -178,7 +178,7 @@ string HG_TypeToName(float t) {
 	switch(t) {
 		case HG_NORMAL: return "normal";
 		case HG_NAPALM: return "napalm";
-		case HG_STICKY: return "sticky";
+		case HG_REMOTE: return "remote";
 		default		  : return "fuckoff";
 	}
 }
@@ -186,7 +186,7 @@ string HG_TypeToName(float t) {
 float HG_NameToType(string t) {
 	switch(t) {
 		case "napalm": return HG_NAPALM;
-	 // case "sticky": return HG_STICKY; // Not implemented yet
+        case "remote": return HG_REMOTE;
 		default		 : return HG_NORMAL;
 	}
 }

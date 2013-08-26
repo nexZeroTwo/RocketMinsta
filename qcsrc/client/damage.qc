@@ -111,6 +111,7 @@ void Ent_DamageInfo(float isNew)
 			switch (hittype)
 			{
 				case DEATH_HG_NORMAL:
+                case DEATH_HG_REMOTE:
 					float radius = 250, i;
 					pointparticles (particleeffectnum ("rocket_explode"), self.origin, '0 0 0', 1);
 					for (i = 0; i < 20; i ++)
@@ -119,7 +120,6 @@ void Ent_DamageInfo(float isNew)
 						r = random ();
 						pointparticles (particleeffectnum (mod(i, 4)? "rocket_explode" : "TE_TEI_BIGEXPLOSION"), self.origin + v * radius * r, v * radius * r * 100, 1);
 					}
-				case DEATH_HG_STICKY:
 				case DEATH_HG_NAPALM:
 					break;
 			}

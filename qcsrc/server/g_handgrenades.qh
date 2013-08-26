@@ -13,7 +13,7 @@ void HG_DetonateAll(entity);
 float HG_PlayerMayDetonate(entity);
 
 #define HG_NORMAL DEATH_HG_NORMAL
-#define HG_STICKY DEATH_HG_STICKY
+#define HG_REMOTE DEATH_HG_REMOTE
 #define HG_NAPALM DEATH_HG_NAPALM
 
 .vector org_explosion;

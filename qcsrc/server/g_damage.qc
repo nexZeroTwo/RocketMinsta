@@ -718,11 +718,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					else if(deathtype == DEATH_HG_NORMAL)
 						bprint ("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
 					else if(deathtype == DEATH_HG_NAPALM)
-						bprint ("^1", s, "^1 was burnt to death by ", a, "^1's napalm grenade\n");
+						bprint ("^1", s, "^1 was burnt to ashes by ", a, "^1's napalm grenade\n");
+                    else if(deathtype == DEATH_HG_REMOTE)
+                        bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
-
-
 				}
 
 				if(g_ctf && targ.flagcarried)
