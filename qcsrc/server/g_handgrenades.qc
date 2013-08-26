@@ -219,15 +219,16 @@ void HG_Grenade_Explode()
 }
 #undef GV
 
-void HG_Touch (void)
-{
+void HG_Grenade_Touch() {
 	PROJECTILE_TOUCH;
-	if (other.takedamage == DAMAGE_AIM)
-	{
-		self.use ();
-	}
-	else
-	{
+	if(other.takedamage == DAMAGE_AIM) {
+		self.use();
+	} else {
+        if(self.cnt <= 0) {
+            self.use();
+            return;
+        }
+        
 		float r;
 		r = random() * 6;
 		if(r < 1)
@@ -242,6 +243,8 @@ void HG_Touch (void)
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
 		else
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+        
+        self.cnt -= 1;
 	}
 }
 
@@ -368,8 +371,9 @@ void HG_Attack()
 	gren.think = HG_Grenade_Think;
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
-	gren.touch = HG_Touch;
+	gren.touch = HG_Grenade_Touch;
     gren.team = self.team;
+    gren.cnt = GV("bouncelimit");
     
     if(GV("takedamage")) {
         gren.takedamage = DAMAGE_AIM;

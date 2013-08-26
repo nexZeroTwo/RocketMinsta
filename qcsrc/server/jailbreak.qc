@@ -444,7 +444,8 @@ void JB_Torture_Grenades() {
 	gren.nextthink = time + 3;
 	gren.think = adaptor_think2use;
 	gren.use = JB_Torture_Grenade_Explode; //HG_Grenade_Explode;
-	gren.touch = HG_Touch;
+	gren.touch = HG_Grenade_Touch;
+    gren.cnt = 9001;
 	gren.takedamage = DAMAGE_YES;
 	gren.health = 1;
 	gren.damageforcescale = 4;
