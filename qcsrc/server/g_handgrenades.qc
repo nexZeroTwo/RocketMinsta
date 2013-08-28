@@ -288,6 +288,10 @@ void HG_Translocator_Explode() {
     setsize(self, self.owner.mins, self.owner.maxs);
     move_out_of_solid(self);
     makevectors(self.angles);
+    
+    if(g_jailbreak && self.owner.jb_isprisoned)
+        return;
+    
     TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
 }
 
