@@ -169,6 +169,7 @@ void HG_Napalm_Explode() {
 	mid.origin = self.origin;
 	setorigin(mid, mid.origin);
 	mid.think = HG_Napalm_Middlefire_Think;
+    mid.reset = SUB_Remove;
 	mid.nextthink = time;
 	mid.pushltime = time + cvar ("g_handgrenades_napalm_fire_lifetime");
 	setsize(mid, '0 0 0', '0 0 0');
