@@ -34,7 +34,6 @@ float HG_ShowMenu();
 .float hg_nextsnd;
 .float hg_sndcount;
 .float hg_clearammo;
-.float hg_movetype;
 .float hg_regenstat; // for hud only
 
 float g_handgrenades_oldhitboxes;

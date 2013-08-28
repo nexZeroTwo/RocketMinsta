@@ -300,7 +300,6 @@ const float STAT_ROUNDLOST = 119;
 const float STAT_HGREGEN = 120;
 const float STAT_HGREGENPAUSED = 121;
 const float STAT_HGDETONABLES = 122;
-const float STAT_HGMOVETYPE = 123;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P

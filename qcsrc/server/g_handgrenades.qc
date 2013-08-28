@@ -8,7 +8,6 @@ void HG_Init() {
     addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
-    addstat(STAT_HGMOVETYPE, AS_INT, hg_movetype);
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
 }
 
@@ -40,7 +39,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	play2all("kh/alarm.wav");
 }
 
-void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float burntime)
+void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
 {
 	entity e, o;
 	float d, df;
@@ -85,23 +84,22 @@ void HG_Napalm_Burn (float dt, float dist, float damage, float edgedamage, float
 			e.fireball_impactvec = p;
 			d = vlen(self.origin - e.fireball_impactvec);
 			d = damage + (edgedamage - damage) * (d / dist);
-			Fire_AddDamage(e, self.owner, d * burntime * df, burntime, DEATH_HG_NAPALM);
+			Fire_AddDamage(e, self.owner, d * burntime * df, burntime, dtype);
 		}
 	}
 }
 
-void HG_Napalm_Think ()
+void HG_Napalm_Think()
 {
 	if (time > self.pushltime)
 	{
-		remove (self);
+		remove(self);
 		return;
 	}
 
-	HG_Napalm_Burn (0.1, cvar ("g_handgrenades_napalm_burnradius"), cvar ("g_handgrenades_napalm_burndamage"), cvar ("g_handgrenades_napalm_edgeburndamage"), cvar ("g_handgrenades_napalm_burntime"));
-	if (time >= self.nextparticle)
-	{
-		pointparticles (particleeffectnum ("fire_big"), self.org_explosion + (self.origin - self.org_explosion) * random (), '0 0 0', 1);
+	HG_Napalm_Burn(0.1, GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+	if(time >= self.nextparticle) {
+		pointparticles(particleeffectnum("fire_big"), self.origin, '0 0 0', 1);
 		self.nextparticle = time + 0.2 + random () * 0.2;
 	}
 
@@ -114,23 +112,46 @@ void HG_Napalm_Middlefire_Think() {
 		return;
 	}
 	
-	HG_Napalm_Burn(0.1, cvar("g_handgrenades_napalm_middleburnradius"), cvar("g_handgrenades_napalm_burndamage"), cvar("g_handgrenades_napalm_edgeburndamage"), cvar("g_handgrenades_napalm_burntime"));
+    if(time >= self.nextparticle) {
+        
+        float i; for(i = 0; i < 5; ++i) {
+            vector v = randomvec();
+            v_z = max(0, v_z * 0.3);
+            pointparticles(particleeffectnum("fire_big"), self.origin + v * cvar("g_handgrenades_napalm_middleburnradius"), '0 0 0', 1);
+        }
+        
+		self.nextparticle = time + 0.1 + random () * 0.5;
+	}
+    
+	HG_Napalm_Burn(0.1, cvar("g_handgrenades_napalm_middleburnradius"), cvar("g_handgrenades_napalm_burndamage"), cvar("g_handgrenades_napalm_edgeburndamage"), cvar("g_handgrenades_napalm_burntime"), DEATH_HG_NAPALM);
 	self.nextthink = time + 0.1;
 }
 
-void HG_Napalm (void)
+void HG_Napalm_Projectile_Touch()
 {
-	local entity proj;
-	local vector kick;
+	PROJECTILE_TOUCH;
+	if(other.takedamage == DAMAGE_AIM)
+	if(Fire_AddDamage(other, self.realowner, GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type) >= 0) {
+		remove(self);
+		return;
+	}
+}
 
-	proj = spawn ();
+void HG_Napalm()
+{
+	entity proj;
+	vector kick;
+    
+    
+	proj = spawn();
 	proj.owner = self.owner;
+    proj.hg_type = self.hg_type;
 	proj.classname = "grenade";
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar ("g_handgrenades_napalm_burndamage");
+	proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage");
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
-	proj.touch = W_Firemine_Touch;
+	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
 	setsize (proj, '0 0 0', '0 0 0');
 	setorigin (proj, self.origin);
@@ -138,19 +159,19 @@ void HG_Napalm (void)
 	proj.think = HG_Napalm_Think;
 	proj.nextthink = time;
 	proj.reset = SUB_Remove;
-	proj.damageforcescale = cvar ("g_handgrenades_napalm_damageforcescale");
-	kick_x = (random () - 0.5) * 2 * cvar ("g_handgrenades_napalm_spread_xy");
-	kick_y = (random () - 0.5) * 2 * cvar ("g_handgrenades_napalm_spread_xy");
+	proj.damageforcescale = GRENVAR(self.hg_type, "damageforcescale");
+	kick_x = (random () - 0.5) * 2 * GRENVAR(self.hg_type, "spread_xy");
+	kick_y = (random () - 0.5) * 2 * GRENVAR(self.hg_type, "spread_xy");
 	kick_z = max(
-						cvar("g_handgrenades_napalm_spread_z")
+						GRENVAR(self.hg_type, "spread_z")
 					*	random(),
 					
-						cvar("g_handgrenades_napalm_spread_z_min")
-					+ 	cvar("g_handgrenades_napalm_spread_z_min_randomfactor")
+						GRENVAR(self.hg_type, "spread_z_min")
+					+ 	GRENVAR(self.hg_type, "spread_z_min_randomfactor")
 					*	(random() - 0.5) * 2
 				);
 	proj.velocity = kick;
-	proj.pushltime = time + cvar ("g_handgrenades_napalm_fire_lifetime");
+	proj.pushltime = time + GRENVAR(self.hg_type, "fire_lifetime") + GRENVAR(self.hg_type, "fire_lifetime_randomfactor") * (random() - 0.5) * 2;
 	W_SetupProjectileVelocity(proj);
 
 	proj.angles = vectoangles(proj.velocity);
@@ -161,7 +182,7 @@ void HG_Napalm (void)
 
 void HG_Napalm_Explode() {
 	local float c;
-	for (c = 0; c < cvar ("g_handgrenades_napalm_numparticles"); c ++) HG_Napalm ();
+	for (c = 0; c < cvar("g_handgrenades_napalm_numparticles"); c ++) HG_Napalm();
 	
 	// since we have a ton of fire in the middle, let's make it a real fire
 	entity mid = spawn();
@@ -171,7 +192,7 @@ void HG_Napalm_Explode() {
 	mid.think = HG_Napalm_Middlefire_Think;
     mid.reset = SUB_Remove;
 	mid.nextthink = time;
-	mid.pushltime = time + cvar ("g_handgrenades_napalm_fire_lifetime");
+	mid.pushltime = time + cvar("g_handgrenades_napalm_fire_lifetime");
 	setsize(mid, '0 0 0', '0 0 0');
 }
 
@@ -256,7 +277,12 @@ void HG_Plasma_Projectile() {
 
 void HG_Plasma_Explode() {
     local float c;
-	for (c = 0; c < cvar ("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
+	for (c = 0; c < cvar("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
+}
+
+void HG_Remote_Explode() {
+    local float c;
+    for (c = 0; c < cvar("g_handgrenades_remote_numparticles"); c ++) HG_Napalm();
 }
 
 float HG_TypeToCSQCProjType(float t) {
@@ -283,6 +309,8 @@ void HG_Grenade_Explode()
 		HG_Napalm_Explode();
     else if(self.hg_type == HG_PLASMA)
         HG_Plasma_Explode();
+    else if(self.hg_type == HG_REMOTE)
+        HG_Remote_Explode();
 	
 	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
 	remove (self);
@@ -452,7 +480,7 @@ void HG_Attack()
 	gren.classname = "hg_grenade";
 	gren.bot_dodge = TRUE;
 	gren.bot_dodgerating = GV("damage");
-	self.hg_movetype = gren.movetype = GV("movetype");
+	gren.movetype = GV("movetype");
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;
 	gren.hg_type = hgtype;

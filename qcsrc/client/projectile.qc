@@ -392,7 +392,7 @@ void Ent_Projectile()
                     self.maxs = ' 8  4  3';
                 }
                 
-				self.move_movetype = getstati(STAT_HGMOVETYPE);
+				self.move_movetype = MOVETYPE_BOUNCE;
 				self.move_touch = SUB_Null;
 				break;
 			case PROJECTILE_PORTO_RED:

@@ -835,7 +835,7 @@ string Sbar_GetField(entity pl, float field)
                 
                 case HG_REMOTE:
                     sbar_field_rgb = '0 1 0';
-                    str = "Re ";
+                    str = "Tr ";
                     break;
                 
                 case HG_PLASMA:
