@@ -424,7 +424,7 @@ void SV_ParseClientCommand(string s) {
 			}
 		}
 		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			EnterSpectatorModeDelayed(cvar("sv_spectate_delay"));
+			EnterSpectatorModeDelayed(shooting_forbidden? 0 : cvar("sv_spectate_delay"));
 		}
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
