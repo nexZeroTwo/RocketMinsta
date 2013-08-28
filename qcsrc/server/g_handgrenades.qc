@@ -288,7 +288,7 @@ void HG_Translocator_Explode() {
     setsize(self, self.owner.mins, self.owner.maxs);
     move_out_of_solid(self);
     makevectors(self.angles);
-    TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, self.owner.mins, self.owner.maxs);
+    TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
 }
 
 float HG_TypeToCSQCProjType(float t) {
@@ -328,7 +328,7 @@ void HG_Grenade_Explode()
 
 void HG_Grenade_Touch() {
 	PROJECTILE_TOUCH;
-	if(other.takedamage == DAMAGE_AIM) {
+	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
 		self.use();
 	} else {
         if(self.cnt <= 0) {
