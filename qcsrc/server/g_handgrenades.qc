@@ -2,6 +2,16 @@
 // Handgrenades mutator
 // Intended for the Camping Rifle Arena mode
 
+void HG_Init() {
+    addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
+    addstat(STAT_HGAMMO, AS_INT, hg_ammo);
+    addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
+    addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
+    addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
+    addstat(STAT_HGMOVETYPE, AS_INT, hg_movetype);
+    g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
+}
+
 void HG_Precache() {
     precache_sound("hk/alarm.wav");
     precache_sound("weapons/grenade_bounce1.wav");
@@ -422,7 +432,7 @@ void HG_Attack()
     
     vector hitmins, hitmaxs;
     
-    if(cvar("g_handgrenades_oldhitboxes")) {
+    if(g_handgrenades_oldhitboxes) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {
@@ -436,12 +446,12 @@ void HG_Attack()
 	
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 	
-	entity gren = spawn ();
+	entity gren = spawn();
 	gren.owner = self;
 	gren.classname = "hg_grenade";
 	gren.bot_dodge = TRUE;
 	gren.bot_dodgerating = GV("damage");
-	gren.movetype = GV("movetype");
+	self.hg_movetype = gren.movetype = GV("movetype");
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;
 	gren.hg_type = hgtype;

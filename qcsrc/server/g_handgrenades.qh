@@ -1,4 +1,5 @@
 
+void HG_Init();
 void HG_Precache();
 void HG_Frame();
 void HG_Attack();
@@ -33,7 +34,10 @@ float HG_ShowMenu();
 .float hg_nextsnd;
 .float hg_sndcount;
 .float hg_clearammo;
+.float hg_movetype;
 .float hg_regenstat; // for hud only
+
+float g_handgrenades_oldhitboxes;
 
 #define BUTTON_HG button6
 #define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))

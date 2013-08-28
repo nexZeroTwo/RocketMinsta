@@ -4800,7 +4800,7 @@ void Sbar_Draw (void)
         hgapos_y = vid_conheight - vid_conheight/7;
         
 		float hgammo = getstati(STAT_HGAMMO);
-        float hgdetons = getstati(STTA_HGDETONABLES);
+        float hgdetons = getstati(STAT_HGDETONABLES);
         
         if(hgdetons) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades (^2", ftos(hgdetons), "^3)"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);

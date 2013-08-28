@@ -384,9 +384,15 @@ void Ent_Projectile()
 			case PROJECTILE_HG_GENERIC:
             case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
-				self.mins = '0 0 -3';
-				self.maxs = '0 0 -3';
-				self.move_movetype = MOVETYPE_BOUNCE;
+                if(g_handgrenades == 2) {   // g_handgrenades_oldhitboxes
+                    self.mins = '0 0 -3';
+                    self.maxs = '0 0 -3';
+                } else {
+                    self.mins = '-8 -4 -3';
+                    self.maxs = ' 8  4  3';
+                }
+                
+				self.move_movetype = getstati(STAT_HGMOVETYPE);
 				self.move_touch = SUB_Null;
 				break;
 			case PROJECTILE_PORTO_RED:

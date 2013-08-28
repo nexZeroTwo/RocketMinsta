@@ -711,13 +711,7 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
 	if(g_handgrenades)
-	{
-		addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
-		addstat(STAT_HGAMMO, AS_INT, hg_ammo);
-		addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
-		addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
-        addstat(STTA_HGDETONABLES, AS_INT, hg_detonables);
-	}
+        HG_Init();
 
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
