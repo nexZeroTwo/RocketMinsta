@@ -777,6 +777,7 @@ void PutObserverInServer (void)
 	PlayerScore_Clear(self); // clear scores when needed
     
     self.hg_type_picked = 0;
+    self.hg_type = 0;
 	self.spectatortime = time;
     
 	self.classname = "observer";

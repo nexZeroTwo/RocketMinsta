@@ -142,7 +142,6 @@ void HG_Napalm()
 	entity proj;
 	vector kick;
     
-    
 	proj = spawn();
 	proj.owner = self.owner;
     proj.hg_type = self.hg_type;
@@ -436,6 +435,13 @@ void HG_SetGrenadeType(entity p, float t) {
     }
 }
 
+void HG_FixNadeType(entity p) {
+    if(!p.hg_type) {
+        print("Player ", p.netname, " ^7doesn't have a grenade type - fixing\n");
+        HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    }
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
@@ -445,10 +451,7 @@ void HG_Attack()
 	if(time < self.hg_next)
 		return;
 	
-    if(!self.hg_type) {
-        print("Player ", self.netname, " ^7doesn't have a grenade type - fixing\n");
-        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
-    }
+    HG_FixNadeType(self);
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
@@ -551,6 +554,7 @@ void HG_Frame()
 		return;
 	
     HG_UpdateDetonables();
+    HG_FixNadeType(self);
     
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomCRAHookButton(self))) || self.hg_power;
 	
