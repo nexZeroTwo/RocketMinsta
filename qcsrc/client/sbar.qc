@@ -843,6 +843,11 @@ string Sbar_GetField(entity pl, float field)
                     str = "Pl ";
                     break;
                 
+                case HG_TRANSLOC:
+                    sbar_field_rgb = '1 0 1';
+                    str = "Tl ";
+                    break;
+                
                 default:
                     sbar_field_rgb = '0.5 0.5 0.5';
                     str = "?? ";

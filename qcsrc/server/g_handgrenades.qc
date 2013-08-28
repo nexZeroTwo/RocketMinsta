@@ -284,11 +284,19 @@ void HG_Remote_Explode() {
     for (c = 0; c < cvar("g_handgrenades_remote_numparticles"); c ++) HG_Napalm();
 }
 
+void HG_Translocator_Explode() {
+    setsize(self, self.owner.mins, self.owner.maxs);
+    move_out_of_solid(self);
+    makevectors(self.angles);
+    TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, self.owner.mins, self.owner.maxs);
+}
+
 float HG_TypeToCSQCProjType(float t) {
 	switch(t) {
-		case HG_NAPALM:	return PROJECTILE_HG_NAPALM;
-		case HG_PLASMA:	return PROJECTILE_HG_PLASMA;
-		default:		return PROJECTILE_HG_GENERIC;
+		case HG_NAPALM  :   return PROJECTILE_HG_NAPALM;
+		case HG_PLASMA  :   return PROJECTILE_HG_PLASMA;
+        case HG_TRANSLOC:   return PROJECTILE_HG_TRANSLOC;
+		default         :   return PROJECTILE_HG_GENERIC;
 	}
 }
 
@@ -310,6 +318,8 @@ void HG_Grenade_Explode()
         HG_Plasma_Explode();
     else if(self.hg_type == HG_REMOTE)
         HG_Remote_Explode();
+    else if(self.hg_type == HG_TRANSLOC)
+        HG_Translocator_Explode();
 	
 	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
 	remove (self);
@@ -464,7 +474,10 @@ void HG_Attack()
     
     vector hitmins, hitmaxs;
     
-    if(g_handgrenades_oldhitboxes) {
+    if(self.hg_type == HG_TRANSLOC+100) {
+        hitmins = self.mins,
+        hitmaxs = self.maxs;
+    } else if(g_handgrenades_oldhitboxes) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {

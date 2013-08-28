@@ -92,6 +92,8 @@ void Projectile_DrawTrail(vector to)
         case PROJECTILE_HG_PLASMA:
             trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
             break;
+        case PROJECTILE_HG_TRANSLOC:
+            trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
 		case PROJECTILE_PORTO_RED:
 			trailparticles(self, particleeffectnum("TR_WIZSPIKE"), from, to);
 			break;
@@ -193,6 +195,7 @@ void Projectile_Draw()
 		case PROJECTILE_HG_GENERIC:
         case PROJECTILE_HG_PLASMA:
 		case PROJECTILE_HG_NAPALM:
+        case PROJECTILE_HG_TRANSLOC:
 			trailorigin += v_right * 1 + v_forward * -10;
 			break;
 		default:
@@ -341,6 +344,7 @@ void Ent_Projectile()
                 case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
                 default         :   setmodel(self, "models/grenademodel.md3");       break;
             } break;
+            case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -384,6 +388,7 @@ void Ent_Projectile()
 			case PROJECTILE_HG_GENERIC:
             case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
+            case PROJECTILE_HG_TRANSLOC:
                 if(g_handgrenades == 2) {   // g_handgrenades_oldhitboxes
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';
@@ -468,6 +473,7 @@ void Projectile_Precache()
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
+    precache_model("models/runematch/rune.mdl");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fireball_fly.wav");
