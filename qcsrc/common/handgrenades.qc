@@ -1,7 +1,7 @@
 
 string HG_TypeToExpandedName(float t) {
 	switch(t) {
-		case HG_NORMAL:         return "Grenade";
+		case HG_NORMAL:         return "Hand Grenade";
 		case HG_NAPALM:         return "Napalm Grenade";
 		case HG_REMOTE:         return "Fire Trap";
         case HG_PLASMA:         return "Plasma Bomb";
