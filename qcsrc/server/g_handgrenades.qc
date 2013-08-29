@@ -285,13 +285,17 @@ void HG_Remote_Explode() {
 }
 
 void HG_Translocator_Explode() {
-    setsize(self, self.owner.mins, self.owner.maxs);
-    move_out_of_solid(self);
-    makevectors(self.angles);
-    
     if(g_jailbreak && self.owner.jb_isprisoned)
         return;
     
+    setsize(self, self.owner.mins, self.owner.maxs);
+    
+    if(!move_out_of_solid(self)) {
+        bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted. Origin: ", vtos(self.origin), ", velocity: ", vtos(self.velocity), "\n");
+        return;
+    }
+    
+    makevectors(self.angles);
     TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
 }
 
