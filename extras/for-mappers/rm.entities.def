@@ -63,3 +63,10 @@ target: All entities with matching targetname will be triggered when a jailbreak
 -------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
 model="models/domination/dom_blue.md3"
 */
+
+/*QUAKED jailbreak_controlpoint_neutral (1 1 0) (-16 -16 -16) (16 16 16)
+The NEUTRAL controlpoint. Can be used by any team.
+-------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
+model="models/domination/dom_yellow.md3"
+*/
+
