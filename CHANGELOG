@@ -20,21 +20,21 @@ A question mark following a contributor's name means that I don't remember/exact
 	The "redirect" server command: forces one player to connect to a specific server. Takes the player's id as the first argument and the server address or alias as the second argument.
 	The "gotoserver" server command: forces all players on the server to connect to a specific server. Takes the server address or alias as the first argument.
 	The server admin may define several aliases to be used instead of IPs in the aforementioned commands for convenience, for example:
-		set g_explosive_serveralias_coolserver nex.example.com:1337
-		set g_explosive_serveralias_crapserver nex.example.com:9001
+		set sv_serveralias_coolserver nex.example.com:1337
+		set sv_serveralias_crapserver nex.example.com:9001
 		// "gotoserver coolserver" is now equivalent to "gotoserver nex.example.com.1337", and so on
-	If the gotoserver command is votable, it can be restricted a whitelist of servers specified in the g_explosive_gotoserver_whitelist cvar. Aliases are allowed.
+	If the gotoserver command is votable, it can be restricted a whitelist of servers specified in the sv_gotoserver_whitelist cvar. Aliases are allowed.
 * Merged the 'grenades' branch, which includes a type system for handgrenades and implements Napalm grenades [ThexDarksider, Akari]
 * Added a bonus system for the handgrenades mutator [Akari]
 * Enabled dodging in the CRA config [Akari]
-* Added an adjustable force factor for dodging while frozen: g_explosive_freezetag_dodging_frozen_forcefactor [Akari]
+* Added an adjustable force factor for dodging while frozen: g_freezetag_dodging_frozen_forcefactor [Akari]
 * Added shaders for freezetag iceblocks [Morphed?, Akari]
-* Added a server option that allows to enforce custom fog settings for clients: g_explosive_forcefog. This is used to implement the "night mode" on choobservers. [Akari]
-* Removed sv_forinterval and made it the default behaviour - this prevents clients from disabling the fog if it's present on the map or enforced by g_explosive_forcefog [Akari]
+* Added a server option that allows to enforce custom fog settings for clients: g_rocketminsta_forcefog. This is used to implement the "night mode" on choobservers. [Akari]
+* Removed sv_forinterval and made it the default behaviour - this prevents clients from disabling the fog if it's present on the map or enforced by g_rocketminsta_forcefog [Akari]
 * New options for the grappling hook [Akari]:
-	g_explosive_hook_gravity - If enabled, the hook is affected by gravity
-	g_explosive_hook_dontpull - If enabled, the hook won't pull the player towards the point the hook is attached to
-	g_explosive_hook_dontpull_limit - If >0, defines the maximum tolerated hook length in the 'dontpull' mode
+	g_balance_grapplehook_gravity - If enabled, the hook is affected by gravity
+	g_balance_grapplehook_dontpull - If enabled, the hook won't pull the player towards the point the hook is attached to
+	g_balance_grapplehook_dontpull_limit - If >0, defines the maximum tolerated hook length in the 'dontpull' mode
 * Enabled the grappling hook (to pull frozen players) in the CRA config [Akari]
 * Made the hook compatible with the handgrenades mutator [Akari]
 * Improved the revival and grenade force progressbars in the HUD [Akari]
@@ -42,7 +42,7 @@ A question mark following a contributor's name means that I don't remember/exact
 * Allowed mappers to place pickupable weapons in the g_weaponarena mode. Set the "spawninarena" key of a weapon entity to 1 to enable. A value of 2 makes it spawn only in g_weaponarena [Akari]
 * Fixed a VIP bug: if the player attached the "need help" waypoint then the vip waypoint is lost [svitoos]
 * Added a new gametype: Jailbreak [Akari]
-* Added an option to prevent ballistic bullets from going through solid surfaces (g_explosive_ballisticbullet_gothroughsolid), enabled it by default in CRA [Akari]
+* Added an option to prevent ballistic bullets from going through solid surfaces (g_ballistics_gothroughsolid), enabled it by default in CRA [Akari]
 * Added a FPS column to the scoreboard [Akari]
 * Improved the grenade explosion effect for the handgrenades mutator [Akari]
 * Changed g_turrets_unit_plasma_dual_aim_maxpitch to 90 in CRA [Akari]
@@ -55,7 +55,7 @@ A question mark following a contributor's name means that I don't remember/exact
 * Fixed a DumpStats bug which made it incompatible with rcon2irc, preventing it from reporting when a match is finished [Akari]
 * Added a custom loading picture [Akari]
 * Added a changelog [Akari]
-* Added an option which makes players drop their powerups upon death (g_explosive_droppowerups). Default on CRA [Akari]
+* Added an option which makes players drop their powerups upon death (g_droppowerups). Default on CRA [Akari]
 * Players now drop their soulgems when they get frozen if the Soulmates mutator is active [Akari]
 * Added a new "bigfont" (can be disable in RM options) [Akari]
 * Fixed incorrect centering of bigprints [Akari]
@@ -67,7 +67,7 @@ A question mark following a contributor's name means that I don't remember/exact
 	Gems now glow with their team's color
 	Gems now fly around their carrier in the soulmates mutator
 * Added boobs [Akari, Artefact]
-* Fixed bugged g_explosive_gametypevote_shuffle - availability statuses now get properly updated too [Akari]
+* Fixed bugged sv_vote_gametype_shuffle - availability statuses now get properly updated too [Akari]
 * Fixed the rankings display [Akari]
 * Improved the EndRound code [Akari]
 * Added announcer sounds during warmups in round-based gametypes [Akari]
