@@ -8,7 +8,9 @@ void HG_Init() {
     addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
+    
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
+    g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
 }
 
 void HG_Precache() {
@@ -540,7 +542,7 @@ void HG_Attack()
     
 	gren.health = GV("health");
 	gren.damageforcescale = GV("damageforcescale");
-    if(GV("launchspeed"))
+    if(GV("launchspeed") && !g_handgrenades_detonatelaunches)
         gren.velocity = w_shotdir * GV("speed") * self.hg_power + v_up * GV("speed_up") * self.hg_power;
     else
         gren.velocity = w_shotdir * GV("speed") + v_up * GV("speed_up");
@@ -599,7 +601,10 @@ void HG_Frame()
 	
 	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire) {
         float t = HG_PLAYERNADETYPE(self);
-        float ls = GRENVAR(t, "launchspeed");
+        float ls;
+        
+        if(!g_handgrenades_detonatelaunches)
+            ls = GRENVAR(t, "launchspeed");
         
         if(ls)
             self.hg_power = bound(0, self.hg_power + frametime * ls, 1);
@@ -642,6 +647,9 @@ void HG_Frame()
         
         self.hg_regenstat = bound(0, self.hg_regentime / HG_RegenTime(self), 1);
     }
+    
+    if(self.hg_detonatepressed)
+        self.hg_detonatepressed = FALSE;
 }
 
 void HG_PlayerSpawn()

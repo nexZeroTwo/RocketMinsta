@@ -404,7 +404,7 @@ void FireGrapplingHook (void)
 	if(self.freezetag_frozen)
 		return;
         
-	if(g_handgrenades)
+	if(g_handgrenades && !g_handgrenades_detonatelaunches)
 	if(HG_PlayerMayFire(self) && !CustomCRAHookButton(self))
 		return;
 
