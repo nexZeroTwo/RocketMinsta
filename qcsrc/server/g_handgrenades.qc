@@ -236,7 +236,7 @@ void HG_Plasma_Projectile() {
 	local entity proj;
     vector kick;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", cvar("g_balance_electro_secondary_damage"));
+	W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", cvar("g_balance_electro_secondary_damage"));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -244,6 +244,7 @@ void HG_Plasma_Projectile() {
 	proj = spawn();
 	proj.classname = "plasma";
 	proj.owner = self.owner;
+    proj.team = proj.owner.team;
 	proj.use = HG_Plasma_Projectile_Explode;
 	proj.think = HG_Plasma_Projectile_Think;
     proj.nextthink = time;

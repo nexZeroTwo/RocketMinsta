@@ -170,6 +170,7 @@ void CSQC_Init(void)
 	}
 	
 	IP2C_Init();
+    localcmd("cl_particles_reloadeffects\n");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

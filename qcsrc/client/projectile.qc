@@ -18,6 +18,54 @@ void SUB_Stop()
 .float snd_looping;
 .float silent;
 
+float rm_particleeffectnum(string p) {
+    float n = particleeffectnum(p);
+    
+    if(n < 0) {
+        print("ERROR: RM particle effect ", p, " missing! Will try to use a fallback. Try restarting the game to fix this problem.\n");
+        
+        switch(p) {
+            case "RM_HG_PLASMA_TEAM1":
+            case "RM_HG_PLASMA_TEAM2":
+            case "RM_HG_PLASMA_TEAM3":
+            case "RM_HG_PLASMA_TEAM4":
+                return particleeffectnum("TR_NEXUIZPLASMA");
+                break;
+                
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM1":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM2":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM3":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM4":
+                return particleeffectnum("electro_ballexplode");
+                break;
+            
+            case "RM_HG_PLASMA_EXPLODE_TEAM1":
+            case "RM_HG_PLASMA_EXPLODE_TEAM2":
+            case "RM_HG_PLASMA_EXPLODE_TEAM3":
+            case "RM_HG_PLASMA_EXPLODE_TEAM4":
+                return particleeffectnum("hookbomb_explode");
+                break;
+        }
+    }
+    
+    return n;
+}
+
+float TeamNumber(float t) {
+    switch(t) {
+        case COLOR_TEAM1:
+            return 1;
+        case COLOR_TEAM2:
+            return 2;
+        case COLOR_TEAM3:
+            return 3;
+        case COLOR_TEAM4:
+            return 4;
+        default:
+            return 2;   // default to blue team for particles
+    }
+} 
+
 void Projectile_DrawTrail(vector to)
 {
 	vector from;
@@ -37,8 +85,9 @@ void Projectile_DrawTrail(vector to)
 				to_z += 1;
 				break;
 			case PROJECTILE_ELECTRO:
-                        	trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-                        	return;
+                //trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
+                return;
 			default:
 				return;
 		}
@@ -57,7 +106,8 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+            trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
@@ -90,7 +140,7 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
         case PROJECTILE_HG_PLASMA:
-            trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+            trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
             break;
         case PROJECTILE_HG_TRANSLOC:
             switch(self.team) {
