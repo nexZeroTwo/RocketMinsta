@@ -295,6 +295,7 @@ void HG_Translocator_Explode() {
         return;
     }
     
+    self.angles_x = self.owner.v_angle_x;
     makevectors(self.angles);
     TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
 }
