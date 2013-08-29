@@ -336,6 +336,13 @@ void HG_Grenade_Explode()
 #undef GV
 
 void HG_Grenade_Touch() {
+    
+    if(self.hg_type == HG_TRANSLOC)
+    if(SUB_NoImpactCheck()) {
+        self.use();
+        return;
+    }
+    
 	PROJECTILE_TOUCH;
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
 		self.use();
