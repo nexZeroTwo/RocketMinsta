@@ -1362,8 +1362,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
-    if(g_handgrenades)
-        WriteByte(MSG_ENTITY, g_handgrenades_oldhitboxes? 2 : 1);
+    WriteByte(MSG_ENTITY, g_handgrenades_oldhitboxes? 2 : 1);
 	return TRUE;
 }
 
