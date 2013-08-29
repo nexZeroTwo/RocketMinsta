@@ -93,7 +93,12 @@ void Projectile_DrawTrail(vector to)
             trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
             break;
         case PROJECTILE_HG_TRANSLOC:
-            trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
+            switch(self.team) {
+                case COLOR_TEAM1:           trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"),     from, to); break;
+                case COLOR_TEAM2:           trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"),    from, to); break;
+                case COLOR_TEAM3:           trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"),  from, to); break;
+                case COLOR_TEAM4: default:  trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"),    from, to); break;
+            } break;
 		case PROJECTILE_PORTO_RED:
 			trailparticles(self, particleeffectnum("TR_WIZSPIKE"), from, to);
 			break;
