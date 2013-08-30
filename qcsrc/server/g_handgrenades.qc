@@ -290,6 +290,9 @@ void HG_Remote_Explode() {
 void HG_Translocator_Explode() {
     if(g_jailbreak && self.owner.jb_isprisoned)
         return;
+        
+    if(time - self.jb_jail_lasttouch < 0.1)
+        return;
     
     setsize(self, self.owner.mins, self.owner.maxs);
     

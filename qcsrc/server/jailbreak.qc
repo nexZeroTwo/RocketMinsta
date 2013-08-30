@@ -744,6 +744,16 @@ void JB_SetupJailSpawnpoint() {
 void JB_Jail_Touch() {
 	//JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
 	
+    if(g_handgrenades)
+    if(other.hg_type == HG_TRANSLOC)
+    if(other.classname == "hg_grenade") {
+        other.jb_jail_lasttouch = time;
+        return;
+    }
+    
+    if(!g_jailbreak)
+        return;
+    
 	if(other.classname != "player")
 		return;
 	
@@ -759,7 +769,7 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-	if not(g_jailbreak) {
+	if not(g_jailbreak || g_handgrenades) {
 		remove(self);
 		return;
 	}
