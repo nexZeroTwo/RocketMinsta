@@ -339,14 +339,21 @@ void HG_Grenade_Explode()
 #undef GV
 
 void HG_Grenade_Touch() {
-    
-    if(self.hg_type == HG_TRANSLOC)
-    if(SUB_NoImpactCheck()) {
-        self.use();
-        return;
+    if(self.hg_type == HG_TRANSLOC) {
+        if(SUB_NoImpactCheck()) {
+            if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP) {
+                //print("hit DPCONTENTS_PLAYERCLIP\n");
+                goto troll;
+            }
+                
+            self.use();
+            return;
+        }
     }
     
 	PROJECTILE_TOUCH;
+
+:troll
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
 		self.use();
 	} else {
@@ -405,9 +412,20 @@ void HG_DetonateAll(entity plr) {
             HG_Detonate(nade);
 }
 
+.float ranthink;
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
     
+    if(self.hg_type == HG_TRANSLOC) {
+        tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
+        if(trace_startsolid && !self.ranthink) {
+            bprint(self.owner.netname, "^1's translocator spawned in solid! ", vtos(self.origin), "\n");
+            remove(self);
+            return;
+        }
+    }
+    
+    move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
         self.use();
         return;
@@ -425,6 +443,7 @@ void HG_Grenade_Think() {
     }
     
     self.nextthink = time;
+    self.ranthink += 1;
     
     #undef GV
 }
@@ -532,6 +551,9 @@ void HG_Attack()
 	gren.touch = HG_Grenade_Touch;
     gren.team = self.team;
     gren.cnt = GV("bouncelimit");
+    
+    if(gren.hg_type == HG_TRANSLOC)
+        gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
     
     if(GV("takedamage")) {
         gren.takedamage = DAMAGE_AIM;

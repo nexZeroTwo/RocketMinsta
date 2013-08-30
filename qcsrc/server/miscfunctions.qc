@@ -59,7 +59,7 @@ float move_out_of_solid(entity e)
     tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
     if (!trace_startsolid)
         return 1;
-
+    
     m0 = e.mins;
     m1 = e.maxs;
     e.mins = '0 0 0';

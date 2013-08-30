@@ -399,7 +399,7 @@ void Ent_Projectile()
                 case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
                 default         :   setmodel(self, "models/grenademodel.md3");       break;
             } break;
-            case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); break;
+            case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP; break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;

@@ -312,3 +312,9 @@ float sv_showfps;
 float sv_oldfag;
 
 float g_handgrenades;
+
+float Q3SURFACEFLAG_SLICK = 2; // low friction surface
+float DPCONTENTS_SOLID = 1; // blocks player movement
+float DPCONTENTS_BODY = 32; // blocks player movement
+float DPCONTENTS_CORPSE = 64; // blocks player movement
+float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
