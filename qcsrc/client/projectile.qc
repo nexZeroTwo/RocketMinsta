@@ -382,7 +382,7 @@ void Ent_Projectile()
 		self.scale = 1;
         
         if(self.cnt == PROJECTILE_HG_REMOTE)
-            self.alpha = 0.3;
+            self.alpha = 0.4;
         
 		switch(self.cnt)
 		{
