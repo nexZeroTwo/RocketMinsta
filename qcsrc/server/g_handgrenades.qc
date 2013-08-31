@@ -721,6 +721,7 @@ void HG_Frame()
             
             if(g_freezetag && self.freezetag_frozen)
                 rate *= cvar("g_handgrenades_regen_frozenfactor");
+            rate *= GRENVAR(self.hg_type, "regenscale");
             
             self.hg_regentime -= rate;
             
