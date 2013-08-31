@@ -309,6 +309,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 {
 	string	s, a;
 	float p, w;
+    float spawnfrag;
 
 	local float maxrage = 5;
 	local float rage_timeout = 3;
@@ -361,6 +362,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			ragemeter = strcat(ragemeter, "");
 		else
 			ragemeter = strcat(ragemeter, "^0");
+        
+        spawnfrag = (cvar("g_spawnshieldmode") && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
 	float _hfrag;
@@ -495,14 +498,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
 					bprint ("^1", a, "^1 took action against a team mate\n");
 				} else {
-					//<akari>
-
-					//Fixed this a little
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, "^1, a team mate!"));
-
-					//Why isn't there a teamfrag message for victims?
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were fragged by ^7", a, "^1, the teamkilling moron"));
-					//</akari>
 					bprint ("^1", a, "^1 mows down a team mate\n");
 				}
 				GiveFrags(attacker, inflictor, targ, -1);
@@ -554,10 +551,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
 				} else {
-					//Let's detect laserfrags
 					if(g_minstagib)
 					{
-						if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+                        if(spawnfrag)
+                        {
+                            centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^2spawn^4fragged ^7", s));
+                            centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^2spawn^1fragged by ^7", a));
+                        }
+						else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 						{
 							play2(attacker, "announcer/male/awesome.wav");
 					                if(prec_check_aggression(attacker, inflictor, targ))
@@ -632,8 +633,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
 							}
 
-					                if(prec_check_aggression(attacker, inflictor, targ))
-						        	PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+                            if(prec_check_aggression(attacker, inflictor, targ))
+                                PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
 							play2(attacker, "announcer/male/awesome.wav");
 							_hfrag = 1;
 						}
@@ -661,10 +662,10 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 								tail = strcat(" with ^7", tail);
 						}
 						
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s, "^4", tail));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a, "^1", tail));
+						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ", (spawnfrag? "^2spawn^4":""), "fragged ^7", s, "^4", tail));
+						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ", (spawnfrag? "^2spawn^1":""), "fragged by ^7", a, "^1", tail));
 						
-						if(g_vip) if(prec_check_aggression(attacker, inflictor, targ))
+						if(g_vip) if(prec_check_aggression(attacker, inflictor, targ)) if(!spawnfrag)
 							PlayerScore_Add(attacker, SP_SCORE, 1);
 					}
 					attacker.taunt_soundtime = time + 1;
@@ -737,7 +738,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					hudflash_teamcolor_default_spec(attacker);
 					GiveFrags(attacker, inflictor, targ, 0); // for logging
 				}
-				else
+				else if(!spawnfrag)
 					GiveFrags(attacker, inflictor, targ, 1);
 
 				if (targ.killcount > 2) {

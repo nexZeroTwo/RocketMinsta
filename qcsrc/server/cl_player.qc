@@ -555,7 +555,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
 
-	if (time > self.spawnshieldtime)
+	if (time > self.spawnshieldtime || cvar("g_spawnshieldmode"))
 	{
 		if (!(self.flags & FL_GODMODE))
 		{
