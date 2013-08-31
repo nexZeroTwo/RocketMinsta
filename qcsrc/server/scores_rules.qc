@@ -249,11 +249,15 @@ void ScoreRules_vip()
 
 // Jailbreak stuff
 #define SP_JB_JBREAKS 4
+#define SP_JB_FREED 5
+#define SP_JB_DEFENSE 6
 void ScoreRules_JB()
 {
 	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
-	ScoreInfo_SetLabel_PlayerScore(SP_JB_JBREAKS,		"jbreaks",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_JB_JBREAKS,		"jbreaks",		0);
+    ScoreInfo_SetLabel_PlayerScore(SP_JB_FREED,		    "freed",		SFL_SORT_PRIO_SECONDARY);
+    ScoreInfo_SetLabel_PlayerScore(SP_JB_DEFENSE,		"defense",		0);
 	ScoreRules_basics_end();
 }
 
