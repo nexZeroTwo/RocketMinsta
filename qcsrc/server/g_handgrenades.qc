@@ -679,7 +679,8 @@ void HG_Frame()
 	held = self.BUTTON_HG;
 	
 	if((self.hg_power && !self.hg_state		)||
-	   (g_freezetag && self.freezetag_frozen))
+	   (g_freezetag && self.freezetag_frozen)||
+       (g_jailbreak && self.jb_isprisoned))
 			held = 0;
 	
 	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
