@@ -101,8 +101,10 @@ void HG_Napalm_Think()
 
 	HG_Napalm_Burn(0.1, GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
 	if(time >= self.nextparticle) {
-		pointparticles(particleeffectnum("fire_big"), self.origin, '0 0 0', 1);
-		self.nextparticle = time + 0.2 + random () * 0.2;
+        vector v = randomvec();
+        v_z = (v_z + 1) * 0.25;
+		pointparticles(particleeffectnum("fire_big"), self.origin + v * GRENVAR(self.hg_type, "burnradius") * 0.5, '0 0 0', 1);
+		self.nextparticle = time + 0.15 + random () * 0.15;
 	}
 
 	self.nextthink = time + 0.1;
