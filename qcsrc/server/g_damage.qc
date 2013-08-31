@@ -1063,8 +1063,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 						break;
 				}
 			}
+            
+            if(g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned) && deathtype == DEATH_TELEFRAG) {
+                damage = 0;
+                force = '0 0 0';
+            }
 		}
-
+        
 		// nullify damage if teamplay is on
 		if(deathtype != DEATH_TELEFRAG)
 		if(attacker_is_player)
