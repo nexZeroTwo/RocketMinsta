@@ -93,9 +93,6 @@ void reset_map(float dorespawn)
         self.hg_clearammo = 0;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
-            if(g_handgrenades)
-                HG_ResetState(self);
-            
 			if(g_arena)
 			{
 				if(self.spawned)
@@ -132,6 +129,9 @@ void reset_map(float dorespawn)
 					}
 				}
 			}
+            
+            if(g_handgrenades) if(self.classname == "player")
+                HG_ResetState(self);
 		}
 	}
 
