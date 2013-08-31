@@ -526,13 +526,10 @@ float JB_PlayerDies() {
                 float rng = cvar("g_jailbreak_defense_range");
                 entity cp;
                 if(rng) for(;(cp = find(cp, classname, "jailbreak_controlpoint"));) {
-                    print(etos(cp), ": 1\n");
                     if((cp.team == frag_attacker.team) || (cp.team == JB_TEAM_NEUTRAL && cp.jb_active)) {
-                        print(etos(cp), ": 2\n");
                         // Rewards control point defense if fragging nearby your team's or neutral cp.
                         // In case of neutral cp, it has to be active (no defense farming in the beginning of the round)
                         if(vlen(cp.origin - self.origin) < rng) {
-                            print(etos(cp), ": 3\n");
                             bigprint_spec(frag_attacker, "^5Defense!", "", 2);
                             PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_jailbreak_score_defense"));
                             PlayerScore_Add(frag_attacker, SP_JB_DEFENSE, 1);
