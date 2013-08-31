@@ -441,7 +441,7 @@ void HG_Grenade_Waypoint() {
     
     if(!rng) {
         if(self.hg_waypoint)
-            WaypointSprite_Kill(self.hg_waypoint);
+            WaypointSprite_Disown(self.hg_waypoint, 1);
         return;
     }
     
@@ -547,7 +547,7 @@ void HG_FixNadeType(entity p) {
 
 void HG_Grenade_Remove() {
     if(self.hg_waypoint)
-        WaypointSprite_Kill(self.hg_waypoint);
+        WaypointSprite_Disown(self.hg_waypoint, 1);
     stopsound(self, CHAN_PAIN);
     remove(self);
 }

@@ -916,7 +916,7 @@ void JB_ControlPoint_DefendWaypoint() {
         }
     } else {
         if(self.jb_waypoint_defend)
-            WaypointSprite_Kill(self.jb_waypoint_defend);
+            WaypointSprite_Disown(self.jb_waypoint_defend, 1);
     }
     
     self.jb_defendthink_next = time + 0.1;
@@ -945,7 +945,7 @@ void JB_ControlPoint_SwitchTeam(entity e, float t) {
     WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
     
     if(e.jb_waypoint_defend)
-        WaypointSprite_Kill(e.jb_waypoint_defend);
+        WaypointSprite_Disown(e.jb_waypoint_defend, 1);
 }
 
 void JB_TriggerTeamControlPoints(float t) {
