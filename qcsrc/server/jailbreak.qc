@@ -928,6 +928,9 @@ void JB_ControlPoint_SwitchTeam(entity e, float t) {
     e.team = t;
     WaypointSprite_UpdateSprites(e.jb_waypoint, JB_ControlPoint_WaypointForTeam(e.team), "", "");
     WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
+    
+    if(e.jb_waypoint_defend)
+        WaypointSprite_Kill(e.jb_waypoint_defend);
 }
 
 void JB_TriggerTeamControlPoints(float t) {
