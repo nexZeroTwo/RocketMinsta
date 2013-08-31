@@ -739,6 +739,7 @@ void HG_Frame()
 }
 
 void HG_ResetState(entity p) {
+    print(p.netname, "^7: HG_ResetState(", ftos(p.hg_clearammo), ")\n");
     p.hg_power = 0;
     p.hg_ammo = (p.hg_clearammo? 0 : cvar("g_handgrenades_ammo"));
     p.hg_bonus = 0;
@@ -753,18 +754,17 @@ void HG_PlayerSpawn()
     if(self.classname != "player")
         return;
     
-    if(g_freezetag && self.freezetag_frozen)
-        return;
-    
-    HG_ResetState(self);
+    if(cvar("g_handgrenades_resetonrespawn"))
+        HG_ResetState(self);
 }
 
 void HG_PlayerJoin() {
     if(self.classname != "player")
         return;
         
-    print("Player ", self.netname, "^7 just joined the game\n");
-        
+    if((g_freezetag && self.freezetag_frozen) || (g_jailbreak && self.jb_isprisoned))
+        self.hg_clearammo = TRUE;
+    
     HG_ResetState(self);
 }
 

@@ -778,6 +778,7 @@ void PutObserverInServer (void)
     
     self.hg_type_picked = 0;
     self.hg_type = 0;
+    self.wasingame = FALSE;
 	self.spectatortime = time;
     
 	self.classname = "observer";
@@ -1313,8 +1314,16 @@ void PutClientInServer (void)
 		
 		freezetag_PlayerSpawn();
 		JB_PlayerSpawn();
-		
+        
+        if(g_handgrenades) {
+            if(self.wasingame)
+                HG_PlayerSpawn();
+            else
+                HG_PlayerJoin();
+        }
+        
 		Boobs_Attach();
+        self.wasingame = TRUE;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1333,9 +1342,6 @@ void PutClientInServer (void)
 		self.shownames.customizeentityforclient = shownames_customize;
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
-	
-	if(g_handgrenades)
-		HG_PlayerSpawn();
 	
 	if(self.fire_burner) {
 		remove(self.fire_burner);

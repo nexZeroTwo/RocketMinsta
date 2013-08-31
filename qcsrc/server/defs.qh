@@ -713,3 +713,5 @@ float sv_oldfag;
 float sv_dps;
 
 .float sub_target_used;
+
+.float wasingame;
