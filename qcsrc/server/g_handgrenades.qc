@@ -313,6 +313,7 @@ float HG_TypeToCSQCProjType(float t) {
 		case HG_NAPALM  :   return PROJECTILE_HG_NAPALM;
 		case HG_PLASMA  :   return PROJECTILE_HG_PLASMA;
         case HG_TRANSLOC:   return PROJECTILE_HG_TRANSLOC;
+        case HG_REMOTE  :   return PROJECTILE_HG_REMOTE;
 		default         :   return PROJECTILE_HG_GENERIC;
 	}
 }

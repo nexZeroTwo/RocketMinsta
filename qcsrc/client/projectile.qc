@@ -158,7 +158,7 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_HOOKBOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-		case PROJECTILE_HAGAR:
+		case PROJECTILE_HAGAR:  case PROJECTILE_HG_REMOTE:
 			trailparticles(self, particleeffectnum("TR_GRENADE"), from, to);
 			break;
 		case PROJECTILE_HAGAR_BOUNCING:
@@ -227,6 +227,7 @@ void Projectile_Draw()
 			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
+            case PROJECTILE_HG_REMOTE:
 			//case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
@@ -251,6 +252,7 @@ void Projectile_Draw()
         case PROJECTILE_HG_PLASMA:
 		case PROJECTILE_HG_NAPALM:
         case PROJECTILE_HG_TRANSLOC:
+        case PROJECTILE_HG_REMOTE:
 			trailorigin += v_right * 1 + v_forward * -10;
 			break;
 		default:
@@ -378,6 +380,10 @@ void Ent_Projectile()
 		self.cnt = (self.cnt & 0x7F);
 
 		self.scale = 1;
+        
+        if(self.cnt == PROJECTILE_HG_REMOTE)
+            self.alpha = 0.3;
+        
 		switch(self.cnt)
 		{
 			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
@@ -393,7 +399,7 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: switch(self.team) {
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: case PROJECTILE_HG_REMOTE: switch(self.team) {
                 case COLOR_TEAM2:   setmodel(self, "models/grenademodel_team2.md3"); break;
                 case COLOR_TEAM3:   setmodel(self, "models/grenademodel_team3.md3"); break;
                 case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
@@ -444,6 +450,7 @@ void Ent_Projectile()
             case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
             case PROJECTILE_HG_TRANSLOC:
+            case PROJECTILE_HG_REMOTE:
                 if(g_handgrenades == 2) {   // g_handgrenades_oldhitboxes
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';
