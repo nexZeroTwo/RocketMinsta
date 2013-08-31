@@ -445,7 +445,7 @@ void HG_Grenade_Waypoint() {
         return;
     }
     
-    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self) {
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) {
         if(vlen(self.origin - plr.origin) < rng)
         if(checkpvs(self.origin, plr)) {
             detected = TRUE;
@@ -738,6 +738,16 @@ void HG_Frame()
         self.hg_detonatepressed = FALSE;
 }
 
+void HG_ResetState(entity p) {
+    p.hg_power = 0;
+    p.hg_ammo = (p.hg_clearammo? 0 : cvar("g_handgrenades_ammo"));
+    p.hg_bonus = 0;
+    p.hg_bonustype = HG_NORMAL;
+    p.hg_regentime = HG_RegenTime(self);
+    p.hg_clearammo = 0;
+    HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+}
+
 void HG_PlayerSpawn()
 {
     if(self.classname != "player")
@@ -746,13 +756,16 @@ void HG_PlayerSpawn()
     if(g_freezetag && self.freezetag_frozen)
         return;
     
-	self.hg_power = 0;
-	self.hg_ammo = (self.hg_clearammo? 0 : cvar("g_handgrenades_ammo"));
-	self.hg_bonus = 0;
-	self.hg_bonustype = HG_NORMAL;
-    self.hg_regentime = HG_RegenTime(self);
-    self.hg_clearammo = 0;
-    HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+    HG_ResetState(self);
+}
+
+void HG_PlayerJoin() {
+    if(self.classname != "player")
+        return;
+        
+    print("Player ", self.netname, "^7 just joined the game\n");
+        
+    HG_ResetState(self);
 }
 
 float HG_ShowMenu() {
