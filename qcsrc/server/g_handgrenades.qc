@@ -112,7 +112,7 @@ void HG_Napalm_Think()
 
 void HG_Napalm_Middlefire_Think() {
 	if(time > self.pushltime) {
-		remove (self);
+		remove(self);
 		return;
 	}
 	
@@ -340,7 +340,7 @@ void HG_Grenade_Explode()
         HG_Translocator_Explode();
 	
 	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
-	remove (self);
+	HG_Grenade_Remove();
 }
 #undef GV
 
@@ -418,18 +418,67 @@ void HG_DetonateAll(entity plr) {
             HG_Detonate(nade);
 }
 
-.float ranthink;
+void HG_Grenade_Remote_Waypoint_Update(string wpname) {
+    if(!self.hg_waypoint) {
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32', self.owner, 0, self, hg_waypoint, 1);
+    } else {
+        WaypointSprite_UpdateSprites(self.hg_waypoint, wpname, "", "");
+    }
+}
+
+void HG_Grenade_Waypoint() {
+    entity plr;
+    float detected;
+    float rng;
+    
+    if(time < self.hg_wp_nextthink)
+        return;
+    
+    if(time < self.jb_defendthink_next)
+        return;
+    
+    rng = max(0, GRENVAR(self.hg_type, "detect_enemies"));
+    
+    if(!rng) {
+        if(self.hg_waypoint)
+            WaypointSprite_Kill(self.hg_waypoint);
+        return;
+    }
+    
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self) {
+        if(vlen(self.origin - plr.origin) < rng)
+        if(checkpvs(self.origin, plr)) {
+            detected = TRUE;
+            break;
+        }
+    }
+    
+    if(detected) {
+        if(!self.hg_wp_state) {
+            HG_Grenade_Remote_Waypoint_Update("pointer_red");
+            self.hg_wp_state = TRUE;
+        }
+    } else if(self.hg_wp_state || !self.hg_waypoint) {
+        HG_Grenade_Remote_Waypoint_Update("pointer_cyan");
+        self.hg_wp_state = FALSE;
+    }
+    
+    self.hg_wp_nextthink = time + 0.1;
+}
+
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
     
     if(self.hg_type == HG_TRANSLOC) {
         tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
-        if(trace_startsolid && !self.ranthink) {
+        if(trace_startsolid && !self.hg_ranthink) {
             bprint(self.owner.netname, "^1's translocator spawned in solid! ", vtos(self.origin), "\n");
-            remove(self);
+            HG_Grenade_Remove();
             return;
         }
     }
+    
+    HG_Grenade_Waypoint();
     
     move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
@@ -449,7 +498,7 @@ void HG_Grenade_Think() {
     }
     
     self.nextthink = time;
-    self.ranthink += 1;
+    self.hg_ranthink += 1;
     
     #undef GV
 }
@@ -494,6 +543,13 @@ void HG_FixNadeType(entity p) {
         print("Player ", p.netname, " ^7doesn't have a grenade type - fixing\n");
         HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
     }
+}
+
+void HG_Grenade_Remove() {
+    if(self.hg_waypoint)
+        WaypointSprite_Kill(self.hg_waypoint);
+    stopsound(self, CHAN_PAIN);
+    remove(self);
 }
 
 void HG_Attack()
@@ -555,6 +611,7 @@ void HG_Attack()
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
 	gren.touch = HG_Grenade_Touch;
+    gren.reset = HG_Grenade_Remove;
     gren.team = self.team;
     gren.cnt = GV("bouncelimit");
     

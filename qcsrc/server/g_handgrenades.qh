@@ -11,6 +11,7 @@ void HG_Detonate(entity);
 void HG_DetonateAll(entity);
 float HG_PlayerMayDetonate(entity);
 float HG_ShowMenu();
+void HG_Grenade_Remove();
 
 .vector org_explosion;
 .float nextparticle;
@@ -35,7 +36,12 @@ float HG_ShowMenu();
 .float hg_sndcount;
 .float hg_clearammo;
 .float hg_detonatepressed;
+.float hg_ranthink;
+.float hg_wp_nextthink;
+.float hg_wp_state;
 .float hg_regenstat; // for hud only
+
+.entity hg_waypoint;
 
 float g_handgrenades_oldhitboxes;
 float g_handgrenades_detonatelaunches;
