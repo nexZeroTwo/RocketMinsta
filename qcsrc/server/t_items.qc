@@ -1435,7 +1435,6 @@ void spawnfunc_item_health25() { spawnfunc_item_health_medium(); }
 void spawnfunc_item_health100() { spawnfunc_item_health_mega(); }
 
 void spawnfunc_item_strength (void) {
-	//<akari>
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
@@ -1443,10 +1442,14 @@ void spawnfunc_item_strength (void) {
 		minstagib_items(IT_STRENGTH);
 		return;
 	}
-	//</akari>
 
 	if(!cvar("g_powerup_strength"))
 		return;
+
+    if(cvar("g_powerup_allsuperhealth")) {
+        spawnfunc_item_health_mega();
+        return;
+    }
 
 	if(g_arena && !cvar("g_arena_powerups"))
 		return;
@@ -1461,7 +1464,6 @@ void spawnfunc_item_strength (void) {
 }
 
 void spawnfunc_item_invincible (void) {
-	//<akari>
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
@@ -1469,10 +1471,14 @@ void spawnfunc_item_invincible (void) {
 		minstagib_items(IT_INVINCIBLE);
 		return;
 	}
-	//</akari>
 
 	if(!cvar("g_powerup_shield"))
 		return;
+
+    if(cvar("g_powerup_allsuperhealth")) {
+        spawnfunc_item_health_mega();
+        return;
+    }
 
 	if(g_arena && !cvar("g_arena_powerups"))
 		return;
