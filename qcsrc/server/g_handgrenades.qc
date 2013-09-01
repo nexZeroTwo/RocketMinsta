@@ -509,7 +509,7 @@ void HG_Grenade_Waypoint() {
         return;
     }
     
-    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) {
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freezetag && plr.freezetag_frozen)) {
         if(vlen(self.origin - plr.origin) < rng)
         if(checkpvs(self.origin, plr)) {
             detected = TRUE;
