@@ -574,7 +574,8 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 		return;
 	self.health = self.health - damage;
 	if(self.health <= 0) {
-        self.owner = attacker;
+        if(attacker.classname == "player")
+            self.owner = attacker;
         self.hg_deathtime = time;
 	}
 }
