@@ -504,7 +504,7 @@ void HG_Grenade_Think() {
 }
 
 void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-    if(self.hg_type == HG_REMOTE && DEATH_ISHG(deathtype))
+    if(DEATH_ISHG(deathtype))
         return;
 	if(self.health <= 0)
 		return;
