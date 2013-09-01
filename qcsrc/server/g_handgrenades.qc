@@ -429,6 +429,7 @@ void HG_Remote_Stick() {
     e.think = HG_Grenade_Think;
     e.nextthink = self.nextthink;
     e.flags = self.flags;
+    e.team = self.team;
     e.hg_remote_sticked = TRUE;
     e.hg_deathtime = self.hg_deathtime;
     e.hg_sndcount = self.hg_sndcount;
