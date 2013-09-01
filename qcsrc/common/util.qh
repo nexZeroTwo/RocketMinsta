@@ -200,3 +200,5 @@ string mmss(float tenths);
 #ifdef MENUQC
 float sv_oldfag;		// just to make it compile
 #endif
+
+float TeamColorSkin(float);

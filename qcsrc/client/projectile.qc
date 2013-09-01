@@ -396,23 +396,14 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: switch(self.team) {
-                case COLOR_TEAM2:   setmodel(self, "models/grenademodel_team2.md3"); break;
-                case COLOR_TEAM3:   setmodel(self, "models/grenademodel_team3.md3"); break;
-                case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
-                default         :   setmodel(self, "models/grenademodel.md3");       break;
-            } break;
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
+                setmodel(self, "models/grenademodel.md3");
+                self.skin = TeamColorSkin(self.team);
+                break;
             case PROJECTILE_HG_REMOTE:
                 self.alpha = 1;
                 setmodel(self, "models/mine.md3");
-                
-                switch(self.team) {
-                    case COLOR_TEAM1:   self.skin = 1; break;
-                    case COLOR_TEAM2:   self.skin = 2; break;
-                    case COLOR_TEAM3:   self.skin = 3; break;
-                    case COLOR_TEAM4:   self.skin = 4; break;
-                }
-                
+                self.skin = TeamColorSkin(self.team);
                 break;
             case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP; break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
@@ -535,9 +526,6 @@ void Projectile_Precache()
 	precache_model("models/ebomb.mdl");
 	precache_model("models/elaser.mdl");
 	precache_model("models/grenademodel.md3");
-	precache_model("models/grenademodel_team2.md3");
-	precache_model("models/grenademodel_team3.md3");
-	precache_model("models/grenademodel_team4.md3");
 	precache_model("models/mine.md3");
 	precache_model("models/hagarmissile.mdl");
 	precache_model("models/hlac_bullet.md3");

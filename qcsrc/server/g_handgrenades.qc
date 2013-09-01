@@ -413,14 +413,7 @@ void HG_Remote_Stick() {
     e.bot_dodgerating = self.bot_dodgerating;
     e.owner = self.owner;
     e.angles = vectoangles(-normal);
-    
-    if(teams_matter) switch(e.owner.team) {
-        case COLOR_TEAM1:   e.skin = 1; break;
-        case COLOR_TEAM2:   e.skin = 2; break;
-        case COLOR_TEAM3:   e.skin = 3; break;
-        case COLOR_TEAM4:   e.skin = 4; break;
-    }
-    
+    e.skin = TeamColorSkin(e.owner.team);
     setmodel(e, "models/mine.md3");
     e.damageforcescale = self.damageforcescale;
     e.health = self.health;
