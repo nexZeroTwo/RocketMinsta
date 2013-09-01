@@ -1019,7 +1019,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		targ.flags -= targ.flags & FL_GODMODE;
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade")
 	{
 		// no processing
 	}

@@ -619,7 +619,7 @@ void HG_Attack()
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
     
     if(GV("takedamage")) {
-        gren.takedamage = DAMAGE_AIM;
+        gren.takedamage = DAMAGE_YES;
         gren.event_damage = HG_Grenade_Damage;
     } else {
         gren.takedamage = DAMAGE_NO;
