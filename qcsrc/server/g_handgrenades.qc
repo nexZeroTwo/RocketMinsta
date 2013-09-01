@@ -570,9 +570,6 @@ void HG_Grenade_Think() {
     
     self.nextthink = time;
     self.hg_ranthink += 1;
-    
-    //print("skin = ", ftos(self.skin), ", ", ftos(self.skinindex), "\n");
-    
     #undef GV
 }
 

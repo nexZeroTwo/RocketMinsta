@@ -306,11 +306,6 @@ void Ent_RemoveProjectile()
 	}
 }
 
-void HG_Remote_Touch() {
-    self.angles = vectoangles(-trace_plane_normal);
-    print("HG_Remote_Touch\n");
-}
-
 void Ent_Projectile()
 {
 	float f;
@@ -473,12 +468,8 @@ void Ent_Projectile()
                     self.maxs = ' 8  4  3';
                 }
                 
-				self.move_movetype = MOVETYPE_BOUNCE;
-                
-                if(self.cnt == PROJECTILE_HG_REMOTE)
-                    self.move_touch = HG_Remote_Touch;
-				else
-                    self.move_touch = SUB_Null;
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
 				break;
 			case PROJECTILE_PORTO_RED:
 				self.colormod = '2 1 1';
