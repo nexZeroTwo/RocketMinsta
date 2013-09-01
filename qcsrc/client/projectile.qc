@@ -227,7 +227,7 @@ void Projectile_Draw()
 			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
-            case PROJECTILE_HG_REMOTE:
+            //case PROJECTILE_HG_REMOTE:
 			//case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
@@ -306,6 +306,11 @@ void Ent_RemoveProjectile()
 	}
 }
 
+void HG_Remote_Touch() {
+    self.angles = vectoangles(-trace_plane_normal);
+    print("HG_Remote_Touch\n");
+}
+
 void Ent_Projectile()
 {
 	float f;
@@ -381,9 +386,6 @@ void Ent_Projectile()
 
 		self.scale = 1;
         
-        if(self.cnt == PROJECTILE_HG_REMOTE)
-            self.alpha = 0.4;
-        
 		switch(self.cnt)
 		{
 			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
@@ -399,12 +401,24 @@ void Ent_Projectile()
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
 			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: case PROJECTILE_HG_REMOTE: switch(self.team) {
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA: switch(self.team) {
                 case COLOR_TEAM2:   setmodel(self, "models/grenademodel_team2.md3"); break;
                 case COLOR_TEAM3:   setmodel(self, "models/grenademodel_team3.md3"); break;
                 case COLOR_TEAM4:   setmodel(self, "models/grenademodel_team4.md3"); break;
                 default         :   setmodel(self, "models/grenademodel.md3");       break;
             } break;
+            case PROJECTILE_HG_REMOTE:
+                self.alpha = 1;
+                setmodel(self, "models/mine.md3");
+                
+                switch(self.team) {
+                    case COLOR_TEAM1:   self.skin = 1; break;
+                    case COLOR_TEAM2:   self.skin = 2; break;
+                    case COLOR_TEAM3:   self.skin = 3; break;
+                    case COLOR_TEAM4:   self.skin = 4; break;
+                }
+                
+                break;
             case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP; break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
@@ -460,7 +474,11 @@ void Ent_Projectile()
                 }
                 
 				self.move_movetype = MOVETYPE_BOUNCE;
-				self.move_touch = SUB_Null;
+                
+                if(self.cnt == PROJECTILE_HG_REMOTE)
+                    self.move_touch = HG_Remote_Touch;
+				else
+                    self.move_touch = SUB_Null;
 				break;
 			case PROJECTILE_PORTO_RED:
 				self.colormod = '2 1 1';
@@ -529,6 +547,7 @@ void Projectile_Precache()
 	precache_model("models/grenademodel_team2.md3");
 	precache_model("models/grenademodel_team3.md3");
 	precache_model("models/grenademodel_team4.md3");
+	precache_model("models/mine.md3");
 	precache_model("models/hagarmissile.mdl");
 	precache_model("models/hlac_bullet.md3");
 	precache_model("models/laser.mdl");

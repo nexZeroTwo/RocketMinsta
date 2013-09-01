@@ -22,7 +22,10 @@ void HG_Precache() {
     precache_sound("weapons/grenade_bounce5.wav");
     precache_sound("weapons/grenade_bounce6.wav");
     precache_sound("weapons/grenade_fire.wav");
+    precache_sound("weapons/grenade_stick.wav");
     precache_sound("weapons/rm_nadebeep.wav");
+    precache_sound("weapons/electro_bounce.wav");
+    precache_model("models/mine.md3");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
@@ -230,7 +233,7 @@ void HG_Plasma_Projectile_Touch()
 	if (other.takedamage == DAMAGE_AIM) {
 		HG_Plasma_Projectile_Explode();
 	} else {
-		spamsound (self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
+		spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 	}
 }
 
@@ -357,34 +360,102 @@ void HG_Grenade_Touch() {
         }
     }
     
-	PROJECTILE_TOUCH;
+    if(SUB_OwnerCheck())
+        return;
+    
+    if(SUB_NoImpactCheck()) {
+        HG_Grenade_Remove();
+        return;
+    }
+    
+    if(!self.hg_remote_sticked)
+    if(trace_ent && trace_ent.solid > SOLID_TRIGGER) {
+        UpdateCSQCProjectileNextFrame(self);
+    }
 
 :troll
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
 		self.use();
 	} else {
         if(self.cnt <= 0) {
-            self.use();
+            if(self.hg_type == HG_REMOTE) {
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
+                HG_Remote_Stick();
+            } else
+                self.use();
             return;
         }
         
 		float r;
 		r = random() * 6;
 		if(r < 1)
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce1.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce1.wav", VOL_BASE, ATTN_NORM);
 		else if(r < 2)
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce2.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce2.wav", VOL_BASE, ATTN_NORM);
 		else if(r < 3)
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce3.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce3.wav", VOL_BASE, ATTN_NORM);
 		else if(r < 4)
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce4.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce4.wav", VOL_BASE, ATTN_NORM);
 		else if(r < 5)
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
 		else
-			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
         
         self.cnt -= 1;
 	}
+}
+
+void HG_Remote_Stick() {
+    vector normal = trace_plane_normal;
+    entity e = spawn();
+    e.classname = self.classname;
+    e.bot_dodge = self.bot_dodge;
+    e.bot_dodgerating = self.bot_dodgerating;
+    e.owner = self.owner;
+    e.angles = vectoangles(-normal);
+    
+    if(teams_matter) switch(e.owner.team) {
+        case COLOR_TEAM1:   e.skin = 1; break;
+        case COLOR_TEAM2:   e.skin = 2; break;
+        case COLOR_TEAM3:   e.skin = 3; break;
+        case COLOR_TEAM4:   e.skin = 4; break;
+    }
+    
+    setmodel(e, "models/mine.md3");
+    e.damageforcescale = self.damageforcescale;
+    e.health = self.health;
+    e.takedamage = self.takedamage;
+    e.event_damage = self.event_damage;
+    e.solid = self.solid;
+    e.dphitcontentsmask = self.dphitcontentsmask;
+    e.use = self.use;
+    e.movetype = MOVETYPE_NONE;
+    e.hg_type = self.hg_type;
+    e.projectiledeathtype = self.projectiledeathtype;
+    e.think = self.think;
+    e.think = HG_Grenade_Think;
+    e.nextthink = self.nextthink;
+    e.flags = self.flags;
+    e.hg_remote_sticked = TRUE;
+    e.hg_deathtime = self.hg_deathtime;
+    e.hg_sndcount = self.hg_sndcount;
+    e.hg_nextsnd = self.hg_nextsnd;
+    e.hg_detonable = self.hg_detonable;
+    e.hg_detonatetime = self.hg_detonatetime;
+    e.hg_detonatedelay = self.hg_detonatedelay;
+    e.reset = self.reset;
+    setsize(e, '-4 -4 -4', '4 4 4');
+    setorigin(e, self.origin);
+    vectoangles(normal);
+    
+    if(normal_x)
+        setorigin(e, e.origin + v_forward * 4 * abs(normal_x));
+    if(normal_z)
+        setorigin(e, e.origin - v_forward * 5 * abs(normal_z));
+    
+    move_out_of_solid(e);
+    HG_Grenade_Remove();
+    self = e;
 }
 
 float HG_RegenTime(entity e) {
@@ -480,7 +551,7 @@ void HG_Grenade_Think() {
     
     HG_Grenade_Waypoint();
     
-    move_out_of_solid(self);
+    //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
         self.use();
         return;
@@ -499,6 +570,8 @@ void HG_Grenade_Think() {
     
     self.nextthink = time;
     self.hg_ranthink += 1;
+    
+    //print("skin = ", ftos(self.skin), ", ", ftos(self.skinindex), "\n");
     
     #undef GV
 }
@@ -619,7 +692,7 @@ void HG_Attack()
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
     
     if(GV("takedamage")) {
-        gren.takedamage = DAMAGE_YES;
+        gren.takedamage = DAMAGE_AIM;
         gren.event_damage = HG_Grenade_Damage;
     } else {
         gren.takedamage = DAMAGE_NO;

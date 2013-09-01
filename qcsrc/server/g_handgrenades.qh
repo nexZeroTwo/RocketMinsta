@@ -14,6 +14,8 @@ void HG_DetonateAll(entity);
 float HG_PlayerMayDetonate(entity);
 float HG_ShowMenu();
 void HG_Grenade_Remove();
+void HG_Grenade_Think();
+void HG_Remote_Stick();
 
 .vector org_explosion;
 .float nextparticle;
@@ -41,6 +43,7 @@ void HG_Grenade_Remove();
 .float hg_ranthink;
 .float hg_wp_nextthink;
 .float hg_wp_state;
+.float hg_remote_sticked;
 .float hg_regenstat; // for hud only
 
 .entity hg_waypoint;

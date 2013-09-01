@@ -956,7 +956,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
 	float armordamage;
 	armordamage = 0;
-	
+    
 	if(gameover || targ.killcount == -666)
 		return;
 
