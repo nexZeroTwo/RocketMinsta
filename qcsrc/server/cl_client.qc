@@ -2516,6 +2516,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_detonables = spectatee.hg_detonables;
     self.hg_regenstat = spectatee.hg_regenstat;
     self.hg_regenpaused = spectatee.hg_regenpaused;
+    self.hg_launchspeed = spectatee.hg_launchspeed;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;

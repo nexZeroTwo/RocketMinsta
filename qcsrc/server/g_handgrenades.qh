@@ -44,8 +44,12 @@ void HG_Remote_Stick();
 .float hg_wp_nextthink;
 .float hg_wp_state;
 .float hg_remote_sticked;
-.float hg_regenstat; // for hud only
 
+// for hud only
+.float hg_regenstat;
+.float hg_launchspeed;
+
+.vector hg_normal;
 .entity hg_waypoint;
 
 float g_handgrenades_oldhitboxes;

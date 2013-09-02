@@ -3604,6 +3604,7 @@ void Sbar_Draw (void)
     
 	// handgrenade force meter
 	float hgstat = getstatf(STAT_HGFORCE);
+    float hgls = getstatf(STAT_HGLAUNCH);
 	
 	if(hgstat) {
 		hg_alpha = approach(hg_alpha, 1, 5 * drawframetime);
@@ -3611,7 +3612,7 @@ void Sbar_Draw (void)
 		hg_alpha = approach(hg_alpha, 0, 5 * drawframetime);
 	}
     
-	hg_visual = approach(hg_visual, hgstat, drawframetime);
+	hg_visual = approach(hg_visual, hgstat, drawframetime * hgls);
 	hgstat = hg_visual;
 	
 	if(hg_alpha)

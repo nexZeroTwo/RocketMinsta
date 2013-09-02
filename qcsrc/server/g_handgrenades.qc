@@ -8,6 +8,7 @@ void HG_Init() {
     addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
+    addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
     g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
@@ -229,7 +230,7 @@ void HG_Plasma_Projectile_Think() {
 
 void HG_Plasma_Projectile_Touch()
 {
-	PROJECTILE_TOUCH;
+    PROJECTILE_TOUCH;
 	if (other.takedamage == DAMAGE_AIM) {
 		HG_Plasma_Projectile_Explode();
 	} else {
@@ -261,6 +262,7 @@ void HG_Plasma_Projectile() {
 	setorigin(proj, w_shotorg);
     
 	proj.movetype = MOVETYPE_BOUNCE;
+    
     kick_x = (random () - 0.5) * 2 * cvar("g_handgrenades_plasma_spread_xy");
 	kick_y = (random () - 0.5) * 2 * cvar("g_handgrenades_plasma_spread_xy");
 	kick_z = max(
@@ -271,6 +273,7 @@ void HG_Plasma_Projectile() {
 					+ 	cvar("g_handgrenades_plasma_spread_z_min_randomfactor")
 					*	(random() - 0.5) * 2
 				);
+
     proj.velocity = kick;
 	W_SetupProjectileVelocity(proj);
 	proj.touch = HG_Plasma_Projectile_Touch;
@@ -377,6 +380,7 @@ void HG_Grenade_Touch() {
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
 		self.use();
 	} else {
+        self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
                 spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
@@ -440,7 +444,6 @@ void HG_Remote_Stick() {
     e.reset = self.reset;
     setsize(e, '-4 -4 -4', '4 4 4');
     setorigin(e, self.origin);
-    vectoangles(normal);
     
     if(normal_x)
         setorigin(e, e.origin + v_forward * 4 * abs(normal_x));
@@ -670,6 +673,7 @@ void HG_Attack()
     gren.hg_detonable = GV("detonable");
     gren.hg_detonatedelay = GV("detonate_delay");
     gren.hg_detonateready = time + GV("detonate_threshold");
+    gren.gravity = GV("gravity");
     setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
@@ -695,10 +699,15 @@ void HG_Attack()
     
 	gren.health = GV("health");
 	gren.damageforcescale = GV("damageforcescale");
-    if(GV("launchspeed") && !g_handgrenades_detonatelaunches)
-        gren.velocity = w_shotdir * GV("speed") * self.hg_power + v_up * GV("speed_up") * self.hg_power;
-    else
-        gren.velocity = w_shotdir * GV("speed") + v_up * GV("speed_up");
+    
+    float spd  = GV("speed");
+    float mspd = GV("speed_min");
+    
+    if(GV("launchspeed") && !g_handgrenades_detonatelaunches) {
+        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * GV("speed_up") * self.hg_power;
+    } else
+        gren.velocity = w_shotdir * spd + v_up * GV("speed_up");
+        
 	W_SetupProjectileVelocity(gren);
 	
 	gren.angles = vectoangles (gren.velocity);
@@ -759,6 +768,8 @@ void HG_Frame()
         
         if(!g_handgrenades_detonatelaunches)
             ls = GRENVAR(t, "launchspeed");
+        
+        self.hg_launchspeed = ls;
         
         if(ls)
             self.hg_power = bound(0, self.hg_power + frametime * ls, 1);
