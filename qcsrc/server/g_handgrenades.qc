@@ -112,6 +112,7 @@ void HG_Napalm_Middlefire_Think() {
 		return;
 	}
 	
+    /*
     if(time >= self.nextparticle) {
         
         float i; for(i = 0; i < 5; ++i) {
@@ -122,6 +123,7 @@ void HG_Napalm_Middlefire_Think() {
         
 		self.nextparticle = time + 0.1 + random () * 0.5;
 	}
+    */
     
 	HG_Napalm_Burn(0.1, cvar("g_handgrenades_napalm_middleburnradius"), cvar("g_handgrenades_napalm_burndamage"), cvar("g_handgrenades_napalm_edgeburndamage"), cvar("g_handgrenades_napalm_burntime"), DEATH_HG_NAPALM);
 	self.nextthink = time + 0.1;
@@ -185,7 +187,6 @@ void HG_Napalm_Explode() {
 	local float c;
 	for (c = 0; c < cvar("g_handgrenades_napalm_numparticles"); c ++) HG_Napalm();
 	
-	// since we have a ton of fire in the middle, let's make it a real fire
 	entity mid = spawn();
 	mid.owner = self.owner;
 	mid.origin = self.origin;
@@ -194,7 +195,11 @@ void HG_Napalm_Explode() {
     mid.reset = SUB_Remove;
 	mid.nextthink = time;
 	mid.pushltime = time + cvar("g_handgrenades_napalm_fire_lifetime");
+    mid.team = self.team;
+    mid.csqcprojectile_extradata = cvar("g_handgrenades_napalm_middleburnradius");
 	setsize(mid, '0 0 0', '0 0 0');
+    
+    CSQCProjectile(mid, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
 }
 
 void HG_Plasma_Projectile_Explode() {
