@@ -123,8 +123,8 @@ void CreatureFrame (void)
 // This returns the player who's been afk for the longest amount of time
 entity GetAFKKickVictim() {
 	entity v, e;
-	
-	FOR_EACH_REALCLIENT(e) if(e.is_away)
+    
+	FOR_EACH_REALCLIENT(e) if(time - e.jointime > 30) if(e.is_away)
 		if(!v || v.parm_idlesince > e.parm_idlesince)
 			v = e;
 	
