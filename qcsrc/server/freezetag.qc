@@ -376,6 +376,11 @@ float freezetag_RemovePlayer()
 }
 
 string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vector velo);
+
+float freezetag_AliveCheck(entity p) {
+    return !p.freezetag_frozen;
+}
+
 float freezetag_PlayerDies()
 {
     DEPENDON_F(g_freezetag, 0)
@@ -425,6 +430,7 @@ float freezetag_PlayerDies()
 		W_ThrowNewWeapon(frag_target, WEP_MINSTANEX, 0, frag_target.origin, frag_target.velocity);
 		
 	freezetag_CheckWinner();
+    AloneWarning(self.team, freezetag_AliveCheck);
 
 	return 1;
 }

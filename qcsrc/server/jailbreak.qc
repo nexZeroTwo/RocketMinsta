@@ -122,10 +122,15 @@ void JB_Imprison(entity attacker) {
 	JB_CountPlayers();
 }
 
+float JB_AliveCheck(entity p) {
+    return !p.jb_isprisoned;
+}
+
 void JB_ImprisonLater_Think() {
 	entity oldself = self, attacker = self.jb_prisoned_by;
 	self = self.enemy;
 	JB_Imprison(attacker);
+    AloneWarning(self.team, JB_AliveCheck);
 	self = oldself;
 	remove(self);
 }

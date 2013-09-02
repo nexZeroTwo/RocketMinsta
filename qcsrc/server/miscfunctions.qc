@@ -3377,3 +3377,21 @@ void SendServerInfo(entity player) {
 	WriteString(MSG_ONE, RM_BUILD_DATE);
 	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
 }
+
+void AloneWarning(float t, float(entity) alivecheck) {
+    float alive;
+    entity e;
+    entity p;
+    
+    FOR_EACH_PLAYER(e) if(e.team == t) if(alivecheck(e)) {
+        p = e;
+        alive++;
+        
+        if(alive > 1)
+            return;
+    }
+    
+    if(p) {
+        bigprint_spec(p, "Warning! You are on your own!", "", 3);
+    }
+}
