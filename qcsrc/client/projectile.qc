@@ -1,6 +1,7 @@
 .float spawntime;
 .vector trail_oldorigin;
 .float trail_oldtime;
+.float extradata;
 
 void SUB_Null()
 {
@@ -30,28 +31,39 @@ float rm_particleeffectnum(string p) {
             case "RM_HG_PLASMA_TEAM3":
             case "RM_HG_PLASMA_TEAM4":
                 return particleeffectnum("TR_NEXUIZPLASMA");
-                break;
                 
             case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM1":
             case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM2":
             case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM3":
             case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM4":
                 return particleeffectnum("electro_ballexplode");
-                break;
             
             case "RM_HG_PLASMA_EXPLODE_TEAM1":
             case "RM_HG_PLASMA_EXPLODE_TEAM2":
             case "RM_HG_PLASMA_EXPLODE_TEAM3":
             case "RM_HG_PLASMA_EXPLODE_TEAM4":
                 return particleeffectnum("hookbomb_explode");
-                break;
+            
+            case "RM_HG_NAPALM_FIRE_TEAM1":
+            case "RM_HG_NAPALM_FIRE_TEAM2":
+            case "RM_HG_NAPALM_FIRE_TEAM3":
+            case "RM_HG_NAPALM_FIRE_TEAM4":
+                return particleeffectnum("fire_big");
+            
+            case "RM_HG_NAPALM_TRAIL_TEAM1":
+            case "RM_HG_NAPALM_TRAIL_TEAM2":
+            case "RM_HG_NAPALM_TRAIL_TEAM3":
+            case "RM_HG_NAPALM_TRAIL_TEAM4":
+                return particleeffectnum("firemine");
         }
     }
     
     return n;
 }
 
-float TeamNumber(float t) {
+#define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
+
+float TeamNumber(float t, float d) {
     switch(t) {
         case COLOR_TEAM1:
             return 1;
@@ -62,10 +74,11 @@ float TeamNumber(float t) {
         case COLOR_TEAM4:
             return 4;
         default:
-            return 2;   // default to blue team for particles
+            return d;
     }
 } 
 
+.float nextparticle;
 void Projectile_DrawTrail(vector to)
 {
 	vector from;
@@ -81,12 +94,14 @@ void Projectile_DrawTrail(vector to)
 	{
 		switch(self.cnt)
 		{
+            case PROJECTILE_HG_NAPALMSHARD:
+            case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
 				to_z += 1;
 				break;
 			case PROJECTILE_ELECTRO:
                 //trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-                trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
+                trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
 			default:
 				return;
@@ -107,7 +122,7 @@ void Projectile_DrawTrail(vector to)
 			
 		case PROJECTILE_ELECTRO:
 			//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-            trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
@@ -140,7 +155,7 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
         case PROJECTILE_HG_PLASMA:
-            trailparticles(self, rm_particleeffectnum(strcat("RM_HG_PLASMA_TEAM", ftos(TeamNumber(self.team)))), from, to);
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
             break;
         case PROJECTILE_HG_TRANSLOC:
             switch(self.team) {
@@ -170,12 +185,24 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_BULLET_GLOWING:
 			trailparticles(self, particleeffectnum("tr_rifle"), from, to);
 			break;
-		case PROJECTILE_FIREMINE: case PROJECTILE_HG_NAPALM:
+		case PROJECTILE_FIREMINE:
 			trailparticles(self, particleeffectnum("firemine"), from, to);
 			break;
+        case PROJECTILE_HG_NAPALM:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
+            break;
 		case PROJECTILE_FIREBALL:
 			trailparticles(self, particleeffectnum("fireball"), from, to);
 			break;
+        case PROJECTILE_HG_NAPALMSHARD:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
+            if(time >= self.nextparticle) {
+                vector v = randomvec();
+                v_z = (v_z + 1) * 0.25;
+                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
+                self.nextparticle = time + 0.12 + random() * 0.12;
+            }
+            break;
 		default:
 			break;
 	}
@@ -376,6 +403,9 @@ void Ent_Projectile()
 		self.cnt = ReadByte();
         self.team = ReadByte() - 1;
 
+        if(self.cnt == PROJECTILE_HG_NAPALMSHARD)
+            self.extradata = ReadByte();
+
 		self.silent = (self.cnt & 0x80);
 		self.cnt = (self.cnt & 0x7F);
 
@@ -415,6 +445,7 @@ void Ent_Projectile()
 			case PROJECTILE_HAGAR_BOUNCING: setmodel(self, "models/hagarmissile.mdl"); self.scale = 0.4; break;
 			case PROJECTILE_FIREBALL: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
 			case PROJECTILE_FIREMINE: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
+            case PROJECTILE_HG_NAPALMSHARD: self.model = ""; self.modelindex = 0; break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -487,6 +518,7 @@ void Ent_Projectile()
 				self.mins = '-16 -16 -16';
 				self.maxs = '16 16 16';
 				break;
+            case PROJECTILE_HG_NAPALMSHARD:
 			case PROJECTILE_FIREMINE:
 				loopsound(self, CHAN_PROJECTILE, "weapons/fireball_fly.wav", VOL_BASE, ATTN_NORM);
 				self.move_movetype = MOVETYPE_BOUNCE;

@@ -103,13 +103,6 @@ void HG_Napalm_Think()
 	}
 
 	HG_Napalm_Burn(0.1, GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
-	if(time >= self.nextparticle) {
-        vector v = randomvec();
-        v_z = (v_z + 1) * 0.25;
-		pointparticles(particleeffectnum("fire_big"), self.origin + v * GRENVAR(self.hg_type, "burnradius") * 0.5, '0 0 0', 1);
-		self.nextparticle = time + 0.15 + random () * 0.15;
-	}
-
 	self.nextthink = time + 0.1;
 }
 
@@ -182,8 +175,10 @@ void HG_Napalm()
 
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
+    proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
+    proj.team = self.owner.team;
 
-	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
 }
 
 void HG_Napalm_Explode() {
@@ -574,8 +569,10 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 		return;
 	self.health = self.health - damage;
 	if(self.health <= 0) {
-        if(attacker.classname == "player")
+        if(attacker.classname == "player") {
             self.owner = attacker;
+            self.team = attacker.team;
+        }
         self.hg_deathtime = time;
 	}
 }
@@ -701,7 +698,7 @@ void HG_Attack()
 	
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
-	
+    
 	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
 	
 	if (hgtype == HG_NAPALM && self.hg_power == 1)

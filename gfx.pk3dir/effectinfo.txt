@@ -5079,3 +5079,557 @@ originjitter 1 1 1
 velocityjitter 1900 1900 1300
 velocitymultiplier 0.5
 airfriction 2
+
+/////// Red Napalm
+
+// Red Napalm Fire
+effect RM_HG_NAPALM_FIRE_TEAM1
+//notunderwater
+count 52
+type smoke
+tex 48 55
+size 11 31
+alpha 100 178 128
+gravity -0.25
+color 0x8f0d00 0xff5a00
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+// smoke
+effect RM_HG_NAPALM_FIRE_TEAM1
+type alphastatic
+count 10
+tex 0 8
+size 22 33
+sizeincrease 11
+alpha 100 150 70
+color 0x000000 0x332211
+gravity -0.3
+originjitter 44 44 44
+velocityjitter 11 11 50
+bounce 2
+// light
+effect RM_HG_NAPALM_FIRE_TEAM1
+//notunderwater
+count 1
+type static
+tex 0 0
+size 0 0
+alpha 0 0 0
+lightcolor 1 0.5 0
+lightradius 250
+lightradiusfade 500
+gravity -0.25
+color 0x8f0d00 0xff5a00
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+
+// Red Napalm Trail
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f0d00 0xff5a00
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 250
+bounce 1.5
+velocityjitter 10 10 2
+airfriction 1.2
+//slowfire
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f0d00 0xff5a00
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 10 10 10
+airfriction 1.2
+// very slow and small fire
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f0d00 0xff5a00
+size 1 1
+sizeincrease 2
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 8 8 8
+airfriction 0.3
+//decreasing fire
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f0d00 0xff5a00
+size 5 7
+sizeincrease -3
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 3 3 3
+airfriction 0.3
+//smoke
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 4
+count 1
+type alphastatic
+tex 0 8
+size 1 4
+sizeincrease 1
+color 0x000000 0x111111
+alpha 256 256 90
+//gravity -0.2
+originjitter 2 2 2
+velocityoffset 0 0 3
+airfriction 1
+//fastfire
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 0.5
+count 1
+type smoke
+tex 48 55
+color 0x8f0d00 0xff5a00
+size 12 12
+sizeincrease 0
+gravity 0
+alpha 50 256 1600
+bounce 1.5
+velocityjitter 0 0 0
+airfriction 1.2
+// light only
+effect RM_HG_NAPALM_TRAIL_TEAM1
+trailspacing 8
+lightradius 50
+lightradiusfade 50000
+lightcolor 2.7 2.7 0.6
+
+/////// Blue Napalm
+
+// Blue Napalm Fire
+effect RM_HG_NAPALM_FIRE_TEAM2
+//notunderwater
+count 52
+type smoke
+tex 48 55
+size 11 31
+alpha 100 178 128
+gravity -0.25
+color 0x33568F 0x77A1FF
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+// smoke
+effect RM_HG_NAPALM_FIRE_TEAM2
+type alphastatic
+count 10
+tex 0 8
+size 22 33
+sizeincrease 11
+alpha 100 150 70
+color 0x000000 0x332211
+gravity -0.3
+originjitter 44 44 44
+velocityjitter 11 11 50
+bounce 2
+// light
+effect RM_HG_NAPALM_FIRE_TEAM2
+//notunderwater
+count 1
+type static
+tex 0 0
+size 0 0
+alpha 0 0 0
+//lightcolor 1 0.5 0
+lightcolor 0.3 0.5 1
+lightradius 250
+lightradiusfade 500
+gravity -0.25
+color 0x8f0d00 0xff5a00
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+
+// Blue Napalm Trail
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x33568F 0x77A1FF
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 250
+bounce 1.5
+velocityjitter 10 10 2
+airfriction 1.2
+//slowfire
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x33568F 0x77A1FF
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 10 10 10
+airfriction 1.2
+// very slow and small fire
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x33568F 0x77A1FF
+size 1 1
+sizeincrease 2
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 8 8 8
+airfriction 0.3
+//decreasing fire
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x33568F 0x77A1FF
+size 5 7
+sizeincrease -3
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 3 3 3
+airfriction 0.3
+//smoke
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 4
+count 1
+type alphastatic
+tex 0 8
+size 1 4
+sizeincrease 1
+color 0x000000 0x111111
+alpha 256 256 90
+//gravity -0.2
+originjitter 2 2 2
+velocityoffset 0 0 3
+airfriction 1
+//fastfire
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 0.5
+count 1
+type smoke
+tex 48 55
+color 0x33568F 0x77A1FF
+size 12 12
+sizeincrease 0
+gravity 0
+alpha 50 256 1600
+bounce 1.5
+velocityjitter 0 0 0
+airfriction 1.2
+// light only
+effect RM_HG_NAPALM_TRAIL_TEAM2
+trailspacing 8
+lightradius 50
+lightradiusfade 50000
+lightcolor 0.6 1.14 2.7
+
+/////// Yellow Napalm
+
+// Yellow Napalm Fire
+effect RM_HG_NAPALM_FIRE_TEAM3
+//notunderwater
+count 52
+type smoke
+tex 48 55
+size 11 31
+alpha 100 178 128
+gravity -0.25
+color 0x8f8f0d 0xffff5a
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+// smoke
+effect RM_HG_NAPALM_FIRE_TEAM3
+type alphastatic
+count 10
+tex 0 8
+size 22 33
+sizeincrease 11
+alpha 100 150 70
+color 0x000000 0x332211
+gravity -0.3
+originjitter 44 44 44
+velocityjitter 11 11 50
+bounce 2
+// light
+effect RM_HG_NAPALM_FIRE_TEAM3
+//notunderwater
+count 1
+type static
+tex 0 0
+size 0 0
+alpha 0 0 0
+lightcolor 1 0.9 0.3
+lightradius 250
+lightradiusfade 500
+gravity -0.25
+color 0x8f8f0d 0xffff5a
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+
+// Yellow Napalm Trail
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f8f0d 0xffff5a
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 250
+bounce 1.5
+velocityjitter 10 10 2
+airfriction 1.2
+//slowfire
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f8f0d 0xffff5a
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 10 10 10
+airfriction 1.2
+// very slow and small fire
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f8f0d 0xffff5a
+size 1 1
+sizeincrease 2
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 8 8 8
+airfriction 0.3
+//decreasing fire
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f8f0d 0xffff5a
+size 5 7
+sizeincrease -3
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 3 3 3
+airfriction 0.3
+//smoke
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 4
+count 1
+type alphastatic
+tex 0 8
+size 1 4
+sizeincrease 1
+color 0x000000 0x111111
+alpha 256 256 90
+//gravity -0.2
+originjitter 2 2 2
+velocityoffset 0 0 3
+airfriction 1
+//fastfire
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 0.5
+count 1
+type smoke
+tex 48 55
+color 0x8f8f0d 0xffff5a
+size 12 12
+sizeincrease 0
+gravity 0
+alpha 50 256 1600
+bounce 1.5
+velocityjitter 0 0 0
+airfriction 1.2
+// light only
+effect RM_HG_NAPALM_TRAIL_TEAM3
+trailspacing 8
+lightradius 50
+lightradiusfade 50000
+lightcolor 2.7 2.7 0.6
+
+/////// Pink Napalm
+
+// Pink Napalm Fire
+effect RM_HG_NAPALM_FIRE_TEAM4
+//notunderwater
+count 52
+type smoke
+tex 48 55
+size 11 31
+alpha 100 178 128
+gravity -0.25
+color 0x8f0d8f 0xff5aff
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+// smoke
+effect RM_HG_NAPALM_FIRE_TEAM4
+type alphastatic
+count 10
+tex 0 8
+size 22 33
+sizeincrease 11
+alpha 100 150 70
+color 0x000000 0x332211
+gravity -0.3
+originjitter 44 44 44
+velocityjitter 11 11 50
+bounce 2
+// light
+effect RM_HG_NAPALM_FIRE_TEAM4
+//notunderwater
+count 1
+type static
+tex 0 0
+size 0 0
+alpha 0 0 0
+lightcolor 1 0.3 0.9
+lightradius 250
+lightradiusfade 500
+gravity -0.25
+color 0x8f0d8f 0xff5aff
+bounce 2
+sizeincrease -3
+originjitter 33 33 33
+velocityjitter 22 22 50
+
+// Pink Napalm Trail
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f0d8f 0xff5aff
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 250
+bounce 1.5
+velocityjitter 10 10 2
+airfriction 1.2
+//slowfire
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 1
+count 1
+type smoke
+tex 48 55
+color 0x8f0d8f 0xff5aff
+size 1 1
+sizeincrease 5
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 10 10 10
+airfriction 1.2
+// very slow and small fire
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f0d8f 0xff5aff
+size 1 1
+sizeincrease 2
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 8 8 8
+airfriction 0.3
+//decreasing fire
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 2
+count 1
+type smoke
+tex 48 55
+color 0x8f0d8f 0xff5aff
+size 5 7
+sizeincrease -3
+gravity -0.06
+alpha 50 256 200
+bounce 1.5
+velocityjitter 3 3 3
+airfriction 0.3
+//smoke
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 4
+count 1
+type alphastatic
+tex 0 8
+size 1 4
+sizeincrease 1
+color 0x000000 0x111111
+alpha 256 256 90
+//gravity -0.2
+originjitter 2 2 2
+velocityoffset 0 0 3
+airfriction 1
+//fastfire
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 0.5
+count 1
+type smoke
+tex 48 55
+color 0x8f0d8f 0xff5aff
+size 12 12
+sizeincrease 0
+gravity 0
+alpha 50 256 1600
+bounce 1.5
+velocityjitter 0 0 0
+airfriction 1.2
+// light only
+effect RM_HG_NAPALM_TRAIL_TEAM4
+trailspacing 8
+lightradius 50
+lightradiusfade 50000
+lightcolor 2.7 0.6 2.5
+

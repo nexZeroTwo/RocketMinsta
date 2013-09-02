@@ -114,7 +114,7 @@ void Ent_DamageInfo(float isNew)
 			{
 				case DEATH_HG_NORMAL:
                 case DEATH_HG_REMOTE:
-					float radius = 250, i;
+					float radius = rad, i;
 					pointparticles (particleeffectnum ("rocket_explode"), self.origin, '0 0 0', 1);
 					for (i = 0; i < 20; i ++)
 					{
@@ -125,14 +125,14 @@ void Ent_DamageInfo(float isNew)
                     break;
                 case DEATH_HG_PLASMA_SHARD:
                     org2 = org + backoff * 6;
-                    pointparticles(rm_particleeffectnum(strcat("RM_HG_PLASMA_SHARD_EXPLODE_TEAM", ftos(TeamNumber(self.team)))), org2, '0 0 0', 1);
+                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2), org2, '0 0 0', 1);
                     if(!issilent)
                         sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
                     break;
                     
                 case DEATH_HG_PLASMA:
                     org2 = org + backoff * 2;
-                    pointparticles(rm_particleeffectnum(strcat("RM_HG_PLASMA_EXPLODE_TEAM", ftos(TeamNumber(self.team)))), org2, '0 0 0', 1);
+                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
                     if(!issilent)
                         sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
                     break;
