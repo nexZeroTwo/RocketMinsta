@@ -3459,7 +3459,7 @@ void Sbar_Draw (void)
 	rev = getstatf((gametype == GAME_JAILBREAK)? STAT_UNLOCK_PROGRESS : STAT_REVIVE_PROGRESS);
 	
 	if(rev) {
-		rev_visual = approach(rev_visual, rev, drawframetime);
+        rev_visual += (rev - rev_visual) * drawframetime * 10;
 		rev_alpha = approach(rev_alpha, 1, drawframetime * 5);
 	} else {
 		rev_alpha = approach(rev_alpha, 0, drawframetime * 5);
