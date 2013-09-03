@@ -3351,6 +3351,7 @@ float hg_alpha;
 float hgregen;
 
 float ammo_useprogress;
+float vhealth;
 
 void Sbar_Draw (void)
 {
@@ -4175,6 +4176,10 @@ void Sbar_Draw (void)
 				}
 			}
 
+            vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+            float hlimit = 200;
+            vhealth += (min(mxdmg_x, hlimit) - vhealth) * frametime * 10;
+
 			if(rm_althud)	/// RM hud layout
 			{
 				if(hudskin_line_full)
@@ -4196,13 +4201,19 @@ void Sbar_Draw (void)
 				})
 
 				// healtharmor
-				HUDLINE_SECTOR({
+				//HUDLINE_SECTOR({
+                {
 					hud_sector_x = SECWIDTH_HEALTH;
 					hud_sector_pos_x = 7;
 					sector_mod = '0 0 0'; //'-1 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+                
+                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
@@ -4444,15 +4455,21 @@ void Sbar_Draw (void)
 				})
 
 				// health-armor
-				HUDLINE_SECTOR({
+				//HUDLINE_SECTOR({
+                {
 					hud_sector_x = SECWIDTH_HEALTH;
 					//hud_sector_pos_x = centersector;
 					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
 					sector_mod = '0 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
+                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+                
 				// health-armor | nades
 				HUDLINE_SLICE({
 					hudline_x = 8 - bw_left - bw_right;
