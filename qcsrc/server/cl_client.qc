@@ -776,8 +776,12 @@ void PutObserverInServer (void)
 
 	PlayerScore_Clear(self); // clear scores when needed
     
-    self.hg_type_picked = 0;
-    self.hg_type = 0;
+    if(g_handgrenades) {
+        self.hg_type_picked = 0;
+        self.hg_type = 0;
+        self.hg_nadesused = 0;
+    }
+    
     self.wasingame = FALSE;
 	self.spectatortime = time;
     
@@ -1369,6 +1373,8 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
     WriteByte(MSG_ENTITY, g_handgrenades? (g_handgrenades_oldhitboxes? 2 : 1) : 0);
+    if(g_handgrenades)
+        WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
 	return TRUE;
 }
 
@@ -1843,6 +1849,10 @@ void ClientConnect (void)
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
 	SendServerInfo(self);
 	
+    self.hg_type_picked_nextround = -1;
+    self.hg_optout_nextround = -1;
+
+    
 	totalclients++;
 }
 
@@ -2679,7 +2689,7 @@ void LeaveSpectatorMode()
 {
 	if(isJoinAllowed()) {
 		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
-            if(HG_ShowMenu())
+            if(HG_ShowMenu(FALSE))
                 return;
             
 			self.classname = "player";

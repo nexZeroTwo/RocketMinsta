@@ -30,6 +30,9 @@ void HG_Precache() {
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
+    if(p.hg_optout)
+        return;
+    
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
     
@@ -728,6 +731,8 @@ void HG_Attack()
     
     if(self.hg_bonus)
 		self.hg_bonus -= 1;
+    
+    self.hg_nadesused += 1;
 	
 	#undef GV
 }
@@ -743,9 +748,12 @@ void HG_UpdateDetonables() {
 
 void HG_Frame()
 {
-	if(!g_handgrenades || time < game_starttime)
-		return;
-	
+    if(!g_handgrenades)
+        return;
+    
+    if(time < game_starttime)
+        return;
+        
     HG_UpdateDetonables();
     HG_FixNadeType(self);
     
@@ -848,8 +856,8 @@ void HG_PlayerJoin() {
     HG_ResetState(self);
 }
 
-float HG_ShowMenu() {
-    if(g_handgrenades && cvar_string("g_handgrenades_type_selectable") != "" && !self.hg_type_picked) {
+float HG_ShowMenu(float always) {
+    if(g_handgrenades && cvar_string("g_handgrenades_type_selectable") != "" && (always || !self.hg_type_picked)) {
         stuffcmd(self, strcat("set _nade_options \"", cvar_string("g_handgrenades_type_selectable"), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
         return TRUE;
     }

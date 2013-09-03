@@ -433,7 +433,7 @@ void SV_ParseClientCommand(string s) {
 		if (self.classname != "player" && !lockteams)
 		{
 			if(isJoinAllowed()) {
-                if(HG_ShowMenu())
+                if(HG_ShowMenu(FALSE))
                     return;
                 
 				self.classname = "player";
@@ -479,6 +479,10 @@ void SV_ParseClientCommand(string s) {
         
         if(!g_handgrenades)
             return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = time > warmup && time > game_starttime;
+        float nr = isplayer && (gamestarted || self.hg_nadesused);
         
         float t = HG_NameToType(argv(1));
         float i;
@@ -487,13 +491,30 @@ void SV_ParseClientCommand(string s) {
         if(argc)
             for(i = 0; i < argc; ++i)
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your grenade type has been set to ^2", HG_TypeToExpandedName(t), "\n"));
-                    self.hg_type_picked = t;
+                    sprint(self, strcat("^1Your grenade type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
+                    self.(nr? hg_type_picked_nextround : hg_type_picked) = t;
+                    
+                    if(!nr)
+                        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+                    
                     return;
                 }
                 
         sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
         return;
+    } else if(cmd == "hg_optout") {
+        if not(self.flags & FL_CLIENT)
+            return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = time > warmup && time > game_starttime;
+        
+        self.((isplayer && gamestarted)? hg_optout_nextround : hg_optout) = stof(argv(1));
+    } else if(cmd == "hg_alwaysask") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        self.hg_alwaysask = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;

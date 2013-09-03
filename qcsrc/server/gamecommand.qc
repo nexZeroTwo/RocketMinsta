@@ -1183,6 +1183,7 @@ void GameCommand(string command)
         }
 
         EndRound();
+        return;
     }
 
 	if(argv(0) == "topic")

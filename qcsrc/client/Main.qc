@@ -170,6 +170,7 @@ void CSQC_Init(void)
 	}
 	
 	IP2C_Init();
+    registercvar("_g_handgrenades_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 }
 
@@ -1737,6 +1738,8 @@ void Ent_Init()
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
 	g_handgrenades = ReadByte();
+    
+    cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
 
 	if(!postinit)
 		PostInit();

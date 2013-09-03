@@ -906,7 +906,7 @@ void CSQC_UpdateView(float w, float h)
 	}
 	
 	FPSCounter_Update();
-	
+    
 	// be safe against triggerbots until everyone has the fixed engine
 	// this call is meant to overwrite the trace globals by something
 	// unsuspicious

@@ -93,6 +93,15 @@ void reset_map(float dorespawn)
         self.hg_clearammo = 0;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
+            if(g_handgrenades) {
+                if(self.hg_type_picked_nextround >= 0)
+                    self.hg_type_picked = self.hg_type_picked_nextround;
+                if(self.hg_optout_nextround >= 0)
+                    self.hg_optout = self.hg_optout_nextround;
+                
+                self.hg_type_picked_nextround = self.hg_optout_nextround = -1;
+            }
+            
 			if(g_arena)
 			{
 				if(self.spawned)
@@ -130,8 +139,13 @@ void reset_map(float dorespawn)
 				}
 			}
             
-            if(g_handgrenades) if(self.classname == "player")
+            if(g_handgrenades) if(self.classname == "player") {
                 HG_ResetState(self);
+                self.hg_nadesused = 0;
+                
+                if(self.hg_alwaysask)
+                    HG_ShowMenu(TRUE);
+            }
 		}
 	}
 

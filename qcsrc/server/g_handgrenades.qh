@@ -12,7 +12,7 @@ float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
 void HG_DetonateAll(entity);
 float HG_PlayerMayDetonate(entity);
-float HG_ShowMenu();
+float HG_ShowMenu(float);
 void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
@@ -26,6 +26,7 @@ void HG_Remote_Stick();
 .float hg_ammo;
 .float hg_type;
 .float hg_type_picked;
+.float hg_type_picked_nextround;
 .float hg_bonus;
 .float hg_bonustype;
 .float hg_regentime;
@@ -44,6 +45,10 @@ void HG_Remote_Stick();
 .float hg_wp_nextthink;
 .float hg_wp_state;
 .float hg_remote_sticked;
+.float hg_nadesused;
+.float hg_optout;
+.float hg_optout_nextround;
+.float hg_alwaysask;
 
 // for hud only
 .float hg_regenstat;

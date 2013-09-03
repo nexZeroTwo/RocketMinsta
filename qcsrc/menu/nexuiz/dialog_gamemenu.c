@@ -4,7 +4,7 @@ CLASS(NexuizGameMenuDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizGameMenuDialog, title, string, "Game Menu")
 	ATTRIB(NexuizGameMenuDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.2)
-	ATTRIB(NexuizGameMenuDialog, rows, float, 12)
+	ATTRIB(NexuizGameMenuDialog, rows, float, 13)
 	ATTRIB(NexuizGameMenuDialog, columns, float, 10)
 	ATTRIB(NexuizGameMenuDialog, name, string, "GameMenu")
 ENDCLASS(NexuizGameMenuDialog)
@@ -36,6 +36,9 @@ void fillNexuizGameMenuDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Switch team", '0 0 0', "menu_cmd directmenu TeamSelect;", COMMANDBUTTON_CLOSE));
 		setDependent(e, "_teams_available", 1, 1337);
+	me.TR(me);
+		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Switch grenade mode", '0 0 0', "menu_cmd directmenu NadeMenu;", COMMANDBUTTON_CLOSE));
+		setDependent(e, "_g_handgrenades_select_available", 1, 1337);
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Spectate", '0 0 0', "cmd spectate;", COMMANDBUTTON_CLOSE));
 	me.TR(me);
