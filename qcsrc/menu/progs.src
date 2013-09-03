@@ -1,6 +1,7 @@
 ../../menu.dat
 
 config.qh
+../common/rm_auto.qh
 ../common/util-pre.qh
 msys.qh
 mbuiltin.qh

@@ -6,8 +6,12 @@ string draw_UseSkinFor(string pic)
 {
 	if(substring(pic, 0, 1) == "/")
 		return substring(pic, 1, strlen(pic)-1);
-	else
-		return strcat(draw_currentSkin, "/", pic);
+	else {
+        float i; for(i = 0; i < draw_overrideCount; ++i)
+            if(bufstr_get(draw_overrides, i) == pic)
+                return strcat(draw_originalSkin, "/", pic);
+        return strcat(draw_currentSkin, "/", pic);
+    }
 }
 
 void draw_setMousePointer(string pic, vector theSize, vector theOffset)

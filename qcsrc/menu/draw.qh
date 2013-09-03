@@ -32,6 +32,10 @@ vector globalToBoxSize(vector v, vector scale);
 float draw_NeedResizeNotify;
 
 string draw_currentSkin;
+string draw_originalSkin;
+float draw_overrides;
+float draw_overrideCount;
+string rm_watermark;
 
 float draw_TextWidth_WithColors(string s);
 float draw_TextWidth_WithoutColors(string s);

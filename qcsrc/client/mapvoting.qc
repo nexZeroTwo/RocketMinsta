@@ -478,7 +478,7 @@ void MapVote_Draw()
 		++mv_num_maps;
 	}
 	
-	drawpic(mv_mousepos, strcat("gfx/menu/", cvar_string("menu_skin"), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+	drawpic(mv_mousepos, strcat("gfx/menu/", cvar_string("menu_rmskin"), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
 void Cmd_MapVote_MapDownload(float argc)

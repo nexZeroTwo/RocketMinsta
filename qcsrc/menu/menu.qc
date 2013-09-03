@@ -91,23 +91,26 @@ void() m_init_delayed =
 	RegisterWeapons();
 
 	fh = -1;
-	if(cvar_string("menu_skin") != "")
+	if(cvar_string("menu_rmskin") != "")
 	{
-		draw_currentSkin = strcat("gfx/menu/", cvar_string("menu_skin"));
+		draw_currentSkin = strcat("gfx/menu/", cvar_string("menu_rmskin"));
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
 	}
 	if(fh < 0)
-	if(cvar_defstring("menu_skin") != "")
 	{
-		draw_currentSkin = strcat("gfx/menu/", cvar_defstring("menu_skin"));
+		draw_currentSkin = "gfx/menu/rmdefault";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
+        registercvar("menu_rmskin", "rmdefault", CVAR_SAVE);
 	}
-	if(fh < 0)
+    if(fh < 0)
 	{
 		draw_currentSkin = "gfx/menu/default";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
 	}
-	draw_currentSkin = strzone(draw_currentSkin);
+    
+    draw_originalSkin = draw_currentSkin;
+    draw_overrides = buf_create();
+    
 	while((s = fgets(fh)))
 	{
 		// these two are handled by skinlist.qc
@@ -115,10 +118,30 @@ void() m_init_delayed =
 			continue;
 		if(substring(s, 0, 7) == "author ")
 			continue;
+        
 		n = tokenize_console(s);
-		if(n >= 2)
-			Skin_ApplySetting(argv(0), substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)));
+		if(n >= 2) {
+            string comd = argv(0);
+            
+            switch(comd) {
+                case "baseskin":
+                    draw_currentSkin = strcat("gfx/menu/", argv(1));
+                    break;
+                
+                case "override":
+                    bufstr_set(draw_overrides, draw_overrideCount++, argv(1));
+                    break;
+                
+                default:
+                    Skin_ApplySetting(argv(0), substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)));
+                    break;
+            }
+        }
 	}
+    
+	draw_currentSkin = strzone(draw_currentSkin);
+	draw_originalSkin = strzone(draw_originalSkin);
+    
 	fclose(fh);
 
 	glob = search_begin(strcat(draw_currentSkin, "/*.tga"), TRUE, TRUE);
@@ -144,7 +167,9 @@ void() m_init_delayed =
 	main.focused = 1;
 	menuShiftState = 0;
 	menuMousePos = '0.5 0.5 0';
-
+    
+    rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " ", RM_BUILD_DATE));
+    
 	if(Menu_Active)
 		m_display(); // delayed menu display
 };
@@ -650,8 +675,16 @@ void() m_draw =
 
 	draw_alpha = max(draw_alpha, SKINALPHA_CURSOR_INTRO * bound(0, menuLogoAlpha, 1));
 
-	draw_drawMousePointer(menuMousePos);
+    if(!(gamestatus & (GAME_CONNECTED | GAME_ISSERVER)))
+	{
+		vector position;
+		position = '0 0 0';
+		position_y = conheight - 8;
+		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
+	}
 
+	draw_drawMousePointer(menuMousePos);
+    
 	draw_reset();
 	postMenuDraw();
 
