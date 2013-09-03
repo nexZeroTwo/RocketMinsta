@@ -1153,9 +1153,6 @@ void GameCommand(string command)
 		
 		FOR_EACH_PLAYER(e)
 		{
-			//e.health = 999;
-			//e.armorvalue = 999;
-			
 			e.health = max(e.health, 100);
 			
 			if(g_freezetag)
@@ -1167,7 +1164,12 @@ void GameCommand(string command)
 				self = oldself;
 			}
 		}
-		
+        
+        if(g_jailbreak) {
+            JB_TriggerTeamControlPoints(COLOR_TEAM1);
+            JB_TriggerTeamControlPoints(COLOR_TEAM2);
+        }
+        
 		return;
 	}
 
