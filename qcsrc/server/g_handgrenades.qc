@@ -570,6 +570,7 @@ void HG_Grenade_Think() {
     
     if(self.hg_detonable)
     if(time >= self.hg_detonateready)
+    if(!self.hg_detonatetime)
     if(!self.hg_detonable_updated) {
         self.hg_detonable_updated = TRUE;
         self.owner.hg_detonables += 1;
