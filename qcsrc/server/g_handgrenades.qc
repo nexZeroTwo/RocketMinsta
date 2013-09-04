@@ -29,7 +29,7 @@ void HG_Precache() {
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_model("models/mine.md3");
-    precache_model("models/runematch/rune.mdl");
+    precache_model("models/ctf/shield.md3");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
