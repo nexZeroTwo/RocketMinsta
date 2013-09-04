@@ -5,6 +5,7 @@
 #define HG_PLASMA_SHARD DEATH_HG_PLASMA_SHARD
 #define HG_NAPALM       DEATH_HG_NAPALM
 #define HG_TRANSLOC     DEATH_HG_TRANSLOC
+#define HG_SHIELD       DEATH_HG_SHIELD
 
 string HG_TypeToName(float);
 float HG_NameToType(string);

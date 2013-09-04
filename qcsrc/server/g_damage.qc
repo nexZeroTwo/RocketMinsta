@@ -329,7 +329,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			targ.fixangle = TRUE;
 		}
 	}
-
+    
+    targ.hg_shield = 0;
+    
     DPS_Finish(targ);
     if(attacker.dps_target == targ)
         DPS_Finish(attacker);
@@ -727,6 +729,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                         bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
                     else if(deathtype == DEATH_HG_PLASMA || deathtype == DEATH_HG_PLASMA_SHARD)
                         bprint ("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
+                    else if(deathtype == DEATH_HG_SHIELD)
+                        bprint ("^1", s, "^1 tried to get through ", a, "^1's reflective shield\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 				}

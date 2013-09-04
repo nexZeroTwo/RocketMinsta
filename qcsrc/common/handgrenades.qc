@@ -7,6 +7,7 @@ string HG_TypeToExpandedName(float t) {
         case HG_PLASMA      :   return "Plasma Bomb";
         case HG_PLASMA_SHARD:   return "Plasma Bomb";
         case HG_TRANSLOC    :   return "Translocator";
+        case HG_SHIELD      :   return "Reflective Shield";
 		default             :   return "Fuckoff Grenade";
 	}
 }
@@ -18,6 +19,7 @@ string HG_TypeToName(float t) {
 		case HG_REMOTE      :   return "remote";
         case HG_PLASMA      :   return "plasma";
         case HG_TRANSLOC    :   return "transloc";
+        case HG_SHIELD      :   return "shield";
 		default             :   return strcat("fuckoff", ftos(t));
 	}
 }
@@ -28,6 +30,7 @@ float HG_NameToType(string t) {
         case "remote"       :   return HG_REMOTE;
         case "plasma"       :   return HG_PLASMA;
         case "transloc"     :   return HG_TRANSLOC;
+        case "shield"       :   return HG_SHIELD;
 		default             :   return HG_NORMAL;
 	}
 }

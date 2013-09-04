@@ -50,6 +50,10 @@ void HG_Remote_Stick();
 .float hg_optout_nextround;
 .float hg_alwaysask;
 
+.float hg_shield;
+.float hg_shieldhealth;
+.entity hg_shieldmodel;
+
 // for hud only
 .float hg_regenstat;
 .float hg_launchspeed;

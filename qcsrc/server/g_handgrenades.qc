@@ -9,6 +9,7 @@ void HG_Init() {
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
+    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shield);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
     g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
@@ -26,7 +27,9 @@ void HG_Precache() {
     precache_sound("weapons/grenade_stick.wav");
     precache_sound("weapons/rm_nadebeep.wav");
     precache_sound("weapons/electro_bounce.wav");
+    precache_sound("misc/powerup_shield.wav");
     precache_model("models/mine.md3");
+    precache_model("models/runematch/rune.mdl");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
@@ -625,12 +628,68 @@ void HG_Grenade_Remove() {
     remove(self);
 }
 
+void HG_ShieldModel_Think() {
+    if(self.owner.hg_shield)
+        self.alpha = approach(self.alpha, 1, frametime * 3);
+    else
+        self.alpha = approach(self.alpha, 0, frametime * 3);
+        
+    if(!self.alpha) {
+        self.owner.hg_shieldmodel = world;
+        remove(self);
+        return;
+    }
+    
+    setorigin(self, self.owner.origin);
+    self.nextthink = time;
+}
+
+void HG_Shield() {
+    entity e;
+    
+    self.hg_shield = GRENVAR(self.hg_type, "duration");
+    self.hg_shieldhealth = GRENVAR(self.hg_type, "health");
+    //sound(self, CHAN_PROJECTILE, "misc/powerup_shield", VOL_BASE, ATTN_NORM);
+    sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
+    
+    if(!self.hg_shieldmodel) {
+        e = spawn();
+        e.classname = "hg_shieldmodel";
+        e.owner = self;
+        e.think = HG_ShieldModel_Think;
+        e.nextthink = time;
+        e.alpha = 0.1;
+        e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+        e.colormod = '1 1 0';
+        e.glow_size = 256;
+        e.glow_color = 230;
+        e.glow_trail = 1;
+        e.avelocity = '14 0 22';
+        setorigin(e, self.origin);
+        setmodel(e, "models/ctf/shield.md3");
+        e.scale = 0.5;
+        setsize(e, e.scale * e.mins, e.scale * e.maxs);
+        
+        self.hg_shieldmodel = e;
+    }
+}
+
+void HG_Shield_Frame() {
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+    else
+        self.hg_shield = max(0, self.hg_shield - frametime);
+}
+
 void HG_Attack()
 {
 	#define GV(v) (GRENVAR(hgtype, v))
 	float hgtype;
     float freebonus;
 	
+    if(self.deadflag != DEAD_NO)
+        return;
+    
 	if(time < self.hg_next)
 		return;
 	
@@ -645,12 +704,15 @@ void HG_Attack()
     if(!freebonus && !self.hg_ammo)
         return;
     
+    if(hgtype == HG_SHIELD) {
+        // shield is special - it's not actually a projectile
+        HG_Shield();
+        goto finish;
+    }
+    
     vector hitmins, hitmaxs;
     
-    if(self.hg_type == HG_TRANSLOC+100) {
-        hitmins = self.mins,
-        hitmaxs = self.maxs;
-    } else if(g_handgrenades_oldhitboxes) {
+    if(g_handgrenades_oldhitboxes) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {
@@ -718,15 +780,15 @@ void HG_Attack()
     
 	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
 	
-	if (hgtype == HG_NAPALM && self.hg_power == 1)
+	if(hgtype == HG_NAPALM && self.hg_power == 1)
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
-		
-	self.hg_next = time + GV("cooldown");
+
+:finish
+    self.hg_next = time + GV("cooldown");
     
     if(!freebonus) {
         self.hg_ammo -= 1;
         self.hg_regentime = HG_RegenTime(self);
-        //sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
     }
     
     if(self.hg_bonus)
@@ -756,6 +818,7 @@ void HG_Frame()
         
     HG_UpdateDetonables();
     HG_FixNadeType(self);
+    HG_Shield_Frame();
     
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomCRAHookButton(self))) || self.hg_power;
 	
@@ -834,6 +897,7 @@ void HG_ResetState(entity p) {
     p.hg_bonustype = HG_NORMAL;
     p.hg_regentime = HG_RegenTime(self);
     p.hg_clearammo = 0;
+    p.hg_shield = 0;
     HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
 }
 
@@ -844,6 +908,7 @@ void HG_PlayerSpawn()
     
     if(cvar("g_handgrenades_resetonrespawn"))
         HG_ResetState(self);
+    self.hg_shield = 0;
 }
 
 void HG_PlayerJoin() {

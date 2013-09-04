@@ -780,6 +780,7 @@ void PutObserverInServer (void)
         self.hg_type_picked = 0;
         self.hg_type = 0;
         self.hg_nadesused = 0;
+        self.hg_shield = 0;
     }
     
     self.wasingame = FALSE;
@@ -2251,7 +2252,7 @@ void player_powerups (void)
 		self.spawnshieldtime = max(self.spawnshieldtime, time + cvar("g_midair_shieldtime"));
 
 	if (time >= game_starttime)
-	if (time < self.spawnshieldtime)
+	if (time < self.spawnshieldtime || self.hg_shield)
 		self.effects = self.effects | (EF_ADDITIVE | EF_FULLBRIGHT);
 }
 
@@ -2527,6 +2528,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_regenstat = spectatee.hg_regenstat;
     self.hg_regenpaused = spectatee.hg_regenpaused;
     self.hg_launchspeed = spectatee.hg_launchspeed;
+    self.hg_shield = spectatee.hg_shield;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;

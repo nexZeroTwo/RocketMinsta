@@ -202,3 +202,4 @@ float sv_oldfag;		// just to make it compile
 #endif
 
 float TeamColorSkin(float);
+float approach(float v, float t, float d);

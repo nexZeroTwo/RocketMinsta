@@ -301,6 +301,7 @@ const float STAT_HGREGEN = 120;
 const float STAT_HGREGENPAUSED = 121;
 const float STAT_HGDETONABLES = 122;
 const float STAT_HGLAUNCH = 123;
+const float STAT_HGSHIELD = 124;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -494,7 +495,8 @@ float DEATH_HG_REMOTE = 102;
 float DEATH_HG_PLASMA = 103;
 float DEATH_HG_PLASMA_SHARD = 104;
 float DEATH_HG_TRANSLOC = 105;
-float DEATH_HG_END = 105;
+float DEATH_HG_SHIELD = 106;
+float DEATH_HG_END = 106;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

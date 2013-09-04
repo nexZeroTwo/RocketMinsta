@@ -848,6 +848,11 @@ string Sbar_GetField(entity pl, float field)
                     str = "Tl ";
                     break;
                 
+                case HG_SHIELD:
+                    sbar_field_rgb = '1 1 0';
+                    str = "Sh ";
+                    break;
+                
                 default:
                     sbar_field_rgb = '0.5 0.5 0.5';
                     str = "?? ";
@@ -3352,8 +3357,20 @@ float hgregen;
 
 float ammo_useprogress;
 float vhealth;
+float vshield;
 
-void Sbar_Draw (void)
+void Sbar_HGShield(void) {
+    float s = getstatf(STAT_HGSHIELD);
+    
+    if(s)
+        vshield = approach(vshield, 1, frametime * 3);
+    else
+        vshield = approach(vshield, 0, frametime * 3);
+    
+    drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '1 1 0.2', 0.1 * vshield, DRAWFLAG_ADDITIVE);
+}
+
+void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
 
@@ -3398,6 +3415,8 @@ void Sbar_Draw (void)
 	float weapon_stats;
 	float x, fade;
 	float stat_items, stat_weapons;
+
+    Sbar_HGShield();
 
 	weapon_stats = getstati(STAT_DAMAGE_HITS);
  	weapon_number = weapon_stats & 63;

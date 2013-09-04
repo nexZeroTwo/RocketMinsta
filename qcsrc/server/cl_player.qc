@@ -486,6 +486,24 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 	dh = max(self.health, 0);
 	da = max(self.armorvalue, 0);
 
+    if(damage)
+    if(g_handgrenades)
+    if(attacker.classname == "player")
+    if(self.hg_shield)
+    if(deathtype != DEATH_HG_SHIELD) {
+        vector offs = '0 0 1' * self.maxs_z*0.5;
+        float reflect = damage * cvar("g_handgrenades_shield_damage_reflect");
+        float absorb = damage * (1-cvar("g_handgrenades_shield_damage_take"));
+        damage *= cvar("g_handgrenades_shield_damage_take");
+        
+        if(DEATH_ISHG(deathtype))
+            reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");
+        
+        FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
+        trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin+offs, trace_endpos);
+        self.hg_shieldhealth -= absorb;
+    }
+
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
@@ -578,7 +596,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 					}
 
 					if(sound_allowed(MSG_BROADCAST, attacker))
-					
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					if(!DEATH_ISWEAPON(deathtype, WEP_LASER) || attacker != self || self.health < 2 * cvar("g_balance_laser_primary_damage") * cvar("g_balance_selfdamagepercent") + 1)
 					// exclude pain sounds for laserjumps as long as you aren't REALLY low on health and would die of the next two

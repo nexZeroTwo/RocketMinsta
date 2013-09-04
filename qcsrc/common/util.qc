@@ -1712,3 +1712,16 @@ float TeamColorSkin(float t) {
 #endif
     return 0;
 }
+
+float approach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	return v;
+}
