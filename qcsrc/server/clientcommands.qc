@@ -222,7 +222,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("anonspec", "sv_anonspecs")
 		OPTAVAIL	("showspec", "sv_showspecs")
 		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
-		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
+		//OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
 		OPTAVAIL	("shownames", "sv_shownames")
 		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")

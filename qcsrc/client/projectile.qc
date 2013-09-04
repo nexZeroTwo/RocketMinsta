@@ -64,6 +64,9 @@ float rm_particleeffectnum(string p) {
 #define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
 
 float TeamNumber(float t, float d) {
+    if(!rm_teamlasers)
+        return d;
+    
     switch(t) {
         case COLOR_TEAM1:
             return 1;
@@ -158,6 +161,9 @@ void Projectile_DrawTrail(vector to)
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
             break;
         case PROJECTILE_HG_TRANSLOC:
+            if(!rm_teamlasers)
+                return trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
+        
             switch(self.team) {
                 case COLOR_TEAM1:           trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"),     from, to); break;
                 case COLOR_TEAM2:           trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"),    from, to); break;
