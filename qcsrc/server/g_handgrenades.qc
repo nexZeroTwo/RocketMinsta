@@ -418,6 +418,8 @@ void HG_Grenade_Touch() {
 void HG_Remote_Stick() {
     vector normal = trace_plane_normal;
     entity e = spawn();
+    float d = self.owner.hg_detonables;
+    
     e.classname = self.classname;
     e.bot_dodge = self.bot_dodge;
     e.bot_dodgerating = self.bot_dodgerating;
@@ -448,8 +450,6 @@ void HG_Remote_Stick() {
     e.hg_detonatetime = self.hg_detonatetime;
     e.hg_detonatedelay = self.hg_detonatedelay;
     e.hg_detonable_updated = self.hg_detonable_updated;
-    if(e.hg_detonable)
-        self.owner.hg_detonables += 1;
     e.reset = self.reset;
     setsize(e, '-4 -4 -4', '4 4 4');
     setorigin(e, self.origin);
@@ -462,6 +462,8 @@ void HG_Remote_Stick() {
     move_out_of_solid(e);
     HG_Grenade_Remove();
     self = e;
+    
+    self.owner.hg_detonables = d;
 }
 
 float HG_RegenTime(entity e) {
@@ -642,7 +644,7 @@ void HG_Grenade_Remove() {
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
     stopsound(self, CHAN_PAIN);
     
-    if(hg_detonable_updated && self.owner)
+    if(self.hg_detonable_updated && self.owner)
         self.owner.hg_detonables -= 1;
     
     remove(self);
