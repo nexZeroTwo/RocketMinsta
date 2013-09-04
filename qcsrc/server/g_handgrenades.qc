@@ -927,7 +927,9 @@ void HG_PlayerSpawn()
     
     if(cvar("g_handgrenades_resetonrespawn"))
         HG_ResetState(self);
+        
     self.hg_shield = 0;
+    HG_UpdateDetonables();
 }
 
 void HG_PlayerJoin() {
@@ -938,6 +940,7 @@ void HG_PlayerJoin() {
         self.hg_clearammo = TRUE;
     
     HG_ResetState(self);
+    HG_UpdateDetonables();
 }
 
 float HG_ShowMenu(float always) {
