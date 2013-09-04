@@ -481,7 +481,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name |", (cvar("_g_handgrenades_select_available")? " nade" : ""), " kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
 		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
@@ -778,6 +778,7 @@ string Sbar_GetField(entity pl, float field)
 			{
 				sbar_field_icon0 = "gfx/sb_player_ready";
 			}
+            /*
 			else if(!teamplay)
 			{
 				f = stof(getplayerkey(pl.sv_entnum, "colors"));
@@ -789,6 +790,14 @@ string Sbar_GetField(entity pl, float field)
 					sbar_field_icon2_rgb = colormapPaletteColor(mod(f, 16), 1);
 				}
 			}
+            */
+            else if(g_handgrenades && cvar("_g_handgrenades_select_available")) {
+                if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
+                    float hgt = pl.(scores[SP_NADEMODE]);
+                    sbar_field_icon0 = strcat("gfx/nades/", HG_TypeToName(hgt));
+                    sbar_field_icon0_rgb = HG_TypeToColor(hgt);
+                }
+            }
 			return GetPlayerName(pl.sv_entnum);
 
 		case SP_FRAGS:
@@ -822,44 +831,9 @@ string Sbar_GetField(entity pl, float field)
 			return str;
         
         case SP_NADEMODE:
-            switch(pl.(scores[SP_NADEMODE])) {
-                case HG_NORMAL:
-                    sbar_field_rgb = '1 0.5 0';
-                    str = "Gr ";
-                    break;
-                
-                case HG_NAPALM:
-                    sbar_field_rgb = '1 0 0';
-                    str = "Na ";
-                    break;
-                
-                case HG_REMOTE:
-                    sbar_field_rgb = '0 1 0';
-                    str = "Tr ";
-                    break;
-                
-                case HG_PLASMA:
-                    sbar_field_rgb = '0 1 1';
-                    str = "Pl ";
-                    break;
-                
-                case HG_TRANSLOC:
-                    sbar_field_rgb = '1 0 1';
-                    str = "Tl ";
-                    break;
-                
-                case HG_SHIELD:
-                    sbar_field_rgb = '1 1 0';
-                    str = "Sh ";
-                    break;
-                
-                default:
-                    sbar_field_rgb = '0.5 0.5 0.5';
-                    str = "?? ";
-                    break;
-            }
-            
-            return str;
+            float m = pl.(scores[SP_NADEMODE]);
+            sbar_field_rgb = HG_TypeToColor(m);
+            return "";
         
 		default:
 			tmp = pl.(scores[field]);
@@ -1053,8 +1027,10 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		}
 
 		tmp_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
-		if(sbar_field_icon0 != "")
-			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
+		if(sbar_field_icon0 != "") {
+            float fa = 1 - (pl.(scores[SP_FREEZETAG_FROZENSTATUS]) * 0.7);
+			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a*fa, DRAWFLAG_NORMAL);
+        }
 		if(sbar_field_icon1 != "")
 			drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
 		if(sbar_field_icon2 != "")
@@ -1081,6 +1057,9 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			if(field == SP_NAME) {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len; // left or right aligned? let's put it right...
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
+            } else if(field == SP_NADEMODE) {
+				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
+                drawpic(pos - tmp, strcat("gfx/nades/", HG_TypeToName(pl.(scores[SP_NADEMODE]))), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
@@ -1314,10 +1293,12 @@ void Sbar_DrawScoreboard()
 		return;
 	
 	vector sbar_fontsize_old = sbar_fontsize;
+    /*
     if(sbar_fontsize_x > 10)
         sbar_fontsize_x = 10;
     if(sbar_fontsize_y > 10)
         sbar_fontsize_y = 10;
+    */
 	sbar_fontsize = sbar_fontsize * (sbar_woulddrawscoreboard? ipol_linear : ipol_swingOut)(sbar_scoreboard_fade_alpha);
 	
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg") * sbar_scoreboard_fade_alpha;

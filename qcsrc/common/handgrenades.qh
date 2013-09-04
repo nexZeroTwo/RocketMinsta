@@ -11,3 +11,4 @@ string HG_TypeToName(float);
 float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
 string HG_NameToExpandedName(string t);
+vector HG_TypeToColor(float t);

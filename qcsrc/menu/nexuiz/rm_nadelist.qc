@@ -103,6 +103,8 @@ void resizeNotifyRMNadeList(entity me, vector relOrigin, vector relSize, vector 
     me.realUpperMargin = 0.5 * (1 - me.realFontSize_y);
 }
 
+//void draw_Picture_Unskinned(vector theOrigin, string pic, vector theSize, vector theColor, float theAlpha)
+
 void setDependent_Check(entity);
 void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelected)
 {
@@ -113,7 +115,11 @@ void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelec
     if(isSelected)
         draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);
     
-    s = HG_NameToExpandedName(bufstr_get(me.nadelist_buf, i));
-    draw_Text(me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1) * me.realFontSize_x)) * eX, s, me.realFontSize, '1 1 1', 1 * amod, 1);
+    vector o = me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1) * me.realFontSize_x)) * eX;
+    
+    s = bufstr_get(me.nadelist_buf, i);
+    
+    draw_Picture_Unskinned(o, strcat("gfx/nades/", s), me.realFontSize, HG_TypeToColor(HG_NameToType(s)), 1);
+    draw_Text(me.realFontSize_x * '1.2 0 0' + o, HG_NameToExpandedName(s), me.realFontSize, '1 1 1', 1 * amod, 1);
 }
 #endif

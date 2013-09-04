@@ -38,3 +38,15 @@ float HG_NameToType(string t) {
 string HG_NameToExpandedName(string t) {
     return HG_TypeToExpandedName(HG_NameToType(t));
 }
+
+vector HG_TypeToColor(float t) {
+    switch(t) {
+        case HG_NORMAL:     return '0.2 1 0.2';
+        case HG_NAPALM:     return '1 0.5 0';
+        case HG_REMOTE:     return '1 0.3 0.3';
+        case HG_PLASMA:     return '0.1 1 1';
+        case HG_TRANSLOC:   return '1 0.1 1';
+        case HG_SHIELD:     return '1 1 0';
+        default:            return '0.5 0.5 0.5';
+    }
+}
