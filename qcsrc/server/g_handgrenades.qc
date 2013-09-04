@@ -447,6 +447,9 @@ void HG_Remote_Stick() {
     e.hg_detonable = self.hg_detonable;
     e.hg_detonatetime = self.hg_detonatetime;
     e.hg_detonatedelay = self.hg_detonatedelay;
+    e.hg_detonable_updated = self.hg_detonable_updated;
+    if(e.hg_detonable)
+        self.owner.hg_detonables += 1;
     e.reset = self.reset;
     setsize(e, '-4 -4 -4', '4 4 4');
     setorigin(e, self.origin);
@@ -478,7 +481,12 @@ float HG_PlayerMayDetonate(entity p) {
 void HG_Detonate(entity nade) {
     if(!nade || !nade.hg_detonable || nade.hg_detonatetime || nade.hg_detonateready > time)
         return;
+        
     nade.hg_detonatetime = time + nade.hg_detonatedelay;
+    if(nade.hg_detonable_updated && nade.owner) {
+        nade.hg_detonable_updated = FALSE;
+        nade.owner.hg_detonables -= 1;
+    }
 }
 
 void HG_DetonateAll(entity plr) {    
@@ -560,6 +568,13 @@ void HG_Grenade_Think() {
         return;
     }
     
+    if(self.hg_detonable)
+    if(time >= self.hg_detonateready)
+    if(!self.hg_detonable_updated) {
+        self.hg_detonable_updated = TRUE;
+        self.owner.hg_detonables += 1;
+    }
+    
     if(self.hg_detonable && self.hg_detonatetime) {
         if(time >= self.hg_detonatetime) {
             self.use();
@@ -625,6 +640,10 @@ void HG_Grenade_Remove() {
     if(self.hg_waypoint)
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
     stopsound(self, CHAN_PAIN);
+    
+    if(hg_detonable_updated && self.owner)
+        self.owner.hg_detonables -= 1;
+    
     remove(self);
 }
 
@@ -816,7 +835,7 @@ void HG_Frame()
     if(time < game_starttime)
         return;
         
-    HG_UpdateDetonables();
+    //HG_UpdateDetonables();
     HG_FixNadeType(self);
     HG_Shield_Frame();
     
