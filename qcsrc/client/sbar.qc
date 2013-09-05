@@ -3351,6 +3351,9 @@ void Sbar_HGShield(void) {
     drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '1 1 0.2', 0.1 * vshield, DRAWFLAG_ADDITIVE);
 }
 
+string jb_str;
+float jb_str_alpha;
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3602,6 +3605,26 @@ void Sbar_Draw(void)
 		
 		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
+    
+    float havemsg = TRUE;
+    switch(getstati(STAT_JBMSG)) {
+        case JBMSG_CAPPINGNEUTRAL   :   jb_str  =  "Your team is capturing a Neutral Control Point";    break;
+        case JBMSG_ALLALIVE         :   jb_str  =  "Your team is already free";                         break;
+        case JBMSG_NOTREADY         :   jb_str  =  "This Control Point is not ready yet";               break;
+        case JBMSG_WRONGTEAM        :   jb_str  =  "You can't capture your team's control points";      break;
+        case JBMSG_TOOLATE          :   jb_str  =  "Someone is already capturing this";                 break;
+        default                     :   havemsg =  FALSE;                                               break;
+    }
+    
+    if(havemsg)
+        jb_str_alpha = approach(jb_str_alpha, 1, frametime);
+    else
+        jb_str_alpha = approach(jb_str_alpha, 0, frametime * 3);
+    
+    if(jb_str) if(jb_str_alpha) {
+        drawstringcenter('0 1 0' * (vid_conheight / 2 + sbar_fontsize_y * 4), jb_str, sbar_fontsize, '1 1 1', jb_str_alpha * 0.8, DRAWFLAG_NORMAL);
+    }
+    
     
 	// handgrenade force meter
 	float hgstat = getstatf(STAT_HGFORCE);

@@ -22,6 +22,13 @@ void JB_Init() {
 	e.nextthink = time;
     
     g_jailbreak_claim = cvar("g_jailbreak_controlpoint_claim");
+    
+    addstat(STAT_REDALIVE, AS_INT, redalive_stat);
+    addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
+    addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
+    addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
+    addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
+    addstat(STAT_JBMSG, AS_INT, jb_message);
 }
 
 void JB_Log(string s) {
@@ -530,7 +537,7 @@ float JB_PlayerDies() {
                 
                 float rng = cvar("g_jailbreak_defense_range");
                 entity cp;
-                if(rng) for(;(cp = find(cp, classname, "jailbreak_controlpoint"));) {
+                if(rng) FOR_EACH_JB_CONTROLPOINT(cp) {
                     if((cp.team == frag_attacker.team) || (cp.team == JB_TEAM_NEUTRAL && cp.jb_active)) {
                         // Rewards control point defense if fragging nearby your team's or neutral cp.
                         // In case of neutral cp, it has to be active (no defense farming in the beginning of the round)
@@ -595,8 +602,10 @@ void JB_RemovePlayer() {
 void JB_PlayerPreThink() {
 	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
 	
-	if(time - self.pointupdatetime >= 0.01)
+	if(time - self.pointupdatetime >= 0.01) {
 		self.jb_unlock_progress = 0;
+        self.jb_message = JBMSG_NONE;
+    }
 	
 	if not(self.jb_isprisoned)
 		return;
@@ -941,6 +950,11 @@ void JB_ControlPoint_Think() {
         JB_ControlPoint_Activate(self);
     }
     
+    if(time - self.pointupdatetime >= 0.1) {
+        self.jb_unlock_progress = 0;
+        self.jb_capturingplayer = world;
+    }
+    
     self.jb_cooldown = max(0, self.jb_cooldown - frametime);
 }
 
@@ -955,7 +969,7 @@ void JB_ControlPoint_SwitchTeam(entity e, float t) {
 
 void JB_TriggerTeamControlPoints(float t) {
     entity e, o;
-    for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));) {
+    FOR_EACH_JB_CONTROLPOINT(e) {
         if(e.jb_team_initial == t) {
             o = self;
             self = e;
@@ -1026,39 +1040,51 @@ void JB_ControlPoint_Touch() {
     if(jb_roundover)
         return;
     
-	if(other.team == self.team)
-		return;
-
-	if(other.health < 1)
-		return;
-	
-    if(!self.jb_active)
+    if(other.health < 1)
+        return;
+        
+    if(other.classname != "player")
         return;
     
-	if(other.classname != "player")
-		return;
-		
-	if(JB_TotalPlayersOnTeam(other.team) == JB_AlivePlayersOnTeam(other.team))
-		return;	// no imprisoned players on team - sorta makes no sense to jailbreak
-	
-	if(time - self.pointupdatetime >= 0.1) {
-		self.jb_unlock_progress = 0;
-        self.jb_capturingplayer = world;
-    } else if(self.jb_capturingplayer && self.jb_capturingplayer != other) {
+    other.pointupdatetime = time;
+    
+    if(other.team == self.team) {
+        other.jb_message = JBMSG_WRONGTEAM;
         return;
     }
-	
-	self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_jailbreak_controlpoint_unlock_speed"), 1);
+        
+    if(!self.jb_active) {
+        other.jb_message = JBMSG_NOTREADY;
+        return;
+    }
+    
+    if(self.jb_capturingplayer && self.jb_capturingplayer != other) {
+        other.jb_message = JBMSG_TOOLATE;
+        return;
+    }
+    
+    if(JB_TotalPlayersOnTeam(other.team) == JB_AlivePlayersOnTeam(other.team)) {
+        other.jb_message = JBMSG_ALLALIVE;
+        return;
+    }
+    
+    entity cp;
+    if(self.team != JB_TEAM_NEUTRAL) FOR_EACH_JB_CONTROLPOINT(cp) if(cp.team == JB_TEAM_NEUTRAL) if(cp.jb_unlock_progress) {
+        other.jb_message = JBMSG_CAPPINGNEUTRAL;
+        break;
+    }
+    
+    if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL)
+        self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_jailbreak_controlpoint_unlock_speed"), 1);
 	self.pointupdatetime = time;
     self.jb_capturingplayer = other;
-	other.pointupdatetime = time;
 	other.jb_unlock_progress = self.jb_unlock_progress;
 	
 	if(self.jb_unlock_progress >= 1) {
 		JB_ControlPoint_Capture(other);
         
         JB_ControlPoint_Deactivate(self, JB_ControlPoint_Cooldown(self));
-        entity e; for(;(e = find(e, classname, "jailbreak_controlpoint"));) if(e != self)
+        entity e; FOR_EACH_JB_CONTROLPOINT(e) if(e != self)
             if(e.team == other.team)
                 JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global_own"));
             else if(e.team == JB_TEAM_NEUTRAL || e.team == JB_GetEnemyTeamOf(other.team))
@@ -1117,6 +1143,15 @@ void JB_SetupControlPoint() {
 	self.basewaypoint = self.nearestwaypoint;
 	WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, jb_waypoint);
 	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
+    
+    if(!jb_cp_first) {
+        jb_cp_first = self;
+    }
+    
+    if(jb_cp_last)
+        jb_cp_last.jb_cp_next = self;
+        
+    jb_cp_last = self;
 }
 
 //

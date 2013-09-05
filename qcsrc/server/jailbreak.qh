@@ -23,6 +23,7 @@ void JB_HandleProjectile(entity);
 void JB_ControlPoint_Activate(entity);
 void JB_ControlPoint_Deactivate(entity, float);
 void JB_ControlPoint_UpdateCooldownProgress(entity);
+string JB_ControlPoint_Name(entity);
 
 float JB_PlayerDies();
 void JB_PlayerSpawn();
@@ -41,6 +42,7 @@ void JB_RemovePlayer();
 .float jb_proj_ownerstate;
 .float jb_team_initial;
 .float jb_defendthink_next;
+.float jb_message;
 
 .entity jb_prisonedby;
 .entity jb_prisoned_by;
@@ -51,7 +53,11 @@ void JB_RemovePlayer();
 
 float jb_totalred, jb_totalblue;
 float jb_roundover;
+
 entity jb_activecamera;
+entity jb_cp_first;
+entity jb_cp_last;
+.entity jb_cp_next;
 
 .float jb_torture_force;
 .float jb_torture_force_jitter;
@@ -66,3 +72,5 @@ entity jb_activecamera;
 #define JB_PROJ_OWNERSTATE_FREE 2
 
 #define JB_TEAM_NEUTRAL COLOR_TEAM3
+
+#define FOR_EACH_JB_CONTROLPOINT(e) for(e = jb_cp_first; e; e = e.jb_cp_next)
