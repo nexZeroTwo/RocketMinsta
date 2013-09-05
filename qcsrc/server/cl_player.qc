@@ -957,18 +957,18 @@ float SendEntity_ShowNames(entity to, float sendflags)
 const vector SHOWNAMES_ORIGIN_OFFSET = '0 0 48';
 void shownames_think()
 {
-	if(self.origin - SHOWNAMES_ORIGIN_OFFSET != self.owner.origin)
-	{
-		setorigin(self, self.owner.origin + SHOWNAMES_ORIGIN_OFFSET);
-		self.SendFlags |= 1;
-	}
-	if(self.health != max(0, floor(self.owner.health)) || self.armorvalue != max(0, floor(self.owner.armorvalue)))
-	{
-		self.health = max(0, floor(self.owner.health));
-		self.armorvalue = max(0, floor(self.owner.armorvalue));
-		self.SendFlags |= 2;
-	}
-    self.nextthink = time;
+    if(self.origin - SHOWNAMES_ORIGIN_OFFSET != self.owner.origin)
+    {
+        setorigin(self, self.owner.origin + SHOWNAMES_ORIGIN_OFFSET);
+        self.SendFlags |= 1;
+    }
+    if(self.health != bound(0, floor(self.owner.health), 255) || self.armorvalue != bound(0, floor(self.owner.armorvalue), 255))
+    {
+        self.health = bound(0, floor(self.owner.health), 255);
+        self.armorvalue = bound(0, floor(self.owner.armorvalue), 255);
+        self.SendFlags |= 2;
+    }
+    self.nextthink = time + cvar("sv_shownames_update");
 }
 
 float shownames_customize()

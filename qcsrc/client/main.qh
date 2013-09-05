@@ -318,3 +318,6 @@ float DPCONTENTS_SOLID = 1; // blocks player movement
 float DPCONTENTS_BODY = 32; // blocks player movement
 float DPCONTENTS_CORPSE = 64; // blocks player movement
 float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
+
+.vector oldorigin;
+.vector iorigin;
