@@ -594,6 +594,19 @@ void HG_Grenade_Think() {
     #undef GV
 }
 
+void HG_Grenade_ChangeOwner(entity o) {
+    if(!o || o == self.owner)
+        return;
+    
+    if(self.hg_detonable_updated) {
+        self.owner.hg_detonables -= 1;
+        o.hg_detonables += 1;
+    }
+    
+    self.owner = o;
+    self.team = o.team;
+}
+
 void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
     if(DEATH_ISHG(deathtype))
         return;
@@ -602,8 +615,7 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 	self.health = self.health - damage;
 	if(self.health <= 0) {
         if(attacker.classname == "player") {
-            self.owner = attacker;
-            self.team = attacker.team;
+            HG_Grenade_ChangeOwner(attacker);
         }
         self.hg_deathtime = time;
 	}
