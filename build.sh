@@ -283,6 +283,7 @@ function listcustom()
 function finalize-install
 {
     cp -v "rocketminsta.cfg" "$NEXDATA"
+    cp -v "rocketminsta-gameplay.cfg" "$NEXDATA"
     cp -v "rocketminsta-compat.cfg" "$NEXDATA"
 
     cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
@@ -416,8 +417,8 @@ if [ "$1" = "release" ]; then
     finalize-install    
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
-        cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "$NEXDATA/rocketminsta.cfg"
-        sed -i "/exec rocketminsta.cfg/d" "$NEXDATA/rocketminsta.cfg" # Without this, a recursive include will occur
+        cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "$NEXDATA/rocketminsta-gameplay.cfg"
+        sed -i '/exec "$rm_gameplay_config"/d' "$NEXDATA/rocketminsta-gameplay.cfg" # Without this, a recursive include will occur
     fi
     
     cp -v CHANGELOG "$NEXDATA/CHANGELOG.rmrelease"
@@ -438,7 +439,7 @@ EOF
         If you'd like to use one of the custom configurations,
         add the following at the bottom of your config:
         
-            exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
+            rmcustom NAME_OF_CUSTOM_CONFIG.cfg
         
         The following configurations were included at build time: `ls rm-custom/*.cfg | while read line; do line=${line##rm-custom/}; echo -n "$line "; done`
 EOF
@@ -512,20 +513,15 @@ cat <<EOF
         $NEXDATA/rm-custom
 $(listcustom)
 
-    Please make sure all of these files are
-    accessible by Nexuiz. Then add the following
-    line at top of your server config:
+    Please make sure all of these files are accessible by Nexuiz.
+    Then add the following line at top of your server config:
     
         exec rocketminsta.cfg
 
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
         
-        exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
-
-    (note: if you have sv_progs and csqc_progname variables changed
-    because of a previous RocketMinsta installation, it's a good idea to remove them)
-
+        rmcustom NAME_OF_CUSTOM_CONFIG.cfg
         
     In addition, these packages MUST be available on your download server:
         $BUILT_PACKAGES
