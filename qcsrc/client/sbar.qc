@@ -4854,11 +4854,12 @@ void Sbar_Draw(void)
         
         if(nadesector_pos) {
             float a = getstati(STAT_HGAMMO);
+            float t = getstati(STAT_HGTYPE);
             pos_y = 33;
             pos = bottom - pos;
             pos_x = nadesector_pos;
-
-            drawpic(pos + '0 5 0', "gfx/hud/sb_nade", '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+            
+            drawpic(pos, strcat("gfx/nades/", HG_TypeToName(t), "_large"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1' - '0 1 1' * (!a), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method

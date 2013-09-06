@@ -302,7 +302,8 @@ const float STAT_HGREGENPAUSED = 121;
 const float STAT_HGDETONABLES = 122;
 const float STAT_HGLAUNCH = 123;
 const float STAT_HGSHIELD = 124;
-const float STAT_JBMSG = 125;
+const float STAT_HGTYPE = 125;
+const float STAT_JBMSG = 126;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
