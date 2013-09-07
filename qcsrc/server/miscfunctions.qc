@@ -512,14 +512,15 @@ string apply_autoreplace(string msg) {
 }
 
 string apply_faggotry(string msg) {
-    string result;
+    string result, c;
     float len, i;
     
     msg = strdecolorize(msg);
     len = strlen(msg);
-    if(substring(msg, len-1, 1) == ".")
-        msg = substring(msg, 0, len-1);
-    msg = strcat(msg, ". Also, I'm a huge faggot.");
+    c = substring(msg, len-1, 1);
+    if(c != "." && c != "?" && c != "!")
+        msg = strcat(msg, ".");
+    msg = strcat(msg, " Also, I'm a huge faggot.");
     len = strlen(msg);
     
     for(i = 0; i < len; ++i)
