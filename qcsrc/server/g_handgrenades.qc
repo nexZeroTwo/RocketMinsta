@@ -457,6 +457,7 @@ void HG_Remote_Stick() {
     e.hg_detonatedelay = self.hg_detonatedelay;
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
+    e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     setsize(e, '-4 -4 -4', '4 4 4');
     setorigin(e, self.origin);
     
