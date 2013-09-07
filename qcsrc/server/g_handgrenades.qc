@@ -730,16 +730,17 @@ void HG_Attack()
     if(self.deadflag != DEAD_NO)
         return;
     
-	if(time < self.hg_next)
-		return;
-	
     HG_FixNadeType(self);
 	
 	if(self.hg_bonus) {
 		hgtype = self.hg_bonustype;
         freebonus = cvar("g_handgrenades_bonus_free");
-	} else
+	} else {
+        if(time < self.hg_next)
+            return;
+            
 		hgtype = self.hg_type;
+    }
 	
     if(!freebonus && !self.hg_ammo)
         return;
@@ -873,7 +874,7 @@ void HG_Frame()
 	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
 		bigprint_spec(self, "Out of Grenades", "", 1);
 	
-	if(held && time >= self.hg_next && HG_PlayerMayFire(self) && mayfire) {
+	if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
         float t = HG_PLAYERNADETYPE(self);
         float ls;
         
@@ -888,8 +889,7 @@ void HG_Frame()
             self.hg_power = 0;
             HG_Attack();
         }
-	} else
-	{
+	} else {
 		if(self.hg_state && mayfire)
 			HG_Attack();
 		self.hg_power = 0;
