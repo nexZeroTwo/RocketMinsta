@@ -189,6 +189,7 @@ void HG_Napalm()
     proj.team = self.owner.team;
 
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
+    proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
 
 void HG_Napalm_Explode() {
@@ -295,6 +296,7 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps_next = time + proj.hg_plasma_projdps_delay;
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
+    proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
 
 void HG_Plasma_Explode() {
