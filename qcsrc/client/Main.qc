@@ -136,7 +136,10 @@ void CSQC_Init(void)
 	get_mi_min_max_texcoords(1); // try the CLEVER way first
 	minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
 	shortmapname = mi_shortname;
-
+    
+    if(substring(shortmapname, 0, 7) == "fagcity")
+        whatsgoingon = TRUE;
+    
 	if(precache_pic(minimapname) == "")
 	{
 		// but maybe we have a non-clever minimap
@@ -1677,9 +1680,9 @@ void Fog_Force()
 {
 	// TODO somehow thwart prvm_globalset client ...
 
-	if(forcefog != "") {
+	if(forcefog != "" || whatsgoingon) {
 		
-		if(forcefog == "nyan") {
+		if(forcefog == "nyan" || whatsgoingon) {
 			float a = 0.5 + 0.5 * sin(0.5 * time);
 			vector hsl;
 			hsl_x = a * 2 * PI;
@@ -1690,6 +1693,9 @@ void Fog_Force()
 			if(cvar("r_glsl")) {
 				cvar_clientsettemp("r_glsl_saturation", ftos(3 * cos(time * 0.25)));
 			}
+            
+            cvar_clientsettemp("volume", ftos(max(0.1, cvar("volume"))));
+            cvar_clientsettemp("bgmvolume", ftos(max(0.5, cvar("bgmvolume"))));
 		}
 		
 		else ForceFogString(forcefog);

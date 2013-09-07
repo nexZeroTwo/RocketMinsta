@@ -716,6 +716,8 @@ float sv_dps;
 
 .float wasingame;
 
+float whatsgoingon;
+
 float g_allow_oldnexbeam;
 float leadlimit;
 float sv_jumpvelocity;

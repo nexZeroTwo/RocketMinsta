@@ -321,3 +321,5 @@ float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
 
 .vector oldorigin;
 .vector iorigin;
+
+float whatsgoingon;

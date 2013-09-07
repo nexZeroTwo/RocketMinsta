@@ -511,6 +511,23 @@ string apply_autoreplace(string msg) {
 	return msg;
 }
 
+string apply_faggotry(string msg) {
+    string result;
+    float len, i;
+    
+    msg = strdecolorize(msg);
+    len = strlen(msg);
+    if(substring(msg, len-1, 1) == ".")
+        msg = substring(msg, 0, len-1);
+    msg = strcat(msg, ". Also, I'm a huge faggot.");
+    len = strlen(msg);
+    
+    for(i = 0; i < len; ++i)
+        result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(i * 0.07) + 3, 0.1, 1)), substring(msg, i, 1));
+    
+    return result;
+}
+
 string formatmessage(string msg)
 {
     float p, p1, p2;
@@ -521,6 +538,8 @@ string formatmessage(string msg)
     n = 7;
     
     msg = apply_autoreplace(msg);
+    if(whatsgoingon)
+        msg = apply_faggotry(msg);
     
     while (1)
     {
