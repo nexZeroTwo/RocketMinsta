@@ -219,18 +219,18 @@ void HG_Plasma_Projectile_Explode() {
 
 void HG_Plasma_Projectile_Think() {
     entity e;
-    float dps, rng;
     
     if(time >= self.hg_detonatetime) {
         HG_Plasma_Projectile_Explode();
         return;
     }
     
-    dps = cvar("g_handgrenades_plasma_projectile_dps");
-    rng = cvar("g_handgrenades_plasma_projectile_dps_range");
-    
-    FOR_EACH_PLAYER(e) if(vlen(e.origin - self.origin) <= rng)
-        Damage(e, self, self.owner, dps * frametime, self.projectiledeathtype, '0 0 0', '0 0 0');
+    if(time > self.hg_plasma_projdps_next) {
+        FOR_EACH_PLAYER(e) if(vlen(e.origin - self.origin) < self.hg_plasma_projrange)
+            Damage(e, self, self.owner, self.hg_plasma_projdps * (time - self.hg_plasma_projdps_last), self.projectiledeathtype, '0 0 0', '0 0 0');
+        self.hg_plasma_projdps_next = time + self.hg_plasma_projdps_delay;
+        self.hg_plasma_projdps_last = time;
+    }
     
     self.nextthink = time;
 }
@@ -288,6 +288,11 @@ void HG_Plasma_Projectile() {
 	proj.takedamage = DAMAGE_NO;
 	proj.event_damage = W_Plasma_Damage;
 	proj.flags = FL_PROJECTILE;
+    proj.hg_plasma_projrange = cvar("g_handgrenades_plasma_projectile_dps_range");
+    proj.hg_plasma_projdps = cvar("g_handgrenades_plasma_projectile_dps");
+    proj.hg_plasma_projdps_delay = cvar("g_handgrenades_plasma_projectile_dps_delay");
+    proj.hg_plasma_projdps_last = time;
+    proj.hg_plasma_projdps_next = time + proj.hg_plasma_projdps_delay;
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
 }

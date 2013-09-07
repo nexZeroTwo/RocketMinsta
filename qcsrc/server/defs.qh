@@ -715,3 +715,34 @@ float sv_dps;
 .float sub_target_used;
 
 .float wasingame;
+
+float g_allow_oldnexbeam;
+float leadlimit;
+float sv_jumpvelocity;
+float sv_gameplayfix_q2airaccelerate;
+float sv_autoaway;
+float g_walljump;
+float g_walljump_delay;
+float sv_ready_restart_after_countdown;
+float g_dodging;
+float g_freezetag_dodging_frozen;
+float g_dodging_delay;
+float g_dodging_ramp_time;
+float sv_defaultcharacter;
+float sv_defaultplayercolors;
+float sv_forcespecies;
+
+float g_balance_health_rotstable;
+float g_balance_armor_rotstable;
+float g_balance_fuel_rotstable;
+float g_balance_health_regenstable;
+float g_balance_armor_regenstable;
+float g_balance_fuel_regenstable;
+float g_balance_health_limit;
+float g_balance_armor_limit;
+float g_balance_fuel_limit;
+
+float g_balance_falldamage_deadminspeed;
+float g_balance_falldamage_factor;
+float g_balance_falldamage_minspeed;
+float g_balance_falldamage_maxdamage;

@@ -168,7 +168,10 @@ float player_getspecies()
 {
 	local float glob, i, j, fh, len, s, sk;
 	local string fn, l;
-
+    
+    if(sv_forcespecies >= 0)
+        return sv_forcespecies;
+    
 	s = -1;
 
 	glob = search_begin("models/player/*.txt", TRUE, TRUE);

@@ -783,6 +783,10 @@ void PutObserverInServer (void)
         self.hg_shield = 0;
     }
     
+    self.jb_unlock_progress = 0;
+    self.jb_message = JBMSG_NONE;
+    self.freezetag_revive_progress = 0;
+    
     self.wasingame = FALSE;
 	self.spectatortime = time;
     
@@ -891,8 +895,8 @@ void FixPlayermodel()
 	local vector m1, m2;
 
 	defaultmodel = "";
-
-	if(cvar("sv_defaultcharacter") == 1) {
+    
+	if(sv_defaultcharacter == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
@@ -921,8 +925,8 @@ void FixPlayermodel()
 		{
 			m1 = self.mins;
 			m2 = self.maxs;
-			setmodel_lod (self, defaultmodel);
-			setsize (self, m1, m2);
+			setmodel_lod(self, defaultmodel);
+			setsize(self, m1, m2);
 			chmdl = TRUE;
 		}
 
@@ -934,8 +938,8 @@ void FixPlayermodel()
 			self.playermodel = CheckPlayerModel(self.playermodel);
 			m1 = self.mins;
 			m2 = self.maxs;
-			setmodel_lod (self, self.playermodel);
-			setsize (self, m1, m2);
+			setmodel_lod(self, self.playermodel);
+			setsize(self, m1, m2);
 			chmdl = TRUE;
 		}
 
@@ -947,9 +951,9 @@ void FixPlayermodel()
 		self.species = player_getspecies(); // model or skin has changed
 
 	if(!teams_matter)
-		if(strlen(cvar_string("sv_defaultplayercolors")))
-			if(self.clientcolors != cvar("sv_defaultplayercolors"))
-				setcolor(self, cvar("sv_defaultplayercolors"));
+		if(cvar_string("sv_defaultplayercolors") != "")
+			if(self.clientcolors != sv_defaultplayercolors)
+				setcolor(self, sv_defaultplayercolors);
 }
 
 void PlayerTouchExplode(entity p1, entity p2)
@@ -2308,44 +2312,47 @@ void player_regen (void)
 	if(g_vip) if(ISVIP(self))
 		return;
 	
-	maxh = cvar("g_balance_health_rotstable");
-	maxa = cvar("g_balance_armor_rotstable");
-	maxf = cvar("g_balance_fuel_rotstable");
-	minh = cvar("g_balance_health_regenstable");
-	mina = cvar("g_balance_armor_regenstable");
-	minf = cvar("g_balance_fuel_regenstable");
-	limith = cvar("g_balance_health_limit");
-	limita = cvar("g_balance_armor_limit");
-	limitf = cvar("g_balance_fuel_limit");
+	maxh = g_balance_health_rotstable;
+	maxa = g_balance_armor_rotstable;
+	maxf = g_balance_fuel_rotstable;
+	minh = g_balance_health_regenstable;
+	mina = g_balance_armor_regenstable;
+	minf = g_balance_fuel_regenstable;
+	limith = g_balance_health_limit;
+	limita = g_balance_armor_limit;
+	limitf = g_balance_fuel_limit;
 
 	max_mod = regen_mod = rot_mod = limit_mod = 1;
 
-	if (self.runes & RUNE_REGEN)
-	{
-		if (self.runes & CURSE_VENOM) // do we have both rune/curse?
-		{
-			regen_mod = cvar("g_balance_rune_regen_combo_regenrate");
-			max_mod = cvar("g_balance_rune_regen_combo_hpmod");
-			limit_mod = cvar("g_balance_rune_regen_combo_limitmod");
-		}
-		else
-		{
-			regen_mod = cvar("g_balance_rune_regen_regenrate");
-			max_mod = cvar("g_balance_rune_regen_hpmod");
-			limit_mod = cvar("g_balance_rune_regen_limitmod");
-		}
-	}
-	else if (self.runes & CURSE_VENOM)
-	{
-		max_mod = cvar("g_balance_curse_venom_hpmod");
-		if (self.runes & RUNE_REGEN) // do we have both rune/curse?
-			rot_mod = cvar("g_balance_rune_regen_combo_rotrate");
-		else
-			rot_mod = cvar("g_balance_curse_venom_rotrate");
-		limit_mod = cvar("g_balance_curse_venom_limitmod");
-		//if (!self.runes & RUNE_REGEN)
-		//	rot_mod = cvar("g_balance_curse_venom_rotrate");
-	}
+    if(g_runematch) {
+        if (self.runes & RUNE_REGEN)
+        {
+            if (self.runes & CURSE_VENOM) // do we have both rune/curse?
+            {
+                regen_mod = cvar("g_balance_rune_regen_combo_regenrate");
+                max_mod = cvar("g_balance_rune_regen_combo_hpmod");
+                limit_mod = cvar("g_balance_rune_regen_combo_limitmod");
+            }
+            else
+            {
+                regen_mod = cvar("g_balance_rune_regen_regenrate");
+                max_mod = cvar("g_balance_rune_regen_hpmod");
+                limit_mod = cvar("g_balance_rune_regen_limitmod");
+            }
+        }
+        else if (self.runes & CURSE_VENOM)
+        {
+            max_mod = cvar("g_balance_curse_venom_hpmod");
+            if (self.runes & RUNE_REGEN) // do we have both rune/curse?
+                rot_mod = cvar("g_balance_rune_regen_combo_rotrate");
+            else
+                rot_mod = cvar("g_balance_curse_venom_rotrate");
+            limit_mod = cvar("g_balance_curse_venom_limitmod");
+            //if (!self.runes & RUNE_REGEN)
+            //	rot_mod = cvar("g_balance_curse_venom_rotrate");
+        }
+    }
+    
 	maxh = maxh * max_mod;
 	//maxa = maxa * max_mod;
 	//maxf = maxf * max_mod;
@@ -2873,19 +2880,32 @@ Called every frame for each client before the physics are run
 void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
+.float namecheck;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
 	self.stat_game_starttime = game_starttime;
-	self.stat_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
-	self.stat_leadlimit = cvar("leadlimit");
+	self.stat_allow_oldnexbeam = g_allow_oldnexbeam;
+	self.stat_leadlimit = leadlimit;
 
+    float isplayer, isspec, isobs;
+    
+    if(self.classname == "player")
+        isplayer = TRUE;
+    else if(self.classname == "spectator")
+        isspec = TRUE;
+    else if(self.classname == "observer")
+        isobs = TRUE;
+    
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();
 
 	zoomstate_set = 0;
-
+    
+    if(frametime)
+    if(time > self.namecheck)
 	if(self.netname_previous != self.netname)
 	{
 		if(cvar("sv_eventlog"))
@@ -2893,6 +2913,7 @@ void PlayerPreThink (void)
 		if(self.netname_previous)
 			strunzone(self.netname_previous);
 		self.netname_previous = strzone(self.netname);
+        self.namecheck = time + 0.5;
 	}
 
 	// version nagging
@@ -2941,21 +2962,19 @@ void PlayerPreThink (void)
 		return;
 #endif
 
-	freezetag_PlayerPreThink();
-	domination_PlayerPreThink();
-	vip_PlayerPreThink();
-	JB_PlayerPreThink();
-
-	if(self.classname == "player") {
+	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
-
+        
+        JB_PlayerPreThink();
+        domination_PlayerPreThink();
+        vip_PlayerPreThink();
+        freezetag_PlayerPreThink();
 		CheckRules_Player();
 
 //		PrintWelcomeMessage(self);
 
-		if (intermission_running)
-		{
+		if(intermission_running) {
 			IntermissionThink ();	// otherwise a button could be missed between
 			return;					// the think tics
 		}
@@ -2969,8 +2988,10 @@ void PlayerPreThink (void)
 
 		Nixnex_GiveCurrentWeapon();
 
-		if(frametime > 0) // don't do this in cl_movement frames, just in server ticks
+		if(frametime) { // don't do this in cl_movement frames, just in server ticks
 			UpdateSelectedPlayer();
+			player_powerups();
+        }
 
 		//don't allow the player to turn around while game is paused!
 		if(timeoutStatus == 2) {
@@ -2978,10 +2999,7 @@ void PlayerPreThink (void)
 			self.angles = self.lastV_angle;
 			self.fixangle = TRUE;
 		}
-
-		if(frametime)
-			player_powerups();
-
+        
 		HG_Frame();
 
 		if (self.deadflag != DEAD_NO)
@@ -3037,7 +3055,7 @@ void PlayerPreThink (void)
 
 		if(g_touchexplode)
 		if(time > self.touchexplode_time)
-		if(self.classname == "player")
+		if(isplayer)
 		if(self.deadflag == DEAD_NO)
 		if not(IS_INDEPENDENT_PLAYER(self))
 		FOR_EACH_PLAYER(other) if(self != other)
@@ -3053,7 +3071,8 @@ void PlayerPreThink (void)
 			}
 		}
 
-		if(g_lms && !self.deadflag && cvar("g_lms_campcheck_interval"))
+		if(g_lms && !self.deadflag)
+        if(cvar("g_lms_campcheck_interval"))
 		{
 			vector dist;
 
@@ -3163,9 +3182,9 @@ void PlayerPreThink (void)
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;
-	if(self.classname == "spectator")
+	if(isspec)
 		self.spectatee_status = num_for_edict(self.enemy);
-	else if(self.classname == "observer")
+	else if(isobs)
 		self.spectatee_status = num_for_edict(self);
 	else
 		self.spectatee_status = 0;
@@ -3198,8 +3217,9 @@ void PlayerPreThink (void)
 		self.taunt_soundtime = 0;
 		PlayerSound(playersound_taunt, CHAN_VOICE, VOICETYPE_AUTOTAUNT);
 	}
-
-	target_voicescript_next(self);
+    
+    if(isplayer)
+        target_voicescript_next(self);
 }
 
 // on dragger:

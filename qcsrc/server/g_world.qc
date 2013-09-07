@@ -802,6 +802,8 @@ void spawnfunc_worldspawn (void)
 	}
 	
     sv_dps = cvar("sv_dps");
+    g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
+    sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");
     
 	DPRM_Start();
 }
@@ -1771,7 +1773,7 @@ void ShuffleMaplist()
 }
 
 float leaderfrags;
-float WinningCondition_Scores(float limit, float leadlimit)
+float WinningCondition_Scores(float limit, float llimit)
 {
 	local entity e;
 	// TODO make everything use THIS winning condition (except LMS)
@@ -1801,7 +1803,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 	
 
 	if(WinningConditionHelper_zeroisworst)
-		leadlimit = 0; // not supported in this mode
+		llimit = 0; // not supported in this mode
 
 	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball || g_prec)
 	// these modes always score in increments of 1, thus this makes sense
@@ -1841,7 +1843,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 		(
 			(limit && (WinningConditionHelper_topscore >= limit))
 			||
-			(leadlimit && (WinningConditionHelper_topscore - WinningConditionHelper_secondscore >= leadlimit))
+			(llimit && (WinningConditionHelper_topscore - WinningConditionHelper_secondscore >= llimit))
 		),
 		WinningConditionHelper_equality
 	);
@@ -1965,7 +1967,6 @@ void CheckRules_World()
 {
 	float timelimit;
 	float fraglimit;
-	float leadlimit;
 
 	VoteThink();
 	MapVote_Think();

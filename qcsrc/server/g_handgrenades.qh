@@ -55,6 +55,12 @@ void HG_Remote_Stick();
 .float hg_shieldhealth;
 .entity hg_shieldmodel;
 
+.float hg_plasma_projrange;
+.float hg_plasma_projdps;
+.float hg_plasma_projdps_delay;
+.float hg_plasma_projdps_next;
+.float hg_plasma_projdps_last;
+
 // for hud only
 .float hg_regenstat;
 .float hg_launchspeed;

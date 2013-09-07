@@ -101,8 +101,8 @@ string STR_OBSERVER = "observer";
 #define FOR_EACH_CLIENTSLOT(v) for(v = world; (v = nextent(v)) && (num_for_edict(v) <= maxclients); )
 #define FOR_EACH_CLIENT(v) FOR_EACH_CLIENTSLOT(v) if(v.flags & FL_CLIENT)
 #define FOR_EACH_REALCLIENT(v) FOR_EACH_CLIENT(v) if(clienttype(v) == CLIENTTYPE_REAL)
-#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.classname == STR_PLAYER)
-#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.classname == STR_PLAYER)
+#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
+#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
 #define FOR_EACH_DEVELOPER(v) FOR_EACH_REALCLIENT(v) if(v.isdeveloper)
 #endif
 

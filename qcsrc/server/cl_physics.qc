@@ -48,7 +48,7 @@ void PlayerJump (void)
 {
 	float mjumpheight;
 
-	mjumpheight = cvar("sv_jumpvelocity");
+	mjumpheight = sv_jumpvelocity;
 	if (self.waterlevel >= WATERLEVEL_SWIMMING)
 	{
 		if (self.watertype == CONTENT_WATER)
@@ -425,8 +425,8 @@ void PM_Accelerate(vector wishdir, float wishspeed, float wishspeed0, float acce
 	vector vel_perpend;
 	float addspeed;
 	float savespeed;
-
-	if(cvar("sv_gameplayfix_q2airaccelerate"))
+    
+	if(sv_gameplayfix_q2airaccelerate)
 		wishspeed0 = wishspeed;
 
 	savespeed = self.velocity * self.velocity;
@@ -519,34 +519,22 @@ void SpecialCommand()
 #endif
 }
 
-vector PlayerTouchWall ()
+vector PlayerTouchWall()
 {
-	local float dist, max_normal;
-	local vector start, end;
+	local float dist, max_normal, i;
 	dist = 10;
 	max_normal = 0.2;
-	start = self.origin;
-	end = start + v_forward * 100;
-	tracebox (start, self.mins, self.maxs, end, TRUE, self);
-	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		return trace_plane_normal;
-	end = start - v_forward * 100;
-	tracebox (start, self.mins, self.maxs, end, TRUE, self);
-	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		return trace_plane_normal;
-	end = start + v_right * 100;
-	tracebox (start, self.mins, self.maxs, end, TRUE, self);
-	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		return trace_plane_normal;
-	end = start - v_right * 100;
-	tracebox (start, self.mins, self.maxs, end, TRUE, self);
-	if (trace_fraction < 1 && vlen (self.origin - trace_endpos) < dist && trace_plane_normal_z < max_normal)
-	if (!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		return trace_plane_normal;
-	return '0 0 0';
+    
+    for(i = 1; i > -2; i -= 2) {
+        tracebox(self.origin, self.mins, self.maxs, self.origin + v_forward * 100 * i, TRUE, self);
+        if(trace_fraction < 1)
+        if(trace_plane_normal_z < max_normal)
+        if not(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+        if(vlen(self.origin - trace_endpos) < dist)
+            return trace_plane_normal;
+    }
+    
+    return '0 0 0';
 }
 
 void SV_PlayerPhysics()
@@ -556,8 +544,12 @@ void SV_PlayerPhysics()
 	string temps;
 	float buttons_prev;
 	float not_allowed_to_move;
-	string c;
-
+    float isplayer;
+	//string c;
+    
+    isplayer = self.classname == "player";
+    
+    // XXX: why is this in Physics? Move to PlayerPreThink/PostThink later
 	if(self.movement != '0 0 0')
 	{
 		self.parm_idlesince = time;
@@ -566,7 +558,7 @@ void SV_PlayerPhysics()
 	}
 	else if(!self.is_away)
 	{
-		local float a = cvar("sv_autoaway");
+		local float a = sv_autoaway;
 
 		if(a)
 		if(time - self.parm_idlesince >= a * 60)
@@ -618,27 +610,34 @@ void SV_PlayerPhysics()
 			}
 		}
 	}
-
-	if (cvar ("g_walljump")) // check constantly so there's no need for map restart after setting the cvar
-	if (! (g_freezetag && self.freezetag_frozen) && self.health > 0)
-	if (self.classname == "player" && (! (g_race || g_cts) || cvar ("g_walljump_allowed_in_race")) && ! gameover && ! self.hook.state && self.BUTTON_JUMP && ! (self.flags & FL_ONGROUND) && (time - self.lastwj) > cvar ("g_walljump_delay"))
+    
+    // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
+	if (g_walljump)
+	if (!(g_freezetag && self.freezetag_frozen) && self.health > 0)
+    if (isplayer)
+    if (!(self.flags & FL_ONGROUND))
+    if (self.BUTTON_JUMP)
+    if ((time - self.lastwj) > g_walljump_delay)
+	if (!self.hook.state)
+    if (!gameover)
+    if (!(g_race || g_cts) || cvar("g_walljump_allowed_in_race"))
 	{
 		local vector plane_normal;
 		plane_normal = PlayerTouchWall ();
 		if (plane_normal != '0 0 0')
 		{
 			self.lastwj = time;
-			float wj_force = cvar ("g_walljump_force");
-			float wj_xy_factor = cvar ("g_walljump_velocity_xy_factor");
-			float wj_z_factor = cvar ("g_walljump_velocity_z_factor");
+			float wj_force = cvar("g_walljump_force");
+			float wj_xy_factor = cvar("g_walljump_velocity_xy_factor");
+			float wj_z_factor = cvar("g_walljump_velocity_z_factor");
 			self.velocity_x += plane_normal_x * wj_force;
 			self.velocity_x /= wj_xy_factor;
 			self.velocity_y += plane_normal_y * wj_force;
 			self.velocity_y /= wj_xy_factor;
-			self.velocity_z = cvar ("sv_jumpvelocity") * wj_z_factor;
+			self.velocity_z = sv_jumpvelocity * wj_z_factor;
 			if (self.crouch) self.velocity_z *= -1; // thanks Synap for the idea
 			self.oldvelocity = self.velocity;
-			pointparticles (particleeffectnum ("smoke_ring"), trace_endpos, plane_normal, cvar ("g_walljump_smokeparticle_num"));
+			pointparticles(particleeffectnum("smoke_ring"), trace_endpos, plane_normal, 10);
 			PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
 		}
 	}
@@ -651,6 +650,7 @@ void SV_PlayerPhysics()
 
 	buttons = self.BUTTON_ATCK + 2 * self.BUTTON_JUMP + 4 * self.BUTTON_ATCK2 + 8 * self.BUTTON_ZOOM + 16 * self.BUTTON_CROUCH + 32 * self.BUTTON_HOOK + 64 * self.BUTTON_USE + 128 * (self.movement_x < 0) + 256 * (self.movement_x > 0) + 512 * (self.movement_y < 0) + 1024 * (self.movement_y > 0);
 	
+#if 0
 	if(!buttons)
 		c = "x";
 	else if(buttons == 1)
@@ -680,6 +680,7 @@ void SV_PlayerPhysics()
 	}
 	else if(self.specialcommand_pos && (c != substring(specialcommand, self.specialcommand_pos - 1, 1)))
 		self.specialcommand_pos = 0;
+#endif
 
     if(self.PlayerPhysplug)
         if(self.PlayerPhysplug())
@@ -734,7 +735,7 @@ void SV_PlayerPhysics()
 
 	self.items &~= IT_USING_JETPACK;
 
-	if(self.classname == "player")
+	if(isplayer)
 	{
 		if(self.race_penalty)
 			if(time > self.race_penalty)
@@ -743,7 +744,7 @@ void SV_PlayerPhysics()
 		not_allowed_to_move = 0;
 		if(self.race_penalty)
 			not_allowed_to_move = 1;
-		if(!cvar("sv_ready_restart_after_countdown"))
+		if(!sv_ready_restart_after_countdown)
 		if(time < game_starttime && !g_inf)
 			not_allowed_to_move = 1;
 
@@ -808,16 +809,17 @@ void SV_PlayerPhysics()
 	{
 		maxspd_mod = cvar("g_nexball_basketball_carrier_speed");
 	}
-
-	dodging_PlayerPhysics();
-	freezetag_PlayerPhysics();
+    
+    if(g_dodging)
+        dodging_PlayerPhysics();
+    freezetag_PlayerPhysics();
 
 	swampspd_mod = 1;
 	if(self.in_swamp) {
 		swampspd_mod = self.swamp_slowdown; //cvar("g_balance_swamp_moverate");
 	}
 
-	if(self.classname != "player")
+	if(!isplayer)
 	{
 		maxspd_mod = cvar("sv_spectator_speed_multiplier");
 		if(!self.spectatorspeed)
@@ -890,7 +892,7 @@ void SV_PlayerPhysics()
 	if(IsFlying(self))
 		self.wasFlying = 1;
 
-	if(self.classname == "player")
+	if(isplayer)
 	{
 		if(sv_doublejump)
 		{
@@ -909,7 +911,7 @@ void SV_PlayerPhysics()
 			CheckWaterJump ();
 	}
 
-	if (self.flags & FL_WATERJUMP )
+	if (self.flags & FL_WATERJUMP)
 	{
 		self.velocity_x = self.movedir_x;
 		self.velocity_y = self.movedir_y;
@@ -919,7 +921,7 @@ void SV_PlayerPhysics()
 			self.teleport_time = 0;
 		}
 	}
-	else if (g_bugrigs && self.classname == "player")
+	else if (g_bugrigs && isplayer)
 	{
 		RaceCarPhysics();
 	}
@@ -1007,7 +1009,7 @@ void SV_PlayerPhysics()
 			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
 		}
 	}
-	else if ((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freezetag || !self.freezetag_frozen))
+	else if((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freezetag || !self.freezetag_frozen))
 	{
 		//makevectors(self.v_angle_y * '0 1 0');
 		makevectors(self.v_angle);
@@ -1247,7 +1249,7 @@ void SV_PlayerPhysics()
 	{
 		float myvel = vlen(self.velocity);
 		if(myvel > highest_velocity)
-		if(self.classname == "player")
+		if(isplayer)
 			UpdateHighestVelocity(myvel, self);
 	}
 };

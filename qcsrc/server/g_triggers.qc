@@ -98,7 +98,7 @@ void SUB_UseTargets_Ex(float preventReuse)
 		if (s != "")
 		{
 			for(t = world; (t = find(t, targetname, s)); ) {
-                if(t.use && (!t.sub_target_used || !preventReuse))
+                if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
                     //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
                     self = t;
@@ -106,7 +106,7 @@ void SUB_UseTargets_Ex(float preventReuse)
                     activator = act;
                     self.use();
                     if(preventReuse)
-                        self.sub_target_used = TRUE;
+                        self.sub_target_used = time;
                 }
             }
 		}
@@ -1523,8 +1523,6 @@ void target_voicescript_next(entity pl)
 	if(!vs)
 		return;
 	if(vs.message == "")
-		return;
-	if(pl.classname != "player")
 		return;
 	if(gameover)
 		return;
