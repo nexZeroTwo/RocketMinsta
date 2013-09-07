@@ -28,6 +28,7 @@ void HG_Precache() {
     precache_sound("weapons/grenade_stick.wav");
     precache_sound("weapons/rm_nadebeep.wav");
     precache_sound("weapons/electro_bounce.wav");
+    precache_sound("weapons/rocket_mode.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
@@ -503,8 +504,13 @@ void HG_Detonate(entity nade) {
 void HG_DetonateAll(entity plr) {    
     entity nade;
     
+    if(!plr.hg_detonables)
+        return;
+    
     if(!HG_PlayerMayDetonate(plr))
         return;
+    
+    sound(plr, CHAN_WEAPON2, "weapons/rocket_mode.wav", VOL_BASE, ATTN_NORM);
     
     for(;(nade = find(nade, classname, "hg_grenade"));)
         if(nade.owner == plr)
