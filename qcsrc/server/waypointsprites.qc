@@ -179,15 +179,15 @@ float WaypointSprite_visible_for_player(entity e)
 {
 	// personal waypoints
 	if(self.enemy)
-		if(self.enemy != other)
+		if(self.enemy != e)
 			return FALSE;
 
 	// team waypoints
 	if(self.team && self.rule == SPRITERULE_DEFAULT)
 	{
-		if(self.team != other.team)
+		if(self.team != e.team)
 			return FALSE;
-		if(other.classname != "player")
+		if(e.classname != "player")
 			return FALSE;
 	}
 
@@ -197,7 +197,7 @@ float WaypointSprite_visible_for_player(entity e)
 float WaypointSprite_Customize()
 {
 	// this is not in SendEntity because it shall run every frame, not just every update
-
+    
 	// make spectators see what the player would see
 	entity e;
 	e = other;
