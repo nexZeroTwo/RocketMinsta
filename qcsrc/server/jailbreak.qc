@@ -915,7 +915,7 @@ void JB_ControlPoint_DefendWaypoint() {
     
     rng = cvar("g_jailbreak_controlpoint_detect_enemies");
     
-    FOR_EACH_PLAYER(plr) if(plr.team != self.team) {
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team) if(!plr.jb_isprisoned) {
         if(vlen(self.origin - plr.origin) < rng)
         if(checkpvs(self.origin, plr)) {
             detected = TRUE;
