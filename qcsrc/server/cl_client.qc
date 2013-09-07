@@ -2539,6 +2539,8 @@ void SpectateCopy(entity spectatee) {
     self.hg_shield = spectatee.hg_shield;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
+    self.jb_unlock_progress = spectatee.jb_unlock_progress;
+    self.jb_message = spectatee.jb_message;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
 	setorigin(self, spectatee.origin);
