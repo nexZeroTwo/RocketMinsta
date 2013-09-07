@@ -930,7 +930,6 @@ void HG_Frame()
 }
 
 void HG_ResetState(entity p) {
-    print(p.netname, "^7: HG_ResetState(", ftos(p.hg_clearammo), ")\n");
     p.hg_power = 0;
     p.hg_ammo = (p.hg_clearammo? 0 : cvar("g_handgrenades_ammo"));
     p.hg_bonus = 0;
