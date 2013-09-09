@@ -3,7 +3,7 @@ CLASS(NexuizGameMenuDialog) EXTENDS(NexuizRootDialog)
 	METHOD(NexuizGameMenuDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
 	ATTRIB(NexuizGameMenuDialog, title, string, "Game Menu")
 	ATTRIB(NexuizGameMenuDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
-	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.2)
+	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.25)
 	ATTRIB(NexuizGameMenuDialog, rows, float, 13)
 	ATTRIB(NexuizGameMenuDialog, columns, float, 10)
 	ATTRIB(NexuizGameMenuDialog, name, string, "GameMenu")

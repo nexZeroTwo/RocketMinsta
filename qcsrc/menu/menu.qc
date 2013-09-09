@@ -50,29 +50,42 @@ void() m_init =
 
 void UpdateConWidthHeight()
 {
-	float conwidth_s, conheight_s;
-	conwidth_s = conwidth;
-	conheight_s = conheight;
-	conwidth = cvar("vid_conwidth");
-	conheight = cvar("vid_conheight");
-	if(conwidth < 800)
-	{
-		conheight *= 800 / conwidth;
-		conwidth = 800;
-	}
-	if(conheight < 600)
-	{
-		conwidth *= 600 / conheight;
-		conheight = 600;
-	}
-	if(main)
-	{
-		if(conwidth_s != conwidth || conheight_s != conheight)
-		{
-			draw_reset();
-			main.resizeNotify(main, '0 0 0', eX * conwidth + eY * conheight, '0 0 0', eX * conwidth + eY * conheight);
-		}
-	}
+    conwidth_s = conwidth;
+    conheight_s = conheight;
+    realconwidth = cvar("vid_conwidth");
+    realconheight = cvar("vid_conheight");
+    if(realconwidth / realconheight > MENU_ASPECT)
+    {
+        // widescreen
+        conwidth = realconheight * MENU_ASPECT;
+        conheight = realconheight;
+    }
+    else
+    {
+        // squarescreen
+        conwidth = realconwidth;
+        conheight = realconwidth / MENU_ASPECT;
+    }
+    screenconwidth = conwidth;
+    screenconheight = conheight;
+    if(conwidth < MENU_MINHEIGHT * MENU_ASPECT)
+    {
+        conheight *= MENU_MINHEIGHT * MENU_ASPECT / conwidth;
+        conwidth = MENU_MINHEIGHT * MENU_ASPECT;
+    }
+    if(conheight < MENU_MINHEIGHT)
+    {
+        conwidth *= MENU_MINHEIGHT / conheight;
+        conheight = MENU_MINHEIGHT;
+    }
+    if(main)
+    {   
+        if(conwidth_s != conwidth || conheight_s != conheight)
+        {
+            draw_reset();
+            main.resizeNotify(main, '0 0 0', eX * conwidth + eY * conheight, '0 0 0', eX * conwidth + eY * conheight);
+        }
+    }
 }
 
 void() m_init_delayed =
@@ -244,6 +257,8 @@ void(string img, float a, float algn, float force1) drawBackground =
 	vector v;
 	string s;
 	float i, f;
+    
+    draw_reset_full();
 	sz = draw_PictureSize(img);
 	// keep aspect of image
 	if(sz_x * draw_scale_y >= sz_y * draw_scale_x)
@@ -293,6 +308,7 @@ void(string img, float a, float algn, float force1) drawBackground =
 		else
 			draw_Picture(v, strcat(img, "_l", ftos(i+1)), isz, '1 1 1', a);
 	}
+    draw_reset();
 }
 
 vector menuTooltipAveragedMousePos;
