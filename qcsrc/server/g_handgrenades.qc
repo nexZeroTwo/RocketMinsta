@@ -328,7 +328,10 @@ void HG_Translocator_Explode() {
     a = vectoangles(normalize(self.velocity));
     a_x = self.owner.v_angle_x;
     makevectors(a);
-    TeleportPlayer(self.owner, self.owner, self.origin, a, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
+    TeleportPlayer(self.owner, self.owner, self.origin, a, v_forward * (
+                    GRENVAR(self.hg_type, "push_base")
+                  + GRENVAR(self.hg_type, "push_playerfactor") * vlen(self.owner.velocity)
+                  + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
 }
 
 float HG_TypeToCSQCProjType(float t) {
