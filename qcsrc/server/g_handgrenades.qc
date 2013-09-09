@@ -324,9 +324,11 @@ void HG_Translocator_Explode() {
         return;
     }
     
-    self.angles_x = self.owner.v_angle_x;
-    makevectors(self.angles);
-    TeleportPlayer(self.owner, self.owner, self.origin, self.angles, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
+    vector a;
+    a = vectoangles(normalize(self.velocity));
+    a_x = self.owner.v_angle_x;
+    makevectors(a);
+    TeleportPlayer(self.owner, self.owner, self.origin, a, vlen(self.owner.velocity) * v_forward * 1.5, '0 0 0', '0 0 0');
 }
 
 float HG_TypeToCSQCProjType(float t) {
