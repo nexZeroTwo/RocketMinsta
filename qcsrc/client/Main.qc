@@ -136,9 +136,7 @@ void CSQC_Init(void)
 	get_mi_min_max_texcoords(1); // try the CLEVER way first
 	minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
 	shortmapname = mi_shortname;
-    
-    if(substring(shortmapname, 0, 7) == "fagcity")
-        whatsgoingon = TRUE;
+    whatsgoingon = ISFAGGOTMAP(shortmapname);
     
 	if(precache_pic(minimapname) == "")
 	{

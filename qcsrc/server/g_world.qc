@@ -804,9 +804,7 @@ void spawnfunc_worldspawn (void)
     sv_dps = cvar("sv_dps");
     g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
     sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");
-    
-    if(substring(mapname, 0, 7) == "fagcity")
-        whatsgoingon = TRUE;
+    whatsgoingon = ISFAGGOTMAP(mapname);
     
 	DPRM_Start();
 }
