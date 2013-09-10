@@ -503,7 +503,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
             reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");
         
         FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
-        trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin+offs, trace_endpos);
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin+offs, trace_endpos);
         
         self.hg_shieldhealth -= absorb;
         if(self.hg_shieldhealth <= 0)
