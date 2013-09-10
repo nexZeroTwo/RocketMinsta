@@ -493,7 +493,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
     if(g_handgrenades)
     if(attacker.classname == "player")
     if(self.hg_shield)
-    if(deathtype != DEATH_HG_SHIELD) {
+    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC) {
         vector offs = '0 0 1' * self.maxs_z*0.5;
         float reflect = damage * cvar("g_handgrenades_shield_damage_reflect");
         float absorb = damage * (1-cvar("g_handgrenades_shield_damage_take"));
@@ -504,7 +504,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
         
         FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
         trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin+offs, trace_endpos);
+        
         self.hg_shieldhealth -= absorb;
+        if(self.hg_shieldhealth <= 0)
+            self.hg_shield = 0;
     }
 
 	if(!DEATH_ISSPECIAL(deathtype))

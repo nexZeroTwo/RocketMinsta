@@ -16,6 +16,7 @@ float HG_ShowMenu(float);
 void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
+float HG_RegenTime(entity);
 
 .vector org_explosion;
 .float nextparticle;
@@ -29,6 +30,7 @@ void HG_Remote_Stick();
 .float hg_type_picked_nextround;
 .float hg_bonus;
 .float hg_bonustype;
+.float hg_isbonus;
 .float hg_regentime;
 .float hg_regenpaused;
 .float hg_deathtime;

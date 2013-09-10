@@ -5,14 +5,18 @@ void trigger_teleport_use()
 }
 
 float tdeath_hit;
+float tdeath_deathtype;
 void tdeath(entity player, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
 {
 	entity head;
 	vector deathmin;
 	vector deathmax;
 	float deathradius;
+    float deathtype = (tdeath_deathtype? tdeath_deathtype : DEATH_TELEFRAG);
+    
 	deathmin = player.absmin;
 	deathmax = player.absmax;
+    
 	if(telefragmin != telefragmax)
 	{
 		if(deathmin_x > telefragmin_x) deathmin_x = telefragmin_x;
@@ -32,13 +36,14 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 					{
 						if(head.classname == "player")
 						if(head.health >= 1)
+                        if(!teams_matter || head.team != player.team)
 							++tdeath_hit;
-						Damage (head, teleporter, telefragger, 10000, DEATH_TELEFRAG, head.origin, '0 0 0');
+						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
 					}
 					else if (telefragger.health < 1) // corpses gib
-						Damage (head, teleporter, telefragger, 10000, DEATH_TELEFRAG, head.origin, '0 0 0');
+						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
 					else // dead bodies and monsters gib themselves instead of telefragging
-						Damage (telefragger, teleporter, telefragger, 10000, DEATH_TELEFRAG, telefragger.origin, '0 0 0');
+						Damage(telefragger, teleporter, telefragger, 10000, deathtype, telefragger.origin, '0 0 0');
 				}
 }
 

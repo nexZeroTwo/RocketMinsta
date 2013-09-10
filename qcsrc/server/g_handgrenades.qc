@@ -328,10 +328,22 @@ void HG_Translocator_Explode() {
     a = vectoangles(normalize(self.velocity));
     a_x = self.owner.v_angle_x;
     makevectors(a);
+    
+    tdeath_hit = 0;
+    tdeath_deathtype = self.hg_type;
     TeleportPlayer(self.owner, self.owner, self.origin, a, v_forward * (
                     GRENVAR(self.hg_type, "push_base")
                   + GRENVAR(self.hg_type, "push_playerfactor") * vlen(self.owner.velocity)
                   + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
+    tdeath_deathtype = 0;
+    if(tdeath_hit && !self.hg_isbonus) {
+        float b = cvar("g_handgrenades_transloc_telefragbonus");
+        
+        if(b) {
+            self.owner.hg_ammo += b * tdeath_hit;
+            self.owner.hg_regentime = HG_RegenTime(self.owner);
+        }
+    }
 }
 
 float HG_TypeToCSQCProjType(float t) {
@@ -398,7 +410,7 @@ void HG_Grenade_Touch() {
 
 :troll
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
-		self.use();
+        self.use();
 	} else {
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
@@ -776,7 +788,7 @@ void HG_Attack()
     }
     
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize (self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
+	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
 	w_shotdir = v_forward;
 	
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -805,6 +817,7 @@ void HG_Attack()
     gren.reset = HG_Grenade_Remove;
     gren.team = self.team;
     gren.cnt = GV("bouncelimit");
+    gren.hg_isbonus = self.hg_bonus;
     
     if(gren.hg_type == HG_TRANSLOC)
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;

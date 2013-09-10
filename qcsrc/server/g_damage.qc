@@ -688,7 +688,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						else
 							bprint("^1", s, "^1 ", substring(w_deathtypestring, 0, p), a, "^1", substring(w_deathtypestring, p+1, strlen(w_deathtypestring) - (p+1)), "\n");
 					}
-					else if (deathtype == DEATH_TELEFRAG)
+					else if (deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
 						bprint ("^1",s, "^1 was telefragged by ", a, "\n");
 					else if (deathtype == DEATH_DROWN)
 						bprint ("^1",s, "^1 was drowned by ", a, "\n");
@@ -1068,14 +1068,14 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
             
-            if(g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned) && deathtype == DEATH_TELEFRAG) {
+            if(g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned) && (deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)) {
                 damage = 0;
                 force = '0 0 0';
             }
 		}
         
 		// nullify damage if teamplay is on
-		if(deathtype != DEATH_TELEFRAG)
+		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC)
 		if(attacker_is_player)
 		{
 			if(targ_is_player && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))
