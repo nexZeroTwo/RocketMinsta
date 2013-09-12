@@ -297,7 +297,7 @@ float prec_rune_bot_eval_pickup (entity player, entity rune)
 
 //---- precious game tests and events ----
 
-void prec_player_die (entity player)
+void prec_player_die (entity player, entity frag_attacker)
 {
     // if we're not playing ka, don't interfere with the caller's natural routine
     if(!g_prec) return;

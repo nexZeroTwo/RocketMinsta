@@ -816,6 +816,28 @@ string Team_ColorNameLowerCase(float t)
     return "neutral";
 }
 
+float Team_Index(float t) {
+    switch(t) {
+        case COLOR_TEAM1: return 0;
+        case COLOR_TEAM2: return 1;
+        case COLOR_TEAM3: return 2;
+        case COLOR_TEAM4: return 3;
+    }
+    
+    return -1;
+}
+
+float Team_FromIndex(float i) {
+    switch(i) {
+        case 0: return COLOR_TEAM1;
+        case 1: return COLOR_TEAM2;
+        case 2: return COLOR_TEAM3;
+        case 3: return COLOR_TEAM4;
+    }
+    
+    return 0;
+}
+
 #define CENTERPRIO_POINT 1
 #define CENTERPRIO_SPAM 2
 #define CENTERPRIO_VOTE 4
@@ -3039,14 +3061,14 @@ void hudflash_teamcolor_default_spec(entity e)
 }
 
 // universal endround for all supported gametypes
-void freezetag_EndRound();
+void FreezeTag_EndRound();
 void vip_EndRound();
 void tdom_EndRound();
 
 void EndRound()
 {
     if(g_freezetag)
-        freezetag_EndRound();
+        FreezeTag_EndRound();
 else
     if(g_vip)
         vip_EndRound();

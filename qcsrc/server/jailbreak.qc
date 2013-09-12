@@ -25,7 +25,7 @@ void JB_Init() {
     
     addstat(STAT_REDALIVE, AS_INT, redalive_stat);
     addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
-    addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
+    addstat(STAT_CAPTURE_PROGRESS, AS_FLOAT, jb_unlock_progress);
     addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
     addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
     addstat(STAT_JBMSG, AS_INT, jb_message);
@@ -122,8 +122,8 @@ void JB_Imprison(entity attacker) {
 	}
 	
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
 	}
 	
 	JB_CountPlayers();
@@ -177,8 +177,8 @@ void JB_Release(entity saviour) {
 		HG_PlayerSpawn();
 	
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
 	}
 	
 	JB_CountPlayers();
@@ -522,7 +522,7 @@ void JB_Torture_RegisterAll() {
 //	Callbacks
 //
 
-float JB_PlayerDies() {
+float JB_PlayerDies(entity frag_attacker) {
 	DEPENDON_F(g_jailbreak && JB_GAME_ACTIVE, 0)
 	
 	if(!self.jb_isprisoned) {
@@ -560,8 +560,8 @@ float JB_PlayerDies() {
 		PutClientInServer();
 		
 		if(self.scorekeeper) {
-			self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-			self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+			self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+			self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
 		}
 	}
 	
@@ -573,8 +573,8 @@ void JB_PlayerSpawn() {
 	
 	self.jb_isprisoned = FALSE;
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
 	}
 	
 	self.jb_fragrow = 0;

@@ -4,6 +4,7 @@ void HG_Precache();
 void HG_Frame();
 void HG_Attack();
 void HG_PlayerSpawn();
+void HG_PlayerSpawnEx(entity);
 void HG_PlayerJoin();
 void HG_ResetState(entity);
 void HG_GiveBonus(entity, float, float, string);

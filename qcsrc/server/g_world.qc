@@ -676,29 +676,14 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
-
-	if(g_freezetag)
-	{
-		addstat(STAT_REDALIVE, AS_INT, redalive_stat);
-		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
-		addstat(STAT_YELLOWALIVE, AS_INT, yellowalive_stat);
-		addstat(STAT_PINKALIVE, AS_INT, pinkalive_stat);
-		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
-		//addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
-		
-		if(g_soulmates)
-			addstat(STAT_SM_HASGEM, AS_INT, sm_canattach);
-	}
-
+    
     if(g_domination)
     {
         addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);
         addstat(STAT_REDPOINTS, AS_INT, redpoints_stat);
         addstat(STAT_BLUEPOINTS, AS_INT, bluepoints_stat);
+        addstat(STAT_CAPTURE_PROGRESS, AS_FLOAT, dom_captureprogress);
     }
-
-	if(g_freezetag || g_domination)
-		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
     
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
@@ -755,8 +740,6 @@ void spawnfunc_worldspawn (void)
 
 	world_initialized = 1;
 
-	sys_frametime = (cvar("sys_ticrate") * cvar("slowmo"));
-
 	if(sv_speedaward_ownaccel)
 	{
 		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
@@ -801,6 +784,8 @@ void spawnfunc_worldspawn (void)
 		localcmd("\nmenu_cmd sync\n");
 	}
 	
+    Freeze_Init();
+    
     sv_dps = cvar("sv_dps");
     g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
     sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");

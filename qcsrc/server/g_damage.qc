@@ -1012,7 +1012,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		// No damage modification here
 		// Instead, prepare the victim for his death...
 		
-		if(g_freezetag && targ.freezetag_frozen && deathtype != DEATH_KILL)
+		if(g_freeze && targ.frozen && deathtype != DEATH_KILL)
 		{
 			oldself = self;
 			self = targ;
@@ -1287,17 +1287,17 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			mirrorforce *= g_weaponforcefactor;
 		}
 
-		if(g_freezetag) if(targ.freezetag_frozen)
+		if(g_freeze) if(targ.frozen)
 		{
 			damage = 0;
-			force = force * cvar("g_freezetag_frozen_force");
+			force = force * Freeze_CVar("frozen_force");
 
-			if(targ.team != attacker.team || cvar("g_freezetag_melt_teamdamage"))
+			if(targ.team != attacker.team || Freeze_CVar("melt_teamdamage"))
 			{
-				targ.freezetag_meltprogress = 0;
-				targ.freezetag_freezetime = time;
-				targ.freezetag_meltprogress = 0;
-				targ.freezetag_revive_progress = 0;
+				targ.meltprogress = 0;
+				targ.freezetime = time;
+				targ.meltprogress = 0;
+				targ.revprogress = 0;
 			}
 
 			if(deathtype == DEATH_HURTTRIGGER)
@@ -1514,7 +1514,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freeze && targ.frozen)
 		{
 			float i;
 			

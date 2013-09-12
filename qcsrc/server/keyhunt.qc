@@ -548,6 +548,8 @@ void kh_Key_Touch()  // runs many, many times when a key has been dropped and ca
 		return;
 	if(other.deadflag != DEAD_NO)
 		return;
+    if(g_freeze && other.frozen)
+        return;
 	if(other == self.enemy)
 		if(time < self.kh_droptime + cvar("g_balance_keyhunt_delay_collect"))
 			return;  // you just dropped it!
@@ -940,6 +942,9 @@ void kh_StartRound()  // runs at the start of each round
 		self = oldself;*/
 		
 		bigprint_spec(player, "^2Keys spawned!", "", 1);
+        
+        if(g_freeze)
+            Freeze_UnfreezePlayer(player);
 	}
 
 	for(i = 0; i < kh_teams; ++i)

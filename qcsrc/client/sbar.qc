@@ -480,14 +480,14 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfs" : ""), (g_handgrenades? " nfs" : ""),
-		" +ft,jb,vip/kills +ft,vip,jb/dths +ft/scds +ft/revs "),
+		" +ft,jb,vip/kills +ft,vip,jb/dths +ft/scds "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec/frgs ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
 		"+lms/lives +lms/rank +vip,jb/scds +vip/vks +vip/surv +jb/def +jb/jbs +jb/freed +prec/pckps +prec/rcks ",
 		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		"+tdm/dths +tdm/scds -lms,race,nexball/score");
+		strcat("+tdm/dths +tdm/scds ", (g_freeze? "revs " : ""), "-lms,race,nexball/score"));
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -998,11 +998,13 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawfont = sbar_madokafont;
 			#endif
 
+/*
 			if(gametype != GAME_FREEZETAG && gametype != GAME_JAILBREAK)
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			else
+*/
 			{
-				if(pl.(scores[SP_FREEZETAG_FROZENSTATUS]))
+				if(pl.(scores[SP_FROZENSTATUS]))
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a * 0.3, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
@@ -1028,7 +1030,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
 		tmp_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 		if(sbar_field_icon0 != "") {
-            float fa = 1 - (pl.(scores[SP_FREEZETAG_FROZENSTATUS]) * 0.7);
+            float fa = 1 - (pl.(scores[SP_FROZENSTATUS]) * 0.7);
 			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a*fa, DRAWFLAG_NORMAL);
         }
 		if(sbar_field_icon1 != "")
@@ -3459,8 +3461,13 @@ void Sbar_Draw(void)
 			fovlock = -1;
 	}
 
-	local float rev;
-	rev = getstatf((gametype == GAME_JAILBREAK)? STAT_UNLOCK_PROGRESS : STAT_REVIVE_PROGRESS);
+	float rev, revmode;
+    // we may have both CAPTURE_PROGRESS and REVIVE_PROGRESS at once, but CAPTURE_PROGRESS is more important.
+	rev = getstatf(STAT_CAPTURE_PROGRESS);
+    if(!rev) {
+        revmode = TRUE;
+        rev = getstatf(STAT_REVIVE_PROGRESS);   
+    }
 	
 	if(rev) {
         rev_visual += (rev - rev_visual) * drawframetime * 10;
@@ -3583,7 +3590,7 @@ void Sbar_Draw(void)
         drawfont = sbar_font;
 
 		string s2;
-        if(gametype == GAME_FREEZETAG)
+        if(revmode)
 			s = "Revival progress: ";
 		else if(gametype == GAME_JAILBREAK)
 			s = "Unlocking the jail: ";

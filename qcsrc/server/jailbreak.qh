@@ -25,7 +25,7 @@ void JB_ControlPoint_Deactivate(entity, float);
 void JB_ControlPoint_UpdateCooldownProgress(entity);
 string JB_ControlPoint_Name(entity);
 
-float JB_PlayerDies();
+float JB_PlayerDies(entity);
 void JB_PlayerSpawn();
 void JB_RemovePlayer();
 

@@ -294,7 +294,7 @@ const float STAT_MINSTA = 75;
 const float STAT_HGFORCE = 76;
 const float STAT_HGAMMO = 77;
 const float STAT_SM_HASGEM = 78;
-const float STAT_UNLOCK_PROGRESS = 79;
+const float STAT_CAPTURE_PROGRESS = 79;
 const float STAT_PRISONED = 80;
 const float STAT_ROUNDLOST = 81;
 const float STAT_HGREGEN = 82;
@@ -355,7 +355,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 20
+#define MAX_SCORE 21
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -365,7 +365,7 @@ const float JBMSG_TOOLATE = 5;
 #define SP_SCORE 3
 
 #define SP_HOOKFRAGS 10
-#define SP_FREEZETAG_FROZENSTATUS 11
+#define SP_FROZENSTATUS 11
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
 #define SP_JOINTIME 14
@@ -374,6 +374,7 @@ const float JBMSG_TOOLATE = 5;
 #define SP_FPS 17
 #define SP_NADEMODE 18
 #define SP_NADEFRAGS 19
+#define SP_REVIVALS 20
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider

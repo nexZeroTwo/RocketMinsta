@@ -256,7 +256,7 @@ void InitGameplayMode()
 		fraglimit_override = cvar("g_freezetag_point_limit");
 		leadlimit_override = cvar("g_freezetag_point_leadlimit");
 		timelimit_override = cvar("g_freezetag_timelimit");
-		freezetag_Initialize();
+		FreezeTag_Initialize();
 	}
 
 	if(g_jailbreak)

@@ -290,59 +290,6 @@ void count_spawned_players()
 	}
 }
 
-void count_alive_players()
-{
-	//bprint("count_alive_players() called\n");
-	
-	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
-	if(g_freezetag)
-	{
-		// count amount of alive players in each team
-		FOR_EACH_PLAYER(self)
-		{
-			if (self.team == COLOR_TEAM1 && !self.freezetag_frozen && self.health > 0)
-			{
-				redalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM2 && !self.freezetag_frozen && self.health > 0)
-			{
-				bluealive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM3 && !self.freezetag_frozen && self.health > 0)
-			{
-				yellowalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM4 && !self.freezetag_frozen && self.health > 0)
-			{
-				pinkalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			
-			//bprint(self.netname, " ^6is ^1DEAD^7: team = ", ftos(self.team), "; freezetag_frozen = ", ftos(self.freezetag_frozen), "\n");
-		}
-		FOR_EACH_CLIENT(self) {
-			self.redalive_stat = redalive;
-			self.bluealive_stat = bluealive;
-			self.yellowalive_stat = ((ft_teams > 2)? yellowalive : -1);
-			self.pinkalive_stat = ((ft_teams > 3)? pinkalive : -1);
-		}
-	}
-	
-	/*
-	bprint("count_alive_players():\n");
-	bprint("totalalive = ", ftos(totalalive), "\n");
-	bprint("redalive = ", ftos(redalive), "\n");
-	bprint("bluealive = ", ftos(bluealive), "\n");
-	*/
-}
-
 /**
  * This function finds out whether an arena round is over 1 player is left.
  * It determines the last player who's still alive and saves it's entity reference
@@ -352,11 +299,8 @@ void count_alive_players()
  */
 void Spawnqueue_Check()
 {
-	count_spawned_players();
-	if(g_freezetag) // we want to perform this before the return block below (CA)...
-	{
-		//count_alive_players();
-	}
+    if(!g_freeze)
+        count_spawned_players();
 	if(time < warmup + 1)
 		return;
 

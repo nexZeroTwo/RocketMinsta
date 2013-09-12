@@ -61,8 +61,8 @@ void PlayerJump (void)
 		return;
 	}
 
-	if(g_freezetag)
-	if(self.freezetag_frozen)
+	if(g_freeze)
+	if(self.frozen)
 		return;
 
 	if (!(self.flags & FL_ONGROUND))
@@ -613,7 +613,7 @@ void SV_PlayerPhysics()
     
     // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
 	if (g_walljump)
-	if (!(g_freezetag && self.freezetag_frozen) && self.health > 0)
+	if (!(g_freeze && self.frozen) && self.health > 0)
     if (isplayer)
     if (!(self.flags & FL_ONGROUND))
     if (self.BUTTON_JUMP)
@@ -812,7 +812,7 @@ void SV_PlayerPhysics()
     
     if(g_dodging)
         dodging_PlayerPhysics();
-    freezetag_PlayerPhysics();
+    Freeze_Hook_PlayerPhysics();
 
 	swampspd_mod = 1;
 	if(self.in_swamp) {
@@ -1009,7 +1009,7 @@ void SV_PlayerPhysics()
 			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
 		}
 	}
-	else if((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freezetag || !self.freezetag_frozen))
+	else if((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!cvar("g_jetpack_fuel") || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freeze || !self.frozen))
 	{
 		//makevectors(self.v_angle_y * '0 1 0');
 		makevectors(self.v_angle);
@@ -1111,7 +1111,7 @@ void SV_PlayerPhysics()
 	else if (self.flags & FL_ONGROUND)
 	{
 		// we get here if we ran out of ammo
-		if((self.items & IT_JETPACK) && self.BUTTON_HOOK && !(buttons_prev & 32) && (!g_freezetag || !self.freezetag_frozen))
+		if((self.items & IT_JETPACK) && self.BUTTON_HOOK && !(buttons_prev & 32) && (!g_freeze || !self.frozen))
 			sprint(self, "You don't have any fuel for the ^2Jetpack\n");
 
 		// walking

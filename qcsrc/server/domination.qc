@@ -233,7 +233,7 @@ void dompointthink()
 	self.nextthink = time + 0.1;
 
     if(time - self.pointupdatetime > 0.1)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
@@ -281,6 +281,8 @@ void dompointtouch()
 		return;
 	if (other.health < 1)
 		return;
+    if (g_freeze && other.frozen)
+        return;
 
 	if(time < self.captime + 0.3)
 		return;
@@ -296,18 +298,18 @@ void dompointtouch()
 	if (!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_domination_capture_speed"), 1);
+	self.dom_captureprogress = bound(0, self.dom_captureprogress + frametime * cvar("g_domination_capture_speed"), 1);
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
 
-    other.freezetag_revive_progress = self.freezetag_revive_progress;
-	if(self.freezetag_revive_progress < 1)
+    other.dom_captureprogress = self.dom_captureprogress;
+	if(self.dom_captureprogress < 1)
 	{
-		//bprint(other.netname, "^7.freezetag_revive_progress = ", ftos(other.freezetag_revive_progress), "\n");
+		//bprint(other.netname, "^7.dom_captureprogress = ", ftos(other.dom_captureprogress), "\n");
 		return;
 	}
-	self.freezetag_revive_progress = 0;
-    other.freezetag_revive_progress = self.freezetag_revive_progress;
+	self.dom_captureprogress = 0;
+    other.dom_captureprogress = self.dom_captureprogress;
 
 	// delay capture
 
@@ -348,7 +350,7 @@ float domination_PlayerPreThink()
 	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	return 1;
 }

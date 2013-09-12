@@ -243,7 +243,7 @@ void minstagib_ammocheck (void)
 
 	if(g_minstagib)
 	if(!cvar("g_rocketminsta"))
-	if not(g_freezetag && self.freezetag_frozen)
+	if not(g_freeze && self.frozen)
 	if (self.ammo_cells <= 0)
 	{
 		#define AMMO_DEATHMESSAGE(m) bigprint_spec(self, m, "", 1)
@@ -317,7 +317,7 @@ void minstagib_ammocheck (void)
 		}
 	}
 	
-	if(!g_freezetag || !self.freezetag_frozen)
+	if(!g_freeze || !self.frozen)
 	if(cvar("g_rocketminsta") && cvar("g_rocketminsta_health_drain") && self.health > cvar("g_rocketminsta_health_min"))
 	{
 		self.health -= cvar("g_rocketminsta_health_drain");
@@ -472,8 +472,8 @@ float w_minstanex(float req)
 	{
 		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && cvar("g_rocketminsta")))
 		{
-			if(g_freezetag)
-			if(self.freezetag_frozen)
+			if(g_freeze)
+			if(self.frozen)
 				return TRUE;
 			
 			if(cvar("g_rocketminsta") && cvar("g_rocketminsta_laser_new"))

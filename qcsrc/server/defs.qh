@@ -748,3 +748,6 @@ float g_balance_falldamage_deadminspeed;
 float g_balance_falldamage_factor;
 float g_balance_falldamage_minspeed;
 float g_balance_falldamage_maxdamage;
+
+.float dom_captureprogress;
+float tdom_maycap;
