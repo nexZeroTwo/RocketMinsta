@@ -32,13 +32,13 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 			if(head.takedamage)
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
-					if ((player.classname == "player") && (player.health >= 1))
-					{
-						if(head.classname == "player")
-						if(head.health >= 1)
-                        if(!teams_matter || head.team != player.team)
-							++tdeath_hit;
+					if((player.classname == "player") && (player.health >= 1)) {
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
+                        
+                        if(head.classname == "player")
+                        if(head.deadflag != DEAD_NO)
+                        if(!teams_matter || head.team != player.team)
+                            ++tdeath_hit;
 					}
 					else if (telefragger.health < 1) // corpses gib
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
