@@ -429,7 +429,7 @@ void FlagTouch()
 	if(gameover) return;
 
 	local float t;
-	local entity player;
+	local entity player, e;
 	local string s, s0, h0, h1;
 	if (other.classname != "player")
 		return;
@@ -532,6 +532,9 @@ void FlagTouch()
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
 		
+        if(g_freeze) FOR_EACH_PLAYER(e)
+            Freeze_UnfreezePlayer(e);
+        
 		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
