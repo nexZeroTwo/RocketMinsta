@@ -36,7 +36,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
                         
                         if(head.classname == "player")
-                        if(head.deadflag != DEAD_NO || (g_freezetag && head.freezetag_frozen))
+                        if(head.deadflag != DEAD_NO || (g_freezetag && head.freezetag_frozen) || (g_jailbreak && head.jb_isprisoned))
                         if(!teams_matter || head.team != player.team)
                             ++tdeath_hit;
 					}
