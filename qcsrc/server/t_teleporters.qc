@@ -29,18 +29,18 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	deathradius = max(vlen(deathmin), vlen(deathmax));
 	for(head = findradius(player.origin, deathradius); head; head = head.chain)
 		if(head != player)
-			if(head.takedamage)
+			if(head.takedamage) if(!(g_freezetag && head.freezetag_frozen))
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
 					if((player.classname == "player") && (player.health >= 1)) {
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
                         
                         if(head.classname == "player")
-                        if(head.deadflag != DEAD_NO)
+                        if(head.deadflag != DEAD_NO || (g_freezetag && head.freezetag_frozen))
                         if(!teams_matter || head.team != player.team)
                             ++tdeath_hit;
 					}
-					else if (telefragger.health < 1) // corpses gib
+					else if(telefragger.health < 1) // corpses gib
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
 					else // dead bodies and monsters gib themselves instead of telefragging
 						Damage(telefragger, teleporter, telefragger, 10000, deathtype, telefragger.origin, '0 0 0');
