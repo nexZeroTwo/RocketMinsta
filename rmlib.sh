@@ -5,7 +5,7 @@ if [ -z $INCLUDE ]; then
     exit 1
 fi
 
-RMLIB_REQUIRED="rm mv cp mkdir cat grep sed git"
+RMLIB_REQUIRED="rm mv cp mkdir cat grep:pcregrep sed git"
 
 function error
 {
@@ -101,17 +101,49 @@ function warn-oldconfig
     warning "your $1 is OUTDATED! It does not contain option $2, using the default value of $3! Please refer to EXAMPLE_$1 and fix this!"
 }
 
-PERLGREP="grep -P"
+PERLGREP=""
 function perlgrep
 {
+    if [ -z "$PERLGREP" ]; then
+        if hascommand grep; then
+            PERLGREP="grep -P"
+        elif hascommand pcregrep; then
+            PERLGREP="pcregrep"
+        else
+            error "No suitable grep command found"
+        fi
+    fi
+    
     $PERLGREP "$@"
 }
 
+REQUIRED_FOUND=""
 OPTIONAL_FOUND=""
+
+function test-command
+{
+    if [ "$1" = "grep" ]; then
+        echo a | grep -Pq a
+    fi
+}
 
 function hasoptional
 {
     for i in $OPTIONAL_FOUND; do
+        [ $i == $1 ] && return 0;
+    done; return 1
+}
+
+function hasrequired
+{
+    for i in $REQUIRED_FOUND; do
+        [ $i == $1 ] && return 0;
+    done; return 1
+}
+
+function hascommand
+{
+    for i in $REQUIRED_FOUND $OPTIONAL_FOUND; do
         [ $i == $1 ] && return 0;
     done; return 1
 }
@@ -122,13 +154,8 @@ function require
     local lacking=""
 
     echo "rmlib is checking for required utilities..."
-
-    if ! echo a | grep -Pq a; then
-        echo "WARNING: grep doesn't support -P switch! Will attempt to use pcregrep instead"
-        req="$req pcregrep"
-        PERLGREP="pcregrep"
-    fi
-
+    
+    # TODO: maybe remove this completely and use python-dprcon to support secure rcon?
     if ! echo a > /dev/udp/localhost/1; then
         echo "WARNING: shell doesn't support /dev/udp! Will attempt to use netcat instead"
         req="$req netcat"
@@ -136,29 +163,67 @@ function require
     fi
 
     for i in $req; do
+        local all="$i"
+        local i="${all%%:*}"
+        local alts="${all##$i:}"
+
         echo -n " - ${i##%}... "
 
         if [ ${i##%} = $i ]; then          # no %prefix, required
             if which $i &> /dev/null; then
-                echo -e '\e[32;1mfound\e[0m'
+                if test-command $i; then
+                    echo -e '\e[32;1mfound\e[0m'
+                    REQUIRED_FOUND="$REQUIRED_FOUND $i"
+                    continue
+                else
+                    echo -en "\e[31;1mfound, but incompatible!\e[0m"
+                fi
             else
-                echo -e '\e[31;1mnot found!\e[0m'
-                lacking="$lacking $i"
+                echo -en '\e[31;1mnot found!\e[0m'
             fi
+            
+            local altfound=false
+            if [ "$i" != "$alts" ]; then
+                echo " Will look for alternatives..."
+
+                for alt in $(echo $alts | sed -e 's/:/ /g'); do
+                    echo -n "     - ${alt}... "
+                    if which $alt &> /dev/null; then
+                        if test-command $alt; then
+                            echo -e '\e[32;1mfound\e[0m'
+                            altfound=true
+                            REQUIRED_FOUND="$REQUIRED_FOUND $alt"
+                            break
+                        else
+                            echo -e '\e[31;1mfound, but incompatible!\e[0m'
+                        fi
+                    else
+                        echo -e '\e[31;1mnot found!\e[0m'
+                    fi
+                done 
+            else
+                echo
+            fi
+
+            $altfound || lacking="$lacking $i"
         else                                # %prefix, optional
             i="${i##%}"
             
             if which $i &> /dev/null; then
-                echo -e '\e[32;1mfound\e[0m'
-                OPTIONAL_FOUND="$OPTIONAL_FOUND $i"
+                if test-command $i; then
+                    echo -e '\e[32;1mfound\e[0m'
+                    OPTIONAL_FOUND="$OPTIONAL_FOUND $i"
+                else
+                    echo -e '\e[33;1mincompatible but optional\e[0m'
+                fi
             else
                 echo -e '\e[33;1mnot found but optional\e[0m'
             fi
         fi
     done
-
+    
     if [ -n "$lacking" ]; then
-        error "The following utilities are required but are not present: $lacking. Please install them to proceed."
+        error "The following utilities are required but are not present or are incompatible: $lacking. Please install them to proceed."
     fi
     
     echo "All OK, proceeding"
