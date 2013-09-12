@@ -865,6 +865,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						break;
 				}
 				#undef RAGESOUND
+                
+                if(g_handgrenades)
+                if(DEATH_ISHG(deathtype)) {
+                    print(ftos(PlayerScore_Add(attacker, SP_NADEFRAGS, 1)), "\n");
+                }
 			}
 		}
 		else

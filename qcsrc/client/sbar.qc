@@ -458,9 +458,7 @@ void Cmd_Sbar_Help(float argc)
 	print("^3fastest^7                  Time of fastest lap (race/cts)\n");
 	print("^3ticks^7                    Number of ticks (DOM)\n");
 	print("^3takes^7                    Number of domination points taken (DOM)\n");
-	//<akari>
 	print("^3hfrags^7                   Number of hookfrags\n\n");
-	//</akari>
 	print("^3score^7                    Total score\n\n");
 
 	print("Before a field you can put a + or - sign, then a comma separated list\n");
@@ -481,15 +479,15 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
-		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
-		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/defense +jb/jbreaks +jb/freed +prec/pickups +prec/rckills ",
-		"+kh/caps +kh/pickups +kh/kckills ",
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", ((g_minstagib && cvar("_g_rocketminsta"))? " hfs" : ""), (g_handgrenades? " nfs" : ""),
+		" +ft,jb,vip/kills +ft,vip,jb/dths +ft/scds +ft/revs "),
+		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec/frgs ", // tdm already has this in "score"
+		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
+		"+lms/lives +lms/rank +vip,jb/scds +vip/vks +vip/surv +jb/def +jb/jbs +jb/freed +prec/pckps +prec/rcks ",
+		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		"+tdm/deaths +tdm/suicides -lms,race,nexball/score");
+		"+tdm/dths +tdm/scds -lms,race,nexball/score");
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -582,21 +580,23 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
 		} else if(str == "time") {
 			sbar_field[sbar_num_fields] = SP_JOINTIME;
+        } else if(str == "dths") {
+            sbar_field[sbar_num_fields] = SP_DEATHS;
+        } else if(str == "scds") {
+            sbar_field[sbar_num_fields] = SP_SUICIDES;
+        } else if(str == "hfs") {
+            sbar_field[sbar_num_fields] = SP_HOOKFRAGS;
+        } else if(str == "nfs") {
+            sbar_field[sbar_num_fields] = SP_NADEFRAGS;
 		} else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
 					goto found; // sorry, but otherwise fteqcc -O3 miscompiles this and warns about "unreachable code"
 :notfound
-			if(str == "frags")
+			if(str == "frags" || str == "frgs")
 			{
 				j = SP_FRAGS;
 			}
-			//<akari>
-			else if(str == "hfrags")
-			{
-				j = SP_HOOKFRAGS;
-			}
-			//</akari>
 			else
 			{
 				if not(nocomplain)
