@@ -867,9 +867,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				#undef RAGESOUND
                 
                 if(g_handgrenades)
-                if(DEATH_ISHG(deathtype)) {
-                    print(ftos(PlayerScore_Add(attacker, SP_NADEFRAGS, 1)), "\n");
-                }
+                if(DEATH_ISHG(deathtype))
+                    PlayerScore_Add(attacker, SP_NADEFRAGS, 1);
 			}
 		}
 		else
@@ -1073,7 +1072,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
             
-            if(g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned) && (deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)) {
+            if(deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
+            if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
                 damage = 0;
                 force = '0 0 0';
             }
