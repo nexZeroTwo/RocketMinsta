@@ -2,7 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
-require md5sum tar 7za %convert
+require md5sum tar 7za:zip %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -21,7 +21,7 @@ function buildall
     # $2 = desc
     
     USEQCC="$(getqcc)"
-    [ -z "$USEQCC" ] && exit 1
+    [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
@@ -119,6 +119,18 @@ function compress-restore
 	rm -rf "$COMPRESSGFX_TEMPDIR"
 }
 
+function rmpack
+{
+    if hascommand 7za; then
+        7za a -tzip -mfb258 -mpass15 "$@"
+    elif hascommand zip; then
+        echo zip -r "$@"
+        zip -r "$@"
+    else
+        error "No usable archiver, WTF?"
+    fi
+}
+
 function makedata
 {
     local rmdata="$1"
@@ -161,7 +173,10 @@ function makedata
     echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
     
     echo "   -- Compressing package"
-    7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
+    if ! rmpack "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *; then
+        compress-restore
+        error "Failed to package $rmdata"
+    fi
     echo "   -- Removing temporary files"
     rm -vf _*
     
@@ -273,10 +288,11 @@ function makedata-all
     done
 }
 
-function listcustom()
+function listcustom
 {
     find "$NEXDATA/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
-        echo -e "\t\t$cfg : $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
+        scfg="${cfg##*/}"
+        echo -e "\t\t$scfg -- $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
     done
 }
 
@@ -524,7 +540,9 @@ $(listcustom)
         rmcustom NAME_OF_CUSTOM_CONFIG.cfg
         
     In addition, these packages MUST be available on your download server:
-        $BUILT_PACKAGES
+$(for i in $BUILT_PACKAGES;
+    do echo "        $i";
+done)
     
     All of them have been also installed into:
         $NEXDATA
