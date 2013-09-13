@@ -63,7 +63,7 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 		telefragger = teleporter.owner;
 	else
 		telefragger = player;
-
+    
 	makevectors (to_angles);
 
 	if(self.pushltime < time) // only show one teleport effect per teleporter per 0.2 seconds, for better fps
@@ -119,6 +119,23 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 			self = oldself;
 		}
 	}
+}
+
+void TeleportPlayer_NextFrame_Think() {
+    TeleportPlayer(self.owner, self.enemy, self.origin, self.angles, self.velocity, self.mins, self.maxs);
+}
+
+void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax) {
+    entity e = spawn();
+    e.think = TeleportPlayer_NextFrame_Think;
+    e.nextthink = time;
+    e.owner = teleporter;
+    e.enemy = player;
+    e.origin = to;
+    e.angles = to_angles;
+    e.velocity = to_velocity;
+    e.mins = telefragmin;
+    e.maxs = telefragmax;
 }
 
 void Teleport_Touch (void)

@@ -781,6 +781,7 @@ void PutObserverInServer (void)
         self.hg_shield = 0;
     }
     
+    self.frozenrow = 0;
     self.jb_unlock_progress = 0;
     self.jb_message = JBMSG_NONE;
     self.revprogress = 0;

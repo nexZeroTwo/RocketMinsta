@@ -93,6 +93,9 @@ void reset_map(float dorespawn)
         self.hg_clearammo = 0;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
+            if(g_freeze)
+                self.frozenrow = 0;
+            
             if(g_handgrenades) {
                 if(self.hg_type_picked_nextround >= 0)
                     self.hg_type_picked = self.hg_type_picked_nextround;

@@ -15,6 +15,7 @@ float g_freeze_globalwarming_reset;
 .float meltprogress;
 .float revrow;
 .float danger_used;
+.float frozenrow;
 
 .float spawnstate_saved;
 .float spawnstate_team;
