@@ -532,8 +532,8 @@ void FlagTouch()
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
 		
-        if(g_freeze) FOR_EACH_PLAYER(e)
-            Freeze_UnfreezePlayer(e);
+        if(g_freeze)
+            Freeze_UnfreezeAll();
         
 		hudflash_teamcolor_default_spec(other);
 	}

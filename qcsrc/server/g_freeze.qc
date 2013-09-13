@@ -82,7 +82,6 @@ void Freeze_Frame(void) {
                 entity e; FOR_EACH_PLAYER(e)
                     bigprint_spec(e, "^xFB0Global Warming!", "Everyone has been unfrozen!", 3);
                 Freeze_UnfreezeAll();
-                g_freeze_globalwarming_warned = 0;
             }
         }
     }
@@ -237,6 +236,7 @@ void Freeze_UnfreezeAll(void) {
     entity e; FOR_EACH_PLAYER(e) if(e.frozen)
         Freeze_UnfreezePlayer(e);
     g_freeze_globalwarming_reset = TRUE;
+    g_freeze_globalwarming_warned = 0;
 }
 
 float Freeze_AliveCheck(entity plr) {

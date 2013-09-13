@@ -942,10 +942,10 @@ void kh_StartRound()  // runs at the start of each round
 		self = oldself;*/
 		
 		bigprint_spec(player, "^2Keys spawned!", "", 1);
-        
-        if(g_freeze)
-            Freeze_UnfreezePlayer(player);
 	}
+
+    if(g_freeze)
+        Freeze_UnfreezeAll();
 
 	for(i = 0; i < kh_teams; ++i)
 	{
