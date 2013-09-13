@@ -147,6 +147,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     
     plr.revrow = 0;
     plr.frozen = 1;
+    
     plr.revprogress = 0;
     plr.freezetime = time;
     plr.meltprogress = 0;
@@ -360,7 +361,7 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     if(!self.frozen) {
-        if(time - self.revupdatetime >= 0.01)
+        if(time > self.revresettime)
             self.revprogress = 0;
         
         sm_Frame();
@@ -427,7 +428,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         if(self != other && !other.frozen && other.team == self.team)
         if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
             other.revprogress = self.revprogress;
-            other.revupdatetime = time;
+            other.revresettime = time + frametime * 2;
         }
     } else if(self.revfinished) {
         if(Freeze_CVar("melt"))
@@ -449,7 +450,7 @@ void Freeze_Hook_PlayerPreThink(void) {
             }
             
             self.revprogress = self.meltprogress;
-            self.revupdatetime = time;
+            self.revresettime = time + frametime * 2;
         }
         else
             self.meltprogress = 0;

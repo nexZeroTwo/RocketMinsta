@@ -46,6 +46,7 @@ freezetag.qh
 vip.qh
 jailbreak.qh
 precious.qh
+domination.qh
 
 csqceffects.qc
 scores_rules.qc

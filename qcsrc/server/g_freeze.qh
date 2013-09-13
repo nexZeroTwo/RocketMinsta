@@ -10,7 +10,7 @@ float g_freeze_globalwarming_reset;
 .float frozen;
 .float freezetime;
 .float revprogress;
-.float revupdatetime;
+.float revresettime;
 .float revfinished;
 .float meltprogress;
 .float revrow;

@@ -1478,11 +1478,16 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
             self.lastdamage = time;
+            entity e;
             
             if(g_jailbreak && self.jb_unlock_progress) {
-                entity e; for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));)
+                FOR_EACH_JB_CONTROLPOINT(e)
                     if(e.jb_capturingplayer == self)
                         e.jb_unlock_progress = bound(0, e.jb_unlock_progress - cvar("g_jailbreak_controlpoint_unlock_damage_pushback"), 1);
+            } else if(g_domination && self.dom_captureprogress) {
+                FOR_EACH_DOM_CONTROLPOINT(e)
+                    if(e.dom_capturingplayer == self)
+                        e.dom_captureprogress = bound(0, e.dom_captureprogress - cvar("g_domination_capture_damage_pushback"), 1);
             }
         }
     }

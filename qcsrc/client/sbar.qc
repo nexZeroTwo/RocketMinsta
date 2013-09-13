@@ -3342,6 +3342,8 @@ float ammo_useprogress;
 float vhealth;
 float vshield;
 
+float revmode;
+
 void Sbar_HGShield(void) {
     float s = getstatf(STAT_HGSHIELD);
     
@@ -3461,13 +3463,13 @@ void Sbar_Draw(void)
 			fovlock = -1;
 	}
 
-	float rev, revmode;
+	float rev;
     // we may have both CAPTURE_PROGRESS and REVIVE_PROGRESS at once, but CAPTURE_PROGRESS is more important.
 	rev = getstatf(STAT_CAPTURE_PROGRESS);
     if(!rev) {
-        revmode = TRUE;
-        rev = getstatf(STAT_REVIVE_PROGRESS);   
-    }
+        rev = getstatf(STAT_REVIVE_PROGRESS);
+        if(rev) revmode = TRUE;
+    } else revmode = FALSE;
 	
 	if(rev) {
         rev_visual += (rev - rev_visual) * drawframetime * 10;
@@ -3581,7 +3583,7 @@ void Sbar_Draw(void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-
+    
     if(rev)
     {
         local vector revpos, c;

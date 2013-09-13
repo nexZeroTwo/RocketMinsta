@@ -2539,6 +2539,7 @@ void SpectateCopy(entity spectatee) {
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
     self.jb_message = spectatee.jb_message;
+    self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
 	setorigin(self, spectatee.origin);
@@ -2625,7 +2626,7 @@ float SpectateUpdate() {
 	if(!self.enemy)
 		return 0;
 
-	if (self == self.enemy)
+	if(self == self.enemy)
 		return 0;
 
 	if(self.enemy.classname != "player")
