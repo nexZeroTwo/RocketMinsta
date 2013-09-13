@@ -622,7 +622,8 @@ void SV_PlayerPhysics()
     if (!gameover)
     if (!(g_race || g_cts) || cvar("g_walljump_allowed_in_race"))
 	{
-		local vector plane_normal;
+		vector plane_normal;
+        makevectors(self.angles);
 		plane_normal = PlayerTouchWall ();
 		if (plane_normal != '0 0 0')
 		{
