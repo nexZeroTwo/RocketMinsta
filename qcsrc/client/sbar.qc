@@ -487,7 +487,7 @@ string Sbar_DefaultColumnLayout()
 		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		strcat("+tdm/dths +tdm/scds ", (g_freeze? "revs " : ""), "-lms,race,nexball/score"));
+		strcat("+tdm/dths +tdm/scds ", (g_freeze? "revs " : ""), "+dom,totaldom/takes -lms,race,nexball/score"));
 }
 
 void Cmd_Sbar_SetFields(float argc)
