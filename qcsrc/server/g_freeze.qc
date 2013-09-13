@@ -46,6 +46,7 @@ void Freeze_Frame(void) {
     
     if(!Freeze_GameInProgress()) {
         g_freeze_globalwarming_reset = TRUE;
+        g_freeze_globalwarming_warned = 0;
         return;
     }
     
