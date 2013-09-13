@@ -733,12 +733,10 @@ void dom_spawnteams()
 
 float dom_spawnpointsfor(string clname)
 {
-	local entity head;
-	local float i;
+	entity head;
+	float i;
 	
-	//head = find(world, classname, clname);
-	for(head = world; (head = find(head, classname, clname));)
-	{
+	for(head = world; (head = find(head, classname, clname));) {
 		bprint("^5Domination: ^7found a ", head.classname, " at ", vtos(head.origin), "\n");
 		dom_spawnpoint(head.origin);
 		++i;
@@ -746,6 +744,42 @@ float dom_spawnpointsfor(string clname)
 	
 	bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints for ^6", clname, "\n");
 	return i;
+}
+
+.float dom_used;
+float dom_spawnextrapoints(float numpts, float minpts) {
+    entity head, phead, pt;
+    float i, maxdst, mindst, dst;
+    
+    if(numpts >= minpts)
+        return 0;
+    
+    while(i < minpts-numpts) {
+        maxdst = 0;
+        for(head = world; (head = find(head, classname, "info_player_deathmatch"));) {
+            mindst = 0;
+            for(phead = world; (phead = find(phead, classname, "dom_controlpoint"));) {
+                dst = vlen(phead.origin - head.origin);
+                if(!mindst || dst < mindst)
+                    mindst = dst;
+            }
+            
+            if(mindst >= maxdst) {
+                maxdst = mindst;
+                pt = head;
+            }
+        }
+        
+        if(!pt) {
+            print("Spawning of extra domination points aborted!\n");
+            return i;
+        }
+        
+        dom_spawnpoint(pt.origin);
+        ++i;
+    }
+    
+    return i;
 }
 
 void dom_removeall(string clname)
@@ -791,10 +825,12 @@ void dom_delayedinit()
 		for(j = 0; j < n; ++j)
 			i += dom_spawnpointsfor(argv(j));
 		
+        i += dom_spawnextrapoints(i, cvar("g_domination_spawnpoints_min"));
+        
 		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
-		
+        
 		bprint("^5Domination:^7 spawned ", ftos(i), " controlpoints\n");
 	}
 	else

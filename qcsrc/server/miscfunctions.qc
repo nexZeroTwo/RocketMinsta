@@ -3209,6 +3209,10 @@ float GameTypeFilter_Allowed (string map, string gametype)
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
 		return 1; // maps always support dm-gametypes, even when they don't claim to
 
+    if(cvar("g_domination_always_available"))
+    if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
+        return 1;
+
 	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
 	if(fh < 0)
 	{
