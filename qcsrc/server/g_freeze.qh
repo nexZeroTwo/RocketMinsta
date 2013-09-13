@@ -3,6 +3,9 @@ float g_freeze;
 float g_freezetag;
 float g_freeze_playersalive[4];
 float g_freeze_playerstotal[4];
+float g_freeze_globalwarming;
+float g_freeze_globalwarming_warned;
+float g_freeze_globalwarming_reset;
 
 .float frozen;
 .float freezetime;
@@ -22,12 +25,16 @@ float g_freeze_playerstotal[4];
 .entity iceblock;
 
 void Freeze_Init(void);
+void Freeze_Frame(void);
 void Freeze_Precache(void);
 string Freeze_CVarName(string);
 void Freeze_FreezePlayer(entity, entity);
 float Freeze_GetPlayersAlive(float);
 float Freeze_GetPlayersTotal(float);
 void Freeze_RecountPlayers(void);
+void Freeze_SetGlobalWarming(float);
+float Freeze_GameInProgress(void);
+void Freeze_UnfreezeAll(void);
 
 void Freeze_Hook_PlayerSpawns(void);
 void Freeze_Hook_PlayerPhysics(void);

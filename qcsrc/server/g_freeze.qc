@@ -15,12 +15,16 @@ void Freeze_Init(void) {
     
     if(g_soulmates)
         addstat(STAT_SM_HASGEM, AS_INT, sm_canattach);
+    
+    g_freeze_globalwarming_reset = TRUE;
+    
+    entity e = spawn();
+    e.think = Freeze_Frame;
+    e.nextthink = time;
 }
 
 void Freeze_Precache(void) {
-    precache_sound("ctf/red_capture.wav");
-    precache_sound("ctf/blue_capture.wav");
-    precache_sound("kh/capture.wav");
+    precache_sound("kh/alarm.wav");
     precache_sound("freezetag/freezing.wav");
     precache_model("models/ice/ice.md3");
 }
@@ -29,6 +33,62 @@ string Freeze_CVarName(string s) {
     if(g_freezetag)
         return strcat("g_freezetag_", s);
     return strcat("g_freeze_", s);
+}
+
+void Freeze_GlobalWarming_Warn(float s) {
+    entity e; FOR_EACH_PLAYER(e)
+        bigprint_spec(e, strcat(ftos(floor(s)), " seconds until ^xFB0Global Warming"), "", 2);
+}
+
+void Freeze_Frame(void) {
+    float gw, r, wr;
+    self.nextthink = time;
+    
+    if(!Freeze_GameInProgress()) {
+        g_freeze_globalwarming_reset = TRUE;
+        return;
+    }
+    
+    gw = Freeze_CVar("global_warming");
+    
+    if(gw) {
+        if(g_freeze_globalwarming_reset && !g_freeze_globalwarming_warned) {
+            Freeze_SetGlobalWarming(gw);
+            g_freeze_globalwarming_reset = FALSE;
+        }
+        
+        r = 1;
+        wr = Freeze_CVar("global_warming_minratio");
+        
+        if(!g_freeze_globalwarming_warned && wr < 1) {
+            r = min(r, (g_freeze_playerstotal[0]? g_freeze_playersalive[0]/g_freeze_playerstotal[0] : 1));
+            r = min(r, (g_freeze_playerstotal[1]? g_freeze_playersalive[1]/g_freeze_playerstotal[1] : 1));
+            r = min(r, (g_freeze_playerstotal[2]? g_freeze_playersalive[2]/g_freeze_playerstotal[2] : 1));
+            r = min(r, (g_freeze_playerstotal[3]? g_freeze_playersalive[3]/g_freeze_playerstotal[3] : 1));
+        } else r = 0;
+        
+        if(r <= wr) {
+            g_freeze_globalwarming -= frametime;
+            
+            if(g_freeze_globalwarming < 5 && g_freeze_globalwarming_warned < 2) {
+                Freeze_GlobalWarming_Warn(5);
+                g_freeze_globalwarming_warned = 2;
+            } else if(g_freeze_globalwarming < 10 && g_freeze_globalwarming_warned < 1) {
+                Freeze_GlobalWarming_Warn(10);
+                g_freeze_globalwarming_warned = 1;
+            } else if(g_freeze_globalwarming <= 0) {
+                play2all("kh/alarm.wav");
+                entity e; FOR_EACH_PLAYER(e)
+                    bigprint_spec(e, "^xFB0Global Warming!", "Everyone has been unfrozen!", 3);
+                Freeze_UnfreezeAll();
+                g_freeze_globalwarming_warned = 0;
+            }
+        }
+    }
+}
+
+float Freeze_GameInProgress(void) {
+    return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
 }
 
 void Freeze_Ice_Think() {
@@ -89,6 +149,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.frozen = 1;
     plr.revprogress = 0;
     plr.freezetime = time;
+    plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
 
     if(!plr.iceblock) {
@@ -157,6 +218,24 @@ void Freeze_UnfreezePlayer(entity plr)
     }
     
     Freeze_RecountPlayers();
+}
+
+void Freeze_SetGlobalWarming(float d) {
+    if(d < 10) {
+        if(d < 5)
+            g_freeze_globalwarming_warned = 2;
+        else 
+            g_freeze_globalwarming_warned = 1;
+    } else
+        g_freeze_globalwarming_warned = 0;
+    
+    g_freeze_globalwarming = d;
+}
+
+void Freeze_UnfreezeAll(void) {
+    entity e; FOR_EACH_PLAYER(e) if(e.frozen)
+        Freeze_UnfreezePlayer(e);
+    g_freeze_globalwarming_reset = TRUE;
 }
 
 float Freeze_AliveCheck(entity plr) {
@@ -231,7 +310,7 @@ void Freeze_Hook_PlayerQuits(void) {
 void Freeze_Hook_PlayerSpawns(void) {
     Freeze_UnfreezePlayer(self);
     
-    if(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap))
+    if(!Freeze_GameInProgress())
         return;
     
     self.revprogress = 0;

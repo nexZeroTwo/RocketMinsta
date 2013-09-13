@@ -29,8 +29,10 @@ void FreezeTag_Initialize()
     if(ft_teams < 2)
         ft_teams = cvar("g_freezetag_teams");
     ft_teams = bound(2, ft_teams, 4);
-
-    precache_model("models/ice/ice.md3");
+    
+    precache_sound("ctf/red_capture.wav");
+    precache_sound("ctf/blue_capture.wav");
+    precache_sound("kh/capture.wav");
     
     if(inWarmupStage)
         warmup = time;
