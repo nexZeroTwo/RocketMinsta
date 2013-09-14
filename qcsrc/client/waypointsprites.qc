@@ -108,7 +108,7 @@ void drawhealthbar(vector org, float rot, float h, vector sz, vector hotspot, fl
 void Draw_WaypointSprite()
 {
 	string spriteimage;
-	float t;
+	float t, me;
 
 	if(self.lifetime)
 		self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
@@ -126,17 +126,16 @@ void Draw_WaypointSprite()
 			return; // fixed waypoint
 
 	InterpolateOrigin_Do();
-
-	t = GetPlayerColor(player_localentnum - 1) + 1;
+    me = ((spectatee_status > 0)? spectatee_status : player_localentnum) - 1;
+    t = GetPlayerColor(me) + 1;
 
 	spriteimage = "";
 
 	// choose the sprite
-	switch(self.rule)
-	{
+	switch(self.rule) {
 		case SPRITERULE_DEFAULT:
-			if(self.team)
-			{
+			// XXX: Why is this even here? The server already handles that.
+			if(self.team) {
 				if(self.team == t)
 					spriteimage = self.netname;
 				else

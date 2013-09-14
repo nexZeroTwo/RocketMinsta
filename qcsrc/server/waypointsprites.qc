@@ -179,9 +179,10 @@ float WaypointSprite_visible_for_player(entity e)
 {
 	// personal waypoints
 	if(self.enemy)
-		if(self.enemy != e)
+		if(self.enemy != e) {
 			return FALSE;
-
+        }
+        
 	// team waypoints
 	if(self.team && self.rule == SPRITERULE_DEFAULT)
 	{
@@ -190,7 +191,7 @@ float WaypointSprite_visible_for_player(entity e)
 		if(e.classname != "player")
 			return FALSE;
 	}
-
+    
 	return TRUE;
 }
 
