@@ -51,6 +51,7 @@ void JB_Frame() {
 void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
 void JB_Imprison(entity attacker) {
 	float et;
+    vector a;
 	
 	if(self.jb_isprisoned) {
 		JB_Log(strcat("Tried to imprison a prisoned player (", self.netname, ")"));
@@ -93,24 +94,11 @@ void JB_Imprison(entity attacker) {
 		JB_BLog(strcat("Failed to pick a jail spawnpoint for ", self.netname, "^7, cannot imprison!"));
 		return;
 	}
-	
-	//self.origin = spot.origin;
-	//setorigin(self, self.origin);
-	
-	entity oldself = self;
-	self = spot;
-	TeleportPlayer(spot, oldself, spot.origin, spot.angles, '0 0 0', '0 0 0', '0 0 0');
-	self = oldself;
-	
-	self.angles = spot.angles;
-	self.angles_z = 0; // never spawn tilted even if the spot says to
-	self.fixangle = TRUE; // turn this way immediately
-	self.velocity = '0 0 0';
-	self.avelocity = '0 0 0';
-	self.punchangle = '0 0 0';
-	self.punchvector = '0 0 0';
-	self.oldvelocity = self.velocity;
-	
+    
+    a = spot.angles;
+    a_z = 0;
+    TeleportPlayer_NextFrame(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
+    
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
 	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
@@ -131,24 +119,6 @@ void JB_Imprison(entity attacker) {
 
 float JB_AliveCheck(entity p) {
     return !p.jb_isprisoned;
-}
-
-void JB_ImprisonLater_Think() {
-	entity oldself = self, attacker = self.jb_prisoned_by;
-	self = self.enemy;
-	JB_Imprison(attacker);
-    AloneWarning(self.team, JB_AliveCheck);
-	self = oldself;
-	remove(self);
-}
-
-// Imprison in the next frame
-void JB_ImprisonLater(entity attacker) {
-	entity e = spawn();
-	e.jb_prisoned_by = attacker;
-	e.enemy = self;
-	e.think = JB_ImprisonLater_Think;
-	e.nextthink = time;
 }
 
 void JB_TorturePrisonersLater_Think() {
@@ -554,7 +524,8 @@ float JB_PlayerDies(entity frag_attacker) {
 		}
 		
 		Boobs_DropAllAndRespawn(frag_force);
-		JB_ImprisonLater(frag_attacker);
+		JB_Imprison(frag_attacker);
+        AloneWarning(self.team, JB_AliveCheck);
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
