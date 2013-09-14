@@ -578,14 +578,16 @@ void JB_PlayerPreThink() {
         self.jb_message = JBMSG_NONE;
     }
 	
-	if not(self.jb_isprisoned)
+	if(self.jb_isprisoned < 2)
 		return;
 		
 	if(time - self.jb_prisontime < 1)
 		return;
 	
-	if(time - self.jb_jail_lasttouch >= max(0.1, frametime))
+	if(time > self.jb_jail_resettime) {
+        print("RELEASING\n");
 		JB_Release(self.jb_saviour);
+    }
 }
 
 //
@@ -747,7 +749,7 @@ void JB_Jail_Touch() {
     if(g_handgrenades)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {
-        other.jb_jail_lasttouch = time;
+        other.jb_jail_resettime = frametime * 2;
         return;
     }
     
@@ -762,10 +764,12 @@ void JB_Jail_Touch() {
 		return;
 	}
 	
+    other.jb_isprisoned = 2;
+    
 	if(other.team == self.team)
 		return;
 	
-	other.jb_jail_lasttouch = time;
+	other.jb_jail_resettime = time + frametime * 2;
 }
 
 void JB_SetupJail() {
