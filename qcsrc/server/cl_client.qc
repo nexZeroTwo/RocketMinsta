@@ -2,6 +2,7 @@ void inf_warmup();
 void Boobs_Clear();
 
 .entity specdelay_ent;
+.float justconnected;
 
 float ClientData_Send(entity to, float sf)
 {
@@ -739,18 +740,23 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 	
-	remove(self.shownames);
-	self.shownames = world;
+    if(self.shownames) {
+        remove(self.shownames);
+        self.shownames = world;
+    }
 	DropAllRunes(self);
-	kh_Key_DropAll(self, TRUE);
-    Freeze_Hook_PlayerQuits();
-    HG_DetonateAll(self);
-	vip_RemovePlayer();
-	JB_RemovePlayer();
-	prec_player_die(self, self);
-	inf_player_leave(self);
-	Portal_ClearAll(self);
-	Boobs_Clear();
+    
+    if(!self.justconnected) {
+        kh_Key_DropAll(self, TRUE);
+        Freeze_Hook_PlayerQuits();
+        HG_DetonateAll(self);
+        vip_RemovePlayer();
+        JB_RemovePlayer();
+        prec_player_die(self, self);
+        inf_player_leave(self);
+        Portal_ClearAll(self);
+        Boobs_Clear();
+    }
 	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
@@ -876,6 +882,8 @@ void PutObserverInServer (void)
 	}
 	else
 		self.frags = FRAGS_SPECTATOR;
+    
+    self.justconnected = FALSE;
 }
 
 float RestrictSkin(float s)
@@ -1355,6 +1363,8 @@ void PutClientInServer (void)
 		remove(self.fire_burner);
 		self.fire_burner = world;
 	}
+    
+    self.justconnected = FALSE;
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1664,7 +1674,9 @@ void ClientConnect (void)
 		print("Warning: ClientConnect, but already connected!\n");
 		return;
 	}
-
+    
+    self.justconnected = TRUE;
+    
 	if(Ban_MaybeEnforceBan(self))
 		return;
 
