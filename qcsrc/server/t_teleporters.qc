@@ -53,6 +53,7 @@ void spawn_tdeath(vector v0, entity e, vector v)
 }
 
 .entity pusher;
+.float teleport_effecttime;
 void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax)
 {
 	entity oldself;
@@ -66,12 +67,12 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
     
 	makevectors (to_angles);
 
-	if(self.pushltime < time) // only show one teleport effect per teleporter per 0.2 seconds, for better fps
+	if(self.teleport_effecttime < time) // only show one teleport effect per teleporter per 0.2 seconds, for better fps
 	{
 		sound (player, CHAN_TRIGGER, "misc/teleport.wav", VOL_BASE, ATTN_NORM);
 		pointparticles(particleeffectnum("teleport"), player.origin, '0 0 0', 1);
 		pointparticles(particleeffectnum("teleport"), to + v_forward * 32, '0 0 0', 1);
-		self.pushltime = time + 0.2;
+		self.teleport_effecttime = time + 0.2;
 	}
 
 	// Relocate the player
