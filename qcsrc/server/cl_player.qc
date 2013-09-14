@@ -493,7 +493,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
     if(g_handgrenades)
     if(attacker.classname == "player")
     if(self.hg_shield)
-    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC) {
+    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE) {
         vector offs = '0 0 1' * self.maxs_z*0.5;
         float reflect = damage * cvar("g_handgrenades_shield_damage_reflect");
         float absorb = damage * (1-cvar("g_handgrenades_shield_damage_take"));
@@ -742,6 +742,11 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 
 	if (self.health < 1)
 	{
+        if(g_freeze && self.frozen || g_jailbreak && self.jb_isprisoned) if(deathtype == DEATH_NOISE) {
+            self.health = 1;
+            return;
+        }
+        
 		float defer_ClientKill_Now_TeamChange;
 		defer_ClientKill_Now_TeamChange = FALSE;
 
@@ -1141,6 +1146,18 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
+
+    if(source.iscreature) {
+        float damg;
+        
+        if(teamsay)
+            damg = cvar("sv_chatdamage_team");
+        else if not(privatesay)
+            damg = cvar("sv_chatdamage");
+
+        if(damg)
+            Damage(source, source, source, damg, DEATH_NOISE, '0 0 0', normalize(randomvec()) * 200);
+    }
 
 	if(Ban_MaybeEnforceBan(source))
 		return;

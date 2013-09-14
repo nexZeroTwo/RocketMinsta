@@ -419,7 +419,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to preserve your health"));
 				else
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You grew too old without taking your medicine"));
-			} else if (deathtype == DEATH_MIRRORDAMAGE) {
+			} else if(deathtype == DEATH_MIRRORDAMAGE) {
                                 if(g_prec) {
 			        	if(sv_gentle)
 				        	centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Go aginst the rune carrier!"));
@@ -431,6 +431,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				        else
 					        centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't shoot your team mates!"));
                                 }
+            } else if(deathtype == DEATH_NOISE) {
+                centerprint_spec(targ, "^1You were too noisy to live");
 			} else {
 				if(sv_gentle)
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to be more careful!"));
@@ -480,6 +482,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 burned to death\n");
 				else if (deathtype == DEATH_HG_NAPALM)
 					bprint ("^1",s, "^1 played with fire\n");
+                else if (deathtype == DEATH_NOISE)
+                    bprint ("^1",s, "^1 was too noisy to live\n");
 				else if (deathtype != DEATH_TEAMCHANGE)
 					bprint ("^1",s, "^1 couldn't resist the urge to self-destruct\n");
 					
@@ -1025,9 +1029,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		targ.spawnshieldtime = 0;
 		targ.health = 0.9; // this is < 1
 		targ.flags -= targ.flags & FL_GODMODE;
+        
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade")
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
 	{
 		// no processing
 	}
