@@ -123,6 +123,7 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 
 void TeleportPlayer_NextFrame_Think() {
     TeleportPlayer(self.owner, self.enemy, self.origin, self.angles, self.velocity, self.mins, self.maxs);
+    remove(self);
 }
 
 void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax) {
