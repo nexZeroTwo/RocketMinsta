@@ -305,7 +305,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce) {
         if(!sp) {
             bprint("Coudln't select a spawn point for ", self.netname, "^7!\n");
         } else
-            TeleportPlayer_NextFrame(self, self, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
+            TeleportPlayer(self, self, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
             
         if(self.frozenrow > 1)
             bigprint_spec(self, "", strcat("^5You were moved to a random spawm point after dying ", ftos(self.frozenrow), " times in a row"), 5);

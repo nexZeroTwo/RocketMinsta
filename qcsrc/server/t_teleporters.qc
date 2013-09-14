@@ -77,13 +77,14 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 	// Relocate the player
 	// assuming to allows PL_MIN to PL_MAX box and some more
 	from = player.origin;
-	setorigin (player, to);
+	setorigin(player, to);
+    player.antilag_saved_origin = to; // prevent antilag from taking us back from the teleport destination
 	player.oldorigin = to; // don't undo the teleport by unsticking
 	player.angles = to_angles;
 	player.fixangle = TRUE;
 	player.velocity = to_velocity;
 	BITXOR_ASSIGN(player.effects, EF_TELEPORT_BIT);
-
+    
 	UpdateCSQCProjectileAfterTeleport(player);
 
 	if(player.classname == "player")

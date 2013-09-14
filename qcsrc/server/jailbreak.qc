@@ -48,7 +48,6 @@ void JB_Frame() {
 	self.nextthink = time + 0.1;
 }
 
-void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
 void JB_Imprison(entity attacker) {
 	float et;
     vector a;
@@ -97,7 +96,7 @@ void JB_Imprison(entity attacker) {
     
     a = spot.angles;
     a_z = 0;
-    TeleportPlayer_NextFrame(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
+    TeleportPlayer(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
     
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
