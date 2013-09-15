@@ -63,7 +63,7 @@ const float COLOR_SPECTATOR = 1337;
 // --------------------------------------------------------------------------
 // Scoreboard stuff
 
-#define MAX_SBAR_FIELDS 16
+#define MAX_SBAR_FIELDS 32
 
 #define SP_END -1
 
@@ -323,3 +323,4 @@ float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
 .vector iorigin;
 
 float whatsgoingon;
+float g_freeze;

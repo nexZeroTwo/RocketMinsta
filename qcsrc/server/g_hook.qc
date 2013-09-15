@@ -261,7 +261,7 @@ void GrapplingHookThink()
 	}
 
 	if(self.aiment.classname == "player") if(self.last_dmg < time)
-	if not(g_freezetag && (self.aiment.freezetag_frozen || warmup >= time))
+	if not(g_freeze && (self.aiment.frozen || warmup >= time))
 	if not(g_vip && vip_soulgem && !vip_started)
 	if(!teams_matter || self.owner.team != self.aiment.team)
 	if(cvar("g_rocketminsta"))
@@ -387,7 +387,7 @@ float CustomCRAHookButton(entity e) {
 	// this function sucks
 	// and so does it's name
 	
-	if(!e.BUTTON_USE || e.soulmate || e.smhost || !(g_freezetag || g_jailbreak))
+	if(!e.BUTTON_USE || e.soulmate || e.smhost || !(g_freeze || g_jailbreak))
 		return FALSE;
 	return TRUE;
 }
@@ -400,8 +400,8 @@ void FireGrapplingHook (void)
 	if((arena_roundbased && time < warmup) || (time < game_starttime))
 		return;
 
-	if(g_freezetag)
-	if(self.freezetag_frozen)
+	if(g_freeze)
+	if(self.frozen)
 		return;
         
 	if(g_handgrenades && !g_handgrenades_detonatelaunches)

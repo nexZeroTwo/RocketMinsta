@@ -2,6 +2,7 @@ void inf_warmup();
 void Boobs_Clear();
 
 .entity specdelay_ent;
+.float justconnected;
 
 float ClientData_Send(entity to, float sf)
 {
@@ -739,20 +740,23 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 	
-	frag_attacker = world;
-	
-	remove(self.shownames);
-	self.shownames = world;
+    if(self.shownames) {
+        remove(self.shownames);
+        self.shownames = world;
+    }
 	DropAllRunes(self);
-	kh_Key_DropAll(self, TRUE);
-	freezetag_RemovePlayer();
-    HG_DetonateAll(self);
-	vip_RemovePlayer();
-	JB_RemovePlayer();
-	prec_player_die(self);
-	inf_player_leave(self);
-	Portal_ClearAll(self);
-	Boobs_Clear();
+    
+    if(!self.justconnected) {
+        kh_Key_DropAll(self, TRUE);
+        Freeze_Hook_PlayerQuits();
+        HG_DetonateAll(self);
+        vip_RemovePlayer();
+        JB_RemovePlayer();
+        prec_player_die(self, self);
+        inf_player_leave(self);
+        Portal_ClearAll(self);
+        Boobs_Clear();
+    }
 	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
@@ -783,9 +787,10 @@ void PutObserverInServer (void)
         self.hg_shield = 0;
     }
     
+    self.frozenrow = 0;
     self.jb_unlock_progress = 0;
     self.jb_message = JBMSG_NONE;
-    self.freezetag_revive_progress = 0;
+    self.revprogress = 0;
     
     self.wasingame = FALSE;
 	self.spectatortime = time;
@@ -877,6 +882,8 @@ void PutObserverInServer (void)
 	}
 	else
 		self.frags = FRAGS_SPECTATOR;
+    
+    self.justconnected = FALSE;
 }
 
 float RestrictSkin(float s)
@@ -1321,7 +1328,7 @@ void PutClientInServer (void)
 			activator = world;
 		self = oldself;
 		
-		freezetag_PlayerSpawn();
+        Freeze_Hook_PlayerSpawns();
 		JB_PlayerSpawn();
         
         if(g_handgrenades) {
@@ -1356,6 +1363,8 @@ void PutClientInServer (void)
 		remove(self.fire_burner);
 		self.fire_burner = world;
 	}
+    
+    self.justconnected = FALSE;
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1380,6 +1389,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, g_handgrenades? (g_handgrenades_oldhitboxes? 2 : 1) : 0);
     if(g_handgrenades)
         WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
+    WriteByte(MSG_ENTITY, g_freeze);
 	return TRUE;
 }
 
@@ -1664,7 +1674,9 @@ void ClientConnect (void)
 		print("Warning: ClientConnect, but already connected!\n");
 		return;
 	}
-
+    
+    self.justconnected = TRUE;
+    
 	if(Ban_MaybeEnforceBan(self))
 		return;
 
@@ -1898,16 +1910,14 @@ void ClientDisconnect (void)
 	bprint ("^4 disconnected\n");
 
 	SoundEntity_Detach(self);
-
-	frag_attacker = world;
-
+    
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
-	freezetag_RemovePlayer();
+    Freeze_Hook_PlayerQuits();
     HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
-	prec_player_die(self);
+	prec_player_die(self, self);
 	Portal_ClearAll(self);
 	Boobs_Clear();
 
@@ -2447,7 +2457,7 @@ void EnterSpectatorMode() {
     if(self.ballcarried)
         DropBall(self.ballcarried, self.origin, self.velocity);
     kh_Key_DropAll(self, TRUE);
-    prec_player_die(self);
+    prec_player_die(self, self);
     inf_player_leave(self);
     WaypointSprite_PlayerDead();
     self.classname = "observer";
@@ -2527,8 +2537,8 @@ void SpectateCopy(entity spectatee) {
 	self.dmg_inflictor = spectatee.dmg_inflictor;
 	self.angles = spectatee.v_angle;
 	self.fixangle = TRUE;
-	self.freezetag_frozen = spectatee.freezetag_frozen;
-	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
+	self.frozen = spectatee.frozen;
+	self.revprogress = spectatee.revprogress;
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
     self.hg_type = spectatee.hg_type;
@@ -2541,6 +2551,7 @@ void SpectateCopy(entity spectatee) {
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
     self.jb_message = spectatee.jb_message;
+    self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
 	setorigin(self, spectatee.origin);
@@ -2627,7 +2638,7 @@ float SpectateUpdate() {
 	if(!self.enemy)
 		return 0;
 
-	if (self == self.enemy)
+	if(self == self.enemy)
 		return 0;
 
 	if(self.enemy.classname != "player")
@@ -2968,10 +2979,10 @@ void PlayerPreThink (void)
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
         
+        Freeze_Hook_PlayerPreThink();
         JB_PlayerPreThink();
         domination_PlayerPreThink();
         vip_PlayerPreThink();
-        freezetag_PlayerPreThink();
 		CheckRules_Player();
 
 //		PrintWelcomeMessage(self);

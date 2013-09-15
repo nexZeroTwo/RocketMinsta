@@ -222,8 +222,8 @@ void StartFrame (void)
             g_dodging_delay = cvar("g_dodging_delay");
             g_dodging_ramp_time = cvar("g_dodging_ramp_time");
             
-            if(g_freezetag)
-                g_freezetag_dodging_frozen = cvar("g_freezetag_dodging_frozen");
+            if(g_freeze)
+                g_freezetag_dodging_frozen = Freeze_CVar("dodging_frozen");
         }
         
         g_balance_health_rotstable = cvar("g_balance_health_rotstable");

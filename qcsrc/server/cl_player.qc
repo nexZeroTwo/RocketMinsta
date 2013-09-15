@@ -684,7 +684,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("sv_hidedamage")) if(self.health > 0) if not(g_freezetag && self.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(self.health > 0) if not(g_freeze && self.frozen)
 		{
 			float i;
 			
@@ -778,7 +778,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			}
 		}
 
-		if(!g_freezetag)
+		if(!g_freeze)
 		{
 			// become fully visible
 			self.alpha = 1;
@@ -793,32 +793,20 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		race_PreDie();
 		DropAllRunes(self);
 		
-		if(deathtype == DEATH_HURTTRIGGER && g_freezetag)
+		if(deathtype == DEATH_HURTTRIGGER && g_freeze)
 		{
 			PutClientInServer();
-			count_alive_players(); // re-count players
-			freezetag_CheckWinner();
 			return;
 		}
 		
-		frag_attacker = attacker;
-		frag_inflictor = inflictor;
-		frag_target = self;
-		frag_force = force;
-		
-		prec_player_die(self);
-		
+		prec_player_die(self, attacker);
 		DropPowerups(force);
-		
 		sm_PlayerDies();
 		
-		if(freezetag_PlayerDies())
+		if(vip_PlayerDies(attacker, self, deathtype))
 			return;
 		
-		if(vip_PlayerDies(deathtype))
-			return;
-		
-		if(JB_PlayerDies())
+		if(JB_PlayerDies(attacker))
 			return;
 		
 		if(self == attacker)
@@ -848,6 +836,9 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			self.angles_z = 0;
 		}
 		
+        if(Freeze_Hook_PlayerDies(attacker, force))
+            return;
+        
 		Boobs_DropAll(force);
 		
 		// don't spin

@@ -15,22 +15,12 @@ dom_init();
 Note: The only teams who can use dom control points are identified by spawnfunc_dom_team entities (if none exist these default to red and blue and use only quake models/sounds).
 */
 
-#define DOMPOINTFRAGS frags
-#define FOR_EACH_CONTROLPOINT(v) for(v = world; (v = find(v, classname, "dom_controlpoint")) != world; )
-
-.float enemy_playerid;
-.entity sprite;
-.float captime;
-float tdom_maycap;
-.float pointupdatetime;
-float totalpoints, redpoints, bluepoints;
-
 void dom_recountpoints()
 {
     totalpoints = redpoints = bluepoints = 0;
 
     local entity e;
-    FOR_EACH_CONTROLPOINT(e)
+    FOR_EACH_DOM_CONTROLPOINT(e)
 	{
 		++totalpoints;
 		
@@ -232,8 +222,10 @@ void dompointthink()
 
 	self.nextthink = time + 0.1;
 
-    if(time - self.pointupdatetime > 0.1)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+    if(time - self.pointupdatetime > 0.15) {
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+        self.dom_capturingplayer = world;
+    }
 	
 	//self.frame = self.frame + 1;
 	//if(self.frame > 119)
@@ -277,37 +269,47 @@ void dompointthink()
 void dompointtouch()
 {
 	local entity head;
-	if (other.classname != "player")
+    
+    if(time < game_starttime)
+        return;
+    
+	if(other.classname != "player")
 		return;
-	if (other.health < 1)
+	if(other.health < 1)
 		return;
+    if(g_freeze && other.frozen)
+        return;
 
 	if(time < self.captime + 0.3)
 		return;
 
+    if(self.dom_capturingplayer && self.dom_capturingplayer != other)
+        return;
+
 	if(g_totaldomination)
 	if(!tdom_maycap)
 		return;
-
+    
 	// only valid teams can claim it
 	head = find(world, classname, "dom_team");
-	while (head && head.team != other.team)
+	while(head && head.team != other.team)
 		head = find(head, classname, "dom_team");
-	if (!head || head.netname == "" || head == self.goalentity)
+	if(!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress + frametime * cvar("g_domination_capture_speed"), 1);
+	self.dom_captureprogress = bound(0, self.dom_captureprogress + frametime * cvar("g_domination_capture_speed"), 1);
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
+    self.dom_capturingplayer = other;
 
-    other.freezetag_revive_progress = self.freezetag_revive_progress;
-	if(self.freezetag_revive_progress < 1)
+    other.dom_captureprogress = self.dom_captureprogress;
+	if(self.dom_captureprogress < 1)
 	{
-		//bprint(other.netname, "^7.freezetag_revive_progress = ", ftos(other.freezetag_revive_progress), "\n");
+		//bprint(other.netname, "^7.dom_captureprogress = ", ftos(other.dom_captureprogress), "\n");
 		return;
 	}
-	self.freezetag_revive_progress = 0;
-    other.freezetag_revive_progress = self.freezetag_revive_progress;
+	self.dom_captureprogress = 0;
+    other.dom_captureprogress = self.dom_captureprogress;
 
 	// delay capture
 
@@ -348,7 +350,7 @@ float domination_PlayerPreThink()
 	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
-		self.freezetag_revive_progress = bound(0, self.freezetag_revive_progress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
 	
 	return 1;
 }

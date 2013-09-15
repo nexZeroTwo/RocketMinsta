@@ -1010,8 +1010,8 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(shooting_forbidden && self.weapon != WEP_LASER)
 		return FALSE;
 
-	if(g_freezetag)
-	if(self.freezetag_frozen) 
+	if(g_freeze)
+	if(self.frozen) 
 		return FALSE;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)

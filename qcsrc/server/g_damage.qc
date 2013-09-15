@@ -1016,7 +1016,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		// No damage modification here
 		// Instead, prepare the victim for his death...
 		
-		if(g_freezetag && targ.freezetag_frozen && deathtype != DEATH_KILL)
+		if(g_freeze && targ.frozen && deathtype != DEATH_KILL)
 		{
 			oldself = self;
 			self = targ;
@@ -1292,17 +1292,17 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			mirrorforce *= g_weaponforcefactor;
 		}
 
-		if(g_freezetag) if(targ.freezetag_frozen)
+		if(g_freeze) if(targ.frozen)
 		{
 			damage = 0;
-			force = force * cvar("g_freezetag_frozen_force");
+			force = force * Freeze_CVar("frozen_force");
 
-			if(targ.team != attacker.team || cvar("g_freezetag_melt_teamdamage"))
+			if(targ.team != attacker.team || Freeze_CVar("melt_teamdamage"))
 			{
-				targ.freezetag_meltprogress = 0;
-				targ.freezetag_freezetime = time;
-				targ.freezetag_meltprogress = 0;
-				targ.freezetag_revive_progress = 0;
+				targ.meltprogress = 0;
+				targ.freezetime = time;
+				targ.meltprogress = 0;
+				targ.revprogress = 0;
 			}
 
 			if(deathtype == DEATH_HURTTRIGGER)
@@ -1483,11 +1483,16 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
             self.lastdamage = time;
+            entity e;
             
             if(g_jailbreak && self.jb_unlock_progress) {
-                entity e; for(e = world; (e = find(e, classname, "jailbreak_controlpoint"));)
+                FOR_EACH_JB_CONTROLPOINT(e)
                     if(e.jb_capturingplayer == self)
                         e.jb_unlock_progress = bound(0, e.jb_unlock_progress - cvar("g_jailbreak_controlpoint_unlock_damage_pushback"), 1);
+            } else if(g_domination && self.dom_captureprogress) {
+                FOR_EACH_DOM_CONTROLPOINT(e)
+                    if(e.dom_capturingplayer == self)
+                        e.dom_captureprogress = bound(0, e.dom_captureprogress - cvar("g_domination_capture_damage_pushback"), 1);
             }
         }
     }
@@ -1519,7 +1524,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freezetag && targ.freezetag_frozen)
+		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freeze && targ.frozen)
 		{
 			float i;
 			

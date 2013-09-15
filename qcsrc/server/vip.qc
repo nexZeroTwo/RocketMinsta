@@ -327,12 +327,11 @@ void vip_EndRound()
 		e.nextthink = time + 1;
 		e.cnt = cvar("g_vip_warmup") + next_round;
 		
-		G_EndRound("VIP", 5, cvar("g_vip_warmup"), update_playercount, vip_EndRound_Think, vip_EndRound_Finalize);
+		G_EndRound("VIP", 5, cvar("g_vip_warmup"), SUB_Null, vip_EndRound_Think, vip_EndRound_Finalize);
 	}
 	else
 		defer(5.1, vip_SoulGem_StartRound);
     
-    update_playercount();
     defer(5.1, vip_ClearVIPs);
     vip_ended = 1;
     vip_ResetVIPInfo();
@@ -853,7 +852,7 @@ void vip_BlueVIPDown()
 	vip_EndRound();
 }
 
-float vip_PlayerDies(float deathtype)
+float vip_PlayerDies(entity frag_attacker, entity frag_target, float deathtype)
 {
 	DEPENDON_F(g_vip, 0)
 	

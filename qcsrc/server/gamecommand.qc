@@ -1155,14 +1155,8 @@ void GameCommand(string command)
 		{
 			e.health = max(e.health, 100);
 			
-			if(g_freezetag)
-			{
-				local entity oldself;
-				oldself = self;
-				self = e;
-				freezetag_Unfreeze(world);
-				self = oldself;
-			}
+			if(g_freeze)
+				Freeze_UnfreezePlayer(e);
 		}
         
         if(g_jailbreak) {

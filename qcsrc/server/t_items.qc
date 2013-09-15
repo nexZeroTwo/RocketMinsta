@@ -244,8 +244,8 @@ float Item_GiveTo(entity item, entity player)
 	float i;
 	entity e;
 
-	if(g_freezetag)
-	if(player.freezetag_frozen)
+	if(g_freeze)
+	if(player.frozen)
 		return 0;
 
 	// if nothing happens to player, just return without taking the item

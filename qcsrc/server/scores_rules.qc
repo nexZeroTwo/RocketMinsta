@@ -24,7 +24,10 @@ void ScoreRules_basics(float teams, float sprio, float stprio, float score_enabl
 
 	if not(independent_players)
 		ScoreInfo_SetLabel_PlayerScore(SP_SUICIDES,     "scds",  SFL_LOWER_IS_BETTER);
-
+    
+    if(g_freeze && !g_freezetag)
+        ScoreInfo_SetLabel_PlayerScore(SP_REVIVALS,     "revs",    0);
+        
 	if(score_enabled)
 		ScoreInfo_SetLabel_PlayerScore(SP_SCORE,        "score",     sprio);
 	
@@ -79,11 +82,11 @@ void ScoreRules_ctf()
 	ScoreRules_basics(2 + (c3>=0), SFL_SORT_PRIO_PRIMARY, sp_score, TRUE); // NOTE this assumes that the rogue team is team 3
 	ScoreInfo_SetLabel_TeamScore  (ST_CTF_CAPS,     "caps",      sp_caps);
 	ScoreInfo_SetLabel_PlayerScore(SP_CTF_CAPS,     "caps",      SFL_SORT_PRIO_SECONDARY);
-	ScoreInfo_SetLabel_PlayerScore(SP_CTF_PICKUPS,  "pckps",   0);
-	ScoreInfo_SetLabel_PlayerScore(SP_CTF_FCKILLS,  "fcks",   0);
-	ScoreInfo_SetLabel_PlayerScore(SP_CTF_RETURNS,  "rtrns",   0);
+	ScoreInfo_SetLabel_PlayerScore(SP_CTF_PICKUPS,  "pckps",     0);
+	ScoreInfo_SetLabel_PlayerScore(SP_CTF_FCKILLS,  "fcks",      0);
+	ScoreInfo_SetLabel_PlayerScore(SP_CTF_RETURNS,  "rtrns",     0);
 	ScoreInfo_SetLabel_PlayerScore(SP_CTF_DROPS,    "drops",     SFL_LOWER_IS_BETTER);
-	ScoreInfo_SetLabel_PlayerScore (SP_CARRYING,    "fc",        0);
+	ScoreInfo_SetLabel_PlayerScore(SP_CARRYING,     "fc",        0);
 	ScoreRules_basics_end();
 }
 
@@ -162,11 +165,11 @@ void ScoreRules_kh(float teams)
 	//ScoreInfo_SetLabel_TeamScore  (ST_KH_CAPS,      "caps",      SFL_SORT_PRIO_SECONDARY);
 	ScoreInfo_SetLabel_TeamScore  (ST_KH_CAPS,      "caps",      SFL_SORT_PRIO_PRIMARY);
 	ScoreInfo_SetLabel_PlayerScore(SP_KH_CAPS,      "caps",      SFL_SORT_PRIO_SECONDARY);
-	ScoreInfo_SetLabel_PlayerScore(SP_KH_PUSHES,    "push",    0);
-	ScoreInfo_SetLabel_PlayerScore(SP_KH_DESTROYS,  "dstrd", SFL_LOWER_IS_BETTER);
-	ScoreInfo_SetLabel_PlayerScore(SP_KH_PICKUPS,   "pckps",   0);
-	ScoreInfo_SetLabel_PlayerScore(SP_KH_KCKILLS,   "kcks",   0);
-	ScoreInfo_SetLabel_PlayerScore(SP_KH_LOSSES,    "loss",    SFL_LOWER_IS_BETTER);
+	ScoreInfo_SetLabel_PlayerScore(SP_KH_PUSHES,    "push",      0);
+	ScoreInfo_SetLabel_PlayerScore(SP_KH_DESTROYS,  "dstrd",     SFL_LOWER_IS_BETTER);
+	ScoreInfo_SetLabel_PlayerScore(SP_KH_PICKUPS,   "pckps",     0);
+	ScoreInfo_SetLabel_PlayerScore(SP_KH_KCKILLS,   "kcks",      0);
+	ScoreInfo_SetLabel_PlayerScore(SP_KH_LOSSES,    "loss",      SFL_LOWER_IS_BETTER);
 //	ScoreInfo_SetLabel_PlayerScore (SP_CARRYING,    "keys",      0); // fuck CSQC
 	ScoreRules_basics_end();
 }
@@ -223,13 +226,11 @@ void ScoreRules_nexball(float teams)
 }
 
 // FreezeTag stuff
-#define SP_FREEZETAG_REVIVALS 4
-//#define SP_FREEZETAG_FROZENSTATUS 5
 void ScoreRules_freezetag()
 {
 	CheckAllowedTeams(world);
 	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
-	ScoreInfo_SetLabel_PlayerScore(SP_FREEZETAG_REVIVALS,		"revs",		SFL_SORT_PRIO_SECONDARY);
+	ScoreInfo_SetLabel_PlayerScore(SP_REVIVALS,		"revs",		SFL_SORT_PRIO_SECONDARY);
 	ScoreRules_basics_end();
 }
 

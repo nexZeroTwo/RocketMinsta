@@ -314,7 +314,13 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	e.cnt = FLAG_DROPPED;
 	e.velocity = '0 0 300';
 	e.pain_finished = time + cvar("g_ctf_flag_returntime");//30;
-
+    
+    // hack
+    if(g_freeze) {
+        makevectors(self.angles);
+        e.velocity += v_forward * 100;
+    }
+    
 	trace_startsolid = FALSE;
 	tracebox(e.origin, e.mins, e.maxs, e.origin, TRUE, e);
 	if(trace_startsolid)
@@ -423,12 +429,14 @@ void FlagTouch()
 	if(gameover) return;
 
 	local float t;
-	local entity player;
+	local entity player, e;
 	local string s, s0, h0, h1;
 	if (other.classname != "player")
 		return;
 	if (other.health < 1) // ignore dead players
 		return;
+    if (g_freeze && other.frozen)
+        return;
 
 	if (self.cnt == FLAG_CARRY)
 		return;
@@ -524,6 +532,9 @@ void FlagTouch()
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
 		
+        if(g_freeze)
+            Freeze_UnfreezeAll();
+        
 		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
@@ -933,6 +944,7 @@ void spawnfunc_item_flag_team2()
 			
 		return;
 	}
+    
 	//if(!cvar("teamplay"))
 	//	cvar_set("teamplay", "3");
 

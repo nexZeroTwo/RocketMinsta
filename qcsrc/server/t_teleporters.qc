@@ -29,14 +29,14 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	deathradius = max(vlen(deathmin), vlen(deathmax));
 	for(head = findradius(player.origin, deathradius); head; head = head.chain)
 		if(head != player)
-			if(head.takedamage) if(!(g_freezetag && head.freezetag_frozen))
+			if(head.takedamage) if(!(g_freeze && head.frozen))
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
 					if((player.classname == "player") && (player.health >= 1)) {
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');
                         
                         if(head.classname == "player")
-                        if(head.deadflag != DEAD_NO || (g_freezetag && head.freezetag_frozen) || (g_jailbreak && head.jb_isprisoned))
+                        if(head.deadflag != DEAD_NO || (g_freeze && head.frozen) || (g_jailbreak && head.jb_isprisoned))
                         if(!teams_matter || head.team != player.team)
                             ++tdeath_hit;
 					}
@@ -53,6 +53,7 @@ void spawn_tdeath(vector v0, entity e, vector v)
 }
 
 .entity pusher;
+.float teleport_effecttime;
 void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax)
 {
 	entity oldself;
@@ -63,27 +64,28 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 		telefragger = teleporter.owner;
 	else
 		telefragger = player;
-
+    
 	makevectors (to_angles);
 
-	if(self.pushltime < time) // only show one teleport effect per teleporter per 0.2 seconds, for better fps
+	if(self.teleport_effecttime < time) // only show one teleport effect per teleporter per 0.2 seconds, for better fps
 	{
 		sound (player, CHAN_TRIGGER, "misc/teleport.wav", VOL_BASE, ATTN_NORM);
 		pointparticles(particleeffectnum("teleport"), player.origin, '0 0 0', 1);
 		pointparticles(particleeffectnum("teleport"), to + v_forward * 32, '0 0 0', 1);
-		self.pushltime = time + 0.2;
+		self.teleport_effecttime = time + 0.2;
 	}
 
 	// Relocate the player
 	// assuming to allows PL_MIN to PL_MAX box and some more
 	from = player.origin;
-	setorigin (player, to);
+	setorigin(player, to);
+    player.antilag_saved_origin = to; // prevent antilag from taking us back from the teleport destination
 	player.oldorigin = to; // don't undo the teleport by unsticking
 	player.angles = to_angles;
 	player.fixangle = TRUE;
 	player.velocity = to_velocity;
 	BITXOR_ASSIGN(player.effects, EF_TELEPORT_BIT);
-
+    
 	UpdateCSQCProjectileAfterTeleport(player);
 
 	if(player.classname == "player")
@@ -119,6 +121,24 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 			self = oldself;
 		}
 	}
+}
+
+void TeleportPlayer_NextFrame_Think() {
+    TeleportPlayer(self.owner, self.enemy, self.origin, self.angles, self.velocity, self.mins, self.maxs);
+    remove(self);
+}
+
+void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax) {
+    entity e = spawn();
+    e.think = TeleportPlayer_NextFrame_Think;
+    e.nextthink = time;
+    e.owner = teleporter;
+    e.enemy = player;
+    e.origin = to;
+    e.angles = to_angles;
+    e.velocity = to_velocity;
+    e.mins = telefragmin;
+    e.maxs = telefragmax;
 }
 
 void Teleport_Touch (void)

@@ -64,8 +64,8 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 
 	for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
 	{
-		if(g_freezetag)
-		if(e.freezetag_frozen)
+		if(g_freeze)
+		if(e.frozen)
 			continue;
 		
 		if(o.team == e.team)
@@ -314,7 +314,7 @@ void HG_Translocator_Explode() {
     if(g_jailbreak && self.owner.jb_isprisoned)
         return;
         
-    if(time - self.jb_jail_lasttouch < 0.1)
+    if(time < self.jb_jail_resettime)
         return;
     
     setsize(self, self.owner.mins, self.owner.maxs);
@@ -504,7 +504,7 @@ float HG_PlayerMayFire(entity p) {
 float HG_PlayerMayDetonate(entity p) {
     if(cvar("g_handgrenades_detonate_on_death"))
         return TRUE;
-    return (p.health >= 1) && !(g_freezetag && p.freezetag_frozen);
+    return (p.health >= 1) && !(g_freeze && p.frozen);
 }
 
 void HG_Detonate(entity nade) {
@@ -561,7 +561,7 @@ void HG_Grenade_Waypoint() {
         return;
     }
     
-    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freezetag && plr.freezetag_frozen)) {
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
         if(vlen(self.origin - plr.origin) < rng)
         if(checkpvs(self.origin, plr)) {
             detected = TRUE;
@@ -894,7 +894,7 @@ void HG_Frame()
 	held = self.BUTTON_HG;
 	
 	if((self.hg_power && !self.hg_state		)||
-	   (g_freezetag && self.freezetag_frozen)||
+	   (g_freeze && self.frozen)||
        (g_jailbreak && self.jb_isprisoned))
 			held = 0;
 	
@@ -936,7 +936,7 @@ void HG_Frame()
             float rate;
             rate = frametime;
             
-            if(g_freezetag && self.freezetag_frozen)
+            if(g_freeze && self.frozen)
                 rate *= cvar("g_handgrenades_regen_frozenfactor");
             rate *= GRENVAR(self.hg_type, "regenscale");
             
@@ -979,11 +979,19 @@ void HG_PlayerSpawn()
     HG_UpdateDetonables();
 }
 
+void HG_PlayerSpawnEx(entity p) {
+    entity o;
+    o = self;
+    self = p;
+    HG_PlayerSpawn();
+    self = o;
+}
+
 void HG_PlayerJoin() {
     if(self.classname != "player")
         return;
         
-    if((g_freezetag && self.freezetag_frozen) || (g_jailbreak && self.jb_isprisoned))
+    if((g_freeze && self.frozen) || (g_jailbreak && self.jb_isprisoned))
         self.hg_clearammo = TRUE;
     
     HG_ResetState(self);

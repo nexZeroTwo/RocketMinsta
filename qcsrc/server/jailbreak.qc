@@ -25,7 +25,7 @@ void JB_Init() {
     
     addstat(STAT_REDALIVE, AS_INT, redalive_stat);
     addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
-    addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
+    addstat(STAT_CAPTURE_PROGRESS, AS_FLOAT, jb_unlock_progress);
     addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
     addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
     addstat(STAT_JBMSG, AS_INT, jb_message);
@@ -48,9 +48,9 @@ void JB_Frame() {
 	self.nextthink = time + 0.1;
 }
 
-void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
 void JB_Imprison(entity attacker) {
 	float et;
+    vector a;
 	
 	if(self.jb_isprisoned) {
 		JB_Log(strcat("Tried to imprison a prisoned player (", self.netname, ")"));
@@ -93,24 +93,11 @@ void JB_Imprison(entity attacker) {
 		JB_BLog(strcat("Failed to pick a jail spawnpoint for ", self.netname, "^7, cannot imprison!"));
 		return;
 	}
-	
-	//self.origin = spot.origin;
-	//setorigin(self, self.origin);
-	
-	entity oldself = self;
-	self = spot;
-	TeleportPlayer(spot, oldself, spot.origin, spot.angles, '0 0 0', '0 0 0', '0 0 0');
-	self = oldself;
-	
-	self.angles = spot.angles;
-	self.angles_z = 0; // never spawn tilted even if the spot says to
-	self.fixangle = TRUE; // turn this way immediately
-	self.velocity = '0 0 0';
-	self.avelocity = '0 0 0';
-	self.punchangle = '0 0 0';
-	self.punchvector = '0 0 0';
-	self.oldvelocity = self.velocity;
-	
+    
+    a = spot.angles;
+    a_z = 0;
+    TeleportPlayer(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
+    
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
 	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
@@ -122,8 +109,8 @@ void JB_Imprison(entity attacker) {
 	}
 	
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
 	}
 	
 	JB_CountPlayers();
@@ -131,24 +118,6 @@ void JB_Imprison(entity attacker) {
 
 float JB_AliveCheck(entity p) {
     return !p.jb_isprisoned;
-}
-
-void JB_ImprisonLater_Think() {
-	entity oldself = self, attacker = self.jb_prisoned_by;
-	self = self.enemy;
-	JB_Imprison(attacker);
-    AloneWarning(self.team, JB_AliveCheck);
-	self = oldself;
-	remove(self);
-}
-
-// Imprison in the next frame
-void JB_ImprisonLater(entity attacker) {
-	entity e = spawn();
-	e.jb_prisoned_by = attacker;
-	e.enemy = self;
-	e.think = JB_ImprisonLater_Think;
-	e.nextthink = time;
 }
 
 void JB_TorturePrisonersLater_Think() {
@@ -177,8 +146,8 @@ void JB_Release(entity saviour) {
 		HG_PlayerSpawn();
 	
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
 	}
 	
 	JB_CountPlayers();
@@ -522,7 +491,7 @@ void JB_Torture_RegisterAll() {
 //	Callbacks
 //
 
-float JB_PlayerDies() {
+float JB_PlayerDies(entity frag_attacker) {
 	DEPENDON_F(g_jailbreak && JB_GAME_ACTIVE, 0)
 	
 	if(!self.jb_isprisoned) {
@@ -554,14 +523,15 @@ float JB_PlayerDies() {
 		}
 		
 		Boobs_DropAllAndRespawn(frag_force);
-		JB_ImprisonLater(frag_attacker);
+		JB_Imprison(frag_attacker);
+        AloneWarning(self.team, JB_AliveCheck);
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
 		
 		if(self.scorekeeper) {
-			self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-			self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 1;
+			self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+			self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
 		}
 	}
 	
@@ -573,8 +543,8 @@ void JB_PlayerSpawn() {
 	
 	self.jb_isprisoned = FALSE;
 	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FREEZETAG_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FREEZETAG_FROZENSTATUS]) = 0;
+		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
+		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
 	}
 	
 	self.jb_fragrow = 0;
@@ -607,14 +577,16 @@ void JB_PlayerPreThink() {
         self.jb_message = JBMSG_NONE;
     }
 	
-	if not(self.jb_isprisoned)
+	if(self.jb_isprisoned < 2)
 		return;
 		
 	if(time - self.jb_prisontime < 1)
 		return;
 	
-	if(time - self.jb_jail_lasttouch >= max(0.1, frametime))
+	if(time > self.jb_jail_resettime) {
+        print("RELEASING\n");
 		JB_Release(self.jb_saviour);
+    }
 }
 
 //
@@ -776,7 +748,7 @@ void JB_Jail_Touch() {
     if(g_handgrenades)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {
-        other.jb_jail_lasttouch = time;
+        other.jb_jail_resettime = frametime * 2;
         return;
     }
     
@@ -791,10 +763,12 @@ void JB_Jail_Touch() {
 		return;
 	}
 	
+    other.jb_isprisoned = 2;
+    
 	if(other.team == self.team)
 		return;
 	
-	other.jb_jail_lasttouch = time;
+	other.jb_jail_resettime = time + frametime * 2;
 }
 
 void JB_SetupJail() {
