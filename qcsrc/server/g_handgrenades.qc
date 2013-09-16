@@ -344,6 +344,14 @@ void HG_Translocator_Explode() {
             self.owner.hg_regentime = HG_RegenTime(self.owner);
         }
     }
+    
+    entity oldself = self;
+    self = self.owner;
+    if(GRENVAR(oldself.hg_type, "reloadonuse")) {
+        weapon_action(self.weapon, WR_RESETPLAYER);
+        ATTACK_FINISHED(self) = TRUE;
+    }
+    self = oldself;
 }
 
 float HG_TypeToCSQCProjType(float t) {
