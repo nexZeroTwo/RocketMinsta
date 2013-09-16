@@ -4874,7 +4874,7 @@ void Sbar_Draw(void)
             // HUD doesn't support the nade sector - fallback to the old display method
             
             if(hgammo) {
-                drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(getstati(STAT_HGTYPE)), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             }
             
             if(hgregen && hgregen != 1) {
