@@ -89,8 +89,8 @@ void spawnfunc_info_player_start (void)
 
 void spawnfunc_info_player_deathmatch (void)
 {
-	self.classname = "info_player_deathmatch";
-	relocate_spawnpoint();
+    self.classname = "info_player_deathmatch";
+    relocate_spawnpoint();
 }
 
 void spawnfunc_info_player_intermission (void) {}

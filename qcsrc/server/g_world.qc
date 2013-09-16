@@ -418,6 +418,55 @@ void InfoMessages_Init()
 	e.nextthink = time + cvar("sv_infomessages") * 60;
 }
 
+.string modefilter;
+.float keepspawn;
+// fteqcc segfaults on local arrays apparently
+float modefilter_found[5];
+
+void ForceModeSpawns(void) {
+    entity s, first;
+    float i, n, idx;
+    
+    first = findchain(classname, "info_player_deathmatch");
+    for(s = first; s; s = s.chain) {
+        dprint("Processing spot ", etos(s), " at ", vtos(s.origin), ": ");
+        
+        if(s.modefilter == "") {
+            dprint("no modefilter\n");
+            continue;
+        }
+        
+        n = tokenizebyseparator(s.modefilter, " ");
+        for(i = 0; i < n; ++i) if(gametype_Name_to_ID(argv(0)) == game) {
+            dprint("supports ", gametype_ID_to_Name(game), "\n");
+            idx = Team_Index(s.team)+1;
+            modefilter_found[idx] = TRUE;
+            s.keepspawn = TRUE;
+            break;
+        }
+        
+        if(i == n)
+            dprint("doesn't support ", gametype_ID_to_Name(game), "\n");
+    }
+    
+    for(s = first; s; s = s.chain) {
+        dprint("Checking removal for spot ", etos(s), " at ", vtos(s.origin), ": ");
+        
+        idx = Team_Index(s.team)+1;
+        if(modefilter_found[idx] || s.modefilter) {
+            if not(s.keepspawn) {
+                s.think = SUB_Remove;
+                s.nextthink = time;
+                dprint("removal passed\n");
+            } else {
+                dprint("spot supports current gametype\n");
+            }
+        } else {
+            dprint("no modefilter spots for this team (", ftos(idx), ")\n");
+        }
+    }
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -791,7 +840,8 @@ void spawnfunc_worldspawn (void)
     sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");
     whatsgoingon = ISFAGGOTMAP(mapname);
     
-	DPRM_Start();
+    InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
+    DPRM_Start();
 }
 
 void spawnfunc_light (void)
