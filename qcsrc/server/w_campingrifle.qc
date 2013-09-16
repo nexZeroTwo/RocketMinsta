@@ -249,6 +249,9 @@ float w_campingrifle(float req)
 		self.campingrifle_accumulator = time - cvar("g_balance_campingrifle_bursttime");
 		self.campingrifle_bulletcounter = cvar("g_balance_campingrifle_magazinecapacity");
 		W_CampingRifle_CheckMaxBullets();
+        self.weaponentity.state = WS_READY;
+        self.weapon_think = w_ready;
+        self.weapon_nextthink = time;
 	}
 	return TRUE;
 };
