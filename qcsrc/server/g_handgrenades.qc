@@ -902,7 +902,7 @@ void HG_Frame()
     HG_FixNadeType(self);
     HG_Shield_Frame();
     
-	float mayfire = (!g_grappling_hook || (!self.hook && !CustomCRAHookButton(self))) || self.hg_power;
+	float mayfire = (!g_grappling_hook || (!self.hook && !CustomHGHookButton(self))) || self.hg_power;
 	
 	float held;
 	held = self.BUTTON_HG;
@@ -912,8 +912,8 @@ void HG_Frame()
        (g_jailbreak && self.jb_isprisoned))
 			held = 0;
 	
-	if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO && !g_grappling_hook)
-		bigprint_spec(self, "Out of Grenades", "", 1);
+    if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
+        bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(self.hg_type), "s!"), "", 1);
 	
 	if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
         float t = HG_PLAYERNADETYPE(self);

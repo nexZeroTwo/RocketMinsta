@@ -383,11 +383,8 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 	}
 }
 
-float CustomCRAHookButton(entity e) {
-	// this function sucks
-	// and so does it's name
-	
-	if(!e.BUTTON_USE || e.soulmate || e.smhost || !(g_freeze || g_jailbreak))
+float CustomHGHookButton(entity e) {
+	if(!e.BUTTON_USE || e.soulmate || e.smhost)
 		return FALSE;
 	return TRUE;
 }
@@ -405,7 +402,8 @@ void FireGrapplingHook (void)
 		return;
         
 	if(g_handgrenades && !g_handgrenades_detonatelaunches)
-	if(HG_PlayerMayFire(self) && !CustomCRAHookButton(self))
+	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
+    if(!CustomHGHookButton(self))
 		return;
 
 	makevectors(self.v_angle);
@@ -471,7 +469,7 @@ void GrapplingHookFrame()
 	if(g_grappling_hook && timeoutStatus != 2 && self.weapon != WEP_HOOK)
 	{
 		// offhand hook controls
-		if(self.BUTTON_HOOK || CustomCRAHookButton(self))
+		if(self.BUTTON_HOOK || CustomHGHookButton(self))
 		{
 			if not(self.hook || (self.hook_state & HOOK_WAITING_FOR_RELEASE))
 			{
