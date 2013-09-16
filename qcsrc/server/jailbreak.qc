@@ -31,6 +31,7 @@ void JB_Init() {
     addstat(STAT_JBMSG, AS_INT, jb_message);
 }
 
+.float targethandled;
 void JB_OpenTargetDoors(entity s) {
     float i;
     string targname;
@@ -45,7 +46,7 @@ void JB_OpenTargetDoors(entity s) {
         }
         
         if(targname != "") {
-            for(targ = world; (targ = find(targ, targetname, targname));) if(targ && targ.use) {
+            for(targ = world; (targ = find(targ, targetname, targname));) if(targ && targ.use && !targ.targethandled) {
                 oldself = self;
                 self = targ;
                 
@@ -60,6 +61,7 @@ void JB_OpenTargetDoors(entity s) {
                 }
                 
                 self = oldself;
+                targ.targethandled = TRUE;
                 JB_OpenTargetDoors(targ);
             }
         }
