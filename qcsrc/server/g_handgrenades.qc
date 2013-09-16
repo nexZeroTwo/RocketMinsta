@@ -498,6 +498,9 @@ void HG_Remote_Stick() {
         setorigin(e, e.origin - v_forward * 5 * abs(normal_z));
     
     move_out_of_solid(e);
+    
+    if(self.hg_waypoint)
+        WaypointSprite_Kill(self.hg_waypoint);
     HG_Grenade_Remove();
     self = e;
     
