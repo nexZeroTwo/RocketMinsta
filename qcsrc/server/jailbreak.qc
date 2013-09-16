@@ -57,6 +57,7 @@ void JB_OpenTargetDoors(entity s) {
                     
                     case "door_rotating":
                         door_rotating_init_startopen();
+                        InitMovingBrushTrigger();
                         break;
                 }
                 
