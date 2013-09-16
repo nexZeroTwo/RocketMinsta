@@ -3,6 +3,7 @@ float g_jailbreak_claim;
 typedef void() jb_torture_logic;
 
 void JB_Init();
+void JB_NonJBInit();
 entity JB_ChooseJailSpawnpoint(float);
 float JB_GetEnemyTeamOf(float);
 void JB_CountPlayers();

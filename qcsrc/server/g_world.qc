@@ -841,6 +841,8 @@ void spawnfunc_worldspawn (void)
     whatsgoingon = ISFAGGOTMAP(mapname);
     
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
+    if(!g_jailbreak)
+        InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
     DPRM_Start();
 }
 

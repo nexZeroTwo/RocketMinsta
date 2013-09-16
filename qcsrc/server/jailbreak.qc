@@ -31,6 +31,55 @@ void JB_Init() {
     addstat(STAT_JBMSG, AS_INT, jb_message);
 }
 
+void JB_OpenTargetDoors(entity s) {
+    float i;
+    string targname;
+    entity targ, oldself;
+    
+    for(i = 0; i < 4; ++i) {
+        switch(i) {
+            case 0: targname = s.target ; break;
+            case 1: targname = s.target2; break;
+            case 2: targname = s.target3; break;
+            case 3: targname = s.target4; break;
+        }
+        
+        if(targname != "") {
+            for(targ = world; (targ = find(targ, targetname, targname));) if(targ && targ.use) {
+                oldself = self;
+                self = targ;
+                
+                switch(targ.classname) {
+                    case "door":
+                        door_init_startopen();
+                        break;
+                    
+                    case "door_rotating":
+                        door_rotating_init_startopen();
+                        break;
+                }
+                
+                self = oldself;
+                JB_OpenTargetDoors(targ);
+            }
+        }
+    }
+}
+
+// This is called for non-jailbreak modes only, to alter jb-specific entities on the map
+void JB_NonJBInit() {
+    entity e, t;
+    float i;
+    float openjails = cvar("g_jailbreak_nonjb_openjails");
+    
+    FOR_EACH_JB_CONTROLPOINT(e) {
+        if(openjails)
+            JB_OpenTargetDoors(e);
+        e.think = SUB_Remove;
+        e.nextthink = time;
+    }
+}
+
 void JB_Log(string s) {
 	print(strcat("Jailbreak: ", s, "\n"));
 }
@@ -726,7 +775,7 @@ void JB_Jail_Touch() {
     if(g_handgrenades)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {
-        other.jb_jail_resettime = frametime * 2;
+        other.jb_jail_resettime = time + frametime * 5;
         return;
     }
     
@@ -750,7 +799,7 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-	if not(g_jailbreak || g_handgrenades) {
+	if(cvar("g_jailbreak_nonjb_openjails") || !(g_jailbreak || g_handgrenades)) {
 		remove(self);
 		return;
 	}
@@ -1058,8 +1107,17 @@ void JB_ControlPoint_Reset() {
 }
 
 void JB_SetupControlPoint() {
+    if(!jb_cp_first) {
+        jb_cp_first = self;
+    }
+    
+    if(jb_cp_last)
+        jb_cp_last.jb_cp_next = self;
+        
+    jb_cp_last = self;
+    
 	if not(g_jailbreak) {
-		remove(self);
+		// removal is done in JB_OpenTargetDoors
 		return;
 	}
 	
@@ -1095,15 +1153,6 @@ void JB_SetupControlPoint() {
 	self.basewaypoint = self.nearestwaypoint;
 	WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, jb_waypoint);
 	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
-    
-    if(!jb_cp_first) {
-        jb_cp_first = self;
-    }
-    
-    if(jb_cp_last)
-        jb_cp_last.jb_cp_next = self;
-        
-    jb_cp_last = self;
 }
 
 //

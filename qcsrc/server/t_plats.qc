@@ -1302,7 +1302,6 @@ void door_rotating_init_startopen()
 	self.pos1 = self.movedir;
 }
 
-
 void spawnfunc_func_door_rotating()
 {
 
