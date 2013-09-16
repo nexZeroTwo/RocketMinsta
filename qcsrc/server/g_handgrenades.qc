@@ -320,6 +320,9 @@ void HG_Translocator_Explode() {
     setsize(self, self.owner.mins, self.owner.maxs);
     
     if(!move_out_of_solid(self)) {
+        if(!self.hg_isbonus)
+            self.owner.hg_ammo += 1;
+            
         bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted. Origin: ", vtos(self.origin), ", velocity: ", vtos(self.velocity), "\n");
         return;
     }
