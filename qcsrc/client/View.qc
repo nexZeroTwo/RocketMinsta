@@ -526,29 +526,26 @@ void CSQC_UpdateView(float w, float h)
 		R_SetView(VF_FOV, GetCurrentFov(fov));
 	
 	if(spectatee_status < 0)
-		jb_camera_expiretime = -1;
+		camera_expiretime = -1;
 	
-	float jbcamera = time < jb_camera_expiretime;
-	
+	float tempcamera = (time < camera_expiretime || camera_expiretime < -1);
+    
 	if(getstati(STAT_ROUNDLOST))
 	if(getstati(STAT_HEALTH) > 0)
-		jbcamera = FALSE;
+		tempcamera = FALSE;
 	
-	if(jbcamera) {
-		if(!jb_chasecam_locked) {
-			jb_chasecam_locked = TRUE;
-			jb_chasecam_backup = cvar("chase_active");
+	if(tempcamera) {
+		if(!camera_drawviewmodel_locked) {
+			camera_drawviewmodel_locked = TRUE;
+			camera_drawviewmodel_backup = cvar("r_drawviewmodel");
 		}
 		
-		R_SetView(VF_ORIGIN, jb_camera_origin);
-		cvar_clientsettemp("chase_active", "1");
-		//R_SetView(VF_ANGLES, jb_camera_angles);
-	} else if(jb_chasecam_locked) {
-		jb_chasecam_locked = FALSE;
-		chase_active_backup = jb_chasecam_backup;
-		cvar_set("chase_active", ftos(jb_chasecam_backup));
-	} else if(camera_active) // Camera for demo playback
-	{
+		R_SetView(VF_ORIGIN, camera_origin);
+		cvar_clientsettemp("r_drawviewmodel", "0");
+	} else if(camera_drawviewmodel_locked) {
+		camera_drawviewmodel_locked = FALSE;
+		cvar_set("r_drawviewmodel", ftos(camera_drawviewmodel_backup));
+	} else if(camera_active) { // Camera for demo playback
 		if(cvar("camera_enable"))
 			CSQC_Demo_Camera();
 		else
@@ -645,7 +642,7 @@ void CSQC_UpdateView(float w, float h)
 			)
 		)
 	)
-		if not(jbcamera) teamradar_view();
+		if not(tempcamera) teamradar_view();
 
 	// draw sbar
  	if(cvar("r_letterbox") == 0) {
@@ -680,7 +677,7 @@ void CSQC_UpdateView(float w, float h)
 				CSQC_common_hud();
 
         // crosshair goes VERY LAST
-        if not(jbcamera)
+        if not(tempcamera)
         if(spectatee_status != -1)
         if(!scoreboard_active && !ons_showmap && !camera_active) {
 			// TrueAim check

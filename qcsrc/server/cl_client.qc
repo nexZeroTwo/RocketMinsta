@@ -93,6 +93,9 @@ void spawnfunc_info_player_deathmatch (void)
 	relocate_spawnpoint();
 }
 
+void spawnfunc_info_player_intermission (void) {}
+void spawnfunc_info_intermission (void) {}
+
 void spawnpoint_use()
 {
 	if(teams_matter)

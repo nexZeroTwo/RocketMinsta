@@ -671,28 +671,6 @@ void JB_RestoreCullEntities() {
 	remove(self);
 }
 
-void JB_SetCamera(entity player, entity cam, float timeout) {
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-	WriteByte(MSG_ONE, TRUE);
-	WriteShort(MSG_ONE, cam.origin_x);
-	WriteShort(MSG_ONE, cam.origin_y);
-	WriteShort(MSG_ONE, cam.origin_z);
-	WriteShort(MSG_ONE, timeout);
-}
-
-void JB_ClearCamera(entity player) {
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-	WriteByte(MSG_ONE, FALSE);
-}
-
-void JB_ClearCameraForAll() {
-	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
-}
-
 void JB_ActivateCamera(float theteam, float timeout) {
 	entity cam = JB_FindCamera(theteam);
 	

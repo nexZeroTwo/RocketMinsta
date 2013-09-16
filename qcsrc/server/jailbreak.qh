@@ -16,9 +16,9 @@ void JB_TorturePrisonersLater(float, float);
 void JB_Torture_Register(jb_torture_logic);
 void JB_Torture_RegisterAll();
 void JB_Torture_Start(entity);
-void JB_SetCamera(entity, entity, float);
-void JB_ClearCamera(entity);
-void JB_ClearCameraForAll();
+// void JB_SetCamera(entity, entity, float);
+// void JB_ClearCamera(entity);
+// void JB_ClearCameraForAll();
 void JB_HandleProjectile(entity);
 void JB_ControlPoint_Activate(entity);
 void JB_ControlPoint_Deactivate(entity, float);
@@ -74,3 +74,6 @@ entity jb_cp_last;
 #define JB_TEAM_NEUTRAL COLOR_TEAM3
 
 #define FOR_EACH_JB_CONTROLPOINT(e) for(e = jb_cp_first; e; e = e.jb_cp_next)
+#define JB_SetCamera SetCamera
+#define JB_ClearCamera ClearCamera
+#define JB_ClearCameraForAll ClearCameraForAll

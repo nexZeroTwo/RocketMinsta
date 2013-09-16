@@ -1179,51 +1179,39 @@ void IntermissionThink()
 
 /*
 ============
-FindIntermission
+FindIntermissionViewport
 
 Returns the entity to view from
 ============
 */
-/*
-entity FindIntermission()
+
+entity FindIntermissionViewport(void)
 {
-	local	entity spot;
-	local	float cyc;
-
-// look for info_intermission first
-	spot = find (world, classname, "info_intermission");
-	if (spot)
-	{	// pick a random one
-		cyc = random() * 4;
-		while (cyc > 1)
-		{
-			spot = find (spot, classname, "info_intermission");
-			if (!spot)
-				spot = find (spot, classname, "info_intermission");
-			cyc = cyc - 1;
-		}
-		return spot;
-	}
-
-// then look for the start position
-	spot = find (world, classname, "info_player_start");
-	if (spot)
-		return spot;
-
-// testinfo_player_start is only found in regioned levels
-	spot = find (world, classname, "testplayerstart");
-	if (spot)
-		return spot;
-
-// then look for the start position
-	spot = find (world, classname, "info_player_deathmatch");
-	if (spot)
-		return spot;
-
-	//objerror ("FindIntermission: no spot");
-	return world;
-};
-*/
+    entity spot;
+    
+    // see if we have any map-defined viewports and use a random one
+    RandomSelection_Init();
+    for(spot = world; (spot = nextent(spot));) {
+        if(spot.classname == "info_player_intermission" || spot.classname == "info_intermission")
+            RandomSelection_Add(spot, 0, string_null, 1, 1);
+    }
+    
+    if(RandomSelection_chosen_ent)
+        return RandomSelection_chosen_ent;
+    
+    // try to view from the jail
+    for(spot = world; (spot = find(spot, classname, "info_jailbreak_jailcamera"));)
+        RandomSelection_Add(spot, 0, string_null, 1, 1);
+    
+    if(RandomSelection_chosen_ent)
+        return RandomSelection_chosen_ent;
+    
+    // fall back to player spawn points
+    for(spot = world; (spot = find(spot, classname, "info_player_deathmatch"));)
+        RandomSelection_Add(spot, 0, string_null, 1, 1);
+    
+    return RandomSelection_chosen_ent;
+}
 
 /*
 ===============================================================================
@@ -1402,8 +1390,13 @@ void NextLevel()
 	// done in FixIntermission
 	*/
 
-	//pos = FindIntermission ();
-
+	intermission_viewport = FindIntermissionViewport();
+    
+    if(intermission_viewport) {
+        cvar_settemp("sv_cullentities_pvs", "0");
+        cvar_settemp("sv_cullentities_trace", "0");
+    }
+    
 	VoteReset();
 
 	DumpStats(TRUE);
@@ -1419,7 +1412,14 @@ void NextLevel()
 
 		if(other.winning)
 			bprint(other.netname, " ^7wins.\n");
-	}
+        
+        if(other.iscreature && intermission_viewport && intermission_exittime > time) {
+            SetCamera(other, intermission_viewport, -1);
+            other.angles = intermission_viewport.angles;
+            other.angles_z = 0;
+            other.fixangle = TRUE;
+        }
+    }
 
 	minTotalFrags = 0;
 	maxTotalFrags = 0;

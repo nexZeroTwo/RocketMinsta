@@ -291,10 +291,10 @@ float gui_reloading;
 
 float rm_hidecountry;
 
-vector jb_camera_origin;
-float jb_camera_expiretime;
-float jb_chasecam_locked;
-float jb_chasecam_backup;
+vector camera_origin;
+float camera_expiretime;
+float camera_drawviewmodel_locked;
+float camera_drawviewmodel_backup;
 
 float cl_fps;
 

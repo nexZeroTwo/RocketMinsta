@@ -1997,22 +1997,25 @@ void Net_ReadVIPInfo(float teem)
 
 void Net_Camera() {
 	if(!ReadByte()) {
-		jb_camera_expiretime = -1;
+		camera_expiretime = -1;
 		return;
 	}
 	
-	jb_camera_origin_x = ReadShort();
-	jb_camera_origin_y = ReadShort();
-	jb_camera_origin_z = ReadShort();
+	camera_origin_x = ReadShort();
+	camera_origin_y = ReadShort();
+	camera_origin_z = ReadShort();
 	
-	if(time <= jb_camera_expiretime || jb_chasecam_locked)
+	if(time <= camera_expiretime || camera_drawviewmodel_locked)
 		dprint("Warning: Net_Camera while a camera is still active\n");
 	else {
-		jb_chasecam_backup = cvar("chase_active");
-		jb_chasecam_locked = true;
+		camera_drawviewmodel_backup = cvar("r_drawviewmodel");
+		camera_drawviewmodel_locked = TRUE;
 	}
 	
-	jb_camera_expiretime = time + ReadShort();
+	camera_expiretime = time + ReadShort();
+    
+    if(camera_expiretime < time)
+        camera_expiretime = -2;
 }
 
 void Net_ServerInfo() {
