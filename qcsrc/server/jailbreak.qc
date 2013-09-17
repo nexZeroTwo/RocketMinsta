@@ -818,7 +818,7 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-    if not(g_jailbreak || (g_handgrenades && cvar("g_jailbreak_nonjb_openjails"))) {
+    if not(g_jailbreak || (g_handgrenades && !cvar("g_jailbreak_nonjb_openjails"))) {
 		remove(self);
 		return;
 	}
