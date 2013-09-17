@@ -29,58 +29,8 @@ void JB_Init() {
     addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
     addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
     addstat(STAT_JBMSG, AS_INT, jb_message);
-}
-
-.float targethandled;
-void JB_OpenTargetDoors(entity s) {
-    float i;
-    string targname;
-    entity targ, oldself;
     
-    for(i = 0; i < 4; ++i) {
-        switch(i) {
-            case 0: targname = s.target ; break;
-            case 1: targname = s.target2; break;
-            case 2: targname = s.target3; break;
-            case 3: targname = s.target4; break;
-        }
-        
-        if(targname != "") {
-            for(targ = world; (targ = find(targ, targetname, targname));) if(targ && targ.use && !targ.targethandled) {
-                oldself = self;
-                self = targ;
-                
-                switch(targ.classname) {
-                    case "door":
-                        door_init_startopen();
-                        break;
-                    
-                    case "door_rotating":
-                        door_rotating_init_startopen();
-                        InitMovingBrushTrigger();
-                        break;
-                }
-                
-                self = oldself;
-                targ.targethandled = TRUE;
-                JB_OpenTargetDoors(targ);
-            }
-        }
-    }
-}
-
-// This is called for non-jailbreak modes only, to alter jb-specific entities on the map
-void JB_NonJBInit() {
-    entity e, t;
-    float i;
-    float openjails = cvar("g_jailbreak_nonjb_openjails");
-    
-    FOR_EACH_JB_CONTROLPOINT(e) {
-        if(openjails)
-            JB_OpenTargetDoors(e);
-        e.think = SUB_Remove;
-        e.nextthink = time;
-    }
+    InitializeEntity(world, JB_DelayedInit, INITPRIO_GAMETYPE);
 }
 
 void JB_Log(string s) {
@@ -91,6 +41,67 @@ void JB_BLog(string s) {
 	bprint(strcat("Jailbreak: ", s, "\n"));
 }
 
+void JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity cpoint) {
+    if(door.classname != "door" && door.classname != "door_rotating") {
+        JB_BLog(strcat("Warning: ^3", JB_ControlPoint_Name(cpoint), "^7 at ", vtos(cpoint.origin), " is linked with an entity of unhandled class (^3", door.classname, "^7)!"));
+        return;
+    }
+    
+    if(!JB_FIRSTDOOR(theteam))
+        JB_SETFIRSTDOOR(theteam, door);
+    
+    if(JB_LASTDOOR(theteam))
+        JB_NEXTDOOR(JB_LASTDOOR(theteam)) = door;
+    
+    JB_SETLASTDOOR(theteam, door);
+}
+
+void JB_DelayedInit() {
+    entity e;
+    
+    SUB_ForEachTarget_Init();
+    FOR_EACH_JB_CONTROLPOINT(e)
+        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', string_null, e);
+}
+
+void JB_OpenDoor(entity door, float fdata, vector vdata, string sdata, entity cpoint) {
+    entity oldself = self;
+    self = door;
+    
+    switch(door.classname) {
+        case "door":
+            door_init_startopen();
+            break;
+        
+        case "door_rotating":
+            door_rotating_init_startopen();
+            InitMovingBrushTrigger();
+            break;
+        
+        default:
+            JB_BLog(strcat("Warning: ^3", JB_ControlPoint_Name(cpoint), "^7 at ", vtos(cpoint.origin), " is linked with an entity of unhandled class (^3", door.classname, "^7)!"));
+            break;
+    }
+    
+    self = oldself;
+}
+
+// This is called for non-jailbreak modes only, to alter jb-specific entities on the map
+void JB_NonJBInit() {
+    entity e;
+    float openjails = cvar("g_jailbreak_nonjb_openjails");
+    
+    if(openjails)
+        SUB_ForEachTarget_Init();
+    
+    FOR_EACH_JB_CONTROLPOINT(e) {
+        if(openjails)
+            SUB_ForEachTarget(e, JB_OpenDoor, TRUE, 0, '0 0 0', string_null, e);
+        e.think = SUB_Remove;
+        e.nextthink = time;
+    }
+}
+
 //
 //	Gametype logic
 //
@@ -98,6 +109,13 @@ void JB_BLog(string s) {
 void JB_Frame() {
 	JB_CountPlayers();
 	self.nextthink = time + 0.1;
+}
+
+float JB_JailIsOpen(float theteam) {
+    entity e;
+    FOR_EACH_JB_DOOR(e, theteam) if(e.state != STATE_BOTTOM)
+        return TRUE;
+    return FALSE;
 }
 
 void JB_Imprison(entity attacker) {
@@ -264,9 +282,9 @@ void JB_CountPlayers() {
 	if(gameover && !redalive && !bluealive)
 		return;
 	
-	if(!redalive)
+	if(!redalive && !JB_JailIsOpen(COLOR_TEAM2))
 		JB_TeamWins(COLOR_TEAM2);
-	else if(!bluealive)
+	else if(!bluealive && !JB_JailIsOpen(COLOR_TEAM1))
 		JB_TeamWins(COLOR_TEAM1);
 }
 
@@ -635,10 +653,8 @@ void JB_PlayerPreThink() {
 	if(time - self.jb_prisontime < 1)
 		return;
 	
-	if(time > self.jb_jail_resettime) {
-        print("RELEASING\n");
+	if(time > self.jb_jail_resettime)
 		JB_Release(self.jb_saviour);
-    }
 }
 
 //
@@ -798,7 +814,7 @@ void JB_Jail_Touch() {
 	if(other.team == self.team)
 		return;
 	
-	other.jb_jail_resettime = time + frametime * 2;
+	other.jb_jail_resettime = time + frametime * 5;
 }
 
 void JB_SetupJail() {

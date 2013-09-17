@@ -3,6 +3,7 @@ float g_jailbreak_claim;
 typedef void() jb_torture_logic;
 
 void JB_Init();
+void JB_DelayedInit();
 void JB_NonJBInit();
 entity JB_ChooseJailSpawnpoint(float);
 float JB_GetEnemyTeamOf(float);
@@ -60,6 +61,18 @@ entity jb_cp_first;
 entity jb_cp_last;
 .entity jb_cp_next;
 
+entity jb_door_red_first;
+entity jb_door_red_last;
+entity jb_door_blue_first;
+entity jb_door_blue_last;
+.entity jb_door_next;
+
+#define JB_FIRSTDOOR(t) (((t) == COLOR_TEAM1)? jb_door_red_first : jb_door_blue_first)
+#define JB_SETFIRSTDOOR(t,d) if(t == COLOR_TEAM1) jb_door_red_first = d; else jb_door_blue_first = d
+#define JB_LASTDOOR(t) (((t) == COLOR_TEAM1)? jb_door_red_last : jb_door_blue_last)
+#define JB_SETLASTDOOR(t,d) if(t == COLOR_TEAM1) jb_door_red_last = d; else jb_door_blue_last = d
+#define JB_NEXTDOOR(e) ((e).jb_door_next)
+
 .float jb_torture_force;
 .float jb_torture_force_jitter;
 .float jb_torture_delay;
@@ -75,6 +88,7 @@ entity jb_cp_last;
 #define JB_TEAM_NEUTRAL COLOR_TEAM3
 
 #define FOR_EACH_JB_CONTROLPOINT(e) for(e = jb_cp_first; e; e = e.jb_cp_next)
+#define FOR_EACH_JB_DOOR(e,t) for(e = JB_FIRSTDOOR(t); e; e = JB_NEXTDOOR(e))
 #define JB_SetCamera SetCamera
 #define JB_ClearCamera ClearCamera
 #define JB_ClearCameraForAll ClearCameraForAll

@@ -429,7 +429,7 @@ void FlagTouch()
 	if(gameover) return;
 
 	local float t;
-	local entity player, e;
+	local entity player;
 	local string s, s0, h0, h1;
 	if (other.classname != "player")
 		return;
