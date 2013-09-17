@@ -802,7 +802,7 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-	if(cvar("g_jailbreak_nonjb_openjails") || !(g_jailbreak || g_handgrenades)) {
+    if not(g_jailbreak || (g_handgrenades && cvar("g_jailbreak_nonjb_openjails"))) {
 		remove(self);
 		return;
 	}
@@ -1120,7 +1120,7 @@ void JB_SetupControlPoint() {
     jb_cp_last = self;
     
 	if not(g_jailbreak) {
-		// removal is done in JB_OpenTargetDoors
+		// removal is done in JB_NonJBInit
 		return;
 	}
 	
