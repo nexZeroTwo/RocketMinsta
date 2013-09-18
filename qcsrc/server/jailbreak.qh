@@ -50,7 +50,6 @@ void JB_RemovePlayer();
 .entity jb_prisoned_by;
 .entity jb_saviour;
 .entity jb_waypoint;
-.entity jb_waypoint_defend;
 .entity jb_capturingplayer;
 
 float jb_totalred, jb_totalblue;

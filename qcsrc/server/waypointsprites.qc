@@ -6,6 +6,7 @@
 .vector clr1;
 .vector clr2;
 .vector clr3;
+.float ownerteam;
 
 .float(entity) waypointsprite_visible_for_player;
 
@@ -279,6 +280,8 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 	{
 		WriteByte(MSG_ENTITY, self.team);
 		WriteByte(MSG_ENTITY, self.rule);
+        if(self.rule == SPRITERULE_DEFAULT)
+            WriteByte(MSG_ENTITY, self.ownerteam);
 	}
 
 	if(sendflags & 2)

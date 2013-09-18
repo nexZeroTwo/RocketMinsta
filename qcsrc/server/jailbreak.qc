@@ -943,16 +943,10 @@ void JB_ControlPoint_DefendWaypoint() {
         }
     }
     
-    if(detected) {
-        if(!self.jb_waypoint_defend) {
-            WaypointSprite_SpawnFixed("Defend!", self.origin + '0 0 100', self, jb_waypoint_defend);
-            WaypointSprite_UpdateTextColors(self.jb_waypoint_defend, '1 0.5 0', '0 0 0', '0 0 0');
-            self.jb_waypoint_defend.team = self.team;
-        }
-    } else {
-        if(self.jb_waypoint_defend)
-            WaypointSprite_Disown(self.jb_waypoint_defend, 1);
-    }
+    if(detected)
+        WaypointSprite_UpdateSprites(self.jb_waypoint, self.jb_waypoint.model1, "DEFEND!", self.jb_waypoint.model3);
+    else
+        WaypointSprite_UpdateSprites(self.jb_waypoint, self.jb_waypoint.model1, "", self.jb_waypoint.model3);
     
     self.jb_defendthink_next = time + 0.1;
 }
@@ -981,12 +975,11 @@ void JB_ControlPoint_Think() {
 
 void JB_ControlPoint_SwitchTeam(entity e, float t) {
     e.team = t;
-    //WaypointSprite_UpdateSprites(e.jb_waypoint, JB_ControlPoint_WaypointForTeam(e.team), "", "");
+    WaypointSprite_UpdateSprites(e.jb_waypoint, e.jb_waypoint.model1, "", e.jb_waypoint.model3);
     WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
     WaypointSprite_UpdateTextColors(e.jb_waypoint, TeamColor(e.team), '0 0 0', '0 0 0');
-    
-    if(e.jb_waypoint_defend)
-        WaypointSprite_Disown(e.jb_waypoint_defend, 1);
+    e.jb_waypoint.ownerteam = e.team;
+    e.jb_waypoint.SendFlags |= 1;
 }
 
 void JB_TriggerTeamControlPoints(float t) {
@@ -1176,8 +1169,11 @@ void JB_SetupControlPoint() {
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
 	WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + jb_cp_num)), self.origin + '0 0 37', self, jb_waypoint);
+    self.jb_waypoint.ownerteam = self.team;
+    self.jb_waypoint.SendFlags |= 1;
 	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
-    WaypointSprite_UpdateTextColors(self.jb_waypoint, TeamColor(self.team), '0 0 0', '0 0 0');
+    WaypointSprite_UpdateTextColors(self.jb_waypoint, TeamColor(self.team), '1 0.5 0', '0 0 0');
+    WaypointSprite_UpdateSprites(self.jb_waypoint, self.jb_waypoint.model1, self.jb_waypoint.model2, "");
     
     ++jb_cp_num;
 }

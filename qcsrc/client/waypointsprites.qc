@@ -30,9 +30,13 @@ float waypointsprite_distancefadedistance;
 .float build_started;
 .float build_starthealth;
 .float build_finished;
+.float ownerteam;
 .vector clr1;
 .vector clr2;
 .vector clr3;
+.float topalpha;
+.string toptext;
+.float toptextmode;
 
 vector SPRITE_SIZE = '288 36 0';
 vector SPRITE_HOTSPOT = '144 36 0';
@@ -114,6 +118,9 @@ void Draw_WaypointSprite()
 	float t, me, spritemode;
     vector txtclr;
 
+    if(waypointsprite_scale <= 0)
+        return;
+
 	if(self.lifetime)
 		self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
 	else
@@ -138,7 +145,6 @@ void Draw_WaypointSprite()
 	// choose the sprite
 	switch(self.rule) {
 		case SPRITERULE_DEFAULT:
-			// XXX: Why is this even here? The server already handles that.
 			if(self.team) {
 				if(self.team == t)
 					spriteimage = self.netname;
@@ -148,6 +154,40 @@ void Draw_WaypointSprite()
 			else
 				spriteimage = self.netname;
             txtclr = self.clr1;
+            
+            if(self.ownerteam == t && self.netname2 != "") {
+                self.topalpha = approach(self.topalpha, 1, drawframetime * 2);
+                
+                if(self.toptextmode != 1) {
+                    self.toptextmode = 1;
+                    if(self.toptext) {
+                        strunzone(self.toptext);
+                        self.toptext = string_null;
+                    }
+                }
+                
+                if(!self.toptext)
+                    self.toptext = strzone(self.netname2);
+            } else if(self.netname3 != "") {
+                self.topalpha = approach(self.topalpha, 1, drawframetime * 2);
+                
+                if(self.toptextmode != 2) {
+                    self.toptextmode = 2;
+                    if(self.toptext) {
+                        strunzone(self.toptext);
+                        self.toptext = string_null;
+                    }
+                }
+                
+                if(!self.toptext)
+                    self.toptext = strzone(self.netname3);
+            } else {
+                self.topalpha = approach(self.topalpha, 0, drawframetime * 2);
+                if(!self.topalpha && self.toptext) {
+                    strunzone(self.toptext);
+                    self.toptext = string_null;
+                }
+            }
 			break;
 		case SPRITERULE_TEAMPLAY:
 			if(t == COLOR_SPECTATOR + 1) {
@@ -295,6 +335,13 @@ void Draw_WaypointSprite()
         oc_y = bound(m, oc_y, vid_conheight - fs_y - m);
         txty = oc_y;
         drawstring(oc, spriteimage, fs, txtclr, a, DRAWFLAG_NORMAL);
+        if(self.toptext) {
+            fs += '1 1 0' * 2 * sin(time*3);
+            sw = stringwidth_svn(self.toptext, FALSE, fs);
+            oc_y = bound(m + fs_y*1.5, oc_y - fs_y*1.5, vid_conheight - fs_y*3 - m);
+            oc_x = bound(m, o_x - sw * 0.5, vid_conwidth - sw - m);
+            drawstring(oc, self.toptext, fs, ((self.toptextmode == 1)? self.clr2 : self.clr3), a * self.topalpha, DRAWFLAG_NORMAL);
+        }
         drawfont = sbar_font;
     }
     
@@ -411,6 +458,8 @@ void Ent_WaypointSprite()
 	{
 		self.team = ReadByte();
 		self.rule = ReadByte();
+        if(self.rule == SPRITERULE_DEFAULT)
+            self.ownerteam = ReadByte();
 	}
 
 	if(sendflags & 2)

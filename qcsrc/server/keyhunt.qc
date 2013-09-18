@@ -257,7 +257,7 @@ void kh_Key_Detach(entity key) // runs every time a key is dropped or lost. Runs
 void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is picked up or assigned. Runs prior to kh_key_attach
 {
 	entity k;
-	float ownerteam0, ownerteam;
+	float ownerteam0, ownerteam1;
 	if(key.owner == player)
 		return;
 
@@ -327,10 +327,10 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 
 	key.pusher = world;
 
-	ownerteam = kh_Key_AllOwnedByWhichTeam();
-	if(ownerteam != ownerteam0)
+	ownerteam1 = kh_Key_AllOwnedByWhichTeam();
+	if(ownerteam1 != ownerteam0)
 	{
-		if(ownerteam != -1)
+		if(ownerteam1 != -1)
 		{
 			kh_interferemsg_time = time + 0.2;
 			kh_interferemsg_team = player.team;
