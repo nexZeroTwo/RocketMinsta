@@ -348,9 +348,16 @@ void Ent_RemoveWaypointSprite()
 vector ReadColor() {
     vector v;
     // brighter text for readability
-    v_x = bound(0.2, ReadByte() / 255.0, 1);
-    v_y = bound(0.2, ReadByte() / 255.0, 1);
-    v_z = bound(0.2, ReadByte() / 255.0, 1);
+    v_x = ReadByte() / 255.0;
+    v_y = ReadByte() / 255.0;
+    v_z = ReadByte() / 255.0;
+    
+    if(v == '0 0 0')
+        return v;
+    
+    v_x = bound(0.2, v_x, 1);
+    v_y = bound(0.2, v_y, 1);
+    v_z = bound(0.2, v_z, 1);
     return v;
 }
 
