@@ -172,7 +172,8 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     if(Freeze_CVar("freezesound"))
         sound(plr, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
     
-    WaypointSprite_Spawn("freezetag_frozen", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
+    WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
+    WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
     if(plr.freeze_waypoint)
         WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
 

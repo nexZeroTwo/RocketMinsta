@@ -757,3 +757,5 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
 
 entity intermission_viewport;
+
+vector TeamColor(float teem);

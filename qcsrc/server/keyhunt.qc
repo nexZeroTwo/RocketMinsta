@@ -314,14 +314,8 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			WaypointSprite_AttachCarrier("", player);
 			player.waypointsprite_attachedforcarrier.waypointsprite_visible_for_player = kh_KeyCarrier_waypointsprite_visible_for_player;
 			WaypointSprite_UpdateRule(player.waypointsprite_attachedforcarrier, player.team, SPRITERULE_TEAMPLAY);
-			if(player.team == COLOR_TEAM1)
-				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-red", "keycarrier-friend", "keycarrier-red");
-			else if(player.team == COLOR_TEAM2)
-				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-blue", "keycarrier-friend", "keycarrier-blue");
-			else if(player.team == COLOR_TEAM3)
-				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-yellow", "keycarrier-friend", "keycarrier-yellow");
-			else if(player.team == COLOR_TEAM4)
-				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-pink", "keycarrier-friend", "keycarrier-pink");
+            WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "Key Carrier", "Key Carrier", "Key Carrier");
+            WaypointSprite_UpdateTextColors(player.waypointsprite_attachedforcarrier, TeamColor(player.team), '0 1 0', TeamColor(player.team));
 			WaypointSprite_UpdateTeamRadar(player.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, colormapPaletteColor(player.team - 1, 0));
 			if(!kh_no_radar_circles)
 				WaypointSprite_Ping(player.waypointsprite_attachedforcarrier);
@@ -344,8 +338,10 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			// audit all key carrier sprites, update them to RUN HERE
 			FOR_EACH_KH_KEY(k)
 			{
-				if(k.owner)
-					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "keycarrier-finish", k.owner.waypointsprite_attachedforcarrier.model3);
+				if(k.owner) {
+					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "RUN HERE!", k.owner.waypointsprite_attachedforcarrier.model3);
+                    WaypointSprite_UpdateTextColors(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.clr1, '0.2 1 1', k.owner.waypointsprite_attachedforcarrier.clr3);
+                }
 			}
 		}
 		else
@@ -357,6 +353,7 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			{
 				if(k.owner)
 					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "keycarrier-friend", k.owner.waypointsprite_attachedforcarrier.model3);
+                    WaypointSprite_UpdateTextColors(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.clr1, '0.2 1 1', k.owner.waypointsprite_attachedforcarrier.clr3);
 			}
 		}
 	}
@@ -426,7 +423,8 @@ void kh_Key_Spawn(entity initial_owner, float angle, float i)  // runs every tim
 
 	centerprint(initial_owner, strcat("You are starting with the ", key.netname, "\n"));  // message to player at start of round
 
-	WaypointSprite_Spawn("key-dropped", 0, 0, key, '0 0 1' * KH_KEY_WP_ZSHIFT, world, key.team, key, waypointsprite_attachedforcarrier, FALSE);
+	WaypointSprite_Spawn("DROPPED KEY", 0, 0, key, '0 0 1' * KH_KEY_WP_ZSHIFT, world, key.team, key, waypointsprite_attachedforcarrier, FALSE);
+    WaypointSprite_UpdateTextColors(key.waypointsprite_attachedforcarrier, '0 1 1', '0 0 0', '0 0 0');
 	key.waypointsprite_attachedforcarrier.waypointsprite_visible_for_player = kh_Key_waypointsprite_visible_for_player;
 	WaypointSprite_UpdateTeamRadar(key.waypointsprite_attachedforcarrier, RADARICON_FLAG, '0 1 1');
 

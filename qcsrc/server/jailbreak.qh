@@ -60,6 +60,7 @@ entity jb_activecamera;
 entity jb_cp_first;
 entity jb_cp_last;
 .entity jb_cp_next;
+float jb_cp_num;
 
 entity jb_door_red_first;
 entity jb_door_red_last;

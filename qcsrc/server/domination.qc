@@ -175,22 +175,8 @@ void dompoint_captured ()
 	SUB_UseTargets ();
 	self.delay = old_delay;
 	self.team = old_team;
-
-	switch(self.goalentity.team)
-	{
-		case COLOR_TEAM1:
-			WaypointSprite_UpdateSprites(self.sprite, "dom-red", "", "");
-			break;
-		case COLOR_TEAM2:
-			WaypointSprite_UpdateSprites(self.sprite, "dom-blue", "", "");
-			break;
-		case COLOR_TEAM3:
-			WaypointSprite_UpdateSprites(self.sprite, "dom-yellow", "", "");
-			break;
-		case COLOR_TEAM4:
-			WaypointSprite_UpdateSprites(self.sprite, "dom-pink", "", "");
-			break;
-	}
+    
+    WaypointSprite_UpdateTextColors(self.sprite, TeamColor(self.goalentity.team), '0 0 0', '0 0 0');
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, colormapPaletteColor(self.goalentity.team - 1, 0));
 	WaypointSprite_Ping(self.sprite);
 
@@ -331,9 +317,11 @@ void dompointtouch()
 	if(head == world)
 		return;
 
+    /*
 	WaypointSprite_UpdateSprites(self.sprite, "dom-neut", "", "");
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
 	WaypointSprite_Ping(self.sprite);
+    */
 
 	self.goalentity = head;
 	self.model = head.mdl;
@@ -445,10 +433,12 @@ void dom_controlpoint_setup()
 	droptofloor();
 
 	waypoint_spawnforitem(self);
-	WaypointSprite_SpawnFixed("dom-neut", self.origin + '0 0 32', self, sprite);
+	WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + dom_numpts)), self.origin - '0 0 40', self, sprite);
+    WaypointSprite_UpdateTextColors(self.sprite, '0 1 1', '0 0 0', '0 0 0');
 	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
 
     dom_recountpoints();
+    ++dom_numpts;
 };
 
 

@@ -945,7 +945,8 @@ void JB_ControlPoint_DefendWaypoint() {
     
     if(detected) {
         if(!self.jb_waypoint_defend) {
-            WaypointSprite_SpawnFixed("defend", self.origin + '0 0 70', self, jb_waypoint_defend);
+            WaypointSprite_SpawnFixed("Defend!", self.origin + '0 0 100', self, jb_waypoint_defend);
+            WaypointSprite_UpdateTextColors(self.jb_waypoint_defend, '1 0.5 0', '0 0 0', '0 0 0');
             self.jb_waypoint_defend.team = self.team;
         }
     } else {
@@ -980,8 +981,9 @@ void JB_ControlPoint_Think() {
 
 void JB_ControlPoint_SwitchTeam(entity e, float t) {
     e.team = t;
-    WaypointSprite_UpdateSprites(e.jb_waypoint, JB_ControlPoint_WaypointForTeam(e.team), "", "");
+    //WaypointSprite_UpdateSprites(e.jb_waypoint, JB_ControlPoint_WaypointForTeam(e.team), "", "");
     WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
+    WaypointSprite_UpdateTextColors(e.jb_waypoint, TeamColor(e.team), '0 0 0', '0 0 0');
     
     if(e.jb_waypoint_defend)
         WaypointSprite_Disown(e.jb_waypoint_defend, 1);
@@ -1000,7 +1002,7 @@ void JB_TriggerTeamControlPoints(float t) {
 }
 
 string JB_ControlPoint_Name(entity p) {
-    string clr, tm;
+    string clr, tm, end;
     
     switch(p.team) {
         case COLOR_TEAM1:   clr = "^1"; tm = "Red"; break;
@@ -1008,9 +1010,11 @@ string JB_ControlPoint_Name(entity p) {
         default:            clr = "^3"; tm = "Neutral"; break;
     }
     
+    end = strcat(" (Point ", chr2str(str2chr("A", 0) + p.cnt), ")");
+    
     if(!p.netname)
-        return strcat(clr, tm, " Control Point");
-    return strcat(clr, strdecolorize(p.netname));
+        return strcat(clr, tm, " Control Point", end);
+    return strcat(clr, strdecolorize(p.netname), end);
 }
 
 void JB_ControlPoint_Capture(entity player) {
@@ -1162,6 +1166,7 @@ void JB_SetupControlPoint() {
     self.reset = JB_ControlPoint_Reset;
     self.jb_capturecount = 0;
     self.jb_active = TRUE;
+    self.cnt = jb_cp_num;
     JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
 	setsize(self, '-32 -32 -32', '32 32 32');
 	setorigin(self, self.origin + '0 0 20');
@@ -1170,8 +1175,11 @@ void JB_SetupControlPoint() {
 	waypoint_spawnforitem_force(self, self.origin);
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
-	WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointForTeam(self.team), self.origin + '0 0 37', self, jb_waypoint);
+	WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + jb_cp_num)), self.origin + '0 0 37', self, jb_waypoint);
 	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
+    WaypointSprite_UpdateTextColors(self.jb_waypoint, TeamColor(self.team), '0 0 0', '0 0 0');
+    
+    ++jb_cp_num;
 }
 
 //

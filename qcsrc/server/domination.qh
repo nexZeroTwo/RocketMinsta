@@ -9,3 +9,4 @@ float tdom_maycap;
 .float pointupdatetime;
 float totalpoints, redpoints, bluepoints;
 .entity dom_capturingplayer;
+float dom_numpts;

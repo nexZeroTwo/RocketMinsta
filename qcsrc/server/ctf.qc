@@ -578,8 +578,9 @@ void FlagTouch()
 		self.movetype = MOVETYPE_NONE;
 		setorigin(self, FLAG_CARRY_POS);
 		setattachment(self, other, "");
-		WaypointSprite_AttachCarrier("flagcarrier", other);
+		WaypointSprite_AttachCarrier("FLAG CARRIER", other);
 		WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+        WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
 		WaypointSprite_Ping(self.sprite);
 
 		//hudflash_default(other, '1 1 -1');
@@ -668,8 +669,9 @@ void FlagTouch()
 			setattachment(self, other, "");
 			self.damageforcescale = 0;
 			self.takedamage = DAMAGE_NO;
-			WaypointSprite_AttachCarrier("flagcarrier", other);
-			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+			WaypointSprite_AttachCarrier("FLAG CARRIER", other);
+            WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+            WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
 			
 			other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
 			other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
@@ -893,8 +895,9 @@ void spawnfunc_item_flag_team1()
 		self.nearestwaypointtimeout = 0; // activate waypointing again
 		self.basewaypoint = self.nearestwaypoint;
 
-		WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_SpawnFixed("Red Base", self.origin + '0 0 37', self, sprite);
 		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
 	}
 
 	precache_model("models/ctf/shield.md3");
@@ -1013,8 +1016,9 @@ void spawnfunc_item_flag_team2()
 		self.nearestwaypointtimeout = 0; // activate waypointing again
 		self.basewaypoint = self.nearestwaypoint;
 
-		WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_SpawnFixed("Blue Base", self.origin + '0 0 37', self, sprite);
 		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
 	}
 	
 	precache_model("models/ctf/shield.md3");
