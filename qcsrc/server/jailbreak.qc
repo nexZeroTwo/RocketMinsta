@@ -977,7 +977,7 @@ void JB_ControlPoint_SwitchTeam(entity e, float t) {
     e.team = t;
     WaypointSprite_UpdateSprites(e.jb_waypoint, e.jb_waypoint.model1, "", e.jb_waypoint.model3);
     WaypointSprite_UpdateTeamRadar(e.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(e.team - 1, FALSE));
-    WaypointSprite_UpdateTextColors(e.jb_waypoint, TeamColor(e.team), '0 0 0', '0 0 0');
+    WaypointSprite_UpdateTextColors(e.jb_waypoint, TeamColor(e.team), e.clr2, e.clr3);
     e.jb_waypoint.ownerteam = e.team;
     e.jb_waypoint.SendFlags |= 1;
 }
