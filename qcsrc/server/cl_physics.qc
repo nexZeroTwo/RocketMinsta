@@ -628,7 +628,9 @@ void SV_PlayerPhysics()
 		if (plane_normal != '0 0 0')
 		{
 			self.lastwj = time;
-			float wj_force = cvar("g_walljump_force");
+            vector sidev = self.velocity;
+            sidev_z = 0;
+			float wj_force = max(cvar("g_walljump_force"), vlen(sidev) * cvar("g_walljump_force_velocityscale"));
 			float wj_xy_factor = cvar("g_walljump_velocity_xy_factor");
 			float wj_z_factor = cvar("g_walljump_velocity_z_factor");
 			self.velocity_x += plane_normal_x * wj_force;
