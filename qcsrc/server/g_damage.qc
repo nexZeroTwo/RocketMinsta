@@ -992,7 +992,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		attacker_save = attacker;
 
 	local float took_extra;
-
+    
 	if(targ_is_player)
 		if(targ.hook)
 			if(targ.hook.aiment)
@@ -1009,7 +1009,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				return;
 			}
 	}
-
+    
 	if(deathtype == DEATH_KILL || deathtype == DEATH_TEAMCHANGE || deathtype == DEATH_AUTOTEAMCHANGE)
 	{
 		// These are ALWAYS lethal
@@ -1890,6 +1890,9 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 	{
 		if(e.deadflag)
 			return -1;
+        
+        if(self.jb_proj_ownerstate != JB_PROJ_OWNERSTATE_UNDEFINED)
+            e.jb_proj_ownerstate = self.jb_proj_ownerstate;
 	}
 	else
 	{
