@@ -396,10 +396,8 @@ void HG_Grenade_Explode()
 void HG_Grenade_Touch() {
     if(self.hg_type == HG_TRANSLOC) {
         if(SUB_NoImpactCheck()) {
-            if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP) {
-                //print("hit DPCONTENTS_PLAYERCLIP\n");
+            if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
                 goto troll;
-            }
                 
             self.use();
             return;
@@ -421,6 +419,9 @@ void HG_Grenade_Touch() {
 
 :troll
 	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
+        if(self.hg_type == HG_REMOTE)
+            goto anothertroll;
+            
         self.use();
 	} else {
         self.hg_normal = trace_plane_normal;
@@ -432,7 +433,8 @@ void HG_Grenade_Touch() {
                 self.use();
             return;
         }
-        
+
+:anothertroll
 		float r;
 		r = random() * 6;
 		if(r < 1)
