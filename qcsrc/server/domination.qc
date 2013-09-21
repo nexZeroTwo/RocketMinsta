@@ -202,7 +202,15 @@ void dompointthink()
 	local float fragamt;
 
 	self.nextthink = time + 0.1;
-
+    
+    if(!self.sprite) {
+        waypoint_spawnforitem(self);
+        WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + dom_numpts)), self.origin + '0 0 37', self, sprite);
+        WaypointSprite_UpdateTextColors(self.sprite, '0 1 1', '0 0 0', '0 0 0');
+        WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
+        ++dom_numpts;
+    }
+    
     if(time - self.pointupdatetime > 0.15) {
 		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
         self.dom_capturingplayer = world;
@@ -424,16 +432,13 @@ void dom_controlpoint_setup()
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
 	setsize(self, '-32 -32 -32', '32 32 32');
-	setorigin(self, self.origin + '0 0 20');
+	//setorigin(self, self.origin + '0 0 20');
 	droptofloor();
 
-	waypoint_spawnforitem(self);
-	WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + dom_numpts)), self.origin - '0 0 40', self, sprite);
-    WaypointSprite_UpdateTextColors(self.sprite, '0 1 1', '0 0 0', '0 0 0');
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_DOMPOINT, '0 1 1');
+    if(self.sprite)
+        WaypointSprite_UpdateTextColors(self.sprite, '0 1 1', '0 0 0', '0 0 0');
 
     dom_recountpoints();
-    ++dom_numpts;
 };
 
 
@@ -643,7 +648,7 @@ void spawnfunc_dom_controlpoint()
 	self.reset = dom_controlpoint_setup;
 
 	if(!self.scale)
-		self.scale = 0.6;
+		self.scale = 1.0; //0.6;
 
 	//if(!self.glow_size)
 	//	self.glow_size = cvar("g_domination_point_glow");
@@ -682,14 +687,12 @@ void dom_spawnteam (string teamname, float teamcolor, string pointmodel, float p
 
 void dom_spawnpoint(vector org)
 {
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = spawn();
 	self.classname = "dom_controlpoint";
-	self.think = spawnfunc_dom_controlpoint;
-	self.nextthink = time;
-	spawnfunc_dom_controlpoint();
 	setorigin(self, org + '0 0 1' * (1 - self.mins_z + 24));
+	spawnfunc_dom_controlpoint();
 	self = oldself;
 };
 
