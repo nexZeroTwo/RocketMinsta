@@ -424,7 +424,7 @@ void SV_ParseClientCommand(string s) {
 			}
 		}
 		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			EnterSpectatorModeDelayed(shooting_forbidden? 0 : cvar("sv_spectate_delay"));
+			EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
 		}
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
@@ -481,7 +481,7 @@ void SV_ParseClientCommand(string s) {
             return;
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
-        float gamestarted = time > warmup && time > game_starttime;
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         float nr = isplayer && (gamestarted || self.hg_nadesused);
         
         float t = HG_NameToType(argv(1));
@@ -507,7 +507,7 @@ void SV_ParseClientCommand(string s) {
             return;
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
-        float gamestarted = time > warmup && time > game_starttime;
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         
         self.((isplayer && gamestarted)? hg_optout_nextround : hg_optout) = stof(argv(1));
     } else if(cmd == "hg_alwaysask") {

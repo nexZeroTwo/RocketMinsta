@@ -260,9 +260,9 @@ void GrapplingHookThink()
 		}
 	}
 
+    if(roundstate == ROUNDSTATE_GAME)
 	if(self.aiment.classname == "player") if(self.last_dmg < time)
-	if not(g_freeze && (self.aiment.frozen || warmup >= time))
-	if not(g_vip && vip_soulgem && !vip_started)
+	if not(g_freeze && self.aiment.frozen)
 	if(!teams_matter || self.owner.team != self.aiment.team)
 	if(cvar("g_rocketminsta"))
 	{

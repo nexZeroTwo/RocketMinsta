@@ -234,7 +234,7 @@ void JB_TeamWins(float theteam) {
 	teamname_full = ColoredTeamName(theteam);
 	
 	entity e; FOR_EACH_PLAYER(e) {
-		bigprint_spec(e, strcat(teamname, "^7 Scores!"), "All opponents are imprisoned", 15);
+		bigprint_spec(e, strcat(teamname, "^7 Scores!"), "All opponents are imprisoned", JB_TORTURE_DURATION);
 		
 		if(e.team == theteam)
 			hudflash_teamcolor_default_spec(e);
@@ -243,7 +243,7 @@ void JB_TeamWins(float theteam) {
 	bprint(teamname_full, "^5 wins the round since all their opponents are in a jail\n");
 	TeamScore_AddToTeam(theteam, ST_SCORE, +1);
 	
-	JB_ActivateCamera(theteam, 15);
+	JB_ActivateCamera(theteam, JB_TORTURE_DURATION);
 	JB_TorturePrisonersLater(theteam, 3);
 	JB_EndRound();
 }
@@ -619,6 +619,9 @@ void JB_PlayerSpawn() {
 	
 	self.jb_fragrow = 0;
 	
+    if(jb_activecamera)
+        JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
+    
 	DEPENDON(JB_GAME_ACTIVE)
 	
 	if(JB_TotalPlayersOnTeam(self.team) - 1 > 0) {	// allow to spawn non-prisoned if there are no players on that team
@@ -640,8 +643,14 @@ void JB_RemovePlayer() {
 
 .float pointupdatetime;
 void JB_PlayerPreThink() {
-	DEPENDON(g_jailbreak && JB_GAME_ACTIVE)
+	DEPENDON(g_jailbreak)
 	
+    if(!JB_GAME_ACTIVE) {
+        self.jb_unlock_progress = 0;
+        self.jb_message = JBMSG_NONE;
+        return;
+    }
+    
 	if(time - self.pointupdatetime >= 0.01) {
 		self.jb_unlock_progress = 0;
         self.jb_message = JBMSG_NONE;
@@ -666,8 +675,19 @@ void JB_EndRound_Finalize() {
 	defer(0.1, JB_CountPlayers);
 }
 
+void JB_PrepareNextRound() {
+    print("JB: preparing next round\n");
+    jb_activecamera = world;
+    entity e; FOR_EACH_CLIENT(e) {
+        if(clienttype(e) == CLIENTTYPE_REAL)
+            JB_ClearCamera(e);
+        e.jb_roundlost = FALSE;
+    }
+    self.endround_think2 = func_null;
+}
+
 void JB_EndRound() {
-	G_EndRound("Jailbreak", 15, cvar("g_jailbreak_warmup"), JB_CountPlayers, func_null, JB_EndRound_Finalize);
+	G_EndRound("Jailbreak", JB_TORTURE_DURATION, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }

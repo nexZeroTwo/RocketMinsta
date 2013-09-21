@@ -1135,8 +1135,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			attacker.lms_traveled_distance = cvar("g_lms_campcheck_distance");
 		}
 
-		if((g_vip && vip_soulgem && !vip_started) ||
-		   ((g_freezetag || g_jailbreak) && warmup >= time))
+		if(roundstate != ROUNDSTATE_GAME)
 		if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;

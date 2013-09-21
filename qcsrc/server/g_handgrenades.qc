@@ -904,6 +904,11 @@ void HG_Frame()
     HG_FixNadeType(self);
     HG_Shield_Frame();
     
+    if(roundstate == ROUNDSTATE_OVER) {
+        self.hg_power = 0;
+        return;
+    }
+    
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomHGHookButton(self))) || self.hg_power;
 	
 	float held;

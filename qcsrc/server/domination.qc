@@ -38,14 +38,9 @@ void dom_recountpoints()
     }
 }
 
-void tdom_EndRound_Finalize() {
-	tdom_maycap = TRUE;
-}
-
 void tdom_EndRound()
 {
-	G_EndRound("Total Domination", 5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, tdom_EndRound_Finalize);
-    tdom_maycap = FALSE;
+	G_EndRound("Total Domination", 5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, func_null);
 }
 
 void() dom_controlpoint_setup;
@@ -273,7 +268,7 @@ void dompointtouch()
         return;
 
 	if(g_totaldomination)
-	if(!tdom_maycap)
+	if(roundstate != ROUNDSTATE_GAME)
 		return;
     
 	// only valid teams can claim it
@@ -843,7 +838,6 @@ void totaldom_init()
 	else
 		warmup = time + cvar("g_start_delay");
 	
-	tdom_maycap = 1;
 	precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");
 }

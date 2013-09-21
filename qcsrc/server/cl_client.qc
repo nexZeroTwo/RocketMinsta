@@ -2670,7 +2670,7 @@ float SpectateNext() {
 		
 		if(g_jailbreak)
 		if(jb_roundover)
-			JB_SetCamera(self, jb_activecamera, 15);
+			JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;

@@ -88,7 +88,8 @@ void Freeze_Frame(void) {
 }
 
 float Freeze_GameInProgress(void) {
-    return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
+    //return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
+    return roundstate == ROUNDSTATE_GAME;
 }
 
 void Freeze_Ice_Think() {
@@ -277,7 +278,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce) {
     if(!g_freeze)
         return 0;
     
-    if(warmup >= time)
+    if(roundstate != ROUNDSTATE_GAME)
         return 0;
     
     if(g_vip && ISVIP(self))
@@ -355,14 +356,14 @@ void Freeze_Hook_PlayerPreThink(void) {
     if(!g_freeze)
         return;
     
-    revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
-
-    o = world;
-    
-    if(time < warmup || time < next_round) {
+    if(!Freeze_GameInProgress()) {
         self.revprogress = 0;
+        self.meltprogress = 0;
         return;
     }
+    
+    revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
+    o = world;
     
     if(!self.frozen) {
         if(time > self.revresettime)

@@ -3356,6 +3356,12 @@ string GetForcedFog() {
 .void() endround_think2;
 .void() endround_finalize;
 
+float roundstate;
+#define ROUNDSTATE_PREGAME 0
+#define ROUNDSTATE_GAME 1
+#define ROUNDSTATE_OVER 2
+#define ROUNDSTATE_WARMUP 3
+
 void G_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
@@ -3371,6 +3377,8 @@ void G_EndRound_Think()
     
     if(timeleft <= self.endround_warmuptime)
     {
+        roundstate = ROUNDSTATE_WARMUP;
+        
 		if(!self.endround_announced) {
 			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
 			self.endround_announced = TRUE;
@@ -3378,6 +3386,7 @@ void G_EndRound_Think()
 		
         if(timeleft <= 0)
         {
+            roundstate = ROUNDSTATE_GAME;
             FOR_EACH_PLAYER(e)
             {
                 bigprint_clear_spec(e);
@@ -3416,10 +3425,12 @@ void G_EndRound(string tname, float thedelay, float warmuptime, void() callback,
     e.nextthink = time + 1;
     e.endround_typename = strzone(tname);
     e.endround_think = callback;
+    e.endround_think2 = callback2;
     e.endround_finalize = callbackfin;
     e.endround_warmuptime = warmuptime;
     next_round = time + thedelay;
     e.cnt = warmuptime + next_round;
+    roundstate = ROUNDSTATE_OVER;
 }
 
 // ========================================== //
@@ -3473,4 +3484,11 @@ void ClearCamera(entity player) {
 
 void JB_ClearCameraForAll() {
 	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
+}
+
+void SetCameraWithAngles(entity player, entity cam, float timeout) {
+    SetCamera(player, cam, timeout);
+    player.angles = cam.angles;
+    player.angles_z = 0;
+    player.fixangle = TRUE;
 }

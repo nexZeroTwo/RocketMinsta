@@ -325,6 +325,10 @@ void StartFrame (void)
 		}
 	}
     
+    if(time >= game_starttime)
+    if(roundstate == ROUNDSTATE_PREGAME)
+        roundstate = ROUNDSTATE_GAME;
+    
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;
 }

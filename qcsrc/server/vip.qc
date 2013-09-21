@@ -134,6 +134,7 @@ void vip_SoulGem_touch()
 			oldself = self;
 			self = e;
 			PutClientInServer();
+            HG_ResetState(self);
 			self = oldself;
 			
 			if(ISVIP(e))
@@ -141,6 +142,7 @@ void vip_SoulGem_touch()
 		}
 		vip_started = 1;
 		vip_ended = 0;
+        roundstate = ROUNDSTATE_GAME;
 	}
 	
 	self.gem_pickedup = 1;
@@ -323,16 +325,11 @@ void vip_EndRound()
 	next_round = time + 5;
 	
 	if(!vip_soulgem)
-	{
-		local entity e = spawn();
-		e.think = vip_EndRound_Think;
-		e.nextthink = time + 1;
-		e.cnt = cvar("g_vip_warmup") + next_round;
-		
 		G_EndRound("VIP", 5, cvar("g_vip_warmup"), SUB_Null, vip_EndRound_Think, vip_EndRound_Finalize);
-	}
-	else
+	else {
+        roundstate = ROUNDSTATE_OVER;
 		defer(5.1, vip_SoulGem_StartRound);
+    }
     
     defer(5.1, vip_ClearVIPs);
     vip_ended = 1;
@@ -346,6 +343,7 @@ void vip_SoulGem_StartRound_Think()
 {
 	if(!redvip || !bluevip)
 	{
+        roundstate = ROUNDSTATE_OVER;
 		vip_started = 0;
 		vip_ended = 0;
 		
@@ -776,6 +774,7 @@ void vip_AssignVIPs()
 {
 	if(vip_soulgem)
 	{
+        roundstate = ROUNDSTATE_OVER;
 		vip_SoulGem_StartRound();
 		return;
 	}

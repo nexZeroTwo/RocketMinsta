@@ -79,7 +79,7 @@ entity jb_door_blue_last;
 .float jb_torture_delay_jitter;
 .float jb_torture_suggestedforce;
 
-#define JB_GAME_ACTIVE (warmup < time && !jb_roundover)
+#define JB_GAME_ACTIVE (roundstate == ROUNDSTATE_GAME) //(warmup < time && !jb_roundover)
 
 #define JB_PROJ_OWNERSTATE_UNDEFINED 0
 #define JB_PROJ_OWNERSTATE_IMPRISONED 1
@@ -90,5 +90,9 @@ entity jb_door_blue_last;
 #define FOR_EACH_JB_CONTROLPOINT(e) for(e = jb_cp_first; e; e = e.jb_cp_next)
 #define FOR_EACH_JB_DOOR(e,t) for(e = JB_FIRSTDOOR(t); e; e = JB_NEXTDOOR(e))
 #define JB_SetCamera SetCamera
+#define JB_SetCameraWithAngles SetCameraWithAngles
 #define JB_ClearCamera ClearCamera
 #define JB_ClearCameraForAll ClearCameraForAll
+
+// TODO: cvar this
+#define JB_TORTURE_DURATION 15

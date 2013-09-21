@@ -750,7 +750,6 @@ float g_balance_falldamage_minspeed;
 float g_balance_falldamage_maxdamage;
 
 .float dom_captureprogress;
-float tdom_maycap;
 
 entity SelectSpawnPoint(float anypoint);
 void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);

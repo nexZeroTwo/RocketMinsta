@@ -63,10 +63,8 @@ void FreezeTag_CheckWinner()
     if(time <= game_starttime) // game didn't even start yet! nobody can win in that case.
         return;
 
-    if(next_round || (time > warmup - cvar("g_freezetag_warmup") && time < warmup))
-        return; // already waiting for next round to start
-    
-    //Freeze_RecountPlayers();
+    if(roundstate != ROUNDSTATE_GAME)
+        return;
     
     for(i = 0; i < ft_teams; ++i) {
         if(g_freeze_playerstotal[i]) {

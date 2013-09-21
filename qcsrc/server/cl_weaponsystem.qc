@@ -1007,7 +1007,10 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if((time < game_starttime && !g_inf) || time < self.race_penalty)
 		return FALSE;
 
-	if(shooting_forbidden && self.weapon != WEP_LASER)
+    if(roundstate == ROUNDSTATE_OVER)
+        return FALSE;
+
+	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
 		return FALSE;
 
 	if(g_freeze)
