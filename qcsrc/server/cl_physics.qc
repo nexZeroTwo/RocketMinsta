@@ -620,6 +620,7 @@ void SV_PlayerPhysics()
     if ((time - self.lastwj) > g_walljump_delay)
 	if (!self.hook.state)
     if (!gameover)
+    if (!self.hg_shield || cvar("g_walljump_shielded"))
     if (!(g_race || g_cts) || cvar("g_walljump_allowed_in_race"))
 	{
 		vector plane_normal;

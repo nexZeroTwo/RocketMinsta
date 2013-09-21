@@ -97,6 +97,10 @@ float dodging_GetPressedKeys()
 	if not(g_freezetag_dodging_frozen)
 		return 0;
 
+    if(self.hg_shield)
+    if(!cvar("g_dodging_shielded"))
+        return 0;
+    
 	dodge_detected = 0;
     self.cvar_cl_dodging_timeout = 0.2;
 
