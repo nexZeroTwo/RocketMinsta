@@ -338,9 +338,12 @@ void Freeze_Hook_PlayerSpawns(void) {
     self.revprogress = 0;
     self.meltprogress = 0;
     
-    centerprint_spec(self, "^5You spawned after the game started, you'll spawn frozen\n");
-    Freeze_FreezePlayer(self, world);
-    Freeze_RestoreSpawnState(self);
+    Freeze_RecountPlayers();
+    if(Freeze_GetPlayersTotal(self.team) - 1 > 0) {
+        centerprint_spec(self, "^5You spawned after the game started, you'll spawn frozen\n");
+        Freeze_FreezePlayer(self, world);
+        Freeze_RestoreSpawnState(self);
+    }
 }
 
 void Freeze_Hook_PlayerPreThink(void) {

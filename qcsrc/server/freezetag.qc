@@ -52,7 +52,7 @@ void FreezeTag_Initialize()
 void FreezeTag_CheckWinner()
 {
     string teamname, teamname_full;
-    float winnerteam, i;
+    float winnerteam, i, teams_found;
     entity e;
     
     DEPENDON(g_freezetag)
@@ -68,16 +68,20 @@ void FreezeTag_CheckWinner()
     
     //Freeze_RecountPlayers();
     
-    for(i = 0; i < 4; ++i) {
-        if(g_freeze_playerstotal[i]) if(g_freeze_playersalive[i]) {
-            if(!winnerteam)
-                winnerteam = Team_FromIndex(i);
-            else
-                return;
+    for(i = 0; i < ft_teams; ++i) {
+        if(g_freeze_playerstotal[i]) {
+            if(g_freeze_playersalive[i]) {
+                if(!winnerteam)
+                    winnerteam = Team_FromIndex(i);
+                else
+                    return;
+            }
+            
+            ++teams_found;
         }
     }
     
-    if(!winnerteam)
+    if(!winnerteam || teams_found < 2)
         return;
     
     if(winnerteam == COLOR_TEAM1) {

@@ -621,7 +621,7 @@ void JB_PlayerSpawn() {
 	
 	DEPENDON(JB_GAME_ACTIVE)
 	
-	if(JB_TotalPlayersOnTeam(self.team)) {	// allow to spawn non-prisoned if there are no players on that team
+	if(JB_TotalPlayersOnTeam(self.team) - 1 > 0) {	// allow to spawn non-prisoned if there are no players on that team
 		JB_Imprison(world);
         self.hg_clearammo = 1;
     }
