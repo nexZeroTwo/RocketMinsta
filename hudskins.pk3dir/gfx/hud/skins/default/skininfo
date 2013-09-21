@@ -12,7 +12,7 @@ sector_teamcolor always
 sector_teamcolor_brightness 0.1
 sector_alpha 0.4
 sector_color 0 0 0
-sector_fill tile
+sector_fill stretch
 border_alpha 0.7
 line_color 0 0 0
 line_alpha 0

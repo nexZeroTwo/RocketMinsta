@@ -3149,11 +3149,17 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 			drawfill(fillpos, fillsize, sectorcolor, basealpha, DRAWFLAG_NORMAL);
 			break;
 		
-		case FILL_TILE:
+		case FILL_TILE: case FILL_STRETCH:
 			size_left = hudskin_size_sector_fill_left;
 			size_right = hudskin_size_sector_fill_right;
 			size_center = hudskin_size_sector_fill_center;
 			
+            if(hudskin_sector_fill == FILL_STRETCH)
+            if(size_left == '0 0 0') if(size_right == '0 0 0') {
+                drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha, drawflag);
+                break;
+            }
+            
 			// Autoscaling based on the center area
 			if(size_center_y > fillsize_y)
 			{
@@ -3179,15 +3185,17 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 			part_center_x -= part_right_x;
             
 			if(hudskin_image_sector_fill_left)
-				drawpic_tiled(origin_left, hudskin_image_sector_fill_left, size_left, part_left, sectorcolor, basealpha, drawflag, '0 0 0');
-			if(hudskin_image_sector_fill_center)
-				drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha, drawflag, '0 0 0');
+				drawpic(origin_left, hudskin_image_sector_fill_left, size_left, sectorcolor, basealpha, drawflag);
+			if(hudskin_image_sector_fill_center) {
+                if(hudskin_sector_fill == FILL_STRETCH)
+                    drawpic(origin_center, hudskin_image_sector_fill_center, part_center, sectorcolor, basealpha, drawflag);
+                else
+                    drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha, drawflag, '0 0 0');
+            }
 			if(hudskin_image_sector_fill_right)
-				drawpic_tiled(origin_right, hudskin_image_sector_fill_right, size_right, part_right, sectorcolor, basealpha, drawflag, '0 0 0');
+				drawpic(origin_right, hudskin_image_sector_fill_right, size_right, sectorcolor, basealpha, drawflag);
+            
 			break;
-		
-		case FILL_STRETCH:
-			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha, drawflag);
 	}
 }
 

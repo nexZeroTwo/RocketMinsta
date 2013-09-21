@@ -20,7 +20,7 @@ flash_sector_imod 2
 flash_sector_amod 0
 flash_border_imod 0
 flash_border_amod 0
-sector_fill tile
+sector_fill stretch
 progress_mode 0
 progress_bgalpha 1
 progress_sector_colormode 1
