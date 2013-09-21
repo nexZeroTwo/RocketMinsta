@@ -1693,6 +1693,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 	}
 }
 
+.float damage_noinfo;
 float RadiusDamage_running;
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity)
 // Returns total damage applies to creatures
@@ -1733,8 +1734,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 	blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
-
-	if(deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
+    
+	if(!inflictor.damage_noinfo && deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
 	{
 		force = inflictor.velocity;
 		if(vlen(force) == 0)

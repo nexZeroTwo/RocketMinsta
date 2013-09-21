@@ -215,21 +215,20 @@ void HG_Napalm_Explode() {
 void HG_Plasma_Projectile_Explode() {
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
+    self.damage_noinfo = FALSE;
 	RadiusDamage(self, self.owner, cvar("g_handgrenades_plasma_projectile_damage"), cvar("g_handgrenades_plasma_projectile_edgedamage"), cvar("g_handgrenades_plasma_projectile_radius"), world, cvar("g_handgrenades_plasma_projectile_force"), self.projectiledeathtype, other);
 	remove(self);
 }
 
 void HG_Plasma_Projectile_Think() {
-    entity e;
-    
     if(time >= self.hg_detonatetime) {
         HG_Plasma_Projectile_Explode();
         return;
     }
     
     if(time > self.hg_plasma_projdps_next) {
-        FOR_EACH_PLAYER(e) if(vlen(e.origin - self.origin) < self.hg_plasma_projrange)
-            Damage(e, self, self.owner, self.hg_plasma_projdps * (time - self.hg_plasma_projdps_last), self.projectiledeathtype, '0 0 0', '0 0 0');
+        float pdmg = self.hg_plasma_projdps * (time - self.hg_plasma_projdps_last);
+        RadiusDamage(self, self.owner, pdmg, pdmg, self.hg_plasma_projrange, world, 0, self.projectiledeathtype, world);
         self.hg_plasma_projdps_next = time + self.hg_plasma_projdps_delay;
         self.hg_plasma_projdps_last = time;
     }
@@ -295,6 +294,7 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps_delay = cvar("g_handgrenades_plasma_projectile_dps_delay");
     proj.hg_plasma_projdps_last = time;
     proj.hg_plasma_projdps_next = time + proj.hg_plasma_projdps_delay;
+    proj.damage_noinfo = TRUE;
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
