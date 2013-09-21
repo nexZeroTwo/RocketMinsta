@@ -286,7 +286,11 @@ void dompointtouch()
 	if(!head || head.netname == "" || head == self.goalentity)
 		return;
 
-	self.dom_captureprogress = bound(0, self.dom_captureprogress + frametime * cvar("g_domination_capture_speed"), 1);
+    float rate = cvar("g_domination_capture_speed");
+    if(other.hg_shield)
+        rate *= cvar("g_handgrenades_shield_progressrate");
+
+	self.dom_captureprogress = bound(0, self.dom_captureprogress + frametime * rate, 1);
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
     self.dom_capturingplayer = other;

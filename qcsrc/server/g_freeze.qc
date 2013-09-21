@@ -354,7 +354,7 @@ void Freeze_Hook_PlayerSpawns(void) {
 
 void Freeze_Hook_PlayerPreThink(void) {
     vector revive_extra_size;
-    entity o, oPrev, h;
+    entity rfirst, rlast, h;
     string names;
     float first;
     
@@ -367,9 +367,6 @@ void Freeze_Hook_PlayerPreThink(void) {
         return;
     }
     
-    revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
-    o = world;
-    
     if(!self.frozen) {
         if(time > self.revresettime)
             self.revprogress = 0;
@@ -381,19 +378,36 @@ void Freeze_Hook_PlayerPreThink(void) {
     // frozen
     
     Freeze_DangerShortcut();
+    float shielded = TRUE;
     
-    if(self.freezetime + Freeze_CVar("revive_delay") < time)
+    // Find all players withing revival radius and build a linked list
+    if(self.freezetime + Freeze_CVar("revive_delay") < time) {
+        revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         FOR_EACH_PLAYER(other) if(self != other && !other.frozen && other.team == self.team) {
             if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
-                o = other;
-                break;
-            } else oPrev = other;
-        } else oPrev = other;
-    
-    if(o) // OK, there is at least one teammate reviving us
+                if(!rfirst)
+                    rfirst = other;
+                    
+                if(rlast)
+                    rlast.chain = other;
+                    
+                rlast = other;
+                other.chain     = world;
+                
+                if(!other.hg_shield)
+                    shielded = FALSE;
+            }
+        }
+    }
+        
+    if(rfirst) // OK, there is at least one teammate reviving us
     {
+        float rate = Freeze_CVar("revive_speed");
+        if(shielded)
+            rate *= cvar("g_handgrenades_shield_progressrate");
+        
         self.revfinished = 0;
-        self.revprogress = bound(0, self.revprogress + frametime * Freeze_CVar("revive_speed"), 1);
+        self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
 
         if(self.revprogress >= 1) {
             Freeze_UnfreezePlayer(self);
@@ -402,9 +416,7 @@ void Freeze_Hook_PlayerPreThink(void) {
             
             first = TRUE;
             
-            for(other = oPrev; (other = find(other, classname, STR_PLAYER));)
-            if(self != other && !other.frozen && other.team == self.team)
-            if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
+            for(other = rfirst; other; other = other.chain) {
                 PlayerScore_Add(other, SP_REVIVALS, +1);
                 PlayerScore_Add(other, SP_SCORE, Freeze_CVar("score_revival"));
                 
@@ -425,18 +437,16 @@ void Freeze_Hook_PlayerPreThink(void) {
                     first = FALSE;
                 } else
                     names = strcat(names, "^7, ", other.netname);
+                
+                other.revprogress = self.revprogress;
+                other.revresettime = time + frametime * 2;
             }
 
             centerprint_spec(self, strcat("^5You were revived by ^7", names, "\n"));
             bprint("^7", names, "^5 revived ^7", self.netname, "\n");
             
             return;
-        }
-
-        // now find EVERY teammate within reviving radius, set their revive_progress values correct
-        for(other = oPrev; (other = find(other, classname, STR_PLAYER)) != world; )
-        if(self != other && !other.frozen && other.team == self.team)
-        if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
+        } else for(other = rfirst; other; other = other.chain) {
             other.revprogress = self.revprogress;
             other.revresettime = time + frametime * 2;
         }

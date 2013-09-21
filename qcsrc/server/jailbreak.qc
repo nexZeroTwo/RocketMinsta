@@ -1111,8 +1111,13 @@ void JB_ControlPoint_Touch() {
         break;
     }
     
-    if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL)
-        self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * cvar("g_jailbreak_controlpoint_unlock_speed"), 1);
+    if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL) {
+        float rate = cvar("g_jailbreak_controlpoint_unlock_speed");
+        if(other.hg_shield)
+            rate *= cvar("g_handgrenades_shield_progressrate");
+        
+        self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * rate, 1);
+    }
 	self.pointupdatetime = time;
     self.jb_capturingplayer = other;
 	other.jb_unlock_progress = self.jb_unlock_progress;
