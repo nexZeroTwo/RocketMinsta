@@ -65,9 +65,13 @@ void HUDSkin_Unload()
     hudskin_progress_sector_colormode = 0;
     hudskin_progress_sector_color = '0 0 0';
     hudskin_progress_sector_alpha = 0;
+    hudskin_progress_sector_teamcolor_mod = '0 0 0';
+    hudskin_progress_sector_teamcolor_minalpha = 0;
     hudskin_progress_border_colormode = 0;
     hudskin_progress_border_color = '0 0 0';
     hudskin_progress_border_alpha = 0;
+    hudskin_progress_border_teamcolor_mod = '0 0 0';
+    hudskin_progress_border_teamcolor_minalpha = 0;
     hudskin_progress_head_color = '0 0 0';
     hudskin_progress_head_alpha = 0;
     hudskin_progress_head_teamcolor = 0;
@@ -477,6 +481,20 @@ float HUDSkin_Eval(string cmd)
             hudskin_progress_head_teamcolor = stof(argv(1));
             return TRUE;
         
+        case "progress_sector_teamcolor_mod":
+            hudskin_progress_sector_teamcolor_mod = HUDSkin_ReadColor();
+        
+        case "progress_sector_teamcolor_minalpha":
+            hudskin_progress_sector_teamcolor_minalpha = stof(argv(1));
+            return TRUE;
+        
+        case "progress_border_teamcolor_mod":
+            hudskin_progress_border_teamcolor_mod = HUDSkin_ReadColor();
+        
+        case "progress_border_teamcolor_minalpha":
+            hudskin_progress_border_teamcolor_minalpha = stof(argv(1));
+            return TRUE;
+        
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
@@ -487,7 +505,7 @@ void HUDSkin_LoadBuiltinFallback() {
     // This matches the "classic" skin
     
     hudskin_border_simple = 2;
-    hudskin_sector_teamcolor = TC_SOME;
+    //hudskin_sector_teamcolor = TC_SOME;
     hudskin_sector_teamcolor_brightness = 0.2;
     hudskin_sector_color = '0.2 0.2 0.2';
     hudskin_border_color = '0 0 0';
@@ -505,10 +523,12 @@ void HUDSkin_LoadBuiltinFallback() {
     hudskin_flash_border_imod = 0;
     hudskin_flash_border_amod = 0;
     hudskin_progress_bgalpha = 1;
-    hudskin_progress_sector_colormode = 2;
-    hudskin_progress_sector_alpha = 0.3;
+    hudskin_progress_sector_colormode = 1;
+    hudskin_progress_sector_alpha = 0;
     hudskin_progress_sector_color = '1 0.5 0';
     hudskin_progress_mode = 2;
+    hudskin_progress_sector_teamcolor_minalpha = 0;
+    hudskin_progress_sector_teamcolor_mod = '0 0 0';
 }
 
 float HUDSkin_LoadError(string skin_name, string errstr) {
@@ -530,6 +550,11 @@ float HUDSkin_Load(string skin_name)
 {
 #define SKINIMAGE(i) strzone(strcat("gfx/hud/skins/", skin_name, "/" i))
     HUDSkin_Unload();
+    
+    if(skin_name == "_builtin_") {
+        HUDSkin_LoadBuiltinFallback();
+        return TRUE;
+    }
     
     local float fh, err;
     local string s;

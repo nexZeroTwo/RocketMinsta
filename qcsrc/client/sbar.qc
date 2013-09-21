@@ -2970,16 +2970,16 @@ float ammo_last;
 #define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a*sector_alphamod, bg, hud_sector_drawflag); DrawHUDLineSectorBorder(hud_sector_pos, hud_sector + sector_mod, ba*sector_alphamod, bbg);
 #define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
 #define BG_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamcolor : sector_basecolor)
-#define BG_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? BG_SECTOR_TEAM : hudskin_progress_sector_color) : BG_SECTOR)
+#define BG_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? sector_teamcolor + hudskin_progress_sector_teamcolor_mod : hudskin_progress_sector_color) : BG_SECTOR)
 #define BG_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamcolor : border_basecolor)
 #define BG_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamcolor : border_basecolor)
-#define BG_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? BG_BORDER_TEAM : hudskin_progress_border_color) : BG_BORDER)
+#define BG_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? border_teamcolor + hudskin_progress_border_teamcolor_mod : hudskin_progress_border_color) : BG_BORDER)
 #define A_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamalpha : sector_basealpha)
 #define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
-#define A_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? A_SECTOR_TEAM : hudskin_progress_sector_alpha) : A_SECTOR)
+#define A_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? max(A_SECTOR_TEAM, hudskin_progress_sector_teamcolor_minalpha) : hudskin_progress_sector_alpha) : A_SECTOR)
 #define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
 #define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
-#define A_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? A_BORDER_TEAM : hudskin_progress_border_alpha) : A_BORDER)
+#define A_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? max(A_BORDER_TEAM, hudskin_progress_border_teamcolor_minalpha) : hudskin_progress_border_alpha) : A_BORDER)
 
 void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
 {
