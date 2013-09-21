@@ -1016,6 +1016,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		// No damage modification here
 		// Instead, prepare the victim for his death...
 		
+        if not(g_vip && ISVIP(targ))
 		if(g_freeze && targ.frozen && deathtype != DEATH_KILL)
 		{
 			oldself = self;

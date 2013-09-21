@@ -778,10 +778,11 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			}
 		}
 
+        // become fully visible
+        self.alpha = 1;
+            
 		if(!g_freeze)
 		{
-			// become fully visible
-			self.alpha = 1;
 			// clear selected player display
 			ClearSelectedPlayer();
 			// throw a weapon
@@ -793,7 +794,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		race_PreDie();
 		DropAllRunes(self);
 		
-		if(deathtype == DEATH_HURTTRIGGER && g_freeze)
+		if(deathtype == DEATH_HURTTRIGGER && g_freeze && !(g_vip && ISVIP(self)))
 		{
 			PutClientInServer();
 			return;
