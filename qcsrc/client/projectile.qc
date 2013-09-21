@@ -206,7 +206,7 @@ void Projectile_DrawTrail(vector to)
                 vector v = randomvec();
                 v_z = (v_z + 1) * 0.25;
                 pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
-                self.nextparticle = time + 0.12 + random() * 0.12;
+                self.nextparticle = time + 0.15 + random() * 0.15;
             }
             break;
 		default:
