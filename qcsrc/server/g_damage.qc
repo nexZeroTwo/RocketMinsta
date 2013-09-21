@@ -1775,20 +1775,26 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 					finaldmg = coredamage * power + edgedamage * (1 - power);
 					if (finaldmg > 0)
 					{
-						local float a;
-						local float c;
-						local float hits;
-						local float total;
-						local float hitratio;
-						local vector hitloc;
+						float a;
+						float c;
+						float hits;
+						float total;
+						float hitratio;
+                        float forcescale;
+						vector hitloc;
+                        
 						center = targ.origin + (targ.mins + targ.maxs) * 0.5;
 						// if it's a player, use the view origin as reference
 						if (targ.classname == "player")
 							center = targ.origin + targ.view_ofs;
 						force = normalize(center - blastorigin);
-						//force = force * (finaldmg / coredamage) * forceintensity;
-						// WHAT? This completely breaks force on low damages, how did it even work before?!
-						force = force * forceintensity;
+                        
+                        if(cvar("g_blast_alwaysfullforce"))
+                            forcescale = 1;
+                        else
+                            forcescale = finaldmg / coredamage;
+                        
+						force = force * forcescale * forceintensity;
 						
 						// test line of sight to multiple positions on box,
 						// and do damage if any of them hit
