@@ -191,7 +191,7 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float		dmgtime;
 
 .float		killcount;
-.float hitsound, typehitsound;
+.float hitsound, typehitsound, armorhitsound;
 
 .float watersound_finished;
 .float iscreature;

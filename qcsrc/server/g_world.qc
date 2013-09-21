@@ -2978,6 +2978,8 @@ void EndFrame()
 					else
 						play2(self, RM_SOUND_KILL);
 				}
+                else if(self.enemy.armorhitsound)
+                    play2(self, "misc/armorhit.wav");
 				else if(self.enemy.hitsound)
 					play2(self, "misc/hit.wav");
 			}
@@ -2995,6 +2997,8 @@ void EndFrame()
 					else
 						play2(self, RM_SOUND_KILL);
 				}
+                else if(self.armorhitsound)
+                    play2(self, "misc/armorhit.wav");
 				else if(self.hitsound)
 					play2(self, "misc/hit.wav");
 			}
@@ -3012,6 +3016,7 @@ void EndFrame()
 		self.typehitsound = FALSE;
 		self.killsound = FALSE;
 		self.instakillsound = FALSE;
+        self.armorhitsound = FALSE;
 		antilag_record(self, altime);
 	}
 }

@@ -1193,7 +1193,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
 					damage = 0;
 					targ.hitsound += 1;
-					attacker.hitsound += 1; // TODO change this to a future specific hitsound for armor hit
+					attacker.armorhitsound += 1; // TODO change this to a future specific hitsound for armor hit
 				}
 				else
 				{
@@ -1210,7 +1210,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 						targ.armorvalue = 0;
 					}
 
-					attacker.hitsound += 1;
+					attacker.armorhitsound += 1;
 					targ.hitsound += 1;
 					targ.ignore_next = 1;
 				}
@@ -1237,7 +1237,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					if(targ == attacker)
 						armordamage *= cvar("g_balance_selfdamagepercent");
 					else
-						attacker.hitsound += 1;
+						attacker.armorhitsound += 1;
 
 					if(armor_passthrough)
 					{
@@ -1400,7 +1400,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					{
 						if(targ.BUTTON_CHAT)
 							attacker.typehitsound += 1;
-						else
+						else if(targ.armorvalue)
+                            attacker.armorhitsound += 1;
+                        else
 							attacker.hitsound += 1;
 
 						damage_goodhits += 1;
