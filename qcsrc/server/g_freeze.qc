@@ -193,7 +193,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
 
 void Freeze_UnfreezePlayer(entity plr)
 {
-    if(!plr)
+    if(!plr || !plr.frozen)
         return;
     
     PlayerScore_Set(plr, SP_FROZENSTATUS, 0);
@@ -273,8 +273,17 @@ void Freeze_DangerShortcut(void) {
     } else self.danger_used = 0;
 }
 
+void Freeze_RespawnPlayer(entity p) {
+    entity sp = SelectSpawnPoint(FALSE);
+        
+    if(!sp) {
+        bprint("Coudln't select a spawn point for ", p.netname, "^7!\n");
+    } else
+        TeleportPlayer(p, p, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
+}
+
 string W_ThrowNewWeapon(entity, float, float, vector, vector);
-float Freeze_Hook_PlayerDies(entity attacker, vector frce) {
+float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     if(!g_freeze)
         return 0;
     
@@ -301,19 +310,15 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce) {
     self.frozenrow += 1;
     float r = Freeze_CVar("frozen_row_respawn");
     
-    if(r) if(self.frozenrow >= r) {
-        entity sp = SelectSpawnPoint(FALSE);
-        
-        if(!sp) {
-            bprint("Coudln't select a spawn point for ", self.netname, "^7!\n");
-        } else
-            TeleportPlayer(self, self, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
-            
+    if(deathtype == DEATH_HURTTRIGGER)
+        Freeze_RespawnPlayer(self);
+    else if(r) if(self.frozenrow >= r) {
+        Freeze_RespawnPlayer(self);
         if(self.frozenrow > 1)
             bigprint_spec(self, "", strcat("^5You were moved to a random spawm point after dying ", ftos(self.frozenrow), " times in a row"), 5);
         self.frozenrow = 0;
     }
-        
+    
     AloneWarning(self.team, Freeze_AliveCheck);
     
     return 1;

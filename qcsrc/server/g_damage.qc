@@ -1016,16 +1016,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		// No damage modification here
 		// Instead, prepare the victim for his death...
 		
-        if not(g_vip && ISVIP(targ))
-		if(g_freeze && targ.frozen && deathtype != DEATH_KILL)
-		{
-			oldself = self;
-			self = targ;
-			PutClientInServer();
-			self = oldself;
-			return;
-		}
-		
 		targ.armorvalue = 0;
 		targ.spawnshieldtime = 0;
 		targ.health = 0.9; // this is < 1
@@ -1294,6 +1284,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
 		if(g_freeze) if(targ.frozen)
 		{
+            if(deathtype == DEATH_HURTTRIGGER)
+                Freeze_RespawnPlayer(targ);
+            
 			damage = 0;
 			force = force * Freeze_CVar("frozen_force");
 
@@ -1303,14 +1296,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				targ.freezetime = time;
 				targ.meltprogress = 0;
 				targ.revprogress = 0;
-			}
-
-			if(deathtype == DEATH_HURTTRIGGER)
-			{
-				oldself = self;
-				self = targ;
-				PutClientInServer();
-				self = oldself;
 			}
 		}
 

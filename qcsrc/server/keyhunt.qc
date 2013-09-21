@@ -754,7 +754,7 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 
 	players = keys = 0;
 
-	if(attacker)
+	if(attacker && attacker.classname == "player" && attacker != lostkey.kh_previous_owner)
 	{
 		if(lostkey.kh_previous_owner)
 			kh_Scores_Event(lostkey.kh_previous_owner, world, "pushed", 0, -cvar("g_balance_keyhunt_score_push"));
@@ -763,7 +763,8 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		PlayerScore_Add(attacker, SP_KH_PUSHES, 1);
 		//centerprint_spec(attacker, "Your push is the best!");
 		bprint("The ", ColoredTeamName(teem), "^7 could not take care of the ", lostkey.netname, "^7 when ", attacker.netname, "^7 came\n");
-		kh_Key_Collect(lostkey, attacker);
+        kh_Key_Collect(lostkey, attacker);
+        Freeze_UnfreezePlayer(attacker);
 	}
 	else
 	{
@@ -829,7 +830,7 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		players = 0;
 		entity my_player;
 		FOR_EACH_PLAYER(player)
-			if(player.deadflag == DEAD_NO)
+			if(player.deadflag == DEAD_NO) if not(g_freeze && player.frozen)
 				if(player.team == lostkey.team)
 				{
 					++players;

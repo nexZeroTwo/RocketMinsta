@@ -16,6 +16,7 @@ float g_freeze_globalwarming_reset;
 .float revrow;
 .float danger_used;
 .float frozenrow;
+.float freeze_playerfelloff;
 
 .float spawnstate_saved;
 .float spawnstate_team;
@@ -40,7 +41,7 @@ void Freeze_UnfreezeAll(void);
 void Freeze_Hook_PlayerSpawns(void);
 void Freeze_Hook_PlayerPhysics(void);
 void Freeze_Hook_PlayerPreThink(void);
-float Freeze_Hook_PlayerDies(entity, vector);
+float Freeze_Hook_PlayerDies(entity, vector, float);
 void Freeze_Hook_PlayerQuits(void);
 
 #define Freeze_CVar(s) (cvar(Freeze_CVarName(s)))

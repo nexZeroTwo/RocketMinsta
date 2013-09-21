@@ -794,12 +794,6 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		race_PreDie();
 		DropAllRunes(self);
 		
-		if(deathtype == DEATH_HURTTRIGGER && g_freeze && !(g_vip && ISVIP(self)))
-		{
-			PutClientInServer();
-			return;
-		}
-		
 		prec_player_die(self, attacker);
 		DropPowerups(force);
 		sm_PlayerDies();
@@ -837,7 +831,7 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			self.angles_z = 0;
 		}
 		
-        if(Freeze_Hook_PlayerDies(attacker, force))
+        if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
         
 		Boobs_DropAll(force);
