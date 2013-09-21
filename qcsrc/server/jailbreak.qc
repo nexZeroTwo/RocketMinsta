@@ -1106,10 +1106,11 @@ void JB_ControlPoint_Touch() {
     }
     
     entity cp;
-    if(self.team != JB_TEAM_NEUTRAL) FOR_EACH_JB_CONTROLPOINT(cp) if(cp.team == JB_TEAM_NEUTRAL) if(cp.jb_unlock_progress) {
-        other.jb_message = JBMSG_CAPPINGNEUTRAL;
-        break;
-    }
+    if(self.team != JB_TEAM_NEUTRAL) FOR_EACH_JB_CONTROLPOINT(cp)
+        if(cp.team == JB_TEAM_NEUTRAL) if(cp.jb_unlock_progress) if(cp.jb_capturingplayer.team == other.team) {
+            other.jb_message = JBMSG_CAPPINGNEUTRAL;
+            break;
+        }
     
     if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL) {
         float rate = cvar("g_jailbreak_controlpoint_unlock_speed");
