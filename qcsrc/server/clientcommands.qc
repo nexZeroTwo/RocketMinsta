@@ -542,6 +542,12 @@ void SV_ParseClientCommand(string s) {
 				sprint(self, "^1Game has already been restarted\n");
 			}
 		}
+    } else if(cmd == "tt_save" && sv_cheats) {
+        if(self.tt_lastmoment)
+            TimeTravel_EraseMoment(self.tt_lastmoment);
+        self.tt_lastmoment = TimeTravel_SaveMoment(self);
+    } else if(cmd == "tt_takeback" && sv_cheats) {
+        TimeTravel_TakeBack(self, self.tt_lastmoment);
 	} else if(cmd == "maplist") {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {

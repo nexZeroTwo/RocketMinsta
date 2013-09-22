@@ -177,12 +177,8 @@ void JB_Imprison(entity attacker) {
             self.hg_ammo = 0;
 		self.hg_bonus = 0;
 	}
-	
-	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
-	}
-	
+    
+	PlayerScore_Set(self, SP_FROZENSTATUS, 1);
 	JB_CountPlayers();
 }
 
@@ -209,17 +205,12 @@ void JB_Release(entity saviour) {
 	}
 	
 	self.jb_isprisoned = FALSE;
-	bprint(self.netname, "^3 has broken free!\n");
 	
 	if(g_handgrenades)
     if(!cvar("g_handgrenades_regen_time"))
 		HG_PlayerSpawn();
 	
-	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
-	}
-	
+	PlayerScore_Set(self, SP_FROZENSTATUS, 0);
 	JB_CountPlayers();
 }
 
@@ -598,11 +589,6 @@ float JB_PlayerDies(entity frag_attacker) {
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
-		
-		if(self.scorekeeper) {
-			self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
-			self.scorekeeper.(scores[SP_FROZENSTATUS]) = 1;
-		}
 	}
 	
 	return 1;
@@ -612,11 +598,8 @@ void JB_PlayerSpawn() {
 	DEPENDON(g_jailbreak)
 	
 	self.jb_isprisoned = FALSE;
-	if(self.scorekeeper) {
-		self.scorekeeper.SendFlags |= pow(2, SP_FROZENSTATUS);
-		self.scorekeeper.(scores[SP_FROZENSTATUS]) = 0;
-	}
-	
+	PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    
 	self.jb_fragrow = 0;
 	
     if(jb_activecamera)
@@ -644,11 +627,26 @@ void JB_RemovePlayer() {
 .float pointupdatetime;
 void JB_PlayerPreThink() {
 	DEPENDON(g_jailbreak)
-	
+    
+	if(roundstate == ROUNDSTATE_WARMUP) {
+        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+        self.jb_isprisoned_prev = 0;
+    }
+        
     if(!JB_GAME_ACTIVE) {
         self.jb_unlock_progress = 0;
         self.jb_message = JBMSG_NONE;
         return;
+    }
+    
+    float ps = min(1, self.jb_isprisoned);
+    if(ps != self.jb_isprisoned_prev) {
+        if(!ps) {
+            bprint(self.netname, "^3 has broken free!\n");
+            PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+        } else
+            PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+        self.jb_isprisoned_prev = ps;
     }
     
 	if(time - self.pointupdatetime >= 0.01) {

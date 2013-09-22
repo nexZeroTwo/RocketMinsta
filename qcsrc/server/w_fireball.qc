@@ -386,5 +386,13 @@ float w_fireball(float req)
 	{
 		self.fireball_secondarytime = time;
 	}
+    else if (req == WR_TT_STORE)
+    {
+        TimeTravel_StoreTime(self,      tt_moment, fireball_secondarytime);
+    }
+    else if (req == WR_TT_RESTORE)
+    {
+        TimeTravel_RestoreTime(self,    tt_moment, fireball_secondarytime);
+    }
 	return TRUE;
 };

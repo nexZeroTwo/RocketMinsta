@@ -139,12 +139,8 @@ void Freeze_RecountPlayers(void) {
 }
 
 void Freeze_FreezePlayer(entity plr, entity attacker) {
-    entity ice;
-    
     if(plr.frozen)
         return;
-    
-    PlayerScore_Set(plr, SP_FROZENSTATUS, 1);
     
     plr.revrow = 0;
     plr.frozen = 1;
@@ -153,31 +149,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.freezetime = time;
     plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
-
-    if(!plr.iceblock) {
-        ice = spawn();
-        ice.owner = plr;
-        ice.classname = "freeze_ice";
-        ice.think = Freeze_Ice_Think;
-        ice.nextthink = time;
-        ice.frame = floor(random() * 21); // ice model has 20 different looking frames
-        ice.effects |= EF_ADDITIVE;
-        setmodel(ice, "models/ice/ice.md3");
-        setorigin(ice, plr.origin - '0 0 16');
-        plr.iceblock = ice;
-    }
     
-    if(Freeze_CVar("iceblocks_teamcolored"))
-        ice.skin = TeamColorSkin(plr.team);
-        
-    if(Freeze_CVar("freezesound"))
-        sound(plr, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
-    
-    WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
-    WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
-    if(plr.freeze_waypoint)
-        WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
-
     if(attacker == plr) {
         PlayerScore_Add(plr, SP_SCORE, -Freeze_CVar("penalty_death"));
     } else if(attacker.classname == "player") {
@@ -188,7 +160,8 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
             PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar("penalty_teamkill"));
     }
     
-    Freeze_RecountPlayers();
+    // Done in Freeze_Hook_PlayerPreThink
+    // Freeze_RecountPlayers();
 }
 
 void Freeze_UnfreezePlayer(entity plr)
@@ -196,21 +169,14 @@ void Freeze_UnfreezePlayer(entity plr)
     if(!plr || !plr.frozen)
         return;
     
-    PlayerScore_Set(plr, SP_FROZENSTATUS, 0);
-    
     plr.frozen = 0;
     plr.revprogress = 0;
+    plr.disableclientprediction = 0;
     
     if(plr.iceblock) {
         remove(plr.iceblock);
         plr.iceblock = world;
     }
-    
-    // remove waypoint
-    if(plr.freeze_waypoint)
-        WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
-    
-    plr.disableclientprediction = 0;
     
     if(g_handgrenades) {
         if(cvar("g_handgrenades_regen_time")) {
@@ -220,7 +186,8 @@ void Freeze_UnfreezePlayer(entity plr)
         } else HG_PlayerSpawnEx(plr);
     }
     
-    Freeze_RecountPlayers();
+    // Done in Freeze_Hook_PlayerPreThink
+    // Freeze_RecountPlayers();
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -352,6 +319,35 @@ void Freeze_Hook_PlayerSpawns(void) {
     }
 }
 
+entity Freeze_SpawnIceBlock(entity plr) {
+    entity ice = spawn();
+    ice.owner = plr;
+    ice.classname = "freeze_ice";
+    ice.think = Freeze_Ice_Think;
+    ice.nextthink = time;
+    ice.frame = floor(random() * 21); // ice model has 20 different looking frames
+    ice.effects |= EF_ADDITIVE;
+    setmodel(ice, "models/ice/ice.md3");
+    setorigin(ice, plr.origin - '0 0 16');
+    
+    if(Freeze_CVar("iceblocks_teamcolored"))
+        ice.skin = TeamColorSkin(plr.team);
+    
+    plr.iceblock = ice;
+    
+    if(Freeze_CVar("freezesound"))
+        sound(self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
+    
+    return ice;
+}
+
+entity Freeze_SpawnWaypoint(entity plr) {
+    entity w = WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
+    WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
+    WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
+    return w;
+}
+
 void Freeze_Hook_PlayerPreThink(void) {
     vector revive_extra_size;
     entity rfirst, rlast, h;
@@ -360,6 +356,9 @@ void Freeze_Hook_PlayerPreThink(void) {
     
     if(!g_freeze)
         return;
+    
+    if(roundstate == ROUNDSTATE_WARMUP)
+        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
     
     if(!Freeze_GameInProgress()) {
         self.revprogress = 0;
@@ -371,11 +370,31 @@ void Freeze_Hook_PlayerPreThink(void) {
         if(time > self.revresettime)
             self.revprogress = 0;
         
+        if(self.iceblock) {
+            remove(self.iceblock);
+            self.iceblock = world;
+        }
+        
+        if(self.freeze_waypoint) {
+            WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+            PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+            Freeze_RecountPlayers();
+        }
+        
         sm_Frame();
         return;
     }
     
     // frozen
+    
+    if(!self.iceblock)
+        Freeze_SpawnIceBlock(self);
+    
+    if(!self.freeze_waypoint) {
+        PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+        Freeze_SpawnWaypoint(self);
+        Freeze_RecountPlayers();
+    }
     
     Freeze_DangerShortcut();
     float shielded = TRUE;

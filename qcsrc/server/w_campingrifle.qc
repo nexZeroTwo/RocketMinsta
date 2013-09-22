@@ -253,5 +253,15 @@ float w_campingrifle(float req)
         self.weapon_think = w_ready;
         self.weapon_nextthink = time;
 	}
+    else if (req == WR_TT_STORE)
+    {
+        TimeTravel_StoreTime(self,      tt_moment, campingrifle_accumulator);
+        TimeTravel_StoreFloat(self,     tt_moment, campingrifle_bulletcounter);
+    }
+    else if (req == WR_TT_RESTORE)
+    {
+        TimeTravel_RestoreTime(self,    tt_moment, campingrifle_accumulator);
+        TimeTravel_RestoreFloat(self,   tt_moment, campingrifle_bulletcounter);
+    }
 	return TRUE;
 };
