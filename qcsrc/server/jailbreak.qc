@@ -65,9 +65,20 @@ void JB_DelayedInit() {
         SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', string_null, e);
 }
 
-void JB_OpenDoor(entity door, float fdata, vector vdata, string sdata, entity cpoint) {
+float jb_doors_opened[2];
+void JB_MaybeOpenDoor(entity door, float openjails, vector vdata, string sdata, entity cpoint) {
+    if(openjails == OPENJAILS_LOCKED && door.jaildoormode != JAILDOORMODE_OPEN)
+        return;
+    
+    if(openjails == OPENJAILS_OPEN && door.jaildoormode == JAILDOORMODE_CLOSED)
+        return;
+    
+    // OPENJAILS_LOCKED_FORCE is handled in JB_NonJBInit
+    // For OPENJAILS_OPEN_FORCE, the below is always executed
+    
     entity oldself = self;
     self = door;
+    float opened = TRUE;
     
     switch(door.classname) {
         case "door":
@@ -81,10 +92,16 @@ void JB_OpenDoor(entity door, float fdata, vector vdata, string sdata, entity cp
         
         default:
             JB_BLog(strcat("Warning: ^3", JB_ControlPoint_Name(cpoint), "^7 at ", vtos(cpoint.origin), " is linked with an entity of unhandled class (^3", door.classname, "^7)!"));
+            opened = FALSE;
             break;
     }
     
     self = oldself;
+    
+    if(opened) {
+        float idx = Team_Index(cpoint.team);
+        jb_doors_opened[idx] = jb_doors_opened[idx] + 1;
+    }
 }
 
 // This is called for non-jailbreak modes only, to alter jb-specific entities on the map
@@ -92,14 +109,24 @@ void JB_NonJBInit() {
     entity e;
     float openjails = cvar("g_jailbreak_nonjb_openjails");
     
-    if(openjails)
-        SUB_ForEachTarget_Init();
-    
-    FOR_EACH_JB_CONTROLPOINT(e) {
-        if(openjails)
-            SUB_ForEachTarget(e, JB_OpenDoor, TRUE, 0, '0 0 0', string_null, e);
+    SUB_ForEachTarget_Init();
+    FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
+        if(openjails != OPENJAILS_LOCKED_FORCE)
+            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', string_null, e);
         e.think = SUB_Remove;
         e.nextthink = time;
+    }
+    
+    // If all jail doors are locked, it means that the jail is not intended to be accessible.
+    // We have to keep the jail sectors then to ensure it's not possible to get in with translocator (or something more evil to be added in the future).
+    // Otherwise, they have to be removed. TODO: do something about maps with multiple jails (if we ever get any).
+    
+    for(e = findchain(classname, "jailbreak_jail"); e; e = e.chain) {
+        float idx = Team_Index(e.team);
+        if(!g_handgrenades || jb_doors_opened[idx]) {
+            e.think = SUB_Remove;
+            e.nextthink = time;
+        }
     }
 }
 
@@ -844,12 +871,7 @@ void JB_Jail_Touch() {
 }
 
 void JB_SetupJail() {
-    if not(g_jailbreak || (g_handgrenades && !cvar("g_jailbreak_nonjb_openjails"))) {
-		remove(self);
-		return;
-	}
-	
-	self.classname = "func_jailbreak_jail";
+	self.classname = "jailbreak_jail";
 	self.touch = JB_Jail_Touch;
 	EXACTTRIGGER_INIT;
 }
