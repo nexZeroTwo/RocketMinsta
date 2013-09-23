@@ -1,5 +1,6 @@
 
 float g_jailbreak_claim;
+float g_jailbreak_jail_deathmatch;
 typedef void() jb_torture_logic;
 
 void JB_Init();
@@ -26,6 +27,7 @@ void JB_ControlPoint_Activate(entity);
 void JB_ControlPoint_Deactivate(entity, float);
 void JB_ControlPoint_UpdateCooldownProgress(entity);
 string JB_ControlPoint_Name(entity);
+float JB_JailIsOpen(float);
 
 float JB_PlayerDies(entity);
 void JB_PlayerSpawn();
@@ -46,6 +48,7 @@ void JB_RemovePlayer();
 .float jb_team_initial;
 .float jb_defendthink_next;
 .float jb_message;
+.float jb_jaildm_aggressive;
 
 .entity jb_prisonedby;
 .entity jb_prisoned_by;

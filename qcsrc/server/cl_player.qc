@@ -585,6 +585,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		{
 			self.armorvalue = self.armorvalue - save;
 			self.health = self.health - take;
+            
+            if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
+                self.health = max(1, self.health);  // the best way to win a fight is to avoid it
+            
 			// pause regeneration for 5 seconds
 			self.pauseregen_finished = max(self.pauseregen_finished, time + cvar("g_balance_pause_health_regen"));
 

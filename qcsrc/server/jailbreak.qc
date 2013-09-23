@@ -30,6 +30,7 @@ void JB_Init() {
     addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
     addstat(STAT_JBMSG, AS_INT, jb_message);
     
+    g_jailbreak_jail_deathmatch = cvar("g_jailbreak_jail_deathmatch");
     InitializeEntity(world, JB_DelayedInit, INITPRIO_GAMETYPE);
 }
 
@@ -170,6 +171,7 @@ void JB_Imprison(entity attacker) {
     
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
+    self.jb_jaildm_aggressive = FALSE;
 	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
@@ -206,6 +208,11 @@ void JB_Release(entity saviour) {
 	
 	self.jb_isprisoned = FALSE;
 	
+    if(g_jailbreak_jail_deathmatch) {
+        self.health = max(self.health, cvar("g_jailbreak_prisoner_health"));
+        self.armorvalue = max(self.armorvalue, cvar("g_jailbreak_prisoner_armor"));
+    }
+    
 	if(g_handgrenades)
     if(!cvar("g_handgrenades_regen_time"))
 		HG_PlayerSpawn();
@@ -556,7 +563,8 @@ float JB_PlayerDies(entity frag_attacker) {
 	DEPENDON_F(g_jailbreak && JB_GAME_ACTIVE, 0)
 	
 	if(!self.jb_isprisoned) {
-		self.health = 100;
+		self.health = cvar("g_jailbreak_prisoner_health");
+		self.armorvalue = cvar("g_jailbreak_prisoner_armor");
 	
 		if(frag_attacker == self || !frag_attacker)
 			PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));

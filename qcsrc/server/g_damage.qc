@@ -299,17 +299,27 @@ void LogDeath(string mode, float deathtype, entity killer, entity killed)
 	GameLogEcho(s);
 }
 
-//<akari>
 .float pushltime;
 .float rage;
 .float lastkill;
-//</akari>
+
+float CheckJailDM(entity attacker, entity targ) {
+    if(g_jailbreak)
+    if(g_jailbreak_jail_deathmatch)
+    if(targ.team == attacker.team)
+    if(targ.jb_isprisoned)
+    if(attacker.jb_isprisoned)
+    if(!JB_JailIsOpen(targ.team))
+        return TRUE;
+    return FALSE;
+}
 
 void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 {
 	string	s, a;
 	float p, w;
     float spawnfrag;
+    float jaildm;
 
 	local float maxrage = 5;
 	local float rage_timeout = 3;
@@ -330,6 +340,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 	}
     
+    jaildm = CheckJailDM(attacker, targ);
     targ.hg_shield = 0;
     
     DPS_Finish(targ);
@@ -358,7 +369,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			else
 				ragemeter = strcat(ragemeter, "");
 
-			i++;
+			++i;
 		}
 		if(attacker.rage-1 >= maxrage)
 			ragemeter = strcat(ragemeter, "");
@@ -498,7 +509,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 		else if (attacker.classname == "player" || attacker.classname == "gib")
 		{
-			if(teams_matter && attacker.team == targ.team)
+			if(teams_matter && attacker.team == targ.team && !jaildm)
 			{
 				if(sv_gentle) {
 					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
@@ -746,7 +757,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					hudflash_teamcolor_default_spec(attacker);
 					GiveFrags(attacker, inflictor, targ, 0); // for logging
 				}
-				else if(!spawnfrag)
+				else if(!spawnfrag && !jaildm)
 					GiveFrags(attacker, inflictor, targ, 1);
 
 				if (targ.killcount > 2) {
@@ -953,15 +964,15 @@ entity damage_targ;
 entity damage_inflictor;
 entity damage_attacker;
 
-//<akari>
 .float ignore_next;
-//</akari>
+.float dmg_jaildm;
 
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	float mirrordamage;
 	float mirrorforce;
 	float teamdamage0;
+    float jaildm;
 	entity attacker_save;
 	mirrordamage = 0;
 	mirrorforce = 0;
@@ -976,10 +987,15 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	// By the way, this function is one of the messiest pieces of code here, it could compete with vip.qc ;)
 	float targ_is_player = (targ.classname == "player");
 	float attacker_is_player = (attacker.classname == "player");
-
-	if(g_jailbreak && jb_roundover && targ_is_player)
-		damage = damage * cvar("g_jailbreak_torture_damagefactor");
-		
+    
+    if(g_jailbreak && targ_is_player && jb_roundover)   
+        damage = damage * cvar("g_jailbreak_torture_damagefactor");
+    else {
+        jaildm = CheckJailDM(attacker, targ);
+        if(jaildm)
+            attacker.jb_jaildm_aggressive = TRUE;
+    }
+    
 	local float t_oldhealth = targ.health;
 	local float t_oldarmor = targ.armorvalue;
 
@@ -1049,6 +1065,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					damage = damage * bound(0.1, (skill + 5) * 0.1, 1);
 			
 			if(g_jailbreak)
+            if(!jaildm)
 			if not(DEATH_ISSPECIAL(deathtype)) {
 				if(targ.jb_isprisoned)
 					damage = damage * cvar("g_jailbreak_prisonerdamagefactor_take");
@@ -1076,6 +1093,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		}
         
 		// nullify damage if teamplay is on
+        if(!jaildm)
 		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC)
 		if(attacker_is_player)
 		{
@@ -1394,7 +1412,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
 			if(targ_is_player)
 			{
-				if(IsDifferentTeam(targ, attacker))
+				if(IsDifferentTeam(targ, attacker) || jaildm)
 				{
 					if(damage > 0)
 					{
@@ -1465,13 +1483,15 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		UpdateCSQCProjectile(self);
 	}
 	// apply damage
-	if (damage != 0 || (self.damageforcescale && vlen(force)))
-	if (self.event_damage) {
-		self.event_damage (inflictor, attacker, damage, deathtype, hitloc, force);
+	if(damage || (self.damageforcescale && vlen(force)))
+	if(self.event_damage) {
+        self.dmg_jaildm = jaildm;
+		self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
-            self.lastdamage = time;
-            entity e;
+            if(!teams_matter || self.team != attacker.team)
+                self.lastdamage = time;
             
+            entity e;
             if(g_jailbreak && self.jb_unlock_progress) {
                 FOR_EACH_JB_CONTROLPOINT(e)
                     if(e.jb_capturingplayer == self)
