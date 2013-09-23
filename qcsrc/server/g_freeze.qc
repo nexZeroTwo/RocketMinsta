@@ -178,6 +178,9 @@ void Freeze_UnfreezePlayer(entity plr)
         plr.iceblock = world;
     }
     
+    if(plr.freeze_waypoint)
+        WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
+    
     if(g_handgrenades) {
         if(cvar("g_handgrenades_regen_time")) {
             plr.hg_bonus = 0;
@@ -329,10 +332,6 @@ entity Freeze_SpawnIceBlock(entity plr) {
     ice.effects |= EF_ADDITIVE;
     setmodel(ice, "models/ice/ice.md3");
     setorigin(ice, plr.origin - '0 0 16');
-    
-    if(Freeze_CVar("iceblocks_teamcolored"))
-        ice.skin = TeamColorSkin(plr.team);
-    
     plr.iceblock = ice;
     
     if(Freeze_CVar("freezesound"))
@@ -389,6 +388,12 @@ void Freeze_Hook_PlayerPreThink(void) {
     
     if(!self.iceblock)
         Freeze_SpawnIceBlock(self);
+    
+    if(self.iceblock.team != self.team) {
+        if(Freeze_CVar("iceblocks_teamcolored"))
+            self.iceblock.skin = TeamColorSkin(self.team);
+        self.iceblock.team = self.team;
+    }
     
     if(!self.freeze_waypoint) {
         PlayerScore_Set(self, SP_FROZENSTATUS, 1);
