@@ -314,7 +314,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     else if(r) if(self.frozenrow >= r) {
         Freeze_RespawnPlayer(self);
         if(self.frozenrow > 1)
-            bigprint_spec(self, "", strcat("^5You were moved to a random spawm point after dying ", ftos(self.frozenrow), " times in a row"), 5);
+            bigprint_spec(self, "", strcat("^5You were moved to a random spawn point after dying ", ftos(self.frozenrow), " times in a row"), 5);
         self.frozenrow = 0;
     }
     
