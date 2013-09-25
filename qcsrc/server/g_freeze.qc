@@ -189,7 +189,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
             PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar("penalty_teamkill"));
     }
     
-    PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+    PlayerScore_Set(plr, SP_FROZENSTATUS, 1);
     Freeze_RecountPlayers();
 }
 
@@ -218,7 +218,7 @@ void Freeze_UnfreezePlayer(entity plr)
         } else HG_PlayerSpawnEx(plr);
     }
     
-    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    PlayerScore_Set(plr, SP_FROZENSTATUS, 0);
     Freeze_RecountPlayers();
 }
 
