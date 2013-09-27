@@ -1015,6 +1015,7 @@ void ReadyRestartForce()
 
 	readyrestart_happened = 1;
 	game_starttime = time + RESTART_COUNTDOWN;
+    roundstate = ROUNDSTATE_PREGAME;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage

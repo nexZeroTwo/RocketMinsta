@@ -2005,7 +2005,10 @@ void CheckRules_World()
 {
 	float timelimit;
 	float fraglimit;
-
+    
+    if(!realclients)
+        return;
+    
 	VoteThink();
 	MapVote_Think();
 

@@ -695,6 +695,7 @@ void end_match(float);
 float shooting_forbidden;
 
 float totalclients;
+float realclients;
 .float spawninarena;
 
 typedef void() spawnfunc_t;

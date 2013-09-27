@@ -1872,8 +1872,13 @@ void ClientConnect (void)
     self.hg_type_picked_nextround = -1;
     self.hg_optout_nextround = -1;
 
-    
-	totalclients++;
+    totalclients++;
+    if(clienttype(self) == CLIENTTYPE_REAL) {
+        realclients++;
+        
+        if(realclients == 1 && time > game_starttime)
+            ReadyRestart();
+    }
 }
 
 /*
@@ -1985,7 +1990,10 @@ void ClientDisconnect (void)
 
 	// free cvars
 	GetCvars(-1);
-	totalclients--;
+    
+    totalclients--;
+    if(clienttype(self) == CLIENTTYPE_REAL)
+        realclients--;
 }
 
 .float BUTTON_CHAT;
