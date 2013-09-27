@@ -309,7 +309,7 @@ float CheckJailDM(entity attacker, entity targ) {
     if(targ.team == attacker.team)
     if(targ.jb_isprisoned)
     if(attacker.jb_isprisoned)
-    if(!JB_JailIsOpen(targ.team))
+    if(!JB_JailIsOpen(JB_GetEnemyTeamOf(targ.team)))
         return TRUE;
     return FALSE;
 }
