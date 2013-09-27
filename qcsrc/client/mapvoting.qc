@@ -7,7 +7,6 @@ string mv_pk3[MAPVOTE_COUNT];
 float mv_preview[MAPVOTE_COUNT];
 float mv_votes[MAPVOTE_COUNT];
 float mv_avail[MAPVOTE_COUNT];
-float mv_drawangles[MAPVOTE_COUNT];
 float mv_hoveralpha[MAPVOTE_COUNT];
 float mv_removetime[MAPVOTE_COUNT];
 entity mv_pk3list;
@@ -17,7 +16,6 @@ float mv_detail;
 float mv_timeout;
 float mv_maps_mask;
 float mv_starttime;
-float mv_gtvote_previewangle;
 
 #define PREVIEW_FROMSERVER 2
 
@@ -196,11 +194,11 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	vector img_size;
 	vector rgb;
 	vector txtpos;
+    float origsize;
 	string label;
 	float text_size;
 
 	float alpha = 1 - pow(bound(0, (time - mv_starttime), 1) - 1, 2);
-	float angle = alpha * mv_drawangles[id];
 	float ha = 	ipol_swingInOut(mv_hoveralpha[id]);
 				//((id == mv_selection)? ipol_swingOut : ipol_swingIn)(mv_hoveralpha[id]);
 	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
@@ -211,9 +209,6 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	if(mv_votes[id] < 0)
 		alpha2 = 1 - bound(0, time - mv_removetime[id], 1) * 0.7;
 	
-	if(fromserver)
-		angle = 0;
-	
 	if(sv_oldfag) {
 		alpha = 1;
 		
@@ -221,6 +216,7 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 			alpha2 = 0.3;
 	}
 	
+    origsize = isize;
 	isize *= alpha + ha * 0.07;
 	isize -= sbar_fontsize_y; // respect the text when calculating the image size
 
@@ -240,19 +236,14 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	txtpos = pos;
 
 	pos_x = pos_x + text_size*0.5 - img_size_x*0.5;
-	pos_y = pos_y - img_size_y;
+	pos_y = pos_y - img_size_y - (isize - origsize) * 0.5;
 
-	if(sv_oldfag) {
-		pos += sbar_border_thickness * '1 1 0';
-		img_size -= (sbar_border_thickness * 2) * '1 1 0';
-		drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
-	}
+    pos += sbar_border_thickness * '1 1 0';
+    img_size -= (sbar_border_thickness * 2) * '1 1 0';
+    drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
 
 	if(pic != "") {
-		if(!fromserver)
-			drawpic_rotated(pos, pic, img_size, '1 1 1' * alpha2, angle, alpha * alpha2, DRAWFLAG_NORMAL);
-		else
-			drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
+        drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
 	}
 
 	vector hs = img_size * 0.5;
@@ -389,15 +380,11 @@ void MapVote_Draw()
         
         o_x = vid_conwidth - txtoffset - img_fullsize_x;
 		o_y = sbar_fontsize_y * 10;
-
-		//drawborderlines(sbar_border_thickness, o, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
-		
-		if(mapvote_choosenmappic != "") {
-			if(mv_gtvote_previewangle == 0)
-				drawpic(o + 0.5 * (img_fullsize - img_size), mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
-			else
-				drawpic_rotated(o + 0.5 * (img_fullsize - img_size), mapvote_choosenmappic, img_size, '1 1 1', mv_gtvote_previewangle * rawalpha, alpha, DRAWFLAG_NORMAL);
-		}
+        
+        vector o2 = o + 0.5 * (img_fullsize - img_size);
+        drawborderlines(sbar_border_thickness, o2, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
+        if(mapvote_choosenmappic != "")
+            drawpic(o2, mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
 
 		vector sz = sbar_fontsize * alpha;
 		img_size = img_fullsize;
@@ -572,8 +559,8 @@ void MapVote_Init()
 
 	gametypevote = ReadByte();
 
-	if(gametypevote)
-	{
+    if(gametypevote)
+    {
         string cmap = ReadString();
         string cpic;
         
@@ -587,13 +574,8 @@ void MapVote_Init()
         mapvote_choosenmap 		= strzone(cmap);
         mapvote_choosenmappic 	= strzone(cpic);
         
-		print("^5Now decide the GAMETYPE!\n");
-		
-		if(!sv_oldfag && PreviewExists(mapvote_choosenmappic))
-			mv_gtvote_previewangle = PI * 0.15 * (random() - 0.5);
-		else
-			mv_gtvote_previewangle = 0;
-	}
+    print("^5Now decide the GAMETYPE!\n");
+    }
 
 	if(mv_num_maps <= 8)
 		mv_maps_mask = ReadByte();
@@ -609,9 +591,7 @@ void MapVote_Init()
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
 	{
 		mv_votes[i] = 0;
-		if(!sv_oldfag)
-			mv_drawangles[i] = PI * 0.15 * (random() - 0.5);
-
+        
 		if(mv_maps_mask & power)
 		{
             map = strzone(ReadString());
