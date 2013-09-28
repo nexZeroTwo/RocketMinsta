@@ -2558,6 +2558,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_regenpaused = spectatee.hg_regenpaused;
     self.hg_launchspeed = spectatee.hg_launchspeed;
     self.hg_shield = spectatee.hg_shield;
+    self.hg_shieldpower = spectatee.hg_shieldpower;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;

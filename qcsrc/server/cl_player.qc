@@ -495,9 +495,10 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
     if(self.hg_shield)
     if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE) {
         vector offs = '0 0 1' * self.maxs_z*0.5;
-        float reflect = damage * cvar("g_handgrenades_shield_damage_reflect");
-        float absorb = damage * (1-cvar("g_handgrenades_shield_damage_take"));
-        damage *= cvar("g_handgrenades_shield_damage_take");
+        float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
+        float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
+        float absorb = damage * (1 - takefactor);
+        damage *= takefactor;
         
         if(DEATH_ISHG(deathtype))
             reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");

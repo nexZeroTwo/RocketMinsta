@@ -3360,7 +3360,8 @@ void Sbar_HGShield(void) {
     else
         vshield = approach(vshield, 0, frametime * 3);
     
-    drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '1 1 0.2', 0.1 * vshield, DRAWFLAG_ADDITIVE);
+    if(vshield)
+        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER), 0.1 * vshield, DRAWFLAG_ADDITIVE);
 }
 
 string jb_str;

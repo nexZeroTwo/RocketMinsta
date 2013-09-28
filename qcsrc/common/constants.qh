@@ -282,7 +282,7 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 
 
 const float STAT_FROZEN = 66;
-const float STAT_REVIVE_PROGRESS = 89;
+const float STAT_REVIVE_PROGRESS = 67;
 const float STAT_REDALIVE = 68;
 const float STAT_BLUEALIVE = 69;
 const float STAT_YELLOWALIVE = 70;
@@ -304,6 +304,7 @@ const float STAT_HGLAUNCH = 85;
 const float STAT_HGSHIELD = 86;
 const float STAT_HGTYPE = 87;
 const float STAT_JBMSG = 88;
+const float STAT_HGSHIELDPOWER = 89;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;

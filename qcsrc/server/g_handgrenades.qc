@@ -10,6 +10,7 @@ void HG_Init() {
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
     addstat(STAT_HGSHIELD, AS_FLOAT, hg_shield);
+    addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
@@ -722,15 +723,19 @@ void HG_ShieldModel_Think() {
         return;
     }
     
+    self.colormod = '1 1 0';
+    self.colormod_z = 1 - self.owner.hg_shieldpower;
     setorigin(self, self.owner.origin);
     self.nextthink = time;
 }
 
-void HG_Shield() {
+void HG_Shield(float hgtype) {
     entity e;
     
-    self.hg_shield = GRENVAR(self.hg_type, "duration");
-    self.hg_shieldhealth = GRENVAR(self.hg_type, "health");
+    self.hg_shieldmax = GRENVAR(hgtype, "duration");
+    self.hg_shield = self.hg_shieldmax;
+    self.hg_shieldhealth = GRENVAR(hgtype, "health");
+    self.hg_shieldpower = 1;
     //sound(self, CHAN_PROJECTILE, "misc/powerup_shield", VOL_BASE, ATTN_NORM);
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
@@ -742,11 +747,12 @@ void HG_Shield() {
         e.nextthink = time;
         e.alpha = 0.1;
         e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-        e.colormod = '1 1 0';
         e.glow_size = 256;
         e.glow_color = 230;
         e.glow_trail = 1;
         e.avelocity = '14 0 22';
+        e.movetype = MOVETYPE_FOLLOW;
+        e.aiment = e.owner;
         setorigin(e, self.origin);
         setmodel(e, "models/ctf/shield.md3");
         e.scale = 0.5;
@@ -757,10 +763,16 @@ void HG_Shield() {
 }
 
 void HG_Shield_Frame() {
+    if(!self.hg_shield)
+        return;
+    
     if(self.hg_shieldhealth <= 0)
         self.hg_shield = 0;
-    else
+    else {
         self.hg_shield = max(0, self.hg_shield - frametime);
+        if(cvar("g_handgrenades_shield_diminish"))
+            self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
+    }
 }
 
 void HG_Attack()
@@ -789,7 +801,7 @@ void HG_Attack()
     
     if(hgtype == HG_SHIELD) {
         // shield is special - it's not actually a projectile
-        HG_Shield();
+        HG_Shield(hgtype);
         goto finish;
     }
     
