@@ -791,7 +791,9 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 			// clear selected player display
 			ClearSelectedPlayer();
 			// throw a weapon
-			SpawnThrownWeapon (self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
+            
+            if(!g_jailbreak)
+                SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
 		// print an obituary message
