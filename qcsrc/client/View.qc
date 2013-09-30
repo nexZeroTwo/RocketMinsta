@@ -83,6 +83,30 @@ void Porto_Draw()
 	}
 }
 
+.float plasma_drawn;
+void Plasma_Draw() {
+    entity e, n, p = findchainfloat(cnt, PROJECTILE_ELECTRO);
+    string tex;
+    
+    for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
+        switch(e.team) {
+            case COLOR_TEAM1: tex = "particles/hook_red";       break;
+            case COLOR_TEAM2: tex = "particles/hook_blue";      break;
+            case COLOR_TEAM3: tex = "particles/hook_yellow";    break;
+            case COLOR_TEAM4: tex = "particles/hook_pink";      break;
+            default         : tex = "particles/hook_blue";      break;
+        }
+        
+        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
+            float a; for(a = 0; a < 2; ++a) if(random() > (0.5 + 0.1 * a))
+                Draw_CylindricLine(n.origin + randomvec() * 5, e.origin + randomvec() * 5, 20 + a * 5, tex, 0.1, random(), '1 1 1', 1, DRAWFLAG_ADDITIVE);
+            //n.plasma_drawn = time;
+        }
+        
+        e.plasma_drawn = time;
+    }
+}
+
 /**
  * Checks whether the server initiated a map restart (stat_game_starttime changed)
  *
@@ -593,6 +617,7 @@ void CSQC_UpdateView(float w, float h)
 		if(self.draw)
 			self.draw();
 	self = e;
+    Plasma_Draw();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();

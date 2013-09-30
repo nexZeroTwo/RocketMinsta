@@ -222,9 +222,26 @@ void HG_Plasma_Projectile_Explode() {
 }
 
 void HG_Plasma_Projectile_Think() {
+    entity e;
+    float found;
+    
     if(time >= self.hg_detonatetime) {
         HG_Plasma_Projectile_Explode();
         return;
+    }
+    
+    if(self.hg_plasma_projdist) {
+        for(e = world; (e = findfloat(e, csqcprojectile_extradata, self.csqcprojectile_extradata));) if(e != self)
+            if(e.owner == self.owner) if(e.projectiledeathtype == self.projectiledeathtype)
+            if(vlen(self.origin - e.origin) < self.hg_plasma_projdist) {
+                found = TRUE;
+                break;
+            }
+        
+        if(!found) {
+            HG_Plasma_Projectile_Explode();
+            return;
+        }
     }
     
     if(time > self.hg_plasma_projdps_next) {
@@ -293,8 +310,10 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projrange = cvar("g_handgrenades_plasma_projectile_dps_range");
     proj.hg_plasma_projdps = cvar("g_handgrenades_plasma_projectile_dps");
     proj.hg_plasma_projdps_delay = cvar("g_handgrenades_plasma_projectile_dps_delay");
+    proj.hg_plasma_projdist = cvar("g_handgrenades_plasma_projectile_maxdistance");
     proj.hg_plasma_projdps_last = time;
     proj.hg_plasma_projdps_next = time + proj.hg_plasma_projdps_delay;
+    proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
@@ -302,12 +321,13 @@ void HG_Plasma_Projectile() {
 }
 
 void HG_Plasma_Explode() {
-    local float c;
-	for (c = 0; c < cvar("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
+    float c;
+    ++hg_plasma_group;
+    for (c = 0; c < cvar("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
 }
 
 void HG_Remote_Explode() {
-    local float c;
+    float c;
     for (c = 0; c < cvar("g_handgrenades_remote_numparticles"); c ++) HG_Napalm();
 }
 

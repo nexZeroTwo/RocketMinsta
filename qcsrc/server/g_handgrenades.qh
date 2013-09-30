@@ -65,6 +65,7 @@ float HG_RegenTime(entity);
 .float hg_plasma_projdps_delay;
 .float hg_plasma_projdps_next;
 .float hg_plasma_projdps_last;
+.float hg_plasma_projdist;
 
 // for hud only
 .float hg_regenstat;
@@ -75,6 +76,8 @@ float HG_RegenTime(entity);
 
 float g_handgrenades_oldhitboxes;
 float g_handgrenades_detonatelaunches;
+
+float hg_plasma_group;
 
 #define BUTTON_HG ((g_handgrenades_detonatelaunches)? hg_detonatepressed : button6)
 #define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))

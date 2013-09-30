@@ -409,7 +409,8 @@ void Ent_Projectile()
 		self.cnt = ReadByte();
         self.team = ReadByte() - 1;
 
-        if(self.cnt == PROJECTILE_HG_NAPALMSHARD)
+        if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
+           self.cnt == PROJECTILE_ELECTRO)
             self.extradata = ReadByte();
 
 		self.silent = (self.cnt & 0x80);
