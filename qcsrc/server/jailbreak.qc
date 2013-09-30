@@ -155,6 +155,11 @@ void JB_Imprison(entity attacker) {
 		return;
 	}
 	
+    self.jb_had_unlimited_ammo = (self.items & IT_UNLIMITED_WEAPON_AMMO);
+    
+    if(!self.jb_had_unlimited_ammo)
+        self.items |= IT_UNLIMITED_WEAPON_AMMO;
+        
 	self.jb_fragrow = 0;
 	
 	if(attacker.classname == "player")
@@ -234,7 +239,10 @@ void JB_Release(entity saviour) {
 	}
 	
 	self.jb_isprisoned = FALSE;
-	
+    
+    if(!self.jb_had_unlimited_ammo)
+        self.items &~= IT_UNLIMITED_WEAPON_AMMO;
+    
     if(g_jailbreak_jail_deathmatch) {
         self.health = max(self.health, cvar("g_jailbreak_prisoner_health"));
         self.armorvalue = max(self.armorvalue, cvar("g_jailbreak_prisoner_armor"));
