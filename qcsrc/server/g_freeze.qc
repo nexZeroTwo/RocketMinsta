@@ -175,7 +175,11 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     
     if(!plr.iceblock)
         Freeze_SpawnIceBlock(plr);
-    
+        
+    plr.iceblock.team = plr.team;
+    if(Freeze_CVar("iceblocks_teamcolored"))
+        plr.iceblock.skin = TeamColorSkin(plr.team);
+        
     if(!plr.freeze_waypoint)
         Freeze_SpawnWaypoint(plr);
     
