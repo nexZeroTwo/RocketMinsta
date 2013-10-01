@@ -1152,7 +1152,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			{
 				force = '0 0 0';
 
-				if(attacker_is_player) if(targ_is_player)
+				if(roundstate != ROUNDSTATE_OVER) if(attacker_is_player) if(targ_is_player)
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
 
