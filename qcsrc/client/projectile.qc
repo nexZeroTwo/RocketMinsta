@@ -98,6 +98,7 @@ void Projectile_DrawTrail(vector to)
 		switch(self.cnt)
 		{
             case PROJECTILE_HG_NAPALMSHARD:
+                break;
             case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
 				to_z += 1;
