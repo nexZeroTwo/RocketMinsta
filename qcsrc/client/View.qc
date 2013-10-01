@@ -89,13 +89,13 @@ void Plasma_Draw() {
     string tex;
     
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
-        switch(e.team) {
+        if(rm_teamlasers) switch(e.team) {
             case COLOR_TEAM1: tex = "particles/hook_red";       break;
             case COLOR_TEAM2: tex = "particles/hook_blue";      break;
             case COLOR_TEAM3: tex = "particles/hook_yellow";    break;
             case COLOR_TEAM4: tex = "particles/hook_pink";      break;
             default         : tex = "particles/hook_blue";      break;
-        }
+        }   else              tex = "particles/hook_blue";
         
         for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
             float a; for(a = 0; a < 2; ++a) if(random() > (0.5 + 0.1 * a))
