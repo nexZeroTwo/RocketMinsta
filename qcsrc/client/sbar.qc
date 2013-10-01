@@ -3352,7 +3352,7 @@ float vshield;
 
 float revmode;
 
-void Sbar_HGShield(void) {
+void Sbar_DrawHGShield(void) {
     float s = getstatf(STAT_HGSHIELD);
     
     if(s)
@@ -3362,6 +3362,40 @@ void Sbar_HGShield(void) {
     
     if(vshield)
         drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER), 0.1 * vshield, DRAWFLAG_ADDITIVE);
+}
+
+float hg_bonusalpha;
+float hg_lastbonus;
+void Sbar_DrawHGBonus(void) {
+    float num, hgtype, a, sw, spacing = 4;
+    vector fs, o;
+    string s;
+    
+    num = getstati(STAT_HGBONUS);
+    hg_bonusalpha = approach(hg_bonusalpha, (num > 0), frametime * 2);
+    
+    if(!hg_bonusalpha)
+        return;
+    
+    if(num > 0)
+        hgtype = hg_lastbonus = getstati(STAT_HGBONUSTYPE);
+    else
+        hgtype = hg_lastbonus;
+    
+    a = sbar_alpha_fg * ipol_swingInOut(hg_bonusalpha) * (0.9 + 0.1 * sin(time * 5));
+    fs = '32 32 0' * a;
+    o = '0.5 0 0' * vid_conwidth + '0 1 0' * (vid_conheight - 85);
+    
+    drawfont = sbar_bigfont;
+    s = strcat(HG_TypeToExpandedName(hgtype), "!", ((num > 1)? strcat(" x", ftos(num)) : ""));
+    sw = stringwidth(s, FALSE) + 1;
+    o_x -= (spacing + fs_x * sw) * 0.5;
+    
+    drawpic(o, strcat("gfx/nades/", HG_TypeToName(hgtype), "_large"), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    o_x += fs_x + spacing;
+    drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
+    drawfont = sbar_font;
+    
 }
 
 string jb_str;
@@ -3413,7 +3447,7 @@ void Sbar_Draw(void)
 	float x, fade;
 	float stat_items, stat_weapons;
 
-    Sbar_HGShield();
+    Sbar_DrawHGShield();
 
 	weapon_stats = getstati(STAT_DAMAGE_HITS);
  	weapon_number = weapon_stats & 63;
@@ -4958,8 +4992,10 @@ void Sbar_Draw(void)
 		else if(gametype == GAME_VIP)
 			CSQC_vip_hud(teamhud_pos);
 	}
+    
+    if(g_handgrenades)
+        Sbar_DrawHGBonus();
 
-	
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)
 	{
