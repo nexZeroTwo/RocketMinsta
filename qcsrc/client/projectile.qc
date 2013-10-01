@@ -98,7 +98,7 @@ void Projectile_DrawTrail(vector to)
 		switch(self.cnt)
 		{
             case PROJECTILE_HG_NAPALMSHARD:
-                break;
+                goto flame;
             case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
 				to_z += 1;
@@ -203,6 +203,7 @@ void Projectile_DrawTrail(vector to)
 			break;
         case PROJECTILE_HG_NAPALMSHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
+:flame
             if(time >= self.nextparticle) {
                 vector v = randomvec();
                 v_z = (v_z + 1) * 0.25;
