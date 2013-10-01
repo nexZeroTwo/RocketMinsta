@@ -34,7 +34,6 @@
         TIMETRAVEL_HANDLE(weapon_think,                 VoidFunc)   \
         TIMETRAVEL_HANDLE(frozen,                       Float)      \
         TIMETRAVEL_HANDLE(freezetime,                   Time)       \
-        TIMETRAVEL_HANDLE(revrow,                       Float)      \
         TIMETRAVEL_HANDLE(jb_isprisoned,                Float)      \
         TIMETRAVEL_HANDLE(jb_prisontime,                Time)       \
         TIMETRAVEL_HANDLE(disableclientprediction,      Float)      \

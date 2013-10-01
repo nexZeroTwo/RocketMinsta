@@ -1297,6 +1297,9 @@ void PutClientInServer (void)
 		self.lms_traveled_distance = 0;
 		self.speedrunning = FALSE;
 
+        self.revrow = 0;
+        self.jb_fragrow = 0;
+
 		race_PostSpawn(spot);
 
 		if(cvar("spawn_debug"))
@@ -1341,7 +1344,7 @@ void PutClientInServer (void)
                 HG_PlayerJoin();
         }
         
-		Boobs_Attach();
+        Boobs_Attach();
         self.wasingame = TRUE;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
