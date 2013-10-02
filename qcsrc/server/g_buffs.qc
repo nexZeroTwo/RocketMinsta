@@ -226,6 +226,9 @@ void Buffs_BuffPickup_Reset(void) {
     self.owner = world;
     self.buff_activetime = cvar("g_buffs_activate_delay");
     self.buff_active = !self.buff_activetime;
+    
+    if(self.buff_waypoint)
+        WaypointSprite_UpdateMaxHealth(self.buff_waypoint, 0);
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
