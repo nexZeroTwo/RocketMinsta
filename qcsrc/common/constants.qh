@@ -47,6 +47,7 @@ const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_SERVERINFO = 118;
+const float TE_CSQC_ARC = 119;
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -307,6 +308,7 @@ const float STAT_JBMSG = 88;
 const float STAT_HGSHIELDPOWER = 89;
 const float STAT_HGBONUS = 90;
 const float STAT_HGBONUSTYPE = 91;
+const float STAT_BUFFS = 92;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
@@ -502,6 +504,7 @@ float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 float DEATH_NOISE = 10101;
+float DEATH_ARC = 10102;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;

@@ -26,7 +26,10 @@ float W_WeaponRateFactor()
 			t = t * cvar("g_balance_curse_slow_atkrate");
 		}
 	}
-
+    
+    if(BUFFS_PRESENT(self, BUFF_HASTE))
+        t *= cvar("g_buffs_haste_refire_rate");
+    
 	return t;
 }
 

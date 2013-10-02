@@ -1,0 +1,22 @@
+
+float g_buffs;
+float g_buffs_team_only;
+float g_buffs_stack;
+
+.float buffs;
+.float oldbuffs;
+.float buffs_arc_hit;
+.float buff_active;
+.float buff_activetime;
+
+.entity buff_waypoint;
+.entity buff_model;
+
+#define BUFFS_GIVE(p,b) ((p).buffs |= (b))
+#define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))
+#define BUFFS_PRESENT(p,b) (((p).buffs & b) == (b) && !(p).hg_shield)
+
+void Buffs_Init(void);
+void Buffs_ClientFrame(void);
+void Buffs_ArcDamage(entity, entity, float, float);
+void Buffs_ArcDamage_Finalize(void);

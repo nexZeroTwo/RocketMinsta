@@ -480,7 +480,7 @@ void DropPowerups(vector force) {
 void Boobs_Clear();
 void Boobs_DropAll(vector);
 
-void PlayerDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
+void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
 	vector v;
@@ -488,12 +488,20 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 
 	dh = max(self.health, 0);
 	da = max(self.armorvalue, 0);
+    
+    if(self != attacker)
+    if(!DEATH_ISSPECIAL(deathtype))
+    if(deathtype != DEATH_ARC)
+    if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
+        Buffs_ArcDamage(self, attacker, damage, deathtype);
+        Buffs_ArcDamage_Finalize();
+    }
 
     if(damage)
     if(g_handgrenades)
     if(attacker.classname == "player")
     if(self.hg_shield)
-    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE) {
+    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC) {
         vector offs = '0 0 1' * self.maxs_z*0.5;
         float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
         float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
@@ -714,8 +722,14 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
 				}
 				
-				wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
-				if(!cvar("sv_extendfragmessages")) wpnstring = "";
+                wpnstring = "";
+                
+                if(cvar("sv_extendfragmessages")) {
+                    if(DEATH_ISHG(deathtype))
+                        wpnstring = strcat("^7", HG_TypeToExpandedName(deathtype));
+                    else if(!DEATH_ISSPECIAL(deathtype))
+                        wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
+                }
 				
 				if(attacker.classname == "player") if(attacker != targ)
 				{
@@ -801,6 +815,8 @@ void PlayerDamage (entity inflictor, entity attacker, float damage, float deatht
 		race_PreDie();
 		DropAllRunes(self);
 		
+        self.buffs = 0;
+        
 		prec_player_die(self, attacker);
 		DropPowerups(force);
 		sm_PlayerDies();

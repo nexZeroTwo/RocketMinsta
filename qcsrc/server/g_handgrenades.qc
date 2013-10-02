@@ -902,7 +902,7 @@ void HG_Attack()
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 
 :finish
-    self.hg_next = time + GV("cooldown");
+    self.hg_next = time + GV("cooldown") * (BUFFS_PRESENT(self, BUFF_HASTE)? cvar("g_buffs_haste_refire_rate") : 1);
     
     if(!freebonus) {
         self.hg_ammo -= 1;
@@ -994,6 +994,8 @@ void HG_Frame()
             if(g_freeze && self.frozen)
                 rate *= cvar("g_handgrenades_regen_frozenfactor");
             rate *= GRENVAR(self.hg_type, "regenscale");
+            if(BUFFS_PRESENT(self, BUFF_SUPPLY))
+                rate *= cvar("g_buffs_supply_hg_regenscale");
             
             self.hg_regentime -= rate;
             

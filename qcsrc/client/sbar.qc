@@ -3398,6 +3398,28 @@ void Sbar_DrawHGBonus(void) {
     
 }
 
+void Sbar_DrawBuffs(void) {
+    vector pos;
+    float buffs = getstati(STAT_BUFFS), sw, b;
+    string s;
+    
+    if(!buffs)
+        return;
+    
+    for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) if(buffs & b) {
+        string o = strcat(rgb_to_hexcolor(Buffs_TypeToColor(b)), Buffs_TypeToExpandedName(b));
+        if(s == "")
+            s = o;
+        else
+            s = strcat(s, " ", o);
+    }
+    
+    sw = stringwidth(s, TRUE);
+    pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
+    pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
+    drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
+}
+
 string jb_str;
 float jb_str_alpha;
 
@@ -4995,6 +5017,7 @@ void Sbar_Draw(void)
     
     if(g_handgrenades)
         Sbar_DrawHGBonus();
+    Sbar_DrawBuffs();
 
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)

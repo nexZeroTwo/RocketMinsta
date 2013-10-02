@@ -17,6 +17,7 @@ csqc_builtins.qc
 ../common/interpolation.qh
 ../common/dprm.qh
 ../common/handgrenades.qh
+../common/buffs.qh
 dprm.qh
 
 ../common/mapinfo.qh
@@ -76,3 +77,4 @@ dprm.qc
 ../common/ip2c.qc
 ../common/interpolation.qc
 ../common/handgrenades.qc
+../common/buffs.qc

@@ -834,6 +834,7 @@ void spawnfunc_worldspawn (void)
 	}
 	
     Freeze_Init();
+    Buffs_Init();
     
     sv_dps = cvar("sv_dps");
     g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");

@@ -814,6 +814,9 @@ void SV_PlayerPhysics()
 		maxspd_mod = cvar("g_nexball_basketball_carrier_speed");
 	}
     
+    if(BUFFS_PRESENT(self, BUFF_HASTE))
+        maxspd_mod *= cvar("g_buffs_haste_move_rate");
+    
     if(g_dodging)
         dodging_PlayerPhysics();
     Freeze_Hook_PlayerPhysics();

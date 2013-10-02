@@ -735,7 +735,9 @@ void PutObserverInServer (void)
 	//if(!spot)
 	//	error("No spawnpoints for observers?!?\n");
 	RemoveGrapplingHook(self); // Wazat's Grappling Hook
-
+    
+    self.buffs = 0;
+    
 	if(clienttype(self) == CLIENTTYPE_REAL)
 	{
 		msg_entity = self;
@@ -1114,8 +1116,7 @@ void PutClientInServer (void)
 		if(PlayerScore_Add(self, SP_LMS_RANK, 0) > 0)
 			self.classname = "observer";
 	}
-
-    self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
+    
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -1346,6 +1347,7 @@ void PutClientInServer (void)
         
         Boobs_Attach();
         self.wasingame = TRUE;
+        self.buffs = 0;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -2331,7 +2333,7 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 
 void player_regen (void)
 {
-	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod;
+	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
 	
 	if(g_vip) if(ISVIP(self))
 		return;
@@ -2345,6 +2347,8 @@ void player_regen (void)
 	limith = g_balance_health_limit;
 	limita = g_balance_armor_limit;
 	limitf = g_balance_fuel_limit;
+    aregen = cvar("g_balance_armor_regen");
+    hregen = cvar("g_balance_health_regen");
 
 	max_mod = regen_mod = rot_mod = limit_mod = 1;
 
@@ -2387,13 +2391,22 @@ void player_regen (void)
 	limita = limita * limit_mod;
 	//limitf = limitf * limit_mod;
 
+    if(BUFFS_PRESENT(self, BUFF_GUARD)) {
+        mina = max(mina, cvar("g_buffs_guard_armor"));
+        maxa = max(mina, maxa);
+        minh = max(maxh, cvar("g_buffs_guard_health"));
+        maxh = max(minh, maxh);
+        aregen = max(cvar("g_buffs_guard_armor_regen"), aregen);
+        hregen = max(cvar("g_buffs_guard_health_regen"), hregen);
+    }
+
 	if(g_lms)
 		rot_mod = 0;
 
 	if (!g_minstagib && (!g_lms || cvar("g_lms_regenerate")))
 	{
-		self.armorvalue = CalcRotRegen(self.armorvalue, mina, cvar("g_balance_armor_regen"), cvar("g_balance_armor_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxa, cvar("g_balance_armor_rot"), cvar("g_balance_armor_rotlinear"), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
-		self.health = CalcRotRegen(self.health, minh, cvar("g_balance_health_regen"), cvar("g_balance_health_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxh, cvar("g_balance_health_rot"), cvar("g_balance_health_rotlinear"), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
+		self.armorvalue = CalcRotRegen(self.armorvalue, mina, aregen, cvar("g_balance_armor_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxa, cvar("g_balance_armor_rot"), cvar("g_balance_armor_rotlinear"), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
+		self.health = CalcRotRegen(self.health, minh, hregen, cvar("g_balance_health_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxh, cvar("g_balance_health_rot"), cvar("g_balance_health_rotlinear"), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
 
 		// if player rotted to death...  die!
 		if(self.health < 1)
@@ -2571,6 +2584,7 @@ void SpectateCopy(entity spectatee) {
     self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
+    self.buffs = spectatee.buffs;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
@@ -2992,6 +3006,8 @@ void PlayerPreThink (void)
 		return;
 #endif
 
+    Buffs_ClientFrame();
+    
 	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
@@ -3000,7 +3016,7 @@ void PlayerPreThink (void)
         JB_PlayerPreThink();
         domination_PlayerPreThink();
         vip_PlayerPreThink();
-		CheckRules_Player();
+        CheckRules_Player();
 
 //		PrintWelcomeMessage(self);
 

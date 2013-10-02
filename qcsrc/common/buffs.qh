@@ -1,0 +1,15 @@
+
+#define BUFF_ARC        1
+#define BUFF_SUPPLY     2
+#define BUFF_GUARD      4
+#define BUFF_HASTE      8
+
+#define BUFF_FIRST      BUFF_ARC
+#define BUFF_LAST       BUFF_HASTE
+
+string Buffs_TypeToName(float);
+float Buffs_NameToType(string);
+string Buffs_TypeToExpandedName(float);
+string Buffs_NameToExpandedName(string);
+float Buffs_TypeToPaletteColor(float);
+vector Buffs_TypeToColor(float);
