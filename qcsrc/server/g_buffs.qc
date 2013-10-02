@@ -238,7 +238,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    bigprint(plr, strcat("You got the ", rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!"), "", 3);
+    bigprint_spec(plr, strcat("You got the ", rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!"), "", 3);
     sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
     BUFFS_GIVE(plr, self.buffs);
 }
