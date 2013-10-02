@@ -183,7 +183,7 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(!self.buff_active) {
-        self.alpha = 0.5;
+        self.alpha = 0.3;
         self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
         self.glow_size_saved = 0;
     } else {
