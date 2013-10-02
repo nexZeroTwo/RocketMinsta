@@ -1913,7 +1913,10 @@ void ClientDisconnect (void)
 	}
 
 	bot_clientdisconnect();
-
+    
+    if(self.buff_model)
+        remove(self.buff_model);
+    
 	if(self.entcs)
 		detach_entcs();
 
