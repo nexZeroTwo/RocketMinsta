@@ -816,6 +816,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		DropAllRunes(self);
 		
         self.buffs = 0;
+        self.fire_endtime = time;
         
 		prec_player_die(self, attacker);
 		DropPowerups(force);
