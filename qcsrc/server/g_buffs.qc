@@ -16,6 +16,38 @@ void Buffs_Init(void) {
     precache_model("models/buffs/buff_ring.md3");
     
     addstat(STAT_BUFFS, AS_INT, buffs);
+    InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
+}
+
+float buff_teamfound[4];
+void Buffs_Init_Delayed(void) {
+    entity blist, b;
+    float idx, teams_found, teams_total;
+    
+    if(!teams_matter)
+        return;
+    
+    teams_total = 4 + c1 + c2 + c3 + c4;
+    
+    blist = findchain(classname, "item_buff");
+    for(b = blist; b; b = b.chain) if(b.team) {
+        idx = Team_Index(b.team);
+        if(!buff_teamfound[idx]) {
+            buff_teamfound[idx] = TRUE;
+            ++teams_found;
+        }
+        
+        if(b.team == COLOR_TEAM3 && teams_total < 3 || b.team == COLOR_TEAM4 && teams_total < 4) {
+            b.think = Buffs_BuffPickup_Remove;
+            b.nextthink = time;
+        }
+    }
+    
+    if(teams_total > teams_found)
+    for(b = blist; b; b = b.chain) if(b.team) {
+        b.think = Buffs_BuffPickup_Remove;
+        b.nextthink = time;
+    }
 }
 
 float Buffs_BuffModel_Customize(void) {
@@ -306,6 +338,14 @@ void Buffs_BuffPickup_Setup(void) {
     setsize(self.enemy, self.mins, self.maxs);
     setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);
     setmodel(self.enemy, "models/buffs/buff_ring.md3");
+}
+
+void Buffs_BuffPickup_Remove(void) {
+    if(self.buff_waypoint)
+        WaypointSprite_Kill(self.buff_waypoint);
+    if(self.enemy)
+        remove(self.enemy);
+    remove(self);
 }
 
 // NOTE: Quake III: Team Arena compatibility is untested
