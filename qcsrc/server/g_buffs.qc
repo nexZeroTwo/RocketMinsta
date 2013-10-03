@@ -260,7 +260,7 @@ void Buffs_BuffPickup_Reset(void) {
     self.buff_active = !self.buff_activetime;
     
     if(self.buff_waypoint)
-        WaypointSprite_UpdateMaxHealth(self.buff_waypoint, 0);
+        WaypointSprite_Kill(self.buff_waypoint);
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
