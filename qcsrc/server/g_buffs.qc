@@ -351,11 +351,13 @@ void Buffs_BuffPickup_Remove(void) {
 // NOTE: Quake III: Team Arena compatibility is untested
 
 #define BUFF_SPAWNFUNC(e,b,t) void spawnfunc_item_buff_##e() { self.buffs = b; self.team = t; Buffs_BuffPickup_Setup(); }
-#define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,e) void spawnfunc_##o() {                      \
-                                            if(self.spawnflags & 2)                 \
+#define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,e) void spawnfunc_##o() {                        \
+                                            if(self.spawnflags & 2)                   \
                                                 spawnfunc_item_buff_##e##_team1();    \
-                                            else if(self.spawnflags & 4)            \
+                                            else if(self.spawnflags & 4)              \
                                                 spawnfunc_item_buff_##e##_team2();    \
+                                            else                                      \
+                                                spawnfunc_item_buff_##e();            \
                                         }
 
 BUFF_SPAWNFUNC(arc,             BUFF_ARC,       0)
