@@ -351,9 +351,10 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			// audit all key carrier sprites, update them to RUN HERE
 			FOR_EACH_KH_KEY(k)
 			{
-				if(k.owner)
-					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "keycarrier-friend", k.owner.waypointsprite_attachedforcarrier.model3);
+				if(k.owner) {
+					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "RUN HERE!", k.owner.waypointsprite_attachedforcarrier.model3);
                     WaypointSprite_UpdateTextColors(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.clr1, '0.2 1 1', k.owner.waypointsprite_attachedforcarrier.clr3);
+                }
 			}
 		}
 	}
