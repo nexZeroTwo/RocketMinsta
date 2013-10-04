@@ -7,6 +7,7 @@ void Buffs_Init(void) {
     g_buffs = cvar("g_buffs");
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
+    g_buffs_noteam = cvar("g_buffs_noteam");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -328,6 +329,9 @@ void Buffs_BuffPickup_Setup(void) {
         remove(self);
         return;
     }
+    
+    if(g_buffs_noteam)
+        self.team = 0;
     
     self.classname = "item_buff";
     self.flags = FL_ITEM;
