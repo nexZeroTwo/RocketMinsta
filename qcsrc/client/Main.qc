@@ -1929,18 +1929,6 @@ void Net_ReadClearBigPrint()
     //bigprint("", "", 0);
 }
 
-void Net_ReadSpeedRecord()
-{
-	if(speedrecord_string)
-		strunzone(speedrecord_string);
-	
-	float speedrecord = ReadShort();
-	string speedrecord_name = ReadString();
-	
-	speedrecord_string = strzone(strcat("Speed award: ", speedrecord_name, "^7 (", ftos(floor(speedrecord * (0.0254 * 3.6))), " km/h)"));
-	//print("Speed record: ", speedrecord_name, "^7 (", ftos(speedrecord), ")\n");
-}
-
 void Net_ReadHudFlash(float teamcolor)
 {
 	local float a, i, t;
@@ -2106,9 +2094,6 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
         case TE_CSQC_CLEARBIGPRINT:
             Net_ReadClearBigPrint();
-			return TRUE;
-        case TE_CSQC_SPEEDRECORD:
-			Net_ReadSpeedRecord();
 			return TRUE;
 		case TE_CSQC_HUDFLASH:
 			Net_ReadHudFlash(FALSE);

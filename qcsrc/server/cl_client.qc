@@ -1860,7 +1860,6 @@ void ClientConnect (void)
 	}
 	
 	self.g_minstagib_stat = g_minstagib;
-	SendSpeedRecord(self);
 	IP2C_SetCountry(self);
 	
 	if(self.scorekeeper)

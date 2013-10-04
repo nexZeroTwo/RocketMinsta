@@ -646,14 +646,8 @@ float keeptopic;
 .entity shownames;
 void shownames_think();
 
-float highest_velocity;
-entity highest_velocity_entity;
-string highest_velocity_name;
-
 .float killsound;
 .float instakillsound;
-
-float sv_speedaward_ownaccel;
 
 .float hud_old;
 .float hud_alt;

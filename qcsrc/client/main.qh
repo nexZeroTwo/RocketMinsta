@@ -242,8 +242,6 @@ float gametypevote_longest;
 string mapvote_choosenmap;
 string mapvote_choosenmappic;
 
-string speedrecord_string;
-
 void score_visual(float);
 
 #define MAX_SCORESTRINGS 10

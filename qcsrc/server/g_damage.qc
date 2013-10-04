@@ -1470,15 +1470,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		else
 			self.velocity = self.velocity * cvar("g_balance_push_velocityinfluence");
 
-		if(sv_speedaward_ownaccel)
-		if(attacker == targ)
-		if(self.classname == "player")
-		{
-			float myvel = vlen(self.velocity);
-			if(myvel > highest_velocity)
-				UpdateHighestVelocity(myvel, self);
-		}
-
 		self.flags &~= FL_ONGROUND;
 		UpdateCSQCProjectile(self);
 	}

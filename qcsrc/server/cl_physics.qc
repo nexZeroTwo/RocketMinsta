@@ -1277,12 +1277,4 @@ void SV_PlayerPhysics()
 
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
-
-	if(!sv_speedaward_ownaccel)
-	{
-		float myvel = vlen(self.velocity);
-		if(myvel > highest_velocity)
-		if(isplayer)
-			UpdateHighestVelocity(myvel, self);
-	}
 };

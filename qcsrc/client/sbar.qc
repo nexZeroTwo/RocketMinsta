@@ -1510,13 +1510,6 @@ void Sbar_DrawScoreboard()
 	drawcolorcodedstring(pos + '0.5 0 0' * (sbwidth - sbar_fontsize_x * stringwidth(str, TRUE)), str, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
-
-	if(speedrecord_string && !sv_oldfag)
-	{
-		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
-		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
-	}
-	
 	sbar_fontsize = sbar_fontsize_old;
 }
 

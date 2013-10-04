@@ -500,8 +500,7 @@ void spawnfunc_worldspawn (void)
 	registercvar ("_sv_rm_lastvote", "0");
 	registercvar ("_sv_rm_lastservertime", "0");
 	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
-
-	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
+    
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
@@ -788,18 +787,7 @@ void spawnfunc_worldspawn (void)
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
 
 	world_initialized = 1;
-
-	if(sv_speedaward_ownaccel)
-	{
-		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
-		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel")));
-	}
-	else
-	{
-		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
-		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
-	}
-
+    
 	if(cvar("timelimit") < 0)
 		cvar_set("timelimit", "20");
 
@@ -3106,19 +3094,7 @@ void SV_Shutdown()
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
 		if(!sv_cheats)
-		{
-			if(sv_speedaward_ownaccel)
-			{
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel"), ftos(highest_velocity));
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel"), highest_velocity_name);
-			}
-			else
-			{
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
-			}
 			db_save(ServerProgsDB, "server.db");
-		}
 		IP2C_Shutdown();
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");
