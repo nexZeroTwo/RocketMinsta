@@ -253,9 +253,8 @@ void Buffs_BuffPickup_Ring_Think(void) {
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects - EF_STARDUST;
     
-    if(self.owner.team) {
+    if(self.owner.team)
         self.effects &~= EF_ADDITIVE;
-    }
     
     setorigin(self, self.owner.origin + '0 0 15');
 }
@@ -349,7 +348,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.buff_activetime = cvar("g_buffs_activate_delay");
     self.buff_active = !self.buff_activetime;
     setmodel(self, "models/buffs/buff.md3");
-    setsize(self, '0 0 -40', '0 0 40');
+    setsize(self, '-15 -15 -40', '15 15 40');
     
     self.enemy = spawn();
     self.enemy.owner = self;
