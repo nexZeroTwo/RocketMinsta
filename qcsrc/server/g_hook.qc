@@ -85,6 +85,7 @@ float LostMovetypeFollow(entity ent)
 
 .float hook_length;
 .float hook_switchweapon;
+.float hook_length_initial;
 
 void RemoveGrapplingHook(entity pl)
 {
@@ -110,7 +111,7 @@ void GrapplingHook_Stop()
 	self.touch = SUB_Null;
 	self.velocity = '0 0 0';
 	self.movetype = MOVETYPE_NONE;
-	self.hook_length = -1;
+	self.hook_length = self.hook_length_initial = -1;
 }
 
 .float last_dmg;
@@ -191,6 +192,8 @@ void GrapplingHookThink()
 		dir = self.origin - org;
 		dist = vlen(dir);
 		dir = normalize(dir);
+        if(self.hook_length_initial < 0)
+            self.hook_length_initial = dist;
 
 		if(cvar("g_grappling_hook_tarzan"))
 		{
@@ -222,7 +225,7 @@ void GrapplingHookThink()
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
 				
-				if(!dontpull || (dontpull_limit && self.hook_length >= dontpull_limit)) {
+				if(!dontpull || (dontpull_limit && self.hook_length >= self.hook_length_initial)) {
 					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
 					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
 				}
