@@ -249,9 +249,13 @@ void Buffs_BuffPickup_Think(void) {
 void Buffs_BuffPickup_Ring_Think(void) {
     self.nextthink = time;
     self.angles_y = time * 157.1;
-    self.colormod = self.owner.colormod;
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects - EF_STARDUST;
+    
+    if(self.owner.team) {
+        self.effects &~= EF_ADDITIVE;
+    }
+    
     setorigin(self, self.owner.origin + '0 0 15');
 }
 
@@ -261,9 +265,6 @@ float Buffs_BuffPickup_Customize(void) {
         e = e.enemy;
     
     if(self.team && self.team != e.team) {
-        if(self.cnt)
-            return FALSE;
-            
         self.glow_size = 0;
     } else {
         self.glow_size = self.glow_size_saved;
@@ -347,14 +348,12 @@ void Buffs_BuffPickup_Setup(void) {
     self.enemy.think = Buffs_BuffPickup_Ring_Think;
     self.enemy.nextthink = time;
     self.enemy.effects = self.effects;
-    self.enemy.colormod = self.colormod;
+    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
     self.enemy.alpha = self.alpha;
     self.enemy.scale = self.scale * 1.2;
     self.enemy.team = self.team;
-    self.enemy.cnt = TRUE;
     
     SetCustomizer(self,         Buffs_BuffPickup_Customize, SUB_Nullpointer);
-    SetCustomizer(self.enemy,   Buffs_BuffPickup_Customize, SUB_Nullpointer);
     
     setsize(self.enemy, self.mins, self.maxs);
     setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);
