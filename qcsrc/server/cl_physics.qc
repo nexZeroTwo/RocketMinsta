@@ -519,14 +519,13 @@ void SpecialCommand()
 #endif
 }
 
-vector PlayerTouchWall()
+vector PlayerTouchWall(float dist)
 {
-	local float dist, max_normal, i;
-	dist = 10;
-	max_normal = 0.2;
+    float max_normal, i;
+    max_normal = 0.2;
     
     for(i = 1; i > -2; i -= 2) {
-        tracebox(self.origin, self.mins, self.maxs, self.origin + v_forward * 100 * i, TRUE, self);
+        tracebox(self.origin, self.mins, self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if not(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
@@ -625,19 +624,46 @@ void SV_PlayerPhysics()
 	{
 		vector plane_normal;
         makevectors(self.angles);
-		plane_normal = PlayerTouchWall ();
+		plane_normal = PlayerTouchWall(cvar("g_walljump_distance"));
 		if (plane_normal != '0 0 0')
 		{
 			self.lastwj = time;
-            vector sidev = self.velocity;
+            vector kickdir, sidev = self.velocity;
             sidev_z = 0;
 			float wj_force = max(cvar("g_walljump_force"), vlen(sidev) * cvar("g_walljump_force_velocityscale"));
-			float wj_xy_factor = cvar("g_walljump_velocity_xy_factor");
 			float wj_z_factor = cvar("g_walljump_velocity_z_factor");
-			self.velocity_x += plane_normal_x * wj_force;
-			self.velocity_x /= wj_xy_factor;
-			self.velocity_y += plane_normal_y * wj_force;
-			self.velocity_y /= wj_xy_factor;
+            
+            if(cvar("g_walljump_reflect")) {
+                kickdir = normalize(sidev - 2 * (sidev * plane_normal) * plane_normal);
+                if(kickdir == '0 0 0')
+                    kickdir = plane_normal;
+            } else
+                kickdir = plane_normal;
+            
+            if(cvar("g_walljump_hardkick")) {
+                self.velocity_x = kickdir_x * wj_force;
+                self.velocity_y = kickdir_y * wj_force;
+            } else {
+                float wj_xy_factor = cvar("g_walljump_velocity_xy_factor");
+                float cap = cvar("g_walljump_velocity_xy_cap");
+                if(cap)
+                    cap = max(vlen(sidev) / wj_xy_factor, wj_force);
+                
+                if(cvar("g_walljump_velocity_xy_factor_initial_only")) {
+                    self.velocity_x = (self.velocity_x / wj_xy_factor) + (kickdir_x * wj_force);
+                    self.velocity_y = (self.velocity_y / wj_xy_factor) + (kickdir_y * wj_force);
+                } else {
+                    self.velocity_x = (self.velocity_x + kickdir_x * wj_force) / wj_xy_factor;
+                    self.velocity_y = (self.velocity_y + kickdir_y * wj_force) / wj_xy_factor;
+                }
+                
+                if(cap) {
+                    self.velocity_z = 0;
+                    if(vlen(self.velocity) > cap)
+                        self.velocity = normalize(self.velocity) * cap;
+                }
+            }
+            
 			self.velocity_z = sv_jumpvelocity * wj_z_factor;
 			if (self.crouch) self.velocity_z *= -1; // thanks Synap for the idea
 			self.oldvelocity = self.velocity;
