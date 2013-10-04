@@ -33,6 +33,7 @@ void ScoreRules_basics(float teams, float sprio, float stprio, float score_enabl
 	
     ScoreInfo_SetLabel_PlayerScore(SP_HOOKFRAGS,        "hfs",     0);
     ScoreInfo_SetLabel_PlayerScore(SP_NADEFRAGS,        "nfs",     0);
+    ScoreInfo_SetLabel_PlayerScore(SP_DAMAGE,           "dmg",     0);
 }
 void ScoreRules_basics_end()
 {

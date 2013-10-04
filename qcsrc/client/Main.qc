@@ -1357,13 +1357,13 @@ void Ent_ReadPlayerScore()
 		{
 			if(i == SP_JOINTIME)
 			{
-				local float srvtime;
-				srvtime = stof(ReadString());
+				float srvtime;
+				srvtime = ReadInt24_t() * 0.01;
 				
-				local float offs;
+				float offs;
 				offs = srvtime - time;
 				
-				o.(scores[i]) = stof(ReadString()) - offs;
+				o.(scores[i]) = ReadInt24_t() * 0.01 - offs;
 			}
 			else if(lf & p)
 			{

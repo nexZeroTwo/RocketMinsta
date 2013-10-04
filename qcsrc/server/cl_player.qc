@@ -591,9 +591,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if (time > self.spawnshieldtime || cvar("g_spawnshieldmode"))
 	{
 		if (!(self.flags & FL_GODMODE))
-		{
-			self.armorvalue = self.armorvalue - save;
-			self.health = self.health - take;
+        {
+            self.armorvalue = self.armorvalue - save;
+            if(attacker != self)
+            if(!teams_matter || self.team != attacker.team)
+            if(attacker.classname == "player")
+                PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take));
+            self.health = self.health - take;
             
             if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
                 self.health = max(1, self.health);  // the best way to win a fight is to avoid it

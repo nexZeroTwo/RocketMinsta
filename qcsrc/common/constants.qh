@@ -360,7 +360,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 21
+#define MAX_SCORE 22
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -380,6 +380,7 @@ const float JBMSG_TOOLATE = 5;
 #define SP_NADEMODE 18
 #define SP_NADEFRAGS 19
 #define SP_REVIVALS 20
+#define SP_DAMAGE 21
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider

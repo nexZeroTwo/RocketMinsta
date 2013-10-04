@@ -1486,7 +1486,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(damage || (self.damageforcescale && vlen(force)))
 	if(self.event_damage) {
         self.dmg_jaildm = jaildm;
-		self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
+        self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
             if(!teams_matter || self.team != attacker.team)
                 self.lastdamage = time;
