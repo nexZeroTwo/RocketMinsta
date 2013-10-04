@@ -189,6 +189,19 @@ void Buffs_ArcDamage_Finalize(void) {
 
 .float glow_size_saved;
 
+float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
+    if(self.team && (plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack)))
+        return FALSE;
+    return WaypointSprite_visible_for_player(plr);
+}
+
+void Buffs_BuffPickup_SpawnWaypoint(entity e) {
+    WaypointSprite_Spawn(Buffs_TypeToExpandedName(e.buffs), 0, 0, world, e.origin + '0 0 40', world, e.team, e, buff_waypoint, TRUE);
+    WaypointSprite_UpdateTextColors(e.buff_waypoint, e.colormod, '0 0 0', '0 0 0');
+    WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, e.colormod);
+    e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
+}
+
 void Buffs_BuffPickup_Think(void) {
     if(!self.buff_active && !self.buff_activetime)
     if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || self.owner.classname != "player") {
@@ -198,12 +211,11 @@ void Buffs_BuffPickup_Think(void) {
     
     if(self.buff_activetime && roundstate == ROUNDSTATE_GAME) {
         if(!self.buff_waypoint) {
-            WaypointSprite_Spawn(Buffs_TypeToExpandedName(self.buffs), 0, 0, world, self.origin + '0 0 40', world, self.team, self, buff_waypoint, TRUE);
-            WaypointSprite_UpdateTextColors(self.buff_waypoint, self.colormod, '0 0 0', '0 0 0');
-            WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
-            WaypointSprite_UpdateTeamRadar(self.buff_waypoint, RADARICON_FLAG, self.colormod);
+            Buffs_BuffPickup_SpawnWaypoint(self);
         }
         
+        if(!self.buff_waypoint.max_health)
+            WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
         WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
         self.buff_activetime = max(0, self.buff_activetime - frametime);
         
@@ -215,6 +227,9 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(!self.buff_active) {
+        if(self.buff_waypoint && !self.buff_activetime)
+            WaypointSprite_Disown(self.buff_waypoint, 1);
+        
         self.alpha = 0.3;
         self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
         self.glow_size_saved = 0;
@@ -222,6 +237,9 @@ void Buffs_BuffPickup_Think(void) {
         self.alpha = 1;
         self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
         self.glow_size_saved = 220 + 36 * sin(time);
+        
+        if(self.team && !self.buff_waypoint)
+            Buffs_BuffPickup_SpawnWaypoint(self);
     }
     
     self.nextthink = time;
@@ -261,6 +279,9 @@ void Buffs_BuffPickup_Reset(void) {
     
     if(self.buff_waypoint)
         WaypointSprite_Kill(self.buff_waypoint);
+    
+    if(self.buff_activetime)
+        Buffs_BuffPickup_SpawnWaypoint(self);
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
