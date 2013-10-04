@@ -484,7 +484,7 @@ void GrapplingHookFrame()
 		}
 
 		self.hook_state &~= HOOK_RELEASING;
-		if(self.BUTTON_CROUCH)
+		if(self.BUTTON_CROUCH && cvar("g_balance_grapplehook_crouchslide"))
 		{
 			self.hook_state &~= HOOK_PULLING;
 			//self.hook_state |= HOOK_RELEASING;
