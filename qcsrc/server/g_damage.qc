@@ -967,6 +967,7 @@ entity damage_attacker;
 .float ignore_next;
 .float dmg_jaildm;
 
+void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype);
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	float mirrordamage;
@@ -1498,15 +1499,19 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     }
 	self = oldself;
 
-	// Print damage
-	if(g_minstagib) // since I'm too lazy to do this crap the way it should be done, minstagib uses it's own damage indicator
+	if(g_minstagib && targ_is_player && attacker_is_player)
 	{
-		local float olddamage;
+		float olddamage;
 		olddamage = damage;
 		
-		damage = min(damage, t_oldhealth);
-		armordamage = min(armordamage, t_oldarmor);
-
+		damage = max(0, min(t_oldhealth, damage));
+		armordamage = max(0, min(t_oldarmor, armordamage));
+        
+        if(damage || armordamage) {
+            print(ftos(t_oldhealth), "\n");
+            VisualDamage(attacker, targ, damage, armordamage, ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
+        }
+        
 		if(took_extra)
 			armordamage = 100;
 
@@ -1524,76 +1529,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				hudflash_teamcolor_default_spec(attacker);
 		}
 		
-		if(!cvar("sv_hidedamage")) if(targ.health > 0) if not(g_freeze && targ.frozen)
-		{
-			float i;
-			
-			for(i = 0; i < 2; i++)
-			{
-				local string dmgstring, wpnstring;
-				
-				// To-do: generate prints client-side, send all the crap through a tempentity
-				
-				if(i) // damage
-				{
-					if(!damage)
-						continue;
-					
-					dmgstring = ftos(rint(damage));
-				}
-				else //armor damage
-				{
-					if(!armordamage)
-						continue;
-					
-					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-				}
-				
-				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-					wpnstring = "^1splash";
-				else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-					wpnstring = "^xFB0laser";
-				else if(deathtype == DEATH_NOAMMO)
-				{
-					if(attacker == targ)
-					if(attacker.ammo_cells <= 0)
-						continue;
-					
-					wpnstring = "^7hook";
-				}
-				else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) //???
-					wpnstring = "^5insta";
-				else 
-					wpnstring = "^0unknown";
-				
-				if(!cvar("sv_extendfragmessages"))
-					wpnstring = "";
-				
-				if(attacker_is_player) if(attacker != targ)
-				{
-					if(targ.netname)
-						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-				}
-				
-				if(targ_is_player)
-				{
-					if(attacker.netname)
-					{
-						if(attacker == targ)
-							centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-						else
-							centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
-					}
-					else
-						centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
-				}
-				
-				//hudflash_default_spec(attacker, '1 1 -1');
-				//hudflash_default_spec(targ, '2 1 -1');
-				//hudflash_spec(attacker, '1 1 -1', HF_DEFAULT_TIME * 1.5, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-				hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-			}
-		}
 		damage = olddamage;
 	}
 
@@ -1882,6 +1817,9 @@ float Fire_IsBurning(entity e)
 	return (time < e.fire_endtime);
 }
 
+.float fire_last;
+#define FIRE_DELAY cvar("g_fire_damage_frequency")
+
 float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 {
 	float dps;
@@ -1982,6 +1920,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 		e.fire_deathtype = dt;
 		e.fire_owner = o;
 		e.fire_hitsound = FALSE;
+        e.fire_last = time - FIRE_DELAY;
 		return d;
 	}
 }
@@ -1989,6 +1928,9 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 void Fire_ApplyDamage(entity e)
 {
 	float t, d, hi, ty;
+
+    if(time - e.fire_last < FIRE_DELAY)
+        return;
 
 	if not(Fire_IsBurning(e))
 		return;
@@ -1998,7 +1940,7 @@ void Fire_ApplyDamage(entity e)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
 
-	t = min(frametime, e.fire_endtime - time);
+	t = min(time - e.fire_last, e.fire_endtime - time);
 	d = e.fire_damagepersec * t;
 
 	hi = e.fire_owner.hitsound;
@@ -2026,6 +1968,8 @@ void Fire_ApplyDamage(entity e)
 			Fire_AddDamage(other, e, d, t, DEATH_FIRE);
 		}
 	}
+    
+    e.fire_last = time;
 }
 
 void Fire_ApplyEffect(entity e)

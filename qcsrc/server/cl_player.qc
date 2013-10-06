@@ -480,6 +480,61 @@ void DropPowerups(vector force) {
 void Boobs_Clear();
 void Boobs_DropAll(vector);
 
+void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype) {
+    entity e;
+    vector offs, org, p1, p2;
+    float found;
+    
+    if(cvar("sv_hidedamage"))
+        return;
+    
+    offs = attacker.maxs_z * '0 0 0.5';
+    p1 = attacker.origin + attacker.view_ofs;
+    p2 = targ.origin + targ.view_ofs;
+    
+    while(TRUE) {
+        traceline(p2, p1, FALSE, targ);
+        
+        if(trace_ent == attacker) {
+            found = TRUE;
+            break;
+        }
+        
+        if(!trace_ent || trace_fraction == 1)
+            break;
+        
+        trace_ent.railgunhit = TRUE;
+        trace_ent.railgunhitsolidbackup = trace_ent.solid;
+        
+        if (trace_ent.solid == SOLID_BSP)
+            break;
+        
+        trace_ent.solid = SOLID_NOT;
+    }
+    
+    e = findfloat(world, railgunhit, TRUE);
+    while(e) {
+        e.solid = e.railgunhitsolidbackup;
+        e = findfloat(e, railgunhit, TRUE);
+    }
+    
+    if(!found)
+        return;
+    
+    org = targ.origin + targ.maxs_z * '0 0 1.5';
+    FOR_EACH_REALCLIENT(e) if(e == attacker || (e.enemy == attacker && e.classname == "spectator")) {
+        msg_entity = attacker;
+        WriteByte(MSG_ONE, SVC_TEMPENTITY);
+        WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
+        WriteShort(MSG_ONE, hdmg);
+        WriteShort(MSG_ONE, admg);
+        WriteByte(MSG_ONE, htype);
+        WriteCoord(MSG_ONE, org_x);
+        WriteCoord(MSG_ONE, org_y);
+        WriteCoord(MSG_ONE, org_z);
+    }
+}
+
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	local float take, save, waves, sdelay, dh, da, j;
@@ -602,8 +657,18 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.armorvalue = self.armorvalue - save;
             if(attacker != self)
             if(!teams_matter || self.team != attacker.team)
-            if(attacker.classname == "player")
+            if(attacker.classname == "player") {
+                float cdmg = min(self.health, take);
+                float rdmg = rint(cdmg);
+                if((rdmg || save) && !g_minstagib)
+                    VisualDamage(attacker, self, rdmg, rint(save), ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
                 PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take) + save);
+                
+                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
+                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
+                    hudflash_teamcolor_default_spec(attacker);
+                }
+            }
             self.health = self.health - take;
             
             if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
@@ -679,90 +744,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(clienttype(attacker) == CLIENTTYPE_REAL)
 	if(self != attacker)
 	if(!DEATH_ISSPECIAL(deathtype))
+    if(!DEATH_ISHG(deathtype))
 	if(IsDifferentTeam(self, attacker))
 		valid_damage_for_weaponstats = 1;
 	
     DPS_Record(attacker, self, take);
     
-	// Print damage to players
-	local float olddamage, armordamage;
-	local entity targ;
-	targ = self;
-	olddamage = damage;
-	
-	if(!g_minstagib)
-	{
-		damage = dh - max(self.health, 0);
-		armordamage = da - max(self.armorvalue, 0);
-	
-		damage = max(0, damage);
-		armordamage = max(0, armordamage);
-	
-		if(attacker.classname == "player")
-		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
-		{
-			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-			PlayerScore_Add(attacker, SP_SCORE, armordamage * 0.1);
-			
-			if(attacker != targ) if(damage || armordamage)
-				hudflash_teamcolor_default_spec(attacker);
-		}
-		
-		if(!cvar("sv_hidedamage")) if(self.health > 0) if not(g_freeze && self.frozen)
-		{
-			float i;
-			
-			for(i = 0; i < 2; i++)
-			{
-				local string dmgstring, wpnstring;
-				
-				// To-do: generate prints client-side, send all the crap through a tempentity
-				
-				if(i) // damage
-				{
-					if(!damage)
-						continue;
-					
-					dmgstring = ftos(rint(damage));
-				}
-				else //armor damage
-				{
-					if(!armordamage)
-						continue;
-					
-					dmgstring = strcat("^2(^7", ftos(rint(armordamage)), "^2)");
-				}
-				
-                wpnstring = "";
-                
-                if(cvar("sv_extendfragmessages")) {
-                    if(DEATH_ISHG(deathtype))
-                        wpnstring = strcat("^7", HG_TypeToExpandedName(deathtype));
-                    else if(!DEATH_ISSPECIAL(deathtype))
-                        wpnstring = strcat("^7", get_weaponinfo(DEATH_WEAPONOF(deathtype)).message);
-                }
-				
-				if(attacker.classname == "player") if(attacker != targ)
-				{
-					if(targ.netname)
-						centerprint_spec(attacker, strcat("\x01\x02", targ.netname, " ^3^x550 ^7", dmgstring, " ^x550^3^7 ", wpnstring));
-				}
-				
-				if(attacker.netname)
-				{
-					if(attacker == targ)
-						centerprint_spec(targ, strcat("\x01\x02", "^xFB0self ", "^x500^1 ^7", dmgstring, " ^1^x500 ", wpnstring));
-					else
-						centerprint_spec(targ, strcat("\x01\x02", attacker.netname, " ^x500^1 ^7", dmgstring, " ^1^x500^7 ", wpnstring));
-				}
-				else
-					centerprint_spec(targ, strcat("\x01\x02", "^x500^1 ^7", dmgstring, " ^1^x500\n"));
-				hudflash_spec(targ, '2 0.15 -1', HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-			}
-		}
-		damage = olddamage;
-	}
-	
 	if(valid_damage_for_weaponstats)
 	{
 		dh = dh - max(self.health, 0);

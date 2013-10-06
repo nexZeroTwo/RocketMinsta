@@ -22,7 +22,7 @@ void Ent_DamageInfo(float isNew)
 	rad = ReadByte();
 	edge = ReadByte();
 	force = decompressShortVector(ReadShort());
-
+    
     self.team = ReadByte();
 
 	if not(isNew)

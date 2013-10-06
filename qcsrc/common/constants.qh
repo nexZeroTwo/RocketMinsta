@@ -46,6 +46,10 @@ const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
+const float TE_CSQC_VISUALDAMAGE = 118;
+
+#define VDMG_TYPE_HIT 0
+#define VDMG_TYPE_CRIT 1
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;

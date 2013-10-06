@@ -114,8 +114,8 @@ void HG_Napalm_Think()
 		return;
 	}
 
-	HG_Napalm_Burn(0.1, GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
-	self.nextthink = time + 0.1;
+	HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+	self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
 void HG_Napalm_Middlefire_Think() {

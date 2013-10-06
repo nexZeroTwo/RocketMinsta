@@ -416,7 +416,7 @@ void CSQC_UpdateView(float w, float h)
 	float fov;
 	float f, i, j;
 	vector v;
-
+    
     HG_NadeGainSound();
 
 	dprint_load();
@@ -645,6 +645,7 @@ void CSQC_UpdateView(float w, float h)
 
 	// draw 2D entities
 	
+    VisualDamage_PreDraw();
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw2d)

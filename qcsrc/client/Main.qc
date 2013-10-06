@@ -106,6 +106,8 @@ void CSQC_Init(void)
 #endif
 	registercvar("sbar_usecsqc", "1");
 	registercvar("sbar_columns", "default", CVAR_SAVE);
+    registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
+    registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
 	gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -2082,6 +2084,9 @@ float CSQC_Parse_TempEntity()
 		case TE_CSQC_SERVERINFO:
 			Net_ServerInfo();
 			return TRUE;
+        case TE_CSQC_VISUALDAMAGE:
+            Net_VisualDamage();
+            return TRUE;
 	}
 
 	// pass to the engine
