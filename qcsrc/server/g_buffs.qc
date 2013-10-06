@@ -168,7 +168,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(newtarget) {
         vector offs = '0 0 1' * targ.maxs_z * 0.5;
         Buffs_ArcEffect(targ.origin + offs, newtarget.origin + offs, attacker.team);
-        Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', '0 0 0');
+        Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_buffs_arc_pushback"));
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
         sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);
     }
