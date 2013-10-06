@@ -121,8 +121,8 @@ void Buffs_ClientFrame(void) {
 #undef ON_BUFF_ADDED
 #undef ON_BUFF_REMOVED
 
-void Buffs_ArcEffect(vector from, vector to) {
-    te_csqc_lightningarc(from, to);
+void Buffs_ArcEffect(vector from, vector to, float t) {
+    te_csqc_lightningarc(from, to, TRUE, t);
 }
 
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {
@@ -167,7 +167,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     
     if(newtarget) {
         vector offs = '0 0 1' * targ.maxs_z * 0.5;
-        Buffs_ArcEffect(targ.origin + offs, newtarget.origin + offs);
+        Buffs_ArcEffect(targ.origin + offs, newtarget.origin + offs, attacker.team);
         Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', '0 0 0');
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
         sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);

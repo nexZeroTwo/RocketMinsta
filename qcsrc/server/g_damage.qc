@@ -1692,6 +1692,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 }
 
 .float damage_noinfo;
+.float damage_nextarceffect;
 float RadiusDamage_running;
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity)
 // Returns total damage applies to creatures
@@ -1849,7 +1850,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 							}
 							if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
 								Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
-							else
+                            else
 								Damage (targ, inflictor, attacker, finaldmg, deathtype | HITTYPE_SPLASH, nearest, force);
 						}
 					}

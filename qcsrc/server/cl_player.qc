@@ -519,6 +519,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.hg_shield = 0;
     }
 
+    if(damage)
+    if(deathtype == HG_PLASMA_SHARD)
+    if(time > inflictor.damage_nextarceffect) {
+        te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
+        inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
+    }
+
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
