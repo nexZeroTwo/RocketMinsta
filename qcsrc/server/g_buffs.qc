@@ -133,6 +133,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     float arcfactor = cvar("g_buffs_arc_multiplier");
     float arcrange = cvar("g_buffs_arc_range");
     float archgfactor = cvar("g_buffs_arc_multiplier_hg");
+    vector arcoffset = attacker.maxs_z * '0 0 0.5';
     
     if(DEATH_ISHG(deathtype))
         damage = damage * archgfactor;
@@ -149,14 +150,14 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(plr != attacker)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
-    if(!plr.frozen)
     if(!plr.jb_isprisoned)
     if(!plr.buffs_arc_hit)
+    if(!plr.frozen || !newtarget || newtarget.frozen)
     if(!teams_matter || plr.team != attacker.team) {
         dist = vlen(plr.origin - targ.origin);
         
-        if(!shortest || dist < shortest) {
-            traceline(targ.origin, plr.origin, MOVE_NORMAL, targ);
+        if(!shortest || dist < shortest || (newtarget.frozen && !plr.frozen)) {
+            traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
             
             if(trace_fraction != 1 && trace_ent == plr) {
                 shortest = dist;
@@ -166,8 +167,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     }
     
     if(newtarget) {
-        vector offs = '0 0 1' * targ.maxs_z * 0.5;
-        Buffs_ArcEffect(targ.origin + offs, newtarget.origin + offs, attacker.team);
+        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, attacker.team);
         Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_buffs_arc_pushback"));
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
         sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);

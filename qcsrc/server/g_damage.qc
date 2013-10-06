@@ -1039,7 +1039,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_ARC)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
 	{
 		// no processing
 	}
@@ -1291,15 +1291,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
 		}
-
-		if not(DEATH_ISSPECIAL(deathtype))
-		{
-			damage *= g_weapondamagefactor;
-			mirrordamage *= g_weapondamagefactor;
-			force = force * g_weaponforcefactor;
-			mirrorforce *= g_weaponforcefactor;
-		}
-
+        
 		if(g_freeze) if(targ.frozen)
 		{
             if(deathtype == DEATH_HURTTRIGGER)
@@ -1317,70 +1309,80 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
 		}
 
-		// apply strength multiplier
-		if ((attacker.items & IT_STRENGTH) && !g_minstagib)
-		{
-			if(targ == attacker)
-			{
-				damage = damage * cvar("g_balance_powerup_strength_selfdamage");
-				force = force * cvar("g_balance_powerup_strength_selfforce");
-			}
-			else
-			{
-				damage = damage * cvar("g_balance_powerup_strength_damage");
-				force = force * cvar("g_balance_powerup_strength_force");
-			}
-		}
+        // apply invincibility multiplier
+        if (targ.items & IT_INVINCIBLE && !g_minstagib)
+            damage = damage * cvar("g_balance_powerup_invincible_takedamage");
 
-		// apply invincibility multiplier
-		if (targ.items & IT_INVINCIBLE && !g_minstagib)
-			damage = damage * cvar("g_balance_powerup_invincible_takedamage");
+        if(deathtype != DEATH_ARC) {
+            if not(DEATH_ISSPECIAL(deathtype))
+            {
+                damage *= g_weapondamagefactor;
+                mirrordamage *= g_weapondamagefactor;
+                force = force * g_weaponforcefactor;
+                mirrorforce *= g_weaponforcefactor;
+            }
+            
+            // apply strength multiplier
+            if ((attacker.items & IT_STRENGTH) && !g_minstagib)
+            {
+                if(targ == attacker)
+                {
+                    damage = damage * cvar("g_balance_powerup_strength_selfdamage");
+                    force = force * cvar("g_balance_powerup_strength_selfforce");
+                }
+                else
+                {
+                    damage = damage * cvar("g_balance_powerup_strength_damage");
+                    force = force * cvar("g_balance_powerup_strength_force");
+                }
+            }
 
-		if (targ == attacker)
-			damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
+            if (targ == attacker)
+                damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
 
-		// CTF: reduce damage/force
-		if(g_ctf)
-		if(targ == attacker)
-		if(targ.flagcarried)
-		{
-			damage = damage * cvar("g_ctf_flagcarrier_selfdamage");
-			force = force * cvar("g_ctf_flagcarrier_selfforce");
-		}
+            // CTF: reduce damage/force
+            if(g_ctf)
+            if(targ == attacker)
+            if(targ.flagcarried)
+            {
+                damage = damage * cvar("g_ctf_flagcarrier_selfdamage");
+                force = force * cvar("g_ctf_flagcarrier_selfforce");
+            }
 
-		if(g_runematch)
-		{
-			// apply strength rune
-			if (attacker.runes & RUNE_STRENGTH)
-			{
-				if(attacker.runes & CURSE_WEAK) // have both curse & rune
-				{
-					damage = damage * cvar("g_balance_rune_strength_combo_damage");
-					force = force * cvar("g_balance_rune_strength_combo_force");
-				}
-				else
-				{
-					damage = damage * cvar("g_balance_rune_strength_damage");
-					force = force * cvar("g_balance_rune_strength_force");
-				}
-			}
-			else if (attacker.runes & CURSE_WEAK)
-			{
-				damage = damage * cvar("g_balance_curse_weak_damage");
-				force = force * cvar("g_balance_curse_weak_force");
-			}
+            if(g_runematch)
+            {
+                // apply strength rune
+                if (attacker.runes & RUNE_STRENGTH)
+                {
+                    if(attacker.runes & CURSE_WEAK) // have both curse & rune
+                    {
+                        damage = damage * cvar("g_balance_rune_strength_combo_damage");
+                        force = force * cvar("g_balance_rune_strength_combo_force");
+                    }
+                    else
+                    {
+                        damage = damage * cvar("g_balance_rune_strength_damage");
+                        force = force * cvar("g_balance_rune_strength_force");
+                    }
+                }
+                else if (attacker.runes & CURSE_WEAK)
+                {
+                    damage = damage * cvar("g_balance_curse_weak_damage");
+                    force = force * cvar("g_balance_curse_weak_force");
+                }
 
-			// apply defense rune
-			if (targ.runes & RUNE_DEFENSE)
-			{
-				if (targ.runes & CURSE_VULNER) // have both curse & rune
-					damage = damage * cvar("g_balance_rune_defense_combo_takedamage");
-				else
-					damage = damage * cvar("g_balance_rune_defense_takedamage");
-			}
-			else if (targ.runes & CURSE_VULNER)
-				damage = damage * cvar("g_balance_curse_vulner_takedamage");
-		}
+                // apply defense rune
+                if (targ.runes & RUNE_DEFENSE)
+                {
+                    if (targ.runes & CURSE_VULNER) // have both curse & rune
+                        damage = damage * cvar("g_balance_rune_defense_combo_takedamage");
+                    else
+                        damage = damage * cvar("g_balance_rune_defense_takedamage");
+                }
+                else if (targ.runes & CURSE_VULNER)
+                    damage = damage * cvar("g_balance_curse_vulner_takedamage");
+            }
+        }
 
 		// count the damage
 		if(attacker)
