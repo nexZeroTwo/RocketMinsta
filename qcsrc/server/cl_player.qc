@@ -596,7 +596,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(attacker != self)
             if(!teams_matter || self.team != attacker.team)
             if(attacker.classname == "player")
-                PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take));
+                PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take) + save);
             self.health = self.health - take;
             
             if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
