@@ -2014,34 +2014,6 @@ void Net_ServerInfo() {
 	sv_motd = strzone(ReadString());
 }
 
-void Net_Arc_Draw() {
-    float i; for(i = 0; i < 5; ++i)
-        Draw_CylindricLine(self.origin + randomvec() * 10 * self.alpha, self.velocity + randomvec() * 10 * self.alpha, 25 * self.alpha, "particles/hook_blue", 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
-    
-    self.alpha = self.alpha - frametime * 3;
-    if(self.alpha < 0)
-        remove(self);
-}
-
-void Net_Arc() {
-    vector start, end;
-    
-    end_x = ReadCoord();
-    end_y = ReadCoord();
-    end_z = ReadCoord();
-    start_x = ReadCoord();
-    start_y = ReadCoord();
-    start_z = ReadCoord();
-    
-    entity e = spawn();
-    e.alpha = 1;
-    e.origin = start;
-    e.velocity = end;
-    e.draw = Net_Arc_Draw;
-    
-    pointparticles(particleeffectnum("electro_ballexplode"), start, '0 0 0', 1);
-}
-
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2110,9 +2082,6 @@ float CSQC_Parse_TempEntity()
 		case TE_CSQC_SERVERINFO:
 			Net_ServerInfo();
 			return TRUE;
-        case TE_CSQC_ARC:
-            Net_Arc();
-            return TRUE;
 	}
 
 	// pass to the engine

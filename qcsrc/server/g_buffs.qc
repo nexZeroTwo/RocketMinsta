@@ -1,5 +1,4 @@
 
-
 #define ON_BUFF_ADDED(b) if(self.buffs & (b)) if not(self.oldbuffs & (b))
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
@@ -123,14 +122,7 @@ void Buffs_ClientFrame(void) {
 #undef ON_BUFF_REMOVED
 
 void Buffs_ArcEffect(vector from, vector to) {
-    WriteByte(MSG_ALL, SVC_TEMPENTITY);
-    WriteByte(MSG_ALL, TE_CSQC_ARC);
-    WriteCoord(MSG_ALL, from_x);
-    WriteCoord(MSG_ALL, from_y);
-    WriteCoord(MSG_ALL, from_z);
-    WriteCoord(MSG_ALL, to_x);
-    WriteCoord(MSG_ALL, to_y);
-    WriteCoord(MSG_ALL, to_z);
+    te_csqc_lightningarc(from, to);
 }
 
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {

@@ -30,7 +30,24 @@ void b_make(vector s,vector e, string t,float l,float z)
 }
 */
 
-void cl_effetcs_lightningarc(vector from, vector to,float seglength,float drifts,float drifte,float branchfactor,float branchfactor_add)
+void LingtningArc_Draw() {
+    float i; for(i = 0; i < 5; ++i)
+        Draw_CylindricLine(self.origin + randomvec() * 10 * self.alpha, self.velocity + randomvec() * 10 * self.alpha, 25 * self.alpha, "particles/hook_blue", 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
+    
+    self.alpha = self.alpha - frametime * 3;
+    if(self.alpha < 0)
+        remove(self);
+}
+
+void LingtningArc_Segment(vector start, vector end) {
+    entity e = spawn();
+    e.alpha = 1;
+    e.origin = start;
+    e.velocity = end;
+    e.draw = LingtningArc_Draw;
+}
+
+void LingtningArc_Full(vector from, vector to, float seglength, float drifts, float drifte, float branchfactor, float branchfactor_add)
 {
     vector direction,dirnew, pos, pos_l;
     float length, steps, steplength, i,drift;
@@ -42,7 +59,7 @@ void cl_effetcs_lightningarc(vector from, vector to,float seglength,float drifts
     steps      = floor(length / seglength);
     if(steps < 1)
     {
-        te_lightning1(world,from,to);
+        LingtningArc_Segment(pos_l, pos);
         return;
     }
 
@@ -56,20 +73,17 @@ void cl_effetcs_lightningarc(vector from, vector to,float seglength,float drifts
             drift = drifts * (1 - (i / steps)) + drifte * (i / steps);
             dirnew = normalize(direction * (1 - drift) + randomvec() * drift);
             pos = pos_l +  dirnew * steplength;
-            te_lightning1(world,pos_l,pos);
-            //b_make(pos_l, pos,"particles/lightning2",0.25,64);
+            LingtningArc_Segment(pos_l, pos);
             if(random() < branchfactor)
-                cl_effetcs_lightningarc(pos, pos + (dirnew * length * 0.25),seglength,drifts,drifte,min(branchfactor + branchfactor_add,1),branchfactor_add);
+                LingtningArc_Full(pos, pos + (dirnew * length * 0.25),seglength,drifts,drifte,min(branchfactor + branchfactor_add,1),branchfactor_add);
 
             pos_l = pos;
         }
-        te_lightning1(world,pos_l,to);
-        //b_make(pos_l, to,"particles/lightning2",0.25,64);
+        LingtningArc_Segment(pos_l, pos);
 
     }
     else
-        te_lightning1(world,from,to);
-        //b_make(from, to,"particles/lightning2",0.25,64);
+        LingtningArc_Segment(pos_l, pos);
 
 }
 
@@ -80,12 +94,10 @@ void Net_ReadLightningarc()
     from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
     to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
 
-    if(cvar("cl_effects_lightningarc_simple"))
-    {
-        te_lightning1(world,from,to);
-    }
-    else
-    {
+    pointparticles(particleeffectnum("electro_ballexplode"), to, '0 0 0', 1);
+    if(cvar("cl_effects_lightningarc_simple")) {
+        LingtningArc_Segment(from, to);
+    } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add;
 
         seglength    = cvar("cl_effects_lightningarc_segmentlength");
@@ -94,7 +106,7 @@ void Net_ReadLightningarc()
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_start");
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_add");
 
-        cl_effetcs_lightningarc(from,to,seglength,drifts,drifte,branchfactor,branchfactor_add);
+        LingtningArc_Full(from,to,seglength,drifts,drifte,branchfactor,branchfactor_add);
     }
 
 }
