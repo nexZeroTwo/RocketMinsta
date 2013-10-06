@@ -523,7 +523,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     
     org = targ.origin + targ.maxs_z * '0 0 1.5';
     FOR_EACH_REALCLIENT(e) if(e == attacker || (e.enemy == attacker && e.classname == "spectator")) {
-        msg_entity = attacker;
+        msg_entity = e;
         WriteByte(MSG_ONE, SVC_TEMPENTITY);
         WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
         WriteShort(MSG_ONE, hdmg);
