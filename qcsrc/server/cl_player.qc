@@ -80,7 +80,7 @@ void WeaponStats_LogItem(float awep, float vwep, vector item)
 void WeaponStats_LogDamage(float awep, float vwep, float damage)
 {
 	if(damage < 0)
-		error("negative damage?");
+		print("negative damage?\n");
 	WeaponStats_LogItem(awep, vwep, '1 0 0' * damage);
 }
 void WeaponStats_LogKill(float awep, float vwep)
@@ -540,9 +540,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	local float take, save, waves, sdelay, dh, da, j;
 	vector v;
 	float valid_damage_for_weaponstats;
-
-	dh = max(self.health, 0);
-	da = max(self.armorvalue, 0);
     
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
@@ -751,11 +748,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     DPS_Record(attacker, self, take);
     
 	if(valid_damage_for_weaponstats)
-	{
-		dh = dh - max(self.health, 0);
-		da = da - max(self.armorvalue, 0);
-		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, dh + da);
-	}
+		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, min(take, self.health) + min(save, self.armorvalue));
 
 	if (self.health < 1)
 	{
