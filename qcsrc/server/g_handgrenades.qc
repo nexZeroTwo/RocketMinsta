@@ -441,7 +441,7 @@ void HG_Grenade_Touch() {
     }
 
 :troll
-	if(other.takedamage == DAMAGE_AIM && !(other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
+	if(other.takedamage == DAMAGE_AIM && !(teams_matter && other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
         if(self.hg_type == HG_REMOTE)
             goto anothertroll;
             
