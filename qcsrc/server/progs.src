@@ -32,6 +32,7 @@ campaign.qh
 ip2c.qh
 csqcprojectile.qh
 
+teamcount.qh
 portals.qh
 g_hook.qh
 scores.qh
@@ -162,7 +163,7 @@ t_quake.qc
 
 race.qc
 
-
+teamcount.qc
 ../common/dprm.qc
 ../common/gametype.qc
 

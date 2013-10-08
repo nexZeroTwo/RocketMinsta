@@ -326,8 +326,10 @@ void StartFrame (void)
 	}
     
     if(time >= game_starttime)
-    if(roundstate == ROUNDSTATE_PREGAME)
+    if(roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;
+        TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
+    }
     
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;

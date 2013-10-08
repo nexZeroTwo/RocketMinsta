@@ -67,8 +67,8 @@ void FreezeTag_CheckWinner()
         return;
     
     for(i = 0; i < ft_teams; ++i) {
-        if(g_freeze_playerstotal[i]) {
-            if(g_freeze_playersalive[i]) {
+        if(teamcount_playerstotal[i]) {
+            if(teamcount_playersalive[i]) {
                 alivefound = TRUE;
                 if(!winnerteam)
                     winnerteam = Team_FromIndex(i);

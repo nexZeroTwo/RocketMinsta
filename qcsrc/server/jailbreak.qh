@@ -9,9 +9,11 @@ void JB_NonJBInit();
 entity JB_ChooseJailSpawnpoint(float);
 float JB_GetEnemyTeamOf(float);
 void JB_CountPlayers();
-void JB_EndRound();
+void JB_EndRound(float);
 void JB_Frame();
+void JB_TeamWins(float);
 float JB_TotalPlayersOnTeam(float);
+float JB_AlivePlayersOnTeam(float);
 void JB_PlayerPreThink();
 void JB_ActivateCamera(float, float);
 void JB_TorturePrisoners(float);
@@ -28,6 +30,7 @@ void JB_ControlPoint_Deactivate(entity, float);
 void JB_ControlPoint_UpdateCooldownProgress(entity);
 string JB_ControlPoint_Name(entity);
 float JB_JailIsOpen(float);
+float JB_AliveCheck(entity);
 
 float JB_PlayerDies(entity);
 void JB_PlayerSpawn();
@@ -57,8 +60,8 @@ void JB_RemovePlayer();
 .entity jb_waypoint;
 .entity jb_capturingplayer;
 
-float jb_totalred, jb_totalblue;
 float jb_roundover;
+float jb_recount;
 
 entity jb_activecamera;
 entity jb_cp_first;

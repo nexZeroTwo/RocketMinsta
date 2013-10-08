@@ -1,8 +1,6 @@
 
 float g_freeze;
 float g_freezetag;
-float g_freeze_playersalive[4];
-float g_freeze_playerstotal[4];
 float g_freeze_globalwarming;
 float g_freeze_globalwarming_warned;
 float g_freeze_globalwarming_reset;

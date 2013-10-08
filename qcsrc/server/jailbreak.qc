@@ -135,8 +135,34 @@ void JB_NonJBInit() {
 //
 
 void JB_Frame() {
-	JB_CountPlayers();
-	self.nextthink = time + 0.1;
+    float redsout, bluesout;
+    
+    if(jb_recount) {
+        TeamCount_RecountPlayers(JB_AliveCheck);
+        jb_recount = FALSE;
+    }
+    
+    self.nextthink = time;
+    DEPENDON(JB_GAME_ACTIVE)
+    
+    if(gameover)
+        return;
+    
+    if(JB_TotalPlayersOnTeam(COLOR_TEAM1) < 1)
+        return;
+        
+    if(JB_TotalPlayersOnTeam(COLOR_TEAM2) < 1)
+        return;
+    
+    redsout  = !JB_AlivePlayersOnTeam(COLOR_TEAM1) && !JB_JailIsOpen(COLOR_TEAM2);
+    bluesout = !JB_AlivePlayersOnTeam(COLOR_TEAM2) && !JB_JailIsOpen(COLOR_TEAM1);
+    
+    if(redsout && bluesout)
+        JB_TeamWins(0);
+    else if(redsout)
+        JB_TeamWins(COLOR_TEAM2);
+    else if(bluesout)
+        JB_TeamWins(COLOR_TEAM1);
 }
 
 float JB_JailIsOpen(float theteam) {
@@ -258,7 +284,15 @@ void JB_Release(entity saviour) {
 
 void JB_TeamWins(float theteam) {
 	string teamname, teamname_full;
-	
+    entity e;
+    
+    if(!theteam) {
+        FOR_EACH_PLAYER(e)
+            bigprint_spec(e, "Round Draw!", "", 5);
+        JB_EndRound(5);
+        return;
+    }
+    
 	switch(theteam) {
 		case COLOR_TEAM1:	teamname = "^1Red";		play2all("ctf/red_capture.wav");	break;
 		case COLOR_TEAM2:	teamname = "^4Blue";	play2all("ctf/blue_capture.wav");	break;
@@ -266,7 +300,7 @@ void JB_TeamWins(float theteam) {
 	
 	teamname_full = ColoredTeamName(theteam);
 	
-	entity e; FOR_EACH_PLAYER(e) {
+	FOR_EACH_PLAYER(e) {
 		bigprint_spec(e, strcat(teamname, "^7 Scores!"), "All opponents are imprisoned", JB_TORTURE_DURATION);
 		
 		if(e.team == theteam)
@@ -278,47 +312,12 @@ void JB_TeamWins(float theteam) {
 	
 	JB_ActivateCamera(theteam, JB_TORTURE_DURATION);
 	JB_TorturePrisonersLater(theteam, 3);
-	JB_EndRound();
+	JB_EndRound(JB_TORTURE_DURATION);
 }
 
 void JB_CountPlayers() {
-	entity p;
-	
-	jb_totalred = jb_totalblue = totalalive = redalive = bluealive = 0;
-	
-	FOR_EACH_PLAYER(p) { 
-		switch(p.team) {
-			case COLOR_TEAM1:	jb_totalred++;		break;
-			case COLOR_TEAM2:	jb_totalblue++;		break;
-		}
-		
-		if(!p.jb_isprisoned && p.health > 0) {
-			totalalive++;
-			
-			switch(p.team) {
-				case COLOR_TEAM1:	redalive++; 	break;
-				case COLOR_TEAM2:	bluealive++; 	break;
-			}
-		}
-	}
-	
-	FOR_EACH_REALCLIENT(p) {
-		p.redalive_stat = redalive;
-		p.bluealive_stat = bluealive;
-	}
-	
-	DEPENDON(JB_GAME_ACTIVE)
-	
-	if(jb_totalred < 1 || jb_totalblue < 1)
-		return;
-	
-	if(gameover && !redalive && !bluealive)
-		return;
-	
-	if(!redalive && !JB_JailIsOpen(COLOR_TEAM2))
-		JB_TeamWins(COLOR_TEAM2);
-	else if(!bluealive && !JB_JailIsOpen(COLOR_TEAM1))
-		JB_TeamWins(COLOR_TEAM1);
+    //TeamCount_RecountPlayers(JB_AliveCheck);
+    jb_recount = TRUE;
 }
 
 void JB_HandleProjectile(entity proj) {
@@ -638,24 +637,25 @@ float JB_PlayerDies(entity frag_attacker) {
 }
 
 void JB_PlayerSpawn() {
-	DEPENDON(g_jailbreak)
-	
-	self.jb_isprisoned = FALSE;
-	PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    DEPENDON(g_jailbreak)
     
-	self.jb_fragrow = 0;
-	
+    self.jb_isprisoned = FALSE;
+    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    
+    self.jb_fragrow = 0;
+    
     if(jb_activecamera)
         JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
     
-	DEPENDON(JB_GAME_ACTIVE)
-	
-	if(JB_TotalPlayersOnTeam(self.team) - 1 > 0) {	// allow to spawn non-prisoned if there are no players on that team
-		JB_Imprison(world);
+    DEPENDON(JB_GAME_ACTIVE)
+    
+    TeamCount_RecountPlayers(JB_AliveCheck);
+    if(JB_TotalPlayersOnTeam(self.team) - 1 > 0) {	// allow to spawn non-prisoned if there are no players on that team
+        JB_Imprison(world);
         self.hg_clearammo = 1;
     }
-	
-	self.jb_roundlost = FALSE;
+    
+    self.jb_roundlost = FALSE;
 }
 
 void JB_RemovePlayer() {
@@ -665,6 +665,7 @@ void JB_RemovePlayer() {
 		JB_Release(world);
 	
 	self.jb_roundlost = FALSE;
+    JB_CountPlayers();
 }
 
 .float pointupdatetime;
@@ -727,8 +728,8 @@ void JB_PrepareNextRound() {
     self.endround_think2 = func_null;
 }
 
-void JB_EndRound() {
-	G_EndRound("Jailbreak", JB_TORTURE_DURATION, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
+void JB_EndRound(float t) {
+	G_EndRound("Jailbreak", t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
@@ -757,27 +758,14 @@ float JB_GetEnemyTeamOf(float t) {
 }
 
 float JB_TotalPlayersOnTeam(float theteam) {
-	JB_CountPlayers();	// just in case ;)
-	
-	switch(theteam) {
-		case COLOR_TEAM1: return jb_totalred;
-		case COLOR_TEAM2: return jb_totalblue;
-	}
-	
-	return -1;	// wtf? wrong team dude.
+    float idx = Team_Index(theteam);
+    return teamcount_playerstotal[idx];
 }
 
 float JB_AlivePlayersOnTeam(float theteam) {
-	JB_CountPlayers();	// just in case ;)
-	
-	switch(theteam) {
-		case COLOR_TEAM1: return redalive;
-		case COLOR_TEAM2: return bluealive;
-	}
-	
-	return -1;	// wtf? wrong team dude.
+	float idx = Team_Index(theteam);
+    return teamcount_playersalive[idx];
 }
-
 
 entity JB_FindCamera(float theteam) {
 	RandomSelection_Init();

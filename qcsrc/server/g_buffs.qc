@@ -27,7 +27,7 @@ void Buffs_Init_Delayed(void) {
     if(!teams_matter)
         return;
     
-    teams_total = 4 + c1 + c2 + c3 + c4;
+    teams_total = TeamCount_TotalTeams();
     
     blist = findchain(classname, "item_buff");
     for(b = blist; b; b = b.chain) if(b.team) {

@@ -3107,7 +3107,7 @@ else
         kh_FinishRound();
 else
 	if(g_jailbreak)
-		JB_EndRound();
+		JB_EndRound(5);
 else
     bprint("EndRound() for an unsupported gametype!?\n");
 }

@@ -62,10 +62,10 @@ void Freeze_Frame(void) {
         wr = Freeze_CVar("global_warming_minratio");
         
         if(!g_freeze_globalwarming_warned && wr < 1) {
-            r = min(r, (g_freeze_playerstotal[0]? g_freeze_playersalive[0]/g_freeze_playerstotal[0] : 1));
-            r = min(r, (g_freeze_playerstotal[1]? g_freeze_playersalive[1]/g_freeze_playerstotal[1] : 1));
-            r = min(r, (g_freeze_playerstotal[2]? g_freeze_playersalive[2]/g_freeze_playerstotal[2] : 1));
-            r = min(r, (g_freeze_playerstotal[3]? g_freeze_playersalive[3]/g_freeze_playerstotal[3] : 1));
+            r = min(r, (teamcount_playerstotal[0]? teamcount_playersalive[0]/teamcount_playerstotal[0] : 1));
+            r = min(r, (teamcount_playerstotal[1]? teamcount_playersalive[1]/teamcount_playerstotal[1] : 1));
+            r = min(r, (teamcount_playerstotal[2]? teamcount_playersalive[2]/teamcount_playerstotal[2] : 1));
+            r = min(r, (teamcount_playerstotal[3]? teamcount_playersalive[3]/teamcount_playerstotal[3] : 1));
         } else r = 0;
         
         if(r <= wr) {
@@ -99,43 +99,19 @@ void Freeze_Ice_Think() {
 }
 
 float Freeze_GetPlayersAlive(float t) {
-    return g_freeze_playersalive[Team_Index(t)];
+    return teamcount_playersalive[Team_Index(t)];
 }
 
 float Freeze_GetPlayersTotal(float t) {
-    return g_freeze_playerstotal[Team_Index(t)];
+    return teamcount_playerstotal[Team_Index(t)];
+}
+
+float Freeze_AliveCheck(entity plr) {
+    return !plr.frozen;
 }
 
 void Freeze_RecountPlayers(void) {
-    float i;
-    entity e;
-    
-    if(!g_freeze)
-        return;
-        
-    for(i = 0; i < 4; ++i) {
-        g_freeze_playersalive[i] = 0;
-        g_freeze_playerstotal[i] = 0;
-    }
-    
-    FOR_EACH_PLAYER(e) {
-        float idx = Team_Index(e.team);
-        float fteqcc_sucks;
-        
-        fteqcc_sucks = g_freeze_playerstotal[idx];
-        g_freeze_playerstotal[idx] = fteqcc_sucks + 1;
-        if(!e.frozen) {
-            fteqcc_sucks = g_freeze_playersalive[idx];
-            g_freeze_playersalive[idx] = fteqcc_sucks + 1;
-        }
-    }
-    
-    if(g_freezetag) FOR_EACH_REALCLIENT(e) {
-        e.redalive_stat     = g_freeze_playersalive[0];
-        e.bluealive_stat    = g_freeze_playersalive[1];
-        e.yellowalive_stat  = ((ft_teams > 2)? g_freeze_playersalive[2] : -1);
-        e.pinkalive_stat    = ((ft_teams > 3)? g_freeze_playersalive[3] : -1);
-    }
+    TeamCount_RecountPlayers(Freeze_AliveCheck);
 }
 
 entity Freeze_SpawnIceBlock(entity plr) {
@@ -245,10 +221,6 @@ void Freeze_UnfreezeAll(void) {
     g_freeze_globalwarming_warned = 0;
 }
 
-float Freeze_AliveCheck(entity plr) {
-    return !plr.frozen;
-}
-
 void Freeze_SaveSpawnState(entity plr) {
     plr.spawnstate_saved = TRUE;
     plr.spawnstate_team = plr.team;
@@ -339,6 +311,9 @@ void Freeze_Hook_PlayerQuits(void) {
 }
 
 void Freeze_Hook_PlayerSpawns(void) {
+    if(!g_freeze)
+        return;
+    
     Freeze_UnfreezePlayer(self);
     
     if(!Freeze_GameInProgress())
