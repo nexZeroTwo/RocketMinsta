@@ -395,6 +395,7 @@ string reptable_src[MAXREPS];
 string reptable_rep[MAXREPS];
 float reptable_srclen[MAXREPS];
 float reptable_replen[MAXREPS];
+float reptable_wordmode[MAXREPS];
 float reptable_count;
 float reptable_init;
 float reptable_maxsrclen;
@@ -427,6 +428,7 @@ void reptable_free() {
 		strunzone(reptable_rep[i]);
 		reptable_srclen[i] = 0;
 		reptable_replen[i] = 0;
+		reptable_wordmode[i] = FALSE;
 	}
 	reptable_count = 0;
 	reptable_maxsrclen = 0;
@@ -443,6 +445,12 @@ void reptable_make(string replacements) {
 	float i;
 	for(i = 0; i < reptable_count; ++i) {
 		string id = argv(i);
+        
+        if(substring(id, 0, 1) == "%") {
+            id = substring(id, 1, strlen(id) - 1);
+            reptable_wordmode[i] = TRUE;
+        }
+        
 		string src = strzone(getsrc(id));
 		string rep = strzone(getrep(id));
 		float srclen = strlen(src);
@@ -474,6 +482,9 @@ string apply_autoreplace(string msg) {
 		reptable_make(reps);
 	}
 	
+    float a = 97;
+    float z = 122;
+    
 	float i, len;
 	len = strlen(msg);
 	
@@ -495,6 +506,22 @@ string apply_autoreplace(string msg) {
 			if(p == reptable_src[id]) {
 				//print("apply_autoreplace: success\n");
 				
+                if(reptable_wordmode[id]) {
+                    float c;
+                    
+                    if(i > 0) {
+                        c = str2chr(msg, i - 1);
+                        if(c >= a && c <= z)
+                            continue;
+                    }
+                    
+                    if(i + slen < len) {
+                        c = str2chr(msg, i + slen);
+                        if(c >= a && c <= z)
+                            continue;
+                    }
+                }
+                
 				string head = substring(msg, 0, i);
 				string tail = substring(msg, i + slen, len);
 				msg = strcat(head, reptable_rep[id], tail);
