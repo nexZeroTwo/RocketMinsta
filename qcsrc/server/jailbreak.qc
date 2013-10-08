@@ -172,10 +172,30 @@ float JB_JailIsOpen(float theteam) {
     return FALSE;
 }
 
-void JB_Imprison(entity attacker) {
-	float et;
+void JB_TeleportToJail(entity p) {
     vector a;
-	
+    float et = JB_GetEnemyTeamOf(p.team);
+    entity spot = JB_ChooseJailSpawnpoint(et);
+    
+    float tries;
+    tries = 3;
+    
+    while(!spot && tries) {
+        spot = JB_ChooseJailSpawnpoint(et);
+        tries--;
+    }
+    
+    if(!spot) {
+        JB_BLog(strcat("Failed to pick a jail spawnpoint for ", self.netname, "^7, cannot imprison!"));
+        return;
+    }
+    
+    a = spot.angles;
+    a_z = 0;
+    TeleportPlayer_NextFrame(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
+}
+
+void JB_Imprison(entity attacker) {
 	if(self.jb_isprisoned) {
 		JB_Log(strcat("Tried to imprison a prisoned player (", self.netname, ")"));
 		return;
@@ -202,30 +222,7 @@ void JB_Imprison(entity attacker) {
 	}
 	
 	JB_Log(strcat("Imprisoning ", self.netname, "^7, attacker: ", etos(attacker), " with netname: ", attacker.netname));
-	
-	if(attacker && attacker.team && attacker.team != self.team)
-		et = attacker.team;
-	else
-		et = JB_GetEnemyTeamOf(self.team);
-	
-	entity spot = JB_ChooseJailSpawnpoint(et);
-	
-	float tries;
-	tries = 3;
-	
-	while(!spot && tries) {
-		spot = JB_ChooseJailSpawnpoint(et);
-		tries--;
-	}
-	
-	if(!spot) {
-		JB_BLog(strcat("Failed to pick a jail spawnpoint for ", self.netname, "^7, cannot imprison!"));
-		return;
-	}
-    
-    a = spot.angles;
-    a_z = 0;
-    TeleportPlayer(spot, self, spot.origin, a, '0 0 0', '0 0 0', '0 0 0');
+	JB_TeleportToJail(self);
     
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
@@ -670,9 +667,9 @@ void JB_RemovePlayer() {
 
 .float pointupdatetime;
 void JB_PlayerPreThink() {
-	DEPENDON(g_jailbreak)
+    DEPENDON(g_jailbreak)
     
-	if(roundstate == ROUNDSTATE_WARMUP) {
+    if(roundstate == ROUNDSTATE_WARMUP) {
         PlayerScore_Set(self, SP_FROZENSTATUS, 0);
         self.jb_isprisoned_prev = 0;
     }
@@ -693,19 +690,20 @@ void JB_PlayerPreThink() {
         self.jb_isprisoned_prev = ps;
     }
     
-	if(time - self.pointupdatetime >= 0.01) {
-		self.jb_unlock_progress = 0;
+    if(time - self.pointupdatetime >= 0.01) {
+        self.jb_unlock_progress = 0;
         self.jb_message = JBMSG_NONE;
     }
-	
-	if(self.jb_isprisoned < 2)
-		return;
-		
-	if(time - self.jb_prisontime < 1)
-		return;
-	
-	if(time > self.jb_jail_resettime)
-		JB_Release(self.jb_saviour);
+    
+    if(time - self.jb_prisontime < 0.5)
+        return;
+    
+    if(self.jb_isprisoned == 1) {
+        bprint("^1BUG: ^7", self.netname, " ^7somehow got out of jail without touching the jail sector! Trying to put him back in.\n");
+        JB_TeleportToJail(self);
+    } else if(self.jb_isprisoned)
+        if(time > self.jb_jail_resettime)
+            JB_Release(self.jb_saviour);
 }
 
 //
