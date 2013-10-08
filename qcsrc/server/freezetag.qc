@@ -52,7 +52,7 @@ void FreezeTag_Initialize()
 void FreezeTag_CheckWinner()
 {
     string teamname, teamname_full;
-    float winnerteam, i, teams_found;
+    float winnerteam, i, teams_found, alivefound;
     entity e;
     
     DEPENDON(g_freezetag)
@@ -69,6 +69,7 @@ void FreezeTag_CheckWinner()
     for(i = 0; i < ft_teams; ++i) {
         if(g_freeze_playerstotal[i]) {
             if(g_freeze_playersalive[i]) {
+                alivefound = TRUE;
                 if(!winnerteam)
                     winnerteam = Team_FromIndex(i);
                 else
@@ -79,7 +80,7 @@ void FreezeTag_CheckWinner()
         }
     }
     
-    if(!winnerteam || teams_found < 2)
+    if((!winnerteam && alivefound) || teams_found < 2)
         return;
     
     if(winnerteam == COLOR_TEAM1) {
@@ -97,7 +98,8 @@ void FreezeTag_CheckWinner()
         teamname = "^6Pink";
         teamname_full = "^6Pink team";
     } else {
-        bprint("^1BUG: ^7An invalid team somehow won! Aborting the round to prevent a crash\n");
+        FOR_EACH_PLAYER(e)
+            bigprint_spec(e, "Round Draw!", "", 5);
         FreezeTag_EndRound();
         return;
     }
