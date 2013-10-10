@@ -823,7 +823,7 @@ void HG_Linker_Think() {
                 thealth += p.health;
                 tarmor += p.armorvalue;
                 
-                FOR_EACH_PLAYER(e) if(e.hg_linker == self) IF_HG_LINKER_APPLICABLE(e) {
+                FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) IF_HG_LINKER_APPLICABLE(e) {
                     te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
                 }
             }
