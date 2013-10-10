@@ -219,37 +219,7 @@ void Sbar_DrawXNum (vector pos, float num, float digits, float showminusplus, fl
 
 void Sbar_DrawXNum_Colored (vector pos, float x, float lettersize, float alpha)
 {
-	if(x > 200) {
-		color_x = 0;
-		color_y = 1;
-		color_z = 0;
-	}
-	else if(x > 150) {
-		color_x = 0.4 - (x-150)*0.02 * 0.4; //red value between 0.4 -> 0
-		color_y = 0.9 + (x-150)*0.02 * 0.1; // green value between 0.9 -> 1
-		color_z = 0;
-	}
-	else if(x > 100) {
-		color_x = 1 - (x-100)*0.02 * 0.6; //red value between 1 -> 0.4
-		color_y = 1 - (x-100)*0.02 * 0.1; // green value between 1 -> 0.9
-		color_z = 1 - (x-100)*0.02; // blue value between 1 -> 0
-	}
-	else if(x > 50) {
-		color_x = 1;
-		color_y = 1;
-		color_z = 0.2 + (x-50)*0.02 * 0.8; // blue value between 0.2 -> 1
-	}
-	else if(x > 20) {
-		color_x = 1;
-		color_y = (x-20)*90/27/100; // green value between 0 -> 1
-		color_z = (x-20)*90/27/100 * 0.2; // blue value between 0 -> 0.2
-	}
-	else {
-		color_x = 1;
-		color_y = 0;
-		color_z = 0;
-	}
-	Sbar_DrawXNum(pos, x, 3, 0, lettersize, color, 0, 0, alpha, DRAWFLAG_NORMAL);
+	Sbar_DrawXNum(pos, x, 3, 0, lettersize, healthcolor(x), 0, 0, alpha, DRAWFLAG_NORMAL);
 }
 
 void Cmd_Sbar_SetFields(float argc);
@@ -796,7 +766,7 @@ string Sbar_GetField(entity pl, float field)
             else if(g_handgrenades && cvar("_g_handgrenades_select_available")) {
                 if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
                     float hgt = pl.(scores[SP_NADEMODE]);
-                    sbar_field_icon0 = strcat("gfx/nades/", HG_TypeToName(hgt));
+                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
                     sbar_field_icon0_rgb = HG_TypeToColor(hgt);
                 }
             }
@@ -1080,7 +1050,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
             } else if(field == SP_NADEMODE) {
 				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
-                drawpic(pos - tmp, strcat("gfx/nades/", HG_TypeToName(pl.(scores[SP_NADEMODE]))), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
+                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
@@ -3403,7 +3373,7 @@ void Sbar_DrawHGBonus(void) {
     sw = stringwidth(s, FALSE) + 1;
     o_x -= (spacing + fs_x * sw) * 0.5;
     
-    drawpic(o, strcat("gfx/nades/", HG_TypeToName(hgtype), "_large"), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    drawpic(o, HG_TypeToIcon(hgtype, TRUE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
     o_x += fs_x + spacing;
     drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
@@ -4945,7 +4915,7 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            drawpic(pos, strcat("gfx/nades/", HG_TypeToName(t), "_large"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+            drawpic(pos, HG_TypeToIcon(t, TRUE), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1' - '0 1 1' * (!a), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method

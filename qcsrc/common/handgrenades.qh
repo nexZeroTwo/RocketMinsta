@@ -6,9 +6,12 @@
 #define HG_NAPALM       DEATH_HG_NAPALM
 #define HG_TRANSLOC     DEATH_HG_TRANSLOC
 #define HG_SHIELD       DEATH_HG_SHIELD
+#define HG_LINKER       DEATH_HG_LINKER
 
 string HG_TypeToName(float);
 float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
-string HG_NameToExpandedName(string t);
-vector HG_TypeToColor(float t);
+string HG_NameToExpandedName(string);
+vector HG_TypeToColor(float);
+string HG_TypeToIcon(float, float);
+string HG_NameToIcon(string, float);

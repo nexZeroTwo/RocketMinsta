@@ -1,38 +1,41 @@
 
 string HG_TypeToExpandedName(float t) {
-	switch(t) {
-		case HG_NORMAL      :   return "Hand Grenade";
-		case HG_NAPALM      :   return "Napalm Grenade";
-		case HG_REMOTE      :   return "Fire Trap";
+    switch(t) {
+        case HG_NORMAL      :   return "Hand Grenade";
+        case HG_NAPALM      :   return "Napalm Grenade";
+        case HG_REMOTE      :   return "Fire Trap";
         case HG_PLASMA      :   return "Plasma Bomb";
         case HG_PLASMA_SHARD:   return "Plasma Bomb";
         case HG_TRANSLOC    :   return "Translocator";
         case HG_SHIELD      :   return "Reflective Shield";
-		default             :   return "Fuckoff Grenade";
-	}
+        case HG_LINKER      :   return "Linking Shell";
+        default             :   return "Fuckoff Grenade";
+    }
 }
 
 string HG_TypeToName(float t) {
-	switch(t) {
-		case HG_NORMAL      :   return "normal";
-		case HG_NAPALM      :   return "napalm";
-		case HG_REMOTE      :   return "remote";
+    switch(t) {
+        case HG_NORMAL      :   return "normal";
+        case HG_NAPALM      :   return "napalm";
+        case HG_REMOTE      :   return "remote";
         case HG_PLASMA      :   return "plasma";
         case HG_TRANSLOC    :   return "transloc";
         case HG_SHIELD      :   return "shield";
-		default             :   return strcat("fuckoff", ftos(t));
-	}
+        case HG_LINKER      :   return "linker";
+        default             :   return strcat("fuckoff", ftos(t));
+    }
 }
 
 float HG_NameToType(string t) {
-	switch(t) {
-		case "napalm"       :   return HG_NAPALM;
+    switch(t) {
+        case "napalm"       :   return HG_NAPALM;
         case "remote"       :   return HG_REMOTE;
         case "plasma"       :   return HG_PLASMA;
         case "transloc"     :   return HG_TRANSLOC;
         case "shield"       :   return HG_SHIELD;
-		default             :   return HG_NORMAL;
-	}
+        case "linker"       :   return HG_LINKER;
+        default             :   return HG_NORMAL;
+    }
 }
 
 string HG_NameToExpandedName(string t) {
@@ -47,6 +50,23 @@ vector HG_TypeToColor(float t) {
         case HG_PLASMA      :   return '0.1 1.0 1.0';
         case HG_TRANSLOC    :   return '1.0 0.3 0.9';
         case HG_SHIELD      :   return '1.0 1.0 0.0';
+        case HG_LINKER      :   return '0.3 0.3 1.0';
         default             :   return '0.5 0.5 0.5';
     }
+}
+
+string HG_NameToIcon(string n, float large) {
+    string s = strcat("gfx/nades/", n);
+    
+    if(large)
+        s = strcat(s, "_large");
+    
+    if(n == "linker")
+        s = strcat(s, "_placeholder");
+    
+    return s;
+}
+
+string HG_TypeToIcon(float t, float large) {
+    return HG_NameToIcon(HG_TypeToName(t), large);
 }

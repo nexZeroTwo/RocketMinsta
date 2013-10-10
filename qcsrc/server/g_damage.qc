@@ -964,6 +964,9 @@ entity damage_targ;
 entity damage_inflictor;
 entity damage_attacker;
 
+float damage_linkmode;
+entity damage_origtarget;
+
 .float ignore_next;
 .float dmg_jaildm;
 
@@ -983,6 +986,31 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
 	if(gameover || targ.killcount == -666)
 		return;
+            
+    if not(damage_linkmode) { 
+        damage_origtarget = targ;
+        if(targ.hg_linker) {
+            if(teams_matter && targ.team == attacker.team)
+                return;
+            
+            damage_linkmode = TRUE;
+            entity e, linklist = findchainentity(hg_linker, targ.hg_linker);
+            float denom;
+            
+            for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e)
+                ++denom;
+            
+            if(denom) for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e) {
+                if(e != targ)
+                    te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
+                    
+                Damage(e, inflictor, attacker, (damage / denom) * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
+            }
+                
+            damage_linkmode = FALSE;
+            return;
+        }
+    }
 
 	// I just feel like there are WAY too many checks for these in this function
 	// By the way, this function is one of the messiest pieces of code here, it could compete with vip.qc ;)
@@ -1398,9 +1426,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				// find height of hit on player axis
 				// if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
 				vector headmins, headmaxs, org;
-				org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
-				headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * targ.view_ofs_z - 0.3 * targ.maxs_z);
-				headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * targ.maxs_z;
+				org = antilag_takebackorigin(damage_origtarget, time - ANTILAG_LATENCY(attacker));
+				headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * damage_origtarget.view_ofs_z - 0.3 * damage_origtarget.maxs_z);
+				headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * damage_origtarget.maxs_z;
 				if(trace_hits_box(railgun_start, railgun_end, headmins, headmaxs))
 				{
 					deathtype |= HITTYPE_HEADSHOT;

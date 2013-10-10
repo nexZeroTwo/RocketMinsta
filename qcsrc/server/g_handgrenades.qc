@@ -33,8 +33,10 @@ void HG_Precache() {
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("weapons/rocket_mode.wav");
     precache_sound("misc/powerup_shield.wav");
+    precache_sound("kh/capture.wav");
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
+    precache_model("models/shield_inner.md3");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
@@ -758,7 +760,6 @@ void HG_Shield(float hgtype) {
     self.hg_shield = self.hg_shieldmax;
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
-    //sound(self, CHAN_PROJECTILE, "misc/powerup_shield", VOL_BASE, ATTN_NORM);
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
     if(!self.hg_shieldmodel) {
@@ -797,33 +798,131 @@ void HG_Shield_Frame() {
     }
 }
 
+.float spawntime;
+.float hg_linker_nexteffect;
+
+void HG_Linker_Think() {
+    entity p, e;
+    float denom, thealth, tarmor;
+    
+    FOR_EACH_PLAYER(p) {
+        if(p.team != self.team) {
+            if(p.hg_linker == self)
+                p.hg_linker = world;
+        } else if(p.hg_linker == self) {
+            if(vlen(self.origin - p.origin) > self.hg_linker_range)
+                p.hg_linker = world;
+        } else if(!p.hg_linker) {
+            if(vlen(self.origin - p.origin) <= self.hg_linker_range)
+                p.hg_linker = self;
+        }
+        
+        if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
+            if(time > self.hg_linker_nexteffect) {
+                ++denom;
+                thealth += p.health;
+                tarmor += p.armorvalue;
+                
+                FOR_EACH_PLAYER(e) if(e.hg_linker == self) IF_HG_LINKER_APPLICABLE(e) {
+                    te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
+                }
+            }
+        }
+    }
+    
+    if(time > self.hg_linker_nexteffect) {
+        self.hg_linker_nexteffect = time + 1;
+        
+        if(denom > 1) {
+            sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
+            FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
+                p.health = thealth / denom;
+                p.armorvalue = tarmor / denom;
+                p.pauserothealth_finished = max(p.pauserothealth_finished, time + 1);
+                p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 1);
+            }
+        }
+    }
+    
+    self.alpha = bound(0, (self.cnt - time) * 2, 1);
+    
+    if(self.alpha == 0) {
+        remove(self.enemy);
+        remove(self);
+    }
+    
+    self.alpha = max(0.01, self.alpha * bound(0, (time - self.spawntime) * 2, 1));
+    self.enemy.alpha = self.alpha * 0.7;
+    self.glow_size = self.hg_linker_range * self.alpha * 3;
+    self.nextthink = time;
+}
+
+void HG_Linker(float hgtype) {
+    entity e = spawn();
+    e.classname = "hg_linker";
+    e.owner = self;
+    e.team = self.team;
+    e.think = HG_Linker_Think;
+    e.nextthink = time;
+    e.spawntime = time;
+    e.reset = SUB_Remove;
+    e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+    e.movetype = MOVETYPE_NONE;
+    e.hg_linker_range = GRENVAR(hgtype, "range");
+    e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
+    e.cnt = time + GRENVAR(hgtype, "duration");
+    e.alpha = 0.01;
+    setmodel(e, "models/ctf/shield.md3");
+    if(e.team) e.skin = TeamColorSkin(e.team);
+    e.scale = e.hg_linker_range / e.maxs_x;
+    e.glow_color = 0xF5;
+    setorigin(e, self.origin);
+    
+    e.enemy = spawn();
+    e.enemy.owner = e;
+    e.enemy.effects = e.effects;
+    //e.enemy.colormod = TeamColor(e.team);
+    e.enemy.movetype = e.movetype;
+    e.enemy.scale = e.scale;
+    e.enemy.reset = SUB_Remove;
+    e.enemy.alpha = e.alpha;
+    e.enemy.skin = e.skin;
+    setmodel(e.enemy, "models/shield_inner.md3");
+    setorigin(e.enemy, e.origin);
+    
+    sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
+}
+
 void HG_Attack()
 {
-	#define GV(v) (GRENVAR(hgtype, v))
-	float hgtype;
+    #define GV(v) (GRENVAR(hgtype, v))
+    float hgtype;
     float freebonus;
-	
+    
     if(self.deadflag != DEAD_NO)
         return;
     
     HG_FixNadeType(self);
-	
-	if(self.hg_bonus) {
-		hgtype = self.hg_bonustype;
+    
+    if(self.hg_bonus) {
+        hgtype = self.hg_bonustype;
         freebonus = cvar("g_handgrenades_bonus_free");
-	} else {
+    } else {
         if(time < self.hg_next)
             return;
             
-		hgtype = self.hg_type;
+        hgtype = self.hg_type;
     }
-	
+    
     if(!freebonus && !self.hg_ammo)
         return;
     
     if(hgtype == HG_SHIELD) {
-        // shield is special - it's not actually a projectile
+        // shield is special
         HG_Shield(hgtype);
+        goto finish;
+    } else if(hgtype == HG_LINKER) {
+        HG_Linker(hgtype);
         goto finish;
     }
     
@@ -933,8 +1032,10 @@ void HG_Frame()
     
     if(time < game_starttime)
         return;
-        
-    //HG_UpdateDetonables();
+    
+    if(self.hg_linker && wasfreed(self.hg_linker))
+        self.hg_linker = world;
+    
     HG_FixNadeType(self);
     HG_Shield_Frame();
     

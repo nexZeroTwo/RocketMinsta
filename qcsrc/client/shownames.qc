@@ -126,9 +126,10 @@ void Draw_ShowNames()
             namepos = myPos + eX * 2 * iconsize_y + eY * 0.5 * resize * (autocvar_hud_shownames_height - autocvar_hud_shownames_fontsize);
             namesize = mySize_x - 2 * iconsize_y;
 
-            string s;
+            string s, s2;
             s = GetPlayerName(self.the_entnum-1);
             vector textsz = '1 1 0' * autocvar_hud_shownames_fontsize * resize;
+            float hsz = 2;
             
             if(teamplay) {
                 s = strdecolorize(s);
@@ -146,15 +147,23 @@ void Draw_ShowNames()
             if(self.sameteam) {
                 float mx = 200;
                 vector dmg = healtharmor_maxdamage(self.healthvalue, self.armorvalue, armorblockpercent);
-                self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
-                drawstring(namepos, s, textsz, '0.2 0.2 0.2', a * 0.7, DRAWFLAG_NORMAL);
-                drawsetcliparea(namepos_x, namepos_y, width * self.health_v / mx, textsz_y);
+                dmg_x = max(0, ceil(dmg_x));
+                
+                if(dmg_x) {
+                    self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
+                    //drawstring(namepos, s, textsz, '0.2 0.2 0.2', a * 0.7, DRAWFLAG_NORMAL);
+                    drawfont = sbar_bigfont;
+                    s2 = ftos(dmg_x); // strcat(ftos(self.healthvalue), " / ", ftos(self.armorvalue));
+                    drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, healthcolor(dmg_x), a * 0.7, DRAWFLAG_NORMAL);
+                    drawfont = sbar_font;
+                    //drawsetcliparea(namepos_x, namepos_y, width * self.health_v / mx, textsz_y);
+                }
             }            
             
             if(teamplay)
-				drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
-			else
-				drawcolorcodedstring(namepos, s, textsz, a, DRAWFLAG_NORMAL);
+                drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+            else
+                drawcolorcodedstring(namepos, s, textsz, a, DRAWFLAG_NORMAL);
             
             drawresetcliparea();
             

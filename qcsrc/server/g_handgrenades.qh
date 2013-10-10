@@ -67,6 +67,10 @@ float HG_RegenTime(entity);
 .float hg_plasma_projdps_last;
 .float hg_plasma_projdist;
 
+.entity hg_linker;
+.float hg_linker_range;
+.float hg_linker_factor;
+
 // for hud only
 .float hg_regenstat;
 .float hg_launchspeed;
@@ -83,3 +87,5 @@ float hg_plasma_group;
 #define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
 #define HG_PLAYERNADETYPE(p) (((p).hg_bonus)? ((p).hg_bonustype) : ((p).hg_type))
+
+#define IF_HG_LINKER_APPLICABLE(p) if(p.takedamage) if(!p.jb_isprisoned) if(p.deadflag == DEAD_NO) if(!p.frozen)

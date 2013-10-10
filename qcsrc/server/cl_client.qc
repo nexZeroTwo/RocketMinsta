@@ -736,6 +736,7 @@ void PutObserverInServer (void)
 	//	error("No spawnpoints for observers?!?\n");
 	RemoveGrapplingHook(self); // Wazat's Grappling Hook
     
+    self.hg_linker = world;
     self.buffs = 0;
     
 	if(clienttype(self) == CLIENTTYPE_REAL)
@@ -1117,6 +1118,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_linker = world;
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -2934,7 +2936,7 @@ void PlayerPreThink (void)
 	self.stat_game_starttime = game_starttime;
 	self.stat_allow_oldnexbeam = g_allow_oldnexbeam;
 	self.stat_leadlimit = leadlimit;
-
+    
     float isplayer, isspec, isobs;
     
     if(self.classname == "player")

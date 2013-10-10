@@ -806,6 +806,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		race_PreDie();
 		DropAllRunes(self);
 		
+        self.hg_linker = world;
         self.buffs = 0;
         self.fire_endtime = time;
         
