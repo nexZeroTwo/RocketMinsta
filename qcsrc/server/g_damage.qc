@@ -969,6 +969,7 @@ entity damage_origtarget;
 
 .float ignore_next;
 .float dmg_jaildm;
+.float heal_next_particle;
 
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype);
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
@@ -988,6 +989,29 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		return;
             
     if not(damage_linkmode) { 
+        if(BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
+            if(teams_matter && attacker.team == targ.team) {
+                float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor"));
+                if(attacker == targ)
+                    heal *= cvar("g_buffs_medic_selfhealfactor");
+                
+                targ.health += heal;
+                targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + cvar("g_buffs_medic_pauserot"));
+                if(time > targ.heal_next_particle) {
+                    pointparticles(particleeffectnum("electro_impact"), targ.origin + targ.view_ofs, '0 0 0', 1);
+                    targ.heal_next_particle = time + 0.2;
+                }
+                
+                if(heal) {
+                    VisualDamage(attacker, targ, heal, 0, VDMG_TYPE_HEAL);
+                    sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
+                }
+                
+                return;
+            } else
+                damage *= cvar("g_buffs_medic_damagefactor");
+        }
+        
         damage_origtarget = targ;
         if(targ.hg_linker) {
             if(teams_matter && targ.team == attacker.team)

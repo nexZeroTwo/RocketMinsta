@@ -73,7 +73,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 		if(e.frozen)
 			continue;
 		
-		if(o.team == e.team)
+		if(o.team == e.team && !BUFFS_PRESENT(o, BUFF_MEDIC))
 		{
 			if(teamplay == 1)
 				continue;

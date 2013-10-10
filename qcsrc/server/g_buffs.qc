@@ -403,6 +403,12 @@ BUFF_SPAWNFUNC(haste_team2,     BUFF_HASTE,     COLOR_TEAM2)
 BUFF_SPAWNFUNC(haste_team3,     BUFF_HASTE,     COLOR_TEAM3)
 BUFF_SPAWNFUNC(haste_team4,     BUFF_HASTE,     COLOR_TEAM4)
 
+BUFF_SPAWNFUNC(medic,           BUFF_MEDIC,     0)
+BUFF_SPAWNFUNC(medic_team1,     BUFF_MEDIC,     COLOR_TEAM1)
+BUFF_SPAWNFUNC(medic_team2,     BUFF_MEDIC,     COLOR_TEAM2)
+BUFF_SPAWNFUNC(medic_team3,     BUFF_MEDIC,     COLOR_TEAM3)
+BUFF_SPAWNFUNC(medic_team4,     BUFF_MEDIC,     COLOR_TEAM4)
+
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    arc)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      guard)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      haste)

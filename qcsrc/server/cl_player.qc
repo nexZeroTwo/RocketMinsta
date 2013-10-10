@@ -492,34 +492,36 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     p1 = attacker.origin + attacker.view_ofs;
     p2 = targ.origin + targ.view_ofs;
     
-    while(TRUE) {
-        traceline(p2, p1, FALSE, targ);
-        
-        if(trace_ent == attacker) {
-            found = TRUE;
-            break;
+    if(htype != VDMG_TYPE_HEAL) {
+        while(TRUE) {
+            traceline(p2, p1, FALSE, targ);
+            
+            if(trace_ent == attacker) {
+                found = TRUE;
+                break;
+            }
+            
+            if(!trace_ent || trace_fraction == 1)
+                break;
+            
+            trace_ent.railgunhit = TRUE;
+            trace_ent.railgunhitsolidbackup = trace_ent.solid;
+            
+            if (trace_ent.solid == SOLID_BSP)
+                break;
+            
+            trace_ent.solid = SOLID_NOT;
         }
         
-        if(!trace_ent || trace_fraction == 1)
-            break;
+        e = findfloat(world, railgunhit, TRUE);
+        while(e) {
+            e.solid = e.railgunhitsolidbackup;
+            e = findfloat(e, railgunhit, TRUE);
+        }
         
-        trace_ent.railgunhit = TRUE;
-        trace_ent.railgunhitsolidbackup = trace_ent.solid;
-        
-        if (trace_ent.solid == SOLID_BSP)
-            break;
-        
-        trace_ent.solid = SOLID_NOT;
+        if(!found)
+            return;
     }
-    
-    e = findfloat(world, railgunhit, TRUE);
-    while(e) {
-        e.solid = e.railgunhitsolidbackup;
-        e = findfloat(e, railgunhit, TRUE);
-    }
-    
-    if(!found)
-        return;
     
     org = targ.origin + targ.maxs_z * '0 0 1.5';
     FOR_EACH_REALCLIENT(e) if(e == attacker || (e.enemy == attacker && e.classname == "spectator")) {

@@ -385,7 +385,7 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     Freeze_DangerShortcut();
-    float shielded = TRUE;
+    float rmod;
     
     // Find all players withing revival radius and build a linked list
     if(self.freezetime + Freeze_CVar("revive_delay") < time) {
@@ -401,17 +401,19 @@ void Freeze_Hook_PlayerPreThink(void) {
                 rlast = other;
                 other.chain     = world;
                 
-                if(!other.hg_shield)
-                    shielded = FALSE;
+                float lmod = 1;
+                if(other.hg_shield)
+                    lmod *= cvar("g_handgrenades_shield_progressrate");
+                if(BUFFS_PRESENT(other, BUFF_MEDIC))
+                    lmod *= cvar("g_buffs_medic_revivefactor");
+                rmod = max(rmod, lmod);
             }
         }
     }
         
     if(rfirst) // OK, there is at least one teammate reviving us
     {
-        float rate = Freeze_CVar("revive_speed");
-        if(shielded)
-            rate *= cvar("g_handgrenades_shield_progressrate");
+        float rate = Freeze_CVar("revive_speed") * rmod;
         
         self.revfinished = 0;
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);

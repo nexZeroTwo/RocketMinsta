@@ -70,7 +70,7 @@ void VisualDamage_PreDraw(void) {
 
 void VisualDamage_Draw(void) {
     float a = ipol_swingInOut(self.alpha), sw;
-    vector o, oldo;
+    vector o, oldo, clr;
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
     float fs = VDMG_FONTSIZE * max(1, a * ((self.vd_type == VDMG_TYPE_CRIT)? 2 : 1));
     
@@ -80,7 +80,14 @@ void VisualDamage_Draw(void) {
         o_z = 0;
         drawfont = sbar_bigfont;
         sw = self.vd_width * fs;
-        drawstring(o - sw * '0.5 0 0', self.vd_str, fs * '1 1 0', '1 0.7 0' - '0 0.4 0' * (self.vd_type == VDMG_TYPE_CRIT), VDMG_ALPHA * a, DRAWFLAG_NORMAL);
+        
+        switch(self.vd_type) {
+            case VDMG_TYPE_HIT:     clr = '1.0 0.7 0.0';     break;
+            case VDMG_TYPE_CRIT:    clr = '1.0 0.3 0.0';     break;
+            case VDMG_TYPE_HEAL:    clr = '0.0 1.0 0.0';     break;
+        }
+        
+        drawstring(o - sw * '0.5 0 0', self.vd_str, fs * '1 1 0', clr, VDMG_ALPHA * a, DRAWFLAG_NORMAL);
         drawfont = sbar_font;
     }
     

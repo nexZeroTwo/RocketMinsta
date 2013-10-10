@@ -3,9 +3,10 @@
 #define BUFF_SUPPLY     2
 #define BUFF_GUARD      4
 #define BUFF_HASTE      8
+#define BUFF_MEDIC      16
 
 #define BUFF_FIRST      BUFF_ARC
-#define BUFF_LAST       BUFF_HASTE
+#define BUFF_LAST       BUFF_MEDIC
 
 string Buffs_TypeToName(float);
 float Buffs_NameToType(string);
