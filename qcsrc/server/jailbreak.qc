@@ -154,8 +154,8 @@ void JB_Frame() {
     if(JB_TotalPlayersOnTeam(COLOR_TEAM2) < 1)
         return;
     
-    redsout  = !JB_AlivePlayersOnTeam(COLOR_TEAM1) && !JB_JailIsOpen(COLOR_TEAM2);
-    bluesout = !JB_AlivePlayersOnTeam(COLOR_TEAM2) && !JB_JailIsOpen(COLOR_TEAM1);
+    redsout  = !(JB_AlivePlayersOnTeam(COLOR_TEAM1) || JB_JailIsOpen(COLOR_TEAM2));
+    bluesout = !(JB_AlivePlayersOnTeam(COLOR_TEAM2) || JB_JailIsOpen(COLOR_TEAM1));
     
     if(redsout && bluesout)
         JB_TeamWins(0);
