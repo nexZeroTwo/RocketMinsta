@@ -3217,15 +3217,23 @@ void PlayerPreThink (void)
 		self.dmg_team = max(0, self.dmg_team - cvar("g_teamdamage_resetspeed") * frametime);
 
 		//self.angles_y=self.v_angle_y + 90;   // temp
-	} else if(gameover) {
-		if (intermission_running)
-			IntermissionThink ();	// otherwise a button could be missed between
-		return;
-	} else if(self.classname == "observer") {
-		ObserverThink();
-	} else if(self.classname == "spectator") {
-		SpectatorThink();
-	}
+	} else {
+        if(self.solid) {
+            bprint("BUG: spectator/observer was solid\n");
+            localcmd("prvm_edict server ", ftos(num_for_edict(self)), "\n");
+            self.solid = SOLID_NOT;
+        }
+        
+        if(gameover) {
+            if(intermission_running)
+                IntermissionThink ();	// otherwise a button could be missed between
+            return;
+        } else if(self.classname == "observer") {
+            ObserverThink();
+        } else if(self.classname == "spectator") {
+            SpectatorThink();
+        }
+    }
 
 	if(!zoomstate_set)
 		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX));
