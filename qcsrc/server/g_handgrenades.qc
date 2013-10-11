@@ -187,8 +187,7 @@ void HG_Napalm()
 				);
 	proj.velocity = kick;
 	proj.pushltime = time + GRENVAR(self.hg_type, "fire_lifetime") + GRENVAR(self.hg_type, "fire_lifetime_randomfactor") * (random() - 0.5) * 2;
-	W_SetupProjectileVelocity(proj);
-
+    
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
@@ -271,12 +270,7 @@ void HG_Plasma_Projectile_Touch()
 void HG_Plasma_Projectile() {
 	local entity proj;
     vector kick;
-
-	W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", cvar("g_balance_electro_secondary_damage"));
-	w_shotdir = v_forward; // no TrueAim for grenades please
-
-	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
-
+    
 	proj = spawn();
 	proj.classname = "plasma";
 	proj.owner = self.owner;
@@ -289,7 +283,7 @@ void HG_Plasma_Projectile() {
     proj.hg_detonatetime = time + cvar("g_handgrenades_plasma_projectile_lifetime") + random() * cvar("g_handgrenades_plasma_projectile_lifetime_randomfactor");
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = HG_PLASMA_SHARD;
-	setorigin(proj, w_shotorg);
+	setorigin(proj, self.origin);
     
 	proj.movetype = MOVETYPE_BOUNCE;
     
@@ -305,11 +299,9 @@ void HG_Plasma_Projectile() {
 				);
 
     proj.velocity = kick;
-	W_SetupProjectileVelocity(proj);
 	proj.touch = HG_Plasma_Projectile_Touch;
 	setsize(proj, '0 0 -3', '0 0 -3');
 	proj.takedamage = DAMAGE_NO;
-	proj.event_damage = W_Plasma_Damage;
 	proj.flags = FL_PROJECTILE;
     proj.hg_plasma_projrange = cvar("g_handgrenades_plasma_projectile_dps_range");
     proj.hg_plasma_projdps = cvar("g_handgrenades_plasma_projectile_dps");
@@ -320,6 +312,7 @@ void HG_Plasma_Projectile() {
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
+    sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
@@ -938,7 +931,7 @@ void HG_Attack()
     
 	makevectors(self.v_angle);
 	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
-	w_shotdir = v_forward;
+	//w_shotdir = v_forward;
 	
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 	
@@ -992,7 +985,7 @@ void HG_Attack()
         
 	W_SetupProjectileVelocity(gren);
 	
-	gren.angles = vectoangles (gren.velocity);
+	gren.angles = vectoangles(gren.velocity);
 	gren.flags = FL_PROJECTILE;
     
 	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
