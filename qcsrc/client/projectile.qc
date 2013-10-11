@@ -55,6 +55,9 @@ float rm_particleeffectnum(string p) {
             case "RM_HG_NAPALM_TRAIL_TEAM3":
             case "RM_HG_NAPALM_TRAIL_TEAM4":
                 return particleeffectnum("firemine");
+            
+            case "RM_HEAL":
+                return particleeffectnum("electro_impact");
         }
     }
     

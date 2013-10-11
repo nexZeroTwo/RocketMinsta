@@ -47,6 +47,7 @@ const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
+const float TE_CSQC_HEAL = 119;
 
 #define VDMG_TYPE_HIT 0
 #define VDMG_TYPE_CRIT 1

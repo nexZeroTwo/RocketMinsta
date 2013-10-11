@@ -973,7 +973,7 @@ void Heal(entity targ, entity inflictor, entity healer, float heal, float pauser
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
     if(time > targ.heal_next_particle) {
-        pointparticles(particleeffectnum("electro_impact"), targ.origin + targ.view_ofs, '0 0 0', 1);
+        te_heal(targ);
         targ.heal_next_particle = time + 0.2;
     }
     

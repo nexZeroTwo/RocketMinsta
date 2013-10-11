@@ -5564,3 +5564,39 @@ lightradius 50
 lightradiusfade 50000
 lightcolor 2.7 0.6 2.5
 
+/////// Healing effect
+
+// flare effect
+effect RM_HEAL
+countabsolute 1
+type static
+tex 38 38
+color 0x8CFF80 0x8CFF80
+size 10 10
+alpha 256 256 512
+// cloud of bouncing sparks
+effect RM_HEAL
+count 60
+type smoke
+tex 42 42
+color 0x62FF6A 0x00FF65
+size 24 24
+sizeincrease -50
+alpha 256 256 1024
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_HEAL
+count 30
+type smoke
+color 0x62FF6A 0x55FF65
+tex 0 8
+size 10 15
+sizeincrease 50
+alpha 200 256 350
+airfriction 30
+originjitter 20 20 20
+velocityjitter 320 320 320

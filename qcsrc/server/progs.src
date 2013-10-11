@@ -31,6 +31,7 @@ campaign.qh
 ../common/buffs.qh
 ip2c.qh
 csqcprojectile.qh
+csqceffects.qh
 
 teamcount.qh
 portals.qh
@@ -52,7 +53,6 @@ jailbreak.qh
 precious.qh
 domination.qh
 
-csqceffects.qc
 scores_rules.qc
 miscfunctions.qc
 waypointsprites.qc
@@ -70,6 +70,7 @@ g_violence.qc
 g_damage.qc
 teamplay.qc
 cl_physics.qc
+csqceffects.qc
 
 // tZork's libs
 pathlib/pathlib.qh

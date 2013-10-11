@@ -2017,6 +2017,14 @@ void Net_ServerInfo() {
 	sv_motd = strzone(ReadString());
 }
 
+void Net_Heal() {
+    vector o;
+    o_x = ReadCoord();
+    o_y = ReadCoord();
+    o_z = ReadCoord();
+    pointparticles(rm_particleeffectnum("RM_HEAL"), o, '0 0 0', 1);
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2087,6 +2095,9 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
         case TE_CSQC_VISUALDAMAGE:
             Net_VisualDamage();
+            return TRUE;
+        case TE_CSQC_HEAL:
+            Net_Heal();
             return TRUE;
 	}
 
