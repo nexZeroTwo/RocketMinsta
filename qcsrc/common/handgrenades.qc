@@ -50,7 +50,7 @@ vector HG_TypeToColor(float t) {
         case HG_PLASMA      :   return '0.1 1.0 1.0';
         case HG_TRANSLOC    :   return '1.0 0.3 0.9';
         case HG_SHIELD      :   return '1.0 1.0 0.0';
-        case HG_LINKER      :   return '0.3 0.3 1.0';
+        case HG_LINKER      :   return '0.5 0.5 1.0';
         default             :   return '0.5 0.5 0.5';
     }
 }
