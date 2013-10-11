@@ -1,7 +1,7 @@
 #ifdef INTERFACE
 CLASS(NexuizNadeMenuDialog) EXTENDS(NexuizRootDialog)
     METHOD(NexuizNadeMenuDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
-    ATTRIB(NexuizNadeMenuDialog, title, string, "Pick Grenade Mode")
+    ATTRIB(NexuizNadeMenuDialog, title, string, "Nadget Selection")
     ATTRIB(NexuizNadeMenuDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
     ATTRIB(NexuizNadeMenuDialog, intendedWidth, float, 0.27)
     ATTRIB(NexuizNadeMenuDialog, rows, float, 7)
