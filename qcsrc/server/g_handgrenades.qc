@@ -867,7 +867,8 @@ void HG_Linker(float hgtype) {
     e.spawntime = time;
     e.reset = SUB_Remove;
     e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-    e.movetype = MOVETYPE_NONE;
+    e.movetype = MOVETYPE_TOSS;
+    e.gravity = 100;
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
     e.cnt = time + GRENVAR(hgtype, "duration");
@@ -876,7 +877,7 @@ void HG_Linker(float hgtype) {
     if(e.team) e.skin = TeamColorSkin(e.team);
     e.scale = e.hg_linker_range / e.maxs_x;
     e.glow_color = 0xF5;
-    setorigin(e, self.origin);
+    setorigin(e, self.origin + self.view_ofs);
     
     e.enemy = spawn();
     e.enemy.owner = e;
@@ -887,8 +888,12 @@ void HG_Linker(float hgtype) {
     e.enemy.reset = SUB_Remove;
     e.enemy.alpha = e.alpha;
     e.enemy.skin = e.skin;
+    e.enemy.gravity = e.gravity;
     setmodel(e.enemy, "models/shield_inner.md3");
     setorigin(e.enemy, e.origin);
+    
+    setsize(e, '-32 -32 0', '32 32 32');
+    setsize(e.enemy, '-32 -32 0', '32 32 32');
     
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
