@@ -449,7 +449,8 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (g_handgrenades? " nfs" : ""),
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
+        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_handgrenades? " nfs" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec/frgs ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
@@ -560,7 +561,9 @@ void Cmd_Sbar_SetFields(float argc)
             sbar_field[sbar_num_fields] = SP_NADEFRAGS;
         } else if(str == "dmg") {
             sbar_field[sbar_num_fields] = SP_DAMAGE;
-		} else {
+        } else if(str == "heal") {
+            sbar_field[sbar_num_fields] = SP_HEALING;
+        } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
 					goto found; // sorry, but otherwise fteqcc -O3 miscompiles this and warns about "unreachable code"
@@ -777,8 +780,8 @@ string Sbar_GetField(entity pl, float field)
 			f -= pl.(scores[SP_SUICIDES]);
 			return ftos(f);
         
-        case SP_DAMAGE:
-            f = pl.(scores[SP_DAMAGE]);
+        case SP_DAMAGE: case SP_HEALING:
+            f = pl.(scores[field]);
             if(f >= 1000000)
                 str = ftos(rint(f * 0.00001) * 0.1);
             else if(f >= 1000)

@@ -959,6 +959,31 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	}
 }
 
+void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype);
+
+.float heal_next_particle;
+
+void HealScore(entity healer, float heal) {
+    PlayerScore_Add(healer, SP_HEALING, heal);
+    PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
+}
+
+void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {
+    targ.health += heal;
+    targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
+    
+    if(time > targ.heal_next_particle) {
+        pointparticles(particleeffectnum("electro_impact"), targ.origin + targ.view_ofs, '0 0 0', 1);
+        targ.heal_next_particle = time + 0.2;
+    }
+    
+    if(heal) {
+        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL);
+        HealScore(healer, heal);
+        sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
+    }
+}
+
 // these are updated by each Damage call for use in button triggering and such
 entity damage_targ;
 entity damage_inflictor;
@@ -969,9 +994,7 @@ entity damage_origtarget;
 
 .float ignore_next;
 .float dmg_jaildm;
-.float heal_next_particle;
 
-void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype);
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	float mirrordamage;
@@ -994,19 +1017,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor"));
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
-                
-                targ.health += heal;
-                targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + cvar("g_buffs_medic_pauserot"));
-                if(time > targ.heal_next_particle) {
-                    pointparticles(particleeffectnum("electro_impact"), targ.origin + targ.view_ofs, '0 0 0', 1);
-                    targ.heal_next_particle = time + 0.2;
-                }
-                
-                if(heal) {
-                    VisualDamage(attacker, targ, heal, 0, VDMG_TYPE_HEAL);
-                    sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
-                }
-                
+                Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
                 return;
             } else
                 damage *= cvar("g_buffs_medic_damagefactor");
@@ -1025,12 +1036,17 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 ++denom;
             
             if(denom) for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e) {
+                float d = damage / denom;
+                
                 if(e != targ)
                     te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
                     
-                Damage(e, inflictor, attacker, (damage / denom) * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
-            }
+                Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
                 
+                if(targ.hg_linker.owner.scorekeeper)
+                    HealScore(targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
+            }
+            
             damage_linkmode = FALSE;
             return;
         }

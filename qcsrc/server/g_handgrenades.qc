@@ -793,6 +793,7 @@ void HG_Shield_Frame() {
 
 .float spawntime;
 .float hg_linker_nexteffect;
+.float hg_linker_effecttime;
 
 void HG_Linker_Think() {
     entity p, e;
@@ -816,9 +817,12 @@ void HG_Linker_Think() {
                 thealth += p.health;
                 tarmor += p.armorvalue;
                 
-                FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) IF_HG_LINKER_APPLICABLE(e) {
-                    te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
+                if(time > p.hg_linker_effecttime) {
+                    FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
+                        te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
+                    }
                 }
+                p.hg_linker_effecttime = time;
             }
         }
     }
@@ -829,7 +833,10 @@ void HG_Linker_Think() {
         if(denom > 1) {
             sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-                p.health = thealth / denom;
+                float newhealth = thealth / denom;
+                if(newhealth > p.health)
+                    Heal(p, self, self.owner, newhealth - p.health, 0);
+                p.health = newhealth;
                 p.armorvalue = tarmor / denom;
                 p.pauserothealth_finished = max(p.pauserothealth_finished, time + 1);
                 p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 1);

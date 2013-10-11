@@ -1400,6 +1400,7 @@ float ClientInit_SendEntity(entity to, float sf)
     if(g_handgrenades)
         WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
     WriteByte(MSG_ENTITY, g_freeze);
+    WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
 	return TRUE;
 }
 

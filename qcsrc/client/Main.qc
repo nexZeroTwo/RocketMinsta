@@ -1743,9 +1743,10 @@ void Ent_Init()
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
-	g_handgrenades = ReadByte();    
+	g_handgrenades = ReadByte();
     cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
     g_freeze = ReadByte();
+    sv_scoreboard_heal_column = ReadByte();
 
 	if(!postinit)
 		PostInit();

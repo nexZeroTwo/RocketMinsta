@@ -827,6 +827,7 @@ void spawnfunc_worldspawn (void)
     sv_dps = cvar("sv_dps");
     g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
     sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");
+    sv_scoreboard_heal_column = cvar("sv_scoreboard_heal_column");
     whatsgoingon = ISFAGGOTMAP(mapname);
     
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);

@@ -309,6 +309,8 @@ float sv_showfps;
 float sv_oldfag;
 
 float g_handgrenades;
+float sv_scoreboard_heal_column;
+float g_freeze;
 
 float Q3SURFACEFLAG_SLICK = 2; // low friction surface
 float DPCONTENTS_SOLID = 1; // blocks player movement
@@ -320,4 +322,3 @@ float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
 .vector iorigin;
 
 float whatsgoingon;
-float g_freeze;

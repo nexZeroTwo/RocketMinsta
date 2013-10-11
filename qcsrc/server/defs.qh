@@ -755,3 +755,5 @@ void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vecto
 entity intermission_viewport;
 
 vector TeamColor(float teem);
+
+float sv_scoreboard_heal_column;
