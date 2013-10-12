@@ -1474,10 +1474,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					deathtype |= HITTYPE_HEADSHOT;
 				}
 			}
-			else if(targ.classname == "turret_head")
-			{
+			else if(targ.classname == "turret_head") {
 				deathtype |= HITTYPE_HEADSHOT;
 			}
+            
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
 
