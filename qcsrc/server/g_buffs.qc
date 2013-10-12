@@ -7,6 +7,7 @@ void Buffs_Init(void) {
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
     g_buffs_noteam = cvar("g_buffs_noteam");
+    g_buffs_randomize = cvar("g_buffs_randomize");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -17,6 +18,40 @@ void Buffs_Init(void) {
     
     addstat(STAT_BUFFS, AS_INT, buffs);
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
+}
+
+void Buffs_Randomize_Reset(void) {
+    float i;
+    
+    for(i = 0; i < BUFF_COUNT; ++i) {
+        g_buffs_replacements[i] = 0;
+        g_buffs_used[i] = FALSE;
+    }
+}
+
+void Buffs_Randomize(entity blist) {
+    float i, j;
+    entity b;
+    
+    Buffs_Randomize_Reset();
+    
+    for(i = 0; i < BUFF_COUNT; ++i) {
+        RandomSelection_Init();
+        for(j = 0; j < BUFF_COUNT; ++j)
+            if not(g_buffs_used[j])
+                RandomSelection_Add(world, j, string_null, 1, 1);
+        g_buffs_used[RandomSelection_chosen_float] = TRUE;
+        g_buffs_replacements[i] = pow(2, RandomSelection_chosen_float);
+    }
+    
+    if(!blist)
+        blist = findchain(classname, "item_buff");
+    
+    for(b = blist; b; b = b.chain) {
+        i = Buffs_TypeToIndex(b.buffs);
+        j = g_buffs_replacements[i];
+        if(j) b.buffs = j;
+    }
 }
 
 float buff_teamfound[4];
@@ -48,6 +83,9 @@ void Buffs_Init_Delayed(void) {
         b.think = Buffs_BuffPickup_Remove;
         b.nextthink = time;
     }
+    
+    if(g_buffs_randomize)
+        Buffs_Randomize(blist);
 }
 
 float Buffs_BuffModel_Customize(void) {
@@ -196,26 +234,44 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
 }
 
 void Buffs_BuffPickup_Think(void) {
+    if(time < 1)
+        return;
+    
+    if(self.buffs != self.oldbuffs) {
+        self.glow_color = Buffs_TypeToPaletteColor(self.buffs);
+        self.colormod = Buffs_TypeToColor(self.buffs);
+        self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
+        
+        if(self.buff_waypoint) {
+            WaypointSprite_Disown(self.buff_waypoint, 1);
+            Buffs_BuffPickup_SpawnWaypoint(self);
+        }
+        
+        self.oldbuffs = self.buffs;
+    }
+    
     if(!self.buff_active && !self.buff_activetime)
     if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || self.owner.classname != "player") {
         self.owner = world;
         self.buff_activetime = cvar("g_buffs_reactivate_delay") + frametime;
     }
     
-    if(self.buff_activetime && roundstate == ROUNDSTATE_GAME) {
+    if(self.buff_activetime) {
         if(!self.buff_waypoint) {
             Buffs_BuffPickup_SpawnWaypoint(self);
         }
         
-        if(!self.buff_waypoint.max_health)
-            WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
-        WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
-        self.buff_activetime = max(0, self.buff_activetime - frametime);
-        
-        if(!self.buff_activetime) {
-            self.buff_active = TRUE;
-            WaypointSprite_Disown(self.buff_waypoint, 1);
-            sound(self, CHAN_TRIGGER, "misc/strength_respawn.wav", VOL_BASE, ATTN_NORM); 
+        if(roundstate == ROUNDSTATE_GAME) {
+            if(!self.buff_waypoint.max_health)
+                WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
+            WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
+            self.buff_activetime = max(0, self.buff_activetime - frametime);
+            
+            if(!self.buff_activetime) {
+                self.buff_active = TRUE;
+                WaypointSprite_Disown(self.buff_waypoint, 1);
+                sound(self, CHAN_TRIGGER, "misc/strength_respawn.wav", VOL_BASE, ATTN_NORM); 
+            }
         }
     }
     
@@ -324,13 +380,12 @@ void Buffs_BuffPickup_Setup(void) {
     if(g_buffs_noteam)
         self.team = 0;
     
+    //self.oldbuffs = self.buffs;
     self.classname = "item_buff";
     self.flags = FL_ITEM;
     self.solid = SOLID_TRIGGER;
     self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY;
     self.movetype = MOVETYPE_TOSS;
-    self.glow_color = Buffs_TypeToPaletteColor(self.buffs);
-    self.colormod = Buffs_TypeToColor(self.buffs);
     self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_STARDUST;
     self.think = Buffs_BuffPickup_Think;
     self.touch = Buffs_BuffPickup_Touch;
@@ -339,6 +394,9 @@ void Buffs_BuffPickup_Setup(void) {
     self.scale = 1.5;
     self.buff_activetime = cvar("g_buffs_activate_delay");
     self.buff_active = !self.buff_activetime;
+    self.glow_color = Buffs_TypeToPaletteColor(self.buffs);
+    self.colormod = Buffs_TypeToColor(self.buffs);
+    self.gravity = 100;
     setmodel(self, "models/buffs/buff.md3");
     setsize(self, '-15 -15 -40', '15 15 40');
     
@@ -347,12 +405,15 @@ void Buffs_BuffPickup_Setup(void) {
     self.enemy.think = Buffs_BuffPickup_Ring_Think;
     self.enemy.nextthink = time;
     self.enemy.effects = self.effects;
-    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
     self.enemy.alpha = self.alpha;
     self.enemy.scale = self.scale * 1.2;
     self.enemy.team = self.team;
+    self.enemy.gravity = self.gravity;
+    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
     
-    SetCustomizer(self,         Buffs_BuffPickup_Customize, SUB_Nullpointer);
+    droptofloor();
+    
+    SetCustomizer(self, Buffs_BuffPickup_Customize, SUB_Nullpointer);
     
     setsize(self.enemy, self.mins, self.maxs);
     setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);

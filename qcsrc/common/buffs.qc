@@ -57,3 +57,11 @@ vector Buffs_TypeToColor(float buff) {
         default             :      return '0.0 0.0 0.0';
     }
 }
+
+float Buffs_TypeToIndex(float buff) {
+    float b, i;
+    for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2, ++i)
+        if(buff == b)
+            return i;
+    return -1;
+}

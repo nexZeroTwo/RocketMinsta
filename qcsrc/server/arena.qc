@@ -66,7 +66,10 @@ void reset_map(float dorespawn)
 			remove(self);
 		}
 	}
-
+    
+    if(g_buffs && g_buffs_randomize == 2)
+        Buffs_Randomize(world);
+    
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
