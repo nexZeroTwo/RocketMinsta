@@ -144,7 +144,7 @@ void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vecto
 void Teleport_Touch (void)
 {
 	entity oldself, e;
-
+    
 	if (other.health < 1)
 		return;
 	if not(other.flags & FL_CLIENT)	// FIXME: Make missiles firable through the teleport too
@@ -270,7 +270,7 @@ void spawnfunc_trigger_teleport (void)
 	EXACTTRIGGER_INIT;
 
 	self.use = trigger_teleport_use;
-
+    
 	// this must be called to spawn the teleport waypoints for bots
 	InitializeEntity(self, teleport_findtarget, INITPRIO_FINDTARGET);
 

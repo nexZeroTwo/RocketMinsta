@@ -1575,10 +1575,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		damage = max(0, min(t_oldhealth, damage));
 		armordamage = max(0, min(t_oldarmor, armordamage));
         
-        if(damage || armordamage) {
-            print(ftos(t_oldhealth), "\n");
+        if(damage || armordamage)
             VisualDamage(attacker, targ, damage, armordamage, ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
-        }
         
 		if(took_extra)
 			armordamage = 100;

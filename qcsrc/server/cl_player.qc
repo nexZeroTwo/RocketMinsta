@@ -480,6 +480,9 @@ void DropPowerups(vector force) {
 void Boobs_Clear();
 void Boobs_DropAll(vector);
 
+.float loscheck_found;
+.float loscheck_solid;
+
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype) {
     entity e;
     vector offs, org, p1, p2;
@@ -504,8 +507,8 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             if(!trace_ent || trace_fraction == 1)
                 break;
             
-            trace_ent.railgunhit = TRUE;
-            trace_ent.railgunhitsolidbackup = trace_ent.solid;
+            trace_ent.loscheck_found = TRUE;
+            trace_ent.loscheck_solid = trace_ent.solid;
             
             if (trace_ent.solid == SOLID_BSP)
                 break;
@@ -513,10 +516,11 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             trace_ent.solid = SOLID_NOT;
         }
         
-        e = findfloat(world, railgunhit, TRUE);
+        e = findfloat(world, loscheck_found, TRUE);
         while(e) {
-            e.solid = e.railgunhitsolidbackup;
-            e = findfloat(e, railgunhit, TRUE);
+            e.solid = e.loscheck_solid;
+            e.loscheck_found = FALSE;
+            e = findfloat(e, loscheck_found, TRUE);
         }
         
         if(!found)
