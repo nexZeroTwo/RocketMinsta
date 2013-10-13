@@ -482,8 +482,8 @@ string apply_autoreplace(string msg) {
 		reptable_make(reps);
 	}
 	
-    float a = 97;
-    float z = 122;
+    float a = 97,  A = 65;
+    float z = 122, Z = 90;
     
 	float i, len;
 	len = strlen(msg);
@@ -511,13 +511,13 @@ string apply_autoreplace(string msg) {
                     
                     if(i > 0) {
                         c = str2chr(msg, i - 1);
-                        if(c >= a && c <= z)
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
                             continue;
                     }
                     
                     if(i + slen < len) {
                         c = str2chr(msg, i + slen);
-                        if(c >= a && c <= z)
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
                             continue;
                     }
                 }
