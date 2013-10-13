@@ -963,7 +963,10 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 
 .float heal_next_particle;
 
-void HealScore(entity healer, float heal) {
+void HealScore(entity targ, entity healer, float heal) {
+    if(targ == healer)
+        return;
+    
     PlayerScore_Add(healer, SP_HEALING, heal);
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
@@ -979,7 +982,7 @@ void Heal(entity targ, entity inflictor, entity healer, float heal, float pauser
     
     if(heal) {
         VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL);
-        HealScore(healer, heal);
+        HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
     }
 }
@@ -1045,7 +1048,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
                 
                 if(targ.hg_linker.owner.scorekeeper)
-                    HealScore(targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
+                    HealScore(targ, targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
             }
             
             damage_linkmode = FALSE;
