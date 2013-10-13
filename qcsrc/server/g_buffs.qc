@@ -411,6 +411,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.enemy.gravity = self.gravity;
     self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
     
+    move_out_of_solid(self);
     droptofloor();
     
     SetCustomizer(self, Buffs_BuffPickup_Customize, SUB_Nullpointer);
