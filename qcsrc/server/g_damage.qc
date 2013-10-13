@@ -1041,6 +1041,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(e != targ)
                     te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
                     
+                damage_origtarget = e;
                 Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
                 
                 if(targ.hg_linker.owner.scorekeeper)
