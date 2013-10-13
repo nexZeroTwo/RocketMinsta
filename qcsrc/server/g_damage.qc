@@ -1010,7 +1010,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
 	if(gameover || targ.killcount == -666)
 		return;
-            
+    
     if not(damage_linkmode) { 
         if(BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
             if(teams_matter && attacker.team == targ.team) {
@@ -1024,7 +1024,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
         
         damage_origtarget = targ;
-        if(targ.hg_linker) {
+        if(targ.hg_linker && deathtype != HG_TRANSLOC && !DEATH_ISSPECIAL(deathtype)) {
             if(teams_matter && targ.team == attacker.team)
                 return;
             
