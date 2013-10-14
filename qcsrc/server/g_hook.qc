@@ -224,8 +224,10 @@ void GrapplingHookThink()
 			{
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
+                float pulled;
 				
 				if(!dontpull || (dontpull_limit && self.hook_length >= self.hook_length_initial)) {
+                    pulled = TRUE;
 					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
 					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
 				}
@@ -242,8 +244,9 @@ void GrapplingHookThink()
 						self.aiment.pushltime = time + cvar("g_maxpushtime");
 					}
 				}
-
-				self.owner.flags &~= FL_ONGROUND;
+                
+                if(pulled)
+                    self.owner.flags &~= FL_ONGROUND;
 			}
 		}
 		else
