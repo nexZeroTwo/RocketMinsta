@@ -335,7 +335,7 @@ void HG_Translocator_Explode() {
     if(time < self.jb_jail_resettime)
         return;
     
-    setsize(self, self.owner.mins, self.owner.maxs);
+    setsize(self, PL_MIN, PL_MAX);
     
     if(!move_out_of_solid(self)) {
         if(!self.hg_isbonus)
