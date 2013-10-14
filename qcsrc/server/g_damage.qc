@@ -1022,7 +1022,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     heal *= cvar("g_buffs_medic_selfhealfactor");
                 Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
                 return;
-            } else
+            } else if(targ.iscreature)
                 damage *= cvar("g_buffs_medic_damagefactor");
         }
         
