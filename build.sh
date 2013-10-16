@@ -339,7 +339,8 @@ EOF
         for i in "${LINKDIRS[@]}"; do
             echo "  -- Linking files in \"${BUILDDIR}/\" to \"${i}/\""
             checkdir "${i}/"
-            ln --symbolic --force --target-directory "${i}/" build/*
+            [[ -d "${i}/rm-custom/" ]] && error "Old rm-custom directory still exists in \"${i}/\", please make sure it doesn't contain any valuable files and remove it yourself."
+            ln --symbolic --force --target-directory "${i}/" "${BUILDDIR}/"*
         done
     fi
 }
