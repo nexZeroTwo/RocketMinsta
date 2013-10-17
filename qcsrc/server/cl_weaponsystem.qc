@@ -1158,8 +1158,11 @@ void weapon_thinkf(float fr, float t, void() func)
 				a = self.weaponentity.anim_fire1;
 			else if (fr == WFRAME_FIRE2)
 				a = self.weaponentity.anim_fire2;
-			else if (fr == WFRAME_RELOAD)
+			else if (fr == WFRAME_RELOAD) {
 				a = self.weaponentity.anim_reload;
+                a_y = 0.5;
+                print(vtos(a), "\n");
+            }
 			a_z *= g_weaponratefactor;
 			setanim(self.weaponentity, a, restartanim == FALSE, restartanim, restartanim);
 		}
