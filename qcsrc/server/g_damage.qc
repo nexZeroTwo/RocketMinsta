@@ -672,6 +672,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						if(cvar("sv_extendfragmessages")) {
 							if(DEATH_ISHG(deathtype))
 								tail = HG_TypeToExpandedName(deathtype);
+                            else if(deathtype == DEATH_ARC)
+                                tail = "Arc Buff";
 							else 
 								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
 								
