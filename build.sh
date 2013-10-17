@@ -15,6 +15,74 @@ BUILT_PKGNAMES=""
 COMMONSUM=""
 MENUSUM=""
 
+function getfiledircache
+{
+    filecache=()
+    dircache=()
+
+    checkdir "${1}/"
+    pushd "${1}/"
+
+    if [ "${2}" = "reverse" ]; then
+        readarray -t filecache < <(find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        readarray -t dircache  < <(find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+    else
+        readarray -t filecache < <(find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        readarray -t dircache  < <(find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+    fi
+
+    popd
+}
+
+function removeoldfiles
+{
+    if [ -n "${LINKDIRS}" ]; then
+
+        getfiledircache "${BUILDDIR}" reverse
+
+        for j in "${LINKDIRS[@]}"; do
+            echo "  -- Removing old files and directories in '${j}/'.."
+            checkdir "${j}"
+
+            for i in "${filecache[@]}"; do
+                rm "${j}/${i:2}" &>/dev/null
+                rm "${BUILDDIR}/${i:2}"
+            done
+
+            for i in "${dircache[@]}"; do
+                rmdir "${j}/${i:2}/" &>/dev/null
+                rmdir "${BUILDDIR}/${i:2}/"
+            done
+        done
+    fi
+
+}
+
+function linkfiles
+{
+    if [ -n "${LINKDIRS}" ]; then
+
+        # Not tested under Windows at all
+        export CYGWIN="winsymlinks:native"
+
+        getfiledircache "${BUILDDIR}"
+
+        for j in "${LINKDIRS[@]}"; do
+            echo "  -- Linking files and directories in '${BUILDDIR}/' to '${j}/'"
+            checkdir "${j}/"
+
+            for i in "${dircache[@]}"; do
+                mkdir "${j}/${i:2}/"
+            done
+
+            for i in "${filecache[@]}"; do
+                ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+            done
+
+        done
+    fi
+}
+
 function checkdir
 {
     local dir="$(readlink -f "${1}")"
@@ -335,14 +403,7 @@ EOF
         cp -rv rm-custom/* "${BUILDDIR}/rm-custom"
     fi
 
-    if [ ${#LINKDIRS[@]} -ge 1 ]; then
-        for i in "${LINKDIRS[@]}"; do
-            echo "  -- Linking files in \"${BUILDDIR}/\" to \"${i}/\""
-            checkdir "${i}/"
-            [[ -d "${i}/rm-custom/" ]] && error "Old rm-custom directory still exists in \"${i}/\", please make sure it doesn't contain any valuable files and remove it yourself."
-            ln --symbolic --force --target-directory "${i}/" "${BUILDDIR}/"*
-        done
-    fi
+    linkfiles
 }
 
 function configtest
@@ -423,6 +484,8 @@ if [ "$1" = "cleancache" ]; then
 fi
 
 configtest
+
+removeoldfiles
 
 if [ "$1" = "release" ]; then
     RELEASE=1
