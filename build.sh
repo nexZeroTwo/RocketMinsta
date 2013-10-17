@@ -470,6 +470,11 @@ if ! [ "${LINKDIRS+test}" = "test" ]; then
     LINKDIRS=("${NEXDATA:-${HOME}/.nexuiz/data}")
 fi
 
+if [ -z ${CACHEDIR} ]; then
+    warn-oldconfig "config.sh" "CACHEDIR" "pkgcache"
+    CACHEDIR="pkgcache"
+fi
+
 if [ -n "$BUILDNAME" ]; then
     BRANCH=$BUILDNAME
 fi
