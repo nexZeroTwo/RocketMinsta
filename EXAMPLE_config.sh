@@ -44,7 +44,6 @@ IGNOREPKG=(-)
 CACHEPKGS=0
 
 # Directory to cache the packages
-
 CACHEDIR="pkgcache"
 
 # Like CACHEPKGS, but caches compilled QuakeC code
