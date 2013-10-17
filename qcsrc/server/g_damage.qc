@@ -744,8 +744,10 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint ("^1", s, "^1 was burnt to ashes by ", a, "^1's napalm grenade\n");
                     else if(deathtype == DEATH_HG_REMOTE)
                         bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
-                    else if(deathtype == DEATH_HG_PLASMA || deathtype == DEATH_HG_PLASMA_SHARD)
+                    else if(deathtype == DEATH_HG_PLASMA)
                         bprint ("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
+                    else if(deathtype == DEATH_HG_PLASMA_SHARD)
+                        bprint ("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
                     else if(deathtype == DEATH_HG_SHIELD)
                         bprint ("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
 					else
