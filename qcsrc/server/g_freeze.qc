@@ -330,11 +330,51 @@ void Freeze_Hook_PlayerSpawns(void) {
     }
 }
 
+void Freeze_RevivePlayer(entity plr, entity revlist) {
+    float first = TRUE;
+    string names;
+    entity e;
+    
+    if(!plr.frozen)
+        return;
+    
+    Freeze_UnfreezePlayer(plr);
+    
+    // EVERY team mate nearby gets a point (even if multiple!)
+    
+    for(e = revlist; e; e = e.chain) {
+        PlayerScore_Add(e, SP_REVIVALS, +1);
+        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival"));
+        
+        e.health = max(e.health, Freeze_CVar("revive_heal"));
+        centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
+        
+        e.revrow++;
+        if(Freeze_CVar("revive_bonusgrenade"))
+        if(e.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
+            HG_GiveBonus(e, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
+                        strcat(ftos(e.revrow), " revivals in a row")
+            );
+            e.revrow = 0;
+        }
+        
+        if(first) {
+            names = e.netname;
+            first = FALSE;
+        } else
+            names = strcat(names, "^7, ", e.netname);
+        
+        e.revprogress = plr.revprogress;
+        e.revresettime = time + frametime * 2;
+    }
+    
+    centerprint_spec(plr, strcat("^5You were revived by ^7", names, "\n"));
+    bprint("^7", names, "^5 revived ^7", plr.netname, "\n");
+}
+
 void Freeze_Hook_PlayerPreThink(void) {
     vector revive_extra_size;
     entity rfirst, rlast, h;
-    string names;
-    float first;
     
     if(!g_freeze)
         return;
@@ -419,41 +459,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
 
         if(self.revprogress >= 1) {
-            Freeze_UnfreezePlayer(self);
-
-            // EVERY team mate nearby gets a point (even if multiple!)
-            
-            first = TRUE;
-            
-            for(other = rfirst; other; other = other.chain) {
-                PlayerScore_Add(other, SP_REVIVALS, +1);
-                PlayerScore_Add(other, SP_SCORE, Freeze_CVar("score_revival"));
-                
-                other.health = max(other.health, Freeze_CVar("revive_heal"));
-                centerprint_spec(other, strcat("^5You revived ^7", self.netname, "\n"));
-                
-                other.revrow++;
-                if(Freeze_CVar("revive_bonusgrenade"))
-                if(other.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
-                    HG_GiveBonus(other, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
-                                strcat(ftos(other.revrow), " revivals in a row")
-                    );
-                    other.revrow = 0;
-                }
-                
-                if(first) {
-                    names = other.netname;
-                    first = FALSE;
-                } else
-                    names = strcat(names, "^7, ", other.netname);
-                
-                other.revprogress = self.revprogress;
-                other.revresettime = time + frametime * 2;
-            }
-
-            centerprint_spec(self, strcat("^5You were revived by ^7", names, "\n"));
-            bprint("^7", names, "^5 revived ^7", self.netname, "\n");
-            
+            Freeze_RevivePlayer(self, rfirst);
             return;
         } else for(other = rfirst; other; other = other.chain) {
             other.revprogress = self.revprogress;
