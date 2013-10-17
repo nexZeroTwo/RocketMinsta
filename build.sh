@@ -402,8 +402,6 @@ EOF
         mkdir -pv "${BUILDDIR}/rm-custom"
         cp -rv rm-custom/* "${BUILDDIR}/rm-custom"
     fi
-
-    linkfiles
 }
 
 function configtest
@@ -616,6 +614,7 @@ checkdir "${BUILDDIR}/"
 makedata-all "$PREFIX" "git build"
 buildall "$PREFIX" "git build"
 finalize-install
+linkfiles
 
 cat <<EOF
 **************************************************
