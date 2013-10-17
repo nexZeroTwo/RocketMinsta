@@ -5,6 +5,7 @@ BUILDDIR="build"
 
 # Additional dirs to link the built files to from the original build directory. Typically $HOME/.nexuiz/data
 # Warning: already existing RocketMinsta files will be overwritten
+# Set to an empty string to disable linking
 LINKDIRS=("$HOME/.nexuiz/data")
 
 # Paths where the compiled mod files will be installed

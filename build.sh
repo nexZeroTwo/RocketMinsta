@@ -404,7 +404,7 @@ if [ -z ${BUILDDIR} ]; then
     BUILDDIR="build"
 fi
 
-if [ -z ${LINKDIRS} ]; then
+if ! [ "${LINKDIRS+test}" = "test" ]; then
     warn-oldconfig "config.sh" "LINKDIRS" "NEXDATA' or '$HOME/.nexuiz/data"
     LINKDIRS=("${NEXDATA:-${HOME}/.nexuiz/data}")
 fi
