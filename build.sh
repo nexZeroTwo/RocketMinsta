@@ -399,6 +399,16 @@ if [ -z $COMPRESSGFX_QUALITY ]; then
     COMPRESSGFX_QUALITY=85
 fi
 
+if [ -z ${BUILDDIR} ]; then
+    warn-oldconfig "config.sh" "BUILDDIR" "build"
+    BUILDDIR="build"
+fi
+
+if [ -z ${LINKDIRS} ]; then
+    warn-oldconfig "config.sh" "LINKDIRS" "NEXDATA' or '$HOME/.nexuiz/data"
+    LINKDIRS=("${NEXDATA:-${HOME}/.nexuiz/data}")
+fi
+
 if [ -n "$BUILDNAME" ]; then
     BRANCH=$BUILDNAME
 fi
