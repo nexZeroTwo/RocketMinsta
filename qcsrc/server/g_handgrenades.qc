@@ -436,12 +436,19 @@ void HG_Grenade_Touch() {
     }
 
 :troll
-	if(other.takedamage == DAMAGE_AIM && !(teams_matter && other.team == self.owner.team && self.hg_type == HG_TRANSLOC)) {
-        if(self.hg_type == HG_REMOTE)
+    if(other.takedamage == DAMAGE_AIM) {
+        if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
+            if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+                if(g_freeze && other.frozen) {
+                    self.owner.chain = world;
+                    Freeze_RevivePlayer(other, self.owner);
+                }
+            } else goto anothertroll;
+        } else if(self.hg_type == HG_REMOTE)
             goto anothertroll;
             
         self.use();
-	} else {
+    } else {
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
