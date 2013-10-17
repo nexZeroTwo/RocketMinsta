@@ -490,6 +490,9 @@ configtest
 
 removeoldfiles
 
+SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+
 if [ "$1" = "release" ]; then
     RELEASE=1
     
@@ -527,8 +530,6 @@ if [ "$1" = "release" ]; then
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
     BUILDDIR="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
-    SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
-    CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
 
     checkdir "${BUILDDIR}/"
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"

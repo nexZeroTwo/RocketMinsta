@@ -8,9 +8,11 @@ BUILDDIR="build"
 # Set to an empty string to disable linking
 LINKDIRS=("$HOME/.nexuiz/data")
 
-# Paths where the compiled mod files will be installed
-SVPROGS="$BUILDDIR/rocketminsta_sv.dat"
-CSPROGS="$BUILDDIR/rocketminsta_cl.dat"
+# File name for the compiled server QC module
+SVPROGS="rocketminsta_sv.dat"
+
+# File name for the compiled client QC module
+CSPROGS="rocketminsta_cl.dat"
 
 # List of QuakeC compillers the script will attempt to use
 # Full and relative paths are allowed
