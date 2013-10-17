@@ -863,23 +863,23 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						break;
 
 					case 2: RAGESOUND
-						bigprint_spec(attacker, "^2double^7kill!", ragemeter, 1);
+						bigprint_spec(attacker, "^2Double ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^2DOUBLE ^7KILL!\n");
 						break;
 					case 3: RAGESOUND
-						bigprint_spec(attacker, "^3triple^7kill!", ragemeter, 1);
+						bigprint_spec(attacker, "^3Triple ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^3TRIPLE ^7KILL!\n");
 						break;
 					case 4: RAGESOUND
-						bigprint_spec(attacker, "^6quad^7kill!", ragemeter, 1);
+						bigprint_spec(attacker, "^6Quad ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^6QUAD ^7KILL!\n");
 						break;
 					case 5: RAGESOUND
-						bigprint_spec(attacker, "^5ultra^7kill!", ragemeter, 1);
+						bigprint_spec(attacker, "^5Ultra ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored an ^5ULTRA ^7KILL!\n");
 						break;
 					default: case 6: RAGESOUND
-						bigprint_spec(attacker, "^1monster^7kill!", ragemeter, 1);
+						bigprint_spec(attacker, "^1Monster ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^1MONSTER ^7KILL!\n");
 						break;
 				}

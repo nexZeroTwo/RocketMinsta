@@ -148,7 +148,7 @@ void W_MinstaNex_Attack (void)
 		if(headshot)
 		{
 			announce(self, "announcer/male/headshot.wav");
-			bigprint_spec(self, "^1Head^7shot!", "", 1);
+			bigprint_spec(self, "^1Head ^7shot!", "", 1);
 		}
 	}
 	else

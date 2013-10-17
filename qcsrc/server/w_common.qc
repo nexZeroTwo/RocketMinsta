@@ -212,7 +212,7 @@ void W_BallisticBullet_Hit (void)
 			if(headshot)
 			{
 				announce(self.owner, "announcer/male/headshot.wav");
-				bigprint_spec(self.owner, "^1Head^7Shot!", "", 1);
+				bigprint_spec(self.owner, "^1Head ^7Shot!", "", 1);
 			}
 			
 			if(yoda)

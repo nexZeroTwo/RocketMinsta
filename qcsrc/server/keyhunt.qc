@@ -864,7 +864,7 @@ void kh_FinishRound()  // runs when a team captures the keys
 	kh_no_radar_circles = FALSE;
 
 	kh_controller.nextthink = time + 5;
-	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "spawning keys in ", kh_StartRound);
+	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Spawning keys in ", kh_StartRound);
 }
 
 string kh_CheckEnoughPlayers()  // checks enough player are present, runs after every completed round
@@ -906,7 +906,7 @@ void kh_WaitForPlayers()  // delay start of the round until enough players are p
 
 	teams_missing = kh_CheckEnoughPlayers();
 	if(teams_missing == "")
-		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "spawning keys in ", kh_StartRound);
+		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Spawning keys in ", kh_StartRound);
 	else
 		kh_Controller_SetThink(1, strcat("Not enough players\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
 }
