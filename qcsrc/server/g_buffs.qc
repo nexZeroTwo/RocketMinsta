@@ -89,7 +89,7 @@ void Buffs_Init_Delayed(void) {
 }
 
 float Buffs_BuffModel_Customize(void) {
-    if(other == self.owner || other.enemy == self.owner) {
+    if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
         // somewhat hide the model, but keep the glow
         self.effects = 0;
         self.alpha = 0.01;
@@ -251,20 +251,27 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(!self.buff_active && !self.buff_activetime)
-    if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || self.owner.classname != "player") {
+    if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || !self.owner.iscreature || !(self.owner.buffs & self.buffs)) {
+        if(self.owner.buff_cdoverride) {
+            self.buff_activetime = max(0, self.owner.buff_cdoverride) + frametime;
+            self.owner.buff_cdoverride = 0;
+        } else
+            self.buff_activetime = cvar("g_buffs_reactivate_delay") + frametime;
         self.owner = world;
-        self.buff_activetime = cvar("g_buffs_reactivate_delay") + frametime;
     }
     
     if(self.buff_activetime) {
-        if(!self.buff_waypoint) {
+        if(!self.buff_waypoint && self.buff_activetime > frametime) {
             Buffs_BuffPickup_SpawnWaypoint(self);
         }
         
         if(roundstate == ROUNDSTATE_GAME) {
-            if(!self.buff_waypoint.max_health)
-                WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
-            WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
+            if(self.buff_activetime > frametime) {
+                if(!self.buff_waypoint.max_health)
+                    WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
+                WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
+            }
+            
             self.buff_activetime = max(0, self.buff_activetime - frametime);
             
             if(!self.buff_activetime) {
@@ -352,7 +359,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
 void Buffs_BuffPickup_Touch(void) {
     if(!self.buff_active)
         return;
-    
+        
     if(self.team && other.team != self.team)
         return;
     
@@ -475,3 +482,5 @@ BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    arc)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      guard)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      haste)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  supply)
+
+

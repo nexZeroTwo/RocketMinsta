@@ -313,6 +313,7 @@ const float STAT_HGSHIELDPOWER = 89;
 const float STAT_HGBONUS = 90;
 const float STAT_HGBONUSTYPE = 91;
 const float STAT_BUFFS = 92;
+const float STAT_TERM_AUTH = 93;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;

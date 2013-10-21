@@ -45,6 +45,7 @@ vote.qh
 soulmates.qh
 timetravel.qh
 g_handgrenades.qh
+g_terminals.qh
 g_buffs.qh
 g_freeze.qh
 freezetag.qh
@@ -129,6 +130,7 @@ nexball.qc
 g_hook.qc
 timetravel.qc
 g_handgrenades.qc
+g_terminals.qc
 g_buffs.qc
 soulmates.qc
 

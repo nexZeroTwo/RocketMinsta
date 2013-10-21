@@ -482,7 +482,8 @@ void SV_ParseClientCommand(string s) {
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
-        float nr = isplayer && (gamestarted || self.hg_nadesused);
+        float term = self.term_authed;
+        float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
         
         float t = HG_NameToType(argv(1));
         float i;
@@ -491,11 +492,28 @@ void SV_ParseClientCommand(string s) {
         if(argc)
             for(i = 0; i < argc; ++i)
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your grenade type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
+                    sprint(self, strcat("^1Your nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
                     self.(nr? hg_type_picked_nextround : hg_type_picked) = t;
                     
-                    if(!nr)
+                    if(!nr) {
+                        float o;
+                        if(term) {
+                            if(self.hg_ammo < 1)
+                                o = TRUE;
+                                
+                            if(self.hg_type != t) {
+                                self.hg_ammo = 1;
+                                o = TRUE;
+                            } else
+                                self.hg_ammo = max(1, self.hg_ammo);
+                            
+                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+                        }
+                        
                         HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+                        if(o)
+                            self.hg_regentime = HG_RegenTime(self);
+                    }
                     
                     return;
                 }

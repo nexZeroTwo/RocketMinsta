@@ -13,6 +13,7 @@ float g_buffs_used[BUFF_COUNT];
 .float buffs_arc_hit;
 .float buff_active;
 .float buff_activetime;
+.float buff_cdoverride;
 
 .entity buff_waypoint;
 .entity buff_model;

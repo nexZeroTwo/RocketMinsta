@@ -1119,6 +1119,7 @@ void PutClientInServer (void)
 	}
     
     self.hg_linker = world;
+    self.buff_cdoverride = 0;
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -3012,6 +3013,7 @@ void PlayerPreThink (void)
 #endif
 
     Buffs_ClientFrame();
+    Term_Hook_PlayerPreThink();
     
 	if(isplayer) {
 //		if(self.netname == "Wazat")

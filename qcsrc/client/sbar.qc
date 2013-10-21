@@ -3408,6 +3408,10 @@ void Sbar_DrawBuffs(void) {
 string jb_str;
 float jb_str_alpha;
 
+#define RMODE_CAP 0
+#define RMODE_REV 1
+#define RMODE_AUTH 2
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3518,8 +3522,11 @@ void Sbar_Draw(void)
 	rev = getstatf(STAT_CAPTURE_PROGRESS);
     if(!rev) {
         rev = getstatf(STAT_REVIVE_PROGRESS);
-        if(rev) revmode = TRUE;
-    } else revmode = FALSE;
+        if(!rev) {
+            rev = getstatf(STAT_TERM_AUTH);
+            if(rev) revmode = RMODE_AUTH;
+        } else revmode = RMODE_REV;
+    } else revmode = RMODE_CAP;
 	
 	if(rev) {
         rev_visual += (rev - rev_visual) * drawframetime * 10;
@@ -3642,12 +3649,15 @@ void Sbar_Draw(void)
         drawfont = sbar_font;
 
 		string s2;
-        if(revmode)
+        if(revmode == RMODE_REV)
 			s = "Revival progress: ";
+        else if(revmode == RMODE_AUTH)
+            s = "Authenticating: ";
 		else if(gametype == GAME_JAILBREAK)
 			s = "Unlocking the jail: ";
 		else
 			s = "Capture progress: ";
+        
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
 		s2 = strcat(ftos(floor(rev * 100)), "%");
 		

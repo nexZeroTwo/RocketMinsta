@@ -737,7 +737,8 @@ void spawnfunc_worldspawn (void)
 
 	if(g_handgrenades)
         HG_Init();
-
+    Term_Init();
+    
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
 

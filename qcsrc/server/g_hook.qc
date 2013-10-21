@@ -312,9 +312,16 @@ void GrapplingHookTouch (void)
 
 	GrapplingHook_Stop();
 
-	if(other)
-		if(other.movetype != MOVETYPE_NONE)
+	if(other) {
+		if(other.movetype != MOVETYPE_NONE) {
+            if(other.term_authed) {     // super evil
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
 			SetMovetypeFollow(self, other);
+        }
+    }
 
 	//self.owner.disableclientprediction = TRUE;
 }
