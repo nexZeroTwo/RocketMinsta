@@ -412,20 +412,16 @@ void HG_Grenade_Explode()
 #undef GV
 
 void HG_Grenade_Touch() {
-    if(self.hg_type == HG_TRANSLOC) {
-        if(SUB_NoImpactCheck()) {
-            if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
-                goto troll;
-                
-            self.use();
-            return;
-        }
-    }
-    
     if(SUB_OwnerCheck())
         return;
     
     if(SUB_NoImpactCheck()) {
+        if(self.hg_type == HG_TRANSLOC) {
+            if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
+                goto troll;
+            self.use();
+            return;
+        }
         HG_Grenade_Remove();
         return;
     }
@@ -434,8 +430,7 @@ void HG_Grenade_Touch() {
     if(trace_ent && trace_ent.solid > SOLID_TRIGGER) {
         UpdateCSQCProjectileNextFrame(self);
     }
-
-:troll
+    
     if(other.takedamage == DAMAGE_AIM) {
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
             if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
@@ -443,9 +438,9 @@ void HG_Grenade_Touch() {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
                 }
-            } else goto anothertroll;
+            } else goto troll;
         } else if(self.hg_type == HG_REMOTE)
-            goto anothertroll;
+            goto troll;
             
         self.use();
     } else {
@@ -459,7 +454,7 @@ void HG_Grenade_Touch() {
             return;
         }
 
-:anothertroll
+:troll
 		float r;
 		r = random() * 6;
 		if(r < 1)
