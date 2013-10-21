@@ -511,14 +511,11 @@ void HG_Remote_Stick() {
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
-    setsize(e, '-4 -4 -4', '4 4 4');
+    setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
     if(normal_x)
-        setorigin(e, e.origin + v_forward * 4 * abs(normal_x));
-    if(normal_z)
-        setorigin(e, e.origin - v_forward * 5 * abs(normal_z));
-    
+        setorigin(e, e.origin - normal * 4.5);
     move_out_of_solid(e);
     
     if(self.hg_waypoint)
