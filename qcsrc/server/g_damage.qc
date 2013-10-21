@@ -741,10 +741,13 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					else if(deathtype == DEATH_HG_NORMAL)
 						bprint ("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
 					else if(deathtype == DEATH_HG_NAPALM)
-						bprint ("^1", s, "^1 was burnt to ashes by ", a, "^1's napalm grenade\n");
-                    else if(deathtype == DEATH_HG_REMOTE)
-                        bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
-                    else if(deathtype == DEATH_HG_PLASMA)
+                        bprint ("^1", s, "^1 engaged in ", a, "^1's hot napalm action\n");
+                    else if(deathtype == DEATH_HG_REMOTE) {
+                        if(targ == inflictor)   // fire damage does this
+                            bprint ("^1", s, "^1 was incinerated by ", a, "^1's fire trap\n");
+                        else
+                            bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
+                    } else if(deathtype == DEATH_HG_PLASMA)
                         bprint ("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
                     else if(deathtype == DEATH_HG_PLASMA_SHARD)
                         bprint ("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
