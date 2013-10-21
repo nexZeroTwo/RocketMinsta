@@ -12,6 +12,9 @@ void JB_Init() {
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
 	precache_sound("kh/alarm.wav");
+	precache_sound("jailbreak/jb_red.wav");
+	precache_sound("jailbreak/jb_blue.wav");
+	precache_sound("jailbreak/imprison.wav");
 	
 	ScoreRules_JB();
 	JB_Torture_RegisterAll();
@@ -227,6 +230,7 @@ void JB_Imprison(entity attacker) {
 	self.jb_isprisoned = TRUE;
 	self.jb_prisontime = time;
     self.jb_jaildm_aggressive = FALSE;
+    announce(self, "jailbreak/imprison.wav");
 	bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
 	
 	if(g_handgrenades) {
@@ -1079,8 +1083,10 @@ void JB_ControlPoint_Capture(entity player) {
 			bigprint_spec(e, "You're free! Run away!", "", 5);
             pc++;
         }
+        
 	}
-	
+    
+    sound(world, CHAN_VOICE, strcat("jailbreak/jb_", ((player.team == COLOR_TEAM1)? "red" : "blue"), ".wav"), VOL_BASEVOICE, ATTN_NONE);
 	bprint(player.netname, " ^5has captured the ", cpname, "^5! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
 	PlayerScore_Add(player, SP_SCORE, ((self.team == JB_TEAM_NEUTRAL)? cvar("g_jailbreak_score_jbreak_neutralmultiplier") : 1)
                                     * (cvar("g_jailbreak_score_jbreak") + cvar("g_jailbreak_score_jbreak_perplayer") * pc));
