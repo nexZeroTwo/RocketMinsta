@@ -70,6 +70,7 @@ float HG_RegenTime(entity);
 .entity hg_linker;
 .float hg_linker_range;
 .float hg_linker_factor;
+.float hg_linker_hps;
 
 // for hud only
 .float hg_regenstat;

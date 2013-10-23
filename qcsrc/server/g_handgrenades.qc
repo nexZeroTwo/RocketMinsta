@@ -829,16 +829,24 @@ void HG_Linker_Think() {
     if(time > self.hg_linker_nexteffect) {
         self.hg_linker_nexteffect = time + 1;
         
-        if(denom > 1) {
-            sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
+        if(denom >= 1) {
+            if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-                float newhealth = thealth / denom;
-                if(newhealth > p.health)
-                    Heal(p, self, self.owner, newhealth - p.health, 0);
-                p.health = newhealth;
-                p.armorvalue = tarmor / denom;
-                p.pauserothealth_finished = max(p.pauserothealth_finished, time + 1);
-                p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 1);
+                if(denom > 1) {
+                    float newhealth = thealth / denom;
+                    
+                    if(newhealth > p.health)
+                        Heal(p, self, self.owner, newhealth - p.health, 0);
+                    
+                    p.health = newhealth;
+                    p.armorvalue = tarmor / denom;
+                }
+                
+                p.pauserothealth_finished = max(p.pauserothealth_finished, time + 2);
+                p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
+            
+                if(self.hg_linker_hps)
+                    Heal(p, self, self.owner, self.hg_linker_hps, 0);
             }
         }
     }
@@ -870,6 +878,7 @@ void HG_Linker(float hgtype) {
     e.gravity = 100;
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
+    e.hg_linker_hps = GRENVAR(hgtype, "hps");
     e.cnt = time + GRENVAR(hgtype, "duration");
     e.alpha = 0.01;
     setmodel(e, "models/ctf/shield.md3");
