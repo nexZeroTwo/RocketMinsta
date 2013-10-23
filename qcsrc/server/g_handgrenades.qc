@@ -859,7 +859,7 @@ void HG_Linker_Think() {
     }
     
     self.alpha = max(0.01, self.alpha * bound(0, (time - self.spawntime) * 2, 1));
-    self.enemy.alpha = self.alpha * 0.7;
+    self.enemy.alpha = self.alpha * 0.5;
     self.glow_size = self.hg_linker_range * self.alpha * 3;
     self.nextthink = time;
 }
