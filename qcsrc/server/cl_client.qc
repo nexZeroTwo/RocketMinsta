@@ -2355,7 +2355,12 @@ void player_regen (void)
 	limitf = g_balance_fuel_limit;
     aregen = cvar("g_balance_armor_regen");
     hregen = cvar("g_balance_health_regen");
-
+    
+    if(!aregen)
+        mina = 0;
+    if(!hregen)
+        minh = 0;
+    
 	max_mod = regen_mod = rot_mod = limit_mod = 1;
 
     if(g_runematch) {
@@ -2404,6 +2409,12 @@ void player_regen (void)
         maxh = max(minh, maxh);
         aregen = max(cvar("g_buffs_guard_armor_regen"), aregen);
         hregen = max(cvar("g_buffs_guard_health_regen"), hregen);
+    }
+    
+    if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
+        mina = max(mina, cvar("g_buffs_medic_armor"));
+        maxa = max(mina, maxa);
+        aregen = max(cvar("g_buffs_medic_armor_regen"), aregen);
     }
 
 	if(g_lms)
