@@ -524,16 +524,24 @@ vector PlayerTouchWall(float dist)
     float max_normal, i;
     max_normal = 0.2;
     
+    vector old_forward = v_forward, old_right = v_right, old_up = v_up, normal = '0 0 0';
+    makevectors(self.angles);
+    
     for(i = 1; i > -2; i -= 2) {
         tracebox(self.origin, self.mins, self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if not(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
-        if(vlen(self.origin - trace_endpos) < dist)
-            return trace_plane_normal;
+        if(vlen(self.origin - trace_endpos) < dist) {
+            normal = trace_plane_normal;
+            break;
+        }
     }
     
-    return '0 0 0';
+    v_forward = old_forward;
+    v_right = old_right;
+    v_up = old_up;
+    return normal;
 }
 
 void SV_PlayerPhysics()
@@ -623,7 +631,6 @@ void SV_PlayerPhysics()
     if (!(g_race || g_cts) || cvar("g_walljump_allowed_in_race"))
 	{
 		vector plane_normal;
-        makevectors(self.angles);
 		plane_normal = PlayerTouchWall(cvar("g_walljump_distance"));
 		if (plane_normal != '0 0 0')
 		{
