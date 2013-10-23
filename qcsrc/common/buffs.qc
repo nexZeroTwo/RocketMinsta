@@ -36,17 +36,6 @@ string Buffs_NameToExpandedName(string t) {
     return Buffs_TypeToExpandedName(Buffs_NameToType(t));
 }
 
-float Buffs_TypeToPaletteColor(float buff) {
-    switch(buff) {
-        case BUFF_ARC       :      return 0xF5;
-        case BUFF_SUPPLY    :      return 0x3E;
-        case BUFF_GUARD     :      return 0xD0;
-        case BUFF_HASTE     :      return 0xFC;
-        case BUFF_MEDIC     :      return 0x90;
-        default             :      return 0x00;
-    }
-}
-
 vector Buffs_TypeToColor(float buff) {
     switch(buff) {
         case BUFF_ARC       :      return '0.2 0.7 1.0';

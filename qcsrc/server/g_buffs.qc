@@ -155,6 +155,7 @@ void Buffs_ClientFrame(void) {
             setmodel(m, "models/buffs/buff.md3");
             m.customizeentityforclient = Buffs_BuffModel_Customize;
             m.owner = self;
+            m.pflags = PFLAGS_FULLDYNAMIC;
             self.buff_model = m;
         }
         
@@ -163,9 +164,8 @@ void Buffs_ClientFrame(void) {
         
         float b; for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2)
             if(self.buffs & b) {
-                self.buff_model.colormod = Buffs_TypeToColor(b);
-                self.buff_model.glow_color = Buffs_TypeToPaletteColor(b);
-                self.buff_model.glow_size = 200;
+                self.buff_model.color = self.buff_model.colormod = Buffs_TypeToColor(b);
+                self.buff_model.light_lev = 200;
                 break;
             }
     } else if(self.buff_model) {
@@ -236,8 +236,6 @@ void Buffs_ArcDamage_Finalize(void) {
         e.buffs_arc_hit = FALSE;
 }
 
-.float glow_size_saved;
-
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
     if(self.team && (plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack)))
         return FALSE;
@@ -256,8 +254,7 @@ void Buffs_BuffPickup_Think(void) {
         return;
     
     if(self.buffs != self.oldbuffs) {
-        self.glow_color = Buffs_TypeToPaletteColor(self.buffs);
-        self.colormod = Buffs_TypeToColor(self.buffs);
+        self.color = self.colormod = Buffs_TypeToColor(self.buffs);
         self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
         
         if(self.buff_waypoint) {
@@ -306,11 +303,12 @@ void Buffs_BuffPickup_Think(void) {
         
         self.alpha = 0.3;
         self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
-        self.glow_size_saved = 0;
+        self.pflags = 0;
     } else {
         self.alpha = 1;
         self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
-        self.glow_size_saved = 220 + 36 * sin(time);
+        self.light_lev = 220 + 36 * sin(time);
+        self.pflags = PFLAGS_FULLDYNAMIC;
         
         if(self.team && !self.buff_waypoint)
             Buffs_BuffPickup_SpawnWaypoint(self);
@@ -330,20 +328,6 @@ void Buffs_BuffPickup_Ring_Think(void) {
         self.effects &~= EF_ADDITIVE;
     
     setorigin(self, self.owner.origin + '0 0 15');
-}
-
-float Buffs_BuffPickup_Customize(void) {
-    entity e = other;
-    if(e.classname == "spectator")
-        e = e.enemy;
-    
-    if(self.team && self.team != e.team) {
-        self.glow_size = 0;
-    } else {
-        self.glow_size = self.glow_size_saved;
-    }
-    
-    return TRUE;
 }
 
 void Buffs_BuffPickup_Reset(void) {
@@ -425,8 +409,8 @@ void Buffs_BuffPickup_Setup(void) {
     self.scale = 1.5;
     self.buff_activetime = cvar("g_buffs_activate_delay");
     self.buff_active = !self.buff_activetime;
-    self.glow_color = Buffs_TypeToPaletteColor(self.buffs);
-    self.colormod = Buffs_TypeToColor(self.buffs);
+    self.color = self.colormod = Buffs_TypeToColor(self.buffs);
+    self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
     setmodel(self, "models/buffs/buff.md3");
     setsize(self, '-15 -15 -40', '15 15 40');
@@ -444,8 +428,6 @@ void Buffs_BuffPickup_Setup(void) {
     
     move_out_of_solid(self);
     droptofloor();
-    
-    SetCustomizer(self, Buffs_BuffPickup_Customize, SUB_Nullpointer);
     
     setsize(self.enemy, self.mins, self.maxs);
     setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);

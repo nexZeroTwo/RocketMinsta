@@ -13,6 +13,5 @@ string Buffs_TypeToName(float);
 float Buffs_NameToType(string);
 string Buffs_TypeToExpandedName(float);
 string Buffs_NameToExpandedName(string);
-float Buffs_TypeToPaletteColor(float);
 vector Buffs_TypeToColor(float);
 float Buffs_TypeToIndex(float);
