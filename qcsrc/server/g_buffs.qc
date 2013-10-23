@@ -3,6 +3,8 @@
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
 void Buffs_Init(void) {
+    float i, b;
+    
     g_buffs = cvar("g_buffs");
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
@@ -17,6 +19,10 @@ void Buffs_Init(void) {
     precache_model("models/buffs/buff_ring.md3");
     
     addstat(STAT_BUFFS, AS_INT, buffs);
+    
+    for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2)
+        g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
+    
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
 
@@ -25,22 +31,34 @@ void Buffs_Randomize_Reset(void) {
     
     for(i = 0; i < BUFF_COUNT; ++i) {
         g_buffs_replacements[i] = 0;
-        g_buffs_used[i] = FALSE;
+        g_buffs_used[i] = 0;
     }
 }
 
 void Buffs_Randomize(entity blist) {
     float i, j;
+    float found;
+    float ulevel = 1;
     entity b;
     
     Buffs_Randomize_Reset();
     
     for(i = 0; i < BUFF_COUNT; ++i) {
         RandomSelection_Init();
-        for(j = 0; j < BUFF_COUNT; ++j)
-            if not(g_buffs_used[j])
-                RandomSelection_Add(world, j, string_null, 1, 1);
-        g_buffs_used[RandomSelection_chosen_float] = TRUE;
+        found = 0;
+        
+        while(!found) {
+            for(j = 0; j < BUFF_COUNT; ++j)
+                if(g_buffs_enabled[j] && g_buffs_used[j] < ulevel) {
+                    RandomSelection_Add(world, j, string_null, 1, 1);
+                    ++found;
+                }
+            
+            if(!found)
+                ++ulevel;
+        }
+        
+        g_buffs_used[RandomSelection_chosen_float] = ulevel;
         g_buffs_replacements[i] = pow(2, RandomSelection_chosen_float);
     }
     
@@ -48,7 +66,7 @@ void Buffs_Randomize(entity blist) {
         blist = findchain(classname, "item_buff");
     
     for(b = blist; b; b = b.chain) {
-        i = Buffs_TypeToIndex(b.buffs);
+        i = Buffs_TypeToIndex(b.origbuffs);
         j = g_buffs_replacements[i];
         if(j) b.buffs = j;
     }
@@ -384,10 +402,16 @@ void Buffs_BuffPickup_Setup(void) {
         return;
     }
     
+    if not(g_buffs_randomize)
+    if not(g_buffs_enabled[Buffs_TypeToIndex(self.buffs)]) {
+        remove(self);
+        return;
+    }
+    
     if(g_buffs_noteam)
         self.team = 0;
     
-    //self.oldbuffs = self.buffs;
+    self.origbuffs = self.buffs;
     self.classname = "item_buff";
     self.flags = FL_ITEM;
     self.solid = SOLID_TRIGGER;

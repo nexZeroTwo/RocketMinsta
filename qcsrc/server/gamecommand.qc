@@ -1234,8 +1234,15 @@ void GameCommand(string command)
 		
 		FOR_EACH_CLIENT(client)
 			stuffcmd(client, strcat("connect ", s,"\n"));
+        return;
 	}
-
+    
+    if(argv(0) == "randomize_buffs") {
+        if(g_buffs)
+            Buffs_Randomize(world);
+        return;
+    }
+    
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 
