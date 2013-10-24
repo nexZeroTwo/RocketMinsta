@@ -1031,7 +1031,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
         }
         
-        if(BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
+        if(BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
             if(teams_matter && attacker.team == targ.team) {
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor"));
                 if(attacker == targ)
