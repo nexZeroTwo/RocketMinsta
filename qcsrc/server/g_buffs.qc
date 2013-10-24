@@ -236,6 +236,35 @@ void Buffs_ArcDamage_Finalize(void) {
         e.buffs_arc_hit = FALSE;
 }
 
+void Buffs_BashDamage_Proc(entity attacker, entity inflictor, entity ignore, float damage) {
+    RadiusDamage(inflictor, attacker, damage * cvar("g_buffs_bash_coremultiplier"), damage * cvar("g_buffs_bash_edgemultiplier"), cvar("g_buffs_bash_radius"), world, damage * cvar("g_buffs_bash_damageforcescale"), DEATH_BASH, ignore);
+    te_blast(RadiusDamage_blastorigin);
+}
+
+void Buffs_BashDamage_Think(void) {
+    entity o = self;
+    self = self.chain;
+    Buffs_BashDamage_Proc(o.owner, o, o.aiment, o.cnt);
+    self = o;
+    remove(self);
+}
+
+void Buffs_BashDamage(entity attacker, entity inflictor, entity ignore, float damage, vector loc) {
+    entity e = spawn();
+    e.aiment = ignore;
+    e.enemy = inflictor;
+    e.owner = attacker;
+    e.cnt = damage;
+    e.think = Buffs_BashDamage_Think;
+    e.chain = self;
+    e.nextthink = time;
+    
+    if(loc != '0 0 0')
+        setorigin(e, loc);
+    else
+        setorigin(e, inflictor.origin);
+}
+
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
     if(self.team && (plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack)))
         return FALSE;

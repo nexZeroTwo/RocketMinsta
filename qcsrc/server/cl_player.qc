@@ -621,7 +621,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	}
 	else
 		Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
-
+    
 	if(g_arena)
 	if(numspawned < 2)
 		return;
@@ -637,7 +637,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		save = 0;
 		take = damage;
 	}
-
+    
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{
 		if (save > 10)
@@ -652,7 +652,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-
+    
 	if (time > self.spawnshieldtime || cvar("g_spawnshieldmode"))
 	{
 		if (!(self.flags & FL_GODMODE))

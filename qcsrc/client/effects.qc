@@ -96,3 +96,13 @@ void Net_ReadLightningarc(void)
         pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
     LightingArc_Default(from, to, ateam);
 }
+
+void Net_ReadBlast(void) {
+    vector loc;
+    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
+    pointparticles(particleeffectnum("TE_TEI_BIGEXPLOSION"), loc, '0 0 0', 1);
+    entity e = spawn();
+    setorigin(e, loc);
+    sound(e, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+    remove(e);
+}

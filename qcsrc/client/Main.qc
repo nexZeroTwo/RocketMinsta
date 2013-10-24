@@ -2099,6 +2099,9 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_HEAL:
             Net_Heal();
             return TRUE;
+        case TE_CSQC_BLAST:
+            Net_ReadBlast();
+			return TRUE;
 	}
 
 	// pass to the engine

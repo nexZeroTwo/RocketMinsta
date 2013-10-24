@@ -8,6 +8,9 @@
 .float dps_damage;
 .float dps_hits;
 
+float RadiusDamage_running;
+vector RadiusDamage_blastorigin;
+
 void DPS_Message(entity p, string s) {
     sprint(p, strcat("^2DPS: ^7", s, "\n"));
 }
@@ -674,6 +677,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 								tail = HG_TypeToExpandedName(deathtype);
                             else if(deathtype == DEATH_ARC)
                                 tail = "Arc Buff";
+                            else if(deathtype == DEATH_BASH)
+                                tail = "Bash Buff";
 							else 
 								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
 								
@@ -1021,7 +1026,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(gameover || targ.killcount == -666)
 		return;
     
-    if not(damage_linkmode) { 
+    if not(damage_linkmode) {
+        if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
+            Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
+        }
+        
         if(BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
             if(teams_matter && attacker.team == targ.team) {
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor"));
@@ -1707,7 +1716,6 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 
 .float damage_noinfo;
 .float damage_nextarceffect;
-float RadiusDamage_running;
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity)
 // Returns total damage applies to creatures
 {
@@ -1745,10 +1753,11 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 	tfloordmg = cvar("g_throughfloor_damage");
 	tfloorforce = cvar("g_throughfloor_force");
 
-	blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
+	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
     
-	if(!inflictor.damage_noinfo && deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
+    if(deathtype != DEATH_BASH)
+    if(!inflictor.damage_noinfo && deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
 	{
 		force = inflictor.velocity;
 		if(vlen(force) == 0)
@@ -1862,10 +1871,14 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 									stat_maxdamage += coredamage;
 								}
 							}
-							if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
-								Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
+                            
+                            if(targ == directhitentity && deathtype == DEATH_BASH)
+                                finaldmg = 0;
+                            
+                            if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
+                                Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
                             else
-								Damage (targ, inflictor, attacker, finaldmg, deathtype | HITTYPE_SPLASH, nearest, force);
+                                Damage (targ, inflictor, attacker, finaldmg, deathtype | HITTYPE_SPLASH, nearest, force);
 						}
 					}
 				}

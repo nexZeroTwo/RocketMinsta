@@ -48,6 +48,7 @@ const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
+const float TE_CSQC_BLAST = 120;
 
 #define VDMG_TYPE_HIT 0
 #define VDMG_TYPE_CRIT 1
@@ -512,6 +513,7 @@ float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 float DEATH_NOISE = 10101;
 float DEATH_ARC = 10102;
+float DEATH_BASH = 10103;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;

@@ -102,7 +102,7 @@ void Ent_DamageInfo(float isNew)
 
 		setorigin(self, org + backoff * 2); // for sound() calls
 
-		if (DEATH_ISHG(hittype))
+        if(DEATH_ISHG(hittype))
 		{
 			if (!issilent) {
 				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);

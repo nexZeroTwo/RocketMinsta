@@ -6,6 +6,7 @@ string Buffs_TypeToName(float buff) {
         case BUFF_GUARD     :      return "guard";
         case BUFF_HASTE     :      return "haste";
         case BUFF_MEDIC     :      return "medic";
+        case BUFF_BASH      :      return "bash";
         default             :      return "unknown";
     }
 }
@@ -17,6 +18,7 @@ float Buffs_NameToType(string name) {
         case "guard"        :      return BUFF_GUARD;
         case "haste"        :      return BUFF_HASTE;
         case "medic"        :      return BUFF_MEDIC;
+        case "bash"         :      return BUFF_BASH;
         default             :      return 0;
     }
 }
@@ -28,6 +30,7 @@ string Buffs_TypeToExpandedName(float buff) {
         case BUFF_GUARD     :      return "Guard";
         case BUFF_HASTE     :      return "Haste";
         case BUFF_MEDIC     :      return "Medic";
+        case BUFF_BASH      :      return "Bash";
         default             :      return "Unknown";
     }
 }
@@ -41,8 +44,9 @@ vector Buffs_TypeToColor(float buff) {
         case BUFF_ARC       :      return '0.2 0.7 1.0';
         case BUFF_SUPPLY    :      return '0.2 1.0 0.2';
         case BUFF_GUARD     :      return '0.3 0.2 1.0';
-        case BUFF_HASTE     :      return '1.0 0.9 0.2';
+        case BUFF_HASTE     :      return '1.0 1.0 0.2';
         case BUFF_MEDIC     :      return '1.0 0.3 1.0';
+        case BUFF_BASH      :      return '1.0 0.4 0.0';
         default             :      return '0.0 0.0 0.0';
     }
 }

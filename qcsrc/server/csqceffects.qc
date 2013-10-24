@@ -27,3 +27,12 @@ void te_heal(entity e) {
         WriteCoord(MSG_ONE, o_z);
     }
 }
+
+void te_blast(vector loc) {
+    WriteByte(MSG_ALL, SVC_TEMPENTITY);
+    WriteByte(MSG_ALL, TE_CSQC_BLAST);
+    
+    WriteCoord(MSG_ALL, loc_x);
+    WriteCoord(MSG_ALL, loc_y);
+    WriteCoord(MSG_ALL, loc_z);
+}
