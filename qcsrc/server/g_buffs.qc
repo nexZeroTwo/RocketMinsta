@@ -477,17 +477,22 @@ void Buffs_BuffPickup_Remove(void) {
     remove(self);
 }
 
-// NOTE: Quake III: Team Arena compatibility is untested
+void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
+    if(self.spawnflags & 2)
+        self.team = COLOR_TEAM1;
+    else if(self.spawnflags & 4)
+        self.team = COLOR_TEAM2;
+    
+    if not((self.buffs = Buffs_NameToType(cvar_string(strcat("g_buffs_q3ta_", rune))))) {
+        remove(self);
+        return;
+    }
+    
+    Buffs_BuffPickup_Setup();
+}
 
 #define BUFF_SPAWNFUNC(e,b,t) void spawnfunc_item_buff_##e() { self.buffs = b; self.team = t; Buffs_BuffPickup_Setup(); }
-#define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,e) void spawnfunc_##o() {                        \
-                                            if(self.spawnflags & 2)                   \
-                                                spawnfunc_item_buff_##e##_team1();    \
-                                            else if(self.spawnflags & 4)              \
-                                                spawnfunc_item_buff_##e##_team2();    \
-                                            else                                      \
-                                                spawnfunc_item_buff_##e();            \
-                                        }
+#define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,r) void spawnfunc_##o() { Buffs_BuffPickup_SetupQ3TACompat(r); }
 
 BUFF_SPAWNFUNC(arc,             BUFF_ARC,       0)
 BUFF_SPAWNFUNC(arc_team1,       BUFF_ARC,       COLOR_TEAM1)
@@ -525,9 +530,9 @@ BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
 BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
 BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
 
-BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    arc)
-BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      guard)
-BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      haste)
-BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  supply)
+BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
+BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
+BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scount")
+BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  "ammoregen")
 
 
