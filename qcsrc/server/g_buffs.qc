@@ -519,6 +519,12 @@ BUFF_SPAWNFUNC(medic_team2,     BUFF_MEDIC,     COLOR_TEAM2)
 BUFF_SPAWNFUNC(medic_team3,     BUFF_MEDIC,     COLOR_TEAM3)
 BUFF_SPAWNFUNC(medic_team4,     BUFF_MEDIC,     COLOR_TEAM4)
 
+BUFF_SPAWNFUNC(bash,            BUFF_BASH,      0)
+BUFF_SPAWNFUNC(bash_team1,      BUFF_BASH,      COLOR_TEAM1)
+BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
+BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
+BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
+
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    arc)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      guard)
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      haste)
