@@ -191,6 +191,9 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     float archgfactor = cvar("g_buffs_arc_multiplier_hg");
     vector arcoffset = attacker.maxs_z * '0 0 0.5';
     
+    float targetTeamMates = teams_matter && BUFFS_PRESENT(attacker, BUFF_MEDIC);
+    float preferTeamMates = targetTeamMates && targ.team == attacker.team;
+    
     if(DEATH_ISHG(deathtype))
         damage = damage * archgfactor;
     damage = damage * arcfactor;
@@ -203,21 +206,24 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
         return;
     
     FOR_EACH_PLAYER(plr)
-    if(plr != attacker)
+    if(plr != attacker || targetTeamMates)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
     if(!plr.jb_isprisoned)
     if(!plr.buffs_arc_hit)
-    if(!plr.frozen || !newtarget || newtarget.frozen)
-    if(!teams_matter || plr.team != attacker.team) {
-        dist = vlen(plr.origin - targ.origin);
-        
-        if(!shortest || dist < shortest || (newtarget.frozen && !plr.frozen)) {
-            traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+    if(!plr.frozen || !newtarget || newtarget.frozen) {
+        float sameteam = plr.team == attacker.team;
+        if(!teams_matter || ((sameteam && targetTeamMates) || (!sameteam && !(preferTeamMates && newtarget.team == attacker.team)))) {
+            dist = vlen(plr.origin - targ.origin);
             
-            if(trace_fraction != 1 && trace_ent == plr) {
-                shortest = dist;
-                newtarget = plr;
+            if(dist < arcrange)
+            if(dist < shortest || (newtarget.frozen && !plr.frozen) || (preferTeamMates && plr.team == attacker.team && newtarget.team != attacker.team)) {
+                traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+                
+                if(trace_fraction != 1 && trace_ent == plr) {
+                    shortest = dist;
+                    newtarget = plr;
+                }
             }
         }
     }
