@@ -67,8 +67,7 @@ void reset_map(float dorespawn)
 		}
 	}
     
-    if(g_buffs && g_buffs_randomize == 2)
-        Buffs_Randomize(world);
+    Buffs_Randomize(world, FALSE);
     
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )

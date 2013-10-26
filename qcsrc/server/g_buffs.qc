@@ -11,6 +11,8 @@ void Buffs_Init(void) {
     g_buffs_noteam = cvar("g_buffs_noteam");
     g_buffs_randomize = cvar("g_buffs_randomize");
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
+    g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
+    g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -34,65 +36,75 @@ void Buffs_Randomize_Reset(void) {
         g_buffs_replacements[i] = 0;
         g_buffs_used[i] = 0;
         g_buffs_used_dual[i] = 0;
+        g_buffs_randomize_ulevel = 0;
+        g_buffs_randomize_ulevel_dual = 0;
     }
 }
 
-void Buffs_Randomize(entity blist) {
-    float i, j;
-    float found;
-    float ulevel = 1;
-    float ulevel_dual = 1;
-    float choosen;
-    entity b;
+float Buffs_Randomize_Yield(void) {
+    float found, sub, choosen, j;
+    RandomSelection_Init();
     
-    Buffs_Randomize_Reset();
+    while(!found) {
+        for(j = 0; j < BUFF_COUNT; ++j)
+            if(g_buffs_enabled[j] && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
+                RandomSelection_Add(world, j, string_null, 1, 1);
+                ++found;
+            }
+        
+        if(!found)
+            ++g_buffs_randomize_ulevel;
+    }
     
-    for(i = 0; i < BUFF_COUNT; ++i) {
+    choosen = RandomSelection_chosen_float;
+    g_buffs_used[choosen] = g_buffs_randomize_ulevel;
+    sub = pow(2, choosen);
+    
+    if(g_buffs_randomize_dual >= 1 || random() < g_buffs_randomize_dual) {
         RandomSelection_Init();
         found = 0;
         
         while(!found) {
             for(j = 0; j < BUFF_COUNT; ++j)
-                if(g_buffs_enabled[j] && g_buffs_used[j] < ulevel) {
+                if(g_buffs_enabled[j] && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
                     RandomSelection_Add(world, j, string_null, 1, 1);
                     ++found;
                 }
             
             if(!found)
-                ++ulevel;
+                ++g_buffs_randomize_ulevel_dual;
         }
         
-        choosen = RandomSelection_chosen_float;
-        g_buffs_used[choosen] = ulevel;
-        g_buffs_replacements[i] = pow(2, choosen);
-        
-        if(g_buffs_randomize_dual >= 1 || random() < g_buffs_randomize_dual) {
-            RandomSelection_Init();
-            found = 0;
-            
-            while(!found) {
-                for(j = 0; j < BUFF_COUNT; ++j)
-                    if(g_buffs_enabled[j] && j != choosen && g_buffs_used_dual[j] < ulevel_dual) {
-                        RandomSelection_Add(world, j, string_null, 1, 1);
-                        ++found;
-                    }
-                
-                if(!found)
-                    ++ulevel_dual;
-            }
-            
-            g_buffs_used_dual[RandomSelection_chosen_float] = ulevel_dual;
-            g_buffs_replacements[i] = g_buffs_replacements[i] | pow(2, RandomSelection_chosen_float);
-        }
+        g_buffs_used_dual[RandomSelection_chosen_float] = g_buffs_randomize_ulevel_dual;
+        sub = sub | pow(2, RandomSelection_chosen_float);
     }
+    
+    return sub;
+}
+
+void Buffs_Randomize(entity blist, float force) {
+    float i, j;
+    entity b;
+    
+    if(g_buffs_randomize >= 2)
+        force = TRUE;
+    
+    Buffs_Randomize_Reset();
+    
+    if(force && g_buffs_randomize_byinstance <= 1) for(i = 0; i < BUFF_COUNT; ++i)
+        g_buffs_replacements[i] = Buffs_Randomize_Yield();
     
     if(!blist)
         blist = findchain(classname, "item_buff");
     
     for(b = blist; b; b = b.chain) {
-        i = Buffs_TypeToIndex(b.origbuffs);
-        j = g_buffs_replacements[i];
-        if(j) b.buffs = j;
+        if(b.origbuffs == BUFF_RANDOM || g_buffs_randomize_byinstance > 1 || (g_buffs_randomize_byinstance && !b.team))
+            b.buffs = Buffs_Randomize_Yield();
+        else if(force) {
+            i = Buffs_TypeToIndex(b.origbuffs);
+            j = g_buffs_replacements[i];
+            if(j) b.buffs = j;
+        }
     }
 }
 
@@ -126,8 +138,7 @@ void Buffs_Init_Delayed(void) {
         b.nextthink = time;
     }
     
-    if(g_buffs_randomize)
-        Buffs_Randomize(blist);
+    Buffs_Randomize(blist, g_buffs_randomize);
 }
 
 string Buffs_GenName(float b) {
@@ -592,6 +603,12 @@ BUFF_SPAWNFUNC(bash_team1,      BUFF_BASH,      COLOR_TEAM1)
 BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
 BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
 BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
+
+BUFF_SPAWNFUNC(random,          BUFF_RANDOM,    0)
+BUFF_SPAWNFUNC(random_team1,    BUFF_RANDOM,    COLOR_TEAM1)
+BUFF_SPAWNFUNC(random_team2,    BUFF_RANDOM,    COLOR_TEAM2)
+BUFF_SPAWNFUNC(random_team3,    BUFF_RANDOM,    COLOR_TEAM3)
+BUFF_SPAWNFUNC(random_team4,    BUFF_RANDOM,    COLOR_TEAM4)
 
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")

@@ -1239,7 +1239,7 @@ void GameCommand(string command)
     
     if(argv(0) == "randomize_buffs") {
         if(g_buffs)
-            Buffs_Randomize(world);
+            Buffs_Randomize(world, TRUE);
         return;
     }
     
