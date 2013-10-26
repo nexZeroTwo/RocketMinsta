@@ -210,7 +210,7 @@ void Buffs_ClientFrame(void) {
             self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
         }
         
-        if(self.buff_model)
+        if(self.buff_model && self.buffs)
             self.buff_model.color = self.buff_model.colormod = Buffs_GenColor(self.buffs);
         
         self.oldbuffs = self.buffs;
