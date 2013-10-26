@@ -34,7 +34,7 @@ Angles control the aim.
 jb_torture_force: The force of fired projectiles (default: 400)
 jb_torture_force_jitter: The amplitude of random deviations from the fire force (default: jb_torture_force * 0.1)
 jb_torture_delay: The delay between shots (default: 2)
-jb_torture_delay_jitter: The amplitude of random deviations from the fire delay (default: jb_torture_delay_jitter * 0.5)
+jb_torture_delay_jitter: The amplitude of random deviations from the fire delay (default: jb_torture_delay * 0.5)
 */
 
 /*QUAKED info_jailbreak_torturespawn_blue (.1 .1 1) (-8 -8 -8) (8 8 8)
@@ -45,7 +45,7 @@ Angles control the aim.
 jb_torture_force: The force of fired projectiles (default: 400)
 jb_torture_force_jitter: The amplitude of random deviations from the fire force (default: jb_torture_force * 0.1)
 jb_torture_delay: The delay between shots (default: 2)
-jb_torture_delay_jitter: The amplitude of random deviations from the fire delay (default: jb_torture_delay_jitter * 0.5)
+jb_torture_delay_jitter: The amplitude of random deviations from the fire delay (default: jb_torture_delay * 0.5)
 */
 
 /*QUAKED jailbreak_controlpoint_red (1 0 0) (-16 -16 -16) (16 16 16) 
