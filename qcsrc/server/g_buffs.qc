@@ -6,6 +6,10 @@ void Buffs_Init(void) {
     float i, b;
     
     g_buffs = cvar("g_buffs");
+    
+    if(!g_buffs)
+        return;
+    
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
     g_buffs_noteam = cvar("g_buffs_noteam");
@@ -13,6 +17,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
     g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
+    g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -110,32 +115,50 @@ void Buffs_Randomize(entity blist, float force) {
 
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
-    entity blist, b;
-    float idx, teams_found, teams_total;
+    entity blist, b, o;
+    float idx, teams_found, teams_total, bcnt = g_buffs_count;
     
-    if(!teams_matter)
-        return;
+    if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
+        o = self;
+        for(b = findchain(classname, "buff_placeholder"); b; b = b.chain) {
+            if(bcnt) {
+                b.nextthink = time;
+                b.think = SUB_Remove;
+            } else {
+                self = b;
+                self.buffs = BUFF_RANDOM;
+                Buffs_BuffPickup_Setup();
+                if(self.owner && !wasfreed(self.owner)) {
+                    remove(self.owner);
+                    self.owner = world;
+                }
+            }
+        }
+        self = o;
+    }
     
-    teams_total = TeamCount_TotalTeams();
-    
-    blist = findchain(classname, "item_buff");
-    for(b = blist; b; b = b.chain) if(b.team) {
-        idx = Team_Index(b.team);
-        if(!buff_teamfound[idx]) {
-            buff_teamfound[idx] = TRUE;
-            ++teams_found;
+    if(teams_matter) {
+        teams_total = TeamCount_TotalTeams();
+        
+        blist = findchain(classname, "item_buff");
+        for(b = blist; b; b = b.chain) if(b.team) {
+            idx = Team_Index(b.team);
+            if(!buff_teamfound[idx]) {
+                buff_teamfound[idx] = TRUE;
+                ++teams_found;
+            }
+            
+            if(b.team == COLOR_TEAM3 && teams_total < 3 || b.team == COLOR_TEAM4 && teams_total < 4) {
+                b.think = Buffs_BuffPickup_Remove;
+                b.nextthink = time;
+            }
         }
         
-        if(b.team == COLOR_TEAM3 && teams_total < 3 || b.team == COLOR_TEAM4 && teams_total < 4) {
+        if(teams_total > teams_found)
+        for(b = blist; b; b = b.chain) if(b.team) {
             b.think = Buffs_BuffPickup_Remove;
             b.nextthink = time;
         }
-    }
-    
-    if(teams_total > teams_found)
-    for(b = blist; b; b = b.chain) if(b.team) {
-        b.think = Buffs_BuffPickup_Remove;
-        b.nextthink = time;
     }
     
     Buffs_Randomize(blist, g_buffs_randomize);
@@ -195,6 +218,9 @@ float Buffs_BuffModel_Customize(void) {
 }
 
 void Buffs_ClientFrame(void) {
+    if(!g_buffs)
+        return;
+    
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
@@ -541,6 +567,8 @@ void Buffs_BuffPickup_Setup(void) {
     setsize(self.enemy, self.mins, self.maxs);
     setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);
     setmodel(self.enemy, "models/buffs/buff_ring.md3");
+    
+    ++g_buffs_count;
 }
 
 void Buffs_BuffPickup_Remove(void) {
@@ -549,6 +577,18 @@ void Buffs_BuffPickup_Remove(void) {
     if(self.enemy)
         remove(self.enemy);
     remove(self);
+}
+
+void Buffs_BuffPickup_Placeholder(void) {
+    if(!g_buffs || !g_buffs_spawn_on_powerups)
+        return;
+    
+    entity e = spawn();
+    setorigin(e, self.origin);
+    e.owner = self;
+    e.classname = "buff_placeholder";
+    
+    //error(strcat(vtos(e.origin), " ", vtos(e.owner.origin), " ", e.owner.classname));
 }
 
 void Buffs_BuffPickup_SetupQ3TACompat(string rune) {

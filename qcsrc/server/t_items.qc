@@ -1439,6 +1439,8 @@ void spawnfunc_item_health25() { spawnfunc_item_health_medium(); }
 void spawnfunc_item_health100() { spawnfunc_item_health_mega(); }
 
 void spawnfunc_item_strength (void) {
+    Buffs_BuffPickup_Placeholder();
+    
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
@@ -1468,6 +1470,8 @@ void spawnfunc_item_strength (void) {
 }
 
 void spawnfunc_item_invincible (void) {
+    Buffs_BuffPickup_Placeholder();
+    
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
