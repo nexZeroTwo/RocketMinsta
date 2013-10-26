@@ -4,10 +4,12 @@ float g_buffs_team_only;
 float g_buffs_stack;
 float g_buffs_noteam;
 float g_buffs_randomize;
+float g_buffs_randomize_dual;
 
 float g_buffs_enabled[BUFF_COUNT];
 float g_buffs_replacements[BUFF_COUNT];
 float g_buffs_used[BUFF_COUNT];
+float g_buffs_used_dual[BUFF_COUNT];
 
 .float buffs;
 .float oldbuffs;

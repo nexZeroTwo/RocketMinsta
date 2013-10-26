@@ -10,6 +10,7 @@ void Buffs_Init(void) {
     g_buffs_stack = cvar("g_buffs_stack");
     g_buffs_noteam = cvar("g_buffs_noteam");
     g_buffs_randomize = cvar("g_buffs_randomize");
+    g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -32,6 +33,7 @@ void Buffs_Randomize_Reset(void) {
     for(i = 0; i < BUFF_COUNT; ++i) {
         g_buffs_replacements[i] = 0;
         g_buffs_used[i] = 0;
+        g_buffs_used_dual[i] = 0;
     }
 }
 
@@ -39,6 +41,8 @@ void Buffs_Randomize(entity blist) {
     float i, j;
     float found;
     float ulevel = 1;
+    float ulevel_dual = 1;
+    float choosen;
     entity b;
     
     Buffs_Randomize_Reset();
@@ -58,8 +62,28 @@ void Buffs_Randomize(entity blist) {
                 ++ulevel;
         }
         
-        g_buffs_used[RandomSelection_chosen_float] = ulevel;
-        g_buffs_replacements[i] = pow(2, RandomSelection_chosen_float);
+        choosen = RandomSelection_chosen_float;
+        g_buffs_used[choosen] = ulevel;
+        g_buffs_replacements[i] = pow(2, choosen);
+        
+        if(g_buffs_randomize_dual >= 1 || random() < g_buffs_randomize_dual) {
+            RandomSelection_Init();
+            found = 0;
+            
+            while(!found) {
+                for(j = 0; j < BUFF_COUNT; ++j)
+                    if(g_buffs_enabled[j] && j != choosen && g_buffs_used_dual[j] < ulevel_dual) {
+                        RandomSelection_Add(world, j, string_null, 1, 1);
+                        ++found;
+                    }
+                
+                if(!found)
+                    ++ulevel_dual;
+            }
+            
+            g_buffs_used_dual[RandomSelection_chosen_float] = ulevel_dual;
+            g_buffs_replacements[i] = g_buffs_replacements[i] | pow(2, RandomSelection_chosen_float);
+        }
     }
     
     if(!blist)
@@ -104,6 +128,47 @@ void Buffs_Init_Delayed(void) {
     
     if(g_buffs_randomize)
         Buffs_Randomize(blist);
+}
+
+string Buffs_GenName(float b) {
+    string r;
+    float o, first = TRUE;
+    
+    r = Buffs_TypeToExpandedName(b);
+    
+    if(r != "Unknown")
+        return r;
+    
+    for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2)
+        if(b & o) {
+            if(first) {
+                r = Buffs_TypeToExpandedName(o);
+                first = FALSE;
+            } else {
+                r = strcat(r, " + ", Buffs_TypeToExpandedName(o));
+            }
+        }
+    
+    return r;
+}
+
+vector Buffs_GenColor(float b) {
+    vector c;
+    float o, n;
+    
+    c = Buffs_TypeToColor(b);
+    
+    if(c != '0 0 0')
+        return c;
+    
+    for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2)
+        if(b & o) {
+            c += Buffs_TypeToColor(o);
+            ++n;
+        }
+    
+    // actually, this looks like shit
+    return c * (1/n);
 }
 
 float Buffs_BuffModel_Customize(void) {
@@ -156,18 +221,13 @@ void Buffs_ClientFrame(void) {
             m.customizeentityforclient = Buffs_BuffModel_Customize;
             m.owner = self;
             m.pflags = PFLAGS_FULLDYNAMIC;
+            m.color = m.colormod = Buffs_GenColor(self.buffs);
+            m.light_lev = 200;
             self.buff_model = m;
         }
         
         setorigin(self.buff_model, self.origin + '0 0 70');
         self.buff_model.angles_y = 200 * time;
-        
-        float b; for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2)
-            if(self.buffs & b) {
-                self.buff_model.color = self.buff_model.colormod = Buffs_TypeToColor(b);
-                self.buff_model.light_lev = 200;
-                break;
-            }
     } else if(self.buff_model) {
         remove(self.buff_model);
         self.buff_model = world;
@@ -278,7 +338,7 @@ float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
 }
 
 void Buffs_BuffPickup_SpawnWaypoint(entity e) {
-    WaypointSprite_Spawn(Buffs_TypeToExpandedName(e.buffs), 0, 0, world, e.origin + '0 0 40', world, e.team, e, buff_waypoint, TRUE);
+    WaypointSprite_Spawn(Buffs_GenName(e.buffs), 0, 0, world, e.origin + '0 0 40', world, e.team, e, buff_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(e.buff_waypoint, e.colormod, '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, e.colormod);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
@@ -289,7 +349,7 @@ void Buffs_BuffPickup_Think(void) {
         return;
     
     if(self.buffs != self.oldbuffs) {
-        self.color = self.colormod = Buffs_TypeToColor(self.buffs);
+        self.color = self.colormod = Buffs_GenColor(self.buffs);
         self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
         
         if(self.buff_waypoint) {
@@ -384,7 +444,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
+    string bname = strcat(rgb_to_hexcolor(self.colormod), Buffs_GenName(self.buffs), "^7 Buff!");
     string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
     
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
@@ -444,7 +504,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.scale = 1.5;
     self.buff_activetime = cvar("g_buffs_activate_delay");
     self.buff_active = !self.buff_activetime;
-    self.color = self.colormod = Buffs_TypeToColor(self.buffs);
+    self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
     setmodel(self, "models/buffs/buff.md3");
