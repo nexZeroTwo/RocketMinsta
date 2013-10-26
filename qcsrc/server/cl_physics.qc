@@ -528,7 +528,7 @@ vector PlayerTouchWall(float dist)
     makevectors(self.angles);
     
     for(i = 1; i > -2; i -= 2) {
-        tracebox(self.origin, self.mins, self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
+        tracebox(self.origin, self.mins + cvar("sv_stepheight") * '0 0 1', self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if not(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
