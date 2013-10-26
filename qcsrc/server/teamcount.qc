@@ -1,6 +1,10 @@
 
 float TeamCount_TotalTeams(void) {
     float i;
+    
+    if(g_keyhunt)   // TODO: find out what the hell is going on here
+        return kh_teams;
+    
     if(c1 >= 0) ++i;
     if(c2 >= 0) ++i;
     if(c3 >= 0) ++i;

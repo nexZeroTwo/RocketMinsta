@@ -139,7 +139,7 @@ void Buffs_Init_Delayed(void) {
     
     if(teams_matter) {
         teams_total = TeamCount_TotalTeams();
-        
+
         blist = findchain(classname, "item_buff");
         for(b = blist; b; b = b.chain) if(b.team) {
             idx = Team_Index(b.team);
