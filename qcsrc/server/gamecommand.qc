@@ -574,6 +574,8 @@ void make_mapinfo_Think()
 	}
 }
 
+.float ispicked;
+
 void GameCommand(string command)
 {
 	float argc;
@@ -1240,6 +1242,20 @@ void GameCommand(string command)
     if(argv(0) == "randomize_buffs") {
         if(g_buffs)
             Buffs_Randomize(world, TRUE);
+        return;
+    }
+    
+    if(argv(0) == "pickcaptains") {
+        float t = TeamCount_TotalTeams();
+        for(i = 0; i < t; ++i) {
+            RandomSelection_Init();
+            FOR_EACH_REALCLIENT(e) if(e.ispicked != time)
+                RandomSelection_Add(e, 0, string_null, 1, 1);
+            if(RandomSelection_chosen_ent) {
+                RandomSelection_chosen_ent.ispicked = time;
+                bprint("\{1}", ColoredTeamName(Team_FromIndex(i)), " ^7captain: ^3", RandomSelection_chosen_ent.netname, "\n");
+            }
+        }
         return;
     }
     
