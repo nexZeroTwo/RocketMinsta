@@ -58,10 +58,12 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	// note down which entities were hit so we can damage them later
 	while (1)
 	{
-		if(self.antilag_debug)
-			traceline_antilag (self, start, end, FALSE, self, self.antilag_debug);
+        if(deathtype == DEATH_HG_SHIELD)
+            traceline(start, end, FALSE, self);
+		else if(self.antilag_debug)
+			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
 		else
-			traceline_antilag (self, start, end, FALSE, self, ANTILAG_LATENCY(self));
+			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
 
 		// if it is world we can't hurt it so stop now
 		if (trace_ent == world || trace_fraction == 1) {
