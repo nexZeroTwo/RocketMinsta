@@ -425,6 +425,8 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     Freeze_DangerShortcut();
+    self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
+    
     float rmod;
     
     // Find all players withing revival radius and build a linked list

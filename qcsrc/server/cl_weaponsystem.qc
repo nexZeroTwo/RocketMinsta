@@ -1019,7 +1019,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(g_freeze)
 	if(self.frozen) 
 		return FALSE;
-
+        
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
