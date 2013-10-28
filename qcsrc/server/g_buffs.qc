@@ -342,9 +342,15 @@ void Buffs_ArcDamage_Finalize(void) {
         e.buffs_arc_hit = FALSE;
 }
 
+.float lastbash;
+
 void Buffs_BashDamage_Proc(entity attacker, entity inflictor, entity ignore, float damage) {
+    if(time - attacker.lastbash < cvar("g_buffs_bash_cooldown") * W_WeaponRateFactor())
+        return;
+    
     RadiusDamage(inflictor, attacker, damage * cvar("g_buffs_bash_coremultiplier"), damage * cvar("g_buffs_bash_edgemultiplier"), cvar("g_buffs_bash_radius"), world, damage * cvar("g_buffs_bash_damageforcescale"), DEATH_BASH, ignore);
     te_blast(RadiusDamage_blastorigin);
+    attacker.lastbash = time;
 }
 
 void Buffs_BashDamage_Think(void) {
