@@ -2361,7 +2361,7 @@ void player_regen (void)
     if(!hregen)
         minh = 0;
     
-	max_mod = regen_mod = rot_mod = limit_mod = 1;
+    max_mod = regen_mod = rot_mod = limit_mod = 1;
 
     if(g_runematch) {
         if (self.runes & RUNE_REGEN)
@@ -2403,18 +2403,28 @@ void player_regen (void)
 	//limitf = limitf * limit_mod;
 
     if(BUFFS_PRESENT(self, BUFF_GUARD)) {
-        mina = max(mina, cvar("g_buffs_guard_armor"));
+        float ghealth, garmor, ghregen, garegen, gpower;
+        
+        gpower  = Buffs_BuffPower(self, BUFF_GUARD);
+        ghealth = minh   + (cvar("g_buffs_guard_health")       - minh)   * gpower;
+        garmor  = mina   + (cvar("g_buffs_guard_armor")        - mina)   * gpower;
+        ghregen = hregen + (cvar("g_buffs_guard_health_regen") - hregen) * gpower;
+        garegen = aregen + (cvar("g_buffs_guard_armor_regen")  - aregen) * gpower;
+        
+        mina = max(mina, garmor);
         maxa = max(mina, maxa);
-        minh = max(maxh, cvar("g_buffs_guard_health"));
+        minh = max(maxh, ghealth);
         maxh = max(minh, maxh);
-        aregen = max(cvar("g_buffs_guard_armor_regen"), aregen);
-        hregen = max(cvar("g_buffs_guard_health_regen"), hregen);
+        
+        hregen = max(ghregen, hregen);
+        aregen = max(garegen, aregen);
     }
     
     if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
-        mina = max(mina, cvar("g_buffs_medic_armor"));
+        float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
+        mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
         maxa = max(mina, maxa);
-        aregen = max(cvar("g_buffs_medic_armor_regen"), aregen);
+        aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
     }
 
 	if(g_lms)
@@ -2601,7 +2611,7 @@ void SpectateCopy(entity spectatee) {
     self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
-    self.buffs = spectatee.buffs;
+    self.buffstat = spectatee.buffstat;
 	setorigin(self, spectatee.origin);
 	setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);

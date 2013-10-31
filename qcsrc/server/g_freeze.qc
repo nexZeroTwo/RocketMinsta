@@ -447,7 +447,7 @@ void Freeze_Hook_PlayerPreThink(void) {
                 if(other.hg_shield)
                     lmod *= cvar("g_handgrenades_shield_progressrate");
                 if(BUFFS_PRESENT(other, BUFF_MEDIC))
-                    lmod *= cvar("g_buffs_medic_revivefactor");
+                    lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * Buffs_BuffPower(other, BUFF_MEDIC);
                 rmod = max(rmod, lmod);
             }
         }

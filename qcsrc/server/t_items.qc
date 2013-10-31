@@ -426,7 +426,7 @@ float Item_GiveTo(entity item, entity player)
         
         float pickupfactor = 1;
         if(BUFFS_PRESENT(player, BUFF_SUPPLY))
-            pickupfactor = cvar("g_buffs_supply_pickup_multiplier");
+            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * Buffs_BuffPower(player, BUFF_SUPPLY);
         
 		if(item.spawnshieldtime)
 		{

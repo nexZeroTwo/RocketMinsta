@@ -798,6 +798,9 @@ void HG_Linker_Think() {
     entity p, e;
     float denom, thealth, tarmor;
     
+    if(time > self.hg_linker_nexteffect)
+        self.buffs = 0;
+    
     FOR_EACH_PLAYER(p) {
         if(p.team != self.team) {
             if(p.hg_linker == self)
@@ -815,6 +818,8 @@ void HG_Linker_Think() {
                 ++denom;
                 thealth += p.health;
                 tarmor += p.armorvalue;
+                
+                self.buffs |= p.buffs;
                 
                 if(time > p.hg_linker_effecttime) {
                     FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
@@ -879,6 +884,7 @@ void HG_Linker(float hgtype) {
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
     e.hg_linker_hps = GRENVAR(hgtype, "hps");
+    e.hg_linker_buffpower = GRENVAR(hgtype, "sharedbuffpower");
     e.cnt = time + GRENVAR(hgtype, "duration");
     e.alpha = 0.01;
     setmodel(e, "models/ctf/shield.md3");
@@ -1014,7 +1020,7 @@ void HG_Attack()
 		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
 
 :finish
-    self.hg_next = time + GV("cooldown") * (BUFFS_PRESENT(self, BUFF_HASTE)? cvar("g_buffs_haste_refire_rate") : 1);
+    self.hg_next = time + GV("cooldown") * W_WeaponRateFactor();
     
     if(!freebonus) {
         self.hg_ammo -= 1;
@@ -1109,7 +1115,7 @@ void HG_Frame()
                 rate *= cvar("g_handgrenades_regen_frozenfactor");
             rate *= GRENVAR(self.hg_type, "regenscale");
             if(BUFFS_PRESENT(self, BUFF_SUPPLY))
-                rate *= cvar("g_buffs_supply_hg_regenscale");
+                rate = rate * (1 + (cvar("g_buffs_supply_hg_regenscale") - 1) * Buffs_BuffPower(self, BUFF_SUPPLY));
             
             self.hg_regentime -= rate;
             

@@ -25,13 +25,16 @@ float g_buffs_count;
 .float buff_active;
 .float buff_activetime;
 .float buff_cdoverride;
+.float buffstat;
+.float oldbuffstat;
 
 .entity buff_waypoint;
 .entity buff_model;
 
 #define BUFFS_GIVE(p,b) ((p).buffs |= (b))
 #define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))
-#define BUFFS_PRESENT(p,b) (g_buffs && ((p).buffs & b) == (b) && !(p).hg_shield)
+#define BUFFS_PRESENT_INTERNAL(p,b) (g_buffs && (((p).buffs & b) == (b) || (((p).hg_linker.buffs & b) == (b) && (p).hg_linker.hg_linker_buffpower)))
+#define BUFFS_PRESENT(p,b) (BUFFS_PRESENT_INTERNAL(p,b) && !(p).hg_shield)
 
 #define BUFF_RANDOM -1337
 
@@ -45,3 +48,4 @@ void Buffs_BuffPickup_Remove(void);
 void Buffs_Randomize(entity, float);
 void Buffs_BuffPickup_Placeholder(void);
 void Buffs_BuffPickup_Setup(void);
+float Buffs_BuffPower(entity, float);

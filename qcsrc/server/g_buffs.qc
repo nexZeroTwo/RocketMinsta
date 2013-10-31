@@ -26,7 +26,7 @@ void Buffs_Init(void) {
     precache_model("models/buffs/buff.md3");
     precache_model("models/buffs/buff_ring.md3");
     
-    addstat(STAT_BUFFS, AS_INT, buffs);
+    addstat(STAT_BUFFS, AS_INT, buffstat);
     
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2)
         g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
@@ -164,6 +164,19 @@ void Buffs_Init_Delayed(void) {
     Buffs_Randomize(blist, g_buffs_randomize);
 }
 
+float Buffs_BuffPower(entity p, float b) {
+    if(p.hg_shield)
+        return 0;
+    
+    if(p.buffs & b)
+        return 1;
+    
+    if(p.hg_linker.buffs & b)
+        return p.hg_linker.hg_linker_buffpower;
+    
+    return 0;
+}
+
 string Buffs_GenName(float b) {
     string r;
     float o, first = TRUE;
@@ -221,6 +234,10 @@ void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
     
+    self.buffstat = self.buffs;
+    if(self.hg_linker.hg_linker_buffpower)
+        self.buffstat = self.buffstat | self.hg_linker.buffs;
+    
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
@@ -247,13 +264,16 @@ void Buffs_ClientFrame(void) {
             self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
         }
         
-        if(self.buff_model && self.buffs)
-            self.buff_model.color = self.buff_model.colormod = Buffs_GenColor(self.buffs);
-        
         self.oldbuffs = self.buffs;
     }
     
-    if(self.buffs) {
+    if(self.buffstat != self.oldbuffstat) {
+        if(self.buff_model && self.buffstat)
+            self.buff_model.color = self.buff_model.colormod = Buffs_GenColor(self.buffstat);
+        self.oldbuffstat = self.buffstat;
+    }
+    
+    if(self.buffstat) {
         if(!self.buff_model) {
             entity m = spawn();
             setsize(m, '0 0 -40', '0 0 40');
@@ -261,7 +281,7 @@ void Buffs_ClientFrame(void) {
             m.customizeentityforclient = Buffs_BuffModel_Customize;
             m.owner = self;
             m.pflags = PFLAGS_FULLDYNAMIC;
-            m.color = m.colormod = Buffs_GenColor(self.buffs);
+            m.color = m.colormod = Buffs_GenColor(self.buffstat);
             m.light_lev = 200;
             self.buff_model = m;
         }
@@ -286,7 +306,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     entity plr, newtarget;
     float dist, shortest;
     
-    float arcfactor = cvar("g_buffs_arc_multiplier");
+    float arcfactor = cvar("g_buffs_arc_multiplier") * Buffs_BuffPower(attacker, BUFF_ARC);
     float arcrange = cvar("g_buffs_arc_range");
     float archgfactor = cvar("g_buffs_arc_multiplier_hg");
     vector arcoffset = attacker.maxs_z * '0 0 0.5';
@@ -348,7 +368,8 @@ void Buffs_BashDamage_Proc(entity attacker, entity inflictor, entity ignore, flo
     if(time - attacker.lastbash < cvar("g_buffs_bash_cooldown") * W_WeaponRateFactor())
         return;
     
-    RadiusDamage(inflictor, attacker, damage * cvar("g_buffs_bash_coremultiplier"), damage * cvar("g_buffs_bash_edgemultiplier"), cvar("g_buffs_bash_radius"), world, damage * cvar("g_buffs_bash_damageforcescale"), DEATH_BASH, ignore);
+    float p = Buffs_BuffPower(attacker, BUFF_BASH);
+    RadiusDamage(inflictor, attacker, damage * cvar("g_buffs_bash_coremultiplier") * p, damage * cvar("g_buffs_bash_edgemultiplier") * p, cvar("g_buffs_bash_radius"), world, damage * cvar("g_buffs_bash_damageforcescale"), DEATH_BASH, ignore);
     te_blast(RadiusDamage_blastorigin);
     attacker.lastbash = time;
 }

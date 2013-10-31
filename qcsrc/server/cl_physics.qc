@@ -848,7 +848,7 @@ void SV_PlayerPhysics()
 	}
     
     if(BUFFS_PRESENT(self, BUFF_HASTE))
-        maxspd_mod *= cvar("g_buffs_haste_move_rate");
+        maxspd_mod *= 1 + (cvar("g_buffs_haste_move_rate") - 1) * Buffs_BuffPower(self, BUFF_HASTE);
     
     if(g_dodging)
         dodging_PlayerPhysics();
