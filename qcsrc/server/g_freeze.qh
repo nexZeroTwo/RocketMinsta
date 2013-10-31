@@ -7,6 +7,7 @@ float g_freeze_globalwarming_reset;
 
 .float frozen;
 .float freezetime;
+.float freezetime_real;
 .float revprogress;
 .float revresettime;
 .float revfinished;

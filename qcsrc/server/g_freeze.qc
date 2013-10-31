@@ -145,7 +145,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.frozen = 1;
     
     plr.revprogress = 0;
-    plr.freezetime = time;
+    plr.freezetime = plr.freezetime_real = time;
     plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
     
@@ -408,6 +408,16 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     // frozen
+    
+    float ftime = Freeze_CVar("respawn");
+    if(ftime)
+    if(time - self.freezetime_real > ftime) {
+        Freeze_UnfreezePlayer(self);
+        Freeze_RespawnPlayer(self);
+        centerprint_spec(self, strcat("^5You have been respawned after staying frozen for ", ftos(ftime), " seconds\n"));
+        bprint(self.netname, " ^5has been respawned after staying frozen for ", ftos(ftime), " seconds\n");
+        return;
+    }
     
     if(!self.iceblock)
         Freeze_SpawnIceBlock(self);
