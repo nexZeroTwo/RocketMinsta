@@ -757,3 +757,6 @@ entity intermission_viewport;
 vector TeamColor(float teem);
 
 float sv_scoreboard_heal_column;
+
+float hack_forcenextmap;
+string nextgametype;

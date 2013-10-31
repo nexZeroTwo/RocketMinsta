@@ -649,7 +649,8 @@ void GameCommand(string command)
 		// might fail but screw it
 		if(argc > 2)
 		{
-			localcmd("gametype ", argv(2), "\n");
+			//localcmd("gametype ", argv(2), "\n");
+            nextgametype = strzone(argv(2));
 			gametypetoset = gametype_Name_to_ID(argv(2));
 		}
 		

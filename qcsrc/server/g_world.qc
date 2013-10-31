@@ -1217,6 +1217,9 @@ void IntermissionThink()
 		if (time < intermission_exittime + 10 && !self.BUTTON_ATCK && !self.BUTTON_JUMP && !self.BUTTON_ATCK2 && !self.BUTTON_HOOK && !self.BUTTON_USE)
 			return;
 
+    if(nextgametype != "")
+        GameCommand(strcat("gametype ", nextgametype));
+
 	MapVote_Start();
 };
 
@@ -2588,10 +2591,12 @@ float MapVote_Finished(float mappos)
 	FOR_EACH_REALCLIENT(other)
 		FixClientCvars(other);
 
-
-	if(!cvar("sv_vote_gametype"))
+	if(!cvar("sv_vote_gametype") || hack_forcenextmap)
 	{
-		Map_Goto_SetStr(mapvote_maps[mappos]);
+        if(cvar_string("nextmap") != "")
+            Map_Goto_SetStr(cvar_string("nextmap"));
+        else
+            Map_Goto_SetStr(mapvote_maps[mappos]);
 		Map_Goto();
 		alreadychangedlevel = TRUE;
 		return TRUE;

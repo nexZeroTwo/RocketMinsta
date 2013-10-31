@@ -179,7 +179,10 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "\n");
 				return FALSE;
 			}
-
+            
+            if(e.vote_master)
+                hack_forcenextmap = TRUE;
+            
 			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 			
@@ -365,8 +368,9 @@ float RemapVote(string vote, string cmd, entity e)
 
 			// Gametype overplayed?
 			// TODO: Get rid of this, if the gametype is overplayed a gametype voting screen should appear
+            if(!e.vote_master)
 			if(!cvar("sv_vote_gametype_overplayed_allowcall"))
-			if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
+			if(GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
 			{
 				sprint (e, "^1This gametype is currently overplayed.");
 				if (s == "ft")
@@ -844,11 +848,13 @@ void VoteAccept() {
 void VoteReject() {
 	bprint("\{1}^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 was rejected\n");
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteTimeout() {
 	bprint("\{1}^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 timed out\n");
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteStop(entity stopper) {
@@ -862,6 +868,7 @@ void VoteStop(entity stopper) {
 		}
 	}
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteSpam(float yescount, float nocount, float abstaincount, float notvoters, float mincount, string result)
