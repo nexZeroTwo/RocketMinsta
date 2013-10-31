@@ -58,6 +58,7 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 {
 	entity oldself;
 	entity telefragger;
+    entity h;
 	vector from;
 
 	if(teleporter.owner)
@@ -121,6 +122,10 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 			self = oldself;
 		}
 	}
+    
+    for(;(h = find(h, classname, "grapplinghook"));)
+        if(h.aiment == player)
+            RemoveGrapplingHook(h.owner);
 }
 
 void TeleportPlayer_NextFrame_Think() {
