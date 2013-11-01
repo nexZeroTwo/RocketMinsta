@@ -909,9 +909,9 @@ void AnimateDomPoint();
 
 string JB_ControlPoint_ModelForTeam(float t) {
     switch(t) {
-        case COLOR_TEAM1:       return "models/domination/dom_red.md3";
-        case COLOR_TEAM2:       return "models/domination/dom_blue.md3";
-        default:                return "models/domination/dom_yellow.md3";
+        case COLOR_TEAM1:       return "models/domination/dom_red_baseless.md3";
+        case COLOR_TEAM2:       return "models/domination/dom_blue_baseless.md3";
+        default:                return "models/domination/dom_yellow_baseless.md3";
     }
 }
 
@@ -961,7 +961,7 @@ void JB_ControlPoint_Deactivate(entity e, float cooldown) {
     JB_Log(strcat(etos(e), ": ", ftos(e.jb_cooldown), "s cooldown. Team: ", ftos(e.team), ", Caps: ", ftos(e.jb_capturecount)));
     
     if(e.jb_active && e.jb_cooldown > 0) {
-        setmodel(e, "models/domination/dom_unclaimed.md3");
+        setmodel(e, "models/domination/dom_unclaimed_baseless.md3");
         e.jb_active = FALSE;
     }
 }
