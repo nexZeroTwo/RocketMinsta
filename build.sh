@@ -24,11 +24,11 @@ function getfiledircache
     pushd "${1}/"
 
     if [ "${2}" = "reverse" ]; then
-        readarray -t filecache < <(find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
-        readarray -t dircache  < <(find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
     else
-        readarray -t filecache < <(find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
-        readarray -t dircache  < <(find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
     fi
 
     popd
