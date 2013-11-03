@@ -207,6 +207,10 @@ void JB_Imprison(entity attacker) {
 		return;
 	}
 	
+    self.health = cvar("g_jailbreak_prisoner_health");
+	self.armorvalue = cvar("g_jailbreak_prisoner_armor");
+	
+    
     self.jb_had_unlimited_ammo = (self.items & IT_UNLIMITED_WEAPON_AMMO);
     
     if(!self.jb_had_unlimited_ammo)
@@ -604,9 +608,6 @@ float JB_PlayerDies(entity frag_attacker) {
 	DEPENDON_F(g_jailbreak && JB_GAME_ACTIVE, 0)
 	
 	if(!self.jb_isprisoned) {
-		self.health = cvar("g_jailbreak_prisoner_health");
-		self.armorvalue = cvar("g_jailbreak_prisoner_armor");
-	
 		if(frag_attacker == self || !frag_attacker)
 			PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));
 		else if(frag_attacker.classname == "player") {
