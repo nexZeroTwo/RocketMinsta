@@ -15,6 +15,7 @@ TIMETRAVEL_HANDLER(VoidFunc,    void(), TIMETRAVEL_STORE_IDENTITY, TIMETRAVEL_RE
 
 entity TimeTravel_SaveMoment(entity e);
 void TimeTravel_TakeBack(entity dst, entity state);
+void TimeTravel_EraseMoment(entity e);
 
 .entity tt_lastmoment;
 entity tt_moment;

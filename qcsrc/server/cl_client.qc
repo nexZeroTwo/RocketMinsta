@@ -780,17 +780,19 @@ void PutObserverInServer (void)
 			else
 				bprint ("^4", self.netname, "^4 is spectating now\n"); // TODO turn this into a proper forfeit?
 		}
-		else
+		else if(!self.jb_specteam)
 			bprint ("^4", self.netname, "^4 is spectating now\n");
 	}
-
-	PlayerScore_Clear(self); // clear scores when needed
     
-    if(g_handgrenades) {
-        self.hg_type_picked = 0;
-        self.hg_type = 0;
-        self.hg_nadesused = 0;
-        self.hg_shield = 0;
+    if(!self.jb_specteam) {
+        PlayerScore_Clear(self); // clear scores when needed
+    
+        if(g_handgrenades) {
+            self.hg_type_picked = 0;
+            self.hg_type = 0;
+            self.hg_nadesused = 0;
+            self.hg_shield = 0;
+        }
     }
     
     self.frozenrow = 0;
@@ -863,8 +865,9 @@ void PutObserverInServer (void)
 
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
-
-	self.team = -1;
+    
+    if(!self.jb_specteam)
+        self.team = -1;
 
 	if(g_arena)
 	{
@@ -886,7 +889,7 @@ void PutObserverInServer (void)
 		else
 			self.frags = FRAGS_LMS_LOSER;
 	}
-	else
+	else if(!self.jb_specteam)
 		self.frags = FRAGS_SPECTATOR;
     
     self.justconnected = FALSE;
@@ -1374,6 +1377,14 @@ void PutClientInServer (void)
 		remove(self.fire_burner);
 		self.fire_burner = world;
 	}
+    
+    self.jb_specteam = 0;
+    
+    if(self.jb_jailspec_proxy) {
+        JB_JailSpec_Proxy_CopyFields(self, self.jb_jailspec_proxy);
+        remove(self.jb_jailspec_proxy);
+        self.jb_jailspec_proxy = world;
+    }
     
     self.justconnected = FALSE;
 }
@@ -1998,10 +2009,13 @@ void ClientDisconnect (void)
 
     if(self.specdelay_ent)
         remove(self.specdelay_ent);
-
-	// free cvars
-	GetCvars(-1);
     
+    if(self.jb_jailspec_proxy)
+        remove(self.jb_jailspec_proxy);
+    
+    // free cvars
+    GetCvars(-1);
+
     totalclients--;
     if(clienttype(self) == CLIENTTYPE_REAL)
         realclients--;
@@ -2613,7 +2627,8 @@ void SpectateCopy(entity spectatee) {
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
     self.buffstat = spectatee.buffstat;
 	setorigin(self, spectatee.origin);
-	setsize(self, spectatee.mins, spectatee.maxs);
+    // TODO: find out if this is actually needed
+    // setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
 }
 
@@ -2685,39 +2700,62 @@ void WriteSpectatorInfo(entity player)
     if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
-    	WriteSpectatorInfoOf(player, player, FALSE);
-	
-	local entity spec;
-	FOR_EACH_SPECOF(player, spec, 0)
-		WriteSpectatorInfoOf(spec, player, TRUE);
+        WriteSpectatorInfoOf(player, player, FALSE);
+    
+    entity spec;
+    FOR_EACH_SPECOF(player, spec, 0)
+        WriteSpectatorInfoOf(spec, player, TRUE);
 }
 
 float SpectateUpdate() {
-	if(!self.enemy)
-		return 0;
+    if(!self.enemy)
+        return 0;
 
-	if(self == self.enemy)
-		return 0;
+    if(self == self.enemy)
+        return 0;
 
-	if(self.enemy.classname != "player")
-		return 0;
-
-	SpectateCopy(self.enemy);
-	return 1;
+    if(self.enemy.classname != "player")
+        return 0;
+    
+    if(self.jb_specteam) if(self.enemy.team != self.jb_specteam || self.enemy.jb_isprisoned)
+        return 0;
+    
+    SpectateCopy(self.enemy);
+    return 1;
 }
 
 float SpectateNext() {
-	local entity oldenemy = self.enemy;
-	
-	UnmarkAway(self);
-	
-	other = find(self.enemy, classname, "player");
-	if (!other) {
-		other = find(other, classname, "player");
-	}
+    entity oldenemy = self.enemy;
+    float retry;
+    
+    UnmarkAway(self);
+    
+    other = find(self.enemy, classname, "player");
+    if(!other || (self.jb_specteam && (other.team != self.jb_specteam || other.jb_isprisoned))) {
+        other = find(other, classname, "player");
+    }
+    
+    if(self.jb_specteam) do {
+        while(other.team != self.jb_specteam || other.jb_isprisoned) {
+            other = find(other, classname, "player");
+            if(!other)
+                return 0;
+            break;
+        }
+        
+        if(other.team != self.jb_specteam || other.jb_isprisoned) {
+            self.enemy = world;
+            if(retry)
+                return 0;
+            else
+                retry = TRUE;
+        } else retry = FALSE;
+    } while(retry);
+    
 	if (other) {
 		self.enemy = other;
 	}
+    
 	if(self.enemy.classname == "player") {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
@@ -2768,8 +2806,14 @@ void ShowRespawnCountdown()
 
 void LeaveSpectatorMode()
 {
+    if(self.jb_specteam) {
+        self.classname = "player";
+        PutClientInServer();
+        return;
+    }
+    
 	if(isJoinAllowed()) {
-		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
+        if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
             if(HG_ShowMenu(FALSE))
                 return;
             
@@ -2876,8 +2920,16 @@ float vercmp(string v1, string v2)
 
 void ObserverThink()
 {
-	if (self.flags & FL_JUMPRELEASED) {
-		if (self.BUTTON_JUMP && !self.version_mismatch) {
+    if(self.jb_specteam) {
+        if(SpectateNext()) {
+            self.classname = "spectator";
+            WriteSpectatorInfo(self.enemy);
+        } else {
+            self.flags &~= FL_SPAWNING;
+            LeaveSpectatorMode();
+        }
+	} else if(self.flags & FL_JUMPRELEASED) {
+		if(self.BUTTON_JUMP && !self.version_mismatch) {
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
@@ -2888,7 +2940,7 @@ void ObserverThink()
 			}
 		}
 	} else {
-		if (!(self.BUTTON_ATCK || self.BUTTON_JUMP)) {
+		if(!(self.BUTTON_ATCK || self.BUTTON_JUMP)) {
 			self.flags |= FL_JUMPRELEASED;
 			if(self.flags & FL_SPAWNING)
 			{
@@ -2903,6 +2955,11 @@ void ObserverThink()
 
 void SpectatorThink()
 {
+    if(self.jb_specteam && roundstate != ROUNDSTATE_GAME) {
+        LeaveSpectatorMode();
+        return;
+    }
+    
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
 			self.flags &~= FL_JUMPRELEASED;
@@ -2912,17 +2969,23 @@ void SpectatorThink()
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
 			} else {
-				self.classname = "observer";
+				self.classname = (self.jb_specteam? "player" : "observer");
 				PutClientInServer();
 			}
 			WriteSpectatorInfo(self.enemy);
-		} else if (self.BUTTON_ATCK2) {
+		} else if(self.BUTTON_ATCK2 && !self.jb_specteam) {
+            self.BUTTON_ATCK2 = FALSE;
 			self.flags &~= FL_JUMPRELEASED;
 			self.classname = "observer";
 			PutClientInServer();
 		} else {
-			if(!SpectateUpdate())
-				PutObserverInServer();
+			if(!SpectateUpdate()) {
+                if(self.jb_specteam) {
+                    if(!SpectateNext())
+                        LeaveSpectatorMode();
+                } else
+                    PutObserverInServer();
+            }
 		}
 	} else {
 		if (!(self.BUTTON_ATCK || self.BUTTON_ATCK2)) {
@@ -2968,6 +3031,13 @@ void PlayerPreThink (void)
         isspec = TRUE;
     else if(self.classname == "observer")
         isobs = TRUE;
+    
+    if(self.jb_specteam && isplayer) {
+        JB_JailSpec_CreateProxy();
+        PutObserverInServer();
+        isplayer = FALSE;
+        isobs = TRUE;
+    }
     
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).

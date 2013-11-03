@@ -453,13 +453,15 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 		if( !teams_matter ) {
-			sprint( self, "selecteam can only be used in teamgames\n");
+			sprint(self, "selectteam can only be used in teamgames\n");
+        } else if(self.jb_specteam) {
+            sprint(self, "selectteam can't be used while spectating in the jail\n");
 		} else if(g_inf) {
 			//don't allow players to switch their team when playing infection
 		} else if(cvar("g_campaign")) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
-			sprint( self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
+			sprint(self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
 		} else if( argv(1) == "red" ) {
 			DoTeamChange(COLOR_TEAM1);
 		} else if( argv(1) == "blue" ) {

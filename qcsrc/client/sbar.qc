@@ -3578,7 +3578,16 @@ void Sbar_Draw(void)
 		drawfont = sbar_font;
 	}
 	#endif
-
+    
+    float jailspec = FALSE;
+    if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FROZENSTATUS])) {
+        o = Sbar_DrawNoteLine(o, "^1You are imprisoned");
+        if(!spectatee_status)
+            o = Sbar_DrawNoteLine(o, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team"));
+        else
+            jailspec = TRUE;
+    }
+    
 	if(spectatee_status && !intermission)
 	{
 		drawfont = sbar_bigfont;
@@ -3599,16 +3608,15 @@ void Sbar_Draw(void)
 		else
 			s = strcat("^1Press ^3", getcommandkey("primary fire", "+attack"), "^1 for another player");
 		o = Sbar_DrawNoteLine(o, s);
-
-		if(spectatee_status == -1)
-			s = strcat("^1Use ^3", getcommandkey("next weapon", "weapnext"), "^1 or ^3", getcommandkey("previous weapon", "weapprev"), "^1 to change the speed");
-		else
-			s = strcat("^1Press ^3", getcommandkey("secondary fire", "+attack2"), "^1 to observe");
-		o = Sbar_DrawNoteLine(o, s);
-
-		s = strcat("^1Press ^3", getcommandkey("server info", "+show_info"), "^1 for gamemode info");
-		o = Sbar_DrawNoteLine(o, s);
-
+        
+        if(!jailspec) {
+            if(spectatee_status == -1)
+                s = strcat("^1Use ^3", getcommandkey("next weapon", "weapnext"), "^1 or ^3", getcommandkey("previous weapon", "weapprev"), "^1 to change the speed");
+            else
+                s = strcat("^1Press ^3", getcommandkey("secondary fire", "+attack2"), "^1 to observe");
+            o = Sbar_DrawNoteLine(o, s);
+        }
+        
 		if(gametype == GAME_ARENA)
 			s = "^1Wait for your turn to join";
 		else if(gametype == GAME_LMS)
@@ -3623,7 +3631,7 @@ void Sbar_Draw(void)
 				s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
 		}
 		else
-			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
+			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), (jailspec? "^1 to leave spectator mode" : "^1 to join"));
 		o = Sbar_DrawNoteLine(o, s);
 
 		//show restart countdown:
