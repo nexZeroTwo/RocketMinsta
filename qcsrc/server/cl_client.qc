@@ -2724,37 +2724,29 @@ float SpectateUpdate() {
     return 1;
 }
 
+entity SpectateNext_Yield(entity p) {
+    if(self.jb_specteam) {
+        p = find(p, classname, "player");
+        while(p && p.team != self.jb_specteam || p.jb_isprisoned)
+            p = find(p, classname, "player");
+        return p;
+    } else
+        return find(p, classname, "player");
+}
+
 float SpectateNext() {
     entity oldenemy = self.enemy;
-    float retry;
     
     UnmarkAway(self);
     
-    other = find(self.enemy, classname, "player");
-    if(!other || (self.jb_specteam && (other.team != self.jb_specteam || other.jb_isprisoned))) {
-        other = find(other, classname, "player");
+    other = SpectateNext_Yield(self.enemy);
+    
+    if(!other)
+        other = SpectateNext_Yield(world);
+
+    if(other) {
+        self.enemy = other;
     }
-    
-    if(self.jb_specteam) do {
-        while(other.team != self.jb_specteam || other.jb_isprisoned) {
-            other = find(other, classname, "player");
-            if(!other)
-                return 0;
-            break;
-        }
-        
-        if(other.team != self.jb_specteam || other.jb_isprisoned) {
-            self.enemy = world;
-            if(retry)
-                return 0;
-            else
-                retry = TRUE;
-        } else retry = FALSE;
-    } while(retry);
-    
-	if (other) {
-		self.enemy = other;
-	}
     
 	if(self.enemy.classname == "player") {
 		msg_entity = self;

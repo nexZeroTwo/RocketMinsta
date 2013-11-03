@@ -1099,7 +1099,7 @@ void JB_ControlPoint_Capture(entity player) {
     cpname = JB_ControlPoint_Name(self);
     
     entity o = self;
-    FOR_EACH_CLIENT(self) if(!self.iscreature) if(self.jb_specteam)
+    FOR_EACH_CLIENT(self) if(!self.iscreature) if(self.jb_specteam == player.team)
         LeaveSpectatorMode();
     self = o;
     
