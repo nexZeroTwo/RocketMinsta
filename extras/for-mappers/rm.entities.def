@@ -233,5 +233,5 @@ model="models/it/pc.md3"
 Use this entity as the camera for the scoreboards view at end of matches. Can be aimed by setting the "angles" key or targeting an pointing to an aiming entity. If you use more than one, a random one of these will be used.
 -------- KEYS --------
 angles: sorted as pitch, yaw, roll.
-target : point this to an info_notnull or target_position entity to set the camera's pointing angles.
+target: point this to an info_notnull or target_position entity to set the camera's pointing angles.
 */
