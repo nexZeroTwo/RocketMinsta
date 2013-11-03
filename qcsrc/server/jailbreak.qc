@@ -1055,7 +1055,7 @@ void JB_TriggerTeamControlPoints(float t) {
         if(self.jb_team_initial == t)
             SUB_UseTargets_PreventReuse();
     
-    FOR_EACH_CLIENT(self) if(self.jb_specteam) {
+    FOR_EACH_CLIENT(self) if(self.jb_specteam && self.jb_specteam != t) {
         self.classname = "player";
         PutClientInServer();
     }
