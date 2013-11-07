@@ -438,27 +438,39 @@ void Freeze_Hook_PlayerPreThink(void) {
     self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
     
     float rmod;
+    float allow;
     
     // Find all players withing revival radius and build a linked list
     if(self.freezetime + Freeze_CVar("revive_delay") < time) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         FOR_EACH_PLAYER(other) if(self != other && !other.frozen && other.team == self.team) {
             if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
-                if(!rfirst)
-                    rfirst = other;
-                    
-                if(rlast)
-                    rlast.chain = other;
-                    
-                rlast = other;
-                other.chain     = world;
+                allow = Freeze_CVar("revive_through_walls");
                 
-                float lmod = 1;
-                if(other.hg_shield)
-                    lmod *= cvar("g_handgrenades_shield_progressrate");
-                if(BUFFS_PRESENT(other, BUFF_MEDIC))
-                    lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * Buffs_BuffPower(other, BUFF_MEDIC);
-                rmod = max(rmod, lmod);
+                if(!allow) {
+                    vector o = self.origin + self.view_ofs;
+                    vector e = other.origin + other.view_ofs;
+                    traceline(o, e, TRUE, self);
+                    allow = (trace_endpos == e);
+                }
+                
+                if(allow) {
+                    if(!rfirst)
+                        rfirst = other;
+                        
+                    if(rlast)
+                        rlast.chain = other;
+                        
+                    rlast = other;
+                    other.chain     = world;
+                    
+                    float lmod = 1;
+                    if(other.hg_shield)
+                        lmod *= cvar("g_handgrenades_shield_progressrate");
+                    if(BUFFS_PRESENT(other, BUFF_MEDIC))
+                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * Buffs_BuffPower(other, BUFF_MEDIC);
+                    rmod = max(rmod, lmod);
+                }
             }
         }
     }
