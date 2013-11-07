@@ -240,7 +240,9 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 
     pos += sbar_border_thickness * '1 1 0';
     img_size -= (sbar_border_thickness * 2) * '1 1 0';
-    drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
+    
+    if(id < mv_num_maps)
+        drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
 
 	if(pic != "") {
         drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
