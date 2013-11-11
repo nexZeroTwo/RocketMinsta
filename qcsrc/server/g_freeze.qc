@@ -462,7 +462,7 @@ void Freeze_Hook_PlayerPreThink(void) {
                         rlast.chain = other;
                         
                     rlast = other;
-                    other.chain     = world;
+                    other.chain = world;
                     
                     float lmod = 1;
                     if(other.hg_shield)

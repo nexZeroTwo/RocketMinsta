@@ -58,6 +58,7 @@ float HG_RegenTime(entity);
 .float hg_shieldpower;
 .float hg_shieldmax;
 .float hg_shieldhealth;
+.float hg_shield_oldmovetype;
 .entity hg_shieldmodel;
 
 .float hg_plasma_projrange;

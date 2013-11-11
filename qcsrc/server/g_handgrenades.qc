@@ -752,6 +752,10 @@ void HG_Shield(float hgtype) {
     self.hg_shield = self.hg_shieldmax;
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
+    if(GRENVAR(hgtype, "immobile")) {
+        self.hg_shield_oldmovetype = self.movetype;
+        self.movetype = MOVETYPE_NONE;
+    }
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
     if(!self.hg_shieldmodel) {
@@ -778,8 +782,14 @@ void HG_Shield(float hgtype) {
 }
 
 void HG_Shield_Frame() {
-    if(!self.hg_shield)
+    if(!self.hg_shield) {
+        if(self.hg_shield_oldmovetype) {
+            self.movetype = self.hg_shield_oldmovetype;
+            self.hg_shield_oldmovetype = 0;
+        }
+        
         return;
+    }
     
     if(self.hg_shieldhealth <= 0)
         self.hg_shield = 0;
