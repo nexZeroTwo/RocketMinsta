@@ -941,11 +941,11 @@ float HG_GG_Button(float hgtype) {
             allow = (vlen(trace_endpos - e) < 5);
         
         if(allow) {
-            FireRailgunBullet(o, e, damage, 1000, 0, 0, 0, 0, DEATH_HG_GG);
-            trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), o, trace_endpos + randomvec() * 10);
-            trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), o, trace_endpos + randomvec() * 10);
-            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, trace_endpos + randomvec() * 10);
-            trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, trace_endpos + randomvec() * 10);
+            Damage(p, world, self, damage, DEATH_HG_GG, e, normalize(e - o) * 1000);
+            trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), o, e + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), o, e + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, e + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, e + randomvec() * 10);
             ++pwned;
         }
     }
