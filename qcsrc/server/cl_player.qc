@@ -559,7 +559,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(g_handgrenades)
     if(attacker.classname == "player")
     if(self.hg_shield)
-    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC) {
+    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
         vector offs = '0 0 1' * self.maxs_z*0.5;
         float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
         float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;

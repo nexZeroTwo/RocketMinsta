@@ -4922,16 +4922,19 @@ void Sbar_Draw(void)
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;
         
-		float hgammo = getstati(STAT_HGAMMO);
+        float hgtype = getstati(STAT_HGTYPE);
+        float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         
-        if(hgdetons) {
+        if(hgdetons)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades (^2", ftos(hgdetons), "^3)"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        }
+        else if(hgtype == HG_GG && hgammo)
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("hook / nadget key", "+hook")), " ^3to win!"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            
         
         if(nadesector_pos) {
             float a = getstati(STAT_HGAMMO);
-            float t = getstati(STAT_HGTYPE);
+            float t = hgtype;
             pos_y = 33;
             pos = bottom - pos;
             pos_x = nadesector_pos;

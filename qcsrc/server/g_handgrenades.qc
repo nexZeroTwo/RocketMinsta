@@ -33,6 +33,7 @@ void HG_Precache() {
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("weapons/rocket_mode.wav");
     precache_sound("misc/powerup_shield.wav");
+    precache_sound("misc/gg.wav");
     precache_sound("kh/capture.wav");
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
@@ -922,6 +923,39 @@ void HG_Linker(float hgtype) {
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
 
+float HG_GG_Button(float hgtype) {
+    entity p;
+    float pwned;
+    float allow;
+    
+    float damage = GRENVAR(hgtype, "damage");
+    float range  = GRENVAR(hgtype, "range");
+    
+    FOR_EACH_PLAYER(p) if(p != self) if(!teams_matter || p.team != self.team || BUFFS_PRESENT(self, BUFF_MEDIC)) if(p.deadflag == DEAD_NO) if(!p.frozen) if(!p.jb_isprisoned) if(vlen(self.origin - p.origin) < range) {
+        vector o = self.origin + self.view_ofs;
+        vector e = p.origin + p.view_ofs;
+        traceline(o, e, TRUE, self);
+        
+        allow = (trace_endpos == e);
+        if(!allow)
+            allow = (vlen(trace_endpos - e) < 5);
+        
+        if(allow) {
+            FireRailgunBullet(o, e, damage, 1000, 0, 0, 0, 0, DEATH_HG_GG);
+            trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), o, trace_endpos + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), o, trace_endpos + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, trace_endpos + randomvec() * 10);
+            trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, trace_endpos + randomvec() * 10);
+            ++pwned;
+        }
+    }
+    
+    if(pwned)
+        sound(self, CHAN_AUTO, "misc/gg.wav", 1, ATTN_NORM);
+    
+    return pwned;
+}
+
 void HG_Attack()
 {
     #define GV(v) (GRENVAR(hgtype, v))
@@ -953,6 +987,14 @@ void HG_Attack()
     } else if(hgtype == HG_LINKER) {
         HG_Linker(hgtype);
         goto finish;
+    } else if(hgtype == HG_GG) {
+        if(HG_GG_Button(hgtype))
+            goto finish;
+        else {
+            bigprint_spec(self, "Nobody to win against!", "", 1);
+            self.hg_next = time + 1;
+            return;
+        }
     }
     
     vector hitmins, hitmaxs;
@@ -1102,7 +1144,7 @@ void HG_Frame()
             HG_Attack();
         }
 	} else {
-		if(self.hg_state && mayfire)
+		if(self.hg_state && mayfire && self.hg_launchspeed)
 			HG_Attack();
 		self.hg_power = 0;
 	}

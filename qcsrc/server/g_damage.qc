@@ -758,6 +758,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                         bprint ("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
                     else if(deathtype == DEATH_HG_SHIELD)
                         bprint ("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
+                    else if(deathtype == DEATH_HG_GG)
+                        bprint ("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 				}
@@ -1047,7 +1049,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
         
         damage_origtarget = targ;
-        if(targ.hg_linker && deathtype != HG_TRANSLOC && !DEATH_ISSPECIAL(deathtype)) {
+        if(targ.hg_linker && deathtype != HG_TRANSLOC && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype)) {
             if(teams_matter && targ.team == attacker.team)
                 return;
             
