@@ -164,6 +164,9 @@ void Projectile_DrawTrail(vector to)
         case PROJECTILE_HG_PLASMA:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
             break;
+        case PROJECTILE_HG_LASER:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
+            break;
         case PROJECTILE_HG_TRANSLOC:
             if(!rm_teamlasers)
                 return trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
@@ -291,6 +294,7 @@ void Projectile_Draw()
 		case PROJECTILE_HG_NAPALM:
         case PROJECTILE_HG_TRANSLOC:
         case PROJECTILE_HG_REMOTE:
+        case PROJECTILE_HG_LASER:
 			trailorigin += v_right * 1 + v_forward * -10;
 			break;
 		default:
@@ -447,6 +451,7 @@ void Ent_Projectile()
                 setmodel(self, "models/mine.md3");
                 self.skin = TeamColorSkin(self.team);
                 break;
+            case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
             case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP; break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
@@ -494,6 +499,7 @@ void Ent_Projectile()
 			case PROJECTILE_HG_NAPALM:
             case PROJECTILE_HG_TRANSLOC:
             case PROJECTILE_HG_REMOTE:
+            case PROJECTILE_HG_LASER:
                 if(g_handgrenades == 2) {   // g_handgrenades_oldhitboxes
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';

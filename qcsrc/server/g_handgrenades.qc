@@ -36,6 +36,8 @@ void HG_Precache() {
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
     precache_sound("kh/capture.wav");
+    precache_sound(RM_SOUND_LASER_PRIMARY);
+    precache_sound(RM_SOUND_LASER_SECONDARY);
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
     precache_model("models/shield_inner.md3");
@@ -383,11 +385,16 @@ float HG_TypeToCSQCProjType(float t) {
 		case HG_PLASMA  :   return PROJECTILE_HG_PLASMA;
         case HG_TRANSLOC:   return PROJECTILE_HG_TRANSLOC;
         case HG_REMOTE  :   return PROJECTILE_HG_REMOTE;
+        case HG_LASER   :   return PROJECTILE_HG_LASER;
 		default         :   return PROJECTILE_HG_GENERIC;
 	}
 }
 
 #define GV(v) (GRENVAR(self.hg_type, v))
+void HG_Grenade_RadiusDamage() {
+    RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
+}
+
 void HG_Grenade_Explode()
 {
 	if(other.takedamage == DAMAGE_AIM)
@@ -407,9 +414,9 @@ void HG_Grenade_Explode()
         HG_Remote_Explode();
     else if(self.hg_type == HG_TRANSLOC)
         HG_Translocator_Explode();
-	
-	RadiusDamage(self, self.owner, GV("damage"), GV("edgedamage"), GV("radius"), world, GV("force"), self.projectiledeathtype, other);
-	HG_Grenade_Remove();
+    
+    HG_Grenade_RadiusDamage();
+    HG_Grenade_Remove();
 }
 #undef GV
 
@@ -454,24 +461,30 @@ void HG_Grenade_Touch() {
             } else
                 self.use();
             return;
-        }
+        } else if(self.hg_type == HG_LASER)
+            HG_Grenade_RadiusDamage();
 
 :troll
-		float r;
-		r = random() * 6;
-		if(r < 1)
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce1.wav", VOL_BASE, ATTN_NORM);
-		else if(r < 2)
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce2.wav", VOL_BASE, ATTN_NORM);
-		else if(r < 3)
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce3.wav", VOL_BASE, ATTN_NORM);
-		else if(r < 4)
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce4.wav", VOL_BASE, ATTN_NORM);
-		else if(r < 5)
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
-		else
-			spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
-        
+
+        if(self.hg_type == HG_LASER)
+            spamsound(self, CHAN_PROJECTILE, RM_SOUND_LASER_SECONDARY, VOL_BASE, ATTN_NORM);
+        else {
+            float r;
+            r = random() * 6;
+            if(r < 1)
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce1.wav", VOL_BASE, ATTN_NORM);
+            else if(r < 2)
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce2.wav", VOL_BASE, ATTN_NORM);
+            else if(r < 3)
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce3.wav", VOL_BASE, ATTN_NORM);
+            else if(r < 4)
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce4.wav", VOL_BASE, ATTN_NORM);
+            else if(r < 5)
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
+            else
+                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
+        }
+    
         self.cnt -= 1;
 	}
 }
@@ -963,6 +976,15 @@ float HG_GG_Button(float hgtype) {
     return pwned;
 }
 
+string HG_TypeToAttackSound(float hgtype) {
+    switch(hgtype) {
+        case HG_LASER:
+            return RM_SOUND_LASER_PRIMARY;
+        default:
+            return "weapons/grenade_fire.wav";
+    }
+}
+
 void HG_Attack()
 {
     #define GV(v) (GRENVAR(hgtype, v))
@@ -1015,11 +1037,11 @@ void HG_Attack()
     }
     
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, "weapons/grenade_fire.wav", GV("damage"));
+	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, HG_TypeToAttackSound(hgtype), GV("damage"));
 	//w_shotdir = v_forward;
-	
-	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
-	
+    
+    pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
+    
 	entity gren = spawn();
 	gren.owner = self;
 	gren.classname = "hg_grenade";
@@ -1163,13 +1185,12 @@ void HG_Frame()
     self.hg_regenpaused = time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause");
     
     if(cvar("g_handgrenades_regen_time")) {
-        float mx = cvar("g_handgrenades_regen_max");
+        float mx = GRENVAR(self.hg_type, "stacklimit");
+        if(mx <= 0) mx = cvar("g_handgrenades_regen_max");
         if(mx <= 0) mx = cvar("g_handgrenades_ammo");
         
         if(self.hg_ammo < mx && !self.hg_regenpaused) {
-            float rate;
-            rate = frametime;
-            
+            float rate = frametime;
             if(g_freeze && self.frozen)
                 rate *= cvar("g_handgrenades_regen_frozenfactor");
             rate *= GRENVAR(self.hg_type, "regenscale");

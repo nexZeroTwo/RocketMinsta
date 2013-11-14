@@ -8,6 +8,7 @@
 #define HG_SHIELD       DEATH_HG_SHIELD
 #define HG_LINKER       DEATH_HG_LINKER
 #define HG_GG           DEATH_HG_GG
+#define HG_LASER        DEATH_HG_LASER
 
 string HG_TypeToName(float);
 float HG_NameToType(string);

@@ -123,9 +123,9 @@ void Ent_DamageInfo(float isNew)
 						pointparticles (particleeffectnum (mod(i, 4)? "rocket_explode" : "TE_TEI_BIGEXPLOSION"), self.origin + v * radius * r, v * radius * r * 100, 1);
 					}
                     break;
-                case DEATH_HG_PLASMA_SHARD:
+                case DEATH_HG_PLASMA_SHARD: case DEATH_HG_LASER:
                     org2 = org + backoff * 6;
-                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2), org2, '0 0 0', 1);
+                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == DEATH_HG_LASER)), org2, '0 0 0', 1);
                     if(!issilent)
                         sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
                     break;
