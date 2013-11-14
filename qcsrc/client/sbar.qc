@@ -4926,8 +4926,17 @@ void Sbar_Draw(void)
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         
-        if(hgdetons)
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades (^2", ftos(hgdetons), "^3)"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        if(getstatf(STAT_HGSHIELD))
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        else if(hgdetons)
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
+                                        ((hgdetons > 1)? strcat("s (^2", ftos(hgdetons), "^3)") : "")),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
         else if(hgtype == HG_GG && hgammo)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("hook / nadget key", "+hook")), " ^3to win!"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             

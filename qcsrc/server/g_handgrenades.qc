@@ -32,6 +32,7 @@ void HG_Precache() {
     precache_sound("weapons/rm_nadebeep.wav");
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("weapons/rocket_mode.wav");
+    precache_sound("porto/expire.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
     precache_sound("kh/capture.wav");
@@ -554,6 +555,12 @@ void HG_Detonate(entity nade) {
 
 void HG_DetonateAll(entity plr) {    
     entity nade;
+    
+    if(plr.hg_shield) {
+        plr.hg_shield = 0;
+        stopsound(plr, CHAN_AUTO);  // stop the shield sound
+        sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+    }
     
     if(!plr.hg_detonables)
         return;
