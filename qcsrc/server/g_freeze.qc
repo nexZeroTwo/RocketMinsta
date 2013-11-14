@@ -450,13 +450,12 @@ void Freeze_Hook_PlayerPreThink(void) {
                 if(!allow) {
                     vector o = self.origin + self.view_ofs;
                     vector e = other.origin + other.view_ofs;
+                    
                     traceline(o, e, TRUE, self);
                     allow = (trace_endpos == e);
                     
-                    if(!allow) {
-                        print(ftos(vlen(trace_endpos - e)), "\n");
+                    if(!allow)
                         allow = (vlen(trace_endpos - e) < Freeze_CVar("revive_wall_trace_tolerance"));
-                    }
                 }
                 
                 if(allow) {
