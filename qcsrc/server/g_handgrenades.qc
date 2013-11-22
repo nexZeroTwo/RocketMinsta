@@ -812,6 +812,11 @@ void HG_Shield_Frame() {
         return;
     }
     
+    if(!self.movetype) {
+        // with MOVETYPE_NONE the player model rotation will not correspond to the view direction, so fix it here
+        self.angles_y = self.v_angle_y;
+    }
+    
     if(self.hg_shieldhealth <= 0)
         self.hg_shield = 0;
     else {
