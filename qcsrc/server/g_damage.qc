@@ -1180,7 +1180,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
             
-            if(deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
+            if(deathtype == DEATH_TELEFRAG || (deathtype == HG_TRANSLOC && !cvar("g_handgrenades_transloc_damage")))
             if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
                 damage = 0;
                 force = '0 0 0';
