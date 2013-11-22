@@ -222,7 +222,7 @@ float Buffs_BuffModel_Customize(void) {
     if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
         // somewhat hide the model, but keep the glow
         self.effects = 0;
-        self.alpha = 0.01;
+        self.alpha = -1;
     } else {
         self.effects = EF_ADDITIVE | EF_FULLBRIGHT;
         self.alpha = 1;
