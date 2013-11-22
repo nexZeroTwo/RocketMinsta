@@ -1182,7 +1182,7 @@ void HG_Frame()
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;
-    self.hg_regenpaused = time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause");
+    self.hg_regenpaused = ((time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause")) && (self.hg_type != HG_LASER));
     
     if(cvar("g_handgrenades_regen_time")) {
         float mx = GRENVAR(self.hg_type, "stacklimit");

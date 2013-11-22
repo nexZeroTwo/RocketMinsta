@@ -1354,6 +1354,7 @@ void PutClientInServer (void)
         Boobs_Attach();
         self.wasingame = TRUE;
         self.buffs = 0;
+        self.lastdamage = 0;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1372,7 +1373,7 @@ void PutClientInServer (void)
 		self.shownames.customizeentityforclient = shownames_customize;
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
-	
+    
 	if(self.fire_burner) {
 		remove(self.fire_burner);
 		self.fire_burner = world;
