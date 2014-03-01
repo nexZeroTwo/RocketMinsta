@@ -8,6 +8,7 @@ float g_buffs_randomize_dual;
 float g_buffs_randomize_byinstance;
 float g_buffs_randomize_chaos;
 float g_buffs_spawn_on_powerups;
+float g_buffs_lockon;
 
 float g_buffs_enabled[BUFF_COUNT];
 float g_buffs_replacements[BUFF_COUNT];
@@ -30,6 +31,8 @@ float g_buffs_count;
 
 .entity buff_waypoint;
 .entity buff_model;
+.entity buff_lockon;
+.float buff_lockon_updatetime;
 
 #define BUFFS_GIVE(p,b) ((p).buffs |= (b))
 #define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))

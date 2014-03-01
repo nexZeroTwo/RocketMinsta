@@ -18,6 +18,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
+    g_buffs_lockon = cvar("g_buffs_lockon");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -415,6 +416,10 @@ void Buffs_BuffPickup_Think(void) {
     if(time < 1)
         return;
     
+    if(self.buff_lockon)
+    if(time > self.buff_lockon_updatetime)
+        self.buff_lockon = world;
+    
     if(self.buffs != self.oldbuffs) {
         self.color = self.colormod = Buffs_GenColor(self.buffs);
         self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
@@ -521,9 +526,6 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
 }
 
 void Buffs_BuffPickup_Touch(void) {
-    if(!self.buff_active)
-        return;
-        
     if(self.team && other.team != self.team)
         return;
     
@@ -539,7 +541,19 @@ void Buffs_BuffPickup_Touch(void) {
     if(other.classname != "player")
         return;
     
+    if(!self.buff_active) {
+        if(g_buffs_lockon && (!self.buff_lockon || self.buff_lockon == other)) {
+            self.buff_lockon = other;
+            self.buff_lockon_updatetime = time + 0.5;
+        }
+        return;
+    }
+    
+    if(self.buff_lockon && self.buff_lockon != other)
+        return;
+    
     Buffs_BuffPickup_GiveTo(other);
+    self.buff_lockon = world;
 }
 
 void Buffs_BuffPickup_Setup(void) {
