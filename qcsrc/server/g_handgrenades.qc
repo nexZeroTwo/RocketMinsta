@@ -491,6 +491,11 @@ void HG_Grenade_Touch() {
 
 void HG_Remote_Stick() {
     vector normal = trace_plane_normal;
+
+    // TODO: A better, more general fix
+    if(trace_ent.classname == "misc_terminal")
+        return;
+
     entity e = spawn();
     float d = self.owner.hg_detonables;
     
@@ -508,7 +513,7 @@ void HG_Remote_Stick() {
     e.solid = self.solid;
     e.dphitcontentsmask = self.dphitcontentsmask;
     e.use = self.use;
-    e.movetype = MOVETYPE_NONE;
+    e.movetype = (trace_ent? MOVETYPE_TOSS : MOVETYPE_NONE);
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
     e.think = self.think;
