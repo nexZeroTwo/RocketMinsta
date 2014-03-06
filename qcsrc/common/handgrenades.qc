@@ -69,9 +69,6 @@ string HG_NameToIcon(string n, float large) {
     if(large)
         s = strcat(s, "_large");
     
-    if(n == "laser")
-        s = strcat(s, "_placeholder");
-    
     return s;
 }
 
