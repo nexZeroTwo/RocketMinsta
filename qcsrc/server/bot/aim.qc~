@@ -49,7 +49,6 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	c = 0;
 	//headshot option
 	if(self.weapon == WEP_CAMPINGRIFLE)
-	if(!self.enemy.crouch)
 	if(random() < 0.7)
 		end_z = end_z + 10;
 	//
@@ -74,7 +73,6 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 			return TRUE;
 		}
 		if(self.weapon == WEP_CAMPINGRIFLE)
-		if(!self.enemy.crouch)
 		{
 			dir_z = dir_z;
 		}

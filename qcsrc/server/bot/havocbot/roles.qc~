@@ -181,7 +181,6 @@ void havocbot_goalrating_enemyplayers(float ratingscale, vector org, float sradi
 			//dev.xonotic.org/issues/495 //looks like its already disabled by botshouldattack function in aim.qc
 			//if (head.frozen)
 			//	continue;
-			// in this case bots start ignore frozen teammates by some reasons.
 			
 			if(g_minstagib)
 			if(head.items & IT_STRENGTH)

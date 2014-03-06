@@ -657,7 +657,7 @@ void navigation_routerating(entity e, float f, float rangebias)
 	if(self.items & IT_JETPACK)
 	if(cvar("bot_ai_navigation_jetpack"))
 	//if(vlen(self.origin - e.origin) > cvar("bot_ai_navigation_jetpack_mindistance"))
-	if(vlen(self.origin - o) > cvar("bot_ai_navigation_jetpack_mindistance"))
+	if(vlen(self.origin - o) > autocvar_bot_ai_navigation_jetpack_mindistance)
 	{
 		vector pointa, pointb;
 

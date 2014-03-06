@@ -168,7 +168,7 @@ void HG_Napalm()
 	proj.classname = "grenade";
 	proj.bot_dodge = TRUE;
 	//proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage"); //was, not effective for bots
-	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 250; //Havoc said set at least +60 to hit radius
+	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 150; //Havoc said set at least +60 to hit radius
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
@@ -285,7 +285,7 @@ void HG_Plasma_Projectile() {
     proj.nextthink = time;
 	proj.bot_dodge = TRUE;
 	//proj.bot_dodgerating = cvar("g_handgrenades_plasma_projectile_damage"); //was and not effective for bots
-	proj.bot_dodgerating = cvar("g_handgrenades_plasma_projectile_radius") + 250; // lordHavoc said about increased radius of damage to +60 at leas
+	proj.bot_dodgerating = cvar("g_handgrenades_plasma_projectile_radius") + 150; // lordHavoc said about increased radius of damage to +60 at leas
     proj.hg_detonatetime = time + cvar("g_handgrenades_plasma_projectile_lifetime") + random() * cvar("g_handgrenades_plasma_projectile_lifetime_randomfactor");
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = HG_PLASMA_SHARD;
@@ -1053,7 +1053,7 @@ void HG_Attack()
 	gren.owner = self;
 	gren.classname = "hg_grenade";
 	gren.bot_dodge = TRUE;
-	gren.bot_dodgerating = GV("damage") + 250; //added +100 by Havocs words about at least +60 to radius
+	gren.bot_dodgerating = GV("damage") + 150; //added +100 by Havocs words about at least +60 to radius
 	gren.movetype = GV("movetype");
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = hgtype;

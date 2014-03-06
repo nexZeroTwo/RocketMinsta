@@ -1393,36 +1393,36 @@ vector havocbot_dodge()
 		if (head.bot_dodge)
 		if (head.owner != self)
 		{
-// 			if(head.hg_type == HG_NAPALM)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the fire!!!\n");
-// 			}
-// 			else if(head.hg_type == HG_PLASMA)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the plasma!!!\n");
-// 			}
-// 			else if(head.projectiledeathtype == HG_PLASMA_SHARD)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the plasma shard!!!\n");
-// 			}
-// 			else if(head.hg_type == HG_REMOTE)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the TRAP!!!\n");
-// 			}
-// 			else
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see Danger!!!\n");
-// 			}
+			if(head.hg_type == HG_NAPALM)
+			{
+				bprint(self.netname);
+				bprint(" - said:");
+				bprint("I see the fire!!!\n");
+			}
+			else if(head.hg_type == HG_PLASMA)
+			{
+				bprint(self.netname);
+				bprint(" - said:");
+				bprint("I see the plasma!!!\n");
+			}
+			else if(head.projectiledeathtype == HG_PLASMA_SHARD)
+			{
+				bprint(self.netname);
+				bprint(" - said:");
+				bprint("I see the plasma shard!!!\n");
+			}
+			else if(head.hg_type == HG_REMOTE)
+			{
+				bprint(self.netname);
+				bprint(" - said:");
+				bprint("I see the TRAP!!!\n");
+			}
+			else
+			{
+				bprint(self.netname);
+				bprint(" - said:");
+				bprint("I see Danger!!!\n");
+			}
 
 			
 			vl = vlen(head.velocity);
