@@ -29,6 +29,10 @@ float g_buffs_count;
 .float buffstat;
 .float oldbuffstat;
 
+.float buff_vamp_ticks;
+.float buff_vamp_healthpool;
+.float buff_vamp_nexttick;
+
 .entity buff_waypoint;
 .entity buff_model;
 .entity buff_lockon;
@@ -47,6 +51,7 @@ void Buffs_ClientFrame(void);
 void Buffs_ArcDamage(entity, entity, float, float);
 void Buffs_ArcDamage_Finalize(void);
 void Buffs_BashDamage(entity, entity, entity, float, vector);
+void Buffs_VampireDamage(entity, entity, float, float);
 void Buffs_BuffPickup_Remove(void);
 void Buffs_Randomize(entity, float);
 void Buffs_BuffPickup_Placeholder(void);

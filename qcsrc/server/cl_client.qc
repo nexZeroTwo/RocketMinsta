@@ -1354,6 +1354,7 @@ void PutClientInServer (void)
         Boobs_Attach();
         self.wasingame = TRUE;
         self.buffs = 0;
+        self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.lastdamage = 0;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();

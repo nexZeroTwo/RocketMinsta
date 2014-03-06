@@ -7,6 +7,7 @@ string Buffs_TypeToName(float buff) {
         case BUFF_HASTE     :      return "haste";
         case BUFF_MEDIC     :      return "medic";
         case BUFF_BASH      :      return "bash";
+        case BUFF_VAMPIRE   :      return "vampire";
         default             :      return "unknown";
     }
 }
@@ -19,6 +20,7 @@ float Buffs_NameToType(string name) {
         case "haste"        :      return BUFF_HASTE;
         case "medic"        :      return BUFF_MEDIC;
         case "bash"         :      return BUFF_BASH;
+        case "vampire"      :      return BUFF_VAMPIRE;
         default             :      return 0;
     }
 }
@@ -31,6 +33,7 @@ string Buffs_TypeToExpandedName(float buff) {
         case BUFF_HASTE     :      return "Haste";
         case BUFF_MEDIC     :      return "Medic";
         case BUFF_BASH      :      return "Bash";
+        case BUFF_VAMPIRE   :      return "Vampire";
         default             :      return "Unknown";
     }
 }
@@ -41,13 +44,14 @@ string Buffs_NameToExpandedName(string t) {
 
 vector Buffs_TypeToColor(float buff) {
     switch(buff) {
-        case BUFF_ARC       :      return '0.2 0.7 1.0';
-        case BUFF_SUPPLY    :      return '0.2 1.0 0.2';
-        case BUFF_GUARD     :      return '0.3 0.2 1.0';
-        case BUFF_HASTE     :      return '1.0 1.0 0.2';
-        case BUFF_MEDIC     :      return '1.0 0.3 1.0';
-        case BUFF_BASH      :      return '1.0 0.4 0.0';
-        default             :      return '0.0 0.0 0.0';
+        case BUFF_ARC       :      return '0.20  0.70  1.00';    // Cyan
+        case BUFF_SUPPLY    :      return '0.20  1.00  0.20';    // Green
+        case BUFF_GUARD     :      return '0.30  0.20  1.00';    // Blue-ish
+        case BUFF_HASTE     :      return '1.00  1.00  0.20';    // Yellow
+        case BUFF_MEDIC     :      return '1.00  0.30  1.00';    // Pink
+        case BUFF_BASH      :      return '1.00  0.40  0.00';    // Orange
+        case BUFF_VAMPIRE   :      return '1.00  0.15  0.00';    // Scarlet
+        default             :      return '0.00  0.00  0.00';
     }
 }
 
