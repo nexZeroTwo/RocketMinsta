@@ -998,6 +998,7 @@ void Heal(entity targ, entity inflictor, entity healer, float heal, float pauser
         VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL);
         HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
+        //centerprint(targ, strcat("^2+", ftos(heal)));
     }
 }
 

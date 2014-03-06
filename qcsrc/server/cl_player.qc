@@ -667,6 +667,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     VisualDamage(attacker, self, rdmg, rint(save), ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
                 PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take) + save);
                 
+                if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
+                    Buffs_VampireDamage(self, attacker, damage, deathtype);
+                
                 if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
                     PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
                     hudflash_teamcolor_default_spec(attacker);

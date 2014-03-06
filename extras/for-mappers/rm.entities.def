@@ -197,6 +197,27 @@ The Bash Buff (Pink Team)
 */
 
 
+/*QUAKED item_buff_vampire (1.0 0.15 0.1) (-16 -16 -16) (16 16 16)
+The Vampire Buff
+*/
+
+/*QUAKED item_buff_vampire_team1 (1.0 0.15 0.1) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Red Team)
+*/
+
+/*QUAKED item_buff_vampire_team2 (1.0 0.15 0.1) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_vampire_team3 (1.0 0.15 0.1) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_vampire_team4 (1.0 0.15 0.1) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Pink Team)
+*/
+
+
 /*QUAKED item_buff_random (0.5 0.5 0.5) (-16 -16 -16) (16 16 16)
 A random buff
 */

@@ -18,6 +18,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
+    g_buffs_lockon = cvar("g_buffs_lockon");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -264,6 +265,14 @@ void Buffs_ClientFrame(void) {
             self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
         }
         
+        ON_BUFF_REMOVED(BUFF_VAMPIRE) {
+            self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
+        }
+        
+        ON_BUFF_ADDED(BUFF_VAMPIRE) {
+            self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
+        }
+        
         self.oldbuffs = self.buffs;
     }
     
@@ -292,6 +301,16 @@ void Buffs_ClientFrame(void) {
         remove(self.buff_model);
         self.buff_model = world;
     }
+    
+    if(BUFFS_PRESENT(self, BUFF_VAMPIRE)) {
+        if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
+            float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
+            Heal(self, world, self, heal, cvar("g_buffs_vampire_pauserot"));
+            self.buff_vamp_healthpool -= heal;
+            self.buff_vamp_ticks -= 1;
+            self.buff_vamp_nexttick = time + 1;
+        }
+    }
 }
 
 #undef ON_BUFF_ADDED
@@ -299,6 +318,28 @@ void Buffs_ClientFrame(void) {
 
 void Buffs_ArcEffect(vector from, vector to, float t) {
     te_csqc_lightningarc(from, to, TRUE, t);
+}
+
+void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
+    if(damage <= 0)
+        return;
+    
+    // paranoid sanity check, should not happen
+    if(!a.buff_vamp_ticks  &&  a.buff_vamp_healthpool ||
+        a.buff_vamp_ticks  && !a.buff_vamp_healthpool)
+        a.buff_vamp_ticks  =   a.buff_vamp_healthpool = 0;
+    
+    float ticks = cvar("g_buffs_vampire_time");
+    float factor = cvar("g_buffs_vampire_factor") * Buffs_BuffPower(a, BUFF_VAMPIRE);
+    
+    if(ticks > 0) {
+        // refresh duration, extend the pool
+        a.buff_vamp_ticks = ticks;
+        a.buff_vamp_healthpool += damage * factor;
+    } else {
+        // instant-healing mode, don't use the buffer, just heal
+        Heal(a, world, a, damage * factor, cvar("g_buffs_vampire_pauserot"));
+    }
 }
 
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {
@@ -415,6 +456,10 @@ void Buffs_BuffPickup_Think(void) {
     if(time < 1)
         return;
     
+    if(self.buff_lockon)
+    if(time > self.buff_lockon_updatetime)
+        self.buff_lockon = world;
+    
     if(self.buffs != self.oldbuffs) {
         self.color = self.colormod = Buffs_GenColor(self.buffs);
         self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
@@ -521,9 +566,6 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
 }
 
 void Buffs_BuffPickup_Touch(void) {
-    if(!self.buff_active)
-        return;
-        
     if(self.team && other.team != self.team)
         return;
     
@@ -539,7 +581,19 @@ void Buffs_BuffPickup_Touch(void) {
     if(other.classname != "player")
         return;
     
+    if(!self.buff_active) {
+        if(g_buffs_lockon && (!self.buff_lockon || self.buff_lockon == other)) {
+            self.buff_lockon = other;
+            self.buff_lockon_updatetime = time + 0.5;
+        }
+        return;
+    }
+    
+    if(self.buff_lockon && self.buff_lockon != other)
+        return;
+    
     Buffs_BuffPickup_GiveTo(other);
+    self.buff_lockon = world;
 }
 
 void Buffs_BuffPickup_Setup(void) {
@@ -670,6 +724,12 @@ BUFF_SPAWNFUNC(bash_team1,      BUFF_BASH,      COLOR_TEAM1)
 BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
 BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
 BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
+
+BUFF_SPAWNFUNC(vampire,         BUFF_VAMPIRE,   0)
+BUFF_SPAWNFUNC(vampire_team1,   BUFF_VAMPIRE,   COLOR_TEAM1)
+BUFF_SPAWNFUNC(vampire_team2,   BUFF_VAMPIRE,   COLOR_TEAM2)
+BUFF_SPAWNFUNC(vampire_team3,   BUFF_VAMPIRE,   COLOR_TEAM3)
+BUFF_SPAWNFUNC(vampire_team4,   BUFF_VAMPIRE,   COLOR_TEAM4)
 
 BUFF_SPAWNFUNC(random,          BUFF_RANDOM,    0)
 BUFF_SPAWNFUNC(random_team1,    BUFF_RANDOM,    COLOR_TEAM1)
