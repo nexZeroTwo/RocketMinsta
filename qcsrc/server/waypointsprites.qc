@@ -474,5 +474,6 @@ void WaypointSprite_PlayerGone()
 	WaypointSprite_Disown(self.waypointsprite_deployed_fixed, waypointsprite_deadlifetime);
 	WaypointSprite_Kill(self.waypointsprite_deployed_personal);
 	WaypointSprite_Disown(self.waypointsprite_attached, waypointsprite_deadlifetime);
+    WaypointSprite_Kill(self.buff_teamwp);
 	WaypointSprite_DetachCarrier(self);
 }

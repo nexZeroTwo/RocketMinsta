@@ -35,6 +35,7 @@ float g_buffs_count;
 
 .entity buff_waypoint;
 .entity buff_model;
+.entity buff_teamwp;
 .entity buff_lockon;
 .float buff_lockon_updatetime;
 

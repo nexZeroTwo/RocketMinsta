@@ -231,6 +231,30 @@ float Buffs_BuffModel_Customize(void) {
     return TRUE;
 }
 
+float Buffs_TeamWaypoint_VisibleForPlayer(entity plr) {
+    if(plr == self.owner)
+        return FALSE;
+    return WaypointSprite_visible_for_player(plr);
+}
+
+void Buffs_SetTeamWaypoint(entity plr, string txt, vector clr, float btype) {
+    entity wp = plr.buff_teamwp;
+    
+    if(!wp) {
+        wp = WaypointSprite_Spawn(txt, 0, 0, plr, '0 0 120', world, plr.team, plr, buff_teamwp, TRUE);
+        wp.buff_waypoint.waypointsprite_visible_for_player = Buffs_TeamWaypoint_VisibleForPlayer;
+    } else
+        WaypointSprite_UpdateSprites(wp, txt, "", "");
+    
+    WaypointSprite_UpdateTeamRadar(wp, RADARICON_GENERATOR, clr);
+    WaypointSprite_UpdateTextColors(wp, clr, '0 0 0', '0 0 0');
+    wp.buffs = btype;
+}
+
+void Buffs_RemoveTeamWaypoint(entity plr) {
+    WaypointSprite_Disown(plr.buff_teamwp, 0.5);
+}
+
 void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
@@ -244,6 +268,10 @@ void Buffs_ClientFrame(void) {
             remove(self.buff_model);
             self.buff_model = world;
         }
+        
+        if(self.buff_teamwp)
+            Buffs_RemoveTeamWaypoint(self);
+        
         return;
     }
     
@@ -311,6 +339,12 @@ void Buffs_ClientFrame(void) {
             self.buff_vamp_nexttick = time + 1;
         }
     }
+    
+    if(!self.buff_teamwp) {
+        if(BUFFS_PRESENT(self, BUFF_MEDIC))
+            Buffs_SetTeamWaypoint(self, "HEALER", Buffs_TypeToColor(BUFF_MEDIC), BUFF_MEDIC);
+    } else if(!BUFFS_PRESENT(self, self.buff_teamwp.buffs))
+        Buffs_RemoveTeamWaypoint(self);
 }
 
 #undef ON_BUFF_ADDED
