@@ -589,7 +589,9 @@ void MapVote_Init()
 	// Assume mv_pk3list is NULL, there should only be 1 mapvote per round
 	mv_pk3list = NULL; // I'm still paranoid!
 
-	mv_starttime = time;
+    if(!mv_starttime || gametypevote)
+        mv_starttime = time;
+    
 	for(i = 0, power = 1; i < mv_num_maps; ++i, power *= 2)
 	{
 		mv_votes[i] = 0;
