@@ -361,8 +361,7 @@ void MapVote_Draw()
 	ymax -= isize;
 
 	vector o;
-    float txtoffset = max(vid_conwidth * 0.5 - (sbar_fontsize_x * gametypevote_longest) * 0.5, sbar_fontsize_x);
-
+    
 	if(gametypevote)
 	{
 		// draws the picked map
@@ -375,13 +374,14 @@ void MapVote_Draw()
 		vector img_size;
 		vector img_fullsize;
 
+        isize = vid_conwidth * 0.25;
 		img_size_y = isize;
 		img_size_x = isize / 0.75;
 		img_fullsize = img_size;
 		img_size *= alpha;
         
-        o_x = vid_conwidth - txtoffset - img_fullsize_x;
-		o_y = sbar_fontsize_y * 10;
+        o_x = vid_conwidth * 0.75 - img_fullsize_x * 0.5;
+        o_y = sbar_fontsize_y * 10;
         
         vector o2 = o + 0.5 * (img_fullsize - img_size);
         drawborderlines(sbar_border_thickness, o2, img_size, '0 0 0', 1, DRAWFLAG_NORMAL);
@@ -397,7 +397,7 @@ void MapVote_Draw()
 		drawstring(o, mapvote_choosenmap, sz, '1 1 1' * alpha * alpha, alpha * alpha, DRAWFLAG_NORMAL);
 	}
 
-	o_x = txtoffset;
+	o_x = max(vid_conwidth * 0.25 - (sbar_fontsize_x * gametypevote_longest) * 0.25, sbar_fontsize_x);
 	o_y = sbar_fontsize_y * 10;
 
 	for(i = 0; i < mv_num_maps; ++i)
@@ -576,7 +576,7 @@ void MapVote_Init()
         mapvote_choosenmap 		= strzone(cmap);
         mapvote_choosenmappic 	= strzone(cpic);
         
-    print("^5Now decide the GAMETYPE!\n");
+        print("^5Now decide the GAMETYPE!\n");
     }
 
 	if(mv_num_maps <= 8)
@@ -612,8 +612,9 @@ void MapVote_Init()
 				for(j = 0; j < n; ++j)
 				{
 					tmp = strlen(argv(j));
-					if(tmp > gametypevote_longest)
+					if(tmp > gametypevote_longest) {
 						gametypevote_longest = tmp;
+                    }
 				}
 			} else {
                 pic = strzone(strcat(ssdir, "/", map));
