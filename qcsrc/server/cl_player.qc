@@ -584,6 +584,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
     }
 
+    damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
+
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
@@ -663,7 +665,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(attacker.classname == "player") {
                 float cdmg = min(self.health, take);
                 float rdmg = rint(cdmg);
-                if((rdmg || save) && !g_minstagib)
+                if(!g_minstagib)
                     VisualDamage(attacker, self, rdmg, rint(save), ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
                 PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take) + save);
                 

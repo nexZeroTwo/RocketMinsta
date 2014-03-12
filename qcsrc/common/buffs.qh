@@ -6,10 +6,11 @@
 #define BUFF_MEDIC      16
 #define BUFF_BASH       32
 #define BUFF_VAMPIRE    64
+#define BUFF_TENACITY   128
 
 #define BUFF_FIRST      BUFF_ARC
-#define BUFF_LAST       BUFF_VAMPIRE
-#define BUFF_COUNT      7
+#define BUFF_LAST       BUFF_TENACITY
+#define BUFF_COUNT      8
 
 string Buffs_TypeToName(float);
 float Buffs_NameToType(string);

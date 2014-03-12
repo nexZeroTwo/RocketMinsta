@@ -54,9 +54,13 @@ void VisualDamage_PreDraw(void) {
             continue;
         }
         
-        s = ftos(e.vd_damage);
-        if(e.vd_armordamage)
-            s = strcat(s, " [", ftos(e.vd_armordamage), "]");
+        if(!e.vd_damage)
+            s = "Immune";
+        else {
+            s = ftos(e.vd_damage);
+            if(e.vd_armordamage)
+                s = strcat(s, " [", ftos(e.vd_armordamage), "]");
+        }
         
         e.vd_str = s;
         e.vd_width = stringwidth(s, FALSE);
