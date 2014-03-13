@@ -350,8 +350,20 @@ void Buffs_ClientFrame(void) {
 #undef ON_BUFF_ADDED
 #undef ON_BUFF_REMOVED
 
-void Buffs_ArcEffect(vector from, vector to, float t) {
-    te_csqc_lightningarc(from, to, TRUE, t);
+float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float deathtype) {
+    if(!BUFFS_PRESENT(targ, BUFF_TENACITY))
+        return damage;
+    
+    if(DEATH_ISSPECIAL(deathtype) && deathtype != DEATH_ARC && deathtype != DEATH_BASH)
+        return damage;
+    
+    if(targ == attacker)
+        return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_self")) * Buffs_BuffPower(targ, BUFF_TENACITY));
+    
+    if(DEATH_ISHG(deathtype) || (deathtype & HITTYPE_SPLASH) || deathtype == DEATH_ARC || deathtype == DEATH_BASH)
+        return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_aoe")) * Buffs_BuffPower(targ, BUFF_TENACITY));
+    
+    return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage")) * Buffs_BuffPower(targ, BUFF_TENACITY));
 }
 
 void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
@@ -374,6 +386,10 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         // instant-healing mode, don't use the buffer, just heal
         Heal(a, world, a, damage * factor, cvar("g_buffs_vampire_pauserot"));
     }
+}
+
+void Buffs_ArcEffect(vector from, vector to, float t) {
+    te_csqc_lightningarc(from, to, TRUE, t);
 }
 
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {
@@ -764,6 +780,12 @@ BUFF_SPAWNFUNC(vampire_team1,   BUFF_VAMPIRE,   COLOR_TEAM1)
 BUFF_SPAWNFUNC(vampire_team2,   BUFF_VAMPIRE,   COLOR_TEAM2)
 BUFF_SPAWNFUNC(vampire_team3,   BUFF_VAMPIRE,   COLOR_TEAM3)
 BUFF_SPAWNFUNC(vampire_team4,   BUFF_VAMPIRE,   COLOR_TEAM4)
+
+BUFF_SPAWNFUNC(tenacity,        BUFF_TENACITY,  0)
+BUFF_SPAWNFUNC(tenacity_team1,  BUFF_TENACITY,  COLOR_TEAM1)
+BUFF_SPAWNFUNC(tenacity_team2,  BUFF_TENACITY,  COLOR_TEAM2)
+BUFF_SPAWNFUNC(tenacity_team3,  BUFF_TENACITY,  COLOR_TEAM3)
+BUFF_SPAWNFUNC(tenacity_team4,  BUFF_TENACITY,  COLOR_TEAM4)
 
 BUFF_SPAWNFUNC(random,          BUFF_RANDOM,    0)
 BUFF_SPAWNFUNC(random_team1,    BUFF_RANDOM,    COLOR_TEAM1)

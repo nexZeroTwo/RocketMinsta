@@ -218,6 +218,27 @@ The Vampire Buff (Pink Team)
 */
 
 
+/*QUAKED item_buff_tenacity (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff
+*/
+
+/*QUAKED item_buff_tenacity_team1 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Red Team)
+*/
+
+/*QUAKED item_buff_tenacity_team2 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_tenacity_team3 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_tenacity_team4 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Pink Team)
+*/
+
+
 /*QUAKED item_buff_random (0.5 0.5 0.5) (-16 -16 -16) (16 16 16)
 A random buff
 */
