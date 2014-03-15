@@ -64,52 +64,58 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 
 void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
 {
-	entity e, o;
-	float d, df;
-	vector p;
-	
-	o = self.owner;
-	df = 1;
+    entity e, o;
+    float d, df, ismedic;
+    vector p;
+    
+    o = self.owner;
+    df = 1;
 
-	for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
-	{
-		if(g_freeze)
-		if(e.frozen)
-			continue;
-		
-		if(o.team == e.team && !BUFFS_PRESENT(o, BUFF_MEDIC))
-		{
-			if(teamplay == 1)
-				continue;
-			else if(e != o)
-			{
-				if(teamplay == 3)
-					continue;
-				else if(teamplay == 4) {
-					df = cvar("g_friendlyfire");
-					
-					if(df == 0)
-						continue;
-				}
-			}
-		}
-		
-		p = e.origin;
-		p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
-		p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
-		p_z += e.mins_z + random() * (e.maxs_z - e.mins_z);
-		d = vlen(self.origin - p);
-		if(d < dist)
-		{
-			traceline(p, self.origin, MOVE_NORMAL, e);
-			if(/* trace_startsolid || */ trace_fraction != 1)
-				continue;
-			e.fireball_impactvec = p;
-			d = vlen(self.origin - e.fireball_impactvec);
-			d = damage + (edgedamage - damage) * (d / dist);
-			Fire_AddDamage(e, self.owner, d * burntime * df, burntime, dtype);
-		}
-	}
+    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
+    {
+        if(g_freeze)
+        if(e.frozen)
+            continue;
+        
+        ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
+        
+        if(o.team == e.team && !ismedic)
+        {
+            if(teamplay == 1)
+                continue;
+            else if(e != o)
+            {
+                if(teamplay == 3)
+                    continue;
+                else if(teamplay == 4) {
+                    df = cvar("g_friendlyfire");
+                    
+                    if(df == 0)
+                        continue;
+                }
+            }
+        }
+        
+        if(!ismedic)
+        if(!Buffs_TenacityDamage(e, o, damage, dtype))
+            continue;
+        
+        p = e.origin;
+        p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
+        p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
+        p_z += e.mins_z + random() * (e.maxs_z - e.mins_z);
+        d = vlen(self.origin - p);
+        if(d < dist)
+        {
+            traceline(p, self.origin, MOVE_NORMAL, e);
+            if(/* trace_startsolid || */ trace_fraction != 1)
+                continue;
+            e.fireball_impactvec = p;
+            d = vlen(self.origin - e.fireball_impactvec);
+            d = damage + (edgedamage - damage) * (d / dist);
+            Fire_AddDamage(e, o, d * burntime * df, burntime, dtype);
+        }
+    }
 }
 
 void HG_Napalm_Think()
