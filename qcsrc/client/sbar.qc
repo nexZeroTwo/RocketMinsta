@@ -1056,6 +1056,8 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
                 drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
+                if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
+                    sbar_field_rgb = '0.3 1 0.3';
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
 			}
 
