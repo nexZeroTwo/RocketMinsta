@@ -1114,7 +1114,7 @@ void HG_Attack()
 	CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
 	
 	if(hgtype == HG_NAPALM && self.hg_power == 1)
-		Damage(self, self, self, GV("kamikaze_damage"), DEATH_SHOOTING_STAR, self.origin, '0 0 0');
+		Damage(self, self, self, GV("kamikaze_damage"), DEATH_HG_NAPALM, self.origin, '0 0 0');
 
 :finish
     self.hg_next = time + GV("cooldown") * W_WeaponRateFactor();
