@@ -108,6 +108,7 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
 	gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
