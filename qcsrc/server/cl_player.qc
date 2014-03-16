@@ -488,6 +488,10 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     vector offs, org, p1, p2;
     float found;
     
+    if(!cvar("sv_showdamage"))
+        return;
+    
+    // note: obsolete
     if(cvar("sv_hidedamage"))
         return;
     
@@ -495,6 +499,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     p1 = attacker.origin + attacker.view_ofs;
     p2 = targ.origin + targ.view_ofs;
     
+    if(cvar("sv_showdamage_checklos"))
     if(htype != VDMG_TYPE_HEAL) {
         while(TRUE) {
             traceline(p2, p1, FALSE, targ);

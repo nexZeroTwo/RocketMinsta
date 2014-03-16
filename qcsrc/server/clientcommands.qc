@@ -224,7 +224,7 @@ void SV_ParseClientCommand(string s) {
 		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
 		//OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
 		OPTAVAIL	("shownames", "sv_shownames")
-		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
+		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		

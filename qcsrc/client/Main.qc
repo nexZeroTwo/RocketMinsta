@@ -108,6 +108,7 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
 	gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -1305,6 +1306,43 @@ void Ent_RemovePlayerScore()
 	}
 }
 
+.entity bestscore_next;
+void UpdateBestScore(float teem, float sfield) {
+    float i, best, scr, better;
+    entity bestscore_head, bestscore_tail, c;
+    
+    for(c = players.sort_next; c; c = c.sort_next) {
+        if(GetPlayerColor(c.sv_entnum) != teem)
+            continue;
+        
+        c.(hasbestscore[sfield]) = FALSE;
+        scr = c.(scores[sfield]);
+        
+        if(!bestscore_head)
+            better = TRUE;
+        if(scores_flags[sfield] & SFL_LOWER_IS_BETTER)
+            better = scr < best;
+        else
+            better = scr > best;
+        
+        if(better) {
+            c.bestscore_next = world;
+            best = scr;
+            bestscore_head = bestscore_tail = c;
+        } else if(scr == best) {
+            c.bestscore_next = world;
+            if(bestscore_tail)
+                bestscore_tail.bestscore_next = c;
+            else
+                bestscore_head = c;
+            bestscore_tail = c;
+        }
+    }
+    
+    for(c = bestscore_head; c; c = c.bestscore_next)
+        c.(hasbestscore[sfield]) = TRUE;
+}
+
 void Ent_ReadPlayerScore()
 {
 	float i, n;
@@ -1367,14 +1405,15 @@ void Ent_ReadPlayerScore()
 				
 				o.(scores[i]) = ReadInt24_t() * 0.01 - offs;
 			}
-			else if(lf & p)
-			{
-				o.(scores[i]) = ReadInt24_t();
-			}
 			else
-			{
-				o.(scores[i]) = ReadChar();
-			}
+            {
+                if(lf & p)
+                    o.(scores[i]) = ReadInt24_t();
+                else
+                    o.(scores[i]) = ReadChar();
+                
+                UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            }
 		}
 	}
 

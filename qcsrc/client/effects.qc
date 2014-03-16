@@ -70,15 +70,17 @@ void LightingArc_Default(vector from, vector to, float ateam) {
     if(cvar("cl_effects_lightningarc_simple")) {
         LightingArc_Segment(from, to, ateam);
     } else {
-        float seglength, drifts, drifte, branchfactor, branchfactor_add;
+        float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
         seglength    = cvar("cl_effects_lightningarc_segmentlength");
         drifts       = cvar("cl_effects_lightningarc_drift_start");
         drifte       = cvar("cl_effects_lightningarc_drift_end");
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_start");
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_add");
-
-        LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
+        lcount       = cvar("cl_effects_lightningarc_count");
+        
+        for(; lcount; --lcount)
+            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
     }
 }
 
@@ -94,6 +96,7 @@ void Net_ReadLightningarc(void)
 
     if(flash)
         pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
+    
     LightingArc_Default(from, to, ateam);
 }
 
