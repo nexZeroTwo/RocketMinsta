@@ -303,5 +303,13 @@ float w_electro(float req)
 	{
 		self.electro_secondarytime = time;
 	}
+    else if (req == WR_TT_STORE)
+    {
+        TimeTravel_StoreTime(self,      tt_moment, electro_secondarytime);
+    }
+    else if (req == WR_TT_RESTORE)
+    {
+        TimeTravel_RestoreTime(self,    tt_moment, electro_secondarytime);
+    }
 	return TRUE;
 };

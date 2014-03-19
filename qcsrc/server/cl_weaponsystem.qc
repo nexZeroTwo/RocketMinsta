@@ -26,7 +26,10 @@ float W_WeaponRateFactor()
 			t = t * cvar("g_balance_curse_slow_atkrate");
 		}
 	}
-
+    
+    if(BUFFS_PRESENT(self, BUFF_HASTE))
+        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * Buffs_BuffPower(self, BUFF_HASTE));
+    
 	return t;
 }
 
@@ -1007,13 +1010,16 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if((time < game_starttime && !g_inf) || time < self.race_penalty)
 		return FALSE;
 
-	if(shooting_forbidden && self.weapon != WEP_LASER)
+    if(roundstate == ROUNDSTATE_OVER)
+        return FALSE;
+
+	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
 		return FALSE;
 
-	if(g_freezetag)
-	if(self.freezetag_frozen) 
+	if(g_freeze)
+	if(self.frozen) 
 		return FALSE;
-
+        
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
@@ -1040,7 +1046,8 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.weaponentity.state = WS_INUSE;
 
-	self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
+    if(!cvar("g_spawnshieldmode"))
+        self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
 
 	// if the weapon hasn't been firing continuously, reset the timer
 	if(attacktime >= 0)
@@ -1151,8 +1158,9 @@ void weapon_thinkf(float fr, float t, void() func)
 				a = self.weaponentity.anim_fire1;
 			else if (fr == WFRAME_FIRE2)
 				a = self.weaponentity.anim_fire2;
-			else if (fr == WFRAME_RELOAD)
+			else if (fr == WFRAME_RELOAD) {
 				a = self.weaponentity.anim_reload;
+            }
 			a_z *= g_weaponratefactor;
 			setanim(self.weaponentity, a, restartanim == FALSE, restartanim, restartanim);
 		}

@@ -1,3 +1,6 @@
+
+#define HUDSKIN_VERSION "1"
+
 vector hudskin_size_border_left; // = '2 0 0';
 vector hudskin_size_border_right; // = '2 0 0';
 vector hudskin_offset_border_left;
@@ -55,6 +58,23 @@ string hudskin_image_line_fill;
 vector hudskin_size_line_fill;
 vector hudskin_line_padding;
 string hudskin_name;
+float hudskin_progress_bgalpha;
+float hudskin_progress_mode;
+float hudskin_progress_sector_colormode;
+vector hudskin_progress_sector_color;
+float hudskin_progress_sector_alpha;
+float hudskin_progress_sector_teamcolor_minalpha;
+vector hudskin_progress_sector_teamcolor_mod;
+float hudskin_progress_border_colormode;
+vector hudskin_progress_border_color;
+float hudskin_progress_border_alpha;
+float hudskin_progress_border_teamcolor_minalpha;
+vector hudskin_progress_border_teamcolor_mod;
+string hudskin_image_progress_head;
+vector hudskin_size_progress_head;
+vector hudskin_progress_head_color;
+float hudskin_progress_head_alpha;
+float hudskin_progress_head_teamcolor;
 
 float HUDSkin_Load(string);
 void HUDSkin_Unload();

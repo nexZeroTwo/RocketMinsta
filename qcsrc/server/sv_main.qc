@@ -4,8 +4,9 @@ void CreatureFrame (void)
 	local entity oldself;
 	local float dm;
 	oldself = self;
-	self = findfloat(world, iscreature, TRUE);
-	while (self)
+	//self = findfloat(world, iscreature, TRUE);
+	//while(self)
+    FOR_EACH_CLIENTSLOT(self) if(self.iscreature)
 	{
 		if (self.movetype != MOVETYPE_NOCLIP)
 		{
@@ -71,9 +72,9 @@ void CreatureFrame (void)
 			{
 				dm = vlen(self.oldvelocity) - vlen(self.velocity); // dm is now the velocity DECREASE. Velocity INCREASE should never cause a sound or any damage.
 				if (self.deadflag)
-					dm = (dm - cvar("g_balance_falldamage_deadminspeed")) * cvar("g_balance_falldamage_factor");
+					dm = (dm - g_balance_falldamage_deadminspeed) * g_balance_falldamage_factor;
 				else
-					dm = min((dm - cvar("g_balance_falldamage_minspeed")) * cvar("g_balance_falldamage_factor"), cvar("g_balance_falldamage_maxdamage"));
+					dm = min((dm - g_balance_falldamage_minspeed) * g_balance_falldamage_factor, g_balance_falldamage_maxdamage);
 				if (dm > 0)
 				{
 					Damage (self, world, world, dm, DEATH_FALL, self.origin, '0 0 0');
@@ -115,7 +116,7 @@ void CreatureFrame (void)
 			}
 			self.oldvelocity = self.velocity;
 		}
-		self = findfloat(self, iscreature, TRUE);
+		//self = findfloat(self, iscreature, TRUE);
 	}
 	self = oldself;
 }
@@ -123,8 +124,8 @@ void CreatureFrame (void)
 // This returns the player who's been afk for the longest amount of time
 entity GetAFKKickVictim() {
 	entity v, e;
-	
-	FOR_EACH_REALCLIENT(e) if(e.is_away)
+    
+	FOR_EACH_REALCLIENT(e) if(time - e.jointime > 30) if(e.is_away)
 		if(!v || v.parm_idlesince > e.parm_idlesince)
 			v = e;
 	
@@ -141,11 +142,14 @@ Called before each frame by the server
 void RuneMatchGivePoints();
 float RedirectionThink();
 
+float cvarupdatetime;
 string oldfog;
 
 entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
+    entity e;
+    
 	remove = remove_unsafely; // not during spawning!
 	serverprevtime = servertime;
 	servertime = time;
@@ -176,8 +180,7 @@ void StartFrame (void)
 #endif
 
 	dprint_load(); // load dprint status from cvar
-
-	entity e;
+    
 	for(e = world; (e = findfloat(e, csqcprojectile_clientanimate, 1)); )
 		CSQCProjectile_Check(e);
 
@@ -187,28 +190,65 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
-	sv_gravity = cvar("sv_gravity");
-	sv_maxairspeed = cvar("sv_maxairspeed");
-	sv_maxspeed = cvar ("sv_maxspeed");
-	sv_friction = cvar ("sv_friction");
-	sv_accelerate = cvar ("sv_accelerate");
-	sv_airaccelerate = cvar("sv_airaccelerate");
-	sv_airaccel_sideways_friction = cvar("sv_airaccel_sideways_friction");
-	sv_airaccel_qw = cvar("sv_airaccel_qw");
-	sv_stopspeed = cvar ("sv_stopspeed");
-	sv_airstopaccelerate = cvar("sv_airstopaccelerate");
-	sv_airstrafeaccelerate = cvar("sv_airstrafeaccelerate");
-	sv_maxairstrafespeed = cvar("sv_maxairstrafespeed");
-	sv_aircontrol = cvar("sv_aircontrol");
-	sv_warsowbunny_airforwardaccel = cvar("sv_warsowbunny_airforwardaccel");
-	sv_warsowbunny_accel = cvar("sv_warsowbunny_accel");
-	sv_warsowbunny_topspeed = cvar("sv_warsowbunny_topspeed");
-	sv_warsowbunny_turnaccel = cvar("sv_warsowbunny_turnaccel");
-	sv_warsowbunny_backtosideratio = cvar("sv_warsowbunny_backtosideratio");
-	teamplay = cvar ("teamplay");
-	sys_ticrate = cvar("sys_ticrate");
+    if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
+        sv_gravity = cvar("sv_gravity");
+        sv_maxairspeed = cvar("sv_maxairspeed");
+        sv_maxspeed = cvar("sv_maxspeed");
+        sv_friction = cvar("sv_friction");
+        sv_accelerate = cvar("sv_accelerate");
+        sv_airaccelerate = cvar("sv_airaccelerate");
+        sv_airaccel_sideways_friction = cvar("sv_airaccel_sideways_friction");
+        sv_airaccel_qw = cvar("sv_airaccel_qw");
+        sv_stopspeed = cvar("sv_stopspeed");
+        sv_airstopaccelerate = cvar("sv_airstopaccelerate");
+        sv_airstrafeaccelerate = cvar("sv_airstrafeaccelerate");
+        sv_maxairstrafespeed = cvar("sv_maxairstrafespeed");
+        sv_aircontrol = cvar("sv_aircontrol");
+        sv_warsowbunny_airforwardaccel = cvar("sv_warsowbunny_airforwardaccel");
+        sv_warsowbunny_accel = cvar("sv_warsowbunny_accel");
+        sv_warsowbunny_topspeed = cvar("sv_warsowbunny_topspeed");
+        sv_warsowbunny_turnaccel = cvar("sv_warsowbunny_turnaccel");
+        sv_warsowbunny_backtosideratio = cvar("sv_warsowbunny_backtosideratio");
+        teamplay = cvar("teamplay");
+        sys_ticrate = cvar("sys_ticrate");
+        sv_jumpvelocity = cvar("sv_jumpvelocity");
+        sv_gameplayfix_q2airaccelerate = cvar("sv_gameplayfix_q2airaccelerate");
+        sv_autoaway = cvar("sv_autoaway");
+        g_walljump = cvar("g_walljump");
+        g_walljump_delay = cvar("g_walljump_delay");
+        g_dodging = cvar("g_dodging");
 
-	if (timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
+        if(g_dodging) {
+            g_dodging_delay = cvar("g_dodging_delay");
+            g_dodging_ramp_time = cvar("g_dodging_ramp_time");
+            
+            if(g_freeze)
+                g_freezetag_dodging_frozen = Freeze_CVar("dodging_frozen");
+        }
+        
+        g_balance_health_rotstable = cvar("g_balance_health_rotstable");
+        g_balance_armor_rotstable = cvar("g_balance_armor_rotstable");
+        g_balance_fuel_rotstable = cvar("g_balance_fuel_rotstable");
+        g_balance_health_regenstable = cvar("g_balance_health_regenstable");
+        g_balance_armor_regenstable = cvar("g_balance_armor_regenstable");
+        g_balance_fuel_regenstable = cvar("g_balance_fuel_regenstable");
+        g_balance_health_limit = cvar("g_balance_health_limit");
+        g_balance_armor_limit = cvar("g_balance_armor_limit");
+        g_balance_fuel_limit = cvar("g_balance_fuel_limit");
+        
+        g_balance_falldamage_deadminspeed = cvar("g_balance_falldamage_deadminspeed");
+        g_balance_falldamage_factor = cvar("g_balance_falldamage_factor");
+        g_balance_falldamage_minspeed = cvar("g_balance_falldamage_minspeed");
+        g_balance_falldamage_maxdamage = cvar("g_balance_falldamage_maxdamage");
+        
+        sv_defaultcharacter = cvar("sv_defaultcharacter");
+        sv_defaultplayercolors = cvar("sv_defaultplayercolors");
+        sv_forcespecies = cvar("sv_forcespecies");
+        
+        cvarupdatetime = time + 1;
+    }
+
+	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = cvar("slowmo"); // slowmo will be restored after the timeout
 
 	if(teams_matter && !teamplay)
@@ -284,6 +324,15 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+    
+    if(time >= game_starttime)
+    if(roundstate == ROUNDSTATE_PREGAME) {
+        roundstate = ROUNDSTATE_GAME;
+        TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
+    }
+    
+    //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
+    //    e.sub_target_used = FALSE;
 }
 
 .vector originjitter;

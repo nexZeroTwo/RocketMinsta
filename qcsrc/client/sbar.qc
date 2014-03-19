@@ -9,6 +9,10 @@ float weapon_number;
 float last_weapon;
 float weapontime;
 
+#define SECWIDTH_NORMAL 103
+#define SECWIDTH_WIDE 206
+#define SECWIDTH_HEALTH 217
+
 float sbar_alpha_fg;
 float sbar_alpha_bg;
 float sbar_color_bg_team;
@@ -215,37 +219,7 @@ void Sbar_DrawXNum (vector pos, float num, float digits, float showminusplus, fl
 
 void Sbar_DrawXNum_Colored (vector pos, float x, float lettersize, float alpha)
 {
-	if(x > 200) {
-		color_x = 0;
-		color_y = 1;
-		color_z = 0;
-	}
-	else if(x > 150) {
-		color_x = 0.4 - (x-150)*0.02 * 0.4; //red value between 0.4 -> 0
-		color_y = 0.9 + (x-150)*0.02 * 0.1; // green value between 0.9 -> 1
-		color_z = 0;
-	}
-	else if(x > 100) {
-		color_x = 1 - (x-100)*0.02 * 0.6; //red value between 1 -> 0.4
-		color_y = 1 - (x-100)*0.02 * 0.1; // green value between 1 -> 0.9
-		color_z = 1 - (x-100)*0.02; // blue value between 1 -> 0
-	}
-	else if(x > 50) {
-		color_x = 1;
-		color_y = 1;
-		color_z = 0.2 + (x-50)*0.02 * 0.8; // blue value between 0.2 -> 1
-	}
-	else if(x > 20) {
-		color_x = 1;
-		color_y = (x-20)*90/27/100; // green value between 0 -> 1
-		color_z = (x-20)*90/27/100 * 0.2; // blue value between 0 -> 0.2
-	}
-	else {
-		color_x = 1;
-		color_y = 0;
-		color_z = 0;
-	}
-	Sbar_DrawXNum(pos, x, 3, 0, lettersize, color, 0, 0, alpha, DRAWFLAG_NORMAL);
+	Sbar_DrawXNum(pos, x, 3, 0, lettersize, healthcolor(x), 0, 0, alpha, DRAWFLAG_NORMAL);
 }
 
 void Cmd_Sbar_SetFields(float argc);
@@ -454,9 +428,7 @@ void Cmd_Sbar_Help(float argc)
 	print("^3fastest^7                  Time of fastest lap (race/cts)\n");
 	print("^3ticks^7                    Number of ticks (DOM)\n");
 	print("^3takes^7                    Number of domination points taken (DOM)\n");
-	//<akari>
 	print("^3hfrags^7                   Number of hookfrags\n\n");
-	//</akari>
 	print("^3score^7                    Total score\n\n");
 
 	print("Before a field you can put a + or - sign, then a comma separated list\n");
@@ -477,15 +449,16 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kd", ((g_minstagib && cvar("_g_rocketminsta"))? " hfrags" : ""),
-		" +ft,jb,vip/kills +ft,vip,jb/deaths +ft/suicides +ft/revivals "),
-		"-teams,race,lms/kills -teams,lms/deaths -teams,lms,race/suicides -race,dm,tdm,ft,jb,vip,prec/frags ", // tdm already has this in "score"
-		"+ctf/caps +ctf/pickups +ctf/fckills +ctf/returns ",
-		"+lms/lives +lms/rank +vip,jb/suicides +vip/vipkills +vip/survivals +jb/jbreaks +prec/pickups +prec/rckills ",
-		"+kh/caps +kh/pickups +kh/kckills ",
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
+        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_handgrenades? " nfs" : ""),
+		" +ft,jb,vip/kills +ft,vip,jb/dths "),
+		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec/frgs ", // tdm already has this in "score"
+		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
+		"+lms/lives +lms/rank +vip/vks +vip/surv +jb/def +jb/jbs +jb/freed +prec/pckps +prec/rcks ",
+		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		"+tdm/deaths +tdm/suicides -lms,race,nexball/score");
+		strcat("+tdm/dths +tdm/scds ", (g_freeze? "revs " : ""), "+dom,totaldom/takes -lms,race,nexball/score"));
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -562,6 +535,8 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_PING;
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
+        } else if(str == "nade") {
+            sbar_field[sbar_num_fields] = SP_NADEMODE;
 		} else if(str == "fps") {
 			sbar_field[sbar_num_fields] = SP_FPS;
 		} else if(str == "kd" || str == "kdr" || str == "kdratio" || str == "k/d") {
@@ -576,21 +551,27 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
 		} else if(str == "time") {
 			sbar_field[sbar_num_fields] = SP_JOINTIME;
-		} else {
+        } else if(str == "dths") {
+            sbar_field[sbar_num_fields] = SP_DEATHS;
+        } else if(str == "scds") {
+            sbar_field[sbar_num_fields] = SP_SUICIDES;
+        } else if(str == "hfs") {
+            sbar_field[sbar_num_fields] = SP_HOOKFRAGS;
+        } else if(str == "nfs") {
+            sbar_field[sbar_num_fields] = SP_NADEFRAGS;
+        } else if(str == "dmg") {
+            sbar_field[sbar_num_fields] = SP_DAMAGE;
+        } else if(str == "heal") {
+            sbar_field[sbar_num_fields] = SP_HEALING;
+        } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
 					goto found; // sorry, but otherwise fteqcc -O3 miscompiles this and warns about "unreachable code"
 :notfound
-			if(str == "frags")
+			if(str == "frags" || str == "frgs")
 			{
 				j = SP_FRAGS;
 			}
-			//<akari>
-			else if(str == "hfrags")
-			{
-				j = SP_HOOKFRAGS;
-			}
-			//</akari>
 			else
 			{
 				if not(nocomplain)
@@ -772,6 +753,7 @@ string Sbar_GetField(entity pl, float field)
 			{
 				sbar_field_icon0 = "gfx/sb_player_ready";
 			}
+            /*
 			else if(!teamplay)
 			{
 				f = stof(getplayerkey(pl.sv_entnum, "colors"));
@@ -783,22 +765,47 @@ string Sbar_GetField(entity pl, float field)
 					sbar_field_icon2_rgb = colormapPaletteColor(mod(f, 16), 1);
 				}
 			}
+            */
+            else if(g_handgrenades && cvar("_g_handgrenades_select_available")) {
+                if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
+                    float hgt = pl.(scores[SP_NADEMODE]);
+                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
+                    sbar_field_icon0_rgb = HG_TypeToColor(hgt);
+                }
+            }
 			return GetPlayerName(pl.sv_entnum);
 
 		case SP_FRAGS:
 			f = pl.(scores[SP_KILLS]);
 			f -= pl.(scores[SP_SUICIDES]);
 			return ftos(f);
-
+        
+        case SP_DAMAGE: case SP_HEALING:
+            f = pl.(scores[field]);
+            if(f >= 1000000)
+                str = ftos(rint(f * 0.00001) * 0.1);
+            else if(f >= 1000)
+                str = ftos(rint(f * 0.01) * 0.1);
+            else
+                return ftos(f);
+            
+            tmp = strstrofs(str, ".", 0);
+            if(tmp >= 0)
+                str = substring(str, 0, tmp + 2);
+            else
+                str = strcat(str, ".0");
+            
+            return strcat(str, ((f >= 1000000)? "m" : "k"));
+            
 		case SP_KDRATIO:
 			num = pl.(scores[SP_KILLS]);
 			denom = pl.(scores[SP_DEATHS]);
 
 			if(denom == 0) {
-				sbar_field_rgb = '1 1 1';
+				sbar_field_rgb = '0 1 1';
 				str = "inf";
 			} else {
-				float ratio = num/denom;
+				float ratio = max(0, num/denom);
 				
 				if(ratio < 1)
 					sbar_field_rgb = '1 0 0' + '0 1 0' * (ratio * ratio);
@@ -808,10 +815,18 @@ string Sbar_GetField(entity pl, float field)
 					sbar_field_rgb = '0 1 0' + '0 0 1' * ((ratio - 2) * 0.125);
 				
 				str = strcat(ftos(rint(ratio * 100)), "%");
+                
+                if(substring(str, 0, 1) == "-")
+                    str = substring(str, 1, strlen(str)-1);
 			}
 			
 			return str;
-
+        
+        case SP_NADEMODE:
+            float m = pl.(scores[SP_NADEMODE]);
+            sbar_field_rgb = HG_TypeToColor(m);
+            return "";
+        
 		default:
 			tmp = pl.(scores[field]);
 			f = scores_flags[field];
@@ -980,11 +995,13 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawfont = sbar_madokafont;
 			#endif
 
+/*
 			if(gametype != GAME_FREEZETAG && gametype != GAME_JAILBREAK)
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			else
+*/
 			{
-				if(pl.(scores[SP_FREEZETAG_FROZENSTATUS]))
+				if(pl.(scores[SP_FROZENSTATUS]))
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a * 0.3, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
@@ -1009,8 +1026,10 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		}
 
 		tmp_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
-		if(sbar_field_icon0 != "")
-			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
+		if(sbar_field_icon0 != "") {
+            float fa = 1 - (pl.(scores[SP_FROZENSTATUS]) * 0.7);
+			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a*fa, DRAWFLAG_NORMAL);
+        }
 		if(sbar_field_icon1 != "")
 			drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
 		if(sbar_field_icon2 != "")
@@ -1037,8 +1056,13 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			if(field == SP_NAME) {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len; // left or right aligned? let's put it right...
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
+            } else if(field == SP_NADEMODE) {
+				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
+                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
+                if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
+                    sbar_field_rgb = '0.3 1 0.3';
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
 			}
 
@@ -1270,6 +1294,12 @@ void Sbar_DrawScoreboard()
 		return;
 	
 	vector sbar_fontsize_old = sbar_fontsize;
+    /*
+    if(sbar_fontsize_x > 10)
+        sbar_fontsize_x = 10;
+    if(sbar_fontsize_y > 10)
+        sbar_fontsize_y = 10;
+    */
 	sbar_fontsize = sbar_fontsize * (sbar_woulddrawscoreboard? ipol_linear : ipol_swingOut)(sbar_scoreboard_fade_alpha);
 	
 	sbar_scoreboard_alpha_bg = cvar("sbar_scoreboard_alpha_bg") * sbar_scoreboard_fade_alpha;
@@ -1467,13 +1497,6 @@ void Sbar_DrawScoreboard()
 	drawcolorcodedstring(pos + '0.5 0 0' * (sbwidth - sbar_fontsize_x * stringwidth(str, TRUE)), str, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
-
-	if(speedrecord_string && !sv_oldfag)
-	{
-		pos_y = max(ymax, pos_y) + 1.2 * sbar_fontsize_y;
-		drawcolorcodedstring(pos, speedrecord_string, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
-	}
-	
 	sbar_fontsize = sbar_fontsize_old;
 }
 
@@ -1568,7 +1591,7 @@ void Sbar_Score()
 
 	vector rpos, rsize = '100 100 0';
 	rpos = bottomright;
-	rpos_y -= 100;
+	rpos_y -= 150;
 	rpos_x -= 105;
 
 	if((scores_flags[ps_primary] & SFL_TIME) && !teamplay) { // race/cts record display on HUD
@@ -1886,7 +1909,7 @@ void Sbar_Timer()
 	}
 
 	if(minutesLeft >= 1 || cvar("sbar_increment_maptime") || timelimit == 0 || warmup_stage) {
-		Sbar_DrawXNum(topright - '103 0 0' + '0 2 0', minutes, 3, 0, 18, timer_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		Sbar_DrawXNum(topright - '1 0 0'*SECWIDTH_NORMAL + '0 2 0', minutes, 3, 0, 18, timer_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 		drawpic(topright - '53 0 0' + '0 1 0', "gfx/hud/num_colon", '18 18 0', timer_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
 	}
 	Sbar_DrawXNum(topright - '36 0 0' - '3 0 0' + '0 2 0', seconds, -2, 0, 18, timer_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -2948,16 +2971,19 @@ float pw_alpha;
 float ammo_last;
 
 #define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { DrawHUDLineSlice(hudline_pos, hudline, slice_basecolor, slice_basealpha); linedrawn = 1; }
-#define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a, ba, sector_alphamod, bg, bbg);
-//drawborderlines(2, hud_sector_pos, hud_sector + sector_mod, '0 0 0', 0.8 * sector_alphamod, DRAWFLAG_NORMAL); drawfill(hud_sector_pos, hud_sector, (bg), sector_basealpha * sector_alphamod, DRAWFLAG_NORMAL);
+#define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a*sector_alphamod, bg, hud_sector_drawflag); DrawHUDLineSectorBorder(hud_sector_pos, hud_sector + sector_mod, ba*sector_alphamod, bbg);
 #define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
 #define BG_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamcolor : sector_basecolor)
+#define BG_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? sector_teamcolor + hudskin_progress_sector_teamcolor_mod : hudskin_progress_sector_color) : BG_SECTOR)
 #define BG_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamcolor : border_basecolor)
 #define BG_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamcolor : border_basecolor)
+#define BG_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? border_teamcolor + hudskin_progress_border_teamcolor_mod : hudskin_progress_border_color) : BG_BORDER)
 #define A_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamalpha : sector_basealpha)
 #define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
+#define A_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? max(A_SECTOR_TEAM, hudskin_progress_sector_teamcolor_minalpha) : hudskin_progress_sector_alpha) : A_SECTOR)
 #define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
 #define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
+#define A_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? max(A_BORDER_TEAM, hudskin_progress_border_teamcolor_minalpha) : hudskin_progress_border_alpha) : A_BORDER)
 
 void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
 {
@@ -2994,7 +3020,117 @@ void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, floa
 	}
 }
 
-void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, float borderalpha, float alphamod, vector sectorcolor, vector bordercolor)
+vector sector_clip_pos;
+vector sector_clip_size;
+
+vector sector_border_left_pos;
+vector sector_border_left_size;
+vector sector_border_right_pos;
+vector sector_border_right_size;
+
+void GetSectorBorderValues(vector sectorpos, vector sectorsize) {
+    vector pos_left, pos_right, size_left, size_right;
+    float offset_right, offset_left;
+    
+    size_left = hudskin_size_border_left * hudskin_scale_border_left;
+    offset_left = (sectorsize_y - size_left_y) / 2;
+    pos_left = sectorpos;
+    pos_left_y += offset_left;
+    pos_left = pos_left + hudskin_offset_border_left;
+    
+    size_right = hudskin_size_border_right * hudskin_scale_border_right;
+    offset_right = (sectorsize_y - size_right_y) / 2;
+    pos_right = sectorpos + '1 0 0' * sectorsize_x;
+    pos_right_x -= size_right_x;
+    pos_right_y += offset_right;
+    pos_right = pos_right + hudskin_offset_border_right;
+    
+    sector_border_left_pos   = pos_left;
+    sector_border_left_size  = size_left;
+    sector_border_right_pos  = pos_right;
+    sector_border_right_size = size_right;
+}
+
+void GetSectorClipArea(vector sectorpos, vector sectorsize) {
+    sector_clip_pos = sectorpos;
+	sector_clip_size = sectorsize;
+    
+	sector_clip_pos_x += hudskin_sector_padding_left;
+	sector_clip_size_x -= hudskin_sector_padding_left;
+	sector_clip_size_x -= hudskin_sector_padding_right;
+	sector_clip_pos_y += hudskin_sector_padding_top;
+	sector_clip_size_y -= hudskin_sector_padding_top;
+	sector_clip_size_y -= hudskin_sector_padding_bottom;
+}
+
+void GetSectorBorderClipArea(vector sectorpos, vector sectorsize) {
+    sector_clip_pos = sectorpos;
+	sector_clip_size = sectorsize;
+    
+    if(hudskin_border_simple) {
+        sector_clip_pos_x  -= hudskin_border_simple;
+        sector_clip_size_x += hudskin_border_simple*2;
+        sector_clip_pos_y  -= hudskin_border_simple;
+        sector_clip_size_y += hudskin_border_simple*2;
+    } else {
+        GetSectorBorderValues(sectorpos, sectorsize);
+        
+        float ol = sector_border_left_pos_y;
+        float or = sector_border_right_pos_y;
+        float al = ol + sector_border_left_size_y;
+        float ar = or + sector_border_right_size_y;
+        float h  = max(abs(ol - ar), abs(or - al));
+        float hd = h - sector_clip_size_y;
+        
+        sector_clip_pos_x  = sector_border_left_pos_x;
+        sector_clip_size_x = sector_border_right_pos_x - sector_clip_pos_x + sector_border_right_size_x;
+        sector_clip_pos_y -= hd/2;
+        sector_clip_size_y = h;
+    }
+}
+
+void GetSectorFullClipArea(vector sectorpos, vector sectorsize) {
+    vector p, s;
+    vector p1, s1, p2, s2;
+    float o1, a1, o2, a2;
+    
+    GetSectorClipArea(sectorpos, sectorsize);
+    p1 = sector_clip_pos; s1 = sector_clip_size;
+    GetSectorBorderClipArea(sectorpos, sectorsize);
+    p2 = sector_clip_pos; s2 = sector_clip_size;
+    
+    s = '1 0 0' * abs((min(p1_x, p2_x) - max(p1_x + s1_x, p2_x + s2_x))) +
+        '0 1 0' * abs((min(p1_y, p2_y) - max(p1_y + s1_y, p2_y + s2_y)));
+    
+    p = '1 0 0' * min(p1_x, p2_x) + '0 1 0' * min(p1_y, p2_y);
+    
+    sector_clip_size = s;
+    sector_clip_pos  = p;
+}
+
+void DrawHUDLineSectorBorder(vector sectorpos, vector sectorsize, float borderalpha, vector bordercolor) {
+	if(hudskin_border_simple)
+		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha, hudskin_border_drawflag);
+	else
+	{
+        GetSectorBorderValues(sectorpos, sectorsize);
+        
+		if(hudskin_image_border_left)
+			drawpic(sector_border_left_pos, hudskin_image_border_left, sector_border_left_size, bordercolor, borderalpha, hudskin_border_drawflag);
+		
+		if(hudskin_image_border_right)
+			drawpic(sector_border_right_pos, hudskin_image_border_right, sector_border_right_size, bordercolor, borderalpha, hudskin_border_drawflag);
+	}
+}
+
+void DrawDebug(vector p, vector s) {
+    vector clr = '1 0 0' * (0.5 + 0.5 * sin(p_x * p_y + s_x * s_y)) +
+                 '0 1 0' * (0.5 + 0.5 * cos(0.4*p_x * p_y + 0.7*s_x * s_y)) +
+                 '0 0 1' * (0.5 + 0.5 * sin(0.6*p_x * p_y + 0.3*s_x * s_y));
+    drawfill(p, s, clr, 0.1, DRAWFLAG_NORMAL);
+}
+
+void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vector sectorcolor, float drawflag)
 {
 	//sectorpos_x -= 2;
 	//sectorsize_x += 4;
@@ -3017,16 +3153,22 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 	switch(hudskin_sector_fill)
 	{
 		case FILL_COLOR:
-			drawfill(fillpos, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
+			drawfill(fillpos, fillsize, sectorcolor, basealpha, DRAWFLAG_NORMAL);
 			break;
-		
-		case FILL_TILE:
+            
+		case FILL_TILE: case FILL_STRETCH:
 			vector screw = '50 0 0' * abs(sin(time * 6) * cos(time * 7)) + '0 50 0' * abs(cos(time * 6) * sin(time * 7));
 			size_left = hudskin_size_sector_fill_left + screw;
 			size_right = hudskin_size_sector_fill_right + screw;
 			size_center = hudskin_size_sector_fill_center + screw;
 			fillsize = fillsize + screw;
-			
+            
+            if(hudskin_sector_fill == FILL_STRETCH)
+            if(size_left == '0 0 0') if(size_right == '0 0 0') {
+                drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha, drawflag);
+                break;
+            }
+            
 			// Autoscaling based on the center area
 			if(size_center_y > fillsize_y)
 			{
@@ -3050,46 +3192,83 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, flo
 			
 			origin_right_x = origin_right_x + fillsize_x - part_right_x;
 			part_center_x -= part_right_x;
-			
+            
 			if(hudskin_image_sector_fill_left)
-				drawpic_tiled(origin_left, hudskin_image_sector_fill_left, size_left, part_left, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL, '0 0 0');
-			if(hudskin_image_sector_fill_center)
-				drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL, '0 0 0');
+				drawpic(origin_left, hudskin_image_sector_fill_left, size_left, sectorcolor, basealpha, drawflag);
+			if(hudskin_image_sector_fill_center) {
+                if(hudskin_sector_fill == FILL_STRETCH)
+                    drawpic(origin_center, hudskin_image_sector_fill_center, part_center, sectorcolor, basealpha, drawflag);
+                else
+                    drawpic_tiled(origin_center, hudskin_image_sector_fill_center, size_center, part_center, sectorcolor, basealpha, drawflag, '0 0 0');
+            }
 			if(hudskin_image_sector_fill_right)
-				drawpic_tiled(origin_right, hudskin_image_sector_fill_right, size_right, part_right, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL, '0 0 0');
+				drawpic(origin_right, hudskin_image_sector_fill_right, size_right, sectorcolor, basealpha, drawflag);
+            
 			break;
-		
-		case FILL_STRETCH:
-			drawpic(fillpos, hudskin_image_sector_fill_center, fillsize, sectorcolor, basealpha * alphamod, DRAWFLAG_NORMAL);
 	}
-	
-	vector pos_left, pos_right;
-	
-	if(hudskin_border_simple)
-		drawborderlines(hudskin_border_simple, sectorpos, sectorsize, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
-	else
-	{
-		float offset_right, offset_left;
-		
-		size_left = hudskin_size_border_left * hudskin_scale_border_left;
-		offset_left = (sectorsize_y - size_left_y) / 2;
-		pos_left = sectorpos;
-		pos_left_y += offset_left;
-		pos_left = pos_left + hudskin_offset_border_left;
-		
-		size_right = hudskin_size_border_right * hudskin_scale_border_right;
-		offset_right = (sectorsize_y - size_right_y) / 2;
-		pos_right = sectorpos + '1 0 0' * sectorsize_x;
-		pos_right_x -= size_right_x;
-		pos_right_y += offset_right;
-		pos_right = pos_right + hudskin_offset_border_right;
-		
-		if(hudskin_image_border_left)
-			drawpic(pos_left, hudskin_image_border_left, size_left, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
-		
-		if(hudskin_image_border_right)
-			drawpic(pos_right, hudskin_image_border_right, size_right, bordercolor, borderalpha * alphamod, hudskin_border_drawflag);
-	}
+}
+
+void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector, vector c_sector, vector c_border, float a_sector, float a_border, vector c_sector_p, vector c_border_p, float a_sector_p, float a_border_p, float sector_alphamod, float hud_sector_drawflag) {
+    float invert;
+    if(prog < 0) {
+        prog *= -1;
+        invert = 1;
+    }
+    
+    if(prog <= 0.01)
+        prog = 0;
+    
+    switch(hudskin_progress_mode) {
+        case 0: { // Use the whole sector as both the background and the bar
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
+            GetSectorFullClipArea(hud_sector_pos, hud_sector);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
+            drawresetcliparea();
+            break;
+        }
+        
+        case 1: { // Use the border for progressbar, rest as background
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
+            GetSectorBorderClipArea(hud_sector_pos, hud_sector);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
+            drawresetcliparea();
+            break;
+        }
+        
+        case 2: { // Draw border with full opacity, use the rest as progressbar
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod, c_border);
+            GetSectorClipArea(hud_sector_pos, hud_sector);
+            drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
+            drawresetcliparea();
+        }
+    }
+    
+    if(!hudskin_image_progress_head || !hudskin_progress_head_alpha)
+        return;
+    
+    // TODO: more customization options here
+    
+    vector hpos;
+    vector hsize = hudskin_size_progress_head;
+    hsize_y = sector_clip_size_y;
+    hsize_x *= 0.5;
+    hpos_y = sector_clip_pos_y;
+    hpos_x = sector_clip_pos_x + sector_clip_size_x*(invert? 1-prog : prog) - hsize_x * 0.5;
+    
+    float a = hudskin_progress_head_alpha;
+    if(prog > 0.90)
+        a *= (1 - prog) / 0.10;
+    else if(prog < 0.10)
+        a *= 1 - (0.10 - prog) / 0.10;
+    
+    if(a) drawpic(hpos, hudskin_image_progress_head, hsize, hudskin_progress_head_color, a, DRAWFLAG_NORMAL);
 }
 
 float ammonotifytime;
@@ -3174,7 +3353,90 @@ float rev_old;
 float hg_visual;
 float hg_alpha;
 
-void Sbar_Draw (void)
+float hgregen;
+
+float ammo_useprogress;
+float vhealth;
+float vshield;
+
+float revmode;
+
+void Sbar_DrawHGShield(void) {
+    float s = getstatf(STAT_HGSHIELD);
+    
+    if(s)
+        vshield = approach(vshield, 1, frametime * 3);
+    else
+        vshield = approach(vshield, 0, frametime * 3);
+    
+    if(vshield)
+        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER), 0.1 * vshield, DRAWFLAG_ADDITIVE);
+}
+
+float hg_bonusalpha;
+float hg_lastbonus;
+void Sbar_DrawHGBonus(void) {
+    float num, hgtype, a, sw, spacing = 4;
+    vector fs, o;
+    string s;
+    
+    num = getstati(STAT_HGBONUS);
+    hg_bonusalpha = approach(hg_bonusalpha, (num > 0), frametime * 2);
+    
+    if(!hg_bonusalpha)
+        return;
+    
+    if(num > 0)
+        hgtype = hg_lastbonus = getstati(STAT_HGBONUSTYPE);
+    else
+        hgtype = hg_lastbonus;
+    
+    a = sbar_alpha_fg * ipol_swingInOut(hg_bonusalpha) * (0.9 + 0.1 * sin(time * 5));
+    fs = '32 32 0' * a;
+    o = '0.5 0 0' * vid_conwidth + '0 1 0' * (vid_conheight - 85);
+    
+    drawfont = sbar_bigfont;
+    s = strcat(HG_TypeToExpandedName(hgtype), "!", ((num > 1)? strcat(" x", ftos(num)) : ""));
+    sw = stringwidth(s, FALSE) + 1;
+    o_x -= (spacing + fs_x * sw) * 0.5;
+    
+    drawpic(o, HG_TypeToIcon(hgtype, TRUE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    o_x += fs_x + spacing;
+    drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
+    drawfont = sbar_font;
+    
+}
+
+void Sbar_DrawBuffs(void) {
+    vector pos;
+    float buffs = getstati(STAT_BUFFS), sw, b;
+    string s;
+    
+    if(!buffs)
+        return;
+    
+    for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) if(buffs & b) {
+        string o = strcat(rgb_to_hexcolor(Buffs_TypeToColor(b)), Buffs_TypeToExpandedName(b));
+        if(s == "")
+            s = o;
+        else
+            s = strcat(s, " ", o);
+    }
+    
+    sw = stringwidth(s, TRUE);
+    pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
+    pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
+    drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
+}
+
+string jb_str;
+float jb_str_alpha;
+
+#define RMODE_CAP 0
+#define RMODE_REV 1
+#define RMODE_AUTH 2
+
+void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
 
@@ -3220,6 +3482,8 @@ void Sbar_Draw (void)
 	float x, fade;
 	float stat_items, stat_weapons;
 
+    Sbar_DrawHGShield();
+
 	weapon_stats = getstati(STAT_DAMAGE_HITS);
  	weapon_number = weapon_stats & 63;
  	weapon_hits[weapon_number] = rint(weapon_stats / 64);
@@ -3236,7 +3500,7 @@ void Sbar_Draw (void)
 	string s;
 	vector pos;
 	pos = '0 0 0';
-
+    
 	sbar_fontsize = Sbar_GetFontsize("sbar_fontsize");
 	sbar_fontsize_spec = Sbar_GetFontsize("sbar_fontsize_spec");
 
@@ -3277,11 +3541,19 @@ void Sbar_Draw (void)
 			fovlock = -1;
 	}
 
-	local float rev;
-	rev = getstatf((gametype == GAME_JAILBREAK)? STAT_UNLOCK_PROGRESS : STAT_REVIVE_PROGRESS);
+	float rev;
+    // we may have both CAPTURE_PROGRESS and REVIVE_PROGRESS at once, but CAPTURE_PROGRESS is more important.
+	rev = getstatf(STAT_CAPTURE_PROGRESS);
+    if(!rev) {
+        rev = getstatf(STAT_REVIVE_PROGRESS);
+        if(!rev) {
+            rev = getstatf(STAT_TERM_AUTH);
+            if(rev) revmode = RMODE_AUTH;
+        } else revmode = RMODE_REV;
+    } else revmode = RMODE_CAP;
 	
 	if(rev) {
-		rev_visual = approach(rev_visual, rev, drawframetime);
+        rev_visual += (rev - rev_visual) * drawframetime * 10;
 		rev_alpha = approach(rev_alpha, 1, drawframetime * 5);
 	} else {
 		rev_alpha = approach(rev_alpha, 0, drawframetime * 5);
@@ -3330,7 +3602,16 @@ void Sbar_Draw (void)
 		drawfont = sbar_font;
 	}
 	#endif
-
+    
+    float jailspec = FALSE;
+    if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FROZENSTATUS])) {
+        o = Sbar_DrawNoteLine(o, "^1You are imprisoned");
+        if(!spectatee_status)
+            o = Sbar_DrawNoteLine(o, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team"));
+        else
+            jailspec = TRUE;
+    }
+    
 	if(spectatee_status && !intermission)
 	{
 		drawfont = sbar_bigfont;
@@ -3351,16 +3632,15 @@ void Sbar_Draw (void)
 		else
 			s = strcat("^1Press ^3", getcommandkey("primary fire", "+attack"), "^1 for another player");
 		o = Sbar_DrawNoteLine(o, s);
-
-		if(spectatee_status == -1)
-			s = strcat("^1Use ^3", getcommandkey("next weapon", "weapnext"), "^1 or ^3", getcommandkey("previous weapon", "weapprev"), "^1 to change the speed");
-		else
-			s = strcat("^1Press ^3", getcommandkey("secondary fire", "+attack2"), "^1 to observe");
-		o = Sbar_DrawNoteLine(o, s);
-
-		s = strcat("^1Press ^3", getcommandkey("server info", "+show_info"), "^1 for gamemode info");
-		o = Sbar_DrawNoteLine(o, s);
-
+        
+        if(!jailspec) {
+            if(spectatee_status == -1)
+                s = strcat("^1Use ^3", getcommandkey("next weapon", "weapnext"), "^1 or ^3", getcommandkey("previous weapon", "weapprev"), "^1 to change the speed");
+            else
+                s = strcat("^1Press ^3", getcommandkey("secondary fire", "+attack2"), "^1 to observe");
+            o = Sbar_DrawNoteLine(o, s);
+        }
+        
 		if(gametype == GAME_ARENA)
 			s = "^1Wait for your turn to join";
 		else if(gametype == GAME_LMS)
@@ -3375,7 +3655,7 @@ void Sbar_Draw (void)
 				s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
 		}
 		else
-			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
+			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), (jailspec? "^1 to leave spectator mode" : "^1 to join"));
 		o = Sbar_DrawNoteLine(o, s);
 
 		//show restart countdown:
@@ -3392,7 +3672,7 @@ void Sbar_Draw (void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-
+    
     if(rev)
     {
         local vector revpos, c;
@@ -3401,12 +3681,15 @@ void Sbar_Draw (void)
         drawfont = sbar_font;
 
 		string s2;
-        if(gametype == GAME_FREEZETAG)
+        if(revmode == RMODE_REV)
 			s = "Revival progress: ";
+        else if(revmode == RMODE_AUTH)
+            s = "Authenticating: ";
 		else if(gametype == GAME_JAILBREAK)
 			s = "Unlocking the jail: ";
 		else
 			s = "Capture progress: ";
+        
 		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
 		s2 = strcat(ftos(floor(rev * 100)), "%");
 		
@@ -3424,16 +3707,37 @@ void Sbar_Draw (void)
 		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
     
+    float havemsg = TRUE;
+    switch(getstati(STAT_JBMSG)) {
+        case JBMSG_CAPPINGNEUTRAL   :   jb_str  =  "Your team is capturing a Neutral Control Point";    break;
+        case JBMSG_ALLALIVE         :   jb_str  =  "Your team is already free";                         break;
+        case JBMSG_NOTREADY         :   jb_str  =  "This Control Point is not ready yet";               break;
+        case JBMSG_WRONGTEAM        :   jb_str  =  "You can't capture your team's control points";      break;
+        case JBMSG_TOOLATE          :   jb_str  =  "Someone is already capturing this";                 break;
+        default                     :   havemsg =  FALSE;                                               break;
+    }
+    
+    if(havemsg)
+        jb_str_alpha = approach(jb_str_alpha, 1, frametime);
+    else
+        jb_str_alpha = approach(jb_str_alpha, 0, frametime * 3);
+    
+    if(jb_str) if(jb_str_alpha) {
+        drawstringcenter('0 1 0' * (vid_conheight / 2 + sbar_fontsize_y * 4), jb_str, sbar_fontsize, '1 1 1', jb_str_alpha * 0.8, DRAWFLAG_NORMAL);
+    }
+    
+    
 	// handgrenade force meter
 	float hgstat = getstatf(STAT_HGFORCE);
+    float hgls = getstatf(STAT_HGLAUNCH);
 	
 	if(hgstat) {
 		hg_alpha = approach(hg_alpha, 1, 5 * drawframetime);
 	} else {
 		hg_alpha = approach(hg_alpha, 0, 5 * drawframetime);
 	}
-	
-	hg_visual = approach(hg_visual, hgstat, drawframetime);
+    
+	hg_visual = approach(hg_visual, hgstat, drawframetime * hgls);
 	hgstat = hg_visual;
 	
 	if(hg_alpha)
@@ -3446,10 +3750,12 @@ void Sbar_Draw (void)
 		hgcolor_y = hgcolor_y * 1 - hgstat;
 		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, hgcolor);
 	}
-
+    
+    
 	local vector sv_pos;
 	sv_pos = bottomright;
-	sv_pos_y -= 100 + sbar_info_pos;
+	sv_pos_y -= 200;
+    sv_pos_x -= 15;
 	
 	if(!rm_showrankings)
 		sv_pos_y += 40;
@@ -3486,7 +3792,7 @@ void Sbar_Draw (void)
 			local float a2 = (j? bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) : a);
 
 			drawfont = sbar_bigfont_real; // bypass madoka, as many numeric characters are missing
-			drawstringright(mypos, s, '24 24 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
+			drawstringright(mypos, s, '30 30 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
 			drawfont = sbar_font;
 		}
 	}
@@ -3812,8 +4118,9 @@ void Sbar_Draw (void)
 		border_teamalpha = hudflash_resultalpha;
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
-	float ammosector_pos, next_sector;
+	float ammosector_pos, nadesector_pos, next_sector, hud_sector_drawflag;
 	vector powerup_pos, teamhud_pos;
+    hud_sector_drawflag = DRAWFLAG_NORMAL;
 
 	if (intermission == 2) // map voting screen
 	{
@@ -3850,7 +4157,7 @@ void Sbar_Draw (void)
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
 
-			next_sector = bottomright_x - 103 - 6;
+			next_sector = bottomright_x - SECWIDTH_NORMAL - 6;
 			
 			if(hudskin_line_full)
 			{
@@ -3866,7 +4173,7 @@ void Sbar_Draw (void)
 			})
 
 			HUDLINE_SECTOR({
-				hud_sector_x = 103;
+				hud_sector_x = SECWIDTH_NORMAL;
 				hud_sector_pos_x = hudline_pos_x + hudline_x + bw_left;
 				sector_mod = '0 0 0';
 			}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
@@ -3994,6 +4301,10 @@ void Sbar_Draw (void)
 				}
 			}
 
+            vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+            float hlimit = 200;
+            vhealth += (min(mxdmg_x, hlimit) - vhealth) * frametime * 10;
+
 			if(rm_althud)	/// RM hud layout
 			{
 				if(hudskin_line_full)
@@ -4015,13 +4326,19 @@ void Sbar_Draw (void)
 				})
 
 				// healtharmor
-				HUDLINE_SECTOR({
-					hud_sector_x = 217;
+				//HUDLINE_SECTOR({
+                {
+					hud_sector_x = SECWIDTH_HEALTH;
 					hud_sector_pos_x = 7;
 					sector_mod = '0 0 0'; //'-1 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+                
+                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
@@ -4030,26 +4347,50 @@ void Sbar_Draw (void)
 				})
 
 				// ammo
-				HUDLINE_SECTOR({
-					ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
-					hud_sector_x = 103;
-					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+                ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
+                hud_sector_x = SECWIDTH_NORMAL;
+                sector_mod = '0 0 0';
+                
+                if(ammo_useprogress)
+                    DrawProgressBarSector(bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
+                if(g_handgrenades && vid_conwidth >= 678) {
+                    // ammo | nades
+                    HUDLINE_SLICE({
+                        hudline_x = 10 - bw_right - bw_left;
+                        hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
+                    })
+                    
+                    // nades
+                    nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
+                    hud_sector_x = SECWIDTH_NORMAL;
+                    sector_mod = '0 0 0';
+                    sector_alphamod = 1;
+                    
+                    DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+                }
+                
 				// separator slice:
-				//		ammo | teamhud
+				//		ammo/nades | teamhud
 
-				if(vid_conwidth < 800)
-					next_sector = bottomright_x - 206 - 13;
+				if(vid_conwidth < 800 || g_handgrenades && vid_conwidth <= 1024)
+					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
 				else if(teamhud_wide)
 				{
 					if(vid_conwidth <= 900)
 						next_sector = hud_sector_pos_x + hud_sector_x + 10;
 					else
-						next_sector = bottom_x - 206/2;
+						next_sector = bottom_x - SECWIDTH_WIDE/2;
 				}
 				else
-					next_sector = bottom_x - 103/2;
+					next_sector = bottom_x - SECWIDTH_NORMAL/2;
 
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -4057,14 +4398,13 @@ void Sbar_Draw (void)
 				})
 
 				// teamhud
-
 				if(th_alpha)
 				{
 					HUDLINE_SECTOR({
 						if(teamhud_wide)
-							hud_sector_x = 206;
+							hud_sector_x = SECWIDTH_WIDE;
 						else
-							hud_sector_x = 103;
+							hud_sector_x = SECWIDTH_NORMAL;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
@@ -4083,18 +4423,18 @@ void Sbar_Draw (void)
 				if(vid_conwidth >= 800)
 				{
 					// teamhud | powerups
-					next_sector = bottomright_x - 206 - 13; //bottomright_x - 103 - 6;
+					next_sector = bottomright_x - SECWIDTH_WIDE - 13; //bottomright_x - 103 - 6;
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 						hudline_x = topright_x - hudline_pos_x - (bottomright_x - 
-							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - 103 - 6) : next_sector)) - bw_left;
+							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - SECWIDTH_NORMAL - 6) : next_sector)) - bw_left;
 					})
 
 					// powerups
 					if(pw_alpha)
 					{
 						HUDLINE_SECTOR({
-							hud_sector_x = 103;
+							hud_sector_x = SECWIDTH_NORMAL;
 							hud_sector_pos_x = next_sector - 2;
 							powerup_pos = hud_sector_pos;
 							sector_mod = '0 0 0';
@@ -4102,31 +4442,6 @@ void Sbar_Draw (void)
 						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 					}
 					sector_alphamod = 1;
-
-					/*		WTF did I write?
-					
-					local float offs;
-					offs = 0;
-					
-					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
-					{
-						hud_sector_pos_x = next_sector - 2;
-						hud_sector_x = 103;
-						
-						HUDLINE_SLICE({
-							hudline_x = hud_sector_x; //+ bw_right;
-							hudline_pos_x = hud_sector_pos_x; //- bw_right;
-						})
-					}
-					else
-						offs = bw_right;
-
-					// powerups | scores
-					HUDLINE_SLICE({
-						hudline_pos_x = hud_sector_pos_x + hud_sector_x + offs;;
-						hudline_x = 10 - bw_right - bw_left - offs + 2;
-					})
-					*/
 					
 					// powerups | scores
 					if not(!pwhud_enabled || pwhud_enabled != pw_finalstate)
@@ -4139,15 +4454,15 @@ void Sbar_Draw (void)
 					
 					// scores
 					HUDLINE_SECTOR({
-						hud_sector_x = 103;
-						hud_sector_pos_x = next_sector + 103 + 7;
+						hud_sector_x = SECWIDTH_NORMAL;
+						hud_sector_pos_x = next_sector + SECWIDTH_NORMAL + 7;
 						sector_mod = '0 0 0';
 					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				else // If we don't have enough space, display powerups above the scores sector
 				{
 					// teamhud | scores
-					next_sector = bottomright_x - 103 - 6;
+					next_sector = bottomright_x - SECWIDTH_NORMAL - 6;
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 						hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
@@ -4155,7 +4470,7 @@ void Sbar_Draw (void)
 
 					// scores
 					HUDLINE_SECTOR({
-						hud_sector_x = 103;
+						hud_sector_x = SECWIDTH_NORMAL;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
@@ -4182,7 +4497,7 @@ void Sbar_Draw (void)
 			{
 				float centersector;
 				float low = vid_conwidth < 800;
-				float low2 = vid_conwidth < 677;
+				float low2 = vid_conwidth < 675;
 				
 				if(hudskin_line_full)
 				{
@@ -4209,9 +4524,9 @@ void Sbar_Draw (void)
 				{
 					HUDLINE_SECTOR({
 						if(teamhud_wide)
-							hud_sector_x = 206;
+							hud_sector_x = SECWIDTH_WIDE;
 						else
-							hud_sector_x = 103;
+							hud_sector_x = SECWIDTH_NORMAL;
 						hud_sector_pos_x = next_sector;
 						sector_mod = '0 0 0';
 						sector_alphamod = th_alpha;
@@ -4232,13 +4547,13 @@ void Sbar_Draw (void)
 
 				if(low)
 				{
-					next_sector = hud_sector_pos_x + 103 + 10;
-					centersector = next_sector + 103 + 10;
+					next_sector = hud_sector_pos_x + SECWIDTH_NORMAL + 10;
+					centersector = next_sector + SECWIDTH_NORMAL + 10;
 				}
 				else
 				{
-					centersector = bottom_x - 217/2;
-					next_sector = centersector - 103 - 10;
+					centersector = bottom_x - SECWIDTH_HEALTH/2;
+					next_sector = centersector - SECWIDTH_NORMAL - 10;
 				}
 
 				HUDLINE_SLICE({
@@ -4247,12 +4562,17 @@ void Sbar_Draw (void)
 				})
 
 				// ammo
-				HUDLINE_SECTOR({
-					ammosector_pos = hud_sector_pos_x = next_sector;
-					hud_sector_x = 103;
-					sector_mod = '0 0 0';
-				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-				
+                ammosector_pos = hud_sector_pos_x = next_sector;
+                hud_sector_x = SECWIDTH_NORMAL;
+                sector_mod = '0 0 0';
+                
+                if(ammo_useprogress)
+                    DrawProgressBarSector(-bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
+                
 				// ammo | health-armor
 				HUDLINE_SLICE({
 					hudline_x = 8 - bw_left - bw_right;
@@ -4260,16 +4580,22 @@ void Sbar_Draw (void)
 				})
 
 				// health-armor
-				HUDLINE_SECTOR({
-					hud_sector_x = 217;
+				//HUDLINE_SECTOR({
+                {
+					hud_sector_x = SECWIDTH_HEALTH;
 					//hud_sector_pos_x = centersector;
 					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
 					sector_mod = '0 0 0';
 
 					s_health = hud_sector_pos;
-				}, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
+				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
-				// health-armor | powerups
+                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                                            BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
+                
+				// health-armor | nades
 				HUDLINE_SLICE({
 					hudline_x = 8 - bw_left - bw_right;
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
@@ -4277,24 +4603,30 @@ void Sbar_Draw (void)
 				
 				if(!low2)
 				{
-					// powerups
-					if(pw_alpha)
-					{
-						HUDLINE_SECTOR({
-							hud_sector_x = 103;
-							hud_sector_pos_x = hudline_pos_x - bw_right + 8;
-							powerup_pos = hud_sector_pos;
-							sector_mod = '0 0 0';
-							sector_alphamod = pw_alpha;
-						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-					}
-					sector_alphamod = 1;
-					
-					if(!pwhud_enabled || pwhud_enabled != pw_finalstate)
-					{
-						hud_sector_pos_x = hudline_pos_x - bw_right + 8;
-						hud_sector_x = -bw_right - bw_left;
-					}
+                    if(g_handgrenades) {/*
+                        HUDLINE_SECTOR({
+                            hud_sector_x = SECWIDTH_NORMAL;
+                            nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+                            powerup_pos = hud_sector_pos;
+                            sector_mod = '0 0 0';
+                            sector_alphamod = 1;
+                        }, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+                        */
+                        
+                        // nades
+                        nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+                        hud_sector_x = SECWIDTH_NORMAL;
+                        sector_mod = '0 0 0';
+                        sector_alphamod = 1;
+                        
+                        DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
+                                                BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                                BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                                sector_alphamod, hud_sector_drawflag);
+                    } else {
+                        hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+                        hud_sector_x = -bw_right - bw_left;
+                    }
 				}
 				else
 				{
@@ -4303,8 +4635,8 @@ void Sbar_Draw (void)
 				}
 				
 				// separator slice:
-				// 		powerups | scores
-				next_sector = bottomright_x - 103 - 6;
+				// 		powerups/nades | scores
+				next_sector = bottomright_x - SECWIDTH_NORMAL - 6;
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					//hudline_x = 10;
@@ -4313,12 +4645,22 @@ void Sbar_Draw (void)
 
 				// scores
 				HUDLINE_SECTOR({
-					hud_sector_x = 103;
+					hud_sector_x = SECWIDTH_NORMAL;
 					//hud_sector_pos_x = hudline_pos_x + hudline_x;
 					hud_sector_pos_x = next_sector;
 					sector_mod = '0 0 0';
 				}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-
+                
+                if(pw_alpha) {
+                    // powerups (drawn above scores)
+                    HUDLINE_SECTOR({
+                        hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+                        powerup_pos = hud_sector_pos;
+                        sector_alphamod = pw_alpha;
+                    }, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
+                    sector_alphamod = 1;
+                }
+                
 				if(low2)
 				{
 					if(pw_alpha)
@@ -4437,17 +4779,31 @@ void Sbar_Draw (void)
 		
 		if(!g_minstagib)
 		{
+            float wepcnt;
+            
 			x = 1.0;
-			Sbar_DrawWeapon_Clear();
-			for(i = 1; i <= 24; ++i)
-			{
-				if(weaponimpulse[i-1] >= 0)
-				if(stat_weapons & x)
-				{
-					Sbar_DrawWeapon(i-1, fade, (i == activeweapon), i);
-				}
+			for(i = 1; i <= 24; ++i) {
+                if(weaponimpulse[i-1] >= 0) if(stat_weapons & x) {
+                    wepcnt += 1;
+                    if(wepcnt >= 2)
+                        break;
+                }
 				x *= 2;
-			}
+            }
+            
+            if(wepcnt >= 2) {
+                x = 1.0;
+                Sbar_DrawWeapon_Clear();
+                for(i = 1; i <= 24; ++i)
+                {
+                    if(weaponimpulse[i-1] >= 0)
+                    if(stat_weapons & x)
+                    {
+                        Sbar_DrawWeapon(i-1, fade, (i == activeweapon), i);
+                    }
+                    x *= 2;
+                }
+            }
 		}
 
 		// ammo
@@ -4467,9 +4823,13 @@ void Sbar_Draw (void)
 		
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
+            float isrifle;
             
-            if(activeweapon == WEP_CAMPINGRIFLE && a == 999)
+            if(activeweapon == WEP_CAMPINGRIFLE && a == 999) {
                 a = getstati(STAT_BULLETS_LOADED);
+                isrifle = TRUE;
+                ammo_useprogress = TRUE;
+            } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
             
 			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
 			
@@ -4503,7 +4863,7 @@ void Sbar_Draw (void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < 10)
+						if(a < 10 && !isrifle)
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4517,7 +4877,7 @@ void Sbar_Draw (void)
 						drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 						if(!a)
 							drawpic_expanding(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
-						if(a < 10)
+						if(a < 10 && !isrifle)
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4564,7 +4924,7 @@ void Sbar_Draw (void)
 							
 							drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-							if(a < 10)
+							if(a < 10 && !isrifle)
 								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 							else
 								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4572,7 +4932,7 @@ void Sbar_Draw (void)
 						else
 						{
 							pos_y -= 10;
-							pos_x = ammosector_pos - bw_left + ((103 + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
+							pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
 							
 							drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 							Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
@@ -4583,28 +4943,52 @@ void Sbar_Draw (void)
 			}
 		}
 		
-		// TODO: make this less ugly
-		float hgammo = getstati(STAT_HGAMMO);
-        float hgdetons = getstati(STTA_HGDETONABLES);
-        
+        // nades
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;
         
-        if(hgdetons) {
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")), " ^3to detonate your grenades"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        }
+        float hgtype = getstati(STAT_HGTYPE);
+        float hgammo = getstati(STAT_HGAMMO);
+        float hgdetons = getstati(STAT_HGDETONABLES);
         
-		if(hgammo) {
-			drawcolorcodedstringcenter(hgapos, strcat("Grenades: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-		}
-		
-        float hgregen = getstatf(STAT_HGREGEN);
-        if(hgregen && hgregen != 1) {
-            vector hgrsize = '70 3 0';
-            hgapos_y += 10;
-            hgapos_x = (vid_conwidth - hgrsize_x) * 0.5;
-            hgrsize_x *= hgregen;
-            drawfill(hgapos, hgrsize, '1 1 1' - '0 0.5 0.5' * getstati(STAT_HGREGENPAUSED), 0.5, DRAWFLAG_NORMAL);
+        if(getstatf(STAT_HGSHIELD))
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        else if(hgdetons)
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
+                                        ((hgdetons > 1)? strcat("s (^2", ftos(hgdetons), "^3)") : "")),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        else if(hgtype == HG_GG && hgammo)
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("hook / nadget key", "+hook")), " ^3to win!"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            
+        
+        if(nadesector_pos) {
+            float a = getstati(STAT_HGAMMO);
+            float t = hgtype;
+            pos_y = 33;
+            pos = bottom - pos;
+            pos_x = nadesector_pos;
+            
+            drawpic(pos, HG_TypeToIcon(t, TRUE), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1' - '0 1 1' * (!a), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+        } else {
+            // HUD doesn't support the nade sector - fallback to the old display method
+            
+            if(hgammo) {
+                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(getstati(STAT_HGTYPE)), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            }
+            
+            if(hgregen && hgregen != 1) {
+                vector hgrsize = '70 3 0';
+                hgapos_y += 10;
+                hgapos_x = (vid_conwidth - hgrsize_x) * 0.5;
+                hgrsize_x *= hgregen;
+                drawfill(hgapos, hgrsize, '1 1 1' - '0 0.5 0.5' * getstati(STAT_HGREGENPAUSED), 0.5, DRAWFLAG_NORMAL);
+            }
         }
         
 		// fuel ammo
@@ -4670,8 +5054,11 @@ void Sbar_Draw (void)
 		else if(gametype == GAME_VIP)
 			CSQC_vip_hud(teamhud_pos);
 	}
+    
+    if(g_handgrenades)
+        Sbar_DrawHGBonus();
+    Sbar_DrawBuffs();
 
-	
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)
 	{
@@ -4838,7 +5225,7 @@ void Sbar_Draw (void)
 		drawpic(lpos, "gfx/loading.tga", lpic, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
 	
-	return;
+    hgregen += (getstatf(STAT_HGREGEN) - hgregen) * drawframetime * 3;
 }
 
 // CTF HUD
@@ -5246,7 +5633,7 @@ void CSQC_hud_TeamStatCommon(vector hudpos, float redstat, float bluestat, float
 		Sbar_DrawXNum(position, redstat, 4, 0, 24, GetTeamRGB(COLOR_TEAM1) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 
 		position = hudpos;
-		position_x += 103 - 29;
+		position_x += SECWIDTH_NORMAL - 29;
 
 		Sbar_DrawXNum(position, bluestat, 4, 0, 24, GetTeamRGB(COLOR_TEAM2) * 0.8 + '0.2 0.2 0.2', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 		return;
@@ -5413,7 +5800,7 @@ void CSQC_vip_hud(vector hudpos)
 	}
 	teamhud_enabled = 1;
 
-	float hudwidth = (teamhud_wide? 206 : 103);
+	float hudwidth = (teamhud_wide? SECWIDTH_WIDE : SECWIDTH_NORMAL);
 	float textwidth = (teamhud_wide? 11.5 : 5);
 	float hudstart, hudend;
 	float healthpercent;

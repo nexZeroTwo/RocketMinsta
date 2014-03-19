@@ -63,7 +63,7 @@ const float COLOR_SPECTATOR = 1337;
 // --------------------------------------------------------------------------
 // Scoreboard stuff
 
-#define MAX_SBAR_FIELDS 16
+#define MAX_SBAR_FIELDS 32
 
 #define SP_END -1
 
@@ -91,6 +91,7 @@ string teamscores_label[MAX_SCORE];
 float teamscores_flags[MAX_SCORE];
 .float scores[MAX_SCORE];
 .float teamscores[MAX_TEAMSCORE];
+.float hasbestscore[MAX_SCORE];
 
 #define IS_INCREASING(x) ( (x)&SFL_LOWER_IS_BETTER )
 #define IS_DECREASING(x) ( !((x)&SFL_LOWER_IS_BETTER) )
@@ -242,9 +243,6 @@ float gametypevote_longest;
 
 string mapvote_choosenmap;
 string mapvote_choosenmappic;
-void MapVote_RememberMap(string);
-
-string speedrecord_string;
 
 void score_visual(float);
 
@@ -353,10 +351,10 @@ float drawpic(vector position, string pic, vector sz, vector rgb, float alpha, f
 // the server will set this
 float v_flipped;
 
-vector jb_camera_origin;
-float jb_camera_expiretime;
-float jb_chasecam_locked;
-float jb_chasecam_backup;
+vector camera_origin;
+float camera_expiretime;
+float camera_drawviewmodel_locked;
+float camera_drawviewmodel_backup;
 
 float cl_fps;
 
@@ -372,3 +370,18 @@ string sv_motd;
 float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
+
+float g_handgrenades;
+float sv_scoreboard_heal_column;
+float g_freeze;
+
+float Q3SURFACEFLAG_SLICK = 2; // low friction surface
+float DPCONTENTS_SOLID = 1; // blocks player movement
+float DPCONTENTS_BODY = 32; // blocks player movement
+float DPCONTENTS_CORPSE = 64; // blocks player movement
+float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
+
+.vector oldorigin;
+.vector iorigin;
+
+float whatsgoingon;

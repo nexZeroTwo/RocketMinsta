@@ -9,6 +9,7 @@ void HUDSkin_Unload()
     FREE(hudskin_image_sector_fill_left)
     FREE(hudskin_image_sector_fill_center)
     FREE(hudskin_image_sector_fill_right)
+    FREE(hudskin_image_progress_head)
     
     hudskin_size_border_left = '0 0 0';
     hudskin_size_border_right = '0 0 0';
@@ -60,6 +61,20 @@ void HUDSkin_Unload()
     hudskin_size_sector_fill_left = '0 0 0';
     hudskin_size_sector_fill_right = '0 0 0';
     hudskin_line_padding = '0 0 0';
+    hudskin_progress_bgalpha = 0;
+    hudskin_progress_sector_colormode = 0;
+    hudskin_progress_sector_color = '0 0 0';
+    hudskin_progress_sector_alpha = 0;
+    hudskin_progress_sector_teamcolor_mod = '0 0 0';
+    hudskin_progress_sector_teamcolor_minalpha = 0;
+    hudskin_progress_border_colormode = 0;
+    hudskin_progress_border_color = '0 0 0';
+    hudskin_progress_border_alpha = 0;
+    hudskin_progress_border_teamcolor_mod = '0 0 0';
+    hudskin_progress_border_teamcolor_minalpha = 0;
+    hudskin_progress_head_color = '0 0 0';
+    hudskin_progress_head_alpha = 0;
+    hudskin_progress_head_teamcolor = 0;
     
     print("Unloaded HUD skin\n");
     
@@ -378,6 +393,12 @@ float HUDSkin_Eval(string cmd)
             hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_left);
             return TRUE;
         
+        case "extern_image_progress_head":
+            FREE(hudskin_image_progress_head)
+            hudskin_image_progress_head = strzone(argv(1));
+            hudskin_size_progress_head = drawgetimagesize(hudskin_image_progress_head);
+            return TRUE;
+        
         case "sector_fill":
 			hudskin_sector_fill = HUDSkin_ReadFillMode();
             
@@ -395,41 +416,165 @@ float HUDSkin_Eval(string cmd)
 			hudskin_line_padding_y = stof(argv(2));
 			return TRUE;
         
+        case "progress_bgalpha":
+            hudskin_progress_bgalpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_mode":
+            hudskin_progress_mode = stof(argv(1));
+            
+            if(hudskin_progress_mode < 0 || hudskin_progress_mode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_mode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_sector_colormode":
+            hudskin_progress_sector_colormode = stof(argv(1));
+            
+            if(hudskin_progress_sector_colormode < 0 || hudskin_progress_sector_colormode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_sector_colormode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_border_colormode":
+            hudskin_progress_border_colormode = stof(argv(1));
+            
+            if(hudskin_progress_border_colormode < 0 || hudskin_progress_border_colormode > 2) {
+                print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
+                hudskin_progress_border_colormode = 0;
+                return FALSE;
+            }
+            
+            return TRUE;
+        
+        case "progress_sector_color":
+            hudskin_progress_sector_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_border_color":
+            hudskin_progress_border_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_sector_alpha":
+            hudskin_progress_sector_alpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_border_alpha":
+            hudskin_progress_border_alpha = stof(argv(1));
+            return TRUE;
+        
+        case "progress_head_alpha":
+            hudskin_progress_head_alpha = stof(argv(1));
+            return TRUE;
+            
+        case "progress_head_color":
+            hudskin_progress_head_color = HUDSkin_ReadColor();
+            return TRUE;
+        
+        case "progress_head_teamcolor":
+            hudskin_progress_head_teamcolor = stof(argv(1));
+            return TRUE;
+        
+        case "progress_sector_teamcolor_mod":
+            hudskin_progress_sector_teamcolor_mod = HUDSkin_ReadColor();
+        
+        case "progress_sector_teamcolor_minalpha":
+            hudskin_progress_sector_teamcolor_minalpha = stof(argv(1));
+            return TRUE;
+        
+        case "progress_border_teamcolor_mod":
+            hudskin_progress_border_teamcolor_mod = HUDSkin_ReadColor();
+        
+        case "progress_border_teamcolor_minalpha":
+            hudskin_progress_border_teamcolor_minalpha = stof(argv(1));
+            return TRUE;
+        
         default:
             print("HUDSkin_Eval: Invalid key ", argv(0), "\n");
             return FALSE;
     }
 }
 
+void HUDSkin_LoadBuiltinFallback() {
+    // This matches the "classic" skin
+    
+    hudskin_border_simple = 2;
+    //hudskin_sector_teamcolor = TC_SOME;
+    hudskin_sector_teamcolor_brightness = 0.2;
+    hudskin_sector_color = '0.2 0.2 0.2';
+    hudskin_border_color = '0 0 0';
+    hudskin_sector_alpha = 0.5;
+    hudskin_border_alpha = 0.8;
+    hudskin_line_color = '0.5 0.5 0.5';
+    hudskin_line_alpha = 0.2;
+    hudskin_flash_alphamod = 1;
+    hudskin_flash_intmod = 1;
+    hudskin_border_drawflag = DRAWFLAG_NORMAL;
+    hudskin_flash_line_imod = 1;
+    hudskin_flash_line_amod = 1;
+    hudskin_flash_sector_imod = 2;
+    hudskin_flash_sector_amod = 0;
+    hudskin_flash_border_imod = 0;
+    hudskin_flash_border_amod = 0;
+    hudskin_progress_bgalpha = 1;
+    hudskin_progress_sector_colormode = 1;
+    hudskin_progress_sector_alpha = 0;
+    hudskin_progress_sector_color = '1 0.5 0';
+    hudskin_progress_mode = 2;
+    hudskin_progress_sector_teamcolor_minalpha = 0;
+    hudskin_progress_sector_teamcolor_mod = '0 0 0';
+}
+
+float HUDSkin_LoadError(string skin_name, string errstr) {
+    if(skin_name == HUDSKIN_DEFAULT)
+    {
+        print("Failed to load skininfo for the default HUD skin '", skin_name, "': ", errstr, ". Loading builtin fallback.\n");
+        HUDSkin_LoadBuiltinFallback();
+        return FALSE;
+    }
+    else
+    {
+        print("Failed to load skininfo for HUD skin '", skin_name, "': ", errstr, ". Falling back to '", HUDSKIN_DEFAULT, "'.\n");
+        HUDSkin_Load(HUDSKIN_DEFAULT);
+        return FALSE;
+    }
+}
+
 float HUDSkin_Load(string skin_name)
 {
+#define SKINIMAGE(i) strzone(strcat("gfx/hud/skins/", skin_name, "/" i))
     HUDSkin_Unload();
+    
+    if(skin_name == "_builtin_") {
+        HUDSkin_LoadBuiltinFallback();
+        return TRUE;
+    }
     
     local float fh, err;
     local string s;
     
     fh = fopen(strcat("gfx/hud/skins/", skin_name, "/skininfo"), FILE_READ);
     if(fh < 0)
-    {
-        if(skin_name == HUDSKIN_DEFAULT)
-        {
-            print("Failed to load skininfo for the default HUD skin '", skin_name, "', something is really screwed up\n");
-            return FALSE;
-        }
-        else
-        {
-            print("Failed to load skininfo for HUD skin '", skin_name, "', falling back to '", HUDSKIN_DEFAULT, "'\n");
-            HUDSkin_Load(HUDSKIN_DEFAULT);
-            return FALSE;
-        }
+        return HUDSkin_LoadError(skin_name, "fopen failed");
+    
+    if(fgets(fh) != "#version " HUDSKIN_VERSION) {
+        fclose(fh);
+        return HUDSkin_LoadError(skin_name, "version mismatch");
     }
     
-    hudskin_image_border_left = strzone(strcat("gfx/hud/skins/", skin_name, "/border_left"));
-    hudskin_image_border_right = strzone(strcat("gfx/hud/skins/", skin_name, "/border_right"));
-    hudskin_image_line_fill = strzone(strcat("gfx/hud/skins/", skin_name, "/line_fill"));
-    hudskin_image_sector_fill_left = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_left"));
-    hudskin_image_sector_fill_center = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_center"));
-    hudskin_image_sector_fill_right = strzone(strcat("gfx/hud/skins/", skin_name, "/sector_fill_right"));
+    hudskin_image_border_left = SKINIMAGE("border_left");
+    hudskin_image_border_right = SKINIMAGE("border_right");
+    hudskin_image_line_fill = SKINIMAGE("line_fill");
+    hudskin_image_sector_fill_left = SKINIMAGE("sector_fill_left");
+    hudskin_image_sector_fill_center = SKINIMAGE("sector_fill_center");
+    hudskin_image_sector_fill_right = SKINIMAGE("sector_fill_right");
+    hudskin_image_progress_head = SKINIMAGE("progress_head");
     
     while((s = fgets(fh)))
         err += !HUDSkin_Eval(s);
@@ -445,12 +590,14 @@ float HUDSkin_Load(string skin_name)
     hudskin_size_sector_fill_center = drawgetimagesize(hudskin_image_sector_fill_center);
     hudskin_size_sector_fill_left = drawgetimagesize(hudskin_image_sector_fill_left);
     hudskin_size_sector_fill_right = drawgetimagesize(hudskin_image_sector_fill_right);
+    hudskin_size_progress_head = drawgetimagesize(hudskin_image_progress_head);
     
     print("Loaded HUD skin '", skin_name, "'\n");
     hudskin_name = strzone(skin_name);
     localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", hudskin_name, "\n");
     
     return TRUE;
+#undef SKINIMAGE
 }
 
 float HUDSkin_GetBorderWidth(float border)

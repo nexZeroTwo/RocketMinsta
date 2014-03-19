@@ -191,7 +191,7 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float		dmgtime;
 
 .float		killcount;
-.float hitsound, typehitsound;
+.float hitsound, typehitsound, armorhitsound;
 
 .float watersound_finished;
 .float iscreature;
@@ -239,6 +239,8 @@ float WR_SUICIDEMESSAGE = 7; // sets w_deathtypestring or leaves it alone (and m
 float WR_KILLMESSAGE    = 8; // sets w_deathtypestring or leaves it alone
 float WR_RELOAD         = 9; // does not need to do anything
 float WR_RESETPLAYER    = 10; // does not need to do anything
+float WR_TT_STORE       = 11; // save weapon-specific fields into tt_moment for time travel
+float WR_TT_RESTORE     = 12; // restore weapon-specific fields from tt_moment for time travel
 
 void weapon_defaultspawnfunc(float wpn);
 
@@ -644,14 +646,8 @@ float keeptopic;
 .entity shownames;
 void shownames_think();
 
-float highest_velocity;
-entity highest_velocity_entity;
-string highest_velocity_name;
-
 .float killsound;
 .float instakillsound;
-
-float sv_speedaward_ownaccel;
 
 .float hud_old;
 .float hud_alt;
@@ -695,6 +691,7 @@ void end_match(float);
 float shooting_forbidden;
 
 float totalclients;
+float realclients;
 .float spawninarena;
 
 typedef void() spawnfunc_t;
@@ -713,3 +710,55 @@ float sv_oldfag;
 .float lastdamage;
 
 float sv_dps;
+
+.float sub_target_used;
+
+.float wasingame;
+
+float whatsgoingon;
+
+float g_allow_oldnexbeam;
+float leadlimit;
+float sv_jumpvelocity;
+float sv_gameplayfix_q2airaccelerate;
+float sv_autoaway;
+float g_walljump;
+float g_walljump_delay;
+float sv_ready_restart_after_countdown;
+float g_dodging;
+float g_freezetag_dodging_frozen;
+float g_dodging_delay;
+float g_dodging_ramp_time;
+float sv_defaultcharacter;
+float sv_defaultplayercolors;
+float sv_forcespecies;
+
+float g_balance_health_rotstable;
+float g_balance_armor_rotstable;
+float g_balance_fuel_rotstable;
+float g_balance_health_regenstable;
+float g_balance_armor_regenstable;
+float g_balance_fuel_regenstable;
+float g_balance_health_limit;
+float g_balance_armor_limit;
+float g_balance_fuel_limit;
+
+float g_balance_falldamage_deadminspeed;
+float g_balance_falldamage_factor;
+float g_balance_falldamage_minspeed;
+float g_balance_falldamage_maxdamage;
+
+.float dom_captureprogress;
+
+entity SelectSpawnPoint(float anypoint);
+void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
+void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
+
+entity intermission_viewport;
+
+vector TeamColor(float teem);
+
+float sv_scoreboard_heal_column;
+
+float hack_forcenextmap;
+string nextgametype;

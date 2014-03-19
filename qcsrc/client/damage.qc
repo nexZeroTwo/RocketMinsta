@@ -22,6 +22,8 @@ void Ent_DamageInfo(float isNew)
 	rad = ReadByte();
 	edge = ReadByte();
 	force = decompressShortVector(ReadShort());
+    
+    self.team = ReadByte();
 
 	if not(isNew)
 		return;
@@ -79,7 +81,7 @@ void Ent_DamageInfo(float isNew)
 	self = oldself;
 
 	// TODO spawn particle effects and sounds based on hittype
-	
+    
 	if(!DEATH_ISSPECIAL(hittype))
 	{
 		float hitwep, secondary, bounce, headshot;
@@ -100,7 +102,7 @@ void Ent_DamageInfo(float isNew)
 
 		setorigin(self, org + backoff * 2); // for sound() calls
 
-		if (DEATH_ISHG(hittype))
+        if(DEATH_ISHG(hittype))
 		{
 			if (!issilent) {
 				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
@@ -111,7 +113,8 @@ void Ent_DamageInfo(float isNew)
 			switch (hittype)
 			{
 				case DEATH_HG_NORMAL:
-					float radius = 250, i;
+                case DEATH_HG_REMOTE:
+					float radius = rad, i;
 					pointparticles (particleeffectnum ("rocket_explode"), self.origin, '0 0 0', 1);
 					for (i = 0; i < 20; i ++)
 					{
@@ -119,7 +122,20 @@ void Ent_DamageInfo(float isNew)
 						r = random ();
 						pointparticles (particleeffectnum (mod(i, 4)? "rocket_explode" : "TE_TEI_BIGEXPLOSION"), self.origin + v * radius * r, v * radius * r * 100, 1);
 					}
-				case DEATH_HG_STICKY:
+                    break;
+                case DEATH_HG_PLASMA_SHARD: case DEATH_HG_LASER:
+                    org2 = org + backoff * 6;
+                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == DEATH_HG_LASER)), org2, '0 0 0', 1);
+                    if(!issilent)
+                        sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+                    break;
+                    
+                case DEATH_HG_PLASMA:
+                    org2 = org + backoff * 2;
+                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
+                    if(!issilent)
+                        sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+                    break;
 				case DEATH_HG_NAPALM:
 					break;
 			}

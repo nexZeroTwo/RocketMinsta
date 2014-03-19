@@ -1,6 +1,7 @@
 ../../menu.dat
 
 config.qh
+../common/rm_auto.qh
 ../common/util-pre.qh
 msys.qh
 mbuiltin.qh
@@ -13,6 +14,7 @@ oo/base.h
 ../common/items.qh
 ../common/ip2c.qh
 ../common/gametype.qh
+../common/handgrenades.qh
 ../common/dprm.qh
 
 gamecommand.qh
@@ -42,5 +44,6 @@ nexuiz/util.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
-../common/gametype.qc
+../common/gametype.qc            
+../common/handgrenades.qc
 

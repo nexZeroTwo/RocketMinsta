@@ -34,8 +34,8 @@ void fillNexuizRMConfigDialog(entity me)
 			OPTDEP("shownames")
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Teamcolored lasers"));
-			OPTDEP("teamlasers")
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Team-colored particles"));
+			//OPTDEP("teamlasers")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "legacyvote", "Simple voting screen"));
 	me.TR(me);

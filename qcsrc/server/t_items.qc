@@ -244,8 +244,8 @@ float Item_GiveTo(entity item, entity player)
 	float i;
 	entity e;
 
-	if(g_freezetag)
-	if(player.freezetag_frozen)
+	if(g_freeze)
+	if(player.frozen)
 		return 0;
 
 	// if nothing happens to player, just return without taking the item
@@ -423,38 +423,42 @@ float Item_GiveTo(entity item, entity player)
 
 		if not(player.weapons & W_WeaponBit(player.switchweapon))
 			_switchweapon = TRUE;
-
+        
+        float pickupfactor = 1;
+        if(BUFFS_PRESENT(player, BUFF_SUPPLY))
+            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * Buffs_BuffPower(player, BUFF_SUPPLY);
+        
 		if(item.spawnshieldtime)
 		{
 			if (item.ammo_shells)
 			if (player.ammo_shells < g_pickup_shells_max)
 			{
 				pickedup = TRUE;
-				player.ammo_shells = min (player.ammo_shells + item.ammo_shells, g_pickup_shells_max);
+				player.ammo_shells = min (player.ammo_shells + item.ammo_shells * pickupfactor, g_pickup_shells_max);
 			}
 			if (item.ammo_nails)
 			if (player.ammo_nails < g_pickup_nails_max)
 			{
 				pickedup = TRUE;
-				player.ammo_nails = min (player.ammo_nails + item.ammo_nails, g_pickup_nails_max);
+				player.ammo_nails = min (player.ammo_nails + item.ammo_nails * pickupfactor, g_pickup_nails_max);
 			}
 			if (item.ammo_rockets)
 			if (player.ammo_rockets < g_pickup_rockets_max)
 			{
 				pickedup = TRUE;
-				player.ammo_rockets = min (player.ammo_rockets + item.ammo_rockets, g_pickup_rockets_max);
+				player.ammo_rockets = min (player.ammo_rockets + item.ammo_rockets * pickupfactor, g_pickup_rockets_max);
 			}
 			if (item.ammo_cells)
 			if (player.ammo_cells < g_pickup_cells_max)
 			{
 				pickedup = TRUE;
-				player.ammo_cells = min (player.ammo_cells + item.ammo_cells, g_pickup_cells_max);
+				player.ammo_cells = min (player.ammo_cells + item.ammo_cells * pickupfactor, g_pickup_cells_max);
 			}
 			if (item.ammo_fuel)
 			if (player.ammo_fuel < g_pickup_fuel_max)
 			{
 				pickedup = TRUE;
-				player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel, g_pickup_fuel_max);
+				player.ammo_fuel = min(player.ammo_fuel + item.ammo_fuel * pickupfactor, g_pickup_fuel_max);
 				player.pauserotfuel_finished = max(player.pauserotfuel_finished, time + cvar("g_balance_pause_fuel_rot"));
 			}
 		}
@@ -505,14 +509,14 @@ float Item_GiveTo(entity item, entity player)
 			if (player.health < item.max_health)
 			{
 				pickedup = TRUE;
-				player.health = min(player.health + item.health, item.max_health);
+				player.health = min(player.health + item.health * pickupfactor, item.max_health);
 				player.pauserothealth_finished = max(player.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
 			}
 			if (item.armorvalue)
 			if (player.armorvalue < item.max_armorvalue)
 			{
 				pickedup = TRUE;
-				player.armorvalue = min(player.armorvalue + item.armorvalue, item.max_armorvalue);
+				player.armorvalue = min(player.armorvalue + item.armorvalue * pickupfactor, item.max_armorvalue);
 				player.pauserotarmor_finished = max(player.pauserotarmor_finished, time + cvar("g_balance_pause_armor_rot"));
 			}
 		}
@@ -1435,7 +1439,8 @@ void spawnfunc_item_health25() { spawnfunc_item_health_medium(); }
 void spawnfunc_item_health100() { spawnfunc_item_health_mega(); }
 
 void spawnfunc_item_strength (void) {
-	//<akari>
+    Buffs_BuffPickup_Placeholder();
+    
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
@@ -1443,10 +1448,14 @@ void spawnfunc_item_strength (void) {
 		minstagib_items(IT_STRENGTH);
 		return;
 	}
-	//</akari>
 
 	if(!cvar("g_powerup_strength"))
 		return;
+
+    if(cvar("g_powerup_allsuperhealth")) {
+        spawnfunc_item_health_mega();
+        return;
+    }
 
 	if(g_arena && !cvar("g_arena_powerups"))
 		return;
@@ -1461,7 +1470,8 @@ void spawnfunc_item_strength (void) {
 }
 
 void spawnfunc_item_invincible (void) {
-	//<akari>
+    Buffs_BuffPickup_Placeholder();
+    
 	if(g_minstagib)
 	if(cvar("g_rocketminsta"))
 	if(cvar("g_rocketminsta_armor"))
@@ -1469,10 +1479,14 @@ void spawnfunc_item_invincible (void) {
 		minstagib_items(IT_INVINCIBLE);
 		return;
 	}
-	//</akari>
 
 	if(!cvar("g_powerup_shield"))
 		return;
+
+    if(cvar("g_powerup_allsuperhealth")) {
+        spawnfunc_item_health_mega();
+        return;
+    }
 
 	if(g_arena && !cvar("g_arena_powerups"))
 		return;

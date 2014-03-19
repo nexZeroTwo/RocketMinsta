@@ -1,6 +1,9 @@
 void inf_warmup();
 void Boobs_Clear();
 
+.entity specdelay_ent;
+.float justconnected;
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -86,9 +89,12 @@ void spawnfunc_info_player_start (void)
 
 void spawnfunc_info_player_deathmatch (void)
 {
-	self.classname = "info_player_deathmatch";
-	relocate_spawnpoint();
+    self.classname = "info_player_deathmatch";
+    relocate_spawnpoint();
 }
+
+void spawnfunc_info_player_intermission (void) {}
+void spawnfunc_info_intermission (void) {}
 
 void spawnpoint_use()
 {
@@ -729,7 +735,10 @@ void PutObserverInServer (void)
 	//if(!spot)
 	//	error("No spawnpoints for observers?!?\n");
 	RemoveGrapplingHook(self); // Wazat's Grappling Hook
-
+    
+    self.hg_linker = world;
+    self.buffs = 0;
+    
 	if(clienttype(self) == CLIENTTYPE_REAL)
 	{
 		msg_entity = self;
@@ -737,20 +746,23 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 	
-	frag_attacker = world;
-	
-	remove(self.shownames);
-	self.shownames = world;
+    if(self.shownames) {
+        remove(self.shownames);
+        self.shownames = world;
+    }
 	DropAllRunes(self);
-	kh_Key_DropAll(self, TRUE);
-	freezetag_RemovePlayer();
-    HG_DetonateAll(self);
-	vip_RemovePlayer();
-	JB_RemovePlayer();
-	prec_player_die(self);
-	inf_player_leave(self);
-	Portal_ClearAll(self);
-	Boobs_Clear();
+    
+    if(!self.justconnected) {
+        kh_Key_DropAll(self, TRUE);
+        Freeze_Hook_PlayerQuits();
+        HG_DetonateAll(self);
+        vip_RemovePlayer();
+        JB_RemovePlayer();
+        prec_player_die(self, self);
+        inf_player_leave(self);
+        Portal_ClearAll(self);
+        Boobs_Clear();
+    }
 	
 	if(self.flagcarried)
 		DropFlag(self.flagcarried, world, world);
@@ -768,14 +780,29 @@ void PutObserverInServer (void)
 			else
 				bprint ("^4", self.netname, "^4 is spectating now\n"); // TODO turn this into a proper forfeit?
 		}
-		else
+		else if(!self.jb_specteam)
 			bprint ("^4", self.netname, "^4 is spectating now\n");
 	}
-
-	PlayerScore_Clear(self); // clear scores when needed
-
+    
+    if(!self.jb_specteam) {
+        PlayerScore_Clear(self); // clear scores when needed
+    
+        if(g_handgrenades) {
+            self.hg_type_picked = 0;
+            self.hg_type = 0;
+            self.hg_nadesused = 0;
+            self.hg_shield = 0;
+        }
+    }
+    
+    self.frozenrow = 0;
+    self.jb_unlock_progress = 0;
+    self.jb_message = JBMSG_NONE;
+    self.revprogress = 0;
+    
+    self.wasingame = FALSE;
 	self.spectatortime = time;
-
+    
 	self.classname = "observer";
 	self.iscreature = FALSE;
 	self.health = -666;
@@ -838,8 +865,9 @@ void PutObserverInServer (void)
 
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
-
-	self.team = -1;
+    
+    if(!self.jb_specteam)
+        self.team = -1;
 
 	if(g_arena)
 	{
@@ -861,8 +889,10 @@ void PutObserverInServer (void)
 		else
 			self.frags = FRAGS_LMS_LOSER;
 	}
-	else
+	else if(!self.jb_specteam)
 		self.frags = FRAGS_SPECTATOR;
+    
+    self.justconnected = FALSE;
 }
 
 float RestrictSkin(float s)
@@ -881,8 +911,8 @@ void FixPlayermodel()
 	local vector m1, m2;
 
 	defaultmodel = "";
-
-	if(cvar("sv_defaultcharacter") == 1) {
+    
+	if(sv_defaultcharacter == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
@@ -911,8 +941,8 @@ void FixPlayermodel()
 		{
 			m1 = self.mins;
 			m2 = self.maxs;
-			setmodel_lod (self, defaultmodel);
-			setsize (self, m1, m2);
+			setmodel_lod(self, defaultmodel);
+			setsize(self, m1, m2);
 			chmdl = TRUE;
 		}
 
@@ -924,8 +954,8 @@ void FixPlayermodel()
 			self.playermodel = CheckPlayerModel(self.playermodel);
 			m1 = self.mins;
 			m2 = self.maxs;
-			setmodel_lod (self, self.playermodel);
-			setsize (self, m1, m2);
+			setmodel_lod(self, self.playermodel);
+			setsize(self, m1, m2);
 			chmdl = TRUE;
 		}
 
@@ -937,9 +967,9 @@ void FixPlayermodel()
 		self.species = player_getspecies(); // model or skin has changed
 
 	if(!teams_matter)
-		if(strlen(cvar_string("sv_defaultplayercolors")))
-			if(self.clientcolors != cvar("sv_defaultplayercolors"))
-				setcolor(self, cvar("sv_defaultplayercolors"));
+		if(cvar_string("sv_defaultplayercolors") != "")
+			if(self.clientcolors != sv_defaultplayercolors)
+				setcolor(self, sv_defaultplayercolors);
 }
 
 void PlayerTouchExplode(entity p1, entity p2)
@@ -1090,8 +1120,9 @@ void PutClientInServer (void)
 		if(PlayerScore_Add(self, SP_LMS_RANK, 0) > 0)
 			self.classname = "observer";
 	}
-
-    self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
+    
+    self.hg_linker = world;
+    self.buff_cdoverride = 0;
 	self.goodhits = 0;
 
 	if(g_arena)
@@ -1273,6 +1304,9 @@ void PutClientInServer (void)
 		self.lms_traveled_distance = 0;
 		self.speedrunning = FALSE;
 
+        self.revrow = 0;
+        self.jb_fragrow = 0;
+
 		race_PostSpawn(spot);
 
 		if(cvar("spawn_debug"))
@@ -1307,10 +1341,21 @@ void PutClientInServer (void)
 			activator = world;
 		self = oldself;
 		
-		freezetag_PlayerSpawn();
+        Freeze_Hook_PlayerSpawns();
 		JB_PlayerSpawn();
-		
-		Boobs_Attach();
+        
+        if(g_handgrenades) {
+            if(self.wasingame)
+                HG_PlayerSpawn();
+            else
+                HG_PlayerJoin();
+        }
+        
+        Boobs_Attach();
+        self.wasingame = TRUE;
+        self.buffs = 0;
+        self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
+        self.lastdamage = 0;
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1329,14 +1374,21 @@ void PutClientInServer (void)
 		self.shownames.customizeentityforclient = shownames_customize;
 		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
 	}
-	
-	if(g_handgrenades)
-		HG_PlayerSpawn();
-	
+    
 	if(self.fire_burner) {
 		remove(self.fire_burner);
 		self.fire_burner = world;
 	}
+    
+    self.jb_specteam = 0;
+    
+    if(self.jb_jailspec_proxy) {
+        JB_JailSpec_Proxy_CopyFields(self, self.jb_jailspec_proxy);
+        remove(self.jb_jailspec_proxy);
+        self.jb_jailspec_proxy = world;
+    }
+    
+    self.justconnected = FALSE;
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1358,6 +1410,11 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
+    WriteByte(MSG_ENTITY, g_handgrenades? (g_handgrenades_oldhitboxes? 2 : 1) : 0);
+    if(g_handgrenades)
+        WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
+    WriteByte(MSG_ENTITY, g_freeze);
+    WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
 	return TRUE;
 }
 
@@ -1642,7 +1699,9 @@ void ClientConnect (void)
 		print("Warning: ClientConnect, but already connected!\n");
 		return;
 	}
-
+    
+    self.justconnected = TRUE;
+    
 	if(Ban_MaybeEnforceBan(self))
 		return;
 
@@ -1818,7 +1877,6 @@ void ClientConnect (void)
 	}
 	
 	self.g_minstagib_stat = g_minstagib;
-	SendSpeedRecord(self);
 	IP2C_SetCountry(self);
 	
 	if(self.scorekeeper)
@@ -1833,7 +1891,16 @@ void ClientConnect (void)
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
 	SendServerInfo(self);
 	
-	totalclients++;
+    self.hg_type_picked_nextround = -1;
+    self.hg_optout_nextround = -1;
+
+    totalclients++;
+    if(clienttype(self) == CLIENTTYPE_REAL) {
+        realclients++;
+        
+        if(realclients == 1 && time > game_starttime && !cvar("g_warmup"))
+            ReadyRestart();
+    }
 }
 
 /*
@@ -1863,7 +1930,10 @@ void ClientDisconnect (void)
 	}
 
 	bot_clientdisconnect();
-
+    
+    if(self.buff_model)
+        remove(self.buff_model);
+    
 	if(self.entcs)
 		detach_entcs();
 
@@ -1873,16 +1943,14 @@ void ClientDisconnect (void)
 	bprint ("^4 disconnected\n");
 
 	SoundEntity_Detach(self);
-
-	frag_attacker = world;
-
+    
 	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
-	freezetag_RemovePlayer();
+    Freeze_Hook_PlayerQuits();
     HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
-	prec_player_die(self);
+	prec_player_die(self, self);
 	Portal_ClearAll(self);
 	Boobs_Clear();
 
@@ -1939,11 +2007,21 @@ void ClientDisconnect (void)
 	self.playerid = 0;
 	ReadyCount();
 
-	remove(self.shownames);
+    if(self.shownames)
+        remove(self.shownames);
 
-	// free cvars
-	GetCvars(-1);
-	totalclients--;
+    if(self.specdelay_ent)
+        remove(self.specdelay_ent);
+    
+    if(self.jb_jailspec_proxy)
+        remove(self.jb_jailspec_proxy);
+    
+    // free cvars
+    GetCvars(-1);
+
+    totalclients--;
+    if(clienttype(self) == CLIENTTYPE_REAL)
+        realclients--;
 }
 
 .float BUTTON_CHAT;
@@ -2227,7 +2305,7 @@ void player_powerups (void)
 		self.spawnshieldtime = max(self.spawnshieldtime, time + cvar("g_midair_shieldtime"));
 
 	if (time >= game_starttime)
-	if (time < self.spawnshieldtime)
+	if (time < self.spawnshieldtime || self.hg_shield)
 		self.effects = self.effects | (EF_ADDITIVE | EF_FULLBRIGHT);
 }
 
@@ -2278,49 +2356,59 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 
 void player_regen (void)
 {
-	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod;
+	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
 	
 	if(g_vip) if(ISVIP(self))
 		return;
 	
-	maxh = cvar("g_balance_health_rotstable");
-	maxa = cvar("g_balance_armor_rotstable");
-	maxf = cvar("g_balance_fuel_rotstable");
-	minh = cvar("g_balance_health_regenstable");
-	mina = cvar("g_balance_armor_regenstable");
-	minf = cvar("g_balance_fuel_regenstable");
-	limith = cvar("g_balance_health_limit");
-	limita = cvar("g_balance_armor_limit");
-	limitf = cvar("g_balance_fuel_limit");
+	maxh = g_balance_health_rotstable;
+	maxa = g_balance_armor_rotstable;
+	maxf = g_balance_fuel_rotstable;
+	minh = g_balance_health_regenstable;
+	mina = g_balance_armor_regenstable;
+	minf = g_balance_fuel_regenstable;
+	limith = g_balance_health_limit;
+	limita = g_balance_armor_limit;
+	limitf = g_balance_fuel_limit;
+    aregen = cvar("g_balance_armor_regen");
+    hregen = cvar("g_balance_health_regen");
+    
+    if(!aregen)
+        mina = 0;
+    if(!hregen)
+        minh = 0;
+    
+    max_mod = regen_mod = rot_mod = limit_mod = 1;
 
-	max_mod = regen_mod = rot_mod = limit_mod = 1;
-
-	if (self.runes & RUNE_REGEN)
-	{
-		if (self.runes & CURSE_VENOM) // do we have both rune/curse?
-		{
-			regen_mod = cvar("g_balance_rune_regen_combo_regenrate");
-			max_mod = cvar("g_balance_rune_regen_combo_hpmod");
-			limit_mod = cvar("g_balance_rune_regen_combo_limitmod");
-		}
-		else
-		{
-			regen_mod = cvar("g_balance_rune_regen_regenrate");
-			max_mod = cvar("g_balance_rune_regen_hpmod");
-			limit_mod = cvar("g_balance_rune_regen_limitmod");
-		}
-	}
-	else if (self.runes & CURSE_VENOM)
-	{
-		max_mod = cvar("g_balance_curse_venom_hpmod");
-		if (self.runes & RUNE_REGEN) // do we have both rune/curse?
-			rot_mod = cvar("g_balance_rune_regen_combo_rotrate");
-		else
-			rot_mod = cvar("g_balance_curse_venom_rotrate");
-		limit_mod = cvar("g_balance_curse_venom_limitmod");
-		//if (!self.runes & RUNE_REGEN)
-		//	rot_mod = cvar("g_balance_curse_venom_rotrate");
-	}
+    if(g_runematch) {
+        if (self.runes & RUNE_REGEN)
+        {
+            if (self.runes & CURSE_VENOM) // do we have both rune/curse?
+            {
+                regen_mod = cvar("g_balance_rune_regen_combo_regenrate");
+                max_mod = cvar("g_balance_rune_regen_combo_hpmod");
+                limit_mod = cvar("g_balance_rune_regen_combo_limitmod");
+            }
+            else
+            {
+                regen_mod = cvar("g_balance_rune_regen_regenrate");
+                max_mod = cvar("g_balance_rune_regen_hpmod");
+                limit_mod = cvar("g_balance_rune_regen_limitmod");
+            }
+        }
+        else if (self.runes & CURSE_VENOM)
+        {
+            max_mod = cvar("g_balance_curse_venom_hpmod");
+            if (self.runes & RUNE_REGEN) // do we have both rune/curse?
+                rot_mod = cvar("g_balance_rune_regen_combo_rotrate");
+            else
+                rot_mod = cvar("g_balance_curse_venom_rotrate");
+            limit_mod = cvar("g_balance_curse_venom_limitmod");
+            //if (!self.runes & RUNE_REGEN)
+            //	rot_mod = cvar("g_balance_curse_venom_rotrate");
+        }
+    }
+    
 	maxh = maxh * max_mod;
 	//maxa = maxa * max_mod;
 	//maxf = maxf * max_mod;
@@ -2331,13 +2419,38 @@ void player_regen (void)
 	limita = limita * limit_mod;
 	//limitf = limitf * limit_mod;
 
+    if(BUFFS_PRESENT(self, BUFF_GUARD)) {
+        float ghealth, garmor, ghregen, garegen, gpower;
+        
+        gpower  = Buffs_BuffPower(self, BUFF_GUARD);
+        ghealth = minh   + (cvar("g_buffs_guard_health")       - minh)   * gpower;
+        garmor  = mina   + (cvar("g_buffs_guard_armor")        - mina)   * gpower;
+        ghregen = hregen + (cvar("g_buffs_guard_health_regen") - hregen) * gpower;
+        garegen = aregen + (cvar("g_buffs_guard_armor_regen")  - aregen) * gpower;
+        
+        mina = max(mina, garmor);
+        maxa = max(mina, maxa);
+        minh = max(maxh, ghealth);
+        maxh = max(minh, maxh);
+        
+        hregen = max(ghregen, hregen);
+        aregen = max(garegen, aregen);
+    }
+    
+    if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
+        float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
+        mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
+        maxa = max(mina, maxa);
+        aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
+    }
+
 	if(g_lms)
 		rot_mod = 0;
 
 	if (!g_minstagib && (!g_lms || cvar("g_lms_regenerate")))
 	{
-		self.armorvalue = CalcRotRegen(self.armorvalue, mina, cvar("g_balance_armor_regen"), cvar("g_balance_armor_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxa, cvar("g_balance_armor_rot"), cvar("g_balance_armor_rotlinear"), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
-		self.health = CalcRotRegen(self.health, minh, cvar("g_balance_health_regen"), cvar("g_balance_health_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxh, cvar("g_balance_health_rot"), cvar("g_balance_health_rotlinear"), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
+		self.armorvalue = CalcRotRegen(self.armorvalue, mina, aregen, cvar("g_balance_armor_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxa, cvar("g_balance_armor_rot"), cvar("g_balance_armor_rotlinear"), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
+		self.health = CalcRotRegen(self.health, minh, hregen, cvar("g_balance_health_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxh, cvar("g_balance_health_rot"), cvar("g_balance_health_rotlinear"), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
 
 		// if player rotted to death...  die!
 		if(self.health < 1)
@@ -2408,6 +2521,64 @@ void GetPressedKeys(void) {
 spectate mode routines
 ======================
 */
+
+void EnterSpectatorMode() {
+    if(self.flagcarried)
+        DropFlag(self.flagcarried, world, world);
+    if(self.ballcarried)
+        DropBall(self.ballcarried, self.origin, self.velocity);
+    kh_Key_DropAll(self, TRUE);
+    prec_player_die(self, self);
+    inf_player_leave(self);
+    WaypointSprite_PlayerDead();
+    self.classname = "observer";
+    if(blockSpectators)
+        sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
+    PutClientInServer();
+}
+
+void SpectateDelay_Think() {
+    if(!self.owner || self.owner.classname != "player") {
+        self.owner.specdelay_ent = world;
+        remove(self);
+        return;
+    }
+    
+    if(self.cnt <= 0) {
+        entity o = self;
+        self = self.owner;
+        EnterSpectatorMode();
+        self = o;
+        self.owner.specdelay_ent = world;
+        remove(self);
+        return;
+    }
+    
+    bigprint_spec(self.owner, "", strcat("Spectating in ^1", ftos(self.cnt), " ^7seconds"), 1);
+    self.nextthink = time + 1;
+    self.cnt -= 1;
+}
+
+void EnterSpectatorModeDelayed(float dlay) {
+    dlay = floor(dlay);
+    
+    if(dlay <= 0) {
+        EnterSpectatorMode();
+        return;
+    }
+    
+    if(self.specdelay_ent)
+        return;
+    
+    entity e = spawn();
+    e.think = SpectateDelay_Think;
+    e.nextthink = time;
+    e.owner = self;
+    e.cnt = dlay;
+    
+    self.specdelay_ent = e;
+}
+
 void SpectateCopy(entity spectatee) {
 	self.kh_state = spectatee.kh_state;
 	self.armortype = spectatee.armortype;
@@ -2437,19 +2608,30 @@ void SpectateCopy(entity spectatee) {
 	self.dmg_inflictor = spectatee.dmg_inflictor;
 	self.angles = spectatee.v_angle;
 	self.fixangle = TRUE;
-	self.freezetag_frozen = spectatee.freezetag_frozen;
-	self.freezetag_revive_progress = spectatee.freezetag_revive_progress;
+	self.frozen = spectatee.frozen;
+	self.revprogress = spectatee.revprogress;
 	self.hg_power = spectatee.hg_power;
 	self.hg_ammo = spectatee.hg_ammo;
+    self.hg_type = spectatee.hg_type;
+    self.hg_bonus = spectatee.hg_bonus;
+    self.hg_bonustype = spectatee.hg_bonustype;
     self.hg_detonables = spectatee.hg_detonables;
     self.hg_regenstat = spectatee.hg_regenstat;
     self.hg_regenpaused = spectatee.hg_regenpaused;
+    self.hg_launchspeed = spectatee.hg_launchspeed;
+    self.hg_shield = spectatee.hg_shield;
+    self.hg_shieldpower = spectatee.hg_shieldpower;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
+    self.jb_unlock_progress = spectatee.jb_unlock_progress;
+    self.jb_message = spectatee.jb_message;
+    self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
+    self.buffstat = spectatee.buffstat;
 	setorigin(self, spectatee.origin);
-	setsize(self, spectatee.mins, spectatee.maxs);
+    // TODO: find out if this is actually needed
+    // setsize(self, spectatee.mins, spectatee.maxs);
 	SetZoomState(spectatee.zoomstate);
 }
 
@@ -2521,39 +2703,54 @@ void WriteSpectatorInfo(entity player)
     if(cvar("sv_showspecs_hidefromplayers"))
         ResetSpectatorInfo(player);
     else
-    	WriteSpectatorInfoOf(player, player, FALSE);
-	
-	local entity spec;
-	FOR_EACH_SPECOF(player, spec, 0)
-		WriteSpectatorInfoOf(spec, player, TRUE);
+        WriteSpectatorInfoOf(player, player, FALSE);
+    
+    entity spec;
+    FOR_EACH_SPECOF(player, spec, 0)
+        WriteSpectatorInfoOf(spec, player, TRUE);
 }
 
 float SpectateUpdate() {
-	if(!self.enemy)
-		return 0;
+    if(!self.enemy)
+        return 0;
 
-	if (self == self.enemy)
-		return 0;
+    if(self == self.enemy)
+        return 0;
 
-	if(self.enemy.classname != "player")
-		return 0;
+    if(self.enemy.classname != "player")
+        return 0;
+    
+    if(self.jb_specteam) if(self.enemy.team != self.jb_specteam || self.enemy.jb_isprisoned)
+        return 0;
+    
+    SpectateCopy(self.enemy);
+    return 1;
+}
 
-	SpectateCopy(self.enemy);
-	return 1;
+entity SpectateNext_Yield(entity p) {
+    if(self.jb_specteam) {
+        p = find(p, classname, "player");
+        while(p && p.team != self.jb_specteam || p.jb_isprisoned)
+            p = find(p, classname, "player");
+        return p;
+    } else
+        return find(p, classname, "player");
 }
 
 float SpectateNext() {
-	local entity oldenemy = self.enemy;
-	
-	UnmarkAway(self);
-	
-	other = find(self.enemy, classname, "player");
-	if (!other) {
-		other = find(other, classname, "player");
-	}
-	if (other) {
-		self.enemy = other;
-	}
+    entity oldenemy = self.enemy;
+    
+    UnmarkAway(self);
+    
+    other = SpectateNext_Yield(self.enemy);
+    
+    if(!other)
+        other = SpectateNext_Yield(world);
+
+    if(other) {
+        self.enemy = other;
+    }
+    
 	if(self.enemy.classname == "player") {
 		msg_entity = self;
 		WriteByte(MSG_ONE, SVC_SETVIEW);
@@ -2561,7 +2758,7 @@ float SpectateNext() {
 		
 		if(g_jailbreak)
 		if(jb_roundover)
-			JB_SetCamera(self, jb_activecamera, 15);
+			JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
 		
 	 	//stuffcmd(self, "set viewsize $tmpviewsize \n");
 		self.movetype = MOVETYPE_NONE;
@@ -2604,8 +2801,17 @@ void ShowRespawnCountdown()
 
 void LeaveSpectatorMode()
 {
+    if(self.jb_specteam) {
+        self.classname = "player";
+        PutClientInServer();
+        return;
+    }
+    
 	if(isJoinAllowed()) {
-		if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
+        if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
+            if(HG_ShowMenu(FALSE))
+                return;
+            
 			self.classname = "player";
 			if(cvar("g_campaign") || cvar("g_balance_teams") || cvar("g_balance_teams_force"))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -2618,7 +2824,7 @@ void LeaveSpectatorMode()
 				centerprint(self,""); // clear MOTD
 			return;
 		} else {
-			stuffcmd(self,"menu_showteamselect\n");
+			stuffcmd(self, "menu_showteamselect\n");
 			return;
 		}
 	}
@@ -2709,8 +2915,16 @@ float vercmp(string v1, string v2)
 
 void ObserverThink()
 {
-	if (self.flags & FL_JUMPRELEASED) {
-		if (self.BUTTON_JUMP && !self.version_mismatch) {
+    if(self.jb_specteam) {
+        if(SpectateNext()) {
+            self.classname = "spectator";
+            WriteSpectatorInfo(self.enemy);
+        } else {
+            self.flags &~= FL_SPAWNING;
+            LeaveSpectatorMode();
+        }
+	} else if(self.flags & FL_JUMPRELEASED) {
+		if(self.BUTTON_JUMP && !self.version_mismatch) {
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
@@ -2721,7 +2935,7 @@ void ObserverThink()
 			}
 		}
 	} else {
-		if (!(self.BUTTON_ATCK || self.BUTTON_JUMP)) {
+		if(!(self.BUTTON_ATCK || self.BUTTON_JUMP)) {
 			self.flags |= FL_JUMPRELEASED;
 			if(self.flags & FL_SPAWNING)
 			{
@@ -2736,6 +2950,11 @@ void ObserverThink()
 
 void SpectatorThink()
 {
+    if(self.jb_specteam && roundstate != ROUNDSTATE_GAME) {
+        LeaveSpectatorMode();
+        return;
+    }
+    
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch) {
 			self.flags &~= FL_JUMPRELEASED;
@@ -2745,17 +2964,23 @@ void SpectatorThink()
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
 			} else {
-				self.classname = "observer";
+				self.classname = (self.jb_specteam? "player" : "observer");
 				PutClientInServer();
 			}
 			WriteSpectatorInfo(self.enemy);
-		} else if (self.BUTTON_ATCK2) {
+		} else if(self.BUTTON_ATCK2 && !self.jb_specteam) {
+            self.BUTTON_ATCK2 = FALSE;
 			self.flags &~= FL_JUMPRELEASED;
 			self.classname = "observer";
 			PutClientInServer();
 		} else {
-			if(!SpectateUpdate())
-				PutObserverInServer();
+			if(!SpectateUpdate()) {
+                if(self.jb_specteam) {
+                    if(!SpectateNext())
+                        LeaveSpectatorMode();
+                } else
+                    PutObserverInServer();
+            }
 		}
 	} else {
 		if (!(self.BUTTON_ATCK || self.BUTTON_ATCK2)) {
@@ -2784,19 +3009,39 @@ Called every frame for each client before the physics are run
 void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
+.float namecheck;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
 	self.stat_game_starttime = game_starttime;
-	self.stat_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
-	self.stat_leadlimit = cvar("leadlimit");
-
+	self.stat_allow_oldnexbeam = g_allow_oldnexbeam;
+	self.stat_leadlimit = leadlimit;
+    
+    float isplayer, isspec, isobs;
+    
+    if(self.classname == "player")
+        isplayer = TRUE;
+    else if(self.classname == "spectator")
+        isspec = TRUE;
+    else if(self.classname == "observer")
+        isobs = TRUE;
+    
+    if(self.jb_specteam && isplayer) {
+        JB_JailSpec_CreateProxy();
+        PutObserverInServer();
+        isplayer = FALSE;
+        isobs = TRUE;
+    }
+    
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();
 
 	zoomstate_set = 0;
-
+    
+    if(frametime)
+    if(time > self.namecheck)
 	if(self.netname_previous != self.netname)
 	{
 		if(cvar("sv_eventlog"))
@@ -2804,6 +3049,7 @@ void PlayerPreThink (void)
 		if(self.netname_previous)
 			strunzone(self.netname_previous);
 		self.netname_previous = strzone(self.netname);
+        self.namecheck = time + 0.5;
 	}
 
 	// version nagging
@@ -2852,21 +3098,22 @@ void PlayerPreThink (void)
 		return;
 #endif
 
-	freezetag_PlayerPreThink();
-	domination_PlayerPreThink();
-	vip_PlayerPreThink();
-	JB_PlayerPreThink();
-
-	if(self.classname == "player") {
+    Buffs_ClientFrame();
+    Term_Hook_PlayerPreThink();
+    
+	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
-
-		CheckRules_Player();
+        
+        Freeze_Hook_PlayerPreThink();
+        JB_PlayerPreThink();
+        domination_PlayerPreThink();
+        vip_PlayerPreThink();
+        CheckRules_Player();
 
 //		PrintWelcomeMessage(self);
 
-		if (intermission_running)
-		{
+		if(intermission_running) {
 			IntermissionThink ();	// otherwise a button could be missed between
 			return;					// the think tics
 		}
@@ -2880,8 +3127,10 @@ void PlayerPreThink (void)
 
 		Nixnex_GiveCurrentWeapon();
 
-		if(frametime > 0) // don't do this in cl_movement frames, just in server ticks
+		if(frametime) { // don't do this in cl_movement frames, just in server ticks
 			UpdateSelectedPlayer();
+			player_powerups();
+        }
 
 		//don't allow the player to turn around while game is paused!
 		if(timeoutStatus == 2) {
@@ -2889,10 +3138,7 @@ void PlayerPreThink (void)
 			self.angles = self.lastV_angle;
 			self.fixangle = TRUE;
 		}
-
-		if(frametime)
-			player_powerups();
-
+        
 		HG_Frame();
 
 		if (self.deadflag != DEAD_NO)
@@ -2914,7 +3160,7 @@ void PlayerPreThink (void)
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || cvar("g_forced_respawn"));
 				
-				if (jb_roundover) {
+				if (jb_roundover || (g_vip && ISVIP(self))) {
 					// lol no respawn for ya
 				} else if (self.deadflag == DEAD_DYING)
 				{
@@ -2948,7 +3194,7 @@ void PlayerPreThink (void)
 
 		if(g_touchexplode)
 		if(time > self.touchexplode_time)
-		if(self.classname == "player")
+		if(isplayer)
 		if(self.deadflag == DEAD_NO)
 		if not(IS_INDEPENDENT_PLAYER(self))
 		FOR_EACH_PLAYER(other) if(self != other)
@@ -2964,7 +3210,8 @@ void PlayerPreThink (void)
 			}
 		}
 
-		if(g_lms && !self.deadflag && cvar("g_lms_campcheck_interval"))
+		if(g_lms && !self.deadflag)
+        if(cvar("g_lms_campcheck_interval"))
 		{
 			vector dist;
 
@@ -3059,24 +3306,32 @@ void PlayerPreThink (void)
 		self.dmg_team = max(0, self.dmg_team - cvar("g_teamdamage_resetspeed") * frametime);
 
 		//self.angles_y=self.v_angle_y + 90;   // temp
-	} else if(gameover) {
-		if (intermission_running)
-			IntermissionThink ();	// otherwise a button could be missed between
-		return;
-	} else if(self.classname == "observer") {
-		ObserverThink();
-	} else if(self.classname == "spectator") {
-		SpectatorThink();
-	}
+	} else {
+        if(self.solid) {
+            bprint("BUG: spectator/observer was solid\n");
+            localcmd("prvm_edict server ", ftos(num_for_edict(self)), "\n");
+            self.solid = SOLID_NOT;
+        }
+        
+        if(gameover) {
+            if(intermission_running)
+                IntermissionThink ();	// otherwise a button could be missed between
+            return;
+        } else if(self.classname == "observer") {
+            ObserverThink();
+        } else if(self.classname == "spectator") {
+            SpectatorThink();
+        }
+    }
 
 	if(!zoomstate_set)
 		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX));
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;
-	if(self.classname == "spectator")
+	if(isspec)
 		self.spectatee_status = num_for_edict(self.enemy);
-	else if(self.classname == "observer")
+	else if(isobs)
 		self.spectatee_status = num_for_edict(self);
 	else
 		self.spectatee_status = 0;
@@ -3109,8 +3364,9 @@ void PlayerPreThink (void)
 		self.taunt_soundtime = 0;
 		PlayerSound(playersound_taunt, CHAN_VOICE, VOICETYPE_AUTOTAUNT);
 	}
-
-	target_voicescript_next(self);
+    
+    if(isplayer)
+        target_voicescript_next(self);
 }
 
 // on dragger:

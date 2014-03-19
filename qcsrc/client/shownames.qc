@@ -4,6 +4,9 @@
 // self.armorvalue
 // self.sameteam = player is on same team as local client
 //
+
+.float health_v;
+
 void Draw_ShowNames()
 {
     if(!autocvar_hud_shownames)
@@ -11,14 +14,16 @@ void Draw_ShowNames()
 
     local float oldfont;
     oldfont = drawfont;
-
+    
+    self.iorigin = self.iorigin + (self.origin - self.iorigin) * frametime * 15;
+    
     if(self.sameteam || (!self.sameteam && !rm_shownames_teamonly))
     {
-        InterpolateOrigin_Do();
+        //InterpolateOrigin_Do();
 
         if(!self.sameteam)
         {
-            traceline(self.origin, view_origin, 1, self);
+            traceline(self.iorigin, view_origin, 1, self);
             if(trace_endpos != view_origin) // fade out
             {
                 self.alpha = max(0, self.alpha - 4 * frametime);
@@ -42,7 +47,7 @@ void Draw_ShowNames()
         // otherwise, increase alpha until 1
 
         float dist;
-        dist = vlen(self.origin - view_origin);
+        dist = vlen(self.iorigin - view_origin);
 
         float a;
         a = autocvar_hud_shownames_alpha;
@@ -62,7 +67,7 @@ void Draw_ShowNames()
 
         // draw the sprite image
         vector o;
-        o = project_3d_to_2d(self.origin);
+        o = project_3d_to_2d(self.iorigin);
 
         if not(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight)
         {
@@ -121,30 +126,55 @@ void Draw_ShowNames()
             namepos = myPos + eX * 2 * iconsize_y + eY * 0.5 * resize * (autocvar_hud_shownames_height - autocvar_hud_shownames_fontsize);
             namesize = mySize_x - 2 * iconsize_y;
 
-            string s;
+            string s, s2;
             s = GetPlayerName(self.the_entnum-1);
-            //if((autocvar_hud_shownames_decolorize == 1 && teamplay) || autocvar_hud_shownames_decolorize == 2)
-            if(teamplay)
-            {
-                //s = playername(s, GetPlayerColor(self.the_entnum-1));
+            vector textsz = '1 1 0' * autocvar_hud_shownames_fontsize * resize;
+            float hsz = 2;
+            
+            if(teamplay) {
                 s = strdecolorize(s);
-				s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_nocolors_svn);
-			}
-			else s = textShortenToWidth_svn(s, namesize, '1 1 0' * autocvar_hud_shownames_fontsize * resize, stringwidth_colors_svn);
+                s = textShortenToWidth_svn(s, namesize, textsz, stringwidth_nocolors_svn);
+            } else s = textShortenToWidth_svn(s, namesize, textsz, stringwidth_colors_svn);
 
             float width;
-            width = stringwidth_svn(s, TRUE, '1 1 0' * autocvar_hud_shownames_fontsize * resize);
+            width = stringwidth_svn(s, TRUE, textsz);
 
             if (width != namesize)
                 namepos_x += (namesize - width) / 2;
                 
             drawfont = sbar_bigfont_real;
+            float nade;
+            if(g_handgrenades)
+                nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
+                
+            if(self.sameteam) {
+                
+                float mx = 200;
+                vector dmg = healtharmor_maxdamage(self.healthvalue, self.armorvalue, armorblockpercent);
+                dmg_x = max(0, ceil(dmg_x));
+                
+                if(dmg_x) {
+                    self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
+                    drawfont = sbar_bigfont;
+                    s2 = ftos(dmg_x); // strcat(ftos(self.healthvalue), " / ", ftos(self.armorvalue));
+                    drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, healthcolor(dmg_x), a * 0.7, DRAWFLAG_NORMAL);
+                    
+                    drawfont = sbar_font;
+                }
+            }            
+            
+            if(nade) {
+                drawpic(namepos - '0.5 0 0' * textsz_x - '2 0 0', HG_TypeToIcon(nade, FALSE), textsz, HG_TypeToColor(nade), a * 0.7, DRAWFLAG_NORMAL);
+                namepos = '0.5 0 0' * textsz_x + '2 0 0' + namepos;
+            }
             
             if(teamplay)
-				drawstring(namepos, s, '1 1 0' * autocvar_hud_shownames_fontsize * resize, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
-			else
-				drawcolorcodedstring(namepos, s, '1 1 0' * autocvar_hud_shownames_fontsize * resize, a, DRAWFLAG_NORMAL);
-				
+                drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+            else
+                drawcolorcodedstring(namepos, s, textsz, a, DRAWFLAG_NORMAL);
+            
+            drawresetcliparea();
+            
             drawfont = oldfont;
             //drawfontscale = '1 1 0';
         }

@@ -16,6 +16,8 @@ csqc_builtins.qc
 ../common/ip2c.qh
 ../common/interpolation.qh
 ../common/dprm.qh
+../common/handgrenades.qh
+../common/buffs.qh
 dprm.qh
 
 ../common/mapinfo.qh
@@ -25,6 +27,7 @@ waypointsprites.qh
 movetypes.qh
 prandom.qh
 bgmscript.qh
+visualdamage.qh
 
 main.qh
 hudskin.qh
@@ -50,6 +53,7 @@ casings.qc
 effects.qc
 wall.qc
 modeleffects.qc
+visualdamage.qc
 
 ../common/gametype.qc
 
@@ -74,3 +78,5 @@ dprm.qc
 ../common/items.qc
 ../common/ip2c.qc
 ../common/interpolation.qc
+../common/handgrenades.qc
+../common/buffs.qc

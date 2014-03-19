@@ -256,7 +256,7 @@ void InitGameplayMode()
 		fraglimit_override = cvar("g_freezetag_point_limit");
 		leadlimit_override = cvar("g_freezetag_point_leadlimit");
 		timelimit_override = cvar("g_freezetag_timelimit");
-		freezetag_Initialize();
+		FreezeTag_Initialize();
 	}
 
 	if(g_jailbreak)
@@ -818,7 +818,7 @@ void GetTeamCounts(entity ignore)
 	// FIXME: also find and memorize the lowest-scoring bot on each team (in case players must be shuffled around)
 	// also remember the lowest-scoring player
 
-	FOR_EACH_PLAYER(head)
+	FOR_EACH_CLIENT(head) if(head.iscreature || head.jb_specteam)
 	{
 		if(head != ignore)// && head.netname != "")
 		{

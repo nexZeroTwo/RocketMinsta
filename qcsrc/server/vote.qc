@@ -170,7 +170,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, strcat ("^1", gametype_Name_to_LongName (s), " is not allowed on the selected map\n"));
 				return FALSE;
 			}
-			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("sv_vote_gametype_overplayed_allowcall"))
+			else if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED) if(!cvar("sv_vote_gametype_overplayed_allowcall")) if(!e.vote_master)
 			{
 				// Gametype overplayed?
 				sprint (e, "^1This gametype is currently overplayed.");
@@ -179,7 +179,10 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint (e, "\n");
 				return FALSE;
 			}
-
+            
+            if(e.vote_master)
+                hack_forcenextmap = TRUE;
+            
 			RemapVote_vote = strzone(strcat("sv_cmd ", vote));
 			RemapVote_display = strzone(strcat("^1", vote, " ^7(^5", gametype_Name_to_LongName(s), "^7)"));
 			
@@ -365,8 +368,9 @@ float RemapVote(string vote, string cmd, entity e)
 
 			// Gametype overplayed?
 			// TODO: Get rid of this, if the gametype is overplayed a gametype voting screen should appear
+            if(!e.vote_master)
 			if(!cvar("sv_vote_gametype_overplayed_allowcall"))
-			if (GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
+			if(GameTypeVote_AvailabilityStatus (s) == GTV_OVERPLAYED)
 			{
 				sprint (e, "^1This gametype is currently overplayed.");
 				if (s == "ft")
@@ -470,7 +474,7 @@ float GameCommand_Vote(string s, entity e) {
 			}
 		} else if(argv(1) == "call") {
 			if(!e || cvar("sv_vote_call")) {
-				if(cvar("sv_vote_nospectators") && e && e.classname != "player") {
+				if(cvar("sv_vote_nospectators") && e && e.classname != "player" && !e.vote_master) {
 					print_to(e, "^1Error: Only players can call a vote."); // TODO invent a cvar name for allowing votes by spectators during warmup anyway
 				}
 				else if(timeoutStatus) { //don't allow a vote call during a timeout
@@ -485,8 +489,7 @@ float GameCommand_Vote(string s, entity e) {
 						print_to(e, "^1Your vote is empty. See 'vhelp' for more info.");
 					} else if(vote == "$*") {	// happens on "vcall" without arguments
 						stuffcmd(e, "menu_cmd directmenu VcallMenu\n");
-					} else if(e
-						&& time < e.vote_next) {
+					} else if(e && time < e.vote_next && !e.vote_master) {
 							print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote."));
 					} else if(VoteCheckNasty(vote)) {
 						print_to(e, "Syntax error in command. See 'vhelp' for more info.");
@@ -720,7 +723,7 @@ string ValidateMap(string m, entity e)
 		print_to(e, "This map is not available on this server.");
 		return string_null;
 	}
-	if(!cvar("sv_vote_override_mostrecent"))
+	if(!cvar("sv_vote_override_mostrecent") && !e.vote_master)
 		if(Map_IsRecent(m))
 		{
 			print_to(e, "This server does not allow for recent maps to be played again. Please be patient for some rounds.");
@@ -845,11 +848,13 @@ void VoteAccept() {
 void VoteReject() {
 	bprint("\{1}^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 was rejected\n");
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteTimeout() {
 	bprint("\{1}^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 timed out\n");
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteStop(entity stopper) {
@@ -863,6 +868,7 @@ void VoteStop(entity stopper) {
 		}
 	}
 	VoteReset();
+    hack_forcenextmap = FALSE;
 }
 
 void VoteSpam(float yescount, float nocount, float abstaincount, float notvoters, float mincount, string result)

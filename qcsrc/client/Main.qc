@@ -106,6 +106,9 @@ void CSQC_Init(void)
 #endif
 	registercvar("sbar_usecsqc", "1");
 	registercvar("sbar_columns", "default", CVAR_SAVE);
+    registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
+    registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
 	gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -136,7 +139,8 @@ void CSQC_Init(void)
 	get_mi_min_max_texcoords(1); // try the CLEVER way first
 	minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
 	shortmapname = mi_shortname;
-
+    whatsgoingon = ISFAGGOTMAP(shortmapname);
+    
 	if(precache_pic(minimapname) == "")
 	{
 		// but maybe we have a non-clever minimap
@@ -170,6 +174,8 @@ void CSQC_Init(void)
 	}
 	
 	IP2C_Init();
+    registercvar("_g_handgrenades_select_available", "0", 0);
+    localcmd("cl_particles_reloadeffects\n");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -1319,6 +1325,43 @@ void Ent_RemovePlayerScore()
 	}
 }
 
+.entity bestscore_next;
+void UpdateBestScore(float teem, float sfield) {
+    float i, best, scr, better;
+    entity bestscore_head, bestscore_tail, c;
+    
+    for(c = players.sort_next; c; c = c.sort_next) {
+        if(GetPlayerColor(c.sv_entnum) != teem)
+            continue;
+        
+        c.(hasbestscore[sfield]) = FALSE;
+        scr = c.(scores[sfield]);
+        
+        if(!bestscore_head)
+            better = TRUE;
+        if(scores_flags[sfield] & SFL_LOWER_IS_BETTER)
+            better = scr < best;
+        else
+            better = scr > best;
+        
+        if(better) {
+            c.bestscore_next = world;
+            best = scr;
+            bestscore_head = bestscore_tail = c;
+        } else if(scr == best) {
+            c.bestscore_next = world;
+            if(bestscore_tail)
+                bestscore_tail.bestscore_next = c;
+            else
+                bestscore_head = c;
+            bestscore_tail = c;
+        }
+    }
+    
+    for(c = bestscore_head; c; c = c.bestscore_next)
+        c.(hasbestscore[sfield]) = TRUE;
+}
+
 void Ent_ReadPlayerScore()
 {
 	float i, n;
@@ -1373,22 +1416,23 @@ void Ent_ReadPlayerScore()
 		{
 			if(i == SP_JOINTIME)
 			{
-				local float srvtime;
-				srvtime = stof(ReadString());
+				float srvtime;
+				srvtime = ReadInt24_t() * 0.01;
 				
-				local float offs;
+				float offs;
 				offs = srvtime - time;
 				
-				o.(scores[i]) = stof(ReadString()) - offs;
-			}
-			else if(lf & p)
-			{
-				o.(scores[i]) = ReadInt24_t();
+				o.(scores[i]) = ReadInt24_t() * 0.01 - offs;
 			}
 			else
-			{
-				o.(scores[i]) = ReadChar();
-			}
+            {
+                if(lf & p)
+                    o.(scores[i]) = ReadInt24_t();
+                else
+                    o.(scores[i]) = ReadChar();
+                
+                UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            }
 		}
 	}
 
@@ -1694,9 +1738,9 @@ void Fog_Force()
 {
 	// TODO somehow thwart prvm_globalset client ...
 
-	if(forcefog != "") {
+	if(forcefog != "" || whatsgoingon) {
 		
-		if(forcefog == "nyan") {
+		if(forcefog == "nyan" || whatsgoingon) {
 			float a = 0.5 + 0.5 * sin(0.5 * time);
 			vector hsl;
 			hsl_x = a * 2 * PI;
@@ -1707,6 +1751,9 @@ void Fog_Force()
 			if(cvar("r_glsl")) {
 				cvar_clientsettemp("r_glsl_saturation", ftos(3 * cos(time * 0.25)));
 			}
+            
+            cvar_clientsettemp("volume", ftos(max(0.1, cvar("volume"))));
+            cvar_clientsettemp("bgmvolume", ftos(max(0.5, cvar("bgmvolume"))));
 		}
 		
 		else ForceFogString(forcefog);
@@ -1754,6 +1801,10 @@ void Ent_Init()
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
+	g_handgrenades = ReadByte();
+    cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
+    g_freeze = ReadByte();
+    sv_scoreboard_heal_column = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -1995,18 +2046,6 @@ void Net_ReadClearBigPrint()
     //bigprint("", "", 0);
 }
 
-void Net_ReadSpeedRecord()
-{
-	if(speedrecord_string)
-		strunzone(speedrecord_string);
-	
-	float speedrecord = ReadShort();
-	string speedrecord_name = ReadString();
-	
-	speedrecord_string = strzone(strcat("Speed award: ", speedrecord_name, "^7 (", ftos(floor(speedrecord * (0.0254 * 3.6))), " km/h)"));
-	//print("Speed record: ", speedrecord_name, "^7 (", ftos(speedrecord), ")\n");
-}
-
 void Net_ReadHudFlash(float teamcolor)
 {
 	local float a, i, t;
@@ -2063,22 +2102,25 @@ void Net_ReadVIPInfo(float teem)
 
 void Net_Camera() {
 	if(!ReadByte()) {
-		jb_camera_expiretime = -1;
+		camera_expiretime = -1;
 		return;
 	}
 	
-	jb_camera_origin_x = ReadShort();
-	jb_camera_origin_y = ReadShort();
-	jb_camera_origin_z = ReadShort();
+	camera_origin_x = ReadShort();
+	camera_origin_y = ReadShort();
+	camera_origin_z = ReadShort();
 	
-	if(time <= jb_camera_expiretime || jb_chasecam_locked)
+	if(time <= camera_expiretime || camera_drawviewmodel_locked)
 		dprint("Warning: Net_Camera while a camera is still active\n");
 	else {
-		jb_chasecam_backup = cvar("chase_active");
-		jb_chasecam_locked = true;
+		camera_drawviewmodel_backup = cvar("r_drawviewmodel");
+		camera_drawviewmodel_locked = TRUE;
 	}
 	
-	jb_camera_expiretime = time + ReadShort();
+	camera_expiretime = time + ReadShort();
+    
+    if(camera_expiretime < time)
+        camera_expiretime = -2;
 }
 
 void Net_ServerInfo() {
@@ -2087,6 +2129,14 @@ void Net_ServerInfo() {
 	sv_rm_version = strzone(ReadString());
 	sv_rm_date = strzone(ReadString());
 	sv_motd = strzone(ReadString());
+}
+
+void Net_Heal() {
+    vector o;
+    o_x = ReadCoord();
+    o_y = ReadCoord();
+    o_z = ReadCoord();
+    pointparticles(rm_particleeffectnum("RM_HEAL"), o, '0 0 0', 1);
 }
 
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
@@ -2142,9 +2192,6 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_CLEARBIGPRINT:
             Net_ReadClearBigPrint();
 			return TRUE;
-        case TE_CSQC_SPEEDRECORD:
-			Net_ReadSpeedRecord();
-			return TRUE;
 		case TE_CSQC_HUDFLASH:
 			Net_ReadHudFlash(FALSE);
 			return TRUE;
@@ -2159,6 +2206,15 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
 		case TE_CSQC_SERVERINFO:
 			Net_ServerInfo();
+			return TRUE;
+        case TE_CSQC_VISUALDAMAGE:
+            Net_VisualDamage();
+            return TRUE;
+        case TE_CSQC_HEAL:
+            Net_Heal();
+            return TRUE;
+        case TE_CSQC_BLAST:
+            Net_ReadBlast();
 			return TRUE;
 	}
 

@@ -221,15 +221,14 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 	WriteInt24_t(MSG_ENTITY, sendflags);
 	WriteInt24_t(MSG_ENTITY, longflags);
 #endif
+
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
 		if(sendflags & p)
 		{
-			if(i == SP_JOINTIME) // haha
-			{
-				WriteString(MSG_ENTITY, ftos(time));
-				WriteString(MSG_ENTITY, ftos(self.scores[i]));
-			}
-			else if(longflags & p)
+			if(i == SP_JOINTIME) {
+				WriteInt24_t(MSG_ENTITY, time * 100);
+				WriteInt24_t(MSG_ENTITY, self.scores[i] * 100);
+			} else if(longflags & p)
 				WriteInt24_t(MSG_ENTITY, self.scores[i]);
 			else
 				WriteChar(MSG_ENTITY, self.scores[i]);
@@ -270,6 +269,9 @@ void Score_ClearAll()
 			continue;
 		for(i = 0; i < MAX_SCORE; ++i)
 		{
+            if(i == SP_CN_CHAR0 || i == SP_CN_CHAR1 || i == SP_NADEMODE)
+                continue;
+            
 			if(sk.(scores[i]) != 0)
 				if(scores_label[i] != "")
 					sk.SendFlags |= pow(2, i);

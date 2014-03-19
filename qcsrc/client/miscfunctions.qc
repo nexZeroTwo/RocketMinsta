@@ -466,15 +466,32 @@ void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha
 	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
 }
 
-float approach(float v, float t, float d) {
-	if(v < t) {
-		v += d;
-		if(v > t)
-			return t;
-	} else if(v > t) {
-		v -= d;
-		if(v < t)
-			return t;
-	}
-	return v;
+vector healthcolor(float x) {
+    vector c;
+    c_z = 0;
+    
+    if(x > 200) {
+        c_x = 0;
+        c_y = 1;
+    } else if(x > 150) {
+        c_x = 0.4 - (x-150)*0.02 * 0.4;
+        c_y = 0.9 + (x-150)*0.02 * 0.1;
+    } else if(x > 100) {
+        c_x = 1 - (x-100)*0.02 * 0.6;
+        c_y = 1 - (x-100)*0.02 * 0.1;
+        c_z = 1 - (x-100)*0.02;
+    } else if(x > 50) {
+        c_x = 1;
+        c_y = 1;
+        c_z = 0.2 + (x-50)*0.02 * 0.8;  
+    } else if(x > 20) {
+        c_x = 1;
+        c_y = (x-20)*90/27/100;
+        c_z = (x-20)*90/27/100 * 0.2;
+    } else {
+        c_x = 1;
+        c_y = 0;
+    }
+    
+    return c;
 }

@@ -20,8 +20,6 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
-float redalive, bluealive, yellowalive, pinkalive;
-float totalalive;
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
 float redspawned, bluespawned, yellowspawned, pinkspawned;
 float totalspawned;
@@ -68,7 +66,9 @@ void reset_map(float dorespawn)
 			remove(self);
 		}
 	}
-
+    
+    Buffs_Randomize(world, FALSE);
+    
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
@@ -90,8 +90,21 @@ void reset_map(float dorespawn)
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
+        self.hg_clearammo = 0;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
+            if(g_freeze)
+                self.frozenrow = 0;
+            
+            if(g_handgrenades) {
+                if(self.hg_type_picked_nextround >= 0)
+                    self.hg_type_picked = self.hg_type_picked_nextround;
+                if(self.hg_optout_nextround >= 0)
+                    self.hg_optout = self.hg_optout_nextround;
+                
+                self.hg_type_picked_nextround = self.hg_optout_nextround = -1;
+            }
+            
 			if(g_arena)
 			{
 				if(self.spawned)
@@ -128,6 +141,14 @@ void reset_map(float dorespawn)
 					}
 				}
 			}
+            
+            if(g_handgrenades) if(self.classname == "player") {
+                HG_ResetState(self);
+                self.hg_nadesused = 0;
+                
+                if(self.hg_alwaysask)
+                    HG_ShowMenu(TRUE);
+            }
 		}
 	}
 
@@ -272,59 +293,6 @@ void count_spawned_players()
 	}
 }
 
-void count_alive_players()
-{
-	//bprint("count_alive_players() called\n");
-	
-	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
-	if(g_freezetag)
-	{
-		// count amount of alive players in each team
-		FOR_EACH_PLAYER(self)
-		{
-			if (self.team == COLOR_TEAM1 && !self.freezetag_frozen && self.health > 0)
-			{
-				redalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM2 && !self.freezetag_frozen && self.health > 0)
-			{
-				bluealive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM3 && !self.freezetag_frozen && self.health > 0)
-			{
-				yellowalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM4 && !self.freezetag_frozen && self.health > 0)
-			{
-				pinkalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			
-			//bprint(self.netname, " ^6is ^1DEAD^7: team = ", ftos(self.team), "; freezetag_frozen = ", ftos(self.freezetag_frozen), "\n");
-		}
-		FOR_EACH_CLIENT(self) {
-			self.redalive_stat = redalive;
-			self.bluealive_stat = bluealive;
-			self.yellowalive_stat = ((ft_teams > 2)? yellowalive : -1);
-			self.pinkalive_stat = ((ft_teams > 3)? pinkalive : -1);
-		}
-	}
-	
-	/*
-	bprint("count_alive_players():\n");
-	bprint("totalalive = ", ftos(totalalive), "\n");
-	bprint("redalive = ", ftos(redalive), "\n");
-	bprint("bluealive = ", ftos(bluealive), "\n");
-	*/
-}
-
 /**
  * This function finds out whether an arena round is over 1 player is left.
  * It determines the last player who's still alive and saves it's entity reference
@@ -334,11 +302,8 @@ void count_alive_players()
  */
 void Spawnqueue_Check()
 {
-	count_spawned_players();
-	if(g_freezetag) // we want to perform this before the return block below (CA)...
-	{
-		//count_alive_players();
-	}
+    if(!g_freeze)
+        count_spawned_players();
 	if(time < warmup + 1)
 		return;
 

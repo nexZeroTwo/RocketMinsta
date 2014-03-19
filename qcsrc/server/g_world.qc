@@ -436,6 +436,55 @@ void ViewportFlipper_Init(void) {
 	e.nextthink = VFLIPPER_NEXTTHINK;
 }
 
+.string modefilter;
+.float keepspawn;
+// fteqcc segfaults on local arrays apparently
+float modefilter_found[5];
+
+void ForceModeSpawns(void) {
+    entity s, first;
+    float i, n, idx;
+    
+    first = findchain(classname, "info_player_deathmatch");
+    for(s = first; s; s = s.chain) {
+        dprint("Processing spot ", etos(s), " at ", vtos(s.origin), ": ");
+        
+        if(s.modefilter == "") {
+            dprint("no modefilter\n");
+            continue;
+        }
+        
+        n = tokenizebyseparator(s.modefilter, " ");
+        for(i = 0; i < n; ++i) if(gametype_Name_to_ID(argv(0)) == game) {
+            dprint("supports ", gametype_ID_to_Name(game), "\n");
+            idx = Team_Index(s.team)+1;
+            modefilter_found[idx] = TRUE;
+            s.keepspawn = TRUE;
+            break;
+        }
+        
+        if(i == n)
+            dprint("doesn't support ", gametype_ID_to_Name(game), "\n");
+    }
+    
+    for(s = first; s; s = s.chain) {
+        dprint("Checking removal for spot ", etos(s), " at ", vtos(s.origin), ": ");
+        
+        idx = Team_Index(s.team)+1;
+        if(modefilter_found[idx] || s.modefilter) {
+            if not(s.keepspawn) {
+                s.think = SUB_Remove;
+                s.nextthink = time;
+                dprint("removal passed\n");
+            } else {
+                dprint("spot supports current gametype\n");
+            }
+        } else {
+            dprint("no modefilter spots for this team (", ftos(idx), ")\n");
+        }
+    }
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -470,8 +519,7 @@ void spawnfunc_worldspawn (void)
 	registercvar ("_sv_rm_lastvote", "0");
 	registercvar ("_sv_rm_lastservertime", "0");
 	cvar_set ("_sv_rm_lastvote", ftos (cvar ("_sv_rm_lastvote") - cvar ("_sv_rm_lastservertime")));
-
-	sv_speedaward_ownaccel = cvar("sv_speedaward_ownaccel");
+    
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
@@ -695,49 +743,21 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
-
-	if(g_freezetag)
-	{
-		addstat(STAT_REDALIVE, AS_INT, redalive_stat);
-		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
-		addstat(STAT_YELLOWALIVE, AS_INT, yellowalive_stat);
-		addstat(STAT_PINKALIVE, AS_INT, pinkalive_stat);
-		addstat(STAT_FROZEN, AS_INT, freezetag_frozen);
-		//addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
-		
-		if(g_soulmates)
-			addstat(STAT_SM_HASGEM, AS_INT, sm_canattach);
-	}
-
+    
     if(g_domination)
     {
         addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);
         addstat(STAT_REDPOINTS, AS_INT, redpoints_stat);
         addstat(STAT_BLUEPOINTS, AS_INT, bluepoints_stat);
+        addstat(STAT_CAPTURE_PROGRESS, AS_FLOAT, dom_captureprogress);
     }
-
-	if(g_freezetag || g_domination)
-		addstat(STAT_REVIVE_PROGRESS, AS_FLOAT, freezetag_revive_progress);
-
-	if(g_jailbreak) {
-		addstat(STAT_REDALIVE, AS_INT, redalive_stat);
-		addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
-		addstat(STAT_UNLOCK_PROGRESS, AS_FLOAT, jb_unlock_progress);
-		addstat(STAT_PRISONED, AS_INT, jb_isprisoned);
-		addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
-	}
-
+    
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
 	if(g_handgrenades)
-	{
-		addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
-		addstat(STAT_HGAMMO, AS_INT, hg_ammo);
-		addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
-		addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
-        addstat(STTA_HGDETONABLES, AS_INT, hg_detonables);
-	}
-
+        HG_Init();
+    Term_Init();
+    
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
 
@@ -787,20 +807,7 @@ void spawnfunc_worldspawn (void)
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
 
 	world_initialized = 1;
-
-	sys_frametime = (cvar("sys_ticrate") * cvar("slowmo"));
-
-	if(sv_speedaward_ownaccel)
-	{
-		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel")));
-		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel")));
-	}
-	else
-	{
-		highest_velocity = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed")));
-		highest_velocity_name = strzone(db_get(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname")));
-	}
-
+    
 	if(cvar("timelimit") < 0)
 		cvar_set("timelimit", "20");
 
@@ -834,9 +841,19 @@ void spawnfunc_worldspawn (void)
 		localcmd("\nmenu_cmd sync\n");
 	}
 	
-    sv_dps = cvar("sv_dps");
+    Freeze_Init();
+    Buffs_Init();
     
-	DPRM_Start();
+    sv_dps = cvar("sv_dps");
+    g_allow_oldnexbeam = cvar("g_allow_oldnexbeam");
+    sv_ready_restart_after_countdown = cvar("sv_ready_restart_after_countdown");
+    sv_scoreboard_heal_column = cvar("sv_scoreboard_heal_column");
+    whatsgoingon = ISFAGGOTMAP(mapname);
+    
+    InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
+    if(!g_jailbreak)
+        InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
+    DPRM_Start();
 }
 
 void spawnfunc_light (void)
@@ -1219,56 +1236,47 @@ void IntermissionThink()
 		if (time < intermission_exittime + 10 && !self.BUTTON_ATCK && !self.BUTTON_JUMP && !self.BUTTON_ATCK2 && !self.BUTTON_HOOK && !self.BUTTON_USE)
 			return;
 
+    if(nextgametype != "")
+        GameCommand(strcat("gametype ", nextgametype));
+
 	MapVote_Start();
 };
 
 /*
 ============
-FindIntermission
+FindIntermissionViewport
 
 Returns the entity to view from
 ============
 */
-/*
-entity FindIntermission()
+
+entity FindIntermissionViewport(void)
 {
-	local	entity spot;
-	local	float cyc;
-
-// look for info_intermission first
-	spot = find (world, classname, "info_intermission");
-	if (spot)
-	{	// pick a random one
-		cyc = random() * 4;
-		while (cyc > 1)
-		{
-			spot = find (spot, classname, "info_intermission");
-			if (!spot)
-				spot = find (spot, classname, "info_intermission");
-			cyc = cyc - 1;
-		}
-		return spot;
-	}
-
-// then look for the start position
-	spot = find (world, classname, "info_player_start");
-	if (spot)
-		return spot;
-
-// testinfo_player_start is only found in regioned levels
-	spot = find (world, classname, "testplayerstart");
-	if (spot)
-		return spot;
-
-// then look for the start position
-	spot = find (world, classname, "info_player_deathmatch");
-	if (spot)
-		return spot;
-
-	//objerror ("FindIntermission: no spot");
-	return world;
-};
-*/
+    entity spot;
+    
+    // see if we have any map-defined viewports and use a random one
+    RandomSelection_Init();
+    for(spot = world; (spot = nextent(spot));) {
+        if(spot.classname == "info_player_intermission" || spot.classname == "info_intermission")
+            RandomSelection_Add(spot, 0, string_null, 1, 1);
+    }
+    
+    if(RandomSelection_chosen_ent)
+        return RandomSelection_chosen_ent;
+    
+    // try to view from the jail
+    for(spot = world; (spot = find(spot, classname, "info_jailbreak_jailcamera"));)
+        RandomSelection_Add(spot, 0, string_null, 1, 1);
+    
+    if(RandomSelection_chosen_ent)
+        return RandomSelection_chosen_ent;
+    
+    // fall back to player spawn points
+    for(spot = world; (spot = find(spot, classname, "info_player_deathmatch"));)
+        RandomSelection_Add(spot, 0, string_null, 1, 1);
+    
+    return RandomSelection_chosen_ent;
+}
 
 /*
 ===============================================================================
@@ -1447,8 +1455,13 @@ void NextLevel()
 	// done in FixIntermission
 	*/
 
-	//pos = FindIntermission ();
-
+	intermission_viewport = FindIntermissionViewport();
+    
+    if(intermission_viewport) {
+        cvar_settemp("sv_cullentities_pvs", "0");
+        cvar_settemp("sv_cullentities_trace", "0");
+    }
+    
 	VoteReset();
 
 	DumpStats(TRUE);
@@ -1464,7 +1477,14 @@ void NextLevel()
 
 		if(other.winning)
 			bprint(other.netname, " ^7wins.\n");
-	}
+        
+        if(other.iscreature && intermission_viewport && intermission_exittime > time) {
+            SetCamera(other, intermission_viewport, -1);
+            other.angles = intermission_viewport.angles;
+            other.angles_z = 0;
+            other.fixangle = TRUE;
+        }
+    }
 
 	minTotalFrags = 0;
 	maxTotalFrags = 0;
@@ -1804,7 +1824,7 @@ void ShuffleMaplist()
 }
 
 float leaderfrags;
-float WinningCondition_Scores(float limit, float leadlimit)
+float WinningCondition_Scores(float limit, float llimit)
 {
 	local entity e;
 	// TODO make everything use THIS winning condition (except LMS)
@@ -1834,7 +1854,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 	
 
 	if(WinningConditionHelper_zeroisworst)
-		leadlimit = 0; // not supported in this mode
+		llimit = 0; // not supported in this mode
 
 	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball || g_prec)
 	// these modes always score in increments of 1, thus this makes sense
@@ -1874,7 +1894,7 @@ float WinningCondition_Scores(float limit, float leadlimit)
 		(
 			(limit && (WinningConditionHelper_topscore >= limit))
 			||
-			(leadlimit && (WinningConditionHelper_topscore - WinningConditionHelper_secondscore >= leadlimit))
+			(llimit && (WinningConditionHelper_topscore - WinningConditionHelper_secondscore >= llimit))
 		),
 		WinningConditionHelper_equality
 	);
@@ -1998,8 +2018,10 @@ void CheckRules_World()
 {
 	float timelimit;
 	float fraglimit;
-	float leadlimit;
-
+    
+    if(!realclients)
+        return;
+    
 	VoteThink();
 	MapVote_Think();
 
@@ -2588,10 +2610,12 @@ float MapVote_Finished(float mappos)
 	FOR_EACH_REALCLIENT(other)
 		FixClientCvars(other);
 
-
-	if(!cvar("sv_vote_gametype"))
+	if(!cvar("sv_vote_gametype") || hack_forcenextmap)
 	{
-		Map_Goto_SetStr(mapvote_maps[mappos]);
+        if(cvar_string("nextmap") != "")
+            Map_Goto_SetStr(cvar_string("nextmap"));
+        else
+            Map_Goto_SetStr(mapvote_maps[mappos]);
 		Map_Goto();
 		alreadychangedlevel = TRUE;
 		return TRUE;
@@ -2972,6 +2996,8 @@ void EndFrame()
 					else
 						play2(self, RM_SOUND_KILL);
 				}
+                else if(self.enemy.armorhitsound)
+                    play2(self, "misc/armorhit.wav");
 				else if(self.enemy.hitsound)
 					play2(self, "misc/hit.wav");
 			}
@@ -2989,6 +3015,8 @@ void EndFrame()
 					else
 						play2(self, RM_SOUND_KILL);
 				}
+                else if(self.armorhitsound)
+                    play2(self, "misc/armorhit.wav");
 				else if(self.hitsound)
 					play2(self, "misc/hit.wav");
 			}
@@ -3006,6 +3034,7 @@ void EndFrame()
 		self.typehitsound = FALSE;
 		self.killsound = FALSE;
 		self.instakillsound = FALSE;
+        self.armorhitsound = FALSE;
 		antilag_record(self, altime);
 	}
 }
@@ -3091,19 +3120,7 @@ void SV_Shutdown()
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
 		if(!sv_cheats)
-		{
-			if(sv_speedaward_ownaccel)
-			{
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed_ownaccel"), ftos(highest_velocity));
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname_ownaccel"), highest_velocity_name);
-			}
-			else
-			{
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/speed"), ftos(highest_velocity));
-				db_put(ServerProgsDB, strcat(GetMapname(), "/speedaward/netname"), highest_velocity_name);
-			}
 			db_save(ServerProgsDB, "server.db");
-		}
 		IP2C_Shutdown();
 		if(cvar("developer"))
 			db_save(TemporaryDB, "server-temp.db");

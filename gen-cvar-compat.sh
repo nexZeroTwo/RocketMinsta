@@ -38,7 +38,7 @@ EOB
 done)
 
 	if(corrections)
-		print("\n^1***\nPlease update your server configuration using the update-cvars.sh script.\nYou can find it in the RM git repository.\nNOTE: If you RM in 'singleplayer' mode, you will also have to update your config.cfg.\n^1***\n\n");
+		print("\n^1***\nPlease update your server configuration using the update-cvars.sh script.\nYou can find it in the RM git repository.\nNOTE: If you run RM in 'singleplayer' mode, you will also have to update your config.cfg.\n^1***\n\n");
 	else
 		print("Fully compatible, NICE\n");
 	

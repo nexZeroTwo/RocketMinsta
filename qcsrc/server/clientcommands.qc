@@ -222,9 +222,9 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("anonspec", "sv_anonspecs")
 		OPTAVAIL	("showspec", "sv_showspecs")
 		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
-		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
+		//OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
 		OPTAVAIL	("shownames", "sv_shownames")
-		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
+		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
@@ -424,18 +424,7 @@ void SV_ParseClientCommand(string s) {
 			}
 		}
 		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			if(self.flagcarried)
-				DropFlag(self.flagcarried, world, world);
-			if(self.ballcarried)
-				DropBall(self.ballcarried, self.origin, self.velocity);
-			kh_Key_DropAll(self, TRUE);
-			prec_player_die(self);
-			inf_player_leave(self);
-			WaypointSprite_PlayerDead();
-			self.classname = "observer";
-			if(blockSpectators)
-				sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
-			PutClientInServer();
+			EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
 		}
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
@@ -444,6 +433,9 @@ void SV_ParseClientCommand(string s) {
 		if (self.classname != "player" && !lockteams)
 		{
 			if(isJoinAllowed()) {
+                if(HG_ShowMenu(FALSE))
+                    return;
+                
 				self.classname = "player";
 				PlayerScore_Clear(self);
 				bprint ("^4", self.netname, "^4 is playing now\n");
@@ -461,13 +453,15 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 		if( !teams_matter ) {
-			sprint( self, "selecteam can only be used in teamgames\n");
+			sprint(self, "selectteam can only be used in teamgames\n");
+        } else if(self.jb_specteam) {
+            sprint(self, "selectteam can't be used while spectating in the jail\n");
 		} else if(g_inf) {
 			//don't allow players to switch their team when playing infection
 		} else if(cvar("g_campaign")) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
-			sprint( self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
+			sprint(self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
 		} else if( argv(1) == "red" ) {
 			DoTeamChange(COLOR_TEAM1);
 		} else if( argv(1) == "blue" ) {
@@ -481,7 +475,67 @@ void SV_ParseClientCommand(string s) {
 		} else {
 			sprint( self, strcat( "selectteam none/red/blue/yellow/pink/auto - \"", argv(1), "\" not recognised\n" ) );
 		}
-	} else if(cmd == "ready") {
+	} else if(cmd == "picknade") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        if(!g_handgrenades)
+            return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        float term = self.term_authed;
+        float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
+        
+        float t = HG_NameToType(argv(1));
+        float i;
+        float argc = tokenize_console(cvar_string("g_handgrenades_type_selectable"));
+        
+        if(argc)
+            for(i = 0; i < argc; ++i)
+                if(t == HG_NameToType(argv(i))) {
+                    sprint(self, strcat("^1Your nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
+                    self.(nr? hg_type_picked_nextround : hg_type_picked) = t;
+                    
+                    if(!nr) {
+                        float o;
+                        if(term) {
+                            if(self.hg_ammo < 1)
+                                o = TRUE;
+                                
+                            if(self.hg_type != t) {
+                                self.hg_ammo = 1;
+                                o = TRUE;
+                            } else
+                                self.hg_ammo = max(1, self.hg_ammo);
+                            
+                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+                        }
+                        
+                        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+                        if(o)
+                            self.hg_regentime = HG_RegenTime(self);
+                    }
+                    
+                    return;
+                }
+                
+        sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
+        return;
+    } else if(cmd == "hg_optout") {
+        if not(self.flags & FL_CLIENT)
+            return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        
+        self.((isplayer && gamestarted)? hg_optout_nextround : hg_optout) = stof(argv(1));
+    } else if(cmd == "hg_alwaysask") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        self.hg_alwaysask = stof(argv(1));
+    } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;
 
@@ -508,6 +562,12 @@ void SV_ParseClientCommand(string s) {
 				sprint(self, "^1Game has already been restarted\n");
 			}
 		}
+    } else if(cmd == "tt_save" && sv_cheats) {
+        if(self.tt_lastmoment)
+            TimeTravel_EraseMoment(self.tt_lastmoment);
+        self.tt_lastmoment = TimeTravel_SaveMoment(self);
+    } else if(cmd == "tt_takeback" && sv_cheats) {
+        TimeTravel_TakeBack(self, self.tt_lastmoment);
 	} else if(cmd == "maplist") {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {
@@ -975,6 +1035,7 @@ void ReadyRestartForce()
 
 	readyrestart_happened = 1;
 	game_starttime = time + RESTART_COUNTDOWN;
+    roundstate = ROUNDSTATE_PREGAME;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage

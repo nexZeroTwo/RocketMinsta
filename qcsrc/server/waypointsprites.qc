@@ -3,6 +3,10 @@
 .string model1;
 .string model2;
 .string model3;
+.vector clr1;
+.vector clr2;
+.vector clr3;
+.float ownerteam;
 
 .float(entity) waypointsprite_visible_for_player;
 
@@ -10,19 +14,34 @@ void WaypointSprite_UpdateSprites(entity e, string m1, string m2, string m3)
 {
 	if(m1 != e.model1)
 	{
-		e.model1 = m1;
+        if(e.model1)
+            strunzone(e.model1);
+		e.model1 = strzone(m1);
 		e.SendFlags |= 2;
 	}
 	if(m2 != e.model2)
 	{
-		e.model2 = m2;
+		if(e.model2)
+            strunzone(e.model2);
+		e.model2 = strzone(m2);
 		e.SendFlags |= 4;
 	}
 	if(m3 != e.model3)
 	{
-		e.model3 = m3;
+		if(e.model3)
+            strunzone(e.model3);
+		e.model3 = strzone(m3);
 		e.SendFlags |= 8;
 	}
+}
+
+void WaypointSprite_UpdateTextColors(entity e, vector cl1, vector cl2, vector cl3) {
+    if(cl1 != e.clr1 || cl2 != e.clr2 || cl3 != e.clr3) {
+        e.clr1 = cl1;
+        e.clr2 = cl2;
+        e.clr3 = cl3;
+        e.SendFlags |= 32;
+    }
 }
 
 void WaypointSprite_UpdateHealth(entity e, float f)
@@ -131,6 +150,12 @@ void WaypointSprite_Kill(entity wp)
 		return;
 	if(wp.owner)
 		wp.owner.(wp.owned_by_field) = world;
+    if(wp.model1)
+        strunzone(wp.model1);
+    if(wp.model2)
+        strunzone(wp.model2);
+    if(wp.model3)
+        strunzone(wp.model3);
 	remove(wp);
 }
 
@@ -179,25 +204,26 @@ float WaypointSprite_visible_for_player(entity e)
 {
 	// personal waypoints
 	if(self.enemy)
-		if(self.enemy != other)
+		if(self.enemy != e) {
 			return FALSE;
-
+        }
+        
 	// team waypoints
 	if(self.team && self.rule == SPRITERULE_DEFAULT)
 	{
-		if(self.team != other.team)
+		if(self.team != e.team)
 			return FALSE;
-		if(other.classname != "player")
+		if(e.classname != "player")
 			return FALSE;
 	}
-
+    
 	return TRUE;
 }
 
 float WaypointSprite_Customize()
 {
 	// this is not in SendEntity because it shall run every frame, not just every update
-
+    
 	// make spectators see what the player would see
 	entity e;
 	e = other;
@@ -205,6 +231,12 @@ float WaypointSprite_Customize()
 		e = e.enemy;
 
 	return self.waypointsprite_visible_for_player(e);
+}
+
+void WriteColor(float msg, vector c) {
+    WriteByte(MSG_ENTITY, c_x * 255.0);
+    WriteByte(MSG_ENTITY, c_y * 255.0);
+    WriteByte(MSG_ENTITY, c_z * 255.0);
 }
 
 float WaypointSprite_SendEntity(entity to, float sendflags)
@@ -248,6 +280,8 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 	{
 		WriteByte(MSG_ENTITY, self.team);
 		WriteByte(MSG_ENTITY, self.rule);
+        if(self.rule == SPRITERULE_DEFAULT)
+            WriteByte(MSG_ENTITY, self.ownerteam);
 	}
 
 	if(sendflags & 2)
@@ -276,12 +310,13 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 	if(sendflags & 32)
 	{
 		WriteByte(MSG_ENTITY, self.cnt); // icon on radar
-		WriteByte(MSG_ENTITY, self.colormod_x * 255.0);
-		WriteByte(MSG_ENTITY, self.colormod_y * 255.0);
-		WriteByte(MSG_ENTITY, self.colormod_z * 255.0);
+		WriteColor(MSG_ENTITY, self.colormod);
+        WriteColor(MSG_ENTITY, self.clr1);
+        WriteColor(MSG_ENTITY, self.clr2);
+        WriteColor(MSG_ENTITY, self.clr3);
 	}
-
-	return TRUE;
+    
+    return TRUE;
 }
 
 void WaypointSprite_Reset()
@@ -328,7 +363,7 @@ entity WaypointSprite_Spawn(
 	wp.fade_rate = maxdistance;
 	wp.think = WaypointSprite_Think;
 	wp.nextthink = time;
-	wp.model1 = spr;
+	wp.model1 = strzone(spr);
 	wp.customizeentityforclient = WaypointSprite_Customize;
 	wp.waypointsprite_visible_for_player = WaypointSprite_visible_for_player;
 	wp.reset2 = WaypointSprite_Reset;
@@ -439,5 +474,6 @@ void WaypointSprite_PlayerGone()
 	WaypointSprite_Disown(self.waypointsprite_deployed_fixed, waypointsprite_deadlifetime);
 	WaypointSprite_Kill(self.waypointsprite_deployed_personal);
 	WaypointSprite_Disown(self.waypointsprite_attached, waypointsprite_deadlifetime);
+    WaypointSprite_Kill(self.buff_teamwp);
 	WaypointSprite_DetachCarrier(self);
 }

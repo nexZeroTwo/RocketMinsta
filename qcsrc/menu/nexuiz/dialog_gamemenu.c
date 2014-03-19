@@ -3,8 +3,8 @@ CLASS(NexuizGameMenuDialog) EXTENDS(NexuizRootDialog)
 	METHOD(NexuizGameMenuDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
 	ATTRIB(NexuizGameMenuDialog, title, string, "Game Menu")
 	ATTRIB(NexuizGameMenuDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
-	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.2)
-	ATTRIB(NexuizGameMenuDialog, rows, float, 12)
+	ATTRIB(NexuizGameMenuDialog, intendedWidth, float, 0.25)
+	ATTRIB(NexuizGameMenuDialog, rows, float, 13)
 	ATTRIB(NexuizGameMenuDialog, columns, float, 10)
 	ATTRIB(NexuizGameMenuDialog, name, string, "GameMenu")
 ENDCLASS(NexuizGameMenuDialog)
@@ -28,7 +28,7 @@ void fillNexuizGameMenuDialog(entity me)
 			e.onClick = GotoMainMenu;
 			e.onClickEntity = me;
 	me.TR(me);
-		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("RM Options", '0 0 0', "menu_cmd directmenu RMConfig;", COMMANDBUTTON_CLOSE));
+		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("RM options", '0 0 0', "menu_cmd directmenu RMConfig;", COMMANDBUTTON_CLOSE));
 		setDependent(e, "_rm_server", 1, 1);
 	me.TR(me);
 	me.TR(me);
@@ -36,6 +36,9 @@ void fillNexuizGameMenuDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Switch team", '0 0 0', "menu_cmd directmenu TeamSelect;", COMMANDBUTTON_CLOSE));
 		setDependent(e, "_teams_available", 1, 1337);
+	me.TR(me);
+		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Switch nadget", '0 0 0', "menu_cmd directmenu NadeMenu;", COMMANDBUTTON_CLOSE));
+		setDependent(e, "_g_handgrenades_select_available", 1, 1337);
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizCommandButton("Spectate", '0 0 0', "cmd spectate;", COMMANDBUTTON_CLOSE));
 	me.TR(me);

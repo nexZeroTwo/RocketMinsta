@@ -59,7 +59,7 @@ float move_out_of_solid(entity e)
     tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
     if (!trace_startsolid)
         return 1;
-
+    
     m0 = e.mins;
     m1 = e.maxs;
     e.mins = '0 0 0';
@@ -101,8 +101,8 @@ string STR_OBSERVER = "observer";
 #define FOR_EACH_CLIENTSLOT(v) for(v = world; (v = nextent(v)) && (num_for_edict(v) <= maxclients); )
 #define FOR_EACH_CLIENT(v) FOR_EACH_CLIENTSLOT(v) if(v.flags & FL_CLIENT)
 #define FOR_EACH_REALCLIENT(v) FOR_EACH_CLIENT(v) if(clienttype(v) == CLIENTTYPE_REAL)
-#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.classname == STR_PLAYER)
-#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.classname == STR_PLAYER)
+#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
+#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
 #define FOR_EACH_DEVELOPER(v) FOR_EACH_REALCLIENT(v) if(v.isdeveloper)
 #endif
 
@@ -214,7 +214,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt)
         if (self.team)
             have_team_spawns = 1;
 
@@ -395,6 +395,7 @@ string reptable_src[MAXREPS];
 string reptable_rep[MAXREPS];
 float reptable_srclen[MAXREPS];
 float reptable_replen[MAXREPS];
+float reptable_wordmode[MAXREPS];
 float reptable_count;
 float reptable_init;
 float reptable_maxsrclen;
@@ -427,6 +428,7 @@ void reptable_free() {
 		strunzone(reptable_rep[i]);
 		reptable_srclen[i] = 0;
 		reptable_replen[i] = 0;
+		reptable_wordmode[i] = FALSE;
 	}
 	reptable_count = 0;
 	reptable_maxsrclen = 0;
@@ -443,6 +445,12 @@ void reptable_make(string replacements) {
 	float i;
 	for(i = 0; i < reptable_count; ++i) {
 		string id = argv(i);
+        
+        if(substring(id, 0, 1) == "%") {
+            id = substring(id, 1, strlen(id) - 1);
+            reptable_wordmode[i] = TRUE;
+        }
+        
 		string src = strzone(getsrc(id));
 		string rep = strzone(getrep(id));
 		float srclen = strlen(src);
@@ -474,6 +482,9 @@ string apply_autoreplace(string msg) {
 		reptable_make(reps);
 	}
 	
+    float a = 97,  A = 65;
+    float z = 122, Z = 90;
+    
 	float i, len;
 	len = strlen(msg);
 	
@@ -495,6 +506,22 @@ string apply_autoreplace(string msg) {
 			if(p == reptable_src[id]) {
 				//print("apply_autoreplace: success\n");
 				
+                if(reptable_wordmode[id]) {
+                    float c;
+                    
+                    if(i > 0) {
+                        c = str2chr(msg, i - 1);
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                            continue;
+                    }
+                    
+                    if(i + slen < len) {
+                        c = str2chr(msg, i + slen);
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                            continue;
+                    }
+                }
+                
 				string head = substring(msg, 0, i);
 				string tail = substring(msg, i + slen, len);
 				msg = strcat(head, reptable_rep[id], tail);
@@ -509,6 +536,33 @@ string apply_autoreplace(string msg) {
 	}
 	
 	return msg;
+}
+
+string apply_faggotry(string msg) {
+    string result, c;
+    float len, i, o;
+    
+    msg = strdecolorize(msg);
+    
+    len = strlen(msg);
+    c = substring(msg, len-1, 1);
+    if(c != "." && c != "?" && c != "!")
+        msg = strcat(msg, ".");
+    msg = strcat(msg, " Also, I'm a huge faggot.");
+    len = strlen(msg);
+    
+    for(i = 0; i < len; ++i, ++o) {
+        c = substring(msg, i, 1);
+        if(c == "^") {
+            c = "^^";
+            if(substring(msg, i+1, 1) == "^")
+                i++;
+        }
+            
+        result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(o * 0.07) + 3, 0.1, 1)), c);
+    }
+    
+    return result;
 }
 
 string formatmessage(string msg)
@@ -590,6 +644,10 @@ string formatmessage(string msg)
         msg = strcat(substring(msg, 0, p), replacement, substring(msg, p+2, strlen(msg) - (p+2)));
         p = p + strlen(replacement);
     }
+    
+    if(whatsgoingon)
+        msg = apply_faggotry(msg);
+    
     return msg;
 }
 
@@ -783,6 +841,28 @@ string Team_ColorNameLowerCase(float t)
     if (t == COLOR_TEAM4)
         return "pink";
     return "neutral";
+}
+
+float Team_Index(float t) {
+    switch(t) {
+        case COLOR_TEAM1: return 0;
+        case COLOR_TEAM2: return 1;
+        case COLOR_TEAM3: return 2;
+        case COLOR_TEAM4: return 3;
+    }
+    
+    return -1;
+}
+
+float Team_FromIndex(float i) {
+    switch(i) {
+        case 0: return COLOR_TEAM1;
+        case 1: return COLOR_TEAM2;
+        case 2: return COLOR_TEAM3;
+        case 3: return COLOR_TEAM4;
+    }
+    
+    return 0;
 }
 
 #define CENTERPRIO_POINT 1
@@ -3008,14 +3088,14 @@ void hudflash_teamcolor_default_spec(entity e)
 }
 
 // universal endround for all supported gametypes
-void freezetag_EndRound();
+void FreezeTag_EndRound();
 void vip_EndRound();
 void tdom_EndRound();
 
 void EndRound()
 {
     if(g_freezetag)
-        freezetag_EndRound();
+        FreezeTag_EndRound();
 else
     if(g_vip)
         vip_EndRound();
@@ -3027,7 +3107,7 @@ else
         kh_FinishRound();
 else
 	if(g_jailbreak)
-		JB_EndRound();
+		JB_EndRound(5);
 else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
@@ -3039,32 +3119,6 @@ float EndRound_Allowed()
          || g_totaldomination
          || g_keyhunt
          || g_jailbreak);
-}
-
-void SendSpeedRecord(entity e)
-{
-    if(e.classname == "")
-        return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_SPEEDRECORD);
-    WriteShort(MSG_ONE, highest_velocity);
-    WriteString(MSG_ONE, highest_velocity_name);
-}
-
-void UpdateHighestVelocity(float v, entity e)
-{
-    highest_velocity = v;
-    highest_velocity_entity = e;
-    
-    if(highest_velocity_name)
-        strunzone(highest_velocity_name);
-        
-    highest_velocity_name = strzone(e.netname);
-    
-    FOR_EACH_REALCLIENT(other)
-        SendSpeedRecord(other);
 }
 
 .float is_away;
@@ -3155,6 +3209,10 @@ float GameTypeFilter_Allowed (string map, string gametype)
 
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
 		return 1; // maps always support dm-gametypes, even when they don't claim to
+
+    if(cvar("g_domination_always_available"))
+    if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
+        return 1;
 
 	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
 	if(fh < 0)
@@ -3299,6 +3357,12 @@ string GetForcedFog() {
 .void() endround_think2;
 .void() endround_finalize;
 
+float roundstate;
+#define ROUNDSTATE_PREGAME 0
+#define ROUNDSTATE_GAME 1
+#define ROUNDSTATE_OVER 2
+#define ROUNDSTATE_WARMUP 3
+
 void G_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);
@@ -3314,6 +3378,8 @@ void G_EndRound_Think()
     
     if(timeleft <= self.endround_warmuptime)
     {
+        roundstate = ROUNDSTATE_WARMUP;
+        
 		if(!self.endround_announced) {
 			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
 			self.endround_announced = TRUE;
@@ -3321,6 +3387,7 @@ void G_EndRound_Think()
 		
         if(timeleft <= 0)
         {
+            roundstate = ROUNDSTATE_GAME;
             FOR_EACH_PLAYER(e)
             {
                 bigprint_clear_spec(e);
@@ -3359,10 +3426,12 @@ void G_EndRound(string tname, float thedelay, float warmuptime, void() callback,
     e.nextthink = time + 1;
     e.endround_typename = strzone(tname);
     e.endround_think = callback;
+    e.endround_think2 = callback2;
     e.endround_finalize = callbackfin;
     e.endround_warmuptime = warmuptime;
     next_round = time + thedelay;
     e.cnt = warmuptime + next_round;
+    roundstate = ROUNDSTATE_OVER;
 }
 
 // ========================================== //
@@ -3376,4 +3445,51 @@ void SendServerInfo(entity player) {
 	WriteString(MSG_ONE, RM_BUILD_VERSION);
 	WriteString(MSG_ONE, RM_BUILD_DATE);
 	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
+}
+
+void AloneWarning(float t, float(entity) alivecheck) {
+    float alive;
+    entity e;
+    entity p;
+    
+    FOR_EACH_PLAYER(e) if(e.team == t) if(alivecheck(e)) {
+        p = e;
+        alive++;
+        
+        if(alive > 1)
+            return;
+    }
+    
+    if(p) {
+        bigprint_spec(p, "Warning! You are on your own!", "", 3);
+    }
+}
+
+void SetCamera(entity player, entity cam, float timeout) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, TRUE);
+	WriteShort(MSG_ONE, cam.origin_x);
+	WriteShort(MSG_ONE, cam.origin_y);
+	WriteShort(MSG_ONE, cam.origin_z);
+	WriteShort(MSG_ONE, timeout);
+}
+
+void ClearCamera(entity player) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, FALSE);
+}
+
+void JB_ClearCameraForAll() {
+	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
+}
+
+void SetCameraWithAngles(entity player, entity cam, float timeout) {
+    SetCamera(player, cam, timeout);
+    player.angles = cam.angles;
+    player.angles_z = 0;
+    player.fixangle = TRUE;
 }

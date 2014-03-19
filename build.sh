@@ -2,7 +2,7 @@
 
 INCLUDE=1
 . rmlib.sh || exit 1
-require md5sum tar 7za %convert
+require md5sum tar 7za:zip %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -15,13 +15,96 @@ BUILT_PKGNAMES=""
 COMMONSUM=""
 MENUSUM=""
 
+function getfiledircache
+{
+    filecache=()
+    dircache=()
+
+    checkdir "${1}/"
+    pushd "${1}/"
+
+    if [ "${2}" = "reverse" ]; then
+        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+    else
+        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+    fi
+
+    popd
+}
+
+function removeoldfiles
+{
+    if [ -n "${LINKDIRS}" ]; then
+
+        getfiledircache "${BUILDDIR}" reverse
+
+        for j in "${LINKDIRS[@]}"; do
+            echo "  -- Removing old files and directories in '${j}/'.."
+            checkdir "${j}"
+
+            for i in "${filecache[@]}"; do
+                rm "${j}/${i:2}" &>/dev/null
+                rm "${BUILDDIR}/${i:2}"
+            done
+
+            for i in "${dircache[@]}"; do
+                rmdir "${j}/${i:2}/" &>/dev/null
+                rmdir "${BUILDDIR}/${i:2}/"
+            done
+        done
+    fi
+
+}
+
+function linkfiles
+{
+    if [ -n "${LINKDIRS}" ]; then
+
+        # Not tested under Windows at all
+        export CYGWIN="winsymlinks:native"
+
+        getfiledircache "${BUILDDIR}"
+
+        for j in "${LINKDIRS[@]}"; do
+            echo "  -- Linking files and directories in '${BUILDDIR}/' to '${j}/'"
+            checkdir "${j}/"
+
+            for i in "${dircache[@]}"; do
+                mkdir "${j}/${i:2}/"
+            done
+
+            for i in "${filecache[@]}"; do
+                ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+            done
+
+        done
+    fi
+}
+
+function checkdir
+{
+    local dir="$(readlink -f "${1}")"
+    if [[ -d "${dir}" ]]; then
+        if [[ -x "${dir}" && -w "${dir}" ]]; then
+            return 0
+        else
+            error "\"${dir}/\" has wrong permissions."
+        fi
+    else
+        echo " -- Creating \"${dir}/\".."
+        mkdir -p "${dir}/" || error "Could not create directory \"${dir}/\" in \"${dir%/*}/\"."
+    fi
+}
+
 function buildall
 {
     # $1 = suffix
     # $2 = desc
     
     USEQCC="$(getqcc)"
-    [ -z "$USEQCC" ] && exit 1
+    [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
@@ -119,12 +202,23 @@ function compress-restore
 	rm -rf "$COMPRESSGFX_TEMPDIR"
 }
 
+function rmpack
+{
+    if hascommand 7za; then
+        7za a -tzip -mfb258 -mpass15 "$@"
+    elif hascommand zip; then
+        echo zip -r "$@"
+        zip -r "$@"
+    else
+        error "No usable archiver, WTF?"
+    fi
+}
+
 function makedata
 {
     local rmdata="$1"
     local suffix="$2"
     local desc="$3"
-    local curpath="$(pwd)"
 
     echo " -- Building client-side package $1"
     
@@ -140,11 +234,11 @@ function makedata
         sum="$MENUSUM"
     fi
     
-    if [ $CACHEPKGS = 1 ] && [ -e "$curpath/pkgcache/$rmdata-$sum.pk3" ]; then
+    if [ $CACHEPKGS = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
         
         popd
-        cp -v "pkgcache/$rmdata-$sum.pk3" "$NEXDATA/$rmdata-$sum.pk3"
+        cp -v "${CACHEDIR}/$rmdata-$sum.pk3" "${BUILDDIR}/$rmdata-$sum.pk3"
         echo "   -- Done"
 
         BUILT_PACKAGES="${BUILT_PACKAGES}$rmdata-$sum.pk3 "
@@ -161,19 +255,22 @@ function makedata
     echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
     
     echo "   -- Compressing package"
-    7za a -tzip -mfb258 -mpass15 "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *
+    if ! rmpack "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *; then
+        compress-restore
+        error "Failed to package $rmdata"
+    fi
     echo "   -- Removing temporary files"
     rm -vf _*
     
     compress-restore
     popd
         
-    echo "   -- Installing to $NEXDATA"
-    mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "$NEXDATA/$rmdata-$sum.pk3"
+    echo "   -- Installing to ${BUILDDIR}/"
+    mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "${BUILDDIR}/$rmdata-$sum.pk3"
 
     if [ $CACHEPKGS = 1 ]; then
         echo "   -- Copying the package to cache"
-        cp -v "$NEXDATA/$rmdata-$sum.pk3" pkgcache
+        cp -v "${BUILDDIR}/$rmdata-$sum.pk3" "${CACHEDIR}/"
     fi
 
     echo "   -- Done"
@@ -206,10 +303,10 @@ function buildqc
             sum="$sum.$MENUSUM"
         fi
         
-        if [ -e "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
+        if [ -e "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
             echo " -- Found a cached build of $1, using it"
             
-            cp -v "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
+            cp -v "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
             return
         fi
     fi
@@ -229,8 +326,8 @@ function buildqc
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
         
-        [ ! -e "pkgcache/qccache" ] && mkdir -p "pkgcache/qccache"
-        cp -v "$progname.dat" "pkgcache/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
+        [ ! -e "${CACHEDIR}/qccache" ] && mkdir -p "${CACHEDIR}/qccache"
+        cp -v "$progname.dat" "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
     fi
 }
 
@@ -273,26 +370,28 @@ function makedata-all
     done
 }
 
-function listcustom()
+function listcustom
 {
-    find "$NEXDATA/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
-        echo -e "\t\t$cfg : $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
+    find "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
+        scfg="${cfg##*/}"
+        echo -e "\t\t$scfg -- $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
     done
 }
 
 function finalize-install
 {
-    cp -v "rocketminsta.cfg" "$NEXDATA"
-    cp -v "rocketminsta-compat.cfg" "$NEXDATA"
+    cp -v "rocketminsta.cfg" "${BUILDDIR}/"
+    cp -v "rocketminsta-gameplay.cfg" "${BUILDDIR}/"
+    cp -v "rocketminsta-compat.cfg" "${BUILDDIR}/"
 
-    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+    cat <<EOF >>"${BUILDDIR}/rocketminsta.cfg"
 rm_clearpkgs
 $(for i in $BUILT_PKGINFOS; do
     echo "rm_putpackage $i"
 done)
 EOF
 
-    cat <<EOF >>"$NEXDATA"/rocketminsta.cfg
+    cat <<EOF >>"${BUILDDIR}/rocketminsta.cfg"
 
 // Tells the engine to load the mod
 set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
@@ -300,8 +399,8 @@ set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        mkdir -pv "$NEXDATA/rm-custom"
-        cp -rv rm-custom/* "$NEXDATA/rm-custom"
+        mkdir -pv "${BUILDDIR}/rm-custom"
+        cp -rv rm-custom/* "${BUILDDIR}/rm-custom"
     fi
 }
 
@@ -359,17 +458,40 @@ if [ -z $COMPRESSGFX_QUALITY ]; then
     COMPRESSGFX_QUALITY=85
 fi
 
+if [ -z ${BUILDDIR} ]; then
+    warn-oldconfig "config.sh" "BUILDDIR" "build"
+    BUILDDIR="build"
+fi
+
+if ! [ "${LINKDIRS+test}" = "test" ]; then
+    warn-oldconfig "config.sh" "LINKDIRS" "NEXDATA' or '$HOME/.nexuiz/data"
+    LINKDIRS=("${NEXDATA:-${HOME}/.nexuiz/data}")
+fi
+
+if [ -z ${CACHEDIR} ]; then
+    warn-oldconfig "config.sh" "CACHEDIR" "pkgcache"
+    CACHEDIR="pkgcache"
+fi
+
 if [ -n "$BUILDNAME" ]; then
     BRANCH=$BUILDNAME
 fi
 
+CACHEDIR="$(readlink -f "${CACHEDIR}/")"
+BUILDDIR="$(readlink -f "${BUILDDIR}/")"
+
 if [ "$1" = "cleancache" ]; then
     echo " -- Cleaning package cache"
-    rm -vf pkgcache/*.pk3 pkgcache/qccache/*.dat.* || error "rm failed"
+    rm -vf "${CACHEDIR}/"*.pk3 "${CACHEDIR}/qccache/"*.dat.* || error "rm failed"
     exit
 fi
 
 configtest
+
+removeoldfiles
+
+SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
 
 if [ "$1" = "release" ]; then
     RELEASE=1
@@ -407,22 +529,23 @@ if [ "$1" = "release" ]; then
     RELEASE_PKGPATH="$(readlink -f "$RELEASE_PKGPATH")"
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
-    NEXDATA="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
-    SVPROGS="$NEXDATA/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
-    CSPROGS="$NEXDATA/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+    BUILDDIR="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
+    SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+    CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
 
+    checkdir "${BUILDDIR}/"
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     finalize-install    
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
-        cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "$NEXDATA/rocketminsta.cfg"
-        sed -i "/exec rocketminsta.cfg/d" "$NEXDATA/rocketminsta.cfg" # Without this, a recursive include will occur
+        cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "${BUILDDIR}/rocketminsta-gameplay.cfg"
+        sed -i '/exec "$rm_gameplay_config"/d' "${BUILDDIR}/rocketminsta-gameplay.cfg" # Without this, a recursive include will occur
     fi
     
-    cp -v CHANGELOG "$NEXDATA/CHANGELOG.rmrelease"
-    cp -v COPYING "$NEXDATA/COPYING.rmrelease"
-    cat <<EOF > "$NEXDATA/README.rmrelease"
+    cp -v CHANGELOG "${BUILDDIR}/CHANGELOG.rmrelease"
+    cp -v COPYING "${BUILDDIR}/COPYING.rmrelease"
+    cat <<EOF > "${BUILDDIR}/README.rmrelease"
 
 This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
     
@@ -433,18 +556,18 @@ This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DAT
 EOF
 
     if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        cat <<EOF >> "$NEXDATA/README.rmrelease"
+        cat <<EOF >> "${BUILDDIR}/README.rmrelease"
         
         If you'd like to use one of the custom configurations,
         add the following at the bottom of your config:
         
-            exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
+            rmcustom NAME_OF_CUSTOM_CONFIG.cfg
         
         The following configurations were included at build time: `ls rm-custom/*.cfg | while read line; do line=${line##rm-custom/}; echo -n "$line "; done`
 EOF
     fi
 
-    cat <<EOF >> "$NEXDATA/README.rmrelease"
+    cat <<EOF >> "${BUILDDIR}/README.rmrelease"
     3) MAKE SURE that the following packages can be autodownloaded by clients:
         $BUILT_PACKAGES
         
@@ -452,7 +575,7 @@ EOF
     4) Start the server and enjoy.
 EOF
 
-    cat <<EOF >> "$NEXDATA/README.rmrelease"
+    cat <<EOF >> "${BUILDDIR}/README.rmrelease"
 
 RocketMinsta project: http://rocketminsta.net/
 
@@ -460,7 +583,7 @@ EOF
 
     prepackage "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "prepackage failed"
 
-    pushd "$NEXDATA" &>/dev/null
+    pushd "${BUILDDIR}/" &>/dev/null
     tar -zcvf "$RELEASE_PKGPATH/$RELEASE_PKGNAME.tar.gz" * | while read line; do
         echo "Adding file: $line"
     done
@@ -472,7 +595,7 @@ EOF
 
     postpackage "$RELEASE_PKGPATH/$RELEASE_PKGNAME.tar.gz" || error "postpackage failed"
 
-    cat << EOF
+    cat <<EOF
 **************************************************
 
     Finished $PKGNAME release
@@ -490,9 +613,11 @@ RELEASE_RMCUSTOM=1
 PREFIX="-$BRANCH"
 [ $PREFIX = "-master" ] && PREFIX=""
 
+checkdir "${BUILDDIR}/"
 makedata-all "$PREFIX" "git build"
 buildall "$PREFIX" "git build"
 finalize-install
+linkfiles
 
 cat <<EOF
 **************************************************
@@ -506,32 +631,29 @@ cat <<EOF
         $CSPROGS
         
     CVAR defaults for server configuration:
-        $NEXDATA/rocketminsta.cfg
+        ${BUILDDIR}/rocketminsta.cfg
     
     Optional custom configurations:
-        $NEXDATA/rm-custom
+        ${BUILDDIR}/rm-custom
 $(listcustom)
 
-    Please make sure all of these files are
-    accessible by Nexuiz. Then add the following
-    line at top of your server config:
+    Please make sure all of these files are accessible by Nexuiz.
+    Then add the following line at top of your server config:
     
         exec rocketminsta.cfg
 
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
         
-        exec rm-custom/NAME_OF_CUSTOM_CONFIG.cfg
-
-    (note: if you have sv_progs and csqc_progname variables changed
-    because of a previous RocketMinsta installation, it's a good idea to remove them)
-
+        rmcustom NAME_OF_CUSTOM_CONFIG.cfg
         
     In addition, these packages MUST be available on your download server:
-        $BUILT_PACKAGES
+$(for i in $BUILT_PACKAGES;
+    do echo "        $i";
+done)
     
     All of them have been also installed into:
-        $NEXDATA
+        ${BUILDDIR}/
     
     They will be added to sv_curl_serverpackages automatically.
 

@@ -1700,3 +1700,28 @@ void defer(float fdelay, void() func)
     e.nextthink = time + fdelay;
 }
 #endif
+
+float TeamColorSkin(float t) {
+#ifndef MENUQC
+    switch(t) {
+        case COLOR_TEAM1:   return 1; break;
+        case COLOR_TEAM2:   return 2; break;
+        case COLOR_TEAM3:   return 3; break;
+        case COLOR_TEAM4:   return 4; break;
+    }
+#endif
+    return 0;
+}
+
+float approach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	return v;
+}

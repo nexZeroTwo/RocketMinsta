@@ -41,12 +41,18 @@ const float TE_CSQC_VOTERESET = 109;
 const float TE_CSQC_MADOKAPRINT = 110;
 const float TE_CSQC_MORNINGRESCUE = 111;
 const float TE_CSQC_CLEARBIGPRINT = 112;
-const float TE_CSQC_SPEEDRECORD = 113;
+const float TE_CSQC_SERVERINFO = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
 const float TE_CSQC_VIPINFO = 116;
 const float TE_CSQC_CAMERA = 117;
-const float TE_CSQC_SERVERINFO = 118;
+const float TE_CSQC_VISUALDAMAGE = 118;
+const float TE_CSQC_HEAL = 119;
+const float TE_CSQC_BLAST = 120;
+
+#define VDMG_TYPE_HIT 0
+#define VDMG_TYPE_CRIT 1
+#define VDMG_TYPE_HEAL 2
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -281,25 +287,41 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 //const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
 
 
-const float STAT_FROZEN = 104;
-const float STAT_REVIVE_PROGRESS = 105;
-const float STAT_REDALIVE = 106;
-const float STAT_BLUEALIVE = 107;
-const float STAT_YELLOWALIVE = 108;
-const float STAT_PINKALIVE = 109;
-const float STAT_TOTALPOINTS = 110;
-const float STAT_REDPOINTS = 111;
-const float STAT_BLUEPOINTS = 112;
-const float STAT_MINSTA = 113;
-const float STAT_HGFORCE = 114;
-const float STAT_HGAMMO = 115;
-const float STAT_SM_HASGEM = 116;
-const float STAT_UNLOCK_PROGRESS = 117;
-const float STAT_PRISONED = 118;
-const float STAT_ROUNDLOST = 119;
-const float STAT_HGREGEN = 120;
-const float STAT_HGREGENPAUSED = 121;
-const float STTA_HGDETONABLES = 122;
+const float STAT_FROZEN = 66;
+const float STAT_REVIVE_PROGRESS = 67;
+const float STAT_REDALIVE = 68;
+const float STAT_BLUEALIVE = 69;
+const float STAT_YELLOWALIVE = 70;
+const float STAT_PINKALIVE = 71;
+const float STAT_TOTALPOINTS = 72;
+const float STAT_REDPOINTS = 73;
+const float STAT_BLUEPOINTS = 74;
+const float STAT_MINSTA = 75;
+const float STAT_HGFORCE = 76;
+const float STAT_HGAMMO = 77;
+const float STAT_SM_HASGEM = 78;
+const float STAT_CAPTURE_PROGRESS = 79;
+const float STAT_PRISONED = 80;
+const float STAT_ROUNDLOST = 81;
+const float STAT_HGREGEN = 82;
+const float STAT_HGREGENPAUSED = 83;
+const float STAT_HGDETONABLES = 84;
+const float STAT_HGLAUNCH = 85;
+const float STAT_HGSHIELD = 86;
+const float STAT_HGTYPE = 87;
+const float STAT_JBMSG = 88;
+const float STAT_HGSHIELDPOWER = 89;
+const float STAT_HGBONUS = 90;
+const float STAT_HGBONUSTYPE = 91;
+const float STAT_BUFFS = 92;
+const float STAT_TERM_AUTH = 93;
+
+const float JBMSG_NONE = 0;
+const float JBMSG_CAPPINGNEUTRAL = 1;
+const float JBMSG_ALLALIVE = 2;
+const float JBMSG_NOTREADY = 3;
+const float JBMSG_WRONGTEAM = 4;
+const float JBMSG_TOOLATE = 5;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
@@ -344,7 +366,7 @@ const float STTA_HGDETONABLES = 122;
  * Score indices
  */
  
-#define MAX_SCORE 18
+#define MAX_SCORE 23
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -354,13 +376,18 @@ const float STTA_HGDETONABLES = 122;
 #define SP_SCORE 3
 
 #define SP_HOOKFRAGS 10
-#define SP_FREEZETAG_FROZENSTATUS 11
+#define SP_FROZENSTATUS 11
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
 #define SP_JOINTIME 14
 #define SP_CN_CHAR0 15
 #define SP_CN_CHAR1 16
 #define SP_FPS 17
+#define SP_NADEMODE 18
+#define SP_NADEFRAGS 19
+#define SP_REVIVALS 20
+#define SP_DAMAGE 21
+#define SP_HEALING 22
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
@@ -448,6 +475,12 @@ float PROJECTILE_RM_LASER_PINK = 25;
 
 float PROJECTILE_HG_GENERIC = 26;
 float PROJECTILE_HG_NAPALM = 27;
+float PROJECTILE_HG_PLASMA = 28;
+float PROJECTILE_HG_TRANSLOC = 29;
+float PROJECTILE_HG_REMOTE = 30;
+float PROJECTILE_HG_LASER = 31;
+
+float PROJECTILE_HG_NAPALMSHARD = 50;
 
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
@@ -479,12 +512,22 @@ float DEATH_TOUCHEXPLODE = 10015;
 float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
+float DEATH_NOISE = 10101;
+float DEATH_ARC = 10102;
+float DEATH_BASH = 10103;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;
 float DEATH_HG_NAPALM = 101;
-float DEATH_HG_STICKY = 102;
-float DEATH_HG_END = 102;
+float DEATH_HG_REMOTE = 102;
+float DEATH_HG_PLASMA = 103;
+float DEATH_HG_PLASMA_SHARD = 104;
+float DEATH_HG_TRANSLOC = 105;
+float DEATH_HG_SHIELD = 106;
+float DEATH_HG_LINKER = 107;
+float DEATH_HG_GG = 108;
+float DEATH_HG_LASER = 109;
+float DEATH_HG_END = 109;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

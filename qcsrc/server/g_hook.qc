@@ -85,6 +85,7 @@ float LostMovetypeFollow(entity ent)
 
 .float hook_length;
 .float hook_switchweapon;
+.float hook_length_initial;
 
 void RemoveGrapplingHook(entity pl)
 {
@@ -110,7 +111,7 @@ void GrapplingHook_Stop()
 	self.touch = SUB_Null;
 	self.velocity = '0 0 0';
 	self.movetype = MOVETYPE_NONE;
-	self.hook_length = -1;
+	self.hook_length = self.hook_length_initial = -1;
 }
 
 .float last_dmg;
@@ -191,6 +192,8 @@ void GrapplingHookThink()
 		dir = self.origin - org;
 		dist = vlen(dir);
 		dir = normalize(dir);
+        if(self.hook_length_initial < 0)
+            self.hook_length_initial = dist;
 
 		if(cvar("g_grappling_hook_tarzan"))
 		{
@@ -221,8 +224,10 @@ void GrapplingHookThink()
 			{
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
+                float pulled;
 				
-				if(!dontpull || (dontpull_limit && self.hook_length >= dontpull_limit)) {
+				if(!dontpull || (dontpull_limit && self.hook_length >= self.hook_length_initial)) {
+                    pulled = TRUE;
 					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
 					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
 				}
@@ -239,8 +244,9 @@ void GrapplingHookThink()
 						self.aiment.pushltime = time + cvar("g_maxpushtime");
 					}
 				}
-
-				self.owner.flags &~= FL_ONGROUND;
+                
+                if(pulled)
+                    self.owner.flags &~= FL_ONGROUND;
 			}
 		}
 		else
@@ -260,9 +266,9 @@ void GrapplingHookThink()
 		}
 	}
 
+    if(roundstate == ROUNDSTATE_GAME)
 	if(self.aiment.classname == "player") if(self.last_dmg < time)
-	if not(g_freezetag && (self.aiment.freezetag_frozen || warmup >= time))
-	if not(g_vip && vip_soulgem && !vip_started)
+	if not(g_freeze && self.aiment.frozen)
 	if(!teams_matter || self.owner.team != self.aiment.team)
 	if(cvar("g_rocketminsta"))
 	{
@@ -306,9 +312,16 @@ void GrapplingHookTouch (void)
 
 	GrapplingHook_Stop();
 
-	if(other)
-		if(other.movetype != MOVETYPE_NONE)
+	if(other) {
+		if(other.movetype != MOVETYPE_NONE) {
+            if(other.term_authed) {     // super evil
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
 			SetMovetypeFollow(self, other);
+        }
+    }
 
 	//self.owner.disableclientprediction = TRUE;
 }
@@ -383,11 +396,8 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 	}
 }
 
-float CustomCRAHookButton(entity e) {
-	// this function sucks
-	// and so does it's name
-	
-	if(!e.BUTTON_USE || e.soulmate || e.smhost || !(g_freezetag || g_jailbreak))
+float CustomHGHookButton(entity e) {
+	if(!e.BUTTON_USE || e.soulmate || e.smhost)
 		return FALSE;
 	return TRUE;
 }
@@ -400,12 +410,13 @@ void FireGrapplingHook (void)
 	if((arena_roundbased && time < warmup) || (time < game_starttime))
 		return;
 
-	if(g_freezetag)
-	if(self.freezetag_frozen)
+	if(g_freeze)
+	if(self.frozen)
 		return;
         
-	if(g_handgrenades)
-	if(HG_PlayerMayFire(self) && !CustomCRAHookButton(self))
+	if(g_handgrenades && !g_handgrenades_detonatelaunches)
+	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
+    if(!CustomHGHookButton(self))
 		return;
 
 	makevectors(self.v_angle);
@@ -471,7 +482,7 @@ void GrapplingHookFrame()
 	if(g_grappling_hook && timeoutStatus != 2 && self.weapon != WEP_HOOK)
 	{
 		// offhand hook controls
-		if(self.BUTTON_HOOK || CustomCRAHookButton(self))
+		if(self.BUTTON_HOOK || CustomHGHookButton(self))
 		{
 			if not(self.hook || (self.hook_state & HOOK_WAITING_FOR_RELEASE))
 			{
@@ -486,7 +497,7 @@ void GrapplingHookFrame()
 		}
 
 		self.hook_state &~= HOOK_RELEASING;
-		if(self.BUTTON_CROUCH)
+		if(self.BUTTON_CROUCH && cvar("g_balance_grapplehook_crouchslide"))
 		{
 			self.hook_state &~= HOOK_PULLING;
 			//self.hook_state |= HOOK_RELEASING;

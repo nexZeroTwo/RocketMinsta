@@ -1,3 +1,4 @@
+#version 1
 border_left_scale 0.11
 border_right_scale 0.11
 border_left_offset -3 0
@@ -26,3 +27,5 @@ flash_border_amod 1
 line_fill tile
 extern_image_sector_fill_center gfx/hud/skins/glow/line_fill
 sector_fill stretch
+progress_mode 2
+progress_bgalpha 1
