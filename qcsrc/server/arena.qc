@@ -42,6 +42,8 @@ void reset_map(float dorespawn)
 		warmup = time + cvar("g_freezetag_warmup");
 	else if(g_jailbreak)
 		warmup = time + cvar("g_jailbreak_warmup");
+    else if(g_clanarena)
+        warmup = time + cvar("g_clanarena_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
@@ -112,10 +114,17 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak)
+			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
 			{
-				if(self.classname == "player")
+				if(self.classname == "player") {
 					PutClientInServer();
+                    if(g_clanarena)
+                        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                } else if(g_clanarena && self.jb_specteam) {
+                    self.classname = "player";
+                    PutClientInServer();
+                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                }
 			}
 			else
 			{
@@ -309,7 +318,7 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
+	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
 	{
 		if((next_round && next_round < time))
 		{

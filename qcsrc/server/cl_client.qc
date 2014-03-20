@@ -893,6 +893,7 @@ void PutObserverInServer (void)
 		self.frags = FRAGS_SPECTATOR;
     
     self.justconnected = FALSE;
+    CA_PlayerLeaves();
 }
 
 float RestrictSkin(float s)
@@ -1389,6 +1390,8 @@ void PutClientInServer (void)
     }
     
     self.justconnected = FALSE;
+    
+    CA_PlayerJoins();
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -2021,6 +2024,8 @@ void ClientDisconnect (void)
     totalclients--;
     if(clienttype(self) == CLIENTTYPE_REAL)
         realclients--;
+    
+    CA_PlayerLeaves();
 }
 
 .float BUTTON_CHAT;
@@ -2133,6 +2138,11 @@ void respawn(void)
 {
 	CopyBody(1);
 	self.effects |= EF_NODRAW; // prevent another CopyBody
+    
+    if(g_clanarena)
+        if(CA_AttemptRespawn())
+            return;
+    
 	PutClientInServer();
 }
 
@@ -2372,6 +2382,9 @@ void player_regen (void)
     aregen = cvar("g_balance_armor_regen");
     hregen = cvar("g_balance_health_regen");
     
+    if(g_clanarena && !g_clanarena_pickups)
+        hregen = aregen = 0;
+    
     if(!aregen)
         mina = 0;
     if(!hregen)
@@ -2443,8 +2456,16 @@ void player_regen (void)
         aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
     }
 
-	if(g_lms)
+	if(g_lms || g_clanarena)
 		rot_mod = 0;
+        
+    if(g_clanarena) {
+        float clamp = cvar("g_clanarena_heal_limit");
+        if(clamp) {
+            maxh = min(maxh, clamp);
+            maxa = min(maxa, clamp);
+        }
+    }
 
 	if (!g_minstagib && (!g_lms || cvar("g_lms_regenerate")))
 	{
@@ -2710,6 +2731,7 @@ void WriteSpectatorInfo(entity player)
 }
 
 float SpectateUpdate() {
+    
     if(!self.enemy)
         return 0;
 
@@ -2721,6 +2743,9 @@ float SpectateUpdate() {
     
     if(self.jb_specteam) if(self.enemy.team != self.jb_specteam || self.enemy.jb_isprisoned)
         return 0;
+    
+    if(clienttype(self) != CLIENTTYPE_REAL)
+        return 1;
     
     SpectateCopy(self.enemy);
     return 1;
@@ -2751,10 +2776,12 @@ float SpectateNext() {
     }
     
 	if(self.enemy.classname == "player") {
-		msg_entity = self;
-		WriteByte(MSG_ONE, SVC_SETVIEW);
-		WriteEntity(MSG_ONE, self.enemy);
-		
+        if(clienttype(self) == CLIENTTYPE_REAL) {
+            msg_entity = self;
+            WriteByte(MSG_ONE, SVC_SETVIEW);
+            WriteEntity(MSG_ONE, self.enemy);
+		}
+        
 		if(g_jailbreak)
 		if(jb_roundover)
 			JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
@@ -2801,6 +2828,11 @@ void ShowRespawnCountdown()
 void LeaveSpectatorMode()
 {
     if(self.jb_specteam) {
+        if(g_clanarena) {
+            //bigprint(self, "", "^1You cannot join the game until the round is over", 2);
+            return;
+        }
+        
         self.classname = "player";
         PutClientInServer();
         return;
@@ -2816,7 +2848,7 @@ void LeaveSpectatorMode()
 				JoinBestTeam(self, FALSE, TRUE);
 			if(cvar("g_campaign"))
 				campaign_bots_may_start = 1;
-			PutClientInServer();
+            PutClientInServer();
 			if(self.classname == "player")
 				bprint ("^4", self.netname, "^4 is playing now\n");
 			if(!cvar("g_campaign"))
@@ -2938,8 +2970,8 @@ void ObserverThink()
 			self.flags |= FL_JUMPRELEASED;
 			if(self.flags & FL_SPAWNING)
 			{
-				self.flags &~= FL_SPAWNING;
-				LeaveSpectatorMode();
+                self.flags &~= FL_SPAWNING;
+                LeaveSpectatorMode();
 				return;
 			}
 		}
@@ -2949,13 +2981,13 @@ void ObserverThink()
 
 void SpectatorThink()
 {
-    if(self.jb_specteam && roundstate != ROUNDSTATE_GAME) {
+    if(self.jb_specteam && roundstate != ROUNDSTATE_GAME && (roundstate != ROUNDSTATE_OVER || !g_clanarena)) {
         LeaveSpectatorMode();
         return;
     }
     
 	if (self.flags & FL_JUMPRELEASED) {
-		if (self.BUTTON_JUMP && !self.version_mismatch) {
+		if (self.BUTTON_JUMP && !self.version_mismatch && (!g_clanarena || !self.jb_specteam)) {
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK) {
@@ -2986,8 +3018,8 @@ void SpectatorThink()
 			self.flags |= FL_JUMPRELEASED;
 			if(self.flags & FL_SPAWNING)
 			{
-				self.flags &~= FL_SPAWNING;
-				LeaveSpectatorMode();
+                self.flags &~= FL_SPAWNING;
+                LeaveSpectatorMode();
 				return;
 			}
 		}

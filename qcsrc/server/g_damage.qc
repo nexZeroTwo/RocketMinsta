@@ -248,7 +248,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
+	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
 	{
 		f = 0;
 	}
@@ -985,8 +985,15 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {
+void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
     targ.health += heal;
+    
+    if(g_clanarena) {
+        float lim = cvar("g_clanarena_heal_limit");
+        if(lim)
+            targ.health = min(lim, targ.health);
+    }
+    
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
     if(time > targ.heal_next_particle) {
@@ -1210,6 +1217,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					{
 						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
+                            float ff = cvar("g_friendlyfire");
+                            if(g_clanarena) ff = ff * cvar("g_clanarena_teamdamage");
 							teamdamage0 = max(attacker.dmg_team, cvar("g_teamdamage_threshold"));
 							attacker.dmg_team = attacker.dmg_team + damage;
 							if(attacker.dmg_team > teamdamage0)
@@ -1217,11 +1226,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 							mirrorforce = cvar("g_mirrordamage") * vlen(force);
 							if(g_minstagib)
 							{
-								if(cvar("g_friendlyfire") == 0)
+								if(ff == 0)
 									damage = 0;
 							}
 							else
-								damage = cvar("g_friendlyfire") * damage;
+								damage = ff * damage;
 							// mirrordamage will be used LATER
 						}
 						else
@@ -1433,8 +1442,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
             }
 
-            if (targ == attacker)
+            if (targ == attacker) {
                 damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
+                if(g_clanarena)
+                    damage = damage * cvar("g_clanarena_selfdamage");
+            }
 
             // CTF: reduce damage/force
             if(g_ctf)

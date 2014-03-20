@@ -24,7 +24,7 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
         teamcount_playerstotal[i] = 0;
     }
     
-    FOR_EACH_CLIENT(e) if(e.iscreature || (g_jailbreak && e.jb_specteam)) {
+    FOR_EACH_CLIENT(e) if(e.iscreature || ((g_jailbreak || g_clanarena) && e.jb_specteam)) {
         float idx = Team_Index(e.team);
         float fteqcc_sucks;
         

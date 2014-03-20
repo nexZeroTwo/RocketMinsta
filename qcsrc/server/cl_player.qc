@@ -672,7 +672,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 float rdmg = rint(cdmg);
                 if(!g_minstagib)
                     VisualDamage(attacker, self, rdmg, rint(save), ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
-                PlayerScore_Add(attacker, SP_DAMAGE, min(self.health, take) + save);
+                PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
+                if(g_clanarena)
+                    PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
                 
                 if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
                     Buffs_VampireDamage(self, attacker, damage, deathtype);
@@ -954,6 +956,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             weapon_action(j, WR_RESETPLAYER);
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
+        
+        CA_PlayerDies(attacker);
 	}
 }
 

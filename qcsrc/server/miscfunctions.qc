@@ -214,7 +214,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt || g_clanarena)
         if (self.team)
             have_team_spawns = 1;
 
@@ -1008,8 +1008,18 @@ void readplayerstartcvars()
 	g_weaponarena_limitammo = cvar("g_weaponarena_limitammo");
 
     g_weaponarena = 0;
-    s = cvar_string("g_weaponarena");
-    if (s == "0")
+    
+    if(g_clanarena) {
+        s = cvar_string("g_clanarena_start_weapons");
+        if(s == "0")
+            s = cvar_string("g_weaponarena");
+    } else {
+        s = cvar_string("g_weaponarena");
+        if(s == "0")
+            s = "most";
+    }
+    
+    if(s == "0")
     {
     }
     else if (s == "all")
@@ -1070,7 +1080,12 @@ void readplayerstartcvars()
 		g_weaponarena_random = cvar("g_weaponarena_random");
 	else
 		g_weaponarena_random = 0;
-
+    
+    if (g_clanarena) {
+        start_health = cvar("g_clanarena_start_health");
+        start_armorvalue = cvar("g_clanarena_start_armor");
+    }
+    
     if (g_nixnex)
     {
         start_weapons = 0;
@@ -1099,6 +1114,14 @@ void readplayerstartcvars()
 				start_ammo_fuel = 999;
 			start_items |= IT_UNLIMITED_AMMO;
 		}
+        else if (g_clanarena)
+        {
+            start_ammo_shells = cvar("g_clanarena_start_shells");
+            start_ammo_nails = cvar("g_clanarena_start_nails");
+            start_ammo_rockets = cvar("g_clanarena_start_rockets");
+            start_ammo_cells = cvar("g_clanarena_start_cells");
+            start_ammo_fuel = cvar("g_clanarena_start_fuel");
+        }
 		else
 		{
 			start_ammo_shells = cvar("g_start_ammo_shells");
@@ -3109,6 +3132,9 @@ else
 	if(g_jailbreak)
 		JB_EndRound(5);
 else
+    if(g_clanarena)
+        CA_EndRound();
+else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
 
@@ -3118,7 +3144,8 @@ float EndRound_Allowed()
          || g_vip
          || g_totaldomination
          || g_keyhunt
-         || g_jailbreak);
+         || g_jailbreak
+         || g_clanarena);
 }
 
 .float is_away;

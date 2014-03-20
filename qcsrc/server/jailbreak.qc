@@ -1290,6 +1290,9 @@ void JB_JailSpec_Proxy_Think() {
 }
 
 entity JB_JailSpec_CreateProxy() {
+    if(!g_jailbreak)
+        return world;
+    
     entity p = spawn();
     JB_JailSpec_Proxy_CopyFields(p, self);
     p.think = JB_JailSpec_Proxy_Think;

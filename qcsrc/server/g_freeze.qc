@@ -1,6 +1,6 @@
 
 void Freeze_Init(void) {
-    if(!teams_matter || g_jailbreak || (!cvar("g_freeze") && !g_freezetag))
+    if(!teams_matter || g_jailbreak || g_clanarena || (!cvar("g_freeze") && !g_freezetag))
         return;
     
     g_freeze = TRUE;

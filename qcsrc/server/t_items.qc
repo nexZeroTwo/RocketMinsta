@@ -758,6 +758,13 @@ float commodity_pickupevalfunc(entity player, entity item)
 void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, float defaultrespawntimejitter, string itemname, float itemid, float weaponid, float itemflags, float(entity player, entity item) pickupevalfunc, float pickupbasevalue)
 {
 	startitem_failed = FALSE;
+    
+    if(g_clanarena && !g_clanarena_pickups) {
+        startitem_failed = TRUE;
+        remove(self);
+        return;
+    }
+        
 
 	// is it a dropped weapon?
 	if (self.classname == "droppedweapon")
