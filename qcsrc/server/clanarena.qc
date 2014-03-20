@@ -118,14 +118,19 @@ void CA_CheckWinner(void) {
 }
 
 void CA_PlayerDies(entity attacker) {
+    if(!g_clanarena)
+        return;
+    
     if(roundstate != ROUNDSTATE_GAME)
         return;
     
-    if(self == attacker) {
-    } else if(self.team == attacker.team) {
-        PlayerScore_Add(attacker, SP_SCORE, -cvar("g_clanarena_penalty_teamkill"));
-    } else {
-        PlayerScore_Add(attacker, SP_SCORE,  cvar("g_clanarena_score_kill"));
+    if(attacker.classname == "player") {
+        if(self == attacker) {
+        } else if(self.team == attacker.team) {
+            PlayerScore_Add(attacker, SP_SCORE, -cvar("g_clanarena_penalty_teamkill"));
+        } else {
+            PlayerScore_Add(attacker, SP_SCORE,  cvar("g_clanarena_score_kill"));
+        }
     }
     
     PlayerScore_Add(self, SP_SCORE, -cvar("g_clanarena_penalty_death"));
@@ -154,6 +159,9 @@ void CA_PlayerJoins(void) {
 }
 
 float CA_AttemptRespawn(void) {
+    if(!g_clanarena)
+        return FALSE;
+    
     if(roundstate == ROUNDSTATE_GAME) {
         JB_JailSpectate();
         return TRUE;

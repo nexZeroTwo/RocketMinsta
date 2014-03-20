@@ -2139,9 +2139,8 @@ void respawn(void)
 	CopyBody(1);
 	self.effects |= EF_NODRAW; // prevent another CopyBody
     
-    if(g_clanarena)
-        if(CA_AttemptRespawn())
-            return;
+    if(CA_AttemptRespawn())
+        return;
     
 	PutClientInServer();
 }
