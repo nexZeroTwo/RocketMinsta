@@ -18,7 +18,7 @@ void ScoreRules_basics(float teams, float sprio, float stprio, float score_enabl
 		ScoreInfo_SetLabel_TeamScore  (ST_SCORE,        "score",     stprio);
 
 	if not(independent_players)
-		ScoreInfo_SetLabel_PlayerScore(SP_KILLS,        "kills",     0);
+		ScoreInfo_SetLabel_PlayerScore(SP_KILLS,        "kills",     (g_clanarena? SFL_SORT_PRIO_SECONDARY : 0));
 
 	ScoreInfo_SetLabel_PlayerScore(SP_DEATHS,           "dths",    SFL_LOWER_IS_BETTER);
 

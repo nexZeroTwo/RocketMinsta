@@ -7,6 +7,9 @@ void Buffs_Init(void) {
     
     g_buffs = cvar("g_buffs");
     
+    if(g_clanarena)
+        g_buffs = (g_buffs && cvar("g_clanarena_buffs"));
+    
     if(!g_buffs)
         return;
     

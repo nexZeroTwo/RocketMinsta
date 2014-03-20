@@ -51,6 +51,7 @@ g_freeze.qh
 freezetag.qh
 vip.qh
 jailbreak.qh
+clanarena.qh
 precious.qh
 domination.qh
 
@@ -135,6 +136,7 @@ g_buffs.qc
 soulmates.qc
 
 jailbreak.qc
+clanarena.qc
 
 t_swamp.qc
 

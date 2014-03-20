@@ -452,7 +452,7 @@ string Sbar_DefaultColumnLayout()
 		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
         (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_handgrenades? " nfs" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
-		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec/frgs ", // tdm already has this in "score"
+		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
 		"+lms/lives +lms/rank +vip/vks +vip/surv +jb/def +jb/jbs +jb/freed +prec/pckps +prec/rcks ",
 		"+kh/caps +kh/pckps +kh/kcks ",
@@ -5019,7 +5019,7 @@ void Sbar_Draw(void)
 			CSQC_kh_hud(teamhud_pos);
 		else if(gametype == GAME_CTF)
 			CSQC_ctf_hud(teamhud_pos);
-		else if(gametype == GAME_FREEZETAG || gametype == GAME_JAILBREAK)
+		else if(gametype == GAME_FREEZETAG || gametype == GAME_JAILBREAK || gametype == GAME_CLANARENA)
 			CSQC_ft_hud(teamhud_pos);
         else if(gametype == GAME_DOMINATION)
             CSQC_dom_hud(teamhud_pos);

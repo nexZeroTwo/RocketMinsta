@@ -423,9 +423,21 @@ void SV_ParseClientCommand(string s) {
 				return;
 			}
 		}
-		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
-		}
+        if(cvar("sv_spectate") == 1) {
+            if(self.classname == "player") {
+                EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
+            } else {
+                /*
+                 * Actually no, this is probably a bad idea
+                 * 
+                if(self.jb_specteam) {
+                    self.jb_specteam = 0;
+                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                    PutObserverInServer();
+                }
+                */
+            }
+        }
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -438,8 +450,10 @@ void SV_ParseClientCommand(string s) {
                 
 				self.classname = "player";
 				PlayerScore_Clear(self);
+                
 				bprint ("^4", self.netname, "^4 is playing now\n");
-				PutClientInServer();
+                PutClientInServer();
+                
 				if(cvar("g_campaign"))
 					campaign_bots_may_start = 1;
 			}
