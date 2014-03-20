@@ -121,11 +121,13 @@ void CA_PlayerDies(entity attacker) {
     if(roundstate != ROUNDSTATE_GAME)
         return;
     
-    if(self == attacker) {
-    } else if(self.team == attacker.team) {
-        PlayerScore_Add(attacker, SP_SCORE, -cvar("g_clanarena_penalty_teamkill"));
-    } else {
-        PlayerScore_Add(attacker, SP_SCORE,  cvar("g_clanarena_score_kill"));
+    if(attacker.classname == "player") {
+        if(self == attacker) {
+        } else if(self.team == attacker.team) {
+            PlayerScore_Add(attacker, SP_SCORE, -cvar("g_clanarena_penalty_teamkill"));
+        } else {
+            PlayerScore_Add(attacker, SP_SCORE,  cvar("g_clanarena_score_kill"));
+        }
     }
     
     PlayerScore_Add(self, SP_SCORE, -cvar("g_clanarena_penalty_death"));
