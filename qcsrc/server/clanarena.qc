@@ -118,6 +118,9 @@ void CA_CheckWinner(void) {
 }
 
 void CA_PlayerDies(entity attacker) {
+    if(!g_clanarena)
+        return;
+    
     if(roundstate != ROUNDSTATE_GAME)
         return;
     
@@ -156,6 +159,9 @@ void CA_PlayerJoins(void) {
 }
 
 float CA_AttemptRespawn(void) {
+    if(!g_clanarena)
+        return FALSE;
+    
     if(roundstate == ROUNDSTATE_GAME) {
         JB_JailSpectate();
         return TRUE;
