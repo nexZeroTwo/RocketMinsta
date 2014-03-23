@@ -986,14 +986,13 @@ void HealScore(entity targ, entity healer, float heal) {
 }
 
 void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
-    targ.health += heal;
-    
     if(g_clanarena) {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
-            targ.health = min(lim, targ.health);
+            heal = max(0, min(heal, lim - targ.health));
     }
     
+    targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
     if(time > targ.heal_next_particle) {
