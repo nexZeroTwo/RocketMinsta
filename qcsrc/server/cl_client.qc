@@ -2439,6 +2439,9 @@ void player_regen (void)
         ghregen = hregen + (cvar("g_buffs_guard_health_regen") - hregen) * gpower;
         garegen = aregen + (cvar("g_buffs_guard_armor_regen")  - aregen) * gpower;
         
+        if(g_clanarena)
+            garmor = 0;
+        
         mina = max(mina, garmor);
         maxa = max(mina, maxa);
         minh = max(maxh, ghealth);
