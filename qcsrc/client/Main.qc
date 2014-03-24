@@ -1569,8 +1569,15 @@ void Ent_ShowNames()
     }
     if(sf & 2)
     {
-        self.healthvalue = ReadByte();
-        self.armorvalue = ReadByte();
+        if(sf & 16)
+            self.healthvalue = ReadShort();
+        else
+            self.healthvalue = ReadByte();
+        
+        if(sf & 32)
+            self.armorvalue = ReadShort();
+        else
+            self.armorvalue = ReadByte();
     }
 
     if(sf & 128) // same team
