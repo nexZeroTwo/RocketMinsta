@@ -54,7 +54,7 @@ void VisualDamage_PreDraw(void) {
             continue;
         }
         
-        if(!e.vd_damage)
+        if(!e.vd_damage && !e.vd_armordamage)
             s = "Immune";
         else {
             s = ftos(e.vd_damage);
@@ -76,7 +76,7 @@ void VisualDamage_Draw(void) {
     float a = ipol_swingInOut(self.alpha), sw;
     vector o, oldo, clr;
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
-    float fs = VDMG_FONTSIZE * max(1, a * ((self.vd_type == VDMG_TYPE_CRIT)? 2 : 1));
+    float fs = VDMG_FONTSIZE * max(1, a * ((self.vd_type & VDMG_TYPE_CRIT)? 2 : 1));
     
     o = self.vd_projected + offs - '0 0.5 0' * fs;
     
@@ -85,11 +85,14 @@ void VisualDamage_Draw(void) {
         drawfont = sbar_bigfont;
         sw = self.vd_width * fs;
         
-        switch(self.vd_type) {
-            case VDMG_TYPE_HIT:     clr = '1.0 0.7 0.0';     break;
-            case VDMG_TYPE_CRIT:    clr = '1.0 0.3 0.0';     break;
-            case VDMG_TYPE_HEAL:    clr = '0.0 1.0 0.0';     break;
-        }
+        if(self.vd_type & VDMG_TYPE_HEAL)
+            clr = '0.0 1.0 0.0';
+        else if(self.vd_type & VDMG_TYPE_TEAMHIT)
+            clr = '1.0 0.0 0.0';
+        else if(self.vd_type & VDMG_TYPE_CRIT)
+            clr = '1.0 0.3 0.0';
+        else
+            clr = '1.0 0.7 0.0';
         
         drawstring(o - sw * '0.5 0 0', self.vd_str, fs * '1 1 0', clr, VDMG_ALPHA * a, DRAWFLAG_NORMAL);
         drawfont = sbar_font;

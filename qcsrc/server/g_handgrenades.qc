@@ -536,6 +536,7 @@ void HG_Remote_Stick() {
     e.hg_detonable = self.hg_detonable;
     e.hg_detonatetime = self.hg_detonatetime;
     e.hg_detonatedelay = self.hg_detonatedelay;
+    e.hg_detonateready = self.hg_detonateready;
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
@@ -900,7 +901,7 @@ void HG_Linker_Think() {
                 p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
             
                 if(self.hg_linker_hps)
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0);
+                    Heal(p, world, self.owner, self.hg_linker_hps, 0);
             }
         }
     }
