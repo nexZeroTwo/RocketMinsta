@@ -986,7 +986,7 @@ void HealScore(entity targ, entity healer, float heal) {
 }
 
 void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
-    if(g_clanarena) {
+    if(g_clanarena) if(inflictor.classname != "hg_linker") {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
             heal = max(0, min(heal, lim - targ.health));

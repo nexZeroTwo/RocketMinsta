@@ -899,7 +899,7 @@ void HG_Linker_Think() {
                 p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
             
                 if(self.hg_linker_hps)
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0);
+                    Heal(p, world, self.owner, self.hg_linker_hps, 0);
             }
         }
     }
