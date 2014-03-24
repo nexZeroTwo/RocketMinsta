@@ -50,9 +50,10 @@ const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
 
-#define VDMG_TYPE_HIT 0
-#define VDMG_TYPE_CRIT 1
-#define VDMG_TYPE_HEAL 2
+#define VDMG_TYPE_HIT 1
+#define VDMG_TYPE_CRIT 2
+#define VDMG_TYPE_HEAL 4
+#define VDMG_TYPE_TEAMHIT 8
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;

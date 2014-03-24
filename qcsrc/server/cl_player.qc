@@ -495,6 +495,9 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(cvar("sv_hidedamage"))
         return;
     
+    if(htype & VDMG_TYPE_TEAMHIT && !hdmg && !admg)
+        return;
+    
     offs = attacker.maxs_z * '0 0 0.5';
     p1 = attacker.origin + attacker.view_ofs;
     p2 = targ.origin + targ.view_ofs;
@@ -673,22 +676,32 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         {
             self.armorvalue = self.armorvalue - save;
             if(attacker != self)
-            if(!teams_matter || self.team != attacker.team)
             if(attacker.classname == "player") {
                 float cdmg = min(self.health, take);
                 float rdmg = rint(cdmg);
+                float sameteam = (teams_matter && self.team == attacker.team);
+                float htype = VDMG_TYPE_HIT;
+                
+                if(deathtype & HITTYPE_HEADSHOT)
+                    htype |= VDMG_TYPE_CRIT;
+                if(sameteam)
+                    htype |= VDMG_TYPE_TEAMHIT;
+                
                 if(!g_minstagib)
-                    VisualDamage(attacker, self, rdmg, rint(save), ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
-                PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
-                if(g_clanarena)
-                    PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
-                
-                if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
-                    Buffs_VampireDamage(self, attacker, damage, deathtype);
-                
-                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
-                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
-                    hudflash_teamcolor_default_spec(attacker);
+                    VisualDamage(attacker, self, rdmg, rint(save), htype);
+                    
+                if(!sameteam) {
+                    PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
+                    if(g_clanarena)
+                        PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
+                    
+                    if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
+                        Buffs_VampireDamage(self, attacker, damage, deathtype);
+                    
+                    if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
+                        PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
+                        hudflash_teamcolor_default_spec(attacker);
+                    }
                 }
             }
             self.health = self.health - take;
