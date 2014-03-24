@@ -583,11 +583,18 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 
     if(damage)
-    if(deathtype == HG_PLASMA_SHARD)
-    if(time > inflictor.damage_nextarceffect) {
-        te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
-        inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
+    if(deathtype == HG_PLASMA_SHARD) {
+        if(time > inflictor.damage_nextarceffect) {
+            te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
+            inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
+        }
     }
+    
+    if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
+        if(self.frozen) if(self.team != attacker.team) {
+            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock");
+            self.frozen_plasmalock_owner = attacker;
+        }
 
     damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
 
