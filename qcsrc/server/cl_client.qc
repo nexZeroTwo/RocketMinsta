@@ -3191,7 +3191,7 @@ void PlayerPreThink (void)
 				if(frametime)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
-				force_respawn = (g_lms || cvar("g_forced_respawn"));
+				force_respawn = (g_lms || g_clanarena || cvar("g_forced_respawn"));
 				
 				if (jb_roundover || (g_vip && ISVIP(self))) {
 					// lol no respawn for ya
