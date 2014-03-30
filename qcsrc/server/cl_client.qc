@@ -866,7 +866,9 @@ void PutObserverInServer (void)
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
     
-    if(!self.jb_specteam)
+    if(self.jb_specteam)
+        self.team = self.jb_specteam;
+    else
         self.team = -1;
 
 	if(g_arena)
