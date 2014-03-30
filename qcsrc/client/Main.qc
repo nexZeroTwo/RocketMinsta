@@ -1516,6 +1516,8 @@ void Ent_Nagger()
 		if(vote_called_vote)
 			strunzone(vote_called_vote);
 		vote_called_vote = strzone(ColorTranslateRGB(ReadString()));
+        if(vote_called_vote == "")
+            vote_active = 0;
 	}
 
 	if(nags & 1)

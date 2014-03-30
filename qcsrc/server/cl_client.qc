@@ -866,7 +866,9 @@ void PutObserverInServer (void)
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
     
-    if(!self.jb_specteam)
+    if(self.jb_specteam)
+        self.team = self.jb_specteam;
+    else
         self.team = -1;
 
 	if(g_arena)
@@ -3007,11 +3009,10 @@ void SpectatorThink()
 			self.classname = "observer";
 			PutClientInServer();
 		} else {
-			if(!SpectateUpdate()) {
-                if(self.jb_specteam) {
-                    if(!SpectateNext())
-                        LeaveSpectatorMode();
-                } else
+			if(!SpectateUpdate()) if(!SpectateNext()) {
+                if(self.jb_specteam)
+                    LeaveSpectatorMode();
+                else
                     PutObserverInServer();
             }
 		}
@@ -3191,7 +3192,7 @@ void PlayerPreThink (void)
 				if(frametime)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
-				force_respawn = (g_lms || cvar("g_forced_respawn"));
+				force_respawn = (g_lms || g_clanarena || cvar("g_forced_respawn"));
 				
 				if (jb_roundover || (g_vip && ISVIP(self))) {
 					// lol no respawn for ya

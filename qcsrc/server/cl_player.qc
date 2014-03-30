@@ -1236,7 +1236,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(msgin == "")
 		return;
 
-	if(source.classname != "player")
+	if(source.classname != "player" && !source.jb_specteam)
 		colorstr = "^0"; // black for spectators
 	else if(teams_matter)
 		colorstr = Team_ColorCode(source.team);
@@ -1376,7 +1376,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	}
 
 	if(!privatesay)
-	if(source.classname != "player")
+	if(source.classname != "player" && !source.jb_specteam)
 	{
 		if(teamsay || (cvar("g_chat_nospectators") == 1) || (cvar("g_chat_nospectators") == 2 && !inWarmupStage))
 			teamsay = -1; // spectators
@@ -1434,7 +1434,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		sprint(source, sourcemsgstr);
 		if(sourcecmsgstr != "")
 			centerprint(source, sourcecmsgstr);
-		FOR_EACH_REALPLAYER(head) if(head.team == source.team)
+		FOR_EACH_REALCLIENT(head) if(head.classname == "player" || head.jb_specteam) if(head.team == source.team)
 			if(head != source)
 			{
 				sprint(head, msgstr);
@@ -1445,7 +1445,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	else if(teamsay < 0)
 	{
 		sprint(source, sourcemsgstr);
-		FOR_EACH_REALCLIENT(head) if(head.classname != "player")
+		FOR_EACH_REALCLIENT(head) if(head.classname != "player" && !head.jb_specteam)
 			if(head != source)
 				sprint(head, msgstr);
 	}

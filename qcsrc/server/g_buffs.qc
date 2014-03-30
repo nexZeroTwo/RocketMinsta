@@ -23,6 +23,9 @@ void Buffs_Init(void) {
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_lockon = cvar("g_buffs_lockon");
     
+    if(g_clanarena)
+        g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
+    
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
     precache_sound("misc/arc1.wav");
@@ -292,8 +295,12 @@ void Buffs_ClientFrame(void) {
         }
         
         ON_BUFF_ADDED(BUFF_GUARD) {
-            self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
-            self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            if(g_clanarena)
+                self.health = max(min(cvar("g_clanarena_heal_limit"), cvar("g_buffs_guard_pickup_health")), self.health);
+            else {
+                self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
+                self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            }
         }
         
         ON_BUFF_REMOVED(BUFF_VAMPIRE) {
