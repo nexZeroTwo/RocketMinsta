@@ -23,6 +23,9 @@ void Buffs_Init(void) {
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_lockon = cvar("g_buffs_lockon");
     
+    if(g_clanarena)
+        g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
+    
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
     precache_sound("misc/arc1.wav");
