@@ -3007,11 +3007,10 @@ void SpectatorThink()
 			self.classname = "observer";
 			PutClientInServer();
 		} else {
-			if(!SpectateUpdate()) {
-                if(self.jb_specteam) {
-                    if(!SpectateNext())
-                        LeaveSpectatorMode();
-                } else
+			if(!SpectateUpdate()) if(!SpectateNext()) {
+                if(self.jb_specteam)
+                    LeaveSpectatorMode();
+                else
                     PutObserverInServer();
             }
 		}
