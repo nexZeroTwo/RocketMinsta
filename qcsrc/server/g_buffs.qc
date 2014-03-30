@@ -292,8 +292,12 @@ void Buffs_ClientFrame(void) {
         }
         
         ON_BUFF_ADDED(BUFF_GUARD) {
-            self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
-            self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            if(g_clanarena)
+                self.health = max(min(cvar("g_clanarena_heal_limit"), cvar("g_buffs_guard_pickup_health")), self.health);
+            else {
+                self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
+                self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            }
         }
         
         ON_BUFF_REMOVED(BUFF_VAMPIRE) {
