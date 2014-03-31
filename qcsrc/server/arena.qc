@@ -49,7 +49,10 @@ void reset_map(float dorespawn)
 	lms_next_place = player_count;
 
 	race_ReadyRestart();
-	
+    
+    if(cvar("g_swap_teams"))
+        SwapTeams();
+    
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
 	{

@@ -1615,3 +1615,15 @@ void tdm_init()
 {
 	InitializeEntity(world, tdm_delayedinit, INITPRIO_GAMETYPE);
 };
+
+void SwapTeams(void) {
+    entity o = self;
+    for(self = world; (self = nextent(self));)
+        if(self.teamswap)
+            self.teamswap();
+    self = o;
+}
+
+void SwapTeams_Generic(void) {
+    self.team = TeamCount_NextTeam(self.team);
+}

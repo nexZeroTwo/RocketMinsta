@@ -48,3 +48,23 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
 float TeamCount_AliveCheck_Null(entity e) {
     return TRUE;
 }
+
+float TeamCount_NextTeam(float t) {
+    float tc = TeamCount_TotalTeams();
+    
+    switch(t) {
+        case COLOR_TEAM1:
+            return COLOR_TEAM2;
+        
+        case COLOR_TEAM2:
+            return ((tc > 2)? COLOR_TEAM3 : COLOR_TEAM1);
+        
+        case COLOR_TEAM3:
+            return ((tc > 3)? COLOR_TEAM4 : COLOR_TEAM1);
+        
+        case COLOR_TEAM4:
+            return COLOR_TEAM1;
+    }
+    
+    return t;
+}

@@ -77,6 +77,10 @@ void ClientData_Touch(entity e)
 
 .string netname_previous;
 
+void spawnpoint_teamswap(void) {
+    self.team_saved = TeamCount_NextTeam(self.team_saved);
+}
+
 void spawnfunc_info_player_survivor (void)
 {
 	spawnfunc_info_player_deathmatch();
@@ -90,6 +94,7 @@ void spawnfunc_info_player_start (void)
 void spawnfunc_info_player_deathmatch (void)
 {
     self.classname = "info_player_deathmatch";
+    self.teamswap = spawnpoint_teamswap;
     relocate_spawnpoint();
 }
 
