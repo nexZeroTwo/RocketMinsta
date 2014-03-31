@@ -670,6 +670,9 @@ void Buffs_BuffPickup_Setup(void) {
     
     if(g_buffs_noteam)
         self.team = 0;
+        
+    if(cvar("g_buffs_team_swap"))
+        self.team = TeamCount_NextTeam(self.team);
     
     self.origbuffs = self.buffs;
     self.classname = "item_buff";
