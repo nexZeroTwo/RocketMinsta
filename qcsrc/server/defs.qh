@@ -762,3 +762,7 @@ float hack_forcenextmap;
 string nextgametype;
 
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity);
+
+.void(void) teamswap;
+void SwapTeams(void);
+void SwapTeams_Generic(void);

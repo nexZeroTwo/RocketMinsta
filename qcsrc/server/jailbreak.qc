@@ -856,6 +856,7 @@ void JB_SetupJailSpawnpoint() {
 	}
 	
 	self.classname = "info_jailbreak_jailspawn";
+    self.teamswap = SwapTeams_Generic;
 }
 
 void JB_Jail_Touch() {
@@ -890,6 +891,7 @@ void JB_Jail_Touch() {
 void JB_SetupJail() {
 	self.classname = "jailbreak_jail";
 	self.touch = JB_Jail_Touch;
+    self.teamswap = SwapTeams_Generic;
 	EXACTTRIGGER_INIT;
 }
 
@@ -900,6 +902,7 @@ void JB_SetupJailCamera() {
 	}
 	
 	self.classname = "info_jailbreak_jailcamera";
+    self.teamswap = SwapTeams_Generic;
 }
 
 void JB_SetupTortureSpawnpoint() {
@@ -909,6 +912,7 @@ void JB_SetupTortureSpawnpoint() {
 	}
 	
 	self.classname = "info_jailbreak_torturespawn";
+    self.teamswap = SwapTeams_Generic;
 	
 	if(!self.jb_torture_force)
 		self.jb_torture_force = 400;
@@ -1204,6 +1208,11 @@ void JB_ControlPoint_Reset() {
     JB_ControlPoint_SwitchTeam(self, cvar("g_jailbreak_controlpoint_claim_allneutral")? JB_TEAM_NEUTRAL : self.jb_team_initial);
 }
 
+void JB_ControlPoint_TeamSwap() {
+    if(self.jb_team_initial != JB_TEAM_NEUTRAL)
+        self.jb_team_initial = TeamCount_NextTeam(self.jb_team_initial);
+}
+
 void JB_SetupControlPoint() {
     if(!jb_cp_first) {
         jb_cp_first = self;
@@ -1239,6 +1248,7 @@ void JB_SetupControlPoint() {
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
     self.reset = JB_ControlPoint_Reset;
+    self.teamswap = JB_ControlPoint_TeamSwap;
     self.jb_capturecount = 0;
     self.jb_active = TRUE;
     self.cnt = jb_cp_num;

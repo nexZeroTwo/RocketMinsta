@@ -597,16 +597,19 @@ void Buffs_BuffPickup_Ring_Think(void) {
     setorigin(self, self.owner.origin + '0 0 15');
 }
 
-void Buffs_BuffPickup_Reset(void) {
-    self.owner = world;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
-    self.buff_active = !self.buff_activetime;
-    
+void Buffs_BuffPickup_ResetWaypoint(void) {
     if(self.buff_waypoint)
         WaypointSprite_Kill(self.buff_waypoint);
     
     if(self.buff_activetime)
         Buffs_BuffPickup_SpawnWaypoint(self);
+}
+
+void Buffs_BuffPickup_Reset(void) {
+    self.owner = world;
+    self.buff_activetime = cvar("g_buffs_activate_delay");
+    self.buff_active = !self.buff_activetime;
+    Buffs_BuffPickup_ResetWaypoint();
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
@@ -656,6 +659,11 @@ void Buffs_BuffPickup_Touch(void) {
     self.buff_lockon = world;
 }
 
+void Buffs_BuffPickup_TeamSwap(void) {
+    self.team = TeamCount_NextTeam(self.team);
+    Buffs_BuffPickup_ResetWaypoint();
+}
+
 void Buffs_BuffPickup_Setup(void) {
     if(!g_buffs || (self.team && !teams_matter) || (g_buffs_team_only && !self.team)) {
         remove(self);
@@ -684,6 +692,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.think = Buffs_BuffPickup_Think;
     self.touch = Buffs_BuffPickup_Touch;
     self.reset = Buffs_BuffPickup_Reset;
+    self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
     self.scale = 1.5;
     self.buff_activetime = cvar("g_buffs_activate_delay");
