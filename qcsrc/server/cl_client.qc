@@ -669,7 +669,7 @@ float Client_customizeentityforclient()
     
     float sa = 1 - self.hg_stealthalpha;
     
-    if((teams_matter && other.team == self.team) || other.hg_stealth)
+    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
         sa = 0.3 + 0.7 * sa;
     
     self.alpha = sa * default_player_alpha;
