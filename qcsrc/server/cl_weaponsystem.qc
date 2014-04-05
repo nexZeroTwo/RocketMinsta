@@ -1019,7 +1019,13 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(g_freeze)
 	if(self.frozen) 
 		return FALSE;
-        
+    
+    if(self.hg_stealth)
+        self.hg_stealth = -1;
+    
+    if(self.hg_stealthalpha > 0.3)
+        return FALSE;
+    
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
@@ -1061,6 +1067,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.bulletcounter += 1;
 	//dprint("attack finished ", ftos(ATTACK_FINISHED(self)), "\n");
+    
 	return TRUE;
 };
 

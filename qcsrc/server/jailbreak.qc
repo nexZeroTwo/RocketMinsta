@@ -1143,6 +1143,9 @@ void JB_ControlPoint_Touch() {
     if(other.classname != "player")
         return;
     
+    if(other.hg_stealth)
+        return;
+    
     other.pointupdatetime = time;
     
     if(other.team == self.team) {

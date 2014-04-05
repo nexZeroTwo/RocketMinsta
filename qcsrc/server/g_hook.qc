@@ -425,7 +425,10 @@ void FireGrapplingHook (void)
 	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
     if(!CustomHGHookButton(self))
 		return;
-
+    
+    if(self.hg_stealth)
+        self.hg_stealth = -1;
+    
 	makevectors(self.v_angle);
 
 	// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds

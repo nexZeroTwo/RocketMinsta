@@ -268,7 +268,10 @@ void dompointtouch()
 		return;
     if(g_freeze && other.frozen)
         return;
-
+    
+    if(other.hg_stealth)
+        return;
+    
 	if(time < self.captime + 0.3)
 		return;
 

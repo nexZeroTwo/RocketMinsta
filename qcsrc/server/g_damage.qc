@@ -1588,8 +1588,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
-            if(!teams_matter || self.team != attacker.team)
+            if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                if(self.hg_stealth && self.hg_stealthalpha > 0.2)
+                    self.hg_stealth = -1;
+            }
             
             entity e;
             if(g_jailbreak && self.jb_unlock_progress) {

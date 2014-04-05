@@ -620,6 +620,7 @@ void SV_PlayerPhysics()
     
     // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
 	if (g_walljump)
+    if (!self.hg_stealth)
 	if (!(g_freeze && self.frozen) && self.health > 0)
     if (isplayer)
     if (!(self.flags & FL_ONGROUND))
@@ -849,6 +850,9 @@ void SV_PlayerPhysics()
     
     if(BUFFS_PRESENT(self, BUFF_HASTE))
         maxspd_mod *= 1 + (cvar("g_buffs_haste_move_rate") - 1) * Buffs_BuffPower(self, BUFF_HASTE);
+    
+    if(self.hg_stealth)
+        maxspd_mod *= cvar("g_handgrenades_cloak_movespeed");
     
     if(g_dodging)
         dodging_PlayerPhysics();
