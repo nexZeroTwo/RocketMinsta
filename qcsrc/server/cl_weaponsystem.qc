@@ -1023,7 +1023,7 @@ float weapon_prepareattack(float secondary, float attacktime)
     if(self.hg_stealth)
         self.hg_stealth = -1;
     
-    if(self.hg_stealthalpha > 0.3)
+    if(self.hg_stealthalpha > cvar("g_handgrenades_cloak_alphashootlimit"))
         return FALSE;
     
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)

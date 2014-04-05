@@ -620,7 +620,7 @@ void SV_PlayerPhysics()
     
     // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
 	if (g_walljump)
-    if (!self.hg_stealth)
+    //if (!self.hg_stealth)
 	if (!(g_freeze && self.frozen) && self.health > 0)
     if (isplayer)
     if (!(self.flags & FL_ONGROUND))
