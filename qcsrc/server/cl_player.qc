@@ -846,6 +846,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		
         self.hg_linker = world;
         self.buffs = 0;
+        self.hg_stealth = 0;
         self.fire_endtime = time;
         
 		prec_player_die(self, attacker);
@@ -988,7 +989,7 @@ float SendEntity_ShowNames(entity to, float sendflags)
     WriteByte(MSG_ENTITY, num_for_edict(self.owner));
 
     sendflags = sendflags & 127;
-    if(teams_matter && (self.owner.team == to.team || (to.classname == "spectator" && to.enemy.team == self.owner.team)))
+    if(teams_matter && ((to.hg_stealth && !self.owner.hg_stealth) || self.owner.team == to.team || (to.classname == "spectator" && to.enemy.team == self.owner.team)))
         sendflags |= 128;
     else
         sendflags &~= 2;
@@ -1042,6 +1043,9 @@ float shownames_customize()
     entity e = other;
     if(other.classname == "spectator")
         e = other.enemy;
+    
+    if(self.owner.alpha < 0.4 && !(teams_matter && self.owner.team == e.team))
+        return FALSE;
     
     if(self.owner != e) // no need to spam own coordinates
     if(vlen(e.origin - self.origin) < autocvar_sv_shownames_cull_distance) // distance cull

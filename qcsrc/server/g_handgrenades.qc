@@ -14,6 +14,7 @@ void HG_Init() {
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
+    addstat(STAT_STEALTH, AS_INT, hg_stealth);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
     g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
@@ -35,6 +36,8 @@ void HG_Precache() {
     precache_sound("porto/expire.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
+    precache_sound("misc/stealth.wav");
+    precache_sound("misc/unstealth.wav");
     precache_sound("kh/capture.wav");
     precache_sound(RM_SOUND_LASER_PRIMARY);
     precache_sound(RM_SOUND_LASER_SECONDARY);
@@ -840,6 +843,30 @@ void HG_Shield_Frame() {
     }
 }
 
+void HG_Cloak(float hgtype) {
+    self.hg_stealth += cvar("g_handgrenades_cloak_duration");
+    pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
+    sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
+}
+
+void HG_Cloak_Frame() {
+    if(self.hg_stealth == -1) {
+        self.hg_stealth = 0;
+        sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
+    }
+    
+    if(self.hg_stealth) {
+        self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime);
+        //self.campingrifle_bulletcounter = 0;
+        
+        self.hg_stealth = approach(self.hg_stealth, 0, frametime);
+        if(!self.hg_stealth)
+            self.hg_stealth = -1;
+    } else
+        self.hg_stealthalpha = approach(self.hg_stealthalpha, 0, frametime * 0.5);
+    
+}
+
 .float spawntime;
 .float hg_linker_nexteffect;
 .float hg_linker_effecttime;
@@ -1035,6 +1062,9 @@ void HG_Attack()
     } else if(hgtype == HG_LINKER) {
         HG_Linker(hgtype);
         goto finish;
+    } else if(hgtype == HG_CLOAK) {
+        HG_Cloak(hgtype);
+        goto finish;
     } else if(hgtype == HG_GG) {
         if(HG_GG_Button(hgtype))
             goto finish;
@@ -1157,6 +1187,7 @@ void HG_Frame()
     
     HG_FixNadeType(self);
     HG_Shield_Frame();
+    HG_Cloak_Frame();
     
     if(roundstate == ROUNDSTATE_OVER) {
         self.hg_power = 0;
@@ -1208,7 +1239,7 @@ void HG_Frame()
         if(mx <= 0) mx = cvar("g_handgrenades_regen_max");
         if(mx <= 0) mx = cvar("g_handgrenades_ammo");
         
-        if(self.hg_ammo < mx && !self.hg_regenpaused) {
+        if(self.hg_ammo < mx && !self.hg_regenpaused && !self.hg_stealth) {
             float rate = frametime;
             if(g_freeze && self.frozen)
                 rate *= cvar("g_handgrenades_regen_frozenfactor");

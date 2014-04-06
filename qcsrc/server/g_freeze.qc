@@ -466,7 +466,7 @@ void Freeze_Hook_PlayerPreThink(void) {
     // Find all players withing revival radius and build a linked list
     if(self.freezetime + Freeze_CVar("revive_delay") < time) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
-        FOR_EACH_PLAYER(other) if(self != other && !other.frozen && other.team == self.team) {
+        FOR_EACH_PLAYER(other) if(!other.hg_stealth) if(self != other && !other.frozen && other.team == self.team) {
             if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
                 allow = Freeze_CVar("revive_through_walls");
                 

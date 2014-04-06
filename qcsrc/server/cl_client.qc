@@ -666,7 +666,20 @@ float Client_customizeentityforclient()
 	t1 = gettime(GETTIME_HIRES); // reference
 	client_cefc_accumulator += (t1 - t0);
 #endif
-
+    
+    float sa = 1 - self.hg_stealthalpha;
+    
+    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
+        sa = 0.3 + 0.7 * sa;
+    
+    self.alpha = sa * default_player_alpha;
+    
+    if(!self.alpha)
+        self.alpha = -1;
+    
+    if(self.alpha < 0)
+        return FALSE;
+    
 	return TRUE;
 }
 
@@ -1362,6 +1375,7 @@ void PutClientInServer (void)
         Boobs_Attach();
         self.wasingame = TRUE;
         self.buffs = 0;
+        self.hg_stealth = 0;
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.lastdamage = 0;
 	} else if(self.classname == "observer") {
@@ -2650,6 +2664,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_launchspeed = spectatee.hg_launchspeed;
     self.hg_shield = spectatee.hg_shield;
     self.hg_shieldpower = spectatee.hg_shieldpower;
+    self.hg_stealth = spectatee.hg_stealth;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;

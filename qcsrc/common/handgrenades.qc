@@ -11,6 +11,7 @@ string HG_TypeToExpandedName(float t) {
         case HG_LINKER      :   return "Linking Shell";
         case HG_GG          :   return "GG Button";
         case HG_LASER       :   return "Lasergun";
+        case HG_CLOAK       :   return "Concealing Cloak";
         default             :   return "Fuckoff Grenade";
     }
 }
@@ -26,6 +27,7 @@ string HG_TypeToName(float t) {
         case HG_LINKER      :   return "linker";
         case HG_GG          :   return "gg";
         case HG_LASER       :   return "laser";
+        case HG_CLOAK       :   return "cloak";
         default             :   return strcat("fuckoff", ftos(t));
     }
 }
@@ -40,6 +42,7 @@ float HG_NameToType(string t) {
         case "linker"       :   return HG_LINKER;
         case "gg"           :   return HG_GG;
         case "laser"        :   return HG_LASER;
+        case "cloak"        :   return HG_CLOAK;
         default             :   return HG_NORMAL;
     }
 }
@@ -58,6 +61,7 @@ vector HG_TypeToColor(float t) {
         case HG_SHIELD      :   return '1.0 1.0 0.0';
         case HG_LINKER      :   return '0.5 0.5 1.0';
         case HG_LASER       :   return '1.0 0.5 0.0';   // TODO: unique color for this?
+        case HG_CLOAK       :   return '0.7 0.7 0.7';
         case HG_GG          :   return '0.5 0.5 0.5' + colormapPaletteColor(15, FALSE);
         default             :   return '0.5 0.5 0.5';
     }
@@ -68,6 +72,9 @@ string HG_NameToIcon(string n, float large) {
     
     if(large)
         s = strcat(s, "_large");
+    
+    if(n == "cloak")
+        s = strcat(s, "_placeholder");
     
     return s;
 }

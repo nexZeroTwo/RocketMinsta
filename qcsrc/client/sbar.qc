@@ -3340,7 +3340,8 @@ float vshield;
 float revmode;
 
 void Sbar_DrawHGShield(void) {
-    float s = getstatf(STAT_HGSHIELD);
+    float st = getstati(STAT_STEALTH);
+    float s = st || getstatf(STAT_HGSHIELD);
     
     if(s)
         vshield = approach(vshield, 1, frametime * 3);
@@ -3348,7 +3349,7 @@ void Sbar_DrawHGShield(void) {
         vshield = approach(vshield, 0, frametime * 3);
     
     if(vshield)
-        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER), 0.1 * vshield, DRAWFLAG_ADDITIVE);
+        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', (st? '1 1 1' : ('0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER))), 0.1 * vshield, DRAWFLAG_ADDITIVE);
 }
 
 float hg_bonusalpha;
@@ -4928,7 +4929,12 @@ void Sbar_Draw(void)
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         
-        if(getstatf(STAT_HGSHIELD))
+        if(getstati(STAT_STEALTH)) {
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to cancel stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(getstatf(STAT_HGSHIELD))
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),

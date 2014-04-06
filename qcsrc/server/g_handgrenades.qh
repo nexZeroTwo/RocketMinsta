@@ -61,6 +61,9 @@ float HG_RegenTime(entity);
 .float hg_shield_oldmovetype;
 .entity hg_shieldmodel;
 
+.float hg_stealth;
+.float hg_stealthalpha;
+
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;
 .float hg_plasma_projdps_delay;

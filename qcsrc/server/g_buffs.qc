@@ -226,6 +226,10 @@ vector Buffs_GenColor(float b) {
 }
 
 float Buffs_BuffModel_Customize(void) {
+    float sameteam = (teams_matter && (other.team == self.owner.team || (other.classname == "spectator" && other.enemy.team == self.owner.team)));
+    if(self.owner.hg_stealth && !sameteam)
+        return FALSE;
+    
     if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
         // somewhat hide the model, but keep the glow
         self.effects = 0;
@@ -430,6 +434,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(plr != attacker || targetTeamMates)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
+    if(!plr.hg_stealth || targetTeamMates)
     if(!plr.jb_isprisoned)
     if(!plr.buffs_arc_hit)
     if(!plr.frozen || !newtarget || newtarget.frozen) {

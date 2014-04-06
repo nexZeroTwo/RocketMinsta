@@ -9,6 +9,7 @@
 #define HG_LINKER       DEATH_HG_LINKER
 #define HG_GG           DEATH_HG_GG
 #define HG_LASER        DEATH_HG_LASER
+#define HG_CLOAK        DEATH_HG_CLOAK
 
 string HG_TypeToName(float);
 float HG_NameToType(string);
