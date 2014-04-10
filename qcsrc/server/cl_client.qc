@@ -1168,7 +1168,7 @@ void PutClientInServer (void)
 			centerprint_spec(self, "Sorry, no spawnpoints available!\nHope your team can fix it...");
 			return; // spawn failed
 		}
-
+        
 		RemoveGrapplingHook(self); // Wazat's Grappling Hook
 
 		self.classname = "player";

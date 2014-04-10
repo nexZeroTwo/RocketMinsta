@@ -60,10 +60,10 @@ float TeamCount_NextTeam(float t) {
             return ((tc > 2)? COLOR_TEAM3 : COLOR_TEAM1);
         
         case COLOR_TEAM3:
-            return ((tc > 3)? COLOR_TEAM4 : COLOR_TEAM1);
+            return ((tc > 3)? COLOR_TEAM4 : ((tc < 3)? COLOR_TEAM3 : COLOR_TEAM1));
         
         case COLOR_TEAM4:
-            return COLOR_TEAM1;
+            return ((tc < 4)? COLOR_TEAM4 : COLOR_TEAM1);
     }
     
     return t;
