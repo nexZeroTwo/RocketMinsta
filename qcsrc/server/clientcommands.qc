@@ -1048,7 +1048,7 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + RESTART_COUNTDOWN;
+	game_starttime = time + cvar("g_start_delay");
     roundstate = ROUNDSTATE_PREGAME;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
