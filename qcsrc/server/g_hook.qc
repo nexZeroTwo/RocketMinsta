@@ -326,7 +326,13 @@ void GrapplingHookTouch (void)
                 return;
             }
             
-			SetMovetypeFollow(self, other);
+            if(other.iscreature && cvar("g_balance_grapplehook_oneperplayer")) {
+                entity e; for(;(e = find(e, classname, "grapplinghook"));)
+                    if(e.aiment == other)
+                        RemoveGrapplingHook(e.owner);
+                    
+            SetMovetypeFollow(self, other);
+            }
         }
     }
 
