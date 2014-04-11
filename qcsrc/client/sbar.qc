@@ -4809,18 +4809,11 @@ void Sbar_Draw(void)
                 ammo_useprogress = TRUE;
             } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
             
-			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
-			
+            if(a < 0 || (!a && !(stat_items & GetAmmoItemCode(i))))
+                continue;
+            
 			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
 				if (stat_items & GetAmmoItemCode(i)) {
-					/*if (vid_conwidth >= 800) {
-						pos_x = 230;
-						pos_y = 40;
-					} else {*/
-						//pos_x = 206;
-						//pos_y = 33;
-					//}
-
 					if(!a)
 					{
 						if(ammonotifytime < time)
@@ -4841,7 +4834,7 @@ void Sbar_Draw(void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < 10 && !isrifle)
+						if(a < (1 + 9 * !isrifle))
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4862,62 +4855,60 @@ void Sbar_Draw(void)
 					}
 				}
 			} else {
-				if (a > 0) {
-					if(rm_oldhud)
-						{
-						switch (i) {
-							case 0: pos_x = 286; pos_y = 48; break; // shells
-							case 1: pos_x = 286; pos_y = 26; break; // bullets
-							case 2: pos_x = 200; pos_y = 48; break; // rockets
-							case 3: pos_x = 200; pos_y = 26; break; // cells
-						}
+                if(rm_oldhud)
+                    {
+                    switch (i) {
+                        case 0: pos_x = 286; pos_y = 48; break; // shells
+                        case 1: pos_x = 286; pos_y = 26; break; // bullets
+                        case 2: pos_x = 200; pos_y = 48; break; // rockets
+                        case 3: pos_x = 200; pos_y = 26; break; // cells
+                    }
 
-						pos = bottom - pos;
-						
-						if (stat_items & GetAmmoItemCode(i))
-							drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-						drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-						
-						if (a < 10) {
-							if(stat_items & GetAmmoItemCode(i))
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-						} else {
-							if(stat_items & GetAmmoItemCode(i))
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-						}
-					}
-					else
-					{
-						pos_y = 33;
-						pos = bottom - pos;
-						pos_x = ammosector_pos;
-						
-						if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
-						{
-							ammo_last = i;
-							
-							drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    pos = bottom - pos;
+                    
+                    if (stat_items & GetAmmoItemCode(i))
+                        drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    
+                    if (a < 10) {
+                        if(stat_items & GetAmmoItemCode(i))
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                    } else {
+                        if(stat_items & GetAmmoItemCode(i))
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                    }
+                }
+                else
+                {
+                    pos_y = 33;
+                    pos = bottom - pos;
+                    pos_x = ammosector_pos;
+                    
+                    if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
+                    {
+                        ammo_last = i;
+                        
+                        drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-							if(a < 10 && !isrifle)
-								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-						}
-						else
-						{
-							pos_y -= 10;
-							pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
-							
-							drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-							Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-							a_offset += 42;
-						}
-					}
-				}
+                        if(a < (1 + 9 * !isrifle))
+                            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    }
+                    else
+                    {
+                        pos_y -= 10;
+                        pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
+                        
+                        drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                        a_offset += 42;
+                    }
+                }
 			}
 		}
 		
@@ -4950,19 +4941,17 @@ void Sbar_Draw(void)
             
         
         if(nadesector_pos) {
-            float a = getstati(STAT_HGAMMO);
-            float t = hgtype;
             pos_y = 33;
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            drawpic(pos, HG_TypeToIcon(t, TRUE), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1' - '0 1 1' * (!a), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            drawpic(pos, HG_TypeToIcon(hgtype, TRUE), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+            Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method
             
             if(hgammo) {
-                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(getstati(STAT_HGTYPE)), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(hgtype), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             }
             
             if(hgregen && hgregen != 1) {
