@@ -2,6 +2,7 @@
 entity DamageTracker_CreateKeeper(entity own) {
     entity k = spawn();
     k.owner = own;
+    k.classname = "dtrack_keeper";
     return k;
 }
 
@@ -31,10 +32,11 @@ void DamageTracker_Sort_Swap(entity keeper, float i, float j) {
     keeper.(dtrack_damage[j]) = tmp_d1;
 }
 
-void DamageTracker_Sort(entity keeper) {
-    float i, j, maxidx;
+float DamageTracker_Sort(entity keeper) {
+    float i, j, maxidx, ecnt;
     
-    FOR_DTRAK_ENTRIES(keeper, i) {
+    FOR_DTRACK_ENTRIES(keeper, i) {
+        ++ecnt;
         maxidx = i;
         
         for(j = i + 1; j < DTRACK_ENTRIES && keeper.(dtrack_type[j]); ++j) {
@@ -45,6 +47,8 @@ void DamageTracker_Sort(entity keeper) {
         if(i != maxidx)
             DamageTracker_Sort_Swap(keeper, i, maxidx);
     }
+    
+    return ecnt;
 }
 
 void DamageTracker_Record(entity keeper, float dtype, float damage) {
@@ -55,4 +59,18 @@ void DamageTracker_Record(entity keeper, float dtype, float damage) {
     
     if(keeper.(dtrack_damage[i]) > keeper.dtrack_highestdamage)
         keeper.dtrack_highestdamage = keeper.(dtrack_damage[i]);
+}
+
+void DamageTracker_Wipe(entity keeper) {
+    float i;
+    
+    FOR_DTRACK_ENTRIES(keeper, i) {
+        keeper.(dtrack_type[i]) = 0;
+        keeper.(dtrack_damage[i]) = 0;
+    }
+    
+    keeper.dtrack_type = 0;
+    keeper.dtrack_damage = 0;
+    keeper.dtrack_highestdamage = 0;
+    keeper.dtrack_totaldamage = 0;
 }
