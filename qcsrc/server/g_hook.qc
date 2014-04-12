@@ -330,9 +330,9 @@ void GrapplingHookTouch (void)
                 entity e; for(;(e = find(e, classname, "grapplinghook"));)
                     if(e.aiment == other)
                         RemoveGrapplingHook(e.owner);
-                    
-            SetMovetypeFollow(self, other);
             }
+            
+            SetMovetypeFollow(self, other);
         }
     }
 
