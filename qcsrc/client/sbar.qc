@@ -781,21 +781,7 @@ string Sbar_GetField(entity pl, float field)
 			return ftos(f);
         
         case SP_DAMAGE: case SP_HEALING:
-            f = pl.(scores[field]);
-            if(f >= 1000000)
-                str = ftos(rint(f * 0.00001) * 0.1);
-            else if(f >= 1000)
-                str = ftos(rint(f * 0.01) * 0.1);
-            else
-                return ftos(f);
-            
-            tmp = strstrofs(str, ".", 0);
-            if(tmp >= 0)
-                str = substring(str, 0, tmp + 2);
-            else
-                str = strcat(str, ".0");
-            
-            return strcat(str, ((f >= 1000000)? "m" : "k"));
+            return FormatDamage(pl.(scores[field]));
             
 		case SP_KDRATIO:
 			num = pl.(scores[SP_KILLS]);
@@ -2473,6 +2459,92 @@ void Sbar_ShowAcceleration(void)
 		drawpic(pos + acceleration * scale * '40 0 0', "gfx/hud/accelerometer_gradient", -acceleration * scale * '40 0 0' + sz * '0 1 0', rgb, alpha * sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
+vector Sbar_DamageStats_Color(float i) {
+    vector clr;
+    float darken = floor(i / 8) * 0.2;
+    i = mod(i, 8);
+    
+    switch(i) {
+        case 0:     clr = '1.0   0.0   0.0'; break;
+        case 1:     clr = '0.0   1.0   0.0'; break;
+        case 2:     clr = '0.0   0.0   1.0'; break;
+        case 3:     clr = '1.0   1.0   0.0'; break;
+        case 4:     clr = '0.0   1.0   1.0'; break;
+        case 5:     clr = '1.0   0.0   1.0'; break;
+        case 6:     clr = '1.0   0.5   0.0'; break;
+        case 7:     clr = '0.0   1.0   0.5'; break;
+    }
+    
+    return clr * (1 - darken);
+}
+
+float damagesources_count;
+void Sbar_DrawDamageStats(vector pos, vector sz) {
+    string str;
+    vector tsize = sbar_fontsize * 1.5;
+    vector o, e;
+    float i, l, a = 1;
+    float header = (tsize_y + sbar_fontsize_y * 0.5);
+    vector opos = pos;
+    
+    sz_y = header + min(floor((sz_y - header) / sbar_fontsize_y) * sbar_fontsize_y, 
+                                             damagesources_count * sbar_fontsize_y);
+    
+    drawfill(pos, sz, '0 0 0', 0.5 * sbar_alpha_bg, DRAWFLAG_NORMAL);
+    drawborderlines(2, pos, sz, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
+    drawborderlines(2, pos, '1 0 0' * sz_x + '0 1 0' * (header - 1), '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
+    
+    o   = '0 1 0' * header;
+    pos = pos + o;
+    sz  = sz - o;
+    
+    tsize = sbar_fontsize;
+    
+    damagesources_count = 0;
+    FOR_DTRAK_ENTRIES(dtrack_total, i) {
+        ++damagesources_count;
+        l = sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage);
+        
+        if(l > 0) {
+            drawfill(opos + e, '0 1 0' * (header - 1) + '1 0 0' * l, Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+            e += l * '1 0 0';
+        }
+        
+        if(sz_y < tsize_y)
+            continue;
+        
+        a = max(0.2, a - 0.025);
+        drawfill(pos, '0 1 0' * tsize_y + '1 0 0' * sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_highestdamage), Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+            
+        str = ftos((dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage) * 100);
+        l = strstrofs(str, ".", 0);
+        if(l >= 0)
+            str = substring(str, 0, l + 2);
+        str = strcat(", ", str, "%");
+        l = stringwidth_svn(str, FALSE, tsize);
+        drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        str = FormatDamage(dtrack_total.(dtrack_damage[i]));
+        l += stringwidth_svn(str, FALSE, tsize);
+        drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        str = strcat(ftos(i+1), ". ", DamageSourceName(dtrack_total.(dtrack_type[i]), TRUE));
+        str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
+        drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        o   = '0 1 0' * tsize_y;
+        pos = pos + o;
+        sz  = sz - o;
+    }
+    
+    tsize = sbar_fontsize * 1.5;
+    drawfont = sbar_bigfont;
+    str = "Damage Statistics";
+    drawstring(opos + (sz_x - stringwidth_svn(str, FALSE, tsize)) * '0.5 0 0', str, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawfont = sbar_font;
+    
+}
+
 void Sbar_DrawAccuracyStats_Description_Hitscan(vector position)
 {
 	drawstring(position + '0 3 0' * sbar_fontsize_y, "Shots fired:", sbar_fontsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -2521,13 +2593,19 @@ void Sbar_DrawAccuracyStats()
 
 		return;
 	}
-
+    
 	float top_border_hitscan = SCOREBOARD_OFFSET + 55;  // position where the hitscan row starts: pixels down the screen
 	Sbar_DrawAccuracyStats_Description_Hitscan('1 0 0' * col_margin + '0 1 0' * top_border_hitscan);
 
 	float top_border_splash = SCOREBOARD_OFFSET + 175;  // position where the splash row starts: pixels down the screen
 	Sbar_DrawAccuracyStats_Description_Splash('1 0 0' * col_margin + '0 1 0' * top_border_splash);
 
+    if(sv_damagestats) {
+        //vector dsize = '0.2 0 0' * vid_conwidth + '0 0.3 0' * vid_conheight;
+        vector dsize = '300 450';
+        Sbar_DrawDamageStats('1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan, dsize);
+    }
+    
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
 	{
 		weapon_hit = weapon_hits[i];

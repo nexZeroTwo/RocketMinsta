@@ -692,6 +692,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     
                 if(!sameteam) {
                     PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
+                    DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save);
+                    
                     if(g_clanarena)
                         PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
                     

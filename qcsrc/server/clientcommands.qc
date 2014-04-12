@@ -963,6 +963,22 @@ void SV_ParseClientCommand(string s) {
 		}
 		self.hidecountry = stof (argv (1));
 		IP2C_SetCountry (self);
+    } else if (cmd == "dmgstats") {
+        if(!sv_damagestats) {
+            sprint(self, "^1Damage statistics are not available on this server.\n");
+            return;
+        }
+        
+        float entno = stof(argv(1));
+        entity client = world;
+        if(entno <= maxclients)
+            client = edict_num(entno);
+        
+        if(client.dtrack_total)
+            DamageTracker_Print(client.dtrack_total, self);
+        else
+            sprint(self, "^1Usage: cmd dmgstats player_id\n");
+        return;
 	} else {
 		//if(ctf_clientcommand())
 		//	return;

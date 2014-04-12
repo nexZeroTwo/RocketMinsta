@@ -1439,6 +1439,7 @@ float ClientInit_SendEntity(entity to, float sf)
         WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
+    WriteByte(MSG_ENTITY, sv_damagestats);
 	return TRUE;
 }
 
@@ -1924,6 +1925,8 @@ void ClientConnect (void)
         if(realclients == 1 && time > game_starttime && !cvar("g_warmup"))
             ReadyRestart();
     }
+    
+    self.dtrack_total = DamageTracker_CreateKeeper(self);
 }
 
 /*
@@ -2038,6 +2041,9 @@ void ClientDisconnect (void)
     
     if(self.jb_jailspec_proxy)
         remove(self.jb_jailspec_proxy);
+    
+    if(self.dtrack_total)
+        remove(self.dtrack_total);
     
     // free cvars
     GetCvars(-1);
