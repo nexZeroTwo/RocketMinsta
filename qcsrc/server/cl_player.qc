@@ -563,33 +563,35 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         Buffs_ArcDamage_Finalize();
     }
 
-    if(damage)
-    if(g_handgrenades)
-    if(attacker.classname == "player")
-    if(self.hg_shield)
-    if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
-        vector offs = '0 0 1' * self.maxs_z*0.5;
-        float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
-        float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
-        float absorb = damage * (1 - takefactor);
-        damage *= takefactor;
+    if(damage) {
+        if(g_handgrenades)
+        if(attacker.classname == "player")
+        if(self.hg_shield) {
+            if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
+                vector offs = '0 0 1' * self.maxs_z*0.5;
+                float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
+                float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
+                float absorb = damage * (1 - takefactor);
+                damage *= takefactor;
+                
+                if(DEATH_ISHG(deathtype))
+                    reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");
+                
+                FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
+                trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin+offs, trace_endpos);
+                
+                self.hg_shieldhealth -= absorb;
+                if(self.hg_shieldhealth <= 0)
+                    self.hg_shield = 0;
+            } else if(deathtype == DEATH_HG_TRANSLOC)
+                self.hg_shield = 0;
+        }
         
-        if(DEATH_ISHG(deathtype))
-            reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");
-        
-        FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
-        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin+offs, trace_endpos);
-        
-        self.hg_shieldhealth -= absorb;
-        if(self.hg_shieldhealth <= 0)
-            self.hg_shield = 0;
-    }
-
-    if(damage)
-    if(deathtype == HG_PLASMA_SHARD) {
-        if(time > inflictor.damage_nextarceffect) {
-            te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
-            inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
+        if(deathtype == HG_PLASMA_SHARD) {
+            if(time > inflictor.damage_nextarceffect) {
+                te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
+                inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
+            }
         }
     }
     
@@ -692,7 +694,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     
                 if(!sameteam) {
                     PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
-                    DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save);
+                    DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
+                    DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
                     
                     if(g_clanarena)
                         PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));

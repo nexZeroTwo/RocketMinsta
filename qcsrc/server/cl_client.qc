@@ -1927,6 +1927,9 @@ void ClientConnect (void)
     }
     
     self.dtrack_total = DamageTracker_CreateKeeper(self);
+    self.dtrack_total.netname = "Damage done";
+    self.dtrack_taken = DamageTracker_CreateKeeper(self);
+    self.dtrack_taken.netname = "Damage taken";
 }
 
 /*
@@ -2044,6 +2047,9 @@ void ClientDisconnect (void)
     
     if(self.dtrack_total)
         remove(self.dtrack_total);
+    
+    if(self.dtrack_taken)
+        remove(self.dtrack_taken);
     
     // free cvars
     GetCvars(-1);
@@ -2823,6 +2829,9 @@ float SpectateNext() {
 		
 		WriteSpectatorInfo(oldenemy);
 		WriteSpectatorInfo(self.enemy);
+        
+        DamageTracker_Overwrite(self.enemy.dtrack_total, self, DTFLAG_DONE  | DTFLAG_SPEC);
+        DamageTracker_Overwrite(self.enemy.dtrack_taken, self, DTFLAG_TAKEN | DTFLAG_SPEC);
 		return 1;
 	} else {
 		return 0;

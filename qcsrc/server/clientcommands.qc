@@ -974,8 +974,10 @@ void SV_ParseClientCommand(string s) {
         if(entno <= maxclients)
             client = edict_num(entno);
         
-        if(client.dtrack_total)
-            DamageTracker_Print(client.dtrack_total, self);
+        entity k = ((argv(2) == "taken")? client.dtrack_taken : client.dtrack_total);
+        
+        if(k)
+            DamageTracker_Print(k, self);
         else
             sprint(self, "^1Usage: cmd dmgstats player_id\n");
         return;

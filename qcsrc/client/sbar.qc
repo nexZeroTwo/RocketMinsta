@@ -2478,8 +2478,8 @@ vector Sbar_DamageStats_Color(float i) {
     return clr * (1 - darken);
 }
 
-float damagesources_count;
-void Sbar_DrawDamageStats(vector pos, vector sz) {
+.float cnt;
+vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
     string str;
     vector tsize = sbar_fontsize * 1.5;
     vector o, e;
@@ -2488,7 +2488,7 @@ void Sbar_DrawDamageStats(vector pos, vector sz) {
     vector opos = pos;
     
     sz_y = header + min(floor((sz_y - header) / sbar_fontsize_y) * sbar_fontsize_y, 
-                                             damagesources_count * sbar_fontsize_y);
+                                                           k.cnt * sbar_fontsize_y);
     
     drawfill(pos, sz, '0 0 0', 0.5 * sbar_alpha_bg, DRAWFLAG_NORMAL);
     drawborderlines(2, pos, sz, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
@@ -2500,10 +2500,10 @@ void Sbar_DrawDamageStats(vector pos, vector sz) {
     
     tsize = sbar_fontsize;
     
-    damagesources_count = 0;
-    FOR_DTRAK_ENTRIES(dtrack_total, i) {
-        ++damagesources_count;
-        l = sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage);
+    k.cnt = 0;
+    FOR_DTRACK_ENTRIES(k, i) {
+        k.cnt += 1;
+        l = sz_x * (k.(dtrack_damage[i]) / k.dtrack_totaldamage);
         
         if(l > 0) {
             drawfill(opos + e, '0 1 0' * (header - 1) + '1 0 0' * l, Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
@@ -2514,9 +2514,9 @@ void Sbar_DrawDamageStats(vector pos, vector sz) {
             continue;
         
         a = max(0.2, a - 0.025);
-        drawfill(pos, '0 1 0' * tsize_y + '1 0 0' * sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_highestdamage), Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+        drawfill(pos, '0 1 0' * tsize_y + '1 0 0' * sz_x * (k.(dtrack_damage[i]) / k.dtrack_highestdamage), Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
             
-        str = ftos((dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage) * 100);
+        str = ftos((k.(dtrack_damage[i]) / k.dtrack_totaldamage) * 100);
         l = strstrofs(str, ".", 0);
         if(l >= 0)
             str = substring(str, 0, l + 2);
@@ -2524,11 +2524,11 @@ void Sbar_DrawDamageStats(vector pos, vector sz) {
         l = stringwidth_svn(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
-        str = FormatDamage(dtrack_total.(dtrack_damage[i]));
+        str = FormatDamage(k.(dtrack_damage[i]));
         l += stringwidth_svn(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
-        str = strcat(ftos(i+1), ". ", DamageSourceName(dtrack_total.(dtrack_type[i]), TRUE));
+        str = strcat(ftos(i+1), ". ", DamageSourceName(k.(dtrack_type[i]), TRUE));
         str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
         drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
@@ -2539,10 +2539,12 @@ void Sbar_DrawDamageStats(vector pos, vector sz) {
     
     tsize = sbar_fontsize * 1.5;
     drawfont = sbar_bigfont;
-    str = "Damage Statistics";
-    drawstring(opos + (sz_x - stringwidth_svn(str, FALSE, tsize)) * '0.5 0 0', str, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawstring(opos + tsize_x * '0.5 0 0', head, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    str = FormatDamage(k.dtrack_totaldamage);
+    drawstring(opos - (tsize_x * 0.5 + stringwidth_svn(str, FALSE, tsize) - sz_x) * '1 0 0', str, tsize, '1 1 0', sbar_alpha_fg, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
     
+    return pos;
 }
 
 void Sbar_DrawAccuracyStats_Description_Hitscan(vector position)
@@ -2602,8 +2604,10 @@ void Sbar_DrawAccuracyStats()
 
     if(sv_damagestats) {
         //vector dsize = '0.2 0 0' * vid_conwidth + '0 0.3 0' * vid_conheight;
-        vector dsize = '300 450';
-        Sbar_DrawDamageStats('1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan, dsize);
+        vector dsize = '0.25 0 0' * vid_conwidth + '0 0.25 0' * vid_conheight;
+        vector dpos = '1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan;
+        dpos = Sbar_DrawDamageStats(((spectatee_status > 0)? dtrack_total_spec : dtrack_total), "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
+        Sbar_DrawDamageStats(((spectatee_status > 0)? dtrack_taken_spec : dtrack_taken), "Damage taken", dpos, dsize);
     }
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
