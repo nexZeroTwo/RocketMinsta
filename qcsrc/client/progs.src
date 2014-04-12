@@ -29,6 +29,7 @@ prandom.qh
 bgmscript.qh
 visualdamage.qh
 
+../common/damagetracker.qh
 main.qh
 hudskin.qh
 
@@ -55,6 +56,7 @@ wall.qc
 modeleffects.qc
 visualdamage.qc
 
+../common/damagetracker.qc
 ../common/gametype.qc
 
 //vehicles/spiderbot.qc

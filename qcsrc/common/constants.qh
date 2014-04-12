@@ -49,6 +49,7 @@ const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
+const float TE_CSQC_DTRACK = 121;
 
 #define VDMG_TYPE_HIT 1
 #define VDMG_TYPE_CRIT 2

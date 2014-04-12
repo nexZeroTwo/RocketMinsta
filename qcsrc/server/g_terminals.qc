@@ -96,7 +96,7 @@ void Term_Hook_PlayerPreThink(void) {
     if(!g_terminals)
         return;
     
-    if(!self.iscreature || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO || time - self.lastdamage < cvar("g_terminals_auth_damage_delay")) {
+    if(!self.iscreature || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO || time - self.lastdamage < cvar("g_terminals_auth_damage_delay") || self.hg_stealth) {
         self.term_auth = self.term_authed = 0;
         return;
     }

@@ -478,6 +478,8 @@ void spawnfunc_worldspawn (void)
 	dprint_load(); // load dprint status from cvar
 	
 	RM_CvarCompat();
+    sv_damagestats = cvar("sv_damagestats");
+
 	
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");

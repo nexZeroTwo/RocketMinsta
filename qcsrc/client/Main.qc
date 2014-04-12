@@ -173,6 +173,8 @@ void CSQC_Init(void)
 		oldengine = 1;
 	}
 	
+    dtrack_total = DamageTracker_CreateKeeper(world);
+    
 	IP2C_Init();
     registercvar("_g_handgrenades_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
@@ -1795,6 +1797,7 @@ void Ent_Init()
     cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
+    sv_damagestats = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -2073,6 +2076,14 @@ void Net_Heal() {
     pointparticles(rm_particleeffectnum("RM_HEAL"), o, '0 0 0', 1);
 }
 
+void Net_DamageTracker() {
+    float dtype, damage;
+    dtype = ReadShort();
+    damage = ReadShort();
+    DamageTracker_Record(dtrack_total, dtype, damage);
+    DamageTracker_Sort(dtrack_total);
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2149,8 +2160,11 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_BLAST:
             Net_ReadBlast();
-			return TRUE;
-	}
+            return TRUE;
+        case TE_CSQC_DTRACK:
+            Net_DamageTracker();
+            return TRUE;
+    }
 
 	// pass to the engine
 	return FALSE;

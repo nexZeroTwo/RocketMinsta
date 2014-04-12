@@ -781,21 +781,7 @@ string Sbar_GetField(entity pl, float field)
 			return ftos(f);
         
         case SP_DAMAGE: case SP_HEALING:
-            f = pl.(scores[field]);
-            if(f >= 1000000)
-                str = ftos(rint(f * 0.00001) * 0.1);
-            else if(f >= 1000)
-                str = ftos(rint(f * 0.01) * 0.1);
-            else
-                return ftos(f);
-            
-            tmp = strstrofs(str, ".", 0);
-            if(tmp >= 0)
-                str = substring(str, 0, tmp + 2);
-            else
-                str = strcat(str, ".0");
-            
-            return strcat(str, ((f >= 1000000)? "m" : "k"));
+            return FormatDamage(pl.(scores[field]));
             
 		case SP_KDRATIO:
 			num = pl.(scores[SP_KILLS]);
@@ -2473,6 +2459,92 @@ void Sbar_ShowAcceleration(void)
 		drawpic(pos + acceleration * scale * '40 0 0', "gfx/hud/accelerometer_gradient", -acceleration * scale * '40 0 0' + sz * '0 1 0', rgb, alpha * sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
+vector Sbar_DamageStats_Color(float i) {
+    vector clr;
+    float darken = floor(i / 8) * 0.2;
+    i = mod(i, 8);
+    
+    switch(i) {
+        case 0:     clr = '1.0   0.0   0.0'; break;
+        case 1:     clr = '0.0   1.0   0.0'; break;
+        case 2:     clr = '0.0   0.0   1.0'; break;
+        case 3:     clr = '1.0   1.0   0.0'; break;
+        case 4:     clr = '0.0   1.0   1.0'; break;
+        case 5:     clr = '1.0   0.0   1.0'; break;
+        case 6:     clr = '1.0   0.5   0.0'; break;
+        case 7:     clr = '0.0   1.0   0.5'; break;
+    }
+    
+    return clr * (1 - darken);
+}
+
+float damagesources_count;
+void Sbar_DrawDamageStats(vector pos, vector sz) {
+    string str;
+    vector tsize = sbar_fontsize * 1.5;
+    vector o, e;
+    float i, l, a = 1;
+    float header = (tsize_y + sbar_fontsize_y * 0.5);
+    vector opos = pos;
+    
+    sz_y = header + min(floor((sz_y - header) / sbar_fontsize_y) * sbar_fontsize_y, 
+                                             damagesources_count * sbar_fontsize_y);
+    
+    drawfill(pos, sz, '0 0 0', 0.5 * sbar_alpha_bg, DRAWFLAG_NORMAL);
+    drawborderlines(2, pos, sz, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
+    drawborderlines(2, pos, '1 0 0' * sz_x + '0 1 0' * (header - 1), '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
+    
+    o   = '0 1 0' * header;
+    pos = pos + o;
+    sz  = sz - o;
+    
+    tsize = sbar_fontsize;
+    
+    damagesources_count = 0;
+    FOR_DTRAK_ENTRIES(dtrack_total, i) {
+        ++damagesources_count;
+        l = sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage);
+        
+        if(l > 0) {
+            drawfill(opos + e, '0 1 0' * (header - 1) + '1 0 0' * l, Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+            e += l * '1 0 0';
+        }
+        
+        if(sz_y < tsize_y)
+            continue;
+        
+        a = max(0.2, a - 0.025);
+        drawfill(pos, '0 1 0' * tsize_y + '1 0 0' * sz_x * (dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_highestdamage), Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+            
+        str = ftos((dtrack_total.(dtrack_damage[i]) / dtrack_total.dtrack_totaldamage) * 100);
+        l = strstrofs(str, ".", 0);
+        if(l >= 0)
+            str = substring(str, 0, l + 2);
+        str = strcat(", ", str, "%");
+        l = stringwidth_svn(str, FALSE, tsize);
+        drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        str = FormatDamage(dtrack_total.(dtrack_damage[i]));
+        l += stringwidth_svn(str, FALSE, tsize);
+        drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        str = strcat(ftos(i+1), ". ", DamageSourceName(dtrack_total.(dtrack_type[i]), TRUE));
+        str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
+        drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+        
+        o   = '0 1 0' * tsize_y;
+        pos = pos + o;
+        sz  = sz - o;
+    }
+    
+    tsize = sbar_fontsize * 1.5;
+    drawfont = sbar_bigfont;
+    str = "Damage Statistics";
+    drawstring(opos + (sz_x - stringwidth_svn(str, FALSE, tsize)) * '0.5 0 0', str, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawfont = sbar_font;
+    
+}
+
 void Sbar_DrawAccuracyStats_Description_Hitscan(vector position)
 {
 	drawstring(position + '0 3 0' * sbar_fontsize_y, "Shots fired:", sbar_fontsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -2521,13 +2593,19 @@ void Sbar_DrawAccuracyStats()
 
 		return;
 	}
-
+    
 	float top_border_hitscan = SCOREBOARD_OFFSET + 55;  // position where the hitscan row starts: pixels down the screen
 	Sbar_DrawAccuracyStats_Description_Hitscan('1 0 0' * col_margin + '0 1 0' * top_border_hitscan);
 
 	float top_border_splash = SCOREBOARD_OFFSET + 175;  // position where the splash row starts: pixels down the screen
 	Sbar_DrawAccuracyStats_Description_Splash('1 0 0' * col_margin + '0 1 0' * top_border_splash);
 
+    if(sv_damagestats) {
+        //vector dsize = '0.2 0 0' * vid_conwidth + '0 0.3 0' * vid_conheight;
+        vector dsize = '300 450';
+        Sbar_DrawDamageStats('1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan, dsize);
+    }
+    
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
 	{
 		weapon_hit = weapon_hits[i];
@@ -4809,18 +4887,11 @@ void Sbar_Draw(void)
                 ammo_useprogress = TRUE;
             } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
             
-			//if(sbar_currentammo || vid_conwidth < 800) { // force showing current ammo only with conwidths < 800
-			
+            if(a < 0 || (!a && !(stat_items & GetAmmoItemCode(i))))
+                continue;
+            
 			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
 				if (stat_items & GetAmmoItemCode(i)) {
-					/*if (vid_conwidth >= 800) {
-						pos_x = 230;
-						pos_y = 40;
-					} else {*/
-						//pos_x = 206;
-						//pos_y = 33;
-					//}
-
 					if(!a)
 					{
 						if(ammonotifytime < time)
@@ -4841,7 +4912,7 @@ void Sbar_Draw(void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < 10 && !isrifle)
+						if(a < (1 + 9 * !isrifle))
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -4862,62 +4933,60 @@ void Sbar_Draw(void)
 					}
 				}
 			} else {
-				if (a > 0) {
-					if(rm_oldhud)
-						{
-						switch (i) {
-							case 0: pos_x = 286; pos_y = 48; break; // shells
-							case 1: pos_x = 286; pos_y = 26; break; // bullets
-							case 2: pos_x = 200; pos_y = 48; break; // rockets
-							case 3: pos_x = 200; pos_y = 26; break; // cells
-						}
+                if(rm_oldhud)
+                    {
+                    switch (i) {
+                        case 0: pos_x = 286; pos_y = 48; break; // shells
+                        case 1: pos_x = 286; pos_y = 26; break; // bullets
+                        case 2: pos_x = 200; pos_y = 48; break; // rockets
+                        case 3: pos_x = 200; pos_y = 26; break; // cells
+                    }
 
-						pos = bottom - pos;
-						
-						if (stat_items & GetAmmoItemCode(i))
-							drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-						drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-						
-						if (a < 10) {
-							if(stat_items & GetAmmoItemCode(i))
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-						} else {
-							if(stat_items & GetAmmoItemCode(i))
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-						}
-					}
-					else
-					{
-						pos_y = 33;
-						pos = bottom - pos;
-						pos_x = ammosector_pos;
-						
-						if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
-						{
-							ammo_last = i;
-							
-							drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    pos = bottom - pos;
+                    
+                    if (stat_items & GetAmmoItemCode(i))
+                        drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    
+                    if (a < 10) {
+                        if(stat_items & GetAmmoItemCode(i))
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                    } else {
+                        if(stat_items & GetAmmoItemCode(i))
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                    }
+                }
+                else
+                {
+                    pos_y = 33;
+                    pos = bottom - pos;
+                    pos_x = ammosector_pos;
+                    
+                    if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
+                    {
+                        ammo_last = i;
+                        
+                        drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-							if(a < 10 && !isrifle)
-								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-							else
-								Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-						}
-						else
-						{
-							pos_y -= 10;
-							pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
-							
-							drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-							Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
-							a_offset += 42;
-						}
-					}
-				}
+                        if(a < (1 + 9 * !isrifle))
+                            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        else
+                            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                    }
+                    else
+                    {
+                        pos_y -= 10;
+                        pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
+                        
+                        drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+                        Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
+                        a_offset += 42;
+                    }
+                }
 			}
 		}
 		
@@ -4950,19 +5019,17 @@ void Sbar_Draw(void)
             
         
         if(nadesector_pos) {
-            float a = getstati(STAT_HGAMMO);
-            float t = hgtype;
             pos_y = 33;
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            drawpic(pos, HG_TypeToIcon(t, TRUE), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-            Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1' - '0 1 1' * (!a), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            drawpic(pos, HG_TypeToIcon(hgtype, TRUE), '32 32 0', '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED), sbar_alpha_fg, DRAWFLAG_NORMAL);
+            Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method
             
             if(hgammo) {
-                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(getstati(STAT_HGTYPE)), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+                drawcolorcodedstringcenter(hgapos, strcat(HG_TypeToExpandedName(hgtype), "s: ^3", ftos(hgammo)), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             }
             
             if(hgregen && hgregen != 1) {
