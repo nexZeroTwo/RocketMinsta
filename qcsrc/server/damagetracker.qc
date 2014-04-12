@@ -54,6 +54,9 @@ void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float
     if(!keeper.owner.iscreature)
         return;
     
+    if(damage <= 0)
+        return;
+    
     DamageTracker_Record(keeper, dtype, damage);
     
     dtflags &~= DTFLAG_OVERWRITE;
