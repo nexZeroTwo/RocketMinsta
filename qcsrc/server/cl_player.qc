@@ -849,6 +849,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		race_PreDie();
 		DropAllRunes(self);
 		
+        self.hg_bonus = 0;
+        self.hg_bonustype = HG_NORMAL;
         self.hg_linker = world;
         self.buffs = 0;
         self.hg_stealth = 0;
