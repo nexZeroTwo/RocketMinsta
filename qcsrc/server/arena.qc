@@ -23,6 +23,7 @@ void target_assault_roundend_reset();
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
 float redspawned, bluespawned, yellowspawned, pinkspawned;
 float totalspawned;
+void SetPlayerTeam(entity pl, float t, float s, float noprint);
 
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
@@ -90,7 +91,10 @@ void reset_map(float dorespawn)
 		vip_ClearVIPs_MaybeAssign();
 		//vip_RespawnSoulGems();
 	}
-
+    
+    if(teamcount_balancenext)
+        TeamCount_BalanceTeams();
+    
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)

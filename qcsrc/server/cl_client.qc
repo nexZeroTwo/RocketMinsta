@@ -3103,6 +3103,10 @@ void PlayerPreThink (void)
         isobs = TRUE;
     }
     
+    if(isplayer || self.jb_specteam)
+    if(roundstate == ROUNDSTATE_GAME)
+        self.playtime += frametime;
+    
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();
