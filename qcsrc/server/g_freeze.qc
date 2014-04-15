@@ -192,8 +192,6 @@ void Freeze_UnfreezePlayer(entity plr)
     
     if(g_handgrenades) {
         if(cvar("g_handgrenades_regen_time")) {
-            plr.hg_bonus = 0;
-            plr.hg_bonustype = HG_NORMAL;
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }

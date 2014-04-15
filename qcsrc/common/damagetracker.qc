@@ -17,7 +17,7 @@ float DamageTracker_GetEntryId(entity keeper, float dtype) {
     return -1;
 }
 
-void DamageTracker_Sort_Swap(entity keeper, float i, float j) {
+void DamageTracker_Sort_Swap(float i, float j, entity keeper) {
     float tmp_t1, tmp_d1;
     float tmp_t2, tmp_d2;
     
@@ -32,22 +32,17 @@ void DamageTracker_Sort_Swap(entity keeper, float i, float j) {
     keeper.(dtrack_damage[j]) = tmp_d1;
 }
 
+float DamageTracker_Sort_Compare(float i, float j, entity keeper) {
+    return keeper.(dtrack_damage[j]) - keeper.(dtrack_damage[i]);
+}
+
 float DamageTracker_Sort(entity keeper) {
-    float i, j, maxidx, ecnt;
+    float ecnt, i;
     
-    FOR_DTRACK_ENTRIES(keeper, i) {
+    FOR_DTRACK_ENTRIES(keeper, i)
         ++ecnt;
-        maxidx = i;
         
-        for(j = i + 1; j < DTRACK_ENTRIES && keeper.(dtrack_type[j]); ++j) {
-            if(keeper.(dtrack_damage[j]) > keeper.dtrack_damage[maxidx])
-                maxidx = j;
-        }
-        
-        if(i != maxidx)
-            DamageTracker_Sort_Swap(keeper, i, maxidx);
-    }
-    
+    heapsort(ecnt, DamageTracker_Sort_Swap, DamageTracker_Sort_Compare, keeper);
     return ecnt;
 }
 
