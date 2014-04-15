@@ -765,3 +765,5 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 .void(void) teamswap;
 void SwapTeams(void);
 void SwapTeams_Generic(void);
+
+.float playtime;

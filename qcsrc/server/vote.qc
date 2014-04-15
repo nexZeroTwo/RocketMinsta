@@ -405,7 +405,12 @@ float RemapVote(string vote, string cmd, entity e)
 		keeptopic = TRUE;
 		cvar_set("_sv_explosive_topicby", e.netname);
 	}
-
+    
+    if(argv(0) == "balanceteams" && teamcount_balancenext) {
+        sprint(e, "Team rebalance is already scheduled for the next round.\n");
+        return FALSE;
+    }
+    
 	cvar_set ("_sv_rm_lastvote", ftos (time));
 
 	return TRUE;

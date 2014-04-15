@@ -111,6 +111,10 @@ float TeamScore_Add(entity player, float scorefield, float score)
 	return TeamScore_AddToTeam(player.team, scorefield, score);
 }
 
+float TeamScore_Get(float t, float scorefield) {
+    return teamscorekeepers[t - 1].(teamscores[scorefield]);
+}
+
 float TeamScore_Compare(entity t1, entity t2)
 {
 	if(!t1 || !t2) return (!t2) - !t1;
