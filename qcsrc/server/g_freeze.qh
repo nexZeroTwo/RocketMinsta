@@ -11,6 +11,7 @@ float g_freeze_globalwarming_reset;
 .float revprogress;
 .float revresettime;
 .float revfinished;
+.float revtime;
 .float meltprogress;
 .float revrow;
 .float danger_used;

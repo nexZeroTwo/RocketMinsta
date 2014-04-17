@@ -338,6 +338,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         return;
     
     Freeze_UnfreezePlayer(plr);
+    plr.revtime = time;
     
     // EVERY team mate nearby gets a point (even if multiple!)
     
@@ -469,8 +470,13 @@ void Freeze_Hook_PlayerPreThink(void) {
     // Find all players withing revival radius and build a linked list
     if(self.freezetime + Freeze_CVar("revive_delay") < time) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
-        FOR_EACH_PLAYER(other) if(!other.hg_stealth) if(self != other && !other.frozen && other.team == self.team) {
-            if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
+        
+        FOR_EACH_PLAYER(other)
+            if(!other.hg_stealth)
+            if(self != other && !other.frozen && other.team == self.team)
+            if(time - other.revtime > Freeze_CVar("revive_delay_after_revived"))
+            if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
+            {
                 allow = Freeze_CVar("revive_through_walls");
                 
                 if(!allow) {
@@ -502,7 +508,6 @@ void Freeze_Hook_PlayerPreThink(void) {
                     rmod = max(rmod, lmod);
                 }
             }
-        }
     }
         
     if(rfirst) // OK, there is at least one teammate reviving us
