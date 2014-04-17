@@ -34,7 +34,7 @@ void restartAnnouncer_Think() {
 		//gamestart_fadetime = time + 0.5;
 		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
 		bigprint(" ", "", 1);
-		bigprint(strcat("Game starts in: ", ftos(countdown_rounded)), "", 1);
+		bigprint(strcat(strcat(gametype_ID_to_LongName(gametype)), " starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);

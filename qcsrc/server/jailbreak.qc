@@ -750,7 +750,7 @@ void JB_PrepareNextRound() {
 }
 
 void JB_EndRound(float t) {
-	G_EndRound("Jailbreak", t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
+	G_EndRound(t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
