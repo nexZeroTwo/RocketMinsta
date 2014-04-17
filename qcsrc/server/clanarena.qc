@@ -97,7 +97,7 @@ void CA_CheckWinner(void) {
     } else {
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Draw!", "", 5);
-        FreezeTag_EndRound();
+        CA_EndRound();
         return;
     }
     
