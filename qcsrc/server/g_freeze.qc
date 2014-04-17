@@ -332,6 +332,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     float first = TRUE;
     string names;
     entity e;
+    float pcnt = 1;
     
     if(!plr.frozen)
         return;
@@ -340,9 +341,13 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     
     // EVERY team mate nearby gets a point (even if multiple!)
     
+    if(Freeze_CVar("score_revival_shared"))
+        for(e = revlist.chain; e; e = e.chain)
+            ++pcnt;
+    
     for(e = revlist; e; e = e.chain) {
-        PlayerScore_Add(e, SP_REVIVALS, +1);
-        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival"));
+        PlayerScore_Add(e, SP_REVIVALS, 1);
+        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
         
         e.health = max(e.health, Freeze_CVar("revive_heal"));
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
