@@ -2492,7 +2492,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
     
     drawfill(pos, sz, '0 0 0', 0.5 * sbar_alpha_bg, DRAWFLAG_NORMAL);
     drawborderlines(2, pos, sz, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
-    drawborderlines(2, pos, '1 0 0' * sz_x + '0 1 0' * (header - 1), '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
+    drawborderlines(2, pos, '1 0 0' * sz_x + '0 1 0' * (header - 2), '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
     
     o   = '0 1 0' * header;
     pos = pos + o;
@@ -2506,7 +2506,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
         l = sz_x * (k.(dtrack_damage[i]) / k.dtrack_totaldamage);
         
         if(l > 0) {
-            drawfill(opos + e, '0 1 0' * (header - 1) + '1 0 0' * l, Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
+            drawfill(opos + e, '0 1 0' * (header - 2) + '1 0 0' * l, Sbar_DamageStats_Color(i), 0.3, DRAWFLAG_NORMAL);
             e += l * '1 0 0';
         }
         
@@ -2538,10 +2538,11 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
     }
     
     tsize = sbar_fontsize * 1.5;
+    opos_y += header * 0.5 - tsize_y * 0.55;
     drawfont = sbar_bigfont;
-    drawstring(opos + tsize_x * '0.5 0 0', head, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawstring(opos + tsize_x * '0.25 0 0', head, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
     str = FormatDamage(k.dtrack_totaldamage);
-    drawstring(opos - (tsize_x * 0.5 + stringwidth_svn(str, FALSE, tsize) - sz_x) * '1 0 0', str, tsize, '1 1 0', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawstring(opos - (tsize_x * 0.25 + stringwidth_svn(str, FALSE, tsize) - sz_x) * '1 0 0', str, tsize, '1 1 0', sbar_alpha_fg, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
     
     return pos;
@@ -3120,8 +3121,8 @@ void GetSectorClipArea(vector sectorpos, vector sectorsize) {
     sector_clip_pos = sectorpos;
 	sector_clip_size = sectorsize;
     
-	sector_clip_pos_x += hudskin_sector_padding_left;
-	sector_clip_size_x -= hudskin_sector_padding_left;
+	sector_clip_pos_x += hudskin_sector_padding_left - 1;
+	sector_clip_size_x -= hudskin_sector_padding_left - 1;
 	sector_clip_size_x -= hudskin_sector_padding_right;
 	sector_clip_pos_y += hudskin_sector_padding_top;
 	sector_clip_size_y -= hudskin_sector_padding_top;
@@ -3147,8 +3148,8 @@ void GetSectorBorderClipArea(vector sectorpos, vector sectorsize) {
         float h  = max(abs(ol - ar), abs(or - al));
         float hd = h - sector_clip_size_y;
         
-        sector_clip_pos_x  = sector_border_left_pos_x;
-        sector_clip_size_x = sector_border_right_pos_x - sector_clip_pos_x + sector_border_right_size_x;
+        sector_clip_pos_x  = sector_border_left_pos_x - 1;
+        sector_clip_size_x = sector_border_right_pos_x - sector_clip_pos_x + sector_border_right_size_x + 1;
         sector_clip_pos_y -= hd/2;
         sector_clip_size_y = h;
     }
@@ -4363,7 +4364,7 @@ void Sbar_Draw(void)
 
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
             float hlimit = 200;
-            vhealth += (min(mxdmg_x, hlimit) - vhealth) * frametime * 10;
+            vhealth += (min(mxdmg_x + 1, hlimit) - vhealth) * frametime * 10;
 
 			if(rm_althud)	/// RM hud layout
 			{
