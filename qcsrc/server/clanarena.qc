@@ -43,7 +43,7 @@ float CA_AliveCheck(entity plr) {
 }
 
 void CA_EndRound(void) {
-    G_EndRound("Clan Arena", 5, cvar("g_clanarena_warmup"), CA_RecountPlayers, func_null, func_null);
+    G_EndRound(5, cvar("g_clanarena_warmup"), CA_RecountPlayers, func_null, func_null);
     CA_RecountPlayers();
 }
 
@@ -97,7 +97,7 @@ void CA_CheckWinner(void) {
     } else {
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Draw!", "", 5);
-        FreezeTag_EndRound();
+        CA_EndRound();
         return;
     }
     

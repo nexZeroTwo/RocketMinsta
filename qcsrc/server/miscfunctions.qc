@@ -3377,7 +3377,6 @@ string GetForcedFog() {
 
 // ========================================== //
 
-.string endround_typename;
 .float endround_warmuptime;
 .float endround_announced;
 .void() endround_think;
@@ -3424,7 +3423,6 @@ void G_EndRound_Think()
 			sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
             if(self.endround_finalize)
 				self.endround_finalize();
-            strunzone(self.endround_typename);
             remove(self);
             shooting_forbidden = FALSE;
             return;
@@ -3437,7 +3435,7 @@ void G_EndRound_Think()
         FOR_EACH_PLAYER(e)
         {
             bigprint_clear_spec(e);
-            bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
+            bigprint_spec(e, strcat(gametype_ID_to_LongName(game), " starts in: ", ftos(timeleft)), "", 1);
         }
         
         if(timeleft <= 3)
@@ -3446,12 +3444,11 @@ void G_EndRound_Think()
     self.nextthink = time + 1;
 }
 
-void G_EndRound(string tname, float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
+void G_EndRound(float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
 {
     local entity e = spawn();
     e.think = G_EndRound_Think;
     e.nextthink = time + 1;
-    e.endround_typename = strzone(tname);
     e.endround_think = callback;
     e.endround_think2 = callback2;
     e.endround_finalize = callbackfin;

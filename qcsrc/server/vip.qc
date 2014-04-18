@@ -325,7 +325,7 @@ void vip_EndRound()
 	next_round = time + 5;
 	
 	if(!vip_soulgem)
-		G_EndRound("VIP", 5, cvar("g_vip_warmup"), SUB_Null, vip_EndRound_Think, vip_EndRound_Finalize);
+		G_EndRound(5, cvar("g_vip_warmup"), SUB_Null, vip_EndRound_Think, vip_EndRound_Finalize);
 	else {
         roundstate = ROUNDSTATE_OVER;
 		defer(5.1, vip_SoulGem_StartRound);
