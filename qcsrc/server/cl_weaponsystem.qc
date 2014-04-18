@@ -149,8 +149,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	trueaimpoint = trace_endpos;
 
 	// Track max damage and set the stat to be sent later in g_world.qc
+    if(maxdamage >= 0)
 	if not(inWarmupStage)
-	{
+    if not(g_minstagib) {
 		ent.max_damage[ent.weapon] += maxdamage;
 		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
 	}

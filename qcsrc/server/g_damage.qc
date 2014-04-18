@@ -1720,8 +1720,11 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 {
 	float weaponid;
 	weaponid = DEATH_WEAPONOF(deathtype);
+    
 	if not(inWarmupStage)
 	if(weaponid)
+    if(!DEATH_ISHG(deathtype))
+    if(!g_minstagib || DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 	if(clienttype(attacker) == CLIENTTYPE_REAL)
 	{
 		// Track damage done and update the stat to be sent later in g_world.qc

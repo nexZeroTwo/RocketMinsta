@@ -1084,7 +1084,7 @@ void HG_Attack()
     }
     
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, HG_TypeToAttackSound(hgtype), GV("damage"));
+	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, HG_TypeToAttackSound(hgtype), -1);
 	//w_shotdir = v_forward;
     
     pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
