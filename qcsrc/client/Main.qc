@@ -173,6 +173,11 @@ void CSQC_Init(void)
 		oldengine = 1;
 	}
 	
+    dtrack_total = DamageTracker_CreateKeeper(world);
+    dtrack_taken = DamageTracker_CreateKeeper(world);
+    dtrack_total_spec = DamageTracker_CreateKeeper(world);
+    dtrack_taken_spec = DamageTracker_CreateKeeper(world);
+    
 	IP2C_Init();
     registercvar("_g_handgrenades_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
@@ -1535,6 +1540,8 @@ void Ent_Nagger()
 		if(vote_called_vote)
 			strunzone(vote_called_vote);
 		vote_called_vote = strzone(ColorTranslateRGB(ReadString()));
+        if(vote_called_vote == "")
+            vote_active = 0;
 	}
 
 	if(nags & 1)
@@ -1588,8 +1595,15 @@ void Ent_ShowNames()
     }
     if(sf & 2)
     {
-        self.healthvalue = ReadByte();
-        self.armorvalue = ReadByte();
+        if(sf & 16)
+            self.healthvalue = ReadShort();
+        else
+            self.healthvalue = ReadByte();
+        
+        if(sf & 32)
+            self.armorvalue = ReadShort();
+        else
+            self.armorvalue = ReadByte();
     }
 
     if(sf & 128) // same team
@@ -1805,6 +1819,7 @@ void Ent_Init()
     cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
+    sv_damagestats = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -2139,6 +2154,50 @@ void Net_Heal() {
     pointparticles(rm_particleeffectnum("RM_HEAL"), o, '0 0 0', 1);
 }
 
+entity Net_DamageTracker_KeeperFromFlags(float dtflags) {
+    if(dtflags & DTFLAG_DONE) {
+        if(dtflags & DTFLAG_SPEC)
+            return dtrack_total_spec;
+        else
+            return dtrack_total;
+    } else if(dtflags & DTFLAG_TAKEN) {
+        if(dtflags & DTFLAG_SPEC)
+            return dtrack_taken_spec;
+        else
+            return dtrack_taken;
+    }
+    
+    return world;
+}
+
+void Net_DamageTracker() {
+    float dtype, damage, dtflags, i, ecnt;
+    entity k;
+    
+    dtflags = ReadByte();
+    k = Net_DamageTracker_KeeperFromFlags(dtflags);
+    
+    if(!k)
+        error(strcat("Got invalid damage tracker flags from server: ", ftos(dtflags)));
+    
+    if(dtflags & DTFLAG_OVERWRITE) {
+        ecnt = ReadByte();
+        
+        DamageTracker_Wipe(k);
+        for(i = 0; i < ecnt; ++i) {
+            dtype = ReadShort();
+            damage = ReadShort();
+            DamageTracker_Record(k, dtype, damage);
+            // assume it's sorted by the server already
+        }
+    } else {        
+        dtype = ReadShort();
+        damage = ReadShort();
+        DamageTracker_Record(k, dtype, damage);
+        DamageTracker_Sort(k);
+    }
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2215,8 +2274,11 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_BLAST:
             Net_ReadBlast();
-			return TRUE;
-	}
+            return TRUE;
+        case TE_CSQC_DTRACK:
+            Net_DamageTracker();
+            return TRUE;
+    }
 
 	// pass to the engine
 	return FALSE;

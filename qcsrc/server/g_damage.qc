@@ -248,7 +248,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
+	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
 	{
 		f = 0;
 	}
@@ -669,19 +669,11 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 					else
 					{
-						local string tail;
-						tail = "";
+						string tail;
 						
 						if(cvar("sv_extendfragmessages")) {
-							if(DEATH_ISHG(deathtype))
-								tail = HG_TypeToExpandedName(deathtype);
-                            else if(deathtype == DEATH_ARC)
-                                tail = "Arc Buff";
-                            else if(deathtype == DEATH_BASH)
-                                tail = "Bash Buff";
-							else 
-								tail = get_weaponinfo(DEATH_WEAPONOF(deathtype)).message;
-								
+							tail = DamageSourceName(deathtype, FALSE);
+                            
 							if(tail != "")
 								tail = strcat(" with ^7", tail);
 						}
@@ -985,7 +977,13 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {
+void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
+    if(g_clanarena) if(inflictor.classname != "hg_linker") {
+        float lim = cvar("g_clanarena_heal_limit");
+        if(lim)
+            heal = max(0, min(heal, lim - targ.health));
+    }
+    
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
@@ -1030,6 +1028,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		return;
     
     if not(damage_linkmode) {
+        if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
+            damage = cvar("g_handgrenades_transloc_damage_shield");
+        
         if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
         }
@@ -1210,6 +1211,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					{
 						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
+                            float ff = cvar("g_friendlyfire");
+                            if(g_clanarena) ff = ff * cvar("g_clanarena_teamdamage");
 							teamdamage0 = max(attacker.dmg_team, cvar("g_teamdamage_threshold"));
 							attacker.dmg_team = attacker.dmg_team + damage;
 							if(attacker.dmg_team > teamdamage0)
@@ -1217,11 +1220,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 							mirrorforce = cvar("g_mirrordamage") * vlen(force);
 							if(g_minstagib)
 							{
-								if(cvar("g_friendlyfire") == 0)
+								if(ff == 0)
 									damage = 0;
 							}
 							else
-								damage = cvar("g_friendlyfire") * damage;
+								damage = ff * damage;
 							// mirrordamage will be used LATER
 						}
 						else
@@ -1433,8 +1436,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
             }
 
-            if (targ == attacker)
+            if (targ == attacker) {
                 damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
+                if(g_clanarena)
+                    damage = damage * cvar("g_clanarena_selfdamage");
+            }
 
             // CTF: reduce damage/force
             if(g_ctf)
@@ -1577,8 +1583,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
         if(t_oldhealth > self.health) {
-            if(!teams_matter || self.team != attacker.team)
+            if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                if(self.hg_stealth && self.hg_stealthalpha > 0.2)
+                    self.hg_stealth = -1;
+            }
             
             entity e;
             if(g_jailbreak && self.jb_unlock_progress) {
@@ -1711,8 +1720,11 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 {
 	float weaponid;
 	weaponid = DEATH_WEAPONOF(deathtype);
+    
 	if not(inWarmupStage)
 	if(weaponid)
+    if(!DEATH_ISHG(deathtype))
+    if(!g_minstagib || DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 	if(clienttype(attacker) == CLIENTTYPE_REAL)
 	{
 		// Track damage done and update the stat to be sent later in g_world.qc
@@ -2038,6 +2050,12 @@ void Fire_ApplyDamage(entity e)
 		e.fire_endtime = 0;
 
 	t = min(time - e.fire_last, e.fire_endtime - time);
+    
+    if(t < 0) {
+        backtrace("Abnormal fire damage tick (negative time)");
+        t = 0;
+    }
+    
 	d = e.fire_damagepersec * t;
 
 	hi = e.fire_owner.hitsound;

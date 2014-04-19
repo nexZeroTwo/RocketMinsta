@@ -1725,3 +1725,58 @@ float approach(float v, float t, float d) {
 	}
 	return v;
 }
+
+string DamageSourceName(float dtype, float extended) {
+    string r;
+    
+    if(DEATH_ISHG(dtype))
+        return HG_TypeToExpandedName(dtype);
+    else if(dtype == DEATH_ARC)
+        return "Arc Buff";
+    else if(dtype == DEATH_BASH)
+        return "Bash Buff";
+    else { 
+        r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
+        
+        if(extended) {
+            if(r == "")
+                return strcat("Unknown damage source (", ftos(dtype), ")");
+            
+            #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
+            string mods;
+            if(dtype & HITTYPE_SECONDARY)   ADDMOD("secondary");
+            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("headshot");
+            if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
+            if(dtype & HITTYPE_BOUNCE)      ADDMOD("bounce");
+            #undef ADDMOD
+            
+            if(mods != "")
+                return strcat(r, " (", mods, ")");
+        }
+        
+        return r;
+    }
+}
+
+string FormatDamage(float f) {
+    string str;
+    float tmp;
+    
+    if(f >= 1000000)
+        str = ftos(rint(f * 0.00001) * 0.1);
+    else if(f >= 1000)
+        str = ftos(rint(f * 0.01) * 0.1);
+    else
+        str = ftos(rint(f));
+    
+    tmp = strstrofs(str, ".", 0);
+    if(tmp >= 0)
+        str = substring(str, 0, tmp + 2);
+    else if(f >= 1000)
+        str = strcat(str, ".0");
+    
+    if(!strstrofs(str, "-", 0))
+        str = substring(str, 1, strlen(str));
+    
+    return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
+}

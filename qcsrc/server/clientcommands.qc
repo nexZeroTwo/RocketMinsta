@@ -423,9 +423,21 @@ void SV_ParseClientCommand(string s) {
 				return;
 			}
 		}
-		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
-		}
+        if(cvar("sv_spectate") == 1) {
+            if(self.classname == "player") {
+                EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
+            } else {
+                /*
+                 * Actually no, this is probably a bad idea
+                 * 
+                if(self.jb_specteam) {
+                    self.jb_specteam = 0;
+                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                    PutObserverInServer();
+                }
+                */
+            }
+        }
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -438,8 +450,10 @@ void SV_ParseClientCommand(string s) {
                 
 				self.classname = "player";
 				PlayerScore_Clear(self);
+                
 				bprint ("^4", self.netname, "^4 is playing now\n");
-				PutClientInServer();
+                PutClientInServer();
+                
 				if(cvar("g_campaign"))
 					campaign_bots_may_start = 1;
 			}
@@ -949,6 +963,24 @@ void SV_ParseClientCommand(string s) {
 		}
 		self.hidecountry = stof (argv (1));
 		IP2C_SetCountry (self);
+    } else if (cmd == "dmgstats") {
+        if(!sv_damagestats) {
+            sprint(self, "^1Damage statistics are not available on this server.\n");
+            return;
+        }
+        
+        float entno = stof(argv(1));
+        entity client = world;
+        if(entno <= maxclients)
+            client = edict_num(entno);
+        
+        entity k = ((argv(2) == "taken")? client.dtrack_taken : client.dtrack_total);
+        
+        if(k)
+            DamageTracker_Print(k, self);
+        else
+            sprint(self, "^1Usage: cmd dmgstats player_id\n");
+        return;
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
@@ -1034,7 +1066,7 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + RESTART_COUNTDOWN;
+	game_starttime = time + cvar("g_start_delay");
     roundstate = ROUNDSTATE_PREGAME;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 

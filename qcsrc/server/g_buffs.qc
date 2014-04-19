@@ -7,6 +7,9 @@ void Buffs_Init(void) {
     
     g_buffs = cvar("g_buffs");
     
+    if(g_clanarena)
+        g_buffs = (g_buffs && cvar("g_clanarena_buffs"));
+    
     if(!g_buffs)
         return;
     
@@ -19,6 +22,9 @@ void Buffs_Init(void) {
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_lockon = cvar("g_buffs_lockon");
+    
+    if(g_clanarena)
+        g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -220,6 +226,10 @@ vector Buffs_GenColor(float b) {
 }
 
 float Buffs_BuffModel_Customize(void) {
+    float sameteam = (teams_matter && (other.team == self.owner.team || (other.classname == "spectator" && other.enemy.team == self.owner.team)));
+    if(self.owner.hg_stealth && !sameteam)
+        return FALSE;
+    
     if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
         // somewhat hide the model, but keep the glow
         self.effects = 0;
@@ -289,8 +299,12 @@ void Buffs_ClientFrame(void) {
         }
         
         ON_BUFF_ADDED(BUFF_GUARD) {
-            self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
-            self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            if(g_clanarena)
+                self.health = max(min(cvar("g_clanarena_heal_limit"), cvar("g_buffs_guard_pickup_health")), self.health);
+            else {
+                self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
+                self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+            }
         }
         
         ON_BUFF_REMOVED(BUFF_VAMPIRE) {
@@ -420,6 +434,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(plr != attacker || targetTeamMates)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
+    if(!plr.hg_stealth || targetTeamMates)
     if(!plr.jb_isprisoned)
     if(!plr.buffs_arc_hit)
     if(!plr.frozen || !newtarget || newtarget.frozen) {
@@ -587,16 +602,19 @@ void Buffs_BuffPickup_Ring_Think(void) {
     setorigin(self, self.owner.origin + '0 0 15');
 }
 
-void Buffs_BuffPickup_Reset(void) {
-    self.owner = world;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
-    self.buff_active = !self.buff_activetime;
-    
+void Buffs_BuffPickup_ResetWaypoint(void) {
     if(self.buff_waypoint)
         WaypointSprite_Kill(self.buff_waypoint);
     
     if(self.buff_activetime)
         Buffs_BuffPickup_SpawnWaypoint(self);
+}
+
+void Buffs_BuffPickup_Reset(void) {
+    self.owner = world;
+    self.buff_activetime = cvar("g_buffs_activate_delay");
+    self.buff_active = !self.buff_activetime;
+    Buffs_BuffPickup_ResetWaypoint();
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
@@ -646,6 +664,11 @@ void Buffs_BuffPickup_Touch(void) {
     self.buff_lockon = world;
 }
 
+void Buffs_BuffPickup_TeamSwap(void) {
+    self.team = TeamCount_NextTeam(self.team);
+    Buffs_BuffPickup_ResetWaypoint();
+}
+
 void Buffs_BuffPickup_Setup(void) {
     if(!g_buffs || (self.team && !teams_matter) || (g_buffs_team_only && !self.team)) {
         remove(self);
@@ -660,6 +683,9 @@ void Buffs_BuffPickup_Setup(void) {
     
     if(g_buffs_noteam)
         self.team = 0;
+        
+    if(cvar("g_buffs_team_swap"))
+        self.team = TeamCount_NextTeam(self.team);
     
     self.origbuffs = self.buffs;
     self.classname = "item_buff";
@@ -671,6 +697,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.think = Buffs_BuffPickup_Think;
     self.touch = Buffs_BuffPickup_Touch;
     self.reset = Buffs_BuffPickup_Reset;
+    self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
     self.scale = 1.5;
     self.buff_activetime = cvar("g_buffs_activate_delay");

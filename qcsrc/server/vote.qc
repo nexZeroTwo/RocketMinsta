@@ -405,7 +405,12 @@ float RemapVote(string vote, string cmd, entity e)
 		keeptopic = TRUE;
 		cvar_set("_sv_explosive_topicby", e.netname);
 	}
-
+    
+    if(argv(0) == "balanceteams" && teamcount_balancenext) {
+        sprint(e, "Team rebalance is already scheduled for the next round.\n");
+        return FALSE;
+    }
+    
 	cvar_set ("_sv_rm_lastvote", ftos (time));
 
 	return TRUE;
@@ -607,7 +612,7 @@ float GameCommand_Vote(string s, entity e) {
 				VoteDialog_UpdateHighlight(1);
 				
 				print_to(e, "^1You accepted the vote.");
-				if(!cvar("sv_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^2YES\n"));
+				if(!cvar("sv_vote_anonymous")) bprint(strcat("^3", e.netname, "^7 votes ^2YES\n"));
 				e.vote_vote = 1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {
@@ -628,7 +633,7 @@ float GameCommand_Vote(string s, entity e) {
 				VoteDialog_UpdateHighlight(2);
 				
 				print_to(e, "^1You rejected the vote.");
-				if(!cvar("sv_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 votes ^1",
+				if(!cvar("sv_vote_anonymous")) bprint(strcat("^3", e.netname, "^7 votes ^1",
 																((crc16(FALSE, argv(2)) == STUPID_VNO_PASSWORD)?
 																	GetStupidVNoString() : "NO"), "\n"));
 				e.vote_vote = -1;
@@ -651,7 +656,7 @@ float GameCommand_Vote(string s, entity e) {
 				VoteDialog_UpdateHighlight(3);
 				
 				print_to(e, "^1You abstained from your vote.");
-				if(!cvar("sv_vote_anonymous")) bprint(strcat("\{1}^2* ^3", e.netname, "^7 abstained his vote\n"));
+				if(!cvar("sv_vote_anonymous")) bprint(strcat("^3", e.netname, "^7 abstained his vote\n"));
 				e.vote_vote = -2;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!cvar("sv_vote_singlecount")) {

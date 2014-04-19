@@ -49,10 +49,12 @@ const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
+const float TE_CSQC_DTRACK = 121;
 
-#define VDMG_TYPE_HIT 0
-#define VDMG_TYPE_CRIT 1
-#define VDMG_TYPE_HEAL 2
+#define VDMG_TYPE_HIT 1
+#define VDMG_TYPE_CRIT 2
+#define VDMG_TYPE_HEAL 4
+#define VDMG_TYPE_TEAMHIT 8
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -315,6 +317,7 @@ const float STAT_HGBONUS = 90;
 const float STAT_HGBONUSTYPE = 91;
 const float STAT_BUFFS = 92;
 const float STAT_TERM_AUTH = 93;
+const float STAT_STEALTH = 94;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
@@ -527,7 +530,8 @@ float DEATH_HG_SHIELD = 106;
 float DEATH_HG_LINKER = 107;
 float DEATH_HG_GG = 108;
 float DEATH_HG_LASER = 109;
-float DEATH_HG_END = 109;
+float DEATH_HG_CLOAK = 110;
+float DEATH_HG_END = 110;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

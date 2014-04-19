@@ -40,7 +40,7 @@ void dom_recountpoints()
 
 void tdom_EndRound()
 {
-	G_EndRound("Total Domination", 5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, func_null);
+	G_EndRound(5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, func_null);
 }
 
 void() dom_controlpoint_setup;
@@ -268,7 +268,10 @@ void dompointtouch()
 		return;
     if(g_freeze && other.frozen)
         return;
-
+    
+    if(other.hg_stealth)
+        return;
+    
 	if(time < self.captime + 0.3)
 		return;
 

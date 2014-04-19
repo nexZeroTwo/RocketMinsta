@@ -385,3 +385,10 @@ float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
 .vector iorigin;
 
 float whatsgoingon;
+
+entity dtrack_total;
+entity dtrack_taken;
+entity dtrack_total_spec;
+entity dtrack_taken_spec;
+
+float sv_damagestats;

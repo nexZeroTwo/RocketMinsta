@@ -750,7 +750,7 @@ void JB_PrepareNextRound() {
 }
 
 void JB_EndRound(float t) {
-	G_EndRound("Jailbreak", t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
+	G_EndRound(t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
@@ -856,6 +856,7 @@ void JB_SetupJailSpawnpoint() {
 	}
 	
 	self.classname = "info_jailbreak_jailspawn";
+    self.teamswap = SwapTeams_Generic;
 }
 
 void JB_Jail_Touch() {
@@ -890,6 +891,7 @@ void JB_Jail_Touch() {
 void JB_SetupJail() {
 	self.classname = "jailbreak_jail";
 	self.touch = JB_Jail_Touch;
+    self.teamswap = SwapTeams_Generic;
 	EXACTTRIGGER_INIT;
 }
 
@@ -900,6 +902,7 @@ void JB_SetupJailCamera() {
 	}
 	
 	self.classname = "info_jailbreak_jailcamera";
+    self.teamswap = SwapTeams_Generic;
 }
 
 void JB_SetupTortureSpawnpoint() {
@@ -909,6 +912,7 @@ void JB_SetupTortureSpawnpoint() {
 	}
 	
 	self.classname = "info_jailbreak_torturespawn";
+    self.teamswap = SwapTeams_Generic;
 	
 	if(!self.jb_torture_force)
 		self.jb_torture_force = 400;
@@ -1139,6 +1143,9 @@ void JB_ControlPoint_Touch() {
     if(other.classname != "player")
         return;
     
+    if(other.hg_stealth)
+        return;
+    
     other.pointupdatetime = time;
     
     if(other.team == self.team) {
@@ -1204,6 +1211,11 @@ void JB_ControlPoint_Reset() {
     JB_ControlPoint_SwitchTeam(self, cvar("g_jailbreak_controlpoint_claim_allneutral")? JB_TEAM_NEUTRAL : self.jb_team_initial);
 }
 
+void JB_ControlPoint_TeamSwap() {
+    if(self.jb_team_initial != JB_TEAM_NEUTRAL)
+        self.jb_team_initial = TeamCount_NextTeam(self.jb_team_initial);
+}
+
 void JB_SetupControlPoint() {
     if(!jb_cp_first) {
         jb_cp_first = self;
@@ -1239,6 +1251,7 @@ void JB_SetupControlPoint() {
 	self.solid = SOLID_TRIGGER;
 	self.flags = FL_ITEM;
     self.reset = JB_ControlPoint_Reset;
+    self.teamswap = JB_ControlPoint_TeamSwap;
     self.jb_capturecount = 0;
     self.jb_active = TRUE;
     self.cnt = jb_cp_num;
@@ -1290,6 +1303,9 @@ void JB_JailSpec_Proxy_Think() {
 }
 
 entity JB_JailSpec_CreateProxy() {
+    if(!g_jailbreak)
+        return world;
+    
     entity p = spawn();
     JB_JailSpec_Proxy_CopyFields(p, self);
     p.think = JB_JailSpec_Proxy_Think;

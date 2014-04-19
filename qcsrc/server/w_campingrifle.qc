@@ -179,17 +179,23 @@ float w_campingrifle(float req)
 			if (time >= self.campingrifle_accumulator + cvar("g_balance_campingrifle_primary_burstcost"))
 			if (weapon_prepareattack(0, cvar("g_balance_campingrifle_primary_refire")))
 			{
-				W_CampingRifle_Attack();
-				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_campingrifle_primary_animtime"), W_CampingRifle_CheckReloadAndReady);
-				self.campingrifle_accumulator += cvar("g_balance_campingrifle_primary_burstcost");
+                if(self.campingrifle_bulletcounter > 0) {
+                    W_CampingRifle_Attack();
+                    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_campingrifle_primary_animtime"), W_CampingRifle_CheckReloadAndReady);
+                    self.campingrifle_accumulator += cvar("g_balance_campingrifle_primary_burstcost");
+                } else
+                    W_CampingRifle_Reload();
 			}
 			if (self.BUTTON_ATCK2)
 			if (time >= self.campingrifle_accumulator + cvar("g_balance_campingrifle_secondary_burstcost"))
 			if (weapon_prepareattack(1, cvar("g_balance_campingrifle_secondary_refire")))
 			{
-				W_CampingRifle_Attack2();
-				weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_campingrifle_secondary_animtime"), W_CampingRifle_CheckReloadAndReady);
-				self.campingrifle_accumulator += cvar("g_balance_campingrifle_secondary_burstcost");
+                if(self.campingrifle_bulletcounter > 0) {
+                    W_CampingRifle_Attack2();
+                    weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_campingrifle_secondary_animtime"), W_CampingRifle_CheckReloadAndReady);
+                    self.campingrifle_accumulator += cvar("g_balance_campingrifle_secondary_burstcost");
+                } else 
+                    W_CampingRifle_Reload();
 			}
 		}
 	}

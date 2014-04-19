@@ -267,7 +267,16 @@ void InitGameplayMode()
 		timelimit_override = cvar("g_jailbreak_timelimit");
 		JB_Init();
 	}
-
+    
+    if(g_clanarena)
+    {
+        ActivateTeamplay();
+        fraglimit_override = cvar("g_clanarena_point_limit");
+        leadlimit_override = cvar("g_clanarena_point_leadlimit");
+        timelimit_override = cvar("g_clanarena_timelimit");
+        CA_Initialize();
+    }
+    
 	if(g_assault)
 	{
 		ActivateTeamplay();
@@ -745,6 +754,8 @@ void CheckAllowedTeams (entity for_whom)
 			dm = race_teams;
 		else if(g_freezetag)
 			dm = ft_teams;
+        else if(g_clanarena)
+            dm = ca_teams;
 		else
 			dm = 2;
 
@@ -1604,3 +1615,15 @@ void tdm_init()
 {
 	InitializeEntity(world, tdm_delayedinit, INITPRIO_GAMETYPE);
 };
+
+void SwapTeams(void) {
+    entity o = self;
+    for(self = world; (self = nextent(self));)
+        if(self.teamswap)
+            self.teamswap();
+    self = o;
+}
+
+void SwapTeams_Generic(void) {
+    self.team = TeamCount_NextTeam(self.team);
+}

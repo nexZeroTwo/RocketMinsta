@@ -149,8 +149,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	trueaimpoint = trace_endpos;
 
 	// Track max damage and set the stat to be sent later in g_world.qc
+    if(maxdamage >= 0)
 	if not(inWarmupStage)
-	{
+    if not(g_minstagib) {
 		ent.max_damage[ent.weapon] += maxdamage;
 		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
 	}
@@ -1019,7 +1020,13 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(g_freeze)
 	if(self.frozen) 
 		return FALSE;
-        
+    
+    if(self.hg_stealth)
+        self.hg_stealth = -1;
+    
+    if(self.hg_stealthalpha > cvar("g_handgrenades_cloak_alphashootlimit"))
+        return FALSE;
+    
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
@@ -1061,6 +1068,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.bulletcounter += 1;
 	//dprint("attack finished ", ftos(ATTACK_FINISHED(self)), "\n");
+    
 	return TRUE;
 };
 

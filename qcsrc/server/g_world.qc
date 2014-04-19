@@ -497,6 +497,8 @@ void spawnfunc_worldspawn (void)
 	dprint_load(); // load dprint status from cvar
 	
 	RM_CvarCompat();
+    sv_damagestats = cvar("sv_damagestats");
+
 	
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
@@ -506,6 +508,7 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
 	registercvar("g_jailbreak", "0");
+    registercvar("g_clanarena", "0");
 	registercvar("g_no", "0");
 	
 	
@@ -768,6 +771,7 @@ void spawnfunc_worldspawn (void)
 	{
 		if(MapInfo_Get_ByID(i))
 			if not(MapInfo_Map_flags & (MAPINFO_FLAG_HIDDEN | MAPINFO_FLAG_FORBIDDEN))
+            if(ListContains(cvar_string("g_maplist"), MapInfo_Map_bspname, " "))
 			{
 				if(mod(i, 2))
 					col = "^2";
@@ -2310,11 +2314,12 @@ string MapVote_Suggest(string m)
 	if(mapvote_initialized)
 		return "Can't suggest - voting is already in progress!";
 	m = MapInfo_FixName(m);
-	if(!m)
+	if(!m || !ListContains(cvar_string("g_maplist"), m, " "))
 		return "The map you suggested is not available on this server.";
 	if(!cvar("g_maplist_votable_override_mostrecent"))
 		if(Map_IsRecent(m))
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
+    
 
 	if(!MapInfo_CheckMap(m))
 		return "The map you suggested does not support the current game mode.";
@@ -2357,6 +2362,9 @@ string GameTypeVote_GetOptions();
 float GameTypeVote_AvailabilityStatus_ForMap(string, string);
 float MapIsPlayable(string map_name)
 {
+    if(!ListContains(cvar_string("g_maplist"), map_name, " "))
+        return 0;
+    
 	if(!cvar("sv_vote_gametype"))
 		// if gametype voting isn't enabled, the server will stay on the current gametype
 		// so let's hide any map that isn't allowed in the current mode

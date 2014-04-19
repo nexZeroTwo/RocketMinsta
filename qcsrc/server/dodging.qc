@@ -93,9 +93,15 @@ float dodging_GetPressedKeys()
 	if not(g_dodging)
 		return 0;
 
-	if(g_freeze && self.frozen)
-	if not(g_freezetag_dodging_frozen)
-		return 0;
+	if(g_freeze && self.frozen) {
+        if not(g_freezetag_dodging_frozen)
+            return 0;
+        if(time < self.frozen_plasmalock)
+            return 0;
+    }
+
+    //if(self.hg_stealth)
+    //    return 0;
 
     if(self.hg_shield)
     if(!cvar("g_dodging_shielded"))

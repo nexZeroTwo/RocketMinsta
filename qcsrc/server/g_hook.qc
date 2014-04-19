@@ -319,7 +319,20 @@ void GrapplingHookTouch (void)
                 return;
             }
             
-			SetMovetypeFollow(self, other);
+            if(other.frozen && time < other.frozen_plasmalock) {
+                te_csqc_lightningarc(other.origin + other.maxs_z * '0 0 0.5', self.owner.origin + self.owner.maxs_z * '0 0 0.5', TRUE, other.frozen_plasmalock_owner.team);
+                Damage(self.owner, other.frozen_plasmalock_owner, other.frozen_plasmalock_owner, cvar("g_handgrenades_plasma_projectile_frozenlock_hookdamage"), DEATH_HG_PLASMA, '0 0 0', '0 0 0');
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
+            if(other.iscreature && cvar("g_balance_grapplehook_oneperplayer")) {
+                entity e; for(;(e = find(e, classname, "grapplinghook"));)
+                    if(e.aiment == other)
+                        RemoveGrapplingHook(e.owner);
+            }
+            
+            SetMovetypeFollow(self, other);
         }
     }
 
@@ -418,7 +431,10 @@ void FireGrapplingHook (void)
 	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
     if(!CustomHGHookButton(self))
 		return;
-
+    
+    if(self.hg_stealth)
+        self.hg_stealth = -1;
+    
 	makevectors(self.v_angle);
 
 	// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds

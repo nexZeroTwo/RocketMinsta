@@ -25,7 +25,6 @@ tturrets/include/turrets_early.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
-../common/util.qc
 ../common/ip2c.qh
 ../common/handgrenades.qh
 ../common/buffs.qh
@@ -51,9 +50,13 @@ g_freeze.qh
 freezetag.qh
 vip.qh
 jailbreak.qh
+clanarena.qh
 precious.qh
 domination.qh
+../common/damagetracker.qh
+damagetracker.qh
 
+../common/util.qc
 scores_rules.qc
 miscfunctions.qc
 waypointsprites.qc
@@ -135,6 +138,7 @@ g_buffs.qc
 soulmates.qc
 
 jailbreak.qc
+clanarena.qc
 
 t_swamp.qc
 
@@ -167,6 +171,8 @@ t_quake.qc
 race.qc
 
 teamcount.qc
+../common/damagetracker.qc
+damagetracker.qc
 ../common/dprm.qc
 ../common/gametype.qc
 

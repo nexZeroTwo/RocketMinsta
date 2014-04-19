@@ -1260,6 +1260,12 @@ void GameCommand(string command)
         return;
     }
     
+    if(argv(0) == "balanceteams") {
+        print("\x01^3* Teams will be automatically rebalanced after this round.\n");
+        teamcount_balancenext = TRUE;
+        return;
+    }
+    
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

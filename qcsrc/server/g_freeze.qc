@@ -1,6 +1,6 @@
 
 void Freeze_Init(void) {
-    if(!teams_matter || g_jailbreak || (!cvar("g_freeze") && !g_freezetag))
+    if(!teams_matter || g_jailbreak || g_clanarena || (!cvar("g_freeze") && !g_freezetag))
         return;
     
     g_freeze = TRUE;
@@ -192,8 +192,6 @@ void Freeze_UnfreezePlayer(entity plr)
     
     if(g_handgrenades) {
         if(cvar("g_handgrenades_regen_time")) {
-            plr.hg_bonus = 0;
-            plr.hg_bonustype = HG_NORMAL;
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
@@ -334,17 +332,23 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     float first = TRUE;
     string names;
     entity e;
+    float pcnt = 1;
     
     if(!plr.frozen)
         return;
     
     Freeze_UnfreezePlayer(plr);
+    plr.revtime = time;
     
     // EVERY team mate nearby gets a point (even if multiple!)
     
+    if(Freeze_CVar("score_revival_shared"))
+        for(e = revlist.chain; e; e = e.chain)
+            ++pcnt;
+    
     for(e = revlist; e; e = e.chain) {
-        PlayerScore_Add(e, SP_REVIVALS, +1);
-        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival"));
+        PlayerScore_Add(e, SP_REVIVALS, 1);
+        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
         
         e.health = max(e.health, Freeze_CVar("revive_heal"));
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
@@ -440,11 +444,39 @@ void Freeze_Hook_PlayerPreThink(void) {
     float rmod;
     float allow;
     
+    if(time < self.frozen_plasmalock) {
+        if(!self.frozen_plasmalock_owner.iscreature) {
+            self.frozen_plasmalock_owner = world;
+            self.frozen_plasmalock = 0;
+            self.frozen_plasmalock_nexteffect = time + frametime;
+        }
+        
+        if(time > self.frozen_plasmalock_nexteffect) {
+            float edelay = 0.35;
+            self.frozen_plasmalock_nexteffect = time + edelay;
+            vector eorigin = self.origin + self.maxs_z * '0 0 0.5';
+            
+            float pdmg = cvar("g_handgrenades_plasma_projectile_frozenlock_dps") * edelay;
+            if(pdmg)
+                RadiusDamage(self, self.frozen_plasmalock_owner, pdmg, pdmg, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
+            
+            te_csqc_lightningarc(eorigin + randomvec() * 100, eorigin + randomvec() * 10, TRUE, self.frozen_plasmalock_owner.team);
+            sound(self, CHAN_AUTO, "sound/weapons/electro_impact.wav", 0.4, 1.5);
+        }
+        
+        return;
+    }
+    
     // Find all players withing revival radius and build a linked list
     if(self.freezetime + Freeze_CVar("revive_delay") < time) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
-        FOR_EACH_PLAYER(other) if(self != other && !other.frozen && other.team == self.team) {
-            if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax)) {
+        
+        FOR_EACH_PLAYER(other)
+            if(!other.hg_stealth)
+            if(self != other && !other.frozen && other.team == self.team)
+            if(time - other.revtime > Freeze_CVar("revive_delay_after_revived"))
+            if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
+            {
                 allow = Freeze_CVar("revive_through_walls");
                 
                 if(!allow) {
@@ -476,7 +508,6 @@ void Freeze_Hook_PlayerPreThink(void) {
                     rmod = max(rmod, lmod);
                 }
             }
-        }
     }
         
     if(rfirst) // OK, there is at least one teammate reviving us
@@ -532,6 +563,9 @@ void Freeze_Hook_PlayerPhysics(void) {
     
     if(self.frozen) {
         float s = Freeze_CVar("frozen_movespeed");
+        
+        if(time < self.frozen_plasmalock)
+            s = 0;
         
         if(s > 0) {
             if(Freeze_CVar("movespeed_dependonmelt"))

@@ -148,10 +148,9 @@ void Draw_ShowNames()
                 nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
                 
             if(self.sameteam) {
-                
                 float mx = 200;
                 vector dmg = healtharmor_maxdamage(self.healthvalue, self.armorvalue, armorblockpercent);
-                dmg_x = max(0, ceil(dmg_x));
+                dmg_x = max(0, ceil(dmg_x + 1));
                 
                 if(dmg_x) {
                     self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);

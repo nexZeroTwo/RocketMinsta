@@ -5,7 +5,7 @@
 
 void FreezeTag_EndRound()
 {
-    G_EndRound("FreezeTag", 5, cvar("g_freezetag_warmup"), Freeze_RecountPlayers, func_null, func_null);
+    G_EndRound(5, cvar("g_freezetag_warmup"), Freeze_RecountPlayers, func_null, func_null);
     Freeze_RecountPlayers();
     defer(5, sm_Clear);
 }

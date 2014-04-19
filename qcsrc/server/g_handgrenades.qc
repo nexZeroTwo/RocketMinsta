@@ -14,6 +14,7 @@ void HG_Init() {
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
+    addstat(STAT_STEALTH, AS_INT, hg_stealth);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
     g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
@@ -35,6 +36,8 @@ void HG_Precache() {
     precache_sound("porto/expire.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
+    precache_sound("misc/stealth.wav");
+    precache_sound("misc/unstealth.wav");
     precache_sound("kh/capture.wav");
     precache_sound(RM_SOUND_LASER_PRIMARY);
     precache_sound(RM_SOUND_LASER_SECONDARY);
@@ -534,6 +537,7 @@ void HG_Remote_Stick() {
     e.hg_detonable = self.hg_detonable;
     e.hg_detonatetime = self.hg_detonatetime;
     e.hg_detonatedelay = self.hg_detonatedelay;
+    e.hg_detonateready = self.hg_detonateready;
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
@@ -837,6 +841,30 @@ void HG_Shield_Frame() {
     }
 }
 
+void HG_Cloak(float hgtype) {
+    self.hg_stealth += cvar("g_handgrenades_cloak_duration");
+    pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
+    sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
+}
+
+void HG_Cloak_Frame() {
+    if(self.hg_stealth == -1) {
+        self.hg_stealth = 0;
+        sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
+    }
+    
+    if(self.hg_stealth) {
+        self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime);
+        //self.campingrifle_bulletcounter = 0;
+        
+        self.hg_stealth = approach(self.hg_stealth, 0, frametime);
+        if(!self.hg_stealth)
+            self.hg_stealth = -1;
+    } else
+        self.hg_stealthalpha = approach(self.hg_stealthalpha, 0, frametime * 0.5);
+    
+}
+
 .float spawntime;
 .float hg_linker_nexteffect;
 .float hg_linker_effecttime;
@@ -898,7 +926,7 @@ void HG_Linker_Think() {
                 p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
             
                 if(self.hg_linker_hps)
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0);
+                    Heal(p, world, self.owner, self.hg_linker_hps, 0);
             }
         }
     }
@@ -1032,6 +1060,9 @@ void HG_Attack()
     } else if(hgtype == HG_LINKER) {
         HG_Linker(hgtype);
         goto finish;
+    } else if(hgtype == HG_CLOAK) {
+        HG_Cloak(hgtype);
+        goto finish;
     } else if(hgtype == HG_GG) {
         if(HG_GG_Button(hgtype))
             goto finish;
@@ -1053,7 +1084,7 @@ void HG_Attack()
     }
     
 	makevectors(self.v_angle);
-	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, HG_TypeToAttackSound(hgtype), GV("damage"));
+	W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, HG_TypeToAttackSound(hgtype), -1);
 	//w_shotdir = v_forward;
     
     pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -1154,6 +1185,7 @@ void HG_Frame()
     
     HG_FixNadeType(self);
     HG_Shield_Frame();
+    HG_Cloak_Frame();
     
     if(roundstate == ROUNDSTATE_OVER) {
         self.hg_power = 0;
@@ -1198,7 +1230,7 @@ void HG_Frame()
 		HG_Attack(); 	// inhand explosion
 	
 	self.hg_state = held;
-    self.hg_regenpaused = ((time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause")) && (self.hg_type != HG_LASER));
+    self.hg_regenpaused = (self.hg_stealth || (time - self.lastdamage <= cvar("g_handgrenades_regen_damagepause")) && (self.hg_type != HG_LASER));
     
     if(cvar("g_handgrenades_regen_time")) {
         float mx = GRENVAR(self.hg_type, "stacklimit");

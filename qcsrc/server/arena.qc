@@ -23,6 +23,7 @@ void target_assault_roundend_reset();
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
 float redspawned, bluespawned, yellowspawned, pinkspawned;
 float totalspawned;
+void SetPlayerTeam(entity pl, float t, float s, float noprint);
 
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
@@ -42,12 +43,17 @@ void reset_map(float dorespawn)
 		warmup = time + cvar("g_freezetag_warmup");
 	else if(g_jailbreak)
 		warmup = time + cvar("g_jailbreak_warmup");
+    else if(g_clanarena)
+        warmup = time + cvar("g_clanarena_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
 
 	race_ReadyRestart();
-	
+    
+    if(cvar("g_swap_teams"))
+        SwapTeams();
+    
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
 	{
@@ -85,7 +91,10 @@ void reset_map(float dorespawn)
 		vip_ClearVIPs_MaybeAssign();
 		//vip_RespawnSoulGems();
 	}
-
+    
+    if(teamcount_balancenext)
+        TeamCount_BalanceTeams();
+    
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
@@ -112,10 +121,17 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak)
+			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
 			{
-				if(self.classname == "player")
+				if(self.classname == "player") {
 					PutClientInServer();
+                    if(g_clanarena)
+                        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                } else if(g_clanarena && self.jb_specteam) {
+                    self.classname = "player";
+                    PutClientInServer();
+                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                }
 			}
 			else
 			{
@@ -309,7 +325,7 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
+	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
 	{
 		if((next_round && next_round < time))
 		{
