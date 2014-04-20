@@ -22,6 +22,7 @@ void JB_Init() {
 	entity e = spawn();
 	e.classname = "jailbreak_logic";
 	e.think = JB_Frame;
+    e.teamswap = JB_TeamSwap;
 	e.nextthink = time;
     
     g_jailbreak_claim = cvar("g_jailbreak_controlpoint_claim");
@@ -166,6 +167,15 @@ void JB_Frame() {
         JB_TeamWins(COLOR_TEAM2);
     else if(bluesout)
         JB_TeamWins(COLOR_TEAM1);
+}
+
+void JB_TeamSwap() {
+    entity of = jb_door_red_first;
+    entity ol = jb_door_red_last;
+    jb_door_red_first = jb_door_blue_first;
+    jb_door_red_last = jb_door_blue_last;
+    jb_door_blue_first = of;
+    jb_door_blue_last = ol;
 }
 
 float JB_JailIsOpen(float theteam) {
@@ -722,7 +732,7 @@ void JB_PlayerPreThink() {
         return;
     
     if(self.jb_isprisoned == 1) {
-        bprint("^1BUG: ^7", self.netname, " ^7somehow got out of jail without touching the jail sector! Trying to put him back in.\n");
+        print("^1BUG: ^7", self.netname, " ^7somehow got out of jail without touching the jail sector! Trying to put him back in.\n");
         JB_TeleportToJail(self);
     } else if(self.jb_isprisoned)
         if(time > self.jb_jail_resettime)
