@@ -351,6 +351,8 @@ void Draw_WaypointSprite()
         drawfont = sbar_font;
     }
     
+    float ha = 1;
+    
 	if(self.build_finished)
 	{
 		if(time < self.build_finished + 0.25)
@@ -359,8 +361,10 @@ void Draw_WaypointSprite()
 				self.health = self.build_starthealth;
 			else if(time < self.build_finished)
 				self.health = (time - self.build_started) / (self.build_finished - self.build_started) * (1 - self.build_starthealth) + self.build_starthealth;
-			else
+			else {
 				self.health = 1;
+                ha = 1 - (time - self.build_finished) * 4;
+            }
 		}
 		else
 			self.health = -1;
@@ -384,7 +388,7 @@ void Draw_WaypointSprite()
             o_y = bound(m + h * 0.5, txty + h*5, vid_conheight - h * 0.5);
         }
         
-		drawhealthbar(o, rot * 90 * DEG2RAD, self.health, ssize, SPRITE_HOTSPOT * t, w, h, SPRITE_HEALTHBAR_MARGIN * t, SPRITE_HEALTHBAR_BORDER * t, align, self.teamradar_color, a * SPRITE_HEALTHBAR_BORDERALPHA, self.teamradar_color, a * SPRITE_HEALTHBAR_HEALTHALPHA, DRAWFLAG_NORMAL);
+		drawhealthbar(o, rot * 90 * DEG2RAD, self.health, ssize, SPRITE_HOTSPOT * t, w, h, SPRITE_HEALTHBAR_MARGIN * t, SPRITE_HEALTHBAR_BORDER * t, align, self.teamradar_color, ha * a * SPRITE_HEALTHBAR_BORDERALPHA, self.teamradar_color, ha * a * SPRITE_HEALTHBAR_HEALTHALPHA, DRAWFLAG_NORMAL);
 	}
 }
 
@@ -446,11 +450,13 @@ void Ent_WaypointSprite()
 			//print("build: ", ftos(self.build_finished - self.build_started), "\n");
 		}
 	}
+    /*
 	else
 	{
 		self.health = -1;
 		self.build_finished = 0;
 	}
+    */
 
 	if(sendflags & 64)
 	{
