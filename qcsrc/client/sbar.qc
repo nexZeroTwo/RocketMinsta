@@ -1902,6 +1902,8 @@ float Sbar_WouldDrawScoreboard() {
 		return 1;
 	else if(sb_showscores_force)
 		return 1;
+    else if(getstati(STAT_ROUNDSTATE) == ROUNDSTATE_OVER && gametype != GAME_JAILBREAK)
+        return 1;
 	return 0;
 }
 
@@ -4195,7 +4197,7 @@ void Sbar_Draw(void)
 
 		Sbar_Reset();
 	}
-	else if (sb_showscores_force || getstati(STAT_HEALTH) <= 0 || intermission == 1)
+	else if (sb_showscores_force || getstati(STAT_HEALTH) <= 0 || intermission == 1 || (getstati(STAT_ROUNDSTATE) == ROUNDSTATE_OVER && gametype != GAME_JAILBREAK))
 	{
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
