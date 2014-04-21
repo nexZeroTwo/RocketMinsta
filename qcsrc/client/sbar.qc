@@ -1888,6 +1888,8 @@ void Sbar_Timer()
 }
 
 float Sbar_WouldDrawScoreboard() {
+    if (sb_showaccuracy)
+        return 0;
 	if (is_tmpmadoka)
 		return 0;
 	else if (sb_showscores)
@@ -2577,7 +2579,7 @@ void Sbar_DrawAccuracyStats()
 
 	fill_size_x = 5 * sbar_fontsize_x;  // width of the background
 	fill_size_y = 10 * sbar_fontsize_y;  // height of the background
-
+    
 	drawfont = sbar_bigfont;
 	pos_x = 0;
 	pos_y = SCOREBOARD_OFFSET;
@@ -4182,27 +4184,30 @@ void Sbar_Draw(void)
 
 	if (intermission == 2) // map voting screen
 	{
-		if(sb_showscores) {
-			Sbar_DrawScoreboard();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-		else if(sb_showaccuracy) {
-			Sbar_DrawAccuracyStats();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-  		else
-			Sbar_FinaleOverlay();
+        float drawoverlay = TRUE;
+        
+        if(sb_showaccuracy) {
+            Sbar_DrawAccuracyStats();
+            drawoverlay = FALSE;
+        }
+        
+        if(sb_showscores) {
+            Sbar_DrawScoreboard();
+            drawoverlay = FALSE;
+        }
+        
+        if(drawoverlay)
+            Sbar_FinaleOverlay();
+        else
+            Sbar_Timer();
 
 		Sbar_Reset();
 	}
 	else if (sb_showscores_force || getstati(STAT_HEALTH) <= 0 || intermission == 1 || (getstati(STAT_ROUNDSTATE) == ROUNDSTATE_OVER && gametype != GAME_JAILBREAK))
 	{
+        Sbar_DrawScoreboard();
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else
-			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)
 		{
@@ -4249,17 +4254,9 @@ void Sbar_Draw(void)
   	}
 	else
 	{
-		/*
-		if (sb_showscores)
-			Sbar_DrawScoreboard();
-		else if(sb_showaccuracy)
-			Sbar_DrawAccuracyStats();
-			*/
-		
+        Sbar_DrawScoreboard();
 		if(sb_showaccuracy)
 			Sbar_DrawAccuracyStats();
-		else
-			Sbar_DrawScoreboard();
 
 		// lol
 		if(!rm_oldhud)
