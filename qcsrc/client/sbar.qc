@@ -3857,8 +3857,10 @@ void Sbar_Draw(void)
 		}
 	}
 
-	local float bp_alpha;
-	local vector bp_pos;
+	float bp_alpha, bp_ypos;
+	vector bp_pos;
+    bp_ypos = (vid_conheight / 5) * (1 - sbar_scoreboard_fade_alpha)
+            + (SCOREBOARD_OFFSET) * (    sbar_scoreboard_fade_alpha);
 
 	if(obp_draw)
 	if(bigprint_oldstring)
@@ -3867,7 +3869,7 @@ void Sbar_Draw(void)
 
 		if(bp_alpha > 0)
 		{
-			bp_pos = '0 1 0' * (vid_conheight/5);
+            bp_pos = '0 1 0' * bp_ypos;
 			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
@@ -3883,7 +3885,7 @@ void Sbar_Draw(void)
 			obp_draw = 0;
 	}
 
-	bp_pos = '0 1 0' * (vid_conheight/5);
+	bp_pos = '0 1 0' * bp_ypos;
 	if(bp_draw)
 	if(bigprint_string)
 	{
