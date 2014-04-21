@@ -550,7 +550,7 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
 		} else if(str == "time") {
-			sbar_field[sbar_num_fields] = SP_JOINTIME;
+			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
             sbar_field[sbar_num_fields] = SP_DEATHS;
         } else if(str == "scds") {
@@ -708,10 +708,8 @@ string Sbar_GetField(entity pl, float field)
 
 			return strcat(chr2str(char0), chr2str(char1));
 
-		case SP_JOINTIME:
-			local float jt;
-			jt = pl.(scores[field]);
-			return mmss((time - jt) * 10);
+		case SP_PLAYTIME:
+			return mmss(pl.(scores[field]) * 10);
 
 		case SP_PING:
 			if not(pl.gotscores)
