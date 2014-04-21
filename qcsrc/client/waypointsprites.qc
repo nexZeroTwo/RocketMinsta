@@ -232,7 +232,13 @@ void Draw_WaypointSprite()
 	o = project_3d_to_2d(self.origin);
 	rot = 0;
 
-	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight)
+    float maxw = vid_conwidth;
+    float maxh = vid_conheight;
+    
+    if(cvar("viewsize") < 120 || !cvar("r_letterbox"))
+        maxh -= 50;
+
+	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > maxw || o_y > maxh)
 	{
 		// scale it to be just in view
 		vector d;
@@ -245,15 +251,15 @@ void Draw_WaypointSprite()
 		d_z = 0;
 		*/
 		
-		d = o - '0.5 0 0' * vid_conwidth - '0 0.5 0' * vid_conheight;
+		d = o - '0.5 0 0' * maxw - '0 0.5 0' * maxh;
 
 		/*
 		if(cvar("v_flipped"))
 			d_x = -d_x;
 		*/
 
-		f1 = d_x / vid_conwidth;
-		f2 = d_y / vid_conheight;
+		f1 = d_x / maxw;
+		f2 = d_y / maxh;
 
 		if(max(f1, -f1) > max(f2, -f2))
 		{
@@ -286,7 +292,7 @@ void Draw_WaypointSprite()
 			}
 		}
 
-		o = d + '0.5 0 0' * vid_conwidth + '0 0.5 0' * vid_conheight;
+		o = d + '0.5 0 0' * maxw + '0 0.5 0' * maxh;
 	}
 	o_z = 0;
 
@@ -375,7 +381,7 @@ void Draw_WaypointSprite()
         if(!spritemode) {
             rot = 0;
             o_x = bound(m + w * 0.5, o_x, vid_conwidth - w * 0.5 - m);
-            o_y = bound(m * 5.5 + h * 0.5, txty + h*5, vid_conheight - h * 0.5);
+            o_y = bound(m + h * 0.5, txty + h*5, vid_conheight - h * 0.5);
         }
         
 		drawhealthbar(o, rot * 90 * DEG2RAD, self.health, ssize, SPRITE_HOTSPOT * t, w, h, SPRITE_HEALTHBAR_MARGIN * t, SPRITE_HEALTHBAR_BORDER * t, align, self.teamradar_color, a * SPRITE_HEALTHBAR_BORDERALPHA, self.teamradar_color, a * SPRITE_HEALTHBAR_HEALTHALPHA, DRAWFLAG_NORMAL);
