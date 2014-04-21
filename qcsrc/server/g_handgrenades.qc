@@ -488,7 +488,8 @@ void HG_Grenade_Touch() {
         }
     
         self.cnt -= 1;
-	}
+        self.hg_state = TRUE;
+    }
 }
 
 void HG_Remote_Stick() {
@@ -534,6 +535,7 @@ void HG_Remote_Stick() {
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
+    e.hg_state = TRUE;
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
@@ -704,15 +706,17 @@ void HG_Grenade_ChangeOwner(entity o) {
 void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
     if(DEATH_ISHG(deathtype))
         return;
-	if(self.health <= 0)
-		return;
-	self.health = self.health - damage;
-	if(self.health <= 0) {
+    if(self.health <= 0)
+        return;
+    if(!self.hg_state)
+        return;
+    self.health = self.health - damage;
+    if(self.health <= 0) {
         if(attacker.classname == "player") {
             HG_Grenade_ChangeOwner(attacker);
         }
         self.hg_deathtime = time;
-	}
+    }
 }
 
 float HG_PlayerGrenadeType(entity e) {
