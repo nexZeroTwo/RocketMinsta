@@ -74,6 +74,11 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     o = self.owner;
     df = 1;
 
+    if(o.classname != "player" || o.team != self.team) {
+        remove(self);
+        return;
+    }
+
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
         if(g_freeze)
@@ -82,26 +87,14 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
         
         ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
         
-        if(o.team == e.team && !ismedic)
-        {
-            if(teamplay == 1)
-                continue;
-            else if(e != o)
-            {
-                if(teamplay == 3)
+        if(!ismedic) {
+            if(!IsDifferentTeam(o, e) && o != e)
+                if(!cvar("g_friendlyfire"))
                     continue;
-                else if(teamplay == 4) {
-                    df = cvar("g_friendlyfire");
-                    
-                    if(df == 0)
-                        continue;
-                }
-            }
+                
+            if(!Buffs_TenacityDamage(e, o, damage, dtype))
+                continue;
         }
-        
-        if(!ismedic)
-        if(!Buffs_TenacityDamage(e, o, damage, dtype))
-            continue;
         
         p = e.origin;
         p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
