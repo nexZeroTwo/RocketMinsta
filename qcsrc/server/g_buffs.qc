@@ -505,7 +505,7 @@ void Buffs_BashDamage(entity attacker, entity inflictor, entity ignore, float da
 }
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
-    if(self.team && (plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack)))
+    if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
         return FALSE;
     return WaypointSprite_visible_for_player(plr);
 }
@@ -517,6 +517,17 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
 }
 
+void Buffs_BuffPickup_SetCooldown(float cd) {
+    cd = max(0, cd);
+    
+    if(!self.buff_waypoint)
+        Buffs_BuffPickup_SpawnWaypoint(self);
+    
+    WaypointSprite_UpdateBuildFinished(self.buff_waypoint, time + cd);
+    self.buff_activetime = cd;
+    self.buff_active = !cd;
+}
+
 void Buffs_BuffPickup_Think(void) {
     if(time < 1)
         return;
@@ -524,6 +535,12 @@ void Buffs_BuffPickup_Think(void) {
     if(self.buff_lockon)
     if(time > self.buff_lockon_updatetime)
         self.buff_lockon = world;
+    
+    if(roundstate == ROUNDSTATE_GAME)
+    if(!self.buff_activetime_updated) {
+        Buffs_BuffPickup_SetCooldown(self.buff_activetime);
+        self.buff_activetime_updated = TRUE;
+    }
     
     if(self.buffs != self.oldbuffs) {
         self.color = self.colormod = Buffs_GenColor(self.buffs);
@@ -540,39 +557,25 @@ void Buffs_BuffPickup_Think(void) {
     if(!self.buff_active && !self.buff_activetime)
     if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || !self.owner.iscreature || !(self.owner.buffs & self.buffs)) {
         if(self.owner.buff_cdoverride) {
-            self.buff_activetime = max(0, self.owner.buff_cdoverride) + frametime;
+            Buffs_BuffPickup_SetCooldown(max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
         } else
-            self.buff_activetime = cvar("g_buffs_reactivate_delay") + frametime;
+            Buffs_BuffPickup_SetCooldown(cvar("g_buffs_reactivate_delay") + frametime);
         self.owner = world;
     }
     
     if(self.buff_activetime) {
-        if(!self.buff_waypoint && self.buff_activetime > frametime) {
-            Buffs_BuffPickup_SpawnWaypoint(self);
-        }
-        
         if(roundstate == ROUNDSTATE_GAME) {
-            if(self.buff_activetime > frametime) {
-                if(!self.buff_waypoint.max_health)
-                    WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
-                WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
-            }
-            
             self.buff_activetime = max(0, self.buff_activetime - frametime);
             
             if(!self.buff_activetime) {
                 self.buff_active = TRUE;
-                WaypointSprite_Disown(self.buff_waypoint, 1);
                 sound(self, CHAN_TRIGGER, "misc/strength_respawn.wav", VOL_BASE, ATTN_NORM); 
             }
         }
     }
     
     if(!self.buff_active) {
-        if(self.buff_waypoint && !self.buff_activetime)
-            WaypointSprite_Disown(self.buff_waypoint, 1);
-        
         self.alpha = 0.3;
         self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
         self.pflags = 0;
@@ -612,9 +615,9 @@ void Buffs_BuffPickup_ResetWaypoint(void) {
 
 void Buffs_BuffPickup_Reset(void) {
     self.owner = world;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
-    self.buff_active = !self.buff_activetime;
+    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
     Buffs_BuffPickup_ResetWaypoint();
+    self.buff_activetime_updated = FALSE;
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
@@ -666,7 +669,9 @@ void Buffs_BuffPickup_Touch(void) {
 
 void Buffs_BuffPickup_TeamSwap(void) {
     self.team = TeamCount_NextTeam(self.team);
-    Buffs_BuffPickup_ResetWaypoint();
+    if(self.buff_waypoint)
+        self.buff_waypoint.team = self.team;
+    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
 }
 
 void Buffs_BuffPickup_Setup(void) {
@@ -700,7 +705,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
     self.scale = 1.5;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
+    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
     self.buff_active = !self.buff_activetime;
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
