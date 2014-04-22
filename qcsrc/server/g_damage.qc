@@ -672,7 +672,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						string tail;
 						
 						if(cvar("sv_extendfragmessages")) {
-							tail = DamageSourceName(deathtype, FALSE);
+							tail = DamageTracker_DamageSourceName(deathtype, FALSE);
                             
 							if(tail != "")
 								tail = strcat(" with ^7", tail);

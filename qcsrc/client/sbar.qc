@@ -2530,7 +2530,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
         l += stringwidth_svn(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
-        str = strcat(ftos(i+1), ". ", DamageSourceName(k.(dtrack_type[i]), TRUE));
+        str = strcat(ftos(i+1), ". ", DamageTracker_DamageSourceName(k.(dtrack_type[i]), TRUE));
         str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
         drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         

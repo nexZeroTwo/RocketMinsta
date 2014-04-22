@@ -207,5 +207,4 @@ float approach(float v, float t, float d);
 // TODO: serverside setting with a list of those maybe? :p
 #define ISFAGGOTMAP(m) (substring(m, 0, 7) == "fagcity" || substring(m, 0, 7) == "ikzbdsm")
 
-string DamageSourceName(float, float);
 string FormatDamage(float f);
