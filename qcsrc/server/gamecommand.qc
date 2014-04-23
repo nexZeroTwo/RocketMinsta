@@ -1261,7 +1261,7 @@ void GameCommand(string command)
     }
     
     if(argv(0) == "balanceteams") {
-        print("\x01^3* Teams will be automatically rebalanced after this round.\n");
+        bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
         teamcount_balancenext = TRUE;
         return;
     }

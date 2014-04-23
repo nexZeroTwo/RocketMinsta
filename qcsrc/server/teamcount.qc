@@ -268,8 +268,13 @@ void TeamCount_BalanceTeams(void) {
         pool = teamcount_balance_pools[i];
         for(j = 0; j < pool.teamcount_poolsize; ++j) {
             plr = TeamCount_PlayerPool_GetPlayer(pool, j);
+            
+            if(plr.team != pool.team)
+                bigprint_spec(plr, strcat("You are now on the ", Team_ColorCode(pool.team), strtoupper(Team_ColorName(pool.team)), " ^7Team!"), "", 5);
+            
             if(plr.jb_specteam)
                 plr.jb_specteam = pool.team;
+            
             TeamchangeFrags(plr);
             SetPlayerTeam(plr, Team_Index(pool.team)+1, Team_Index(plr.team)+1, FALSE);
             plr.scorekeeper.SendFlags |= pow(2, SP_SCORE);
