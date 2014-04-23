@@ -47,6 +47,7 @@ float DamageTracker_Sort(entity keeper) {
 }
 
 void DamageTracker_Record(entity keeper, float dtype, float damage) {
+    dtype = DamageTracker_TransformDamageSource(dtype);
     float i = DamageTracker_GetEntryId(keeper, dtype);
     keeper.(dtrack_type[i]) = dtype;
     keeper.(dtrack_damage[i]) += damage;
@@ -68,4 +69,42 @@ void DamageTracker_Wipe(entity keeper) {
     keeper.dtrack_damage = 0;
     keeper.dtrack_highestdamage = 0;
     keeper.dtrack_totaldamage = 0;
+}
+
+string DamageTracker_DamageSourceName(float dtype, float extended) {
+    string r;
+    
+    if(DEATH_ISHG(dtype))
+        return HG_TypeToExpandedName(dtype);
+    else if(dtype == DEATH_ARC)
+        return "Arc Buff";
+    else if(dtype == DEATH_BASH)
+        return "Bash Buff";
+    else { 
+        r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
+        
+        if(extended) {
+            if(r == "")
+                return strcat("Unknown damage source (", ftos(dtype), ")");
+            
+            #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
+            string mods;
+            if(dtype & HITTYPE_SECONDARY)   ADDMOD("secondary");
+            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("headshot");
+            if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
+            if(dtype & HITTYPE_BOUNCE)      ADDMOD("bounce");
+            #undef ADDMOD
+            
+            if(mods != "")
+                return strcat(r, " (", mods, ")");
+        }
+        
+        return r;
+    }
+}
+
+float DamageTracker_TransformDamageSource(float dtype) {
+    if(dtype == DEATH_HG_PLASMA_SHARD)
+        return DEATH_HG_PLASMA;
+    return dtype;
 }

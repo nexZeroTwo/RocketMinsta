@@ -672,7 +672,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						string tail;
 						
 						if(cvar("sv_extendfragmessages")) {
-							tail = DamageSourceName(deathtype, FALSE);
+							tail = DamageTracker_DamageSourceName(deathtype, FALSE);
                             
 							if(tail != "")
 								tail = strcat(" with ^7", tail);
@@ -2041,13 +2041,16 @@ void Fire_ApplyDamage(entity e)
     if(time - e.fire_last < FIRE_DELAY)
         return;
 
-	if not(Fire_IsBurning(e))
-		return;
-
 	// water and slime stop fire
 	if(e.waterlevel)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
+
+    if(!e.fire_owner.iscreature)
+        e.fire_endtime = 0;
+
+	if not(Fire_IsBurning(e))
+		return;
 
 	t = min(time - e.fire_last, e.fire_endtime - time);
     
@@ -2057,7 +2060,6 @@ void Fire_ApplyDamage(entity e)
     }
     
 	d = e.fire_damagepersec * t;
-
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
@@ -2080,7 +2082,7 @@ void Fire_ApplyDamage(entity e)
 		{
 			t = cvar("g_balance_firetransfer_time") * (e.fire_endtime - time);
 			d = cvar("g_balance_firetransfer_damage") * e.fire_damagepersec * t;
-			Fire_AddDamage(other, e, d, t, DEATH_FIRE);
+			Fire_AddDamage(other, e, d, t, e.fire_deathtype);
 		}
 	}
     

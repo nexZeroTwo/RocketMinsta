@@ -74,6 +74,11 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     o = self.owner;
     df = 1;
 
+    if(o.classname != "player" || o.team != self.team) {
+        remove(self);
+        return;
+    }
+
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
         if(g_freeze)
@@ -82,26 +87,14 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
         
         ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
         
-        if(o.team == e.team && !ismedic)
-        {
-            if(teamplay == 1)
-                continue;
-            else if(e != o)
-            {
-                if(teamplay == 3)
+        if(!ismedic) {
+            if(!IsDifferentTeam(o, e) && o != e)
+                if(!cvar("g_friendlyfire"))
                     continue;
-                else if(teamplay == 4) {
-                    df = cvar("g_friendlyfire");
-                    
-                    if(df == 0)
-                        continue;
-                }
-            }
+                
+            if(!Buffs_TenacityDamage(e, o, damage, dtype))
+                continue;
         }
-        
-        if(!ismedic)
-        if(!Buffs_TenacityDamage(e, o, damage, dtype))
-            continue;
         
         p = e.origin;
         p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
@@ -497,7 +490,8 @@ void HG_Grenade_Touch() {
         }
     
         self.cnt -= 1;
-	}
+        self.hg_state = TRUE;
+    }
 }
 
 void HG_Remote_Stick() {
@@ -543,6 +537,7 @@ void HG_Remote_Stick() {
     e.hg_detonable_updated = self.hg_detonable_updated;
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
+    e.hg_state = TRUE;
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
@@ -550,8 +545,14 @@ void HG_Remote_Stick() {
         setorigin(e, e.origin - normal * 4.5);
     move_out_of_solid(e);
     
-    if(self.hg_waypoint)
-        WaypointSprite_Kill(self.hg_waypoint);
+    if(self.hg_waypoint) {
+        entity wp = self.hg_waypoint;
+        self.hg_waypoint = world;
+        wp.owner = e;
+        wp.exteriormodeltoclient = e;
+        e.hg_waypoint = wp;
+    }
+        
     HG_Grenade_Remove();
     self = e;
     
@@ -608,6 +609,10 @@ void HG_DetonateAll(entity plr) {
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
         WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32', self.owner, 0, self, hg_waypoint, 1);
+        if(self.hg_detonateready > time) {
+            WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
+            WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
+        }
     } else {
         WaypointSprite_UpdateSprites(self.hg_waypoint, wpname, "", "");
     }
@@ -619,9 +624,6 @@ void HG_Grenade_Waypoint() {
     float rng;
     
     if(time < self.hg_wp_nextthink)
-        return;
-    
-    if(time < self.jb_defendthink_next)
         return;
     
     rng = max(0, GRENVAR(self.hg_type, "detect_enemies"));
@@ -713,15 +715,17 @@ void HG_Grenade_ChangeOwner(entity o) {
 void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
     if(DEATH_ISHG(deathtype))
         return;
-	if(self.health <= 0)
-		return;
-	self.health = self.health - damage;
-	if(self.health <= 0) {
+    if(self.health <= 0)
+        return;
+    if(!self.hg_state)
+        return;
+    self.health = self.health - damage;
+    if(self.health <= 0) {
         if(attacker.classname == "player") {
             HG_Grenade_ChangeOwner(attacker);
         }
         self.hg_deathtime = time;
-	}
+    }
 }
 
 float HG_PlayerGrenadeType(entity e) {

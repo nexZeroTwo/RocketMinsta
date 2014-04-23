@@ -767,3 +767,6 @@ void SwapTeams(void);
 void SwapTeams_Generic(void);
 
 .float playtime;
+.float playtimeupdate;
+float roundstate;
+.float roundstate_stat;

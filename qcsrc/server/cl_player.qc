@@ -555,6 +555,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	vector v;
 	float valid_damage_for_weaponstats;
     
+    float oh = self.health;
+    float oa = self.armorvalue;
+    
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
     if(deathtype != DEATH_ARC)
@@ -791,7 +794,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     DPS_Record(attacker, self, take);
     
 	if(valid_damage_for_weaponstats)
-		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, min(take, self.health) + min(save, self.armorvalue));
+		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, (oh - self.health) + (oa - self.armorvalue));
 
 	if (self.health < 1)
 	{

@@ -3383,12 +3383,6 @@ string GetForcedFog() {
 .void() endround_think2;
 .void() endround_finalize;
 
-float roundstate;
-#define ROUNDSTATE_PREGAME 0
-#define ROUNDSTATE_GAME 1
-#define ROUNDSTATE_OVER 2
-#define ROUNDSTATE_WARMUP 3
-
 void G_EndRound_Think()
 {
     local float timeleft = rint(self.cnt - time);

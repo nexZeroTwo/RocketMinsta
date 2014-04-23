@@ -25,6 +25,7 @@ float g_buffs_count;
 .float buffs_arc_hit;
 .float buff_active;
 .float buff_activetime;
+.float buff_activetime_updated;
 .float buff_cdoverride;
 .float buffstat;
 .float oldbuffstat;

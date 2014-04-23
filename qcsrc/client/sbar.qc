@@ -550,7 +550,7 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
 		} else if(str == "time") {
-			sbar_field[sbar_num_fields] = SP_JOINTIME;
+			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
             sbar_field[sbar_num_fields] = SP_DEATHS;
         } else if(str == "scds") {
@@ -708,10 +708,8 @@ string Sbar_GetField(entity pl, float field)
 
 			return strcat(chr2str(char0), chr2str(char1));
 
-		case SP_JOINTIME:
-			local float jt;
-			jt = pl.(scores[field]);
-			return mmss((time - jt) * 10);
+		case SP_PLAYTIME:
+			return mmss(pl.(scores[field]) * 10);
 
 		case SP_PING:
 			if not(pl.gotscores)
@@ -1890,6 +1888,8 @@ void Sbar_Timer()
 }
 
 float Sbar_WouldDrawScoreboard() {
+    if (sb_showaccuracy)
+        return 0;
 	if (is_tmpmadoka)
 		return 0;
 	else if (sb_showscores)
@@ -2528,7 +2528,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
         l += stringwidth_svn(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
-        str = strcat(ftos(i+1), ". ", DamageSourceName(k.(dtrack_type[i]), TRUE));
+        str = strcat(ftos(i+1), ". ", DamageTracker_DamageSourceName(k.(dtrack_type[i]), TRUE));
         str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
         drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
@@ -2577,7 +2577,7 @@ void Sbar_DrawAccuracyStats()
 
 	fill_size_x = 5 * sbar_fontsize_x;  // width of the background
 	fill_size_y = 10 * sbar_fontsize_y;  // height of the background
-
+    
 	drawfont = sbar_bigfont;
 	pos_x = 0;
 	pos_y = SCOREBOARD_OFFSET;
@@ -3859,8 +3859,10 @@ void Sbar_Draw(void)
 		}
 	}
 
-	local float bp_alpha;
-	local vector bp_pos;
+	float bp_alpha, bp_ypos;
+	vector bp_pos;
+    bp_ypos = (vid_conheight / 5) * (1 - sbar_scoreboard_fade_alpha)
+            + (SCOREBOARD_OFFSET) * (    sbar_scoreboard_fade_alpha);
 
 	if(obp_draw)
 	if(bigprint_oldstring)
@@ -3869,7 +3871,7 @@ void Sbar_Draw(void)
 
 		if(bp_alpha > 0)
 		{
-			bp_pos = '0 1 0' * (vid_conheight/5);
+            bp_pos = '0 1 0' * bp_ypos;
 			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
@@ -3885,7 +3887,7 @@ void Sbar_Draw(void)
 			obp_draw = 0;
 	}
 
-	bp_pos = '0 1 0' * (vid_conheight/5);
+	bp_pos = '0 1 0' * bp_ypos;
 	if(bp_draw)
 	if(bigprint_string)
 	{
@@ -4180,27 +4182,30 @@ void Sbar_Draw(void)
 
 	if (intermission == 2) // map voting screen
 	{
-		if(sb_showscores) {
-			Sbar_DrawScoreboard();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-		else if(sb_showaccuracy) {
-			Sbar_DrawAccuracyStats();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-  		else
-			Sbar_FinaleOverlay();
+        float drawoverlay = TRUE;
+        
+        if(sb_showaccuracy) {
+            Sbar_DrawAccuracyStats();
+            drawoverlay = FALSE;
+        }
+        
+        if(sb_showscores) {
+            Sbar_DrawScoreboard();
+            drawoverlay = FALSE;
+        }
+        
+        if(drawoverlay)
+            Sbar_FinaleOverlay();
+        else
+            Sbar_Timer();
 
 		Sbar_Reset();
 	}
 	else if (sb_showscores_force || getstati(STAT_HEALTH) <= 0 || intermission == 1)
 	{
+        Sbar_DrawScoreboard();
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else
-			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)
 		{
@@ -4247,17 +4252,9 @@ void Sbar_Draw(void)
   	}
 	else
 	{
-		/*
-		if (sb_showscores)
-			Sbar_DrawScoreboard();
-		else if(sb_showaccuracy)
-			Sbar_DrawAccuracyStats();
-			*/
-		
+        Sbar_DrawScoreboard();
 		if(sb_showaccuracy)
 			Sbar_DrawAccuracyStats();
-		else
-			Sbar_DrawScoreboard();
 
 		// lol
 		if(!rm_oldhud)

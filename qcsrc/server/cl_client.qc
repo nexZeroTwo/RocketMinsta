@@ -1904,14 +1904,6 @@ void ClientConnect (void)
 	self.g_minstagib_stat = g_minstagib;
 	IP2C_SetCountry(self);
 	
-	if(self.scorekeeper)
-	{
-		self.scorekeeper.SendFlags |= pow(2, SP_JOINTIME);
-		self.scorekeeper.(scores[SP_JOINTIME]) = time;
-	}
-	else
-		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
-	
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
 	SendServerInfo(self);
 	
@@ -3089,6 +3081,8 @@ void PlayerPreThink (void)
     
     float isplayer, isspec, isobs;
     
+    self.roundstate_stat = roundstate;
+    
     if(self.classname == "player")
         isplayer = TRUE;
     else if(self.classname == "spectator")
@@ -3104,8 +3098,14 @@ void PlayerPreThink (void)
     }
     
     if(isplayer || self.jb_specteam)
-    if(roundstate == ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
+        
+        if(time > self.playtimeupdate) {
+            self.playtimeupdate = time + 30;
+            PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
+        }
+    }
     
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
