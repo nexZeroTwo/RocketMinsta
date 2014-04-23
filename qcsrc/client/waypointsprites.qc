@@ -353,7 +353,7 @@ void Draw_WaypointSprite()
     
     float ha = 1;
     
-	if(self.build_finished)
+	if(self.build_finished > 0)
 	{
 		if(time < self.build_finished + 0.25)
 		{
@@ -422,14 +422,17 @@ void Ent_WaypointSprite()
 {
 	float sendflags, f, t;
 	sendflags = ReadByte();
-
-	if(!self.spawntime)
-		self.spawntime = time;
+    
+    if(!self.spawntime) {
+        self.spawntime = time;
+        self.build_finished = -1;
+        self.health = -1;
+    }
 
 	self.draw2d = Draw_WaypointSprite;
     
 	InterpolateOrigin_Undo();
-
+    
 	if(sendflags & 0x80)
 	{
 		t = ReadByte();
@@ -442,7 +445,7 @@ void Ent_WaypointSprite()
 		{
 			t = (t - 192) * 256 + ReadByte();
 			self.build_started = servertime;
-			if(self.build_finished)
+			if(self.build_finished > 0)
 				self.build_starthealth = bound(0, self.health, 1);
 			else
 				self.build_starthealth = 0;
