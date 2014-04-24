@@ -3401,7 +3401,7 @@ void G_EndRound_Think()
         roundstate = ROUNDSTATE_WARMUP;
         
 		if(!self.endround_announced) {
-			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
+			sound(world, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
 			self.endround_announced = TRUE;
 		}
 		
@@ -3409,14 +3409,11 @@ void G_EndRound_Think()
         {
             roundstate = ROUNDSTATE_GAME;
             FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", 1);
-            }
+                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", -1);
             
-			sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+            sound(world, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
             if(self.endround_finalize)
-				self.endround_finalize();
+                self.endround_finalize();
             remove(self);
             shooting_forbidden = FALSE;
             return;
@@ -3427,13 +3424,10 @@ void G_EndRound_Think()
 		shooting_forbidden = TRUE;
         
         FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat(gametype_ID_to_LongName(game), " starts in: ", ftos(timeleft)), "", 1);
-        }
+            bigprint_spec(e, strcat(gametype_ID_to_LongName(game), " starts in: ", ftos(timeleft)), "", -1);
         
         if(timeleft <= 3)
-			sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+			sound(world, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
     }
     self.nextthink = time + 1;
 }

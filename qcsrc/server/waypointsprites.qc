@@ -245,6 +245,9 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 
 	WriteByte(MSG_ENTITY, ENT_CLIENT_WAYPOINT);
 
+    if(!self.pain_finished && !self.max_health)
+        sendflags &~= 0x80;
+
     // sendflags = sendflags & 0x7F;
 	
 	if(g_nexball)

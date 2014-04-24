@@ -2241,10 +2241,12 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
+float bigprint_noold;
+
 void bigprint_old(string bigstr, string comment, float fadeTime)
 {
 	if(is_tmpmadoka) return;
-	
+    
 	obp_draw = 1;
 	
 	if(bigprint_oldstring)
@@ -2261,7 +2263,12 @@ void bigprint_old(string bigstr, string comment, float fadeTime)
 
 void bigprint(string bigstr, string comment, float staytime)
 {
-	//staytime = 1337;
+    float no = FALSE;
+    if(staytime < 0) {
+        staytime = -staytime;
+        no = TRUE;
+    }
+    
 	if(rm_nobigtext)
 	{
 		local string s;
@@ -2281,7 +2288,9 @@ void bigprint(string bigstr, string comment, float staytime)
 	if(bigstr != "")
 	{
 		bp_draw = 1;
-		bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
+        
+        if(!bigprint_noold)
+            bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
 		
 		if(bigprint_string)
 			fstrunzone(bigprint_string);
@@ -2291,6 +2300,8 @@ void bigprint(string bigstr, string comment, float staytime)
 		bigprint_appeartime = time;
 	}
 	
+    bigprint_noold = no;
+    
 	if(comment != "")
 	{
 		
