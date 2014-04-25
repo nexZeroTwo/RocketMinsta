@@ -1309,6 +1309,9 @@ void HG_PlayerJoin() {
 }
 
 float HG_ShowMenu(float always) {
+    if(self.hg_type_picked && self.BUTTON_CHAT)
+        return TRUE;
+    
     if(g_handgrenades && cvar_string("g_handgrenades_type_selectable") != "" && (always || !self.hg_type_picked)) {
         stuffcmd(self, strcat("set _nade_options \"", cvar_string("g_handgrenades_type_selectable"), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
         return TRUE;
