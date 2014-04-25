@@ -60,3 +60,6 @@ void Buffs_Randomize(entity, float);
 void Buffs_BuffPickup_Placeholder(void);
 void Buffs_BuffPickup_Setup(void);
 float Buffs_BuffPower(entity, float);
+float Buffs_NadgetPower(entity);
+float Buffs_NadgetRegen(entity);
+float Buffs_NadgetRegenDmgPause(entity);

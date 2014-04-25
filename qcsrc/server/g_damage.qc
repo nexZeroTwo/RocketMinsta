@@ -1029,7 +1029,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
     if not(damage_linkmode) {
         if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
-            damage = cvar("g_handgrenades_transloc_damage_shield");
+            damage = cvar("g_handgrenades_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
         if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
