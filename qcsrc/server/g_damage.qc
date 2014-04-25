@@ -1041,6 +1041,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
                 Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
+                targ.frozen_plasmalock = 0;
                 if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
                     Buffs_ArcDamage(targ, attacker, damage, deathtype);
                     Buffs_ArcDamage_Finalize();
