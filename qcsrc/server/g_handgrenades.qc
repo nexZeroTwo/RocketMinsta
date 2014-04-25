@@ -15,6 +15,7 @@ void HG_Init() {
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
     addstat(STAT_STEALTH, AS_INT, hg_stealth);
+    addstat(STAT_HGREFIRE, AS_FLOAT, hg_next);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
     g_handgrenades_detonatelaunches = cvar("g_handgrenades_detonatelaunches");
