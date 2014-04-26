@@ -600,7 +600,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
     if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
         if(self.frozen) if(self.team != attacker.team) {
-            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock");
+            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
             self.frozen_plasmalock_owner = attacker;
         }
 

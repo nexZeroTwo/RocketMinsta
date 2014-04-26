@@ -3493,6 +3493,7 @@ void Sbar_DrawBuffs(void) {
 
 string jb_str;
 float jb_str_alpha;
+float hg_maxcd;
 
 #define RMODE_CAP 0
 #define RMODE_REV 1
@@ -4999,6 +5000,11 @@ void Sbar_Draw(void)
         float hgtype = getstati(STAT_HGTYPE);
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
+        float hgcd = getstatf(STAT_HGREFIRE) - servertime;
+        
+        if(hgcd > 0) {
+            if(hgcd > hg_maxcd) hg_maxcd = hgcd;
+        } else hg_maxcd = 0;
         
         if(getstati(STAT_STEALTH)) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
@@ -5025,7 +5031,20 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            drawpic(pos, HG_TypeToIcon(hgtype, TRUE), '32 32 0', '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED), sbar_alpha_fg, DRAWFLAG_NORMAL);
+            string hgicon = HG_TypeToIcon(hgtype, TRUE);
+            vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED);
+            vector hgsize = '32 32 0';
+            
+            if(hgcd > 0) {
+                float cdh = hgsize_y * (hgcd / hg_maxcd);
+                drawsetcliparea(pos_x, pos_y, hgsize_x, cdh);
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg * 0.3, DRAWFLAG_NORMAL);
+                drawsetcliparea(pos_x, pos_y + cdh, hgsize_x, hgsize_y);
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                drawresetcliparea();
+            } else
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            
             Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method

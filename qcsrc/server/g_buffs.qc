@@ -364,6 +364,28 @@ void Buffs_ClientFrame(void) {
 #undef ON_BUFF_ADDED
 #undef ON_BUFF_REMOVED
 
+float Buffs_NadgetPower(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgpower");
+}
+
+float Buffs_NadgetRegen(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgregen");
+}
+
+float Buffs_NadgetRegenDmgPause(entity plr) {
+    return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
+}
+
 float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float deathtype) {
     if(!BUFFS_PRESENT(targ, BUFF_TENACITY))
         return damage;
@@ -770,60 +792,23 @@ void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
 
 #define BUFF_SPAWNFUNC(e,b,t) void spawnfunc_item_buff_##e() { self.buffs = b; self.team = t; Buffs_BuffPickup_Setup(); }
 #define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,r) void spawnfunc_##o() { Buffs_BuffPickup_SetupQ3TACompat(r); }
+#define BUFF_SPAWNFUNCS(e,b)                         \
+        BUFF_SPAWNFUNC(e,           b,  0)           \
+        BUFF_SPAWNFUNC(e##_team1,   b,  COLOR_TEAM1) \
+        BUFF_SPAWNFUNC(e##_team2,   b,  COLOR_TEAM2) \
+        BUFF_SPAWNFUNC(e##_team3,   b,  COLOR_TEAM3) \
+        BUFF_SPAWNFUNC(e##_team4,   b,  COLOR_TEAM4) 
 
-BUFF_SPAWNFUNC(arc,             BUFF_ARC,       0)
-BUFF_SPAWNFUNC(arc_team1,       BUFF_ARC,       COLOR_TEAM1)
-BUFF_SPAWNFUNC(arc_team2,       BUFF_ARC,       COLOR_TEAM2)
-BUFF_SPAWNFUNC(arc_team3,       BUFF_ARC,       COLOR_TEAM3)
-BUFF_SPAWNFUNC(arc_team4,       BUFF_ARC,       COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(guard,           BUFF_GUARD,     0)
-BUFF_SPAWNFUNC(guard_team1,     BUFF_GUARD,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(guard_team2,     BUFF_GUARD,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(guard_team3,     BUFF_GUARD,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(guard_team4,     BUFF_GUARD,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(supply,          BUFF_SUPPLY,    0)
-BUFF_SPAWNFUNC(supply_team1,    BUFF_SUPPLY,    COLOR_TEAM1)
-BUFF_SPAWNFUNC(supply_team2,    BUFF_SUPPLY,    COLOR_TEAM2)
-BUFF_SPAWNFUNC(supply_team3,    BUFF_SUPPLY,    COLOR_TEAM3)
-BUFF_SPAWNFUNC(supply_team4,    BUFF_SUPPLY,    COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(haste,           BUFF_HASTE,     0)
-BUFF_SPAWNFUNC(haste_team1,     BUFF_HASTE,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(haste_team2,     BUFF_HASTE,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(haste_team3,     BUFF_HASTE,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(haste_team4,     BUFF_HASTE,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(medic,           BUFF_MEDIC,     0)
-BUFF_SPAWNFUNC(medic_team1,     BUFF_MEDIC,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(medic_team2,     BUFF_MEDIC,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(medic_team3,     BUFF_MEDIC,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(medic_team4,     BUFF_MEDIC,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(bash,            BUFF_BASH,      0)
-BUFF_SPAWNFUNC(bash_team1,      BUFF_BASH,      COLOR_TEAM1)
-BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
-BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
-BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(vampire,         BUFF_VAMPIRE,   0)
-BUFF_SPAWNFUNC(vampire_team1,   BUFF_VAMPIRE,   COLOR_TEAM1)
-BUFF_SPAWNFUNC(vampire_team2,   BUFF_VAMPIRE,   COLOR_TEAM2)
-BUFF_SPAWNFUNC(vampire_team3,   BUFF_VAMPIRE,   COLOR_TEAM3)
-BUFF_SPAWNFUNC(vampire_team4,   BUFF_VAMPIRE,   COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(tenacity,        BUFF_TENACITY,  0)
-BUFF_SPAWNFUNC(tenacity_team1,  BUFF_TENACITY,  COLOR_TEAM1)
-BUFF_SPAWNFUNC(tenacity_team2,  BUFF_TENACITY,  COLOR_TEAM2)
-BUFF_SPAWNFUNC(tenacity_team3,  BUFF_TENACITY,  COLOR_TEAM3)
-BUFF_SPAWNFUNC(tenacity_team4,  BUFF_TENACITY,  COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(random,          BUFF_RANDOM,    0)
-BUFF_SPAWNFUNC(random_team1,    BUFF_RANDOM,    COLOR_TEAM1)
-BUFF_SPAWNFUNC(random_team2,    BUFF_RANDOM,    COLOR_TEAM2)
-BUFF_SPAWNFUNC(random_team3,    BUFF_RANDOM,    COLOR_TEAM3)
-BUFF_SPAWNFUNC(random_team4,    BUFF_RANDOM,    COLOR_TEAM4)
+BUFF_SPAWNFUNCS(arc,        BUFF_ARC)
+BUFF_SPAWNFUNCS(guard,      BUFF_GUARD)
+BUFF_SPAWNFUNCS(supply,     BUFF_SUPPLY)
+BUFF_SPAWNFUNCS(haste,      BUFF_HASTE)
+BUFF_SPAWNFUNCS(medic,      BUFF_MEDIC)
+BUFF_SPAWNFUNCS(bash,       BUFF_BASH)
+BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
+BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
+BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
+BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
