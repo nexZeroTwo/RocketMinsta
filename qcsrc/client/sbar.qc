@@ -3499,6 +3499,18 @@ float hg_maxcd;
 #define RMODE_REV 1
 #define RMODE_AUTH 2
 
+void Sbar_DrawPlayerName(string s) {
+    vector pos;
+    
+    drawfont = sbar_bigfont;
+    
+    pos_y = vid_conheight - 50 - sbar_fontsize_spec_y;
+    s = textShortenToWidth(s, vid_conwidth/2.5/sbar_fontsize_spec_x, stringwidth_colors);
+    drawcolorcodedstring(pos, s, sbar_fontsize_spec, sbar_alpha_fg, DRAWFLAG_NORMAL);
+    
+    drawfont = sbar_font;
+}
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -3677,18 +3689,12 @@ void Sbar_Draw(void)
     
 	if(spectatee_status && !intermission)
 	{
-		drawfont = sbar_bigfont;
-		if(spectatee_status == -1)
-			s = "^1Observing";
-		else
-			s = GetPlayerName(spectatee_status - 1);
-		// spectated player name between HUD and chat area, aligned to the left
-		pos_x = bottomleft_x;
-		pos_y = bottom_y - 50 - sbar_fontsize_spec_y;
-		s = textShortenToWidth(s, vid_conwidth/2.5/sbar_fontsize_spec_x, stringwidth_colors);
-		drawcolorcodedstring(pos, s, sbar_fontsize_spec, sbar_alpha_fg, DRAWFLAG_NORMAL);
-		drawfont = sbar_font;
-
+        if(spectatee_status == -1)
+            s = "^1Observing";
+        else
+            s = GetPlayerName(spectatee_status - 1);
+        Sbar_DrawPlayerName(s);
+        
 		// spectator text in the upper right corner
 		if(spectatee_status == -1)
 			s = strcat("^1Press ^3", getcommandkey("primary fire", "+attack"), "^1 to spectate");
@@ -3729,7 +3735,12 @@ void Sbar_Draw(void)
 			s = strcat("^1Game starts in ^3", ftos(countdown), "^1 seconds");
 			o = Sbar_DrawNoteLine(o, s);
 		}
-	}
+	} else {
+        float spn = cvar("rm_showplayername");
+        if((spn > 1) || (spn && isdemo()))
+            Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
+    }
+    
 	if(warmup_stage && !intermission)
 	{
 		s = "^2Currently in ^1warmup^2 stage!";
