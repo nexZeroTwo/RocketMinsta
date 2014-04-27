@@ -1531,7 +1531,7 @@ void Ent_Nagger()
 	ready_waiting = (nags & 1);
 	ready_waiting_for_me = (nags & 2);
 	vote_waiting = (nags & 4);
-	vote_waiting_for_me = (nags & 8);
+	vote_waiting_for_me = ((nags & 8) && !isdemo());
 	warmup_stage = (nags & 16);
 }
 
