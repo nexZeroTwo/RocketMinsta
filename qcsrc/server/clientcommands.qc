@@ -527,8 +527,13 @@ void SV_ParseClientCommand(string s) {
                         }
                         
                         HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
-                        if(o)
+                        
+                        if(o || !term) {
                             self.hg_regentime = HG_RegenTime(self);
+                            self.hg_regenstat = 0;
+                            if(!term)
+                                self.hg_ammo = cvar("g_handgrenades_ammo");
+                        }
                     }
                     
                     return;
