@@ -22,7 +22,7 @@ float IRC_CheckSession(float s) {
 string IRC_TopicPostfix(void) {
     return strcat(strcat("^9  //  ^7playing ^5", gametype_ID_to_LongName(game)), 
                   "^7 on ^2", mapname, "^9  //  ^1", 
-                  ftos(totalclients), "^7/", ftos(maxclients), " clients");
+                  ftos(realclients), "^7/", ftos(maxclients), " clients");
 }
 
 void IRC_UpdateTopic(void) {
@@ -87,7 +87,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
     switch(cmd) {
         case "status": case "list": case "players": {
             IRC_Notice(handle, nick, strcat("^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, "^7, ^1", 
-                                     strcat(ftos(totalclients), "^7/", ftos(maxclients), " clients")));
+                                     strcat(ftos(realclients), "^7/", ftos(maxclients), " clients")));
             FOR_EACH_CLIENT(e) {
                 s = IRC_DP2IRC(e.netname);
                 if(argc < 2 || strstrofs(strdecolorize(s), argv(1), 0) >= 0) {
