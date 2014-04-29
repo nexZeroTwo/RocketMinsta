@@ -21,16 +21,31 @@ float IRC_CheckSession(float s) {
     return s;
 }
 
-string IRC_TopicPostfix(void) {
-    return strcat(strcat("^9  //  ^7playing ^5", gametype_ID_to_LongName(game)), 
-                  "^7 on ^2", mapname, "^9  //  ^1", 
-                  ftos(realclients), "^7/", ftos(maxclients), " clients");
+#define IRC_STRING_SEPARATOR "^9  //  "
+
+string IRC_GameInfoString(void) {
+    return strcat("^7playing ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname);
+}
+
+string IRC_ClientsInfoString(void) {
+    float bots = totalclients - realclients;
+    string s = strcat("^1", ftos(totalclients), "^7/", ftos(maxclients), " clients");
+    if(bots > 0)
+        s = strcat(s, " (", ftos(bots), " bots)");
+    return s;
 }
 
 void IRC_UpdateTopic(void) {
     if(!cvar("sv_ircbot_update_topic"))
         return;
-    IRC_Topic(irc.cnt, irc.target, strcat(cvar_string("hostname"), IRC_TopicPostfix()));
+        
+    string s = strcat(cvar_string("hostname"), IRC_STRING_SEPARATOR, IRC_GameInfoString());
+    if(!realclients)
+        s = strcat(s, IRC_STRING_SEPARATOR, "^1server empty");
+    else if(totalclients == maxclients)
+        s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
+    
+    IRC_Topic(irc.cnt, irc.target, s);
     irc.skin = 0;
 }
 
@@ -316,9 +331,9 @@ void IRC_Announce_Client(entity plr, float ispart) {
     
     if(cvar("sv_ircbot_announce_joinparts_showip"))
         msg = strcat(msg, "^7 (^4", plr.netaddress, "^7)");
-    
     if(!cvar("sv_ircbot_update_topic"))
-        msg = strcat(msg, IRC_TopicPostfix());
+        msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_GameInfoString());
+    msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_ClientsInfoString());
     
     IRC_Privmsg(irc.cnt, irc.target, msg);
     irc.skin = 1;
