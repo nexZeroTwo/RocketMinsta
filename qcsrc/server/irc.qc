@@ -289,6 +289,9 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "MODE") {
         if(argv(0) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
             irc.skin = 1;
+    } else if(event == "NICK") {
+        if(cvar("sv_ircbot_announce_irc_nick"))
+            bprint("\{1}^5IRC  ^7* ^3", nick, " ^7is now known as ^3", argv(0), "\n");
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
         IRC_ChangeNick(handle, strcat(argv(1), "`"));
     }
@@ -350,4 +353,9 @@ void IRC_Announce_Vote(string vstr) { if(!irc) return;
 void IRC_Announce_Ban(string bstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_bans"))
         IRC_Privmsg(irc.cnt, irc.target, bstr);
+}
+
+void IRC_Announce_Name(entity plr, string name) { if(!irc) return;
+    if(cvar("sv_ircbot_announce_name") && plr.netname != name)
+        IRC_Privmsg(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
 }
