@@ -1918,6 +1918,9 @@ void ClientConnect (void)
             ReadyRestart();
     }
     
+    if(clienttype(self) == CLIENTTYPE_REAL)
+        IRC_Announce_ClientConnect(self);
+    
     self.dtrack_total = DamageTracker_CreateKeeper(self);
     self.dtrack_total.netname = "Damage done";
     self.dtrack_taken = DamageTracker_CreateKeeper(self);
@@ -2047,8 +2050,10 @@ void ClientDisconnect (void)
     GetCvars(-1);
 
     totalclients--;
-    if(clienttype(self) == CLIENTTYPE_REAL)
+    if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients--;
+        IRC_Announce_ClientDisconnect(self);
+    }
     
     CA_PlayerLeaves();
 }

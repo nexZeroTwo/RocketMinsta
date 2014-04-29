@@ -1264,6 +1264,9 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(msgin == "")
 		return;
 
+    if(!teamsay && !privatesay)
+        IRC_Announce_PlayerChat(source, msgin);
+
 	/*
 	 * using bprint solves this... me stupid
 	// how can we prevent the message from appearing in a listen server?

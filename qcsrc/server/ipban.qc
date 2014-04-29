@@ -214,12 +214,6 @@ void OnlineBanList_Think()
 		self.nextthink = time + max(60, cvar("g_ban_sync_interval") * 60);
 }
 
-#define BAN_MAX 64
-float ban_loaded;
-string ban_ip[BAN_MAX];
-float ban_expire[BAN_MAX];
-float ban_count;
-
 string ban_ip1;
 string ban_ip2;
 string ban_ip3;
@@ -377,6 +371,7 @@ float Ban_MaybeEnforceBan(entity client)
 	{
 		string s;
 		s = strcat("^1NOTE:^7 banned client ", client.netaddress, " just tried to enter\n");
+        IRC_Announce_Ban(strcat("^1* banned client ^4", client.netaddress, "^1 just tried to enter"));
 		dropclient(client);
 		bprint(s);
 		return TRUE;
@@ -403,6 +398,7 @@ string Ban_Enforce(float i, string reason)
 				reason = strcat(reason, e.netname);
 			}
 			s = strcat(s, "^1NOTE:^7 banned client ", e.netname, "^7 has to go\n");
+            IRC_Announce_Ban(strcat("^1* banned client ^4", e.netaddress, "^1 has to go"));
 			dropclient(e);
 		}
 	bprint(s);
