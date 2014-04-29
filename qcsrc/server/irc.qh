@@ -8,6 +8,7 @@ void IRC_Announce_GameOver(void);
 void IRC_Announce_Vote(string vstr);
 void IRC_Announce_Ban(string bstr);
 void IRC_Announce_Name(entity plr, string name);
+
 //
 //  DP_RM_IRC extension definitions
 //
@@ -170,3 +171,25 @@ const float IRC_RFC_ERR_UNIQOPPRIVSNEEDED = 485;
 const float IRC_RFC_ERR_NOOPERHOST = 491;
 const float IRC_RFC_ERR_UMODEUNKNOWNFLAG = 501;
 const float IRC_RFC_ERR_USERSDONTMATCH = 502;
+
+const float IRC_ERR_OK = 0;
+const float IRC_ERR_INVAL = 1;
+const float IRC_ERR_RESOLV = 2;
+const float IRC_ERR_SOCKET = 3;
+const float IRC_ERR_CONNECT = 4;
+const float IRC_ERR_CLOSED = 5;
+const float IRC_ERR_NOMEM = 6;
+const float IRC_ERR_ACCEPT = 7;
+const float IRC_ERR_NODCCSEND = 9;
+const float IRC_ERR_READ = 10;
+const float IRC_ERR_WRITE = 11;
+const float IRC_ERR_STATE = 12;
+const float IRC_ERR_TIMEOUT = 13;
+const float IRC_ERR_OPENFILE = 14;
+const float IRC_ERR_TERMINATED = 15;
+const float IRC_ERR_NOIPV6 = 16;
+const float IRC_ERR_SSL_NOT_SUPPORTED = 17;
+const float IRC_ERR_SSL_INIT_FAILED = 18;
+const float IRC_ERR_CONNECT_SSL_FAILED = 19;
+const float IRC_ERR_SSL_CERT_VERIFY_FAILED = 20;
+const float IRC_ERR_MAX = 21;

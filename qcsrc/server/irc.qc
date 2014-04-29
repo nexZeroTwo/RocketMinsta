@@ -5,15 +5,17 @@ float IRC_CheckSession(float s) {
     if(!IRC_SessionExists(s))
         s = IRC_CreateSession();
     
-    if(!IRC_SessionIsConnected(s))
-        IRC_ConnectSession(s,
+    if(!IRC_SessionIsConnected(s)) {
+        if(IRC_ConnectSession(s,
             cvar_string("sv_ircbot_server"),
             cvar("sv_ircbot_server_port"),
             cvar_string("sv_ircbot_server_password"),
             cvar_string("sv_ircbot_nick"),
             cvar_string("sv_ircbot_user"),
             cvar_string("sv_ircbot_realname")
-        );
+        ) == IRC_ERR_STATE)
+            IRC_TerminateSession(s);
+    }
     
     cvar_set("_sv_ircbot_session", ftos(s));
     return s;
