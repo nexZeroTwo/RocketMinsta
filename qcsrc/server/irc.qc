@@ -94,7 +94,8 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                 s = IRC_DP2IRC(e.netname);
                 if(argc < 2 || strstrofs(strdecolorize(s), argv(1), 0) >= 0) {
                     s = strcat("^3#", ftos(num_for_edict(e)));
-                    for(i = 0; i < 6 - strlen(s); ++i) s = strcat(s, " ");
+                    l = strlen(s);
+                    for(i = 0; i < 7 - l; ++i) s = strcat(s, " ");
                     s = strcat(s, " ^4", e.netaddress);
                     for(i = 0; i < 15 - strlen(e.netaddress); ++i) s = strcat(s, " ");
                     s = strcat(s, " ^7", e.netname);
