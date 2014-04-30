@@ -11,5 +11,6 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync);
 #define BAN_MAX 64
 float ban_loaded;
 string ban_ip[BAN_MAX];
+string ban_reason[BAN_MAX];
 float ban_expire[BAN_MAX];
 float ban_count;

@@ -181,14 +181,15 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                 s = strcat("^3#", ftos(i), " ", ((i < 10)? " " : ""));
                 s = strcat(s, "^4", ban_ip[i], "^7 ");
                 for(j = 0; j < 15 - strlen(ban_ip[i]); ++j) s = strcat(s, " ");
-                s = strcat(s, ftos(ban_expire[i] - time), " seconds");
+                s = strcat(s, ftos(rint(ban_expire[i] - time)), "s");
+                if(ban_reason[i])
+                    s = strcat(s, ", ", ban_reason[i]);
                 IRC_Notice(handle, nick, s);
             }
             if(l == ban_count || l == stof(argv(1)))
                 IRC_Notice(handle, nick, "- End of list -");
             else
                 IRC_Notice(handle, nick, "- List truncated, use bans <position> [item count] to start from a different item -");
-            print(ftos(l), "\n");
             break;
         }
         

@@ -165,7 +165,7 @@ void OnlineBanList_URI_Get_Callback(float id, float status, string data)
 			timeleft = min(syncinterval + (OnlineBanList_Timeout - time) + 5, timeleft);
 			// the ban will be prolonged on the next sync
 			// or expire 5 seconds after the next timeout
-		Ban_Insert(ip, timeleft, strcat("ban synced from ", serverip, " at ", uri), 0);
+		Ban_Insert(ip, timeleft, strcat("[server: ", serverip, "] ", reason), 0);
 		print("Ban list syncing: accepted ban of ", ip, " by ", serverip, " at ", uri, ": ");
 		print(reason, "\n");
 
@@ -257,6 +257,10 @@ float Ban_Delete(float i)
 	}
 	ban_expire[i] = 0;
 	ban_ip[i] = "";
+    if(ban_reason[i] != "") {
+        strunzone(ban_reason[i]);
+        ban_reason[i] = "";
+    }
 	Ban_SaveBans();
 	return TRUE;
 }
@@ -411,11 +415,15 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
 	float i;
 	float j;
 	float bestscore;
-
+    
 	// already banned?
 	for(i = 0; i < ban_count; ++i)
 		if(ban_ip[i] == ip)
 		{
+            if(!ban_reason[i])
+                ban_reason[i] = strzone(reason);
+            print(reason, "\n");
+            
 			// prolong the ban
 			if(time + bantime > ban_expire[i])
 			{
@@ -480,6 +488,9 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
 			if(substring(reason, 0, 1) != "~") // like IRC: unauthenticated banner
 				OnlineBanList_SendBan(ip, bantime, reason);
 
+    if(reason)
+        ban_reason[i] = strzone(reason);
+    
 	return TRUE;
 }
 
