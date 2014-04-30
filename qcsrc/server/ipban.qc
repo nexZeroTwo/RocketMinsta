@@ -422,7 +422,6 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
 		{
             if(!ban_reason[i])
                 ban_reason[i] = strzone(reason);
-            print(reason, "\n");
             
 			// prolong the ban
 			if(time + bantime > ban_expire[i])
