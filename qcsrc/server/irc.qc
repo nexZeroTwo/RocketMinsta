@@ -172,7 +172,8 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         }
         
         case "bans": {
-            for(l = i = stof(argv(1)); i < ban_count, k < 10; ++i, ++k) {
+            float maxrange = min(10, max(5, stof(argv(2))));
+            for(l = i = stof(argv(1)); i < ban_count, k < maxrange; ++i, ++k) {
                 if(time > ban_expire[i])
                     continue;
                 
@@ -186,7 +187,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             if(l == ban_count || l == stof(argv(1)))
                 IRC_Notice(handle, nick, "- End of list -");
             else
-                IRC_Notice(handle, nick, "- List truncated, use bans <position> to start from a different item -");
+                IRC_Notice(handle, nick, "- List truncated, use bans <position> [item count] to start from a different item -");
             print(ftos(l), "\n");
             break;
         }
