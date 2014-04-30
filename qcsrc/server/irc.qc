@@ -246,7 +246,7 @@ float IRC_IsAdmin(string mask) {
 }
 
 void IRC_Event(float handle, string event, float numeric, string src, float argc) {
-    float i, ijp;
+    float ijp;
     string nick, user, host;
     
     if(handle != irc.cnt)    // not our session

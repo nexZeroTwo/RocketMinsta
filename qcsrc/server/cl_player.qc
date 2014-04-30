@@ -551,7 +551,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float take, save, waves, sdelay, dh, da, j;
+	local float take, save, waves, sdelay, j;
 	vector v;
 	float valid_damage_for_weaponstats;
     

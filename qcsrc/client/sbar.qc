@@ -2025,7 +2025,6 @@ void CSQC_Strength_Timer(vector sectorpos) {
 string centerprint_messages[CENTERPRINT_MAX_LINES];
 float centerprint_width[CENTERPRINT_MAX_LINES];
 float centerprint_expires[CENTERPRINT_MAX_LINES];
-float centerprint_posttime[CENTERPRINT_MAX_LINES];
 vector centerprint_start;
 float centerprint_expire;
 float centerprint_num;
@@ -3158,7 +3157,6 @@ void GetSectorBorderClipArea(vector sectorpos, vector sectorsize) {
 void GetSectorFullClipArea(vector sectorpos, vector sectorsize) {
     vector p, s;
     vector p1, s1, p2, s2;
-    float o1, a1, o2, a2;
     
     GetSectorClipArea(sectorpos, sectorsize);
     p1 = sector_clip_pos; s1 = sector_clip_size;
@@ -3556,6 +3554,7 @@ void Sbar_Draw(void)
 	float weapon_stats;
 	float x, fade;
 	float stat_items, stat_weapons;
+    vector c;
 
     Sbar_DrawHGShield();
 
@@ -3749,7 +3748,7 @@ void Sbar_Draw(void)
     
     if(rev)
     {
-        local vector revpos, c;
+        vector revpos;
         revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
@@ -3819,12 +3818,8 @@ void Sbar_Draw(void)
 		vector hgpos;
 		hgpos_x = vid_conwidth/2;
 		hgpos_y = vid_conheight - vid_conheight/4;
-		
-		vector hgcolor = '1 1 0';
-		hgcolor_y = hgcolor_y * 1 - hgstat;
-		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, hgcolor);
+		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, '1 0 0' + '0 1 0' * (1 - hgstat));
 	}
-    
     
 	local vector sv_pos;
 	sv_pos = bottomright;
@@ -3850,7 +3845,6 @@ void Sbar_Draw(void)
 		a *= score_strings_alphamod[i];
 
 		s = score_strings[i];
-		local vector c;
 		c = score_strings_color[i];
 
 		local vector mypos;
