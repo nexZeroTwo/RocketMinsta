@@ -433,39 +433,41 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     entity plr, newtarget;
     float dist, shortest;
     
-    float arcfactor = cvar("g_buffs_arc_multiplier") * Buffs_BuffPower(attacker, BUFF_ARC);
-    float arcrange = cvar("g_buffs_arc_range");
-    float archgfactor = cvar("g_buffs_arc_multiplier_hg");
     vector arcoffset = attacker.maxs_z * '0 0 0.5';
     
-    float targetTeamMates = teams_matter && BUFFS_PRESENT(attacker, BUFF_MEDIC);
-    float preferTeamMates = targetTeamMates && targ.team == attacker.team;
+    float targetTeamMates = (teams_matter && BUFFS_PRESENT(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+    float targetFrozen = targ.frozen && !targetTeamMates;
+    float targetAlive = !targetFrozen && !targetTeamMates;
     
-    if(DEATH_ISHG(deathtype))
-        damage = damage * archgfactor;
-    damage = damage * arcfactor;
+    if(targ.team == attacker.team && !targetTeamMates)
+        return;
     
-    newtarget = world;
-    shortest = arcrange;
-    targ.buffs_arc_hit = TRUE;
+    if(targetFrozen)
+        damage = 1;
+    else {
+        if(DEATH_ISHG(deathtype))
+            damage = damage * cvar("g_buffs_arc_multiplier_hg");
+        damage = damage * cvar("g_buffs_arc_multiplier") * Buffs_BuffPower(attacker, BUFF_ARC);
+    }
     
     if(damage < 1)
         return;
+    
+    newtarget = world;
+    shortest = cvar("g_buffs_arc_range");
+    targ.buffs_arc_hit = TRUE;
     
     FOR_EACH_PLAYER(plr)
     if(plr != attacker || targetTeamMates)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
-    if(!plr.hg_stealth || targetTeamMates)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
     if(!plr.jb_isprisoned)
-    if(!plr.buffs_arc_hit)
-    if(!plr.frozen || !newtarget || newtarget.frozen) {
-        float sameteam = plr.team == attacker.team;
-        if(!teams_matter || ((sameteam && targetTeamMates) || (!sameteam && !(preferTeamMates && newtarget.team == attacker.team)))) {
+    if(!plr.buffs_arc_hit) {
+        float sameteam = (teams_matter && plr.team == attacker.team);
+        if((!sameteam && ((!plr.frozen && targetAlive) || (plr.frozen && targetFrozen))) || (sameteam && targetTeamMates)) {
             dist = vlen(plr.origin - targ.origin);
-            
-            if(dist < arcrange)
-            if(dist < shortest || (newtarget.frozen && !plr.frozen) || (preferTeamMates && plr.team == attacker.team && newtarget.team != attacker.team)) {
+            if(dist < shortest) {
                 traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
                 
                 if(trace_fraction != 1 && trace_ent == plr) {
@@ -482,6 +484,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
         sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);
     }
+    
     self = oldself;
 }
 
