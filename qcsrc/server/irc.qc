@@ -222,7 +222,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         
         default: {
 :help
-            s = "Available commands: status kickban bans unban";
+            s = "Available commands: status kickban ban bans unban";
             if(cvar("sv_ircbot_admin_allow_cmd"))
                 s = strcat(s, " cmd");
             IRC_Notice(handle, nick, s);
