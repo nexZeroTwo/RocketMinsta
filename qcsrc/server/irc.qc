@@ -173,6 +173,9 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         
         case "bans": {
             float maxrange = min(10, max(5, stof(argv(2))));
+            IRC_Notice(handle, nick, strcat("Total bans: ^1", ftos(ban_count), "^7, showing ^3#",
+                                     ftos(min(ban_count, stof(argv(1)))), "^7 to ^3#", 
+                                     ftos(min(ban_count, stof(argv(1)) + maxrange - 1))));
             for(l = i = stof(argv(1)); i < ban_count, k < maxrange; ++i, ++k) {
                 if(time > ban_expire[i])
                     continue;
