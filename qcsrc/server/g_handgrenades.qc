@@ -858,10 +858,7 @@ void HG_Cloak_Frame() {
     if(self.hg_stealth) {
         self.hg_wasstealth = TRUE;
         self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime);
-        
         self.hg_stealth = approach(self.hg_stealth, 0, frametime);
-        if(!self.hg_stealth)
-            self.hg_stealth = 0;
     } else {
         if(self.hg_wasstealth) {
             self.hg_wasstealth = FALSE;
