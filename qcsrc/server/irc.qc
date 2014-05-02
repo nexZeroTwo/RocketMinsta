@@ -225,6 +225,14 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             } else goto help;
         }
         
+        case "masktest": {
+            IRC_Notice(handle, nick, argv(1));
+            IRC_Notice(handle, nick, argv(2));
+            if(IRC_MaskMatches(argv(1), argv(2)))
+                IRC_Notice(handle, nick, "MATCH");
+            IRC_Notice(handle, nick, ftos(IRC_MaskMatches(argv(1), argv(2))));
+        }
+        
         default: {
 :help
             s = "Available commands: status kickban ban bans unban";
