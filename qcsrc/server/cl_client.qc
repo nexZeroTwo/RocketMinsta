@@ -1142,6 +1142,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_wasstealth = FALSE;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
 	self.goodhits = 0;

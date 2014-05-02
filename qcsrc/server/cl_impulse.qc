@@ -145,7 +145,7 @@ void ImpulseCommands (void)
 				case 17:
                     if(g_handgrenades) {
                         if(self.hg_stealth)
-                            self.hg_stealth = -1;
+                            self.hg_stealth = 0;
                         else {
                             self.hg_detonatepressed = TRUE;
                             HG_DetonateAll(self);

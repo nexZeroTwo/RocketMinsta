@@ -1022,7 +1022,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 		return FALSE;
     
     if(self.hg_stealth)
-        self.hg_stealth = -1;
+        self.hg_stealth = 0;
     
     if(self.hg_stealthalpha > cvar("g_handgrenades_cloak_alphashootlimit"))
         return FALSE;

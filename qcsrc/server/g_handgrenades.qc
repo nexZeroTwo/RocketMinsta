@@ -855,21 +855,21 @@ void HG_Cloak(float hgtype) {
 }
 
 void HG_Cloak_Frame() {
-    if(self.hg_stealth == -1) {
-        self.hg_stealth = 0;
-        sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
-    }
-    
     if(self.hg_stealth) {
+        self.hg_wasstealth = TRUE;
         self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime);
-        //self.campingrifle_bulletcounter = 0;
         
         self.hg_stealth = approach(self.hg_stealth, 0, frametime);
         if(!self.hg_stealth)
-            self.hg_stealth = -1;
-    } else
+            self.hg_stealth = 0;
+    } else {
+        if(self.hg_wasstealth) {
+            self.hg_wasstealth = FALSE;
+            self.hg_next = max(self.hg_next, time + cvar("g_handgrenades_cloak_cooldown_decloak"));
+            sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
+        }
         self.hg_stealthalpha = approach(self.hg_stealthalpha, 0, frametime * 0.5);
-    
+    }
 }
 
 .float spawntime;
