@@ -849,7 +849,7 @@ void HG_Shield_Frame() {
 }
 
 void HG_Cloak(float hgtype) {
-    self.hg_stealth += cvar("g_handgrenades_cloak_duration") * Buffs_NadgetPower(self);
+    self.hg_stealth = self.hg_stealth + cvar("g_handgrenades_cloak_duration") * Buffs_NadgetPower(self);
     pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
     sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
 }
