@@ -55,6 +55,7 @@ precious.qh
 domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
+irc.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -125,6 +126,7 @@ cl_player.qc
 cl_client.qc
 t_plats.qc
 antilag.qc
+irc.qc
 
 ctf.qc
 domination.qc

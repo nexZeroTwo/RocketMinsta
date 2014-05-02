@@ -527,11 +527,15 @@ vector PlayerTouchWall(float dist)
     vector old_forward = v_forward, old_right = v_right, old_up = v_up, normal = '0 0 0';
     makevectors(self.angles);
     
+    float sh  = cvar("sv_stepheight");
+    float shc = cvar("g_walljump_stepheightcompensate");
+    float pc  = cvar("g_walljump_playerclip");
+    
     for(i = 1; i > -2; i -= 2) {
-        tracebox(self.origin, self.mins + cvar("sv_stepheight") * '0 0 1' * (cvar("g_walljump_stepheightcompensate")? 1 : 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
+        tracebox(self.origin, self.mins + sh * '0 0 1' * (shc? 1 : 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
-        if not(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+        if(!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))
         if(vlen(self.origin - trace_endpos) < dist) {
             normal = trace_plane_normal;
             break;

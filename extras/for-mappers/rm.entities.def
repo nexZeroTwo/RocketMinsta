@@ -239,6 +239,27 @@ The Tenacity Buff (Pink Team)
 */
 
 
+/*QUAKED item_buff_wrath (0.55 0.50 1.00) (-16 -16 -16) (16 16 16)
+The Wrath Buff
+*/
+
+/*QUAKED item_buff_wrath_team1 (0.55 0.50 1.00) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Red Team)
+*/
+
+/*QUAKED item_buff_wrath_team2 (0.55 0.50 1.00) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_wrath_team3 (0.55 0.50 1.00) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_wrath_team4 (0.55 0.50 1.00) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Pink Team)
+*/
+
+
 /*QUAKED item_buff_random (0.5 0.5 0.5) (-16 -16 -16) (16 16 16)
 A random buff
 */

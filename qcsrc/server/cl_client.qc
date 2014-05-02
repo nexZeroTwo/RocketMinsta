@@ -1142,6 +1142,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_wasstealth = FALSE;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
 	self.goodhits = 0;
@@ -1903,16 +1904,9 @@ void ClientConnect (void)
 	
 	self.g_minstagib_stat = g_minstagib;
 	IP2C_SetCountry(self);
-	
-	if(self.scorekeeper)
-	{
-		self.scorekeeper.SendFlags |= pow(2, SP_JOINTIME);
-		self.scorekeeper.(scores[SP_JOINTIME]) = time;
-	}
-	else
-		print("WARNING: failed to set jointime for ", self.netname, "^7, scorekeeper is missing!\n");
-	
+    
 	VFLIPPER_UPDATECLIENT(self);
+    
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && cvar("g_rocketminsta")), "\n"));
 	SendServerInfo(self);
 	
@@ -1926,6 +1920,9 @@ void ClientConnect (void)
         if(realclients == 1 && time > game_starttime && !cvar("g_warmup"))
             ReadyRestart();
     }
+    
+    if(clienttype(self) == CLIENTTYPE_REAL)
+        IRC_Announce_ClientConnect(self);
     
     self.dtrack_total = DamageTracker_CreateKeeper(self);
     self.dtrack_total.netname = "Damage done";
@@ -2056,8 +2053,10 @@ void ClientDisconnect (void)
     GetCvars(-1);
 
     totalclients--;
-    if(clienttype(self) == CLIENTTYPE_REAL)
+    if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients--;
+        IRC_Announce_ClientDisconnect(self);
+    }
     
     CA_PlayerLeaves();
 }
@@ -2678,6 +2677,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_shield = spectatee.hg_shield;
     self.hg_shieldpower = spectatee.hg_shieldpower;
     self.hg_stealth = spectatee.hg_stealth;
+    self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
@@ -3090,6 +3090,8 @@ void PlayerPreThink (void)
     
     float isplayer, isspec, isobs;
     
+    self.roundstate_stat = roundstate;
+    
     if(self.classname == "player")
         isplayer = TRUE;
     else if(self.classname == "spectator")
@@ -3105,8 +3107,14 @@ void PlayerPreThink (void)
     }
     
     if(isplayer || self.jb_specteam)
-    if(roundstate == ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
+        
+        if(time > self.playtimeupdate) {
+            self.playtimeupdate = time + 30;
+            PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
+        }
+    }
     
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).

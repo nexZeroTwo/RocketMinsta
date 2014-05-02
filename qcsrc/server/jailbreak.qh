@@ -11,6 +11,7 @@ float JB_GetEnemyTeamOf(float);
 void JB_CountPlayers();
 void JB_EndRound(float);
 void JB_Frame();
+void JB_TeamSwap();
 void JB_TeamWins(float);
 float JB_TotalPlayersOnTeam(float);
 float JB_AlivePlayersOnTeam(float);

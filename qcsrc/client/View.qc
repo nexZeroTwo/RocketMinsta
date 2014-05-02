@@ -909,6 +909,12 @@ void CSQC_UpdateView(float w, float h)
 	
 	FPSCounter_Update();
     
+    if(getstati(STAT_ROUNDSTATE) == ROUNDSTATE_GAME) {
+        entity pl; for(pl = players.sort_next; pl; pl = pl.sort_next)
+            if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR)
+                pl.(scores[SP_PLAYTIME]) += drawframetime;
+    }
+    
 	// be safe against triggerbots until everyone has the fixed engine
 	// this call is meant to overwrite the trace globals by something
 	// unsuspicious

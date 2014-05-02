@@ -364,6 +364,28 @@ void Buffs_ClientFrame(void) {
 #undef ON_BUFF_ADDED
 #undef ON_BUFF_REMOVED
 
+float Buffs_NadgetPower(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgpower");
+}
+
+float Buffs_NadgetRegen(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgregen");
+}
+
+float Buffs_NadgetRegenDmgPause(entity plr) {
+    return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
+}
+
 float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float deathtype) {
     if(!BUFFS_PRESENT(targ, BUFF_TENACITY))
         return damage;
@@ -411,39 +433,41 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     entity plr, newtarget;
     float dist, shortest;
     
-    float arcfactor = cvar("g_buffs_arc_multiplier") * Buffs_BuffPower(attacker, BUFF_ARC);
-    float arcrange = cvar("g_buffs_arc_range");
-    float archgfactor = cvar("g_buffs_arc_multiplier_hg");
     vector arcoffset = attacker.maxs_z * '0 0 0.5';
     
-    float targetTeamMates = teams_matter && BUFFS_PRESENT(attacker, BUFF_MEDIC);
-    float preferTeamMates = targetTeamMates && targ.team == attacker.team;
+    float targetTeamMates = (teams_matter && BUFFS_PRESENT(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+    float targetFrozen = targ.frozen && !targetTeamMates;
+    float targetAlive = !targetFrozen && !targetTeamMates;
     
-    if(DEATH_ISHG(deathtype))
-        damage = damage * archgfactor;
-    damage = damage * arcfactor;
+    if(targ.team == attacker.team && !targetTeamMates)
+        return;
     
-    newtarget = world;
-    shortest = arcrange;
-    targ.buffs_arc_hit = TRUE;
+    if(targetFrozen)
+        damage = 1;
+    else {
+        if(DEATH_ISHG(deathtype))
+            damage = damage * cvar("g_buffs_arc_multiplier_hg");
+        damage = damage * cvar("g_buffs_arc_multiplier") * Buffs_BuffPower(attacker, BUFF_ARC);
+    }
     
     if(damage < 1)
         return;
+    
+    newtarget = world;
+    shortest = cvar("g_buffs_arc_range");
+    targ.buffs_arc_hit = TRUE;
     
     FOR_EACH_PLAYER(plr)
     if(plr != attacker || targetTeamMates)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
-    if(!plr.hg_stealth || targetTeamMates)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
     if(!plr.jb_isprisoned)
-    if(!plr.buffs_arc_hit)
-    if(!plr.frozen || !newtarget || newtarget.frozen) {
-        float sameteam = plr.team == attacker.team;
-        if(!teams_matter || ((sameteam && targetTeamMates) || (!sameteam && !(preferTeamMates && newtarget.team == attacker.team)))) {
+    if(!plr.buffs_arc_hit) {
+        float sameteam = (teams_matter && plr.team == attacker.team);
+        if((!sameteam && ((!plr.frozen && targetAlive) || (plr.frozen && targetFrozen))) || (sameteam && targetTeamMates)) {
             dist = vlen(plr.origin - targ.origin);
-            
-            if(dist < arcrange)
-            if(dist < shortest || (newtarget.frozen && !plr.frozen) || (preferTeamMates && plr.team == attacker.team && newtarget.team != attacker.team)) {
+            if(dist < shortest) {
                 traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
                 
                 if(trace_fraction != 1 && trace_ent == plr) {
@@ -460,6 +484,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
         sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);
     }
+    
     self = oldself;
 }
 
@@ -505,7 +530,7 @@ void Buffs_BashDamage(entity attacker, entity inflictor, entity ignore, float da
 }
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
-    if(self.team && (plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack)))
+    if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
         return FALSE;
     return WaypointSprite_visible_for_player(plr);
 }
@@ -517,6 +542,17 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
 }
 
+void Buffs_BuffPickup_SetCooldown(float cd) {
+    cd = max(0, cd);
+    
+    if(!self.buff_waypoint)
+        Buffs_BuffPickup_SpawnWaypoint(self);
+    
+    WaypointSprite_UpdateBuildFinished(self.buff_waypoint, time + cd);
+    self.buff_activetime = cd;
+    self.buff_active = !cd;
+}
+
 void Buffs_BuffPickup_Think(void) {
     if(time < 1)
         return;
@@ -524,6 +560,12 @@ void Buffs_BuffPickup_Think(void) {
     if(self.buff_lockon)
     if(time > self.buff_lockon_updatetime)
         self.buff_lockon = world;
+    
+    if(roundstate == ROUNDSTATE_GAME)
+    if(!self.buff_activetime_updated) {
+        Buffs_BuffPickup_SetCooldown(self.buff_activetime);
+        self.buff_activetime_updated = TRUE;
+    }
     
     if(self.buffs != self.oldbuffs) {
         self.color = self.colormod = Buffs_GenColor(self.buffs);
@@ -540,39 +582,25 @@ void Buffs_BuffPickup_Think(void) {
     if(!self.buff_active && !self.buff_activetime)
     if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || !self.owner.iscreature || !(self.owner.buffs & self.buffs)) {
         if(self.owner.buff_cdoverride) {
-            self.buff_activetime = max(0, self.owner.buff_cdoverride) + frametime;
+            Buffs_BuffPickup_SetCooldown(max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
         } else
-            self.buff_activetime = cvar("g_buffs_reactivate_delay") + frametime;
+            Buffs_BuffPickup_SetCooldown(cvar("g_buffs_reactivate_delay") + frametime);
         self.owner = world;
     }
     
     if(self.buff_activetime) {
-        if(!self.buff_waypoint && self.buff_activetime > frametime) {
-            Buffs_BuffPickup_SpawnWaypoint(self);
-        }
-        
         if(roundstate == ROUNDSTATE_GAME) {
-            if(self.buff_activetime > frametime) {
-                if(!self.buff_waypoint.max_health)
-                    WaypointSprite_UpdateMaxHealth(self.buff_waypoint, self.buff_activetime);
-                WaypointSprite_UpdateHealth(self.buff_waypoint, self.buff_waypoint.max_health - self.buff_activetime);
-            }
-            
             self.buff_activetime = max(0, self.buff_activetime - frametime);
             
             if(!self.buff_activetime) {
                 self.buff_active = TRUE;
-                WaypointSprite_Disown(self.buff_waypoint, 1);
                 sound(self, CHAN_TRIGGER, "misc/strength_respawn.wav", VOL_BASE, ATTN_NORM); 
             }
         }
     }
     
     if(!self.buff_active) {
-        if(self.buff_waypoint && !self.buff_activetime)
-            WaypointSprite_Disown(self.buff_waypoint, 1);
-        
         self.alpha = 0.3;
         self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
         self.pflags = 0;
@@ -612,9 +640,9 @@ void Buffs_BuffPickup_ResetWaypoint(void) {
 
 void Buffs_BuffPickup_Reset(void) {
     self.owner = world;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
-    self.buff_active = !self.buff_activetime;
+    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
     Buffs_BuffPickup_ResetWaypoint();
+    self.buff_activetime_updated = FALSE;
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
@@ -666,7 +694,9 @@ void Buffs_BuffPickup_Touch(void) {
 
 void Buffs_BuffPickup_TeamSwap(void) {
     self.team = TeamCount_NextTeam(self.team);
-    Buffs_BuffPickup_ResetWaypoint();
+    if(self.buff_waypoint)
+        self.buff_waypoint.team = self.team;
+    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
 }
 
 void Buffs_BuffPickup_Setup(void) {
@@ -700,7 +730,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
     self.scale = 1.5;
-    self.buff_activetime = cvar("g_buffs_activate_delay");
+    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
     self.buff_active = !self.buff_activetime;
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
@@ -765,60 +795,23 @@ void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
 
 #define BUFF_SPAWNFUNC(e,b,t) void spawnfunc_item_buff_##e() { self.buffs = b; self.team = t; Buffs_BuffPickup_Setup(); }
 #define BUFF_SPAWNFUNC_Q3TA_COMPAT(o,r) void spawnfunc_##o() { Buffs_BuffPickup_SetupQ3TACompat(r); }
+#define BUFF_SPAWNFUNCS(e,b)                         \
+        BUFF_SPAWNFUNC(e,           b,  0)           \
+        BUFF_SPAWNFUNC(e##_team1,   b,  COLOR_TEAM1) \
+        BUFF_SPAWNFUNC(e##_team2,   b,  COLOR_TEAM2) \
+        BUFF_SPAWNFUNC(e##_team3,   b,  COLOR_TEAM3) \
+        BUFF_SPAWNFUNC(e##_team4,   b,  COLOR_TEAM4) 
 
-BUFF_SPAWNFUNC(arc,             BUFF_ARC,       0)
-BUFF_SPAWNFUNC(arc_team1,       BUFF_ARC,       COLOR_TEAM1)
-BUFF_SPAWNFUNC(arc_team2,       BUFF_ARC,       COLOR_TEAM2)
-BUFF_SPAWNFUNC(arc_team3,       BUFF_ARC,       COLOR_TEAM3)
-BUFF_SPAWNFUNC(arc_team4,       BUFF_ARC,       COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(guard,           BUFF_GUARD,     0)
-BUFF_SPAWNFUNC(guard_team1,     BUFF_GUARD,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(guard_team2,     BUFF_GUARD,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(guard_team3,     BUFF_GUARD,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(guard_team4,     BUFF_GUARD,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(supply,          BUFF_SUPPLY,    0)
-BUFF_SPAWNFUNC(supply_team1,    BUFF_SUPPLY,    COLOR_TEAM1)
-BUFF_SPAWNFUNC(supply_team2,    BUFF_SUPPLY,    COLOR_TEAM2)
-BUFF_SPAWNFUNC(supply_team3,    BUFF_SUPPLY,    COLOR_TEAM3)
-BUFF_SPAWNFUNC(supply_team4,    BUFF_SUPPLY,    COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(haste,           BUFF_HASTE,     0)
-BUFF_SPAWNFUNC(haste_team1,     BUFF_HASTE,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(haste_team2,     BUFF_HASTE,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(haste_team3,     BUFF_HASTE,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(haste_team4,     BUFF_HASTE,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(medic,           BUFF_MEDIC,     0)
-BUFF_SPAWNFUNC(medic_team1,     BUFF_MEDIC,     COLOR_TEAM1)
-BUFF_SPAWNFUNC(medic_team2,     BUFF_MEDIC,     COLOR_TEAM2)
-BUFF_SPAWNFUNC(medic_team3,     BUFF_MEDIC,     COLOR_TEAM3)
-BUFF_SPAWNFUNC(medic_team4,     BUFF_MEDIC,     COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(bash,            BUFF_BASH,      0)
-BUFF_SPAWNFUNC(bash_team1,      BUFF_BASH,      COLOR_TEAM1)
-BUFF_SPAWNFUNC(bash_team2,      BUFF_BASH,      COLOR_TEAM2)
-BUFF_SPAWNFUNC(bash_team3,      BUFF_BASH,      COLOR_TEAM3)
-BUFF_SPAWNFUNC(bash_team4,      BUFF_BASH,      COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(vampire,         BUFF_VAMPIRE,   0)
-BUFF_SPAWNFUNC(vampire_team1,   BUFF_VAMPIRE,   COLOR_TEAM1)
-BUFF_SPAWNFUNC(vampire_team2,   BUFF_VAMPIRE,   COLOR_TEAM2)
-BUFF_SPAWNFUNC(vampire_team3,   BUFF_VAMPIRE,   COLOR_TEAM3)
-BUFF_SPAWNFUNC(vampire_team4,   BUFF_VAMPIRE,   COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(tenacity,        BUFF_TENACITY,  0)
-BUFF_SPAWNFUNC(tenacity_team1,  BUFF_TENACITY,  COLOR_TEAM1)
-BUFF_SPAWNFUNC(tenacity_team2,  BUFF_TENACITY,  COLOR_TEAM2)
-BUFF_SPAWNFUNC(tenacity_team3,  BUFF_TENACITY,  COLOR_TEAM3)
-BUFF_SPAWNFUNC(tenacity_team4,  BUFF_TENACITY,  COLOR_TEAM4)
-
-BUFF_SPAWNFUNC(random,          BUFF_RANDOM,    0)
-BUFF_SPAWNFUNC(random_team1,    BUFF_RANDOM,    COLOR_TEAM1)
-BUFF_SPAWNFUNC(random_team2,    BUFF_RANDOM,    COLOR_TEAM2)
-BUFF_SPAWNFUNC(random_team3,    BUFF_RANDOM,    COLOR_TEAM3)
-BUFF_SPAWNFUNC(random_team4,    BUFF_RANDOM,    COLOR_TEAM4)
+BUFF_SPAWNFUNCS(arc,        BUFF_ARC)
+BUFF_SPAWNFUNCS(guard,      BUFF_GUARD)
+BUFF_SPAWNFUNCS(supply,     BUFF_SUPPLY)
+BUFF_SPAWNFUNCS(haste,      BUFF_HASTE)
+BUFF_SPAWNFUNCS(medic,      BUFF_MEDIC)
+BUFF_SPAWNFUNCS(bash,       BUFF_BASH)
+BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
+BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
+BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
+BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")

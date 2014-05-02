@@ -3,6 +3,7 @@ float waypointsprite_fadedistance;
 float waypointsprite_normdistance;
 float waypointsprite_minscale;
 float waypointsprite_minalpha;
+float waypointsprite_alpha;
 float waypointsprite_distancealphaexponent;
 float waypointsprite_timealphaexponent;
 float waypointsprite_scale;
@@ -231,7 +232,7 @@ void Draw_WaypointSprite()
 	dist = vlen(self.origin - view_origin);
 	
 	float a;
-	a = self.alpha * sbar_alpha_fg;
+	a = self.alpha * sbar_alpha_fg * waypointsprite_alpha;
 
 	if(self.maxdistance > waypointsprite_normdistance)
 		a *= pow(bound(0, (self.maxdistance - dist) / (self.maxdistance - waypointsprite_normdistance), 1), waypointsprite_distancealphaexponent);
@@ -247,7 +248,13 @@ void Draw_WaypointSprite()
 	o = project_3d_to_2d(self.origin);
 	rot = 0;
 
-	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight)
+    float maxw = vid_conwidth;
+    float maxh = vid_conheight;
+    
+    if(cvar("viewsize") < 120 || !cvar("r_letterbox"))
+        maxh -= 50;
+
+	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > maxw || o_y > maxh)
 	{
 		// scale it to be just in view
 		vector d;
@@ -260,15 +267,15 @@ void Draw_WaypointSprite()
 		d_z = 0;
 		*/
 		
-		d = o - '0.5 0 0' * vid_conwidth - '0 0.5 0' * vid_conheight;
+		d = o - '0.5 0 0' * maxw - '0 0.5 0' * maxh;
 
 		/*
 		if(cvar("v_flipped"))
 			d_x = -d_x;
 		*/
 
-		f1 = d_x / vid_conwidth;
-		f2 = d_y / vid_conheight;
+		f1 = d_x / maxw;
+		f2 = d_y / maxh;
 
 		if(max(f1, -f1) > max(f2, -f2))
 		{
@@ -301,7 +308,7 @@ void Draw_WaypointSprite()
 			}
 		}
 
-		o = d + '0.5 0 0' * vid_conwidth + '0 0.5 0' * vid_conheight;
+		o = d + '0.5 0 0' * maxw + '0 0.5 0' * maxh;
 	}
 	o_z = 0;
 
@@ -360,7 +367,9 @@ void Draw_WaypointSprite()
         drawfont = sbar_font;
     }
     
-	if(self.build_finished)
+    float ha = 1;
+    
+	if(self.build_finished > 0)
 	{
 		if(time < self.build_finished + 0.25)
 		{
@@ -368,8 +377,10 @@ void Draw_WaypointSprite()
 				self.health = self.build_starthealth;
 			else if(time < self.build_finished)
 				self.health = (time - self.build_started) / (self.build_finished - self.build_started) * (1 - self.build_starthealth) + self.build_starthealth;
-			else
+			else {
 				self.health = 1;
+                ha = 1 - (time - self.build_finished) * 4;
+            }
 		}
 		else
 			self.health = -1;
@@ -390,10 +401,10 @@ void Draw_WaypointSprite()
         if(!spritemode) {
             rot = 0;
             o_x = bound(m + w * 0.5, o_x, vid_conwidth - w * 0.5 - m);
-            o_y = bound(m * 5.5 + h * 0.5, txty + h*5, vid_conheight - h * 0.5);
+            o_y = bound(m + h * 0.5, txty + h*5, vid_conheight - h * 0.5);
         }
         
-		drawhealthbar(o, rot * 90 * DEG2RAD, self.health, ssize, SPRITE_HOTSPOT * t, w, h, SPRITE_HEALTHBAR_MARGIN * t, SPRITE_HEALTHBAR_BORDER * t, align, self.teamradar_color, a * SPRITE_HEALTHBAR_BORDERALPHA, self.teamradar_color, a * SPRITE_HEALTHBAR_HEALTHALPHA, DRAWFLAG_NORMAL);
+		drawhealthbar(o, rot * 90 * DEG2RAD, self.health, ssize, SPRITE_HOTSPOT * t, w, h, SPRITE_HEALTHBAR_MARGIN * t, SPRITE_HEALTHBAR_BORDER * t, align, self.teamradar_color, ha * a * SPRITE_HEALTHBAR_BORDERALPHA, self.teamradar_color, ha * a * SPRITE_HEALTHBAR_HEALTHALPHA, DRAWFLAG_NORMAL);
 	}
 }
 
@@ -427,14 +438,17 @@ void Ent_WaypointSprite()
 {
 	float sendflags, f, t;
 	sendflags = ReadByte();
-
-	if(!self.spawntime)
-		self.spawntime = time;
+    
+    if(!self.spawntime) {
+        self.spawntime = time;
+        self.build_finished = -1;
+        self.health = -1;
+    }
 
 	self.draw2d = Draw_WaypointSprite;
     
 	InterpolateOrigin_Undo();
-
+    
 	if(sendflags & 0x80)
 	{
 		t = ReadByte();
@@ -447,7 +461,7 @@ void Ent_WaypointSprite()
 		{
 			t = (t - 192) * 256 + ReadByte();
 			self.build_started = servertime;
-			if(self.build_finished)
+			if(self.build_finished > 0)
 				self.build_starthealth = bound(0, self.health, 1);
 			else
 				self.build_starthealth = 0;
@@ -455,11 +469,13 @@ void Ent_WaypointSprite()
 			//print("build: ", ftos(self.build_finished - self.build_started), "\n");
 		}
 	}
+    /*
 	else
 	{
 		self.health = -1;
 		self.build_finished = 0;
 	}
+    */
 
 	if(sendflags & 64)
 	{
@@ -530,6 +546,8 @@ void WaypointSprite_Load()
 {
 	waypointsprite_fadedistance = vlen(mi_max - mi_min);
 	waypointsprite_normdistance = cvar("g_waypointsprite_normdistance");
+    waypointsprite_alpha = cvar("g_waypointsprite_alpha");
+    if(!waypointsprite_alpha) waypointsprite_alpha = 1;
 	waypointsprite_minscale = cvar("g_waypointsprite_minscale");
 	waypointsprite_minalpha = cvar("g_waypointsprite_minalpha");
 	waypointsprite_distancealphaexponent = cvar("g_waypointsprite_distancealphaexponent");

@@ -551,9 +551,12 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float take, save, waves, sdelay, dh, da, j;
+	local float take, save, waves, sdelay, j;
 	vector v;
 	float valid_damage_for_weaponstats;
+    
+    float oh = self.health;
+    float oa = self.armorvalue;
     
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
@@ -597,7 +600,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
     if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
         if(self.frozen) if(self.team != attacker.team) {
-            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock");
+            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
             self.frozen_plasmalock_owner = attacker;
         }
 
@@ -791,7 +794,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     DPS_Record(attacker, self, take);
     
 	if(valid_damage_for_weaponstats)
-		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, min(take, self.health) + min(save, self.armorvalue));
+		WeaponStats_LogDamage(DEATH_WEAPONOF(deathtype), self.weapon, (oh - self.health) + (oa - self.armorvalue));
 
 	if (self.health < 1)
 	{
@@ -1293,6 +1296,9 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	msgin = trigger_magicear_processmessage_forallears(source, teamsay, privatesay, msgin);
 	if(msgin == "")
 		return;
+
+    if(!teamsay && !privatesay)
+        IRC_Announce_PlayerChat(source, msgin);
 
 	/*
 	 * using bprint solves this... me stupid

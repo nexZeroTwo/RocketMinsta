@@ -392,3 +392,5 @@ entity dtrack_total_spec;
 entity dtrack_taken_spec;
 
 float sv_damagestats;
+
+float GetBigfont();

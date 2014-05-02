@@ -672,7 +672,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						string tail;
 						
 						if(cvar("sv_extendfragmessages")) {
-							tail = DamageSourceName(deathtype, FALSE);
+							tail = DamageTracker_DamageSourceName(deathtype, FALSE);
                             
 							if(tail != "")
 								tail = strcat(" with ^7", tail);
@@ -1029,7 +1029,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
     if not(damage_linkmode) {
         if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
-            damage = cvar("g_handgrenades_transloc_damage_shield");
+            damage = cvar("g_handgrenades_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
         if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
@@ -1041,6 +1041,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
                 Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
+                targ.frozen_plasmalock = 0;
                 if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
                     Buffs_ArcDamage(targ, attacker, damage, deathtype);
                     Buffs_ArcDamage_Finalize();
@@ -1586,7 +1587,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2)
-                    self.hg_stealth = -1;
+                    self.hg_stealth = 0;
             }
             
             entity e;
@@ -2041,13 +2042,16 @@ void Fire_ApplyDamage(entity e)
     if(time - e.fire_last < FIRE_DELAY)
         return;
 
-	if not(Fire_IsBurning(e))
-		return;
-
 	// water and slime stop fire
 	if(e.waterlevel)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
+
+    if(!e.fire_owner.iscreature)
+        e.fire_endtime = 0;
+
+	if not(Fire_IsBurning(e))
+		return;
 
 	t = min(time - e.fire_last, e.fire_endtime - time);
     
@@ -2057,7 +2061,6 @@ void Fire_ApplyDamage(entity e)
     }
     
 	d = e.fire_damagepersec * t;
-
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
@@ -2080,7 +2083,7 @@ void Fire_ApplyDamage(entity e)
 		{
 			t = cvar("g_balance_firetransfer_time") * (e.fire_endtime - time);
 			d = cvar("g_balance_firetransfer_damage") * e.fire_damagepersec * t;
-			Fire_AddDamage(other, e, d, t, DEATH_FIRE);
+			Fire_AddDamage(other, e, d, t, e.fire_deathtype);
 		}
 	}
     

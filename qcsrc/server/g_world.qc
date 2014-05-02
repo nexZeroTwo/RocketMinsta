@@ -730,6 +730,7 @@ void spawnfunc_worldspawn (void)
 
 	WeaponStats_Init();
 
+    addstat(STAT_ROUNDSTATE, AS_INT, roundstate_stat);
 	addstat(STAT_WEAPONS, AS_INT, weapons);
 	addstat(STAT_SWITCHWEAPON, AS_INT, switchweapon);
 	addstat(STAT_GAMESTARTTIME, AS_FLOAT, stat_game_starttime);
@@ -857,6 +858,8 @@ void spawnfunc_worldspawn (void)
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
+
+    IRC_Init();
     DPRM_Start();
 }
 
@@ -1473,7 +1476,8 @@ void NextLevel()
 	if(cvar("sv_eventlog"))
 		GameLogEcho(":gameover");
 
-	GameLogClose();
+    IRC_Announce_GameOver();
+    GameLogClose();
 
 	FOR_EACH_CLIENT(other)
 	{

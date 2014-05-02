@@ -11,7 +11,7 @@ void DamageTracker_Print(entity keeper, entity to) {
         float damage = keeper.(dtrack_damage[i]);
         string ratio = ftos((damage / keeper.dtrack_totaldamage) * 100);
         ratio = substring(ratio, 0, strstrofs(ratio, ".", 0) + 3);
-        string srcname = DamageSourceName(keeper.(dtrack_type[i]), TRUE);
+        string srcname = DamageTracker_DamageSourceName(keeper.(dtrack_type[i]), TRUE);
         sprint(to, strcat(ftos(i+1), ". ^2", srcname));
         float spaces = max(1, 45 - strlen(srcname));
         for(j = 0; j < spaces; ++j)

@@ -209,11 +209,10 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 	WriteByte(MSG_ENTITY, ENT_CLIENT_SCORES);
 	WriteByte(MSG_ENTITY, num_for_edict(self.owner));
 
-	longflags = 0;
-	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
-		if(i != SP_JOINTIME)
-			if(self.scores[i] > 127 || self.scores[i] <= -128)
-				longflags |= p;
+    longflags = 0;
+    for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+        if(self.scores[i] > 127 || self.scores[i] <= -128)
+            longflags |= p;
 
 #if MAX_SCORE <= 8
 	WriteByte(MSG_ENTITY, sendflags);
@@ -226,19 +225,15 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 	WriteInt24_t(MSG_ENTITY, longflags);
 #endif
 
-	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
-		if(sendflags & p)
-		{
-			if(i == SP_JOINTIME) {
-				WriteInt24_t(MSG_ENTITY, time * 100);
-				WriteInt24_t(MSG_ENTITY, self.scores[i] * 100);
-			} else if(longflags & p)
-				WriteInt24_t(MSG_ENTITY, self.scores[i]);
-			else
-				WriteChar(MSG_ENTITY, self.scores[i]);
-		}
+    for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+        if(sendflags & p) {
+            if(longflags & p)
+                WriteInt24_t(MSG_ENTITY, self.scores[i]);
+            else
+                WriteChar(MSG_ENTITY, self.scores[i]);
+        }
 
-	return TRUE;
+    return TRUE;
 }
 
 void PlayerScore_Clear(entity player)

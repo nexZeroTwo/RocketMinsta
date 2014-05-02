@@ -550,7 +550,7 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
 		} else if(str == "time") {
-			sbar_field[sbar_num_fields] = SP_JOINTIME;
+			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
             sbar_field[sbar_num_fields] = SP_DEATHS;
         } else if(str == "scds") {
@@ -708,10 +708,8 @@ string Sbar_GetField(entity pl, float field)
 
 			return strcat(chr2str(char0), chr2str(char1));
 
-		case SP_JOINTIME:
-			local float jt;
-			jt = pl.(scores[field]);
-			return mmss((time - jt) * 10);
+		case SP_PLAYTIME:
+			return mmss(pl.(scores[field]) * 10);
 
 		case SP_PING:
 			if not(pl.gotscores)
@@ -1902,6 +1900,8 @@ void Sbar_Timer()
 }
 
 float Sbar_WouldDrawScoreboard() {
+    if (sb_showaccuracy)
+        return 0;
 	if (is_tmpmadoka)
 		return 0;
 	else if (sb_showscores)
@@ -2037,7 +2037,6 @@ void CSQC_Strength_Timer(vector sectorpos) {
 string centerprint_messages[CENTERPRINT_MAX_LINES];
 float centerprint_width[CENTERPRINT_MAX_LINES];
 float centerprint_expires[CENTERPRINT_MAX_LINES];
-float centerprint_posttime[CENTERPRINT_MAX_LINES];
 vector centerprint_start;
 float centerprint_expire;
 float centerprint_num;
@@ -2540,7 +2539,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
         l += stringwidth_svn(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
-        str = strcat(ftos(i+1), ". ", DamageSourceName(k.(dtrack_type[i]), TRUE));
+        str = strcat(ftos(i+1), ". ", DamageTracker_DamageSourceName(k.(dtrack_type[i]), TRUE));
         str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
         drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
@@ -2589,7 +2588,7 @@ void Sbar_DrawAccuracyStats()
 
 	fill_size_x = 5 * sbar_fontsize_x;  // width of the background
 	fill_size_y = 10 * sbar_fontsize_y;  // height of the background
-
+    
 	drawfont = sbar_bigfont;
 	pos_x = 0;
 	pos_y = SCOREBOARD_OFFSET;
@@ -3175,7 +3174,6 @@ void GetSectorBorderClipArea(vector sectorpos, vector sectorsize) {
 void GetSectorFullClipArea(vector sectorpos, vector sectorsize) {
     vector p, s;
     vector p1, s1, p2, s2;
-    float o1, a1, o2, a2;
     
     GetSectorClipArea(sectorpos, sectorsize);
     p1 = sector_clip_pos; s1 = sector_clip_size;
@@ -3515,10 +3513,23 @@ void Sbar_DrawBuffs(void) {
 
 string jb_str;
 float jb_str_alpha;
+float hg_maxcd;
 
 #define RMODE_CAP 0
 #define RMODE_REV 1
 #define RMODE_AUTH 2
+
+void Sbar_DrawPlayerName(string s) {
+    vector pos;
+    
+    drawfont = sbar_bigfont;
+    
+    pos_y = vid_conheight - 50 - sbar_fontsize_spec_y;
+    s = textShortenToWidth(s, vid_conwidth/2.5/sbar_fontsize_spec_x, stringwidth_colors);
+    drawcolorcodedstring(pos, s, sbar_fontsize_spec, sbar_alpha_fg, DRAWFLAG_NORMAL);
+    
+    drawfont = sbar_font;
+}
 
 void Sbar_Draw(void)
 {
@@ -3565,6 +3576,7 @@ void Sbar_Draw(void)
 	float weapon_stats;
 	float x, fade;
 	float stat_items, stat_weapons;
+    vector c;
 
     Sbar_DrawHGShield();
 
@@ -3698,18 +3710,12 @@ void Sbar_Draw(void)
     
 	if(spectatee_status && !intermission)
 	{
-		drawfont = sbar_bigfont;
-		if(spectatee_status == -1)
-			s = "^1Observing";
-		else
-			s = GetPlayerName(spectatee_status - 1);
-		// spectated player name between HUD and chat area, aligned to the left
-		pos_x = bottomleft_x;
-		pos_y = bottom_y - 50 - sbar_fontsize_spec_y;
-		s = textShortenToWidth(s, vid_conwidth/2.5/sbar_fontsize_spec_x, stringwidth_colors);
-		drawcolorcodedstring(pos, s, sbar_fontsize_spec, sbar_alpha_fg, DRAWFLAG_NORMAL);
-		drawfont = sbar_font;
-
+        if(spectatee_status == -1)
+            s = "^1Observing";
+        else
+            s = GetPlayerName(spectatee_status - 1);
+        Sbar_DrawPlayerName(s);
+        
 		// spectator text in the upper right corner
 		if(spectatee_status == -1)
 			s = strcat("^1Press ^3", getcommandkey("primary fire", "+attack"), "^1 to spectate");
@@ -3750,7 +3756,12 @@ void Sbar_Draw(void)
 			s = strcat("^1Game starts in ^3", ftos(countdown), "^1 seconds");
 			o = Sbar_DrawNoteLine(o, s);
 		}
-	}
+	} else {
+        float spn = cvar("rm_showplayername");
+        if((spn > 1) || (spn && isdemo()))
+            Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
+    }
+    
 	if(warmup_stage && !intermission)
 	{
 		s = "^2Currently in ^1warmup^2 stage!";
@@ -3759,7 +3770,7 @@ void Sbar_Draw(void)
     
     if(rev)
     {
-        local vector revpos, c;
+        vector revpos;
         revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
@@ -3829,12 +3840,8 @@ void Sbar_Draw(void)
 		vector hgpos;
 		hgpos_x = vid_conwidth/2;
 		hgpos_y = vid_conheight - vid_conheight/4;
-		
-		vector hgcolor = '1 1 0';
-		hgcolor_y = hgcolor_y * 1 - hgstat;
-		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, hgcolor);
+		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, '1 0 0' + '0 1 0' * (1 - hgstat));
 	}
-    
     
 	local vector sv_pos;
 	sv_pos = bottomright;
@@ -3860,7 +3867,6 @@ void Sbar_Draw(void)
 		a *= score_strings_alphamod[i];
 
 		s = score_strings[i];
-		local vector c;
 		c = score_strings_color[i];
 
 		local vector mypos;
@@ -3881,8 +3887,10 @@ void Sbar_Draw(void)
 		}
 	}
 
-	local float bp_alpha;
-	local vector bp_pos;
+	float bp_alpha, bp_ypos;
+	vector bp_pos;
+    bp_ypos = (vid_conheight / 5) * (1 - sbar_scoreboard_fade_alpha)
+            + (SCOREBOARD_OFFSET) * (    sbar_scoreboard_fade_alpha);
 
 	if(obp_draw)
 	if(bigprint_oldstring)
@@ -3891,7 +3899,7 @@ void Sbar_Draw(void)
 
 		if(bp_alpha > 0)
 		{
-			bp_pos = '0 1 0' * (vid_conheight/5);
+            bp_pos = '0 1 0' * bp_ypos;
 			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
@@ -3907,7 +3915,7 @@ void Sbar_Draw(void)
 			obp_draw = 0;
 	}
 
-	bp_pos = '0 1 0' * (vid_conheight/5);
+	bp_pos = '0 1 0' * bp_ypos;
 	if(bp_draw)
 	if(bigprint_string)
 	{
@@ -4208,27 +4216,30 @@ void Sbar_Draw(void)
 
 	if (intermission == 2) // map voting screen
 	{
-		if(sb_showscores) {
-			Sbar_DrawScoreboard();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-		else if(sb_showaccuracy) {
-			Sbar_DrawAccuracyStats();
-			//Sbar_Score();
-			Sbar_Timer();
-		}
-  		else
-			Sbar_FinaleOverlay();
+        float drawoverlay = TRUE;
+        
+        if(sb_showaccuracy) {
+            Sbar_DrawAccuracyStats();
+            drawoverlay = FALSE;
+        }
+        
+        if(sb_showscores) {
+            Sbar_DrawScoreboard();
+            drawoverlay = FALSE;
+        }
+        
+        if(drawoverlay)
+            Sbar_FinaleOverlay();
+        else
+            Sbar_Timer();
 
 		Sbar_Reset();
 	}
 	else if (sb_showscores_force || getstati(STAT_HEALTH) <= 0 || intermission == 1)
 	{
+        Sbar_DrawScoreboard();
   		if(sb_showaccuracy)
   			Sbar_DrawAccuracyStats();
-  		else
-			Sbar_DrawScoreboard();
 
 		if(!rm_oldhud)
 		{
@@ -4275,17 +4286,9 @@ void Sbar_Draw(void)
   	}
 	else
 	{
-		/*
-		if (sb_showscores)
-			Sbar_DrawScoreboard();
-		else if(sb_showaccuracy)
-			Sbar_DrawAccuracyStats();
-			*/
-		
+        Sbar_DrawScoreboard();
 		if(sb_showaccuracy)
 			Sbar_DrawAccuracyStats();
-		else
-			Sbar_DrawScoreboard();
 
 		// lol
 		if(!rm_oldhud)
@@ -5025,6 +5028,11 @@ void Sbar_Draw(void)
         float hgtype = getstati(STAT_HGTYPE);
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
+        float hgcd = getstatf(STAT_HGREFIRE) - servertime;
+        
+        if(hgcd > 0) {
+            if(hgcd > hg_maxcd) hg_maxcd = hgcd;
+        } else hg_maxcd = 0;
         
         if(getstati(STAT_STEALTH)) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
@@ -5051,7 +5059,20 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            drawpic(pos, HG_TypeToIcon(hgtype, TRUE), '32 32 0', '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED), sbar_alpha_fg, DRAWFLAG_NORMAL);
+            string hgicon = HG_TypeToIcon(hgtype, TRUE);
+            vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED);
+            vector hgsize = '32 32 0';
+            
+            if(hgcd > 0) {
+                float cdh = hgsize_y * (hgcd / hg_maxcd);
+                drawsetcliparea(pos_x, pos_y, hgsize_x, cdh);
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg * 0.3, DRAWFLAG_NORMAL);
+                drawsetcliparea(pos_x, pos_y + cdh, hgsize_x, hgsize_y);
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
+                drawresetcliparea();
+            } else
+                drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            
             Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method

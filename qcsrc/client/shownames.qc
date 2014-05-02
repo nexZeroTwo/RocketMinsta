@@ -142,11 +142,10 @@ void Draw_ShowNames()
             if (width != namesize)
                 namepos_x += (namesize - width) / 2;
                 
-            drawfont = sbar_bigfont_real;
             float nade;
             if(g_handgrenades)
                 nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
-                
+            
             if(self.sameteam) {
                 float mx = 200;
                 vector dmg = healtharmor_maxdamage(self.healthvalue, self.armorvalue, armorblockpercent);
@@ -154,10 +153,9 @@ void Draw_ShowNames()
                 
                 if(dmg_x) {
                     self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
-                    drawfont = sbar_bigfont;
+                    drawfont = GetBigfont();
                     s2 = ftos(dmg_x); // strcat(ftos(self.healthvalue), " / ", ftos(self.armorvalue));
                     drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, healthcolor(dmg_x), a * 0.7, DRAWFLAG_NORMAL);
-                    
                     drawfont = sbar_font;
                 }
             }            

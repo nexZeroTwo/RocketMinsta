@@ -108,8 +108,9 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
-	gametype = 0;
+    gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
 	for(i = 0; i < MAX_SBAR_FIELDS; ++i)
@@ -1332,7 +1333,7 @@ void Ent_RemovePlayerScore()
 
 .entity bestscore_next;
 void UpdateBestScore(float teem, float sfield) {
-    float i, best, scr, better;
+    float best, scr, better;
     entity bestscore_head, bestscore_tail, c;
     
     for(c = players.sort_next; c; c = c.sort_next) {
@@ -1419,25 +1420,13 @@ void Ent_ReadPlayerScore()
 	{
 		if(sf & p)
 		{
-			if(i == SP_JOINTIME)
-			{
-				float srvtime;
-				srvtime = ReadInt24_t() * 0.01;
-				
-				float offs;
-				offs = srvtime - time;
-				
-				o.(scores[i]) = ReadInt24_t() * 0.01 - offs;
-			}
-			else
-            {
-                if(lf & p)
-                    o.(scores[i]) = ReadInt24_t();
-                else
-                    o.(scores[i]) = ReadChar();
-                
+            if(lf & p)
+                o.(scores[i]) = ReadInt24_t();
+            else
+                o.(scores[i]) = ReadChar();
+            
+            if(i != SP_PLAYTIME)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
-            }
 		}
 	}
 
@@ -1562,7 +1551,7 @@ void Ent_Nagger()
 	ready_waiting = (nags & 1);
 	ready_waiting_for_me = (nags & 2);
 	vote_waiting = (nags & 4);
-	vote_waiting_for_me = (nags & 8);
+	vote_waiting_for_me = ((nags & 8) && !isdemo());
 	warmup_stage = (nags & 16);
 }
 
@@ -2328,10 +2317,12 @@ string getcommandkey(string text, string command)
 
 //////////////////////////////
 
+float bigprint_noold;
+
 void bigprint_old(string bigstr, string comment, float fadeTime)
 {
 	if(is_tmpmadoka) return;
-	
+    
 	obp_draw = 1;
 	
 	if(bigprint_oldstring)
@@ -2348,7 +2339,12 @@ void bigprint_old(string bigstr, string comment, float fadeTime)
 
 void bigprint(string bigstr, string comment, float staytime)
 {
-	//staytime = 1337;
+    float no = FALSE;
+    if(staytime < 0) {
+        staytime = -staytime;
+        no = TRUE;
+    }
+    
 	if(rm_nobigtext)
 	{
 		local string s;
@@ -2368,7 +2364,9 @@ void bigprint(string bigstr, string comment, float staytime)
 	if(bigstr != "")
 	{
 		bp_draw = 1;
-		bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
+        
+        if(!bigprint_noold)
+            bigprint_old(bigprint_string, bigprint_comment, bigprint_fadetime);
 		
 		if(bigprint_string)
 			fstrunzone(bigprint_string);
@@ -2378,6 +2376,8 @@ void bigprint(string bigstr, string comment, float staytime)
 		bigprint_appeartime = time;
 	}
 	
+    bigprint_noold = no;
+    
 	if(comment != "")
 	{
 		

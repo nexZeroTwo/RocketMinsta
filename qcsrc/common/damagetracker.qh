@@ -16,3 +16,5 @@ entity DamageTracker_CreateKeeper(entity);
 void DamageTracker_Record(entity, float, float);
 float DamageTracker_Sort(entity);
 void DamageTracker_Wipe(entity);
+string DamageTracker_DamageSourceName(float, float);
+float DamageTracker_TransformDamageSource(float);

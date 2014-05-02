@@ -100,6 +100,7 @@ void reset_map(float dorespawn)
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
         self.hg_clearammo = 0;
+        self.playtimeupdate = time;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
             if(g_freeze)
