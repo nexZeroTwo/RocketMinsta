@@ -839,6 +839,8 @@ void spawnfunc_worldspawn (void)
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
+
+    IRC_Init();
     DPRM_Start();
 }
 
@@ -1455,7 +1457,8 @@ void NextLevel()
 	if(cvar("sv_eventlog"))
 		GameLogEcho(":gameover");
 
-	GameLogClose();
+    IRC_Announce_GameOver();
+    GameLogClose();
 
 	FOR_EACH_CLIENT(other)
 	{

@@ -851,27 +851,26 @@ void HG_Shield_Frame() {
 }
 
 void HG_Cloak(float hgtype) {
-    self.hg_stealth += cvar("g_handgrenades_cloak_duration") * Buffs_NadgetPower(self);
+    self.hg_stealth = self.hg_stealth + cvar("g_handgrenades_cloak_duration") * Buffs_NadgetPower(self);
     pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
     sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
 }
 
 void HG_Cloak_Frame() {
-    if(self.hg_stealth == -1) {
-        self.hg_stealth = 0;
-        sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
-    }
-    
     if(self.hg_stealth) {
-        self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime);
-        //self.campingrifle_bulletcounter = 0;
-        
+        self.hg_wasstealth = TRUE;
+        if(self.hg_stealthalpha < 1)
+            self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime * cvar("g_handgrenades_cloak_stealthrate"));
         self.hg_stealth = approach(self.hg_stealth, 0, frametime);
-        if(!self.hg_stealth)
-            self.hg_stealth = -1;
-    } else
-        self.hg_stealthalpha = approach(self.hg_stealthalpha, 0, frametime * 0.5);
-    
+    } else {
+        if(self.hg_wasstealth) {
+            self.hg_wasstealth = FALSE;
+            self.hg_next = max(self.hg_next, time + cvar("g_handgrenades_cloak_cooldown_decloak"));
+            sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
+        }
+        if(self.hg_stealthalpha)
+            self.hg_stealthalpha = approach(self.hg_stealthalpha, 0, frametime * cvar("g_handgrenades_cloak_unstealthrate"));
+    }
 }
 
 .float spawntime;

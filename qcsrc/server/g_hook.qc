@@ -433,7 +433,7 @@ void FireGrapplingHook (void)
 		return;
     
     if(self.hg_stealth)
-        self.hg_stealth = -1;
+        self.hg_stealth = 0;
     
 	makevectors(self.v_angle);
 

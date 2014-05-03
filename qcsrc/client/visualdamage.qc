@@ -74,7 +74,7 @@ void VisualDamage_PreDraw(void) {
 
 void VisualDamage_Draw(void) {
     float a = ipol_swingInOut(self.alpha), sw;
-    vector o, oldo, clr;
+    vector o, clr;
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
     float fs = VDMG_FONTSIZE * max(1, a * ((self.vd_type & VDMG_TYPE_CRIT)? 2 : 1));
     
@@ -82,7 +82,7 @@ void VisualDamage_Draw(void) {
     
     if not(self.vd_culled) {
         o_z = 0;
-        drawfont = sbar_bigfont;
+        drawfont = GetBigfont();
         sw = self.vd_width * fs;
         
         if(self.vd_type & VDMG_TYPE_HEAL)

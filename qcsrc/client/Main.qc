@@ -1314,7 +1314,7 @@ void Ent_RemovePlayerScore()
 
 .entity bestscore_next;
 void UpdateBestScore(float teem, float sfield) {
-    float i, best, scr, better;
+    float best, scr, better;
     entity bestscore_head, bestscore_tail, c;
     
     for(c = players.sort_next; c; c = c.sort_next) {

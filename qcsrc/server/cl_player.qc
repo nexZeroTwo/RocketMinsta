@@ -551,7 +551,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float take, save, waves, sdelay, dh, da, j;
+	local float take, save, waves, sdelay, j;
 	vector v;
 	float valid_damage_for_weaponstats;
     
@@ -1263,6 +1263,9 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	msgin = trigger_magicear_processmessage_forallears(source, teamsay, privatesay, msgin);
 	if(msgin == "")
 		return;
+
+    if(!teamsay && !privatesay)
+        IRC_Announce_PlayerChat(source, msgin);
 
 	/*
 	 * using bprint solves this... me stupid

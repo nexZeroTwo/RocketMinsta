@@ -1062,7 +1062,7 @@ void JB_ControlPoint_SwitchTeam(entity e, float t) {
 }
 
 void JB_TriggerTeamControlPoints(float t) {
-    entity e, o;
+    entity o;
     o = self;
     
     FOR_EACH_JB_CONTROLPOINT(self)
