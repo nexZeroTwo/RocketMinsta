@@ -495,6 +495,13 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(cvar("sv_hidedamage"))
         return;
     
+    if(teams_matter && attacker != targ && attacker.team == targ.team)
+        htype |= VDMG_TYPE_TEAMHIT;
+    
+    if(htype & VDMG_TYPE_HEAL && (hdmg >= 100 || admg >= 100))
+        // EPIC HEALZ!!!
+        htype |= VDMG_TYPE_CRIT;
+    
     if(htype & VDMG_TYPE_TEAMHIT && !hdmg && !admg)
         return;
     
@@ -502,51 +509,60 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     p1 = attacker.origin + attacker.view_ofs;
     p2 = targ.origin + targ.view_ofs;
     
-    if(cvar("sv_showdamage_checklos"))
-    if(htype != VDMG_TYPE_HEAL) {
-        while(TRUE) {
-            traceline(p2, p1, FALSE, targ);
-            
-            if(trace_ent == attacker) {
-                found = TRUE;
-                break;
+    if(attacker) {
+        if(cvar("sv_showdamage_checklos") && htype != VDMG_TYPE_HEAL && attacker != targ) {
+            while(TRUE) {
+                traceline(p2, p1, FALSE, targ);
+                
+                if(trace_ent == attacker) {
+                    found = TRUE;
+                    break;
+                }
+                
+                if(!trace_ent || trace_fraction == 1)
+                    break;
+                
+                trace_ent.loscheck_found = TRUE;
+                trace_ent.loscheck_solid = trace_ent.solid;
+                
+                if (trace_ent.solid == SOLID_BSP)
+                    break;
+                
+                trace_ent.solid = SOLID_NOT;
             }
             
-            if(!trace_ent || trace_fraction == 1)
-                break;
-            
-            trace_ent.loscheck_found = TRUE;
-            trace_ent.loscheck_solid = trace_ent.solid;
-            
-            if (trace_ent.solid == SOLID_BSP)
-                break;
-            
-            trace_ent.solid = SOLID_NOT;
-        }
-        
-        e = findfloat(world, loscheck_found, TRUE);
-        while(e) {
-            e.solid = e.loscheck_solid;
-            e.loscheck_found = FALSE;
-            e = findfloat(e, loscheck_found, TRUE);
-        }
-        
-        if(!found)
-            return;
+            e = findfloat(world, loscheck_found, TRUE);
+            while(e) {
+                e.solid = e.loscheck_solid;
+                e.loscheck_found = FALSE;
+                e = findfloat(e, loscheck_found, TRUE);
+            }
+        } else
+            found = TRUE;
     }
     
     org = targ.origin + targ.maxs_z * '0 0 1.5';
-    FOR_EACH_REALCLIENT(e) if(e == attacker || (e.enemy == attacker && e.classname == "spectator")) {
-        msg_entity = e;
-        WriteByte(MSG_ONE, SVC_TEMPENTITY);
-        WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
-        WriteShort(MSG_ONE, hdmg);
-        WriteShort(MSG_ONE, admg);
-        WriteByte(MSG_ONE, htype);
-        WriteCoord(MSG_ONE, org_x);
-        WriteCoord(MSG_ONE, org_y);
-        WriteCoord(MSG_ONE, org_z);
-    }
+    FOR_EACH_REALCLIENT(e)
+        if(((found && e       == attacker) || e       == targ) ||
+          (((found && e.enemy == attacker) || e.enemy == targ) && e.classname == "spectator")) {
+            entity check = e;
+            if(!check.iscreature)
+                check = check.enemy;
+            
+            msg_entity = e;
+            WriteByte(MSG_ONE, SVC_TEMPENTITY);
+            WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
+            WriteShort(MSG_ONE, hdmg);
+            WriteShort(MSG_ONE, admg);
+            if(check == attacker && check != targ) {
+                WriteByte(MSG_ONE, htype);
+                WriteCoord(MSG_ONE, org_x);
+                WriteCoord(MSG_ONE, org_y);
+                WriteCoord(MSG_ONE, org_z);
+            } else {
+                WriteByte(MSG_ONE, htype | VDMG_TYPE_TOSELF);
+            }
+        }
 }
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
@@ -680,36 +696,34 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		if (!(self.flags & FL_GODMODE))
         {
             self.armorvalue = self.armorvalue - save;
+
+            float cdmg = min(self.health, take);
+            float rdmg = rint(cdmg);
+            float sameteam = (teams_matter && self.team == attacker.team);
+            float htype = VDMG_TYPE_HIT;
+            
+            if(deathtype & HITTYPE_HEADSHOT)
+                htype |= VDMG_TYPE_CRIT;
+            
+            if(!g_minstagib)
+                VisualDamage(attacker, self, rdmg, rint(save), htype);
+            
             if(attacker != self)
+            if(!sameteam)
             if(attacker.classname == "player") {
-                float cdmg = min(self.health, take);
-                float rdmg = rint(cdmg);
-                float sameteam = (teams_matter && self.team == attacker.team);
-                float htype = VDMG_TYPE_HIT;
+                PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
+                DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
+                DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
                 
-                if(deathtype & HITTYPE_HEADSHOT)
-                    htype |= VDMG_TYPE_CRIT;
-                if(sameteam)
-                    htype |= VDMG_TYPE_TEAMHIT;
+                if(g_clanarena)
+                    PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
                 
-                if(!g_minstagib)
-                    VisualDamage(attacker, self, rdmg, rint(save), htype);
-                    
-                if(!sameteam) {
-                    PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
-                    DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
-                    DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
-                    
-                    if(g_clanarena)
-                        PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
-                    
-                    if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
-                        Buffs_VampireDamage(self, attacker, damage, deathtype);
-                    
-                    if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
-                        PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
-                        hudflash_teamcolor_default_spec(attacker);
-                    }
+                if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
+                    Buffs_VampireDamage(self, attacker, damage, deathtype);
+                
+                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
+                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
+                    hudflash_teamcolor_default_spec(attacker);
                 }
             }
             self.health = self.health - take;
