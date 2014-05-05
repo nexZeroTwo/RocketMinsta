@@ -719,7 +719,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
                 
                 if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
-                    Buffs_VampireDamage(self, attacker, damage, deathtype);
+                    Buffs_VampireDamage(self, attacker, cdmg, deathtype);
                 
                 if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
                     PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
