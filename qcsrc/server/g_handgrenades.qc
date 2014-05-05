@@ -879,6 +879,12 @@ void HG_Linker_Think() {
     entity p, e;
     float denom, thealth, tarmor;
     
+    if(!self.owner.iscreature || self.owner.team != self.team) {
+        remove(self.enemy);
+        remove(self);
+        return;
+    }
+    
     if(time > self.hg_linker_nexteffect)
         self.buffs = 0;
     
@@ -942,6 +948,7 @@ void HG_Linker_Think() {
     if(self.alpha == 0) {
         remove(self.enemy);
         remove(self);
+        return;
     }
     
     self.alpha = max(0.01, self.alpha * bound(0, (time - self.spawntime) * 2, 1));
