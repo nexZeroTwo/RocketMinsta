@@ -724,7 +724,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2shownames^7: If enabled, names of players will be shown above their heads (disabled by default)\n");
 		print("^2shownames_teamonly^7: If enabled, shownames will work only for allies (disabled by default)\n");
 		print("^2visualscore^7: If enabled, changes to your score will be displayed (enabled by default)\n");
-		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
+		print("^2oldhud^7: If enabled, standard Vecxis HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
@@ -732,7 +732,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
-		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
+		print("^2oldbigfont^7: If enabled, will use Vecxis's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
 		#ifdef RM_SUPPORT_MADOKA
@@ -898,7 +898,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			search_end(hsglob);
 			
 			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
-			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Vecxis default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
 			
 			return true;
 		}
