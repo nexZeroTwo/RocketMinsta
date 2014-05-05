@@ -425,7 +425,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
 }
 
 void Buffs_ArcEffect(vector from, vector to, float t) {
-    te_csqc_lightningarc(from, to, TRUE, t);
+    te_csqc_lightningarc(from, to, t, t);
 }
 
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {
@@ -479,10 +479,14 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     }
     
     if(newtarget) {
-        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, attacker.team);
+        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, (targetTeamMates? 0 : (teams_matter? attacker.team : COLOR_TEAM2)));
         Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_buffs_arc_pushback"));
         Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
-        sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NONE);
+        if(targetTeamMates)
+            sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
+        else
+            sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM * 0.3);
+            
     }
     
     self = oldself;
