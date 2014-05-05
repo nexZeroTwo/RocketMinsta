@@ -488,6 +488,11 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     vector offs, org, p1, p2;
     float found;
     
+    if(targ.vdmg_ignorenext) {
+        targ.vdmg_ignorenext = FALSE;
+        return;
+    }
+    
     if(!cvar("sv_showdamage"))
         return;
     
