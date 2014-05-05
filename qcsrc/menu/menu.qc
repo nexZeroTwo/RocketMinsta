@@ -111,9 +111,9 @@ void() m_init_delayed =
 	}
 	if(fh < 0)
 	{
-		draw_currentSkin = "gfx/menu/rmdefault";
+		draw_currentSkin = "gfx/menu/default";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
-        registercvar("menu_rmskin", "rmdefault", CVAR_SAVE);
+        registercvar("menu_rmskin", "default", CVAR_SAVE);
 	}
     if(fh < 0)
 	{
