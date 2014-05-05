@@ -604,7 +604,20 @@ void Client_uncustomizeentityforclient()
 
 float Client_customizeentityforclient()
 {
-	entity modelsource;
+    entity modelsource;
+    
+    float sa = 1 - self.hg_stealthalpha;
+    
+    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
+        sa = 0.3 + 0.7 * sa;
+    
+    self.alpha = sa * default_player_alpha;
+    
+    if(!self.alpha)
+        self.alpha = -1;
+    
+    if(self.alpha < 0)
+        return FALSE;
 
 	if(self.modelindex == 0)
 		return TRUE;
@@ -667,20 +680,7 @@ float Client_customizeentityforclient()
 	client_cefc_accumulator += (t1 - t0);
 #endif
     
-    float sa = 1 - self.hg_stealthalpha;
-    
-    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
-        sa = 0.3 + 0.7 * sa;
-    
-    self.alpha = sa * default_player_alpha;
-    
-    if(!self.alpha)
-        self.alpha = -1;
-    
-    if(self.alpha < 0)
-        return FALSE;
-    
-	return TRUE;
+    return TRUE;
 }
 
 void UpdatePlayerSounds();
