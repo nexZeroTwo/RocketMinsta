@@ -770,3 +770,5 @@ void SwapTeams_Generic(void);
 .float playtimeupdate;
 float roundstate;
 .float roundstate_stat;
+
+.float vdmg_ignorenext;

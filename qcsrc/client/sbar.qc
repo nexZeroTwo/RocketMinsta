@@ -4399,6 +4399,7 @@ void Sbar_Draw(void)
 					s_health = hud_sector_pos;
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
                 
+                vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
                 DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
@@ -4654,6 +4655,7 @@ void Sbar_Draw(void)
 					s_health = hud_sector_pos;
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
+                vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
                 DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
@@ -4776,6 +4778,7 @@ void Sbar_Draw(void)
 
 			if(rm_oldhud)
 			{
+                vdmg_dmgtakenorigin = bottom - '0 30 0';
 				if (sbar_hudselector == 0) { // old style layout with armor left of health
 					armor_pos = bottom - '96 28 0';
 					health_pos = bottom - '-14 28 0';

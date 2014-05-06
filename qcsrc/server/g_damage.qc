@@ -1892,8 +1892,10 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								}
 							}
                             
-                            if(targ == directhitentity && deathtype == DEATH_BASH)
+                            if(targ == directhitentity && deathtype == DEATH_BASH) {
+                                targ.vdmg_ignorenext = TRUE;
                                 finaldmg = 0;
+                            }
                             
                             if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
                                 Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);
