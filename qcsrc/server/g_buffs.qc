@@ -30,13 +30,23 @@ void Buffs_Init(void) {
     precache_sound("misc/shield_respawn.wav");
     precache_sound("misc/arc1.wav");
     precache_sound("misc/arc2.wav");
-    precache_model("models/buffs/buff.md3");
     precache_model("models/buffs/buff_ring.md3");
     
     addstat(STAT_BUFFS, AS_INT, buffstat);
     
-    for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2)
+    for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
         g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
+        
+        if(g_buffs_enabled[i]) {
+            string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
+            if(!fexists(s)) {
+                s = "models/buffs/buff.md3";
+                print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
+            }
+            g_buffs_model[i] = strzone(s);
+            precache_model(g_buffs_model[i]);
+        }
+    }
     
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
@@ -226,18 +236,20 @@ vector Buffs_GenColor(float b) {
 }
 
 float Buffs_BuffModel_Customize(void) {
+    entity oself = self;
+    if(!self.owner.iscreature)  // called for a multibuff model - check against the parent model
+        self = self.owner;
+    
     float sameteam = (teams_matter && (other.team == self.owner.team || (other.classname == "spectator" && other.enemy.team == self.owner.team)));
     if(self.owner.hg_stealth && !sameteam)
         return FALSE;
     
     if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
-        // somewhat hide the model, but keep the glow
-        self.effects = 0;
-        self.alpha = -1;
+        oself.alpha = -1;
     } else {
-        self.effects = EF_ADDITIVE | EF_FULLBRIGHT;
-        self.alpha = 1;
+        oself.alpha = 1;
     }
+    
     return TRUE;
 }
 
@@ -263,6 +275,85 @@ void Buffs_SetTeamWaypoint(entity plr, string txt, vector clr, float btype) {
 
 void Buffs_RemoveTeamWaypoint(entity plr) {
     WaypointSprite_Disown(plr.buff_teamwp, 0.5);
+}
+
+.entity buffmdl[BUFF_COUNT];
+
+void Buffs_SetBuffModel_MultiBuffModel_Think(void) {
+    if(!self.owner || wasfreed(self.owner) || self.owner.buffs != self.buffstat) {
+        remove(self);
+        return;
+    }
+    
+    self.effects = self.owner.effects;
+    self.effects &~= EF_NODRAW;
+    self.light_lev = self.owner.light_lev * 0.7;
+    self.pflags = self.owner.pflags;
+    self.color = self.colormod = Buffs_GenColor(self.buffs);
+    self.alpha = self.owner.alpha;
+    
+    vector ang;
+    ang_y = mod(time * 120 + self.cnt, 360);
+    makevectors(ang);
+    setorigin(self, self.owner.origin + v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt));
+    self.angles_y = ang_y + 90;
+    
+    self.nextthink = time;
+    return;
+}
+
+void Buffs_SetBuffModel_SetupMultiBuffModel(entity bmdl, entity parent, float offs) {
+    bmdl.owner = parent;
+    float bi = Buffs_TypeToIndex(bmdl.buffs);
+    Buffs_SetBuffModel(bmdl, bmdl.buffs);
+    bmdl.owner = parent;
+    bmdl.customizeentityforclient = parent.customizeentityforclient;
+    bmdl.pflags = PFLAGS_FULLDYNAMIC;
+    bmdl.scale = (parent.scale? parent.scale : 1); // * 0.90;
+    bmdl.cnt = offs;
+    bmdl.think = Buffs_SetBuffModel_MultiBuffModel_Think;
+    bmdl.buffstat = parent.buffs;
+    bmdl.nextthink = time;
+}
+
+void Buffs_SetBuffModel(entity ment, float thebuffs) {
+    float idx = Buffs_TypeToIndex(thebuffs);
+    float i, j, b;
+    
+    if(idx >= 0) {
+        // single model - use ment to display it
+        
+        for(i = 0; i < BUFF_COUNT; ++i) {
+            if(ment.(buffmdl[i])) {
+                remove(ment.(buffmdl[i]));
+                ment.(buffmdl[i]) = world;
+            }
+        }
+        
+        ment.effects &~= EF_NODRAW;
+        setmodel(ment, g_buffs_model[Buffs_TypeToIndex(thebuffs)]);
+    } else {
+        // multiple buffs - hide ment and use additional models
+        
+        ment.effects |= EF_NODRAW;
+        
+        for(i = 0, b = 1; b <= BUFF_LAST; b *= 2) if(thebuffs & b) {
+            if(!ment.(buffmdl[i]))
+                ment.(buffmdl[i]) = spawn();
+            ment.(buffmdl[i]).buffs = b;
+            ++i;
+        }
+        
+        for(j = 0; j < BUFF_COUNT; ++j) {
+            if(j >= i) {
+                if(ment.(buffmdl[j])) {
+                    remove(ment.(buffmdl[j]));
+                    ment.(buffmdl[j]) = world;
+                }
+            } else Buffs_SetBuffModel_SetupMultiBuffModel(ment.(buffmdl[j]), ment, (j/i)*360);
+            
+        }
+    }
 }
 
 void Buffs_ClientFrame(void) {
@@ -319,21 +410,25 @@ void Buffs_ClientFrame(void) {
     }
     
     if(self.buffstat != self.oldbuffstat) {
-        if(self.buff_model && self.buffstat)
+        if(self.buff_model && self.buffstat) {
             self.buff_model.color = self.buff_model.colormod = Buffs_GenColor(self.buffstat);
+            Buffs_SetBuffModel(self.buff_model, self.buffstat);
+        }
         self.oldbuffstat = self.buffstat;
     }
     
     if(self.buffstat) {
         if(!self.buff_model) {
             entity m = spawn();
+            float bi = Buffs_TypeToIndex(self.buffstat);
             setsize(m, '0 0 -40', '0 0 40');
-            setmodel(m, "models/buffs/buff.md3");
             m.customizeentityforclient = Buffs_BuffModel_Customize;
             m.owner = self;
             m.pflags = PFLAGS_FULLDYNAMIC;
             m.color = m.colormod = Buffs_GenColor(self.buffstat);
             m.light_lev = 200;
+            m.effects = EF_ADDITIVE | EF_FULLBRIGHT;
+            Buffs_SetBuffModel(m, self.buffstat);
             self.buff_model = m;
         }
         
@@ -580,6 +675,7 @@ void Buffs_BuffPickup_Think(void) {
             Buffs_BuffPickup_SpawnWaypoint(self);
         }
         
+        Buffs_SetBuffModel(self, self.buffs);
         self.oldbuffs = self.buffs;
     }
     
@@ -626,10 +722,12 @@ void Buffs_BuffPickup_Ring_Think(void) {
     self.nextthink = time;
     self.angles_y = time * 157.1;
     self.alpha = self.owner.alpha;
-    self.effects = self.owner.effects - EF_STARDUST;
+    self.effects = self.owner.effects;
+    
+    self.effects &~= (EF_STARDUST | EF_NODRAW);
     
     if(self.owner.team)
-        self.effects &~= EF_ADDITIVE;
+        self.effects &~= EF_ADDITIVE | EF_FULLBRIGHT;
     
     setorigin(self, self.owner.origin + '0 0 15');
 }
@@ -739,7 +837,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
-    setmodel(self, "models/buffs/buff.md3");
+    Buffs_SetBuffModel(self, self.buffs);
     setsize(self, '-15 -15 -40', '15 15 40');
     
     self.enemy = spawn();
