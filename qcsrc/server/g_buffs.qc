@@ -724,10 +724,10 @@ void Buffs_BuffPickup_Ring_Think(void) {
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects;
     
-    self.effects &~= (EF_STARDUST | EF_NODRAW);
+    self.effects &~= EF_STARDUST | EF_NODRAW;
     
     if(self.owner.team)
-        self.effects &~= EF_ADDITIVE | EF_FULLBRIGHT;
+        self.effects &~= EF_ADDITIVE;
     
     setorigin(self, self.owner.origin + '0 0 15');
 }
