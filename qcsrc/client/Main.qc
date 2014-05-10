@@ -518,9 +518,13 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
 			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
-			
+        case 38:
+            // fight evil with evil
+            if(cvar("cl_gunalign") == 3)
+                localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
+            
 		//More to come here with each update
-		localcmd("seta rm_initialized 38\n");
+		localcmd("seta rm_initialized 39\n");
 		RM_OUTDATED
 		break;
 	}
