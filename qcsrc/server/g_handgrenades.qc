@@ -810,21 +810,33 @@ void HG_ShieldModel_Think() {
     
     self.colormod = '1 1 0';
     self.colormod_z = 1 - self.owner.hg_shieldpower;
+    if(self.hg_adept && self.owner.hg_shieldpower == 1)
+        self.colormod_z = 1;
     setorigin(self, self.owner.origin);
     self.nextthink = time;
 }
 
 void HG_Shield(float hgtype) {
     entity e;
+    float d;
+    float adept = BUFFS_PRESENT(self, BUFF_ADEPT);
     
-    self.hg_shieldmax = GRENVAR(hgtype, "duration") * Buffs_NadgetPower(self);
+    if(adept) {
+        d = GRENVAR(hgtype, "adept_duration");
+    } else {
+        d = GRENVAR(hgtype, "duration");
+        
+        if(GRENVAR(hgtype, "immobile")) {
+            self.hg_shield_oldmovetype = self.movetype;
+            self.movetype = MOVETYPE_NONE;
+        }
+    }
+    
+    self.hg_shieldmax = d * Buffs_NadgetPower(self);
     self.hg_shield = self.hg_shieldmax;
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
-    if(GRENVAR(hgtype, "immobile")) {
-        self.hg_shield_oldmovetype = self.movetype;
-        self.movetype = MOVETYPE_NONE;
-    }
+    
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
     if(!self.hg_shieldmodel) {
@@ -834,7 +846,7 @@ void HG_Shield(float hgtype) {
         e.think = HG_ShieldModel_Think;
         e.nextthink = time;
         e.alpha = 0.1;
-        e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+        e.effects = EF_ADDITIVE | EF_FULLBRIGHT;
         e.glow_size = 256;
         e.glow_color = 230;
         e.glow_trail = 1;
@@ -844,6 +856,7 @@ void HG_Shield(float hgtype) {
         setorigin(e, self.origin);
         setmodel(e, "models/ctf/shield.md3");
         e.scale = 0.5;
+        e.hg_adept = adept;
         setsize(e, e.scale * e.mins, e.scale * e.maxs);
         
         self.hg_shieldmodel = e;
