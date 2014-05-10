@@ -39,10 +39,16 @@ void IRC_UpdateTopic(void) {
     if(!cvar("sv_ircbot_update_topic"))
         return;
         
-    string s = strcat(cvar_string("hostname"), IRC_STRING_SEPARATOR, IRC_GameInfoString());
-    if(!realclients)
+    string s = cvar_string("sv_ircbot_update_topic_static");
+    if(s != "")
+        s = strcat(s, IRC_STRING_SEPARATOR, "^7");
+    if(cvar("sv_ircbot_update_topic_hostname"))
+        s = strcat(s, cvar_string("hostname"), IRC_STRING_SEPARATOR);
+    s = strcat(s, IRC_GameInfoString());
+    
+    if(!realclients && cvar("sv_ircbot_update_topic_serverempty"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server empty");
-    else if(totalclients == maxclients)
+    else if(totalclients == maxclients && cvar("sv_ircbot_update_topic_serverfull"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
     IRC_Topic(irc.cnt, irc.target, s);

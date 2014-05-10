@@ -553,7 +553,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     targ.buffs_arc_hit = TRUE;
     
     FOR_EACH_PLAYER(plr)
-    if(plr != attacker || targetTeamMates)
+    if(plr != attacker)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
     if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
@@ -724,10 +724,10 @@ void Buffs_BuffPickup_Ring_Think(void) {
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects;
     
-    self.effects &~= (EF_STARDUST | EF_NODRAW);
+    self.effects &~= EF_STARDUST | EF_NODRAW;
     
     if(self.owner.team)
-        self.effects &~= EF_ADDITIVE | EF_FULLBRIGHT;
+        self.effects &~= EF_ADDITIVE;
     
     setorigin(self, self.owner.origin + '0 0 15');
 }
@@ -825,7 +825,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.solid = SOLID_TRIGGER;
     self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY;
     self.movetype = MOVETYPE_TOSS;
-    self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_STARDUST;
+    self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_STARDUST | EF_NOSHADOW;
     self.think = Buffs_BuffPickup_Think;
     self.touch = Buffs_BuffPickup_Touch;
     self.reset = Buffs_BuffPickup_Reset;
