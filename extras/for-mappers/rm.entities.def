@@ -260,6 +260,27 @@ The Wrath Buff (Pink Team)
 */
 
 
+/*QUAKED item_buff_adept (0.57 0.00 1.00) (-16 -16 -16) (16 16 16)
+The Adept Buff
+*/
+
+/*QUAKED item_buff_adept_team1 (0.57 0.00 1.00) (-16 -16 -16) (16 16 16)
+The Adept Buff (Red Team)
+*/
+
+/*QUAKED item_buff_adept_team2 (0.57 0.00 1.00) (-16 -16 -16) (16 16 16)
+The Adept Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_adept_team3 (0.57 0.00 1.00) (-16 -16 -16) (16 16 16)
+The Adept Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_adept_team4 (0.57 0.00 1.00) (-16 -16 -16) (16 16 16)
+The Adept Buff (Pink Team)
+*/
+
+
 /*QUAKED item_buff_random (0.5 0.5 0.5) (-16 -16 -16) (16 16 16)
 A random buff
 */
