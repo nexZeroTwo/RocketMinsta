@@ -857,6 +857,7 @@ void HG_Cloak(float hgtype) {
 void HG_Cloak_Frame() {
     if(self.hg_stealth) {
         self.hg_wasstealth = TRUE;
+        self.hg_stealthtime = time;
         if(self.hg_stealthalpha < 1)
             self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime * cvar("g_handgrenades_cloak_stealthrate"));
         self.hg_stealth = approach(self.hg_stealth, 0, frametime);

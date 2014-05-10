@@ -1586,8 +1586,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(t_oldhealth > self.health) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
-                if(self.hg_stealth && self.hg_stealthalpha > 0.2)
+                if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
+                    self.hg_stealthtime = 0; // no action delay if forcefully decloaked
+                }
             }
             
             entity e;
