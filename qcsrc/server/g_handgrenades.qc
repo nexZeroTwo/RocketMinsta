@@ -82,16 +82,12 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
-        if(g_freeze)
-        if(e.frozen)
-            continue;
-        
         ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
         
         if(!ismedic) {
             if(!IsDifferentTeam(o, e) && o != e)
                 if(!cvar("g_friendlyfire"))
-                    continue;
+                        continue;
                 
             if(!Buffs_TenacityDamage(e, o, damage, dtype))
                 continue;
@@ -107,6 +103,12 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
             traceline(p, self.origin, MOVE_NORMAL, e);
             if(/* trace_startsolid || */ trace_fraction != 1)
                 continue;
+            
+            if(e.frozen) {
+                e.revprogress = 0;
+                continue;
+            }
+            
             e.fireball_impactvec = p;
             d = vlen(self.origin - e.fireball_impactvec);
             d = damage + (edgedamage - damage) * (d / dist);
@@ -858,7 +860,10 @@ void HG_Cloak(float hgtype) {
 
 void HG_Cloak_Frame() {
     if(self.hg_stealth) {
+        if(self.flagcarried)
+            DropFlag(self.flagcarried, world, world);
         self.hg_wasstealth = TRUE;
+        self.hg_stealthtime = time;
         if(self.hg_stealthalpha < 1)
             self.hg_stealthalpha = approach(self.hg_stealthalpha, 1, frametime * cvar("g_handgrenades_cloak_stealthrate"));
         self.hg_stealth = approach(self.hg_stealth, 0, frametime);

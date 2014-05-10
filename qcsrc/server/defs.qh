@@ -632,7 +632,6 @@ void bigprint(entity e, string bigstring, string comment, float staytime);
 void centerprint_spec(entity, string);
 void bigprint_spec(entity, string, string, float);
 
-.string rmcfgreport;
 .float anonspec;
 .float madoka;
 

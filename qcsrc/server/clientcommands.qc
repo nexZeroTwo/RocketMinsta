@@ -179,7 +179,6 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "prespawn")
 	if(cmd != "spawn")
 	if(cmd != "begin")
-	if(cmd != "rmcfgreport")
 	if(cmd != "hudinfo")
 	if(cmd != "fovreport")
 	if(cmd != "zoomreport")
@@ -193,20 +192,7 @@ void SV_ParseClientCommand(string s) {
 		return;
 	} else if(GameCommand_MapVote(argv(0))) {
 		return;
-	} else if(cmd == "rmcfgreport") {
-		print("^2Received rmcfgreport from ", self.netname, "^2: ", s, "\n");
-		
-		if(!self)
-			return;
-			
-		if(self.rmcfgreport)
-			strunzone(self.rmcfgreport);
-		
-		if(!self)
-			return;
-		
-		self.rmcfgreport = strzone(s);
-	} else if(cmd == "menu_request"){
+    } else if(cmd == "menu_request"){
 		// Report that this server is running RM
 		stuffcmd(self, "set _rm_server 1\n");
 		
@@ -239,21 +225,6 @@ void SV_ParseClientCommand(string s) {
 		
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
-	} else if(cmd == "spyrmcfg") {
-		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
-		
-		if(e && e != world)
-		{
-			if(clienttype(e) != CLIENTTYPE_REAL)
-			{
-				sprint(self, strcat(e.netname, "^1: not a real client\n"));
-				return;
-			}
-			
-			sprint(self, strcat("^3rmcfgreport from ", e.netname, "^3 (cached):\n^2", e.rmcfgreport, "\n"));
-		}
-		else
-			sprint(self, strcat(argv(1), "^1: failed to find player\n"));
 	} else if(cmd == "anonspec") {
 		local string val = argv(1);
 		

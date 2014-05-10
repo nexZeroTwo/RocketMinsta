@@ -472,7 +472,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         
         FOR_EACH_PLAYER(other)
-            if(!other.hg_stealth)
+            if(time - other.hg_stealthtime >= cvar("g_handgrenades_cloak_actiondelay"))
             if(self != other && !other.frozen && other.team == self.team)
             if(time - other.revtime > Freeze_CVar("revive_delay_after_revived"))
             if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))

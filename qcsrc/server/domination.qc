@@ -269,7 +269,7 @@ void dompointtouch()
     if(g_freeze && other.frozen)
         return;
     
-    if(other.hg_stealth)
+    if(time - other.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
         return;
     
 	if(time < self.captime + 0.3)

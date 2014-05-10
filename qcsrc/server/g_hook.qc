@@ -435,6 +435,9 @@ void FireGrapplingHook (void)
     if(self.hg_stealth)
         self.hg_stealth = 0;
     
+    if(time - self.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
+        return;
+    
 	makevectors(self.v_angle);
 
 	// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds

@@ -1153,7 +1153,7 @@ void JB_ControlPoint_Touch() {
     if(other.classname != "player")
         return;
     
-    if(other.hg_stealth)
+    if(time - other.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
         return;
     
     other.pointupdatetime = time;

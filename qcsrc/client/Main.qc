@@ -338,7 +338,6 @@ void TrueAim_Init();
 
 float rmconfig_initialized;
 
-void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
 #ifdef RM_SUPPORT_MADOKA
@@ -424,11 +423,6 @@ void FPSReporter_Init() {
 	entity e = spawn();
 	e.think = FPSReporter_Think;
 	e.nextthink = time + 1;
-}
-
-void EnableRMCFGReport() {
-	rmconfig_initialized = TRUE;
-	SendRMCFGReport();
 }
 
 void PostInit(void)
@@ -518,9 +512,13 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
 			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
-			
+        case 38:
+            // fight evil with evil
+            if(cvar("cl_gunalign") == 3)
+                localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
+            
 		//More to come here with each update
-		localcmd("seta rm_initialized 38\n");
+		localcmd("seta rm_initialized 39\n");
 		RM_OUTDATED
 		break;
 	}
@@ -579,10 +577,8 @@ void PostInit(void)
 	// -- //
 	registercmd("hudskin");
 	
-	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
-	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
@@ -630,27 +626,6 @@ void Cmd_Sbar_SetFields(float);
 void Cmd_Sbar_Help(float);
 
 void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
-void SendRMCFGReport()
-{
-	float h, n, i;
-	string k, res;
-	
-	if(!rmconfig_initialized)
-		return;
-	
-	h = buf_create();
-	buf_cvarlist(h, "rm_", "");
-	n = buf_getsize(h);
-	
-	for(i = 0; i < n; ++i)
-	{
-		k = bufstr_get(h, i);
-		res = strcat(res, "^3", k, " ^2", cvar_string(k), " ");
-	}
-	
-	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
-	buf_del(h);
-}
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
 #define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
@@ -810,7 +785,6 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -837,7 +811,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_madoka = cvar("rm_madoka");
 		SetMadokaFont(MDKF_AUTO);
 		
-		SendRMCFGReport();
 		if(sv_showspecs_extra)
 			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		RMSETTINGREPORT
@@ -852,7 +825,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -865,7 +837,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		//	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
 		SetMadokaFont(MDKF_AUTO);
 		
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -907,7 +878,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		{
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
-			SendRMCFGReport();
 			localcmd("menu_cmd update_rmvars\n");
 			if(sv_showspecs_extra)
 				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
@@ -925,7 +895,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set ("rm_hidecountry", argv (1));
 		rm_hidecountry = cvar ("rm_hidecountry");
-		SendRMCFGReport ();
 		localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
 		RMSETTINGREPORT
 		return true;
