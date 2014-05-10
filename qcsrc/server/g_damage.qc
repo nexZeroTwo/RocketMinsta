@@ -977,7 +977,7 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-void Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
+float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
     if(g_clanarena) if(inflictor.classname != "hg_linker") {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
@@ -996,8 +996,9 @@ void Heal(entity targ, entity inflictor, entity healer, float heal, float pauser
         VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL);
         HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
-        //centerprint(targ, strcat("^2+", ftos(heal)));
     }
+    
+    return heal;
 }
 
 // these are updated by each Damage call for use in button triggering and such
@@ -1040,7 +1041,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC));
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
-                Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
+                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
+                if(attacker != targ)
+                    Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 targ.frozen_plasmalock = 0;
                 if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
                     Buffs_ArcDamage(targ, attacker, damage, deathtype);
