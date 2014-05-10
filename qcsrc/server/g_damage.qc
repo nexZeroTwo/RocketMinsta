@@ -857,35 +857,58 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					}
 				}
 
-				#define RAGESOUND announce(attacker, "porto/fire.wav");
-				switch(attacker.rage)
-				{
-					case 0:
-					case 1:
-						break;
+                #define RAGESOUND announce(attacker, "porto/fire.wav");
+                switch(attacker.rage) {
+                    case 0:
+                    case 1:
+                        break;
 
-					case 2: RAGESOUND
-						bigprint_spec(attacker, "^2Double ^7Kill!", ragemeter, 1);
+                    case 2: RAGESOUND
+                        bigprint_spec(attacker, "^2Double ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^2DOUBLE ^7KILL!\n");
-						break;
-					case 3: RAGESOUND
-						bigprint_spec(attacker, "^3Triple ^7Kill!", ragemeter, 1);
+                        break;
+                    case 3: RAGESOUND
+                        bigprint_spec(attacker, "^3Triple ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^3TRIPLE ^7KILL!\n");
-						break;
-					case 4: RAGESOUND
-						bigprint_spec(attacker, "^6Quad ^7Kill!", ragemeter, 1);
+                        break;
+                    case 4: RAGESOUND
+                        bigprint_spec(attacker, "^6Quad ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^6QUAD ^7KILL!\n");
-						break;
-					case 5: RAGESOUND
-						bigprint_spec(attacker, "^5Ultra ^7Kill!", ragemeter, 1);
+                        break;
+                    case 5: RAGESOUND
+                        bigprint_spec(attacker, "^5Ultra ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored an ^5ULTRA ^7KILL!\n");
-						break;
-					default: case 6: RAGESOUND
-						bigprint_spec(attacker, "^1Monster ^7Kill!", ragemeter, 1);
+                        break;
+                    case 6: RAGESOUND
+                        bigprint_spec(attacker, "^1Monster ^7Kill!", ragemeter, 1);
                         bprint(attacker.netname, " ^7scored a ^1MONSTER ^7KILL!\n");
-						break;
-				}
-				#undef RAGESOUND
+                        break;
+                    case 7: RAGESOUND
+                        bigprint_spec(attacker, "^2Hax ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored a ^2HAX ^7KILL!\n");
+                        break;
+                    case 8: RAGESOUND
+                        bigprint_spec(attacker, "^3Aimbot ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored an ^3AIMBOT ^7KILL!\n");
+                        break;
+                    case 9: RAGESOUND
+                        bigprint_spec(attacker, "^6Fegget ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored a ^6FEGGET ^7KILL!\n");
+                        break;
+                    case 10: RAGESOUND
+                        bigprint_spec(attacker, "^5Yo Momma ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored a ^5YO MOMMA ^7KILL!\n");
+                        break;
+                    case 11: RAGESOUND
+                        bigprint_spec(attacker, "^xE90Potato ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored a ^xE90POTATO ^7KILL!\n");
+                        break;
+                    default: case 12: RAGESOUND
+                        bigprint_spec(attacker, "^1Kill la ^7Kill!", ragemeter, 1);
+                        bprint(attacker.netname, " ^7scored a ^1KILL LA ^7KILL!\n");
+                        break;
+                }
+                #undef RAGESOUND
                 
                 if(g_handgrenades)
                 if(DEATH_ISHG(deathtype))
