@@ -553,7 +553,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     targ.buffs_arc_hit = TRUE;
     
     FOR_EACH_PLAYER(plr)
-    if(plr != attacker || targetTeamMates)
+    if(plr != attacker)
     if(plr != targ)
     if(plr.deadflag == DEAD_NO)
     if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
