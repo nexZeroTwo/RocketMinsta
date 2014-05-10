@@ -53,6 +53,7 @@ float HG_RegenTime(entity);
 .float hg_optout;
 .float hg_optout_nextround;
 .float hg_alwaysask;
+.float hg_adept;
 
 .float hg_shield;
 .float hg_shieldpower;
