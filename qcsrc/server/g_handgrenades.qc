@@ -856,6 +856,8 @@ void HG_Cloak(float hgtype) {
 
 void HG_Cloak_Frame() {
     if(self.hg_stealth) {
+        if(self.flagcarried)
+            DropFlag(self.flagcarried, world, world);
         self.hg_wasstealth = TRUE;
         self.hg_stealthtime = time;
         if(self.hg_stealthalpha < 1)
