@@ -914,6 +914,11 @@ void HG_Linker_Think() {
         return;
     }
     
+    if(self.hg_adept) {
+        setorigin(self, self.owner.origin);
+        setorigin(self.enemy, self.origin);
+    }
+    
     if(time > self.hg_linker_nexteffect)
         self.buffs = 0;
     
@@ -996,7 +1001,6 @@ void HG_Linker(float hgtype) {
     e.spawntime = time;
     e.reset = SUB_Remove;
     e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-    e.movetype = MOVETYPE_TOSS;
     e.gravity = 100;
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
@@ -1008,6 +1012,8 @@ void HG_Linker(float hgtype) {
     if(e.team) e.skin = TeamColorSkin(e.team);
     e.scale = e.hg_linker_range / e.maxs_x;
     e.glow_color = 0xF5;
+    e.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
+    e.movetype = (e.hg_adept? MOVETYPE_NONE : MOVETYPE_TOSS);
     setorigin(e, self.origin + self.view_ofs);
     
     e.enemy = spawn();
