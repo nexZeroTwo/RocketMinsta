@@ -1021,6 +1021,9 @@ float weapon_prepareattack(float secondary, float attacktime)
 	if(self.frozen) 
 		return FALSE;
     
+    if(time < self.hg_plasmalock)
+        return FALSE;
+    
     if(self.hg_stealth)
         self.hg_stealth = 0;
     

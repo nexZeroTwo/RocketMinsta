@@ -1142,6 +1142,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
@@ -2346,6 +2347,9 @@ void player_powerups (void)
 	if (time >= game_starttime)
 	if (time < self.spawnshieldtime || self.hg_shield)
 		self.effects = self.effects | (EF_ADDITIVE | EF_FULLBRIGHT);
+    
+    if(time < self.hg_plasmalock)
+        self.effects |= EF_ADDITIVE | EF_FULLBRIGHT;
 }
 
 float CalcRegen(float current, float stable, float regenfactor, float regenframetime)
@@ -3119,6 +3123,29 @@ void PlayerPreThink (void)
 		checkSpectatorBlock();
 
 	zoomstate_set = 0;
+    
+    if(frametime)
+    if(isplayer)
+    if(time < self.hg_plasmalock) {
+        if(!self.hg_plasmalock_owner.iscreature) {
+            self.hg_plasmalock_owner = world;
+            self.hg_plasmalock = 0;
+            self.hg_plasmalock_nexteffect = time + frametime;
+        }
+        
+        if(time > self.hg_plasmalock_nexteffect) {
+            float edelay = 0.35;
+            self.hg_plasmalock_nexteffect = time + edelay;
+            vector eorigin = self.origin + self.maxs_z * '0 0 0.5';
+            
+            float pdmg = cvar("g_handgrenades_plasma_projectile_frozenlock_dps") * edelay;
+            if(pdmg)
+                RadiusDamage(self, self.hg_plasmalock_owner, pdmg, pdmg, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
+            
+            te_csqc_lightningarc(eorigin + randomvec() * 100, eorigin + randomvec() * 10, TRUE, self.hg_plasmalock_owner.team);
+            sound(self, CHAN_AUTO, "sound/weapons/electro_impact.wav", 0.4, 1.5);
+        }
+    }
     
     if(frametime)
     if(time > self.namecheck)

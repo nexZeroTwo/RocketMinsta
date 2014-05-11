@@ -619,12 +619,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         }
     }
     
+    if(time < self.hg_plasmalock)
+    if(deathtype != DEATH_NOISE)
+    if(deathtype != DEATH_TEAMCHANGE)
+    if(deathtype != DEATH_AUTOTEAMCHANGE)
+    if(deathtype != DEATH_KILL)
+    if(deathtype != DEATH_FALL)
+    if(deathtype != DEATH_DROWN)
+    if(deathtype != DEATH_ROT)
+    if(deathtype != DEATH_HURTTRIGGER) {
+        damage = 0;
+        force = '0 0 0';
+    }
+    
     if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
-        if(self.frozen) if(self.team != attacker.team) {
-            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
-            self.frozen_plasmalock_owner = attacker;
+        if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
+            self.hg_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
+            self.hg_plasmalock_owner = attacker;
+            te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
-
+    
     damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
 
 	if(!DEATH_ISSPECIAL(deathtype))

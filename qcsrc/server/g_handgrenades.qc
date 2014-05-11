@@ -336,6 +336,10 @@ void HG_Plasma_Projectile() {
 
 void HG_Plasma_Explode() {
     float c;
+    
+    if(self.hg_adept)
+        return;
+    
     ++hg_plasma_group;
     for (c = 0; c < cvar("g_handgrenades_plasma_projectile_count"); c ++) HG_Plasma_Projectile();
 }
@@ -1350,6 +1354,9 @@ void HG_Frame()
     
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomHGHookButton(self))) || self.hg_power;
 	
+    if(time < self.hg_plasmalock)
+        mayfire = FALSE;
+    
 	float held;
 	held = self.BUTTON_HG;
 	
