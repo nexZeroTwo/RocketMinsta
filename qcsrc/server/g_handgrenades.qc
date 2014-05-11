@@ -209,7 +209,9 @@ void HG_Napalm()
     proj.team = self.owner.team;
     proj.hg_adept = self.hg_adept;
     proj.hg_remote_firesource = self;
-    
+    proj.effects = EF_NODEPTHTEST;
+
+>>>>>>> unstable
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
