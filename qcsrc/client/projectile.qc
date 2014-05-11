@@ -538,7 +538,7 @@ void Ent_Projectile()
 				break;
             case PROJECTILE_HG_NAPALMSHARD:
 			case PROJECTILE_FIREMINE:
-				loopsound(self, CHAN_PROJECTILE, "weapons/fireball_fly.wav", VOL_BASE, ATTN_NORM);
+				loopsound(self, CHAN_PROJECTILE, "weapons/fire_burn.wav", VOL_BASE, ATTN_NORM);
 				self.move_movetype = MOVETYPE_BOUNCE;
 				self.move_touch = SUB_Null;
 				self.mins = '-4 -4 -4';
@@ -586,6 +586,6 @@ void Projectile_Precache()
     precache_model("models/runematch/rune.mdl");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
-	precache_sound("weapons/fireball_fly.wav");
+	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
 }
