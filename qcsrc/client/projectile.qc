@@ -104,6 +104,7 @@ void Projectile_DrawTrail(vector to)
                 goto flame;
             case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
+            case PROJECTILE_HG_TRANSLOC:
 				to_z += 1;
 				break;
 			case PROJECTILE_ELECTRO:
@@ -473,7 +474,10 @@ void Ent_Projectile()
 		self.colormod = '0 0 0';
 		self.move_touch = SUB_Stop;
 		self.move_movetype = MOVETYPE_TOSS;
-
+        
+        if(self.cnt == PROJECTILE_HG_TRANSLOC)
+            self.colormod = '1 1 1' * 0.3 + GetTeamRGB(self.team) * 0.7;
+        
 		switch(self.cnt)
 		{
 			case PROJECTILE_ELECTRO:

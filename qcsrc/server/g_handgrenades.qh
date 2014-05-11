@@ -56,6 +56,9 @@ float HG_RegenTime(entity);
 .float hg_adept;
 
 .entity hg_remote_firesource;
+.entity hg_transloc_last;
+
+.vector hg_lastvel;
 
 .float hg_shield;
 .float hg_shieldpower;

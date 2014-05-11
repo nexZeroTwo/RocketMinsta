@@ -363,7 +363,7 @@ void HG_Translocator_Explode() {
     }
     
     vector a;
-    a = vectoangles(normalize(self.velocity));
+    a = vectoangles(normalize(self.hg_lastvel));
     a_x = self.owner.v_angle_x;
     makevectors(a);
     
@@ -495,6 +495,12 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
+        if(self.hg_type == HG_TRANSLOC && self.hg_adept && trace_plane_normal == '0 0 1') {
+            self.velocity = '0 0 0';
+            self.movetype = MOVETYPE_TOSS;
+            UpdateCSQCProjectile(self);
+        }
+        
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
@@ -640,8 +646,11 @@ void HG_DetonateAll(entity plr) {
     sound(plr, CHAN_WEAPON2, "weapons/rocket_mode.wav", VOL_BASE, ATTN_NORM);
     
     for(;(nade = find(nade, classname, "hg_grenade"));)
-        if(nade.owner == plr)
+        if(nade.owner == plr) {
+            if(nade.hg_type == HG_TRANSLOC)
+                nade.owner.hg_transloc_last = nade;
             HG_Detonate(nade);
+        }
 }
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
@@ -699,6 +708,9 @@ void HG_Grenade_Waypoint() {
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
     
+    if(self.velocity != '0 0 0')
+        self.hg_lastvel = self.velocity;
+    
     if(self.solid == SOLID_NOT)
         self.solid = SOLID_TRIGGER;
     
@@ -728,7 +740,10 @@ void HG_Grenade_Think() {
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
-        self.use();
+        if(self.hg_adept && self.hg_type == HG_TRANSLOC)
+            HG_Grenade_Remove();
+        else
+            self.use();
         return;
     }
     
@@ -742,7 +757,10 @@ void HG_Grenade_Think() {
     
     if(self.hg_detonable && self.hg_detonatetime) {
         if(time >= self.hg_detonatetime) {
-            self.use();
+            if(self.hg_type != HG_TRANSLOC || self == self.owner.hg_transloc_last)
+                self.use();
+            else
+                HG_Grenade_Remove();
             return;
         } else if(time >= self.hg_nextsnd) {
             spamsound(self, CHAN_PROJECTILE, "weapons/rm_nadebeep.wav", VOL_BASE * 0.5, ATTN_NORM * 2);
@@ -781,6 +799,8 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
         if(attacker.classname == "player") {
             HG_Grenade_ChangeOwner(attacker);
         }
+        if(self.hg_type == HG_TRANSLOC)
+            self.hg_adept = 0;
         self.hg_deathtime = time;
     }
 }
@@ -1146,7 +1166,6 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.classname = "hg_grenade";
     gren.bot_dodge = TRUE;
     gren.bot_dodgerating = GV("damage");
-    gren.movetype = GV("movetype");
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
@@ -1162,12 +1181,17 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         gren.hg_detonateready = time + GV("detonate_threshold");
     }
     
+    if(gren.hg_adept && GV("adept_movetype"))
+        gren.movetype = GV("adept_movetype");
+    else
+        gren.movetype = GV("movetype");
+    
     gren.gravity = GV("gravity");
     setsize(gren, hitmins, hitmaxs);
     setorigin(gren, w_shotorg);
 
     float lt;
-    if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+    if(gren.hg_adept) {
         lt = GV("adept_lifetime");
         if(!lt)
             lt = GV("lifetime");
@@ -1189,7 +1213,10 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     if(gren.hg_type == HG_TRANSLOC)
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
     
-    if(GV("takedamage")) {
+    if(gren.hg_adept)
+        gren.health = GV("adept_health");
+    
+    if(GV("takedamage") || gren.health) {
         gren.takedamage = DAMAGE_AIM;
         gren.event_damage = HG_Grenade_Damage;
     } else {
@@ -1197,7 +1224,8 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         gren.event_damage = SUB_Null;
     }
     
-    gren.health = GV("health");
+    if(!gren.health)
+        gren.health = GV("health");
     gren.damageforcescale = GV("damageforcescale");
     
     float spd  = GV("speed");
@@ -1217,6 +1245,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     if(hgtype == HG_NAPALM && self.hg_power == 1)
         Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), DEATH_HG_NAPALM, self.origin, '0 0 0');
+    
+    if(hgtype == HG_TRANSLOC)
+        self.hg_transloc_last = gren;
     
     return gren;
 }
