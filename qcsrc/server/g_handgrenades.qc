@@ -1192,7 +1192,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
-    gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
+    
+    if(hgtype != HG_NAPALM)
+        gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
     
     if(gren.hg_adept && GV("adept_detonable")) {
         gren.hg_detonable = GV("adept_detonable");
