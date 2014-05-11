@@ -661,7 +661,10 @@ void HG_Grenade_Waypoint() {
     if(time < self.hg_wp_nextthink)
         return;
     
-    rng = max(0, GRENVAR(self.hg_type, "detect_enemies"));
+    if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
+        rng = max(0, GRENVAR(self.hg_type, "adept_detect_enemies"));
+    else
+        rng = max(0, GRENVAR(self.hg_type, "detect_enemies"));
     
     if(!rng) {
         if(self.hg_waypoint)
@@ -1144,9 +1147,18 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
-    gren.hg_detonable = GV("detonable");
-    gren.hg_detonatedelay = GV("detonate_delay");
-    gren.hg_detonateready = time + GV("detonate_threshold");
+    gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
+    
+    if(gren.hg_adept && GV("adept_detonable")) {
+        gren.hg_detonable = GV("adept_detonable");
+        gren.hg_detonatedelay = GV("adept_detonate_delay");
+        gren.hg_detonateready = time + GV("adept_detonate_threshold");
+    } else {        
+        gren.hg_detonable = GV("detonable");
+        gren.hg_detonatedelay = GV("detonate_delay");
+        gren.hg_detonateready = time + GV("detonate_threshold");
+    }
+    
     gren.gravity = GV("gravity");
     setsize(gren, hitmins, hitmaxs);
     setorigin(gren, w_shotorg);
@@ -1170,7 +1182,6 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.team = self.team;
     gren.cnt = GV("bouncelimit");
     gren.hg_isbonus = self.hg_bonus;
-    gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
     
     if(gren.hg_type == HG_TRANSLOC)
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
