@@ -119,14 +119,18 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 
 void HG_Napalm_Think()
 {
-	if (time > self.pushltime)
-	{
-		remove(self);
-		return;
-	}
+    if(self.hg_adept) {
+        if(!self.hg_remote_firesource || wasfreed(self.hg_remote_firesource)) {
+            remove(self);
+            return;
+        }
+    } else if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
 
-	HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
-	self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
+    HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+    self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
 void HG_Napalm_Middlefire_Think() {
@@ -155,6 +159,7 @@ void HG_Napalm_Middlefire_Think() {
 void HG_Napalm_Projectile_Touch()
 {
 	PROJECTILE_TOUCH;
+    if(!self.hg_adept)
 	if(other.takedamage == DAMAGE_AIM)
 	if(Fire_AddDamage(other, self.realowner, GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type) >= 0) {
 		remove(self);
@@ -173,7 +178,7 @@ void HG_Napalm()
 	proj.classname = "grenade";
 	proj.bot_dodge = TRUE;
 	proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage");
-	proj.movetype = MOVETYPE_BOUNCE;
+	proj.movetype = (self.hg_adept? MOVETYPE_TOSS : MOVETYPE_BOUNCE);
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
@@ -201,7 +206,9 @@ void HG_Napalm()
 	proj.flags = FL_PROJECTILE;
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
     proj.team = self.owner.team;
-
+    proj.hg_adept = self.hg_adept;
+    proj.hg_remote_firesource = self;
+    
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
@@ -431,14 +438,18 @@ void HG_Grenade_Explode()
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
 	
-	if(self.hg_type == HG_NAPALM)
-		HG_Napalm_Explode();
-    else if(self.hg_type == HG_PLASMA)
+    if(self.hg_type == HG_NAPALM) {
+        HG_Napalm_Explode();
+    } else if(self.hg_type == HG_PLASMA) {
         HG_Plasma_Explode();
-    else if(self.hg_type == HG_REMOTE)
-        HG_Remote_Explode();
-    else if(self.hg_type == HG_TRANSLOC)
+    } else if(self.hg_type == HG_REMOTE) {
+        if(self.hg_adept >= 0) {
+            self.hg_adept = 0;
+            HG_Remote_Explode();
+        }
+    } else if(self.hg_type == HG_TRANSLOC) {
         HG_Translocator_Explode();
+    }
     
     HG_Grenade_RadiusDamage();
     HG_Grenade_Remove();
@@ -546,7 +557,6 @@ void HG_Remote_Stick() {
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
     e.think = self.think;
-    e.think = HG_Grenade_Think;
     e.nextthink = self.nextthink;
     e.flags = self.flags;
     e.team = self.team;
@@ -562,6 +572,7 @@ void HG_Remote_Stick() {
     e.reset = self.reset;
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     e.hg_state = TRUE;
+    e.hg_adept = self.hg_adept;
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
@@ -695,6 +706,19 @@ void HG_Grenade_Think() {
     }
     
     HG_Grenade_Waypoint();
+    
+    if(self.hg_type == HG_REMOTE)
+    if(self.hg_remote_sticked) {
+        if(self.hg_adept > 0)
+        if(time >= self.hg_detonateready) {
+            self.solid = SOLID_NOT;
+            HG_Remote_Explode();
+            self.hg_adept = -1;
+        }
+        
+        if(self.solid == SOLID_NOT) 
+            self.solid = SOLID_CORPSE;
+    }
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
@@ -1127,7 +1151,17 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     setsize(gren, hitmins, hitmaxs);
     setorigin(gren, w_shotorg);
 
-    gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime") * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+    float lt;
+    if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+        lt = GV("adept_lifetime");
+        if(!lt)
+            lt = GV("lifetime");
+        else if(hgtype == HG_REMOTE)
+            lt = lt * Buffs_NadgetPower(self);
+    } else
+        lt = GV("lifetime");
+
+    gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + lt * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
     gren.think = HG_Grenade_Think;
     gren.nextthink = time;
     gren.use = HG_Grenade_Explode;

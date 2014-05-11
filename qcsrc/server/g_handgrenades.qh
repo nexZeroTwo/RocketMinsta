@@ -55,6 +55,8 @@ float HG_RegenTime(entity);
 .float hg_alwaysask;
 .float hg_adept;
 
+.entity hg_remote_firesource;
+
 .float hg_shield;
 .float hg_shieldpower;
 .float hg_shieldmax;
