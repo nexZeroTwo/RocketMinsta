@@ -5009,15 +5009,25 @@ void Sbar_Draw(void)
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         float hgcd = getstatf(STAT_HGREFIRE) - servertime;
+        float adept = getstati(STAT_BUFFS) & BUFF_ADEPT;
         
         if(hgcd > 0) {
             if(hgcd > hg_maxcd) hg_maxcd = hgcd;
         } else hg_maxcd = 0;
         
         if(getstati(STAT_STEALTH)) {
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        " ^3to ", (adept? "suspend" : "cancel"), " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            if(adept) drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop flag", "+use")),
+                                        " ^3to cancel stealth completely"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(getstati(STAT_STEALTH_SAVED)) {
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to re-enter stealth (^1", ftos(getstati(STAT_STEALTH_SAVED)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
         } else if(getstatf(STAT_HGSHIELD))
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(

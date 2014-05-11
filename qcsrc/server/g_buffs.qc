@@ -406,6 +406,10 @@ void Buffs_ClientFrame(void) {
             self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         }
         
+        ON_BUFF_REMOVED(BUFF_ADEPT) {
+            self.hg_stealth_saved = 0;
+        }
+        
         self.oldbuffs = self.buffs;
     }
     

@@ -1025,7 +1025,7 @@ float weapon_prepareattack(float secondary, float attacktime)
         return FALSE;
     
     if(self.hg_stealth)
-        self.hg_stealth = 0;
+        HG_Cloak_Trigger();
     
     if(time - self.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
         return FALSE;

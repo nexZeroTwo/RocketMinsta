@@ -435,8 +435,11 @@ void FireGrapplingHook (void)
     if(!CustomHGHookButton(self))
 		return;
     
-    if(self.hg_stealth)
+    if(self.hg_stealth) {
+        //HG_Cloak_Trigger();
         self.hg_stealth = 0;
+        self.hg_stealth_saved = 0;
+    }
     
     if(time - self.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
         return;

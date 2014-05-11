@@ -15,6 +15,7 @@ void HG_Init() {
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
     addstat(STAT_STEALTH, AS_INT, hg_stealth);
+    addstat(STAT_STEALTH_SAVED, AS_INT, hg_stealth_saved);
     addstat(STAT_HGREFIRE, AS_FLOAT, hg_next);
     
     g_handgrenades_oldhitboxes = cvar("g_handgrenades_oldhitboxes");
@@ -947,6 +948,22 @@ void HG_Cloak(float hgtype) {
     sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
 }
 
+void HG_Cloak_Trigger(void) {
+    if(!BUFFS_PRESENT(self, BUFF_ADEPT)) {
+        self.hg_stealth = 0;
+        return;
+    }
+    
+    if(self.hg_stealth) {
+        self.hg_stealth_saved = self.hg_stealth;
+        self.hg_stealth = 0;
+    } else if(self.hg_stealth_saved) {
+        sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
+        self.hg_stealth = self.hg_stealth_saved;
+        self.hg_stealth_saved = 0;
+    }
+}
+
 void HG_Cloak_Frame() {
     if(self.hg_stealth) {
         if(self.flagcarried)
@@ -1394,7 +1411,7 @@ void HG_Frame()
 	
 	self.hg_state = held;
     float dpause = cvar("g_handgrenades_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
-    self.hg_regenpaused = (self.hg_stealth || ((time - self.lastdamage <= dpause) && (self.hg_type != HG_LASER)));
+    self.hg_regenpaused = (self.hg_stealth || self.hg_stealth_saved || ((time - self.lastdamage <= dpause) && (self.hg_type != HG_LASER)));
     
     if(cvar("g_handgrenades_regen_time")) {
         float mx = GRENVAR(self.hg_type, "stacklimit");

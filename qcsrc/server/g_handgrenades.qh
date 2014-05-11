@@ -18,6 +18,7 @@ void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
+void HG_Cloak_Trigger(void);
 
 .vector org_explosion;
 .float nextparticle;
@@ -75,6 +76,7 @@ float HG_RegenTime(entity);
 .float hg_stealthalpha;
 .float hg_stealthtime;
 .float hg_wasstealth;
+.float hg_stealth_saved;
 
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;

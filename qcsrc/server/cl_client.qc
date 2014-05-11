@@ -608,7 +608,9 @@ float Client_customizeentityforclient()
     
     float sa = 1 - self.hg_stealthalpha;
     
-    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
+    if((teams_matter && other.team == self.team) || 
+       (other.hg_stealth && (!BUFFS_PRESENT(self, BUFF_ADEPT) || BUFFS_PRESENT(other, BUFF_ADEPT))) ||
+       !other.iscreature)
         sa = 0.3 + 0.7 * sa;
     
     self.alpha = sa * default_player_alpha;
@@ -1144,9 +1146,10 @@ void PutClientInServer (void)
     
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
+    self.hg_stealth_saved = 0;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
-	self.goodhits = 0;
+    self.goodhits = 0;
 
 	if(g_arena)
 	if(!self.spawned)
@@ -2679,6 +2682,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_shield = spectatee.hg_shield;
     self.hg_shieldpower = spectatee.hg_shieldpower;
     self.hg_stealth = spectatee.hg_stealth;
+    self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;

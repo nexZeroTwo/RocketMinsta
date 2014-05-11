@@ -1614,6 +1614,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 self.lastdamage = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
+                    self.hg_stealth_saved = 0;
                     self.hg_stealthtime = 0; // no action delay if forcefully decloaked
                 }
             }

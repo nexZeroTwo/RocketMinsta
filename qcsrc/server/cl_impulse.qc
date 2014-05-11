@@ -144,8 +144,8 @@ void ImpulseCommands (void)
 					break;
 				case 17:
                     if(g_handgrenades) {
-                        if(self.hg_stealth)
-                            self.hg_stealth = 0;
+                        if(self.hg_stealth || self.hg_stealth_saved)
+                            HG_Cloak_Trigger();
                         else {
                             self.hg_detonatepressed = TRUE;
                             HG_DetonateAll(self);
