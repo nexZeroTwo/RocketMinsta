@@ -410,8 +410,11 @@ void HG_Grenade_RadiusDamage() {
     float frcmod = 1;
     
     if(self.hg_adept) {
-        if(self.hg_type == HG_LASER) {
+        if(GV("adept_damagemod")) {
             dmgmod = dmgmod * (1 + (GV("adept_damagemod") - 1) * self.hg_adept);
+        }
+        
+        if(GV("adept_forcemod")) {
             frcmod = frcmod * (1 + (GV("adept_forcemod")  - 1) * self.hg_adept);
         }
     }
@@ -1254,9 +1257,9 @@ void HG_Attack()
             return;
         }
     } else {
-        if(BUFFS_PRESENT(self, BUFF_ADEPT) && hgtype == HG_LASER) {
+        if(BUFFS_PRESENT(self, BUFF_ADEPT) && GV("adept_split") > 0) {
             float split = GV("adept_split");
-            float spread = GV("adept_spread");
+            float spread = GV("adept_split_spread");
             vector dir;
             float i;
             
