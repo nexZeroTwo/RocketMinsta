@@ -571,7 +571,7 @@ void HG_Remote_Stick() {
     e.movetype = (trace_ent? MOVETYPE_TOSS : MOVETYPE_NONE);
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
-    e.think = self.think;
+    e.think = HG_Grenade_Think;
     e.nextthink = self.nextthink;
     e.flags = self.flags;
     e.team = self.team;
