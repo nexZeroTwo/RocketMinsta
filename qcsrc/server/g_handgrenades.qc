@@ -1304,6 +1304,8 @@ void HG_Attack()
     } else if(hgtype == HG_LINKER) {
         HG_Linker(hgtype);
     } else if(hgtype == HG_CLOAK) {
+        if(self.hg_stealth && !cvar("g_handgrenades_cloak_usewhileactive"))
+            return;
         HG_Cloak(hgtype);
     } else if(hgtype == HG_GG) {
         if(!HG_GG_Button(hgtype)) {
