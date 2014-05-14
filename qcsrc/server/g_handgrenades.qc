@@ -1080,6 +1080,8 @@ void HG_Attack()
         HG_Linker(hgtype);
         goto finish;
     } else if(hgtype == HG_CLOAK) {
+        if(self.hg_stealth && !cvar("g_handgrenades_cloak_usewhileactive"))
+            return;
         HG_Cloak(hgtype);
         goto finish;
     } else if(hgtype == HG_GG) {
