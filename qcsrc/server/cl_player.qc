@@ -1297,9 +1297,6 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(msgin == "")
 		return;
 
-    if(!teamsay && !privatesay)
-        IRC_Announce_PlayerChat(source, msgin);
-
 	/*
 	 * using bprint solves this... me stupid
 	// how can we prevent the message from appearing in a listen server?
@@ -1432,8 +1429,10 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			teamsay = -1; // spectators
 	}
 
-	if(flood)
-		print("NOTE: ", playername(source), "^7 is flooding.\n");
+    if(flood)
+        print("NOTE: ", playername(source), "^7 is flooding.\n");
+    else if(!teamsay && !privatesay)
+        IRC_Announce_PlayerChat(source, msgin);
 
 	// build sourcemsgstr by cutting off a prefix and replacing it by the other one
 	if(privatesay)
