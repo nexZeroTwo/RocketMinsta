@@ -122,8 +122,8 @@ void HG_Napalm_Think()
 {
     if(self.hg_adept) {
         if(!self.hg_remote_firesource || wasfreed(self.hg_remote_firesource)) {
-            remove(self);
-            return;
+            self.hg_adept = FALSE;
+            self.pushltime = time + GRENVAR(self.hg_type, "adept_fire_extra_lifetime");
         }
     } else if(time > self.pushltime) {
         remove(self);
