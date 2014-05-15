@@ -653,9 +653,11 @@ void HG_DetonateAll(entity plr) {
     
     for(;(nade = find(nade, classname, "hg_grenade"));)
         if(nade.owner == plr) {
-            if(nade.hg_type == HG_TRANSLOC)
-                nade.owner.hg_transloc_last = nade;
+            // if(nade.hg_type == HG_TRANSLOC)
+            //    nade.owner.hg_transloc_last = nade;
             HG_Detonate(nade);
+            if(nade.hg_type == HG_TRANSLOC)
+                break;
         }
 }
 
@@ -665,6 +667,9 @@ void HG_Grenade_Remote_Waypoint_Update(string wpname) {
         if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
+        } else if(self.hg_type == HG_TRANSLOC) {
+            WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
+            WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_deathtime);
         }
     } else {
         WaypointSprite_UpdateSprites(self.hg_waypoint, wpname, "", "");
@@ -680,9 +685,9 @@ void HG_Grenade_Waypoint() {
         return;
     
     if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
-        rng = max(0, GRENVAR(self.hg_type, "adept_detect_enemies"));
+        rng = GRENVAR(self.hg_type, "adept_detect_enemies");
     else
-        rng = max(0, GRENVAR(self.hg_type, "detect_enemies"));
+        rng = GRENVAR(self.hg_type, "detect_enemies");
     
     if(!rng) {
         if(self.hg_waypoint)
@@ -690,7 +695,7 @@ void HG_Grenade_Waypoint() {
         return;
     }
     
-    FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
+    if(rng > 0) FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
         if(vlen(self.origin - plr.origin) < rng)
         if(checkpvs(self.origin, plr)) {
             detected = TRUE;
@@ -763,11 +768,19 @@ void HG_Grenade_Think() {
     
     if(self.hg_detonable && self.hg_detonatetime) {
         if(time >= self.hg_detonatetime) {
-            if(self.hg_type != HG_TRANSLOC || self == self.owner.hg_transloc_last)
+            /*
+            if(self.hg_type == HG_TRANSLOC) {
+                if(self == self.owner.hg_transloc_last) {
+                    self.use();
+                    return;
+                } else
+                    self.hg_detonatetime = 0;
+            } else
+            */
+            {
                 self.use();
-            else
-                HG_Grenade_Remove();
-            return;
+                return;
+            }
         } else if(time >= self.hg_nextsnd) {
             spamsound(self, CHAN_PROJECTILE, "weapons/rm_nadebeep.wav", VOL_BASE * 0.5, ATTN_NORM * 2);
             self.hg_sndcount += 1;
