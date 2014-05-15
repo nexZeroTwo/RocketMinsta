@@ -802,11 +802,10 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
         return;
     self.health = self.health - damage;
     if(self.health <= 0) {
-        if(attacker.classname == "player") {
-            HG_Grenade_ChangeOwner(attacker);
-        }
-        if(self.hg_type == HG_TRANSLOC)
+        if(self.hg_type == HG_TRANSLOC && self.hg_adept)
             self.hg_adept = 0;
+        else if(attacker.classname == "player")
+            HG_Grenade_ChangeOwner(attacker);
         self.hg_deathtime = time;
     }
 }
