@@ -651,14 +651,21 @@ void HG_DetonateAll(entity plr) {
     
     sound(plr, CHAN_WEAPON2, "weapons/rocket_mode.wav", VOL_BASE, ATTN_NORM);
     
+    entity tl;
     for(;(nade = find(nade, classname, "hg_grenade"));)
         if(nade.owner == plr) {
             // if(nade.hg_type == HG_TRANSLOC)
             //    nade.owner.hg_transloc_last = nade;
-            HG_Detonate(nade);
-            if(nade.hg_type == HG_TRANSLOC)
-                break;
+            
+            if(nade.hg_type == HG_TRANSLOC) {
+                if(!tl || nade.hg_nadesused < tl.hg_nadesused)
+                    tl = nade;
+            } else
+                HG_Detonate(nade);
         }
+    
+    if(tl)
+        HG_Detonate(tl);
 }
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
@@ -1276,6 +1283,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     gren.angles = vectoangles(gren.velocity);
     gren.flags = FL_PROJECTILE;
+    gren.hg_nadesused = self.hg_nadesused;
     
     CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
