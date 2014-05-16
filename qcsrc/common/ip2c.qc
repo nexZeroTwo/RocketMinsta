@@ -56,6 +56,7 @@ void IP2C_CacheIP(string ip, string cn) {
 
 void IP2C_RequestTimeout(void) {
     IP2C_Log(strcat("Request for ", self.ip2c_callbackip, " timed out after ", ftos(time - self.ip2c_requested_at), " seconds"));
+    self.ip2c_callbackfunction(self.ip2c_callbackip, "", self.ip2c_callbackentity);
     IP2C_FreeCallbackEntity(self);
 }
 
@@ -76,35 +77,37 @@ void IP2C_CheckTimedOut(void) {
 }
 #endif
 
-void IP2C_AddCallback(string ip, ip2c_callback_t callback, entity callbackentity) {
+void IP2C_AddCallback(string ip, ip2c_callback_t callback, float timeout, entity callbackentity) {
+    if(timeout <= 0)
+        timeout = cvar("sv_ip2country_timeout");
+    
     entity cb = spawn();
     cb.classname = "ip2c_callbackprovider";
     cb.ip2c_callbackip = strzone(ip);
     cb.ip2c_callbackentity = callbackentity;
     cb.ip2c_callbackfunction = callback;
     cb.think = IP2C_RequestTimeout;
-    cb.nextthink = time + cvar("sv_ip2country_timeout");
+    cb.nextthink = time + timeout;
     cb.ip2c_requested_at = time;
 }
 
 void IP2C_ExecCallbacks(string ip, string cn) {
     entity e;
     for(e = world; (e = find(e, classname, "ip2c_callbackprovider")); )
-    if(e.ip2c_callbackip == ip)
-    {
+    if(e.ip2c_callbackip == ip) {
         e.ip2c_callbackfunction(ip, cn, e.ip2c_callbackentity);
         IP2C_FreeCallbackEntity(e);
     }
 }
 
-void IP2C_Lookup(string ip, ip2c_callback_t callback, entity callbackentity) {
+void IP2C_Lookup(string ip, ip2c_callback_t callback, float timeout, entity callbackentity) {
     if(!cvar("sv_ip2country"))
         return;
 
     string res;
     res = IP2C_LookupCached(ip);
     
-    IP2C_AddCallback(ip, callback, callbackentity);
+    IP2C_AddCallback(ip, callback, timeout, callbackentity);
     
     if(res != "") {
         IP2C_ExecCallbacks(ip, res);
@@ -134,6 +137,7 @@ void IP2C_URI_Get_Callback(float id, float status, string data) {
     
     if(cn == "--") {
         IP2C_Log(strcat("The remote server failed to resolve ", ip));
+        IP2C_ExecCallbacks(ip, "");
         return;
     }
     
@@ -142,7 +146,8 @@ void IP2C_URI_Get_Callback(float id, float status, string data) {
 }
 
 void IP2C_Callback_DumpToConsole(string ip, string cn, entity e) {
-    IP2C_Log(strcat("Country for IP ", ip, ": ", cn));
+    if(cn != "")
+        IP2C_Log(strcat("Country for IP ", ip, ": ", cn));
 }
 
 void IP2C_PrintRequests(void) {
@@ -164,7 +169,7 @@ float IP2C_GameCommand(string command) {
             return TRUE;
         
         case "ip2c_lookup":
-            IP2C_Lookup(argv(1), IP2C_Callback_DumpToConsole, world);
+            IP2C_Lookup(argv(1), IP2C_Callback_DumpToConsole, 0, world);
             return TRUE;
             
         case "ip2c_status":
