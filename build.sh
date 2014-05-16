@@ -128,16 +128,21 @@ function buildall
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
+    mv -v progs.lno "${SVPROGS%%dat}lno"
 
     buildqc client/
     mv -v csprogs.dat "$CSPROGS"
+    mv -v csprogs.lno "${CSPROGS%%dat}lno"
 
     buildqc menu/
     mv -v menu.dat "menu.pk3dir/menu.dat"
+    mv -v menu.lno "menu.pk3dir/menu.lno"
     makedata menu "$1" "$2"
     rm -v "menu.pk3dir"/*.dat
 
     rm -v "$QCSOURCE"/common/rm_auto.qh
+    
+    mv -v --target-directory="${BUILDDIR}" *.lno *.log
 }
 
 function tocompress
