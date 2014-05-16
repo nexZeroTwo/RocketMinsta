@@ -2,11 +2,13 @@
 
 use strict;
 use warnings;
+use File::Basename;
+my $dirname = "${\dirname(__FILE__)}/../..";
 
 my $out = "";
 my %found;
 
-open my $fh, '<', 'gfx.pk3dir/effectinfo.txt';
+open my $fh, '<', "$dirname/gfx.pk3dir/effectinfo.txt";
 while(<$fh>)
 {
 	chomp;
@@ -36,7 +38,7 @@ while(<$fh>)
 					: "\"$search\"|\\<" . lc($search) . "\\>|\\<" . $search . "\\>|"
 					. "\"$search2\"|\\<" . lc($search2) . "\\>|\\<" . $search2 . "\\>";
 			print "$ENV{effectre}\n";
-			my $occurrences = `grep -E "\$effectre" qcsrc/server/*.qc qcsrc/client/*.qc`;
+			my $occurrences = `grep -E "\$effectre" $dirname/qcsrc/server/*.qc $dirname/qcsrc/client/*.qc`;
 			$occurrences =~ s/\r/\n/g;
 			$occurrences =~ s/;//g;
 			my $found = 0;
@@ -60,6 +62,6 @@ while(<$fh>)
 }
 close $fh;
 
-open $fh, '>', 'gfx.pk3dir/effectinfo.txt';
+open $fh, '>', "$dirname/gfx.pk3dir/effectinfo.txt";
 print $fh $out;
 close $fh;
