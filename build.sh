@@ -8,6 +8,7 @@ RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
 BUILD_DATE_PLAIN="$(date +%y%m%d%H%M%S)"
 BRANCH="`git symbolic-ref HEAD 2>/dev/null | sed -e 's@^refs/heads/@@'`"
+COMMIT="$(git show 2>/dev/null | head -n 1 | sed -e 's/commit //' | head -c 8)"
 VERSION="$(rm-version)"
 BUILT_PACKAGES=""
 BUILT_PKGINFOS=""
@@ -118,6 +119,7 @@ function buildall
     echo "#define RM_BUILD_VERSION \"$VERSION\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
+    echo "#define RM_BUILD_COMMIT \"$COMMIT\""        >> "$QCSOURCE"/common/rm_auto.qh
     
 	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
 	for i in $BUILT_PKGNAMES; do

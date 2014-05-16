@@ -303,6 +303,7 @@ string sv_hostname;
 string sv_rm_build;
 string sv_rm_version;
 string sv_rm_date;
+string sv_rm_commit;
 string sv_motd;
 
 float sv_showspecs_extra;
