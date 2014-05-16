@@ -273,8 +273,26 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             IRC_SendRaw(handle, cvar_string("sv_ircbot_connectcommand"));
     } else if(event == "CHANNEL") {
         if(cvar("sv_ircbot_chat_irc2game"))
-        if(strtolower(argv(0)) == irc.target)
-            bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", IRC_IRC2DP(argv(1)), "\n");
+        if(strtolower(argv(0)) == irc.target) {
+            string msg = IRC_IRC2DP(argv(1));
+            
+            if(cvar("sv_ircbot_chat_irc2game_require_highlight")) {
+                string mynick = IRC_CurrentNick(handle);
+                float nl = strlen(mynick);
+                float ml = strlen(msg);
+                
+                if(substring(msg, 0, nl + 1) == strcat(mynick, " "))
+                    msg = substring(msg, nl + 1, ml);
+                else if(substring(msg, 0, nl + 2) == strcat(mynick, ": ") ||
+                        substring(msg, 0, nl + 2) == strcat(mynick, ", "))
+                    msg = substring(msg, nl + 2, ml);
+                else
+                    msg = "";
+            }
+            
+            if(msg != "")
+                bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", msg, "\n");
+        }
     } else if(event == "PRIVMSG" || event == "NOTICE") {
         string cmd = argv(1);
         if(argv(0) == IRC_CurrentNick(handle)) {
