@@ -349,9 +349,6 @@ void IRC_Announce_PlayerChat(entity plr, string msg) { if(!irc) return;
 }
 
 void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {
-    if(!cvar("sv_ircbot_announce_joinparts"))
-        return;
-    
     entity plr = ctx.owner;
     string msg;
     
@@ -374,6 +371,9 @@ void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {
 }
 
 void IRC_Announce_Client(entity plr, float ispart) {
+    if(!cvar("sv_ircbot_announce_joinparts"))
+        return;
+    
     entity ctx = spawn();
     ctx.cnt = ispart;
     ctx.owner = plr;
