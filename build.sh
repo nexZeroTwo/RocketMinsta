@@ -383,15 +383,16 @@ function listcustom
 {
     find "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
         scfg="${cfg##*/}"
-        echo -e "\t\t$scfg -- $(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
+        scfg="${scfg%%.cfg}"
+        echo -n "            $scfg "
+        for ((i=$(echo -n "$scfg" | wc -c); i <= 15; ++i)); do echo -n " "; done
+        echo "$(head -1 "$cfg" | sed -e 's@//cfgname:@@')"
     done
 }
 
 function finalize-install
 {
-    cp -v "rocketminsta.cfg" "${BUILDDIR}/"
-    cp -v "rocketminsta-gameplay.cfg" "${BUILDDIR}/"
-    cp -v "rocketminsta-compat.cfg" "${BUILDDIR}/"
+    cp -vr modfiles/* "${BUILDDIR}/"
 
     cat <<EOF >>"${BUILDDIR}/rocketminsta.cfg"
 rm_clearpkgs
@@ -406,11 +407,6 @@ EOF
 set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
 set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 EOF
-
-    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        mkdir -pv "${BUILDDIR}/rm-custom"
-        cp -rv rm-custom/* "${BUILDDIR}/rm-custom"
-    fi
 }
 
 function configtest
@@ -524,7 +520,7 @@ if [ "$1" = "release" ]; then
             RELEASE_REALSUFFIX="-cfg$RELEASE_DEFAULTCFG"
         fi
         
-        [ -e "rm-custom/$RELEASE_DEFAULTCFG.cfg" ] || error "Default configuration '$RELEASE_DEFAULTCFG.cfg' does not exist in rm-custom"
+        [ -e "modfiles/rm-custom/$RELEASE_DEFAULTCFG.cfg" ] || error "Default configuration '$RELEASE_DEFAULTCFG.cfg' does not exist in rm-custom"
     fi
     
     PKGNAME="RocketMinsta${RELEASE_REALSUFFIX}"
@@ -548,7 +544,7 @@ if [ "$1" = "release" ]; then
     finalize-install    
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
-        cat "rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "${BUILDDIR}/rocketminsta-gameplay.cfg"
+        cat "modfiles/rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "${BUILDDIR}/rocketminsta-gameplay.cfg"
         sed -i '/exec "$rm_gameplay_config"/d' "${BUILDDIR}/rocketminsta-gameplay.cfg" # Without this, a recursive include will occur
     fi
     
@@ -562,30 +558,23 @@ This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DAT
     2) Edit your server config and add the following line at very top:
         
         exec rocketminsta.cfg
-EOF
-
-    if [ $RELEASE_RMCUSTOM -eq 1 ]; then
-        cat <<EOF >> "${BUILDDIR}/README.rmrelease"
         
         If you'd like to use one of the custom configurations,
         add the following at the bottom of your config:
         
-            rmcustom NAME_OF_CUSTOM_CONFIG.cfg
+            rmcustom NAME_OF_CUSTOM_CONFIG
         
-        The following configurations were included at build time: `ls rm-custom/*.cfg | while read line; do line=${line##rm-custom/}; echo -n "$line "; done`
-EOF
-    fi
-
-    cat <<EOF >> "${BUILDDIR}/README.rmrelease"
+        The following configurations were included at build time: 
+$(listcustom)
     3) MAKE SURE that the following packages can be autodownloaded by clients:
-        $BUILT_PACKAGES
+$(for i in $BUILT_PACKAGES; do
+    echo "        $i"
+done)
         
         This package contains all of them
     4) Start the server and enjoy.
-EOF
-
-    cat <<EOF >> "${BUILDDIR}/README.rmrelease"
-
+    
+    
 RocketMinsta project: http://rocketminsta.net/
 
 EOF
@@ -618,7 +607,6 @@ EOF
     exit
 fi
 
-RELEASE_RMCUSTOM=1
 PREFIX="-$BRANCH"
 [ $PREFIX = "-master" ] && PREFIX=""
 
@@ -654,7 +642,7 @@ $(listcustom)
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
         
-        rmcustom NAME_OF_CUSTOM_CONFIG.cfg
+        rmcustom NAME_OF_CUSTOM_CONFIG
         
     In addition, these packages MUST be available on your download server:
 $(for i in $BUILT_PACKAGES;
