@@ -157,7 +157,7 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " ", RM_BUILD_DATE));
+	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");
@@ -2022,11 +2022,12 @@ void Net_Camera() {
 }
 
 void Net_ServerInfo() {
-	sv_hostname = strzone(ReadString());
-	sv_rm_build = strzone(ReadString());
-	sv_rm_version = strzone(ReadString());
-	sv_rm_date = strzone(ReadString());
-	sv_motd = strzone(ReadString());
+    sv_hostname = strzone(ReadString());
+    sv_rm_build = strzone(ReadString());
+    sv_rm_version = strzone(ReadString());
+    sv_rm_date = strzone(ReadString());
+    sv_rm_commit = strzone(ReadString());
+    sv_motd = strzone(ReadString());
 }
 
 void Net_Heal() {

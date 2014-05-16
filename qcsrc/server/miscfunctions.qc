@@ -3456,6 +3456,7 @@ void SendServerInfo(entity player) {
 	WriteString(MSG_ONE, RM_BUILD_NAME);
 	WriteString(MSG_ONE, RM_BUILD_VERSION);
 	WriteString(MSG_ONE, RM_BUILD_DATE);
+	WriteString(MSG_ONE, RM_BUILD_COMMIT);
 	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
 }
 

@@ -8,7 +8,7 @@ void Ban_KickBanClient(entity client, float bantime, float masksize, string reas
 float Ban_Delete(float i);
 float Ban_Insert(string ip, float bantime, string reason, float dosync);
 
-#define BAN_MAX 64
+#define BAN_MAX 256
 float ban_loaded;
 string ban_ip[BAN_MAX];
 string ban_reason[BAN_MAX];

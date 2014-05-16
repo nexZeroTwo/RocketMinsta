@@ -154,12 +154,7 @@ void HG_Napalm_Middlefire_Think() {
 
 void HG_Napalm_Projectile_Touch()
 {
-	PROJECTILE_TOUCH;
-	if(other.takedamage == DAMAGE_AIM)
-	if(Fire_AddDamage(other, self.realowner, GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type) >= 0) {
-		remove(self);
-		return;
-	}
+    PROJECTILE_TOUCH;
 }
 
 void HG_Napalm()
@@ -272,11 +267,7 @@ void HG_Plasma_Projectile_Think() {
 void HG_Plasma_Projectile_Touch()
 {
     PROJECTILE_TOUCH;
-	if (other.takedamage == DAMAGE_AIM) {
-		HG_Plasma_Projectile_Explode();
-	} else {
-		spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
-	}
+    spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 }
 
 void HG_Plasma_Projectile() {
