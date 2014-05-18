@@ -430,6 +430,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         if(Freeze_CVar("iceblocks_teamcolored"))
             self.iceblock.skin = TeamColorSkin(self.team);
         self.iceblock.team = self.team;
+        WaypointSprite_Disown(self.freeze_waypoint, 0.5);
     }
     
     if(!self.freeze_waypoint) {

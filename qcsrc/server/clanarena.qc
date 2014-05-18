@@ -36,6 +36,8 @@ void CA_Initialize(void) {
     entity ca = spawn();
     ca.think = CA_Frame;
     ca.nextthink = time;
+    
+    sv_nicehealth = cvar("g_clanarena_start_health") + cvar("g_clanarena_start_armor");
 }
 
 float CA_AliveCheck(entity plr) {
