@@ -602,6 +602,8 @@ void spawnfunc_worldspawn (void)
 
 	precache_model ("null"); // we need this one before InitGameplayMode
     
+    sv_nicehealth = cvar("sv_nicehealth");
+    
     MapInfo_Enumerate();
     registercvar("_sv_rm_nextgametype", "");
     s = cvar_string("_sv_rm_nextgametype");

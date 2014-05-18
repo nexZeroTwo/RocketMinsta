@@ -1441,6 +1441,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
+    WriteShort(MSG_ENTITY, sv_nicehealth);
 	return TRUE;
 }
 

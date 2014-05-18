@@ -4380,8 +4380,7 @@ void Sbar_Draw(void)
 			}
 
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
-            float hlimit = 200;
-            vhealth += (min(mxdmg_x + 1, hlimit) - vhealth) * frametime * 10;
+            vhealth += (min(mxdmg_x + 1, sv_nicehealth) - vhealth) * frametime * 10;
 
 			if(rm_althud)	/// RM hud layout
 			{
@@ -4414,7 +4413,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
                 
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
@@ -4670,7 +4669,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);

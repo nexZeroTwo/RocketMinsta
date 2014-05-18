@@ -1761,6 +1761,7 @@ void Ent_Init()
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
+    sv_nicehealth = ReadShort();
 
 	if(!postinit)
 		PostInit();

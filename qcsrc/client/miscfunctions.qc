@@ -471,6 +471,8 @@ vector healthcolor(float x) {
     vector c;
     c_z = 0;
     
+    x = 200 * (x / sv_nicehealth);
+    
     if(x > 200) {
         c_x = 0;
         c_y = 1;
