@@ -476,8 +476,8 @@ void spawnfunc_worldspawn (void)
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
-	
-	RM_CvarCompat();
+
+    RM_CvarCompat();
     sv_damagestats = cvar("sv_damagestats");
 
 	
@@ -491,8 +491,7 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_jailbreak", "0");
     registercvar("g_clanarena", "0");
 	registercvar("g_no", "0");
-	
-	
+    
 /*
  - now unused
     registercvar("_sv_rm_lastgametype", "");
@@ -602,6 +601,14 @@ void spawnfunc_worldspawn (void)
 	Map_MarkAsRecent(mapname);
 
 	precache_model ("null"); // we need this one before InitGameplayMode
+    
+    MapInfo_Enumerate();
+    registercvar("_sv_rm_nextgametype", "");
+    s = cvar_string("_sv_rm_nextgametype");
+    if(s != "")
+        GameCommand(strcat("gametype ", s));
+    cvar_set("_sv_rm_nextgametype", "");
+    
 	InitGameplayMode();
 	readlevelcvars();
 	GrappleHookInit();
@@ -671,7 +678,6 @@ void spawnfunc_worldspawn (void)
 
 	Ban_LoadBans();
 
-	MapInfo_Enumerate();
 	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 
 	if(whichpack(strcat("maps/", mapname, ".cfg")) != "")
@@ -1223,10 +1229,7 @@ void IntermissionThink()
 	if(!mapvote_initialized)
 		if (time < intermission_exittime + 10 && !self.BUTTON_ATCK && !self.BUTTON_JUMP && !self.BUTTON_ATCK2 && !self.BUTTON_HOOK && !self.BUTTON_USE)
 			return;
-
-    if(nextgametype != "")
-        GameCommand(strcat("gametype ", nextgametype));
-
+            
 	MapVote_Start();
 };
 
@@ -2251,24 +2254,7 @@ float DoNextMapOverride()
 	if(cvar_string("nextmap") != "")
 		if(MapInfo_CheckMap(cvar_string("nextmap")))
 		{
-			if(gametypevote)
-				return FALSE;
-			
 			Map_Goto_SetStr(cvar_string("nextmap"));
-			
-			if(mapvote_initialized)
-			{
-				if(cvar("sv_vote_gametype")) if(cvar("sv_vote_gametype_overplayed_strict"))
-				{
-					if(GameTypeVote_AvailabilityStatus(gametype_ID_to_Name(gametypetoset)) != GTV_AVAILABLE)
-					{
-						choosenmap = strzone(cvar_string("nextmap"));
-						//GameTypeVote_Start();
-						return FALSE;
-					}
-				}
-			}
-			
 			alreadychangedlevel = TRUE;
 			Map_Goto();
 			return TRUE;
