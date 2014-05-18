@@ -56,6 +56,7 @@ domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
 irc.qh
+joinqueue.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -127,6 +128,7 @@ cl_client.qc
 t_plats.qc
 antilag.qc
 irc.qc
+joinqueue.qc
 
 ctf.qc
 domination.qc
