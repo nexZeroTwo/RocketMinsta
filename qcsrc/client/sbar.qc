@@ -306,11 +306,19 @@ float Sbar_ComparePlayerScores(entity left, entity right)
 	
 	if(vl == COLOR_SPECTATOR)
 	{
-		// FIRST the one with scores (spectators), THEN the ones without (downloaders)
+		// FIRST queued, THEN the one with scores (spectators), THEN the ones without (downloaders)
 		// no other sorting
-		if(!left.gotscores && right.gotscores)
-			return true;
-		return false;
+        
+        if(!left.gotscores && right.gotscores)
+            return true;
+        
+        vl = left.(scores[SP_QUEUE]);
+        vr = right.(scores[SP_QUEUE]);
+        
+        if(vl > vr && vl)
+            return true;
+        
+        return false;
 	}
 
 	vl = left.scores[ps_primary];
@@ -1375,15 +1383,32 @@ void Sbar_DrawScoreboard()
 		}
 	}
 
+	float specs;
+	specs = 0;
+    
+    tmp = pos + '0 1.5 0' * sbar_fontsize_y;
+	pos_y += 3 * sbar_fontsize_y;
+
+	// List queued
+	for(pl = players.sort_next; pl; pl = pl.sort_next)
+	{
+		if(pl.team != COLOR_SPECTATOR || !pl.(scores[SP_QUEUE]))
+			continue;
+		Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), specs);
+		pos_y += 1.25 * sbar_fontsize_y;
+		++specs;
+	}
+
+	if(specs)
+		drawstring(tmp, "Queued", sbar_fontsize, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+    
 	tmp = pos + '0 1.5 0' * sbar_fontsize_y;
 	pos_y += 3 * sbar_fontsize_y;
 
 	// List spectators
-	float specs;
-	specs = 0;
 	for(pl = players.sort_next; pl; pl = pl.sort_next)
 	{
-		if(pl.team != COLOR_SPECTATOR)
+		if(pl.team != COLOR_SPECTATOR || pl.(scores[SP_QUEUE]))
 			continue;
 		Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), specs);
 		pos_y += 1.25 * sbar_fontsize_y;
@@ -5280,7 +5305,16 @@ void Sbar_Draw(void)
 		}
 	}
 	#endif
-
+    
+    if(getstati(STAT_QUEUE)) {
+        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
+        o = Sbar_DrawNoteLine(o, s);
+        s = "^1You will automatically join the game when there's a free slot";
+        o = Sbar_DrawNoteLine(o, s);
+        s = strcat("^1Press ^3", getcommandkey("spectate", "spec"), " ^1to leave the queue");
+        o = Sbar_DrawNoteLine(o, s);
+    }
+    
 	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)

@@ -284,6 +284,8 @@ const float ROUNDSTATE_GAME = 1;
 const float ROUNDSTATE_OVER = 2;
 const float ROUNDSTATE_WARMUP = 3;
 
+const float STAT_QUEUE = 52;
+
 const float STAT_SPIDERBOT_HEALTH  = 60;
 const float STAT_SPIDERBOT_ROCKETS = 61;
 const float STAT_SPIDERBOT_HEAT    = 62;
@@ -377,7 +379,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 23
+#define MAX_SCORE 24
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -399,6 +401,7 @@ const float JBMSG_TOOLATE = 5;
 #define SP_REVIVALS 20
 #define SP_DAMAGE 21
 #define SP_HEALING 22
+#define SP_QUEUE 23
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
