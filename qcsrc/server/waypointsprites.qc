@@ -57,6 +57,9 @@ void WaypointSprite_UpdateHealth(entity e, float f)
 
 void WaypointSprite_UpdateMaxHealth(entity e, float f)
 {
+    if(!f)
+        f = -1;
+    
 	if(f != e.max_health || e.pain_finished)
 	{
 		e.max_health = f;
@@ -264,9 +267,9 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 
 	if(sendflags & 0x80)
 	{
-		if(self.max_health)
+		if(self.max_health > 0)
 		{
-			WriteByte(MSG_ENTITY, (self.health / self.max_health) * 191.0);
+            WriteByte(MSG_ENTITY, (self.health / self.max_health) * 191.0);
 		}
 		else
 		{
