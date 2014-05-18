@@ -12,7 +12,7 @@ void Draw_ShowNames()
     if(!autocvar_hud_shownames)
         return;
 
-    local float oldfont;
+    float oldfont;
     oldfont = drawfont;
     
     self.iorigin = self.iorigin + (self.origin - self.iorigin) * frametime * 15;
@@ -141,7 +141,7 @@ void Draw_ShowNames()
 
             if (width != namesize)
                 namepos_x += (namesize - width) / 2;
-                
+            
             float nade;
             if(g_handgrenades)
                 nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
@@ -154,8 +154,15 @@ void Draw_ShowNames()
                 if(dmg_x) {
                     self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
                     drawfont = GetBigfont();
-                    s2 = ftos(dmg_x); // strcat(ftos(self.healthvalue), " / ", ftos(self.armorvalue));
-                    drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, healthcolor(dmg_x), a * 0.7, DRAWFLAG_NORMAL);
+                    vector clr;
+                    if(playerslots[self.the_entnum-1].(scores[SP_FROZENSTATUS])) {
+                        s2 = "Frozen!";
+                        clr = '0.2 1 1';
+                    } else {
+                        s2 = ftos(dmg_x); // strcat(ftos(self.healthvalue), " / ", ftos(self.armorvalue));
+                        clr = healthcolor(dmg_x);
+                    }
+                    drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, clr, a * 0.7, DRAWFLAG_NORMAL);
                     drawfont = sbar_font;
                 }
             }            
@@ -174,6 +181,8 @@ void Draw_ShowNames()
             
             drawfont = oldfont;
             //drawfontscale = '1 1 0';
+            
+            playerslots[self.the_entnum-1].sn_lastdraw = time;
         }
     }
 }
