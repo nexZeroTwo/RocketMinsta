@@ -54,11 +54,14 @@ void JoinQ_Remove(entity plr) {
     if(plr.jq_next)
         plr.jq_next.jq_prev = plr.jq_prev;
     
+    if(plr.joinqueue)
+        bprint("^4", plr.netname, "^4 has been removed from the join queue\n");
+    
     plr.jq_next = plr.jq_prev = world;
     plr.joinqueue = 0;
-    PlayerScore_Set(plr, SP_QUEUE, 0);
-    
-    bprint("^4", plr.netname, "^4 has been removed from the join queue\n");
+
+    if(plr.scorekeeper)
+        PlayerScore_Set(plr, SP_QUEUE, 0);
     
     JoinQ_Fix();
 }
