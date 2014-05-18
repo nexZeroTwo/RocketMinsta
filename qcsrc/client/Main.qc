@@ -516,9 +516,11 @@ void PostInit(void)
             // fight evil with evil
             if(cvar("cl_gunalign") == 3)
                 localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
+        case 39:
+            cvar_set("_rm_hg_optout", "0");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 39\n");
+		localcmd("seta rm_initialized 40\n");
 		RM_OUTDATED
 		break;
 	}
