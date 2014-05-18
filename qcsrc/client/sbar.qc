@@ -1404,6 +1404,7 @@ void Sbar_DrawScoreboard()
     
 	tmp = pos + '0 1.5 0' * sbar_fontsize_y;
 	pos_y += 3 * sbar_fontsize_y;
+    specs = 0;
 
 	// List spectators
 	for(pl = players.sort_next; pl; pl = pl.sort_next)
