@@ -15,11 +15,15 @@ void Draw_ShowNames()
     float oldfont;
     oldfont = drawfont;
     
-    self.iorigin = self.iorigin + (self.origin - self.iorigin) * frametime * 15;
-    
     if(self.sameteam || (!self.sameteam && !rm_shownames_teamonly))
     {
         //InterpolateOrigin_Do();
+        
+        if(self.iorigin == '0 0 0')
+            self.iorigin = self.origin;
+        else
+            self.iorigin = self.iorigin + (self.origin - self.iorigin) * frametime * 15;
+        
 
         if(!self.sameteam)
         {
