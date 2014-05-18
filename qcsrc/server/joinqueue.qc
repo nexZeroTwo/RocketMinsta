@@ -8,6 +8,9 @@ entity JoinQ_Pop(void) {
     if(!jq_first)
         return world;
     
+    if(gameover)
+        return world;
+    
     if(!isJoinAllowed())
         return world;
     

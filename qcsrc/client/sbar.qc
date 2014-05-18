@@ -5307,7 +5307,7 @@ void Sbar_Draw(void)
 	}
 	#endif
     
-    if(getstati(STAT_QUEUE)) {
+    if(getstati(STAT_QUEUE) && !intermission) {
         s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
         o = Sbar_DrawNoteLine(o, s);
         s = "^1You will automatically join the game when there's a free slot";
