@@ -56,6 +56,9 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	// trace multiple times until we hit a wall, each obstacle will be made
 	// non-solid so we can hit the next, while doing this we spawn effects and
 	// note down which entities were hit so we can damage them later
+    
+    float tries;
+    
 	while (1)
 	{
         if(deathtype == DEATH_HG_SHIELD)
@@ -67,9 +70,16 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 		// if it is world we can't hurt it so stop now
 		if (trace_ent == world || trace_fraction == 1) {
-            if(bash)
-                Buffs_BashDamage(self, world, world, bdamage, trace_endpos);
-			break;
+            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents) {
+                if(bash)
+                    Buffs_BashDamage(self, world, world, bdamage, trace_endpos);
+                break;
+            } else {
+                if(++tries == 3)
+                    break;
+                start = trace_endpos;
+                continue;
+            }
         }
 
 		// make the entity non-solid so we can hit the next one
@@ -81,7 +91,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		if (trace_ent.solid == SOLID_BSP) {
             if(bash)
                 Buffs_BashDamage(self, world, world, bdamage, trace_endpos);
-			break;
+            break;
         }
 
 		// make the entity non-solid
@@ -319,9 +329,9 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 
 	if(maxdist <= cvar("g_ballistics_mindistance"))
 		return 0;
-
+    
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
-
+    
 	if not(cvar("g_ballistics_gothroughsolid"))
 	if not(trace_ent)
 		return 0;
@@ -365,7 +375,7 @@ void W_BallisticBullet_Touch (void)
 {
 	if(self.think == W_BallisticBullet_LeaveSolid_think) // skip this!
 		return;
-
+    
 	PROJECTILE_TOUCH;
 	W_BallisticBullet_Hit ();
 
@@ -415,9 +425,10 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.dmg_edge = headshotbonus;
 	proj.dmg_force = force;
 	proj.projectiledeathtype = dtype;
-
+    
 	proj.oldvelocity = proj.velocity;
-
+    PROJECTILE_FIX(proj)
+    
 	//calculate fired bullets for ballistics
 	if not(inWarmupStage)
 	if not(self.isbot)
