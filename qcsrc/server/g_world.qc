@@ -761,7 +761,7 @@ void spawnfunc_worldspawn (void)
 			if not(MapInfo_Map_flags & (MAPINFO_FLAG_HIDDEN | MAPINFO_FLAG_FORBIDDEN))
             if(ListContains(cvar_string("g_maplist"), MapInfo_Map_bspname, " "))
 			{
-				if(mod(i, 2))
+				if(mod(j, 2))
 					col = "^2";
 				else
 					col = "^3";
