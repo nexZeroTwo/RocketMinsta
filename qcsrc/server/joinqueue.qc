@@ -40,10 +40,8 @@ void JoinQ_Push(entity plr) {
 }
 
 void JoinQ_Remove(entity plr) {
-    if(plr == jq_first) {
+    if(plr == jq_first)
         jq_first = jq_first.jq_next;
-        jq_first.jq_prev = world;
-    }
     
     if(plr == jq_last)
         jq_last = plr.jq_prev;
