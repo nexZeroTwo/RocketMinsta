@@ -551,7 +551,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     else
         org = hitloc;
     
-    org = org + targ.maxs_z * '0 0 1.5';
+    org = org + min(45, targ.maxs_z) * '0 0 1.5';
     
     FOR_EACH_REALCLIENT(e)
         if(((found && e       == attacker) || e       == targ) ||

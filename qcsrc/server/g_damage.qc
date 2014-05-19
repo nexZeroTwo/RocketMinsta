@@ -1629,6 +1629,15 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                         e.dom_captureprogress = bound(0, e.dom_captureprogress - cvar("g_domination_capture_damage_pushback"), 1);
             }
         }
+        
+        if(attacker_is_player)
+        if(!targ_is_player)
+        if(t_oldarmor > targ.armorvalue || t_oldhealth > targ.health) {
+            float dtype = VDMG_TYPE_HIT | VDMG_TYPE_NOTPLAYERTARGET;
+            if(deathtype & HITTYPE_HEADSHOT)
+                dtype |= VDMG_TYPE_CRIT;
+            VisualDamage(attacker, targ, rint(t_oldhealth - targ.health), rint(t_oldarmor - targ.armorvalue), dtype, hitloc);
+        }
     }
 	self = oldself;
 
