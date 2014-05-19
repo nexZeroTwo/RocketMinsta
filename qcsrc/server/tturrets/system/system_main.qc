@@ -502,6 +502,9 @@ float turret_validate_target(entity e_turret,entity e_target,float validate_flag
 
         if (e_target.deadflag != DEAD_NO || (e_target.frozen && !e_target.revprogress) || e_target.jb_isprisoned)
             return -8;
+        
+        if (e_target.hg_stealthalpha > 0.5)
+            return -8;
     }
 
 	// enemy turrets

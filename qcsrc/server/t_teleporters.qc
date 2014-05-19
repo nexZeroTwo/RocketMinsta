@@ -40,10 +40,10 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 			if(head.takedamage) if(!(g_freeze && head.frozen))
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
-					if((player.classname == "player") && (player.health >= 1)) {
+					if(player.iscreature && (player.health >= 1)) {
 						Damage(head, teleporter, telefragger, damage, deathtype, head.origin, '0 0 0');
                         
-                        if(head.classname == "player")
+                        if(head.iscreature)
                         if(head.deadflag != DEAD_NO || (g_freeze && head.frozen) || (g_jailbreak && head.jb_isprisoned))
                         if(!teams_matter || head.team != player.team)
                             ++tdeath_hit;

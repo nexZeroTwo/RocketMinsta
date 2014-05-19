@@ -1541,7 +1541,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
 
-			if(targ_is_player)
+			if(targ.iscreature)
 			{
 				if(IsDifferentTeam(targ, attacker) || jaildm)
 				{
