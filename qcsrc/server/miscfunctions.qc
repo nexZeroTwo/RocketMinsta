@@ -2238,7 +2238,7 @@ float SUB_NoImpactCheck()
         {
             dprint("Odd... did not hit...?\n");
         }
-        else if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+        else if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) if(self.classname == "grapplinghook")
         {
             dprint("Detected and prevented the sky-grapple bug.\n");
             return 1;
@@ -2251,6 +2251,8 @@ float SUB_NoImpactCheck()
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
+#define PROJECTILE_FIX(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); }
+#define PROJECTILE_FIX2(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
 
 float MAX_IPBAN_URIS = 16;
 

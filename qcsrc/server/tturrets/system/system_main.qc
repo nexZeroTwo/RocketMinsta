@@ -500,7 +500,7 @@ float turret_validate_target(entity e_turret,entity e_target,float validate_flag
         if not (validate_flags & TFL_TARGETSELECT_PLAYERS)
             return -7;
 
-        if (e_target.deadflag != DEAD_NO)
+        if (e_target.deadflag != DEAD_NO || (e_target.frozen && !e_target.revprogress) || e_target.jb_isprisoned)
             return -8;
     }
 

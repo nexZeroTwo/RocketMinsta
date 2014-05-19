@@ -8,6 +8,9 @@ entity JoinQ_Pop(void) {
     if(!jq_first)
         return world;
     
+    if(gameover)
+        return world;
+    
     if(!isJoinAllowed())
         return world;
     
@@ -40,10 +43,8 @@ void JoinQ_Push(entity plr) {
 }
 
 void JoinQ_Remove(entity plr) {
-    if(plr == jq_first) {
+    if(plr == jq_first)
         jq_first = jq_first.jq_next;
-        jq_first.jq_prev = world;
-    }
     
     if(plr == jq_last)
         jq_last = plr.jq_prev;
@@ -54,11 +55,14 @@ void JoinQ_Remove(entity plr) {
     if(plr.jq_next)
         plr.jq_next.jq_prev = plr.jq_prev;
     
+    if(plr.joinqueue)
+        bprint("^4", plr.netname, "^4 has been removed from the join queue\n");
+    
     plr.jq_next = plr.jq_prev = world;
     plr.joinqueue = 0;
-    PlayerScore_Set(plr, SP_QUEUE, 0);
-    
-    bprint("^4", plr.netname, "^4 has been removed from the join queue\n");
+
+    if(plr.scorekeeper)
+        PlayerScore_Set(plr, SP_QUEUE, 0);
     
     JoinQ_Fix();
 }

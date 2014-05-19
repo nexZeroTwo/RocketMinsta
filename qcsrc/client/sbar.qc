@@ -1404,6 +1404,7 @@ void Sbar_DrawScoreboard()
     
 	tmp = pos + '0 1.5 0' * sbar_fontsize_y;
 	pos_y += 3 * sbar_fontsize_y;
+    specs = 0;
 
 	// List spectators
 	for(pl = players.sort_next; pl; pl = pl.sort_next)
@@ -5306,7 +5307,7 @@ void Sbar_Draw(void)
 	}
 	#endif
     
-    if(getstati(STAT_QUEUE)) {
+    if(getstati(STAT_QUEUE) && !intermission) {
         s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
         o = Sbar_DrawNoteLine(o, s);
         s = "^1You will automatically join the game when there's a free slot";

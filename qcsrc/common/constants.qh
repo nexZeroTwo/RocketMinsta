@@ -56,6 +56,7 @@ const float TE_CSQC_DTRACK = 121;
 #define VDMG_TYPE_HEAL 4
 #define VDMG_TYPE_TEAMHIT 8
 #define VDMG_TYPE_TOSELF 16
+#define VDMG_TYPE_NOTPLAYERTARGET 32
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;

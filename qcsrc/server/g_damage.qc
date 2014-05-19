@@ -988,7 +988,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	}
 }
 
-void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype);
+void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc);
 
 .float heal_next_particle;
 
@@ -1000,7 +1000,7 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot) {    
+float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {    
     if(g_clanarena) if(inflictor.classname != "hg_linker") {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
@@ -1016,7 +1016,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float pause
     }
     
     if(heal) {
-        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL);
+        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL, hitloc);
         HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
     }
@@ -1064,7 +1064,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC));
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
-                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"));
+                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 targ.frozen_plasmalock = 0;
@@ -1629,6 +1629,15 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                         e.dom_captureprogress = bound(0, e.dom_captureprogress - cvar("g_domination_capture_damage_pushback"), 1);
             }
         }
+        
+        if(attacker_is_player)
+        if(!targ_is_player)
+        if(t_oldarmor > targ.armorvalue || t_oldhealth > targ.health) {
+            float dtype = VDMG_TYPE_HIT | VDMG_TYPE_NOTPLAYERTARGET;
+            if(deathtype & HITTYPE_HEADSHOT)
+                dtype |= VDMG_TYPE_CRIT;
+            VisualDamage(attacker, targ, rint(t_oldhealth - targ.health), rint(t_oldarmor - targ.armorvalue), dtype, hitloc);
+        }
     }
 	self = oldself;
 
@@ -1641,7 +1650,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		armordamage = max(0, min(t_oldarmor, armordamage));
         
         if(damage || armordamage)
-            VisualDamage(attacker, targ, damage, armordamage, ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT));
+            VisualDamage(attacker, targ, damage, armordamage, ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT), hitloc);
         
 		if(took_extra)
 			armordamage = 100;
