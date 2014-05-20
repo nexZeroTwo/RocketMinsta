@@ -595,7 +595,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
     if(damage) {
         if(g_handgrenades)
-        if(attacker.classname == "player")
+        if(attacker.iscreature)
         if(self.hg_shield) {
             if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
                 vector offs = '0 0 1' * self.maxs_z*0.5;
