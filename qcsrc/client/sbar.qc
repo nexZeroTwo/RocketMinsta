@@ -724,7 +724,8 @@ string Sbar_GetField(entity pl, float field)
                 return "AFK";
             if(GetPlayerColor(pl.sv_entnum) == COLOR_SPECTATOR)
                 return "";
-            return mmss(pl.(scores[field]) * 10);
+            // return mmss(pl.(scores[field]) * 10);
+            return strcat(ftos(floor(pl.(scores[field]) / 60)), "m");
 
 		case SP_PING:
 			if not(pl.gotscores)
