@@ -110,6 +110,8 @@ void Projectile_DrawTrail(vector to)
                 //trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
+            case PROJECTILE_HEAL_PARTICLE_EMITTER:
+                break;
 			default:
 				return;
 		}
@@ -214,6 +216,13 @@ void Projectile_DrawTrail(vector to)
                 vector v = randomvec();
                 v_z = (v_z + 1) * 0.25;
                 pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
+                self.nextparticle = time + 0.15 + random() * 0.15;
+            }
+            break;
+        case PROJECTILE_HEAL_PARTICLE_EMITTER:
+            if(time >= self.nextparticle) {
+                vector v = randomvec();
+                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + v * self.extradata * 0.5, '0 0 0', 1);
                 self.nextparticle = time + 0.15 + random() * 0.15;
             }
             break;
@@ -419,7 +428,8 @@ void Ent_Projectile()
         self.team = ReadByte() - 1;
 
         if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
-           self.cnt == PROJECTILE_ELECTRO)
+           self.cnt == PROJECTILE_ELECTRO ||
+           self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER)
             self.extradata = ReadByte();
 
 		self.silent = (self.cnt & 0x80);
@@ -462,7 +472,7 @@ void Ent_Projectile()
 			case PROJECTILE_HAGAR_BOUNCING: setmodel(self, "models/hagarmissile.mdl"); self.scale = 0.4; break;
 			case PROJECTILE_FIREBALL: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
 			case PROJECTILE_FIREMINE: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
-            case PROJECTILE_HG_NAPALMSHARD: self.model = ""; self.modelindex = 0; break;
+            case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;

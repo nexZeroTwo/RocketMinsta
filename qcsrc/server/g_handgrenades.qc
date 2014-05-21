@@ -118,16 +118,47 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     }
 }
 
-void HG_Napalm_Think()
-{
-	if (time > self.pushltime)
-	{
-		remove(self);
-		return;
-	}
+.entity heal_emitter;
 
-	HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
-	self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
+void HG_Napalm_HealEmitter_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+    
+    UpdateCSQCProjectile(self);
+    self.nextthink = time + 0.5;
+}
+
+void HG_Napalm_Think(void) {
+    if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
+    
+    if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+        if(!self.heal_emitter) {
+            entity e = spawn();
+            e.owner = self;
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = self;
+            e.think = HG_Napalm_HealEmitter_Think;
+            e.nextthink = time;
+            e.velocity = self.velocity;
+            e.csqcprojectile_extradata = self.csqcprojectile_extradata;
+            
+            CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            self.heal_emitter = e;
+        }
+    } else {
+        if(self.heal_emitter) {
+            remove(self.heal_emitter);
+            self.heal_emitter = world;
+        }
+    }
+    
+    HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+    self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
 void HG_Napalm_Middlefire_Think() {
