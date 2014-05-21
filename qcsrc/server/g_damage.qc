@@ -1064,7 +1064,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
         }
         
-        if(BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
+        if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC));
                 if(attacker == targ)
@@ -1078,7 +1078,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     Buffs_ArcDamage_Finalize();
                 }
                 return;
-            } else if(targ.iscreature)
+            } else
                 damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * Buffs_BuffPower(attacker, BUFF_MEDIC));
         }
         
