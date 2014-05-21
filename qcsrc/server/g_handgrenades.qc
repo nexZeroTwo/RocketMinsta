@@ -69,7 +69,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
 {
     entity e, o;
-    float d, df, ismedic;
+    float d, df, ismedic, sameteam;
     vector p;
     
     o = self.owner;
@@ -83,9 +83,10 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
         ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
+        sameteam = !IsDifferentTeam(o, e);
         
         if(!ismedic) {
-            if(!IsDifferentTeam(o, e) && o != e)
+            if(sameteam && o != e)
                 if(!cvar("g_friendlyfire"))
                         continue;
                 
@@ -104,7 +105,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
             if(/* trace_startsolid || */ trace_fraction != 1)
                 continue;
             
-            if(e.frozen) {
+            if(e.frozen && !(ismedic && sameteam)) {
                 e.revprogress = 0;
                 continue;
             }
