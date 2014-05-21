@@ -157,7 +157,7 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = strzone(strcat(RM_BUILD_NAME, " ", RM_BUILD_VERSION, " ", RM_BUILD_DATE));
+	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
 	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");
@@ -516,9 +516,11 @@ void PostInit(void)
             // fight evil with evil
             if(cvar("cl_gunalign") == 3)
                 localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
+        case 39:
+            cvar_set("_rm_hg_optout", "0");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 39\n");
+		localcmd("seta rm_initialized 40\n");
 		RM_OUTDATED
 		break;
 	}
@@ -1759,6 +1761,7 @@ void Ent_Init()
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
+    sv_nicehealth = ReadShort();
 
 	if(!postinit)
 		PostInit();
@@ -2022,11 +2025,12 @@ void Net_Camera() {
 }
 
 void Net_ServerInfo() {
-	sv_hostname = strzone(ReadString());
-	sv_rm_build = strzone(ReadString());
-	sv_rm_version = strzone(ReadString());
-	sv_rm_date = strzone(ReadString());
-	sv_motd = strzone(ReadString());
+    sv_hostname = strzone(ReadString());
+    sv_rm_build = strzone(ReadString());
+    sv_rm_version = strzone(ReadString());
+    sv_rm_date = strzone(ReadString());
+    sv_rm_commit = strzone(ReadString());
+    sv_motd = strzone(ReadString());
 }
 
 void Net_Heal() {

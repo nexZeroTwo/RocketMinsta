@@ -306,11 +306,19 @@ float Sbar_ComparePlayerScores(entity left, entity right)
 	
 	if(vl == COLOR_SPECTATOR)
 	{
-		// FIRST the one with scores (spectators), THEN the ones without (downloaders)
+		// FIRST queued, THEN the one with scores (spectators), THEN the ones without (downloaders)
 		// no other sorting
-		if(!left.gotscores && right.gotscores)
-			return true;
-		return false;
+        
+        if(!left.gotscores && right.gotscores)
+            return true;
+        
+        vl = left.(scores[SP_QUEUE]);
+        vr = right.(scores[SP_QUEUE]);
+        
+        if(vl > vr && vl)
+            return true;
+        
+        return false;
 	}
 
 	vl = left.scores[ps_primary];
@@ -1375,15 +1383,33 @@ void Sbar_DrawScoreboard()
 		}
 	}
 
-	tmp = pos + '0 1.5 0' * sbar_fontsize_y;
-	pos_y += 3 * sbar_fontsize_y;
-
-	// List spectators
 	float specs;
 	specs = 0;
+    
+    tmp = pos + '0 1.5 0' * sbar_fontsize_y;
+	pos_y += 3 * sbar_fontsize_y;
+
+	// List queued
 	for(pl = players.sort_next; pl; pl = pl.sort_next)
 	{
-		if(pl.team != COLOR_SPECTATOR)
+		if(pl.team != COLOR_SPECTATOR || !pl.(scores[SP_QUEUE]))
+			continue;
+		Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), specs);
+		pos_y += 1.25 * sbar_fontsize_y;
+		++specs;
+	}
+
+	if(specs)
+		drawstring(tmp, "Queued", sbar_fontsize, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+    
+	tmp = pos + '0 1.5 0' * sbar_fontsize_y;
+	pos_y += 3 * sbar_fontsize_y;
+    specs = 0;
+
+	// List spectators
+	for(pl = players.sort_next; pl; pl = pl.sort_next)
+	{
+		if(pl.team != COLOR_SPECTATOR || pl.(scores[SP_QUEUE]))
 			continue;
 		Sbar_PrintScoreboardItem(pos, pl, (pl.sv_entnum == player_localentnum - 1), specs);
 		pos_y += 1.25 * sbar_fontsize_y;
@@ -1806,6 +1832,7 @@ void Sbar_Score()
 	}
 }
 
+float timer_alpha;
 void Sbar_Timer()
 {
 	float timelimit, elapsedTime, minutes, seconds, timeleft, minutesLeft, secondsLeft;
@@ -1833,6 +1860,19 @@ void Sbar_Timer()
 	else
 		timer_color = '1 0 0'; //red
 
+    if(timer_color == '1 1 1')
+        timer_alpha = approach(timer_alpha, 0, frametime * 5);
+    else
+        timer_alpha = approach(timer_alpha, 1, frametime * 5);
+
+    float a = max(timer_alpha, sbar_scoreboard_fade_alpha);
+    
+    if(!a)
+        return;
+    
+    topright_x += 100 * (1 - a);
+    topright_y -= 18 * (1 - a);
+    
 	if (cvar("sbar_increment_maptime") || timelimit == 0 || warmup_stage) {
 		if (time < getstatf(STAT_GAMESTARTTIME)) {
 			//while restart is still active, show 00:00
@@ -1848,7 +1888,7 @@ void Sbar_Timer()
 			bgpos_x = topright_x - 72 - 17 - 12;
 		else
 			bgpos_x = topright_x - 90 - 17 - 12;
-		bgpos_y = 0;
+		bgpos_y = topright_y;
 		bgpos_z = 0;
 	} else {
 		minutes = minutesLeft;
@@ -1861,7 +1901,7 @@ void Sbar_Timer()
 			bgpos_x = topright_x - 72 - 17 - 12;
 		else
 			bgpos_x = topright_x - 90 - 17 - 12;
-		bgpos_y = 0;
+		bgpos_y = topright_y;
 		bgpos_z = 0;
 	}
 
@@ -1869,22 +1909,22 @@ void Sbar_Timer()
 	{
 		if (cvar("viewsize") <= 100) { // draw timer background when viewsize <= 100
 			if (teamplay)
-				drawpic(bgpos, "gfx/hud/sb_timerbg", '120 30 0', GetTeamRGB(myteam) * sbar_color_bg_team, sbar_alpha_bg, DRAWFLAG_NORMAL); // timer bg color = myteam color
+				drawpic(bgpos, "gfx/hud/sb_timerbg", '120 30 0', GetTeamRGB(myteam) * sbar_color_bg_team, sbar_alpha_bg * a, DRAWFLAG_NORMAL); // timer bg color = myteam color
 			else {
 				color_x = cvar("sbar_color_bg_r");
 				color_y = cvar("sbar_color_bg_g");
 				color_z = cvar("sbar_color_bg_b");
 
-				drawpic(bgpos, "gfx/hud/sb_timerbg", '120 30 0', color, sbar_alpha_bg, DRAWFLAG_NORMAL);
+				drawpic(bgpos, "gfx/hud/sb_timerbg", '120 30 0', color, sbar_alpha_bg * a, DRAWFLAG_NORMAL);
 			}
 		}
 	}
 
 	if(minutesLeft >= 1 || cvar("sbar_increment_maptime") || timelimit == 0 || warmup_stage) {
-		Sbar_DrawXNum(topright - '1 0 0'*SECWIDTH_NORMAL + '0 2 0', minutes, 3, 0, 18, timer_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-		drawpic(topright - '53 0 0' + '0 1 0', "gfx/hud/num_colon", '18 18 0', timer_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
+		Sbar_DrawXNum(topright - '1 0 0'*SECWIDTH_NORMAL + '0 2 0', minutes, 3, 0, 18, timer_color, 0, 0, sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+		drawpic(topright - '53 0 0' + '0 1 0', "gfx/hud/num_colon", '18 18 0', timer_color, sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 	}
-	Sbar_DrawXNum(topright - '36 0 0' - '3 0 0' + '0 2 0', seconds, -2, 0, 18, timer_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+	Sbar_DrawXNum(topright - '36 0 0' - '3 0 0' + '0 2 0', seconds, -2, 0, 18, timer_color, 0, 0, sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 }
 
 float Sbar_WouldDrawScoreboard() {
@@ -2925,7 +2965,7 @@ void Sbar_ServerInfo() {
 	pos_y += sz_big_y + sz_norm_y * 0.5;
 	drawfont = sbar_font;
 	
-	drawstringcenter(pos, strcat(sv_rm_build, " (", sv_rm_version, ")"), sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
+	drawstringcenter(pos, strcat(sv_rm_build, " (", sv_rm_version, ", ", sv_rm_commit, ")"), sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
 	pos_y += sz_norm_y;
 	drawstringcenter(pos, sv_rm_date, sz_norm, '1 1 1', a, DRAWFLAG_NORMAL);
 	pos_y += sz_norm_y * 1.5;
@@ -4366,8 +4406,7 @@ void Sbar_Draw(void)
 			}
 
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
-            float hlimit = 200;
-            vhealth += (min(mxdmg_x + 1, hlimit) - vhealth) * frametime * 10;
+            vhealth += (min(mxdmg_x + 1, sv_nicehealth) - vhealth) * frametime * 10;
 
 			if(rm_althud)	/// RM hud layout
 			{
@@ -4400,7 +4439,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
                 
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
@@ -4656,7 +4695,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/hlimit, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
@@ -5267,7 +5306,16 @@ void Sbar_Draw(void)
 		}
 	}
 	#endif
-
+    
+    if(getstati(STAT_QUEUE) && !intermission) {
+        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
+        o = Sbar_DrawNoteLine(o, s);
+        s = "^1You will automatically join the game when there's a free slot";
+        o = Sbar_DrawNoteLine(o, s);
+        s = strcat("^1Press ^3", getcommandkey("spectate", "spec"), " ^1to leave the queue");
+        o = Sbar_DrawNoteLine(o, s);
+    }
+    
 	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)

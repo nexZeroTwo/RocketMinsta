@@ -38,6 +38,8 @@ float waypointsprite_distancefadedistance;
 .float topalpha;
 .string toptext;
 .float toptextmode;
+.float frozenid;
+.float frozen_alpha;
 
 vector SPRITE_SIZE = '288 36 0';
 vector SPRITE_HOTSPOT = '144 36 0';
@@ -223,6 +225,16 @@ void Draw_WaypointSprite()
 		a *= pow(bound(0, (self.maxdistance - dist) / (self.maxdistance - waypointsprite_normdistance), 1), waypointsprite_distancealphaexponent);
 	else if(self.maxdistance > 0)
 		a *= pow(bound(0, (waypointsprite_fadedistance - dist) / (waypointsprite_fadedistance - waypointsprite_normdistance), 1), waypointsprite_distancealphaexponent) * (1 - waypointsprite_minalpha) + waypointsprite_minalpha;
+    
+    if(rm_shownames && self.frozenid) {
+        entity p = playerslots[self.frozenid-1];
+        if(time - p.sn_lastdraw > drawframetime * 3) {
+            self.frozen_alpha = approach(self.frozen_alpha, 1, drawframetime * 3);
+        } else {
+            self.frozen_alpha = approach(self.frozen_alpha, 0, drawframetime * 3);
+        }
+        a = a * self.frozen_alpha;
+    }
 
 	if(a <= 0)
 		return;
@@ -232,7 +244,7 @@ void Draw_WaypointSprite()
 	float rot;
 	o = project_3d_to_2d(self.origin);
 	rot = 0;
-
+    
     float maxw = vid_conwidth;
     float maxh = vid_conheight;
     
@@ -483,6 +495,9 @@ void Ent_WaypointSprite()
 		if(self.netname)
 			strunzone(self.netname);
 		self.netname = strzone(ReadString());
+        
+        if(self.netname == "Frozen!")
+            self.frozenid = ReadByte();
 	}
 
 	if(sendflags & 4)

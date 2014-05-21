@@ -524,7 +524,7 @@ float Item_GiveTo(entity item, entity player)
 			}
             
             if(oh != player.health || oa != player.armorvalue)
-                VisualDamage(player, player, rint(player.health - oh), rint(player.armorvalue - oa), VDMG_TYPE_HEAL);
+                VisualDamage(player, player, rint(player.health - oh), rint(player.armorvalue - oa), VDMG_TYPE_HEAL, '0 0 0');
 		}
 	}
 

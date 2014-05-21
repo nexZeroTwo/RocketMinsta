@@ -154,12 +154,7 @@ void HG_Napalm_Middlefire_Think() {
 
 void HG_Napalm_Projectile_Touch()
 {
-	PROJECTILE_TOUCH;
-	if(other.takedamage == DAMAGE_AIM)
-	if(Fire_AddDamage(other, self.realowner, GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type) >= 0) {
-		remove(self);
-		return;
-	}
+    PROJECTILE_TOUCH;
 }
 
 void HG_Napalm()
@@ -271,11 +266,7 @@ void HG_Plasma_Projectile_Think() {
 void HG_Plasma_Projectile_Touch()
 {
     PROJECTILE_TOUCH;
-	if (other.takedamage == DAMAGE_AIM) {
-		HG_Plasma_Projectile_Explode();
-	} else {
-		spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
-	}
+    spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 }
 
 void HG_Plasma_Projectile() {
@@ -934,7 +925,7 @@ void HG_Linker_Think() {
                     float newhealth = thealth / denom;
                     
                     if(newhealth > p.health)
-                        Heal(p, self, self.owner, newhealth - p.health, 0);
+                        Heal(p, self, self.owner, newhealth - p.health, 0, '0 0 0');
                     
                     p.health = newhealth;
                     p.armorvalue = tarmor / denom;
@@ -944,7 +935,7 @@ void HG_Linker_Think() {
                 p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
             
                 if(self.hg_linker_hps)
-                    Heal(p, world, self.owner, self.hg_linker_hps, 0);
+                    Heal(p, world, self.owner, self.hg_linker_hps, 0, '0 0 0');
             }
         }
     }

@@ -483,7 +483,7 @@ void Boobs_DropAll(vector);
 .float loscheck_found;
 .float loscheck_solid;
 
-void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype) {
+void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc) {
     entity e;
     vector offs, org, p1, p2;
     float found;
@@ -546,7 +546,13 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             found = TRUE;
     }
     
-    org = targ.origin + targ.maxs_z * '0 0 1.5';
+    if(hitloc == '0 0 0')
+        org = targ.origin;
+    else
+        org = hitloc;
+    
+    org = org + min(45, targ.maxs_z) * '0 0 1.5';
+    
     FOR_EACH_REALCLIENT(e)
         if(((found && e       == attacker) || e       == targ) ||
           (((found && e.enemy == attacker) || e.enemy == targ) && e.classname == "spectator")) {
@@ -589,7 +595,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
     if(damage) {
         if(g_handgrenades)
-        if(attacker.classname == "player")
+        if(attacker.iscreature)
         if(self.hg_shield) {
             if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
                 vector offs = '0 0 1' * self.maxs_z*0.5;
@@ -711,7 +717,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 htype |= VDMG_TYPE_CRIT;
             
             if(!g_minstagib)
-                VisualDamage(attacker, self, rdmg, rint(save), htype);
+                VisualDamage(attacker, self, rdmg, rint(save), htype, hitloc);
             
             if(attacker != self)
             if(!sameteam)
