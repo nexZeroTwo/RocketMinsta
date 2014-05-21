@@ -1000,12 +1000,17 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {    
+float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {   
+    if(roundstate != ROUNDSTATE_GAME)
+        heal = 0;
+    
     if(g_clanarena) if(inflictor.classname != "hg_linker") {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
             heal = max(0, min(heal, lim - targ.health));
     }
+    
+    heal = max(0, min(heal, g_balance_health_limit - targ.health));
     
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
