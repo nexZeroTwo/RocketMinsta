@@ -1078,7 +1078,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     Buffs_ArcDamage_Finalize();
                 }
                 return;
-            } else
+            } else if(!attacker.hg_shield)
                 damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * Buffs_BuffPower(attacker, BUFF_MEDIC));
         }
         

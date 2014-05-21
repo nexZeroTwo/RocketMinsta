@@ -11,6 +11,7 @@ void HG_Init() {
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
     addstat(STAT_HGSHIELD, AS_FLOAT, hg_shield);
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
+    addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
@@ -34,6 +35,7 @@ void HG_Precache() {
     precache_sound("weapons/rm_nadebeep.wav");
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("weapons/rocket_mode.wav");
+    precache_sound("weapons/nexfire.wav");
     precache_sound("porto/expire.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
@@ -615,9 +617,8 @@ void HG_DetonateAll(entity plr) {
     entity nade;
     
     if(plr.hg_shield) {
-        plr.hg_shield = 0;
-        stopsound(plr, CHAN_AUTO);  // stop the shield sound
-        sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+        HG_Shield_Trigger(plr);
+        return;
     }
     
     if(!plr.hg_detonables)
@@ -796,7 +797,32 @@ void HG_Grenade_Remove() {
     remove(self);
 }
 
-void HG_ShieldModel_Think() {
+void HG_Shield_Trigger(entity plr) {
+    plr.hg_shield = 0;
+    stopsound(plr, CHAN_AUTO);  // stop the shield sound
+    sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+    
+    if(plr.hg_shield_stored) {
+        entity oself = self;
+        self = plr;
+        
+        makevectors(self.v_angle);
+        W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", plr.hg_shield_stored);
+        //FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
+        traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
+        entity infl = spawn();
+        setorigin(infl, trace_endpos);
+        RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_edgefactor"), cvar("g_handgrenades_shield_damage_store_radius"), world, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_forcefactor"), HG_SHIELD, trace_ent);
+        remove(infl);
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, trace_endpos);
+        te_csqc_lightningarc(w_shotorg, trace_endpos, TRUE, COLOR_TEAM3);
+        te_blast(trace_endpos);
+        
+        self = oself;
+    }
+}
+
+void HG_Shield_Model_Think(void) {
     if(self.owner.hg_shield)
         self.alpha = approach(self.alpha, 1, frametime * 3);
     else
@@ -821,17 +847,21 @@ void HG_Shield(float hgtype) {
     self.hg_shield = self.hg_shieldmax;
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
+    self.hg_shield_stored = GRENVAR(hgtype, "damage_store_base");
+    self.nobuffs = GRENVAR(hgtype, "nobuffs");
+    
     if(GRENVAR(hgtype, "immobile")) {
         self.hg_shield_oldmovetype = self.movetype;
         self.movetype = MOVETYPE_NONE;
     }
+    
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
     if(!self.hg_shieldmodel) {
         e = spawn();
         e.classname = "hg_shieldmodel";
         e.owner = self;
-        e.think = HG_ShieldModel_Think;
+        e.think = HG_Shield_Model_Think;
         e.nextthink = time;
         e.alpha = 0.1;
         e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
@@ -850,8 +880,9 @@ void HG_Shield(float hgtype) {
     }
 }
 
-void HG_Shield_Frame() {
+void HG_Shield_Frame(void) {
     if(!self.hg_shield) {
+        self.nobuffs = 0;
         if(self.hg_shield_oldmovetype) {
             self.movetype = self.hg_shield_oldmovetype;
             self.hg_shield_oldmovetype = 0;

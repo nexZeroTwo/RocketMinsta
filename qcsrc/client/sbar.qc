@@ -5073,12 +5073,15 @@ void Sbar_Draw(void)
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to cancel stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        } else if(getstatf(STAT_HGSHIELD))
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
-                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),
-                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        else if(hgdetons)
+        } else if(getstatf(STAT_HGSHIELD)) {
+            string smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                 " ^3to cancel your ", HG_TypeToExpandedName(hgtype));
+            
+            if(getstati(STAT_HGSHIELDSTORE))
+                smsg = strcat(smsg, " and unleash ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
+            
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(hgdetons)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to trigger your ", HG_TypeToExpandedName(hgtype),

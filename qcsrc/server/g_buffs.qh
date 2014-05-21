@@ -41,10 +41,12 @@ float g_buffs_count;
 .entity buff_lockon;
 .float buff_lockon_updatetime;
 
+.float nobuffs;
+
 #define BUFFS_GIVE(p,b) ((p).buffs |= (b))
 #define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))
 #define BUFFS_PRESENT_INTERNAL(p,b) (g_buffs && (((p).buffs & b) == (b) || (((p).hg_linker.buffs & b) == (b) && (p).hg_linker.hg_linker_buffpower)))
-#define BUFFS_PRESENT(p,b) (BUFFS_PRESENT_INTERNAL(p,b) && !(p).hg_shield)
+#define BUFFS_PRESENT(p,b) (BUFFS_PRESENT_INTERNAL(p,b) && !(p).nobuffs)
 
 #define BUFF_RANDOM -1337
 

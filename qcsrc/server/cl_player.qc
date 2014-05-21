@@ -602,6 +602,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
                 float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
                 float absorb = damage * (1 - takefactor);
+                self.hg_shield_stored = min(cvar("g_handgrenades_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_handgrenades_shield_damage_store"));
                 damage *= takefactor;
                 
                 if(DEATH_ISHG(deathtype))

@@ -18,6 +18,7 @@ void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
+void HG_Shield_Trigger(entity);
 
 .vector org_explosion;
 .float nextparticle;
@@ -59,6 +60,7 @@ float HG_RegenTime(entity);
 .float hg_shieldmax;
 .float hg_shieldhealth;
 .float hg_shield_oldmovetype;
+.float hg_shield_stored;
 .entity hg_shieldmodel;
 
 .float hg_stealth;
