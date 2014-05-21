@@ -500,7 +500,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(cvar("sv_hidedamage"))
         return;
     
-    if(teams_matter && attacker != targ && attacker.team == targ.team)
+    if(teams_matter && attacker != targ && attacker.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == attacker))
         htype |= VDMG_TYPE_TEAMHIT;
     
     if(htype & VDMG_TYPE_HEAL && (hdmg >= 100 || admg >= 100))
