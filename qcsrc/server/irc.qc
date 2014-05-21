@@ -273,8 +273,26 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             IRC_SendRaw(handle, cvar_string("sv_ircbot_connectcommand"));
     } else if(event == "CHANNEL") {
         if(cvar("sv_ircbot_chat_irc2game"))
-        if(strtolower(argv(0)) == irc.target)
-            bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", IRC_IRC2DP(argv(1)), "\n");
+        if(strtolower(argv(0)) == irc.target) {
+            string msg = IRC_IRC2DP(argv(1));
+            
+            if(cvar("sv_ircbot_chat_irc2game_require_highlight")) {
+                string mynick = IRC_CurrentNick(handle);
+                float nl = strlen(mynick);
+                float ml = strlen(msg);
+                
+                if(substring(msg, 0, nl + 1) == strcat(mynick, " "))
+                    msg = substring(msg, nl + 1, ml);
+                else if(substring(msg, 0, nl + 2) == strcat(mynick, ": ") ||
+                        substring(msg, 0, nl + 2) == strcat(mynick, ", "))
+                    msg = substring(msg, nl + 2, ml);
+                else
+                    msg = "";
+            }
+            
+            if(msg != "")
+                bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", msg, "\n");
+        }
     } else if(event == "PRIVMSG" || event == "NOTICE") {
         string cmd = argv(1);
         if(argv(0) == IRC_CurrentNick(handle)) {
@@ -330,24 +348,44 @@ void IRC_Announce_PlayerChat(entity plr, string msg) { if(!irc) return;
     IRC_Privmsg(irc.cnt, irc.target, strcat("<", plr.netname, "> ", msg));
 }
 
-void IRC_Announce_Client(entity plr, float ispart) {
-    if(!cvar("sv_ircbot_announce_joinparts"))
-        return;
-    
+void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {
+    entity plr = ctx.owner;
     string msg;
     
-    if(ispart)  msg = "^1- part ^3#";
+    if(ctx.cnt) msg = "^1- part ^3#";
     else        msg = "^2+ join ^3#";
     msg = strcat(msg, ftos(num_for_edict(plr)), "^7: ", plr.netname);
     
     if(cvar("sv_ircbot_announce_joinparts_showip"))
-        msg = strcat(msg, "^7 (^4", plr.netaddress, "^7)");
+        msg = strcat(msg, "^7 (^4", ip, "^7)");
+    if(cn != "")
+        msg = strcat(msg, "^7 [^6", strtoupper(cn), "^7]");
     if(!cvar("sv_ircbot_update_topic"))
         msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_GameInfoString());
     msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_ClientsInfoString());
     
     IRC_Privmsg(irc.cnt, irc.target, msg);
     irc.skin = 1;
+    
+    remove(ctx);
+}
+
+void IRC_Announce_Client(entity plr, float ispart) {
+    if(!cvar("sv_ircbot_announce_joinparts"))
+        return;
+    
+    entity ctx = spawn();
+    ctx.cnt = ispart;
+    ctx.owner = plr;
+    
+    if(cvar("sv_ircbot_announce_joinparts_showcountry"))
+    if(cvar("sv_ip2country"))
+    if(cvar_string("sv_ip2country_server") != "") {
+        IP2C_Lookup(plr.netaddress, IRC_Announce_Client_Callback, cvar("sv_ircbot_announce_joinparts_showcountry_timeout"), ctx);
+        return;
+    }
+    
+    IRC_Announce_Client_Callback(plr.netaddress, "", ctx);
 }
 
 void IRC_Announce_ClientConnect(entity plr) { if(!irc) return;

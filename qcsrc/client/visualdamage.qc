@@ -106,6 +106,9 @@ void VisualDamage_Draw(void) {
     else
         smod = 1;
     
+    if(self.vd_type & VDMG_TYPE_NOTPLAYERTARGET)
+        smod = smod * 0.8;
+    
     float fs = VDMG_FONTSIZE * max(1, a * smod);
     
     o = self.vd_projected + offs - '0 0.5 0' * fs;
@@ -118,10 +121,15 @@ void VisualDamage_Draw(void) {
             clr = '0.0 1.0 0.0';
         else if(self.vd_type & VDMG_TYPE_TEAMHIT || self.vd_type & VDMG_TYPE_TOSELF)
             clr = '1.0 0.2 0.2';
+        else if(self.vd_type & VDMG_TYPE_NOTPLAYERTARGET)
+            clr = '1.0 1.0 1.0';
         else if(self.vd_type & VDMG_TYPE_CRIT)
             clr = '1.0 0.3 0.0';
         else
             clr = '1.0 0.7 0.0';
+        
+        if(self.vd_type & VDMG_TYPE_NOTPLAYERTARGET)
+            clr = clr * 0.9;
         
         sw = self.vd_width * fs;
         sw2 = self.vd_width2 * fs;

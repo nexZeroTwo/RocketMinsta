@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 INCLUDE=1
-. rmlib.sh || exit 1
+. "$(dirname "$0")"/rmlib.sh || exit 1
 
 if [ -z "$1" ]; then
     echo "Usage: $0 newversion" >&2

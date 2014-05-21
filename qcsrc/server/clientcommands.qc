@@ -378,7 +378,10 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(g_arena)
+        if(self.joinqueue) {
+            JoinQ_Remove(self);
+            self.hg_type_picked = 0;
+		} if(g_arena)
 			return;
 		if(g_lms)
 		{
@@ -430,7 +433,11 @@ void SV_ParseClientCommand(string s) {
 			}
 			else {
 				//player may not join because of g_maxplayers is set
-				centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+				//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+                
+                if(!self.joinqueue)
+                if(!HG_ShowMenu(FALSE))
+                    JoinQ_Push(self);
 			}
 		}
 		UnmarkAway(self);

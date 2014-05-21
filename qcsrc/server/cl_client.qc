@@ -1418,6 +1418,7 @@ void PutClientInServer (void)
     self.justconnected = FALSE;
     
     CA_PlayerJoins();
+    JoinQ_Pop();
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1445,6 +1446,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
+    WriteShort(MSG_ENTITY, sv_nicehealth);
 	return TRUE;
 }
 
@@ -1957,7 +1959,8 @@ void ClientDisconnect (void)
 		fclose(self.hitplotfh);
 		self.hitplotfh = -1;
 	}
-
+    
+    JoinQ_Remove(self);
 	bot_clientdisconnect();
     
     if(self.buff_model)
@@ -2061,6 +2064,7 @@ void ClientDisconnect (void)
     }
     
     CA_PlayerLeaves();
+    JoinQ_Pop();
 }
 
 .float BUTTON_CHAT;
@@ -2907,7 +2911,11 @@ void LeaveSpectatorMode()
 	}
 	else {
 		//player may not join because of g_maxplayers is set
-		centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+		//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+        
+        if(!self.joinqueue)
+        if(!HG_ShowMenu(FALSE))
+            JoinQ_Push(self);
 	}
 }
 
@@ -2923,8 +2931,8 @@ float isJoinAllowed() {
 
 	local entity e;
 	local float currentlyPlaying;
-	FOR_EACH_REALPLAYER(e) {
-		if(e.classname == "player")
+	FOR_EACH_REALCLIENT(e) {
+		if(e.classname == "player" || e.jb_specteam)
 			currentlyPlaying += 1;
 	}
 	if(currentlyPlaying < cvar("g_maxplayers"))

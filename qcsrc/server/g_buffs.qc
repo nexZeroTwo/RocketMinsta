@@ -446,7 +446,7 @@ void Buffs_ClientFrame(void) {
     if(BUFFS_PRESENT(self, BUFF_VAMPIRE)) {
         if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
             float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
-            Heal(self, world, self, heal, cvar("g_buffs_vampire_pauserot"));
+            Heal(self, world, self, heal, cvar("g_buffs_vampire_pauserot"), '0 0 0');
             self.buff_vamp_healthpool -= heal;
             self.buff_vamp_ticks -= 1;
             self.buff_vamp_nexttick = time + 1;
@@ -519,7 +519,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_healthpool += damage * factor;
     } else {
         // instant-healing mode, don't use the buffer, just heal
-        Heal(a, world, a, damage * factor, cvar("g_buffs_vampire_pauserot"));
+        Heal(a, world, a, damage * factor, cvar("g_buffs_vampire_pauserot"), '0 0 0');
     }
 }
 
