@@ -799,7 +799,6 @@ void HG_Grenade_Remove() {
 }
 
 void HG_Shield_Trigger(entity plr) {
-    plr.hg_shield = 0;
     stopsound(plr, CHAN_AUTO);  // stop the shield sound
     sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
@@ -831,6 +830,8 @@ void HG_Shield_Trigger(entity plr) {
         
         self = oself;
     }
+    
+    plr.hg_shield = 0;
 }
 
 void HG_Shield_Model_Think(void) {
