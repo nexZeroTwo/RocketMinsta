@@ -9,9 +9,10 @@ void HG_Init() {
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
-    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shield);
+    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
     addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
+    addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
@@ -858,6 +859,7 @@ void HG_Shield(float hgtype) {
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
     self.hg_shield_stored = GRENVAR(hgtype, "damage_store_base");
+    self.hg_shield_stored_limit = GRENVAR(hgtype, "damage_store_limit");
     self.nobuffs = GRENVAR(hgtype, "nobuffs");
     
     if(GRENVAR(hgtype, "immobile")) {
@@ -891,6 +893,11 @@ void HG_Shield(float hgtype) {
 }
 
 void HG_Shield_Frame(void) {
+    if(self.hg_shieldmax && self.hg_shield)
+        self.hg_shieldstat = self.hg_shield / self.hg_shieldmax;
+    else
+        self.hg_shieldstat = 0;
+    
     if(!self.hg_shield) {
         self.nobuffs = 0;
         if(self.hg_shield_oldmovetype) {
