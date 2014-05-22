@@ -825,7 +825,6 @@ void HG_Shield_Trigger(entity plr) {
         
         trailparticles(world, eff, w_shotorg, trace_endpos);
         te_csqc_lightningarc(w_shotorg, trace_endpos, TRUE, self.team);
-        
         te_blast(trace_endpos);
         
         self = oself;
@@ -1241,7 +1240,7 @@ void HG_Attack()
 		Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), DEATH_HG_NAPALM, self.origin, '0 0 0');
 
 :finish
-    self.hg_next = time + (GV("cooldown") * W_WeaponRateFactor()) / ((hgtype == HG_LINKER)? Buffs_NadgetRegen(self) : 1);
+    self.hg_next = time + GV("cooldown") * Buffs_NadgetCooldown(self);
     
     if(!freebonus) {
         self.hg_ammo -= 1;
