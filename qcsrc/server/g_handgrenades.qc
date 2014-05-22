@@ -798,24 +798,78 @@ void HG_Grenade_Remove() {
     remove(self);
 }
 
+void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
+    entity oldself = self;
+    float wantteam = targ.team;
+    float targetTeamMates = wantteam == self.team && BUFFS_PRESENT(self, BUFF_MEDIC);
+    float dist, shortest;
+    vector arcoffset = self.maxs_z * '0 0 0.5';
+    entity plr, newtarget;
+    
+    damage *= cvar("g_handgrenades_shield_damage_store_arc");
+    shortest = cvar("g_handgrenades_shield_damage_store_arc_range");
+    newtarget = world;
+    targ.buffs_arc_hit = TRUE;
+    
+    FOR_EACH_PLAYER(plr)
+    if(plr != attacker)
+    if(plr != targ)
+    if(plr.deadflag == DEAD_NO)
+    if(plr.team == wantteam)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
+    if(!plr.jb_isprisoned)
+    if(!plr.buffs_arc_hit) {
+        dist = vlen(plr.origin - targ.origin);
+        if(dist < shortest) {
+            traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+            
+            if(trace_fraction != 1 && trace_ent == plr) {
+                shortest = dist;
+                newtarget = plr;
+            }
+        }
+    }
+    
+    if(newtarget) {
+        te_csqc_lightningarc(targ.origin + arcoffset, newtarget.origin + arcoffset, TRUE, attacker.team);
+        Damage(newtarget, attacker, attacker, damage, DEATH_HG_SHIELD, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_handgrenades_shield_damage_store_arc_pushback"));
+        HG_Shield_Discharge_Arc(attacker, newtarget, damage);
+        sound(newtarget, CHAN_PROJECTILE, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM * 0.3);
+    }
+    
+    self = oldself;
+}
+
 void HG_Shield_Trigger(entity plr) {
     stopsound(plr, CHAN_AUTO);  // stop the shield sound
     sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
+    // Discharge
     if(plr.hg_shield_stored) {
         entity oself = self;
+        entity targ;
+        vector start, end;
+        float eff, arc = cvar("g_handgrenades_shield_damage_store_arc");
+        
         self = plr;
         
         makevectors(self.v_angle);
         W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", plr.hg_shield_stored);
-        //FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
+        
+        // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
+        
         traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
+        targ = trace_ent;
+        start = w_shotorg;
+        end = trace_endpos;
+        
         entity infl = spawn();
-        setorigin(infl, trace_endpos);
-        RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_edgefactor"), cvar("g_handgrenades_shield_damage_store_radius"), world, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_forcefactor"), HG_SHIELD, trace_ent);
+        setorigin(infl, end);
+        RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_edgefactor"),
+                     cvar("g_handgrenades_shield_damage_store_radius"), world,
+                     plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_forcefactor"), HG_SHIELD, targ);
         remove(infl);
         
-        float eff;
         switch(self.team) {
             case COLOR_TEAM1:           eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
             case COLOR_TEAM2:           eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
@@ -823,9 +877,15 @@ void HG_Shield_Trigger(entity plr) {
             case COLOR_TEAM4:           eff = particleeffectnum("TE_TEI_G3PINK_HIT");   break;
         }
         
-        trailparticles(world, eff, w_shotorg, trace_endpos);
-        te_csqc_lightningarc(w_shotorg, trace_endpos, TRUE, self.team);
-        te_blast(trace_endpos);
+        trailparticles(world, eff, w_shotorg, end);
+        te_csqc_lightningarc(start, end, TRUE, self.team);
+        te_blast(end);
+        
+        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || BUFFS_PRESENT(self, BUFF_MEDIC))) {
+            HG_Shield_Discharge_Arc(self, targ, plr.hg_shield_stored);
+            entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
+                e.buffs_arc_hit = FALSE;
+        }
         
         self = oself;
     }

@@ -588,6 +588,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
     if(deathtype != DEATH_ARC)
+    if(deathtype != DEATH_HG_SHIELD)
     if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
         Buffs_ArcDamage(self, attacker, damage, deathtype);
         Buffs_ArcDamage_Finalize();
