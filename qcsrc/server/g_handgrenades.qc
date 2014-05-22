@@ -814,8 +814,18 @@ void HG_Shield_Trigger(entity plr) {
         setorigin(infl, trace_endpos);
         RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_edgefactor"), cvar("g_handgrenades_shield_damage_store_radius"), world, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_forcefactor"), HG_SHIELD, trace_ent);
         remove(infl);
-        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, trace_endpos);
-        te_csqc_lightningarc(w_shotorg, trace_endpos, TRUE, COLOR_TEAM3);
+        
+        float eff;
+        switch(self.team) {
+            case COLOR_TEAM1:           eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
+            case COLOR_TEAM2:           eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
+            case COLOR_TEAM3: default:  eff = particleeffectnum("TE_TEI_G3YELLOW_HIT"); break;
+            case COLOR_TEAM4:           eff = particleeffectnum("TE_TEI_G3PINK_HIT");   break;
+        }
+        
+        trailparticles(world, eff, w_shotorg, trace_endpos);
+        te_csqc_lightningarc(w_shotorg, trace_endpos, TRUE, self.team);
+        
         te_blast(trace_endpos);
         
         self = oself;
