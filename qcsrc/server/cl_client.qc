@@ -2682,6 +2682,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;
     self.hg_shield_stored = spectatee.hg_shield_stored;
+    self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
     self.hg_stealth = spectatee.hg_stealth;
     self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;
