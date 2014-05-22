@@ -182,7 +182,7 @@ void Buffs_Init_Delayed(void) {
 }
 
 float Buffs_BuffPower(entity p, float b) {
-    if(p.hg_shield)
+    if(p.nobuffs)
         return 0;
     
     if(p.buffs & b)

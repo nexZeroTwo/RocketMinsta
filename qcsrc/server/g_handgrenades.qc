@@ -858,7 +858,7 @@ void HG_Shield_Trigger(entity plr) {
         
         // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
         
-        traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
+        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, ANTILAG_LATENCY(self));
         targ = trace_ent;
         start = w_shotorg;
         end = trace_endpos;
