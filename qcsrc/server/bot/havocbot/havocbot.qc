@@ -256,9 +256,9 @@ void havocbot_bunnyhop(vector dir)
 		return;
 
 	// Don't jump when using some weapons
-	if(self.aistatus & AI_STATUS_ATTACKING)
+	//if(self.aistatus & AI_STATUS_ATTACKING)
 	//if(self.weapon & WEP_CAMPINGRIFLE) //whats wrong in jumping with rifle?
-		return;
+	//	return;
 
 	if(self.goalcurrent.classname == "player")
 		return;
