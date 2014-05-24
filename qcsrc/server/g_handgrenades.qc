@@ -1257,7 +1257,9 @@ void HG_Attack()
     setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
-	gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime") * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+	gren.hg_deathtime = ((self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))? 
+                          time + 0.01 : time + GV("lifetime") * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+                          
 	gren.think = HG_Grenade_Think;
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
@@ -1378,8 +1380,8 @@ void HG_Frame()
 		self.hg_power = 0;
 	}
 	
-	if(self.hg_power == 1 && mayfire)
-		HG_Attack(); 	// inhand explosion
+	if(self.hg_power == 1 && mayfire && GRENVAR((self.hg_bonus? self.hg_bonustype : self.hg_type), "launch_fullforce_launches_immediately"))
+		HG_Attack();
 	
 	self.hg_state = held;
     float dpause = cvar("g_handgrenades_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
