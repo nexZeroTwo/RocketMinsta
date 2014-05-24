@@ -539,7 +539,9 @@ void Cmd_Sbar_SetFields(float argc)
 		sbar_size[sbar_num_fields] = stringwidth(str, FALSE);
 		str = strtolower(str);
 
-		if(str == "ping") {
+        if(str == "lag") {
+            sbar_field[sbar_num_fields] = SP_LAG;
+        } else if(str == "ping") {
 			sbar_field[sbar_num_fields] = SP_PING;
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
@@ -684,7 +686,8 @@ float sbar_field_icon2_alpha;
 string Sbar_GetField(entity pl, float field)
 {
 	float tmp, num, denom, f;
-	string str;
+	string str, str2;
+    vector v;
 	sbar_field_rgb = '1 1 1';
 	sbar_field_icon0 = "";
 	sbar_field_icon1 = "";
@@ -716,35 +719,47 @@ string Sbar_GetField(entity pl, float field)
 
 			return strcat(chr2str(char0), chr2str(char1));
 
-		case SP_PLAYTIME:
-			return mmss(pl.(scores[field]) * 10);
+        case SP_PLAYTIME:
+            if(pl.(scores[SP_AWAYSTATUS]))
+                return "AFK";
+            if(GetPlayerColor(pl.sv_entnum) == COLOR_SPECTATOR)
+                return "";
+            // return mmss(pl.(scores[field]) * 10);
+            return strcat(ftos(floor(pl.(scores[field]) / 60)), "m");
 
 		case SP_PING:
 			if not(pl.gotscores)
 				return "\x8D\x8D\x8D"; // >>> sign
 			str = getplayerkey(pl.sv_entnum, "ping");
-			if(str == "0")
-				return "N/A";
 			tmp = max(0, min(220, stof(str)-80)) / 220;
 			sbar_field_rgb = '1 1 1' - '0 1 1'*tmp;
 			return str;
 
 		case SP_PL:
 			if not(pl.gotscores)
-				return "N/A";
-
-			if(pl.(scores[SP_AWAYSTATUS]))
-			{
-				sbar_field_rgb = '1 1 1';
-				return "AFK";
-			}
-
+				return "";
+                
 			str = getplayerkey(pl.sv_entnum, "pl");
 			if(str == "0")
 				return "";
+                
 			tmp = bound(0, stof(str), 20) / 20; // 20% is REALLY BAD pl
 			sbar_field_rgb = '1 0.5 0.5' - '0 0.5 0.5'*tmp;
 			return str;
+
+        case SP_LAG:
+            str = Sbar_GetField(pl, SP_PING);
+            v = sbar_field_rgb;
+            str2 = Sbar_GetField(pl, SP_PL);
+            
+            if(str2 != "") {
+                str = strcat(str, " (", str2, ")");
+                if(sbar_field_rgb_y < v_y)
+                    v = sbar_field_rgb;
+            }
+            
+            sbar_field_rgb = v;
+            return str;
 
 		case SP_FPS:
 			if not(pl.gotscores)
@@ -962,7 +977,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_SEPARATOR)
 			break;
 
-		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_CN_CHAR0) {
+		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_LAG && field != SP_PLAYTIME && field != SP_CN_CHAR0) {
 			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}
@@ -5068,12 +5083,23 @@ void Sbar_Draw(void)
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to re-enter stealth (^1", ftos(getstati(STAT_STEALTH_SAVED)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        } else if(getstatf(STAT_HGSHIELD))
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
-                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),
-                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        else if(hgdetons)
+        } else if(getstatf(STAT_HGSHIELD)) {
+            string smsg;
+            
+            if(getstati(STAT_HGSHIELDSTORE)) {
+                float a = getstatf(STAT_HGSHIELD);
+                DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
+                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), min(0.7, a), '1 1 0' - a * '0 0.7 0');
+                smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                              " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
+                              " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
+            } else {
+                smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                              " ^3to cancel your ", HG_TypeToExpandedName(hgtype));
+            }
+            
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(hgdetons)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to trigger your ", HG_TypeToExpandedName(hgtype),

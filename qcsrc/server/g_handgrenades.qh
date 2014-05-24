@@ -19,6 +19,7 @@ void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
 void HG_Cloak_Trigger(void);
+void HG_Shield_Trigger(entity);
 
 .vector org_explosion;
 .float nextparticle;
@@ -66,10 +67,13 @@ void HG_Cloak_Trigger(void);
 .entity hg_plasmalock_owner;
 
 .float hg_shield;
+.float hg_shieldstat;
 .float hg_shieldpower;
 .float hg_shieldmax;
 .float hg_shieldhealth;
 .float hg_shield_oldmovetype;
+.float hg_shield_stored;
+.float hg_shield_stored_limit;
 .entity hg_shieldmodel;
 
 .float hg_stealth;

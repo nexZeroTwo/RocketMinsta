@@ -500,7 +500,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(cvar("sv_hidedamage"))
         return;
     
-    if(teams_matter && attacker != targ && attacker.team == targ.team)
+    if(teams_matter && attacker != targ && attacker.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == attacker))
         htype |= VDMG_TYPE_TEAMHIT;
     
     if(htype & VDMG_TYPE_HEAL && (hdmg >= 100 || admg >= 100))
@@ -588,6 +588,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
     if(deathtype != DEATH_ARC)
+    if(deathtype != DEATH_HG_SHIELD)
     if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
         Buffs_ArcDamage(self, attacker, damage, deathtype);
         Buffs_ArcDamage_Finalize();
@@ -602,6 +603,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
                 float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
                 float absorb = damage * (1 - takefactor);
+                self.hg_shield_stored = min(cvar("g_handgrenades_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_handgrenades_shield_damage_store"));
                 damage *= takefactor;
                 
                 if(DEATH_ISHG(deathtype))

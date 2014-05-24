@@ -182,7 +182,7 @@ void Buffs_Init_Delayed(void) {
 }
 
 float Buffs_BuffPower(entity p, float b) {
-    if(p.hg_shield)
+    if(p.nobuffs)
         return 0;
     
     if(p.buffs & b)
@@ -479,6 +479,15 @@ float Buffs_NadgetRegen(entity plr) {
         return 1;
     
     return bp * cvar("g_buffs_wrath_hgregen");
+}
+
+float Buffs_NadgetCooldown(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgcooldown");
 }
 
 float Buffs_NadgetRegenDmgPause(entity plr) {
