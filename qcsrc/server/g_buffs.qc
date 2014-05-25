@@ -82,7 +82,7 @@ float Buffs_Randomize_Yield(void) {
     while(!found) {
         for(j = 0; j < BUFF_COUNT; ++j)
             if(g_buffs_enabled[j] && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
-                RandomSelection_Add(world, j, string_null, 1, 1);
+                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
                 ++found;
             }
         
@@ -101,7 +101,7 @@ float Buffs_Randomize_Yield(void) {
         while(!found) {
             for(j = 0; j < BUFF_COUNT; ++j)
                 if(g_buffs_enabled[j] && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
-                    RandomSelection_Add(world, j, string_null, 1, 1);
+                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
                     ++found;
                 }
             
