@@ -1425,7 +1425,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER)
+            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar("teleport_out_of_lava") && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
                 Freeze_RespawnPlayer(targ);
             
 			damage = 0;
