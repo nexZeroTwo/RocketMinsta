@@ -58,6 +58,9 @@ float rm_particleeffectnum(string p) {
             
             case "RM_HEAL":
                 return particleeffectnum("electro_impact");
+            
+            case "RM_EXPLOSION":
+                return particleeffectnum("rocket_explode");
         }
     }
     
