@@ -939,15 +939,18 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
 }
 
 void HG_Shield_Trigger(entity plr) {
-    stopsound(plr, CHAN_AUTO);  // stop the shield sound
     sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
     // Discharge
+    float extend;
     if(plr.hg_shield_stored) {
         entity oself = self;
         entity targ;
         vector start, end;
         float eff, arc = cvar("g_handgrenades_shield_damage_store_arc");
+        
+        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+            extend = cvar("g_handgrenades_shield_adept_discharge_extend");
         
         self = plr;
         
@@ -985,10 +988,16 @@ void HG_Shield_Trigger(entity plr) {
                 e.buffs_arc_hit = FALSE;
         }
         
+        plr.hg_shield_stored = 0;
         self = oself;
     }
     
-    plr.hg_shield = 0;
+    if(extend)
+        plr.hg_shield = plr.hg_shield + extend;
+    else {
+        plr.hg_shield = 0;
+        stopsound(plr, CHAN_AUTO);  // stop the shield sound
+    }
 }
 
 void HG_Shield_Model_Think(void) {
