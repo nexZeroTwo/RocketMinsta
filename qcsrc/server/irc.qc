@@ -154,8 +154,14 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             RESTARG(reason);
             reason = strcat("[IRC ", nick, "] ", reason);
             
-            IRC_Notice(handle, nick, strcat(client.netname, "^7 is now banned for ", ftos(bantime), " seconds (masksize ", ftos(masksize), ")"));
-            Ban_KickBanClient(client, bantime, masksize, reason);
+            i = Ban_KickBanClient(client, bantime, masksize, reason);
+            
+            if(i >= 0)
+                IRC_Notice(handle, nick, strcat(client.netname, "^7 is now banned for ", ftos(bantime),
+                                         strcat(" seconds (masksize ", ftos(masksize), ", id ^3#", ftos(i), "^7)")));
+            else
+                IRC_Notice(handle, nick, "Failed to kickban, just kicked");
+            
             break;
         }
         
@@ -172,17 +178,35 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             RESTARG(reason);
             reason = strcat("[IRC ", nick, "] ", reason);
             
-            IRC_Notice(handle, nick, strcat("^4", s, "^7 is now banned for ", ftos(bantime), " seconds"));
-            Ban_Insert(s, bantime, reason, 1);
+            i = Ban_Insert(s, bantime, reason, 1);
+            
+            if(i >= 0)
+                IRC_Notice(handle, nick, strcat("^4", s, "^7 is now banned for ", ftos(bantime), " seconds (id ^3#", ftos(i), "^7)"));
+            else
+                IRC_Notice(handle, nick, "Failed to ban");
             break;
         }
         
         case "bans": {
-            float maxrange = min(10, max(5, stof(argv(2))));
-            IRC_Notice(handle, nick, strcat("Total bans: ^1", ftos(ban_count), "^7, showing ^3#",
-                                     ftos(min(ban_count, stof(argv(1)))), "^7 to ^3#", 
-                                     ftos(min(ban_count, stof(argv(1)) + maxrange - 1))));
-            for(l = i = stof(argv(1)); i < ban_count, k < maxrange; ++i, ++k) {
+            float maxrange = min(10, max(5, floor(stof(argv(2)))));
+            float activebans = 0;
+            float startfrom = stof(argv(1));
+            
+            for(i = 0; i < ban_count; ++i)
+                if(time <= ban_expire[i]) {
+                    ++activebans;
+                } else if(i == startfrom)
+                    ++startfrom;
+            
+            if(!activebans) {
+                IRC_Notice(handle, nick, "No active bans");
+                break;
+            }
+            
+            IRC_Notice(handle, nick, strcat("Active bans: ^1", ftos(activebans),
+                                            "^7, showing up to ^1", ftos(maxrange), "^7 entries starting from ^3#", ftos(startfrom)));
+            
+            for(l = i = startfrom; i < ban_count, l < maxrange; ++i) {
                 if(time > ban_expire[i])
                     continue;
                 
@@ -195,7 +219,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                     s = strcat(s, ", ", ban_reason[i]);
                 IRC_Notice(handle, nick, s);
             }
-            if(l == ban_count || l == stof(argv(1)))
+            if(l == activebans)
                 IRC_Notice(handle, nick, "- End of list -");
             else
                 IRC_Notice(handle, nick, "- List truncated, use bans <position> [item count] to start from a different item -");
