@@ -344,7 +344,7 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps = cvar("g_handgrenades_plasma_projectile_dps") * Buffs_NadgetPower(self.owner);
     proj.hg_plasma_projdps_delay = cvar("g_handgrenades_plasma_projectile_dps_delay");
     proj.hg_plasma_projdist = cvar("g_handgrenades_plasma_projectile_maxdistance");
-    proj.hg_plasma_projdps_next = time + cvar("g_handgrenades_plasma_projectile_dps_pause");
+    proj.hg_plasma_projdps_next = time + cvar("g_handgrenades_plasma_projectile_dps_pause") + random() * cvar("g_handgrenades_plasma_projectile_dps_pause_randomfactor");
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
