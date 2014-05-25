@@ -936,7 +936,7 @@ void HG_Shield(float hgtype) {
         e.think = HG_Shield_Model_Think;
         e.nextthink = time;
         e.alpha = 0.1;
-        e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+        e.effects = EF_ADDITIVE | EF_FULLBRIGHT;
         e.glow_size = 256;
         e.glow_color = 230;
         e.glow_trail = 1;
