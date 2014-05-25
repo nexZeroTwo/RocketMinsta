@@ -1471,6 +1471,8 @@ void HG_Attack()
 {
     float hgtype;
     float freebonus;
+    float used = 1;
+    float avail = self.hg_ammo;
     
     if(self.deadflag != DEAD_NO)
         return;
@@ -1480,6 +1482,7 @@ void HG_Attack()
     if(self.hg_bonus) {
         hgtype = self.hg_bonustype;
         freebonus = cvar("g_handgrenades_bonus_free");
+        avail = self.hg_bonus;
     } else {
         if(time < self.hg_next)
             return;
@@ -1505,13 +1508,19 @@ void HG_Attack()
             return;
         }
     } else {
-        if(BUFFS_PRESENT(self, BUFF_ADEPT) && GV("adept_split") > 0) {
+        if(BUFFS_PRESENT(self, BUFF_ADEPT) && (GV("adept_split") > 0 || hgtype == HG_LASER)) {
             float split = GV("adept_split");
             float spread = GV("adept_split_spread");
             vector dir;
             float i;
             
-            for(i = 0; i < split; ++i) {
+            if(!split && hgtype == HG_LASER) {
+                split = used = avail;
+            }
+            
+            if(split == 1)
+                HG_GenericProjectile(hgtype, '0 0 0', FALSE);
+            else for(i = 0; i < split; ++i) {
                 dir_y = spread * (-0.5 + (i / (split-1)));
                 entity e = HG_GenericProjectile(hgtype, dir, i);
                 e.solid = SOLID_NOT;
@@ -1524,14 +1533,14 @@ void HG_Attack()
     self.hg_next = time + GV("cooldown") * Buffs_NadgetCooldown(self);
     
     if(!freebonus) {
-        self.hg_ammo -= 1;
+        self.hg_ammo -= used;
         self.hg_regentime = HG_RegenTime(self);
     }
     
     if(self.hg_bonus)
-        self.hg_bonus -= 1;
+        self.hg_bonus -= used;
     
-    self.hg_nadesused += 1;
+    self.hg_nadesused += used;
     
 }
 #undef GV
@@ -1610,7 +1619,12 @@ void HG_Frame()
     self.hg_regenpaused = (self.hg_stealth || self.hg_stealth_saved || ((time - self.lastdamage <= dpause) && (self.hg_type != HG_LASER)));
     
     if(cvar("g_handgrenades_regen_time")) {
-        float mx = GRENVAR(self.hg_type, "stacklimit");
+        float mx = 0;
+        
+        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+            mx = GRENVAR(self.hg_type, "adept_stacklimit");
+        
+        if(mx <= 0) mx = GRENVAR(self.hg_type, "stacklimit");
         if(mx <= 0) mx = cvar("g_handgrenades_regen_max");
         if(mx <= 0) mx = cvar("g_handgrenades_ammo");
         
