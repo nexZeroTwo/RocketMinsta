@@ -35,6 +35,22 @@ string IRC_ClientsInfoString(void) {
     return s;
 }
 
+float IRC_Privmsg(float handle, string targ, string msg) {
+    float r = IRC_Privmsg_Builtin(handle, targ, msg);
+    
+    float spam = max(0, cvar("sv_ircbot_spamstatus"));
+    if(spam && handle == irc.cnt && targ == irc.target) {
+        float c = cvar("_sv_ircbot_msgsent") + 1;
+        if(c >= spam) {
+            c = 0;
+            IRC_Privmsg_Builtin(handle, targ, strcat("^1Game status: ^7", IRC_GameInfoString(), IRC_STRING_SEPARATOR, IRC_ClientsInfoString()));
+        }
+        cvar_set("_sv_ircbot_msgsent", ftos(c));
+    }
+    
+    return r;
+}
+
 void IRC_UpdateTopic(void) {
     if(!cvar("sv_ircbot_update_topic"))
         return;
@@ -84,6 +100,7 @@ void IRC_Init(void) {
     // These are internal cvars used to achieve persistence between restarts
     registercvar("_sv_ircbot_session", "-1");
     registercvar("_sv_ircbot_joinlog", "");
+    registercvar("_sv_ircbot_msgsent", "0");
     
     s = IRC_CheckSession(cvar("_sv_ircbot_session"));
     
@@ -384,7 +401,7 @@ void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {
         msg = strcat(msg, "^7 (^4", ip, "^7)");
     if(cn != "")
         msg = strcat(msg, "^7 [^6", strtoupper(cn), "^7]");
-    if(!cvar("sv_ircbot_update_topic"))
+    if(cvar("sv_ircbot_announce_joinparts_showgameinfo"))
         msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_GameInfoString());
     msg = strcat(msg, IRC_STRING_SEPARATOR, IRC_ClientsInfoString());
     
