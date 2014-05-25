@@ -1177,6 +1177,14 @@ void HG_Cloak_Frame() {
 .float hg_linker_nexteffect;
 .float hg_linker_effecttime;
 
+void HG_Linker_Adept_Push(entity p) {
+    if(vlen(p.origin - self.origin) <= self.hg_linker_range) {
+        float v = max(400, vlen(p.velocity));
+        p.velocity = normalize(p.origin - self.origin) * v;
+        UpdateCSQCProjectile(p);
+    }
+}
+
 void HG_Linker_Think() {
     entity p, e;
     float denom, thealth, tarmor;
@@ -1187,10 +1195,12 @@ void HG_Linker_Think() {
         return;
     }
     
+    /*
     if(self.hg_adept) {
         setorigin(self, self.owner.origin);
         setorigin(self.enemy, self.origin);
     }
+    */
     
     if(time > self.hg_linker_nexteffect)
         self.buffs = 0;
@@ -1223,8 +1233,17 @@ void HG_Linker_Think() {
                 p.hg_linker_effecttime = time;
             }
         }
+        
+        if(self.hg_adept)
+            if(p != self.owner && (!teams_matter || p.team != self.team))
+                HG_Linker_Adept_Push(p);
     }
     
+    if(self.hg_adept)
+        for(p = findchainflags(flags, FL_PROJECTILE); p; p = p.chain)
+            if(p.classname != "bullet" && p.owner != self.owner && (!teams_matter || p.owner.team != self.team))
+                HG_Linker_Adept_Push(p);
+        
     if(time > self.hg_linker_nexteffect) {
         self.hg_linker_nexteffect = time + 1;
         
