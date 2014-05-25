@@ -530,6 +530,31 @@ void HG_Grenade_Touch() {
         if(self.hg_type == HG_TRANSLOC && self.hg_adept && trace_plane_normal == '0 0 1') {
             self.velocity = '0 0 0';
             self.movetype = MOVETYPE_TOSS;
+            
+            // check if it's ok to teleport in this location
+            // if not, remove and refund the translocator
+            
+            if(!self.hg_transloc_solidcheck) {
+                self.hg_transloc_solidcheck = TRUE;
+                
+                vector omins = self.mins;
+                vector omaxs = self.maxs;
+                vector oorig = self.origin;
+                setsize(self, PL_MIN, PL_MAX);
+                
+                if(!move_out_of_solid(self)) {
+                    if(!self.hg_isbonus)
+                        self.owner.hg_ammo += 1;
+                    
+                    bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
+                    HG_Grenade_Remove();
+                    return;
+                }
+                
+                setsize(self, omins, omaxs);
+                setorigin(self, oorig);
+            }
+            
             UpdateCSQCProjectile(self);
         }
         

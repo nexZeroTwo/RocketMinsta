@@ -57,6 +57,8 @@ void HG_Shield_Trigger(entity);
 .float hg_alwaysask;
 .float hg_adept;
 
+.float hg_transloc_solidcheck;
+
 .entity hg_remote_firesource;
 .entity hg_transloc_last;
 
