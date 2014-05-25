@@ -43,6 +43,9 @@ void Buffs_Init(void) {
             
         if(b == BUFF_WRATH && !g_handgrenades)
             g_buffs_enabled[i] = FALSE;
+            
+        if(b == BUFF_ADEPT && !g_handgrenades)
+            g_buffs_enabled[i] = FALSE;
         
         if(g_buffs_enabled[i]) {
             string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
