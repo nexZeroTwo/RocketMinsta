@@ -441,7 +441,7 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
 					if(substring(reason, 0, 1) != "~") // like IRC: unauthenticated banner
 						OnlineBanList_SendBan(ip, bantime, reason);
 
-			return FALSE;
+			return -1;
 		}
 
 	// do we have a free slot?
@@ -468,7 +468,7 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
 	if(ban_expire[i] > time + bantime)
 	{
 		print(ip, " could not get banned due to no free ban slot\n");
-		return FALSE;
+		return -1;
 	}
 	// okay, insert our new victim as i
 	Ban_Delete(i);
@@ -490,32 +490,28 @@ float Ban_Insert(string ip, float bantime, string reason, float dosync)
     if(reason)
         ban_reason[i] = strzone(reason);
     
-	return TRUE;
+	return i;
 }
 
-void Ban_KickBanClient(entity client, float bantime, float masksize, string reason)
+float Ban_KickBanClient(entity client, float bantime, float masksize, string reason)
 {
 	if(!Ban_GetClientIP(client))
 	{
 		sprint(client, strcat("Kickbanned: ", reason, "\n"));
 		dropclient(client);
-		return;
+		return -1;
 	}
 	// now ban him
 	switch(masksize)
 	{
 		case 1:
-			Ban_Insert(ban_ip1, bantime, reason, 1);
-			break;
+			return Ban_Insert(ban_ip1, bantime, reason, 1);
 		case 2:
-			Ban_Insert(ban_ip2, bantime, reason, 1);
-			break;
+			return Ban_Insert(ban_ip2, bantime, reason, 1);
 		case 3:
-			Ban_Insert(ban_ip3, bantime, reason, 1);
-			break;
+			return Ban_Insert(ban_ip3, bantime, reason, 1);
 		default:
-			Ban_Insert(ban_ip4, bantime, reason, 1);
-			break;
+			return Ban_Insert(ban_ip4, bantime, reason, 1);
 	}
 	/*
 	 * not needed, as we enforce the ban in Ban_Insert anyway
