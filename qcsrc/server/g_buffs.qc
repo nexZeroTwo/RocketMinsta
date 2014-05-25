@@ -34,6 +34,7 @@ void Buffs_Init(void) {
     
     addstat(STAT_BUFFS, AS_INT, buffstat);
     
+    float enabled;
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
         g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
         
@@ -52,8 +53,12 @@ void Buffs_Init(void) {
             
             g_buffs_model[i] = strzone(s);
             precache_model(g_buffs_model[i]);
+            ++enabled;
         }
     }
+    
+    if(enabled < 2)
+        g_buffs_randomize_dual = 0;
     
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
