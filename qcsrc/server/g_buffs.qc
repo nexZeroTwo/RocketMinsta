@@ -37,12 +37,19 @@ void Buffs_Init(void) {
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
         g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
         
+        if(b == BUFF_MEDIC && !teams_matter)
+            g_buffs_enabled[i] = FALSE;
+            
+        if(b == BUFF_WRATH && !g_handgrenades)
+            g_buffs_enabled[i] = FALSE;
+        
         if(g_buffs_enabled[i]) {
             string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
             if(!fexists(s)) {
                 s = "models/buffs/buff.md3";
                 print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
             }
+            
             g_buffs_model[i] = strzone(s);
             precache_model(g_buffs_model[i]);
         }
