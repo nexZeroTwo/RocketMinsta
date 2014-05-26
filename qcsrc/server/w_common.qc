@@ -204,19 +204,24 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 void W_BallisticBullet_Hit (void)
 {
-	float f;
+	float f, fd;
 
 	float hit;
 	hit = 0;
 
 	f = pow(bound(0, vlen(self.velocity) / vlen(self.oldvelocity), 1), 2); // energy multiplier
+    
+    if(cvar("g_ballistics_constantdamage"))
+        fd = 1;
+    else
+        fd = f;
 
 	if(other.solid == SOLID_BSP) {
         if(BUFFS_PRESENT(self.owner, BUFF_BASH) && !self.bash_done) {
             self.bash_done = TRUE;
             Buffs_BashDamage(self.owner, self, world, self.dmg, '0 0 0');
         } else
-            Damage_DamageInfo(self.origin, self.dmg * f, 0, 0, max(1, self.dmg_force) * normalize(self.velocity) * f, self.projectiledeathtype, self);
+            Damage_DamageInfo(self.origin, self.dmg * fd, 0, 0, max(1, self.dmg_force) * normalize(self.velocity) * f, self.projectiledeathtype, self);
     }
 
 	if(other && other != self.enemy)
@@ -237,7 +242,7 @@ void W_BallisticBullet_Hit (void)
 		if(other.team == self.owner.team)
 			hit = 0;
 
-		Damage(other, self, self.owner, self.dmg * f, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
+		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
 		if(self.dmg_edge != 0)
