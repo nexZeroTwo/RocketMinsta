@@ -418,9 +418,20 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     end = start + dir * MAX_SHOT_DISTANCE;
     
     damage_headshotbonus = headshotbonus;
+    headshot = yoda = 0;
     FireRailgunBullet(start, end, damage, force, 0, 0, 0, 0, dtype);
     damage_headshotbonus = 0;
     end =  trace_endpos;
+    
+    if(headshot) {
+        announce(self, "announcer/male/headshot.wav");
+        bigprint_spec(self, "^1Head ^7Shot!", "", 1);
+    }
+    
+    if(yoda) {
+        announce(self, "announcer/male/awesome.wav");
+        bigprint_spec(self, "^5Awesome!", "", 1);
+    }
     
     if(tracereffects & EF_RED)
         eff = particleeffectnum("tr_rifle");
