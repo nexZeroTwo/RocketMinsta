@@ -71,7 +71,7 @@ void Nagger_ReadyCounted()
 }
 
 void ReadyCount();
-string MapVote_Suggest(string m);
+string MapVote_Suggest(string m, float ismaster);
 
 entity GetPlayer(string name)
 {
@@ -608,7 +608,7 @@ void SV_ParseClientCommand(string s) {
 		else
 			wordwrap_sprint(cmd, 1111);
 	} else if(cmd == "suggestmap") {
-		sprint(self, strcat(MapVote_Suggest(argv(1)), "\n"));
+		sprint(self, strcat(MapVote_Suggest(argv(1), self.vote_master), "\n"));
 	} else if(cmd == "timeout") {
 		if not(self.flags & FL_CLIENT)
 			return;

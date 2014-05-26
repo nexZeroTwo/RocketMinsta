@@ -2278,7 +2278,7 @@ void MapVote_ClearAllVotes()
 		other.mapvote = 0;
 }
 
-string MapVote_Suggest(string m)
+string MapVote_Suggest(string m, float ismaster)
 {
 	float i;
 	if(m == "")
@@ -2290,7 +2290,7 @@ string MapVote_Suggest(string m)
 	m = MapInfo_FixName(m);
 	if(!m || !ListContains(cvar_string("g_maplist"), m, " "))
 		return "The map you suggested is not available on this server.";
-	if(!cvar("g_maplist_votable_override_mostrecent"))
+	if(!cvar("g_maplist_votable_override_mostrecent") && !ismaster)
 		if(Map_IsRecent(m))
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
     
