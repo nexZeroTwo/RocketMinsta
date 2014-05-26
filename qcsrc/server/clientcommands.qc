@@ -197,7 +197,7 @@ void SV_ParseClientCommand(string s) {
 		stuffcmd(self, "set _rm_server 1\n");
 		
 		// Report available votes
-		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(FALSE, FALSE), "\"\n"));
 		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
 		
 		// Report availability of certain RM options

@@ -3286,13 +3286,22 @@ float Banning_UnbanPlayerByName (string name)
 	return 1;
 }
 
-string GetVoteList_All()
+string GetVoteList_VoteCommands(float ismaster, float isvdo) {
+    string s = cvar_string("sv_vote_commands");
+    if(ismaster)
+        s = strcat(s, " ", cvar_string("sv_vote_master_commands"));
+    if(!isvdo)
+        s = strcat(s, " ", cvar_string("sv_vote_only_commands"));
+    return s;
+}
+
+string GetVoteList_All(float ismaster, float isvdo)
 {
 	if(!cvar("sv_vote_gametype_call"))
-		return cvar_string("sv_vote_commands");
+		return GetVoteList_VoteCommands(ismaster, isvdo);
 	
 	local string votes;
-	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
+	local float i, n = tokenizebyseparator(GetVoteList_VoteCommands(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
@@ -3303,17 +3312,17 @@ string GetVoteList_All()
 	return strcat(votes, cvar_string("sv_vote_gametype_options"));
 }
 
-string GetVoteList_Filtered()
+string GetVoteList_Filtered(float ismaster, float isvdo)
 {
 	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_All(), " ");
+	local float i, n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
 		float c = ListContains(cvar_string("sv_vote_secretcommands"), argv(i), " ");
 		
 		// ListContains tokenizes
-		n = tokenizebyseparator(GetVoteList_All(), " ");
+		n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
 		
 		if not(c)
 			votes = strcat(votes, argv(i), " ");
@@ -3322,12 +3331,12 @@ string GetVoteList_Filtered()
 	return votes;
 }
 
-string GetVoteList()
+string GetVoteList(float ismaster, float isvdo)
 {
 	if(cvar("sv_vote_secretcommands_enabled"))
-		return GetVoteList_All();
+		return GetVoteList_All(ismaster, isvdo);
 	else
-		return GetVoteList_Filtered();
+		return GetVoteList_Filtered(ismaster, isvdo);
 }
 
 void GameCommand(string);

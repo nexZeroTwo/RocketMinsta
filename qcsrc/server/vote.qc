@@ -112,7 +112,7 @@ float RemapVote(string vote, string cmd, entity e)
 		return FALSE;
 	}
 
-	if(!VoteAllowed(argv(0), cmd))
+	if(!VoteAllowed(e, argv(0), cmd))
 		return FALSE;
 
 	// VoteAllowed tokenizes!
@@ -713,7 +713,7 @@ void VoteHelp(entity e) {
 	print_to(e, "^7If enough of the players vote no the vote is rejected.");
 	print_to(e, strcat("^7If neither the vote will timeout after ", cvar_string("sv_vote_timeout"), "^7 seconds."));
 	print_to(e, "^7You can call a vote for or execute these commands:");
-	print_to(e, strcat("^3", GetVoteList_Filtered(), "^7and maybe further ^3arguments^7"));
+	print_to(e, strcat("^3", GetVoteList_Filtered(e.vote_master, FALSE), "^7and maybe further ^3arguments^7"));
 }
 
 string VoteNetname(entity e)
@@ -796,27 +796,16 @@ float VoteCommandInList(string votecommand, string list)
 	return FALSE;
 }
 
-float VoteAllowed(string votecommand, string cmd) {
+float VoteAllowed(entity caller, string votecommand, string cmd) {
 	local string s;
 	
-	if(VoteCommandInList(votecommand, GetVoteList()))
+	if(VoteCommandInList(votecommand, GetVoteList(caller.vote_master, (cmd == "vdo"))))
 		return TRUE;
 
 	if(cvar("sv_vote_gametype_call"))
 	if((s = NormalizeGametypeName(votecommand)) != "")
 	if(ListContainsEx(cvar_string("sv_vote_gametype_options"), s, " ", NormalizeGametypeName))
 		return TRUE;			// gametype alias
-
-	if(cmd == "vdo")
-	{
-		if(VoteCommandInList(votecommand, cvar_string("sv_vote_master_commands")))
-			return TRUE;
-	}
-	else
-	{
-		if(VoteCommandInList(votecommand, cvar_string("sv_vote_only_commands")))
-			return TRUE;
-	}
 
 	return FALSE;
 }

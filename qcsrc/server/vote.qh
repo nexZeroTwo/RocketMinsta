@@ -16,7 +16,7 @@ string VoteNetname(entity e);
 string ValidateMap(string m, entity e);
 void VoteThink();
 string VoteParse(string s, float tokens);
-float VoteAllowed(string vote, string cmd);
+float VoteAllowed(entity caller, string vote, string cmd);
 void VoteReset();
 void VoteAccept();
 void VoteReject();
