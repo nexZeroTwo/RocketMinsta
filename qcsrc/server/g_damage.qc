@@ -1000,12 +1000,17 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {    
+float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {   
+    if(roundstate != ROUNDSTATE_GAME)
+        heal = 0;
+    
     if(g_clanarena) if(inflictor.classname != "hg_linker") {
         float lim = cvar("g_clanarena_heal_limit");
         if(lim)
             heal = max(0, min(heal, lim - targ.health));
     }
+    
+    heal = max(0, min(heal, g_balance_health_limit - targ.health));
     
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
@@ -1059,7 +1064,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
         }
         
-        if(BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
+        if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC));
                 if(attacker == targ)
@@ -1073,7 +1078,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     Buffs_ArcDamage_Finalize();
                 }
                 return;
-            } else if(targ.iscreature)
+            } else if(!attacker.hg_shield)
                 damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * Buffs_BuffPower(attacker, BUFF_MEDIC));
         }
         
@@ -1420,7 +1425,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER)
+            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar("teleport_out_of_lava") && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
                 Freeze_RespawnPlayer(targ);
             
 			damage = 0;
@@ -1541,7 +1546,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
 
-			if(targ.iscreature)
+			if(targ.iscreature && targ.deadflag == DEAD_NO && targ.classname != "body")
 			{
 				if(IsDifferentTeam(targ, attacker) || jaildm)
 				{
@@ -1636,7 +1641,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             float dtype = VDMG_TYPE_HIT | VDMG_TYPE_NOTPLAYERTARGET;
             if(deathtype & HITTYPE_HEADSHOT)
                 dtype |= VDMG_TYPE_CRIT;
-            VisualDamage(attacker, targ, rint(t_oldhealth - targ.health), rint(t_oldarmor - targ.armorvalue), dtype, hitloc);
+            VisualDamage(attacker, targ, min(rint(t_oldhealth - targ.health), t_oldhealth), min(rint(t_oldarmor - targ.armorvalue), t_oldarmor), dtype, hitloc);
         }
     }
 	self = oldself;

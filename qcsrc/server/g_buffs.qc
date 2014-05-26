@@ -34,8 +34,15 @@ void Buffs_Init(void) {
     
     addstat(STAT_BUFFS, AS_INT, buffstat);
     
+    float enabled;
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
         g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
+        
+        if(b == BUFF_MEDIC && !teams_matter)
+            g_buffs_enabled[i] = FALSE;
+            
+        if(b == BUFF_WRATH && !g_handgrenades)
+            g_buffs_enabled[i] = FALSE;
         
         if(g_buffs_enabled[i]) {
             string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
@@ -43,10 +50,15 @@ void Buffs_Init(void) {
                 s = "models/buffs/buff.md3";
                 print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
             }
+            
             g_buffs_model[i] = strzone(s);
             precache_model(g_buffs_model[i]);
+            ++enabled;
         }
     }
+    
+    if(enabled < 2)
+        g_buffs_randomize_dual = 0;
     
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
@@ -70,7 +82,7 @@ float Buffs_Randomize_Yield(void) {
     while(!found) {
         for(j = 0; j < BUFF_COUNT; ++j)
             if(g_buffs_enabled[j] && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
-                RandomSelection_Add(world, j, string_null, 1, 1);
+                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
                 ++found;
             }
         
@@ -89,7 +101,7 @@ float Buffs_Randomize_Yield(void) {
         while(!found) {
             for(j = 0; j < BUFF_COUNT; ++j)
                 if(g_buffs_enabled[j] && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
-                    RandomSelection_Add(world, j, string_null, 1, 1);
+                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
                     ++found;
                 }
             
@@ -182,7 +194,7 @@ void Buffs_Init_Delayed(void) {
 }
 
 float Buffs_BuffPower(entity p, float b) {
-    if(p.hg_shield)
+    if(p.nobuffs)
         return 0;
     
     if(p.buffs & b)
@@ -475,6 +487,15 @@ float Buffs_NadgetRegen(entity plr) {
         return 1;
     
     return bp * cvar("g_buffs_wrath_hgregen");
+}
+
+float Buffs_NadgetCooldown(entity plr) {
+    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
+    
+    if(!bp)
+        return 1;
+    
+    return bp * cvar("g_buffs_wrath_hgcooldown");
 }
 
 float Buffs_NadgetRegenDmgPause(entity plr) {

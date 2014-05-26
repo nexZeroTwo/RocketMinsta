@@ -1145,7 +1145,10 @@ void PutClientInServer (void)
     self.hg_wasstealth = FALSE;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
-	self.goodhits = 0;
+    self.goodhits = 0;
+    self.hg_shield_stored = 0;
+    self.hg_stealth = 0;
+    self.hg_shieldstat = 0;
 
 	if(g_arena)
 	if(!self.spawned)
@@ -2676,8 +2679,10 @@ void SpectateCopy(entity spectatee) {
     self.hg_regenstat = spectatee.hg_regenstat;
     self.hg_regenpaused = spectatee.hg_regenpaused;
     self.hg_launchspeed = spectatee.hg_launchspeed;
-    self.hg_shield = spectatee.hg_shield;
+    self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;
+    self.hg_shield_stored = spectatee.hg_shield_stored;
+    self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
     self.hg_stealth = spectatee.hg_stealth;
     self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;

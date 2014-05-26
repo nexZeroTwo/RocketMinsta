@@ -329,6 +329,8 @@ const float STAT_BUFFS = 92;
 const float STAT_TERM_AUTH = 93;
 const float STAT_STEALTH = 94;
 const float STAT_HGREFIRE = 95;
+const float STAT_HGSHIELDSTORE = 96;
+const float STAT_HGSHIELDSTOREMAX = 97;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
@@ -496,6 +498,8 @@ float PROJECTILE_HG_REMOTE = 30;
 float PROJECTILE_HG_LASER = 31;
 
 float PROJECTILE_HG_NAPALMSHARD = 50;
+
+float PROJECTILE_HEAL_PARTICLE_EMITTER = 70;
 
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;

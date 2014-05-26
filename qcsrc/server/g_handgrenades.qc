@@ -9,8 +9,10 @@ void HG_Init() {
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
-    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shield);
+    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
+    addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
+    addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
     addstat(STAT_HGTYPE, AS_INT, hg_type);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
@@ -34,6 +36,7 @@ void HG_Precache() {
     precache_sound("weapons/rm_nadebeep.wav");
     precache_sound("weapons/electro_bounce.wav");
     precache_sound("weapons/rocket_mode.wav");
+    precache_sound("weapons/nexfire.wav");
     precache_sound("porto/expire.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
@@ -69,7 +72,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
 {
     entity e, o;
-    float d, df, ismedic;
+    float d, df, ismedic, sameteam;
     vector p;
     
     o = self.owner;
@@ -83,9 +86,10 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
         ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
+        sameteam = !IsDifferentTeam(o, e);
         
         if(!ismedic) {
-            if(!IsDifferentTeam(o, e) && o != e)
+            if(sameteam && o != e)
                 if(!cvar("g_friendlyfire"))
                         continue;
                 
@@ -104,7 +108,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
             if(/* trace_startsolid || */ trace_fraction != 1)
                 continue;
             
-            if(e.frozen) {
+            if(e.frozen && !(ismedic && sameteam)) {
                 e.revprogress = 0;
                 continue;
             }
@@ -117,16 +121,47 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     }
 }
 
-void HG_Napalm_Think()
-{
-	if (time > self.pushltime)
-	{
-		remove(self);
-		return;
-	}
+.entity heal_emitter;
 
-	HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
-	self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
+void HG_Napalm_HealEmitter_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+    
+    UpdateCSQCProjectile(self);
+    self.nextthink = time + 0.5;
+}
+
+void HG_Napalm_Think(void) {
+    if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
+    
+    if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+        if(!self.heal_emitter) {
+            entity e = spawn();
+            e.owner = self;
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = self;
+            e.think = HG_Napalm_HealEmitter_Think;
+            e.nextthink = time;
+            e.velocity = self.velocity;
+            e.csqcprojectile_extradata = self.csqcprojectile_extradata;
+            
+            CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            self.heal_emitter = e;
+        }
+    } else {
+        if(self.heal_emitter) {
+            remove(self.heal_emitter);
+            self.heal_emitter = world;
+        }
+    }
+    
+    HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+    self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
 void HG_Napalm_Middlefire_Think() {
@@ -311,7 +346,7 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps = cvar("g_handgrenades_plasma_projectile_dps") * Buffs_NadgetPower(self.owner);
     proj.hg_plasma_projdps_delay = cvar("g_handgrenades_plasma_projectile_dps_delay");
     proj.hg_plasma_projdist = cvar("g_handgrenades_plasma_projectile_maxdistance");
-    proj.hg_plasma_projdps_next = time + cvar("g_handgrenades_plasma_projectile_dps_pause");
+    proj.hg_plasma_projdps_next = time + cvar("g_handgrenades_plasma_projectile_dps_pause") + random() * cvar("g_handgrenades_plasma_projectile_dps_pause_randomfactor");
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
@@ -585,9 +620,8 @@ void HG_DetonateAll(entity plr) {
     entity nade;
     
     if(plr.hg_shield) {
-        plr.hg_shield = 0;
-        stopsound(plr, CHAN_AUTO);  // stop the shield sound
-        sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+        HG_Shield_Trigger(plr);
+        return;
     }
     
     if(!plr.hg_detonables)
@@ -766,7 +800,102 @@ void HG_Grenade_Remove() {
     remove(self);
 }
 
-void HG_ShieldModel_Think() {
+void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
+    entity oldself = self;
+    float wantteam = targ.team;
+    float targetTeamMates = wantteam == self.team && BUFFS_PRESENT(self, BUFF_MEDIC);
+    float dist, shortest;
+    vector arcoffset = self.maxs_z * '0 0 0.5';
+    entity plr, newtarget;
+    
+    damage *= cvar("g_handgrenades_shield_damage_store_arc");
+    shortest = cvar("g_handgrenades_shield_damage_store_arc_range");
+    newtarget = world;
+    targ.buffs_arc_hit = TRUE;
+    
+    FOR_EACH_PLAYER(plr)
+    if(plr != attacker)
+    if(plr != targ)
+    if(plr.deadflag == DEAD_NO)
+    if(plr.team == wantteam)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
+    if(!plr.jb_isprisoned)
+    if(!plr.buffs_arc_hit) {
+        dist = vlen(plr.origin - targ.origin);
+        if(dist < shortest) {
+            traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+            
+            if(trace_fraction != 1 && trace_ent == plr) {
+                shortest = dist;
+                newtarget = plr;
+            }
+        }
+    }
+    
+    if(newtarget) {
+        te_csqc_lightningarc(targ.origin + arcoffset, newtarget.origin + arcoffset, TRUE, attacker.team);
+        Damage(newtarget, attacker, attacker, damage, DEATH_HG_SHIELD, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_handgrenades_shield_damage_store_arc_pushback"));
+        HG_Shield_Discharge_Arc(attacker, newtarget, damage);
+        sound(newtarget, CHAN_PROJECTILE, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM * 0.3);
+    }
+    
+    self = oldself;
+}
+
+void HG_Shield_Trigger(entity plr) {
+    stopsound(plr, CHAN_AUTO);  // stop the shield sound
+    sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+    
+    // Discharge
+    if(plr.hg_shield_stored) {
+        entity oself = self;
+        entity targ;
+        vector start, end;
+        float eff, arc = cvar("g_handgrenades_shield_damage_store_arc");
+        
+        self = plr;
+        
+        makevectors(self.v_angle);
+        W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", plr.hg_shield_stored);
+        
+        // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
+        
+        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, ANTILAG_LATENCY(self));
+        targ = trace_ent;
+        start = w_shotorg;
+        end = trace_endpos;
+        
+        entity infl = spawn();
+        setorigin(infl, end);
+        RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_edgefactor"),
+                     cvar("g_handgrenades_shield_damage_store_radius"), world,
+                     plr.hg_shield_stored * cvar("g_handgrenades_shield_damage_store_forcefactor"), HG_SHIELD, targ);
+        remove(infl);
+        
+        switch(self.team) {
+            case COLOR_TEAM1:           eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
+            case COLOR_TEAM2:           eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
+            case COLOR_TEAM3: default:  eff = particleeffectnum("TE_TEI_G3YELLOW_HIT"); break;
+            case COLOR_TEAM4:           eff = particleeffectnum("TE_TEI_G3PINK_HIT");   break;
+        }
+        
+        trailparticles(world, eff, w_shotorg, end);
+        te_csqc_lightningarc(start, end, TRUE, self.team);
+        te_blast(end);
+        
+        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || BUFFS_PRESENT(self, BUFF_MEDIC))) {
+            HG_Shield_Discharge_Arc(self, targ, plr.hg_shield_stored);
+            entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
+                e.buffs_arc_hit = FALSE;
+        }
+        
+        self = oself;
+    }
+    
+    plr.hg_shield = 0;
+}
+
+void HG_Shield_Model_Think(void) {
     if(self.owner.hg_shield)
         self.alpha = approach(self.alpha, 1, frametime * 3);
     else
@@ -791,20 +920,25 @@ void HG_Shield(float hgtype) {
     self.hg_shield = self.hg_shieldmax;
     self.hg_shieldhealth = GRENVAR(hgtype, "health");
     self.hg_shieldpower = 1;
+    self.hg_shield_stored = GRENVAR(hgtype, "damage_store_base");
+    self.hg_shield_stored_limit = GRENVAR(hgtype, "damage_store_limit");
+    self.nobuffs = GRENVAR(hgtype, "nobuffs");
+    
     if(GRENVAR(hgtype, "immobile")) {
         self.hg_shield_oldmovetype = self.movetype;
         self.movetype = MOVETYPE_NONE;
     }
+    
     sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     
     if(!self.hg_shieldmodel) {
         e = spawn();
         e.classname = "hg_shieldmodel";
         e.owner = self;
-        e.think = HG_ShieldModel_Think;
+        e.think = HG_Shield_Model_Think;
         e.nextthink = time;
         e.alpha = 0.1;
-        e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+        e.effects = EF_ADDITIVE | EF_FULLBRIGHT;
         e.glow_size = 256;
         e.glow_color = 230;
         e.glow_trail = 1;
@@ -820,8 +954,14 @@ void HG_Shield(float hgtype) {
     }
 }
 
-void HG_Shield_Frame() {
+void HG_Shield_Frame(void) {
+    if(self.hg_shieldmax && self.hg_shield)
+        self.hg_shieldstat = self.hg_shield / self.hg_shieldmax;
+    else
+        self.hg_shieldstat = 0;
+    
     if(!self.hg_shield) {
+        self.nobuffs = 0;
         if(self.hg_shield_oldmovetype) {
             self.movetype = self.hg_shield_oldmovetype;
             self.hg_shield_oldmovetype = 0;
@@ -1119,7 +1259,9 @@ void HG_Attack()
     setsize(gren, hitmins, hitmaxs);
 	setorigin(gren, w_shotorg);
 
-	gren.hg_deathtime = ((self.hg_power == 1)? time + 0.01 : time + GV("lifetime") * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+	gren.hg_deathtime = ((self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))? 
+                          time + 0.01 : time + GV("lifetime") * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+                          
 	gren.think = HG_Grenade_Think;
     gren.nextthink = time;
 	gren.use = HG_Grenade_Explode;
@@ -1162,7 +1304,7 @@ void HG_Attack()
 		Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), DEATH_HG_NAPALM, self.origin, '0 0 0');
 
 :finish
-    self.hg_next = time + (GV("cooldown") * W_WeaponRateFactor()) / ((hgtype == HG_LINKER)? Buffs_NadgetRegen(self) : 1);
+    self.hg_next = time + GV("cooldown") * Buffs_NadgetCooldown(self);
     
     if(!freebonus) {
         self.hg_ammo -= 1;
@@ -1240,8 +1382,8 @@ void HG_Frame()
 		self.hg_power = 0;
 	}
 	
-	if(self.hg_power == 1 && mayfire)
-		HG_Attack(); 	// inhand explosion
+	if(self.hg_power == 1 && mayfire && GRENVAR((self.hg_bonus? self.hg_bonustype : self.hg_type), "launch_fullforce_launches_immediately"))
+		HG_Attack();
 	
 	self.hg_state = held;
     float dpause = cvar("g_handgrenades_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
