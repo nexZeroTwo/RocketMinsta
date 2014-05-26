@@ -576,7 +576,7 @@ float GameCommand_Vote(string s, entity e) {
 				} else if(VoteCheckNasty(dovote)) {
 					print_to(e, "Syntax error in command. See 'vhelp' for more info.");
 				} else if(RemapVote(dovote, "vdo", e)) { // strcat seems to be necessary
-                    tmp = strcat("^2* ^3", VoteNetname(e), "^2 used his ^3master^2 status to do ^2", RemapVote_display, "^2");
+                    tmp = strcat("^2* ^3", VoteNetname(e), "^2 used his ^3", e.vote_mastername, "^2 status to do ^2", RemapVote_display, "^2");
 					bprint("\{1}", tmp, "\n");
                     IRC_Announce_Vote(tmp);
 					if(cvar("sv_eventlog"))
@@ -597,8 +597,23 @@ float GameCommand_Vote(string s, entity e) {
 				if (e)
 					e.vote_master = granted;
 				if(granted) {
+                    string lname;
+                    
+                    if(argc > 3 && cvar("sv_vote_master_arbitrary_login"))
+                        lname = argv(3);
+                    else
+                        lname = cvar_string("sv_vote_master_default_login");
+                    
+                    if(e) {
+                        if(e.vote_mastername) {
+                            strunzone(e.vote_mastername);
+                            e.vote_mastername = string_null;
+                        }
+                        e.vote_mastername = strzone(lname);
+                    }
+                    
 					print("Accepted master login from ", VoteNetname(e), "\n");
-                    tmp = strcat("^2* ^3", VoteNetname(e), "^2 logged in as ^3master^2");
+                    tmp = strcat("^2* ^3", VoteNetname(e), "^2 logged in as ^3", e.vote_mastername, "^2");
 					bprint("\{1}", tmp, "\n");
                     IRC_Announce_Vote(tmp);
 					if(cvar("sv_eventlog"))

@@ -8,6 +8,8 @@ float votefinished;
 .float vote_next;
 .float vote_vote;
 
+.string vote_mastername;
+
 float VoteCheckNasty(string cmd);
 entity GetKickVoteVictim(string vote, string cmd, entity caller);
 float GameCommand_Vote(string s, entity e);
