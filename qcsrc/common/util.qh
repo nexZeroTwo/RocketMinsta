@@ -208,3 +208,5 @@ float approach(float v, float t, float d);
 #define ISFAGGOTMAP(m) (substring(m, 0, 7) == "fagcity" || substring(m, 0, 7) == "ikzbdsm")
 
 string FormatDamage(float f);
+
+float strcmp(string s1, string s2);

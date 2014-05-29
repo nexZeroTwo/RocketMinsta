@@ -23,6 +23,7 @@ void fillNexuizMultiplayerDialog(entity me)
 		me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Player Setup",  makeNexuizPlayerSettingsTab()));
 			if(cvar_string("_cl_name") == "Player")
 				e.onClick(e, e.onClickEntity); // lol animation
+        me.TD(me, 1, 1, mc.makeTabButton(mc, "IRC",  makeNexuizIRCTab()));
 
 	me.TR(me);
 	me.TR(me);

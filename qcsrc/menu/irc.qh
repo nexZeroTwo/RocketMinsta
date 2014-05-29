@@ -1,0 +1,33 @@
+
+#define IRC_MAX_BUFFERS 256
+#define IRC_BUFFER_SIZE 512
+
+#define IRC_BUFFER_MSGLEVEL_NONE 0
+#define IRC_BUFFER_MSGLEVEL_INFO 1
+#define IRC_BUFFER_MSGLEVEL_NORMAL 2
+#define IRC_BUFFER_MSGLEVEL_URGENT 3
+
+float irc_initialized;
+float irc_activebuffer;
+
+float irc_buffer_handles[IRC_MAX_BUFFERS];
+float irc_buffer_size[IRC_MAX_BUFFERS];
+float irc_buffer_msglevel[IRC_MAX_BUFFERS];
+float irc_buffer_session[IRC_MAX_BUFFERS];
+string irc_buffer_ids[IRC_MAX_BUFFERS];
+string irc_buffer_msgtarget[IRC_MAX_BUFFERS];
+
+void IRC_Init(void);
+float IRC_CreateBuffer(string id, float session, string targ);
+float IRC_GetBuffer(string id);
+float IRC_GetBufferHandle(float i);
+float IRC_GetOrCreateBuffer(string id, float session, string targ);
+void IRC_DeleteBuffer(float i);
+void IRC_DeleteBufferByID(string id);
+void IRC_DeleteBuffersByPrefix(string prefix);
+void IRC_PutInBuffer(float i, string str, float level);
+float IRC_GetBufferSize(float i);
+string IRC_ChannelBufferName(float handle, string channel);
+string IRC_QueryBufferName(float handle, string nick);
+string IRC_ServerBufferName(float handle);
+void IRC_ChangeBufferInfo(float i, string id, string targ);

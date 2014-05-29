@@ -16,6 +16,8 @@ oo/base.h
 ../common/gametype.qh
 ../common/handgrenades.qh
 ../common/dprm.qh
+../common/irc.qh
+irc.qh
 
 gamecommand.qh
 menu.qh
@@ -37,6 +39,7 @@ gamecommand.qc
 menu.qc
 draw.qc
 nexuiz/util.qc
+irc.qc
 
 ../common/dprm.qc
 ../common/campaign_file.qc

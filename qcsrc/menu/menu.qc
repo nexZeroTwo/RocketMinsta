@@ -46,6 +46,7 @@ void() m_init =
 	
 	IP2C_Init();
 	DPRM_Start();
+    IRC_Init();
 }
 
 void UpdateConWidthHeight()

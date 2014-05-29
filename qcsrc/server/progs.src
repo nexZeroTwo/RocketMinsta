@@ -55,6 +55,7 @@ precious.qh
 domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
+../common/irc.qh
 irc.qh
 joinqueue.qh
 

@@ -237,8 +237,8 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 			}
 		}
 		
-		if not(ok)
-			print("^1 *** ", MapInfo_Map_bspname, " filtered\n");
+		//if not(ok)
+		//	print("^1 *** ", MapInfo_Map_bspname, " filtered\n");
 		
 		//if((MapInfo_Map_supportedFeatures & pFeatures) == pFeatures)
 		//if((MapInfo_Map_flags & pFlagsRequired) == pFlagsRequired)
