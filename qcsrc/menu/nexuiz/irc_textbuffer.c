@@ -20,6 +20,7 @@ CLASS(IRCTextBuffer) EXTENDS(NexuizListBox)
     ATTRIB(IRCTextBuffer, prevSelected, float, -1)
     ATTRIB(IRCTextBuffer, srcBuffer, float, 0)
     ATTRIB(IRCTextBuffer, lastDraw, float, 0)
+    ATTRIB(IRCTextBuffer, lastUpdate, float, 0)
 ENDCLASS(IRCTextBuffer)
 entity makeIRCTextBuffer();
 #endif
@@ -76,6 +77,8 @@ void updateBufferTextIRCTextBuffer(entity me) {
         me.selectedItem = j - 1;
         me.scrollPos = max(0, me.nItems * me.itemHeight - 1);
     }
+    
+    me.lastUpdate = time;
 }
 
 void configureIRCTextBufferIRCTextBuffer(entity me) {
@@ -94,8 +97,9 @@ void resizeNotifyIRCTextBuffer(entity me, vector relOrigin, vector relSize, vect
 void drawListBoxItemIRCTextBuffer(entity me, float i, vector absSize, float isSelected) {
     string s;
     
-    if(time - me.lastDraw > 1)
+    if(time - me.lastDraw > 1 || time - me.lastUpdate > 1)
         me.updateBufferText(me);
+    
     me.lastDraw = time;
     
     if(isSelected)
