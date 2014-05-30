@@ -1,10 +1,11 @@
 #ifdef INTERFACE
-CLASS(NexuizIRCTab) EXTENDS(NexuizTab)
+CLASS(NexuizIRCTab) EXTENDS(NexuizDialog)
     METHOD(NexuizIRCTab, fill, void(entity))
     ATTRIB(NexuizIRCTab, title, string, "IRC")
-    ATTRIB(NexuizIRCTab, intendedWidth, float, 0.9)
-    ATTRIB(NexuizIRCTab, rows, float, 22)
-    ATTRIB(NexuizIRCTab, columns, float, 6.5)
+    ATTRIB(NexuizIRCTab, intendedWidth, float, 0.96)
+    ATTRIB(NexuizIRCTab, rows, float, 24)
+    ATTRIB(NexuizIRCTab, columns, float, 6)
+    ATTRIB(NexuizIRCTab, color, vector, SKINCOLOR_DIALOG_MULTIPLAYER)
     ATTRIB(NexuizIRCTab, name, string, "IRC")
 ENDCLASS(NexuizIRCTab)
 entity makeNexuizIRCTab();

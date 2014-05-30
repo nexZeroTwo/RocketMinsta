@@ -107,15 +107,20 @@ void configureMainWindowMainWindow(entity me)
 		n.setNexposee(n, i, SKINPOSITION_DIALOG_SINGLEPLAYER, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
     */
         
+        i = spawnNexuizIRCTab();
+        i.configureDialog(i);
+        n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+        n.setNexposee(n, i, '0.1 0.2 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+        
 		i = spawnNexuizMultiplayerDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, '0.5 0.1 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.9 0.2 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNexuizSettingsDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, '0.5 0.9 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.5 0.8 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNexuizCreditsDialog();
 		i.configureDialog(i);
