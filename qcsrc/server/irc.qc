@@ -334,7 +334,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             if(msg != "")
                 bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", msg, "\n");
         }
-    } else if(event == "PRIVMSG" || event == "NOTICE") {
+    } else if(event == "PRIVMSG") {
         string cmd = argv(1);
         if(argv(0) == IRC_CurrentNick(handle)) {
             if(IRC_IsAdmin(src))
