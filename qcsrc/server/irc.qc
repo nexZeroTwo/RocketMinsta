@@ -171,6 +171,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             RESTARG(reason);
             reason = strcat("[IRC ", nick, "] ", reason);
             
+            string clname = strzone(client.netname);
             i = Ban_KickBanClient(client, bantime, masksize, reason);
             
             if(i >= 0)
@@ -179,6 +180,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             else
                 IRC_Notice(handle, nick, "Failed to kickban, just kicked");
             
+            strunzone(clname);
             break;
         }
         
