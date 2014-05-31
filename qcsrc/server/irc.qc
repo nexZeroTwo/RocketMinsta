@@ -39,7 +39,7 @@ float IRC_Privmsg(float handle, string targ, string msg) {
     float r = IRC_Privmsg_Builtin(handle, targ, msg);
     
     float spam = max(0, cvar("sv_ircbot_spamstatus"));
-    if(spam && handle == irc.cnt && targ == irc.target) {
+    if(spam && handle == irc.cnt && strtolower(targ) == irc.target) {
         float c = cvar("_sv_ircbot_msgsent") + 1;
         if(c >= spam) {
             c = 0;
@@ -171,6 +171,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             RESTARG(reason);
             reason = strcat("[IRC ", nick, "] ", reason);
             
+            string clname = strzone(client.netname);
             i = Ban_KickBanClient(client, bantime, masksize, reason);
             
             if(i >= 0)
@@ -179,6 +180,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             else
                 IRC_Notice(handle, nick, "Failed to kickban, just kicked");
             
+            strunzone(clname);
             break;
         }
         
@@ -334,7 +336,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             if(msg != "")
                 bprint("\{1}^5IRC ^8<^3", nick, "^8>^7 ", msg, "\n");
         }
-    } else if(event == "PRIVMSG" || event == "NOTICE") {
+    } else if(event == "PRIVMSG") {
         string cmd = argv(1);
         if(argv(0) == IRC_CurrentNick(handle)) {
             if(IRC_IsAdmin(src))
@@ -343,27 +345,35 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
                 IRC_Notice(handle, nick, "Permission denied");
         }
     } else if(event == "CTCP") {
+        // /me for borked libircclient
         if(cvar("sv_ircbot_chat_irc2game"))
+        if(!cvar("sv_ircbot_chat_irc2game_require_highlight"))
         if(substring(argv(0), 0, 7) == "ACTION ")
             bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(argv(0), 7, strlen(argv(0)))), "\n");
+    } else if(event == "ACTION") {
+        // /me for unborked libircclient
+        if(cvar("sv_ircbot_chat_irc2game"))
+        if(!cvar("sv_ircbot_chat_irc2game_require_highlight"))
+        if(strtolower(argv(0)) == irc.target)
+            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(argv(1), 7, strlen(argv(1)))), "\n");
     } else if(event == "KICK") {
         if(cvar("sv_ircbot_channel_auto_rejoin"))
         if(argv(1) == IRC_CurrentNick(handle)) {
-            IRC_JoinChannel(handle, argv(0), ((argv(0) == irc.target)? irc.targetname : ""));
+            IRC_JoinChannel(handle, argv(0), ((strtolower(argv(0)) == irc.target)? irc.targetname : ""));
             return;
         }
         
-        if(ijp) if(argv(0) == irc.target) {
+        if(ijp) if(strtolower(argv(0)) == irc.target) {
             bprint("\{1}^5IRC  ^1* ^3", nick, " ^1kicked ^3", argv(1), " ^1from ^2", argv(0));
             if(argv(2) != "" && argv(2) != argv(1))
                bprint(" ^8(", argv(2), ")");
             bprint("\n");
         }
     } else if(event == "JOIN") {
-        if(ijp) if(argv(0) == irc.target)
+        if(ijp) if(strtolower(argv(0)) == irc.target)
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7joined ^2", argv(0), "\n");
     } else if(event == "PART") {
-        if(ijp) if(argv(0) == irc.target)
+        if(ijp) if(strtolower(argv(0)) == irc.target)
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7left ^2", argv(0));
             if(argv(1) != "" && argv(1) != nick)
                 bprint(" ^8(", argv(1), ")");
@@ -375,7 +385,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
                 bprint(" ^8(", argv(0), ")");
             bprint("\n");
     } else if(event == "MODE") {
-        if(argv(0) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
+        if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
             irc.skin = 1;
     } else if(event == "NICK") {
         if(cvar("sv_ircbot_announce_irc_nick"))

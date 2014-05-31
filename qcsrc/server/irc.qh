@@ -33,6 +33,8 @@ float(float handle, string nick) IRC_ChangeNick = #566;
 float(float handle, string channel, string mode) IRC_ChannelMode = #567;
 float(float handle, string mode) IRC_UserMode = #568;
 float(string mask, string pattern) IRC_MaskMatches = #569;
+float(float handle, string targ, string msg) IRC_CTCPRequest = #570;
+float(float handle, string targ, string msg) IRC_CTCPReply = #571;
 
 const float IRC_RFC_COMMAND_LENGTH = 510;
 
