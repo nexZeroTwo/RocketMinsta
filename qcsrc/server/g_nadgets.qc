@@ -1,5 +1,5 @@
 
-// Handgrenades mutator
+// Nadgets mutator
 // Intended for the Camping Rifle Arena mode
 
 void HG_Init() {
