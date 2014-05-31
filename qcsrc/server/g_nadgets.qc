@@ -1305,7 +1305,7 @@ void HG_Linker(float hgtype) {
     e.scale = e.hg_linker_range / e.maxs_x;
     e.glow_color = 0xF5;
     e.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
-    e.movetype = (e.hg_adept? MOVETYPE_NONE : MOVETYPE_TOSS);
+    e.movetype = MOVETYPE_TOSS;
     setorigin(e, self.origin + self.view_ofs);
     
     e.enemy = spawn();
