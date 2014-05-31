@@ -19,3 +19,6 @@ string Buffs_TypeToExpandedName(float);
 string Buffs_NameToExpandedName(string);
 vector Buffs_TypeToColor(float);
 float Buffs_TypeToIndex(float);
+
+#define Buffs_NameToIcon(buff) strcat("gfx/buffs/", buff)
+#define Buffs_TypeToIcon(buff) Buffs_NameToIcon(Buffs_TypeToName(buff))

@@ -1964,6 +1964,36 @@ float Sbar_WouldDrawScoreboard() {
 
 float pwhud_enabled;
 
+void Sbar_Buffs(vector pos, vector sz) {
+    float pwups = pwhud_enabled;
+    
+    float extra = 20;
+    pos_x -= extra * 0.5;
+    sz_x += extra;
+    
+    float buffs = getstati(STAT_BUFFS);
+    float bcount, buff, i;
+    vector isize = '42 42 0';
+    
+    for(buff = BUFF_FIRST; buff <= BUFF_LAST; buff *= 2)
+        if(buffs & buff)
+            ++bcount;
+    
+    if(bcount) {
+        pwhud_enabled = TRUE;
+    } else {
+        if(!pwups)
+            pwhud_enabled = FALSE;
+        return;
+    }
+    
+    for(buff = BUFF_FIRST; buff <= BUFF_LAST; buff *= 2) if(buffs & buff) {
+        drawpic(pos + '1 0 0' * (sz_x * (i+1)/(bcount+1) - isize_x * 0.5) + '0 0.5 0' * (sz_y - isize_y), 
+                Buffs_TypeToIcon(buff), isize, '1 1 1', 1, DRAWFLAG_NORMAL);
+        ++i;
+    }
+}
+
 void CSQC_Strength_Timer(vector sectorpos) {
 	vector pos, numpos;
 	vector bottom;
@@ -4238,7 +4268,7 @@ void Sbar_Draw(void)
 
 	vector hudline, hudline_pos, hud_sector, hud_sector_pos, sector_mod;
 	float ammosector_pos, nadesector_pos, next_sector, hud_sector_drawflag;
-	vector powerup_pos, teamhud_pos;
+	vector powerup_pos, teamhud_pos, powerup_size;
     hud_sector_drawflag = DRAWFLAG_NORMAL;
 
 	if (intermission == 2) // map voting screen
@@ -4500,7 +4530,7 @@ void Sbar_Draw(void)
 				//		ammo/nades | teamhud
 
 				if(vid_conwidth < 800 || g_handgrenades && vid_conwidth <= 1024)
-					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
+					next_sector = bottomright_x - SECWIDTH_NORMAL*2 - 15;
 				else if(teamhud_wide)
 				{
 					if(vid_conwidth <= 900)
@@ -4539,7 +4569,7 @@ void Sbar_Draw(void)
 
 				teamhud_pos = hud_sector_pos;
 				
-				if(vid_conwidth >= 800)
+				if(vid_conwidth > 1024)
 				{
 					// teamhud | powerups
 					next_sector = bottomright_x - SECWIDTH_WIDE - 13; //bottomright_x - 103 - 6;
@@ -4556,6 +4586,7 @@ void Sbar_Draw(void)
 							hud_sector_x = SECWIDTH_NORMAL;
 							hud_sector_pos_x = next_sector - 2;
 							powerup_pos = hud_sector_pos;
+                            powerup_size = hud_sector;
 							sector_mod = '0 0 0';
 							sector_alphamod = pw_alpha;
 						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
@@ -4600,6 +4631,7 @@ void Sbar_Draw(void)
 						HUDLINE_SECTOR({
 							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
 							powerup_pos = hud_sector_pos;
+                            powerup_size = hud_sector;
 							sector_alphamod = pw_alpha;
 						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 						sector_alphamod = 1;
@@ -4776,6 +4808,7 @@ void Sbar_Draw(void)
                     HUDLINE_SECTOR({
                         hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
                         powerup_pos = hud_sector_pos;
+                        powerup_size = hud_sector;
                         sector_alphamod = pw_alpha;
                     }, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
                     sector_alphamod = 1;
@@ -4789,6 +4822,7 @@ void Sbar_Draw(void)
 						HUDLINE_SECTOR({
 							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
 							powerup_pos = hud_sector_pos;
+                            powerup_size = hud_sector;
 							sector_alphamod = pw_alpha;
 						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 						sector_alphamod = 1;
@@ -5175,6 +5209,8 @@ void Sbar_Draw(void)
 		//if(rm_oldhud)
 			CSQC_Strength_Timer(powerup_pos);
 
+        Sbar_Buffs(powerup_pos, powerup_size);
+
 		// draw gametype specific icons
 
 		if(gametype != GAME_DEATHMATCH && gametype != GAME_TEAM_DEATHMATCH)
@@ -5201,7 +5237,8 @@ void Sbar_Draw(void)
     
     if(g_handgrenades)
         Sbar_DrawHGBonus();
-    Sbar_DrawBuffs();
+    
+    // Sbar_DrawBuffs();
 
 	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)
