@@ -311,7 +311,7 @@ float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
 
-float g_handgrenades;
+float g_nadgets;
 float sv_scoreboard_heal_column;
 float g_freeze;
 

@@ -143,7 +143,7 @@ void ImpulseCommands (void)
 					W_PreviousWeapon (2);
 					break;
 				case 17:
-                    if(g_handgrenades) {
+                    if(g_nadgets) {
                         if(self.hg_stealth || self.hg_stealth_saved)
                             HG_Cloak_Trigger();
                         else {

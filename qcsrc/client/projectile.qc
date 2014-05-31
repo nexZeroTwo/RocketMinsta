@@ -517,7 +517,7 @@ void Ent_Projectile()
             case PROJECTILE_HG_TRANSLOC:
             case PROJECTILE_HG_REMOTE:
             case PROJECTILE_HG_LASER:
-                if(g_handgrenades == 2) {   // g_handgrenades_oldhitboxes
+                if(g_nadgets == 2) {   // g_nadgets_oldhitboxes
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';
                 } else {

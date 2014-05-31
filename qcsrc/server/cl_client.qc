@@ -807,7 +807,7 @@ void PutObserverInServer (void)
     if(!self.jb_specteam) {
         PlayerScore_Clear(self); // clear scores when needed
     
-        if(g_handgrenades) {
+        if(g_nadgets) {
             self.hg_type_picked = 0;
             self.hg_type = 0;
             self.hg_nadesused = 0;
@@ -1374,7 +1374,7 @@ void PutClientInServer (void)
         Freeze_Hook_PlayerSpawns();
 		JB_PlayerSpawn();
         
-        if(g_handgrenades) {
+        if(g_nadgets) {
             if(self.wasingame)
                 HG_PlayerSpawn();
             else
@@ -1444,9 +1444,9 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
-    WriteByte(MSG_ENTITY, g_handgrenades? (g_handgrenades_oldhitboxes? 2 : 1) : 0);
-    if(g_handgrenades)
-        WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
+    WriteByte(MSG_ENTITY, g_nadgets? (g_nadgets_oldhitboxes? 2 : 1) : 0);
+    if(g_nadgets)
+        WriteByte(MSG_ENTITY, (cvar_string("g_nadgets_type_selectable") != ""));
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
@@ -3156,9 +3156,9 @@ void PlayerPreThink (void)
             self.hg_plasmalock_nexteffect = time + edelay;
             vector eorigin = self.origin + self.maxs_z * '0 0 0.5';
             
-            float pdmg = cvar("g_handgrenades_plasma_projectile_frozenlock_dps") * edelay;
+            float pdmg = cvar("g_nadgets_plasma_projectile_frozenlock_dps") * edelay;
             if(pdmg)
-                RadiusDamage(self, self.hg_plasmalock_owner, pdmg, pdmg, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_handgrenades_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
+                RadiusDamage(self, self.hg_plasmalock_owner, pdmg, pdmg, cvar("g_nadgets_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_nadgets_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
             
             te_csqc_lightningarc(eorigin + randomvec() * 100, eorigin + randomvec() * 10, TRUE, self.hg_plasmalock_owner.team);
             sound(self, CHAN_AUTO, "sound/weapons/electro_impact.wav", 0.4, 1.5);

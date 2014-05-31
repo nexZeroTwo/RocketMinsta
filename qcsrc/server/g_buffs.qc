@@ -41,10 +41,10 @@ void Buffs_Init(void) {
         if(b == BUFF_MEDIC && !teams_matter)
             g_buffs_enabled[i] = FALSE;
             
-        if(b == BUFF_WRATH && !g_handgrenades)
+        if(b == BUFF_WRATH && !g_nadgets)
             g_buffs_enabled[i] = FALSE;
             
-        if(b == BUFF_ADEPT && !g_handgrenades)
+        if(b == BUFF_ADEPT && !g_nadgets)
             g_buffs_enabled[i] = FALSE;
         
         if(g_buffs_enabled[i]) {

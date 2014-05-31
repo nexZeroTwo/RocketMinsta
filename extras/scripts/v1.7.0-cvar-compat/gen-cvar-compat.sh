@@ -1,5 +1,6 @@
 #!/bin/bash
 
+cvars="$(dirname "$0")"/cvars.compat
 cd "$(dirname "$0")/../../.."
 
 function gen-qc {
@@ -21,7 +22,7 @@ void RM_CvarCompat() {
 	
 	print("Checking config compatibility...\n");
 	
-$(cat cvars.compat | while read line; do
+$(cat $cvars | while read line; do
 	old=${line%% *}
 	new=${line##* }
 	
@@ -65,7 +66,7 @@ function gen-cfg {
 
 EOF
 	
-	cat cvars.compat | while read line; do
+	cat $cvars | while read line; do
 		old=${line%% *}
 		new=${line##* }
 		echo "set $old __COMPATVAR_DISABLED__ \"Compatbility cvar: DO NOT USE. Use $new instead.\""
@@ -73,4 +74,4 @@ EOF
 }
 
 gen-qc  > qcsrc/server/rm_cvarcompat.qc
-gen-cfg > rocketminsta-compat.cfg
+gen-cfg > modfiles/rocketminsta-compat.cfg

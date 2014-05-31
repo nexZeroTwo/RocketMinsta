@@ -471,7 +471,7 @@ void SV_ParseClientCommand(string s) {
         if not(self.flags & FL_CLIENT)
             return;
         
-        if(!g_handgrenades)
+        if(!g_nadgets)
             return;
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
@@ -481,7 +481,7 @@ void SV_ParseClientCommand(string s) {
         
         float t = HG_NameToType(argv(1));
         float i;
-        float argc = tokenize_console(cvar_string("g_handgrenades_type_selectable"));
+        float argc = tokenize_console(cvar_string("g_nadgets_type_selectable"));
         
         if(argc)
             for(i = 0; i < argc; ++i)
@@ -510,7 +510,7 @@ void SV_ParseClientCommand(string s) {
                             self.hg_regentime = HG_RegenTime(self);
                             self.hg_regenstat = 0;
                             if(!term)
-                                self.hg_ammo = cvar("g_handgrenades_ammo");
+                                self.hg_ammo = cvar("g_nadgets_ammo");
                         }
                     }
                     

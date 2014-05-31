@@ -862,7 +862,7 @@ void SV_PlayerPhysics()
         maxspd_mod *= 1 + (cvar("g_buffs_haste_move_rate") - 1) * Buffs_BuffPower(self, BUFF_HASTE);
     
     if(self.hg_stealth)
-        maxspd_mod *= cvar("g_handgrenades_cloak_movespeed");
+        maxspd_mod *= cvar("g_nadgets_cloak_movespeed");
     
     if(g_dodging)
         dodging_PlayerPhysics();

@@ -190,8 +190,8 @@ void Freeze_UnfreezePlayer(entity plr)
     if(plr.freeze_waypoint)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
-    if(g_handgrenades) {
-        if(cvar("g_handgrenades_regen_time")) {
+    if(g_nadgets) {
+        if(cvar("g_nadgets_regen_time")) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
@@ -454,7 +454,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         
         FOR_EACH_PLAYER(other)
-            if(time - other.hg_stealthtime >= cvar("g_handgrenades_cloak_actiondelay"))
+            if(time - other.hg_stealthtime >= cvar("g_nadgets_cloak_actiondelay"))
             if(self != other && !other.frozen && other.team == self.team)
             if(time - other.revtime >= Freeze_CVar("revive_delay_after_revived"))
             if(time - other.lastdamage >= Freeze_CVar("revive_delay_for_reviver") || BUFFS_PRESENT(other, BUFF_MEDIC))
@@ -485,7 +485,7 @@ void Freeze_Hook_PlayerPreThink(void) {
                     
                     float lmod = 1;
                     if(other.hg_shield)
-                        lmod *= cvar("g_handgrenades_shield_progressrate");
+                        lmod *= cvar("g_nadgets_shield_progressrate");
                     if(BUFFS_PRESENT(other, BUFF_MEDIC))
                         lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * Buffs_BuffPower(other, BUFF_MEDIC);
                     rmod = max(rmod, lmod);

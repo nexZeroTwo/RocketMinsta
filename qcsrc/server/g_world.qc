@@ -748,7 +748,7 @@ void spawnfunc_worldspawn (void)
     
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
-	if(g_handgrenades)
+	if(g_nadgets)
         HG_Init();
     Term_Init();
     
