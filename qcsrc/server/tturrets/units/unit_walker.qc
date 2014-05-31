@@ -1011,7 +1011,7 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
             CSQCProjectile(e, TRUE, HG_TypeToCSQCProjType(e.hg_type), TRUE);
         }
         
-        if(g_handgrenades)
+        if(g_nadgets)
             HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"));
     }
     

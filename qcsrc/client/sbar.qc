@@ -458,7 +458,7 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
-        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_handgrenades? " nfs" : ""),
+        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_nadgets? " nfs" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
@@ -787,7 +787,7 @@ string Sbar_GetField(entity pl, float field)
 				}
 			}
             */
-            else if(g_handgrenades && cvar("_g_handgrenades_select_available")) {
+            else if(g_nadgets && cvar("_g_nadgets_select_available")) {
                 if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
                     float hgt = pl.(scores[SP_NADEMODE]);
                     sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
@@ -4477,7 +4477,7 @@ void Sbar_Draw(void)
                                             sector_alphamod, hud_sector_drawflag);
 				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
-                if(g_handgrenades && vid_conwidth >= 678) {
+                if(g_nadgets && vid_conwidth >= 678) {
                     // ammo | nades
                     HUDLINE_SLICE({
                         hudline_x = 10 - bw_right - bw_left;
@@ -4499,7 +4499,7 @@ void Sbar_Draw(void)
 				// separator slice:
 				//		ammo/nades | teamhud
 
-				if(vid_conwidth < 800 || g_handgrenades && vid_conwidth <= 1024)
+				if(vid_conwidth < 800 || g_nadgets && vid_conwidth <= 1024)
 					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
 				else if(teamhud_wide)
 				{
@@ -4723,7 +4723,7 @@ void Sbar_Draw(void)
 				
 				if(!low2)
 				{
-                    if(g_handgrenades) {/*
+                    if(g_nadgets) {/*
                         HUDLINE_SECTOR({
                             hud_sector_x = SECWIDTH_NORMAL;
                             nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
@@ -5199,7 +5199,7 @@ void Sbar_Draw(void)
 			CSQC_vip_hud(teamhud_pos);
 	}
     
-    if(g_handgrenades)
+    if(g_nadgets)
         Sbar_DrawHGBonus();
     Sbar_DrawBuffs();
 

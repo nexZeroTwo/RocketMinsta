@@ -90,13 +90,13 @@ void HG_Shield_Trigger(entity);
 .vector hg_normal;
 .entity hg_waypoint;
 
-float g_handgrenades_oldhitboxes;
-float g_handgrenades_detonatelaunches;
+float g_nadgets_oldhitboxes;
+float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
 
-#define BUTTON_HG ((g_handgrenades_detonatelaunches)? hg_detonatepressed : button6)
-#define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
+#define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
+#define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
 #define HG_PLAYERNADETYPE(p) (((p).hg_bonus)? ((p).hg_bonustype) : ((p).hg_type))
 

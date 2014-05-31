@@ -16,7 +16,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     float damage;
     
     if(tdeath_deathtype == DEATH_HG_TRANSLOC)
-        damage = cvar("g_handgrenades_transloc_damage") * Buffs_NadgetPower(player);
+        damage = cvar("g_nadgets_transloc_damage") * Buffs_NadgetPower(player);
     
     if(!damage)
         damage = 10000;
