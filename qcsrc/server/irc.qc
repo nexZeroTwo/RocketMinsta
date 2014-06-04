@@ -175,7 +175,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             i = Ban_KickBanClient(client, bantime, masksize, reason);
             
             if(i >= 0)
-                IRC_Notice(handle, nick, strcat(client.netname, "^7 is now banned for ", ftos(bantime),
+                IRC_Notice(handle, nick, strcat(clname, "^7 is now banned for ", ftos(bantime),
                                          strcat(" seconds (masksize ", ftos(masksize), ", id ^3#", ftos(i), "^7)")));
             else
                 IRC_Notice(handle, nick, "Failed to kickban, just kicked");
