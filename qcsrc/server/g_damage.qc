@@ -399,7 +399,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
         HG_DetonateAll(targ);
         
         if(!g_freezetag && !g_jailbreak) {
-            if(cvar("g_handgrenades_resetonrespawn"))
+            if(cvar("g_nadgets_resetonrespawn"))
                 targ.hg_ammo = 0;
         }
 		
@@ -910,7 +910,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                 }
                 #undef RAGESOUND
                 
-                if(g_handgrenades)
+                if(g_nadgets)
                 if(DEATH_ISHG(deathtype))
                     PlayerScore_Add(attacker, SP_NADEFRAGS, 1);
 			}
@@ -1058,7 +1058,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
     if not(damage_linkmode) {
         if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
-            damage = cvar("g_handgrenades_transloc_damage_shield") * Buffs_NadgetPower(attacker);
+            damage = cvar("g_nadgets_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
         if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
             Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
@@ -1214,7 +1214,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
             
-            if(deathtype == DEATH_TELEFRAG || (deathtype == HG_TRANSLOC && !cvar("g_handgrenades_transloc_damage")))
+            if(deathtype == DEATH_TELEFRAG || (deathtype == HG_TRANSLOC && !cvar("g_nadgets_transloc_damage")))
             if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
                 damage = 0;
                 force = '0 0 0';
