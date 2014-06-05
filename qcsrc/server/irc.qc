@@ -175,7 +175,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             i = Ban_KickBanClient(client, bantime, masksize, reason);
             
             if(i >= 0)
-                IRC_Notice(handle, nick, strcat(client.netname, "^7 is now banned for ", ftos(bantime),
+                IRC_Notice(handle, nick, strcat(clname, "^7 is now banned for ", ftos(bantime),
                                          strcat(" seconds (masksize ", ftos(masksize), ", id ^3#", ftos(i), "^7)")));
             else
                 IRC_Notice(handle, nick, "Failed to kickban, just kicked");
@@ -225,11 +225,12 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
             IRC_Notice(handle, nick, strcat("Active bans: ^1", ftos(activebans),
                                             "^7, showing up to ^1", ftos(maxrange), "^7 entries starting from ^3#", ftos(startfrom)));
             
-            for(l = i = startfrom; i < ban_count, l < maxrange; ++i) {
+            for(l = 0, k = i = startfrom; i < ban_count && l < maxrange; ++i) {
                 if(time > ban_expire[i])
                     continue;
                 
-                ++l;
+                ++l; ++k;
+                
                 s = strcat("^3#", ftos(i), " ", ((i < 10)? " " : ""));
                 s = strcat(s, "^4", ban_ip[i], "^7 ");
                 for(j = 0; j < 15 - strlen(ban_ip[i]); ++j) s = strcat(s, " ");
@@ -238,7 +239,8 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                     s = strcat(s, ", ", ban_reason[i]);
                 IRC_Notice(handle, nick, s);
             }
-            if(l == activebans)
+            
+            if(k == activebans)
                 IRC_Notice(handle, nick, "- End of list -");
             else
                 IRC_Notice(handle, nick, "- List truncated, use bans <position> [item count] to start from a different item -");
