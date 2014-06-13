@@ -2886,6 +2886,11 @@ void LeaveSpectatorMode()
     }
     
 	if(isJoinAllowed()) {
+        if(lockteams) {
+            bigprint(self, "The teams are locked", "", 2);
+            return;
+        }
+        
         if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
             if(HG_ShowMenu(FALSE))
                 return;

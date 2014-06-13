@@ -415,9 +415,16 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(!g_arena)
-		if (self.classname != "player" && !lockteams)
-		{
+		
+        if(g_arena)
+            return;
+        
+		if(self.classname != "player") {            
+            if(lockteams) {
+                bigprint(self, "The teams are locked", "", 2);
+                return;
+            }
+            
 			if(isJoinAllowed()) {
                 if(HG_ShowMenu(FALSE))
                     return;
