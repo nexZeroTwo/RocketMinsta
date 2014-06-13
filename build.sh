@@ -18,6 +18,11 @@ BUILT_PKGNAMES=""
 COMMONSUM=""
 MENUSUM=""
 
+WINDOWS=0
+if [ "$(uname -o)" = "Cygwin" ]; then
+	WINDOWS=1
+fi
+
 function getfiledircache
 {
     filecache=()
@@ -64,10 +69,6 @@ function removeoldfiles
 function linkfiles
 {
     if [ -n "${LINKDIRS}" ]; then
-
-        # Not tested under Windows at all
-        export CYGWIN="winsymlinks:native"
-
         getfiledircache "${BUILDDIR}"
 
         for j in "${LINKDIRS[@]}"; do
@@ -79,7 +80,11 @@ function linkfiles
             done
 
             for i in "${filecache[@]}"; do
-                ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+				if [ "$WINDOWS" = 1 ]; then
+					cp -vf "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+				else
+					ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+				fi
             done
 
         done
