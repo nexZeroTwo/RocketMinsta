@@ -415,9 +415,16 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(!g_arena)
-		if (self.classname != "player" && !lockteams)
-		{
+		
+        if(g_arena)
+            return;
+        
+		if(self.classname != "player") {            
+            if(lockteams) {
+                bigprint(self, "The teams are locked", "", 2);
+                return;
+            }
+            
 			if(isJoinAllowed()) {
                 if(HG_ShowMenu(FALSE))
                     return;
@@ -517,7 +524,7 @@ void SV_ParseClientCommand(string s) {
                     return;
                 }
                 
-        sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
+        sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
         return;
     } else if(cmd == "hg_optout") {
         if not(self.flags & FL_CLIENT)
