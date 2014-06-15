@@ -1356,6 +1356,12 @@ float HG_GG_Button(float hgtype) {
             trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, e + randomvec() * 10);
+            
+            if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+                float i; for(i = 0; i < 4; ++i)
+                    te_csqc_lightningarc(o, e + randomvec() * 10, TRUE, Team_FromIndex(i));
+            }
+            
             ++pwned;
         }
     }
