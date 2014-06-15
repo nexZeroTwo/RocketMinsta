@@ -790,7 +790,7 @@ string Sbar_GetField(entity pl, float field)
             else if(g_nadgets && cvar("_g_nadgets_select_available")) {
                 if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
                     float hgt = pl.(scores[SP_NADEMODE]);
-                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
+                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE, FALSE);
                     sbar_field_icon0_rgb = HG_TypeToColor(hgt);
                 }
             }
@@ -1060,7 +1060,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
             } else if(field == SP_NADEMODE) {
 				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
-                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
+                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE, FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
                 if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
@@ -3515,7 +3515,7 @@ void Sbar_DrawHGBonus(void) {
     sw = stringwidth(s, FALSE) + 1;
     o_x -= (spacing + fs_x * sw) * 0.5;
     
-    drawpic(o, HG_TypeToIcon(hgtype, TRUE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    drawpic(o, HG_TypeToIcon(hgtype, TRUE, FALSE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
     o_x += fs_x + spacing;
     drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
@@ -5114,7 +5114,7 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            string hgicon = HG_TypeToIcon(hgtype, TRUE);
+            string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
             vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED);
             vector hgsize = '32 32 0';
             
