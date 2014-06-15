@@ -1223,7 +1223,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		// nullify damage if teamplay is on
         if(!jaildm)
-		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC)
+		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC && deathtype != HG_GG)
 		if(attacker_is_player)
 		{
 			if(targ_is_player && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))

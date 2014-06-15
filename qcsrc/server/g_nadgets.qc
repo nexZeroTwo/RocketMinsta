@@ -1335,7 +1335,13 @@ float HG_GG_Button(float hgtype) {
     float damage = GRENVAR(hgtype, "damage");
     float range  = GRENVAR(hgtype, "range");
     
-    FOR_EACH_PLAYER(p) if(p != self) if(!teams_matter || p.team != self.team || BUFFS_PRESENT(self, BUFF_MEDIC)) if(p.deadflag == DEAD_NO) if(!p.frozen) if(!p.jb_isprisoned) if(vlen(self.origin - p.origin) < range) {
+    FOR_EACH_PLAYER(p)
+    if(p != self)
+    if(!teams_matter || p.team != self.team || BUFFS_PRESENT(self, BUFF_MEDIC) || BUFFS_PRESENT(self, BUFF_ADEPT))
+    if(p.deadflag == DEAD_NO)
+    if(!p.frozen)
+    if(!p.jb_isprisoned)
+    if(vlen(self.origin - p.origin) < range) {
         vector o = self.origin + self.view_ofs;
         vector e = p.origin + p.view_ofs;
         traceline(o, e, TRUE, self);
