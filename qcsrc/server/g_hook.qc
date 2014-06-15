@@ -326,6 +326,13 @@ void GrapplingHookTouch (void)
                 return;
             }
             
+            if(!other.frozen)
+            if(other.classname == "player")
+            if(!cvar("g_balance_grapplehook_works_on_players")) {
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
             if(other.iscreature && cvar("g_balance_grapplehook_oneperplayer")) {
                 entity e; for(;(e = find(e, classname, "grapplinghook"));)
                     if(e.aiment == other)
