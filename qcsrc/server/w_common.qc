@@ -38,7 +38,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	float f, ffs;
     float bash, bashcd;
 
-    bash = BUFFS_PRESENT(self, BUFF_BASH) && deathtype != DEATH_HG_SHIELD;
+    bash = (BUFFS_PRESENT(self, BUFF_BASH) && deathtype != DEATH_HG_SHIELD);
     
     if(bash)
         bashcd = cvar("g_buffs_bash_cooldown");

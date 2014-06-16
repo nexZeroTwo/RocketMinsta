@@ -1024,7 +1024,7 @@ float weapon_prepareattack(float secondary, float attacktime)
     if(self.hg_stealth)
         self.hg_stealth = 0;
     
-    if(time - self.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
+    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
         return FALSE;
     
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)

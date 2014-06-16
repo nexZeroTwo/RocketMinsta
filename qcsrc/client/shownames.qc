@@ -147,7 +147,7 @@ void Draw_ShowNames()
                 namepos_x += (namesize - width) / 2;
             
             float nade;
-            if(g_handgrenades)
+            if(g_nadgets)
                 nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
             
             if(self.sameteam) {

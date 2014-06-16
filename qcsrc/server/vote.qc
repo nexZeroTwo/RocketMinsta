@@ -119,7 +119,7 @@ float RemapVote(string vote, string cmd, entity e)
 	vote_argc = tokenize_console(vote);
 
 	local float min_argc = cvar (strcat ("sv_vote_", argv (0), "_min_arguments"));
-	if (vote_argc < min_argc && min_argc > 0)
+	if (vote_argc <= min_argc && min_argc > 0)
 	{
 		sprint (e, strcat ("^2", argv (0), " ^1requires at least ^2", ftos (min_argc), " ^1argument(s).\n"));
 		return FALSE;
