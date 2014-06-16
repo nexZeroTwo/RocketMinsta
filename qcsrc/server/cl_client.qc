@@ -608,7 +608,9 @@ float Client_customizeentityforclient()
     
     float sa = 1 - self.hg_stealthalpha;
     
-    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
+    if((teams_matter && other.team == self.team) || 
+       (other.hg_stealth && (!BUFFS_PRESENT(self, BUFF_ADEPT) || BUFFS_PRESENT(other, BUFF_ADEPT))) ||
+       !other.iscreature)
         sa = 0.3 + 0.7 * sa;
     
     self.alpha = sa * default_player_alpha;
@@ -1142,10 +1144,13 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
+    self.hg_stealth_saved = 0;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
     self.goodhits = 0;
+    
     self.hg_shield_stored = 0;
     self.hg_stealth = 0;
     self.hg_shieldstat = 0;
@@ -2353,6 +2358,9 @@ void player_powerups (void)
 	if (time >= game_starttime)
 	if (time < self.spawnshieldtime || self.hg_shield)
 		self.effects = self.effects | (EF_ADDITIVE | EF_FULLBRIGHT);
+    
+    if(time < self.hg_plasmalock)
+        self.effects |= EF_ADDITIVE | EF_FULLBRIGHT;
 }
 
 float CalcRegen(float current, float stable, float regenfactor, float regenframetime)
@@ -2684,6 +2692,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_shield_stored = spectatee.hg_shield_stored;
     self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
     self.hg_stealth = spectatee.hg_stealth;
+    self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
@@ -3137,6 +3146,29 @@ void PlayerPreThink (void)
 		checkSpectatorBlock();
 
 	zoomstate_set = 0;
+    
+    if(frametime)
+    if(isplayer)
+    if(time < self.hg_plasmalock) {
+        if(!self.hg_plasmalock_owner.iscreature) {
+            self.hg_plasmalock_owner = world;
+            self.hg_plasmalock = 0;
+            self.hg_plasmalock_nexteffect = time + frametime;
+        }
+        
+        if(time > self.hg_plasmalock_nexteffect) {
+            float edelay = 0.35;
+            self.hg_plasmalock_nexteffect = time + edelay;
+            vector eorigin = self.origin + self.maxs_z * '0 0 0.5';
+            
+            float pdmg = cvar("g_nadgets_plasma_projectile_frozenlock_dps") * edelay;
+            if(pdmg)
+                RadiusDamage(self, self.hg_plasmalock_owner, pdmg, pdmg, cvar("g_nadgets_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_nadgets_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
+            
+            te_csqc_lightningarc(eorigin + randomvec() * 100, eorigin + randomvec() * 10, TRUE, self.hg_plasmalock_owner.team);
+            sound(self, CHAN_AUTO, "sound/weapons/electro_impact.wav", 0.4, 1.5);
+        }
+    }
     
     if(frametime)
     if(time > self.namecheck)

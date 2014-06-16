@@ -329,8 +329,9 @@ const float STAT_BUFFS = 92;
 const float STAT_TERM_AUTH = 93;
 const float STAT_STEALTH = 94;
 const float STAT_HGREFIRE = 95;
-const float STAT_HGSHIELDSTORE = 96;
-const float STAT_HGSHIELDSTOREMAX = 97;
+const float STAT_STEALTH_SAVED = 96;
+const float STAT_HGSHIELDSTORE = 97;
+const float STAT_HGSHIELDSTOREMAX = 98;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;

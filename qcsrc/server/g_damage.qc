@@ -1072,7 +1072,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
-                targ.frozen_plasmalock = 0;
+                targ.hg_plasmalock = 0;
                 if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
                     Buffs_ArcDamage(targ, attacker, damage, deathtype);
                     Buffs_ArcDamage_Finalize();
@@ -1223,7 +1223,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		// nullify damage if teamplay is on
         if(!jaildm)
-		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC)
+		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC && deathtype != HG_GG)
 		if(attacker_is_player)
 		{
 			if(targ_is_player && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))
@@ -1619,6 +1619,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 self.lastdamage = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
+                    self.hg_stealth_saved = 0;
                     self.hg_stealthtime = 0; // no action delay if forcefully decloaked
                 }
             }
