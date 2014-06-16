@@ -528,6 +528,14 @@ float Item_GiveTo(entity item, entity player)
 		}
 	}
 
+    if(g_nadgets)
+    if(item.hg_ammo)
+    if(player.hg_ammo <= HG_RegenLimit(player)) {
+        pickedup = TRUE;
+        player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
+        player.hg_regentime = HG_RegenTime(player);
+    }
+
 :skip
 	// always eat teamed entities
 	if(item.team)
@@ -1839,6 +1847,22 @@ void spawnfunc_item_jetpack(void)
 		return;
 	}
 	StartItem ("models/items/g_jetpack.md3", "misc/itempickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Jet pack", IT_JETPACK, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
+}
+
+void spawnfunc_item_nadget(void) {
+    if(!g_nadgets)
+        return;
+    
+    if(!cvar("g_nadgets_pickup"))
+        return;
+    
+    if(!self.hg_ammo)
+        self.hg_ammo = 1;
+    
+    if(!self.hg_bonus)
+        self.hg_bonus = 1;
+    
+    StartItem ("models/items/g_fuelregen.md3", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
 }
 
 // we no longer have the seeker

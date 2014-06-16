@@ -18,6 +18,7 @@ void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
+float HG_RegenLimit(entity);
 void HG_Shield_Trigger(entity);
 
 .vector org_explosion;

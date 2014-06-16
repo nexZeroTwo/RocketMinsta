@@ -1326,6 +1326,13 @@ void HG_UpdateDetonables() {
             self.hg_detonables += 1;
 }
 
+float HG_RegenLimit(entity plr) {
+    float mx = GRENVAR(plr.hg_type, "stacklimit");
+    if(mx <= 0) mx = cvar("g_nadgets_regen_max");
+    if(mx <= 0) mx = cvar("g_nadgets_ammo");
+    return mx;
+}
+
 void HG_Frame()
 {
     if(!g_nadgets)
@@ -1388,9 +1395,7 @@ void HG_Frame()
     self.hg_regenpaused = (self.hg_stealth || ((time - self.lastdamage <= dpause) && (self.hg_type != HG_LASER)));
     
     if(cvar("g_nadgets_regen_time")) {
-        float mx = GRENVAR(self.hg_type, "stacklimit");
-        if(mx <= 0) mx = cvar("g_nadgets_regen_max");
-        if(mx <= 0) mx = cvar("g_nadgets_ammo");
+        float mx = HG_RegenLimit(self);
         
         if(self.hg_ammo < mx && !self.hg_regenpaused) {
             float rate = frametime;
