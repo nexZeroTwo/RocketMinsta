@@ -1391,11 +1391,12 @@ void HG_Frame()
 		HG_Attack();
 	
 	self.hg_state = held;
-    float dpause = cvar("g_nadgets_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
-    self.hg_regenpaused = (self.hg_stealth || ((time - self.lastdamage <= dpause) && (self.hg_type != HG_LASER)));
     
     if(cvar("g_nadgets_regen_time")) {
         float mx = HG_RegenLimit(self);
+        float dpause = cvar("g_nadgets_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
+        dpause = min(dpause, dpause / GRENVAR(self.hg_type, "regenscale"));
+        self.hg_regenpaused = (self.hg_stealth || (time - self.lastdamage <= dpause));
         
         if(self.hg_ammo < mx && !self.hg_regenpaused) {
             float rate = frametime;
