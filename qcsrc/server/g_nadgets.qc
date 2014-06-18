@@ -1588,8 +1588,8 @@ void HG_UpdateDetonables() {
 float HG_RegenLimit(entity plr) {
     float mx = 0;
     
-    if(BUFFS_PRESENT(self, BUFF_ADEPT))
-            mx = GRENVAR(self.hg_type, "adept_stacklimit");
+    if(BUFFS_PRESENT(plr, BUFF_ADEPT))
+        mx = GRENVAR(plr.hg_type, "adept_stacklimit");
     
     if(mx <= 0) mx = GRENVAR(plr.hg_type, "stacklimit");
     if(mx <= 0) mx = cvar("g_nadgets_regen_max");
