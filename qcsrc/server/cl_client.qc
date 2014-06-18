@@ -1925,8 +1925,10 @@ void ClientConnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients++;
         
-        if(realclients == 1 && time > game_starttime && !cvar("g_warmup"))
+        if(realclients == 1 && time > game_starttime && !cvar("g_warmup")) {
             ReadyRestart();
+            lockteams = FALSE;
+        }
     }
     
     if(clienttype(self) == CLIENTTYPE_REAL)
