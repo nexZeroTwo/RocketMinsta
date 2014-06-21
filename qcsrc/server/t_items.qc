@@ -233,7 +233,7 @@ void Item_ScheduleInitialRespawn(entity e)
 	if(self.droppedpowerup)
 		Item_ScheduleRespawnIn(e, cvar("g_droppowerups_activatedelay"));
 	else
-		Item_ScheduleRespawnIn(e, game_starttime - time + ITEM_RESPAWNTIME_INITIAL(e));
+		Item_ScheduleRespawnIn(e, max(game_starttime - time, 0) + ITEM_RESPAWNTIME_INITIAL(e));
 }
 
 float Item_GiveTo(entity item, entity player)
