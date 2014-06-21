@@ -531,9 +531,10 @@ float Item_GiveTo(entity item, entity player)
     if(g_nadgets)
     if(item.hg_ammo)
     if(player.hg_ammo <= HG_RegenLimit(player)) {
+        float oregen = HG_RegenTime(player);
         pickedup = TRUE;
         player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
-        player.hg_regentime = HG_RegenTime(player);
+        player.hg_regentime = player.hg_regentime - oregen + HG_RegenTime(player);
     }
 
 :skip
