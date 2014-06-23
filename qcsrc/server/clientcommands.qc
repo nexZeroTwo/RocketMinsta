@@ -524,7 +524,7 @@ void SV_ParseClientCommand(string s) {
                     return;
                 }
                 
-        sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
+        sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
         return;
     } else if(cmd == "hg_optout") {
         if not(self.flags & FL_CLIENT)

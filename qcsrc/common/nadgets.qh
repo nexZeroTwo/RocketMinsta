@@ -16,5 +16,5 @@ float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
 string HG_NameToExpandedName(string);
 vector HG_TypeToColor(float);
-string HG_TypeToIcon(float, float);
-string HG_NameToIcon(string, float);
+string HG_TypeToIcon(float, float, float);
+string HG_NameToIcon(string, float, float);

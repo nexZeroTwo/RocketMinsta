@@ -790,7 +790,7 @@ string Sbar_GetField(entity pl, float field)
             else if(g_nadgets && cvar("_g_nadgets_select_available")) {
                 if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
                     float hgt = pl.(scores[SP_NADEMODE]);
-                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
+                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE, FALSE);
                     sbar_field_icon0_rgb = HG_TypeToColor(hgt);
                 }
             }
@@ -1060,7 +1060,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
             } else if(field == SP_NADEMODE) {
 				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
-                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
+                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE, FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
                 if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
@@ -3515,7 +3515,7 @@ void Sbar_DrawHGBonus(void) {
     sw = stringwidth(s, FALSE) + 1;
     o_x -= (spacing + fs_x * sw) * 0.5;
     
-    drawpic(o, HG_TypeToIcon(hgtype, TRUE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    drawpic(o, HG_TypeToIcon(hgtype, TRUE, FALSE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
     o_x += fs_x + spacing;
     drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
@@ -5063,15 +5063,25 @@ void Sbar_Draw(void)
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         float hgcd = getstatf(STAT_HGREFIRE) - servertime;
+        float adept = getstati(STAT_BUFFS) & BUFF_ADEPT;
         
         if(hgcd > 0) {
             if(hgcd > hg_maxcd) hg_maxcd = hgcd;
         } else hg_maxcd = 0;
         
         if(getstati(STAT_STEALTH)) {
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        " ^3to ", (adept? "suspend" : "cancel"), " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            if(adept) drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop flag", "+use")),
+                                        " ^3to cancel stealth completely"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(getstati(STAT_STEALTH_SAVED)) {
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                        " ^3to re-enter stealth (^1", ftos(getstati(STAT_STEALTH_SAVED)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
         } else if(getstatf(STAT_HGSHIELD)) {
             string smsg;
@@ -5104,7 +5114,7 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            string hgicon = HG_TypeToIcon(hgtype, TRUE);
+            string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
             vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED);
             vector hgsize = '32 32 0';
             

@@ -43,6 +43,9 @@ void Buffs_Init(void) {
             
         if(b == BUFF_WRATH && !g_nadgets)
             g_buffs_enabled[i] = FALSE;
+            
+        if(b == BUFF_ADEPT && !g_nadgets)
+            g_buffs_enabled[i] = FALSE;
         
         if(g_buffs_enabled[i]) {
             string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
@@ -416,6 +419,10 @@ void Buffs_ClientFrame(void) {
         
         ON_BUFF_ADDED(BUFF_VAMPIRE) {
             self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
+        }
+        
+        ON_BUFF_REMOVED(BUFF_ADEPT) {
+            self.hg_stealth_saved = 0;
         }
         
         self.oldbuffs = self.buffs;
@@ -934,6 +941,7 @@ BUFF_SPAWNFUNCS(bash,       BUFF_BASH)
 BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
 BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
 BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
+BUFF_SPAWNFUNCS(adept,      BUFF_ADEPT)
 BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
