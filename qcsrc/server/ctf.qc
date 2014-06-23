@@ -441,7 +441,7 @@ void FlagTouch()
 	if (self.cnt == FLAG_CARRY)
 		return;
     
-    if(time - other.hg_stealthtime < cvar("g_handgrenades_cloak_actiondelay"))
+    if(time - other.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
         return;
     
 	if (self.cnt == FLAG_BASE)

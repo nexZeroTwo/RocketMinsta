@@ -500,7 +500,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(cvar("sv_hidedamage"))
         return;
     
-    if(teams_matter && attacker != targ && attacker.team == targ.team)
+    if(teams_matter && attacker != targ && attacker.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == attacker))
         htype |= VDMG_TYPE_TEAMHIT;
     
     if(htype & VDMG_TYPE_HEAL && (hdmg >= 100 || admg >= 100))
@@ -588,24 +588,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype))
     if(deathtype != DEATH_ARC)
+    if(deathtype != DEATH_HG_SHIELD)
     if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
         Buffs_ArcDamage(self, attacker, damage, deathtype);
         Buffs_ArcDamage_Finalize();
     }
 
     if(damage) {
-        if(g_handgrenades)
+        if(g_nadgets)
         if(attacker.iscreature)
         if(self.hg_shield) {
             if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_HG_TRANSLOC && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
                 vector offs = '0 0 1' * self.maxs_z*0.5;
-                float reflect = damage * cvar("g_handgrenades_shield_damage_reflect") * self.hg_shieldpower;
-                float takefactor = 1 - (1 - cvar("g_handgrenades_shield_damage_take")) * self.hg_shieldpower;
+                float reflect = damage * cvar("g_nadgets_shield_damage_reflect") * self.hg_shieldpower;
+                float takefactor = 1 - (1 - cvar("g_nadgets_shield_damage_take")) * self.hg_shieldpower;
                 float absorb = damage * (1 - takefactor);
+                self.hg_shield_stored = min(cvar("g_nadgets_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_nadgets_shield_damage_store"));
                 damage *= takefactor;
                 
                 if(DEATH_ISHG(deathtype))
-                    reflect *= cvar("g_handgrenades_shield_damage_reflect_hg");
+                    reflect *= cvar("g_nadgets_shield_damage_reflect_hg");
                 
                 FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
                 trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin+offs, trace_endpos);
@@ -625,12 +627,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         }
     }
     
+    if(time < self.hg_plasmalock)
+    if(deathtype != DEATH_NOISE)
+    if(deathtype != DEATH_TEAMCHANGE)
+    if(deathtype != DEATH_AUTOTEAMCHANGE)
+    if(deathtype != DEATH_KILL)
+    if(deathtype != DEATH_FALL)
+    if(deathtype != DEATH_DROWN)
+    if(deathtype != DEATH_ROT)
+    if(deathtype != DEATH_HURTTRIGGER) {
+        damage = 0;
+        force = '0 0 0';
+    }
+    
     if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
-        if(self.frozen) if(self.team != attacker.team) {
-            self.frozen_plasmalock = time + cvar("g_handgrenades_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
-            self.frozen_plasmalock_owner = attacker;
+        if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
+            self.hg_plasmalock = time + cvar("g_nadgets_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
+            self.hg_plasmalock_owner = attacker;
+            te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
-
+    
     damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
 
 	if(!DEATH_ISSPECIAL(deathtype))

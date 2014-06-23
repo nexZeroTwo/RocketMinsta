@@ -6,7 +6,7 @@ else
 	cat <<EOF
 Usage: $0 targetfile
 
-Upgrades references to RM cvars to v1.6.0 format in targetfile, which may be either a single file or a directory, in which case all files withing that directory will be converted recursively.
+Upgrades references to RM cvars to v1.7.0 format in targetfile, which may be either a single file or a directory, in which case all files withing that directory will be converted recursively.
 EOF
 	exit 1
 fi

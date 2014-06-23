@@ -18,6 +18,9 @@ void HG_Grenade_Remove();
 void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
+float HG_RegenLimit(entity);
+void HG_Cloak_Trigger(void);
+void HG_Shield_Trigger(entity);
 
 .vector org_explosion;
 .float nextparticle;
@@ -53,18 +56,34 @@ float HG_RegenTime(entity);
 .float hg_optout;
 .float hg_optout_nextround;
 .float hg_alwaysask;
+.float hg_adept;
+
+.float hg_transloc_solidcheck;
+
+.entity hg_remote_firesource;
+.entity hg_transloc_last;
+
+.vector hg_lastvel;
+
+.float hg_plasmalock;
+.float hg_plasmalock_nexteffect;
+.entity hg_plasmalock_owner;
 
 .float hg_shield;
+.float hg_shieldstat;
 .float hg_shieldpower;
 .float hg_shieldmax;
 .float hg_shieldhealth;
 .float hg_shield_oldmovetype;
+.float hg_shield_stored;
+.float hg_shield_stored_limit;
 .entity hg_shieldmodel;
 
 .float hg_stealth;
 .float hg_stealthalpha;
 .float hg_stealthtime;
 .float hg_wasstealth;
+.float hg_stealth_saved;
 
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;
@@ -86,13 +105,13 @@ float HG_RegenTime(entity);
 .vector hg_normal;
 .entity hg_waypoint;
 
-float g_handgrenades_oldhitboxes;
-float g_handgrenades_detonatelaunches;
+float g_nadgets_oldhitboxes;
+float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
 
-#define BUTTON_HG ((g_handgrenades_detonatelaunches)? hg_detonatepressed : button6)
-#define GRENVARNAME(t,v) strcat("g_handgrenades_", HG_TypeToName(t), "_", (v))
+#define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
+#define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
 #define HG_PLAYERNADETYPE(p) (((p).hg_bonus)? ((p).hg_bonustype) : ((p).hg_type))
 

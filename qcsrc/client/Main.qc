@@ -180,7 +180,7 @@ void CSQC_Init(void)
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
     
 	IP2C_Init();
-    registercvar("_g_handgrenades_select_available", "0", 0);
+    registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 }
 
@@ -1756,8 +1756,8 @@ void Ent_Init()
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
-	g_handgrenades = ReadByte();
-    cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
+	g_nadgets = ReadByte();
+    cvar_set("_g_nadgets_select_available", ftos(g_nadgets? ReadByte() : 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();

@@ -147,7 +147,7 @@ void Draw_ShowNames()
                 namepos_x += (namesize - width) / 2;
             
             float nade;
-            if(g_handgrenades)
+            if(g_nadgets)
                 nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
             
             if(self.sameteam) {
@@ -172,7 +172,7 @@ void Draw_ShowNames()
             }            
             
             if(nade) {
-                drawpic(namepos - '0.5 0 0' * textsz_x - '2 0 0', HG_TypeToIcon(nade, FALSE), textsz, HG_TypeToColor(nade), a * 0.7, DRAWFLAG_NORMAL);
+                drawpic(namepos - '0.5 0 0' * textsz_x - '2 0 0', HG_TypeToIcon(nade, FALSE, FALSE), textsz, HG_TypeToColor(nade), a * 0.7, DRAWFLAG_NORMAL);
                 namepos = '0.5 0 0' * textsz_x + '2 0 0' + namepos;
             }
             

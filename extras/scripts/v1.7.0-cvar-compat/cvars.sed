@@ -43,7 +43,7 @@ s/g_explosive_ballisticbullet/g_ballistics/g
 s/g_explosive_droppowerups/g_droppowerups/g
 s/g_explosive_boobs/g_boobs/g
 s/g_explosive_chat/sv_chat/g
-s/g_explosive_handgrenades/g_handgrenades/g
+s/g_explosive_handgrenades/g_nadgets/g
 s/g_explosive_dodging/g_dodging/g
 s/g_explosive_freezetag/g_freezetag/g
 s/g_explosive_vip/g_vip/g
@@ -52,3 +52,4 @@ s/g_explosive_walljump/g_walljump/g
 s/g_explosive_hidedamage/sv_hidedamage/g
 s/g_explosive_ctf/g_ctf/g
 s/g_explosive_/g_rocketminsta_/g
+s/g_handgrenades/g_nadgets/g

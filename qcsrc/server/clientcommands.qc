@@ -71,7 +71,7 @@ void Nagger_ReadyCounted()
 }
 
 void ReadyCount();
-string MapVote_Suggest(string m);
+string MapVote_Suggest(string m, float ismaster);
 
 entity GetPlayer(string name)
 {
@@ -197,7 +197,7 @@ void SV_ParseClientCommand(string s) {
 		stuffcmd(self, "set _rm_server 1\n");
 		
 		// Report available votes
-		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(FALSE, FALSE), "\"\n"));
 		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
 		
 		// Report availability of certain RM options
@@ -415,9 +415,16 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(!g_arena)
-		if (self.classname != "player" && !lockteams)
-		{
+		
+        if(g_arena)
+            return;
+        
+		if(self.classname != "player") {            
+            if(lockteams) {
+                bigprint(self, "The teams are locked", "", 2);
+                return;
+            }
+            
 			if(isJoinAllowed()) {
                 if(HG_ShowMenu(FALSE))
                     return;
@@ -471,7 +478,7 @@ void SV_ParseClientCommand(string s) {
         if not(self.flags & FL_CLIENT)
             return;
         
-        if(!g_handgrenades)
+        if(!g_nadgets)
             return;
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
@@ -481,7 +488,7 @@ void SV_ParseClientCommand(string s) {
         
         float t = HG_NameToType(argv(1));
         float i;
-        float argc = tokenize_console(cvar_string("g_handgrenades_type_selectable"));
+        float argc = tokenize_console(cvar_string("g_nadgets_type_selectable"));
         
         if(argc)
             for(i = 0; i < argc; ++i)
@@ -510,14 +517,14 @@ void SV_ParseClientCommand(string s) {
                             self.hg_regentime = HG_RegenTime(self);
                             self.hg_regenstat = 0;
                             if(!term)
-                                self.hg_ammo = cvar("g_handgrenades_ammo");
+                                self.hg_ammo = cvar("g_nadgets_ammo");
                         }
                     }
                     
                     return;
                 }
                 
-        sprint(self, "^1This grenade type is either invalid or not allowed on this server.\n");
+        sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
         return;
     } else if(cmd == "hg_optout") {
         if not(self.flags & FL_CLIENT)
@@ -608,7 +615,7 @@ void SV_ParseClientCommand(string s) {
 		else
 			wordwrap_sprint(cmd, 1111);
 	} else if(cmd == "suggestmap") {
-		sprint(self, strcat(MapVote_Suggest(argv(1)), "\n"));
+		sprint(self, strcat(MapVote_Suggest(argv(1), self.vote_master), "\n"));
 	} else if(cmd == "timeout") {
 		if not(self.flags & FL_CLIENT)
 			return;

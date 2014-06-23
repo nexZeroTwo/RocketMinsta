@@ -67,15 +67,15 @@ vector HG_TypeToColor(float t) {
     }
 }
 
-string HG_NameToIcon(string n, float large) {
+string HG_NameToIcon(string n, float large, float alt) {
     string s = strcat("gfx/nades/", n);
     
-    if(large)
-        s = strcat(s, "_large");
+    if(large)   s = strcat(s, "_large");
+    if(alt)     s = strcat(s, "_alt");
     
     return s;
 }
 
-string HG_TypeToIcon(float t, float large) {
-    return HG_NameToIcon(HG_TypeToName(t), large);
+string HG_TypeToIcon(float t, float large, float alt) {
+    return HG_NameToIcon(HG_TypeToName(t), large, alt);
 }

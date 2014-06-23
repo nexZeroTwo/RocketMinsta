@@ -458,7 +458,7 @@ string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
 		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
-        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_handgrenades? " nfs" : ""),
+        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_nadgets? " nfs" : ""),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
@@ -539,7 +539,9 @@ void Cmd_Sbar_SetFields(float argc)
 		sbar_size[sbar_num_fields] = stringwidth(str, FALSE);
 		str = strtolower(str);
 
-		if(str == "ping") {
+        if(str == "lag") {
+            sbar_field[sbar_num_fields] = SP_LAG;
+        } else if(str == "ping") {
 			sbar_field[sbar_num_fields] = SP_PING;
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
@@ -684,7 +686,8 @@ float sbar_field_icon2_alpha;
 string Sbar_GetField(entity pl, float field)
 {
 	float tmp, num, denom, f;
-	string str;
+	string str, str2;
+    vector v;
 	sbar_field_rgb = '1 1 1';
 	sbar_field_icon0 = "";
 	sbar_field_icon1 = "";
@@ -716,35 +719,47 @@ string Sbar_GetField(entity pl, float field)
 
 			return strcat(chr2str(char0), chr2str(char1));
 
-		case SP_PLAYTIME:
-			return mmss(pl.(scores[field]) * 10);
+        case SP_PLAYTIME:
+            if(pl.(scores[SP_AWAYSTATUS]))
+                return "AFK";
+            if(GetPlayerColor(pl.sv_entnum) == COLOR_SPECTATOR)
+                return "";
+            // return mmss(pl.(scores[field]) * 10);
+            return strcat(ftos(floor(pl.(scores[field]) / 60)), "m");
 
 		case SP_PING:
 			if not(pl.gotscores)
 				return "\x8D\x8D\x8D"; // >>> sign
 			str = getplayerkey(pl.sv_entnum, "ping");
-			if(str == "0")
-				return "N/A";
 			tmp = max(0, min(220, stof(str)-80)) / 220;
 			sbar_field_rgb = '1 1 1' - '0 1 1'*tmp;
 			return str;
 
 		case SP_PL:
 			if not(pl.gotscores)
-				return "N/A";
-
-			if(pl.(scores[SP_AWAYSTATUS]))
-			{
-				sbar_field_rgb = '1 1 1';
-				return "AFK";
-			}
-
+				return "";
+                
 			str = getplayerkey(pl.sv_entnum, "pl");
 			if(str == "0")
 				return "";
+                
 			tmp = bound(0, stof(str), 20) / 20; // 20% is REALLY BAD pl
 			sbar_field_rgb = '1 0.5 0.5' - '0 0.5 0.5'*tmp;
 			return str;
+
+        case SP_LAG:
+            str = Sbar_GetField(pl, SP_PING);
+            v = sbar_field_rgb;
+            str2 = Sbar_GetField(pl, SP_PL);
+            
+            if(str2 != "") {
+                str = strcat(str, " (", str2, ")");
+                if(sbar_field_rgb_y < v_y)
+                    v = sbar_field_rgb;
+            }
+            
+            sbar_field_rgb = v;
+            return str;
 
 		case SP_FPS:
 			if not(pl.gotscores)
@@ -772,10 +787,10 @@ string Sbar_GetField(entity pl, float field)
 				}
 			}
             */
-            else if(g_handgrenades && cvar("_g_handgrenades_select_available")) {
+            else if(g_nadgets && cvar("_g_nadgets_select_available")) {
                 if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR) {
                     float hgt = pl.(scores[SP_NADEMODE]);
-                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE);
+                    sbar_field_icon0 = HG_TypeToIcon(hgt, FALSE, FALSE);
                     sbar_field_icon0_rgb = HG_TypeToColor(hgt);
                 }
             }
@@ -962,7 +977,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_SEPARATOR)
 			break;
 
-		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_CN_CHAR0) {
+		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_LAG && field != SP_PLAYTIME && field != SP_CN_CHAR0) {
 			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}
@@ -1045,7 +1060,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
             } else if(field == SP_NADEMODE) {
 				tmp_x = (1+sbar_size[i])*sbar_fontsize_x*0.5 + sbar_fontsize_x * 0.25;
-                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
+                drawpic(pos - tmp, HG_TypeToIcon(pl.(scores[SP_NADEMODE]), FALSE, FALSE), sbar_fontsize, sbar_field_rgb, 1, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
                 if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
@@ -3500,7 +3515,7 @@ void Sbar_DrawHGBonus(void) {
     sw = stringwidth(s, FALSE) + 1;
     o_x -= (spacing + fs_x * sw) * 0.5;
     
-    drawpic(o, HG_TypeToIcon(hgtype, TRUE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
+    drawpic(o, HG_TypeToIcon(hgtype, TRUE, FALSE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
     o_x += fs_x + spacing;
     drawstring(o, s, fs, '0.2 0.2 0.2' + HG_TypeToColor(hgtype), a, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
@@ -4462,7 +4477,7 @@ void Sbar_Draw(void)
                                             sector_alphamod, hud_sector_drawflag);
 				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
-                if(g_handgrenades && vid_conwidth >= 678) {
+                if(g_nadgets && vid_conwidth >= 678) {
                     // ammo | nades
                     HUDLINE_SLICE({
                         hudline_x = 10 - bw_right - bw_left;
@@ -4484,7 +4499,7 @@ void Sbar_Draw(void)
 				// separator slice:
 				//		ammo/nades | teamhud
 
-				if(vid_conwidth < 800 || g_handgrenades && vid_conwidth <= 1024)
+				if(vid_conwidth < 800 || g_nadgets && vid_conwidth <= 1024)
 					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
 				else if(teamhud_wide)
 				{
@@ -4708,7 +4723,7 @@ void Sbar_Draw(void)
 				
 				if(!low2)
 				{
-                    if(g_handgrenades) {/*
+                    if(g_nadgets) {/*
                         HUDLINE_SECTOR({
                             hud_sector_x = SECWIDTH_NORMAL;
                             nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
@@ -5048,22 +5063,43 @@ void Sbar_Draw(void)
         float hgammo = getstati(STAT_HGAMMO);
         float hgdetons = getstati(STAT_HGDETONABLES);
         float hgcd = getstatf(STAT_HGREFIRE) - servertime;
+        float adept = getstati(STAT_BUFFS) & BUFF_ADEPT;
         
         if(hgcd > 0) {
             if(hgcd > hg_maxcd) hg_maxcd = hgcd;
         } else hg_maxcd = 0;
         
         if(getstati(STAT_STEALTH)) {
-            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        " ^3to ", (adept? "suspend" : "cancel"), " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        } else if(getstatf(STAT_HGSHIELD))
+            if(adept) drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                        "^3Press ^1", strtoupper(getcommandkey("drop flag", "+use")),
+                                        " ^3to cancel stealth completely"),
+                                        sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(getstati(STAT_STEALTH_SAVED)) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to cancel your ", HG_TypeToExpandedName(hgtype)),
+                                        " ^3to re-enter stealth (^1", ftos(getstati(STAT_STEALTH_SAVED)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-        else if(hgdetons)
+        } else if(getstatf(STAT_HGSHIELD)) {
+            string smsg;
+            
+            if(getstati(STAT_HGSHIELDSTORE)) {
+                float a = getstatf(STAT_HGSHIELD);
+                DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
+                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), min(0.7, a), '1 1 0' - a * '0 0.7 0');
+                smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                              " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
+                              " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
+            } else {
+                smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                              " ^3to cancel your ", HG_TypeToExpandedName(hgtype));
+            }
+            
+            drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+        } else if(hgdetons)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
@@ -5078,7 +5114,7 @@ void Sbar_Draw(void)
             pos = bottom - pos;
             pos_x = nadesector_pos;
             
-            string hgicon = HG_TypeToIcon(hgtype, TRUE);
+            string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
             vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * getstati(STAT_HGREGENPAUSED);
             vector hgsize = '32 32 0';
             
@@ -5173,7 +5209,7 @@ void Sbar_Draw(void)
 			CSQC_vip_hud(teamhud_pos);
 	}
     
-    if(g_handgrenades)
+    if(g_nadgets)
         Sbar_DrawHGBonus();
     Sbar_DrawBuffs();
 
