@@ -2771,6 +2771,7 @@ void ResetSpectatorInfo(entity player)
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
     WriteByte(MSG_ONE, 0);
+    WriteByte(MSG_ONE, 0);
 }
 
 void WriteSpectatorInfo(entity player)
