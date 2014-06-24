@@ -769,3 +769,4 @@ float roundstate;
 
 .float vdmg_ignorenext;
 float sv_nicehealth;
+float sv_showacc;

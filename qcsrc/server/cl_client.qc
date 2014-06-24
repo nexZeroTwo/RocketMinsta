@@ -1451,6 +1451,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
     WriteShort(MSG_ENTITY, sv_nicehealth);
+    WriteByte(MSG_ENTITY, sv_showacc);
 	return TRUE;
 }
 
@@ -3108,6 +3109,7 @@ void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
 .float namecheck;
+.float acctime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3237,6 +3239,19 @@ void PlayerPreThink (void)
 	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
+        
+        if(sv_showacc)
+        if(time > self.acctime) {
+            float hit = self.damage_hits - self.weapon;
+            float total = self.maxdamage_fired - self.weapon;
+            
+            if(hit < 0 || total <= 0)
+                PlayerScore_Set(self, SP_ACCURACY, -1);
+            else
+                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 100);
+            
+            self.acctime = time + 5;
+        }
         
         Freeze_Hook_PlayerPreThink();
         JB_PlayerPreThink();

@@ -1377,7 +1377,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
@@ -1762,6 +1762,7 @@ void Ent_Init()
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
+    sv_showacc = ReadByte();
 
 	if(!postinit)
 		PostInit();
