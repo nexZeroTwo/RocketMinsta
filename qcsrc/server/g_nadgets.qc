@@ -1206,7 +1206,7 @@ void HG_Linker_Think() {
         self.buffs = 0;
     
     FOR_EACH_PLAYER(p) {
-        if(p.team != self.team) {
+        if(p.team != self.team || (!teams_matter && p != self.owner)) {
             if(p.hg_linker == self)
                 p.hg_linker = world;
         } else if(p.hg_linker == self) {
