@@ -1489,12 +1489,13 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
-    if(hgtype == HG_NAPALM && self.hg_power == 1)
+    if(hgtype == HG_NAPALM && self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))
         Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), DEATH_HG_NAPALM, self.origin, '0 0 0');
     
     if(hgtype == HG_TRANSLOC)
         self.hg_transloc_last = gren;
     
+    self.hg_power = 0;
     return gren;
 }
 
@@ -1632,9 +1633,9 @@ void HG_Frame()
 	
     if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
         bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(self.hg_type), "s!"), "", 1);
-	
-	if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
-        float t = HG_PLAYERNADETYPE(self);
+        
+    float t = HG_PLAYERNADETYPE(self);
+    if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
         float ls;
         
         if(!g_nadgets_detonatelaunches)
@@ -1654,7 +1655,7 @@ void HG_Frame()
 		self.hg_power = 0;
 	}
 	
-	if(self.hg_power == 1 && mayfire && GRENVAR((self.hg_bonus? self.hg_bonustype : self.hg_type), "launch_fullforce_launches_immediately"))
+	if(self.hg_power == 1 && mayfire && GRENVAR(t, "launch_fullforce_launches_immediately"))
 		HG_Attack();
 	
 	self.hg_state = held;
