@@ -92,12 +92,14 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showrankings", "Show top players in the HUD"));
+    me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showtimer", "Always show the timer"));
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 		me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 11, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 12, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

@@ -518,9 +518,11 @@ void PostInit(void)
                 localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
         case 39:
             cvar_set("_rm_hg_optout", "0");
+        case 40:
+            localcmd("seta rm_showtimer 0; showtimer 0\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 40\n");
+		localcmd("seta rm_initialized 41\n");
 		RM_OUTDATED
 		break;
 	}
@@ -547,6 +549,7 @@ void PostInit(void)
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 	rm_oldbigfont = cvar("rm_oldbigfont");
+    rm_showtimer = cvar("rm_showtimer");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -576,6 +579,7 @@ void PostInit(void)
 	registercmd("oldbigfont");
 	registercmd("freezetag_danger");
 	registercmd("freezetag_danger_silent");
+    registercmd("showtimer");
 	// -- //
 	registercmd("hudskin");
 	
@@ -709,6 +713,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+        print("^2showtimer^7: If enabled, will always show the timer (disabled by default)\n");
 		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
@@ -744,6 +749,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
+        strCmd == "showtimer"           ||
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
 		strCmd == "freezetag_danger"	||
@@ -768,6 +774,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 		rm_oldbigfont = cvar("rm_oldbigfont");
+        rm_showtimer = cvar("rm_showtimer");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{

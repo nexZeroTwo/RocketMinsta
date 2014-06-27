@@ -1897,16 +1897,22 @@ void Sbar_Timer()
 		timer_color = '1 1 0'; //yellow
 	else
 		timer_color = '1 0 0'; //red
-
-    if(timer_color == '1 1 1')
-        timer_alpha = approach(timer_alpha, 0, frametime * 5);
-    else
-        timer_alpha = approach(timer_alpha, 1, frametime * 5);
-
-    float a = max(timer_alpha, sbar_scoreboard_fade_alpha);
     
-    if(!a)
-        return;
+    float a;
+    
+    if(rm_showtimer)
+        a = 1;
+    else {
+        if(timer_color == '1 1 1')
+            timer_alpha = approach(timer_alpha, 0, frametime * 5);
+        else
+            timer_alpha = approach(timer_alpha, 1, frametime * 5);
+
+        a = max(timer_alpha, sbar_scoreboard_fade_alpha);
+        
+        if(!a)
+            return;
+    }
     
     topright_x += 100 * (1 - a);
     topright_y -= 18 * (1 - a);
@@ -3648,6 +3654,9 @@ void Sbar_Draw(void)
 	vector o2; o2 = '0.5 0 0' * vid_conwidth;
 	o2_y = vid_conheight / 4;
 	o_y = 28; // move spectator text slightly down to prevent overlapping the timer
+
+    if(!rm_showtimer)
+        o_y *= max(timer_alpha, sbar_scoreboard_fade_alpha);
 
 	string s;
 	vector pos;
