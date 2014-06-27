@@ -980,7 +980,7 @@ void HG_Shield_Trigger(entity plr) {
         self = plr;
         
         makevectors(self.v_angle);
-        W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", plr.hg_shield_stored);
+        W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", -1);
         
         // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
         
