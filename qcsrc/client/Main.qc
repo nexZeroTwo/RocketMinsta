@@ -473,9 +473,8 @@ void PostInit(void)
 		case 15:
 			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
 		case 16:
+        case 17:
 			localcmd("seta rm_shownames 1; shownames 1\n");
-		case 17:
-			localcmd("seta rm_shownames 0; shownames 0\n");
 		case 18:
 			localcmd("seta rm_visualscore 1; visualscore 1\n");
 		case 19:
