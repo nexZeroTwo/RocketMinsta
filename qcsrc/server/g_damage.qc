@@ -1021,7 +1021,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float pause
     }
     
     if(heal) {
-        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL, hitloc);
+        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL | (headshot? VDMG_TYPE_CRIT : 0), hitloc);
         HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
     }
@@ -1041,6 +1041,18 @@ entity damage_origtarget;
 .float dmg_jaildm;
 
 void Damage_RecordDamage(entity attacker, float deathtype, float damage);
+
+float IsHeadshot(entity targ, entity attacker, vector hitloc) {
+    // find height of hit on player axis
+    // if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
+    
+    vector headmins, headmaxs, org;
+    org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
+    headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * targ.view_ofs_z - 0.3 * targ.maxs_z);
+    headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * targ.maxs_z;
+    
+    return trace_hits_box(railgun_start, railgun_end, headmins, headmaxs);
+}
 
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
@@ -1068,17 +1080,38 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
-                float heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC));
-                if(attacker == targ)
-                    heal *= cvar("g_buffs_medic_selfhealfactor");
+                float heal;
+                
+                if(deathtype == DEATH_ARC)
+                    // arc scales off the original heal, so leave it as is
+                    heal = damage;
+                else {
+                    heal = damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC);
+                    
+                    if(attacker == targ)
+                        heal *= cvar("g_buffs_medic_selfhealfactor");
+                    
+                    if(damage_headshotbonus)
+                    if(cvar("g_buffs_medic_headshot"))
+                    if(IsHeadshot(targ, attacker, hitloc)) {
+                        heal *= 1 + damage_headshotbonus;
+                        headshot = TRUE;
+                    }
+                }
+                
+                heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, heal);
                 heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
+                
                 if(heal)
                     Damage_RecordDamage(attacker, deathtype, heal);
+                
+                targ.hg_plasmalock = 0;
+                
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
-                targ.hg_plasmalock = 0;
+                
                 if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
-                    Buffs_ArcDamage(targ, attacker, damage, deathtype);
+                    Buffs_ArcDamage(targ, attacker, heal, deathtype);
                     Buffs_ArcDamage_Finalize();
                 }
                 return;
@@ -1528,24 +1561,14 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-			if(targ_is_player)
-			if(!DEATH_ISHG(deathtype))
-			{
-				// HEAD SHOT:
-				// find height of hit on player axis
-				// if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
-				vector headmins, headmaxs, org;
-				org = antilag_takebackorigin(damage_origtarget, time - ANTILAG_LATENCY(attacker));
-				headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * damage_origtarget.view_ofs_z - 0.3 * damage_origtarget.maxs_z);
-				headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * damage_origtarget.maxs_z;
-				if(trace_hits_box(railgun_start, railgun_end, headmins, headmaxs))
-				{
-					deathtype |= HITTYPE_HEADSHOT;
-				}
-			}
-			else if(targ.classname == "turret_head") {
-				deathtype |= HITTYPE_HEADSHOT;
-			}
+            if(!DEATH_ISHG(deathtype)) {
+                if(targ_is_player) {
+                    if(IsHeadshot(damage_origtarget, attacker, hitloc))
+                        deathtype |= HITTYPE_HEADSHOT;
+                } else if(targ.classname == "turret_head") {
+                    deathtype |= HITTYPE_HEADSHOT;
+                }
+            }
             
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
