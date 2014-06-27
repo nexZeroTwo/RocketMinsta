@@ -110,6 +110,8 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
