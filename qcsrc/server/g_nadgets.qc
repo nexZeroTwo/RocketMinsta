@@ -1235,7 +1235,7 @@ void HG_Linker_Think() {
         }
         
         if(self.hg_adept)
-            if(p != self.owner && (!teams_matter || p.team != self.team))
+            if(p != self.owner && !p.frozen && (!teams_matter || p.team != self.team))
                 HG_Linker_Adept_Push(p);
     }
     
