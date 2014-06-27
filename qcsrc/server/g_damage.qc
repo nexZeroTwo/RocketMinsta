@@ -1040,6 +1040,8 @@ entity damage_origtarget;
 .float ignore_next;
 .float dmg_jaildm;
 
+void Damage_RecordDamage(entity attacker, float deathtype, float damage);
+
 void Damage(entity targ, entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	float mirrordamage;
@@ -1070,6 +1072,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker == targ)
                     heal *= cvar("g_buffs_medic_selfhealfactor");
                 heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
+                if(heal)
+                    Damage_RecordDamage(attacker, deathtype, heal);
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 targ.hg_plasmalock = 0;
