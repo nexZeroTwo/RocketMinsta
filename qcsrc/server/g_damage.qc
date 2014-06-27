@@ -1072,6 +1072,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
     if not(damage_linkmode) {
         if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
+        if(cvar("g_nadgets_transloc_counters_shield"))
             damage = cvar("g_nadgets_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
         if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
@@ -1120,7 +1121,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
         
         damage_origtarget = targ;
-        if(targ.hg_linker && deathtype != HG_TRANSLOC && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype)) {
+        if(targ.hg_linker && (deathtype != HG_TRANSLOC || cvar("g_nadgets_transloc_damage")) && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype)) {
             if(teams_matter && targ.team == attacker.team)
                 return;
             
