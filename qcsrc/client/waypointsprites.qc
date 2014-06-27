@@ -321,9 +321,8 @@ void Draw_WaypointSprite()
     }
 
 	float edgedistance_min, crosshairdistance;
-	edgedistance_min = min4(o_y, o_x,vid_conwidth - o_x, vid_conheight - o_y);
-
-	crosshairdistance = sqrt( pow(o_x - vid_conwidth/2, 2) + pow(o_y - vid_conheight/2, 2) );
+	edgedistance_min = min4(o_y, o_x, maxw - o_x, maxh - o_y);
+	crosshairdistance = sqrt(pow(o_x - vid_conwidth/2, 2) + pow(o_y - vid_conheight/2, 2));
 
 	t = waypointsprite_scale * vidscale;
 
