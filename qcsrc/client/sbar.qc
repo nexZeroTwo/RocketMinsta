@@ -5161,6 +5161,24 @@ void Sbar_Draw(void)
                 drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
             
             Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            
+            if(rm_shownadgetregen)
+            if(getstatf(STAT_HGREGENRATE)) {
+                drawfont = sbar_bigfont;
+                float rtime = getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENRATE);
+                string hgtxt = ftos(rtime);
+                
+                float dotpos = strstrofs(hgtxt, ".", 0);
+                if(dotpos >= 0)
+                    hgtxt = substring(hgtxt, 0, dotpos + 2);
+                else
+                    hgtxt = strcat(hgtxt, ".0");
+                
+                float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
+                drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
+                
+                drawfont = sbar_font;
+            }
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method
             
@@ -5417,7 +5435,7 @@ void Sbar_Draw(void)
 		drawpic(lpos, "gfx/loading.tga", lpic, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
 	
-    hgregen += (getstatf(STAT_HGREGEN) - hgregen) * drawframetime * 3;
+    hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 3;
 }
 
 // CTF HUD

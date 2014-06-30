@@ -1297,7 +1297,6 @@ void JB_JailSpec_Proxy_CopyFields(entity to, entity from) {
     SpectateCopy(from);
     self = o;
     
-    to.hg_regentime = from.hg_regentime;
     to.jb_isprisoned = from.jb_isprisoned;
     to.velocity = '0 0 0';
     

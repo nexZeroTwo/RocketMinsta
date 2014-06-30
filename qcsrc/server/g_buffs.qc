@@ -488,12 +488,8 @@ float Buffs_NadgetPower(entity plr) {
 }
 
 float Buffs_NadgetRegen(entity plr) {
-    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
-    
-    if(!bp)
-        return 1;
-    
-    return bp * cvar("g_buffs_wrath_hgregen");
+    return (1 + (cvar("g_buffs_supply_hg_regenscale") - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
+           (1 + (cvar("g_buffs_wrath_hgregen")        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
 }
 
 float Buffs_NadgetCooldown(entity plr) {

@@ -2687,8 +2687,10 @@ void SpectateCopy(entity spectatee) {
     self.hg_bonus = spectatee.hg_bonus;
     self.hg_bonustype = spectatee.hg_bonustype;
     self.hg_detonables = spectatee.hg_detonables;
-    self.hg_regenstat = spectatee.hg_regenstat;
+    self.hg_regentime = spectatee.hg_regentime;
+    self.hg_maxregentime = spectatee.hg_maxregentime;
     self.hg_regenpaused = spectatee.hg_regenpaused;
+    self.hg_regenrate = spectatee.hg_regenrate;
     self.hg_launchspeed = spectatee.hg_launchspeed;
     self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;

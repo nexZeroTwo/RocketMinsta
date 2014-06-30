@@ -5,8 +5,10 @@
 void HG_Init() {
     addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
     addstat(STAT_HGAMMO, AS_INT, hg_ammo);
-    addstat(STAT_HGREGEN, AS_FLOAT, hg_regenstat);
+    addstat(STAT_HGREGEN, AS_FLOAT, hg_regentime);
+    addstat(STAT_HGREGENMAX, AS_FLOAT, hg_maxregentime);
     addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
+    addstat(STAT_HGREGENRATE, AS_FLOAT, hg_regenrate);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
     addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
@@ -411,7 +413,7 @@ void HG_Translocator_Explode() {
         
         if(b) {
             self.owner.hg_ammo += b * tdeath_hit;
-            self.owner.hg_regentime = HG_RegenTime(self.owner);
+            HG_SetRegenTime(self.owner, HG_RegenTime(self.owner));
         }
     }
     
@@ -662,6 +664,11 @@ void HG_Remote_Stick() {
 
 float HG_RegenTime(entity e) {
     return cvar("g_nadgets_regen_time") + pow(e.hg_ammo, cvar("g_nadgets_regen_power")) * cvar("g_nadgets_regen_time") * cvar("g_nadgets_regen_factor");
+}
+
+void HG_SetRegenTime(entity e, float t) {
+    e.hg_regentime = t;
+    e.hg_maxregentime = t;
 }
 
 float HG_PlayerMayFire(entity p) {
@@ -1566,7 +1573,7 @@ void HG_Attack()
     
     if(!freebonus) {
         self.hg_ammo -= used;
-        self.hg_regentime = HG_RegenTime(self);
+        HG_SetRegenTime(self, HG_RegenTime(self));
     }
     
     if(self.hg_bonus)
@@ -1663,28 +1670,25 @@ void HG_Frame()
     if(cvar("g_nadgets_regen_time")) {
         float mx = HG_RegenLimit(self);
         float dpause = cvar("g_nadgets_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
-        dpause = min(dpause, dpause / GRENVAR(self.hg_type, "regenscale"));
+        
+        self.hg_regenrate = GRENVAR(self.hg_type, "regenscale");
+        dpause = min(dpause, dpause / self.hg_regenrate);
         self.hg_regenpaused = (self.hg_stealth || self.hg_stealth_saved || (time - self.lastdamage <= dpause));
         
-        if(self.hg_ammo < mx && !self.hg_regenpaused) {
-            float rate = frametime;
-            if(g_freeze && self.frozen)
-                rate *= cvar("g_nadgets_regen_frozenfactor");
-            rate *= GRENVAR(self.hg_type, "regenscale");
-            rate *= Buffs_NadgetRegen(self);
-            if(BUFFS_PRESENT(self, BUFF_SUPPLY))
-                rate = rate * (1 + (cvar("g_buffs_supply_hg_regenscale") - 1) * Buffs_BuffPower(self, BUFF_SUPPLY));
-            
-            self.hg_regentime -= rate;
-            
-            if(self.hg_regentime <= 0) {
-                self.hg_ammo += 1;
-                self.hg_regentime = HG_RegenTime(self);
-                //sprint(self, strcat("Regen time: ", ftos(self.hg_regentime), "\n"));
+        if(self.hg_ammo < mx) {
+            if(!self.hg_regenpaused) {
+                if(g_freeze && self.frozen)
+                    self.hg_regenrate *= cvar("g_nadgets_regen_frozenfactor");
+                self.hg_regenrate *= Buffs_NadgetRegen(self);
+                
+                self.hg_regentime -= frametime * self.hg_regenrate;
+                if(self.hg_regentime <= 0) {
+                    self.hg_ammo += 1;
+                    HG_SetRegenTime(self, HG_RegenTime(self));
+                }
             }
-        }
-        
-        self.hg_regenstat = bound(0, self.hg_regentime / HG_RegenTime(self), 1);
+        } else
+            self.hg_regenrate = 0;
     }
     
     if(self.hg_detonatepressed)
@@ -1696,9 +1700,9 @@ void HG_ResetState(entity p) {
     p.hg_ammo = (p.hg_clearammo? 0 : cvar("g_nadgets_ammo"));
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
-    p.hg_regentime = HG_RegenTime(self);
     p.hg_clearammo = 0;
     p.hg_shield = 0;
+    HG_SetRegenTime(p, HG_RegenTime(p));
     HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
 }
 

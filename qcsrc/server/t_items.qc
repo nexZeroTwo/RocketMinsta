@@ -534,7 +534,8 @@ float Item_GiveTo(entity item, entity player)
         float oregen = HG_RegenTime(player);
         pickedup = TRUE;
         player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
-        player.hg_regentime = player.hg_regentime - oregen + HG_RegenTime(player);
+        player.hg_maxregentime = HG_RegenTime(player);
+        player.hg_regentime = player.hg_regentime - oregen + player.hg_maxregentime;
     }
 
 :skip
