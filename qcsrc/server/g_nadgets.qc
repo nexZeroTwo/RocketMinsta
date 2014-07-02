@@ -1007,11 +1007,13 @@ void HG_Shield_Trigger(void) {
         self.hg_shield_stored = 0;
     }
     
-    if(extend)
+    if(extend) {
         self.hg_shield = self.hg_shield + extend;
-    else {
+        stopsound(self, CHAN_AUTO);
+        sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
+    } else {
         self.hg_shield = 0;
-        stopsound(self, CHAN_AUTO);  // stop the shield sound
+        stopsound(self, CHAN_AUTO);
     }
 }
 
