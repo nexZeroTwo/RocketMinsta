@@ -63,7 +63,6 @@ void HG_Shield_Trigger(entity);
 
 .float hg_transloc_solidcheck;
 
-.entity hg_remote_firesource;
 .entity hg_transloc_last;
 
 .vector hg_lastvel;

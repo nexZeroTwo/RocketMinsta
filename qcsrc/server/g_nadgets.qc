@@ -137,12 +137,7 @@ void HG_Napalm_HealEmitter_Think(void) {
 }
 
 void HG_Napalm_Think(void) {
-    if(self.hg_adept) {
-        if(!self.hg_remote_firesource || wasfreed(self.hg_remote_firesource)) {
-            self.hg_adept = FALSE;
-            self.pushltime = time + GRENVAR(self.hg_type, "adept_fire_extra_lifetime");
-        }
-    } else if(time > self.pushltime) {
+    if(time > self.pushltime) {
         remove(self);
         return;
     }
@@ -211,7 +206,7 @@ void HG_Napalm()
 	proj.classname = "grenade";
 	proj.bot_dodge = TRUE;
 	proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage");
-	proj.movetype = (self.hg_adept? MOVETYPE_TOSS : MOVETYPE_BOUNCE);
+	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
@@ -239,8 +234,6 @@ void HG_Napalm()
 	proj.flags = FL_PROJECTILE;
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
     proj.team = self.owner.team;
-    proj.hg_adept = self.hg_adept;
-    proj.hg_remote_firesource = self;
     proj.effects = EF_NODEPTHTEST;
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
@@ -484,10 +477,7 @@ void HG_Grenade_Explode()
     } else if(self.hg_type == HG_PLASMA) {
         HG_Plasma_Explode();
     } else if(self.hg_type == HG_REMOTE) {
-        if(self.hg_adept >= 0) {
-            self.hg_adept = 0;
-            HG_Remote_Explode();
-        }
+        HG_Remote_Explode();
     } else if(self.hg_type == HG_TRANSLOC) {
         HG_Translocator_Explode();
     }
@@ -620,6 +610,7 @@ void HG_Remote_Stick() {
     setmodel(e, "models/mine.md3");
     e.damageforcescale = self.damageforcescale;
     e.health = self.health;
+    e.max_health = self.max_health;
     e.takedamage = self.takedamage;
     e.event_damage = self.event_damage;
     e.solid = self.solid;
@@ -791,7 +782,7 @@ void HG_Grenade_Think() {
         self.hg_lastvel = self.velocity;
     
     if(self.solid == SOLID_NOT)
-        self.solid = SOLID_TRIGGER;
+        self.solid = SOLID_CORPSE;
     
     if(self.hg_type == HG_TRANSLOC) {
         tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
@@ -803,19 +794,6 @@ void HG_Grenade_Think() {
     }
     
     HG_Grenade_Waypoint();
-    
-    if(self.hg_type == HG_REMOTE)
-    if(self.hg_remote_sticked) {
-        if(self.hg_adept > 0)
-        if(time >= self.hg_detonateready) {
-            self.solid = SOLID_NOT;
-            HG_Remote_Explode();
-            self.hg_adept = -1;
-        }
-        
-        if(self.solid == SOLID_NOT) 
-            self.solid = SOLID_CORPSE;
-    }
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
@@ -836,16 +814,16 @@ void HG_Grenade_Think() {
     
     if(self.hg_detonable && self.hg_detonatetime) {
         if(time >= self.hg_detonatetime) {
-            /*
-            if(self.hg_type == HG_TRANSLOC) {
-                if(self == self.owner.hg_transloc_last) {
-                    self.use();
-                    return;
-                } else
-                    self.hg_detonatetime = 0;
-            } else
-            */
-            {
+            if(self.hg_type == HG_REMOTE && self.hg_adept) {
+                self.hg_adept = 0;
+                self.health = self.max_health;
+                HG_Remote_Explode();
+                HG_Grenade_RadiusDamage();
+                self.hg_detonateready = time + GRENVAR(self.hg_type, "adept_detonate_threshold");
+                self.hg_detonatetime = 0;
+                self.hg_sndcount = 0;
+                WaypointSprite_Disown(self.hg_waypoint, 0.5);
+            } else {
                 self.use();
                 return;
             }
@@ -1504,6 +1482,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         
     W_SetupProjectileVelocity(gren);
     
+    gren.max_health = gren.health;
     gren.angles = vectoangles(gren.velocity);
     gren.flags = FL_PROJECTILE;
     gren.hg_nadesused = self.hg_nadesused;
