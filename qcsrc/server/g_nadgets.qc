@@ -879,9 +879,12 @@ float HG_PlayerGrenadeType(entity e) {
     
     if(picked == HG_RANDOM) {
         RandomSelection_Init();
-        for(i = 0; i < argc; ++i)
-            RandomSelection_Add(world, i, string_null, 1, 0);
-        picked = HG_NameToType(argv(RandomSelection_chosen_float));
+        float n; for(i = 0; i < argc; ++i) {
+            n = HG_NameToType(argv(i));
+            if(n != HG_RANDOM)
+                RandomSelection_Add(world, i, string_null, 1, 0);
+        }
+        picked = RandomSelection_chosen_float;
     }
     
     e.hg_type_picked = picked;
