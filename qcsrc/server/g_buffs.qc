@@ -346,7 +346,12 @@ void Buffs_SetBuffModel(entity ment, float thebuffs) {
         }
         
         ment.effects &~= EF_NODRAW;
+        
+        vector omins = ment.mins;
+        vector omaxs = ment.maxs;
+        
         setmodel(ment, g_buffs_model[Buffs_TypeToIndex(thebuffs)]);
+        setsize(ment, omins, omaxs);
     } else {
         // multiple buffs - hide ment and use additional models
         
@@ -861,8 +866,9 @@ void Buffs_BuffPickup_Setup(void) {
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
-    Buffs_SetBuffModel(self, self.buffs);
+    
     setsize(self, '-15 -15 -40', '15 15 40');
+    Buffs_SetBuffModel(self, self.buffs);
     
     self.enemy = spawn();
     self.enemy.owner = self;
