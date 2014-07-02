@@ -690,11 +690,6 @@ void HG_Detonate(entity nade) {
 void HG_DetonateAll(entity plr) {    
     entity nade;
     
-    if(plr.hg_shield) {
-        HG_Shield_Trigger(plr);
-        return;
-    }
-    
     if(!plr.hg_detonables)
         return;
     
@@ -782,7 +777,7 @@ void HG_Grenade_Think() {
         self.hg_lastvel = self.velocity;
     
     if(self.solid == SOLID_NOT)
-        self.solid = SOLID_CORPSE;
+        self.solid = SOLID_TRIGGER;
     
     if(self.hg_type == HG_TRANSLOC) {
         tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
@@ -962,21 +957,18 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     self = oldself;
 }
 
-void HG_Shield_Trigger(entity plr) {
-    sound(plr, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
+void HG_Shield_Trigger(void) {
+    sound(self, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
     // Discharge
     float extend;
-    if(plr.hg_shield_stored) {
-        entity oself = self;
+    if(self.hg_shield_stored) {
         entity targ;
         vector start, end;
         float eff, arc = cvar("g_nadgets_shield_damage_store_arc");
         
         if(BUFFS_PRESENT(self, BUFF_ADEPT))
             extend = cvar("g_nadgets_shield_adept_discharge_extend");
-        
-        self = plr;
         
         makevectors(self.v_angle);
         W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", -1);
@@ -990,9 +982,9 @@ void HG_Shield_Trigger(entity plr) {
         
         entity infl = spawn();
         setorigin(infl, end);
-        RadiusDamage(infl, self, plr.hg_shield_stored, plr.hg_shield_stored * cvar("g_nadgets_shield_damage_store_edgefactor"),
+        RadiusDamage(infl, self, self.hg_shield_stored, self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_edgefactor"),
                      cvar("g_nadgets_shield_damage_store_radius"), world,
-                     plr.hg_shield_stored * cvar("g_nadgets_shield_damage_store_forcefactor"), HG_SHIELD, targ);
+                     self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_forcefactor"), HG_SHIELD, targ);
         remove(infl);
         
         switch(self.team) {
@@ -1007,20 +999,19 @@ void HG_Shield_Trigger(entity plr) {
         te_blast(end);
         
         if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || BUFFS_PRESENT(self, BUFF_MEDIC))) {
-            HG_Shield_Discharge_Arc(self, targ, plr.hg_shield_stored);
+            HG_Shield_Discharge_Arc(self, targ, self.hg_shield_stored);
             entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
                 e.buffs_arc_hit = FALSE;
         }
         
-        plr.hg_shield_stored = 0;
-        self = oself;
+        self.hg_shield_stored = 0;
     }
     
     if(extend)
-        plr.hg_shield = plr.hg_shield + extend;
+        self.hg_shield = self.hg_shield + extend;
     else {
-        plr.hg_shield = 0;
-        stopsound(plr, CHAN_AUTO);  // stop the shield sound
+        self.hg_shield = 0;
+        stopsound(self, CHAN_AUTO);  // stop the shield sound
     }
 }
 
@@ -1540,7 +1531,7 @@ void HG_Attack()
             return;
         }
     } else {
-        if(BUFFS_PRESENT(self, BUFF_ADEPT) && (GV("adept_split") > 0 || hgtype == HG_LASER)) {
+        if(BUFFS_PRESENT(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
             float split = GV("adept_split");
             float spread = GV("adept_split_spread");
             vector dir;
@@ -1686,6 +1677,21 @@ void HG_Frame()
     
     if(self.hg_detonatepressed)
         self.hg_detonatepressed = FALSE;
+}
+
+void HG_Trigger(void) {
+    if(self.hg_stealth || self.hg_stealth_saved)
+        HG_Cloak_Trigger();
+    else if(self.hg_shield)
+        HG_Shield_Trigger();
+    else {
+        self.hg_detonatepressed = TRUE;
+        HG_DetonateAll(self);
+        
+        if(self.hg_type == HG_LASER)
+        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+            HG_Attack();
+    }
 }
 
 void HG_ResetState(entity p) {

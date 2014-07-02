@@ -20,8 +20,9 @@ void HG_Remote_Stick();
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
 void HG_SetRegenTime(entity e, float t);
+void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
-void HG_Shield_Trigger(entity);
+void HG_Shield_Trigger(void);
 
 .vector org_explosion;
 .float nextparticle;
