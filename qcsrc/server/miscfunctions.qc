@@ -169,6 +169,31 @@ void GameLogClose()
     }
 }
 
+float check_team_spawns(void) {
+    float r, b, y, p, c;
+    float tc = TeamCount_TotalTeams();
+    entity e;
+    
+    #define HANDLETEAM(n,o,p) case o: if(tc >= n) if(!p) c++; p = 1; break;
+    for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) switch(e.team) {
+        HANDLETEAM(1, COLOR_TEAM1, r)
+        HANDLETEAM(2, COLOR_TEAM2, b)
+        HANDLETEAM(3, COLOR_TEAM3, y)
+        HANDLETEAM(4, COLOR_TEAM4, p)
+    }
+    #undef HANDLETEAM
+    
+    return (c >= tc);
+}
+
+void fix_team_spawns(void) {
+    if(have_team_spawns)
+    if(!check_team_spawns()) {
+        print("Not enough team spawnpoints, not using them\n");
+        have_team_spawns = 0;
+    }
+}
+
 float spawnpoint_nag;
 void relocate_spawnpoint()
 {
@@ -229,27 +254,6 @@ void relocate_spawnpoint()
         setsize(e, '-8 -8 -8', '8 8 8');
         e.solid = SOLID_TRIGGER;
     }
-}
-
-float count_team_spawns()
-{
-	float r, b, y, p, c;
-	entity e;
-	
-	#define HANDLETEAM(o,p) case o: if(!p) c++; p = 1; break;
-	for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) if(e.team)
-	{
-		switch(e.team)
-		{
-			HANDLETEAM(COLOR_TEAM1, r)
-			HANDLETEAM(COLOR_TEAM2, b)
-			HANDLETEAM(COLOR_TEAM3, y)
-			HANDLETEAM(COLOR_TEAM4, p)
-		}
-	}
-	#undef HANDLETEAM
-	
-	return c;
 }
 
 #define strstr strstrofs

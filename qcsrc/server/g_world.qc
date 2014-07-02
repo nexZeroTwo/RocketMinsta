@@ -858,7 +858,9 @@ void spawnfunc_worldspawn (void)
                 break;
             }
     }
-
+    
+    defer(0, fix_team_spawns);
+    
     IRC_Init();
     DPRM_Start();
 }
