@@ -892,17 +892,27 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 }
 
 float HG_PlayerGrenadeType(entity e) {
-    float def = HG_NameToType(cvar_string("g_nadgets_type"));
+    float picked = HG_NameToType(cvar_string("g_nadgets_type"));
     float argc = tokenize_console(cvar_string("g_nadgets_type_selectable"));
     float i;
     
     if(argc)
         for(i = 0; i < argc; ++i)
-            if(e.hg_type_picked == HG_NameToType(argv(i)))
-                return e.hg_type_picked;
+            if(e.hg_type_picked == HG_NameToType(argv(i))) {
+                picked = e.hg_type_picked;
+                break;
+            }
     
-    e.hg_type_picked = def;
-    return def;
+    
+    if(picked == HG_RANDOM) {
+        RandomSelection_Init();
+        for(i = 0; i < argc; ++i)
+            RandomSelection_Add(world, i, string_null, 1, 0);
+        picked = HG_NameToType(argv(RandomSelection_chosen_float));
+    }
+    
+    e.hg_type_picked = picked;
+    return e.hg_type_picked;
 }
 
 void HG_SetGrenadeType(entity p, float t) {
