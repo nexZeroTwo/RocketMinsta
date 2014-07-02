@@ -396,6 +396,9 @@ void HG_Translocator_Explode() {
         return;
     }
     
+    if(self.owner.flagcarried)
+        DropFlag(self.owner.flagcarried, world, world);
+    
     vector a;
     a = vectoangles(normalize(self.hg_lastvel));
     a_x = self.owner.v_angle_x;
@@ -408,6 +411,7 @@ void HG_Translocator_Explode() {
                   + GRENVAR(self.hg_type, "push_playerfactor") * vlen(self.owner.velocity)
                   + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
     tdeath_deathtype = 0;
+    
     if(tdeath_hit && !self.hg_isbonus) {
         float b = cvar("g_nadgets_transloc_telefragbonus");
         
