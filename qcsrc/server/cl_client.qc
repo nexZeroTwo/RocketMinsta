@@ -3242,6 +3242,9 @@ void PlayerPreThink (void)
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
         
+        if(self.joinqueue)
+            JoinQ_Remove(self);
+        
         if(sv_showacc)
         if(time > self.acctime) {
             float hit = self.damage_hits - self.weapon;
