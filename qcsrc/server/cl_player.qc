@@ -1116,19 +1116,29 @@ float UpdateSelectedPlayer_countvalue(float v)
 	return max(0, (v - 1.0) / 0.5);
 }
 
+float UpdateSelectedPlayer_isVisible(entity p) {
+    if(p.deadflag)
+        return FALSE;
+    
+    if(p.alpha < 0.4 && !(teams_matter && p.team == self.team))
+        return FALSE;
+    
+    return TRUE;
+}
+
 // returns: -2 if no hit, otherwise cos of the angle
 // uses the global v_angle
 float UpdateSelectedPlayer_canSee(entity p, float mincosangle, float maxdist)
 {
 	vector so, d;
 	float c;
-
-	if(p == self)
-		return -2;
-
-	if(p.deadflag)
-		return -2;
-
+    
+    if(p == self)
+        return -2;
+    
+    if(!UpdateSelectedPlayer_isVisible(p))
+        return -2;
+        
 	so = self.origin + self.view_ofs;
 	d = p.origin - so;
 
@@ -1185,7 +1195,7 @@ void UpdateSelectedPlayer()
 	makevectors(self.v_angle); // sets v_forward
 
 	// 1. cursor trace is always right
-	if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && !self.cursor_trace_ent.deadflag)
+	if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent))
 	{
 		selected = self.cursor_trace_ent;
 	}
