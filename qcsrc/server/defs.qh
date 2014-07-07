@@ -375,10 +375,9 @@ void UpdateSelectedPlayer();
 void ClearSelectedPlayer();
 .entity selected_player;
 .entity last_selected_player;
-.float selected_player_time; // when this player has been selected
 .float selected_player_count; // how long this player has been directly pointed to
-.float selected_player_display_needs_update; // are regular updates necessary? (health)
 .float selected_player_display_timeout; // when the selection will time out
+.float selected_player_next_update;
 
 void FixIntermissionClient(entity e);
 void FixClientCvars(entity e);

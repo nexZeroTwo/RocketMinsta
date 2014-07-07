@@ -1111,11 +1111,6 @@ float shownames_customize()
     return FALSE;
 }
 
-float UpdateSelectedPlayer_countvalue(float v)
-{
-	return max(0, (v - 1.0) / 0.5);
-}
-
 float UpdateSelectedPlayer_isVisible(entity p) {
     if(p.deadflag)
         return FALSE;
@@ -1128,8 +1123,7 @@ float UpdateSelectedPlayer_isVisible(entity p) {
 
 // returns: -2 if no hit, otherwise cos of the angle
 // uses the global v_angle
-float UpdateSelectedPlayer_canSee(entity p, float mincosangle, float maxdist)
-{
+float UpdateSelectedPlayer_canSee(entity p, float mincosangle, float maxdist) {
 	vector so, d;
 	float c;
     
@@ -1163,110 +1157,81 @@ float UpdateSelectedPlayer_canSee(entity p, float mincosangle, float maxdist)
 	return c;
 }
 
-void ClearSelectedPlayer()
-{
-	if(self.selected_player)
-	{
-		centerprint_expire(self, CENTERPRIO_POINT);
-		self.selected_player = world;
-		self.selected_player_display_needs_update = FALSE;
-	}
+void ClearSelectedPlayer() {
+    if(self.selected_player)
+        self.selected_player = world;
 }
 
-void UpdateSelectedPlayer()
-{
-	entity selected;
-	float selected_score;
-	selected = world;
-	selected_score = 0.95; // 18 degrees
+void UpdateSelectedPlayer() {
+    entity selected;
+    float selected_score;
+    selected = world;
+    selected_score = 0.95; // 18 degrees
 
-	if(!cvar("sv_allow_shownames"))
-		return;
+    if(!cvar("sv_allow_shownames"))
+        return;
 
-	if(clienttype(self) != CLIENTTYPE_REAL)
-		return;
+    if(clienttype(self) != CLIENTTYPE_REAL)
+        return;
 
-	if(self.cvar_cl_shownames == 0)
-		return;
+    if(self.cvar_cl_shownames == 0)
+        return;
 
-	if(self.cvar_cl_shownames == 1 && !teams_matter)
-		return;
+    if(self.cvar_cl_shownames == 1 && !teams_matter)
+        return;
 
-	makevectors(self.v_angle); // sets v_forward
+    makevectors(self.v_angle); // sets v_forward
 
-	// 1. cursor trace is always right
-	if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent))
-	{
-		selected = self.cursor_trace_ent;
-	}
-	else
-	{
-		// 2. if we don't have a cursor trace, find the player which is least
-		//    mis-aimed at
-		entity p;
-		FOR_EACH_PLAYER(p)
-		{
-			float c;
-			c = UpdateSelectedPlayer_canSee(p, selected_score, 100); // 100 = 2.5 meters
-			if(c >= -1)
-			{
-				selected = p;
-				selected_score = c;
-			}
-		}
-	}
+    // 1. cursor trace is always right
+    if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent))
+        selected = self.cursor_trace_ent;
+    else {
+        // 2. if we don't have a cursor trace, find the player which is least
+        //    mis-aimed at
+        entity p;
+        FOR_EACH_PLAYER(p) {
+            float c;
+            c = UpdateSelectedPlayer_canSee(p, selected_score, 100); // 100 = 2.5 meters
+            if(c >= -1) {
+                selected = p;
+                selected_score = c;
+            }
+        }
+    }
 
-	if(selected)
-	{
-		self.selected_player_display_timeout = time + self.cvar_scr_centertime;
-	}
-	else
-	{
-		if(time < self.selected_player_display_timeout)
-			if(UpdateSelectedPlayer_canSee(self.selected_player, 0.7, 200) >= -1) // 5 meters, 45 degrees
-				selected = self.selected_player;
-	}
+    if(selected)
+        self.selected_player_display_timeout = time + self.cvar_scr_centertime;
+    else {
+        if(time < self.selected_player_display_timeout)
+            if(UpdateSelectedPlayer_canSee(self.selected_player, 0.7, 200) >= -1) // 5 meters, 45 degrees
+                selected = self.selected_player;
+    }
 
-	if(selected)
-	{
-		if(selected == self.selected_player)
-		{
-			float save;
-			save = UpdateSelectedPlayer_countvalue(self.selected_player_count);
-			self.selected_player_count = self.selected_player_count + frametime;
-			if(save != UpdateSelectedPlayer_countvalue(self.selected_player_count))
-			{
-				string namestr, healthstr;
-				namestr = playername(selected);
-				if(teams_matter)
-				{
-					healthstr = ftos(floor(selected.health));
-					if(self.team == selected.team)
-					{
-						namestr = strcat(namestr, " (", healthstr, "%)");
-						self.selected_player_display_needs_update = TRUE;
-					}
-				}
-				//centerprint_spec(self, strcat("\x01", namestr));
-				bigprint_spec(self, "", strcat("\x01", namestr), 2);
-			}
-		}
-		else
-		{
-			ClearSelectedPlayer();
-			self.selected_player = selected;
-			self.selected_player_time = time;
-			self.selected_player_count = 0;
-			self.selected_player_display_needs_update = FALSE;
-		}
-	}
-	else
-	{
-		ClearSelectedPlayer();
-	}
+    if(selected) {
+        if(selected == self.selected_player) {
+            if(time > self.selected_player_next_update) {
+                string namestr;
+                namestr = playername(selected);
+                
+                if(teams_matter)
+                    if(self.team == selected.team)
+                        namestr = strcat(namestr, " (", ftos(floor(selected.health)), "h ", ftos(floor(selected.armorvalue)), "a)");
+                
+                bigprint_spec(self, "", strcat("\x01", namestr), self.cvar_scr_centertime);
+                self.selected_player_next_update = time + self.cvar_scr_centertime * 0.8;
+            }
+        }
+        else {
+            ClearSelectedPlayer();
+            self.selected_player = selected;
+            self.selected_player_next_update = 0;
+        }
+    }
+    else
+        ClearSelectedPlayer();
 
-	if(self.selected_player)
-		self.last_selected_player = self.selected_player;
+    if(self.selected_player)
+        self.last_selected_player = self.selected_player;
 }
 
 .float muted; // to be used by prvm_edictset server playernumber muted 1
