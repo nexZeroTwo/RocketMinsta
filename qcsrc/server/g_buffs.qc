@@ -20,6 +20,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
     g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
+    g_buffs_randomize_interval = cvar("g_buffs_randomize_interval");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_lockon = cvar("g_buffs_lockon");
     
@@ -145,6 +146,18 @@ void Buffs_Randomize(entity blist, float force) {
     }
 }
 
+#define BUFFS_RANDOMIZER_NEXTTHINK (time + max3(game_starttime - time, next_round_starttime - time, 0) + g_buffs_randomize_interval)
+
+void Buffs_Randomizer_Think(void) {
+    if(roundstate == ROUNDSTATE_GAME)
+        Buffs_Randomize(world, TRUE);
+    self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+}
+
+void Buffs_Randomizer_Reset(void) {
+    self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+}
+
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
     entity blist, b, o;
@@ -194,6 +207,16 @@ void Buffs_Init_Delayed(void) {
     }
     
     Buffs_Randomize(blist, g_buffs_randomize);
+    
+    if(g_buffs_randomize)
+    if(g_buffs_randomize_interval)
+    if(cvar("g_buffs_randomize_interval_force") || !EndRound_Allowed()) {
+        entity e = spawn();
+        e.classname = "buff_randomizer";
+        e.reset = Buffs_Randomize_Reset;
+        e.think = Buffs_Randomizer_Think;
+        e.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+    }
 }
 
 float Buffs_BuffPower(entity p, float b) {

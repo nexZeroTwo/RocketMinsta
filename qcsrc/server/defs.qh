@@ -695,6 +695,7 @@ vector frag_force;
 void Boobs_DropAllAndRespawn(vector);
 
 float next_round;
+float next_round_starttime;
 
 float sv_showspecs_extra;
 float sv_showfps;

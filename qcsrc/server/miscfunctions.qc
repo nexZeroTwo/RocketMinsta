@@ -3457,7 +3457,8 @@ void G_EndRound(float thedelay, float warmuptime, void() callback, void() callba
     e.endround_finalize = callbackfin;
     e.endround_warmuptime = warmuptime;
     next_round = time + thedelay;
-    e.cnt = warmuptime + next_round;
+    next_round_starttime = next_round + warmuptime;
+    e.cnt = next_round_starttime;
     roundstate = ROUNDSTATE_OVER;
 }
 
