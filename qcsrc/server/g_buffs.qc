@@ -381,7 +381,7 @@ void Buffs_SetBuffModel(entity ment, float thebuffs) {
         ment.effects |= EF_NODRAW;
         
         for(i = 0, b = 1; b <= BUFF_LAST; b *= 2) if(thebuffs & b) {
-            if(!ment.(buffmdl[i]))
+            if(!ment.(buffmdl[i]) || wasfreed(ment.(buffmdl[i])))
                 ment.(buffmdl[i]) = spawn();
             ment.(buffmdl[i]).buffs = b;
             ++i;
