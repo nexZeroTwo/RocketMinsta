@@ -110,6 +110,8 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -473,9 +475,8 @@ void PostInit(void)
 		case 15:
 			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
 		case 16:
+        case 17:
 			localcmd("seta rm_shownames 1; shownames 1\n");
-		case 17:
-			localcmd("seta rm_shownames 0; shownames 0\n");
 		case 18:
 			localcmd("seta rm_visualscore 1; visualscore 1\n");
 		case 19:
@@ -518,9 +519,13 @@ void PostInit(void)
                 localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
         case 39:
             cvar_set("_rm_hg_optout", "0");
+        case 40:
+            localcmd("seta rm_showtimer 0; showtimer 0\n");
+        case 41:
+            localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 40\n");
+		localcmd("seta rm_initialized 42\n");
 		RM_OUTDATED
 		break;
 	}
@@ -547,6 +552,8 @@ void PostInit(void)
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 	rm_oldbigfont = cvar("rm_oldbigfont");
+    rm_showtimer = cvar("rm_showtimer");
+    rm_shownadgetregen = cvar("rm_shownadgetregen");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -576,6 +583,8 @@ void PostInit(void)
 	registercmd("oldbigfont");
 	registercmd("freezetag_danger");
 	registercmd("freezetag_danger_silent");
+    registercmd("showtimer");
+    registercmd("shownadgetregen");
 	// -- //
 	registercmd("hudskin");
 	
@@ -709,6 +718,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+        print("^2showtimer^7: If enabled, will always show the timer (disabled by default)\n");
+        print("^2shownadgetregen^7: If enabled, will show the remaining nadget regeneration time in seconds (RM HUD only) (disabled by default)\n");
 		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
@@ -744,6 +755,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
+        strCmd == "showtimer"           ||
+        strCmd == "shownadgetregen"     ||
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
 		strCmd == "freezetag_danger"	||
@@ -768,6 +781,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 		rm_oldbigfont = cvar("rm_oldbigfont");
+        rm_showtimer = cvar("rm_showtimer");
+        rm_shownadgetregen = cvar("rm_shownadgetregen");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -1377,7 +1392,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
@@ -1762,6 +1777,7 @@ void Ent_Init()
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
+    sv_showacc = ReadByte();
 
 	if(!postinit)
 		PostInit();

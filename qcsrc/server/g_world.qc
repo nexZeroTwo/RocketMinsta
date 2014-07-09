@@ -848,7 +848,19 @@ void spawnfunc_worldspawn (void)
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
-
+    
+    if(cvar("sv_showaccuracy")) {
+        if(g_minstagib)
+            sv_showacc = TRUE;
+        else for(i = WEP_FIRST; i < WEP_COUNT; ++i)
+            if(g_weaponarena == pow(2, i-1)) {
+                sv_showacc = TRUE;
+                break;
+            }
+    }
+    
+    defer(0, fix_team_spawns);
+    
     IRC_Init();
     DPRM_Start();
 }

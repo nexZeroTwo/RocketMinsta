@@ -232,8 +232,16 @@ void Item_ScheduleInitialRespawn(entity e)
 	Item_Show(e, 0);
 	if(self.droppedpowerup)
 		Item_ScheduleRespawnIn(e, cvar("g_droppowerups_activatedelay"));
-	else
-		Item_ScheduleRespawnIn(e, max(game_starttime - time, 0) + ITEM_RESPAWNTIME_INITIAL(e));
+	else {
+        float t;
+        
+        if(e.flags & FL_POWERUP)
+            t = cvar("g_pickup_respawntime_powerup_initial");
+        if(!t)
+            t = ITEM_RESPAWNTIME_INITIAL(e);
+        
+        Item_ScheduleRespawnIn(e, max(game_starttime - time, 0) + t);
+    }
 }
 
 float Item_GiveTo(entity item, entity player)
@@ -534,7 +542,8 @@ float Item_GiveTo(entity item, entity player)
         float oregen = HG_RegenTime(player);
         pickedup = TRUE;
         player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
-        player.hg_regentime = player.hg_regentime - oregen + HG_RegenTime(player);
+        player.hg_maxregentime = HG_RegenTime(player);
+        player.hg_regentime = player.hg_regentime - oregen + player.hg_maxregentime;
     }
 
 :skip

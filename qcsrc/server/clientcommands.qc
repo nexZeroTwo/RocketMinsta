@@ -212,6 +212,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("shownames", "sv_shownames")
 		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
+        OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen_time")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
 		#undef OPTAVAIL_RAW
@@ -514,8 +515,7 @@ void SV_ParseClientCommand(string s) {
                         HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
                         
                         if(o || !term) {
-                            self.hg_regentime = HG_RegenTime(self);
-                            self.hg_regenstat = 0;
+                            HG_SetRegenTime(self, HG_RegenTime(self));
                             if(!term)
                                 self.hg_ammo = cvar("g_nadgets_ammo");
                         }

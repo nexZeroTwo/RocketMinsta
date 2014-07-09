@@ -13,8 +13,7 @@ void IP2C_SetCountry_Internal(entity player, string cn) {
     
     if(player.scorekeeper) {
         cn = strtolower(cn);  // flag icons have lowcase names
-        PlayerScore_Set(player, SP_CN_CHAR0, str2chr(substring(cn, 0, 1), 0));
-        PlayerScore_Set(player, SP_CN_CHAR1, str2chr(substring(cn, 1, 1), 0));
+        PlayerScore_Set(player, SP_COUNTRY, str2chr(substring(cn, 0, 1), 0) | (str2chr(substring(cn, 1, 1), 0) * 256));
     } else
         IP2C_Log(strcat(player.netname, "^7 has no scorekeeper"));
 }

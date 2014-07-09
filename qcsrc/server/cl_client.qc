@@ -1451,6 +1451,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
     WriteShort(MSG_ENTITY, sv_nicehealth);
+    WriteByte(MSG_ENTITY, sv_showacc);
 	return TRUE;
 }
 
@@ -2686,8 +2687,10 @@ void SpectateCopy(entity spectatee) {
     self.hg_bonus = spectatee.hg_bonus;
     self.hg_bonustype = spectatee.hg_bonustype;
     self.hg_detonables = spectatee.hg_detonables;
-    self.hg_regenstat = spectatee.hg_regenstat;
+    self.hg_regentime = spectatee.hg_regentime;
+    self.hg_maxregentime = spectatee.hg_maxregentime;
     self.hg_regenpaused = spectatee.hg_regenpaused;
+    self.hg_regenrate = spectatee.hg_regenrate;
     self.hg_launchspeed = spectatee.hg_launchspeed;
     self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;
@@ -2770,6 +2773,7 @@ void ResetSpectatorInfo(entity player)
     msg_entity = player;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+    WriteByte(MSG_ONE, 0);
     WriteByte(MSG_ONE, 0);
 }
 
@@ -3107,6 +3111,7 @@ void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
 .float namecheck;
+.float acctime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3236,6 +3241,22 @@ void PlayerPreThink (void)
 	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
+        
+        if(self.joinqueue)
+            JoinQ_Remove(self);
+        
+        if(sv_showacc)
+        if(time > self.acctime) {
+            float hit = self.damage_hits - self.weapon;
+            float total = self.maxdamage_fired - self.weapon;
+            
+            if(hit < 0 || total <= 0)
+                PlayerScore_Set(self, SP_ACCURACY, -1);
+            else
+                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 100);
+            
+            self.acctime = time + 5;
+        }
         
         Freeze_Hook_PlayerPreThink();
         JB_PlayerPreThink();
