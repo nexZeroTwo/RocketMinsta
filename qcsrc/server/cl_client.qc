@@ -2545,15 +2545,18 @@ void SetZoomState(float z)
 
 void GetPressedKeys(void) {
 	dodging_GetPressedKeys();
+	
 	if (self.movement_x > 0) // get if movement keys are pressed
 	{	// forward key pressed
 		self.pressedkeys |= KEY_FORWARD;
 		self.pressedkeys &~= KEY_BACKWARD;
+		self.lastkeypressed = KEY_FORWARD;
 	}
 	else if (self.movement_x < 0)
 	{	// backward key pressed
 		self.pressedkeys |= KEY_BACKWARD;
 		self.pressedkeys &~= KEY_FORWARD;
+		self.lastkeypressed = KEY_BACKWARD;
 	}
 	else
 	{	// no x input
@@ -2565,11 +2568,13 @@ void GetPressedKeys(void) {
 	{	// right key pressed
 		self.pressedkeys |= KEY_RIGHT;
 		self.pressedkeys &~= KEY_LEFT;
+		self.lastkeypressed = KEY_RIGHT;
 	}
 	else if (self.movement_y < 0)
 	{	// left key pressed
 		self.pressedkeys |= KEY_LEFT;
 		self.pressedkeys &~= KEY_RIGHT;
+		self.lastkeypressed = KEY_LEFT;
 	}
 	else
 	{	// no y input

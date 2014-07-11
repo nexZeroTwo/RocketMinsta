@@ -525,6 +525,8 @@ string clientstuff;
 .float weapons;
 .float pressedkeys;
 
+.float lastkeypressed;
+
 .float porto_forbidden;
 
 .string fog;
