@@ -525,6 +525,8 @@ string clientstuff;
 .float weapons;
 .float pressedkeys;
 
+.float lastkeypressed; //1 = forward, 2 = right, 3 = back, 4 = left (clockwise)
+
 .float porto_forbidden;
 
 .string fog;

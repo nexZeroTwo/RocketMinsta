@@ -2545,36 +2545,55 @@ void SetZoomState(float z)
 
 void GetPressedKeys(void) {
 	dodging_GetPressedKeys();
+	float hasxmovement;
+	float hasymovement;
+	hasxmovement = 0;
+	hasymovement = 0;
+	
 	if (self.movement_x > 0) // get if movement keys are pressed
 	{	// forward key pressed
 		self.pressedkeys |= KEY_FORWARD;
 		self.pressedkeys &~= KEY_BACKWARD;
+		self.lastkeypressed = 1;
+		hasxmovement = 1;
 	}
 	else if (self.movement_x < 0)
 	{	// backward key pressed
 		self.pressedkeys |= KEY_BACKWARD;
 		self.pressedkeys &~= KEY_FORWARD;
+		self.lastkeypressed = 3;
+		hasxmovement = 1;
 	}
 	else
 	{	// no x input
 		self.pressedkeys &~= KEY_FORWARD;
 		self.pressedkeys &~= KEY_BACKWARD;
+		hasxmovement = 0;
 	}
 
 	if (self.movement_y > 0)
 	{	// right key pressed
 		self.pressedkeys |= KEY_RIGHT;
 		self.pressedkeys &~= KEY_LEFT;
+		self.lastkeypressed = 2;
+		hasymovement = 1;
 	}
 	else if (self.movement_y < 0)
 	{	// left key pressed
 		self.pressedkeys |= KEY_LEFT;
 		self.pressedkeys &~= KEY_RIGHT;
+		self.lastkeypressed = 4;
+		hasymovement = 1;
 	}
 	else
 	{	// no y input
 		self.pressedkeys &~= KEY_RIGHT;
 		self.pressedkeys &~= KEY_LEFT;
+		hasymovement = 0;
+	}
+	if((hasxmovement == 1) && (hasymovement == 1)){
+		//diagonal dashing is messy
+		self.lastkeypressed = 0;
 	}
 
 	if (self.BUTTON_JUMP) // get if jump and crouch keys are pressed
