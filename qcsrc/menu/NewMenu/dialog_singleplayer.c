@@ -76,6 +76,23 @@ void fillNewMenuSingleplayerDialog(entity me)
 			me.campaignBox.labelTitle = lblTitle;
 			me.campaignBox.campaignGo(me.campaignBox, 0);
 
+	me.gotoRC(me, me.rows - 2, 0);
+		me.TDempty(me, 0.2);
+		me.TD(me, 1, 0.8, e = makeNewMenuTextLabel(0, "Bot skill:"));
+		me.TD(me, 1, 2, e = makeNewMenuTextSlider("g_campaign_skill"));
+			e.addValue(e, "Noob", "0");
+			e.addValue(e, "Beginner", "1");
+			e.addValue(e, "You will win", "2");
+			e.addValue(e, "You can win", "3");
+			e.addValue(e, "You might win", "4");
+			e.addValue(e, "Advanced", "5");
+			e.addValue(e, "Expert", "6");
+			e.addValue(e, "Pro", "7");
+			e.addValue(e, "Assassin", "8");
+			e.addValue(e, "Unhuman", "9");
+			e.addValue(e, "Godlike", "10");
+			e.configureNewMenuTextSliderValues(e);
+
 	me.gotoRC(me, me.rows - 1, 0);
 #ifdef MODMODE
 		me.TD(me, 1, 2, e = makeNewMenuModButton("Singleplayer"));

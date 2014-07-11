@@ -96,19 +96,21 @@ void fillNewMenuAudioSettingsTab(entity me)
 		setDependentStringNotEqual(s, "volume", "0");
 
 	me.gotoRC(me, 0, 3.5); me.setFirstColumn(me, me.currentColumn);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Frequency:"));
-		me.TD(me, 1, 2, e = makeNewMenuTextSlider("snd_speed"));
-			e.addValue(e, "8 kHz", "8000");
-			e.addValue(e, "11.025 kHz", "11025");
-			e.addValue(e, "16 kHz", "16000");
-			e.addValue(e, "22.05 kHz", "22050");
-			e.addValue(e, "24 kHz", "24000");
-			e.addValue(e, "32 kHz", "32000");
-			e.addValue(e, "44.1 kHz", "44100");
-			e.addValue(e, "48 kHz", "48000");
-			e.configureNewMenuTextSliderValues(e);
-	me.TR(me);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Channels:"));
+	if(cvar("menu_advanced") > 0){
+			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Frequency:"));
+			me.TD(me, 1, 2, e = makeNewMenuTextSlider("snd_speed"));
+				e.addValue(e, "8 kHz", "8000");
+				e.addValue(e, "11.025 kHz", "11025");
+				e.addValue(e, "16 kHz", "16000");
+				e.addValue(e, "22.05 kHz", "22050");
+				e.addValue(e, "24 kHz", "24000");
+				e.addValue(e, "32 kHz", "32000");
+				e.addValue(e, "44.1 kHz", "44100");
+				e.addValue(e, "48 kHz", "48000");
+				e.configureNewMenuTextSliderValues(e);
+		me.TR(me);
+	}
+		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Sound Channels:"));
 		me.TD(me, 1, 2, e = makeNewMenuTextSlider("snd_channels"));
 			e.addValue(e, "Mono", "1");
 			e.addValue(e, "Stereo", "2");
@@ -119,10 +121,12 @@ void fillNewMenuAudioSettingsTab(entity me)
 			e.addValue(e, "6.1", "7");
 			e.addValue(e, "7.1", "8");
 			e.configureNewMenuTextSliderValues(e);
-	me.TR(me);
-		me.TDempty(me, 0.2);
-		me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_swapstereo", "Swap Stereo"));
-		setDependent(e, "snd_channels", 1.5, 0.5);
+	if(cvar("menu_advanced") > 0){
+		me.TR(me);
+			me.TDempty(me, 0.2);
+			me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_swapstereo", "Swap Stereo"));
+			setDependent(e, "snd_channels", 1.5, 0.5);
+	}
 	me.TR(me);
 		me.TDempty(me, 0.2);
 		me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_spatialization_control", "Headphone friendly mode"));
@@ -133,18 +137,20 @@ void fillNewMenuAudioSettingsTab(entity me)
 		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "0", "None"));
 		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "2", "Taunts"));
 		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "1", "All"));
-	me.TR(me);
-		me.TDempty(me, 0.2);
-		me.TD(me, 1, 0.8, e = makeNewMenuTextLabel(0, "Taunt range:"));
-		setDependent(e, "cl_voice_directional", 0.5, -0.5);
-		me.TD(me, 1, 1.8, e = makeNewMenuTextSlider("cl_voice_directional_taunt_attenuation"));
-			e.addValue(e, "Very short", "3");
-			e.addValue(e, "Short", "2");
-			e.addValue(e, "Normal", "0.5");
-			e.addValue(e, "Long", "0.25");
-			e.addValue(e, "Full", "0.015625");
-			e.configureNewMenuTextSliderValues(e);
-		setDependent(e, "cl_voice_directional", 0.5, -0.5);
+	if(cvar("menu_advanced") > 0){
+		me.TR(me);
+			me.TDempty(me, 0.2);
+			me.TD(me, 1, 0.8, e = makeNewMenuTextLabel(0, "Taunt range:"));
+			setDependent(e, "cl_voice_directional", 0.5, -0.5);
+			me.TD(me, 1, 1.8, e = makeNewMenuTextSlider("cl_voice_directional_taunt_attenuation"));
+				e.addValue(e, "Very short", "3");
+				e.addValue(e, "Short", "2");
+				e.addValue(e, "Normal", "0.5");
+				e.addValue(e, "Long", "0.25");
+				e.addValue(e, "Full", "0.015625");
+				e.configureNewMenuTextSliderValues(e);
+			setDependent(e, "cl_voice_directional", 0.5, -0.5);
+	}
 	me.TR(me);
 		sl = makeNewMenuSlider(0.15, 1, 0.05, "cl_autotaunt");
 			sl.valueDisplayMultiplier = 100;
@@ -152,9 +158,10 @@ void fillNewMenuAudioSettingsTab(entity me)
 		me.TD(me, 1, 1, e = makeNewMenuSliderCheckBox(0, 1, sl, "Automatic taunts"));
 		if(sl.value != e.savedValue)
 			e.savedValue = 0.65; // default
-	me.TR(me);
+	/*me.TR(me);
 		me.TD(me, 1, 3, e = makeNewMenuTextLabel(0.1, "Frequency:"));
 		me.TD(me, 1, 2, sl);
+	*/
 	me.TR(me);
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Time warning:"));

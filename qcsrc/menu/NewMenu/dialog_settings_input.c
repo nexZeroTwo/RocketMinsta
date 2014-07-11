@@ -48,35 +48,47 @@ void fillNewMenuInputSettingsTab(entity me)
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "UI mouse speed:"));
 		me.TD(me, 1, 2, e = makeNewMenuSlider(0.2, 4.0, 0.1, "menu_mouse_speed"));
+	if(cvar("menu_advanced") > 0){
 	me.TR(me);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "View Pitch Minimum:"));
+		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Look Down:"));
 		me.TD(me, 1, 2, e = makeNewMenuSlider(-75, -120, 1, "in_pitch_min"));
 	me.TR(me);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "View Pitch Maximum:"));
+		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Look Up:"));
 		me.TD(me, 1, 2, e = makeNewMenuSlider(75, 120, 1, "in_pitch_max"));
+	}
 	me.TR(me);
 		me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "m_filter", "Mouse filter"));
+	if(cvar("menu_advanced") > 0){
+		me.TR(me);
+			me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "host_sleep", "Minimize input latency"));
+	}
 	me.TR(me);
 		me.TD(me, 1, 3, e = makeNewMenuCheckBox(1.022, "m_pitch", "Invert mouse"));
-	me.TR(me);
+	// No one uses this, at least no one who enjoys winning.
+	if(cvar("menu_advanced") > 0){
+		me.TR(me);
 		if(cvar_type("joy_enable") & CVAR_TYPEFLAG_ENGINE)
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "joy_enable", "Use joystick input"));
 		else if(cvar_type("joystick") & CVAR_TYPEFLAG_ENGINE)
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "joystick", "Use joystick input"));
+	}
+
 	me.TR(me);
 		if(cvar_type("vid_dgamouse") & CVAR_TYPEFLAG_ENGINE)
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "vid_dgamouse", "Turn off OS mouse acceleration"));
 		else if(cvar_type("apple_mouse_noaccel") & CVAR_TYPEFLAG_ENGINE)
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "apple_mouse_noaccel", "Turn off OS mouse acceleration"));
-	me.TR(me);
-		me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "con_closeontoggleconsole", "\"enter console\" also closes"));
-	me.TR(me);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Show binds:"));
-		me.TD(me, 1, 2, e = makeNewMenuTextSlider("sbar_showbinds"));
-			e.addValue(e, "Actions", "0");
-			e.addValue(e, "Bound keys", "1");
-			e.addValue(e, "Both", "2");
-			e.configureNewMenuTextSliderValues(e);
+	if(cvar("menu_advanced") > 0){
+		me.TR(me);
+			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "con_closeontoggleconsole", "\"enter console\" also closes"));
+		me.TR(me);
+			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Show binds:"));
+			me.TD(me, 1, 2, e = makeNewMenuTextSlider("sbar_showbinds"));
+				e.addValue(e, "Actions", "0");
+				e.addValue(e, "Bound keys", "1");
+				e.addValue(e, "Both", "2");
+				e.configureNewMenuTextSliderValues(e);
+	}
 	me.TR(me);
 		me.TD(me, 1, 3, e = makeNewMenuCheckBoxEx(2, 0, "cl_showpressedkeys", "Show pressed keys"));
 }

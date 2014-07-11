@@ -26,7 +26,7 @@ void fillNewMenuMiscSettingsTab(entity me)
 		me.TD(me, 1, 3, e = makeNewMenuTextLabel(0, "Menu skins:"));
 	me.TR(me);
 		me.TD(me, me.rows - 2, 3, sk = makeNewMenuSkinList());
-	me.gotoRC(me, me.rows - 1, 0);
+	me.gotoRC(me, me.rows - 2, 0);
 		me.TD(me, 1, 3, e = makeNewMenuButton("Apply immediately", '0 0 0'));
 			e.onClick = SetSkin_Click;
 			e.onClickEntity = sk;
@@ -65,14 +65,18 @@ void fillNewMenuMiscSettingsTab(entity me)
 			setDependent(e, "cl_showacceleration", 1, 1);
 	me.TR(me);
 	me.TR(me);
-		me.TDempty(me, 0.2);
-		me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "host_sleep", "Minimize input latency"));
-	me.TR(me);
+	if(cvar("menu_advanced") > 0){
 	me.TR(me);
 		me.TDempty(me, 0.5);
 		me.TD(me, 1, 2, e = makeNewMenuButton("Advanced settings...", '0 0 0'));
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.cvarsDialog;
 		me.TDempty(me, 0.5);
+	}
+	me.gotoRC(me, me.rows - 1, 0);
+	if(cvar("menu_advanced") > 0)
+		me.TD(me, 1, me.columns, makeNewMenuCommandButton("Switch to Basic Menu"   , '0 0 0', "set menu_advanced 0; menu_restart; togglemenu", COMMANDBUTTON_APPLY));
+	else
+		me.TD(me, 1, me.columns, makeNewMenuCommandButton("Switch to Advanced Menu", '0 0 0', "set menu_advanced 1; menu_restart; togglemenu", COMMANDBUTTON_APPLY));
 }
 #endif
