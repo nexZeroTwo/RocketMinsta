@@ -953,6 +953,16 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	return str;
 }
 
+string Sbar_FlagIcon(string cn) {
+    if(cn == "zx")
+        return strcat("gfx/flags/zx-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
+    
+    if(cn == "")
+        cn = "xx";
+    
+    return strcat("gfx/flags/", cn);
+}
+
 void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_number)
 {
 	vector tmp, rgb;
@@ -1041,7 +1051,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			local float scale = sbar_fontsize_x / 11;
 
 			if(str != "")
-				drawpic(pos - tmp, strcat("gfx/flags/", str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+				drawpic(pos - tmp, Sbar_FlagIcon(str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		} else if (field == SP_CARRYING) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
 			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
