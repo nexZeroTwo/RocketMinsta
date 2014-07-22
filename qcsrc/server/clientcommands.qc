@@ -297,7 +297,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(!cvar("sv_fakeflag"))
+		if(!cvar("sv_fakeflag") && !self.vote_master)
 		{
 			sprint(self, "^1'fakeflag' is forbidden on this server.");
 			
@@ -484,7 +484,7 @@ void SV_ParseClientCommand(string s) {
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
-        float term = self.term_authed;
+        float term = (self.term_authed && !self.term_used);
         float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
         
         float t = HG_NameToType(argv(1));
@@ -518,6 +518,11 @@ void SV_ParseClientCommand(string s) {
                             HG_SetRegenTime(self, HG_RegenTime(self));
                             if(!term)
                                 self.hg_ammo = cvar("g_nadgets_ammo");
+                        }
+                        
+                        if(term) {
+                            self.term_used = TRUE;
+                            self.term_nextuse = time + cvar("g_terminals_auth_cooldown");
                         }
                     }
                     
@@ -641,6 +646,9 @@ void SV_ParseClientCommand(string s) {
 		sprint(self, cvar_changes);
 	} else if(cmd == "afk") {
 		MarkAway(self, 1);
+    } else if(cmd == "removenadgets") {
+        if(sv_cheats || self.maycheat)
+            HG_RemoveAll(self);
 	} else if(cmd == "pointparticles") {
 		if((sv_cheats || self.maycheat) && tokens == 5)
 		{

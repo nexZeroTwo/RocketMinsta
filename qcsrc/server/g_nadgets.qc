@@ -203,7 +203,7 @@ void HG_Napalm()
 	proj = spawn();
 	proj.owner = self.owner;
     proj.hg_type = self.hg_type;
-	proj.classname = "grenade";
+	proj.classname = "hg_napalm";
 	proj.bot_dodge = TRUE;
 	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 300; //Havoc said set at least +60 to hit radius
 	proj.movetype = (self.hg_adept? MOVETYPE_TOSS : MOVETYPE_BOUNCE);
@@ -312,7 +312,7 @@ void HG_Plasma_Projectile() {
     vector kick;
     
 	proj = spawn();
-	proj.classname = "plasma";
+	proj.classname = "hg_plasma";
 	proj.owner = self.owner;
     proj.team = proj.owner.team;
 	proj.use = HG_Plasma_Projectile_Explode;
@@ -716,6 +716,29 @@ void HG_DetonateAll(entity plr) {
         HG_Detonate(tl);
 }
 
+void HG_RemoveAll(entity plr) {
+    entity n;
+    
+    if(!g_nadgets)
+        return;
+    
+    for(n = world; (n = find(n, classname, "hg_grenade"));)
+        if(n.owner == plr)
+            HG_Grenade_FadeOut(n);
+    
+    for(n = world; (n = find(n, classname, "hg_plasma"));)
+        if(n.owner == plr)
+            HG_Grenade_FadeOut(n);
+    
+    for(n = world; (n = find(n, classname, "hg_napalm"));)
+        if(n.owner == plr)
+            HG_Grenade_FadeOut(n);
+    
+    for(n = world; (n = find(n, classname, "hg_linker"));)
+        if(n.owner == plr)
+            HG_Grenade_FadeOut(n);
+}
+
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
         WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32', self.owner, 0, self, hg_waypoint, 1);
@@ -908,15 +931,55 @@ void HG_FixNadeType(entity p) {
     }
 }
 
-void HG_Grenade_Remove() {
+void HG_Grenade_Remove(void) {
     if(self.hg_waypoint)
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
+    
     stopsound(self, CHAN_PAIN);
     
     if(self.hg_detonable_updated && self.owner)
         self.owner.hg_detonables -= 1;
     
     remove(self);
+}
+
+void HG_Grenade_FadeOut_Think(void) {
+    self.alpha = approach(self.alpha, 0, frametime);
+    if(self.hg_linker_factor)
+        self.enemy.alpha = self.alpha * 0.5;
+    
+    if(!self.alpha) {
+        if(self.hg_linker_factor) {
+            remove(self.enemy);
+            remove(self);
+        } else
+            HG_Grenade_Remove();
+        return;
+    }
+    
+    self.nextthink = time;
+}
+
+void HG_Grenade_FadeOut(entity n) {
+    if(n.hg_waypoint)
+        WaypointSprite_Disown(n.hg_waypoint, 0.5);
+    
+    if(n.hg_detonable_updated && n.owner)
+        n.owner.hg_detonables -= 1;
+    
+    if(!n.alpha)
+        n.alpha = 1;
+    
+    if(n.classname == "hg_linker")
+        n.hg_linker_factor = TRUE;
+    
+    n.solid = SOLID_NOT;
+    n.takedamage = DAMAGE_NO;
+    n.hg_detonable_updated = FALSE;
+    n.event_damage = func_null;
+    n.use = SUB_Null;
+    n.think = HG_Grenade_FadeOut_Think;
+    n.nextthink = time;
 }
 
 void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
@@ -991,14 +1054,7 @@ void HG_Shield_Trigger(void) {
                      self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_forcefactor"), HG_SHIELD, targ);
         remove(infl);
         
-        switch(self.team) {
-            case COLOR_TEAM1:           eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
-            case COLOR_TEAM2:           eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
-            case COLOR_TEAM3: default:  eff = particleeffectnum("TE_TEI_G3YELLOW_HIT"); break;
-            case COLOR_TEAM4:           eff = particleeffectnum("TE_TEI_G3PINK_HIT");   break;
-        }
-        
-        trailparticles(world, eff, w_shotorg, end);
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, end);
         te_csqc_lightningarc(start, end, TRUE, self.team);
         te_blast(end);
         
