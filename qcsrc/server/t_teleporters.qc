@@ -38,6 +38,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	for(head = findradius(player.origin, deathradius); head; head = head.chain)
 		if(head != player)
 			if(head.takedamage)
+                if(!cvar("g_telefrags_noteam") || IsDifferentTeam(player, head))
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
 					if(player.iscreature && (player.health >= 1)) {
