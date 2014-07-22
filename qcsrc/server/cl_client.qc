@@ -808,7 +808,8 @@ void PutObserverInServer (void)
         PlayerScore_Clear(self); // clear scores when needed
     
         if(g_nadgets) {
-            self.hg_type_picked = 0;
+            if(!self.joinqueue)
+                self.hg_type_picked = 0;
             self.hg_type = 0;
             self.hg_nadesused = 0;
             self.hg_shield = 0;
