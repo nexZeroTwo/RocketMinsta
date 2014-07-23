@@ -1054,8 +1054,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			#endif
 		} else if(field == SP_COUNTRY && !rm_noflags) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
-			float s = sbar_fontsize_x / 10;
-            drawpic(pos - tmp, Sbar_FlagIcon(str), '15 10 0' * s, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+            drawpic(pos - tmp, Sbar_FlagIcon(str), '1.5 1 0' * sbar_fontsize_x, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		} else if (field == SP_CARRYING) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
 			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
