@@ -954,13 +954,20 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 }
 
 string Sbar_FlagIcon(string cn) {
-    if(cn == "zx")
-        return strcat("gfx/flags/zx-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
+    string i;
     
     if(cn == "")
-        cn = "xx";
+        return "gfx/flags/xx";
     
-    return strcat("gfx/flags/", cn);
+    if(cn == "zx")
+        i = strcat("gfx/flags/zx-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
+    else
+        i = strcat("gfx/flags/", cn);
+    
+    if(drawgetimagesize(i) == '0 0 0')
+        return "gfx/flags/xx";
+    
+    return i;
 }
 
 void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_number)
@@ -1047,8 +1054,8 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			#endif
 		} else if(field == SP_COUNTRY && !rm_noflags) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
-			local float scale = sbar_fontsize_x / 11;
-            drawpic(pos - tmp, Sbar_FlagIcon(str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+			float s = sbar_fontsize_x / 11;
+            drawpic(pos - tmp, Sbar_FlagIcon(str), '16 11 0' * s, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		} else if (field == SP_CARRYING) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
 			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
