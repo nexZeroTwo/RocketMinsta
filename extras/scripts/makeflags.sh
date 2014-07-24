@@ -8,8 +8,14 @@ import gimpfu, glob, os
 flagfile = "extras/gfx/flags/flag-60x40.xcf"
 template = pdb.gimp_file_load(flagfile, flagfile)
 
+whitelist = ["%s.tga" % a for a in "$*".split(' ') if a]
+
 for srcfile in glob.glob("extras/gfx/flags/src/*.tga"):
     name = srcfile.split('/')[-1]
+    
+    if whitelist and name not in whitelist:
+        continue
+    
     print "Processing: ", name
     
     flag = template.duplicate()
