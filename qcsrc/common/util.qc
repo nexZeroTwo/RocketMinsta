@@ -1756,8 +1756,8 @@ string FlagIcon(string cn) {
     if(cn == "")
         return "gfx/flagicons/xx";
     
-    if(cn == "zx")
-        i = strcat("gfx/flagicons/zx-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
+    if(cn == "29")
+        i = strcat("gfx/flagicons/29-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
     else
         i = strcat("gfx/flagicons/", cn);
     

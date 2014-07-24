@@ -16,7 +16,7 @@ for srcfile in glob.glob("extras/gfx/flags/src/*.tga"):
     flaglayer = pdb.gimp_file_load_layer(flag, srcfile)
     flag.add_layer(flaglayer, len(flag.layers) - 1)
     
-    if name.startswith("zx-"):
+    if name.startswith("29-"):
         flag.layers[0].visible = False
         flag.layers[2].visible = False
         flag.layers[5].visible = False
