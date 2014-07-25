@@ -31,6 +31,7 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
+../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
