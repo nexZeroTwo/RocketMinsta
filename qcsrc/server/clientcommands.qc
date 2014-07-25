@@ -307,11 +307,44 @@ void SV_ParseClientCommand(string s) {
 			
 			return;
 		}
-		
-		if(strlen(argv(1)) != 2)
-			return;
-		
-		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
+        
+        if(strlen(argv(1)) != 2) {
+            sprint(self, "^1The flag code must be exactly 2 characters long.\n");
+            return;
+        }
+        
+        string cn = strtoupper(argv(1));
+        
+        if(!self.vote_master || tokens < 3) {
+            IP2C_SetCountry_Internal(self, cn);
+            return;
+        }
+        
+        float targetteam;
+        
+               if(argv(2) == "red")       targetteam = COLOR_TEAM1;
+        else   if(argv(2) == "blue")      targetteam = COLOR_TEAM2;
+        else   if(argv(2) == "yellow")    targetteam = COLOR_TEAM3;
+        else   if(argv(2) == "pink")      targetteam = COLOR_TEAM4;
+        else   if(argv(2) == "spec") {
+            FOR_EACH_CLIENT(e) if(!e.iscreature)
+                IP2C_SetCountry_Internal(e, cn);
+        } else if(argv(2) == "all") {
+            FOR_EACH_CLIENT(e)
+                IP2C_SetCountry_Internal(e, cn);
+        } else {
+            f = stof(argv(2));
+            e = edict_num(f);
+            if(!(e.flags & FL_CLIENT)) {
+                sprint(self, strcat("^1Client not found: ", ftos(f), "\n"));
+                return;
+            }
+            IP2C_SetCountry_Internal(e, cn);
+        }
+        
+        if(targetteam) FOR_EACH_CLIENT(e)
+            if(e.team == targetteam || e.jb_specteam == targetteam)
+                IP2C_SetCountry_Internal(e, cn);
 	} else if(cmd == "fovreport") {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
