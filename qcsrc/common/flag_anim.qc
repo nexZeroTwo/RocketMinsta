@@ -9,7 +9,7 @@
 float FlagIcon_Animate(string cn) {
     switch(cn) {
         case "29":    return flag_anim_sine(6, 3, 0);
-        case "49":    return flag_anim_linear(12, 9, 0);
+        case "46":    return flag_anim_linear(12, 9, 0);
         case "63":    return flag_anim_linear(8, 5, 0);
     }
     
