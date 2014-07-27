@@ -1751,15 +1751,15 @@ string FormatDamage(float f) {
 
 #ifndef SVQC
 string FlagIcon(string cn) {
-    string i;
+    string i, s;
     
     if(cn == "")
         return "gfx/flagicons/xx";
     
-    if(cn == "zx")
-        i = strcat("gfx/flagicons/zx-", ftos(rint(5 * (sin(time*3) * 0.5 + 0.5))));
-    else
-        i = strcat("gfx/flagicons/", cn);
+    i = strcat("gfx/flagicons/", cn);
+    float aframe = FlagIcon_Animate(cn);
+    if(aframe >= 0)
+        i = strcat(i, "-", ftos(fabs(rint(aframe))));
     
     if(drawgetimagesize(i) == '0 0 0')
         return "gfx/flagicons/xx";

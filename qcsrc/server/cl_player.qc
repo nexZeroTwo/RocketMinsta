@@ -737,6 +737,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(deathtype & HITTYPE_HEADSHOT)
                 htype |= VDMG_TYPE_CRIT;
             
+            if(take >= self.health)
+                htype |= VDMG_TYPE_LETHAL;
+            
             if(!g_minstagib)
                 VisualDamage(attacker, self, rdmg, rint(save), htype, hitloc);
             
@@ -758,6 +761,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     hudflash_teamcolor_default_spec(attacker);
                 }
             }
+            
             self.health = self.health - take;
             
             if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
