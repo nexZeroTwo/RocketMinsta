@@ -232,6 +232,7 @@ void cvar_changes_init()
         BADPREFIX("sv_ircbot");
         BADPREFIX("sv_gotoserver_");
         BADPREFIX("sv_vote_");
+        BADPREFIX("sv_ip2country");
 		BADCVAR("g_banned_list");
 		BADCVAR("log_dest_udp");
 		BADCVAR("log_file");
