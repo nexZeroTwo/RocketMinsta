@@ -191,6 +191,7 @@ void cvar_changes_init()
 		// internal
 		BADPREFIX("csqc_");
 		BADPREFIX("cvar_check_");
+        BADPREFIX("sv_world");
 		BADCVAR("gamecfg");
 		BADCVAR("g_configversion");
 		BADCVAR("g_maplist_index");
@@ -211,6 +212,7 @@ void cvar_changes_init()
 		BADPREFIX("v_");
 		BADPREFIX("vid_");
 		BADPREFIX("crosshair");
+        BADPREFIX("rm_");
 		BADCVAR("mod_q3bsp_lightmapmergepower");
 		BADCVAR("mod_q3bsp_nolightmaps");
 
@@ -226,6 +228,10 @@ void cvar_changes_init()
 		BADPREFIX("sv_eventlog");
 		BADPREFIX("sv_logscores_");
 		BADPREFIX("sv_master");
+        BADPREFIX("irc_");
+        BADPREFIX("sv_ircbot");
+        BADPREFIX("sv_gotoserver_");
+        BADPREFIX("sv_vote_");
 		BADCVAR("g_banned_list");
 		BADCVAR("log_dest_udp");
 		BADCVAR("log_file");
@@ -233,7 +239,6 @@ void cvar_changes_init()
 		BADCVAR("port");
 		BADCVAR("savedgamecfg");
 		BADCVAR("sv_heartbeatperoid");
-		BADCVAR("sv_vote_master_password");
 		BADCVAR("sys_colortranslation");
 		BADCVAR("sys_specialcharactertranslation");
 		BADCVAR("timestamps");
