@@ -1027,14 +1027,16 @@ void HG_Shield_Trigger(void) {
     sound(self, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
     // Discharge
-    float extend;
+    float extend, renew;
     if(self.hg_shield_stored) {
         entity targ;
         vector start, end;
         float eff, arc = cvar("g_nadgets_shield_damage_store_arc");
         
-        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+        if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
             extend = cvar("g_nadgets_shield_adept_discharge_extend");
+            renew = cvar("g_nadgets_shield_adept_discharge_renew");
+        }
         
         makevectors(self.v_angle);
         W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", -1);
@@ -1066,8 +1068,8 @@ void HG_Shield_Trigger(void) {
         self.hg_shield_stored = 0;
     }
     
-    if(extend) {
-        self.hg_shield = self.hg_shield + extend;
+    if(extend || renew) {
+        self.hg_shield = max(self.hg_shield, renew) + extend;
         stopsound(self, CHAN_AUTO);
         sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
     } else {
