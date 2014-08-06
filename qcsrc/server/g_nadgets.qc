@@ -455,7 +455,7 @@ void HG_Grenade_RadiusDamage() {
                        GV("edgedamage") * p * dmgmod,
                        GV("radius"), 
                        world,
-                       GV("force") * p * frcmod,
+                       GV("force") * frcmod,
                        self.projectiledeathtype,
                        other
                 );
