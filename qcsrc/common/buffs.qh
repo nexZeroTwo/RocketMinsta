@@ -4,7 +4,7 @@
 #define BUFF_GUARD      4
 #define BUFF_HASTE      8
 #define BUFF_MEDIC      16
-#define BUFF_BASH       32
+#define BUFF_IGNITE     32
 #define BUFF_VAMPIRE    64
 #define BUFF_TENACITY   128
 #define BUFF_WRATH      256
