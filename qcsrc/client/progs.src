@@ -16,7 +16,7 @@ csqc_builtins.qc
 ../common/ip2c.qh
 ../common/interpolation.qh
 ../common/dprm.qh
-../common/handgrenades.qh
+../common/nadgets.qh
 ../common/buffs.qh
 dprm.qh
 
@@ -74,11 +74,12 @@ bgmscript.qc
 
 ../common/dprm.qc
 dprm.qc
+../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
 ../common/interpolation.qc
-../common/handgrenades.qc
+../common/nadgets.qc
 ../common/buffs.qc

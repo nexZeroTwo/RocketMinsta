@@ -604,7 +604,22 @@ void Client_uncustomizeentityforclient()
 
 float Client_customizeentityforclient()
 {
-	entity modelsource;
+    entity modelsource;
+    
+    float sa = 1 - self.hg_stealthalpha;
+    
+    if((teams_matter && other.team == self.team) || 
+       (other.hg_stealth && (!BUFFS_PRESENT(self, BUFF_ADEPT) || BUFFS_PRESENT(other, BUFF_ADEPT))) ||
+       !other.iscreature)
+        sa = 0.3 + 0.7 * sa;
+    
+    self.alpha = sa * default_player_alpha;
+    
+    if(!self.alpha)
+        self.alpha = -1;
+    
+    if(self.alpha < 0)
+        return FALSE;
 
 	if(self.modelindex == 0)
 		return TRUE;
@@ -667,20 +682,7 @@ float Client_customizeentityforclient()
 	client_cefc_accumulator += (t1 - t0);
 #endif
     
-    float sa = 1 - self.hg_stealthalpha;
-    
-    if((teams_matter && other.team == self.team) || other.hg_stealth || !other.iscreature)
-        sa = 0.3 + 0.7 * sa;
-    
-    self.alpha = sa * default_player_alpha;
-    
-    if(!self.alpha)
-        self.alpha = -1;
-    
-    if(self.alpha < 0)
-        return FALSE;
-    
-	return TRUE;
+    return TRUE;
 }
 
 void UpdatePlayerSounds();
@@ -805,8 +807,9 @@ void PutObserverInServer (void)
     if(!self.jb_specteam) {
         PlayerScore_Clear(self); // clear scores when needed
     
-        if(g_handgrenades) {
-            self.hg_type_picked = 0;
+        if(g_nadgets) {
+            if(!self.joinqueue)
+                self.hg_type_picked = 0;
             self.hg_type = 0;
             self.hg_nadesused = 0;
             self.hg_shield = 0;
@@ -914,6 +917,7 @@ void PutObserverInServer (void)
     
     self.justconnected = FALSE;
     CA_PlayerLeaves();
+    HG_RemoveAll(self);
 }
 
 float RestrictSkin(float s)
@@ -1142,10 +1146,16 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
+    self.hg_stealth_saved = 0;
     self.hg_linker = world;
     self.buff_cdoverride = 0;
-	self.goodhits = 0;
+    self.goodhits = 0;
+    
+    self.hg_shield_stored = 0;
+    self.hg_stealth = 0;
+    self.hg_shieldstat = 0;
 
 	if(g_arena)
 	if(!self.spawned)
@@ -1366,7 +1376,7 @@ void PutClientInServer (void)
         Freeze_Hook_PlayerSpawns();
 		JB_PlayerSpawn();
         
-        if(g_handgrenades) {
+        if(g_nadgets) {
             if(self.wasingame)
                 HG_PlayerSpawn();
             else
@@ -1414,6 +1424,7 @@ void PutClientInServer (void)
     self.justconnected = FALSE;
     
     CA_PlayerJoins();
+    JoinQ_Pop();
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -1435,12 +1446,14 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
-    WriteByte(MSG_ENTITY, g_handgrenades? (g_handgrenades_oldhitboxes? 2 : 1) : 0);
-    if(g_handgrenades)
-        WriteByte(MSG_ENTITY, (cvar_string("g_handgrenades_type_selectable") != ""));
+    WriteByte(MSG_ENTITY, g_nadgets? (g_nadgets_oldhitboxes? 2 : 1) : 0);
+    if(g_nadgets)
+        WriteByte(MSG_ENTITY, (cvar_string("g_nadgets_type_selectable") != ""));
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
+    WriteShort(MSG_ENTITY, sv_nicehealth);
+    WriteByte(MSG_ENTITY, sv_showacc);
 	return TRUE;
 }
 
@@ -1917,8 +1930,10 @@ void ClientConnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients++;
         
-        if(realclients == 1 && time > game_starttime && !cvar("g_warmup"))
+        if(realclients == 1 && time > game_starttime && !cvar("g_warmup")) {
             ReadyRestart();
+            lockteams = FALSE;
+        }
     }
     
     if(clienttype(self) == CLIENTTYPE_REAL)
@@ -1928,6 +1943,15 @@ void ClientConnect (void)
     self.dtrack_total.netname = "Damage done";
     self.dtrack_taken = DamageTracker_CreateKeeper(self);
     self.dtrack_taken.netname = "Damage taken";
+    
+    float i, n = tokenizebyseparator(cvar_string("sv_vote_master_autologin"), " ");
+    for(i = 0; i < n; ++i) {
+        if(strlen(argv(i))) if(substring(self.netaddress, 0, strlen(argv(i))) == argv(i)) {
+            self.vote_mastername = strzone(cvar_string("sv_vote_master_autologin_name"));
+            self.vote_master = TRUE;
+            break;
+        }
+    }
 }
 
 /*
@@ -1955,7 +1979,8 @@ void ClientDisconnect (void)
 		fclose(self.hitplotfh);
 		self.hitplotfh = -1;
 	}
-
+    
+    JoinQ_Remove(self);
 	bot_clientdisconnect();
     
     if(self.buff_model)
@@ -2059,6 +2084,8 @@ void ClientDisconnect (void)
     }
     
     CA_PlayerLeaves();
+    HG_RemoveAll(self);
+    JoinQ_Pop();
 }
 
 .float BUTTON_CHAT;
@@ -2348,6 +2375,9 @@ void player_powerups (void)
 	if (time >= game_starttime)
 	if (time < self.spawnshieldtime || self.hg_shield)
 		self.effects = self.effects | (EF_ADDITIVE | EF_FULLBRIGHT);
+    
+    if(time < self.hg_plasmalock)
+        self.effects |= EF_ADDITIVE | EF_FULLBRIGHT;
 }
 
 float CalcRegen(float current, float stable, float regenfactor, float regenframetime)
@@ -2484,6 +2514,7 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
+    if(!g_clanarena)
     if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
         float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
         mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
@@ -2529,15 +2560,18 @@ void SetZoomState(float z)
 
 void GetPressedKeys(void) {
 	dodging_GetPressedKeys();
+	
 	if (self.movement_x > 0) // get if movement keys are pressed
 	{	// forward key pressed
 		self.pressedkeys |= KEY_FORWARD;
 		self.pressedkeys &~= KEY_BACKWARD;
+		self.lastkeypressed = KEY_FORWARD;
 	}
 	else if (self.movement_x < 0)
 	{	// backward key pressed
 		self.pressedkeys |= KEY_BACKWARD;
 		self.pressedkeys &~= KEY_FORWARD;
+		self.lastkeypressed = KEY_BACKWARD;
 	}
 	else
 	{	// no x input
@@ -2549,11 +2583,13 @@ void GetPressedKeys(void) {
 	{	// right key pressed
 		self.pressedkeys |= KEY_RIGHT;
 		self.pressedkeys &~= KEY_LEFT;
+		self.lastkeypressed = KEY_RIGHT;
 	}
 	else if (self.movement_y < 0)
 	{	// left key pressed
 		self.pressedkeys |= KEY_LEFT;
 		self.pressedkeys &~= KEY_RIGHT;
+		self.lastkeypressed = KEY_LEFT;
 	}
 	else
 	{	// no y input
@@ -2671,12 +2707,17 @@ void SpectateCopy(entity spectatee) {
     self.hg_bonus = spectatee.hg_bonus;
     self.hg_bonustype = spectatee.hg_bonustype;
     self.hg_detonables = spectatee.hg_detonables;
-    self.hg_regenstat = spectatee.hg_regenstat;
+    self.hg_regentime = spectatee.hg_regentime;
+    self.hg_maxregentime = spectatee.hg_maxregentime;
     self.hg_regenpaused = spectatee.hg_regenpaused;
+    self.hg_regenrate = spectatee.hg_regenrate;
     self.hg_launchspeed = spectatee.hg_launchspeed;
-    self.hg_shield = spectatee.hg_shield;
+    self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;
+    self.hg_shield_stored = spectatee.hg_shield_stored;
+    self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
     self.hg_stealth = spectatee.hg_stealth;
+    self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next = spectatee.hg_next;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
@@ -2752,6 +2793,7 @@ void ResetSpectatorInfo(entity player)
     msg_entity = player;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
+    WriteByte(MSG_ONE, 0);
     WriteByte(MSG_ONE, 0);
 }
 
@@ -2879,6 +2921,11 @@ void LeaveSpectatorMode()
     }
     
 	if(isJoinAllowed()) {
+        if(lockteams) {
+            bigprint(self, "The teams are locked", "", 2);
+            return;
+        }
+        
         if(!teams_matter || cvar("g_campaign") || cvar("g_balance_teams") || (self.wasplayer && cvar("g_changeteam_banned")) || cvar("g_inf")) {
             if(HG_ShowMenu(FALSE))
                 return;
@@ -2901,7 +2948,11 @@ void LeaveSpectatorMode()
 	}
 	else {
 		//player may not join because of g_maxplayers is set
-		centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+		//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+        
+        if(!self.joinqueue)
+        if(!HG_ShowMenu(FALSE))
+            JoinQ_Push(self);
 	}
 }
 
@@ -2917,8 +2968,8 @@ float isJoinAllowed() {
 
 	local entity e;
 	local float currentlyPlaying;
-	FOR_EACH_REALPLAYER(e) {
-		if(e.classname == "player")
+	FOR_EACH_REALCLIENT(e) {
+		if(e.classname == "player" || e.jb_specteam)
 			currentlyPlaying += 1;
 	}
 	if(currentlyPlaying < cvar("g_maxplayers"))
@@ -3080,6 +3131,7 @@ void() ctf_setstatus;
 void() nexball_setstatus;
 .float items_added;
 .float namecheck;
+.float acctime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3121,6 +3173,29 @@ void PlayerPreThink (void)
 		checkSpectatorBlock();
 
 	zoomstate_set = 0;
+    
+    if(frametime)
+    if(isplayer)
+    if(time < self.hg_plasmalock) {
+        if(!self.hg_plasmalock_owner.iscreature) {
+            self.hg_plasmalock_owner = world;
+            self.hg_plasmalock = 0;
+            self.hg_plasmalock_nexteffect = time + frametime;
+        }
+        
+        if(time > self.hg_plasmalock_nexteffect) {
+            float edelay = 0.35;
+            self.hg_plasmalock_nexteffect = time + edelay;
+            vector eorigin = self.origin + self.maxs_z * '0 0 0.5';
+            
+            float pdmg = cvar("g_nadgets_plasma_projectile_frozenlock_dps") * edelay;
+            if(pdmg)
+                RadiusDamage(self, self.hg_plasmalock_owner, pdmg, pdmg, cvar("g_nadgets_plasma_projectile_frozenlock_dps_radius"), world, cvar("g_nadgets_plasma_projectile_frozenlock_dps_force"), self.projectiledeathtype, world);
+            
+            te_csqc_lightningarc(eorigin + randomvec() * 100, eorigin + randomvec() * 10, TRUE, self.hg_plasmalock_owner.team);
+            sound(self, CHAN_AUTO, "sound/weapons/electro_impact.wav", 0.4, 1.5);
+        }
+    }
     
     if(frametime)
     if(time > self.namecheck)
@@ -3186,6 +3261,22 @@ void PlayerPreThink (void)
 	if(isplayer) {
 //		if(self.netname == "Wazat")
 //			bprint(self.classname, "\n");
+        
+        if(self.joinqueue)
+            JoinQ_Remove(self);
+        
+        if(sv_showacc)
+        if(time > self.acctime) {
+            float hit = self.damage_hits - self.weapon;
+            float total = self.maxdamage_fired - self.weapon;
+            
+            if(hit < 0 || total <= 0)
+                PlayerScore_Set(self, SP_ACCURACY, -1);
+            else
+                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 100);
+            
+            self.acctime = time + 5;
+        }
         
         Freeze_Hook_PlayerPreThink();
         JB_PlayerPreThink();

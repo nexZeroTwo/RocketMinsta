@@ -60,7 +60,10 @@ void PlayerJump (void)
 
 		return;
 	}
-
+    
+    if(time < self.hg_plasmalock)
+        return;
+    
 	if(g_freeze)
 	if(self.frozen)
 		return;
@@ -112,8 +115,9 @@ void PlayerJump (void)
 
 	self.velocity_z = self.velocity_z + mjumpheight;
 	self.oldvelocity_z = self.velocity_z;
+	if(!self.crouch){
 	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks/stairs/etc. right after the initial jump
-
+	}
 	self.flags &~= FL_ONGROUND;
 	self.flags &~= FL_JUMPRELEASED;
 
@@ -524,6 +528,9 @@ vector PlayerTouchWall(float dist)
     float max_normal, i;
     max_normal = 0.2;
     
+    if(time < self.hg_plasmalock)
+        return '0 0 0';
+    
     vector old_forward = v_forward, old_right = v_right, old_up = v_up, normal = '0 0 0';
     makevectors(self.angles);
     
@@ -856,7 +863,7 @@ void SV_PlayerPhysics()
         maxspd_mod *= 1 + (cvar("g_buffs_haste_move_rate") - 1) * Buffs_BuffPower(self, BUFF_HASTE);
     
     if(self.hg_stealth)
-        maxspd_mod *= cvar("g_handgrenades_cloak_movespeed");
+        maxspd_mod *= cvar("g_nadgets_cloak_movespeed");
     
     if(g_dodging)
         dodging_PlayerPhysics();
@@ -889,6 +896,9 @@ void SV_PlayerPhysics()
 		}
 		maxspd_mod = self.spectatorspeed;
 	}
+
+    if(time < self.hg_plasmalock)
+        maxspd_mod = 0;
 
 	spd = max(sv_maxspeed, sv_maxairspeed) * maxspd_mod * swampspd_mod;
 	if(self.speed != spd)

@@ -110,6 +110,8 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
+    registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -180,7 +182,7 @@ void CSQC_Init(void)
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
     
 	IP2C_Init();
-    registercvar("_g_handgrenades_select_available", "0", 0);
+    registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 }
 
@@ -338,7 +340,6 @@ void TrueAim_Init();
 
 float rmconfig_initialized;
 
-void SendRMCFGReport();
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
 #ifdef RM_SUPPORT_MADOKA
@@ -436,11 +437,6 @@ void FPSReporter_Init() {
 	e.nextthink = time + 1;
 }
 
-void EnableRMCFGReport() {
-	rmconfig_initialized = TRUE;
-	SendRMCFGReport();
-}
-
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -489,9 +485,8 @@ void PostInit(void)
 		case 15:
 			localcmd("seta rm_simpleeffects 0; simpleeffects 0\n");
 		case 16:
+        case 17:
 			localcmd("seta rm_shownames 1; shownames 1\n");
-		case 17:
-			localcmd("seta rm_shownames 0; shownames 0\n");
 		case 18:
 			localcmd("seta rm_visualscore 1; visualscore 1\n");
 		case 19:
@@ -528,9 +523,19 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
 			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
-			
+        case 38:
+            // fight evil with evil
+            if(cvar("cl_gunalign") == 3)
+                localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
+        case 39:
+            cvar_set("_rm_hg_optout", "0");
+        case 40:
+            localcmd("seta rm_showtimer 0; showtimer 0\n");
+        case 41:
+            localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
+            
 		//More to come here with each update
-		localcmd("seta rm_initialized 38\n");
+		localcmd("seta rm_initialized 42\n");
 		RM_OUTDATED
 		break;
 	}
@@ -557,6 +562,8 @@ void PostInit(void)
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 	rm_oldbigfont = cvar("rm_oldbigfont");
+    rm_showtimer = cvar("rm_showtimer");
+    rm_shownadgetregen = cvar("rm_shownadgetregen");
 	
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -586,13 +593,13 @@ void PostInit(void)
 	registercmd("oldbigfont");
 	registercmd("freezetag_danger");
 	registercmd("freezetag_danger_silent");
+    registercmd("showtimer");
+    registercmd("shownadgetregen");
 	// -- //
 	registercmd("hudskin");
 	
-	
 	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
 	
-	defer(5, EnableRMCFGReport);
 	#ifdef RM_SUPPORT_MADOKA
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
@@ -649,27 +656,6 @@ void Cmd_Sbar_SetFields(float);
 void Cmd_Sbar_Help(float);
 
 void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
-void SendRMCFGReport()
-{
-	float h, n, i;
-	string k, res;
-	
-	if(!rmconfig_initialized)
-		return;
-	
-	h = buf_create();
-	buf_cvarlist(h, "rm_", "");
-	n = buf_getsize(h);
-	
-	for(i = 0; i < n; ++i)
-	{
-		k = bufstr_get(h, i);
-		res = strcat(res, "^3", k, " ^2", cvar_string(k), " ");
-	}
-	
-	localcmd(strcat("cmd rmcfgreport ", res, "\n"));
-	buf_del(h);
-}
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
 #define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
@@ -751,6 +737,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
+        print("^2showtimer^7: If enabled, will always show the timer (disabled by default)\n");
+        print("^2shownadgetregen^7: If enabled, will show the remaining nadget regeneration time in seconds (RM HUD only) (disabled by default)\n");
 		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
@@ -786,6 +774,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
 		strCmd == "showrankings"		||
+        strCmd == "showtimer"           ||
+        strCmd == "shownadgetregen"     ||
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
 		strCmd == "freezetag_danger"	||
@@ -810,6 +800,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
 		rm_oldbigfont = cvar("rm_oldbigfont");
+        rm_showtimer = cvar("rm_showtimer");
+        rm_shownadgetregen = cvar("rm_shownadgetregen");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -829,7 +821,6 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -856,7 +847,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_madoka = cvar("rm_madoka");
 		SetMadokaFont(MDKF_AUTO);
 		
-		SendRMCFGReport();
 		if(sv_showspecs_extra)
 			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
 		RMSETTINGREPORT
@@ -871,7 +861,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -884,7 +873,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		//	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
 		SetMadokaFont(MDKF_AUTO);
 		
-		SendRMCFGReport();
 		RMSETTINGREPORT
 		return true;
 	}
@@ -926,7 +914,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		{
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
-			SendRMCFGReport();
 			localcmd("menu_cmd update_rmvars\n");
 			if(sv_showspecs_extra)
 				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
@@ -944,7 +931,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set ("rm_hidecountry", argv (1));
 		rm_hidecountry = cvar ("rm_hidecountry");
-		SendRMCFGReport ();
 		localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
 		RMSETTINGREPORT
 		return true;
@@ -1425,7 +1411,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
@@ -1804,11 +1790,13 @@ void Ent_Init()
 	sv_showspecs_extra = ReadByte();
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
-	g_handgrenades = ReadByte();
-    cvar_set("_g_handgrenades_select_available", ftos(g_handgrenades? ReadByte() : 0));
+	g_nadgets = ReadByte();
+    cvar_set("_g_nadgets_select_available", ftos(g_nadgets? ReadByte() : 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
+    sv_nicehealth = ReadShort();
+    sv_showacc = ReadByte();
 
 	if(!postinit)
 		PostInit();
@@ -2128,11 +2116,12 @@ void Net_Camera() {
 }
 
 void Net_ServerInfo() {
-	sv_hostname = strzone(ReadString());
-	sv_rm_build = strzone(ReadString());
-	sv_rm_version = strzone(ReadString());
-	sv_rm_date = strzone(ReadString());
-	sv_motd = strzone(ReadString());
+    sv_hostname = strzone(ReadString());
+    sv_rm_build = strzone(ReadString());
+    sv_rm_version = strzone(ReadString());
+    sv_rm_date = strzone(ReadString());
+    sv_rm_commit = strzone(ReadString());
+    sv_motd = strzone(ReadString());
 }
 
 void Net_Heal() {
