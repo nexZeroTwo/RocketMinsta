@@ -357,7 +357,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         if(cvar("sv_ircbot_chat_irc2game"))
         if(!cvar("sv_ircbot_chat_irc2game_require_highlight"))
         if(strtolower(argv(0)) == irc.target)
-            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(argv(1), 7, strlen(argv(1)))), "\n");
+            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(argv(1)), "\n");
     } else if(event == "KICK") {
         if(cvar("sv_ircbot_channel_auto_rejoin"))
         if(argv(1) == IRC_CurrentNick(handle)) {

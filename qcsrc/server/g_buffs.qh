@@ -7,6 +7,7 @@ float g_buffs_randomize;
 float g_buffs_randomize_dual;
 float g_buffs_randomize_byinstance;
 float g_buffs_randomize_chaos;
+float g_buffs_randomize_interval;
 float g_buffs_spawn_on_powerups;
 float g_buffs_lockon;
 

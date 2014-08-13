@@ -20,6 +20,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
     g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
+    g_buffs_randomize_interval = cvar("g_buffs_randomize_interval");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_lockon = cvar("g_buffs_lockon");
     
@@ -145,6 +146,18 @@ void Buffs_Randomize(entity blist, float force) {
     }
 }
 
+#define BUFFS_RANDOMIZER_NEXTTHINK (time + max3(game_starttime - time, next_round_starttime - time, 0) + g_buffs_randomize_interval)
+
+void Buffs_Randomizer_Think(void) {
+    if(roundstate == ROUNDSTATE_GAME)
+        Buffs_Randomize(world, TRUE);
+    self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+}
+
+void Buffs_Randomizer_Reset(void) {
+    self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+}
+
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
     entity blist, b, o;
@@ -194,6 +207,16 @@ void Buffs_Init_Delayed(void) {
     }
     
     Buffs_Randomize(blist, g_buffs_randomize);
+    
+    if(g_buffs_randomize)
+    if(g_buffs_randomize_interval)
+    if(cvar("g_buffs_randomize_interval_force") || !EndRound_Allowed()) {
+        entity e = spawn();
+        e.classname = "buff_randomizer";
+        e.reset = Buffs_Randomize_Reset;
+        e.think = Buffs_Randomizer_Think;
+        e.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+    }
 }
 
 float Buffs_BuffPower(entity p, float b) {
@@ -346,14 +369,19 @@ void Buffs_SetBuffModel(entity ment, float thebuffs) {
         }
         
         ment.effects &~= EF_NODRAW;
+        
+        vector omins = ment.mins;
+        vector omaxs = ment.maxs;
+        
         setmodel(ment, g_buffs_model[Buffs_TypeToIndex(thebuffs)]);
+        setsize(ment, omins, omaxs);
     } else {
         // multiple buffs - hide ment and use additional models
         
         ment.effects |= EF_NODRAW;
         
         for(i = 0, b = 1; b <= BUFF_LAST; b *= 2) if(thebuffs & b) {
-            if(!ment.(buffmdl[i]))
+            if(!ment.(buffmdl[i]) || wasfreed(ment.(buffmdl[i])))
                 ment.(buffmdl[i]) = spawn();
             ment.(buffmdl[i]).buffs = b;
             ++i;
@@ -488,12 +516,8 @@ float Buffs_NadgetPower(entity plr) {
 }
 
 float Buffs_NadgetRegen(entity plr) {
-    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
-    
-    if(!bp)
-        return 1;
-    
-    return bp * cvar("g_buffs_wrath_hgregen");
+    return (1 + (cvar("g_buffs_supply_hg_regenscale") - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
+           (1 + (cvar("g_buffs_wrath_hgregen")        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
 }
 
 float Buffs_NadgetCooldown(entity plr) {
@@ -667,6 +691,9 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
     WaypointSprite_UpdateTextColors(e.buff_waypoint, e.colormod, '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, e.colormod);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
+    
+    if(e.buff_activetime && roundstate == ROUNDSTATE_GAME)
+        WaypointSprite_UpdateBuildFinished(e.buff_waypoint, time + e.buff_activetime);
 }
 
 void Buffs_BuffPickup_SetCooldown(float cd) {
@@ -865,8 +892,9 @@ void Buffs_BuffPickup_Setup(void) {
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
-    Buffs_SetBuffModel(self, self.buffs);
+    
     setsize(self, '-15 -15 -40', '15 15 40');
+    Buffs_SetBuffModel(self, self.buffs);
     
     self.enemy = spawn();
     self.enemy.owner = self;

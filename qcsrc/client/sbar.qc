@@ -457,8 +457,8 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr",
-        (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_nadgets? " nfs" : ""),
+		strcat("ping pl", (sv_showfps? " fps" : ""), (cvar("rm_notimer")? "" : " time"), " cn +ctf/fc name | kdr", strcat(
+        (sv_showacc? " acc" : ""), (g_minstagib? (cvar("_g_rocketminsta")? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_nadgets? " nfs" : "")),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
@@ -558,7 +558,7 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_SEPARATOR;
 			have_separator = 1;
 		} else if(str == "cn") {
-			sbar_field[sbar_num_fields] = SP_CN_CHAR0;
+			sbar_field[sbar_num_fields] = SP_COUNTRY;
 		} else if(str == "time") {
 			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
@@ -573,6 +573,8 @@ void Cmd_Sbar_SetFields(float argc)
             sbar_field[sbar_num_fields] = SP_DAMAGE;
         } else if(str == "heal") {
             sbar_field[sbar_num_fields] = SP_HEALING;
+        } else if(str == "acc") {
+            sbar_field[sbar_num_fields] = SP_ACCURACY;
         } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -710,15 +712,14 @@ string Sbar_GetField(entity pl, float field)
 //			if (stuff & 4) strToDraw = strcat (strToDraw, "^3", chr2str (139)); // yellow
 //			if (stuff & 8) strToDraw = strcat (strToDraw, "^6", chr2str (139)); // pink
 			return strToDraw;
-		case SP_CN_CHAR0:
-			local float char0 = pl.(scores[SP_CN_CHAR0]);
-			local float char1 = pl.(scores[SP_CN_CHAR1]);
+		case SP_COUNTRY:
+            float char0 = pl.(scores[SP_COUNTRY]) & 0xff;
+            float char1 = floor(pl.(scores[SP_COUNTRY]) / 256) & 0xff;
 
-			if(!char0 || !char1)
-				return "";
+            if(!char0 || !char1)
+                return "";
 
-			return strcat(chr2str(char0), chr2str(char1));
-
+            return strcat(chr2str(char0), chr2str(char1));
         case SP_PLAYTIME:
             if(pl.(scores[SP_AWAYSTATUS]))
                 return "AFK";
@@ -809,8 +810,13 @@ string Sbar_GetField(entity pl, float field)
 			denom = pl.(scores[SP_DEATHS]);
 
 			if(denom == 0) {
-				sbar_field_rgb = '0 1 1';
-				str = "inf";
+                if(num == 0) {
+                    sbar_field_rgb = '0.5 0.5 0.5';
+                    str = "n/a";
+                } else {
+                    sbar_field_rgb = '0 1 1';
+                    str = "inf";
+                }
 			} else {
 				float ratio = max(0, num/denom);
 				
@@ -833,6 +839,23 @@ string Sbar_GetField(entity pl, float field)
             float m = pl.(scores[SP_NADEMODE]);
             sbar_field_rgb = HG_TypeToColor(m);
             return "";
+        
+        case SP_ACCURACY:
+            float acc = pl.scores[SP_ACCURACY];
+            
+            if(acc < 0) {
+                sbar_field_rgb = '0.5 0.5 0.5';
+                return "n/a";
+            }
+            
+            if(acc < 40)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(acc / 40, 2);
+            else if(acc < 70)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((acc - 40) / 30);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((acc - 70) / 30);
+            
+            return strcat(ftos(acc), "%");
         
 		default:
 			tmp = pl.(scores[field]);
@@ -918,7 +941,7 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 		str = textShortenToWidth(str, namesize, stringwidth_colors);
 		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, TRUE);
 	}
-	else if(field == SP_CN_CHAR0)
+	else if(field == SP_COUNTRY)
 		sbar_fixscoreboardcolumnwidth_len = stringwidth("XX", FALSE);
 	else
 		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, FALSE);
@@ -977,7 +1000,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		if(field == SP_SEPARATOR)
 			break;
 
-		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_LAG && field != SP_PLAYTIME && field != SP_CN_CHAR0) {
+		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_LAG && field != SP_PLAYTIME && field != SP_COUNTRY) {
 			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}
@@ -1012,13 +1035,9 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			#ifdef RM_SUPPORT_MADOKA
 			drawfont = tmp_font;
 			#endif
-		} else if(field == SP_CN_CHAR0 && !rm_noflags) {
+		} else if(field == SP_COUNTRY && !rm_noflags) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
-
-			local float scale = sbar_fontsize_x / 11;
-
-			if(str != "")
-				drawpic(pos - tmp, strcat("gfx/flags/", str), '16 11 0' * scale, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
+            drawpic(pos - tmp, FlagIcon(str), '1.5 1 0' * sbar_fontsize_x, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		} else if (field == SP_CARRYING) {
 			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
 			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
@@ -1874,16 +1893,22 @@ void Sbar_Timer()
 		timer_color = '1 1 0'; //yellow
 	else
 		timer_color = '1 0 0'; //red
-
-    if(timer_color == '1 1 1')
-        timer_alpha = approach(timer_alpha, 0, frametime * 5);
-    else
-        timer_alpha = approach(timer_alpha, 1, frametime * 5);
-
-    float a = max(timer_alpha, sbar_scoreboard_fade_alpha);
     
-    if(!a)
-        return;
+    float a;
+    
+    if(rm_showtimer)
+        a = 1;
+    else {
+        if(timer_color == '1 1 1')
+            timer_alpha = approach(timer_alpha, 0, frametime * 5);
+        else
+            timer_alpha = approach(timer_alpha, 1, frametime * 5);
+
+        a = max(timer_alpha, sbar_scoreboard_fade_alpha);
+        
+        if(!a)
+            return;
+    }
     
     topright_x += 100 * (1 - a);
     topright_y -= 18 * (1 - a);
@@ -3626,6 +3651,9 @@ void Sbar_Draw(void)
 	o2_y = vid_conheight / 4;
 	o_y = 28; // move spectator text slightly down to prevent overlapping the timer
 
+    if(!rm_showtimer)
+        o_y *= max(timer_alpha, sbar_scoreboard_fade_alpha);
+
 	string s;
 	vector pos;
 	pos = '0 0 0';
@@ -5129,6 +5157,24 @@ void Sbar_Draw(void)
                 drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
             
             Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
+            
+            if(rm_shownadgetregen)
+            if(getstatf(STAT_HGREGENRATE)) {
+                drawfont = sbar_bigfont;
+                float rtime = getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENRATE);
+                string hgtxt = ftos(rtime);
+                
+                float dotpos = strstrofs(hgtxt, ".", 0);
+                if(dotpos >= 0)
+                    hgtxt = substring(hgtxt, 0, dotpos + 2);
+                else
+                    hgtxt = strcat(hgtxt, ".0");
+                
+                float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
+                drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
+                
+                drawfont = sbar_font;
+            }
         } else {
             // HUD doesn't support the nade sector - fallback to the old display method
             
@@ -5385,7 +5431,7 @@ void Sbar_Draw(void)
 		drawpic(lpos, "gfx/loading.tga", lpic, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
 	
-    hgregen += (getstatf(STAT_HGREGEN) - hgregen) * drawframetime * 3;
+    hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 3;
 }
 
 // CTF HUD

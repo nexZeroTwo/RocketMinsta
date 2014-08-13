@@ -1748,3 +1748,22 @@ string FormatDamage(float f) {
     
     return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
 }
+
+#ifndef SVQC
+string FlagIcon(string cn) {
+    string i, s;
+    
+    if(cn == "")
+        return "gfx/flagicons/xx";
+    
+    i = strcat("gfx/flagicons/", cn);
+    float aframe = FlagIcon_Animate(cn);
+    if(aframe >= 0)
+        i = strcat(i, "-", ftos(fabs(rint(aframe))));
+    
+    if(drawgetimagesize(i) == '0 0 0')
+        return "gfx/flagicons/xx";
+    
+    return i;
+}
+#endif

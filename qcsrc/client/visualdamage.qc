@@ -95,7 +95,7 @@ void VisualDamage_PreDraw(void) {
 }
 
 void VisualDamage_Draw(void) {
-    float a = ipol_swingInOut(self.alpha), sw, sw2, smod;
+    float a = ipol_swingInOut(self.alpha), sw, sw2, smod, a2, s2;
     vector o, clr;
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
     
@@ -103,6 +103,8 @@ void VisualDamage_Draw(void) {
         smod = 2;
     else if(self.vd_type & VDMG_TYPE_TOSELF && self.vd_type & VDMG_TYPE_HIT)
         smod = 1.3;
+    else if(self.vd_type & VDMG_TYPE_LETHAL)
+        smod = 1.2;
     else
         smod = 1;
     
@@ -134,10 +136,21 @@ void VisualDamage_Draw(void) {
         sw = self.vd_width * fs;
         sw2 = self.vd_width2 * fs;
         
-        if(self.vd_str)
+        if(self.vd_type & VDMG_TYPE_LETHAL) {
+            a2 = bound(0, self.alpha * 3 - 2, 1);
+            if(a2)
+                s2 = 1.5 - a2 * 0.5;
+        }
+        
+        if(self.vd_str) {
             drawstring(o - (sw+sw2) * '0.5 0 0', self.vd_str, fs * '1 1 0', clr, VDMG_ALPHA * a, DRAWFLAG_NORMAL);
-        if(self.vd_str2)
+            if(a2)
+                drawstring(o - (sw+sw2) * '0.5 0 0' * s2 + '0 0.5 0' * (fs-fs*s2), self.vd_str, fs * '1 1 0' * s2, clr, VDMG_ALPHA * a * a2, DRAWFLAG_NORMAL);
+        } if(self.vd_str2) {
             drawstring(o - (sw2-sw) * '0.5 0 0', self.vd_str2, fs * '1 1 0', '1 1 1' * 0.5 + clr * 0.2, VDMG_ALPHA * a, DRAWFLAG_NORMAL);
+            if(a2)
+                drawstring(o - (sw2-sw) * '0.5 0 0' * s2 + '0 0.5 0' * (fs-fs*s2), self.vd_str2, fs * '1 1 0' * s2, '1 1 1' * 0.5 + clr * 0.2, VDMG_ALPHA * a * a2, DRAWFLAG_NORMAL);
+        }
         
         drawfont = sbar_font;
     }

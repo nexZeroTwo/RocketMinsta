@@ -12,15 +12,19 @@ void HG_Napalm();
 float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
 void HG_DetonateAll(entity);
+void HG_RemoveAll(entity);
 float HG_PlayerMayDetonate(entity);
 float HG_ShowMenu(float);
-void HG_Grenade_Remove();
+void HG_Grenade_Remove(void);
+void HG_Grenade_FadeOut(entity);
 void HG_Grenade_Think();
 void HG_Remote_Stick();
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
+void HG_SetRegenTime(entity e, float t);
+void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
-void HG_Shield_Trigger(entity);
+void HG_Shield_Trigger(void);
 
 .vector org_explosion;
 .float nextparticle;
@@ -36,6 +40,8 @@ void HG_Shield_Trigger(entity);
 .float hg_bonustype;
 .float hg_isbonus;
 .float hg_regentime;
+.float hg_maxregentime;
+.float hg_regenrate;
 .float hg_regenpaused;
 .float hg_deathtime;
 .float hg_detonable;
@@ -60,7 +66,6 @@ void HG_Shield_Trigger(entity);
 
 .float hg_transloc_solidcheck;
 
-.entity hg_remote_firesource;
 .entity hg_transloc_last;
 
 .vector hg_lastvel;
@@ -99,7 +104,6 @@ void HG_Shield_Trigger(entity);
 .float hg_linker_buffpower;
 
 // for hud only
-.float hg_regenstat;
 .float hg_launchspeed;
 
 .vector hg_normal;
