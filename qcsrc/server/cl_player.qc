@@ -1279,6 +1279,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			slashme = TRUE;
 			msgin = strdecolorize(substring(msgin, 4, strlen(msgin) - 4));
 		}
+		if(!strstrofs(msgin, "/r ", 0)) {
+			if(self.lasttellid){
+				stuffcmd(self, strcat("tell #", ftos(self.lasttellid), " ", substring(msgin, 3, strlen(msgin) - 3)));
+				msgin = "";
+			}
+		}
 	}
 
 	msgin = formatmessage(msgin);
@@ -1317,6 +1323,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		namestr = source.netname;
 
 	if(privatesay) {
+		self.lasttellid = source.playerid;
 		msgstr = strcat("\{1}\{13}* ^3", namestr, "^3 tells you: ^7");
 		privatemsgprefixlen = strlen(msgstr);
 		msgstr = strcat(msgstr, msgin);
