@@ -1255,7 +1255,8 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
-
+	
+	
     if(source.iscreature) {
         float damg;
         
@@ -1280,9 +1281,9 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			msgin = strdecolorize(substring(msgin, 4, strlen(msgin) - 4));
 		}
 		if(!strstrofs(msgin, "/r ", 0)) {
-			if(self.lasttellid){
-				stuffcmd(self, strcat("tell #", ftos(self.lasttellid), " ", substring(msgin, 3, strlen(msgin) - 3)));
-				msgin = "";
+			if(source == self.lasttell){
+				privatesay = source;
+				msgin = substring(msgin, 3, strlen(msgin) - 3);
 			}
 		}
 	}
@@ -1323,7 +1324,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		namestr = source.netname;
 
 	if(privatesay) {
-		self.lasttellid = source.playerid;
+		self.lasttell = source;
 		msgstr = strcat("\{1}\{13}* ^3", namestr, "^3 tells you: ^7");
 		privatemsgprefixlen = strlen(msgstr);
 		msgstr = strcat(msgstr, msgin);
