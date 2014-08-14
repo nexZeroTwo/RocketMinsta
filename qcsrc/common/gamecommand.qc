@@ -201,7 +201,7 @@ float GameCommand_Generic(string command)
 		print("  delfromlist variable removedvalue\n");
 		print("  delfromlist_startswith variable removedvalue\n");
 		print("  records\n");
-        print("  crc16 string");
+        print("  crc16 string\n");
 		IP2C_GameCommand("help");
 		return TRUE;
 	}

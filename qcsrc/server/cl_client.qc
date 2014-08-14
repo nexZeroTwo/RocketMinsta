@@ -2512,6 +2512,7 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
+    if(!g_clanarena)
     if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
         float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
         mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
