@@ -646,7 +646,17 @@ void SV_ParseClientCommand(string s) {
 		}
 		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
-	} else if(cmd == "info") {
+	}
+	else if (cmd == "reply") {
+		if(self.lasttell){
+			Say(self, FALSE, self.lasttell, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), TRUE);
+		}
+		else{
+			sprint(self, "No one has sent you any tell messages to reply to.\n");
+		}
+		UnmarkAway(self);
+	}
+	else if(cmd == "info") {
 		cmd = cvar_string(strcat("sv_info_", argv(1)));
 		if(cmd == "")
 			sprint(self, "ERROR: unsupported info command\n");
