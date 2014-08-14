@@ -1281,8 +1281,8 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			msgin = strdecolorize(substring(msgin, 4, strlen(msgin) - 4));
 		}
 		if(!strstrofs(msgin, "/r ", 0)) {
-			if(source == self.lasttell){
-				privatesay = source;
+			if(source.lasttell){
+				privatesay = source.lasttell;
 				msgin = substring(msgin, 3, strlen(msgin) - 3);
 			}
 		}
@@ -1324,7 +1324,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		namestr = source.netname;
 
 	if(privatesay) {
-		self.lasttell = source;
+		privatesay.lasttell = source;
 		msgstr = strcat("\{1}\{13}* ^3", namestr, "^3 tells you: ^7");
 		privatemsgprefixlen = strlen(msgstr);
 		msgstr = strcat(msgstr, msgin);
