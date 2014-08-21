@@ -41,7 +41,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Low", '0 0 0', "exec effects-low.cfg", 0));
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Normal", '0 0 0', "exec effects-normal.cfg", 0));
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("High", '0 0 0', "exec effects-high.cfg", 0));
-		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Wow!", '0 0 0', "exec effects-wow.cfg", 0));
+		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Ultra", '0 0 0', "exec effects-ultra.cfg", 0));
 	}
 
 	me.TR(me);
