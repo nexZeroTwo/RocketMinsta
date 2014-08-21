@@ -132,12 +132,12 @@ void fillNewMenuAudioSettingsTab(entity me)
 		me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_spatialization_control", "Headphone friendly mode"));
 		setDependent(e, "snd_channels", 1.5, 0.5);
 	me.TR(me);
-	me.TR(me);
-		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Spatial voices:"));
-		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "0", "None"));
-		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "2", "Taunts"));
-		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "1", "All"));
 	if(cvar("menu_advanced") > 0){
+		me.TR(me);
+			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Spatial voices:"));
+			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "0", "None"));
+			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "2", "Taunts"));
+			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "1", "All"));
 		me.TR(me);
 			me.TDempty(me, 0.2);
 			me.TD(me, 1, 0.8, e = makeNewMenuTextLabel(0, "Taunt range:"));
