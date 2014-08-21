@@ -1,7 +1,7 @@
 #ifdef INTERFACE
 CLASS(NewMenuEffectsSettingsTab) EXTENDS(NewMenuTab)
 	METHOD(NewMenuEffectsSettingsTab, fill, void(entity))
-	ATTRIB(NewMenuEffectsSettingsTab, title, string, "Effects")
+	ATTRIB(NewMenuEffectsSettingsTab, title, string, "Graphics")
 	ATTRIB(NewMenuEffectsSettingsTab, intendedWidth, float, 0.9)
 	ATTRIB(NewMenuEffectsSettingsTab, rows, float, 17)
 	ATTRIB(NewMenuEffectsSettingsTab, columns, float, 6.5)

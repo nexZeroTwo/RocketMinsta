@@ -17,7 +17,7 @@ void fillNewMenuSettingsDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Input",   makeNewMenuInputSettingsTab()));
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Video",   makeNewMenuVideoSettingsTab()));
-		me.TD(me, 1, 1, mc.makeTabButton(mc, "Effects", makeNewMenuEffectsSettingsTab()));
+		me.TD(me, 1, 1, mc.makeTabButton(mc, "Graphics", makeNewMenuEffectsSettingsTab()));
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Audio",   makeNewMenuAudioSettingsTab()));
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Network", makeNewMenuNetworkSettingsTab()));
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Misc",    makeNewMenuMiscSettingsTab()));
