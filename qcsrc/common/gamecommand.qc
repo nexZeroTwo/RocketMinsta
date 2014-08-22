@@ -860,7 +860,13 @@ float GameCommand_Generic(string command)
         s = substring(command, argv_start_index(1), strlen(command));
         print(s, ": ^5", ftos(crc16(FALSE, s)), "\n");
         return TRUE;
+    } else if(argv(0) == "printchars") {
+        s = "";
+        for(i = 1; i < argc; ++i)
+            s = strcat(s, chr2str(stof(argv(i))));
+        print(s, "\n");
+        return TRUE;
 	} else return IP2C_GameCommand(command);
-
+    
 	return FALSE;
 }

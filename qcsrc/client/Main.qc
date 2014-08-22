@@ -354,12 +354,14 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
+	// return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
+    return sbar_bigfont_real;
 }
 
 void SetMadokaFont(float v)
 {
-	#ifdef RM_SUPPORT_MADOKA
+	// #ifdef RM_SUPPORT_MADOKA
+    #if 0
 	switch(v)
 	{
 		case MDKF_SET:
@@ -519,7 +521,7 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
-			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+			// localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 38:
             // fight evil with evil
             if(cvar("cl_gunalign") == 3)
@@ -558,7 +560,7 @@ void PostInit(void)
 	rm_noflags = cvar("rm_noflags");
 	rm_showrankings = cvar("rm_showrankings");
 	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
-	rm_oldbigfont = cvar("rm_oldbigfont");
+	// rm_oldbigfont = cvar("rm_oldbigfont");
     rm_showtimer = cvar("rm_showtimer");
     rm_shownadgetregen = cvar("rm_shownadgetregen");
 	
@@ -587,7 +589,7 @@ void PostInit(void)
 	registercmd("hidecountry");
 	registercmd("showrankings");
 	registercmd("shownames_teamonly");
-	registercmd("oldbigfont");
+	// registercmd("oldbigfont");
 	registercmd("freezetag_danger");
 	registercmd("freezetag_danger_silent");
     registercmd("showtimer");
@@ -604,9 +606,9 @@ void PostInit(void)
 	
 	//loadfont("user3", "gfx/madoka-rune");
 	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
-	localcmd("loadfont user3 gfx/madoka-rune\n");
-	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
-	localcmd("loadfont infobar gfx/vera-sans-big\n");
+	//localcmd("loadfont user3 gfx/madoka-rune\n");
+	//localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
+	//localcmd("loadfont infobar gfx/vera-sans-big\n");
 	SetMadokaFont(MDKF_AUTO);
 	#endif
 	
@@ -725,7 +727,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
 		print("^2hidecountry^7: If enabled, your flag in the scoreboard will be replaced with a question mark sign, unless the server forbids it (disabled by default)\n");
 		print("^2showrankings^7: If enabled, will show a mini-scoreboard in the HUD (enabled by default)\n");
-		print("^2oldbigfont^7: If enabled, will use Vecxis's default 'bigfont' instead of the RM one\n");
+		// print("^2oldbigfont^7: If enabled, will use Vecxis's default 'bigfont' instead of the RM one\n");
         print("^2showtimer^7: If enabled, will always show the timer (disabled by default)\n");
         print("^2shownadgetregen^7: If enabled, will show the remaining nadget regeneration time in seconds (RM HUD only) (disabled by default)\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
@@ -765,7 +767,7 @@ float CSQC_ConsoleCommand(string strMessage)
         strCmd == "showtimer"           ||
         strCmd == "shownadgetregen"     ||
 		strCmd == "shownames_teamonly"  ||
-		strCmd == "oldbigfont"			||
+		// strCmd == "oldbigfont"			||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -787,7 +789,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_noflags = cvar("rm_noflags");
 		rm_showrankings = cvar("rm_showrankings");
 		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
-		rm_oldbigfont = cvar("rm_oldbigfont");
+		// rm_oldbigfont = cvar("rm_oldbigfont");
         rm_showtimer = cvar("rm_showtimer");
         rm_shownadgetregen = cvar("rm_shownadgetregen");
 		

@@ -86,8 +86,8 @@ void fillNewMenuRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
             setDependent(e, "rm_oldhud", 0, 0);
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use default Vecxis fonts"));
+	// me.TR(me);
+	// 	me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use default Vecxis fonts"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
 	me.TR(me);
@@ -102,7 +102,7 @@ void fillNewMenuRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeNewMenuTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 13, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 12, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

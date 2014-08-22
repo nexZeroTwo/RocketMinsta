@@ -361,23 +361,23 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
 
-		ragemeter = "^1";
+		ragemeter = "^1\xee\x80\x9d\xee\x80\x9e";
 
 		local float i;
 		i = 2;
 		while(i < maxrage)
 		{
 			if(attacker.rage == i)
-				ragemeter = strcat(ragemeter, "^0");
+				ragemeter = strcat(ragemeter, "^0\xee\x80\x9e\xee\x80\x9e");
 			else
-				ragemeter = strcat(ragemeter, "");
+				ragemeter = strcat(ragemeter, "\xee\x80\x9e\xee\x80\x9e");
 
 			++i;
 		}
 		if(attacker.rage-1 >= maxrage)
-			ragemeter = strcat(ragemeter, "");
+			ragemeter = strcat(ragemeter, "\xee\x80\x9e\xee\x80\x9f");
 		else
-			ragemeter = strcat(ragemeter, "^0");
+			ragemeter = strcat(ragemeter, "^0\xee\x80\x9e\xee\x80\x9f");
         
         spawnfrag = (cvar("g_spawnshieldmode") && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}

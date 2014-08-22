@@ -218,15 +218,10 @@ entity GetTeam(float Team, float add)
 
 void CSQC_CheckEngine()
 {
-	sbar_font = FONT_USER+1;
-	sbar_bigfont = FONT_USER+2;
-	sbar_rmbigfont = FONT_USER+4;
-	
-	#ifdef RM_SUPPORT_MADOKA
-	sbar_madokafont = FONT_USER+3;
-	#else
-	sbar_madokafont = FONT_USER+2;
-	#endif
+	sbar_font = FONT_USER;
+	sbar_bigfont = FONT_USER;
+	sbar_rmbigfont = FONT_USER;
+	sbar_madokafont = FONT_USER;
 }
 
 vector Sbar_GetFontsize(string cvarname)
@@ -446,7 +441,8 @@ void loadfont(string slot, string font)
 		return;
 	}*/
 	
-	localcmd("loadfont ", slot, " gfx/", font, "\n");
+    print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
+	// localcmd("loadfont ", slot, " gfx/", font, "\n");
 }
 
 void URI_Get_Callback(float id, float status, string data)

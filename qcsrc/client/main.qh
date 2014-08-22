@@ -208,7 +208,7 @@ float rm_shownadgetregen;
 float rm_oldhud;
 float rm_althud;
 float rm_oldflags;
-float rm_oldbigfont;
+// float rm_oldbigfont;
 
 float vote_yescount;
 float vote_nocount;
@@ -232,7 +232,7 @@ float sbar_madokafont;
 #define MDKF_SET 1
 #define MDKF_UNSET 0
 #define MDKF_AUTO -1
-#define sbar_bigfont_real FONT_USER+2
+#define sbar_bigfont_real FONT_USER
 
 void SetMadokaFont(float);
 
