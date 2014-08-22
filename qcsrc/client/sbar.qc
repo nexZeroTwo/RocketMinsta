@@ -733,8 +733,7 @@ string Sbar_GetField(entity pl, float field)
             return strcat(ftos(floor(pl.(scores[field]) / 60)), "m");
 
 		case SP_PING:
-			//if not(pl.gotscores)
-            if(pl.gotscores)
+			if not(pl.gotscores)
 				return "\xEE\x82\x8D\xEE\x82\x8D\xEE\x82\x8D"; // >>> sign
 			str = getplayerkey(pl.sv_entnum, "ping");
 			tmp = max(0, min(220, stof(str)-80)) / 220;
