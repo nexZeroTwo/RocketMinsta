@@ -29,6 +29,7 @@ CLASS(NewMenuServerInfoDialog) EXTENDS(NewMenuDialog)
 	ATTRIB(NewMenuServerInfoDialog, modLabel, entity, NULL)
 	ATTRIB(NewMenuServerInfoDialog, versionLabel, entity, NULL)
 	ATTRIB(NewMenuServerInfoDialog, pingLabel, entity, NULL)
+    ATTRIB(NewMenuServerInfoDialog, rmLabel, entity, NULL)
 ENDCLASS(NewMenuServerInfoDialog)
 
 float SLIST_FIELD_NAME;
@@ -48,7 +49,7 @@ void Join_Click(entity btn, entity me);
 void loadServerInfoNewMenuServerInfoDialog(entity me, float i)
 {
 	float m;
-	string s, typestr, versionstr, numh, maxp;
+	string s, typestr, versionstr, rmversion, numh, maxp;
 
 	SLIST_FIELD_NAME = gethostcacheindexforkey("name");
 	me.currentServerName = strzone(gethostcachestring(SLIST_FIELD_NAME, i));
@@ -71,9 +72,12 @@ void loadServerInfoNewMenuServerInfoDialog(entity me, float i)
 		typestr = "N/A";
 		versionstr = "N/A";
 	}
-	me.currentServerType = strzone(typestr);
-	me.typeLabel.setText(me.typeLabel, me.currentServerType);
+	
+	m = tokenizebyseparator(versionstr, "_rm-");
+	rmversion = argv(1);
 
+	me.currentServerType = gametype_Name_to_LongName(typestr); //strzone(typestr);
+	me.typeLabel.setText(me.typeLabel, me.currentServerType);
 
 	SLIST_FIELD_MAP = gethostcacheindexforkey("map");
 	me.currentServerMap = strzone(gethostcachestring(SLIST_FIELD_MAP, i));
@@ -101,6 +105,9 @@ void loadServerInfoNewMenuServerInfoDialog(entity me, float i)
 
 	me.currentServerVersion = strzone(versionstr);
 	me.versionLabel.setText(me.versionLabel, me.currentServerVersion);
+	me.currentServerRMLabel = strzone(((rmversion && rmversion != "")? strcat("This server is running RocketMinsta ", rmversion) : 
+																	   strcat("This server is running ", cvar_string("sys_project_name"), " ", versionstr)));
+	me.rmLabel.setText(me.rmLabel, me.currentServerRMLabel);
 
 	SLIST_FIELD_PING = gethostcacheindexforkey("ping");
 	s = ftos(gethostcachenumber(SLIST_FIELD_PING, i));
@@ -117,7 +124,12 @@ void fillNewMenuServerInfoDialog(entity me)
 			e.allowCut = 1;
 			me.nameLabel = e;
 	me.TR(me);
-		me.TD(me, 1, me.columns, e = makeNewMenuTextLabel(0.5, ""));
+		me.TD(me, 0.2, me.columns, e = makeNewMenuTextLabel(0.5, ""));
+			e.colorL = SKINCOLOR_SERVERINFO_NAME;
+			e.allowCut = 1;
+			me.rmLabel = e;
+	me.TR(me);
+		me.TD(me, 0.2, me.columns, e = makeNewMenuTextLabel(0.5, ""));
 			e.colorL = SKINCOLOR_SERVERINFO_IP;
 			e.allowCut = 1;
 			me.cnameLabel = e;
@@ -125,7 +137,7 @@ void fillNewMenuServerInfoDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 5.5, e = makeNewMenuTextLabel(0, "Players:"));
 	me.TR(me);
-		me.TD(me, me.rows - 4, 6, e = makeNewMenuPlayerList());
+		me.TD(me, me.rows - 5, 6, e = makeNewMenuPlayerList());
 			me.rawPlayerList = e;
 
 	me.gotoRC(me, 1, 6.25); me.setFirstColumn(me, me.currentColumn);

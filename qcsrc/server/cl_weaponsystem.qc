@@ -26,7 +26,10 @@ float W_WeaponRateFactor()
 			t = t * cvar("g_balance_curse_slow_atkrate");
 		}
 	}
-
+    
+    if(BUFFS_PRESENT(self, BUFF_HASTE))
+        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * Buffs_BuffPower(self, BUFF_HASTE));
+    
 	return t;
 }
 
@@ -130,9 +133,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 {
 	float nudge = 1; // added to traceline target and subtracted from result
 	local vector trueaimpoint;
-	local float oldsolid;
+	local float _oldsolid;
 	vector vecs, dv;
-	oldsolid = ent.dphitcontentsmask;
+	_oldsolid = ent.dphitcontentsmask;
 	if(ent.weapon == WEP_CAMPINGRIFLE)
 		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	else
@@ -146,8 +149,9 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	trueaimpoint = trace_endpos;
 
 	// Track max damage and set the stat to be sent later in g_world.qc
+    if(maxdamage >= 0)
 	if not(inWarmupStage)
-	{
+    if not(g_minstagib) {
 		ent.max_damage[ent.weapon] += maxdamage;
 		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
 	}
@@ -294,7 +298,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	}
 #endif
 
-	ent.dphitcontentsmask = oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
+	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
@@ -1004,10 +1008,28 @@ float weapon_prepareattack(float secondary, float attacktime)
 {
 	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
 	//if all players readied up and the countdown is running
-	if(time < game_starttime || time < self.race_penalty) {
+	if((time < game_starttime && !g_inf) || time < self.race_penalty)
 		return FALSE;
-	}
 
+    if(roundstate == ROUNDSTATE_OVER)
+        return FALSE;
+
+	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
+		return FALSE;
+
+	if(g_freeze)
+	if(self.frozen) 
+		return FALSE;
+    
+    if(time < self.hg_plasmalock)
+        return FALSE;
+    
+    if(self.hg_stealth)
+        HG_Cloak_Trigger();
+    
+    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+        return FALSE;
+    
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
 	{
@@ -1021,19 +1043,21 @@ float weapon_prepareattack(float secondary, float attacktime)
 	// do not even think about shooting if switching
 	if(self.switchweapon != self.weapon)
 		return FALSE;
-
+	
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished
-		if (ATTACK_FINISHED(self) > time + frametime * 0.5)
+		if (ATTACK_FINISHED(self) > time + frametime * 0.5) 
 			return FALSE;
+			
 		// don't fire while changing weapon
 		if (self.weaponentity.state != WS_READY)
 			return FALSE;
 	}
 	self.weaponentity.state = WS_INUSE;
 
-	self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
+    if(!cvar("g_spawnshieldmode"))
+        self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
 
 	// if the weapon hasn't been firing continuously, reset the timer
 	if(attacktime >= 0)
@@ -1047,6 +1071,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.bulletcounter += 1;
 	//dprint("attack finished ", ftos(ATTACK_FINISHED(self)), "\n");
+    
 	return TRUE;
 };
 
@@ -1144,8 +1169,9 @@ void weapon_thinkf(float fr, float t, void() func)
 				a = self.weaponentity.anim_fire1;
 			else if (fr == WFRAME_FIRE2)
 				a = self.weaponentity.anim_fire2;
-			else if (fr == WFRAME_RELOAD)
+			else if (fr == WFRAME_RELOAD) {
 				a = self.weaponentity.anim_reload;
+            }
 			a_z *= g_weaponratefactor;
 			setanim(self.weaponentity, a, restartanim == FALSE, restartanim, restartanim);
 		}

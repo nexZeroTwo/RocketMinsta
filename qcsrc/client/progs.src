@@ -1,13 +1,24 @@
 ../../csprogs.dat
 pre.qh
 
-../common/util-pre.qh
 Defs.qc
+
+../common/gametype.qh
+
+../common/rm_auto.qh
+../common/util-pre.qh
+
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc
 ../common/util.qh
 ../common/items.qh
+../common/ip2c.qh
+../common/interpolation.qh
+../common/dprm.qh
+../common/nadgets.qh
+../common/buffs.qh
+dprm.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -16,8 +27,11 @@ waypointsprites.qh
 movetypes.qh
 prandom.qh
 bgmscript.qh
+visualdamage.qh
 
+../common/damagetracker.qh
 main.qh
+hudskin.qh
 
 sortlist.qc
 miscfunctions.qc
@@ -25,6 +39,7 @@ teamplay.qc
 
 ctf.qc
 
+svnstuff.qc
 sbar.qc
 mapvoting.qc
 
@@ -39,9 +54,16 @@ casings.qc
 effects.qc
 wall.qc
 modeleffects.qc
+visualdamage.qc
+
+../common/damagetracker.qc
+../common/gametype.qc
 
 //vehicles/spiderbot.qc
+shownames.qh
+shownames.qc
 Main.qc
+hudskin.qc
 View.qc
 interpolate.qc
 teamradar.qc
@@ -50,7 +72,14 @@ movetypes.qc
 prandom.qc
 bgmscript.qc
 
+../common/dprm.qc
+dprm.qc
+../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc
 ../common/items.qc
+../common/ip2c.qc
+../common/interpolation.qc
+../common/nadgets.qc
+../common/buffs.qc

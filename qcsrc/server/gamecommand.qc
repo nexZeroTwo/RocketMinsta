@@ -564,7 +564,7 @@ void make_mapinfo_Think()
 	if(MapInfo_FilterGametype(MAPINFO_TYPE_ALL, 0, 0, 0, 1))
 	{
 		print("Done rebuiling mapinfos.\n");
-		MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(game, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 		remove(self);
 	}
 	else
@@ -573,6 +573,8 @@ void make_mapinfo_Think()
 		self.nextthink = time;
 	}
 }
+
+.float ispicked;
 
 void GameCommand(string command)
 {
@@ -600,6 +602,11 @@ void GameCommand(string command)
 		print("  bbox\n");
 		print("  cvar_changes\n");
 		print("  find classname\n");
+		print("  redirect clientnum server\n");
+		print("  gotoserver server\n");
+		#ifdef RM_SUPPORT_MADOKA
+		print("  ^0walpurgis^7\n");
+		#endif
 		GameCommand_Vote("help", world);
 		GameCommand_Ban("help");
 		GameCommand_Generic("help");
@@ -637,32 +644,51 @@ void GameCommand(string command)
 		return;
 	}
 
-	if(argv(0) == "gotomap") if(argc == 2)
-	{
-		print(GotoMap(argv(1)), "\n");
-		return;
-	}
+    if(argv(0) == "gotomap") if(argc >= 2)
+    {
+        if(argc > 2)
+            localcmd("gametype ", argv(2), "\n");
+        
+        print(GotoMap(argv(1)), "\n");
+        return;
+    }
 
-	if(argv(0) == "gametype") if(argc == 2)
+	if(argv(0) == "gametype" || argv(0) == "forcegametype") if(argc == 2)
 	{
 		float t, tsave;
+        
 		s = argv(1);
-		t = MapInfo_Type_FromString(s);
-		tsave = MapInfo_CurrentGametype();
+		s = NormalizeGametypeName(s);
+		
+		if(s == "")
+		{
+			print("^1Gametype '", argv(1), "' is either invalid or not supported\n");
+			return;
+		}
+		
+		t = gametype_Name_to_ID(s);
+		tsave = game;
 		if(t)
 		{
-			MapInfo_SwitchGameType(t);
-			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			if(MapInfo_count > 0)
-			{
-				bprint("Game type successfully switched to ", s, "\n");
-			}
-			else
-			{
-				bprint("Cannot use this game type: no map for it found\n");
-				MapInfo_SwitchGameType(tsave);
-				MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			}
+            if(time > 1) {
+                cvar_set("_sv_rm_nextgametype", s);
+                bprint("The gametype will be switched to ", gametype_Name_to_LongName(s), " on next map\n");
+            } else {
+                //MapInfo_SwitchGameType(t);
+                gametype_Set(gametype_Name_to_ID(s));
+                MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+                
+                if(MapInfo_count > 0) {
+                    bprint("Game type successfully switched to ", s, "\n");
+                } else if(argv(0) == "forcegametype") {
+                    bprint("Not map found for ", s ,", switch forced!\n");
+                } else {
+                    bprint("Cannot use this game type: no map for it found\n");
+                    error(ftos(game));
+                    gametype_Set(tsave);
+                    MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+                }
+            }
 		}
 		else
 			bprint("Game type switch to ", s, " failed: this type does not exist!\n");
@@ -1039,7 +1065,209 @@ void GameCommand(string command)
 
 		return;
 	}
+	
+	#ifdef RM_SUPPORT_MADOKA
+	if(argv(0) == "walpurgis")
+	{
+		FOR_EACH_CLIENT(e)
+		{
+			//if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
+			madokaprint(e, "^1x ^0WALPURGIS NIGHT ^10", "", 5);
+			stuffcmd(e, "play2 sound/misc/scream\n");
+			
+			if(e.classname == "player")
+			{
+				if(random() <= 0.1)
+				{
+					bprint("^5A blessing saved ^7", e.netname, "^5 from his fate\n");
+					Damage(e, world, e, e.health * 0.5, DEATH_NOAMMO, '0 0 0', '0 0 0');
+				}
+				else
+				{
+					e.armorvalue = 0;
+					Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+				}
+			}
+		}
+		
+		return;
+	}
+	#endif
 
+	if(argv(0) == "kill")
+	{
+		e = edict_num(stof(argv(2)));
+		
+		if(!e)
+		{
+			bprint("^1kill: ^7Could not find victim!\n");
+			return;
+		}
+		
+		#ifdef RM_SUPPORT_MADOKA
+		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+		#else
+		bigprint_spec(e, "^9Votekilled", "", 5);
+		#endif
+		
+		e.armorvalue = 0;
+		Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+		return;
+	}
+	
+	if(argv(0) == "killfc")
+	{
+		if(cvar("g_ctf"))
+		{
+			FOR_EACH_CLIENT(e) if(e.flagcarried)
+			{
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
+				e.armorvalue = 0;
+				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		else if(cvar("g_keyhunt"))
+		{
+			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
+			{
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
+				e.owner.armorvalue = 0;
+				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		
+		return;
+	}
+	
+	if(argv(0) == "supermentalrescue")
+	{
+		FOR_EACH_REALCLIENT(e) if(e.classname)
+		{
+			msg_entity = e;
+			WriteByte(MSG_ONE, SVC_TEMPENTITY);
+			WriteByte(MSG_ONE, TE_CSQC_MORNINGRESCUE);
+		}
+		
+		FOR_EACH_PLAYER(e)
+		{
+			e.health = max(e.health, 100);
+			
+			if(g_freeze)
+				Freeze_UnfreezePlayer(e);
+		}
+        
+        if(g_jailbreak) {
+            JB_TriggerTeamControlPoints(COLOR_TEAM1);
+            JB_TriggerTeamControlPoints(COLOR_TEAM2);
+        }
+        
+		return;
+	}
+
+    if(argv(0) == "endround")
+    {
+        FOR_EACH_PLAYER(e)
+            bigprint_spec(e, "Round Aborted", "", 5);
+
+        if(!EndRound_Allowed())
+        {
+            bprint("Attempted to endround, but the gametype doesn't support it!\n");
+            return;
+        }
+
+        EndRound();
+        return;
+    }
+
+	if(argv(0) == "topic")
+	{
+		if(!keeptopic)
+			cvar_set("_sv_explosive_topicby", "");
+		keeptopic = FALSE;
+		
+		local string topicby = cvar_string("_sv_explosive_topicby");
+		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
+		
+		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		
+		return;
+	}
+
+	if(argv(0) == "addinfo")
+	{
+		float c = cvar("_sv_infomessages_count");
+		string newvar = strcat("_sv_infomessages_", ftos(c));
+		registercvar(newvar, "");
+		cvar_set(newvar, argv(1));
+		cvar_set("_sv_infomessages_count", ftos(c + 1));
+		return;
+	}
+	
+	if(argv(0) == "redirect") {
+		if(argc < 3) {
+			print("Usage: redirect clientnum server");
+			return;
+		}
+		
+		entno = stof(argv(1));
+		client = world;
+		if(entno <= maxclients)
+			client = edict_num(entno);
+		if(client.flags & FL_CLIENT)
+			stuffcmd(client, strcat("connect ", ResolveServer(argv(2)) ,"\n"));
+		else
+			print("Client not found\n");
+		return;
+	}
+	
+	if(argv(0) == "gotoserver") {
+		if(argc < 2) {
+			print("Usage: gotoserver server");
+			return;
+		}
+		
+		s = ResolveServer(argv(1));
+		bprint("^5Redirecting everyone to ^2", s, "\n");
+		
+		FOR_EACH_CLIENT(client)
+			stuffcmd(client, strcat("connect ", s,"\n"));
+        return;
+	}
+    
+    if(argv(0) == "randomize_buffs") {
+        if(g_buffs)
+            Buffs_Randomize(world, TRUE);
+        return;
+    }
+    
+    if(argv(0) == "pickcaptains") {
+        float t = TeamCount_TotalTeams();
+        for(i = 0; i < t; ++i) {
+            RandomSelection_Init();
+            FOR_EACH_REALCLIENT(e) if(e.ispicked != time)
+                RandomSelection_Add(e, 0, string_null, 1, 1);
+            if(RandomSelection_chosen_ent) {
+                RandomSelection_chosen_ent.ispicked = time;
+                bprint("\{1}", ColoredTeamName(Team_FromIndex(i)), " ^7captain: ^3", RandomSelection_chosen_ent.netname, "\n");
+            }
+        }
+        return;
+    }
+    
+    if(argv(0) == "balanceteams") {
+        bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
+        teamcount_balancenext = TRUE;
+        return;
+    }
+    
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

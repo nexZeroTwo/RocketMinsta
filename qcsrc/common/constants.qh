@@ -23,22 +23,6 @@
 // Revision 22: hook shot origin
 #define CSQC_REVISION 22
 
-// probably put these in common/
-// so server/ and client/ can be synced better
-const float GAME_DEATHMATCH		= 1;
-const float GAME_TEAM_DEATHMATCH	= 2;
-const float GAME_DOMINATION		= 3;
-const float GAME_CTF			= 4;
-const float GAME_RUNEMATCH		= 5;
-const float GAME_LMS			= 6;
-const float GAME_ARENA		= 7;
-const float GAME_KEYHUNT		= 8;
-const float GAME_ASSAULT		= 9;
-const float GAME_ONSLAUGHT	= 10;
-const float GAME_RACE	= 11;
-const float GAME_NEXBALL = 12;
-const float GAME_CTS = 13;
-
 const float AS_STRING		= 1;
 const float AS_INT		= 2;
 const float AS_FLOAT_TRUNCATED	= 2;
@@ -50,6 +34,30 @@ const float TE_CSQC_SPAWN = 102;
 const float TE_CSQC_ZCURVEPARTICLES = 103;
 const float TE_CSQC_NEXGUNBEAMPARTICLE = 104;
 const float TE_CSQC_LIGHTNINGARC = 105;
+const float TE_CSQC_BIGPRINT = 106;
+const float TE_CSQC_SPECINFO = 107;
+const float TE_CSQC_VOTE = 108;
+const float TE_CSQC_VOTERESET = 109;
+const float TE_CSQC_MADOKAPRINT = 110;
+const float TE_CSQC_MORNINGRESCUE = 111;
+const float TE_CSQC_CLEARBIGPRINT = 112;
+const float TE_CSQC_SERVERINFO = 113;
+const float TE_CSQC_HUDFLASH = 114;
+const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
+const float TE_CSQC_VIPINFO = 116;
+const float TE_CSQC_CAMERA = 117;
+const float TE_CSQC_VISUALDAMAGE = 118;
+const float TE_CSQC_HEAL = 119;
+const float TE_CSQC_BLAST = 120;
+const float TE_CSQC_DTRACK = 121;
+
+#define VDMG_TYPE_HIT 1
+#define VDMG_TYPE_CRIT 2
+#define VDMG_TYPE_HEAL 4
+#define VDMG_TYPE_TEAMHIT 8
+#define VDMG_TYPE_TOSELF 16
+#define VDMG_TYPE_NOTPLAYERTARGET 32
+#define VDMG_TYPE_LETHAL 64
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -83,6 +91,7 @@ const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
+const float ENT_CLIENT_SHOWNAMES = 23;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -262,6 +271,7 @@ const float STAT_NB_METERSTART = 45;
 const float STAT_SHOTORG = 46; // compressShotOrigin
 const float STAT_LEADLIMIT = 47;
 const float STAT_BULLETS_LOADED = 48;
+const float STAT_BULLETS_MAX = 49;
 const float CTF_STATE_ATTACK = 1;
 const float CTF_STATE_DEFEND = 2;
 const float CTF_STATE_COMMANDER = 3;
@@ -269,6 +279,14 @@ const float CTF_STATE_COMMANDER = 3;
 const float STAT_HUD = 50;
 const float HUD_NORMAL = 0;
 const float HUD_SPIDERBOT = 10;
+
+const float STAT_ROUNDSTATE = 51;
+const float ROUNDSTATE_PREGAME = 0;
+const float ROUNDSTATE_GAME = 1;
+const float ROUNDSTATE_OVER = 2;
+const float ROUNDSTATE_WARMUP = 3;
+
+const float STAT_QUEUE = 52;
 
 const float STAT_SPIDERBOT_HEALTH  = 60;
 const float STAT_SPIDERBOT_ROCKETS = 61;
@@ -282,11 +300,52 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 //const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
 
 
+const float STAT_FROZEN = 66;
+const float STAT_REVIVE_PROGRESS = 67;
+const float STAT_REDALIVE = 68;
+const float STAT_BLUEALIVE = 69;
+const float STAT_YELLOWALIVE = 70;
+const float STAT_PINKALIVE = 71;
+const float STAT_TOTALPOINTS = 72;
+const float STAT_REDPOINTS = 73;
+const float STAT_BLUEPOINTS = 74;
+const float STAT_MINSTA = 75;
+const float STAT_HGFORCE = 76;
+const float STAT_HGAMMO = 77;
+const float STAT_SM_HASGEM = 78;
+const float STAT_CAPTURE_PROGRESS = 79;
+const float STAT_PRISONED = 80;
+const float STAT_ROUNDLOST = 81;
+const float STAT_HGREGEN = 82;
+const float STAT_HGREGENPAUSED = 83;
+const float STAT_HGDETONABLES = 84;
+const float STAT_HGLAUNCH = 85;
+const float STAT_HGSHIELD = 86;
+const float STAT_HGTYPE = 87;
+const float STAT_JBMSG = 88;
+const float STAT_HGSHIELDPOWER = 89;
+const float STAT_HGBONUS = 90;
+const float STAT_HGBONUSTYPE = 91;
+const float STAT_BUFFS = 92;
+const float STAT_TERM_AUTH = 93;
+const float STAT_STEALTH = 94;
+const float STAT_HGREFIRE = 95;
+const float STAT_STEALTH_SAVED = 96;
+const float STAT_HGSHIELDSTORE = 97;
+const float STAT_HGSHIELDSTOREMAX = 98;
+const float STAT_HGREGENMAX = 99;
+const float STAT_HGREGENRATE = 100;
 
+const float JBMSG_NONE = 0;
+const float JBMSG_CAPPINGNEUTRAL = 1;
+const float JBMSG_ALLALIVE = 2;
+const float JBMSG_NOTREADY = 3;
+const float JBMSG_WRONGTEAM = 4;
+const float JBMSG_TOOLATE = 5;
 
 // moved that here so the client knows the max.
 // # of maps, I'll use arrays for them :P
-#define MAPVOTE_COUNT 10
+#define MAPVOTE_COUNT 24
 
 /**
  * Lower scores are better (e.g. suicides)
@@ -326,7 +385,8 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 /**
  * Score indices
  */
-#define MAX_SCORE 10
+ 
+#define MAX_SCORE 24
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -334,6 +394,27 @@ const float STAT_SPIDERBOT_SHIELD  = 65;
 #define SP_DEATHS 1
 #define SP_SUICIDES 2
 #define SP_SCORE 3
+
+#define SP_HOOKFRAGS 10
+#define SP_FROZENSTATUS 11
+#define SP_MADOKASTATUS 12
+#define SP_AWAYSTATUS 13
+#define SP_PLAYTIME 14
+#define SP_COUNTRY 15
+#define SP_ACCURACY 16
+#define SP_FPS 17
+#define SP_NADEMODE 18
+#define SP_NADEFRAGS 19
+#define SP_REVIVALS 20
+#define SP_DAMAGE 21
+#define SP_HEALING 22
+#define SP_QUEUE 23
+
+// the following like should be in ctf.qc as per status quo, but ask me if I care
+// --ThexDarksider
+#define SP_CARRYING 9
+// no, really, ask me: irc.quakenet.org #thebadasschoobs
+
 // game mode specific indices are not in common/, but in server/scores_rules.qc!
 
 // this assignment must match menu/NewMenu/dialog_settings_misc.c!
@@ -411,6 +492,22 @@ float PROJECTILE_CRYLINK_BOUNCING = 19;
 float PROJECTILE_FIREBALL = 20;
 float PROJECTILE_FIREMINE = 21;
 
+float PROJECTILE_RM_LASER_RED = 22;
+float PROJECTILE_RM_LASER_BLUE = 23;
+float PROJECTILE_RM_LASER_YELLOW = 24;
+float PROJECTILE_RM_LASER_PINK = 25;
+
+float PROJECTILE_HG_GENERIC = 26;
+float PROJECTILE_HG_NAPALM = 27;
+float PROJECTILE_HG_PLASMA = 28;
+float PROJECTILE_HG_TRANSLOC = 29;
+float PROJECTILE_HG_REMOTE = 30;
+float PROJECTILE_HG_LASER = 31;
+
+float PROJECTILE_HG_NAPALMSHARD = 50;
+
+float PROJECTILE_HEAL_PARTICLE_EMITTER = 70;
+
 float SPECIES_HUMAN        =  0;
 float SPECIES_ROBOT_SOLID  =  1;
 float SPECIES_ALIEN        =  2;
@@ -441,6 +538,23 @@ float DEATH_TOUCHEXPLODE = 10015;
 float DEATH_CHEAT = 10016;
 float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
+float DEATH_NOISE = 10101;
+float DEATH_ARC = 10102;
+float DEATH_BASH = 10103;
+
+float DEATH_HG_START = 100;
+float DEATH_HG_NORMAL = 100;
+float DEATH_HG_NAPALM = 101;
+float DEATH_HG_REMOTE = 102;
+float DEATH_HG_PLASMA = 103;
+float DEATH_HG_PLASMA_SHARD = 104;
+float DEATH_HG_TRANSLOC = 105;
+float DEATH_HG_SHIELD = 106;
+float DEATH_HG_LINKER = 107;
+float DEATH_HG_GG = 108;
+float DEATH_HG_LASER = 109;
+float DEATH_HG_CLOAK = 110;
+float DEATH_HG_END = 110;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
@@ -452,9 +566,10 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
+#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             (DEATH_ISSPECIAL(t) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define DEATH_ISWEAPON(t,w)           (!DEATH_ISHG(t) && !DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
+#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
@@ -473,3 +588,60 @@ float WATERLEVEL_SWIMMING = 2;
 float WATERLEVEL_SUBMERGED = 3;
 
 float MAX_SHOT_DISTANCE = 32768;
+
+#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_sfx)
+	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
+	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
+	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
+	#define RM_SOUND_MINSTA ((cvar("sv_oldnexsound") || sv_oldfag)? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_KILL "misc/kill.wav"
+#else
+	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"
+	#define RM_SOUND_LASER_SECONDARY "weapons/crylink_fire.wav"
+	#define RM_SOUND_MORNINGRESCUE "misc/poweroff.wav"
+	#define RM_SOUND_MINSTA "weapons/minstanexfire.wav"
+	#define RM_SOUND_KILL "misc/hit.wav"
+#endif
+
+#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
+	#define RM_SUPPORT_MADOKA
+	#define RM_SUPPORT_VOTEGFX
+	#define RM_SUPPORT_MORNINGRESCUE
+#endif
+
+#define RM_SOUND_PHOENIX "misc/poweroff.wav"
+#define RM_SOUND_REBIRTH "misc/poweroff.wav"
+#define RM_SOUND_RECOVERY "misc/poweroff.wav"
+
+
+// xonotic compat
+
+#define autocvar_hud_shownames (rm_shownames)
+#define autocvar_sv_shownames_cull_distance 2500
+#define autocvar_hud_shownames_enemies 2
+#define autocvar_hud_shownames_height 15
+#define autocvar_hud_shownames_status 0
+#define autocvar_hud_panel_healtharmor_maxhealth 0
+#define autocvar_hud_panel_healtharmor_maxarmor 0
+#define autocvar_hud_shownames_aspect 8
+#define autocvar_hud_shownames_fontsize 10
+#define autocvar_hud_shownames_decolorize 1
+#define autocvar_hud_shownames_alpha 0.9
+#define autocvar_hud_shownames_resize 0
+#define autocvar_hud_shownames_mindistance 1000
+#define autocvar_hud_shownames_maxdistance 2500
+
+#ifndef MENUQC
+const vector eX = '1 0 0';
+const vector eY = '0 1 0';
+const vector eZ = '0 0 1';
+#endif
+
+#define GTV_AVAILABLE 0
+#define GTV_OVERPLAYED 1
+// for later use in per-map gametype filtering
+#define GTV_FORBIDDEN 2
+
+float(string url, float id) uri_get = #513;
+
+#define abs(f) fabs(f)

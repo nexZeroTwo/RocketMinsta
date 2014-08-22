@@ -263,7 +263,7 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 	w = self.weapon;
 	if (w == 0)
 		return; // just in case
-	if (g_weaponarena)
+	if (g_weaponarena && !g_weaponarena_limitammo)
 		return;
 	if (g_lms)
 		return;
@@ -294,12 +294,13 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 	}
 };
 
+.float w_instaswitch;
 // Bringed back weapon frame
 void W_WeaponFrame()
 {
 	vector fo, ri, up;
 
-	if((arena_roundbased && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
+	if((arena_roundbased && time < warmup) || ((time < game_starttime && !g_inf) && !cvar("sv_ready_restart_after_countdown")))
 		return;
 
 	if (!self.weaponentity || self.health < 1)
@@ -324,12 +325,18 @@ void W_WeaponFrame()
 	{
 		if (self.weaponentity.state == WS_CLEAR)
 		{
+            float r = 1;
+            if(self.w_instaswitch) {
+                self.w_instaswitch = FALSE;
+                r = 0;
+            }
+            
 			setanim(self, self.anim_draw, FALSE, TRUE, TRUE);
 			self.weaponentity.state = WS_RAISE;
 			weapon_action(self.switchweapon, WR_SETUP);
 			// VorteX: add player model weapon select frame here
 			// setcustomframe(PlayerWeaponRaise);
-			weapon_thinkf(WFRAME_IDLE, cvar("g_balance_weaponswitchdelay"), w_ready);
+			weapon_thinkf(WFRAME_IDLE, cvar("g_balance_weaponswitchdelay") * r, w_ready);
 			weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
 		}
 		else if (self.weaponentity.state == WS_READY)

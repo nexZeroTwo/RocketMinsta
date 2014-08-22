@@ -85,6 +85,7 @@ float LostMovetypeFollow(entity ent)
 
 .float hook_length;
 .float hook_switchweapon;
+.float hook_length_initial;
 
 void RemoveGrapplingHook(entity pl)
 {
@@ -110,12 +111,13 @@ void GrapplingHook_Stop()
 	self.touch = SUB_Null;
 	self.velocity = '0 0 0';
 	self.movetype = MOVETYPE_NONE;
-	self.hook_length = -1;
+	self.hook_length = self.hook_length_initial = -1;
 }
 
+.float last_dmg;
 void GrapplingHookThink()
 {
-	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch;
+	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch, dontpull, dontpull_limit;
 	vector dir, org, end, v0, dv;
 	if(self.owner.health <= 0 || self.owner.hook != self)	// how did that happen?
 	{														// well, better fix it anyway
@@ -184,14 +186,19 @@ void GrapplingHookThink()
 		// while hanging on the rope, this friction component will help you a
 		// bit to control the rope
 
+		dontpull = cvar("g_balance_grapplehook_dontpull");
+		dontpull_limit = cvar("g_balance_grapplehook_dontpull_limit");
+
 		dir = self.origin - org;
 		dist = vlen(dir);
 		dir = normalize(dir);
+        if(self.hook_length_initial < 0)
+            self.hook_length_initial = dist;
 
 		if(cvar("g_grappling_hook_tarzan"))
 		{
 			v0 = self.owner.velocity;
-
+			
 			// first pull the rope...
 			if(self.owner.hook_state & HOOK_PULLING)
 			{
@@ -202,7 +209,7 @@ void GrapplingHookThink()
 				{
 					newlength = dist - ropestretch;
 					if(self.owner.velocity * dir < 0) // only if not already moving in hook direction
-						self.owner.velocity = self.owner.velocity + frametime * dir * rubberforce_overstretch;
+						self.owner.velocity = self.owner.velocity + frametime * (dontpull? (dir_x * '1 0 0' + dir_y * '0 1 0') : dir) * rubberforce_overstretch;
 				}
 
 				self.hook_length = newlength;
@@ -217,23 +224,29 @@ void GrapplingHookThink()
 			{
 				// then pull the player
 				spd = bound(0, (dist - self.hook_length) / ropestretch, 1);
-				self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
-				self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+                float pulled;
+				
+				if(!dontpull || (dontpull_limit && self.hook_length >= self.hook_length_initial)) {
+                    pulled = TRUE;
+					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
+					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+				}
 
 				dv = ((self.owner.velocity - v0) * dir) * dir;
 				if(cvar("g_grappling_hook_tarzan") >= 2)
 				{
 					if(self.aiment.movetype == MOVETYPE_WALK)
 					{
-						self.owner.velocity = self.owner.velocity - dv * 0.5;
-						self.aiment.velocity = self.aiment.velocity - dv * 0.5;
+						//self.owner.velocity = self.owner.velocity - dv * 0.5;
+						self.aiment.velocity = self.aiment.velocity - dv; //* 0.5;
 						self.aiment.flags &~= FL_ONGROUND;
 						self.aiment.pusher = self.owner;
 						self.aiment.pushltime = time + cvar("g_maxpushtime");
 					}
 				}
-
-				self.owner.flags &~= FL_ONGROUND;
+                
+                if(pulled)
+                    self.owner.flags &~= FL_ONGROUND;
 			}
 		}
 		else
@@ -253,6 +266,18 @@ void GrapplingHookThink()
 		}
 	}
 
+    if(roundstate == ROUNDSTATE_GAME)
+	if(self.aiment.classname == "player") if(self.last_dmg < time)
+	if not(g_freeze && self.aiment.frozen)
+	if(!teams_matter || self.owner.team != self.aiment.team)
+	if(cvar("g_rocketminsta"))
+	{
+		self.last_dmg = time + 0.1;
+		self.owner.hitsound += 1;
+		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		self.owner.health += 1;
+	}
+	
 	makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0');
 	te_beam(self.owner, self.origin + v_forward * (-9), org);
 }
@@ -287,9 +312,36 @@ void GrapplingHookTouch (void)
 
 	GrapplingHook_Stop();
 
-	if(other)
-		if(other.movetype != MOVETYPE_NONE)
-			SetMovetypeFollow(self, other);
+	if(other) {
+		if(other.movetype != MOVETYPE_NONE) {
+            if(other.term_authed) {     // super evil
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
+            if(time < other.hg_plasmalock) {
+                te_csqc_lightningarc(other.origin + other.maxs_z * '0 0 0.5', self.owner.origin + self.owner.maxs_z * '0 0 0.5', TRUE, other.hg_plasmalock_owner.team);
+                Damage(self.owner, other.hg_plasmalock_owner, other.hg_plasmalock_owner, cvar("g_nadgets_plasma_projectile_frozenlock_hookdamage"), DEATH_HG_PLASMA, '0 0 0', '0 0 0');
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
+            if(!other.frozen)
+            if(other.classname == "player")
+            if(!cvar("g_balance_grapplehook_works_on_players")) {
+                RemoveGrapplingHook(self.owner);
+                return;
+            }
+            
+            if(other.iscreature && cvar("g_balance_grapplehook_oneperplayer")) {
+                entity e; for(;(e = find(e, classname, "grapplinghook"));)
+                    if(e.aiment == other)
+                        RemoveGrapplingHook(e.owner);
+            }
+            
+            SetMovetypeFollow(self, other);
+        }
+    }
 
 	//self.owner.disableclientprediction = TRUE;
 }
@@ -298,17 +350,76 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 {
 	if(self.health > 0)
 	{
-		self.health = self.health - damage;
+		//<akari>
+		if(cvar("g_rocketminsta") || cvar("g_rocketminsta_hook_forcerules"))
+		{	// If the explosive mode is activated or new hook rules are forced, use them.
+		
+			//If the hook is not breakable, do nothing
+			if(!cvar("g_rocketminsta_hook_breakable"))
+			{
+				//bprint("The hook is not breakable!\n");
+				return;
+			}
+			
+			//If we shoot our own hook
+			if(self.owner == attacker)
+			if(!cvar("g_rocketminsta_hook_breakable_self"))
+			{
+				//bprint("Own hook is not breakable!\n");
+				return;
+			}
+			
+			//If we shoot a teammate's hook
+			else if(self.owner.team == attacker.team)
+			if(!cvar("g_rocketminsta_hook_breakable_team"))
+			{
+				//bprint("Team hook is not breakable!\n");
+				return;
+			}
+			
+			//Don't allow hookbreak if the hook is attached to a player
+			if(self.aiment && self.aiment.classname == "player")
+				return;
+			
+			//Die if any amount of damage is recieved
+			if(damage)
+				self.health = 0;
+			
+			//Play a hitsound
+			if(attacker == self.owner || (!teams_matter && self.owner.team != attacker.team))
+				attacker.typehitsound += 1;
+			else
+				attacker.hitsound += 1;
+
+			//Reflect the hook damage to it's owner
+			Damage(self.owner, inflictor, attacker, damage * cvar("g_rocketminsta_hook_damagefactor"), deathtype, self.owner.origin, '0 0 0');
+		}
+		else
+		{	//Otherwise, act normally
+			self.health = self.health - damage;
+		}
+		//</akari>
+		
 		if (self.health <= 0)
 		{
 			if(attacker != self.owner)
 			{
 				self.owner.pusher = attacker;
-				self.owner.pushltime = time + cvar("g_maxpushtime");
+				
+				//<akari>
+				//Please fucking shoot me. I use this number to identify a hookfrag in g_damage.qc.
+				self.owner.pushltime = 1337; //time + cvar("g_maxpushtime");
+				//</akari>
 			}
 			RemoveGrapplingHook(self.owner);
 		}
 	}
+}
+
+float CustomHGHookButton(entity e) {
+	if(!e.BUTTON_USE || e.soulmate || e.smhost)
+		return FALSE;
+	return TRUE;
 }
 
 void FireGrapplingHook (void)
@@ -319,6 +430,27 @@ void FireGrapplingHook (void)
 	if((arena_roundbased && time < warmup) || (time < game_starttime))
 		return;
 
+	if(g_freeze)
+	if(self.frozen)
+		return;
+    
+    if(time < self.hg_plasmalock)
+        return;
+    
+	if(g_nadgets && !g_nadgets_detonatelaunches)
+	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
+    if(!CustomHGHookButton(self))
+		return;
+    
+    if(self.hg_stealth) {
+        //HG_Cloak_Trigger();
+        self.hg_stealth = 0;
+        self.hg_stealth_saved = 0;
+    }
+    
+    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+        return;
+    
 	makevectors(self.v_angle);
 
 	// UGLY WORKAROUND: play this on CHAN_WEAPON2 so it can't cut off fire sounds
@@ -331,7 +463,7 @@ void FireGrapplingHook (void)
 	self.hook = missile;
 	missile.classname = "grapplinghook";
 
-	missile.movetype = MOVETYPE_FLY;
+	missile.movetype = (cvar("g_balance_grapplehook_gravity")? MOVETYPE_TOSS : MOVETYPE_FLY);
 	PROJECTILE_MAKETRIGGER(missile);
 
 	setmodel (missile, "models/hook.md3"); // precision set below
@@ -382,7 +514,7 @@ void GrapplingHookFrame()
 	if(g_grappling_hook && timeoutStatus != 2 && self.weapon != WEP_HOOK)
 	{
 		// offhand hook controls
-		if(self.BUTTON_HOOK)
+		if(self.BUTTON_HOOK || CustomHGHookButton(self))
 		{
 			if not(self.hook || (self.hook_state & HOOK_WAITING_FOR_RELEASE))
 			{
@@ -397,7 +529,7 @@ void GrapplingHookFrame()
 		}
 
 		self.hook_state &~= HOOK_RELEASING;
-		if(self.BUTTON_CROUCH)
+		if(self.BUTTON_CROUCH && cvar("g_balance_grapplehook_crouchslide"))
 		{
 			self.hook_state &~= HOOK_PULLING;
 			//self.hook_state |= HOOK_RELEASING;
@@ -408,7 +540,7 @@ void GrapplingHookFrame()
 			//self.hook_state &~= HOOK_RELEASING;
 		}
 	}
-	else if(!(self.items & IT_JETPACK) && !g_grappling_hook && self.switchweapon != WEP_HOOK)
+	else if(!(self.items & IT_JETPACK) && !g_grappling_hook && self.switchweapon != WEP_HOOK && !g_nadgets)
 	{
 		if(self.BUTTON_HOOK && !self.hook_switchweapon)
 			W_SwitchWeapon(WEP_HOOK);

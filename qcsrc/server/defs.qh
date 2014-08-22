@@ -1,3 +1,4 @@
+#define SERVER_SIDE
 #define INDEPENDENT_ATTACK_FINISHED
 
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
@@ -17,8 +18,12 @@ float require_spawnfunc_prefix; // if this float exists, only functions with spa
 
 float ctf_score_value(string parameter);
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts;
-float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss;
+// derp
+#define g_total_domination g_totaldomination
+
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip, g_prec, g_rps, g_inf, g_jailbreak, g_clanarena, g_no;
+float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss, g_nadgets;
+
 float g_warmup_limit;
 float g_warmup_allguns;
 float g_warmup_allow_timeout;
@@ -44,7 +49,6 @@ float g_jetpack;
 float sv_clones;
 float sv_cheats;
 float sv_gentle;
-float sv_foginterval;
 
 entity	activator;
 string	string_null;
@@ -187,7 +191,7 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float		dmgtime;
 
 .float		killcount;
-.float hitsound, typehitsound;
+.float hitsound, typehitsound, armorhitsound;
 
 .float watersound_finished;
 .float iscreature;
@@ -235,6 +239,8 @@ float WR_SUICIDEMESSAGE = 7; // sets w_deathtypestring or leaves it alone (and m
 float WR_KILLMESSAGE    = 8; // sets w_deathtypestring or leaves it alone
 float WR_RELOAD         = 9; // does not need to do anything
 float WR_RESETPLAYER    = 10; // does not need to do anything
+float WR_TT_STORE       = 11; // save weapon-specific fields into tt_moment for time travel
+float WR_TT_RESTORE     = 12; // restore weapon-specific fields from tt_moment for time travel
 
 void weapon_defaultspawnfunc(float wpn);
 
@@ -252,8 +258,6 @@ float alreadychangedlevel;
 
 .float runes;
 
-
-.float welcomemessage_time;
 .float version;
 
 // Laser target for laser-guided weapons
@@ -271,7 +275,6 @@ float alreadychangedlevel;
 .float nextstep;
 
 .float ready;
-#define RESTART_COUNTDOWN 10
 float restart_mapalreadyrestarted; //bool, indicates whether reset_map() was already executed
 entity restartTimer;
 void restartTimer_Think();
@@ -373,10 +376,9 @@ void UpdateSelectedPlayer();
 void ClearSelectedPlayer();
 .entity selected_player;
 .entity last_selected_player;
-.float selected_player_time; // when this player has been selected
 .float selected_player_count; // how long this player has been directly pointed to
-.float selected_player_display_needs_update; // are regular updates necessary? (health)
 .float selected_player_display_timeout; // when the selection will time out
+.float selected_player_next_update;
 
 void FixIntermissionClient(entity e);
 void FixClientCvars(entity e);
@@ -524,6 +526,8 @@ string clientstuff;
 .float weapons;
 .float pressedkeys;
 
+.float lastkeypressed;
+
 .float porto_forbidden;
 
 .string fog;
@@ -612,6 +616,7 @@ float client_cefc_accumulatortime;
 #endif
 
 .float campingrifle_bulletcounter;
+.float campingrifle_bulletlimit;
 
 #define PROJECTILE_MAKETRIGGER(e) (e).solid = SOLID_CORPSE; (e).dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
 // when doing this, hagar can go through clones
@@ -624,3 +629,147 @@ float client_cefc_accumulatortime;
 
 .entity clientdata;
 .entity personal;
+
+void bigprint(entity e, string bigstring, string comment, float staytime);
+void centerprint_spec(entity, string);
+void bigprint_spec(entity, string, string, float);
+
+.float anonspec;
+.float madoka;
+
+void dom_cp_placeholder();
+
+float keeptopic;
+
+.float totalpoints_stat, redpoints_stat, bluepoints_stat;
+
+.entity shownames;
+void shownames_think();
+
+.float killsound;
+.float instakillsound;
+
+.float hud_old;
+.float hud_alt;
+
+.float clientfov;
+.float speczoom_speed;
+.float speczoom_factor;
+
+.float g_minstagib_stat;
+.string hudskin;
+
+#define DEPENDON(d) if(!(d)) return;
+#define DEPENDON_F(d,f) if(!(d)) return f;
+
+float forbidrestart;
+
+.float rm_nokillsound;
+
+.float hidecountry;
+
+// precious
+.string netname2; // 2nd person netname
+.string netname3; // 3rd person netname
+.entity prec_rune;
+.float prec_grudge;
+.float prec_time;
+
+// Chaiomanot Feb 16 2012: Rather than fixing the spawn system,
+//                         I just _try_ make sure someone can't spawn in the same
+//                         place they did last 2 times
+.entity last_spawn_pt_1;
+.entity last_spawn_pt_2;
+
+void end_match(float);
+.float isdeveloper;
+
+float shooting_forbidden;
+
+float totalclients;
+float realclients;
+.float spawninarena;
+
+typedef void() spawnfunc_t;
+.float droppedpowerup;
+
+vector frag_force;
+
+void Boobs_DropAllAndRespawn(vector);
+
+float next_round;
+float next_round_starttime;
+
+float sv_showspecs_extra;
+float sv_showfps;
+float sv_oldfag;
+
+.float lastdamage;
+
+float sv_dps;
+
+.float sub_target_used;
+
+.float wasingame;
+
+float whatsgoingon;
+
+float g_allow_oldnexbeam;
+float leadlimit;
+float sv_jumpvelocity;
+float sv_gameplayfix_q2airaccelerate;
+float sv_autoaway;
+float g_walljump;
+float g_walljump_delay;
+float sv_ready_restart_after_countdown;
+float g_dodging;
+float g_freezetag_dodging_frozen;
+float g_dodging_delay;
+float g_dodging_ramp_time;
+float sv_defaultcharacter;
+float sv_defaultplayercolors;
+float sv_forcespecies;
+
+float g_balance_health_rotstable;
+float g_balance_armor_rotstable;
+float g_balance_fuel_rotstable;
+float g_balance_health_regenstable;
+float g_balance_armor_regenstable;
+float g_balance_fuel_regenstable;
+float g_balance_health_limit;
+float g_balance_armor_limit;
+float g_balance_fuel_limit;
+
+float g_balance_falldamage_deadminspeed;
+float g_balance_falldamage_factor;
+float g_balance_falldamage_minspeed;
+float g_balance_falldamage_maxdamage;
+
+.float dom_captureprogress;
+
+entity SelectSpawnPoint(float anypoint);
+void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
+void TeleportPlayer_NextFrame(entity teleporter, entity player, vector to, vector to_angles, vector to_velocity, vector telefragmin, vector telefragmax);
+
+entity intermission_viewport;
+
+vector TeamColor(float teem);
+
+float sv_scoreboard_heal_column;
+
+float hack_forcenextmap;
+
+float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity);
+
+.void(void) teamswap;
+void SwapTeams(void);
+void SwapTeams_Generic(void);
+
+.float playtime;
+.float playtimeupdate;
+float roundstate;
+.float roundstate_stat;
+
+.float vdmg_ignorenext;
+float sv_nicehealth;
+float sv_showacc;

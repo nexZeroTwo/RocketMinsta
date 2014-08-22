@@ -28,11 +28,21 @@ void fillNewMenuServerListTab(entity me)
 		me.TD(me, 1, 0.5, e = makeNewMenuTextLabel(0, "Filter:"));
 		me.TD(me, 1, 0.5, btn = makeNewMenuButton("Clear", '0 0 0'));
 			btn.onClick = InputBox_Clear_Click;
-		me.TD(me, 1, me.columns - 2.5, e = makeNewMenuInputBox(0, string_null));
+		me.TD(me, 1, me.columns - 3.1, e = makeNewMenuInputBox(0, string_null));
 			e.onChange = ServerList_Filter_Change;
 			e.onChangeEntity = slist;
 			btn.onClickEntity = e;
 			slist.controlledTextbox = e;
+		/*
+		me.TD(me, 1, 0.35, e = makeNewMenuCheckBox(0, "menu_slist_showonlyex", "Ex"));
+			slist.filterShowEmpty = e.checked;
+			e.onClickEntity = slist;
+			e.onClick = ServerList_ShowOnlyEx_Click;
+		*/
+		me.TD(me, 1, 0.6, e = makeNewMenuCheckBox(0, "menu_slist_showonlyrm", "Only RM"));
+			slist.filterShowEmpty = e.checked;
+			e.onClickEntity = slist;
+			e.onClick = ServerList_ShowOnlyRM_Click;
 		me.TD(me, 1, 0.5, e = makeNewMenuCheckBox(0, "menu_slist_showempty", "Empty"));
 			slist.filterShowEmpty = e.checked;
 			e.onClickEntity = slist;
@@ -67,12 +77,8 @@ void fillNewMenuServerListTab(entity me)
 			e.onClickEntity = slist;
 			slist.infoButton = e;
 	me.TR(me);
-#ifdef MODMODE
-		me.TD(me, 1, 2, e = makeNewMenuModButton("Multiplayer_Join"));
-		me.TD(me, 1, me.columns - 2, e = makeNewMenuButton("Join!", '0 0 0'));
-#else
+		//me.TD(me, 1, 2, e = makeNewMenuModButton("Multiplayer_Join"));
 		me.TD(me, 1, me.columns, e = makeNewMenuButton("Join!", '0 0 0'));
-#endif
 			e.onClick = ServerList_Connect_Click;
 			e.onClickEntity = slist;
 			slist.connectButton = e;

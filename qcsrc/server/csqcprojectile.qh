@@ -1,4 +1,5 @@
 .float csqcprojectile_clientanimate;
+.float csqcprojectile_extradata;
 
 void CSQCProjectile(entity e, float clientanimate, float type, float docull);
 void UpdateCSQCProjectile(entity e);

@@ -63,7 +63,7 @@ const float COLOR_SPECTATOR = 1337;
 // --------------------------------------------------------------------------
 // Scoreboard stuff
 
-#define MAX_SBAR_FIELDS 16
+#define MAX_SBAR_FIELDS 32
 
 #define SP_END -1
 
@@ -73,6 +73,7 @@ const float COLOR_SPECTATOR = 1337;
 #define SP_CLRATIO -5
 #define SP_PL -6
 #define SP_FRAGS -7
+#define SP_LAG -8
 
 #define SP_SEPARATOR -100
 
@@ -83,6 +84,7 @@ float sbar_num_fields;
 
 float sbar_font;
 float sbar_bigfont;
+float sbar_rmbigfont;
 
 string scores_label[MAX_SCORE];
 float scores_flags[MAX_SCORE];
@@ -90,6 +92,7 @@ string teamscores_label[MAX_SCORE];
 float teamscores_flags[MAX_SCORE];
 .float scores[MAX_SCORE];
 .float teamscores[MAX_TEAMSCORE];
+.float hasbestscore[MAX_SCORE];
 
 #define IS_INCREASING(x) ( (x)&SFL_LOWER_IS_BETTER )
 #define IS_DECREASING(x) ( !((x)&SFL_LOWER_IS_BETTER) )
@@ -157,3 +160,179 @@ float armorblockpercent;
 float calledhooks;
 #define HOOK_START    1
 #define HOOK_END      2
+
+string rm_watermark;
+float rm_wm_width;
+
+string bigprint_string;
+string bigprint_comment;
+float bigprint_fadetime;
+float bigprint_appeartime;
+string bigprint_oldstring;
+float bigprint_oldfadetime;
+float bigprint_commentfadetime;
+float bigprint_commentappeartime;
+float bigprint_nofadein;
+float bigprint_oldappeartime;
+
+void bigprint(string, string, float);
+
+float centerprint_init;
+
+#define MAX_SPECTATORS 7
+//string spectatornames[MAX_SPECTATORS];
+float spectatorlist[MAX_SPECTATORS];
+float num_spectators;
+
+float rm_showspec;
+float rm_showdamage;
+float rm_teamlasers;
+float rm_helptime;
+float rm_nobigtext;
+float rm_hidebigcomments;
+float rm_legacyvote;
+float rm_hidewatermark;
+float rm_madoka;
+float rm_crosshealth;
+float rm_simpleeffects;
+float rm_shownames;
+float rm_shownames_teamonly;
+float rm_visualscore;
+float rm_oldhud_option;
+float rm_althud_option;
+float rm_noflags;
+float rm_showrankings;
+float rm_showtimer;
+float rm_shownadgetregen;
+
+float rm_oldhud;
+float rm_althud;
+float rm_oldflags;
+float rm_oldbigfont;
+
+float vote_yescount;
+float vote_nocount;
+float vote_needed;
+float vote_active;
+float vote_highlighted;
+
+float is_tmpmadoka;
+float tmpmadoka_fadetime;
+
+float oldengine;
+float madoka_locked;
+float madokalockstate;
+
+float mr_appeartime;
+float mr_fadetime;
+float morningrescue;
+
+float sbar_madokafont;
+
+#define MDKF_SET 1
+#define MDKF_UNSET 0
+#define MDKF_AUTO -1
+#define sbar_bigfont_real FONT_USER+2
+
+void SetMadokaFont(float);
+
+float bp_draw;
+float bpc_draw;
+float obp_draw;
+
+float gametypevote;
+float gametypevote_longest;
+
+string mapvote_choosenmap;
+string mapvote_choosenmappic;
+
+void score_visual(float);
+
+#define MAX_SCORESTRINGS 10
+string score_strings[MAX_SCORESTRINGS];
+float score_strings_fadeout[MAX_SCORESTRINGS];
+float score_strings_appear[MAX_SCORESTRINGS];
+float score_strings_alphamod[MAX_SCORESTRINGS];
+vector score_strings_color[MAX_SCORESTRINGS];
+float score_strings_num;
+#define SCORECOLOR_MAXSCORE 100
+
+vector hudflash_color;
+float hudflash_appeartime;
+float hudflash_fadetime;
+float hudflash_intensivity;
+float hudflash_alpha;
+float hudflash_enabled;
+void hudflash(vector color, float staytime, float intensivity, float alph);
+
+float hudlocked;
+float hudlock_old;
+float hudlock_alt;
+
+#define hudlocked_old hudlock_old
+#define hudlocked_alt hudlock_alt
+
+float vip_red_health;
+float vip_red_maxhealth;
+string vip_red_name;
+
+float vip_blue_health;
+float vip_blue_maxhealth;
+string vip_blue_name;
+
+float screenfade;
+
+float fovlock;
+float speczoom_speed;
+float speczoom_factor;
+
+float g_minstagib;
+float minstasbar_fixed;
+float gui_reloading;
+
+float rm_hidecountry;
+
+vector camera_origin;
+float camera_expiretime;
+float camera_drawviewmodel_locked;
+float camera_drawviewmodel_backup;
+
+float cl_fps;
+
+.float avg_ping;
+.float avg_ping_next;
+
+string sv_hostname;
+string sv_rm_build;
+string sv_rm_version;
+string sv_rm_date;
+string sv_rm_commit;
+string sv_motd;
+
+float sv_showspecs_extra;
+float sv_showfps;
+float sv_oldfag;
+
+float g_nadgets;
+float sv_scoreboard_heal_column;
+float g_freeze;
+
+float Q3SURFACEFLAG_SLICK = 2; // low friction surface
+float DPCONTENTS_SOLID = 1; // blocks player movement
+float DPCONTENTS_BODY = 32; // blocks player movement
+float DPCONTENTS_CORPSE = 64; // blocks player movement
+float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
+
+.vector oldorigin;
+.vector iorigin;
+
+float whatsgoingon;
+
+entity dtrack_total;
+entity dtrack_taken;
+entity dtrack_total_spec;
+entity dtrack_taken_spec;
+
+float sv_damagestats;
+
+float GetBigfont();

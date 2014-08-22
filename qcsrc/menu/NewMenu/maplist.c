@@ -200,7 +200,7 @@ void refilterNewMenuMapList(entity me)
 	float i, j, n;
 	string s;
 	float gt, f;
-	gt = MapInfo_CurrentGametype();
+	gt = gametype_ID_to_MapID(gametype_GetMenu());
 	f = MapInfo_CurrentFeatures();
 	MapInfo_FilterGametype(gt, f, MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 	me.nItems = MapInfo_count;

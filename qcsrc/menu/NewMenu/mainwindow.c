@@ -8,6 +8,10 @@ CLASS(MainWindow) EXTENDS(ModalController)
 	ATTRIB(MainWindow, userbindEditDialog, entity, NULL)
 	ATTRIB(MainWindow, winnerDialog, entity, NULL)
 	ATTRIB(MainWindow, radarDialog, entity, NULL)
+	ATTRIB(MainWindow, rmDialog, entity, NULL)
+	ATTRIB(MainWindow, gameMenuDialog, entity, NULL)
+	ATTRIB(MainWindow, nadeMenuDialog, entity, NULL)
+	ATTRIB(MainWindow, vcallDialog, entity, NULL)
 	ATTRIB(MainWindow, serverInfoDialog, entity, NULL)
 	ATTRIB(MainWindow, cvarsDialog, entity, NULL)
 	ATTRIB(MainWindow, mainNexposee, entity, NULL)
@@ -30,6 +34,22 @@ void configureMainWindowMainWindow(entity me)
 	entity n, i;
 
 	i = spawnNewMenuTeamSelectDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+	me.rmDialog = i = spawnNewMenuRMConfigDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+	me.gameMenuDialog = i = spawnNewMenuGameMenuDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+    me.nadeMenuDialog = i = spawnNewMenuNadeMenuDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+
+	me.vcallDialog = i = spawnNewMenuVcallDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 
@@ -79,20 +99,22 @@ void configureMainWindowMainWindow(entity me)
 			n.setNexposee(n, i, '0.1 0.1 0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 		}
 	*/
+    /*
 		i = spawnNewMenuSingleplayerDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 		n.setNexposee(n, i, SKINPOSITION_DIALOG_SINGLEPLAYER, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
-		
+    */
+        
 		i = spawnNewMenuMultiplayerDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, SKINPOSITION_DIALOG_MULTIPLAYER, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.5 0.1 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNewMenuSettingsDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, SKINPOSITION_DIALOG_SETTINGS, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.5 0.9 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNewMenuCreditsDialog();
 		i.configureDialog(i);

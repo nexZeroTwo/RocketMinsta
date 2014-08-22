@@ -273,6 +273,9 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	}
 	bprint(p.netname, "^7 lost the ", e.netname, "\n");
 
+	p.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+	p.scorekeeper.(scores [SP_CARRYING]) = 0;
+
 	if(penalty_receiver)
 		UpdateFrags(penalty_receiver, -ctf_score_value("penalty_suicidedrop"));
 	else
@@ -311,7 +314,13 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	e.cnt = FLAG_DROPPED;
 	e.velocity = '0 0 300';
 	e.pain_finished = time + cvar("g_ctf_flag_returntime");//30;
-
+    
+    // hack
+    if(g_freeze) {
+        makevectors(self.angles);
+        e.velocity += v_forward * 100;
+    }
+    
 	trace_startsolid = FALSE;
 	tracebox(e.origin, e.mins, e.maxs, e.origin, TRUE, e);
 	if(trace_startsolid)
@@ -426,10 +435,15 @@ void FlagTouch()
 		return;
 	if (other.health < 1) // ignore dead players
 		return;
+    if (g_freeze && other.frozen)
+        return;
 
 	if (self.cnt == FLAG_CARRY)
 		return;
-
+    
+    if(time - other.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+        return;
+    
 	if (self.cnt == FLAG_BASE)
 	if (other.team == self.team)
 	if (other.flagcarried) // he's got a flag
@@ -439,7 +453,16 @@ void FlagTouch()
 		{
 			return;
 		}
-		if(!cvar("g_ctf_captimerecord_never") && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
+		
+		local entity _pl;
+		if (other.team == COLOR_TEAM1) { // red team scores
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1Red ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+		}
+		if (other.team == COLOR_TEAM2) { // blue team scores
+			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
+		}
+		
+		if(!cvar("g_ctf_captimerecord_never") && (!cvar("g_rocketminsta") || !cvar("g_rocketminsta_ctf_nocapturerecord")) && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
 		{
 			t = time - other.flagcarried.flagpickuptime;
 			s = ftos_decimals(t, 2);
@@ -460,6 +483,7 @@ void FlagTouch()
 			}
 			else if (t < flagcaptimerecord)
 			{
+				bigprint_spec(other, "^2Record ^7Set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
 				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds\n"));
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
@@ -479,6 +503,19 @@ void FlagTouch()
 		// give credit to the individual player
 		UpdateFrags(other, ctf_score_value("score_capture"));
 
+		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+		other.scorekeeper.(scores [SP_CARRYING]) = 0;
+
+		//<akari>
+		//Specially for Spook: restore health on flag capture
+		
+		if(cvar("g_rocketminsta"))
+		if(cvar("g_ctf_capheals"))
+		if(other.health < 100)
+			other.health = 100;
+		
+		//</akari>
+
 		if (cvar("g_ctf_flag_capture_effects")) {
 			if (other.team == COLOR_TEAM1) { // red team scores effect
 				pointparticles(particleeffectnum("red_ground_quake"), self.origin, '0 0 0', 1);
@@ -497,6 +534,11 @@ void FlagTouch()
 		RegenFlag (other.flagcarried);
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
+		
+        if(g_freeze)
+            Freeze_UnfreezeAll();
+        
+		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
 	if (other.team == COLOR_TEAM1 || other.team == COLOR_TEAM2) // only red and blue team can steal flags
@@ -510,6 +552,9 @@ void FlagTouch()
 		if (cvar("g_ctf_flag_pickup_effects")) // pickup effect
 			pointparticles(particleeffectnum("smoke_ring"), 0.5 * (self.absmin + self.absmax), '0 0 0', 1);
 			
+		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+		other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
+		
 		// pick up
 		self.flagpickuptime = time; // used for timing runs
 		self.speedrunning = other.speedrunning; // if speedrunning, flag will self-return and teleport the owner back after the record
@@ -531,14 +576,18 @@ void FlagTouch()
 
 		FOR_EACH_PLAYER(player)
 			if(player.team == self.team)
-				centerprint(player, "The enemy got your flag! Retrieve it!");
+				centerprint_spec(player, "The enemy got your flag! Retrieve it!");
 
 		self.movetype = MOVETYPE_NONE;
 		setorigin(self, FLAG_CARRY_POS);
 		setattachment(self, other, "");
-		WaypointSprite_AttachCarrier("flagcarrier", other);
+		WaypointSprite_AttachCarrier("FLAG CARRIER", other);
 		WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+        WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
 		WaypointSprite_Ping(self.sprite);
+
+		//hudflash_default(other, '1 1 -1');
+		hudflash_teamcolor_default_spec(other);
 
 		return;
 	}
@@ -584,6 +633,8 @@ void FlagTouch()
 			LogCTF("return", self.team, other);
 			sound (other, CHAN_AUTO, self.noise1, VOL_BASE, ATTN_NONE);
 			ReturnFlag(self);
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + cvar("g_balance_ctf_delay_collect")))
 		{
@@ -614,15 +665,21 @@ void FlagTouch()
 
 			FOR_EACH_PLAYER(player)
 				if(player.team == self.team)
-					centerprint(player, "The enemy got your flag! Retrieve it!");
+					centerprint_spec(player, "The enemy got your flag! Retrieve it!");
 
 			self.movetype = MOVETYPE_NONE;	// flag must have MOVETYPE_NONE here, otherwise it will drop through the floor...
 			setorigin(self, FLAG_CARRY_POS);
 			setattachment(self, other, "");
 			self.damageforcescale = 0;
 			self.takedamage = DAMAGE_NO;
-			WaypointSprite_AttachCarrier("flagcarrier", other);
-			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+			WaypointSprite_AttachCarrier("FLAG CARRIER", other);
+            WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+            WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
+			
+			other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
+			other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
+			
+			hudflash_teamcolor_default_spec(other);
 		}
 	}
 };
@@ -758,9 +815,18 @@ Keys:
 
 void spawnfunc_item_flag_team1()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
-		remove(self);
+		if(g_vip)
+		{
+			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
+			remove(self);
+		}
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
+			minstagib_items(IT_STRENGTH);
+		else
+			remove(self);
+			
 		return;
 	}
 
@@ -826,12 +892,16 @@ void spawnfunc_item_flag_team1()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+		WaypointSprite_SpawnFixed("Red Base", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
+	}
 
 	precache_model("models/ctf/shield.md3");
 	precache_model("models/ctf/shockwavetransring.md3");
@@ -866,11 +936,21 @@ Keys:
 
 void spawnfunc_item_flag_team2()
 {
-	if (!g_ctf)
+	if (!g_ctf && !g_domination)
 	{
-		remove(self);
+		if(g_vip)
+		{
+			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
+			remove(self);
+		}
+		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
+			minstagib_items(IT_STRENGTH);
+		else
+			remove(self);
+			
 		return;
 	}
+    
 	//if(!cvar("teamplay"))
 	//	cvar_set("teamplay", "3");
 
@@ -933,13 +1013,17 @@ void spawnfunc_item_flag_team2()
 	// From Spidflisk
 	item_flag_postspawn();
 
-	waypoint_spawnforitem_force(self, self.origin);
-	self.nearestwaypointtimeout = 0; // activate waypointing again
-	self.basewaypoint = self.nearestwaypoint;
+	if(g_ctf)
+	{
+		waypoint_spawnforitem_force(self, self.origin);
+		self.nearestwaypointtimeout = 0; // activate waypointing again
+		self.basewaypoint = self.nearestwaypoint;
 
-	WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
-	WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
-
+		WaypointSprite_SpawnFixed("Blue Base", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
+	}
+	
 	precache_model("models/ctf/shield.md3");
 
 	self.reset = item_flag_reset;
