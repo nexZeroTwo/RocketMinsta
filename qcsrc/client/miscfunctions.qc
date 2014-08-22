@@ -3,6 +3,21 @@ var float(string text, float handleColors) stringwidth;
 entity players;
 entity teams;
 
+
+/**
+ * Add all future announcer sounds precaches here.
+ * TODO: make all announcer sound() calls client-side in the end, to allow queues etc.
+ */
+void Announcer_Precache() {
+	//"cl_announcer" does NOT end in a '/' so one must be added for the file paths to work correctly.
+	precache_sound (strcat(cvar_string("cl_announcer"), "/1minuteremains.wav"));
+	precache_sound (strcat(cvar_string("cl_announcer"), "/5minutesremain.wav"));
+}
+
+void announce(string msg){
+	localcmd(("play2 sound/announcer/$cl_announcer/", msg, "\n"));
+}
+
 void restartAnnouncer_Think() {
 	float countdown_rounded, countdown;
 	countdown = getstatf(STAT_GAMESTARTTIME) - time;
@@ -50,7 +65,7 @@ void maptimeAnnouncer() {
         else if (timelimit > 0 && timeleft < 300 && timeleft > 299) {
 			announcer_5min = TRUE;
 			//dprint("i will play the sound, I promise!\n");
-			sound(self, CHAN_VOICE, "announcer/robotic/5minutesremain.wav", VOL_BASEVOICE, ATTN_NONE);
+			announce("5minutesremain.wav");
 		}
     }
 
@@ -63,18 +78,9 @@ void maptimeAnnouncer() {
     	}
     	else if (timelimit > 0 && timeleft < 60) {
 			announcer_1min = TRUE;
-			sound(self, CHAN_VOICE, "announcer/robotic/1minuteremains.wav", VOL_BASEVOICE, ATTN_NONE);
+			announce("1minuteremains.wav");
     	}
 	}
-}
-
-/**
- * Add all future announcer sounds precaches here.
- * TODO: make all announcer sound() calls client-side in the end, to allow queues etc.
- */
-void Announcer_Precache () {
-    precache_sound ("announcer/robotic/1minuteremains.wav");
-	precache_sound ("announcer/robotic/5minutesremain.wav");
 }
 
 void AuditLists()

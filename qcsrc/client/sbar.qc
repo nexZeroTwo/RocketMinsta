@@ -102,7 +102,11 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	// draw the weapon accuracy on the HUD
 	if(sbar_hud_accuracy)
  	{
- 		weapon_stats = rint(100*weapon_hit/weapon_damage);
+		//avoid divide by zero warnings
+		if(weapon_hit == 0 || weapon_damage == 0)
+			weapon_stats = 0;
+		else
+			weapon_stats = rint(100*weapon_hit/weapon_damage);
  		fill_colour_x = 1 - 0.015 * weapon_stats;
  		fill_colour_y = 1 - 0.015 * (100 - weapon_stats);
  		drawstringright(pos + '22 0 0', strcat(ftos(weapon_stats),"%"), '6 6 0', fill_colour, sbar_alpha_fg, 0);

@@ -230,7 +230,7 @@ void draw_BorderPicture(vector theOrigin, string pic, vector theSize, vector the
 void draw_Text(vector theOrigin, string theText, vector theSize, vector theColor, float theAlpha, float ICanHasKallerz)
 {
 	if(theSize_x <= 0 || theSize_y <= 0)
-		error("Drawing zero size text?\n");
+		error("Drawing zero size text?\n"); // FIXME: make me not crash plzkthx
 	if(ICanHasKallerz)
 		drawcolorcodedstring(boxToGlobal(theOrigin, draw_shift, draw_scale), theText, boxToGlobalSize(theSize, draw_scale), theAlpha * draw_alpha, 0);
 	else

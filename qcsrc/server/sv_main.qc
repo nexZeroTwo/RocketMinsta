@@ -193,7 +193,9 @@ void StartFrame (void)
 	sv_warsowbunny_turnaccel = cvar("sv_warsowbunny_turnaccel");
 	sv_warsowbunny_backtosideratio = cvar("sv_warsowbunny_backtosideratio");
 	teamplay = cvar ("teamplay");
+	sv_lite = cvar("sv_lite");
 	sys_ticrate = cvar("sys_ticrate");
+	
 
 	if (timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = cvar("slowmo"); // slowmo will be restored after the timeout

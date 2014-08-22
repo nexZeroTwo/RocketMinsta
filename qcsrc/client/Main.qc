@@ -135,17 +135,24 @@ void CSQC_Init(void)
 	Announcer_Precache();
 
 	get_mi_min_max_texcoords(1); // try the CLEVER way first
-	minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
+	minimapname = strcat("maps/", mi_shortname, "_radar.tga");
 	shortmapname = mi_shortname;
 
 	if(precache_pic(minimapname) == "")
 	{
 		// but maybe we have a non-clever minimap
-		minimapname = strcat("gfx/", mi_shortname, "_mini.tga");
+		minimapname = strcat("maps/", mi_shortname, "_mini.tga");
+		// maybe we have an ancient one?
+		if(precache_pic(minimapname) == "")
+		  minimapname = strcat("gfx/", mi_shortname, "_radar.tga");
+		// lets try one last location
+		if(precache_pic(minimapname) == "")
+		  minimapname = strcat("gfx/", mi_shortname, "_mini.tga");
+		// time to give up
 		if(precache_pic(minimapname) == "")
 			minimapname = ""; // FAIL
 		else
-			get_mi_min_max_texcoords(0); // load new texcoords
+			get_mi_min_max_texcoords(0); // Success: load new texcoords
 	}
 
 	mi_center = (mi_min + mi_max) * 0.5;

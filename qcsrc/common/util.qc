@@ -1607,10 +1607,16 @@ vector healtharmor_maxdamage(float h, float a, float armorblock)
 	return v;
 }
 
+// a = self.armorvalue, armorblock = cvar("g_balance_armor_blockpercent"), damage to inflict
 vector healtharmor_applydamage(float a, float armorblock, float damage)
 {
 	vector v;
-	v_y = bound(0, damage * armorblock, a); // save
+#ifndef sv_lite
+	if(armorblock >= 1)
+		v_y = bound(0, damage * bound(0, ((armorblock*(a/100))) / 100, armorblock / 100),  a); // save
+	else
+#endif
+		v_y = bound(0, damage * armorblock, a); // save
 	v_x = bound(0, damage - v_y, damage); // take
 	v_z = 0;
 	return v;

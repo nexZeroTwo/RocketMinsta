@@ -538,7 +538,7 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_playerdetailreduction, "cl_playerdetailreduction");
 	GetCvars_handleFloat(s, f, cvar_scr_centertime, "scr_centertime");
 	GetCvars_handleFloat(s, f, cvar_cl_shownames, "cl_shownames");
-	GetCvars_handleString(s, f, cvar_g_nexuizversion, "g_nexuizversion");
+	GetCvars_handleString(s, f, cvar_sys_project_version, "sys_project_version");
 	GetCvars_handleFloat(s, f, cvar_cl_handicap, "cl_handicap");
 	GetCvars_handleString_Fixup(s, f, cvar_cl_weaponpriority, "cl_weaponpriority", W_FixWeaponOrder_ForceComplete);
 	GetCvars_handleString_Fixup(s, f, cvar_cl_weaponpriorities[0], "cl_weaponpriority0", W_FixWeaponOrder_AllowIncomplete);
@@ -557,7 +557,7 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_hitsound, "cl_hitsound");
 #ifdef ALLOW_FORCEMODELS
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodels, "cl_forceplayermodels");
-	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromnexuiz, "cl_forceplayermodelsfromnexuiz");
+	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromgame, "cl_forceplayermodelsfromgame");
 #endif
 	GetCvars_handleFloatOnce(s, f, cvar_cl_gunalign, "cl_gunalign");
 
@@ -1345,13 +1345,14 @@ void play2(entity e, string filename)
 }
 
 .float announcetime;
-float announce(entity player, string msg)
+float announce(entity player, string filename)
 {
     if (time > player.announcetime)
         if (clienttype(player) == CLIENTTYPE_REAL)
         {
             player.announcetime = time + 0.8;
-            play2(player, msg);
+	    stuffcmd(player, strcat("play2 sound/announcer/$cl_announcer/", filename, "\n"));
+            //play2(player, msg);
             return TRUE;
         }
     return FALSE;

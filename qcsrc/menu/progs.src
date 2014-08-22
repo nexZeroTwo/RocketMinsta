@@ -17,7 +17,7 @@ gamecommand.qh
 menu.qh
 draw.qh
 skin.qh
-nexuiz/util.qh
+NewMenu/util.qh
 
 oo/classdefs.h
 	classes.c
@@ -32,7 +32,7 @@ oo/implementation.h
 gamecommand.qc
 menu.qc
 draw.qc
-nexuiz/util.qc
+NewMenu/util.qc
 
 ../common/campaign_file.qc
 ../common/campaign_setup.qc

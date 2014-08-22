@@ -420,8 +420,8 @@ float Client_customizeentityforclient()
 	modelsource = self;
 
 #ifdef ALLOW_FORCEMODELS
-	if(other.cvar_cl_forceplayermodelsfromnexuiz)
-		if not(self.modelindex_lod0_from_nexuiz)
+	if(other.cvar_cl_forceplayermodelsfromgame)
+		if not(self.modelindex_lod0_from_game)
 			modelsource = other;
 	if(other.cvar_cl_forceplayermodels && sv_clforceplayermodels)
 		modelsource = other;
@@ -516,7 +516,7 @@ void setmodel_lod(entity e, string modelname)
 	}
 
 	s = whichpack(self.model);
-	self.modelindex_lod0_from_nexuiz = ((s == "") || (substring(s, 0, 4) == "data"));
+	self.modelindex_lod0_from_game = ((s == "") || (substring(s, 0, 4) == "data"));
 
 	player_setupanimsformodel();
 	UpdatePlayerSounds();
@@ -1117,7 +1117,7 @@ void KillIndicator_Think()
 		if(clienttype(self.owner) == CLIENTTYPE_REAL)
 		{
 			if(self.cnt <= 10)
-				announce(self.owner, strcat("announcer/robotic/", ftos(self.cnt), ".wav"));
+				announce(self.owner, strcat(ftos(self.cnt), ".wav"));
 			if(self.owner.killindicator_teamchange)
 			{
 				if(self.owner.killindicator_teamchange == -1)
@@ -1312,8 +1312,9 @@ void ClientConnect (void)
 
 	race_PreSpawnObserver();
 
-	//if(g_domination)
-	//	dom_player_join_team(self);
+	//Send the name(s) of the map author(s), this should help promote map development.
+	MapInfo_Get_ByName( mapname, FALSE, 0);
+	sprint(self, strcat("^x8afMap created by: ^7", MapInfo_Map_author, "\n"));
 
 	JoinBestTeam(self, FALSE, FALSE); // if the team number is valid, keep it
 
@@ -2097,7 +2098,7 @@ void ShowRespawnCountdown()
 		{
 			self.respawn_countdown = number - 1;
 			if(ceil(self.death_time - (time + 0.5)) == number) // only say it if it is the same number even in 0.5s; to prevent overlapping sounds
-				announce(self, strcat("announcer/robotic/", ftos(number), ".wav"));
+				announce(self, strcat(ftos(number), ".wav"));
 		}
 	}
 }
@@ -2309,30 +2310,31 @@ void PlayerPreThink (void)
 	}
 
 	// version nagging
+	//TODO: remove the unneeded strcat()s after upgrading the compiler
 	if(self.version_nagtime)
-		if(self.cvar_g_nexuizversion)
+		if(self.cvar_sys_project_version)
 			if(time > self.version_nagtime)
 			{
-				if(strstr(self.cvar_g_nexuizversion, "svn", 0) < 0)
+				if(strstr(self.cvar_sys_project_version, "devel", 0) < 0)
 				{
-					if(strstr(cvar_string("g_nexuizversion"), "svn", 0) >= 0)
+					if(strstr(cvar_string("sys_project_version"), "devel", 0) >= 0)
 					{
-						dprint("^1NOTE^7 to ", self.netname, "^7 - the server is running ^3Nexuiz ", cvar_string("g_nexuizversion"), " (beta)^7, you have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1\n");
-						sprint(self, strcat("\{1}^1NOTE: ^7the server is running ^3Nexuiz ", cvar_string("g_nexuizversion"), " (beta)^7, you have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1\n"));
+						dprint("^1NOTE^7 to ", self.netname, "^7 - the server is running ", strcat(cvar_string("sys_project_name")," ", cvar_string("sys_project_version")), " (beta), you have ", strcat(cvar_string("sys_project_name")," ", self.cvar_sys_project_version), "^1\n");
+						sprint(self, strcat("\{1}^1NOTE: ^7the server is running version ", cvar_string("sys_project_version"), " (beta), you have version ", self.cvar_sys_project_version, "^1\n"));
 					}
 					else
 					{
 						float r;
-						r = vercmp(self.cvar_g_nexuizversion, cvar_string("g_nexuizversion"));
+						r = vercmp(self.cvar_sys_project_version, cvar_string("sys_project_version"));
 						if(r < 0)
 						{
-							dprint("^1NOTE^7 to ", self.netname, "^7 - ^3Nexuiz ", cvar_string("g_nexuizversion"), "^7 is out, and you still have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1 - get the update from ^4http://www.nexuiz.com/^1!\n");
-							sprint(self, strcat("\{1}^1NOTE: ^3Nexuiz ", cvar_string("g_nexuizversion"), "^7 is out, and you still have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1 - get the update from ^4http://www.nexuiz.com/^1!\n"));
+							dprint("^1NOTE^7 to ", self.netname, "^7 - ", strcat(cvar_string("sys_project_name"), " ", cvar_string("sys_project_version")), "^7 is out, and you still have ", strcat(cvar_string("sys_project_name"), " ", self.cvar_sys_project_version, "^1 - get the update from ^4", cvar_string("sys_project_url")) , "^1!\n");
+							sprint(self, strcat("\{1}^1NOTE: ^7version ", cvar_string("sys_project_version"), "^7 is out, and you still have version ", self.cvar_sys_project_version, "^1 - get the update from ^4", cvar_string("sys_project_url"), "^1!\n"));
 						}
 						else if(r > 0)
 						{
-							dprint("^1NOTE^7 to ", self.netname, "^7 - the server is running ^3Nexuiz ", cvar_string("g_nexuizversion"), "^7, you have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1\n");
-							sprint(self, strcat("\{1}^1NOTE: ^7the server is running ^3Nexuiz ", cvar_string("g_nexuizversion"), "^7, you have ^3Nexuiz ", self.cvar_g_nexuizversion, "^1\n"));
+							dprint("^1NOTE^7 to ", self.netname, "^7 - the server is running ", strcat(cvar_string("sys_project_name") ," ", cvar_string("sys_project_version")), "^7, you have ", strcat(cvar_string("sys_project_name"), " ", self.cvar_sys_project_version), "^1\n");
+							sprint(self, strcat("\{1}^1NOTE: ^7the server is running ", strcat(cvar_string("sys_project_name"), " ", cvar_string("sys_project_version")), "^7, you have ", strcat(cvar_string("sys_project_name"), " ", self.cvar_sys_project_version), "^1\n"));
 						}
 					}
 				}
@@ -2801,7 +2803,7 @@ void PlayerPostThink (void)
 		if(timeleft <= 0)
 		{
 			bprint("^3", self.netname, "^3 was kicked for idling.\n");
-			announce(self, "announcer/robotic/terminated.wav");
+			announce(self, "terminated.wav");
 			dropclient(self);
 			return;
 		}
@@ -2810,7 +2812,7 @@ void PlayerPostThink (void)
 			if(timeleft != self.idlekick_lasttimeleft)
 			{
 				centerprint_atprio(self, CENTERPRIO_IDLEKICK, strcat("^3Stop idling!\n^3Disconnecting in ", ftos(timeleft), "..."));
-				announce(self, strcat("announcer/robotic/", ftos(timeleft), ".wav"));
+				announce(self, strcat(ftos(timeleft), ".wav"));
 			}
 		}
 		else

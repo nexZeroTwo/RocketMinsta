@@ -459,34 +459,33 @@ void autoskill(float factor)
 			bestbot = max(bestbot, head.totalfrags - head.totalfrags_lastcheck);
 	}
 
-	dprint("autoskill: best player got ", ftos(bestplayer), ", ");
-	dprint("best bot got ", ftos(bestbot), "; ");
+	dprint("autoskill: best player got ", ftos(bestplayer), ", best bot got ", ftos(bestbot), "; ");
 	if(bestbot < 0 || bestplayer < 0)
 	{
-		dprint("not doing anything\n");
+// 		dprint("not doing anything\n");
 		// don't return, let it reset all counters below
 	}
 	else if(bestbot <= bestplayer * factor - 2)
 	{
-		if(cvar("skill") < 17)
+		if(cvar("skill") < cvar("skill_max"))
 		{
-			dprint("2 frags difference, increasing skill\n");
+// 			dprint("2 frags difference, increasing skill\n");
 			cvar_set("skill", ftos(cvar("skill") + 1));
 			bprint("^2SKILL UP!^7 Now at level ", ftos(cvar("skill")), "\n");
 		}
 	}
 	else if(bestbot >= bestplayer * factor + 2)
 	{
-		if(cvar("skill") > 0)
+		if(cvar("skill") > cvar("skill_min"))
 		{
-			dprint("2 frags difference, decreasing skill\n");
+// 			dprint("2 frags difference, decreasing skill\n");
 			cvar_set("skill", ftos(cvar("skill") - 1));
 			bprint("^1SKILL DOWN!^7 Now at level ", ftos(cvar("skill")), "\n");
 		}
 	}
 	else
 	{
-		dprint("not doing anything\n");
+// 		dprint("not doing anything\n");
 		return;
 		// don't reset counters, wait for them to accumulate
 	}

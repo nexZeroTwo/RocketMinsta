@@ -78,8 +78,13 @@ void WeaponStats_LogItem(float awep, float vwep, vector item)
 }
 void WeaponStats_LogDamage(float awep, float vwep, float damage)
 {
+#ifdef DEBUG
 	if(damage < 0)
+	{
+		WeaponStats_LogItem(awep, vwep, '1 0 0' * damage);
 		error("negative damage?");
+	}
+#endif
 	WeaponStats_LogItem(awep, vwep, '1 0 0' * damage);
 }
 void WeaponStats_LogKill(float awep, float vwep)
@@ -134,7 +139,7 @@ void CopyBody(float keepvelocity)
 	self.model = oldself.model;
 	self.modelindex = oldself.modelindex;
 	self.modelindex_lod0 = oldself.modelindex_lod0;
-	self.modelindex_lod0_from_nexuiz = oldself.modelindex_lod0_from_nexuiz;
+	self.modelindex_lod0_from_game = oldself.modelindex_lod0_from_game;
 	self.modelindex_lod1 = oldself.modelindex_lod1;
 	self.modelindex_lod2 = oldself.modelindex_lod2;
 	self.skinindex = oldself.skinindex;

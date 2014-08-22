@@ -271,9 +271,9 @@ float Item_GiveTo(entity item, entity player)
 				if (clienttype(player) == CLIENTTYPE_REAL)
 				{
 					if(player.health <= 5)
-						play2(player, "announcer/robotic/lastsecond.wav");
+						announce(player, "lastsecond.wav");
 					else if(player.health < 50)
-						play2(player, "announcer/robotic/narrowly.wav");
+						announce(player, "narrowly.wav");
 				}
 				// sound not available
 				// else if(item.items == IT_CELLS)
@@ -1283,7 +1283,7 @@ void spawnfunc_item_health_mega (void) {
 }
 
 // support old misnamed entities
-void spawnfunc_item_armor1() { spawnfunc_item_armor_small(); }  // FIXME: in Quake this is green armor, in Nexuiz maps it is an armor shard
+void spawnfunc_item_armor1() { spawnfunc_item_armor_small(); }  // FIXME: in Quake this is green armor, in our maps it is an armor shard
 void spawnfunc_item_armor25() { spawnfunc_item_armor_large(); }
 void spawnfunc_item_health1() { spawnfunc_item_health_small(); }
 void spawnfunc_item_health25() { spawnfunc_item_health_medium(); }
@@ -1640,7 +1640,9 @@ void spawnfunc_item_jetpack(void)
 }
 
 // we no longer have the seeker
+#ifdef 0
 void spawnfunc_weapon_seeker()
 {
 	spawnfunc_weapon_fireball();
 }
+#endif

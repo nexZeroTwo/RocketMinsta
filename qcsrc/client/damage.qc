@@ -218,6 +218,46 @@ void Ent_DamageInfo(float isNew)
 				if(!issilent)
 					sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
 				break;
+			case WEP_SEEKER:
+				org2 = org + backoff * 6;
+				if(secondary)
+				{
+					pointparticles(particleeffectnum("flac_explode"), org2, '0 0 0', 1);
+					if (r<0.15)
+						sound (self, CHAN_PROJECTILE, "weapons/flacexp1.wav", 1, ATTN_NORM);
+					else if (r<0.7)
+						sound (self, CHAN_PROJECTILE, "weapons/flacexp2.wav", 1, ATTN_NORM);
+					else
+						sound (self, CHAN_PROJECTILE, "weapons/flacexp3.wav", 1, ATTN_NORM);
+				}
+				else
+				{
+					if(bounce)
+					{
+						pointparticles(particleeffectnum("hagar_explode"), org2, '0 0 0', 1);
+						if (r<0.15)
+							sound (self, CHAN_PROJECTILE, "weapons/tagexp1.wav", 1, ATTN_NORM);
+						else if (r<0.7)
+							sound (self, CHAN_PROJECTILE, "weapons/tagexp2.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_PROJECTILE, "weapons/tagexp3.wav", 1, ATTN_NORM);
+					}
+					else if(headshot)
+					{
+						sound (self, CHAN_PROJECTILE, "weapons/tag_impact.wav", 1, ATTN_NORM);
+					}
+					else
+					{
+						pointparticles(particleeffectnum("hagar_explode"), org2, '0 0 0', 1);
+						if (r<0.15)
+							sound (self, CHAN_PROJECTILE, "weapons/seekerexp1.wav", 1, ATTN_NORM);
+						else if (r<0.7)
+							sound (self, CHAN_PROJECTILE, "weapons/seekerexp2.wav", 1, ATTN_NORM);
+						else
+							sound (self, CHAN_PROJECTILE, "weapons/seekerexp3.wav", 1, ATTN_NORM);
+					}
+				}
+				break;
 			case WEP_HLAC:
 				org2 = org + backoff * 6;
 				pointparticles(particleeffectnum("laser_impact"), org2, backoff * 1000, 1);
@@ -281,4 +321,11 @@ void DamageInfo_Precache()
 	precache_sound("weapons/rocket_impact.wav");
 	precache_sound("weapons/fireball_impact.wav");
 	precache_sound("weapons/fireball_impact2.wav");
+	precache_sound("weapons/seekerexp1.wav");
+	precache_sound("weapons/seekerexp2.wav");
+	precache_sound("weapons/seekerexp3.wav");
+	precache_sound("weapons/tagexp1.wav");
+	precache_sound("weapons/tagexp2.wav");
+	precache_sound("weapons/tagexp3.wav");
+	precache_sound("weapons/tag_impact.wav");
 }

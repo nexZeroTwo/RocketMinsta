@@ -461,7 +461,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made a ^1TRIPLE SCORE\n");
 					} else {
 						bprint (a,"^7 made a ^1TRIPLE FRAG\n");
-						announce(attacker, "announcer/male/03kills.wav");
+						announce(attacker, "03kills.wav");
 					}
 				}
 				else if (attacker.killcount == 5)
@@ -470,7 +470,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 unleashes ^1SCORING RAGE\n");
 					} else {
 						bprint (a,"^7 unleashes ^1RAGE\n");
-						announce(attacker, "announcer/male/05kills.wav");
+						announce(attacker, "05kills.wav");
 					}
 				}
 				else if (attacker.killcount == 10)
@@ -479,7 +479,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made ^1TEN SCORES IN A ROW!\n");
 					} else {
 						bprint (a,"^7 starts the ^1MASSACRE!\n");
-						announce(attacker, "announcer/male/10kills.wav");
+						announce(attacker, "10kills.wav");
 					}
 				}
 				else if (attacker.killcount == 15)
@@ -488,7 +488,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made ^1FIFTEEN SCORES IN A ROW!\n");
 					} else {
 						bprint (a,"^7 executes ^1MAYHEM!\n");
-						announce(attacker, "announcer/male/15kills.wav");
+						announce(attacker, "15kills.wav");
 					}
 				}
 				else if (attacker.killcount == 20)
@@ -497,7 +497,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made ^1TWENTY SCORES IN A ROW!\n");
 					} else {
 						bprint (a,"^7 is a ^1BERSERKER!\n");
-						announce(attacker, "announcer/male/20kills.wav");
+						announce(attacker, "20kills.wav");
 					}
 				}
 				else if (attacker.killcount == 25)
@@ -506,7 +506,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made ^1TWENTY FIFE SCORES IN A ROW!\n");
 					} else {
 						bprint (a,"^7 inflicts ^1CARNAGE!\n");
-						announce(attacker, "announcer/male/25kills.wav");
+						announce(attacker, "25kills.wav");
 					}
 				}
 				else if (attacker.killcount == 30)
@@ -515,7 +515,16 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 						bprint (a,"^7 made ^1THIRTY SCORES IN A ROW!\n");
 					} else {
 						bprint (a,"^7 unleashes ^1ARMAGEDDON!\n");
-						announce(attacker, "announcer/male/30kills.wav");
+						announce(attacker, "30kills.wav");
+					}
+				}
+				else if (attacker.killcount == 50)
+				{
+					if(sv_gentle) {
+						bprint (a,"^7 made ^1FIFTY SCORES IN A ROW!\n");
+					} else {
+						bprint (a,"^7 unleashes ^1BOTLIKE!\n");
+						announce(attacker, "botlike.wav");
 					}
 				}
 			}
@@ -567,7 +576,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bprint ("^1",s, "^1 died\n");
 			GiveFrags(targ, targ, -1);
 			if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
-				announce(targ, "announcer/male/botlike.wav");
+				announce(targ, "botlike.wav");
 			}
 
 			if (targ.killcount > 2)
@@ -678,13 +687,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 							if(attacker.dmg_team > teamdamage0)
 								mirrordamage = cvar("g_mirrordamage") * (attacker.dmg_team - teamdamage0);
 							mirrorforce = cvar("g_mirrordamage") * vlen(force);
-							if(g_minstagib)
-							{
-								if(cvar("g_friendlyfire") == 0)
-									damage = 0;
-							}
-							else
-								damage = cvar("g_friendlyfire") * damage;
+							damage = cvar("g_friendlyfire") * damage;
 							// mirrordamage will be used LATER
 						}
 						else
@@ -976,9 +979,6 @@ vector NearestPointOnBox(entity box, vector org)
 
 .float actual_damage[WEP_COUNT]; //amount of damage done
 .float max_damage[WEP_COUNT]; //the maximum damage of the weapon
-
-FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(actual_damage);
-FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(max_damage);
 
 void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 {

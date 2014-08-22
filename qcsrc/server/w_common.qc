@@ -1,9 +1,6 @@
 .float bullets_hit[WEP_COUNT]; 		//for hitscan bullets hit
 .float bullets_fired[WEP_COUNT];	//for hitscan bullets fired
 
-FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(bullets_hit);
-FTEQCC_YOU_SUCK_THIS_IS_NOT_UNREFERENCED(bullets_fired);
-
 void W_GiveWeapon (entity e, float wep, string name)
 {
 	entity oldself;
@@ -213,9 +210,9 @@ void W_BallisticBullet_Hit (void)
 		if(self.dmg_edge != 0)
 		{
 			if(headshot)
-				announce(self.owner, "announcer/male/headshot.wav");
+				announce(self.owner, "headshot.wav");
 			if(yoda)
-				announce(self.owner, "announcer/male/awesome.wav");
+				announce(self.owner, "awesome.wav");
 		}
 
 		//calculate hits for ballistic weapons

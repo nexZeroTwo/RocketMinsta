@@ -47,6 +47,9 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_ROCKET:
 			trailparticles(self, particleeffectnum("TR_ROCKET"), from, to);
 			break;
+		case PROJECTILE_TAG:
+			trailparticles(self, particleeffectnum("TR_VORESPIKE"), from, to);
+			break;
 		case PROJECTILE_CRYLINK:
 			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
 			break;
@@ -70,6 +73,12 @@ void Projectile_DrawTrail(vector to)
 			break;
 		case PROJECTILE_PORTO_BLUE:
 			trailparticles(self, particleeffectnum("TR_WIZSPIKE"), from, to);
+			break;
+		case PROJECTILE_FLAC:
+			trailparticles(self, particleeffectnum("TR_VORESPIKE"), from, to);
+			break;
+		case PROJECTILE_SEEKER:
+			trailparticles(self, particleeffectnum("TR_ROCKET"), from, to);
 			break;
 		case PROJECTILE_HOOKBOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
@@ -289,6 +298,7 @@ void Ent_Projectile()
 		{
 			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
+			case PROJECTILE_TAG: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_CRYLINK: setmodel(self, "models/plasmatrail.mdl"); break;
@@ -298,6 +308,8 @@ void Ent_Projectile()
 			case PROJECTILE_GRENADE_BOUNCING: setmodel(self, "models/grenademodel.md3"); break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
+			case PROJECTILE_SEEKER: setmodel(self, "models/tagrocket.md3"); self.scale = 2; break;
+			case PROJECTILE_FLAC: setmodel(self, "models/hagarmissile.mdl"); self.scale = 0.4; break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
 			case PROJECTILE_PORTO_BLUE: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
 			case PROJECTILE_HOOKBOMB: setmodel(self, "models/grenademodel.md3"); break;
@@ -331,6 +343,11 @@ void Ent_Projectile()
 				self.mins = '-3 -3 -3';
 				self.maxs = '3 3 3';
 				break;
+			case PROJECTILE_TAG:
+				loopsound(self, CHAN_PROJECTILE, "weapons/tag_rocket_fly.wav", VOL_BASE, ATTN_NORM);
+				self.mins = '-2 -2 -2';
+				self.maxs = '2 2 2';
+				break;
 			case PROJECTILE_GRENADE:
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';
@@ -340,6 +357,10 @@ void Ent_Projectile()
 				self.maxs = '0 0 -3';
 				self.move_movetype = MOVETYPE_BOUNCE;
 				self.move_touch = SUB_Null;
+				break;
+			case PROJECTILE_SEEKER:
+				self.mins = '-2 -2 -2';
+				self.maxs = '2 2 2';
 				break;
 			case PROJECTILE_PORTO_RED:
 				self.colormod = '2 1 1';
@@ -411,6 +432,7 @@ void Projectile_Precache()
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
+	precache_model("models/tagrocket.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fireball_fly.wav");

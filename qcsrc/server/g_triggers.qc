@@ -448,6 +448,17 @@ entity trigger_hurt_last;
 entity trigger_hurt_first;
 void spawnfunc_trigger_hurt()
 {
+	/* NOFLYZONE: don't spawn when players have a grappling-hook or a jetpack.
+	  Used to control the depth of the floor in sky/space maps */
+	if (self.spawnflags & SPAWNFLAG_NOTOUCH )
+		if(cvar("g_grappling_hook") || cvar("g_jetpack") )
+		{
+			dprint("MAP: Skipping no-fly zone.\n");
+			return;
+		}
+		else
+			dprint("MAP: Spawning no-fly zone.\n");
+
 	EXACTTRIGGER_INIT;
 	self.touch = trigger_hurt_touch;
 	if (!self.dmg)

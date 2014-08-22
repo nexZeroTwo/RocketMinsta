@@ -161,7 +161,7 @@ float Portal_TeleportPlayer(entity teleporter, entity player)
 	{
 		// telefrag within 1 second of portal creation = amazing
 		if(time < teleporter.teleport_time + 1)
-			announce(player, "announcer/male/amazing.wav");
+			announce(player, "amazing.wav");
 	}
 
 	if not(teleporter.enemy)

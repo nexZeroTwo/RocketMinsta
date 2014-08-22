@@ -288,6 +288,7 @@ float isJoinAllowed();
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
 float sys_ticrate; // gets initialised in worlspawn, saves the value from cvar("sys_ticrate")
+float sv_lite; // used to gain a little extra speed, at the expense of some features like gibs.
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
@@ -327,12 +328,12 @@ float default_weapon_alpha;
 .float cvar_cl_playerdetailreduction;
 .float cvar_scr_centertime;
 .float cvar_cl_shownames;
-.string cvar_g_nexuizversion;
+.string cvar_sys_project_version;
 .string cvar_cl_weaponpriority;
 .string cvar_cl_weaponpriorities[10];
 #ifdef ALLOW_FORCEMODELS
 .float cvar_cl_forceplayermodels;
-.float cvar_cl_forceplayermodelsfromnexuiz;
+.float cvar_cl_forceplayermodelsfromgame;
 float sv_clforceplayermodels;
 #endif
 float sv_loddistance1;
@@ -342,7 +343,7 @@ float sv_loddistance2;
 .float version_nagtime;
 
 .float modelindex_lod0;
-.float modelindex_lod0_from_nexuiz;
+.float modelindex_lod0_from_game;
 .float skinindex;
 .float modelindex_lod1;
 .float modelindex_lod2;

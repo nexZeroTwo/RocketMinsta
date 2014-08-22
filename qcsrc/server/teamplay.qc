@@ -412,7 +412,7 @@ string GetClientVersionMessage() {
 		if(self.version < cvar("gameversion")) {
 			versionmsg = "^3Your client version is outdated.\n\n\n### YOU WON'T BE ABLE TO PLAY ON THIS SERVER ###\n\n\nPlease update!!!^8";
 		} else {
-			versionmsg = "^3This server is using an outdated Nexuiz version.\n\n\n ### THIS SERVER IS INCOMPATIBLE AND THUS YOU CANNOT JOIN ###.^8";
+			versionmsg = "^3This server is using an outdated ", cvar_string("sys_project_name")," version.\n\n\n ### THIS SERVER IS INCOMPATIBLE AND THUS YOU CANNOT JOIN ###.^8";
 		}
 	} else {
 		versionmsg = "^2client version and server version are compatible.^8";
@@ -511,7 +511,7 @@ void PrintWelcomeMessage(entity pl)
 	local string versionmessage;
 	versionmessage = GetClientVersionMessage();
 
-	s = strcat(s, NEWLINES, "This is Nexuiz ", cvar_string("g_nexuizversion"), "\n", versionmessage);
+	s = strcat(s, NEWLINES, "This is ", cvar_string("sys_project_name"), " ", cvar_string("sys_project_version"), "\n", versionmessage);
 	s = strcat(s, "^8\n\nmatch type is ^1", gamemode_name, "^8\n");
 
 	if(modifications != "")
@@ -1132,22 +1132,23 @@ void ShufflePlayerOutOfTeam (float source_team)
 	{
 		if(head.team == steam)
 		{
-			if(head.isbot)
-			{
-				if(head.totalfrags < lowest_bot_score)
+			if(!head.flagcarried) // Don't switch the flag carrier
+				if(head.isbot)
 				{
-					lowest_bot = head;
-					lowest_bot_score = head.totalfrags;
+					if(head.totalfrags < lowest_bot_score)
+					{
+						lowest_bot = head;
+						lowest_bot_score = head.totalfrags;
+					}
 				}
-			}
-			else
-			{
-				if(head.totalfrags < lowest_player_score)
+				else
 				{
-					lowest_player = head;
-					lowest_player_score = head.totalfrags;
+					if(head.totalfrags < lowest_player_score)
+					{
+						lowest_player = head;
+						lowest_player_score = head.totalfrags;
+						}
 				}
-			}
 		}
 	}
 
