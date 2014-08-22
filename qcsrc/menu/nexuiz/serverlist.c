@@ -26,8 +26,6 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	METHOD(NexuizServerList, setSortOrder, void(entity, float, float))
 	ATTRIB(NexuizServerList, filterShowEmpty, float, 1)
 	ATTRIB(NexuizServerList, filterShowFull, float, 1)
-	ATTRIB(NexuizServerList, filterShowOnlyRM, float, 0)
-	ATTRIB(NexuizServerList, filterShowOnlyEx, float, 0)
 	ATTRIB(NexuizServerList, filterString, string, string_null)
 	ATTRIB(NexuizServerList, controlledTextbox, entity, NULL)
 	ATTRIB(NexuizServerList, ipAddressBox, entity, NULL)
@@ -48,15 +46,12 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizServerList, currentSortField, float, -1)
 	ATTRIB(NexuizServerList, lastClickedServer, float, -1)
 	ATTRIB(NexuizServerList, lastClickedTime, float, 0)
-	ATTRIB(NexuizServerList, ip2c_localdb, float, -1)
 
 	ATTRIB(NexuizServerList, ipAddressBoxFocused, float, -1)
 ENDCLASS(NexuizServerList)
 entity makeNexuizServerList();
 void ServerList_Connect_Click(entity btn, entity me);
 void ServerList_ShowEmpty_Click(entity box, entity me);
-void ServerList_ShowOnlyRM_Click(entity box, entity me);
-void ServerList_ShowOnlyEx_Click(entity box, entity me);
 void ServerList_ShowFull_Click(entity box, entity me);
 void ServerList_Filter_Change(entity box, entity me);
 void ServerList_Favorite_Click(entity btn, entity me);
@@ -150,10 +145,6 @@ void configureNexuizServerListNexuizServerList(entity me)
 {
 	me.configureNexuizListBox(me);
 
-	if(me.ip2c_localdb > -1)
-		db_close(me.ip2c_localdb);
-	me.ip2c_localdb = db_create();
-	
 	ServerList_UpdateFieldIDs();
 
 	me.nItems = 0;
@@ -219,12 +210,6 @@ void refreshServerListNexuizServerList(entity me, float mode)
 			sethostcachemasknumber(++m, SLIST_FIELD_NUMHUMANS, 1, SLIST_TEST_GREATEREQUAL);
 		if(typestr != "")
 			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, strcat(typestr, ":"), SLIST_TEST_STARTSWITH);
-		if(me.filterShowOnlyRM && me.filterShowOnlyEx) // not the best way of doing this
-			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_", SLIST_TEST_CONTAINS);
-		else if(me.filterShowOnlyRM)
-			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_rm-", SLIST_TEST_CONTAINS);
-		else if(me.filterShowOnlyEx)
-			sethostcachemaskstring(++m, SLIST_FIELD_QCSTATUS, "_ex_", SLIST_TEST_CONTAINS);
 		if(modstr != "")
 		{
 			if(substring(modstr, 0, 1) == "!")
@@ -367,21 +352,21 @@ void ServerList_TypeSort_Click(entity btn, entity me)
 
 	for(i = 1; ; ++i) // 20 modes ought to be enough for anyone
 	{
-		t = gametype_ID_to_Name(i);
+		t = GametypeNameFromType(i);
 		if(i > 1)
-			if(t == gametype_ID_to_Name(0)) // it repeats (default case)
+			if(t == GametypeNameFromType(0)) // it repeats (default case)
 			{
 				// no type was found
 				// choose the first one
 				s = t;
 				break;
 			}
-		if(s == gametype_ID_to_Name(i))
+		if(s == GametypeNameFromType(i))
 		{
 			// the type was found
 			// choose the next one
-			s = gametype_ID_to_Name(i + 1);
-			if(s == gametype_ID_to_Name(0))
+			s = GametypeNameFromType(i + 1);
+			if(s == GametypeNameFromType(0))
 				s = "";
 			break;
 		}
@@ -413,24 +398,6 @@ void ServerList_Filter_Change(entity box, entity me)
 void ServerList_ShowEmpty_Click(entity box, entity me)
 {
 	box.setChecked(box, me.filterShowEmpty = !me.filterShowEmpty);
-	me.refreshServerList(me, 0);
-
-	me.ipAddressBox.setText(me.ipAddressBox, "");
-	me.ipAddressBox.cursorPos = 0;
-	me.ipAddressBoxFocused = -1;
-}
-void ServerList_ShowOnlyRM_Click(entity box, entity me)
-{
-	box.setChecked(box, me.filterShowOnlyRM = !me.filterShowOnlyRM);
-	me.refreshServerList(me, 0);
-
-	me.ipAddressBox.setText(me.ipAddressBox, "");
-	me.ipAddressBox.cursorPos = 0;
-	me.ipAddressBoxFocused = -1;
-}
-void ServerList_ShowOnlyEx_Click(entity box, entity me)
-{
-	box.setChecked(box, me.filterShowOnlyEx = !me.filterShowOnlyEx);
 	me.refreshServerList(me, 0);
 
 	me.ipAddressBox.setText(me.ipAddressBox, "");
@@ -546,14 +513,6 @@ void clickListBoxItemNexuizServerList(entity me, float i, vector where)
 	me.lastClickedServer = i;
 	me.lastClickedTime = time;
 }
-
-void ServerList_StoreCN(string ip, string cn, entity me)
-{
-    if(cn != "")
-        db_put(me.ip2c_localdb, ip, cn);
-}
-
-string(string s) strtolower = #480;
 void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float isSelected)
 {
 	// layout: Ping, Server name, Map name, NP, TP, MP
@@ -597,46 +556,13 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		theAlpha = theAlpha * (1 - SKINALPHA_SERVERLIST_FAVORITE) + SKINALPHA_SERVERLIST_FAVORITE;
 	}
 
-	local string cn;
-    if(cvar("sv_ip2country"))
-	{
-		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
-		ip = substring(ip, 0, strstrofs(ip, ":", 0));
-		cn = db_get(me.ip2c_localdb, ip);
-		if(cn == "")
-		{
-			db_put(me.ip2c_localdb, ip, "--");
-			IP2C_Lookup(ip, ServerList_StoreCN, 0, me);
-		}
-	}
-	else
-		cn = "--";
-
 	s = ftos(p);
 	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0);
-	
-	vector o, v;
-	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
-	o_x -= me.realFontSize_x / 1.5;
-	v = o;
-	o_x += me.realFontSize_x / 1.5;
-	local float scale = me.realFontSize_x / 11;
-	local vector picsize;
-	picsize = '16 11 0' * scale;
-
-	if(cn != "--")
-		draw_Picture_Unskinned(o, FlagIcon(strtolower(cn)), '1 1 0', '1 1 1', 1);
-	
-	o_x += picsize_x + me.realFontSize_x/2;
-	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);
+	draw_Text(me.realUpperMargin * eY + me.columnNameOrigin * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0);
 	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
-	
-	if(strstrofs(s, "_rm-", 0) >= 0)
-		draw_Text(v, "*", me.realFontSize, theColor, theAlpha, 0);
-		
 	p = strstrofs(s, ":", 0);
 	if(p >= 0)
 		s = substring(s, 0, p);

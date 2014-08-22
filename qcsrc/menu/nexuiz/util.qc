@@ -273,15 +273,10 @@ void() Item_Nex_ExtResponseSystem_CheckForResponse =
 
 // END OF EXTRESPONSE SYSTEM /////////////////////////////////////////////////
 
-float gamestat_previous;
-float gamestat;
-
 float preMenuInit()
 {
 	vector sz;
 	vector boxA, boxB;
-
-	gamestat_previous = -1;
 
 	MapInfo_Cache_Create();
 	MapInfo_Enumerate();
@@ -308,76 +303,10 @@ float preMenuInit()
 	return TRUE;
 }
 
-void Menu_ClearVars()
-{
-	registercvar("_voting_allowed", "0", 0);
-	cvar_set("_voting_allowed", "0");
-	
-	registercvar("_vote_commands", "", 0);
-	cvar_set("_vote_commands", "");
-	
-	registercvar("_rm_server", "", 0);
-	cvar_set("_rm_server", "0");
-	
-	// this is needed for compatibility with older RM servers
-	#define OPTAVAIL(o) localcmd("set _rm_optavail_", o, " 1\n");
-	OPTAVAIL("anonspec")
-	OPTAVAIL("showspec")
-	OPTAVAIL("teamlasers")
-	OPTAVAIL("shownames")
-	OPTAVAIL("showdamage")
-	OPTAVAIL("hidecountry")
-	#undef OPTAVAIL
-}
-
-void Event_Connect()
-{
-	Menu_ClearVars();
-	print("^5Connected to server\n");
-	localcmd("cmd menu_request\n");
-}
-
-void Event_Disconnect()
-{
-	Menu_ClearVars();
-	print("^1Disconnected from server\n");
-}
-
 string campaign_name_previous;
 float campaign_won_previous;
-
-float map_nextcheck;
-float map_crc;
-float map_crc_old;
-
 void postMenuDraw()
 {
-	gamestat = (gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
-	
-	if(gamestat != gamestat_previous)
-	{
-		if(gamestat)
-			Event_Connect();
-		else
-			Event_Disconnect();
-		
-		gamestat_previous = gamestat;
-	}
-	else if(gamestat)
-	{
-		if(time >= map_nextcheck)
-		{
-			map_crc = crc16(FALSE, cvar_string("cl_worldbasename"));
-			
-			if(map_crc != map_crc_old)
-			{
-				Event_Connect();
-				map_crc_old = map_crc;
-			}
-			
-			map_nextcheck = time + 2;
-		}
-	}
 }
 void preMenuDraw()
 {

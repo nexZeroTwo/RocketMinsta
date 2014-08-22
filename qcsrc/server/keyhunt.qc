@@ -97,28 +97,11 @@ void kh_Controller_Think()  // called a lot
 			else
 				s = kh_Controller_Waitmsg;
 
-			float _bigprint;
-			_bigprint = 1;
-			if(substring(s, 0, 1) == "\x05")
-			{
-				s = substring(s, 1, strlen(s));
-				_bigprint = 0;
-			}
-
-			tokenizebyseparator(s, "\n");
-
 			//dprint(s, "\n");
 
 			FOR_EACH_PLAYER(e)
 				if(clienttype(e) == CLIENTTYPE_REAL)
-					//centerprint_atprio(e, CENTERPRIO_SPAM, s);
-					if(_bigprint)
-					{
-						bigprint_clear_spec(e);
-						bigprint_spec(e, argv(0), argv(1), 1);
-					}
-					else
-						centerprint_atprio(e, CENTERPRIO_SPAM, s);
+					centerprint_atprio(e, CENTERPRIO_SPAM, s);
 		}
 		self.cnt -= 1;
 	}
@@ -211,10 +194,6 @@ void kh_Key_Attach(entity key)  // runs when a player picks up a key and several
 
 void kh_Key_Detach(entity key) // runs every time a key is dropped or lost. Runs several times times when all the keys are captured
 {
-// maybe one day I'll figure out what's wrong with the scorekeeper
-// until then, this will have to stay commented out
-//	key.owner.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
-//	key.owner.scorekeeper.(scores [SP_CARRYING]) &~= TeamMask (key.owner.team);
 #ifdef KH_PLAYER_USE_ATTACHMENT
 	entity first;
 	first = key.owner.kh_next;
@@ -257,7 +236,7 @@ void kh_Key_Detach(entity key) // runs every time a key is dropped or lost. Runs
 void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is picked up or assigned. Runs prior to kh_key_attach
 {
 	entity k;
-	float ownerteam0, ownerteam1;
+	float ownerteam0, ownerteam;
 	if(key.owner == player)
 		return;
 
@@ -314,8 +293,14 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			WaypointSprite_AttachCarrier("", player);
 			player.waypointsprite_attachedforcarrier.waypointsprite_visible_for_player = kh_KeyCarrier_waypointsprite_visible_for_player;
 			WaypointSprite_UpdateRule(player.waypointsprite_attachedforcarrier, player.team, SPRITERULE_TEAMPLAY);
-            WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "Key Carrier", "Key Carrier", "Key Carrier");
-            WaypointSprite_UpdateTextColors(player.waypointsprite_attachedforcarrier, TeamColor(player.team), '0 1 0', TeamColor(player.team));
+			if(player.team == COLOR_TEAM1)
+				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-red", "keycarrier-friend", "keycarrier-red");
+			else if(player.team == COLOR_TEAM2)
+				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-blue", "keycarrier-friend", "keycarrier-blue");
+			else if(player.team == COLOR_TEAM3)
+				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-yellow", "keycarrier-friend", "keycarrier-yellow");
+			else if(player.team == COLOR_TEAM4)
+				WaypointSprite_UpdateSprites(player.waypointsprite_attachedforcarrier, "keycarrier-pink", "keycarrier-friend", "keycarrier-pink");
 			WaypointSprite_UpdateTeamRadar(player.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, colormapPaletteColor(player.team - 1, 0));
 			if(!kh_no_radar_circles)
 				WaypointSprite_Ping(player.waypointsprite_attachedforcarrier);
@@ -327,10 +312,10 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 
 	key.pusher = world;
 
-	ownerteam1 = kh_Key_AllOwnedByWhichTeam();
-	if(ownerteam1 != ownerteam0)
+	ownerteam = kh_Key_AllOwnedByWhichTeam();
+	if(ownerteam != ownerteam0)
 	{
-		if(ownerteam1 != -1)
+		if(ownerteam != -1)
 		{
 			kh_interferemsg_time = time + 0.2;
 			kh_interferemsg_team = player.team;
@@ -338,10 +323,8 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			// audit all key carrier sprites, update them to RUN HERE
 			FOR_EACH_KH_KEY(k)
 			{
-				if(k.owner) {
-					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "RUN HERE!", k.owner.waypointsprite_attachedforcarrier.model3);
-                    WaypointSprite_UpdateTextColors(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.clr1, '0.2 1 1', k.owner.waypointsprite_attachedforcarrier.clr3);
-                }
+				if(k.owner)
+					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "keycarrier-finish", k.owner.waypointsprite_attachedforcarrier.model3);
 			}
 		}
 		else
@@ -351,10 +334,8 @@ void kh_Key_AssignTo(entity key, entity player)  // runs every time a key is pic
 			// audit all key carrier sprites, update them to RUN HERE
 			FOR_EACH_KH_KEY(k)
 			{
-				if(k.owner) {
-					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "RUN HERE!", k.owner.waypointsprite_attachedforcarrier.model3);
-                    WaypointSprite_UpdateTextColors(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.clr1, '0.2 1 1', k.owner.waypointsprite_attachedforcarrier.clr3);
-                }
+				if(k.owner)
+					WaypointSprite_UpdateSprites(k.owner.waypointsprite_attachedforcarrier, k.owner.waypointsprite_attachedforcarrier.model1, "keycarrier-friend", k.owner.waypointsprite_attachedforcarrier.model3);
 			}
 		}
 	}
@@ -424,8 +405,7 @@ void kh_Key_Spawn(entity initial_owner, float angle, float i)  // runs every tim
 
 	centerprint(initial_owner, strcat("You are starting with the ", key.netname, "\n"));  // message to player at start of round
 
-	WaypointSprite_Spawn("DROPPED KEY", 0, 0, key, '0 0 1' * KH_KEY_WP_ZSHIFT, world, key.team, key, waypointsprite_attachedforcarrier, FALSE);
-    WaypointSprite_UpdateTextColors(key.waypointsprite_attachedforcarrier, '0 1 1', '0 0 0', '0 0 0');
+	WaypointSprite_Spawn("key-dropped", 0, 0, key, '0 0 1' * KH_KEY_WP_ZSHIFT, world, key.team, key, waypointsprite_attachedforcarrier, FALSE);
 	key.waypointsprite_attachedforcarrier.waypointsprite_visible_for_player = kh_Key_waypointsprite_visible_for_player;
 	WaypointSprite_UpdateTeamRadar(key.waypointsprite_attachedforcarrier, RADARICON_FLAG, '0 1 1');
 
@@ -492,10 +472,6 @@ void kh_Key_Collect(entity key, entity player)  //a player picks up a dropped ke
 {
 	sound(player, CHAN_AUTO, kh_sound_collect, VOL_BASE, ATTN_NORM);
 
-// this too
-//	player.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
-//	player.scorekeeper.(scores [SP_CARRYING]) |= TeamMask (player.team);
-
 	if(key.kh_dropperteam != player.team)
 	{
 		kh_Scores_Event(player, key, "collect", cvar("g_balance_keyhunt_score_collect"), 0);
@@ -503,8 +479,6 @@ void kh_Key_Collect(entity key, entity player)  //a player picks up a dropped ke
 	}
 	key.kh_dropperteam = 0;
 	bprint(player.netname, "^7 picked up the ", key.netname, "\n");
-	centerprint_spec(player, strcat("You got the ", key.netname, "^7!"));
-	hudflash_teamcolor_default_spec(player);
 
 	kh_Key_AssignTo(key, player); // this also updates .kh_state
 }
@@ -547,8 +521,6 @@ void kh_Key_Touch()  // runs many, many times when a key has been dropped and ca
 		return;
 	if(other.deadflag != DEAD_NO)
 		return;
-    if(g_freeze && other.frozen)
-        return;
 	if(other == self.enemy)
 		if(time < self.kh_droptime + cvar("g_balance_keyhunt_delay_collect"))
 			return;  // you just dropped it!
@@ -630,11 +602,11 @@ void kh_Key_Think()  // runs all the time
 		{
 			if(head.team == kh_interferemsg_team)
 				if(head.kh_next)
-					bigprint_spec(head, "^2All keys are in YOUR team's hands!", "Meet the other key carriers ^1NOW^7!", 2);
+					centerprint(head, "All keys are in your team's hands!\n\nMeet the other key carriers ^1NOW^7!");
 				else
-					bigprint_spec(head, "^2All keys are in YOUR team's hands!", "Help the key carriers to meet!", 2);
+					centerprint(head, "All keys are in your team's hands!\n\nHelp the key carriers to meet!");
 			else
-				bigprint_spec(head, strcat("^xFB0All keys are in the ", ColoredTeamName(kh_interferemsg_team), "^xFB0's hands!"), "Interfere ^1NOW^7!", 2);
+				centerprint(head, strcat("All keys are in the ", ColoredTeamName(kh_interferemsg_team), "^7's hands!\n\nInterfere ^1NOW^7!"));
 		}
 	}
 
@@ -657,60 +629,19 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 		float f;
 		f = DistributeEvenly_Get(1);
 		kh_Scores_Event(key.owner, key, "capture", f, 0);
-		//PlayerTeamScore_Add(key.owner, SP_KH_CAPS, ST_KH_CAPS, 1);
-		PlayerScore_Add(key.owner, SP_KH_CAPS, 1);
-		
-		if(key.owner.health < 100)
-			key.owner.health = 100;
+		PlayerTeamScore_Add(key.owner, SP_KH_CAPS, ST_KH_CAPS, 1);
 	}
-	TeamScore_AddToTeam(teem, ST_KH_CAPS, 1);
 
 	first = TRUE;
-	
-	local string names;
-	
 	FOR_EACH_KH_KEY(key)
 		if(key.owner.kh_next == key)
 		{
 			if(!first)
 				bprint("^7, ");
 			bprint(key.owner.netname);
-			
-			if(first)
-				names = key.owner.netname;
-			else
-				names = strcat(names, "^7, ", key.owner.netname);
-			
 			first = FALSE;
 		}
 	bprint("^7 captured the keys for the ", ColoredTeamName(teem), "\n");
-
-	local entity e;
-	local string bigstring;
-	switch(teem)
-	{
-		case COLOR_TEAM1:
-			bigstring = "^1Red ^7Scores!";
-			break;
-		case COLOR_TEAM2:
-			bigstring = "^4Blue ^7Scores!";
-			break;
-		case COLOR_TEAM3:
-			bigstring = "^3Yellow ^7Scores!";
-			break;
-		case COLOR_TEAM4:
-			bigstring = "^6Pink ^7Scores!";
-			break;
-	}
-	FOR_EACH_REALCLIENT(e) 
-	{	
-		bigprint(e, bigstring, 
-			strcat("All keys captured by ", names), 5
-		);
-		
-		if(e.team == teem)
-			hudflash_teamcolor_default_spec(e);
-	}
 
 	first = TRUE;
 	midpoint = '0 0 0';
@@ -755,17 +686,15 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 
 	players = keys = 0;
 
-	if(attacker && attacker.classname == "player" && attacker != lostkey.kh_previous_owner)
+	if(attacker)
 	{
 		if(lostkey.kh_previous_owner)
 			kh_Scores_Event(lostkey.kh_previous_owner, world, "pushed", 0, -cvar("g_balance_keyhunt_score_push"));
 			// don't actually GIVE him the -nn points, just log
 		kh_Scores_Event(attacker, world, "push", cvar("g_balance_keyhunt_score_push"), 0);
 		PlayerScore_Add(attacker, SP_KH_PUSHES, 1);
-		//centerprint_spec(attacker, "Your push is the best!");
+		centerprint(attacker, "Your push is the best!");
 		bprint("The ", ColoredTeamName(teem), "^7 could not take care of the ", lostkey.netname, "^7 when ", attacker.netname, "^7 came\n");
-        kh_Key_Collect(lostkey, attacker);
-        Freeze_UnfreezePlayer(attacker);
 	}
 	else
 	{
@@ -826,30 +755,11 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		}
 
 		bprint("The ", ColoredTeamName(teem), "^7 could not take care of the ", lostkey.netname, "\n");
-		//Give this key to a random player, since we do not want to end the round each time this happens
-		
-		players = 0;
-		entity my_player;
-		FOR_EACH_PLAYER(player)
-			if(player.deadflag == DEAD_NO) if not(g_freeze && player.frozen)
-				if(player.team == lostkey.team)
-				{
-					++players;
-					if(random() * players <= 1)
-						my_player = player;
-				}
-		if(players)
-			kh_Key_Collect(lostkey, my_player);
-		else //shit happens
-		{
-			bprint("^2No players capable of carrying the ", lostkey.netname, "^2 left on the ", ColoredTeamName(lostkey.team), "^2! Restarting the round.\n");
-			kh_FinishRound();
-		}
 	}
 	play2all(kh_sound_destroy);
 	te_tarexplosion(lostkey.origin);
 
-	//kh_FinishRound();
+	kh_FinishRound();
 }
 
 void kh_FinishRound()  // runs when a team captures the keys
@@ -863,8 +773,7 @@ void kh_FinishRound()  // runs when a team captures the keys
 		kh_Key_Remove(key);
 	kh_no_radar_circles = FALSE;
 
-	kh_controller.nextthink = time + 5;
-	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Spawning keys in ", kh_StartRound);
+	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Round starts in ", kh_StartRound);
 }
 
 string kh_CheckEnoughPlayers()  // checks enough player are present, runs after every completed round
@@ -881,7 +790,7 @@ string kh_CheckEnoughPlayers()  // checks enough player are present, runs after 
 		players = 0;
 		FOR_EACH_PLAYER(player)
 			if(player.deadflag == DEAD_NO)
-				//if(!player.BUTTON_CHAT) //This is stupid
+				if(!player.BUTTON_CHAT)
 					if(player.team == teem)
 						++players;
 		if(players == 0)
@@ -906,9 +815,9 @@ void kh_WaitForPlayers()  // delay start of the round until enough players are p
 
 	teams_missing = kh_CheckEnoughPlayers();
 	if(teams_missing == "")
-		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Spawning keys in ", kh_StartRound);
+		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round"), "Round starts in ", kh_StartRound);
 	else
-		kh_Controller_SetThink(1, strcat("Not enough players\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
+		kh_Controller_SetThink(1, strcat("Waiting for players to join...\n\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
 }
 
 void kh_StartRound()  // runs at the start of each round
@@ -926,26 +835,13 @@ void kh_StartRound()  // runs at the start of each round
 	teams_missing = kh_CheckEnoughPlayers();
 	if(teams_missing != "")
 	{
-		kh_Controller_SetThink(1, strcat("Not enough players\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
+		kh_Controller_SetThink(1, strcat("Waiting for players to join...\n\nNeed active players for: ", teams_missing), kh_WaitForPlayers);
 		return;
 	}
 
 	FOR_EACH_PLAYER(player)
-	{
 		if(clienttype(player) == CLIENTTYPE_REAL)
 			centerprint_expire(player, CENTERPRIO_SPAM);
-			
-		/*local entity oldself;
-		oldself = self;
-		self = player;
-		PutClientInServer();
-		self = oldself;*/
-		
-		bigprint_spec(player, "^2Keys spawned!", "", 1);
-	}
-
-    if(g_freeze)
-        Freeze_UnfreezeAll();
 
 	for(i = 0; i < kh_teams; ++i)
 	{
@@ -954,7 +850,7 @@ void kh_StartRound()  // runs at the start of each round
 		entity my_player;
 		FOR_EACH_PLAYER(player)
 			if(player.deadflag == DEAD_NO)
-				//if(!player.BUTTON_CHAT)
+				if(!player.BUTTON_CHAT)
 					if(player.team == teem)
 					{
 						++players;
@@ -965,8 +861,7 @@ void kh_StartRound()  // runs at the start of each round
 	}
 
 	kh_tracking_enabled = FALSE;
-	//kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_tracking"), "\x05Scanning frequency range...", kh_EnableTrackingDevice);
-	kh_EnableTrackingDevice();
+	kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_tracking"), "Scanning frequency range...", kh_EnableTrackingDevice);
 }
 
 void kh_EnableTrackingDevice()  // runs after each round
@@ -1020,7 +915,6 @@ float kh_HandleFrags(entity attacker, entity targ, float f)  // adds to the play
 		{
 			kh_Scores_Event(attacker, targ.kh_next, "carrierfrag", cvar("g_balance_keyhunt_score_carrierfrag")-1, 0);
 			PlayerScore_Add(attacker, SP_KH_KCKILLS, 1);
-			hudflash_teamcolor_default_spec(attacker);
 			// the frag gets added later
 		}
 	}
@@ -1070,7 +964,7 @@ void kh_init()  // sets up th KH environment
 	kh_controller.modelindex = 0;
 
 	addstat(STAT_KH_KEYS, AS_INT, kh_state);
-    
+
 	ScoreRules_kh(kh_teams);
 }
 

@@ -160,7 +160,7 @@ float GameCommand_Generic(string command)
 	float argc;
 	float i, j, f, n;
 	vector rgb;
-	string s, s2, s3, c;
+	string s, s2, c;
 	argc = tokenize_console(command);
 	if(argv(0) == "help")
 	{
@@ -198,11 +198,7 @@ float GameCommand_Generic(string command)
 		print("  maplist maplist\n");
 		print("  maplist lsmaps\n");
 		print("  addtolist variable addedvalue\n");
-		print("  delfromlist variable removedvalue\n");
-		print("  delfromlist_startswith variable removedvalue\n");
 		print("  records\n");
-        print("  crc16 string\n");
-		IP2C_GameCommand("help");
 		return TRUE;
 	}
 	
@@ -243,7 +239,7 @@ float GameCommand_Generic(string command)
 		else if(argv(1) == "cleanup")
 		{
 			MapInfo_Enumerate();
-			MapInfo_FilterGametype(gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
@@ -311,7 +307,7 @@ float GameCommand_Generic(string command)
 	else if(argc >= 3 && crc16(0, argv(0)) == 3826 && crc16(0, strcat(argv(0), argv(0), argv(0))) == 55970)
 	{
 		// test case for terrencehill's color codes
-		s = "I AM A HUGE FAGGOT PLEASE RAPE MY FACE"; //strdecolorize(substring(command, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
+		s = strdecolorize(substring(command, argv_start_index(2), argv_end_index(-1) - argv_start_index(2)));
 		s2 = "";
 		
 		n = strlen(s);
@@ -806,43 +802,8 @@ float GameCommand_Generic(string command)
 			}
 		}
 		return TRUE;
-	} else if (argv(0) == "delfromlist") {
-        if(argc >= 2)
-        {
-            s = argv(1);
-            s2 = argv(2);
-
-            if(cvar_string(s) == "")
-                return TRUE;
-
-            n = tokenizebyseparator(cvar_string(s), " ");
-
-            for(i = 0; i < n; ++i)
-                if(argv(i) != s2)
-                    s3 = strcat(s3, " ", argv(i));
-
-            cvar_set(s, substring(s3, 1, strlen(s3) - 1));
-        }
-        return TRUE;
-	} else if (argv(0) == "delfromlist_startswith") {
-        if(argc >= 2)
-        {
-            s = argv(1);
-            s2 = argv(2);
-
-            if(cvar_string(s) == "")
-                return TRUE;
-
-            n = tokenizebyseparator(cvar_string(s), " ");
-
-            for(i = 0; i < n; ++i)
-                if(substring(argv(i), 0, strlen(s2)) != s2)
-                    s3 = strcat(s3, " ", argv(i));
-
-            cvar_set(s, substring(s3, 1, strlen(s3) - 1));
-        }
-        return TRUE;
-    } else if(argv(0) == "records") {
+	}
+	else if(argv(0) == "records") {
 		print(records_reply);
 		return TRUE;
 #ifdef MENUQC
@@ -856,11 +817,7 @@ float GameCommand_Generic(string command)
 		}
 		return TRUE;
 #endif
-    } else if(argv(0) == "crc16") {
-        s = substring(command, argv_start_index(1), strlen(command));
-        print(s, ": ^5", ftos(crc16(FALSE, s)), "\n");
-        return TRUE;
-	} else return IP2C_GameCommand(command);
+	}
 
 	return FALSE;
 }

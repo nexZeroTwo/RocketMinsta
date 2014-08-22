@@ -28,21 +28,11 @@ void fillNexuizServerListTab(entity me)
 		me.TD(me, 1, 0.5, e = makeNexuizTextLabel(0, "Filter:"));
 		me.TD(me, 1, 0.5, btn = makeNexuizButton("Clear", '0 0 0'));
 			btn.onClick = InputBox_Clear_Click;
-		me.TD(me, 1, me.columns - 3.1, e = makeNexuizInputBox(0, string_null));
+		me.TD(me, 1, me.columns - 2.5, e = makeNexuizInputBox(0, string_null));
 			e.onChange = ServerList_Filter_Change;
 			e.onChangeEntity = slist;
 			btn.onClickEntity = e;
 			slist.controlledTextbox = e;
-		/*
-		me.TD(me, 1, 0.35, e = makeNexuizCheckBox(0, "menu_slist_showonlyex", "Ex"));
-			slist.filterShowEmpty = e.checked;
-			e.onClickEntity = slist;
-			e.onClick = ServerList_ShowOnlyEx_Click;
-		*/
-		me.TD(me, 1, 0.6, e = makeNexuizCheckBox(0, "menu_slist_showonlyrm", "Only RM"));
-			slist.filterShowEmpty = e.checked;
-			e.onClickEntity = slist;
-			e.onClick = ServerList_ShowOnlyRM_Click;
 		me.TD(me, 1, 0.5, e = makeNexuizCheckBox(0, "menu_slist_showempty", "Empty"));
 			slist.filterShowEmpty = e.checked;
 			e.onClickEntity = slist;
@@ -77,8 +67,8 @@ void fillNexuizServerListTab(entity me)
 			e.onClickEntity = slist;
 			slist.infoButton = e;
 	me.TR(me);
-		//me.TD(me, 1, 2, e = makeNexuizModButton("Multiplayer_Join"));
-		me.TD(me, 1, me.columns, e = makeNexuizButton("Join!", '0 0 0'));
+		me.TD(me, 1, 2, e = makeNexuizModButton("Multiplayer_Join"));
+		me.TD(me, 1, me.columns - 2, e = makeNexuizButton("Join!", '0 0 0'));
 			e.onClick = ServerList_Connect_Click;
 			e.onClickEntity = slist;
 			slist.connectButton = e;

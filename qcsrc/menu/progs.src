@@ -1,21 +1,17 @@
 ../../menu.dat
 
 config.qh
-../common/rm_auto.qh
 ../common/util-pre.qh
 msys.qh
 mbuiltin.qh
 ../common/util.qh
+
 oo/base.h
 
 ../common/constants.qh
 ../common/mapinfo.qh
 ../common/campaign_common.qh
 ../common/items.qh
-../common/ip2c.qh
-../common/gametype.qh
-../common/nadgets.qh
-../common/dprm.qh
 
 gamecommand.qh
 menu.qh
@@ -31,7 +27,6 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
-../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
@@ -39,12 +34,7 @@ menu.qc
 draw.qc
 nexuiz/util.qc
 
-../common/dprm.qc
 ../common/campaign_file.qc
 ../common/campaign_setup.qc
 ../common/mapinfo.qc
 ../common/items.qc
-../common/ip2c.qc
-../common/gametype.qc            
-../common/nadgets.qc
-

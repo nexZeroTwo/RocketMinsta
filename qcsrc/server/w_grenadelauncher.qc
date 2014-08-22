@@ -58,7 +58,6 @@ void W_Grenade_Touch2 (void)
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce5.wav", VOL_BASE, ATTN_NORM);
 		else
 			spamsound (self, CHAN_PROJECTILE, "weapons/grenade_bounce6.wav", VOL_BASE, ATTN_NORM);
-		
 		self.projectiledeathtype |= HITTYPE_BOUNCE;
 	}
 }
@@ -95,7 +94,6 @@ void W_Grenade_Attack (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(gren)
 
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_primary_lifetime");
 	gren.think = adaptor_think2use;
@@ -131,7 +129,6 @@ void W_Grenade_Attack2 (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER | HITTYPE_SECONDARY;
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
-    PROJECTILE_FIX(gren)
 
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");
 	gren.think = adaptor_think2use;

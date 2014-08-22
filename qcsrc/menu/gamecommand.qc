@@ -57,7 +57,6 @@ void GameCommand(string theCommand)
 	if(argv(0) == "directmenu") if(argc == 2)
 	{
 		// switch to a menu item
-		if not(substring(cvar_string("g_nexuizversion"), 0, strlen("2.5.1")) == "2.5.1")
 		if(!isdemo()) // don't allow this command in demos
 			m_goto(argv(1));
 		return;
@@ -73,15 +72,6 @@ void GameCommand(string theCommand)
 	{
 		_dumptree_space = "";
 		depthfirst(main, parent, firstChild, nextSibling, _dumptree_open, _dumptree_close, NULL);
-		return;
-	}
-
-	if(argv(0) == "update_rmvars")
-	{
-		local entity v;
-		for(v = world; (v = findfloat(v, RMUpdatable, TRUE)); )
-			if(v.RMUpdate)
-				v.RMUpdate(v);
 		return;
 	}
 
@@ -124,6 +114,5 @@ void GameCommand(string theCommand)
 	}
 #endif
 
-
-	print("Invalid theCommand '", theCommand, "'. For a list of supported theCommands, try menu_cmd help.\n");
+	print("Invalid theCommand. For a list of supported theCommands, try menu_cmd help.\n");
 }

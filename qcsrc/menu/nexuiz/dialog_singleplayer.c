@@ -41,7 +41,7 @@ void InstantAction_LoadMap(entity btn, entity dummy)
 		{
 			fclose(fh);
 			localcmd("\nmenu_loadmap_prepare\n");
-			gametype_SetMenu(GAME_DEATHMATCH);
+			MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
 			MapInfo_LoadMap(argv(1));
 			cvar_set("lastlevel", "1");
 			return;
@@ -53,7 +53,7 @@ void InstantAction_LoadMap(entity btn, entity dummy)
 void fillNexuizSingleplayerDialog(entity me)
 {
 	entity e, btnPrev, btnNext, lblTitle;
-    
+
 	me.TR(me);
 		me.TDempty(me, (me.columns - 3) / 2);
 		me.TD(me, 2, 3, e = makeNexuizBigButton("Instant action! (random map with bots)", '0 0 0'));

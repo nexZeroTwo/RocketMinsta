@@ -544,17 +544,12 @@ float w_rlauncher(float req)
 		w_deathtypestring = "exploded";
 	else if (req == WR_KILLMESSAGE)
 	{
-		if(!g_minstagib)
-		{
-			if(w_deathtype & HITTYPE_BOUNCE) // (remote detonation)
-				w_deathtypestring = "got too close to #'s rocket";
-			else if(w_deathtype & HITTYPE_SPLASH)
-				w_deathtypestring = "almost dodged #'s rocket";
-			else
-				w_deathtypestring = "ate #'s rocket";
-		}
+		if(w_deathtype & HITTYPE_BOUNCE) // (remote detonation)
+			w_deathtypestring = "got too close to #'s rocket";
+		else if(w_deathtype & HITTYPE_SPLASH)
+			w_deathtypestring = "almost dodged #'s rocket";
 		else
-			w_deathtypestring = "has been blown up by #";
+			w_deathtypestring = "ate #'s rocket";
 	}
 	else if (req == WR_RESETPLAYER)
 	{

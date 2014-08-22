@@ -8,13 +8,8 @@ void restartAnnouncer_Think() {
 	countdown = getstatf(STAT_GAMESTARTTIME) - time;
 	countdown_rounded = floor(0.5 + countdown);
 	if(countdown <= 0) {
-		//if (!spectatee_status) //do cprint only for players
-		//	centerprint("\x01^1Begin!");
-		
-		//gamestart_status = -1;
-		//gamestart_fadetime = time + 1;
-		
-		bigprint("^xFB0Begin!", "It's time to kick some ass!", 1);
+		if (!spectatee_status) //do cprint only for players
+			centerprint("^1Begin!");
 
 		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
 		//reset maptime announcers now as well
@@ -24,17 +19,8 @@ void restartAnnouncer_Think() {
 		return;
 	}
 	else {
-		//if (!spectatee_status) //do cprint only for players
-		//{
-		//	//centerprint(strcat("\x01^1Game starts in ", ftos(countdown_rounded), " seconds"));
-		//	gamestart_status = countdown_rounded;
-		//}
-
-		//gamestart_status = countdown_rounded;
-		//gamestart_fadetime = time + 0.5;
-		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
-		bigprint(" ", "", 1);
-		bigprint(strcat(strcat(gametype_ID_to_LongName(gametype)), " starts in: ", ftos(countdown_rounded)), "", 1);
+		if (!spectatee_status) //do cprint only for players
+			centerprint(strcat("^1Game starts in ", ftos(countdown_rounded), " seconds"));
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
@@ -214,13 +200,6 @@ void CSQC_CheckEngine()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
-	sbar_rmbigfont = FONT_USER+4;
-	
-	#ifdef RM_SUPPORT_MADOKA
-	sbar_madokafont = FONT_USER+3;
-	#else
-	sbar_madokafont = FONT_USER+2;
-	#endif
 }
 
 vector Sbar_GetFontsize(string cvarname)
@@ -237,7 +216,6 @@ vector Sbar_GetFontsize(string cvarname)
 
 float Sbar_GetWidth(float teamcolumnwidth)
 {
-	#ifdef WE_DONT_NEED_TO_GO_WIDER
 	float f;
 	f = cvar("sbar_width");
 	if(f == 0)
@@ -247,9 +225,6 @@ float Sbar_GetWidth(float teamcolumnwidth)
 	if(f > vid_conwidth - 2 * teamcolumnwidth)
 		f = vid_conwidth - 2 * teamcolumnwidth;
 	return f;
-	#else
-	return vid_conwidth - 2 * teamcolumnwidth;
-	#endif
 }
 
 float PreviewExists(string name)
@@ -367,7 +342,7 @@ void drawborderlines(float thickness, vector pos, vector dim, vector color, floa
 	drawfill(pos + (dim_y + thickness) * '0 1 0', line_dim, color, alpha, drawflag);
 }
 
-void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag, vector src_pos)
+void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color, float alpha, float drawflag)
 {
 	vector current_pos, end_pos, new_size, ratio;
 	end_pos = pos + area;
@@ -382,8 +357,7 @@ void drawpic_tiled(vector pos, string pic, vector sz, vector area, vector color,
 			new_size_y = min(sz_y, end_pos_y - current_pos_y);
 			ratio_x = new_size_x / sz_x;
 			ratio_y = new_size_y / sz_y;
-			drawsubpic(current_pos, new_size, pic, src_pos, ratio,
-			           color, alpha, drawflag);
+			drawsubpic(current_pos, new_size, pic, '0 0 0', ratio, color, alpha, drawflag);
 			current_pos_x += sz_x;
 		}
 		current_pos_y += sz_y;
@@ -420,86 +394,4 @@ void drawcolorcodedstring_expanding(vector position, string text, vector scale, 
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
 	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
-}
-
-void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
-
-void drawpic_rotated(vector position, string pic, vector sz, vector rgb, float angle, float alpha, float flag) {
-	drawrotpic(position + sz * 0.5, angle, pic, sz, sz * 0.5, rgb, alpha, flag);
-}
-
-void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, float angle, vector hotspot, float alpha, float flag) {
-	drawrotpic(position + hotspot, angle, pic, sz, hotspot, rgb, alpha, flag);
-}
-
-void loadfont(string slot, string font)
-{
-	/*if(cvar("rm_dontmesswithfonts"))
-	{
-		print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
-		return;
-	}*/
-	
-	localcmd("loadfont ", slot, " gfx/", font, "\n");
-}
-
-void URI_Get_Callback(float id, float status, string data)
-{
-	if(id == URI_GET_IP2C)
-	{
-		IP2C_URI_Get_Callback(id, status, data);
-		return;
-	}
-}
-
-float stringwidth_svn(string text, float handleColors, vector fontSize);
-#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth_svn(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
-
-// drawstring wrapper to draw a string as large as possible with preserved aspect ratio into a box
-void drawstring_aspect(vector pos, string text, vector sz, vector color, float alpha, float drawflag) {
-	SET_POS_AND_SZ_Y_ASPECT(FALSE)
-	drawstring(pos, text, '1 1 0' * sz_y, color, alpha, drawflag);
-}
-
-// drawstring wrapper to draw a colorcodedstring as large as possible with preserved aspect ratio into a box
-void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha, float drawflag) {
-	SET_POS_AND_SZ_Y_ASPECT(TRUE)
-	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
-}
-
-vector healthcolor(float x) {
-    vector c;
-    c_z = 0;
-    
-    x = 200 * (x / sv_nicehealth);
-    
-    if(x > 600) {
-        c_x = 0;
-        c_y = 1;
-        c_z = 1;
-    } else if(x > 200) {
-        c_x = 0;
-        c_y = 1;
-        c_z = (x-200)*0.0025;
-    } else if(x > 150) {
-        c_x = 0.4 - (x-150)*0.02 * 0.4;
-        c_y = 0.9 + (x-150)*0.02 * 0.1;
-    } else if(x > 100) {
-        c_x = 1 - (x-100)*0.02 * 0.6;
-        c_y = 1 - (x-100)*0.02 * 0.1;
-        c_z = 1 - (x-100)*0.02;
-    } else if(x > 50) {
-        c_x = 1;
-        c_y = 1;
-        c_z = 0.2 + (x-50)*0.02 * 0.8;  
-    } else if(x > 20) {
-        c_x = 1;
-        c_y = (x-20)*90/27/100;
-        c_z = (x-20)*90/27/100 * 0.2;
-    } else {
-        c_x = 1;
-        c_y = 0;
-    }
-    
-    return c;
 }

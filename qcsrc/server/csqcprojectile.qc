@@ -29,15 +29,8 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 		}
 	}
 
-	if(sf & 2) {
+	if(sf & 2)
 		WriteByte(MSG_ENTITY, self.csqcprojectile_type); // TODO maybe put this into sf?
-        WriteByte(MSG_ENTITY, self.team);
-        
-        if(self.csqcprojectile_type == PROJECTILE_HG_NAPALMSHARD        || // Burn radius
-           self.csqcprojectile_type == PROJECTILE_ELECTRO               || // Plasma group ID
-           self.csqcprojectile_type == PROJECTILE_HEAL_PARTICLE_EMITTER)   // Healing radius
-            WriteByte(MSG_ENTITY, min(255, self.csqcprojectile_extradata)); 
-    }
 
 	return 1;
 }
@@ -54,10 +47,8 @@ void CSQCProjectile_Check(entity e)
 
 void CSQCProjectile(entity e, float clientanimate, float type, float docull)
 {
-	JB_HandleProjectile(e); // this is here because it looks like this function gets called for nearly all projectiles
-							// we don't really care about instant stuff (or nearly instant stuff) like bullets and railguns
-							
 	Net_LinkEntity(e, docull, 0, CSQCProjectile_SendEntity);
+	
 	e.csqcprojectile_clientanimate = clientanimate;
 	
 	if(e.movetype == MOVETYPE_TOSS || e.movetype == MOVETYPE_BOUNCE)

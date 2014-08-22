@@ -138,7 +138,7 @@ void wordwrap_cb(string s, float l, void(string) callback)
 float dist_point_line(vector p, vector l0, vector ldir)
 {
 	ldir = normalize(ldir);
-
+	
 	// remove the component in line direction
 	p = p - (p * ldir) * ldir;
 
@@ -277,7 +277,7 @@ void db_save(float db, string pFilename)
 {
 	float fh, i, n;
 	fh = fopen(pFilename, FILE_WRITE);
-	if(fh < 0)
+	if(fh < 0) 
 	{
 		print(strcat("^1Can't write DB to ", pFilename));
 		return;
@@ -413,42 +413,22 @@ void buf_save(float buf, string pFilename)
 	fclose(fh);
 }
 
-// this function expands possible aliases to real gametype names.
-// Update this code when adding new gametypes and/or builtin aliases to existing ones
-string NormalizeGametypeName(string gtname)
+string GametypeNameFromType(float g)
 {
-	return gametype_Name_to_Name(gtname);
-}
-
-float ListContains(string source, string key, string sep)
-{
-	local float i;
-	local float n = tokenizebyseparator(source, sep);
-
-	for(i = 0; i < n; ++i)
-		if(argv(i) == key) return 1;
-	return 0;
-}
-
-float ListContainsEx(string source, string key, string sep, string(string) transform)
-{
-	local float i;
-	local float n = tokenizebyseparator(source, sep);
-
-	for(i = 0; i < n; ++i)
-		if(transform(argv(i)) == key) return 1;
-	return 0;
-}
-
-string mmss(float tenths)
-{
-	float minutes;
-	string s;
-	tenths = floor(tenths + 0.5);
-	minutes = floor(tenths / 600);
-	tenths -= minutes * 600;
-	s = ftos(1000 + tenths);
-	return strcat(ftos(minutes), ":", substring(s, 1, 2));
+	if      (g == GAME_DEATHMATCH) return "dm";
+	else if (g == GAME_TEAM_DEATHMATCH) return "tdm";
+	else if (g == GAME_DOMINATION) return "dom";
+	else if (g == GAME_CTF) return "ctf";
+	else if (g == GAME_RUNEMATCH) return "rune";
+	else if (g == GAME_LMS) return "lms";
+	else if (g == GAME_ARENA) return "arena";
+	else if (g == GAME_KEYHUNT) return "kh";
+	else if (g == GAME_ONSLAUGHT) return "ons";
+	else if (g == GAME_ASSAULT) return "as";
+	else if (g == GAME_RACE) return "rc";
+	else if (g == GAME_NEXBALL) return "nexball";
+	else if (g == GAME_CTS) return "cts";
+	return "dm";
 }
 
 string mmsss(float tenths)
@@ -501,7 +481,7 @@ string ScoreString(float pFlags, float pValue)
 		valstr = TIME_ENCODED_TOSTRING(pValue);
 	else
 		valstr = ftos(pValue);
-
+	
 	return valstr;
 }
 
@@ -708,7 +688,7 @@ string fixPriorityList(string order, float from, float to, float subtract, float
 				neworder = strcat(neworder, ftos(w), " ");
 		}
 	}
-
+	
 	return substring(neworder, 0, strlen(neworder) - 1);
 }
 
@@ -733,7 +713,7 @@ string swapInPriorityList(string order, float i, float j)
 		}
 		return substring(s, 0, strlen(s) - 1);
 	}
-
+	
 	return order;
 }
 
@@ -1107,7 +1087,7 @@ vector rgb_to_hsv(vector rgb)
 		hsv_y = 0;
 	else
 		hsv_y = 1 - mi/ma;
-
+	
 	return hsv;
 }
 
@@ -1125,7 +1105,7 @@ vector rgb_to_hsl(vector rgb)
 	ma = max3(rgb_x, rgb_y, rgb_z);
 
 	hsl_x = rgb_mi_ma_to_hue(rgb, mi, ma);
-
+	
 	hsl_z = 0.5 * (mi + ma);
 	if(mi == ma)
 		hsl_y = 0;
@@ -1133,7 +1113,7 @@ vector rgb_to_hsl(vector rgb)
 		hsl_y = (ma - mi) / (2*hsl_z);
 	else // if(hsl_z > 0.5)
 		hsl_y = (ma - mi) / (2 - 2*hsl_z);
-
+	
 	return hsl;
 }
 
@@ -1145,7 +1125,7 @@ vector hsl_to_rgb(vector hsl)
 		maminusmi = hsl_y * 2 * hsl_z;
 	else
 		maminusmi = hsl_y * (2 - 2 * hsl_z);
-
+	
 	// hsl_z     = 0.5 * mi + 0.5 * ma
 	// maminusmi =     - mi +       ma
 	mi = hsl_z - 0.5 * maminusmi;
@@ -1258,7 +1238,7 @@ float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 		// terminate, as the range still halves each time - but nevertheless, it is
 		// guaranteed that it finds ONE valid cutoff place (where "left" is in
 		// range, and "right" is outside).
-
+		
 		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
 		// and decrease left on the basis of the chars detected of the truncated tag
 		// Even if the ^xrgb tag is not complete/correct, left is decreased
@@ -1286,7 +1266,7 @@ float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 				}
 			}
 	}
-
+	
 	return left;
 }
 
@@ -1337,7 +1317,7 @@ string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_wi
 float isGametypeInFilter(float gt, float tp, string pattern)
 {
 	string subpattern, subpattern2, subpattern3;
-	subpattern = strcat(",", gametype_ID_to_Name(gt), ",");
+	subpattern = strcat(",", GametypeNameFromType(gt), ",");
 	if(tp)
 		subpattern2 = ",teams,";
 	else
@@ -1665,105 +1645,4 @@ void WriteInt24_t(float dest, float val)
 	WriteByte(dest, val - v * 256); // 0..255
 }
 #endif
-
-void remove(entity);
-.entity owner;
-
-void defer_remove() {
-	remove(self);
-}
-
-void defer_think()
-{
-    entity oself;
-
-    oself           = self;
-    self            = self.owner;
-    oself.think     = defer_remove;
-    oself.nextthink = time;
-
-    oself.use();
-}
-
-/*
-    Execute func() after time + fdelay.
-    self when func is executed = self when defer is called
-*/
-void defer(float fdelay, void() func)
-{
-    entity e;
-
-    e           = spawn();
-    e.owner     = self;
-    e.use       = func;
-    e.think     = defer_think;
-    e.nextthink = time + fdelay;
-}
-#endif
-
-float TeamColorSkin(float t) {
-#ifndef MENUQC
-    switch(t) {
-        case COLOR_TEAM1:   return 1; break;
-        case COLOR_TEAM2:   return 2; break;
-        case COLOR_TEAM3:   return 3; break;
-        case COLOR_TEAM4:   return 4; break;
-    }
-#endif
-    return 0;
-}
-
-float approach(float v, float t, float d) {
-	if(v < t) {
-		v += d;
-		if(v > t)
-			return t;
-	} else if(v > t) {
-		v -= d;
-		if(v < t)
-			return t;
-	}
-	return v;
-}
-
-string FormatDamage(float f) {
-    string str;
-    float tmp;
-    
-    if(f >= 1000000)
-        str = ftos(rint(f * 0.00001) * 0.1);
-    else if(f >= 1000)
-        str = ftos(rint(f * 0.01) * 0.1);
-    else
-        str = ftos(rint(f));
-    
-    tmp = strstrofs(str, ".", 0);
-    if(tmp >= 0)
-        str = substring(str, 0, tmp + 2);
-    else if(f >= 1000)
-        str = strcat(str, ".0");
-    
-    if(!strstrofs(str, "-", 0))
-        str = substring(str, 1, strlen(str));
-    
-    return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
-}
-
-#ifndef SVQC
-string FlagIcon(string cn) {
-    string i, s;
-    
-    if(cn == "")
-        return "gfx/flagicons/xx";
-    
-    i = strcat("gfx/flagicons/", cn);
-    float aframe = FlagIcon_Animate(cn);
-    if(aframe >= 0)
-        i = strcat(i, "-", ftos(fabs(rint(aframe))));
-    
-    if(drawgetimagesize(i) == '0 0 0')
-        return "gfx/flagicons/xx";
-    
-    return i;
-}
 #endif

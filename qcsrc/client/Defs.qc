@@ -1,7 +1,5 @@
-#define CLIENT_SIDE
-
 #pragma flag off fastarrays // make dp behave with new fteqcc versions. remove when dp bug with fteqcc fastarrays is fixed
-#pragma flag on subscope
+
 
 //NOTE: THIS IS AN INTERFACE FILE. DO NOT EDIT.
 //MODIFYING THIS FILE CAN RESULT IN CRC ERRORS.
@@ -239,5 +237,3 @@ float ticrate;
 // only for Porto
 float angles_held_status;
 vector angles_held;
-float sv_nicehealth;
-float sv_showacc;

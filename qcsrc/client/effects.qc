@@ -1,32 +1,36 @@
+/*
+.vector fx_start;
+.vector fx_end;
+.float  fx_with;
+.string fx_texture;
+.float  fx_lifetime;
 
-void LightingArc_Draw(void) {
-    string tex;
-    if(rm_teamlasers) switch(self.team) {
-        case COLOR_TEAM1: tex = "particles/hook_red";       break;
-        case COLOR_TEAM2: tex = "particles/hook_blue";      break;
-        case COLOR_TEAM3: tex = "particles/hook_yellow";    break;
-        case COLOR_TEAM4: tex = "particles/hook_pink";      break;
-        default         : tex = "particles/hook_green";     break;
-    }   else              tex = (self.team? "particles/hook_blue" : "particles/hook_green");
-    
-    float i; for(i = 0; i < 5; ++i)
-        Draw_CylindricLine(self.origin + randomvec() * 10 * self.alpha, self.velocity + randomvec() * 10 * self.alpha, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
-    
-    self.alpha = self.alpha - frametime * 3;
-    if(self.alpha < 0)
-        remove(self);
+void SUB_Remove()
+{ remove(self); }
+
+void b_draw()
+{
+    //Draw_CylindricLine(self.fx_start, self.fx_end, self.fx_with, self.fx_texture, 0, time * 3, '1 1 1', 0.7, DRAWFLAG_ADDITIVE);
+    Draw_CylindricLine(self.fx_start, self.fx_end, self.fx_with, self.fx_texture, (self.fx_with/256), 0, '1 1 1', 1, DRAWFLAG_ADDITIVE);
+
 }
+void b_make(vector s,vector e, string t,float l,float z)
+{
+    entity b;
+    b = spawn();
+    b.fx_texture = t;
+    b.fx_start = s;
+    b.fx_end = e;
+    b.fx_with = z;
+    b.think = SUB_Remove;
+    b.nextthink = time + l;
+	b.draw = b_draw;
 
-void LightingArc_Segment(vector start, vector end, float ateam) {
-    entity e = spawn();
-    e.alpha = 1;
-    e.origin = start;
-    e.velocity = end;
-    e.draw = LightingArc_Draw;
-    e.team = ateam;
+	//b.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
 }
+*/
 
-void LightingArc_Full(vector from, vector to, float seglength, float drifts, float drifte, float branchfactor, float branchfactor_add, float ateam)
+void cl_effetcs_lightningarc(vector from, vector to,float seglength,float drifts,float drifte,float branchfactor,float branchfactor_add)
 {
     vector direction,dirnew, pos, pos_l;
     float length, steps, steplength, i,drift;
@@ -38,7 +42,7 @@ void LightingArc_Full(vector from, vector to, float seglength, float drifts, flo
     steps      = floor(length / seglength);
     if(steps < 1)
     {
-        LightingArc_Segment(from, to, ateam);
+        te_lightning1(world,from,to);
         return;
     }
 
@@ -52,60 +56,45 @@ void LightingArc_Full(vector from, vector to, float seglength, float drifts, flo
             drift = drifts * (1 - (i / steps)) + drifte * (i / steps);
             dirnew = normalize(direction * (1 - drift) + randomvec() * drift);
             pos = pos_l +  dirnew * steplength;
-            LightingArc_Segment(pos_l, pos, ateam);
+            te_lightning1(world,pos_l,pos);
+            //b_make(pos_l, pos,"particles/lightning2",0.25,64);
             if(random() < branchfactor)
-                LightingArc_Full(pos, pos + (dirnew * length * 0.25),seglength,drifts,drifte,min(branchfactor + branchfactor_add,1),branchfactor_add, ateam);
+                cl_effetcs_lightningarc(pos, pos + (dirnew * length * 0.25),seglength,drifts,drifte,min(branchfactor + branchfactor_add,1),branchfactor_add);
 
             pos_l = pos;
         }
-        LightingArc_Segment(pos_l, to, ateam);
+        te_lightning1(world,pos_l,to);
+        //b_make(pos_l, to,"particles/lightning2",0.25,64);
 
     }
     else
-        LightingArc_Segment(from, to, ateam);
+        te_lightning1(world,from,to);
+        //b_make(from, to,"particles/lightning2",0.25,64);
 
 }
 
-void LightingArc_Default(vector from, vector to, float ateam) {
-    if(cvar("cl_effects_lightningarc_simple")) {
-        LightingArc_Segment(from, to, ateam);
-    } else {
-        float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
+void Net_ReadLightningarc()
+{
+	vector from, to;
+
+    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
+    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
+
+    if(cvar("cl_effects_lightningarc_simple"))
+    {
+        te_lightning1(world,from,to);
+    }
+    else
+    {
+        float seglength, drifts, drifte, branchfactor, branchfactor_add;
 
         seglength    = cvar("cl_effects_lightningarc_segmentlength");
         drifts       = cvar("cl_effects_lightningarc_drift_start");
         drifte       = cvar("cl_effects_lightningarc_drift_end");
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_start");
         branchfactor = cvar("cl_effects_lightningarc_branchfactor_add");
-        lcount       = cvar("cl_effects_lightningarc_count");
-        
-        for(; lcount; --lcount)
-            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
+
+        cl_effetcs_lightningarc(from,to,seglength,drifts,drifte,branchfactor,branchfactor_add);
     }
-}
 
-void Net_ReadLightningarc(void)
-{
-    float flash, ateam;
-    vector from, to;
-    
-    flash  = ReadByte();
-    ateam  = ReadByte();
-    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
-    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
-
-    if(flash)
-        pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
-    
-    LightingArc_Default(from, to, ateam);
-}
-
-void Net_ReadBlast(void) {
-    vector loc;
-    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
-    pointparticles(particleeffectnum("TE_TEI_BIGEXPLOSION"), loc, '0 0 0', 1);
-    entity e = spawn();
-    setorigin(e, loc);
-    sound(e, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
-    remove(e);
 }

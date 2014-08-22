@@ -1,3 +1,0 @@
-
-float ft_teams;
-void FreezeTag_CheckWinner(void);

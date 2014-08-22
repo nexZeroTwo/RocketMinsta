@@ -25,17 +25,10 @@ void W_Laser_Attack (float issecondary)
 		a = cvar("g_balance_laser_primary_shotangle");
 	s_forward = v_forward * cos(a * DEG2RAD) + v_up * sin(a * DEG2RAD);
 
-	local float lasr_recoil;
-	lasr_recoil = 3;
-	
-	if(cvar("g_rocketminsta_norecoil"))
-		lasr_recoil = 0;
-	
 	if(issecondary)
-		W_SetupShot_Dir (self, s_forward, FALSE, lasr_recoil, "weapons/lasergun_fire.wav", cvar("g_balance_laser_secondary_damage"));
+		W_SetupShot_Dir (self, s_forward, FALSE, 3, "weapons/lasergun_fire.wav", cvar("g_balance_laser_secondary_damage"));
 	else
-		W_SetupShot_Dir (self, s_forward, FALSE, lasr_recoil, "weapons/lasergun_fire.wav", cvar("g_balance_laser_primary_damage"));
-		
+		W_SetupShot_Dir (self, s_forward, FALSE, 3, "weapons/lasergun_fire.wav", cvar("g_balance_laser_primary_damage"));
 	pointparticles(particleeffectnum("laser_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
 	missile = spawn ();
@@ -56,7 +49,6 @@ void W_Laser_Attack (float issecondary)
 
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX(missile)
 
 	if (issecondary)
 		missile.velocity = w_shotdir * cvar("g_balance_laser_secondary_speed");

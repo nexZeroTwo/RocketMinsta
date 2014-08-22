@@ -143,9 +143,7 @@ void ImpulseCommands (void)
 					W_PreviousWeapon (2);
 					break;
 				case 17:
-                    if(g_nadgets)
-                        HG_Trigger();
-					else if(!g_minstagib)
+					if (!g_minstagib)
 						W_ThrowWeapon(W_CalculateProjectileVelocity(self.velocity, v_forward * 750), '0 0 0', TRUE);
 					break;
 				case 18:
@@ -247,21 +245,18 @@ void ImpulseCommands (void)
 			case 33:
 				if(self.deadflag == DEAD_NO && teams_matter)
 				{
-					wp = WaypointSprite_Attach("HELP!", TRUE);
-                    WaypointSprite_UpdateTextColors(wp, '1 0.5 0', '0 0 0', '0 0 0');
+					wp = WaypointSprite_Attach("helpme", TRUE);
 					if(wp)
 						WaypointSprite_UpdateTeamRadar(wp, RADARICON_HELPME, '1 0.5 0'); // TODO choose better color
 					if(!wp)
 						wp = self.waypointsprite_attachedforcarrier; // flag sprite?
-					if(wp) {
+					if(wp)
 						WaypointSprite_Ping(wp);
-                    }
 					sprint(self, "HELP ME attached\n");
 				}
 				break;
 			case 34:
-				wp = WaypointSprite_DeployFixed("HERE!", FALSE, self.origin);
-                WaypointSprite_UpdateTextColors(wp, '0 1 0', '0 0 0', '0 0 0');
+				wp = WaypointSprite_DeployFixed("here", FALSE, self.origin);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_HERE, '0 1 0');
@@ -270,8 +265,7 @@ void ImpulseCommands (void)
 				sprint(self, "HERE spawned at location\n");
 				break;
 			case 35:
-				wp = WaypointSprite_DeployFixed("HERE!", FALSE, self.cursor_trace_endpos);
-                WaypointSprite_UpdateTextColors(wp, '0 1 0', '0 0 0', '0 0 0');
+				wp = WaypointSprite_DeployFixed("here", FALSE, self.cursor_trace_endpos);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_HERE, '0 1 0');
@@ -282,8 +276,7 @@ void ImpulseCommands (void)
 			case 36:
 				if(vlen(self.death_origin))
 				{
-					wp = WaypointSprite_DeployFixed("HERE!", FALSE, self.death_origin);
-                    WaypointSprite_UpdateTextColors(wp, '0 1 0', '0 0 0', '0 0 0');
+					wp = WaypointSprite_DeployFixed("here", FALSE, self.death_origin);
 					if(wp)
 					{
 						WaypointSprite_UpdateTeamRadar(wp, RADARICON_HERE, '0 1 0');
@@ -293,21 +286,19 @@ void ImpulseCommands (void)
 				}
 				break;
 			case 37:
-				wp = WaypointSprite_DeployFixed("ENEMIES SEEN!", FALSE, self.origin);
-                WaypointSprite_UpdateTextColors(wp, '1 0.7 0', '0 0 0', '0 0 0');
+				wp = WaypointSprite_DeployFixed("danger", FALSE, self.origin);
 				if(wp)
 				{
-					WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.7 0');
+					WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.5 0');
 					WaypointSprite_Ping(wp);
 				}
 				sprint(self, "DANGER spawned at location\n");
 				break;
 			case 38:
-				wp = WaypointSprite_DeployFixed("ENEMIES SEEN!", FALSE, self.cursor_trace_endpos);
-                WaypointSprite_UpdateTextColors(wp, '1 0.7 0', '0 0 0', '0 0 0');
+				wp = WaypointSprite_DeployFixed("danger", FALSE, self.cursor_trace_endpos);
 				if(wp)
 				{
-					WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.7 0');
+					WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.5 0');
 					WaypointSprite_Ping(wp);
 				}
 				sprint(self, "DANGER spawned at crosshair\n");
@@ -315,11 +306,10 @@ void ImpulseCommands (void)
 			case 39:
 				if(vlen(self.death_origin))
 				{
-					wp = WaypointSprite_DeployFixed("ENEMIES SEEN!", FALSE, self.death_origin);
-                    WaypointSprite_UpdateTextColors(wp, '1 0.7 0', '0 0 0', '0 0 0');
+					wp = WaypointSprite_DeployFixed("danger", FALSE, self.death_origin);
 					if(wp)
 					{
-						WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.7 0');
+						WaypointSprite_UpdateTeamRadar(wp, RADARICON_DANGER, '1 0.5 0');
 						WaypointSprite_Ping(wp);
 					}
 					sprint(self, "DANGER spawned at death location\n");

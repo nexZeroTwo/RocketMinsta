@@ -22,14 +22,6 @@ void PlayerScore_Detach(entity player);
 float PlayerScore_Add(entity player, float scorefield, float score);
 
 /**
- * Sets the player's scorefield to an absolute value.
- * NEVER call this if PlayerScore_Attach has not been called yet!
- * Means: FIXME make players unable to join the game when not called ClientConnect yet.
- * Returns the new score.
- */
-float PlayerScore_Set(entity player, float scorefield, float score);
-
-/**
  * Initialize the score of this player if needed.
  * Does nothing in teamplay.
  * Use that when a spectator becomes a player.
@@ -49,11 +41,6 @@ float TeamScore_Add(entity player, float scorefield, float score);
  * Returns the new score.
  */
 float TeamScore_AddToTeam(float t, float scorefield, float score);
-
-/**
- * Returns the current score of a team
- */
-float TeamScore_Get(float t, float scorefield);
 
 /**
  * Returns a value indicating the team score (and higher is better).
@@ -132,15 +119,3 @@ string GetTeamScoreString(float tm, float shortString);
  * Returns the beginning of a sorted chain of the non-spectators.
  */
 entity PlayerScore_Sort(.float field);
-
-.entity scorekeeper;
-entity teamscorekeepers[16];
-string scores_label[MAX_SCORE];
-float scores_flags[MAX_SCORE];
-string teamscores_label[MAX_TEAMSCORE];
-float teamscores_flags[MAX_TEAMSCORE];
-float teamscores_entities_count;
-var .float scores_primary;
-var .float teamscores_primary;
-float scores_flags_primary;
-float teamscores_flags_primary;

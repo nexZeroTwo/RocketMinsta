@@ -1,8 +1,5 @@
 ../../progs.dat // output filename
 
-
-
-../common/rm_auto.qh
 ../common/util-pre.qh
 sys.qh
 pre-builtins.qh
@@ -16,75 +13,61 @@ constants.qh
 
 defs.qh		// Should rename this, it has fields and globals
 
-../common/gametype.qh
-
 //// tZork Turrets ////
 tturrets/include/turrets_early.qh
 
-../common/dprm.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
-../common/ip2c.qh
-../common/nadgets.qh
-../common/buffs.qh
-ip2c.qh
-csqcprojectile.qh
-csqceffects.qh
-
-teamcount.qh
-portals.qh
-g_hook.qh
-scores.qh
-ipban.qh
-race.qh
-keyhunt.qh
-antilag.qh
-vote.qh
-soulmates.qh
-timetravel.qh
-g_nadgets.qh
-g_terminals.qh
-g_buffs.qh
-g_freeze.qh
-freezetag.qh
-vip.qh
-jailbreak.qh
-clanarena.qh
-precious.qh
-domination.qh
-../common/damagetracker.qh
-damagetracker.qh
-irc.qh
-joinqueue.qh
-
 ../common/util.qc
-scores_rules.qc
-miscfunctions.qc
-waypointsprites.qc
-bot/bot.qc
-g_subs.qc
-g_tetris.qc
-runematch.qc
-arena.qc
-dodging.qc
-g_freeze.qc
-freezetag.qc
-vip.qc
-precious.qc
-g_violence.qc
-g_damage.qc
-teamplay.qc
-cl_physics.qc
+
+csqcprojectile.qh
 csqceffects.qc
 
+portals.qh
+
+g_hook.qh
+
+scores.qh
+
+ipban.qh
+
+race.qh
+
+keyhunt.qh
+
+antilag.qh
+
+vote.qh
+
+scores_rules.qc
+
+miscfunctions.qc
+
+waypointsprites.qc
+
+bot/bot.qc
+
+g_subs.qc
+
+g_tetris.qc
+
+runematch.qc
+arena.qc
+
+g_violence.qc
+g_damage.qc
+
+teamplay.qc
+
+cl_physics.qc
+
 // tZork's libs
-pathlib/pathlib.qh
 verbstack.qc
 movelib.qc
 steerlib.qc
+pathlib/pathlib.qh
 
-rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
@@ -127,22 +110,12 @@ cl_player.qc
 cl_client.qc
 t_plats.qc
 antilag.qc
-irc.qc
-joinqueue.qc
 
 ctf.qc
 domination.qc
 mode_onslaught.qc
 nexball.qc
 g_hook.qc
-timetravel.qc
-g_nadgets.qc
-g_terminals.qc
-g_buffs.qc
-soulmates.qc
-
-jailbreak.qc
-clanarena.qc
 
 t_swamp.qc
 
@@ -174,12 +147,6 @@ t_quake.qc
 
 race.qc
 
-teamcount.qc
-../common/damagetracker.qc
-damagetracker.qc
-../common/dprm.qc
-../common/gametype.qc
-
 
 //// tZork Turrets ////
 tturrets/include/turrets.qh
@@ -193,14 +160,10 @@ target_spawn.qc
 func_breakable.qc
 
 ../common/items.qc
-../common/ip2c.qc
-../common/nadgets.qc
-../common/buffs.qc
-ip2c.qc
+
 monsters/defs.qc
 monsters/fight.qc
 monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
-

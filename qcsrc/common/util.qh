@@ -56,6 +56,7 @@ void buf_save(float buf, string filename);
 float mod(float a, float b) { return a - (floor(a / b) * b); }   
 #endif
 
+string GametypeNameFromType(float g);
 #define TIME_TO_NTHS(t,n) floor((t) * (n) + 0.4)
 string mmsss(float t);
 string mmssss(float t);
@@ -192,23 +193,4 @@ float ReadInt24_t();
 #else
 void WriteInt24_t(float dest, float val);
 #endif
-void defer(float fdelay, void() func);
-#endif
-
-string mmss(float tenths);
-
-#ifdef MENUQC
-float sv_oldfag;		// just to make it compile
-#endif
-
-float TeamColorSkin(float);
-float approach(float v, float t, float d);
-
-// TODO: serverside setting with a list of those maybe? :p
-#define ISFAGGOTMAP(m) (substring(m, 0, 7) == "fagcity" || substring(m, 0, 7) == "ikzbdsm")
-
-string FormatDamage(float f);
-
-#ifndef SVQC
-string FlagIcon(string cn);
 #endif

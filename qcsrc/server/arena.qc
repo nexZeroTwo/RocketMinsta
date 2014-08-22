@@ -20,11 +20,6 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
-.float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
-float redspawned, bluespawned, yellowspawned, pinkspawned;
-float totalspawned;
-void SetPlayerTeam(entity pl, float t, float s, float noprint);
-
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
  * Sets the 'warmup' global variable.
@@ -35,25 +30,14 @@ void reset_map(float dorespawn)
 	oldself = self;
 
 	if(g_arena)
-	{
-		if(cvar("g_arena_warmup"))
-			warmup = time + cvar("g_arena_warmup");
-	}
-	else if(g_freezetag)
-		warmup = time + cvar("g_freezetag_warmup");
-	else if(g_jailbreak)
-		warmup = time + cvar("g_jailbreak_warmup");
-    else if(g_clanarena)
-        warmup = time + cvar("g_clanarena_warmup");
+	if(cvar("g_arena_warmup"))
+		warmup = time + cvar("g_arena_warmup");
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
 
 	race_ReadyRestart();
-    
-    if(cvar("g_swap_teams"))
-        SwapTeams();
-    
+	
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
 	{
@@ -72,9 +56,7 @@ void reset_map(float dorespawn)
 			remove(self);
 		}
 	}
-    
-    Buffs_Randomize(world, FALSE);
-    
+
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
@@ -85,54 +67,19 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
-	
-	if(g_vip)
-	{
-		vip_ClearVIPs_MaybeAssign();
-		//vip_RespawnSoulGems();
-	}
-    
-    if(teamcount_balancenext)
-        TeamCount_BalanceTeams();
-    
+
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
-        self.hg_clearammo = 0;
-        self.playtimeupdate = time;
 		if(self.flags & FL_CLIENT)				// reset all players
 		{
-            if(g_freeze)
-                self.frozenrow = 0;
-            
-            if(g_nadgets) {
-                if(self.hg_type_picked_nextround >= 0)
-                    self.hg_type_picked = self.hg_type_picked_nextround;
-                if(self.hg_optout_nextround >= 0)
-                    self.hg_optout = self.hg_optout_nextround;
-                
-                self.hg_type_picked_nextround = self.hg_optout_nextround = -1;
-            }
-            
 			if(g_arena)
 			{
 				if(self.spawned)
 					PutClientInServer();
 				else
 					PutObserverInServer();
-			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
-			{
-				if(self.classname == "player") {
-					PutClientInServer();
-                    if(g_clanarena)
-                        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
-                } else if(g_clanarena && self.jb_specteam) {
-                    self.classname = "player";
-                    PutClientInServer();
-                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
-                }
 			}
 			else
 			{
@@ -158,14 +105,6 @@ void reset_map(float dorespawn)
 					}
 				}
 			}
-            
-            if(g_nadgets) if(self.classname == "player") {
-                HG_ResetState(self);
-                self.hg_nadesused = 0;
-                
-                if(self.hg_alwaysask)
-                    HG_ShowMenu(TRUE);
-            }
 		}
 	}
 
@@ -278,37 +217,7 @@ void Arena_Warmup()
 
 }
 
-void count_spawned_players()
-{
-	// TODO fix "*spawned" name, it should rather be "*players" or so
-	// not doing this now to prevent merge hell with Tag
-	// fix after merging with Tag
-
-	// count amount of players in each team
-	totalspawned = redspawned = bluespawned = yellowspawned = pinkspawned = 0;
-	FOR_EACH_PLAYER(self) {
-		if (self.team == COLOR_TEAM1)
-		{
-			redspawned += 1;
-			totalspawned += 1;
-		}
-		else if (self.team == COLOR_TEAM2)
-		{
-			bluespawned += 1;
-			totalspawned += 1;
-		}
-		else if (self.team == COLOR_TEAM3)
-		{
-			yellowspawned += 1;
-			totalspawned += 1;
-		}
-		else if (self.team == COLOR_TEAM4)
-		{
-			pinkspawned += 1;
-			totalspawned += 1;
-		}
-	}
-}
+float next_round;
 
 /**
  * This function finds out whether an arena round is over 1 player is left.
@@ -319,59 +228,37 @@ void count_spawned_players()
  */
 void Spawnqueue_Check()
 {
-    if(!g_freeze)
-        count_spawned_players();
 	if(time < warmup + 1)
 		return;
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
-	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
+	if(!next_round)
+	if(numspawned < 2)
+		next_round = time + 3;
+
+	if(!arena_roundbased || (next_round && next_round < time && player_count > 1))
 	{
-		if((next_round && next_round < time))
+		next_round = 0;
+
+		if(arena_roundbased)
 		{
-			if(intermission_running)
-			{
-				//bprint("Freezetag: GAME OVER (2)\n");
-				next_round = 0;
-				return;
-			}
-			
-			//bprint("Freezetag: round reset\n");
-			next_round = 0;
+			champion = find(world, classname, "player");
+			while(champion && champion.deadflag)
+				champion = find(champion, classname, "player");
 			reset_map(TRUE);
 		}
-	}
-	else
-	{
-		if(!next_round)
-		if(numspawned < 2)
-			next_round = time + 3;
 
-		if(!arena_roundbased || (next_round && next_round < time && player_count > 1))
+		while(numspawned < maxspawned && spawnqueue_first)
 		{
-			next_round = 0;
+			self = spawnqueue_first;
 
-			if(arena_roundbased)
-			{
-				champion = find(world, classname, "player");
-				while(champion && champion.deadflag)
-					champion = find(champion, classname, "player");
-				reset_map(TRUE);
-			}
+			bprint ("^4", self.netname, "^4 is the next challenger\n");
 
-			while(numspawned < maxspawned && spawnqueue_first)
-			{
-				self = spawnqueue_first;
+			Spawnqueue_Remove(self);
+			Spawnqueue_Mark(self);
 
-				bprint ("^4", self.netname, "^4 is the next challenger\n");
-
-				Spawnqueue_Remove(self);
-				Spawnqueue_Mark(self);
-
-				self.classname = "player";
-				PutClientInServer();
-			}
+			self.classname = "player";
+			PutClientInServer();
 		}
 	}
 }

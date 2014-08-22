@@ -59,7 +59,7 @@ float move_out_of_solid(entity e)
     tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
     if (!trace_startsolid)
         return 1;
-    
+
     m0 = e.mins;
     m1 = e.maxs;
     e.mins = '0 0 0';
@@ -101,9 +101,8 @@ string STR_OBSERVER = "observer";
 #define FOR_EACH_CLIENTSLOT(v) for(v = world; (v = nextent(v)) && (num_for_edict(v) <= maxclients); )
 #define FOR_EACH_CLIENT(v) FOR_EACH_CLIENTSLOT(v) if(v.flags & FL_CLIENT)
 #define FOR_EACH_REALCLIENT(v) FOR_EACH_CLIENT(v) if(clienttype(v) == CLIENTTYPE_REAL)
-#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
-#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
-#define FOR_EACH_DEVELOPER(v) FOR_EACH_REALCLIENT(v) if(v.isdeveloper)
+#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.classname == STR_PLAYER)
+#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.classname == STR_PLAYER)
 #endif
 
 // copies a string to a tempstring (so one can strunzone it)
@@ -169,31 +168,6 @@ void GameLogClose()
     }
 }
 
-float check_team_spawns(void) {
-    float r, b, y, p, c;
-    float tc = TeamCount_TotalTeams();
-    entity e;
-    
-    #define HANDLETEAM(n,o,p) case o: if(tc >= n) if(!p) c++; p = 1; break;
-    for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) switch(e.team) {
-        HANDLETEAM(1, COLOR_TEAM1, r)
-        HANDLETEAM(2, COLOR_TEAM2, b)
-        HANDLETEAM(3, COLOR_TEAM3, y)
-        HANDLETEAM(4, COLOR_TEAM4, p)
-    }
-    #undef HANDLETEAM
-    
-    return (c >= tc);
-}
-
-void fix_team_spawns(void) {
-    if(have_team_spawns)
-    if(!check_team_spawns()) {
-        print("Not enough team spawnpoints, not using them\n");
-        have_team_spawns = 0;
-    }
-}
-
 float spawnpoint_nag;
 void relocate_spawnpoint()
 {
@@ -239,7 +213,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt || g_clanarena)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball)
         if (self.team)
             have_team_spawns = 1;
 
@@ -394,181 +368,6 @@ string NearestLocation(vector p)
     return ret;
 }
 
-#define MAXREPS 32
-string reptable_src[MAXREPS];
-string reptable_rep[MAXREPS];
-float reptable_srclen[MAXREPS];
-float reptable_replen[MAXREPS];
-float reptable_wordmode[MAXREPS];
-float reptable_count;
-float reptable_init;
-float reptable_maxsrclen;
-float reptable_minsrclen;
-
-#define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
-
-string getsrc(string id) {
-	string s = cvar_string(strcat("sv_chat_autoreplace_", id, "_src"));
-	if(!s || s == "")	// no src defined? Assume id is the src
-		return id;
-	return s;
-}
-
-string getrep(string id) {
-	//return strcat(rgb_to_hexcolor('1 0 0' * random() + '0 1 0' * random() + '0 0 1' * random()), getsrc(id), "^7");
-	
-	return cvar_string(strcat("sv_chat_autoreplace_", id, "_rep"));
-}
-
-string getrepids() {
-	return cvar_string("sv_chat_autoreplace_order");
-}
-
-void reptable_free() {
-	reptable_init = FALSE;
-	float i;
-	for(i = 0; i < reptable_count; ++i) {
-		strunzone(reptable_src[i]);
-		strunzone(reptable_rep[i]);
-		reptable_srclen[i] = 0;
-		reptable_replen[i] = 0;
-		reptable_wordmode[i] = FALSE;
-	}
-	reptable_count = 0;
-	reptable_maxsrclen = 0;
-	reptable_minsrclen = 0;
-}
-
-void reptable_make(string replacements) {
-	if(reptable_init)
-		reptable_free();
-	
-	reptable_init = TRUE;
-	reptable_count = bound(0, tokenizebyseparator(replacements, " "), MAXREPS);
-	
-	float i;
-	for(i = 0; i < reptable_count; ++i) {
-		string id = argv(i);
-        
-        if(substring(id, 0, 1) == "%") {
-            id = substring(id, 1, strlen(id) - 1);
-            reptable_wordmode[i] = TRUE;
-        }
-        
-		string src = strzone(getsrc(id));
-		string rep = strzone(getrep(id));
-		float srclen = strlen(src);
-		float replen = strlen(rep);
-		
-		reptable_src[i] = src;
-		reptable_rep[i] = rep;
-		reptable_srclen[i] = strlen(src);
-		reptable_replen[i] = strlen(rep);
-		
-		if(srclen > reptable_maxsrclen)
-			reptable_maxsrclen = srclen;
-			
-		if(!reptable_minsrclen || srclen < reptable_minsrclen)
-			reptable_maxsrclen = srclen;
-	}
-	
-	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
-}
-
-string apply_autoreplace(string msg) {
-	if not(cvar("sv_chat_autoreplace"))
-		return msg;
-	
-	if not(reptable_init) {
-		string reps = getrepids();
-		if(reps == "")
-			return msg;
-		reptable_make(reps);
-	}
-	
-    float a = 97,  A = 65;
-    float z = 122, Z = 90;
-    
-	float i, len;
-	len = strlen(msg);
-	
-	if(len < reptable_minsrclen)
-		return msg;		// no point
-		
-	for(i = 0; i < len; ++i) {
-		//print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
-		
-		FOR_EACH_REPID(id) {
-			float slen = reptable_srclen[id];
-			
-			if(len - i < slen)
-				continue;
-			
-			string p = strtolower(substring(msg, i, slen));
-			//print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
-			
-			if(p == reptable_src[id]) {
-				//print("apply_autoreplace: success\n");
-				
-                if(reptable_wordmode[id]) {
-                    float c;
-                    
-                    if(i > 0) {
-                        c = str2chr(msg, i - 1);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
-                            continue;
-                    }
-                    
-                    if(i + slen < len) {
-                        c = str2chr(msg, i + slen);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
-                            continue;
-                    }
-                }
-                
-				string head = substring(msg, 0, i);
-				string tail = substring(msg, i + slen, len);
-				msg = strcat(head, reptable_rep[id], tail);
-				
-				float rlen = reptable_replen[id];
-				i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
-				len += rlen - slen;
-				
-				break;
-			}
-		}
-	}
-	
-	return msg;
-}
-
-string apply_faggotry(string msg) {
-    string result, c;
-    float len, i, o;
-    
-    msg = strdecolorize(msg);
-    
-    len = strlen(msg);
-    c = substring(msg, len-1, 1);
-    if(c != "." && c != "?" && c != "!")
-        msg = strcat(msg, ".");
-    msg = strcat(msg, " Also, I'm a huge faggot.");
-    len = strlen(msg);
-    
-    for(i = 0; i < len; ++i, ++o) {
-        c = substring(msg, i, 1);
-        if(c == "^") {
-            c = "^^";
-            if(substring(msg, i+1, 1) == "^")
-                i++;
-        }
-            
-        result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(o * 0.07) + 3, 0.1, 1)), c);
-    }
-    
-    return result;
-}
-
 string formatmessage(string msg)
 {
     float p, p1, p2;
@@ -577,9 +376,6 @@ string formatmessage(string msg)
     string replacement;
     p = 0;
     n = 7;
-    
-    msg = apply_autoreplace(msg);
-    
     while (1)
     {
         if (n < 1)
@@ -648,10 +444,6 @@ string formatmessage(string msg)
         msg = strcat(substring(msg, 0, p), replacement, substring(msg, p+2, strlen(msg) - (p+2)));
         p = p + strlen(replacement);
     }
-    
-    if(whatsgoingon)
-        msg = apply_faggotry(msg);
-    
     return msg;
 }
 
@@ -767,7 +559,7 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodels, "cl_forceplayermodels");
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromnexuiz, "cl_forceplayermodelsfromnexuiz");
 #endif
-	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
+	GetCvars_handleFloatOnce(s, f, cvar_cl_gunalign, "cl_gunalign");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -788,7 +580,6 @@ float fexists(string f)
     return TRUE;
 }
 
-void GameCommand(string);
 void backtrace(string msg)
 {
     float dev, war;
@@ -804,7 +595,6 @@ void backtrace(string msg)
     dprint("\n--- CUT UNTIL HERE ---\n");
     cvar_set("developer", ftos(dev));
     cvar_set("prvm_backtraceforwarnings", ftos(war));
-    GameCommand("time");
 }
 
 string Team_ColorCode(float teamid)
@@ -845,28 +635,6 @@ string Team_ColorNameLowerCase(float t)
     if (t == COLOR_TEAM4)
         return "pink";
     return "neutral";
-}
-
-float Team_Index(float t) {
-    switch(t) {
-        case COLOR_TEAM1: return 0;
-        case COLOR_TEAM2: return 1;
-        case COLOR_TEAM3: return 2;
-        case COLOR_TEAM4: return 3;
-    }
-    
-    return -1;
-}
-
-float Team_FromIndex(float i) {
-    switch(i) {
-        case 0: return COLOR_TEAM1;
-        case 1: return COLOR_TEAM2;
-        case 2: return COLOR_TEAM3;
-        case 3: return COLOR_TEAM4;
-    }
-    
-    return 0;
 }
 
 #define CENTERPRIO_POINT 1
@@ -990,9 +758,6 @@ float g_ghost_items;
 entity get_weaponinfo(float w);
 
 float NixNex_CanChooseWeapon(float wpn);
-
-float g_weaponarena_limitammo;
-
 void readplayerstartcvars()
 {
     entity e;
@@ -1009,21 +774,9 @@ void readplayerstartcvars()
     start_health = cvar("g_balance_health_start");
     start_armorvalue = cvar("g_balance_armor_start");
 
-	g_weaponarena_limitammo = cvar("g_weaponarena_limitammo");
-
     g_weaponarena = 0;
-    
-    if(g_clanarena) {
-        s = cvar_string("g_clanarena_start_weapons");
-        if(s == "0")
-            s = cvar_string("g_weaponarena");
-    } else {
-        s = cvar_string("g_weaponarena");
-        if(s == "0")
-            s = "most";
-    }
-    
-    if(s == "0")
+    s = cvar_string("g_weaponarena");
+    if (s == "0")
     {
     }
     else if (s == "all")
@@ -1084,12 +837,7 @@ void readplayerstartcvars()
 		g_weaponarena_random = cvar("g_weaponarena_random");
 	else
 		g_weaponarena_random = 0;
-    
-    if (g_clanarena) {
-        start_health = cvar("g_clanarena_start_health");
-        start_armorvalue = cvar("g_clanarena_start_armor");
-    }
-    
+
     if (g_nixnex)
     {
         start_weapons = 0;
@@ -1103,37 +851,17 @@ void readplayerstartcvars()
     else if (g_weaponarena)
     {
         start_weapons = g_weaponarena;
-        
-        if(!g_weaponarena_limitammo)
-        {
-			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
-				start_ammo_rockets = 999;
-			if (g_weaponarena & WEPBIT_SHOTGUN)
-				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
-				start_ammo_cells = 999;
-			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
-				start_ammo_nails = 999;
-			if (g_weaponarena & WEPBIT_HOOK)
-				start_ammo_fuel = 999;
-			start_items |= IT_UNLIMITED_AMMO;
-		}
-        else if (g_clanarena)
-        {
-            start_ammo_shells = cvar("g_clanarena_start_shells");
-            start_ammo_nails = cvar("g_clanarena_start_nails");
-            start_ammo_rockets = cvar("g_clanarena_start_rockets");
-            start_ammo_cells = cvar("g_clanarena_start_cells");
-            start_ammo_fuel = cvar("g_clanarena_start_fuel");
-        }
-		else
-		{
-			start_ammo_shells = cvar("g_start_ammo_shells");
-            start_ammo_nails = cvar("g_start_ammo_nails");
-            start_ammo_rockets = cvar("g_start_ammo_rockets");
-            start_ammo_cells = cvar("g_start_ammo_cells");
-            start_ammo_fuel = cvar("g_start_ammo_fuel");
-		}
+		if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
+			start_ammo_rockets = 999;
+		if (g_weaponarena & WEPBIT_SHOTGUN)
+			start_ammo_shells = 999;
+		if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+			start_ammo_cells = 999;
+		if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
+			start_ammo_nails = 999;
+		if (g_weaponarena & WEPBIT_HOOK)
+			start_ammo_fuel = 999;
+        start_items |= IT_UNLIMITED_AMMO;
     }
     else if (g_minstagib)
     {
@@ -1178,7 +906,6 @@ void readplayerstartcvars()
             start_items |= IT_UNLIMITED_AMMO;
         }
 
-		if(!g_weaponarena)
         for (i = WEP_FIRST; i <= WEP_LAST; ++i)
         {
             e = get_weaponinfo(i);
@@ -1262,9 +989,6 @@ void readplayerstartcvars()
 
     if (g_jetpack)
         start_items |= IT_JETPACK;
-
-	if(g_jetpack /*|| g_grappling_hook*/)
-		g_nadgets = 0;
 
     if (g_weapon_stay == 2)
     {
@@ -1352,12 +1076,12 @@ void readlevelcvars(void)
     sv_clones = cvar("sv_clones");
     sv_cheats = cvar("sv_cheats");
     sv_gentle = cvar("sv_gentle");
+    sv_foginterval = cvar("sv_foginterval");
     g_cloaked = cvar("g_cloaked");
     g_jump_grunt = cvar("g_jump_grunt");
     g_footsteps = cvar("g_footsteps");
     g_grappling_hook = cvar("g_grappling_hook");
     g_jetpack = cvar("g_jetpack");
-    g_nadgets = cvar("g_nadgets");
     g_laserguided_missile = cvar("g_laserguided_missile");
     g_midair = cvar("g_midair");
     g_minstagib = cvar("g_minstagib");
@@ -1412,9 +1136,9 @@ void readlevelcvars(void)
     g_pickup_rockets_max               = cvar("g_pickup_rockets_max");
     g_pickup_cells                     = cvar("g_pickup_cells");
     g_pickup_cells_max                 = cvar("g_pickup_cells_max");
-    g_pickup_fuel                      = cvar("g_pickup_fuel");
-    g_pickup_fuel_jetpack              = cvar("g_pickup_fuel_jetpack");
-    g_pickup_fuel_max                  = cvar("g_pickup_fuel_max");
+    g_pickup_fuel                     = cvar("g_pickup_fuel");
+    g_pickup_fuel_jetpack             = cvar("g_pickup_fuel_jetpack");
+    g_pickup_fuel_max                 = cvar("g_pickup_fuel_max");
     g_pickup_armorsmall                = cvar("g_pickup_armorsmall");
     g_pickup_armorsmall_max            = cvar("g_pickup_armorsmall_max");
     g_pickup_armormedium               = cvar("g_pickup_armormedium");
@@ -1443,8 +1167,6 @@ void readlevelcvars(void)
 
     if not(inWarmupStage)
         game_starttime                 = cvar("g_start_delay");
-    if(g_inf)
-        game_starttime = cvar("g_inf_start_delay");
 
     readplayerstartcvars();
 }
@@ -1700,13 +1422,6 @@ void precache_all_models(string pattern)
 
 void precache()
 {
-    precache_sound (RM_SOUND_MORNINGRESCUE);
-	precache_sound (RM_SOUND_PHOENIX);
-	precache_sound (RM_SOUND_REBIRTH);
-	precache_sound (RM_SOUND_RECOVERY);
-    precache_sound (RM_SOUND_KILL);
-    precache_sound ("misc/scream.wav");
-    
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");
     precache_model ("models/misc/teambubble.spr");
@@ -1720,8 +1435,6 @@ void precache()
     if (cvar("g_turrets"))
         turrets_precash();
 #endif
-
-	precache_model("models/boob.mdl");
 
     // Precache all player models if desired
     if (cvar("sv_precacheplayermodels"))
@@ -1871,14 +1584,10 @@ void precache()
     precache_sound ("weapons/weapon_switch.wav");
     precache_sound ("weapons/weaponpickup.wav");
     precache_sound ("weapons/unavailable.wav");
-    
-    if(g_grappling_hook) {
+    if (g_grappling_hook)
+    {
         precache_sound ("weapons/hook_fire.wav"); // hook
         precache_sound ("weapons/hook_impact.wav"); // hook
-    }
-
-    if(g_nadgets) {
-        HG_Precache();
     }
 
     if (cvar("sv_precacheweapons") || g_nixnex)
@@ -2242,7 +1951,7 @@ float SUB_NoImpactCheck()
         {
             dprint("Odd... did not hit...?\n");
         }
-        else if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) if(self.classname == "grapplinghook")
+        else if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
         {
             dprint("Detected and prevented the sky-grapple bug.\n");
             return 1;
@@ -2255,15 +1964,12 @@ float SUB_NoImpactCheck()
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
-#define PROJECTILE_FIX(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); }
-#define PROJECTILE_FIX2(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
 
 float MAX_IPBAN_URIS = 16;
 
 float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
-//float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2279,10 +1985,6 @@ void URI_Get_Callback(float id, float status, string data)
     {
         // online ban list
         OnlineBanList_URI_Get_Callback(id, status, data);
-    }
-    else if (id == URI_GET_IP2C)
-    {
-        IP2C_URI_Get_Callback(id, status, data);
     }
     else
     {
@@ -2521,6 +2223,7 @@ void zcurveparticles_from_tracetoss(float effectno, vector start, vector end, ve
 	zcurveparticles(effectno, start, end, end_dz, vlen(vel));
 }
 
+string GetGametype(); // g_world.qc
 void write_recordmarker(entity pl, float tstart, float dt)
 {
     GameLogEcho(strcat(":recordset:", ftos(pl.playerid), ":", ftos(dt)));
@@ -2528,7 +2231,7 @@ void write_recordmarker(entity pl, float tstart, float dt)
     // also write a marker into demo files for demotc-race-record-extractor to find
     stuffcmd(pl,
              strcat(
-                 strcat("//", strconv(2, 0, 0, gametype_ID_to_Name(game)), " RECORD SET ", TIME_ENCODED_TOSTRING(TIME_ENCODE(dt))),
+                 strcat("//", strconv(2, 0, 0, GetGametype()), " RECORD SET ", TIME_ENCODED_TOSTRING(TIME_ENCODE(dt))),
                  " ", ftos(tstart), " ", ftos(dt), "\n"));
 }
 
@@ -2946,579 +2649,4 @@ float ExponentialFalloff(float mindist, float maxdist, float halflifedist, float
 		return pow(0.5, (bound(mindist, d, maxdist) - maxdist) / halflifedist);
 	else
 		return 1;
-}
-
-void bigprint(entity e, string bigstring, string comment, float staytime)
-{
-    if(clienttype(e) != CLIENTTYPE_REAL)
-        return;
-    
-    if(e.classname == "")
-        return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_BIGPRINT);
-    WriteString(MSG_ONE, bigstring);
-    WriteString(MSG_ONE, comment);
-    WriteShort(MSG_ONE, staytime);
-}
-
-void centerprint_spec(entity pl, string msg)
-{
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            centerprint(e, msg);
-    }
-}
-
-void bigprint_spec(entity pl, string msg, string comment, float staytime)
-{
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            bigprint(e, msg, comment, staytime);
-    }
-}
-
-void bigprint_clear(entity pl)
-{
-    msg_entity = pl;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_CLEARBIGPRINT);
-}
-
-void bigprint_clear_spec(entity pl)
-{
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            bigprint_clear(e);
-    }
-}
-
-void madokaprint(entity e, string bigstring, string comment, float staytime)
-{
-    if(clienttype(e) != CLIENTTYPE_REAL)
-        return;
-    
-    if(e.classname == "")
-        return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_MADOKAPRINT);
-    WriteString(MSG_ONE, bigstring);
-    WriteString(MSG_ONE, comment);
-    WriteShort(MSG_ONE, staytime);
-}
-
-void madokaprint_spec(entity pl, string msg, string comment, float staytime)
-{
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            madokaprint(e, msg, comment, staytime);
-    }
-}
-
-#define HF_DEFAULT_TIME 1.5
-//#define HF_DEFAULT_INT 0.3
-#define HF_DEFAULT_INT 0.5
-#define HF_DEFAULT_ALPHA 0.4
-
-void hudflash(entity e, vector flashcolor, float staytime, float intensivity, float alph)
-{
-    if(clienttype(e) != CLIENTTYPE_REAL)
-        return;
-    
-    if(e.classname == "")
-        return;
-    
-    if not(cvar("sv_hudflash"))
-		return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH);
-    //WriteShort(MSG_ONE, compressShortVector(flashcolor));
-    
-    WriteCoord(MSG_ONE, flashcolor_x);
-    WriteCoord(MSG_ONE, flashcolor_y);
-    WriteCoord(MSG_ONE, flashcolor_z);
-    
-    WriteCoord(MSG_ONE, staytime);
-    WriteCoord(MSG_ONE, intensivity);
-    WriteCoord(MSG_ONE, alph);
-}
-
-void hudflash_teamcolor(entity e, float staytime, float intensivity, float alph)
-{
-    if(clienttype(e) != CLIENTTYPE_REAL)
-        return;
-    
-    if(e.classname == "")
-        return;
-    
-    if not(cvar("sv_hudflash"))
-		return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_HUDFLASH_TEAMCOLOR);
-    WriteCoord(MSG_ONE, staytime);
-    WriteCoord(MSG_ONE, intensivity);
-    WriteCoord(MSG_ONE, alph);
-}
-
-void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivity, float alph)
-{
-	if not(cvar("sv_hudflash"))
-		return;
-	
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash(e, flashcolor, staytime, intensivity, alph);
-    }
-}
-
-void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
-{
-	if not(cvar("sv_hudflash"))
-		return;
-	
-    local entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash_teamcolor(e, staytime, intensivity, alph);
-    }
-}
-
-void hudflash_default(entity e, vector flashcolor)
-{
-    hudflash(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-}
-
-void hudflash_default_spec(entity e, vector flashcolor)
-{
-    hudflash_spec(e, flashcolor, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-}
-
-void hudflash_teamcolor_default(entity e)
-{
-    hudflash_teamcolor(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-}
-
-void hudflash_teamcolor_default_spec(entity e)
-{
-    hudflash_teamcolor_spec(e, HF_DEFAULT_TIME, HF_DEFAULT_INT, HF_DEFAULT_ALPHA);
-}
-
-// universal endround for all supported gametypes
-void FreezeTag_EndRound();
-void vip_EndRound();
-void tdom_EndRound();
-
-void EndRound()
-{
-    if(g_freezetag)
-        FreezeTag_EndRound();
-else
-    if(g_vip)
-        vip_EndRound();
-else
-    if(g_totaldomination)
-        tdom_EndRound();
-else
-    if(g_keyhunt)
-        kh_FinishRound();
-else
-	if(g_jailbreak)
-		JB_EndRound(5);
-else
-    if(g_clanarena)
-        CA_EndRound();
-else
-    bprint("EndRound() for an unsupported gametype!?\n");
-}
-
-float EndRound_Allowed()
-{
-    return( g_freezetag
-         || g_vip
-         || g_totaldomination
-         || g_keyhunt
-         || g_jailbreak
-         || g_clanarena);
-}
-
-.float is_away;
-
-void MarkAway(entity pl, float force)
-{
-    if(clienttype(pl) != CLIENTTYPE_REAL)
-        return;
-    
-    if(pl.is_away)
-        return;
-    
-    local float idlefor = floor((time - self.parm_idlesince) / 60);
-    
-    if(pl.classname == "player")
-        stuffcmd(pl, "cmd spectate\n");
-    stuffcmd(pl, "set _cl_afkstate 1\n");
-    
-    if(force)
-    {
-        bprint(pl.netname, " ^4is AFK\n");
-        centerprint(pl, "You have been set AFK");
-    }
-    else
-    {
-        bprint(pl.netname, " ^4is AFK (idle for ", ftos(idlefor), " minutes)\n");
-        centerprint(pl, strcat("You have been set AFK (idle for ", ftos(idlefor), " minutes)"));
-    }
-    
-    pl.is_away = 1;
-    
-    if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
-    else
-        bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
-}
-
-void UnmarkAway(entity pl)
-{
-    if(clienttype(pl) != CLIENTTYPE_REAL)
-        return;
-    
-    if(!pl.is_away)
-        return;
-    
-    stuffcmd(pl, "set _cl_afkstate 0\n");
-    
-    bprint(pl.netname, " ^4is back\n");
-    centerprint(pl, "You are no longer marked AFK");
-    pl.is_away = 0;
-    
-    if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
-    else
-        bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
-    
-    pl.parm_idlesince = time;
-}
-
-float CountAFKClients()
-{
-    local entity e;
-    local float r;
-    r = 0;
-    FOR_EACH_REALCLIENT(e)
-    {
-        if(e.is_away)
-        {
-            ++r;
-            //bprint(e.netname, " ^7is away\n");
-        }
-    }
-    return r;
-}
-
-// Chaiomanot Feb 15 2012: game type disabling improved to support all
-//    game types, not just ctf. also, ctf-blacklist bloat has been removed
-float GameTypeFilter_Allowed (string map, string gametype)
-{
-	local float fh;
-	local string s;
-
-	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
-		return 1; // maps always support dm-gametypes, even when they don't claim to
-
-    if(cvar("g_domination_always_available"))
-    if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
-        return 1;
-
-	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
-	if(fh < 0)
-	{
-		print("^1Failed to open mapinfo for ^2", map, "^1: Defaulting to supported\n");
-		return 1;
-	}
-
-	while((s = fgets(fh)))
-	{
-		tokenize_console(s);
-		if(argv(0) == "type")
-			if(gametype_MapID_to_Name(gametype_Name_to_MapID(gametype)) ==
-			   gametype_MapID_to_Name(gametype_Name_to_MapID(argv(1))))
-				break;
-	}
-	fclose(fh);
-	return (s ? 1 : 0);
-}
-
-float Banning_IsNameBanned (string name)
-{
-	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
-}
-
-float Banning_BanPlayerByName (string name, string reason)
-{
-	if (Banning_IsNameBanned (name))
-		return 0;
-	db_put (ServerProgsDB, strcat ("nickbanned/", name), "1");
-	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), reason);
-	return 1;
-}
-
-float Banning_UnbanPlayerByName (string name)
-{
-	if (! Banning_IsNameBanned (name))
-		return 0;
-	db_put (ServerProgsDB, strcat ("nickbanned/", name), "0");
-//	db_put (ServerProgsDB, strcat ("nickbanned_reason/", name), "");
-//	leave the reason so we can know why was the chap banned in the first place
-	return 1;
-}
-
-string GetVoteList_VoteCommands(float ismaster, float isvdo) {
-    string s = cvar_string("sv_vote_commands");
-    if(ismaster)
-        s = strcat(s, " ", cvar_string("sv_vote_master_commands"));
-    if(!isvdo)
-        s = strcat(s, " ", cvar_string("sv_vote_only_commands"));
-    return s;
-}
-
-string GetVoteList_All(float ismaster, float isvdo)
-{
-	if(!cvar("sv_vote_gametype_call"))
-		return GetVoteList_VoteCommands(ismaster, isvdo);
-	
-	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_VoteCommands(ismaster, isvdo), " ");
-	
-	for(i = 0; i < n; ++i)
-	{
-		if(NormalizeGametypeName(argv(i)) == "")
-			votes = strcat(votes, argv(i), " ");
-	}
-	
-	return strcat(votes, cvar_string("sv_vote_gametype_options"));
-}
-
-string GetVoteList_Filtered(float ismaster, float isvdo)
-{
-	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
-	
-	for(i = 0; i < n; ++i)
-	{
-		float c = ListContains(cvar_string("sv_vote_secretcommands"), argv(i), " ");
-		
-		// ListContains tokenizes
-		n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
-		
-		if not(c)
-			votes = strcat(votes, argv(i), " ");
-	}
-	
-	return votes;
-}
-
-string GetVoteList(float ismaster, float isvdo)
-{
-	if(cvar("sv_vote_secretcommands_enabled"))
-		return GetVoteList_All(ismaster, isvdo);
-	else
-		return GetVoteList_Filtered(ismaster, isvdo);
-}
-
-void GameCommand(string);
-void ShuffleMaplist();
-
-float TeamMask (float l_team) // not really needed since we're only using it for CTF at the moment, but it might be useful some time in the future... maybe
-{
-	switch (l_team)
-	{
-		case COLOR_TEAM1: return 1;
-		case COLOR_TEAM2: return 2;
-		case COLOR_TEAM3: return 4;
-		case COLOR_TEAM4: return 8;
-	}
-	
-	return 1; // play it safe: default to one
-}
-
-string ResolveServer(string s) {
-	string r = cvar_string(strcat("sv_serveralias_", s));
-	if(r != "")
-		return r;
-	return s;
-}
-
-string GetAllowedServers() {
-	return cvar_string("sv_gotoserver_whitelist");
-}
-
-/// Does NOT accept server aliases
-float ServerIsAllowed(string s) {
-	string wl = GetAllowedServers();
-	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
-}
-
-float ShouldForceFog() {
-	string s = cvar_string("g_rocketminsta_forcefog");
-	if(s != "")
-		return TRUE;
-	return world.fog != "";
-}
-
-string GetForcedFog() {
-	string s = cvar_string("g_rocketminsta_forcefog");
-	if(s != "")
-		return s;
-	return world.fog;
-}
-
-// ========================================== //
-
-.float endround_warmuptime;
-.float endround_announced;
-.void() endround_think;
-.void() endround_think2;
-.void() endround_finalize;
-
-void G_EndRound_Think()
-{
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
-    
-    if(intermission_running) {
-        remove(self);
-        return;
-    }
-    
-    if(self.endround_think)
-		self.endround_think();
-    
-    if(timeleft <= self.endround_warmuptime)
-    {
-        roundstate = ROUNDSTATE_WARMUP;
-        
-		if(!self.endround_announced) {
-			sound(world, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
-			self.endround_announced = TRUE;
-		}
-		
-        if(timeleft <= 0)
-        {
-            roundstate = ROUNDSTATE_GAME;
-            FOR_EACH_PLAYER(e)
-                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", -1);
-            
-            sound(world, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
-            if(self.endround_finalize)
-                self.endround_finalize();
-            remove(self);
-            shooting_forbidden = FALSE;
-            return;
-        }
-        
-		if(self.endround_think2)
-			self.endround_think2();
-		shooting_forbidden = TRUE;
-        
-        FOR_EACH_PLAYER(e)
-            bigprint_spec(e, strcat(gametype_ID_to_LongName(game), " starts in: ", ftos(timeleft)), "", -1);
-        
-        if(timeleft <= 3)
-			sound(world, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
-    }
-    self.nextthink = time + 1;
-}
-
-void G_EndRound(float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
-{
-    local entity e = spawn();
-    e.think = G_EndRound_Think;
-    e.nextthink = time + 1;
-    e.endround_think = callback;
-    e.endround_think2 = callback2;
-    e.endround_finalize = callbackfin;
-    e.endround_warmuptime = warmuptime;
-    next_round = time + thedelay;
-    next_round_starttime = next_round + warmuptime;
-    e.cnt = next_round_starttime;
-    roundstate = ROUNDSTATE_OVER;
-}
-
-// ========================================== //
-
-void SendServerInfo(entity player) {
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_SERVERINFO);
-	WriteString(MSG_ONE, cvar_string("hostname"));
-	WriteString(MSG_ONE, RM_BUILD_NAME);
-	WriteString(MSG_ONE, RM_BUILD_VERSION);
-	WriteString(MSG_ONE, RM_BUILD_DATE);
-	WriteString(MSG_ONE, RM_BUILD_COMMIT);
-	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
-}
-
-void AloneWarning(float t, float(entity) alivecheck) {
-    float alive;
-    entity e;
-    entity p;
-    
-    FOR_EACH_PLAYER(e) if(e.team == t) if(alivecheck(e)) {
-        p = e;
-        alive++;
-        
-        if(alive > 1)
-            return;
-    }
-    
-    if(p) {
-        bigprint_spec(p, "Warning! You are on your own!", "", 3);
-    }
-}
-
-void SetCamera(entity player, entity cam, float timeout) {
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-	WriteByte(MSG_ONE, TRUE);
-	WriteShort(MSG_ONE, cam.origin_x);
-	WriteShort(MSG_ONE, cam.origin_y);
-	WriteShort(MSG_ONE, cam.origin_z);
-	WriteShort(MSG_ONE, timeout);
-}
-
-void ClearCamera(entity player) {
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
-	WriteByte(MSG_ONE, FALSE);
-}
-
-void JB_ClearCameraForAll() {
-	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
-}
-
-void SetCameraWithAngles(entity player, entity cam, float timeout) {
-    SetCamera(player, cam, timeout);
-    player.angles = cam.angles;
-    player.angles_z = 0;
-    player.fixangle = TRUE;
 }
