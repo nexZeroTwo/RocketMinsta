@@ -16,7 +16,7 @@ void fillNewMenuMultiplayerDialog(entity me)
 	mc = makeNewMenuTabController(me.rows - 2);
 	me.TR(me);
 		me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Servers",  makeNewMenuServerListTab()));
-		me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Create",  makeNewMenuServerCreateTab()));
+		// me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Create",  makeNewMenuServerCreateTab()));
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Demos",   makeNewMenuDemoBrowserTab()));
         me.TD(me, 1, 1, mc.makeTabButton(mc, "Music",   makeNewMenuMusicBrowserTab()));
 		me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Player Setup",  makeNewMenuPlayerSettingsTab()));
