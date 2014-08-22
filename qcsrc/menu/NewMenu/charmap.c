@@ -30,7 +30,14 @@ entity makeNewMenuCharmap(entity theTextbox)
 
 string CharMap_CellToChar(float c)
 {
-	if(c == 13)
+    if(cvar("utf8_enable")) {
+        if(c == 13)
+            return chr(0xE000 + 127);
+        else if(c < 32)
+            return chr(0xE000 + c);
+        else
+            return chr(0xE000 + c + 96);
+    } else if(c == 13)
 		return chr(127);
 	else if(c < 32)
 		return chr(c);
