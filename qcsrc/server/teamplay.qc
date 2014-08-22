@@ -412,7 +412,7 @@ string GetClientVersionMessage() {
 		if(self.version < cvar("gameversion")) {
 			versionmsg = "^3Your client version is outdated.\n\n\n### YOU WON'T BE ABLE TO PLAY ON THIS SERVER ###\n\n\nPlease update!!!^8";
 		} else {
-			versionmsg = "^3This server is using an outdated ", cvar_string("sys_project_name")," version.\n\n\n ### THIS SERVER IS INCOMPATIBLE AND THUS YOU CANNOT JOIN ###.^8";
+			versionmsg = strcat("^3This server is using an outdated ", cvar_string("sys_project_name")," version.\n\n\n ### THIS SERVER IS INCOMPATIBLE AND THUS YOU CANNOT JOIN ###.^8");
 		}
 	} else {
 		versionmsg = "^2client version and server version are compatible.^8";
