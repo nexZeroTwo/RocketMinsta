@@ -204,7 +204,7 @@ void gameTypeChangeNotifyNewMenuServerCreateTab(entity me)
 	// tell the map list to update
 	float gt;
 	entity e, l, l2;
-	gt = MapInfo_CurrentGametype();
+	gt = gametype_ID_to_MapID(gametype_GetMenu());
 	e = me.sliderFraglimit;
 	l = me.checkboxFraglimit;
 	l2 = me.checkboxFraglimitMapinfo;

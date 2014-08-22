@@ -18,6 +18,7 @@ CLASS(NewMenuServerInfoDialog) EXTENDS(NewMenuDialog)
 	ATTRIB(NewMenuServerInfoDialog, currentServerMod, string, string_null)
 	ATTRIB(NewMenuServerInfoDialog, currentServerVersion, string, string_null)
 	ATTRIB(NewMenuServerInfoDialog, currentServerPing, string, string_null)
+    ATTRIB(NewMenuServerInfoDialog, currentServerRMLabel, string, string_null)
 
 	ATTRIB(NewMenuServerInfoDialog, nameLabel, entity, NULL)
 	ATTRIB(NewMenuServerInfoDialog, cnameLabel, entity, NULL)

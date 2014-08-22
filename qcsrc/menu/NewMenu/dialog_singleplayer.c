@@ -41,8 +41,8 @@ void InstantAction_LoadMap(entity btn, entity dummy)
 		{
 			fclose(fh);
 			localcmd("\nmenu_loadmap_prepare\n");
-			MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
-			MapInfo_LoadMap(argv(1));
+			gametype_SetMenu(GAME_DEATHMATCH);
+            MapInfo_LoadMap(argv(1));
 			cvar_set("lastlevel", "1");
 			return;
 		}

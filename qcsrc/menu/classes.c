@@ -68,7 +68,6 @@
 #include "NewMenu/image.c"
 #include "NewMenu/crosshairbutton.c"
 #include "NewMenu/playermodel.c"
-#include "NewMenu/dialog_news.c"
 #include "NewMenu/checkbox_slider_invalid.c"
 #include "NewMenu/charmap.c"
 #include "NewMenu/keybinder.c"

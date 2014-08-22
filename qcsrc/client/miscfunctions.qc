@@ -15,7 +15,7 @@ void Announcer_Precache() {
 }
 
 void announce(string msg){
-	localcmd(("play2 sound/announcer/$cl_announcer/", msg, "\n"));
+	localcmd("play2 sound/announcer/$cl_announcer/", msg, "\n");
 }
 
 void restartAnnouncer_Think() {
