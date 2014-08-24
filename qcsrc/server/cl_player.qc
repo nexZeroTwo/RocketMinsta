@@ -811,9 +811,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		else
 			self.max_armorvalue += (save + take);
 	}
-	self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
-	self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
-	self.dmg_inflictor = inflictor;
+    
+    if(deathtype != DEATH_IGNITE) {
+        self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
+        self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
+    }
+	
+    self.dmg_inflictor = inflictor;
 
 	if(attacker == self)
 	{
