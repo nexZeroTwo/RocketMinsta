@@ -143,6 +143,9 @@ void Buffs_Randomize(entity blist, float force) {
             j = g_buffs_replacements[i];
             if(j) b.buffs = j;
         }
+        
+        if(roundstate != ROUNDSTATE_GAME)
+            Buffs_BuffPickup_SetInitialCooldown(b);
     }
 }
 
@@ -682,15 +685,19 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
         WaypointSprite_UpdateBuildFinished(e.buff_waypoint, time + e.buff_activetime);
 }
 
-void Buffs_BuffPickup_SetCooldown(float cd) {
+void Buffs_BuffPickup_SetCooldown(entity buff, float cd) {
     cd = max(0, cd);
     
-    if(!self.buff_waypoint)
-        Buffs_BuffPickup_SpawnWaypoint(self);
+    if(!buff.buff_waypoint)
+        Buffs_BuffPickup_SpawnWaypoint(buff);
     
-    WaypointSprite_UpdateBuildFinished(self.buff_waypoint, time + cd);
-    self.buff_activetime = cd;
-    self.buff_active = !cd;
+    WaypointSprite_UpdateBuildFinished(buff.buff_waypoint, time + cd);
+    buff.buff_activetime = cd;
+    buff.buff_active = !cd;
+}
+
+void Buffs_BuffPickup_SetInitialCooldown(entity buff) {
+    Buffs_BuffPickup_SetCooldown(buff, cvar((buff.buffs & (buff.buffs - 1))? "g_buffs_activate_delay_dual" : "g_buffs_activate_delay"));
 }
 
 void Buffs_BuffPickup_Think(void) {
@@ -703,7 +710,7 @@ void Buffs_BuffPickup_Think(void) {
     
     if(roundstate == ROUNDSTATE_GAME)
     if(!self.buff_activetime_updated) {
-        Buffs_BuffPickup_SetCooldown(self.buff_activetime);
+        Buffs_BuffPickup_SetCooldown(self, self.buff_activetime);
         self.buff_activetime_updated = TRUE;
     }
     
@@ -723,10 +730,10 @@ void Buffs_BuffPickup_Think(void) {
     if(!self.buff_active && !self.buff_activetime)
     if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || !self.owner.iscreature || !(self.owner.buffs & self.buffs)) {
         if(self.owner.buff_cdoverride) {
-            Buffs_BuffPickup_SetCooldown(max(0, self.owner.buff_cdoverride) + frametime);
+            Buffs_BuffPickup_SetCooldown(self, max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
         } else
-            Buffs_BuffPickup_SetCooldown(cvar("g_buffs_reactivate_delay") + frametime);
+            Buffs_BuffPickup_SetCooldown(self, cvar((self.buffs & (self.buffs - 1))? "g_buffs_reactivate_delay_dual" : "g_buffs_reactivate_delay") + frametime);
         self.owner = world;
     }
     
@@ -783,7 +790,7 @@ void Buffs_BuffPickup_ResetWaypoint(void) {
 
 void Buffs_BuffPickup_Reset(void) {
     self.owner = world;
-    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
+    Buffs_BuffPickup_SetInitialCooldown(self);
     Buffs_BuffPickup_ResetWaypoint();
     self.buff_activetime_updated = FALSE;
 }
@@ -873,7 +880,7 @@ void Buffs_BuffPickup_Setup(void) {
     self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
     self.scale = 1.5;
-    Buffs_BuffPickup_SetCooldown(cvar("g_buffs_activate_delay"));
+    Buffs_BuffPickup_SetInitialCooldown(self);
     self.buff_active = !self.buff_activetime;
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.pflags = PFLAGS_FULLDYNAMIC;

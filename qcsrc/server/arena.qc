@@ -54,6 +54,8 @@ void reset_map(float dorespawn)
     if(cvar("g_swap_teams"))
         SwapTeams();
     
+    Buffs_Randomize(world, FALSE);
+    
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
 	{
@@ -72,8 +74,6 @@ void reset_map(float dorespawn)
 			remove(self);
 		}
 	}
-    
-    Buffs_Randomize(world, FALSE);
     
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )
