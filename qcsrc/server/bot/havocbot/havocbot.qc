@@ -5,6 +5,21 @@
 #include "role_freeze.qc"
 #include "roles.qc"
 
+float IsDifferentTeam(entity a, entity b)
+{
+	if(teams_matter)
+	{
+		if(a.team == b.team)
+			return 0;
+	}
+	else
+	{
+		if(a == b)
+			return 0;
+	}
+	return 1;
+}
+
 void havocbot_ai()
 {
 	if(self.draggedby)
@@ -1387,44 +1402,13 @@ vector havocbot_dodge()
 	dodge = '0 0 0';
 	bestdanger = -20;
 	// check for dangerous objects near bot or approaching bot
-	head = findradius(self.origin, 400);
+	head = findradius(self.origin, 600);
 	while(head)
 	{
 		if (head.bot_dodge)
-		if (head.owner != self)
+		if (IsDifferentTeam(self, head) && head.owner != self)
+		//if (head.owner != self) //havoc`s version. bad for some reasons
 		{
-// 			if(head.hg_type == HG_NAPALM)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the fire!!!\n");
-// 			}
-// 			else if(head.hg_type == HG_PLASMA)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the plasma!!!\n");
-// 			}
-// 			else if(head.projectiledeathtype == HG_PLASMA_SHARD)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the plasma shard!!!\n");
-// 			}
-// 			else if(head.hg_type == HG_REMOTE)
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see the TRAP!!!\n");
-// 			}
-// 			else
-// 			{
-// 				bprint(self.netname);
-// 				bprint(" - said:");
-// 				bprint("I see Danger!!!\n");
-// 			}
-
-			
 			vl = vlen(head.velocity);
 			if (vl > sv_maxspeed * 0.3)
 			{

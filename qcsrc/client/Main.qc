@@ -523,9 +523,11 @@ void PostInit(void)
             localcmd("seta rm_showtimer 0; showtimer 0\n");
         case 41:
             localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
+        case 42:
+            localcmd("seta rm_nododging 0; rm_nododging 0\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 42\n");
+		localcmd("seta rm_initialized 43\n");
 		RM_OUTDATED
 		break;
 	}
@@ -554,7 +556,7 @@ void PostInit(void)
 	rm_oldbigfont = cvar("rm_oldbigfont");
     rm_showtimer = cvar("rm_showtimer");
     rm_shownadgetregen = cvar("rm_shownadgetregen");
-	
+    
 	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
@@ -585,6 +587,7 @@ void PostInit(void)
 	registercmd("freezetag_danger_silent");
     registercmd("showtimer");
     registercmd("shownadgetregen");
+    registercmd("nododging");
 	// -- //
 	registercmd("hudskin");
 	
@@ -713,6 +716,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2nododging^7: If enabled, ingame dodging will be switched off (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
@@ -754,6 +758,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
+		strCmd == "nododging"		||
 		strCmd == "showrankings"		||
         strCmd == "showtimer"           ||
         strCmd == "shownadgetregen"     ||
@@ -783,6 +788,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_oldbigfont = cvar("rm_oldbigfont");
         rm_showtimer = cvar("rm_showtimer");
         rm_shownadgetregen = cvar("rm_shownadgetregen");
+        //rm_nododging = cvar("rm_nododging");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -800,6 +806,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cl_cmd sbar_columns_set default\n");
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+		else if(strCmd == "nododging")
+			localcmd("cmd nododging ", ftos(cvar("rm_nododging")), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT

@@ -53,7 +53,7 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "noflags", "Country flags in scoreboard"));
 	me.TR(me);
-		me.TD (me, 1, 4, e = makeRMCheckBox (0, "hidecountry", "Hide my country"));
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "hidecountry", "Hide my country"));
 			OPTDEP("hidecountry")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "notimer", "\"time\" column in scoreboard"));
@@ -78,6 +78,8 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger_silent", "Without teamchat notification"));
 			OPTDEP("freezetag_danger")
 	me.setFirstColumn(me, me.firstColumn - 0.1);
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable in game Dodging"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD settings:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);

@@ -281,6 +281,11 @@ void SV_ParseClientCommand(string s) {
 			return;
 			
 		self.rm_nokillsound = stof(argv(1));
+	} else if(cmd == "nododging") {
+		if(!self)
+			return;
+			
+		self.rm_nododging = stof(argv(1));
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;

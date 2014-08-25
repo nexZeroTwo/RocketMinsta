@@ -129,20 +129,20 @@ float damage_headshotbonus; // bonus multiplier for head shots, set to 0 after u
 .float taunt_soundtime;
 
 
-float IsDifferentTeam(entity a, entity b)
-{
-	if(teams_matter)
-	{
-		if(a.team == b.team)
-			return 0;
-	}
-	else
-	{
-		if(a == b)
-			return 0;
-	}
-	return 1;
-}
+//float IsDifferentTeam(entity a, entity b)
+//{
+//	if(teams_matter)
+//	{
+//		if(a.team == b.team)
+//			return 0;
+//	}
+//	else
+//	{
+//		if(a == b)
+//			return 0;
+//	}
+//	return 1;
+//}
 
 float IsFlying(entity a)
 {
@@ -1000,7 +1000,7 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {   
+float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc, vector force) {   
     if(roundstate != ROUNDSTATE_GAME)
         heal = 0;
     
@@ -1025,6 +1025,14 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float pause
         HealScore(targ, healer, heal);
         sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
     }
+   
+    	// apply push
+	if (targ.damageforcescale)
+	if (vlen(force))
+	{
+		targ.velocity = targ.velocity + targ.damageforcescale * force;
+		targ.flags &~= FL_ONGROUND;
+	}
     
     return heal;
 }
@@ -1089,8 +1097,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 else {
                     heal = damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC);
                     
-                    if(attacker == targ)
+                    if(attacker == targ) {
                         heal *= cvar("g_buffs_medic_selfhealfactor");
+                    }
                     
                     if(damage_headshotbonus)
                     if(cvar("g_buffs_medic_headshot"))
@@ -1101,7 +1110,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
                 
                 heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, heal);
-                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
+                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc, force);
                 
                 if(heal)
                     Damage_RecordDamage(attacker, deathtype, heal);

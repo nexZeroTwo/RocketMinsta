@@ -669,6 +669,8 @@ float forbidrestart;
 
 .float hidecountry;
 
+.float rm_nododging;
+
 // precious
 .string netname2; // 2nd person netname
 .string netname3; // 3rd person netname
