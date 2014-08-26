@@ -1108,7 +1108,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 
-                if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
+                if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
                     Buffs_ArcDamage(targ, attacker, heal, deathtype);
                     Buffs_ArcDamage_Finalize();
                 }
