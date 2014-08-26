@@ -56,7 +56,7 @@ void Buffs_Init_Delayed(void);
 void Buffs_ClientFrame(void);
 void Buffs_ArcDamage(entity, entity, float, float);
 void Buffs_ArcDamage_Finalize(void);
-void Buffs_BashDamage(entity, entity, entity, float, vector);
+float Buffs_IgniteDamage(entity, entity, entity, float, float);
 void Buffs_VampireDamage(entity, entity, float, float);
 float Buffs_TenacityDamage(entity, entity, float, float);
 void Buffs_BuffPickup_Remove(void);

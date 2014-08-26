@@ -68,7 +68,7 @@ void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float
         WriteByte(MSG_ONE, TE_CSQC_DTRACK);
         WriteByte(MSG_ONE, dtflags);
         WriteShort(MSG_ONE, dtype);
-        WriteShort(MSG_ONE, damage);
+        WriteShort(MSG_ONE, damage * 10);
     }
     
     entity e;
@@ -80,7 +80,7 @@ void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float
                 WriteByte(MSG_ONE, TE_CSQC_DTRACK);
                 WriteByte(MSG_ONE, dtflags | DTFLAG_SPEC);
                 WriteShort(MSG_ONE, dtype);
-                WriteShort(MSG_ONE, damage);
+                WriteShort(MSG_ONE, damage * 10);
             }
 }
 

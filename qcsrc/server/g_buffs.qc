@@ -536,17 +536,37 @@ float Buffs_NadgetRegenDmgPause(entity plr) {
     return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
 }
 
+float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
+    float diffteam;
+    
+    if(damage)
+    if(targ != attacker)
+    if(targ != inflictor)
+    if(attacker.classname == "player")
+    if(deathtype != DEATH_HG_TRANSLOC)
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC)
+    if(BUFFS_PRESENT(attacker, BUFF_IGNITE))
+    if((diffteam = IsDifferentTeam(attacker, targ)) || BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
+        float fdamage = damage * cvar("g_buffs_ignite_damage_fire");
+        if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
+            Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
+        damage = damage * cvar("g_buffs_ignite_damage_base");
+    }
+    
+    return damage;
+}
+
 float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float deathtype) {
     if(!BUFFS_PRESENT(targ, BUFF_TENACITY))
         return damage;
     
-    if(DEATH_ISSPECIAL(deathtype) && deathtype != DEATH_ARC && deathtype != DEATH_BASH)
+    if(DEATH_ISSPECIAL(deathtype) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
         return damage;
     
     if(targ == attacker)
         return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_self")) * Buffs_BuffPower(targ, BUFF_TENACITY));
     
-    if(DEATH_ISHG(deathtype) || (deathtype & HITTYPE_SPLASH) || deathtype == DEATH_ARC || deathtype == DEATH_BASH)
+    if(DEATH_ISHG(deathtype) || (deathtype & HITTYPE_SPLASH) || deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
         return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_aoe")) * Buffs_BuffPower(targ, BUFF_TENACITY));
     
     return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage")) * Buffs_BuffPower(targ, BUFF_TENACITY));
@@ -648,40 +668,6 @@ void Buffs_ArcDamage_Finalize(void) {
 }
 
 .float lastbash;
-
-void Buffs_BashDamage_Proc(entity attacker, entity inflictor, entity ignore, float damage) {
-    if(time - attacker.lastbash < cvar("g_buffs_bash_cooldown") * W_WeaponRateFactor())
-        return;
-    
-    float p = Buffs_BuffPower(attacker, BUFF_BASH);
-    RadiusDamage(inflictor, attacker, damage * cvar("g_buffs_bash_coremultiplier") * p, damage * cvar("g_buffs_bash_edgemultiplier") * p, cvar("g_buffs_bash_radius"), world, damage * cvar("g_buffs_bash_damageforcescale"), DEATH_BASH, ignore);
-    te_blast(RadiusDamage_blastorigin);
-    attacker.lastbash = time;
-}
-
-void Buffs_BashDamage_Think(void) {
-    entity o = self;
-    self = self.chain;
-    Buffs_BashDamage_Proc(o.owner, o, o.aiment, o.cnt);
-    self = o;
-    remove(self);
-}
-
-void Buffs_BashDamage(entity attacker, entity inflictor, entity ignore, float damage, vector loc) {
-    entity e = spawn();
-    e.aiment = ignore;
-    e.enemy = inflictor;
-    e.owner = attacker;
-    e.cnt = damage;
-    e.think = Buffs_BashDamage_Think;
-    e.chain = self;
-    e.nextthink = time;
-    
-    if(loc != '0 0 0')
-        setorigin(e, loc);
-    else
-        setorigin(e, inflictor.origin);
-}
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
     if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
@@ -972,13 +958,17 @@ BUFF_SPAWNFUNCS(guard,      BUFF_GUARD)
 BUFF_SPAWNFUNCS(supply,     BUFF_SUPPLY)
 BUFF_SPAWNFUNCS(haste,      BUFF_HASTE)
 BUFF_SPAWNFUNCS(medic,      BUFF_MEDIC)
-BUFF_SPAWNFUNCS(bash,       BUFF_BASH)
+BUFF_SPAWNFUNCS(ignite,     BUFF_IGNITE)
 BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
 BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
 BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
 BUFF_SPAWNFUNCS(adept,      BUFF_ADEPT)
 BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
+// older RM compatibility
+BUFF_SPAWNFUNCS(bash,       BUFF_IGNITE)
+
+// q3ta compatibility
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scount")

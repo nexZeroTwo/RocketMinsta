@@ -17,6 +17,7 @@ BUILT_PKGINFOS=""
 BUILT_PKGNAMES=""
 COMMONSUM=""
 MENUSUM=""
+CSQCSUM=""
 
 WINDOWS=0
 if [ "$(uname -o)" = "Cygwin" ]; then
@@ -138,14 +139,25 @@ function buildall
     mv -v progs.lno "${SVPROGS%%dat}lno"
 
     buildqc client/
+    
+    if [ "$PACKCSQC" = 1 ]; then
+        rm "csqc.pk3dir"/*.{dat,lno}
+        CSQCSUM="$(md5sum csprogs.dat | sed -e 's/ .*//')"
+        cp -v csprogs.dat "csqc.pk3dir/$CSPROGNAME"
+        cp -v csprogs.lno "csqc.pk3dir/${CSPROGNAME%%dat}lno"
+        makedata csqc "$1" "$2"
+        rm -v "csqc.pk3dir"/*.{dat,lno}
+    fi
+    
     mv -v csprogs.dat "$CSPROGS"
     mv -v csprogs.lno "${CSPROGS%%dat}lno"
-
+    
     buildqc menu/
+    rm "menu.pk3dir"/*.{dat,lno}
     mv -v menu.dat "menu.pk3dir/menu.dat"
     mv -v menu.lno "menu.pk3dir/menu.lno"
     makedata menu "$1" "$2"
-    rm -v "menu.pk3dir"/*.dat
+    rm -v "menu.pk3dir"/*.{dat,lno}
 
     rm -v "$QCSOURCE"/common/rm_auto.qh
     
@@ -240,12 +252,14 @@ function makedata
     rmdata="zzz-rm-$rmdata"
     
     local sum=""
-    if [ "$rmdata" != "zzz-rm-menu" ]; then
+    if [ "$1" = "menu" ]; then
+        sum="$MENUSUM"
+    elif [ "$1" = "csqc" ]; then
+        sum="$CSQCSUM"
+    else
         echo "   -- Calculating md5 sums"
         find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
         sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
-    else
-        sum="$MENUSUM"
     fi
     
     if [ $CACHEPKGS = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
@@ -265,8 +279,8 @@ function makedata
     compress-gfx
     
     echo "   -- Writing version info"
-    echo "RocketMinsta$2 $VERSION client-side package ($3)" >  _pkginfo_$sum.txt
-    echo "Built at $BUILD_DATE"                             >> _pkginfo_$sum.txt
+    echo "RocketMinsta$2 $VERSION client-side package $1 ($3)" >  _pkginfo_$sum.txt
+    echo "Built at $BUILD_DATE"                                >> _pkginfo_$sum.txt
     
     echo "   -- Compressing package"
     if ! rmpack "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *; then
@@ -349,6 +363,11 @@ function is-included
 {
     # special rule: menu package gets built after menu QC
     if [ $1 = "menu" ]; then
+        return 1;
+    fi
+    
+    # special rule: csqc package gets built after client QC
+    if [ $1 = "csqc" ]; then
         return 1;
     fi
     
@@ -487,6 +506,11 @@ if [ -n "$BUILDNAME" ]; then
     BRANCH=$BUILDNAME
 fi
 
+if [ -z "$PACKCSQC" ]; then
+    warn-oldconfig "config.sh" "PACKCSQC" "1"
+    PACKCSQC=1
+fi
+
 CACHEDIR="$(readlink -f "${CACHEDIR}/")"
 BUILDDIR="$(readlink -f "${BUILDDIR}/")"
 
@@ -500,8 +524,10 @@ configtest
 
 removeoldfiles
 
-SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
-CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+SVPROGNAME="$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
+CSPROGNAME="$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+SVPROGS="$BUILDDIR/$SVPROGNAME"
+CSPROGS="$BUILDDIR/$CSPROGNAME"
 
 if [ "$1" = "release" ]; then
     RELEASE=1

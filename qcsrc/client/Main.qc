@@ -2103,7 +2103,7 @@ void Net_DamageTracker() {
         }
     } else {        
         dtype = ReadShort();
-        damage = ReadShort();
+        damage = ReadShort() / 10;
         DamageTracker_Record(k, dtype, damage);
         DamageTracker_Sort(k);
     }
