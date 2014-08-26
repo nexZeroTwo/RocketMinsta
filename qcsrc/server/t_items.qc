@@ -825,9 +825,9 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 			setorigin(self, self.origin + '0 0 1');
 			// set item size before we spawn a spawnfunc_waypoint
 			if((itemflags & FL_POWERUP) || self.health || self.armorvalue)
-				setsize (self, '-16 -16 0', '16 16 48');
+				setsize(self, '-16 -16 0', '16 16 0' + '0 0 48' * cvar("g_pickup_heightscale"));
 			else
-				setsize (self, '-16 -16 0', '16 16 32');
+				setsize(self, '-16 -16 0', '16 16 0' + '0 0 32' * cvar("g_pickup_heightscale"));
 			// note droptofloor returns FALSE if stuck/or would fall too far
 			droptofloor();
 			waypoint_spawnforitem(self);
@@ -992,9 +992,9 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 	setmodel (self, self.mdl); // precision set below
 	self.effects |= EF_LOWPRECISION;
 	if((itemflags & FL_POWERUP) || self.health || self.armorvalue)
-		setsize (self, '-16 -16 0', '16 16 48');
+		setsize(self, '-16 -16 0', '16 16 0' + '0 0 48' * cvar("g_pickup_heightscale"));
 	else
-		setsize (self, '-16 -16 0', '16 16 32');
+		setsize(self, '-16 -16 0', '16 16 0' + '0 0 32' * cvar("g_pickup_heightscale"));
 	if(itemflags & FL_WEAPON)
 		self.modelflags |= MF_ROTATE;
 

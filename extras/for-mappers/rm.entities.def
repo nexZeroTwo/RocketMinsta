@@ -176,24 +176,24 @@ The Medic Buff (Pink Team)
 */
 
 
-/*QUAKED item_buff_bash (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
-The Bash Buff
+/*QUAKED item_buff_ignite (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff
 */
 
-/*QUAKED item_buff_bash_team1 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
-The Bash Buff (Red Team)
+/*QUAKED item_buff_ignite_team1 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Red Team)
 */
 
-/*QUAKED item_buff_bash_team2 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
-The Bash Buff (Blue Team)
+/*QUAKED item_buff_ignite_team2 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Blue Team)
 */
 
-/*QUAKED item_buff_bash_team3 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
-The Bash Buff (Yellow Team)
+/*QUAKED item_buff_ignite_team3 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Yellow Team)
 */
 
-/*QUAKED item_buff_bash_team4 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
-The Bash Buff (Pink Team)
+/*QUAKED item_buff_ignite_team4 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Pink Team)
 */
 
 

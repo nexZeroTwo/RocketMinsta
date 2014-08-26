@@ -1086,16 +1086,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(cvar("g_nadgets_transloc_counters_shield"))
             damage = cvar("g_nadgets_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
-        if(BUFFS_PRESENT(attacker, BUFF_BASH) && !RadiusDamage_running && deathtype != DEATH_BASH && !inflictor.iscreature && !DEATH_ISHG(deathtype)) {
-            Buffs_BashDamage(attacker, inflictor, targ, damage, hitloc);
-        }
-        
-        if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_BASH || deathtype == DEATH_ARC)) {
+        if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_IGNITE || deathtype == DEATH_ARC)) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal;
                 
-                if(deathtype == DEATH_ARC)
-                    // arc scales off the original heal, so leave it as is
+                if(deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
+                    // arc and ignite scale off the original heal, so leave it as is
                     heal = damage;
                 else {
                     heal = damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC);
@@ -1111,6 +1107,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     }
                 }
                 
+                heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
                 heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, heal);
                 heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
                 
@@ -1122,12 +1119,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 
-                if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC) {
+                if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
                     Buffs_ArcDamage(targ, attacker, heal, deathtype);
                     Buffs_ArcDamage_Finalize();
                 }
                 return;
-            } else if(!g_clanarena) if(!attacker.hg_shield)
+            } else if(!g_clanarena) if(!attacker.hg_shield) if(deathtype != DEATH_ARC) if(deathtype != DEATH_IGNITE)
                 damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * Buffs_BuffPower(attacker, BUFF_MEDIC));
         }
         
@@ -1575,7 +1572,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-            if(!DEATH_ISHG(deathtype)) {
+            if(!DEATH_ISHG(deathtype)) if(deathtype != DEATH_IGNITE) {
                 if(targ_is_player) {
                     if(IsHeadshot(damage_origtarget, attacker, hitloc))
                         deathtype |= HITTYPE_HEADSHOT;
@@ -1860,7 +1857,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
     
-    if(deathtype != DEATH_BASH)
     if(!inflictor.damage_noinfo && deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
 	{
 		force = inflictor.velocity;
@@ -1975,11 +1971,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 									stat_maxdamage += coredamage;
 								}
 							}
-                            
-                            if(targ == directhitentity && deathtype == DEATH_BASH) {
-                                targ.vdmg_ignorenext = TRUE;
-                                finaldmg = 0;
-                            }
                             
                             if(targ == directhitentity || DEATH_ISSPECIAL(deathtype) || DEATH_ISHG(deathtype))
                                 Damage (targ, inflictor, attacker, finaldmg, deathtype, nearest, force);

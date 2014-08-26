@@ -563,8 +563,8 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             msg_entity = e;
             WriteByte(MSG_ONE, SVC_TEMPENTITY);
             WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
-            WriteShort(MSG_ONE, hdmg);
-            WriteShort(MSG_ONE, admg);
+            WriteShort(MSG_ONE, hdmg * 10);
+            WriteShort(MSG_ONE, admg * 10);
             if(check == attacker && check != targ) {
                 WriteByte(MSG_ONE, htype);
                 WriteCoord(MSG_ONE, org_x);
@@ -595,6 +595,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 
     if(damage) {
+        damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
+        
         if(g_nadgets)
         if(attacker.iscreature)
         if(self.hg_shield) {
@@ -741,7 +743,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 htype |= VDMG_TYPE_LETHAL;
             
             if(!g_minstagib)
-                VisualDamage(attacker, self, rdmg, rint(save), htype, hitloc);
+                VisualDamage(attacker, self, cdmg, save, htype, hitloc);
             
             if(attacker != self)
             if(!sameteam)
@@ -809,9 +811,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		else
 			self.max_armorvalue += (save + take);
 	}
-	self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
-	self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
-	self.dmg_inflictor = inflictor;
+    
+    if(deathtype != DEATH_IGNITE) {
+        self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
+        self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
+    }
+	
+    self.dmg_inflictor = inflictor;
 
 	if(attacker == self)
 	{

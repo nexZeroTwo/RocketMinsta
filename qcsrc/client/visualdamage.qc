@@ -54,6 +54,7 @@ void VisualDamage_PreDraw(void) {
     entity e;
     string s, s2;
     vector o;
+    float tmp;
     
     drawfont = sbar_bigfont;
     rm_visualdamage_fontsize = cvar("rm_visualdamage_fontsize");
@@ -73,10 +74,21 @@ void VisualDamage_PreDraw(void) {
         if(!e.vd_damage && !e.vd_armordamage)
             s2 = "Immune";
         else {
-            if(e.vd_damage)
-                s = ftos(e.vd_damage);
-            if(e.vd_armordamage)
-                s2 = strcat((e.vd_damage? "  [" : "["), ftos(e.vd_armordamage), "]");
+            if(e.vd_damage) {
+                s = ftos((e.vd_damage < 10)? e.vd_damage : rint(e.vd_damage));
+                tmp = strstrofs(s, ".", 0);
+                if(tmp >= 0)
+                    s = substring(s, 0, tmp + 2);
+            }
+            
+            if(e.vd_armordamage) {
+                s2 = ftos((e.vd_armordamage < 10)? e.vd_armordamage : rint(e.vd_armordamage));
+                tmp = strstrofs(s2, ".", 0);
+                if(tmp >= 0)
+                    s2 = substring(s2, 0, tmp + 2);
+                
+                s2 = strcat((e.vd_damage? "  [" : "["), s2, "]");
+            }
         }
         
         e.vd_str = s;
@@ -210,8 +222,8 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
 
 void Net_VisualDamage(void) {
     vector org;
-    float dmg = ReadShort();
-    float admg = ReadShort();
+    float dmg = ReadShort() / 10;
+    float admg = ReadShort() / 10;
     float type = ReadByte();
     
     if(!(type & VDMG_TYPE_TOSELF)) {
