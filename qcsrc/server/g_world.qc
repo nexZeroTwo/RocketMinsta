@@ -1450,6 +1450,9 @@ void NextLevel()
 	float score;
 	float f;
 
+    if(!realclients) if(!cvar("g_endmatch"))
+        return;
+
 	gameover = TRUE;
 
 	intermission_running = 1;
@@ -2032,9 +2035,6 @@ void CheckRules_World()
 	float timelimit;
 	float fraglimit;
     
-    if(!realclients)
-        return;
-    
 	VoteThink();
 	MapVote_Think();
 
@@ -2062,9 +2062,9 @@ void CheckRules_World()
 	
 	if(cvar("g_endmatch"))
 	{
-		cvar_set("g_endmatch", "0");
 		print("^1Endmatching the game\n");
 		NextLevel();
+		cvar_set("g_endmatch", "0");
 		return;
 	}
 
