@@ -212,8 +212,11 @@ void W_MinstaNex_Attack (void)
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	{
-		if (g_minstagib && !cvar("g_minstagib_ammo_unlimited"))
-			self.ammo_cells = self.ammo_cells - 1;
+		if (g_minstagib){
+			if (!cvar("g_minstagib_ammo_unlimited")){
+				self.ammo_cells = self.ammo_cells - 1;
+			}
+		}
 		else
 			self.ammo_cells = self.ammo_cells - cvar("g_balance_minstanex_ammo");
 	}
