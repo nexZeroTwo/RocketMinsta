@@ -1305,19 +1305,21 @@ void HG_Linker_Think() {
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
                 if(denom > 1) {
                     float newhealth = thealth / denom;
+                    float newarmor = tarmor / denom;
                     
-                    if(newhealth > p.health)
-                        Heal(p, self, self.owner, newhealth - p.health, 0, '0 0 0');
+                    Heal(p, self, self.owner,
+                            max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, DEATH_LINKER_SHARE,
+                            HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
                     
                     p.health = newhealth;
-                    p.armorvalue = tarmor / denom;
+                    p.armorvalue = newarmor;
+                } else {
+                    p.pauserothealth_finished = max(p.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
+                    p.pauserotarmor_finished  = max(p.pauserotarmor_finished,  time + cvar("g_balance_pause_armor_rot"));
                 }
                 
-                p.pauserothealth_finished = max(p.pauserothealth_finished, time + 2);
-                p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
-            
                 if(self.hg_linker_hps)
-                    Heal(p, world, self.owner, self.hg_linker_hps, 0, '0 0 0');
+                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER, 0, 0, '0 0 0');
             }
         }
     }

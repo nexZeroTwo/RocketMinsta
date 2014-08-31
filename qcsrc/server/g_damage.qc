@@ -1011,33 +1011,59 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float pauserot, vector hitloc) {   
-    if(roundstate != ROUNDSTATE_GAME)
-        heal = 0;
+float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc) {
+    if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
+    else        hlimit = g_balance_health_limit;
+    if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
+    else        alimit = g_balance_armor_limit;
     
-    if(g_clanarena) if(inflictor.classname != "hg_linker") {
+    if(g_clanarena) if(healtype != DEATH_LINKER_SHARE) {
         float lim = cvar("g_clanarena_heal_limit");
-        if(lim)
-            heal = max(0, min(heal, lim - targ.health));
+        hlimit = min(hlimit, lim);
+        alimit = min(alimit, lim);
     }
     
-    heal = max(0, min(heal, g_balance_health_limit - targ.health));
+    float silent = (healtype == DEATH_ITEM);
+    
+    if(pauserot  < 0) pauserot  = cvar("g_balance_pause_health_rot");
+    if(pausearot < 0) pausearot = cvar("g_balance_pause_armor_rot");
+    
+    if(roundstate == ROUNDSTATE_OVER)
+        heal = aheal = 0;
+    else {
+        heal  = max(0, min(heal,  hlimit - targ.health));
+        aheal = max(0, min(aheal, alimit - targ.armorvalue));
+    }
     
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
-    if(time > targ.heal_next_particle) {
-        te_heal(targ);
-        targ.heal_next_particle = time + 0.2;
+    targ.armorvalue += aheal;
+    targ.pauserotarmor_finished = max(targ.pauserotarmor_finished, time + pausearot);
+    
+    if(heal || aheal) {
+        float vdtype = VDMG_TYPE_HEAL;
+        
+        if(heal >= 100 || aheal >= 100)
+            vdtype |= VDMG_TYPE_CRIT;
+        else if(DEATH_ISWEAPON(healtype, WEP_CAMPINGRIFLE) && (healtype & HITTYPE_HEADSHOT))
+            vdtype |= VDMG_TYPE_CRIT;
+        
+        VisualDamage(healer, targ, heal, aheal, vdtype, hitloc);
+        HealScore(targ, healer, heal + aheal);
+        
+        if(!silent) {
+            if(time > targ.heal_next_particle) {
+                te_heal(targ);
+                targ.heal_next_particle = time + 0.2;
+            }
+            
+            if(heal)  sound(targ, CHAN_AUTO, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
+            if(aheal) sound(targ, CHAN_AUTO, "misc/armor10.wav", VOL_BASE, ATTN_NORM);
+        }
     }
     
-    if(heal) {
-        VisualDamage(healer, targ, heal, 0, VDMG_TYPE_HEAL | (headshot? VDMG_TYPE_CRIT : 0), hitloc);
-        HealScore(targ, healer, heal);
-        sound(targ, CHAN_TRIGGER, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
-    }
-    
-    return heal;
+    return heal + aheal;
 }
 
 // these are updated by each Damage call for use in button triggering and such
@@ -1103,13 +1129,14 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     if(cvar("g_buffs_medic_headshot"))
                     if(IsHeadshot(targ, attacker, hitloc)) {
                         heal *= 1 + damage_headshotbonus;
+                        deathtype |= HITTYPE_HEADSHOT;
                         headshot = TRUE;
                     }
                 }
                 
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
                 heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, heal);
-                heal = Heal(targ, inflictor, attacker, heal, cvar("g_buffs_medic_pauserot"), hitloc);
+                heal = Heal(targ, inflictor, attacker, heal, 0, cvar("g_buffs_medic_maxhealth"), 0, deathtype, cvar("g_buffs_medic_pauserot"), 0, hitloc);
                 
                 if(heal)
                     Damage_RecordDamage(attacker, deathtype, heal);
@@ -1676,6 +1703,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         if(attacker_is_player)
         if(!targ_is_player)
+        if(t_oldhealth >= 0)
         if(t_oldarmor > targ.armorvalue || t_oldhealth > targ.health) {
             float dtype = VDMG_TYPE_HIT | VDMG_TYPE_NOTPLAYERTARGET;
             if(deathtype & HITTYPE_HEADSHOT)

@@ -775,3 +775,5 @@ float roundstate;
 .float vdmg_ignorenext;
 float sv_nicehealth;
 float sv_showacc;
+
+#define HEAL_PAUSEROT_DEFAULT -1

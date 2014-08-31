@@ -483,9 +483,49 @@ void Boobs_DropAll(vector);
 .float loscheck_found;
 .float loscheck_solid;
 
+float VisualDamage_CheckLOS(entity viewer, entity targ, vector hitloc) {
+    vector p1, p2;
+    float found;
+    
+    p1 = viewer.origin + viewer.view_ofs;
+    if(hitloc != '0 0 0')
+        p2 = hitloc;
+    else
+        p2 = targ.origin + targ.view_ofs;
+    
+    while(TRUE) {
+        traceline(p2, p1, FALSE, targ);
+        
+        if(trace_ent == viewer) {
+            found = TRUE;
+            break;
+        }
+        
+        if(!trace_ent || trace_fraction == 1)
+            break;
+        
+        trace_ent.loscheck_found = TRUE;
+        trace_ent.loscheck_solid = trace_ent.solid;
+        
+        if(trace_ent.solid == SOLID_BSP)
+            break;
+        
+        trace_ent.solid = SOLID_NOT;
+    }
+    
+    entity e = findfloat(world, loscheck_found, TRUE);
+    while(e) {
+        e.solid = e.loscheck_solid;
+        e.loscheck_found = FALSE;
+        e = findfloat(e, loscheck_found, TRUE);
+    }
+    
+    return found;
+}
+
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc) {
     entity e;
-    vector offs, org, p1, p2;
+    vector org;
     float found;
     
     if(targ.vdmg_ignorenext) {
@@ -503,46 +543,13 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     if(teams_matter && attacker != targ && attacker.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == attacker))
         htype |= VDMG_TYPE_TEAMHIT;
     
-    if(htype & VDMG_TYPE_HEAL && (hdmg >= 100 || admg >= 100))
-        // EPIC HEALZ!!!
-        htype |= VDMG_TYPE_CRIT;
-    
     if(htype & VDMG_TYPE_TEAMHIT && !hdmg && !admg)
         return;
     
-    offs = attacker.maxs_z * '0 0 0.5';
-    p1 = attacker.origin + attacker.view_ofs;
-    p2 = targ.origin + targ.view_ofs;
-    
     if(attacker) {
-        if(cvar("sv_showdamage_checklos") && htype != VDMG_TYPE_HEAL && attacker != targ) {
-            while(TRUE) {
-                traceline(p2, p1, FALSE, targ);
-                
-                if(trace_ent == attacker) {
-                    found = TRUE;
-                    break;
-                }
-                
-                if(!trace_ent || trace_fraction == 1)
-                    break;
-                
-                trace_ent.loscheck_found = TRUE;
-                trace_ent.loscheck_solid = trace_ent.solid;
-                
-                if (trace_ent.solid == SOLID_BSP)
-                    break;
-                
-                trace_ent.solid = SOLID_NOT;
-            }
-            
-            e = findfloat(world, loscheck_found, TRUE);
-            while(e) {
-                e.solid = e.loscheck_solid;
-                e.loscheck_found = FALSE;
-                e = findfloat(e, loscheck_found, TRUE);
-            }
-        } else
+        if(cvar("sv_showdamage_checklos"))
+            found = VisualDamage_CheckLOS(attacker, targ, hitloc);
+        else
             found = TRUE;
     }
     
@@ -553,27 +560,43 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     
     org = org + min(45, targ.maxs_z) * '0 0 1.5';
     
-    FOR_EACH_REALCLIENT(e)
-        if(((found && e       == attacker) || e       == targ) ||
-          (((found && e.enemy == attacker) || e.enemy == targ) && e.classname == "spectator")) {
-            entity check = e;
-            if(!check.iscreature)
-                check = check.enemy;
+    FOR_EACH_REALCLIENT(e) {
+        entity check = e;
+        if(check.classname == "spectator")
+            check = check.enemy;
+        
+        if(cvar("sv_showdamage_global") || check == attacker || check == targ) {
+            float stype = htype;
+            
+            if(check == attacker) {
+                if(!found)
+                    continue;
+            } else if(check != targ) {
+                if(cvar("sv_showdamage_global_checklos"))
+                if(!VisualDamage_CheckLOS(check, targ, hitloc))
+                    continue;
+                
+                stype |= VDMG_TYPE_ALIEN;
+                if(teams_matter && check != targ && check.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == check))
+                    stype |= VDMG_TYPE_TEAMHIT;
+            }
             
             msg_entity = e;
             WriteByte(MSG_ONE, SVC_TEMPENTITY);
             WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
             WriteShort(MSG_ONE, hdmg * 10);
             WriteShort(MSG_ONE, admg * 10);
-            if(check == attacker && check != targ) {
-                WriteByte(MSG_ONE, htype);
+            
+            if(check == targ)
+                WriteByte(MSG_ONE, stype | VDMG_TYPE_TOSELF);
+            else {
+                WriteByte(MSG_ONE, stype);
                 WriteCoord(MSG_ONE, org_x);
                 WriteCoord(MSG_ONE, org_y);
                 WriteCoord(MSG_ONE, org_z);
-            } else {
-                WriteByte(MSG_ONE, htype | VDMG_TYPE_TOSELF);
             }
         }
+    }
 }
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
