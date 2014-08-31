@@ -1017,7 +1017,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
     if(pauserot  < 0) pauserot  = cvar("g_balance_pause_health_rot");
     if(pausearot < 0) pausearot = cvar("g_balance_pause_armor_rot");
     
-    if(roundstate != ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_OVER)
         heal = aheal = 0;
     else {
         heal  = max(0, min(heal,  hlimit - targ.health));
