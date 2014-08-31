@@ -1691,6 +1691,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         if(attacker_is_player)
         if(!targ_is_player)
+        if(t_oldhealth >= 0)
         if(t_oldarmor > targ.armorvalue || t_oldhealth > targ.health) {
             float dtype = VDMG_TYPE_HIT | VDMG_TYPE_NOTPLAYERTARGET;
             if(deathtype & HITTYPE_HEADSHOT)
