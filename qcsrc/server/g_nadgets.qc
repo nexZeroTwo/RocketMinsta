@@ -1313,8 +1313,8 @@ void HG_Linker_Think() {
                     p.armorvalue = tarmor / denom;
                 }
                 
-                p.pauserothealth_finished = max(p.pauserothealth_finished, time + 2);
-                p.pauserotarmor_finished = max(p.pauserotarmor_finished, time + 3);
+                p.pauserothealth_finished = max(p.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
+                p.pauserotarmor_finished  = max(p.pauserotarmor_finished,  time + cvar("g_balance_pause_armor_rot"));
             
                 if(self.hg_linker_hps)
                     Heal(p, world, self.owner, self.hg_linker_hps, 0, '0 0 0');
