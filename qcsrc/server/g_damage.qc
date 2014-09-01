@@ -1124,7 +1124,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
                 
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
-                heal = bound(0, cvar("g_buffs_medic_maxhealth") - targ.health, heal);
                 heal = Heal(targ, inflictor, attacker, heal, 0, cvar("g_buffs_medic_maxhealth"), 0, deathtype, cvar("g_buffs_medic_pauserot"), 0, hitloc);
                 
                 if(heal)
