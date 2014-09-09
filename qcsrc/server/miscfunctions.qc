@@ -1357,6 +1357,11 @@ float announce(entity player, string filename)
         }
     return FALSE;
 }
+void announce_publicly(entity player, string filename)
+{
+	//FIXME: this will play the sound using the SERVER's announcer!
+	sound(player, CHAN_VOICE, strcat("sound/announcer/", cvar_string("cl_announcer"), "/", filename) , VOL_BASEVOICE, ATTN_NORM);
+}
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
 float spamsound(entity e, float chan, string samp, float vol, float atten)
 {
@@ -1528,35 +1533,36 @@ void precache()
     if (g_jetpack)
         precache_sound ("misc/jetpack_fly.wav");
 
+    string announcer_base_path = strcat("sound/announcer/", cvar_string("cl_announcer"), "/");
     // announcer sounds - male
-    precache_sound ("announcer/male/electrobitch.wav");
-    precache_sound ("announcer/male/airshot.wav");
-    precache_sound ("announcer/male/03kills.wav");
-    precache_sound ("announcer/male/05kills.wav");
-    precache_sound ("announcer/male/10kills.wav");
-    precache_sound ("announcer/male/15kills.wav");
-    precache_sound ("announcer/male/20kills.wav");
-    precache_sound ("announcer/male/25kills.wav");
-    precache_sound ("announcer/male/30kills.wav");
-    precache_sound ("announcer/male/botlike.wav");
-    precache_sound ("announcer/male/yoda.wav");
-    precache_sound ("announcer/male/amazing.wav");
-    precache_sound ("announcer/male/awesome.wav");
-    precache_sound ("announcer/male/headshot.wav");
-    precache_sound ("announcer/male/impressive.wav");
+    precache_sound (strcat(announcer_base_path, "announceelectrobitch.wav"));
+    precache_sound (strcat(announcer_base_path, "airshot.wav"));
+    precache_sound (strcat(announcer_base_path, "03kills.wav"));
+    precache_sound (strcat(announcer_base_path, "05kills.wav"));
+    precache_sound (strcat(announcer_base_path, "10kills.wav"));
+    precache_sound (strcat(announcer_base_path, "15kills.wav"));
+    precache_sound (strcat(announcer_base_path, "20kills.wav"));
+    precache_sound (strcat(announcer_base_path, "25kills.wav"));
+    precache_sound (strcat(announcer_base_path, "30kills.wav"));
+    precache_sound (strcat(announcer_base_path, "botlike.wav"));
+    precache_sound (strcat(announcer_base_path, "yoda.wav"));
+    precache_sound (strcat(announcer_base_path, "amazing.wav"));
+    precache_sound (strcat(announcer_base_path, "awesome.wav"));
+    precache_sound (strcat(announcer_base_path, "headshot.wav"));
+    precache_sound (strcat(announcer_base_path, "impressive.wav"));
 
     // announcer sounds - robotic
-    precache_sound ("announcer/robotic/prepareforbattle.wav");
-    precache_sound ("announcer/robotic/begin.wav");
-    precache_sound ("announcer/robotic/timeoutcalled.wav");
-    precache_sound ("announcer/robotic/1fragleft.wav");
-    precache_sound ("announcer/robotic/2fragsleft.wav");
-    precache_sound ("announcer/robotic/3fragsleft.wav");
-    precache_sound ("announcer/robotic/terminated.wav");
+    precache_sound (strcat(announcer_base_path, "prepareforbattle.wav"));
+    precache_sound (strcat(announcer_base_path, "begin.wav"));
+    precache_sound (strcat(announcer_base_path, "timeoutcalled.wav"));
+    precache_sound (strcat(announcer_base_path, "1fragleft.wav"));
+    precache_sound (strcat(announcer_base_path, "2fragsleft.wav"));
+    precache_sound (strcat(announcer_base_path, "3fragsleft.wav"));
+    precache_sound (strcat(announcer_base_path, "terminated.wav"));
     if (g_minstagib)
     {
-        precache_sound ("announcer/robotic/lastsecond.wav");
-        precache_sound ("announcer/robotic/narrowly.wav");
+	    precache_sound (strcat(announcer_base_path, "lastsecond.wav"));
+	    precache_sound (strcat(announcer_base_path, "narrowly.wav"));
     }
 
     precache_model ("models/sprites/0.spr32");
