@@ -1360,7 +1360,11 @@ float announce(entity player, string filename)
 void announce_publicly(entity player, string filename)
 {
 	//FIXME: this will play the sound using the SERVER's announcer!
-	sound(player, CHAN_VOICE, strcat("sound/announcer/", cvar_string("cl_announcer"), "/", filename) , VOL_BASEVOICE, ATTN_NORM);
+	if (cvar("g_announce_publicly"))
+		sound(player, CHAN_VOICE, strcat("sound/announcer/", cvar_string("cl_announcer"), "/", filename) , VOL_BASEVOICE, ATTN_NORM);
+	else 
+		announce(entity player, string filename);
+		
 }
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
 float spamsound(entity e, float chan, string samp, float vol, float atten)

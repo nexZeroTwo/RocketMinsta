@@ -1,4 +1,4 @@
-string CVAR_CHECK_DEFAULT = "5c7a02e14b06585890fa6910cbbf39af";
+string CVAR_CHECK_DEFAULT = "1b925b39a3ab2cf36f6698d54f4426d7";
 string CVAR_CHECK_BALANCE = "368da7a9afe8a8ea8fcefacd1e2ea5b3";
 
 float	FALSE					= 0;
