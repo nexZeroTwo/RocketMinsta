@@ -75,6 +75,7 @@ void spawnfunc_weapon_laser (void)
 	weapon_defaultspawnfunc(WEP_LASER);
 }
 
+.float timer_cl_hook_laser;
 float w_laser(float req)
 {
 	local float r1;
@@ -100,22 +101,6 @@ float w_laser(float req)
 		{
 			W_Laser_Attack(FALSE);
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_laser_primary_animtime"), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		{
-			if(cvar("g_balance_laser_secondary"))
-			{
-				if (weapon_prepareattack(0, cvar("g_balance_laser_secondary_refire")))
-				{
-					W_Laser_Attack(TRUE);
-					weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_laser_secondary_animtime"), w_ready);
-				}
-			}
-			else
-			{
-				if(self.switchweapon == WEP_LASER) // don't do this if already switching
-					W_SwitchWeapon (self.cnt);
-			}
 		}
 	}
 	else if (req == WR_PRECACHE)

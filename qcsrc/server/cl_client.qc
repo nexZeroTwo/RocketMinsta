@@ -2562,7 +2562,7 @@ void PlayerPreThink (void)
 	}
 
 	if(!zoomstate_set)
-		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX));
+		SetZoomState(self.BUTTON_ZOOM);
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;
