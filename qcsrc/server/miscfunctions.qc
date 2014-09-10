@@ -1363,7 +1363,7 @@ void announce_publicly(entity player, string filename)
 	if (cvar("g_announce_publicly"))
 		sound(player, CHAN_VOICE, strcat("sound/announcer/", cvar_string("cl_announcer"), "/", filename) , VOL_BASEVOICE, ATTN_NORM);
 	else 
-		announce(entity player, string filename);
+		announce(player, filename);
 		
 }
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
