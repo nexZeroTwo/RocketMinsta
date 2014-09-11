@@ -23,6 +23,7 @@ string IRCTabComplete_Match[ITC_MATCH_MAX];
 string IRCTabComplete(entity me, string input, float cursor) {
     string head, tail, word;
     float last = -1, o;
+    float cmdmode;
     
     IRCTabComplete_cursorpos = cursor;
     
@@ -47,41 +48,63 @@ string IRCTabComplete(entity me, string input, float cursor) {
     float s = irc_buffer_session[b];
     string targ = irc_buffer_msgtarget[b];
     
-    if(!targ)
-        return input;
-    
-    if(!IRC_IsJoinedChannel(s, targ))
-        return input;
+    if(substring(input, 0, 1) == "/" && last < 0) {
+        cmdmode = TRUE;
+    } else {
+        if(!targ)
+            return input;
+        
+        if(!IRC_IsJoinedChannel(s, targ))
+            return input;
+    }
     
     float full = TRUE;
-    string nick, lnick;
-    float i, j, nicks = IRC_TokenizeUserList(s, targ);
+    string newword;
+    float i, j;
     string lword = strtolower(word);
     float wlen = strlen(word);
     
     IRCTabComplete_Match_total = 0;
     float maxlen = 0;
     
-    for(i = 0; i < nicks; ++i) {
-        string n = argv(i);
-        if(substring(strtolower(n), 0, wlen) == lword) {
-            IRCTabComplete_Match[IRCTabComplete_Match_total] = n;
-            ++IRCTabComplete_Match_total;
-            float l = strlen(n);
-            if(l > maxlen)
-                maxlen = l;
+    if(cmdmode) {
+        entity cent; FOR_EACH_IRC_COMMAND(cent) {
+            string n = strcat("/", cent.netname); 
+            if(substring(strtolower(n), 0, wlen) == lword) {
+                IRCTabComplete_Match[IRCTabComplete_Match_total] = n;
+                ++IRCTabComplete_Match_total;
+                float l = strlen(n);
+                if(l > maxlen)
+                    maxlen = l;
+                if(IRCTabComplete_Match_total == ITC_MATCH_MAX)
+                    break;
+            }
+        }
+    } else {
+        float nicks = IRC_TokenizeUserList(s, targ);
+        for(i = 0; i < nicks; ++i) {
+            string n = argv(i);
+            if(substring(strtolower(n), 0, wlen) == lword) {
+                IRCTabComplete_Match[IRCTabComplete_Match_total] = n;
+                ++IRCTabComplete_Match_total;
+                float l = strlen(n);
+                if(l > maxlen)
+                    maxlen = l;
+                if(IRCTabComplete_Match_total == ITC_MATCH_MAX)
+                    break;
+            }
         }
     }
     
     if(IRCTabComplete_Match_total < 1) {
-        IRC_PutInBuffer(b, "^8-^1!^8- No matches", IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(b, IRC_MSGPREFIX_ERROR "No matches", IRC_BUFFER_MSGLEVEL_INFO);
         return input;
     }
     
     if(IRCTabComplete_Match_total == 1)
-        nick = strcat(IRCTabComplete_Match[0], " ");
+        newword = strcat(IRCTabComplete_Match[0], " ");
     else {
-        nick = lword;
+        newword = lword;
         float found;
         
         for(i = wlen; i < maxlen; ++i) {
@@ -97,19 +120,19 @@ string IRCTabComplete(entity me, string input, float cursor) {
             if(found)
                 break;
             
-            nick = strcat(nick, chr2str(ch));
+            newword = strcat(newword, chr2str(ch));
         }
         
-        string msg = strcat("^8-^1!^8- Matched nicks:^9");
+        string msg = IRC_MSGPREFIX_INFO "Matches:^9";
         for(i = 0; i < IRCTabComplete_Match_total; ++i)
             msg = strcat(msg, " ", IRCTabComplete_Match[i]);
         IRC_PutInBuffer(b, msg, IRC_BUFFER_MSGLEVEL_INFO);
     }
     
-    IRCTabComplete_cursorpos = cursor + strlen(nick) - strlen(word);
+    IRCTabComplete_cursorpos = cursor + strlen(newword) - strlen(word);
     
     head = substring(head, 0, strlen(head) - strlen(word));
-    return strcat(head, nick, tail);
+    return strcat(head, newword, tail);
 }
 
 float keyDownIRCInputBox(entity me, float key, float ascii, float shift) {

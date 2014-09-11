@@ -124,6 +124,10 @@ void GameCommand(string theCommand)
 	}
 #endif
 
+    if(argv(0) == "irc_cmd") {
+        IRC_Command_Eval(substring(theCommand, argv_start_index(1), strlen(theCommand)), 0);
+        return;
+    }
 
 	print("Invalid theCommand '", theCommand, "'. For a list of supported theCommands, try menu_cmd help.\n");
 }

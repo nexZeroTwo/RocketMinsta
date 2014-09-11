@@ -27,7 +27,9 @@ void IRCInputBoxSend(entity ibox, entity buffer) {
     
     string msgtarget = irc_buffer_msgtarget[buffer.srcBuffer];
     
-    if(!msgtarget) {
+    if(substring(txt, 0, 1) == "/")
+        IRC_Command_Eval(substring(txt, 1, strlen(txt)), buffer.srcBuffer);
+    else if(!msgtarget) {
         IRC_PutInBuffer(buffer.srcBuffer, "^8-^1!^8- Can't send here", IRC_BUFFER_MSGLEVEL_INFO);
     } else {    
         IRC_PutInBuffer(buffer.srcBuffer,

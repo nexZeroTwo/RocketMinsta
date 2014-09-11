@@ -7,6 +7,13 @@
 #define IRC_BUFFER_MSGLEVEL_NORMAL 2
 #define IRC_BUFFER_MSGLEVEL_URGENT 3
 
+#define IRC_MSGPREFIX_INFO      "^8-^5i^8- "
+#define IRC_MSGPREFIX_ERROR     "^8-^1!^8- "
+#define IRC_MSGPREFIX_NOTICE    "^8-^5n^8- "
+#define IRC_MSGPREFIX_ACTION    "^2*** "
+#define IRC_MSGPREFIX_IN        "^2--> "
+#define IRC_MSGPREFIX_OUT       "^1<-- "
+
 float irc_initialized;
 float irc_activebuffer;
 

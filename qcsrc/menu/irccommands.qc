@@ -1,0 +1,75 @@
+
+void IRC_Command_Call(entity cent, string cmdline, float argc, float b, float ishelp) {
+    if(cent.classname != "irc_command") {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR
+                        "Attempted to call invalid command object '",
+                        etos(cent), "'"), IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+    
+    entity oself = self;
+    self = cent;
+    
+    float session = irc_buffer_session[b];
+    string msgtarget = irc_buffer_msgtarget[b];
+    
+    if(ishelp) {
+        if(cent.cmd_help)
+            cent.cmd_help(cmdline, argc, b, session, msgtarget);
+        else
+            IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "'", cent.netname,
+                            "' has no help function"), IRC_BUFFER_MSGLEVEL_INFO);
+    } else {
+        if(cent.cmd_call) {
+            if(argc < cent.cmd_minargs)
+                IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "'", cent.netname, 
+                                "': not enough arguments (see /help ", cent.netname, ")"),
+                                IRC_BUFFER_MSGLEVEL_INFO);
+            else
+                cent.cmd_call(cmdline, argc, b, session, msgtarget);
+        } else
+            IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR,
+                            "'", cent.netname, "' has no call function"),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+    }
+    
+    self = oself;
+}
+
+void IRC_Command_Eval(string cmdline, float b) {
+    float argc = tokenize_console(cmdline);
+    entity cent;
+    
+    FOR_EACH_IRC_COMMAND(cent) if(cent.netname == argv(0)) {
+        IRC_Command_Call(cent, cmdline, argc, b, FALSE);
+        return;
+    }
+    
+    IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                    "'", argv(0), "': command not found"), IRC_BUFFER_MSGLEVEL_INFO);
+}
+
+void IRC_Command_Register(string cname, float minargs, irc_command_f cmdfunc, irc_command_help_f helpfunc) {
+    entity c = spawn();
+    c.classname = "irc_command";
+    c.netname = cname;
+    c.cmd_minargs = minargs;
+    c.cmd_call = cmdfunc;
+    c.cmd_help = helpfunc;
+}
+
+void IRC_Command_test_call(string cmdline, float argc, float b, float session, string targ) {
+    IRC_PutInBuffer(b, IRC_MSGPREFIX_INFO "^6Hello world!", IRC_BUFFER_MSGLEVEL_INFO);
+}
+
+void IRC_Command_echo_call(string cmdline, float argc, float b, float session, string targ) {
+    IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_INFO, 
+                    substring(cmdline, argv_start_index(1), strlen(cmdline))),
+                    IRC_BUFFER_MSGLEVEL_INFO);
+}
+
+void IRC_Command_RegisterAll(void) {
+    IRC_Command_Register("test", 1, IRC_Command_test_call, irc_command_null);
+    IRC_Command_Register("echo", 2, IRC_Command_echo_call, irc_command_null);
+}
+

@@ -18,6 +18,7 @@ oo/base.h
 ../common/dprm.qh
 ../common/irc.qh
 irc.qh
+irccommands.qh
 
 gamecommand.qh
 menu.qh
@@ -41,6 +42,7 @@ menu.qc
 draw.qc
 nexuiz/util.qc
 irc.qc
+irccommands.qc
 
 ../common/dprm.qc
 ../common/campaign_file.qc

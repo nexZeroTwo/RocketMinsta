@@ -60,16 +60,16 @@ void IRC_Init(void) {
         err = "Your engine is outdated. Install the latest DarkPlacesRM from ^2https://github.com/nexAkari/DarkPlacesRM";
     
     if(err) {
-        IRC_PutInBuffer(m, strcat("^8-^1!^8- ^7Can't use IRC: ", err), IRC_BUFFER_MSGLEVEL_NONE);
+        IRC_PutInBuffer(m, strcat(IRC_MSGPREFIX_ERROR "^7Can't use IRC: ", err), IRC_BUFFER_MSGLEVEL_NONE);
         return;
     }
     
     if(cvar("irc_initialized") < 1.8) {
-        IRC_PutInBuffer(m, strcat("^8-^1!^8- ^7Broken libircclient detected (version ", cvar_string("irc_initialized"), "), expect CTCP ACTION (/me messages) to not work."), IRC_BUFFER_MSGLEVEL_NONE);
+        IRC_PutInBuffer(m, strcat(IRC_MSGPREFIX_ERROR "^7Broken libircclient detected (version ", cvar_string("irc_initialized"), "), expect CTCP ACTION (/me messages) to not work."), IRC_BUFFER_MSGLEVEL_NONE);
         IRC_PutInBuffer(m, "Please update libircclient to version 1.8 or higher at ^2http://sourceforge.net/projects/libircclient/", IRC_BUFFER_MSGLEVEL_NONE);
     }
     
-    IRC_PutInBuffer(m, "^8-^5i^8- ^7This interface is not yet complete. Use ^2irc_create^7 followed by ^2irc_connect^7 in console to connect to an IRC server, and then ^2irc_sendraw \"JOIN #channel\"^7 to join a channel.", IRC_BUFFER_MSGLEVEL_NONE);
+    IRC_PutInBuffer(m, IRC_MSGPREFIX_INFO "^7This interface is not yet complete. Use ^2irc_create^7 followed by ^2irc_connect^7 in console to connect to an IRC server, and then ^2irc_sendraw \"JOIN #channel\"^7 to join a channel.", IRC_BUFFER_MSGLEVEL_NONE);
     
     for(s = 0; s < IRC_MAX_SESSIONS; ++s) if(IRC_SessionExists(s)) {
         IRC_CreateBuffer(IRC_ServerBufferName(s), s, string_null);
@@ -79,6 +79,8 @@ void IRC_Init(void) {
     }
     
     IRC_DispatchBufferTextUpdates(m);
+    IRC_Command_RegisterAll();
+    
     irc_initialized = TRUE;
 }
 
@@ -124,7 +126,6 @@ void IRC_PutNoticeInBuffers(float session, string nick, string msg, float lvl) {
 }
 
 void IRC_PreEvent(float session, string event, float numeric, string orig, float argc) {
-    float buff, buff2, i;
     string nick, user, host, spref, s;
     
     if(!irc_initialized)
@@ -152,7 +153,7 @@ float IRC_CheckHilight(float session, string msg, float defaultlvl) {
 }
 
 void IRC_Event(float session, string event, float numeric, string orig, float argc) {
-    float buff, buff2, i;
+    float buff, i;
     string nick, user, host, spref, s;
     
     if(!irc_initialized)
@@ -173,14 +174,14 @@ void IRC_Event(float session, string event, float numeric, string orig, float ar
         IRC_DeleteBuffersByPrefix(IRC_BufferPrefix(session));
     } else if(event == "JOIN") {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
-        IRC_PutInBuffer(buff, strcat("^2--> ^3", nick, "^8!", user, "@", host, "^7 has joined ^2", argv(0)), IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_IN "^3", nick, "^8!", user, "@", host, "^7 has joined ^2", argv(0)), IRC_BUFFER_MSGLEVEL_INFO);
         IRC_DispatchNicklistUpdates();
         
         if(nick == IRC_CurrentNick(session))
             IRC_DispatchIRCJoinEvent(buff);
     } else if(event == "PART") {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
-        s = strcat("^1<-- ^3", nick, "^8!", user, "@", host, "^7 has left ^2", argv(0));
+        s = strcat(IRC_MSGPREFIX_OUT "^3", nick, "^8!", user, "@", host, "^7 has left ^2", argv(0));
         
         if(argv(1) != "")
             s = strcat(s, "^8 [", IRC_IRC2DP(argv(1)), "^8]");
@@ -197,18 +198,18 @@ void IRC_Event(float session, string event, float numeric, string orig, float ar
     } else if(event == "ACTION") {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
         s = IRC_IRC2DP(argv(1));
-        IRC_PutInBuffer(buff, strcat("^2*** ^3", nick, "^7 ", s), IRC_CheckHilight(session, s, IRC_BUFFER_MSGLEVEL_NORMAL));
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_ACTION "^3", nick, "^7 ", s), IRC_CheckHilight(session, s, IRC_BUFFER_MSGLEVEL_NORMAL));
     } else if(event == "NOTICE") {
         if(argv(0) == IRC_CurrentNick(session)) {
-            s = strcat("^8-^5n^8- ^3", nick, "^9:^7 ", IRC_IRC2DP(argv(1)));
+            s = strcat(IRC_MSGPREFIX_NOTICE "^3", nick, "^9:^7 ", IRC_IRC2DP(argv(1)));
             IRC_PutNoticeInBuffers(session, nick, s, IRC_BUFFER_MSGLEVEL_INFO);
         } else {
             buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
             s = IRC_IRC2DP(argv(1));
-            IRC_PutInBuffer(buff, strcat("^8-^5n^8- ^3", nick, "^9 -> ^2", argv(0), "^9:^7 ", s), IRC_CheckHilight(session, s, IRC_BUFFER_MSGLEVEL_INFO));
+            IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_NOTICE "^3", nick, "^9 -> ^2", argv(0), "^9:^7 ", s), IRC_CheckHilight(session, s, IRC_BUFFER_MSGLEVEL_INFO));
         }
     } else if(event == "NICK") {
-        s = strcat("^8-^5i^8- ^3", nick, "^7 is now known as ^3", argv(0));
+        s = strcat(IRC_MSGPREFIX_INFO "^3", nick, "^7 is now known as ^3", argv(0));
         
         buff = IRC_GetBuffer(IRC_QueryBufferName(session, nick));
         if(buff >= 0)
@@ -218,7 +219,7 @@ void IRC_Event(float session, string event, float numeric, string orig, float ar
         IRC_DispatchNicklistUpdates();
     } else if(event == "KICK") {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
-        s = strcat("^1<-- ^3", argv(1), " ^7has been kicked from^2 ", argv(0), "^7 by^3 ", nick);
+        s = strcat(IRC_MSGPREFIX_OUT "^3", argv(1), " ^7has been kicked from^2 ", argv(0), "^7 by^3 ", nick);
         
         if(argv(2) != "")
             s = strcat(s, "^8 [", IRC_IRC2DP(argv(2)), "^8]");
@@ -227,19 +228,19 @@ void IRC_Event(float session, string event, float numeric, string orig, float ar
         IRC_DispatchNicklistUpdates();
     } else if(event == "MODE" && argv(1)) {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
-        IRC_PutInBuffer(buff, strcat("^8-^5i^8- ^3", nick, "^7 set mode on ^2", argv(0), "^7: ", argv(1), " ", argv(2)), IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_INFO "^3", nick, "^7 set mode on ^2", argv(0), "^7: ", argv(1), " ", argv(2)), IRC_BUFFER_MSGLEVEL_INFO);
         IRC_DispatchNicklistUpdates();  // the engine doesn't actually update it's internal nicklist here yet, but it should
     } else if(event == "TOPIC") {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
-        IRC_PutInBuffer(buff, strcat("^8-^5i^8- ^3", nick, "^7 set the topic for ^2", argv(0), "^7: ", IRC_IRC2DP(argv(1))), IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_INFO "^3", nick, "^7 set the topic for ^2", argv(0), "^7: ", IRC_IRC2DP(argv(1))), IRC_BUFFER_MSGLEVEL_INFO);
         IRC_DispatchIRCTitleUpdates();
     } else if(numeric == IRC_RFC_RPL_TOPIC) {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(1)), session, argv(1));
-        IRC_PutInBuffer(buff, strcat("^8-^5i^8- ^7Topic for ^2", argv(1), "^7: ", IRC_IRC2DP(argv(2))), IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_INFO "^7Topic for ^2", argv(1), "^7: ", IRC_IRC2DP(argv(2))), IRC_BUFFER_MSGLEVEL_INFO);
         IRC_DispatchIRCTitleUpdates();
     } else if(numeric == IRC_RFC_RPL_TOPICBY) {
         buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(1)), session, argv(1));
-        IRC_PutInBuffer(buff, strcat("^8-^5i^8- ^7Topic set by ^3", argv(2)), IRC_BUFFER_MSGLEVEL_INFO);
+        IRC_PutInBuffer(buff, strcat(IRC_MSGPREFIX_INFO "^7Topic set by ^3", argv(2)), IRC_BUFFER_MSGLEVEL_INFO);
     } else if(numeric == IRC_RFC_RPL_NAMREPLY) {
         IRC_DispatchNicklistUpdates();
     } else {

@@ -1,0 +1,16 @@
+
+typedef void(string cmdline, float argc, float buff, float session, string targ) irc_command_f;
+typedef irc_command_f irc_command_help_f;
+
+const var irc_command_f irc_command_null;
+
+.irc_command_f cmd_call;
+.irc_command_help_f cmd_help;
+.float cmd_minargs;
+
+void IRC_Command_Call(entity cmd, string cmdline, float argc, float buffer, float ishelp);
+void IRC_Command_Eval(string cmdline, float buffer);
+void IRC_Command_Register(string cname, float minargs, irc_command_f cmdfunc, irc_command_help_f helpfunc);
+void IRC_Command_RegisterAll(void);
+
+#define FOR_EACH_IRC_COMMAND(e) for(e = world; (e = findstring(e, classname, "irc_command"));)
