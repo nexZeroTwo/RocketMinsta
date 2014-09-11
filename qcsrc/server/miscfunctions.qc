@@ -1539,7 +1539,7 @@ void precache()
 
     string announcer_base_path = strcat("sound/announcer/", cvar_string("cl_announcer"), "/");
     // announcer sounds - male
-    precache_sound (strcat(announcer_base_path, "announceelectrobitch.wav"));
+    precache_sound (strcat(announcer_base_path, "electrobitch.ogg"));
     precache_sound (strcat(announcer_base_path, "airshot.wav"));
     precache_sound (strcat(announcer_base_path, "03kills.wav"));
     precache_sound (strcat(announcer_base_path, "05kills.wav"));
