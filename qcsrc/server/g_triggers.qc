@@ -533,24 +533,20 @@ float tracebox_hits_trigger_hurt(vector start, vector mi, vector ma, vector end)
 .float triggerhealtime;
 void trigger_heal_touch()
 {
-	// only do the EXACTTRIGGER_TOUCH checks when really needed (saves some cpu)
-	if (other.iscreature)
-	{
-		if (other.takedamage)
-		if (other.triggerhealtime < time)
-		{
-			EXACTTRIGGER_TOUCH;
-			other.triggerhealtime = time + 1;
-			
-			if (other.health < self.max_health)
-			{
-				other.health = min(other.health + self.health, self.max_health);
-				other.pauserothealth_finished = max(other.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
-				sound (other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
-			}
-		}
-	}
-};
+    // only do the EXACTTRIGGER_TOUCH checks when really needed (saves some cpu)
+    if(other.iscreature) {
+        if(other.takedamage)
+        if(other.triggerhealtime < time) {
+            EXACTTRIGGER_TOUCH;
+            other.triggerhealtime = time + 1;
+            
+            if(other.health < self.max_health) {
+                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
+                sound(other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
+            }
+        }
+    }
+}
 
 void spawnfunc_trigger_heal()
 {

@@ -191,6 +191,7 @@ void cvar_changes_init()
 		// internal
 		BADPREFIX("csqc_");
 		BADPREFIX("cvar_check_");
+        BADPREFIX("sv_world");
 		BADCVAR("gamecfg");
 		BADCVAR("g_configversion");
 		BADCVAR("g_maplist_index");
@@ -211,6 +212,7 @@ void cvar_changes_init()
 		BADPREFIX("v_");
 		BADPREFIX("vid_");
 		BADPREFIX("crosshair");
+        BADPREFIX("rm_");
 		BADCVAR("mod_q3bsp_lightmapmergepower");
 		BADCVAR("mod_q3bsp_nolightmaps");
 
@@ -226,6 +228,11 @@ void cvar_changes_init()
 		BADPREFIX("sv_eventlog");
 		BADPREFIX("sv_logscores_");
 		BADPREFIX("sv_master");
+        BADPREFIX("irc_");
+        BADPREFIX("sv_ircbot");
+        BADPREFIX("sv_gotoserver_");
+        BADPREFIX("sv_vote_");
+        BADPREFIX("sv_ip2country");
 		BADCVAR("g_banned_list");
 		BADCVAR("log_dest_udp");
 		BADCVAR("log_file");
@@ -233,7 +240,6 @@ void cvar_changes_init()
 		BADCVAR("port");
 		BADCVAR("savedgamecfg");
 		BADCVAR("sv_heartbeatperoid");
-		BADCVAR("sv_vote_master_password");
 		BADCVAR("sys_colortranslation");
 		BADCVAR("sys_specialcharactertranslation");
 		BADCVAR("timestamps");
@@ -848,7 +854,19 @@ void spawnfunc_worldspawn (void)
     InitializeEntity(world, ForceModeSpawns, INITPRIO_LAST);
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
-
+    
+    if(cvar("sv_showaccuracy")) {
+        if(g_minstagib)
+            sv_showacc = TRUE;
+        else for(i = WEP_FIRST; i < WEP_COUNT; ++i)
+            if(g_weaponarena == pow(2, i-1)) {
+                sv_showacc = TRUE;
+                break;
+            }
+    }
+    
+    defer(0, fix_team_spawns);
+    
     IRC_Init();
     DPRM_Start();
 }
@@ -1432,6 +1450,9 @@ void NextLevel()
 	float score;
 	float f;
 
+    if(!realclients) if(!cvar("g_endmatch"))
+        return;
+
 	gameover = TRUE;
 
 	intermission_running = 1;
@@ -2014,9 +2035,6 @@ void CheckRules_World()
 	float timelimit;
 	float fraglimit;
     
-    if(!realclients)
-        return;
-    
 	VoteThink();
 	MapVote_Think();
 
@@ -2044,9 +2062,9 @@ void CheckRules_World()
 	
 	if(cvar("g_endmatch"))
 	{
-		cvar_set("g_endmatch", "0");
 		print("^1Endmatching the game\n");
 		NextLevel();
+		cvar_set("g_endmatch", "0");
 		return;
 	}
 

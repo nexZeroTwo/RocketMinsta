@@ -74,6 +74,7 @@ bgmscript.qc
 
 ../common/dprm.qc
 dprm.qc
+../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 ../common/mapinfo.qc

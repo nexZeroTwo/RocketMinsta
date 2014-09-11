@@ -319,9 +319,9 @@ void GrapplingHookTouch (void)
                 return;
             }
             
-            if(other.frozen && time < other.frozen_plasmalock) {
-                te_csqc_lightningarc(other.origin + other.maxs_z * '0 0 0.5', self.owner.origin + self.owner.maxs_z * '0 0 0.5', TRUE, other.frozen_plasmalock_owner.team);
-                Damage(self.owner, other.frozen_plasmalock_owner, other.frozen_plasmalock_owner, cvar("g_nadgets_plasma_projectile_frozenlock_hookdamage"), DEATH_HG_PLASMA, '0 0 0', '0 0 0');
+            if(time < other.hg_plasmalock) {
+                te_csqc_lightningarc(other.origin + other.maxs_z * '0 0 0.5', self.owner.origin + self.owner.maxs_z * '0 0 0.5', TRUE, other.hg_plasmalock_owner.team);
+                Damage(self.owner, other.hg_plasmalock_owner, other.hg_plasmalock_owner, cvar("g_nadgets_plasma_projectile_frozenlock_hookdamage"), DEATH_HG_PLASMA, '0 0 0', '0 0 0');
                 RemoveGrapplingHook(self.owner);
                 return;
             }
@@ -433,14 +433,20 @@ void FireGrapplingHook (void)
 	if(g_freeze)
 	if(self.frozen)
 		return;
-        
+    
+    if(time < self.hg_plasmalock)
+        return;
+    
 	if(g_nadgets && !g_nadgets_detonatelaunches)
 	//if(HG_PlayerMayFire(self) && !CustomHGHookButton(self))
     if(!CustomHGHookButton(self))
 		return;
     
-    if(self.hg_stealth)
+    if(self.hg_stealth) {
+        //HG_Cloak_Trigger();
         self.hg_stealth = 0;
+        self.hg_stealth_saved = 0;
+    }
     
     if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
         return;

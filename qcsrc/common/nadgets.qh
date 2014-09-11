@@ -1,4 +1,5 @@
 
+#define HG_RANDOM       -1337
 #define HG_NORMAL       DEATH_HG_NORMAL
 #define HG_REMOTE       DEATH_HG_REMOTE
 #define HG_PLASMA       DEATH_HG_PLASMA
@@ -16,5 +17,5 @@ float HG_NameToType(string);
 string HG_TypeToExpandedName(float);
 string HG_NameToExpandedName(string);
 vector HG_TypeToColor(float);
-string HG_TypeToIcon(float, float);
-string HG_NameToIcon(string, float);
+string HG_TypeToIcon(float, float, float);
+string HG_NameToIcon(string, float, float);

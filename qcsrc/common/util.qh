@@ -210,3 +210,7 @@ float approach(float v, float t, float d);
 string FormatDamage(float f);
 
 float strcmp(string s1, string s2);
+
+#ifndef SVQC
+string FlagIcon(string cn);
+#endif

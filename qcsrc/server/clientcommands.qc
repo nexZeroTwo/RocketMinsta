@@ -212,6 +212,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("shownames", "sv_shownames")
 		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
+        OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen_time")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
 		
 		#undef OPTAVAIL_RAW
@@ -296,7 +297,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(!cvar("sv_fakeflag"))
+		if(!cvar("sv_fakeflag") && !self.vote_master)
 		{
 			sprint(self, "^1'fakeflag' is forbidden on this server.");
 			
@@ -306,11 +307,44 @@ void SV_ParseClientCommand(string s) {
 			
 			return;
 		}
-		
-		if(strlen(argv(1)) != 2)
-			return;
-		
-		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
+        
+        if(strlen(argv(1)) != 2) {
+            sprint(self, "^1The flag code must be exactly 2 characters long.\n");
+            return;
+        }
+        
+        string cn = strtoupper(argv(1));
+        
+        if(!self.vote_master || tokens < 3) {
+            IP2C_SetCountry_Internal(self, cn);
+            return;
+        }
+        
+        float targetteam;
+        
+               if(argv(2) == "red")       targetteam = COLOR_TEAM1;
+        else   if(argv(2) == "blue")      targetteam = COLOR_TEAM2;
+        else   if(argv(2) == "yellow")    targetteam = COLOR_TEAM3;
+        else   if(argv(2) == "pink")      targetteam = COLOR_TEAM4;
+        else   if(argv(2) == "spec") {
+            FOR_EACH_CLIENT(e) if(!e.iscreature)
+                IP2C_SetCountry_Internal(e, cn);
+        } else if(argv(2) == "all") {
+            FOR_EACH_CLIENT(e)
+                IP2C_SetCountry_Internal(e, cn);
+        } else {
+            f = stof(argv(2));
+            e = edict_num(f);
+            if(!(e.flags & FL_CLIENT)) {
+                sprint(self, strcat("^1Client not found: ", ftos(f), "\n"));
+                return;
+            }
+            IP2C_SetCountry_Internal(e, cn);
+        }
+        
+        if(targetteam) FOR_EACH_CLIENT(e)
+            if(e.team == targetteam || e.jb_specteam == targetteam)
+                IP2C_SetCountry_Internal(e, cn);
 	} else if(cmd == "fovreport") {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
@@ -483,7 +517,7 @@ void SV_ParseClientCommand(string s) {
             
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
-        float term = self.term_authed;
+        float term = (self.term_authed && !self.term_used);
         float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
         
         float t = HG_NameToType(argv(1));
@@ -514,10 +548,14 @@ void SV_ParseClientCommand(string s) {
                         HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
                         
                         if(o || !term) {
-                            self.hg_regentime = HG_RegenTime(self);
-                            self.hg_regenstat = 0;
+                            HG_SetRegenTime(self, HG_RegenTime(self));
                             if(!term)
                                 self.hg_ammo = cvar("g_nadgets_ammo");
+                        }
+                        
+                        if(term) {
+                            self.term_used = TRUE;
+                            self.term_nextuse = time + cvar("g_terminals_auth_cooldown");
                         }
                     }
                     
@@ -608,7 +646,17 @@ void SV_ParseClientCommand(string s) {
 		}
 		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
-	} else if(cmd == "info") {
+	}
+	else if (cmd == "reply") {
+		if(self.lasttell){
+			Say(self, FALSE, self.lasttell, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), TRUE);
+		}
+		else{
+			sprint(self, "No one has sent you any tell messages to reply to.\n");
+		}
+		UnmarkAway(self);
+	}
+	else if(cmd == "info") {
 		cmd = cvar_string(strcat("sv_info_", argv(1)));
 		if(cmd == "")
 			sprint(self, "ERROR: unsupported info command\n");
@@ -641,6 +689,9 @@ void SV_ParseClientCommand(string s) {
 		sprint(self, cvar_changes);
 	} else if(cmd == "afk") {
 		MarkAway(self, 1);
+    } else if(cmd == "removenadgets") {
+        if(sv_cheats || self.maycheat)
+            HG_RemoveAll(self);
 	} else if(cmd == "pointparticles") {
 		if((sv_cheats || self.maycheat) && tokens == 5)
 		{

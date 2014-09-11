@@ -57,6 +57,8 @@ const float TE_CSQC_DTRACK = 121;
 #define VDMG_TYPE_TEAMHIT 8
 #define VDMG_TYPE_TOSELF 16
 #define VDMG_TYPE_NOTPLAYERTARGET 32
+#define VDMG_TYPE_LETHAL 64
+#define VDMG_TYPE_ALIEN 128
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -329,8 +331,11 @@ const float STAT_BUFFS = 92;
 const float STAT_TERM_AUTH = 93;
 const float STAT_STEALTH = 94;
 const float STAT_HGREFIRE = 95;
-const float STAT_HGSHIELDSTORE = 96;
-const float STAT_HGSHIELDSTOREMAX = 97;
+const float STAT_STEALTH_SAVED = 96;
+const float STAT_HGSHIELDSTORE = 97;
+const float STAT_HGSHIELDSTOREMAX = 98;
+const float STAT_HGREGENMAX = 99;
+const float STAT_HGREGENRATE = 100;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
@@ -396,8 +401,8 @@ const float JBMSG_TOOLATE = 5;
 #define SP_MADOKASTATUS 12
 #define SP_AWAYSTATUS 13
 #define SP_PLAYTIME 14
-#define SP_CN_CHAR0 15
-#define SP_CN_CHAR1 16
+#define SP_COUNTRY 15
+#define SP_ACCURACY 16
 #define SP_FPS 17
 #define SP_NADEMODE 18
 #define SP_NADEFRAGS 19
@@ -533,7 +538,10 @@ float DEATH_FIRE = 10017;
 float DEATH_TURRET = 10100;
 float DEATH_NOISE = 10101;
 float DEATH_ARC = 10102;
-float DEATH_BASH = 10103;
+float DEATH_IGNITE = 10103;
+float DEATH_LINKER_SHARE = 10104;
+float DEATH_VAMPIRE = 10105;
+float DEATH_ITEM = 10106;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;

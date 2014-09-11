@@ -78,8 +78,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return HG_TypeToExpandedName(dtype);
     else if(dtype == DEATH_ARC)
         return "Arc Buff";
-    else if(dtype == DEATH_BASH)
-        return "Bash Buff";
+    else if(dtype == DEATH_IGNITE)
+        return "Ignite Buff";
     else { 
         r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
         

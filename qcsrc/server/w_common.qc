@@ -36,13 +36,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	string snd;
 	entity pseudoprojectile;
 	float f, ffs;
-    float bash, bashcd;
-
-    bash = (BUFFS_PRESENT(self, BUFF_BASH) && deathtype != DEATH_HG_SHIELD);
     
-    if(bash)
-        bashcd = cvar("g_buffs_bash_cooldown");
-
 	did_hit = 0;
 
 	railgun_start = start;
@@ -72,12 +66,10 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
 
 		// if it is world we can't hurt it so stop now
-		if (trace_ent == world || trace_fraction == 1) {
-            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents) {
-                if(bash)
-                    Buffs_BashDamage(self, world, world, bdamage, trace_endpos);
+		if(trace_ent == world || trace_fraction == 1) {
+            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
                 break;
-            } else {
+            else {
                 if(++tries == 3)
                     break;
                 start = trace_endpos;
@@ -91,19 +83,8 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		trace_ent.railgunhitsolidbackup = trace_ent.solid;
 
 		// stop if this is a wall
-		if (trace_ent.solid == SOLID_BSP) {
-            if(bash)
-                Buffs_BashDamage(self, world, world, bdamage, trace_endpos);
+		if(trace_ent.solid == SOLID_BSP)
             break;
-        }
-        
-        // if Bash has a cooldown, it will only get off once, so we bash only the first hit entity
-        // otherwise, it will always end up hitting a wall
-        if(bashcd) {
-            f = ExponentialFalloff(mindist, maxdist, halflifedist, (trace_ent.origin - start) * dir);
-            Buffs_BashDamage(self, world, trace_ent, bdamage * f, trace_endpos);
-            bash = bashcd = 0;
-        }
         
 		// make the entity non-solid
 		trace_ent.solid = SOLID_NOT;
@@ -165,17 +146,15 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 		if(teams_matter)
 		if(ent.team == self.team)
+        if(!BUFFS_PRESENT(self, BUFF_MEDIC))
 			did_hit = 0;
 
 		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
 		ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
 
 		// apply the damage
-		if (ent.takedamage) {
-			Damage (ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
-            if(bash)
-                Buffs_BashDamage(self, world, ent, bdamage * f, hitloc);
-        }
+		if (ent.takedamage)
+			Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
 
 		// create a small explosion to throw gibs around (if applicable)
 		//setorigin (explosion, hitloc);
@@ -211,7 +190,6 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 .float dmg_edge;
 .float dmg_force;
 .float dmg_radius;
-.float bash_done;
 
 void W_BallisticBullet_Hit (void)
 {
@@ -227,13 +205,8 @@ void W_BallisticBullet_Hit (void)
     else
         fd = f;
 
-	if(other.solid == SOLID_BSP) {
-        if(BUFFS_PRESENT(self.owner, BUFF_BASH) && !self.bash_done) {
-            self.bash_done = TRUE;
-            Buffs_BashDamage(self.owner, self, world, self.dmg, '0 0 0');
-        } else
-            Damage_DamageInfo(self.origin, self.dmg * fd, 0, 0, max(1, self.dmg_force) * normalize(self.velocity) * f, self.projectiledeathtype, self);
-    }
+	if(other.solid == SOLID_BSP)
+        Damage_DamageInfo(self.origin, self.dmg * fd, 0, 0, max(1, self.dmg_force) * normalize(self.velocity) * f, self.projectiledeathtype, self);
 
 	if(other && other != self.enemy)
 	{
@@ -251,6 +224,7 @@ void W_BallisticBullet_Hit (void)
 
 		if(teamplay)
 		if(other.team == self.owner.team)
+        if(!BUFFS_PRESENT(self.owner, BUFF_MEDIC))
 			hit = 0;
 
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
