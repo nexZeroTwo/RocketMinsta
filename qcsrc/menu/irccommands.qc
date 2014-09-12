@@ -122,7 +122,7 @@ void IRC_Command_part_call(string cmdline, float argc, float b, float s, string 
 }
 
 void IRC_Command_RegisterAll(void) {
-    IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
+    // IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
     IRC_Command_Register("echo",    2, IRC_Command_echo_call,   irc_command_null);
     IRC_Command_Register("msg",     3, IRC_Command_msg_call,    irc_command_null);
     IRC_Command_Register("notice",  3, IRC_Command_msg_call,    irc_command_null);
