@@ -38,6 +38,9 @@ void IRCInputBoxSend(entity ibox, entity buffer) {
         IRC_Privmsg(irc_buffer_session[buffer.srcBuffer], msgtarget, txt);
     }
     
+    ibox.historyPos = 0;
+    bufstr_add(ibox.historyBuff, txt, TRUE);
+    
     ibox.setText(ibox, "");
 }
 

@@ -1,7 +1,8 @@
 #ifdef INTERFACE
 CLASS(IRCInputBox) EXTENDS(NexuizInputBox)
     METHOD(IRCInputBox, keyDown, float(entity, float, float, float))
-    
+    ATTRIB(IRCInputBox, historyBuff, float, -1)
+    ATTRIB(IRCInputBox, historyPos, float, 0)
 ENDCLASS(IRCInputBox)
 entity makeIRCInputBox(void);
 #endif
@@ -11,6 +12,7 @@ entity makeIRCInputBox(void);
 entity makeIRCInputBox(void) {
     entity me;
     me = spawnIRCInputBox();
+    me.historyBuff = buf_create();
     me.configureNexuizInputBox(me, TRUE, string_null);
     return me;
 }
@@ -136,18 +138,38 @@ string IRCTabComplete(entity me, string input, float cursor) {
 }
 
 float keyDownIRCInputBox(entity me, float key, float ascii, float shift) {
-    float r;
-    r = 0;
-    
     if(key == K_TAB) {
         me.setText(me, IRCTabComplete(me, strcat("", me.text), me.cursorPos));
         me.cursorPos = IRCTabComplete_cursorpos;
         return 1;
     }
     
+    if(key == K_UPARROW) {
+        float i = buf_getsize(me.historyBuff) - 1 - me.historyPos;
+        if(i >= 0) {
+            me.historyPos += 1;
+            me.setText(me, bufstr_get(me.historyBuff, i));
+            me.cursorPos = strlen(me.text);
+        }
+        
+        return 1;
+    }
+    
+    if(key == K_DOWNARROW) {
+        float i = buf_getsize(me.historyBuff) + 1 - me.historyPos;
+        if(i >= 0 && i < buf_getsize(me.historyBuff)) {
+            me.historyPos -= 1;
+            me.setText(me, bufstr_get(me.historyBuff, i));
+            me.cursorPos = strlen(me.text);
+        }
+        
+        return 1;
+    }
+    
     if(keyDownNexuizInputBox(me, key, ascii, shift))
-        r = 1;
-    return r;
+        return 1;
+    
+    return 0;
 }
 
 #endif
