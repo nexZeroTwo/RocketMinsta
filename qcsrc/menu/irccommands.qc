@@ -84,10 +84,25 @@ void IRC_Command_msg_call(string cmdline, float argc, float b, float s, string t
                                 IRC_BUFFER_MSGLEVEL_INFO);
 }
 
+void IRC_Command_close_call(string cmdline, float argc, float b, float s, string t) {
+    if(b <= 0 || !t) {
+        IRC_PutInBuffer(b, IRC_MSGPREFIX_ERROR
+                    "/close: can't close a system buffer",
+                    IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+    
+    if(IRC_IsJoinedChannel(s, t))
+        IRC_PartChannel(s, t);
+    
+    IRC_DeleteBuffer(b);
+}
+
 void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
     IRC_Command_Register("echo",    2, IRC_Command_echo_call,   irc_command_null);
     IRC_Command_Register("msg",     3, IRC_Command_msg_call,    irc_command_null);
     IRC_Command_Register("notice",  3, IRC_Command_msg_call,    irc_command_null);
+    IRC_Command_Register("close",   1, IRC_Command_close_call,  irc_command_null);
 }
 

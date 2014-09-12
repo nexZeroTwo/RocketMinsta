@@ -180,7 +180,11 @@ void IRC_Event(float session, string event, float numeric, string orig, float ar
         if(nick == IRC_CurrentNick(session))
             IRC_DispatchIRCJoinEvent(buff);
     } else if(event == "PART") {
-        buff = IRC_GetOrCreateBuffer(IRC_ChannelBufferName(session, argv(0)), session, argv(0));
+        buff = IRC_GetBuffer(IRC_ChannelBufferName(session, argv(0)));
+        
+        if(buff < 0)
+            return;
+        
         s = strcat(IRC_MSGPREFIX_OUT "^3", nick, "^8!", user, "@", host, "^7 has left ^2", argv(0));
         
         if(argv(1) != "")
