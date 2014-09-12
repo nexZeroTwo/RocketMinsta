@@ -138,6 +138,11 @@ string IRCTabComplete(entity me, string input, float cursor) {
 }
 
 float keyDownIRCInputBox(entity me, float key, float ascii, float shift) {
+    if(shift & S_CTRL && key == 117) {    // Ctrl+U
+        me.setText(me, "");
+        return 1;
+    }
+    
     if(key == K_TAB) {
         me.setText(me, IRCTabComplete(me, strcat("", me.text), me.cursorPos));
         me.cursorPos = IRCTabComplete_cursorpos;
