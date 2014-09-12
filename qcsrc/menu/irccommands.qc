@@ -98,11 +98,36 @@ void IRC_Command_close_call(string cmdline, float argc, float b, float s, string
     IRC_DeleteBuffer(b);
 }
 
+void IRC_Command_join_call(string cmdline, float argc, float b, float s, string t) {
+    if(s < 0) {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/join: must be used in a session-bound buffer"),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+    
+    IRC_JoinChannel(s, argv(1), argv(2));
+}
+
+void IRC_Command_part_call(string cmdline, float argc, float b, float s, string t) {
+    if(s < 0) {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/part: must be used in a session-bound buffer"),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+    
+    // XXX: add reason support to IRC_PartChannel?
+    IRC_PartChannel(s, ((argc > 1)? argv(1) : t));
+}
+
 void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
     IRC_Command_Register("echo",    2, IRC_Command_echo_call,   irc_command_null);
     IRC_Command_Register("msg",     3, IRC_Command_msg_call,    irc_command_null);
     IRC_Command_Register("notice",  3, IRC_Command_msg_call,    irc_command_null);
     IRC_Command_Register("close",   1, IRC_Command_close_call,  irc_command_null);
+    IRC_Command_Register("join",    2, IRC_Command_join_call,   irc_command_null);
+    IRC_Command_Register("part",    1, IRC_Command_part_call,   irc_command_null);
 }
 
