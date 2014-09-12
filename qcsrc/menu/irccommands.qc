@@ -121,13 +121,43 @@ void IRC_Command_part_call(string cmdline, float argc, float b, float s, string 
     IRC_PartChannel(s, ((argc > 1)? argv(1) : t));
 }
 
+void IRC_Command_connect_call(string cmdline, float argc, float b, float s, string t) {
+    float created, err;
+    string errstr;
+    
+    if(s < 0) {
+        s = IRC_CreateSession();
+        created = TRUE;
+    }
+    
+    if(s < 0) {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/connect: session creation failed"),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+    
+    err = IRC_ConnectSession(s, argv(1), stof(argv(2)), argv(6), argv(3), argv(4), argv(5));
+    if      (err < 0) errstr = "session error";
+    else if (err > 0) errstr = IRC_StrError(err);
+    
+    if(errstr) {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/connect: connection error: ", errstr),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+        
+        if(created)
+            IRC_TerminateSession(s);
+    }
+}
+
 void IRC_Command_RegisterAll(void) {
-    // IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
-    IRC_Command_Register("echo",    2, IRC_Command_echo_call,   irc_command_null);
-    IRC_Command_Register("msg",     3, IRC_Command_msg_call,    irc_command_null);
-    IRC_Command_Register("notice",  3, IRC_Command_msg_call,    irc_command_null);
-    IRC_Command_Register("close",   1, IRC_Command_close_call,  irc_command_null);
-    IRC_Command_Register("join",    2, IRC_Command_join_call,   irc_command_null);
-    IRC_Command_Register("part",    1, IRC_Command_part_call,   irc_command_null);
+    IRC_Command_Register("echo",        2, IRC_Command_echo_call,       irc_command_null);
+    IRC_Command_Register("msg",         3, IRC_Command_msg_call,        irc_command_null);
+    IRC_Command_Register("notice",      3, IRC_Command_msg_call,        irc_command_null);
+    IRC_Command_Register("close",       1, IRC_Command_close_call,      irc_command_null);
+    IRC_Command_Register("join",        2, IRC_Command_join_call,       irc_command_null);
+    IRC_Command_Register("part",        1, IRC_Command_part_call,       irc_command_null);
+    IRC_Command_Register("connect",     6, IRC_Command_connect_call,    irc_command_null);
 }
 
