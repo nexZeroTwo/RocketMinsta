@@ -17,19 +17,19 @@ void IRC_Command_Call(entity cent, string cmdline, float argc, float b, float is
         if(cent.cmd_help)
             cent.cmd_help(cmdline, argc, b, session, msgtarget);
         else
-            IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "'", cent.netname,
-                            "' has no help function"), IRC_BUFFER_MSGLEVEL_INFO);
+            IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "/", cent.netname,
+                            " has no help function"), IRC_BUFFER_MSGLEVEL_INFO);
     } else {
         if(cent.cmd_call) {
             if(argc < cent.cmd_minargs)
-                IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "'", cent.netname, 
-                                "': not enough arguments (see /help ", cent.netname, ")"),
+                IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "/", cent.netname, 
+                                ": not enough arguments (see /help ", cent.netname, ")"),
                                 IRC_BUFFER_MSGLEVEL_INFO);
             else
                 cent.cmd_call(cmdline, argc, b, session, msgtarget);
         } else
             IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR,
-                            "'", cent.netname, "' has no call function"),
+                            "/", cent.netname, " has no call function"),
                             IRC_BUFFER_MSGLEVEL_INFO);
     }
     
@@ -46,7 +46,7 @@ void IRC_Command_Eval(string cmdline, float b) {
     }
     
     IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
-                    "'", argv(0), "': command not found"), IRC_BUFFER_MSGLEVEL_INFO);
+                    "/", argv(0), ": command not found"), IRC_BUFFER_MSGLEVEL_INFO);
 }
 
 void IRC_Command_Register(string cname, float minargs, irc_command_f cmdfunc, irc_command_help_f helpfunc) {
