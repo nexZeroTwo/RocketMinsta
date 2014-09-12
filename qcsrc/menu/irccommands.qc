@@ -70,14 +70,16 @@ void IRC_Command_echo_call(string cmdline, float argc, float b, float session, s
 
 void IRC_Command_msg_call(string cmdline, float argc, float b, float s, string t) {
     if(s < 0) {
-        IRC_PutInBuffer(b, IRC_MSGPREFIX_ERROR 
-                            "/msg: must be used in a session-bound buffer",
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/", argv(0), ": must be used in a session-bound buffer"),
                             IRC_BUFFER_MSGLEVEL_INFO);
         return;
     }
     
-    float err = IRC_Privmsg(s, argv(1), substring(cmdline, argv_start_index(2), strlen(cmdline)));
-    if(err > 0) IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "/msg: ",
+    float err = ((argv(0) == "notice")? IRC_Notice : IRC_Privmsg)
+                (s, argv(1), substring(cmdline, argv_start_index(2), strlen(cmdline)));
+                
+    if(err > 0) IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "/", argv(0), ": ",
                                 IRC_StrError(err)),
                                 IRC_BUFFER_MSGLEVEL_INFO);
 }
@@ -86,5 +88,6 @@ void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("test",    1, IRC_Command_test_call,   irc_command_null);
     IRC_Command_Register("echo",    2, IRC_Command_echo_call,   irc_command_null);
     IRC_Command_Register("msg",     3, IRC_Command_msg_call,    irc_command_null);
+    IRC_Command_Register("notice",  3, IRC_Command_msg_call,    irc_command_null);
 }
 
