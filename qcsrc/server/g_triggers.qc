@@ -552,7 +552,7 @@ void trigger_heal_touch()
             other.triggerhealtime = time + 1;
             
             if(other.health < self.max_health) {
-                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
+                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
                 sound(other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
             }
         }
