@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 INCLUDE=1
 . extras/scripts/rmlib.sh || exit 1
-require md5sum tar 7za:zip %convert
+require md5sum tar 7za:7zr:zip %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
