@@ -232,6 +232,8 @@ function rmpack
 {
     if hascommand 7za; then
         7za a -tzip -mfb258 -mpass15 "$@"
+    elif hascommand 7zr; then
+        7zr a -tzip -mfb258 -mpass15 "$@"
     elif hascommand zip; then
         echo zip -r "$@"
         zip -r "$@"
