@@ -1076,22 +1076,6 @@ float() MaplistMethod_Repeat = // fallback method
 	return -2;
 }
 
-float() MaplistMethod_Random = // random map selection
-{
-	float i, imax;
-
-	imax = 42;
-
-	for(i = 0; i <= imax; ++i)
-	{
-		float mapindex;
-		mapindex = mod(Map_Current + floor(random() * (Map_Count - 1) + 1), Map_Count); // any OTHER map
-		if(Map_Check(mapindex, 1))
-			return mapindex;
-	}
-	return -1;
-}
-
 float(float exponent) MaplistMethod_Shuffle = // more clever shuffling
 // the exponent sets a bias on the map selection:
 // the higher the exponent, the less likely "shortly repeated" same maps are
@@ -1162,10 +1146,6 @@ string GetNextMap()
 	if(nextMap == -1)
 		if(cvar("g_maplist_shuffle") > 0)
 			nextMap = MaplistMethod_Shuffle(cvar("g_maplist_shuffle") + 1);
-
-	if(nextMap == -1)
-		if(cvar("g_maplist_selectrandom"))
-			nextMap = MaplistMethod_Random();
 
 	if(nextMap == -1)
 		nextMap = MaplistMethod_Iterate();

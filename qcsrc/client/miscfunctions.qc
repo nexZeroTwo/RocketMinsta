@@ -31,7 +31,7 @@ void restartAnnouncer_Think() {
 		
 		bigprint("^xFB0Begin!", "It's time to kick some ass!", 1);
 
-		sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+		announce("begin.wav");
 		//reset maptime announcers now as well
 		announcer_5min = announcer_1min = FALSE;
 
@@ -52,7 +52,7 @@ void restartAnnouncer_Think() {
 		bigprint(strcat(strcat(gametype_ID_to_LongName(gametype)), " starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
-			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+			announce(strcat(ftos(countdown_rounded), ".wav"));
 		}
 
 		self.nextthink = getstatf(STAT_GAMESTARTTIME) - (countdown - 1);

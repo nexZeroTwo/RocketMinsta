@@ -29,13 +29,6 @@ void W_Plasma_TriggerCombo(vector org, float rad, entity own)
 
 void W_Plasma_Explode (void)
 {
-	if(other.takedamage == DAMAGE_AIM)
-		if(other.classname == "player")
-			if(IsDifferentTeam(self.owner, other))
-				if(other.deadflag == DEAD_NO)
-					if(IsFlying(other))
-						announce(self.owner, "electrobitch.wav");
-
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
 	if (self.movetype == MOVETYPE_BOUNCE)
@@ -65,7 +58,12 @@ void W_Plasma_Touch (void)
 {
 	PROJECTILE_TOUCH;
 	if (other.takedamage == DAMAGE_AIM) {
+		local entity o = self.owner;
 		W_Plasma_Explode ();
+		if(other.classname == "player")
+			if(IsDifferentTeam(o, other))
+				if(IsFlying(other))
+					announce_publicly(o, "electrobitch.ogg");
 	} else {
 		spamsound (self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 		self.projectiledeathtype |= HITTYPE_BOUNCE;

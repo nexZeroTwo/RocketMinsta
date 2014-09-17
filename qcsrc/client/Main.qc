@@ -678,9 +678,31 @@ float CSQC_ConsoleCommand(string strMessage)
 		button_zoom = 0;
 		return true;
 	} else if(strCmd == "+button3") { // secondary
+		switch(getstati(STAT_SWITCHWEAPON))
+		{
+			case WEP_LASER:
+				localcmd("+cl_hook_laser\n");
+				break;
+			case WEP_NEX:
+				localcmd("+cl_hook_nex\n");
+				break;
+			default:
+				break;
+		}
 		button_attack2 = 1;
 		return false;
 	} else if(strCmd == "-button3") { // secondary
+		switch(getstati(STAT_SWITCHWEAPON))
+		{
+			case WEP_LASER:
+			localcmd("-cl_hook_laser\n");
+			break;
+			case WEP_NEX:
+			localcmd("-cl_hook_nex\n");
+			break;
+			default:
+				break;
+		}
 		button_attack2 = 0;
 		return false;
 	} else if(strCmd == "+showscores") {

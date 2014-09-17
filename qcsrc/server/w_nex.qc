@@ -36,6 +36,7 @@ void W_Nex_Attack (void)
 
 void spawnfunc_weapon_nex (void); // defined in t_items.qc
 
+.float timer_cl_hook_nex;
 float w_nex(float req)
 {
 	if (req == WR_AIM)
