@@ -803,6 +803,7 @@ void spawnfunc_worldspawn (void)
 	RandomSeed_Spawn();
 
 	localcmd("\n_sv_hook_gamestart ", gametype_ID_to_Name(game), ";");
+    localcmd("\nsv_hook_rmcustom_gamestart; sv_hook_rmcustom_gamestart_", gametype_ID_to_Name(game), ";");
 
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
@@ -1525,7 +1526,7 @@ void NextLevel()
 	if(cvar("g_campaign"))
 		CampaignPreIntermission();
 
-	localcmd("\nsv_hook_gameend;");
+	localcmd("\nsv_hook_gameend; sv_hook_rmcustom_gameend;");
 
 	// WriteByte (MSG_ALL, SVC_INTERMISSION);
 };
