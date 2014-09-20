@@ -673,6 +673,7 @@ void GameCommand(string command)
             if(time > 1) {
                 cvar_set("_sv_rm_nextgametype", s);
                 bprint("The gametype will be switched to ", gametype_Name_to_LongName(s), " on next map\n");
+                localcmd("\nsv_hook_rmcustom_gameswitch ", s, ";");
             } else {
                 //MapInfo_SwitchGameType(t);
                 gametype_Set(gametype_Name_to_ID(s));
