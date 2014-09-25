@@ -29,4 +29,4 @@ build_server:
 
 clean:
 	$(RM) menu.dat progs.dat csprogs.dat menu.lno progs.lno csprogs.lno base_progs-*.pk3 base_menu-*.pk3
-	find -iname '$(QCC).log' -exec $(RM) {} \;
+	find -iname '*.log' -exec $(RM) {} \;
