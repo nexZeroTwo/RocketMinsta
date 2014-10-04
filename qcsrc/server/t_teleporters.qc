@@ -43,6 +43,9 @@ void tdeath(entity teleobject, entity teleporter, entity telefragger, vector tel
 				if(damage < minDamage){
 					damage = minDamage;
 				}
+				if(damage > maxDamage){
+					damage = maxDamage;
+				}
 			}
 			bprint("telefrag damage ", ftos(damage), "\n");
 		}
