@@ -38,12 +38,12 @@ void tdeath(entity teleobject, entity teleporter, entity telefragger, vector tel
 				damage = 0;
 			}
 			else{
-				float scale = (maxDist / dist);
+				float scale = (dist / maxDist);
 				damage = (maxDamage * scale);
 				if(damage < minDamage){
 					damage = minDamage;
 				}
-				if(damage > maxDamage){
+				else if(damage > maxDamage){
 					damage = maxDamage;
 				}
 			}
