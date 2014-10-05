@@ -25,7 +25,6 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 			float maxDist = cvar("g_nadgets_transloc_maxdistance"); //distance needed to inflict the maximum damage
 			
 			float dist = vlen(teleporter.spawnorigin - player.origin);
-			bprint("telefrag distance ", ftos(dist), "\n");
 			if(dist < minDist){
 				damage = 0;
 			}
@@ -35,7 +34,6 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 				damage = bound(minDamage, damage, maxDamage);
 				damage = damage * Buffs_NadgetPower(player);
 			}
-			bprint("telefrag damage ", ftos(damage), "\n");
 		}
 		else{
 			damage = cvar("g_nadgets_transloc_damage") * Buffs_NadgetPower(player);
