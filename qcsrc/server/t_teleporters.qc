@@ -6,16 +6,8 @@ void trigger_teleport_use()
 
 float tdeath_hit;
 float tdeath_deathtype;
-void tdeath(entity teleobject, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
+void tdeath(entity player, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
 {
-
-	entity player;
-	if(teleobject.owner){
-		player = teleobject.owner;
-	}
-	else{
-		player = teleobject;
-	}
 	
 	entity head;
 	vector deathmin;
@@ -26,13 +18,13 @@ void tdeath(entity teleobject, entity teleporter, entity telefragger, vector tel
     float medic;
     
     if(tdeath_deathtype == DEATH_HG_TRANSLOC){
-		if(cvar("g_nadgets_transloc_scaledamagedistance"){
+		if(cvar("g_nadgets_transloc_scaledamagedistance")){
 			float minDamage = cvar("g_nadgets_transloc_mindamage");
 			float maxDamage = cvar("g_nadgets_transloc_maxdamage");
 			float minDist = cvar("g_nadgets_transloc_mindistance"); //min distance needed to inflict the min damage
 			float maxDist = cvar("g_nadgets_transloc_maxdistance"); //distance needed to inflict the maximum damage
 			
-			float dist = vlen(teleobject.spawnorigin - telefragger.origin);
+			float dist = vlen(teleporter.spawnorigin - player.origin);
 			bprint("telefrag distance ", ftos(dist), "\n");
 			if(dist < minDist){
 				damage = 0;
