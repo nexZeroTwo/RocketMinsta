@@ -32,7 +32,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 			else{
 				float scale = (dist / maxDist);
 				damage = (maxDamage * scale);
-				bound(minDamage, damage, maxDamage);
+				damage = bound(minDamage, damage, maxDamage);
 				damage = damage * Buffs_NadgetPower(player);
 			}
 			bprint("telefrag damage ", ftos(damage), "\n");
