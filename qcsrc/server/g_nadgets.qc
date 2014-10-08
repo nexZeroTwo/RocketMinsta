@@ -554,6 +554,10 @@ void HG_Grenade_Touch() {
             UpdateCSQCProjectile(self);
         }
         
+		if(self.hg_type == HG_TRANSLOC && cvar("g_nadgets_transloc_bounceresetorigin")){
+			self.spawnorigin = self.origin;
+		}
+		
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
