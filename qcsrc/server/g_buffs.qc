@@ -685,7 +685,7 @@ void Buffs_MEODP_Point_Think(void) {
     self.angles = self.angles + (self.owner.angles - self.angles) * frametime;
     makevectors(self.angles + '0 30 0' * time * self.health);
     //setorigin(self, self.owner.origin + v_forward * 50 + v_up * self.owner.maxs_z * 0.5);
-    setorigin(self, (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
+    setorigin(self, self.owner.meodp_point_offs + (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
     
     self.nextthink = time;
 }
@@ -711,13 +711,14 @@ float Buffs_MEODP_Point_Customize(void) {
 void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
     entity oself = self;
     self = targ;
+    targ.meodp_point.solid = SOLID_NOT;
     te_meodp(targ.meodp_point.origin);
     targ.meodp_death(attacker, inflictor);
     self = oself;
 }
 
 void Buffs_MEODP_Point_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-    if(self.solid == SOLID_NOT)
+    if(self.solid == SOLID_NOT || RadiusDamage_running)
         return; // hitscan only
     
     if(!damage)
@@ -792,6 +793,14 @@ void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
     
     if(s)
         Damage(attacker, inflictor, attacker, s, DEATH_MEODP, attacker.origin, '0 0 0');
+}
+
+void Buffs_MEODP_Death_Remove(entity attacker, entity inflictor) {
+    remove(self);
+}
+
+void Buffs_MEODP_Death_Use(entity attacker, entity inflictor) {
+    self.use();
 }
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {

@@ -210,7 +210,7 @@ void HG_Napalm()
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
-	setsize (proj, '0 0 0', '0 0 0');
+	setsize(proj, '0 0 -3', '0 0 -3');
 	setorigin (proj, self.origin);
 	proj.org_explosion = self.origin;
 	proj.think = HG_Napalm_Think;
@@ -235,6 +235,9 @@ void HG_Napalm()
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
+    
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove);
+    proj.meodp_point_offs = '0 0 64';
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
@@ -351,6 +354,9 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
+    
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use);
+    proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
