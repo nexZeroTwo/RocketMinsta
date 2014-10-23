@@ -645,6 +645,12 @@ void HG_Remote_Stick() {
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
+    e.meodp_point = self.meodp_point;
+    e.meodp_point_offs = self.meodp_point_offs;
+    e.meodp_death = self.meodp_death;
+    if(e.meodp_point)
+        e.meodp_point.owner = e;
+    
     if(normal_x)
         setorigin(e, e.origin - normal * 4.5);
     move_out_of_solid(e);
