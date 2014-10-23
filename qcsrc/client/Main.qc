@@ -2184,6 +2184,9 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_DTRACK:
             Net_DamageTracker();
             return TRUE;
+        case TE_CSQC_MEODP:
+            Net_ReadMEODP();
+            return TRUE;
     }
 
 	// pass to the engine

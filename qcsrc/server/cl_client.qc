@@ -916,6 +916,7 @@ void PutObserverInServer (void)
 		self.frags = FRAGS_SPECTATOR;
     
     self.justconnected = FALSE;
+    Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
 }
@@ -1389,6 +1390,8 @@ void PutClientInServer (void)
         self.hg_stealth = 0;
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.lastdamage = 0;
+    
+        Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -2081,6 +2084,7 @@ void ClientDisconnect (void)
         IRC_Announce_ClientDisconnect(self);
     }
     
+    Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
     JoinQ_Pop();

@@ -776,3 +776,5 @@ float sv_nicehealth;
 float sv_showacc;
 
 #define HEAL_PAUSEROT_DEFAULT -1
+
+float IsDifferentTeam(entity a, entity b);

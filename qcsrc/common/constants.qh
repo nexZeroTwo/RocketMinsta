@@ -50,6 +50,7 @@ const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
 const float TE_CSQC_DTRACK = 121;
+const float TE_CSQC_MEODP = 122;
 
 #define VDMG_TYPE_HIT 1
 #define VDMG_TYPE_CRIT 2
@@ -542,6 +543,7 @@ float DEATH_IGNITE = 10103;
 float DEATH_LINKER_SHARE = 10104;
 float DEATH_VAMPIRE = 10105;
 float DEATH_ITEM = 10106;
+float DEATH_MEODP = 10107;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;

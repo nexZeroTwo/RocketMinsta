@@ -60,6 +60,7 @@ float rm_particleeffectnum(string p) {
                 return particleeffectnum("electro_impact");
             
             case "RM_EXPLOSION":
+            case "RM_MEODP":
                 return particleeffectnum("rocket_explode");
         }
     }

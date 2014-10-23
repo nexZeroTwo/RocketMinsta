@@ -114,6 +114,15 @@ void Freeze_RecountPlayers(void) {
     TeamCount_RecountPlayers(Freeze_AliveCheck);
 }
 
+void Freeze_IceBlock_MEODP_Death(entity attacker, entity inflictor) {
+    attacker.chain = world;
+    
+    if(IsDifferentTeam(self.owner, attacker))
+        Freeze_UnfreezePlayer(self.owner);
+    else
+        Freeze_RevivePlayer(self.owner, attacker);
+}
+
 entity Freeze_SpawnIceBlock(entity plr) {
     entity ice = spawn();
     ice.owner = plr;
@@ -122,11 +131,13 @@ entity Freeze_SpawnIceBlock(entity plr) {
     ice.nextthink = time;
     ice.frame = floor(random() * 21); // ice model has 20 different looking frames
     ice.effects |= EF_ADDITIVE;
+    ice.angles = random() * '0 360 0';
     setmodel(ice, "models/ice/ice.md3");
     setorigin(ice, plr.origin - '0 0 16');
     plr.iceblock = ice;
     if(Freeze_CVar("freezesound"))
         sound(self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
+    Buffs_MEODP_Point_Attach(ice, Freeze_IceBlock_MEODP_Death);
     return ice;
 }
 
@@ -198,6 +209,7 @@ void Freeze_UnfreezePlayer(entity plr)
     
     PlayerScore_Set(plr, SP_FROZENSTATUS, 0);
     Freeze_RecountPlayers();
+    Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
 }
 
 void Freeze_SetGlobalWarming(float d) {

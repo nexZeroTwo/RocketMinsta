@@ -870,8 +870,8 @@ void JB_SetupJailSpawnpoint() {
 }
 
 void JB_Jail_Touch() {
-	//JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
-	
+    //JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
+    
     if(g_nadgets)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {

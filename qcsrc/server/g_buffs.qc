@@ -32,6 +32,7 @@ void Buffs_Init(void) {
     precache_sound("misc/arc1.wav");
     precache_sound("misc/arc2.wav");
     precache_model("models/buffs/buff_ring.md3");
+    precache_model("models/runematch/rune.mdl");
     
     addstat(STAT_BUFFS, AS_INT, buffstat);
     
@@ -333,6 +334,11 @@ void Buffs_SetBuffModel_MultiBuffModel_Think(void) {
     self.color = self.colormod = Buffs_GenColor(self.buffs);
     self.alpha = self.owner.alpha;
     
+    if(self.buffs == BUFF_MEODP) {
+        self.color = '1 0 0';
+        self.effects &~= EF_ADDITIVE;
+    }
+    
     vector ang;
     ang_y = mod(time * 120 + self.cnt, 360);
     makevectors(ang);
@@ -378,6 +384,9 @@ void Buffs_SetBuffModel(entity ment, float thebuffs) {
         
         setmodel(ment, g_buffs_model[Buffs_TypeToIndex(thebuffs)]);
         setsize(ment, omins, omaxs);
+        
+        if(thebuffs == BUFF_MEODP)
+            ment.color = '1 0 0';
     } else {
         // multiple buffs - hide ment and use additional models
         
@@ -667,7 +676,123 @@ void Buffs_ArcDamage_Finalize(void) {
         e.buffs_arc_hit = FALSE;
 }
 
-.float lastbash;
+void Buffs_MEODP_Point_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+    
+    self.angles = self.angles + (self.owner.angles - self.angles) * frametime;
+    makevectors(self.angles + '0 30 0' * time * self.health);
+    //setorigin(self, self.owner.origin + v_forward * 50 + v_up * self.owner.maxs_z * 0.5);
+    setorigin(self, (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
+    
+    self.nextthink = time;
+}
+
+float Buffs_MEODP_Point_VisibleForPlayer(entity p, entity plr) {
+    if(!BUFFS_PRESENT(plr, BUFF_MEODP))
+        return FALSE;
+    
+    if(p.owner.iscreature)
+    if(!IsDifferentTeam(p.owner, plr))
+        return FALSE;
+    
+    return TRUE;
+}
+
+float Buffs_MEODP_Point_Customize(void) {
+    if(other.classname == "spectator")
+        other = other.enemy;
+    
+    return Buffs_MEODP_Point_VisibleForPlayer(self, other);
+}
+
+void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
+    entity oself = self;
+    self = targ;
+    te_meodp(targ.meodp_point.origin);
+    targ.meodp_death(attacker, inflictor);
+    self = oself;
+}
+
+void Buffs_MEODP_Point_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+    if(self.solid == SOLID_NOT)
+        return; // hitscan only
+    
+    if(!damage)
+        return;
+    
+    if(!Buffs_MEODP_Point_VisibleForPlayer(self, attacker))
+        return;
+    
+    Buffs_MEODP_TriggerDeath(self.owner, attacker, inflictor);
+}
+
+void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death) {
+    if(!g_buffs_enabled[Buffs_TypeToIndex(BUFF_MEODP)])
+        return;
+    
+    if(e.meodp_point)
+        return;
+    
+    entity p = spawn();
+    p.classname = "meodp_point";
+    p.owner = e;
+    p.customizeentityforclient = Buffs_MEODP_Point_Customize;
+    p.think = Buffs_MEODP_Point_Think;
+    p.nextthink = time;
+    p.solid = SOLID_NOT;
+    p.colormod = '-10 -10 -10';
+    p.glow_size = 256;
+    p.glow_trail = 1;
+    p.glow_color = 251;
+    p.health = random();
+    p.armorvalue = random();
+    p.takedamage = DAMAGE_AIM;
+    p.event_damage = Buffs_MEODP_Point_Damage;
+    setmodel(p, "models/runematch/rune.mdl");
+    setsize(p, '-8 -8 -8', '8 8 8');
+    
+    e.meodp_point = p;
+    e.meodp_death = death;
+}
+
+void Buffs_MEODP_Point_Detach(entity e) {
+    if(!e.meodp_point)
+        return;
+    
+    remove(e.meodp_point);
+    e.meodp_point = world;
+    e.meodp_death = func_null;
+}
+
+entity Buffs_MEODP_Hitscan_Begin(entity plr) {
+    if(!BUFFS_PRESENT(plr, BUFF_MEODP))
+        return world;
+    
+    entity p, pts = findchain(classname, "meodp_point");
+    
+    for(p = pts; p; p = p.chain)
+        p.solid = SOLID_CORPSE;
+        
+    return pts;
+}
+
+void Buffs_MEODP_Hitscan_End(entity pts) {
+    entity p; for(p = pts; p; p = p.chain)
+        p.solid = SOLID_NOT;
+}
+
+void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
+    float d = self.health * cvar("g_buffs_meodp_healthfactor") + self.armorvalue * cvar("g_buffs_meodp_armorfactor");
+    float s = d * cvar("g_buffs_meodp_selfdamage");
+    
+    Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
+    
+    if(s)
+        Damage(attacker, inflictor, attacker, s, DEATH_MEODP, attacker.origin, '0 0 0');
+}
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
     if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
@@ -755,6 +880,10 @@ void Buffs_BuffPickup_Think(void) {
     } else {
         self.alpha = 1;
         self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
+        
+        if(self.buffs == BUFF_MEODP)
+            self.effects &~= EF_ADDITIVE;
+        
         self.light_lev = 220 + 36 * sin(time);
         self.pflags = PFLAGS_FULLDYNAMIC;
         

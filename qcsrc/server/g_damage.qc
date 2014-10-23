@@ -1586,7 +1586,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-            if(!DEATH_ISHG(deathtype)) if(deathtype != DEATH_IGNITE) {
+            if(!DEATH_ISHG(deathtype)) if(deathtype != DEATH_IGNITE) if(deathtype != DEATH_MEODP) {
                 if(targ_is_player) {
                     if(IsHeadshot(damage_origtarget, attacker, hitloc))
                         deathtype |= HITTYPE_HEADSHOT;

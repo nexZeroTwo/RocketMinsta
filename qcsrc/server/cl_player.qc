@@ -609,7 +609,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oa = self.armorvalue;
     
     if(self != attacker)
-    if(!DEATH_ISSPECIAL(deathtype))
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_MEODP)
     if(deathtype != DEATH_ARC)
     if(deathtype != DEATH_HG_SHIELD)
     if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
@@ -759,7 +759,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             float sameteam = (teams_matter && self.team == attacker.team);
             float htype = VDMG_TYPE_HIT;
             
-            if(deathtype & HITTYPE_HEADSHOT)
+            if(deathtype & HITTYPE_HEADSHOT || deathtype == DEATH_MEODP)
                 htype |= VDMG_TYPE_CRIT;
             
             if(take >= self.health)
@@ -983,6 +983,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			self.angles_z = 0;
 		}
 		
+        Buffs_MEODP_Point_Detach(self);
+        
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
         

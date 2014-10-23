@@ -1338,6 +1338,11 @@ void HG_Linker_Think() {
     self.nextthink = time;
 }
 
+void HG_Linker_MEODP_Death(entity attacker, entity inflictor) {
+    remove(self.enemy);
+    remove(self);
+}
+
 void HG_Linker(float hgtype) {
     entity e = spawn();
     e.classname = "hg_linker";
@@ -1378,6 +1383,8 @@ void HG_Linker(float hgtype) {
     
     setsize(e, '-32 -32 0', '32 32 32');
     setsize(e.enemy, '-32 -32 0', '32 32 32');
+    
+    Buffs_MEODP_Point_Attach(e, HG_Linker_MEODP_Death);
     
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
@@ -1434,6 +1441,14 @@ string HG_TypeToAttackSound(float hgtype) {
         default:
             return "weapons/grenade_fire.wav";
     }
+}
+
+void HG_GenericProjectile_MEODP_Death(entity attacker, entity inflictor) {
+    self.takedamage = DAMAGE_AIM;
+    self.health = max(10, self.health);
+    self.event_damage = HG_Grenade_Damage;
+    self.hg_state = 1;
+    Damage(self, attacker, inflictor, self.health, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
 }
 
 #define GV(v) (GRENVAR(hgtype, v))
@@ -1542,6 +1557,8 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.angles = vectoangles(gren.velocity);
     gren.flags = FL_PROJECTILE;
     gren.hg_nadesused = self.hg_nadesused;
+    
+    Buffs_MEODP_Point_Attach(gren, HG_GenericProjectile_MEODP_Death);
     
     CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
