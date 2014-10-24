@@ -768,20 +768,22 @@ void Buffs_MEODP_Point_Detach(entity e) {
     e.meodp_death = func_null;
 }
 
+.entity meodp_chain;
+
 entity Buffs_MEODP_Hitscan_Begin(entity plr) {
     if(!BUFFS_PRESENT(plr, BUFF_MEODP))
         return world;
     
-    entity p, pts = findchain(classname, "meodp_point");
+    entity p, pts = findchain_tofield(classname, "meodp_point", meodp_chain);
     
-    for(p = pts; p; p = p.chain)
+    for(p = pts; p; p = p.meodp_chain)
         p.solid = SOLID_CORPSE;
         
     return pts;
 }
 
 void Buffs_MEODP_Hitscan_End(entity pts) {
-    entity p; for(p = pts; p; p = p.chain)
+    entity p; for(p = pts; p; p = p.meodp_chain)
         p.solid = SOLID_NOT;
 }
 
