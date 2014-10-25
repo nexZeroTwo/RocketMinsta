@@ -285,3 +285,7 @@ float(float timer) gettime = #519;
 float(string s) tokenize_console = #514;
 float(float i) argv_start_index = #515;
 float(float i) argv_end_index = #516;
+
+void parseentitydata(entity ent, string data) = #613;
+void callfunction(...) = #605;
+float isfunction(string function_name) = #607;
