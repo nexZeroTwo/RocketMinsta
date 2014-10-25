@@ -1022,6 +1022,11 @@ void Buffs_BuffPickup_Setup(void) {
         self.team = TeamCount_NextTeam(self.team);
     
     self.origbuffs = self.buffs;
+    
+    if(time > 1)
+    if(self.buffs == BUFF_RANDOM)
+        self.buffs = Buffs_Randomize_Yield();
+    
     self.classname = "item_buff";
     self.flags = FL_ITEM;
     self.solid = SOLID_TRIGGER;
