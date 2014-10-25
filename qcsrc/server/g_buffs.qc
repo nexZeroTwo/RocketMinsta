@@ -60,6 +60,9 @@ void Buffs_Init(void) {
             precache_model(g_buffs_model[i]);
             ++enabled;
         }
+        
+        if(cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline")))
+            g_buffs_baseline |= b;
     }
     
     if(enabled < 2)
@@ -224,16 +227,27 @@ void Buffs_Init_Delayed(void) {
 }
 
 float Buffs_BuffPower(entity p, float b) {
+    if(!g_buffs)
+        return 0;
+    
     if(p.nobuffs)
         return 0;
     
-    if(p.buffs & b)
+    if(p.buffs & b == b)
         return 1;
     
-    if(p.hg_linker.buffs & b)
-        return p.hg_linker.hg_linker_buffpower;
+    float pw;
     
-    return 0;
+    if(g_buffs_baseline & b == b) {
+        if(b & (b - 1)) // multibuff
+            return 1;
+        pw = max(pw, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline")));
+    }
+    
+    if(p.hg_linker.buffs & b == b)
+        pw = max(pw, p.hg_linker.hg_linker_buffpower);
+    
+    return pw;
 }
 
 string Buffs_GenName(float b) {
@@ -731,7 +745,7 @@ void Buffs_MEODP_Point_Damage(entity inflictor, entity attacker, float damage, f
 }
 
 void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death) {
-    if(!g_buffs_enabled[Buffs_TypeToIndex(BUFF_MEODP)])
+    if(!g_buffs_enabled[Buffs_TypeToIndex(BUFF_MEODP)] && !(g_buffs_baseline & BUFF_MEODP))
         return;
     
     if(e.meodp_point)
@@ -936,7 +950,7 @@ void Buffs_BuffPickup_Reset(void) {
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
-    if(self.owner || BUFFS_PRESENT(plr, self.buffs) || (plr.buffs && !g_buffs_stack))
+    if(self.owner || plr.buffs & self.buffs == self.buffs || (plr.buffs && !g_buffs_stack))
         return;
     
     self.owner = plr;

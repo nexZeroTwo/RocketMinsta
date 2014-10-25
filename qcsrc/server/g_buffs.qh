@@ -21,6 +21,8 @@ float g_buffs_randomize_ulevel;
 float g_buffs_randomize_ulevel_dual;
 float g_buffs_count;
 
+float g_buffs_baseline;
+
 .float buffs;
 .float oldbuffs;
 .float origbuffs;
@@ -47,8 +49,7 @@ float g_buffs_count;
 
 #define BUFFS_GIVE(p,b) ((p).buffs |= (b))
 #define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))
-#define BUFFS_PRESENT_INTERNAL(p,b) (g_buffs && (((p).buffs & b) == (b) || (((p).hg_linker.buffs & b) == (b) && (p).hg_linker.hg_linker_buffpower)))
-#define BUFFS_PRESENT(p,b) (BUFFS_PRESENT_INTERNAL(p,b) && !(p).nobuffs)
+#define BUFFS_PRESENT(p,b) Buffs_BuffPower(p, b)
 
 #define BUFF_RANDOM -1337
 
