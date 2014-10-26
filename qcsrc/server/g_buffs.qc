@@ -802,7 +802,7 @@ void Buffs_MEODP_Hitscan_End(entity pts) {
 }
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
-    float d = self.health * cvar("g_buffs_meodp_healthfactor") + self.armorvalue * cvar("g_buffs_meodp_armorfactor");
+    float d = Buffs_BuffPower(attacker, BUFF_MEODP) * (self.health * cvar("g_buffs_meodp_healthfactor") + self.armorvalue * cvar("g_buffs_meodp_armorfactor"));
     float s = d * cvar("g_buffs_meodp_selfdamage");
     
     Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
