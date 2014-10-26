@@ -2900,7 +2900,7 @@ float GameTypeVote_Finished(float pos)
 	localcmd("gametype ", mapvote_maps[pos], "\n");
 	if(cvar_string("nextmap") != "")
 		Map_Goto_SetStr(cvar_string("nextmap"));
-	Map_Goto();
+	defer(0.2, Map_Goto);
 	alreadychangedlevel = TRUE;
 	return TRUE;
 }

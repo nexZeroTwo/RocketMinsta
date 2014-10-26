@@ -576,6 +576,24 @@ void make_mapinfo_Think()
 
 .float ispicked;
 
+void GotoMap_f_delayed(void) {
+    print(GotoMap(self.netname), "\n");
+    strunzone(self.netname);
+    remove(self);
+}
+
+void GotoMap_f(string m, float d) {
+    if(!d) {
+        print(GotoMap(m), "\n");
+        return;
+    }
+    
+    entity e = spawn();
+    e.netname = strzone(m);
+    e.think = GotoMap_f_delayed;
+    e.nextthink = time + d;
+}
+
 void GameCommand(string command)
 {
 	float argc;
@@ -646,10 +664,13 @@ void GameCommand(string command)
 
     if(argv(0) == "gotomap") if(argc >= 2)
     {
-        if(argc > 2)
+        if(argc > 2) {
             localcmd("gametype ", argv(2), "\n");
+            GotoMap_f(argv(1), 0.2);
+        } else {
+            GotoMap_f(argv(1), 0);
+        }
         
-        print(GotoMap(argv(1)), "\n");
         return;
     }
 
