@@ -150,7 +150,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 		if(teams_matter)
 		if(ent.team == self.team)
-        if(!BUFFS_PRESENT(self, BUFF_MEDIC))
+        if(!Buffs_BuffPower(self, BUFF_MEDIC))
 			did_hit = 0;
 
 		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
@@ -230,7 +230,7 @@ void W_BallisticBullet_Hit (void)
 
 		if(teamplay)
 		if(other.team == self.owner.team)
-        if(!BUFFS_PRESENT(self.owner, BUFF_MEDIC))
+        if(!Buffs_BuffPower(self.owner, BUFF_MEDIC))
 			hit = 0;
 
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);

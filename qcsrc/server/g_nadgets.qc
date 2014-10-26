@@ -86,9 +86,9 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
         return;
     }
 
+    ismedic = Buffs_BuffPower(o, BUFF_MEDIC);
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
-        ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
         sameteam = !IsDifferentTeam(o, e);
         
         if(!ismedic) {
@@ -142,7 +142,7 @@ void HG_Napalm_Think(void) {
         return;
     }
     
-    if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+    if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
         if(!self.heal_emitter) {
             entity e = spawn();
             e.owner = self;
@@ -518,7 +518,7 @@ void HG_Grenade_Touch() {
     
     if(other.takedamage == DAMAGE_AIM) {
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
-            if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+            if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
@@ -996,7 +996,7 @@ void HG_Grenade_FadeOut(entity n) {
 void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     entity oldself = self;
     float wantteam = targ.team;
-    float targetTeamMates = wantteam == self.team && BUFFS_PRESENT(self, BUFF_MEDIC);
+    float targetTeamMates = wantteam == self.team && Buffs_BuffPower(self, BUFF_MEDIC);
     float dist, shortest;
     vector arcoffset = self.maxs_z * '0 0 0.5';
     entity plr, newtarget;
@@ -1045,7 +1045,7 @@ void HG_Shield_Trigger(void) {
         vector start, end;
         float eff, arc = cvar("g_nadgets_shield_damage_store_arc");
         
-        if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+        if(Buffs_BuffPower(self, BUFF_ADEPT)) {
             extend = cvar("g_nadgets_shield_adept_discharge_extend");
             renew = cvar("g_nadgets_shield_adept_discharge_renew");
         }
@@ -1071,7 +1071,7 @@ void HG_Shield_Trigger(void) {
         te_csqc_lightningarc(start, end, TRUE, self.team);
         te_blast(end);
         
-        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || BUFFS_PRESENT(self, BUFF_MEDIC))) {
+        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || Buffs_BuffPower(self, BUFF_MEDIC))) {
             HG_Shield_Discharge_Arc(self, targ, self.hg_shield_stored);
             entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
                 e.buffs_arc_hit = FALSE;
@@ -1113,7 +1113,7 @@ void HG_Shield_Model_Think(void) {
 void HG_Shield(float hgtype) {
     entity e;
     float d;
-    float adept = BUFFS_PRESENT(self, BUFF_ADEPT);
+    float adept = Buffs_BuffPower(self, BUFF_ADEPT);
     
     if(adept) {
         d = GRENVAR(hgtype, "adept_duration");
@@ -1203,7 +1203,7 @@ void HG_Cloak(float hgtype) {
 }
 
 void HG_Cloak_Trigger(void) {
-    if(!BUFFS_PRESENT(self, BUFF_ADEPT)) {
+    if(!Buffs_BuffPower(self, BUFF_ADEPT)) {
         self.hg_stealth = 0;
         return;
     }
@@ -1411,7 +1411,7 @@ float HG_GG_Button(float hgtype) {
     
     FOR_EACH_PLAYER(p)
     if(p != self)
-    if(!teams_matter || p.team != self.team || BUFFS_PRESENT(self, BUFF_MEDIC) || BUFFS_PRESENT(self, BUFF_ADEPT))
+    if(!teams_matter || p.team != self.team || Buffs_BuffPower(self, BUFF_MEDIC) || Buffs_BuffPower(self, BUFF_ADEPT))
     if(p.deadflag == DEAD_NO)
     if(!p.frozen)
     if(!p.jb_isprisoned)
@@ -1431,7 +1431,7 @@ float HG_GG_Button(float hgtype) {
             trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, e + randomvec() * 10);
             
-            if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+            if(Buffs_BuffPower(self, BUFF_ADEPT)) {
                 float i; for(i = 0; i < 4; ++i)
                     te_csqc_lightningarc(o, e + randomvec() * 10, TRUE, Team_FromIndex(i));
             }
@@ -1625,7 +1625,7 @@ void HG_Attack()
             return;
         }
     } else {
-        if(BUFFS_PRESENT(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
+        if(Buffs_BuffPower(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
             float split = GV("adept_split");
             float spread = GV("adept_split_spread");
             vector dir;
@@ -1674,7 +1674,7 @@ void HG_UpdateDetonables() {
 float HG_RegenLimit(entity plr) {
     float mx = 0;
     
-    if(BUFFS_PRESENT(plr, BUFF_ADEPT))
+    if(Buffs_BuffPower(plr, BUFF_ADEPT))
         mx = GRENVAR(plr.hg_type, "adept_stacklimit");
     
     if(mx <= 0) mx = GRENVAR(plr.hg_type, "stacklimit");
@@ -1783,7 +1783,7 @@ void HG_Trigger(void) {
         HG_DetonateAll(self);
         
         if(self.hg_type == HG_LASER)
-        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+        if(Buffs_BuffPower(self, BUFF_ADEPT))
             HG_Attack();
     }
 }

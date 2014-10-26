@@ -609,7 +609,7 @@ float Client_customizeentityforclient()
     float sa = 1 - self.hg_stealthalpha;
     
     if((teams_matter && other.team == self.team) || 
-       (other.hg_stealth && (!BUFFS_PRESENT(self, BUFF_ADEPT) || BUFFS_PRESENT(other, BUFF_ADEPT))) ||
+       (other.hg_stealth && (!self.buffpower_adept || other.buffpower_adept)) ||
        !other.iscreature)
         sa = 0.3 + 0.7 * sa;
     
@@ -2494,11 +2494,11 @@ void player_regen (void)
 	limith = limith * limit_mod;
 	limita = limita * limit_mod;
 	//limitf = limitf * limit_mod;
-
-    if(BUFFS_PRESENT(self, BUFF_GUARD)) {
-        float ghealth, garmor, ghregen, garegen, gpower;
+    
+    float gpower = Buffs_BuffPower(self, BUFF_GUARD);
+    if(gpower) {
+        float ghealth, garmor, ghregen, garegen;
         
-        gpower  = Buffs_BuffPower(self, BUFF_GUARD);
         ghealth = minh   + (cvar("g_buffs_guard_health")       - minh)   * gpower;
         garmor  = mina   + (cvar("g_buffs_guard_armor")        - mina)   * gpower;
         ghregen = hregen + (cvar("g_buffs_guard_health_regen") - hregen) * gpower;
@@ -2516,12 +2516,13 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
-    if(!g_clanarena)
-    if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
+    if(!g_clanarena) {
         float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
-        mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
-        maxa = max(mina, maxa);
-        aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
+        if(mpower) {
+            mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
+            maxa = max(mina, maxa);
+            aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
+        }
     }
 
 	if(g_lms || g_clanarena)

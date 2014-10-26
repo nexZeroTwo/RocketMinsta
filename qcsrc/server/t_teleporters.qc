@@ -22,7 +22,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     if(!damage)
         damage = 10000;
     
-    medic = BUFFS_PRESENT(telefragger, BUFF_MEDIC);
+    medic = Buffs_BuffPower(telefragger, BUFF_MEDIC);
     
 	deathmin = player.absmin;
 	deathmax = player.absmax;

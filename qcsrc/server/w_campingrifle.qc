@@ -131,6 +131,8 @@ void spawnfunc_weapon_campingrifle (void)
 }
 
 .float bot_secondary_campingriflemooth;
+.float campingrifle_updatelimit;
+
 float w_campingrifle(float req)
 {
 	float full;
@@ -159,12 +161,18 @@ float w_campingrifle(float req)
 	}
 	else if (req == WR_THINK)
 	{
-        self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
-        if(BUFFS_PRESENT(self, BUFF_SUPPLY)) {
-            float fteqcc_is_gay = floor(cvar("g_buffs_supply_campingrifle_extra_magazine") * Buffs_BuffPower(self, BUFF_SUPPLY));
-            self.campingrifle_bulletlimit += fteqcc_is_gay;
+        if(time > self.campingrifle_updatelimit) {
+            self.campingrifle_bulletlimit = cvar("g_balance_campingrifle_magazinecapacity");
+            
+            float supply = Buffs_BuffPower(self, BUFF_SUPPLY);
+            if(supply) {
+                float fteqcc_is_gay = floor(cvar("g_buffs_supply_campingrifle_extra_magazine") * supply);
+                self.campingrifle_bulletlimit += fteqcc_is_gay;
+            }
+            
+            self.campingrifle_bulletcounter = min(self.campingrifle_bulletcounter, self.campingrifle_bulletlimit);
+            self.campingrifle_updatelimit = time + frametime * 3;
         }
-        self.campingrifle_bulletcounter = min(self.campingrifle_bulletcounter, self.campingrifle_bulletlimit);
         
 		if(self.campingrifle_bulletcounter < 0) // forced reload (e.g. because interrupted)
 		{

@@ -1101,7 +1101,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(cvar("g_nadgets_transloc_counters_shield"))
             damage = cvar("g_nadgets_transloc_damage_shield") * Buffs_NadgetPower(attacker);
         
-        if(targ.iscreature && BUFFS_PRESENT(attacker, BUFF_MEDIC) && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_IGNITE || deathtype == DEATH_ARC)) {
+        float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
+        
+        if(targ.iscreature && medic && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_IGNITE || deathtype == DEATH_ARC)) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal;
                 
@@ -1109,7 +1111,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     // arc and ignite scale off the original heal, so leave it as is
                     heal = damage;
                 else {
-                    heal = damage * cvar("g_buffs_medic_healfactor") * Buffs_BuffPower(attacker, BUFF_MEDIC);
+                    heal = damage * cvar("g_buffs_medic_healfactor") * medic;
                     
                     if(attacker == targ)
                         heal *= cvar("g_buffs_medic_selfhealfactor");
@@ -1134,13 +1136,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
                 
-                if(BUFFS_PRESENT(attacker, BUFF_ARC) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
+                if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
                     Buffs_ArcDamage(targ, attacker, heal, deathtype);
-                    Buffs_ArcDamage_Finalize();
-                }
                 return;
             } else if(!g_clanarena) if(!attacker.hg_shield) if(deathtype != DEATH_ARC) if(deathtype != DEATH_IGNITE)
-                damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * Buffs_BuffPower(attacker, BUFF_MEDIC));
+                damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * medic);
         }
         
         damage_origtarget = targ;

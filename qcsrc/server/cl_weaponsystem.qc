@@ -27,8 +27,9 @@ float W_WeaponRateFactor()
 		}
 	}
     
-    if(BUFFS_PRESENT(self, BUFF_HASTE))
-        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * Buffs_BuffPower(self, BUFF_HASTE));
+    float haste = Buffs_BuffPower(self, BUFF_HASTE);
+    if(haste)
+        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * haste);
     
 	return t;
 }
