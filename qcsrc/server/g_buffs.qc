@@ -704,7 +704,7 @@ void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deat
     if(newtarget) {
         Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, (targetTeamMates? 0 : (teams_matter? attacker.team : COLOR_TEAM2)));
         Damage(newtarget, attacker, attacker, damage, DEATH_ARC, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_buffs_arc_pushback"));
-        Buffs_ArcDamage(newtarget, attacker, damage, DEATH_ARC);
+        Buffs_ArcDamage_Proc(newtarget, attacker, damage, DEATH_ARC, buffpow, arcoffset, range, targetTeamMates, targetFrozen, targetAlive);
         if(targetTeamMates)
             sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
         else
