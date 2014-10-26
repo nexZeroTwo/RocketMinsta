@@ -1460,7 +1460,7 @@ void HG_GenericProjectile_MEODP_Death(entity attacker, entity inflictor) {
     self.health = max(10, self.health);
     self.event_damage = HG_Grenade_Damage;
     self.hg_state = 1;
-    Damage(self, attacker, inflictor, self.health, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
+    Damage(self, inflictor, attacker, self.health, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
 }
 
 #define GV(v) (GRENVAR(hgtype, v))
