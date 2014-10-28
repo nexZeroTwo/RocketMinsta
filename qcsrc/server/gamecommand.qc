@@ -1294,6 +1294,13 @@ void GameCommand(string command)
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
     }
+
+    if(argv(0) == "netmusic") {
+    	string cmd = strcat("cl_cmd netmusic ", argv(1), " ", argv(2), "\n");
+    	FOR_EACH_REALCLIENT(e)
+    		stuffcmd(e, cmd);
+    	return;
+    }
     
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

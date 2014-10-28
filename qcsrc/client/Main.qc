@@ -1034,6 +1034,28 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
+void NetMusic_Think(void) {
+	if(time - self.cnt > 60) {
+		strunzone(self.netname);
+		remove(self);
+	}
+
+	if(!fexists(self.netname)) {
+		print(self.netname, " doesn't exist\n");
+		self.nextthink = time + 1;
+		return;
+	}
+
+	if(cvar("bgmvolume") < 0.5)
+		cvar_clientsettemp("bgmvolume", "0.5");
+
+	print(self.netname, " exists\n");
+	localcmd("cd reset; cd remap ", self.netname, "; cd loop 1;");
+
+	strunzone(self.netname);
+	remove(self);
+}
+
 void GameCommand(string msg)
 {
 	float argc;
@@ -1237,6 +1259,19 @@ void GameCommand(string msg)
 			localcmd("_userbind_call userbind7_press\n");
 		else
 			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
+	}
+	else if(cmd == "netmusic") {
+		string url = argv(1);
+		string fname = argv(2);
+
+		localcmd("curl --pak ", url, "\n");
+
+		entity e = spawn();
+		e.classname = "netmusic";
+		e.netname = strzone(fname);
+		e.think = NetMusic_Think;
+		e.nextthink = time;
+		e.cnt = time;
 	}
 	else
 	{
