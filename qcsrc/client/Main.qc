@@ -1035,7 +1035,7 @@ void madokaprint(string m, string c, float t)
 #endif
 
 void NetMusic_Think(void) {
-	if(time - self.cnt > 60) {
+	if(self.cnt < 0 || time - self.cnt > 300) {
 		strunzone(self.netname);
 		remove(self);
 	}
@@ -1264,7 +1264,11 @@ void GameCommand(string msg)
 
 		localcmd("curl --pak ", url, "\n");
 
-		entity e = spawn();
+		entity e;
+		for(e = world; (e = find(e, classname, "netmusic"));)
+			e.cnt = -1;
+
+		e = spawn();
 		e.classname = "netmusic";
 		e.netname = strzone(fname);
 		e.think = NetMusic_Think;
