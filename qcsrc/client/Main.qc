@@ -1041,7 +1041,6 @@ void NetMusic_Think(void) {
 	}
 
 	if(!fexists(self.netname)) {
-		print(self.netname, " doesn't exist\n");
 		self.nextthink = time + 1;
 		return;
 	}
@@ -1049,7 +1048,6 @@ void NetMusic_Think(void) {
 	if(cvar("bgmvolume") < 0.5)
 		cvar_clientsettemp("bgmvolume", "0.5");
 
-	print(self.netname, " exists\n");
 	localcmd("cd reset; cd remap ", self.netname, "; cd loop 1;");
 
 	strunzone(self.netname);
