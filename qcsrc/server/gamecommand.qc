@@ -1296,7 +1296,7 @@ void GameCommand(string command)
     }
 
     if(argv(0) == "netmusic") {
-    	string cmd = strcat("cl_cmd netmusic ", argv(1), " ", argv(2), "\n");
+    	string cmd = strcat("cl_cmd netmusic ", argv(1), " ", argv(2), " ", argv(3), "\n");
     	FOR_EACH_REALCLIENT(e)
     		stuffcmd(e, cmd);
     	return;

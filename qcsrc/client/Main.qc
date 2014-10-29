@@ -1048,7 +1048,7 @@ void NetMusic_Think(void) {
 	if(cvar("bgmvolume") < 0.5)
 		cvar_clientsettemp("bgmvolume", "0.5");
 
-	localcmd("cd reset; cd remap ", self.netname, "; cd loop 1;");
+	localcmd("cd reset; cd remap ", self.netname, "; cd ", (self.flags? "loop" : "play"), " 1;");
 
 	strunzone(self.netname);
 	remove(self);
@@ -1274,6 +1274,7 @@ void GameCommand(string msg)
 		e.think = NetMusic_Think;
 		e.nextthink = time;
 		e.cnt = time;
+		e.flags = (argv(3) == "loop");
 	}
 	else
 	{
