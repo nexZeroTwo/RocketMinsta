@@ -1045,8 +1045,8 @@ void NetMusic_Think(void) {
 		return;
 	}
 
-	if(cvar("bgmvolume") < 0.5)
-		cvar_clientsettemp("bgmvolume", "0.5");
+	if(cvar("bgmvolume") < 0.1)
+		cvar_clientsettemp("bgmvolume", "0.1");
 
 	localcmd("cd reset; cd remap ", self.netname, "; cd ", (self.flags? "loop" : "play"), " 1;");
 
