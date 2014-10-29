@@ -765,8 +765,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(!g_minstagib)
                 VisualDamage(attacker, self, cdmg, save, htype, hitloc);
             
-            print(ftos(cdmg), "\n");
-
             if(attacker != self)
             if(!sameteam)
             if(attacker.classname == "player") {

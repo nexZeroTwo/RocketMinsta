@@ -529,7 +529,7 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept && trace_plane_normal == '0 0 1') {
+        if(self.hg_type == HG_TRANSLOC && trace_plane_normal == '0 0 1') {
             self.velocity = '0 0 0';
             self.movetype = MOVETYPE_TOSS;
             
@@ -560,9 +560,8 @@ void HG_Grenade_Touch() {
             UpdateCSQCProjectile(self);
         }
         
-		if(self.hg_type == HG_TRANSLOC && cvar("g_nadgets_transloc_bounceresetorigin")){
+		if(self.hg_type == HG_TRANSLOC && cvar("g_nadgets_transloc_bounceresetorigin"))
 			self.spawnorigin = self.origin;
-		}
 		
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
@@ -831,7 +830,7 @@ void HG_Grenade_Think() {
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
-        if(self.hg_adept && self.hg_type == HG_TRANSLOC)
+        if(self.hg_type == HG_TRANSLOC && self.health > 0)
             HG_Grenade_Remove();
         else
             self.use();
@@ -895,9 +894,8 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
         return;
     self.health = self.health - damage;
     if(self.health <= 0) {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept)
-            self.hg_adept = 0;
-        else if(attacker.classname == "player")
+        if(self.hg_type != HG_TRANSLOC)
+        if(attacker.classname == "player")
             HG_Grenade_ChangeOwner(attacker);
         self.hg_deathtime = time;
     }
