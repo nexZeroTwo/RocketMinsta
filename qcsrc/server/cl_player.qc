@@ -762,9 +762,15 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(take >= self.health)
                 htype |= VDMG_TYPE_LETHAL;
             
-            if(!g_minstagib)
-                VisualDamage(attacker, self, cdmg, save, htype, hitloc);
-            
+            if(!g_minstagib) {
+            	vector vdloc = hitloc;
+
+            	if(deathtype == DEATH_HG_TRANSLOC)
+            		vdloc = vdloc + 0.5 * attacker.velocity;
+
+                VisualDamage(attacker, self, cdmg, save, htype, vdloc);
+            }
+
             if(attacker != self)
             if(!sameteam)
             if(attacker.classname == "player") {
