@@ -405,7 +405,7 @@ void HG_Translocator_Explode() {
     
     tdeath_hit = 0;
     tdeath_deathtype = self.hg_type;
-    TeleportPlayer(self.owner, self.owner, self.origin, a, v_forward * (0.5 + 0.5 * Buffs_NadgetPower(self.owner)) * (
+    TeleportPlayer(self, self.owner, self.origin, a, v_forward * (0.5 + 0.5 * Buffs_NadgetPower(self.owner)) * (
                     GRENVAR(self.hg_type, "push_base")
                   + GRENVAR(self.hg_type, "push_playerfactor") * vlen(self.owner.velocity)
                   + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
@@ -529,7 +529,7 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept && trace_plane_normal == '0 0 1') {
+        if(self.hg_type == HG_TRANSLOC && trace_plane_normal == '0 0 1') {
             self.velocity = '0 0 0';
             self.movetype = MOVETYPE_TOSS;
             
@@ -560,6 +560,9 @@ void HG_Grenade_Touch() {
             UpdateCSQCProjectile(self);
         }
         
+		if(self.hg_type == HG_TRANSLOC && cvar("g_nadgets_transloc_bounceresetorigin"))
+			self.spawnorigin = self.origin;
+		
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
@@ -827,7 +830,7 @@ void HG_Grenade_Think() {
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
-        if(self.hg_adept && self.hg_type == HG_TRANSLOC)
+        if(self.hg_type == HG_TRANSLOC && self.health > 0)
             HG_Grenade_Remove();
         else
             self.use();
@@ -891,9 +894,8 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
         return;
     self.health = self.health - damage;
     if(self.health <= 0) {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept)
-            self.hg_adept = 0;
-        else if(attacker.classname == "player")
+        if(self.hg_type != HG_TRANSLOC)
+        if(attacker.classname == "player")
             HG_Grenade_ChangeOwner(attacker);
         self.hg_deathtime = time;
     }
@@ -1492,6 +1494,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
+	gren.spawnorigin = self.origin;
     
     if(hgtype != HG_NAPALM)
         gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
