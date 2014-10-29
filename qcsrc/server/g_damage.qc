@@ -752,6 +752,10 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                         bprint ("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
                     else if(deathtype == DEATH_HG_GG)
                         bprint ("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
+                   	else if(deathtype == DEATH_HG_LASER)
+                        bprint ("^1", s, "^1 took ", a, "^1's blazing charge\n");
+                   	else if(deathtype == DEATH_MEODP)
+                        bprint ("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 				}
