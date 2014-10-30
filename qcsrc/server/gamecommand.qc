@@ -1302,6 +1302,12 @@ void GameCommand(string command)
     	return;
     }
     
+    if(argv(0) == "stopmusic") {
+    	FOR_EACH_REALCLIENT(e)
+    		stuffcmd(e, "cd reset\n");
+    	return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 
