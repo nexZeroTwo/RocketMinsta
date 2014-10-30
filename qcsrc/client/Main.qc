@@ -1034,6 +1034,24 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
+void NetMusic_Stopper_Think(void) {
+	if(self.cnt < -2) {
+		remove(self);
+		return;
+	}
+
+	float t = gettime(GETTIME_CDTRACK);
+	//print(ftos(t), "\n");
+
+	if(self.cnt > t) {
+		localcmd("cd reset;");
+		remove(self);
+	}
+
+	self.cnt = t;
+	self.nextthink = time;
+}
+
 void NetMusic_Think(void) {
 	if(self.cnt < 0 || time - self.cnt > 300) {
 		strunzone(self.netname);
@@ -1048,10 +1066,19 @@ void NetMusic_Think(void) {
 	if(cvar("bgmvolume") < 0.1)
 		cvar_clientsettemp("bgmvolume", "0.1");
 
-	localcmd("cd reset; cd remap ", self.netname, "; cd ", (self.flags? "loop" : "play"), " 1;");
-
+	localcmd("cd reset; cd remap ", self.netname, "; cd loop 1;");
 	strunzone(self.netname);
-	remove(self);
+
+	if(self.flags) {
+		// loop
+		remove(self);
+	} else {
+		// play once - we can't just use "cd play" here becase it's apparently broken
+		// instead, detect when the track starts to loop and stop it
+		self.cnt = -2;
+		self.think = NetMusic_Stopper_Think;
+		self.nextthink = time + 1;
+	}
 }
 
 void GameCommand(string msg)
@@ -1266,7 +1293,7 @@ void GameCommand(string msg)
 
 		entity e;
 		for(e = world; (e = find(e, classname, "netmusic"));)
-			e.cnt = -1;
+			e.cnt = -3;
 
 		e = spawn();
 		e.classname = "netmusic";
