@@ -1056,6 +1056,7 @@ void NetMusic_Think(void) {
 	if(self.cnt < 0 || time - self.cnt > 300) {
 		strunzone(self.netname);
 		remove(self);
+		return;
 	}
 
 	if(!fexists(self.netname)) {
@@ -1287,7 +1288,7 @@ void GameCommand(string msg)
 	}
 	else if(cmd == "netmusic") {
 		string url = argv(1);
-		string fname = argv(2);
+		string fname = strzone(argv(2));
 
 		localcmd("curl --pak ", url, "\n");
 
@@ -1297,7 +1298,7 @@ void GameCommand(string msg)
 
 		e = spawn();
 		e.classname = "netmusic";
-		e.netname = strzone(fname);
+		e.netname = fname;
 		e.think = NetMusic_Think;
 		e.nextthink = time;
 		e.cnt = time;
