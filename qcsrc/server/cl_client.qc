@@ -1953,6 +1953,8 @@ void ClientConnect (void)
             break;
         }
     }
+
+    Radio_ClientConnect();
 }
 
 /*

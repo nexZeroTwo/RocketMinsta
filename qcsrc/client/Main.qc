@@ -1034,54 +1034,6 @@ void madokaprint(string m, string c, float t)
 }
 #endif
 
-void NetMusic_Stopper_Think(void) {
-	if(self.cnt < -2) {
-		remove(self);
-		return;
-	}
-
-	float t = gettime(GETTIME_CDTRACK);
-	//print(ftos(t), "\n");
-
-	if(self.cnt > t) {
-		localcmd("cd reset;");
-		remove(self);
-	}
-
-	self.cnt = t;
-	self.nextthink = time;
-}
-
-void NetMusic_Think(void) {
-	if(self.cnt < 0 || time - self.cnt > 300) {
-		strunzone(self.netname);
-		remove(self);
-		return;
-	}
-
-	if(!fexists(self.netname)) {
-		self.nextthink = time + 1;
-		return;
-	}
-
-	if(cvar("bgmvolume") < 0.1)
-		cvar_clientsettemp("bgmvolume", "0.1");
-
-	localcmd("cd reset; cd remap ", self.netname, "; cd loop 1;");
-	strunzone(self.netname);
-
-	if(self.flags) {
-		// loop
-		remove(self);
-	} else {
-		// play once - we can't just use "cd play" here becase it's apparently broken
-		// instead, detect when the track starts to loop and stop it
-		self.cnt = -2;
-		self.think = NetMusic_Stopper_Think;
-		self.nextthink = time + 1;
-	}
-}
-
 void GameCommand(string msg)
 {
 	float argc;
@@ -1285,24 +1237,6 @@ void GameCommand(string msg)
 			localcmd("_userbind_call userbind7_press\n");
 		else
 			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
-	}
-	else if(cmd == "netmusic") {
-		string url = argv(1);
-		string fname = strzone(argv(2));
-
-		localcmd("curl --pak ", url, "\n");
-
-		entity e;
-		for(e = world; (e = find(e, classname, "netmusic"));)
-			e.cnt = -3;
-
-		e = spawn();
-		e.classname = "netmusic";
-		e.netname = fname;
-		e.think = NetMusic_Think;
-		e.nextthink = time;
-		e.cnt = time;
-		e.flags = (argv(3) == "loop");
 	}
 	else
 	{
@@ -2253,6 +2187,9 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_MEODP:
             Net_ReadMEODP();
             return TRUE;
+       	case TE_CSQC_RADIO:
+       		Net_ReadRadio();
+       		return TRUE;
     }
 
 	// pass to the engine

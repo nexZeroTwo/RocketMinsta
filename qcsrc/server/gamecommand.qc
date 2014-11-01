@@ -1295,16 +1295,18 @@ void GameCommand(string command)
         return;
     }
 
-    if(argv(0) == "netmusic") {
-    	string cmd = strcat("cl_cmd netmusic ", argv(1), " ", argv(2), " ", argv(3), "\n");
-    	FOR_EACH_REALCLIENT(e)
-    		stuffcmd(e, cmd);
+    if(argv(0) == "netmusic" || argv(0) == "radio_play") {
+    	Radio_Play(argv(1), argv(2), (argv(3) == "loop"));
     	return;
     }
     
-    if(argv(0) == "stopmusic") {
-    	FOR_EACH_REALCLIENT(e)
-    		stuffcmd(e, "cd reset\n");
+    if(argv(0) == "stopmusic" || argv(0) == "radio_stop") {
+    	Radio_Stop();
+    	return;
+    }
+
+    if(argv(0) == "radio_preload") {
+    	Radio_Preload(argv(1));
     	return;
     }
 
