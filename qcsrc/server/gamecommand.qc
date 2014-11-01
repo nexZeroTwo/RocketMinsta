@@ -1310,6 +1310,21 @@ void GameCommand(string command)
     	return;
     }
 
+    if(argv(0) == "radio_queue") {
+    	Radio_Queue(argv(1), argv(2), stof(argv(3)));
+    	return;
+    }
+
+    if(argv(0) == "radio_queue_skip") {
+    	Radio_Queue_Skip();
+    	return;
+    }
+
+    if(argv(0) == "radio_queue_restart") {
+    	Radio_Queue_PlayFirst();
+    	return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

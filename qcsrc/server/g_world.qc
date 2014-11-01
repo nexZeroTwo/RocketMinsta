@@ -873,6 +873,7 @@ void spawnfunc_worldspawn (void)
     
     IRC_Init();
     DPRM_Start();
+    Radio_Init();
 }
 
 void spawnfunc_light (void)

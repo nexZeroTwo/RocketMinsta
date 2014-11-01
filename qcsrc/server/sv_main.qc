@@ -331,6 +331,8 @@ void StartFrame (void)
         TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
     }
     
+    Radio_Frame();
+
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;
 }

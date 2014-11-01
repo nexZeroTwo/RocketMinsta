@@ -1,5 +1,10 @@
 
+void Radio_Init(void);
 void Radio_Play(string url, string fname, float loop);
 void Radio_Stop(void);
 void Radio_Preload(string url);
+void Radio_Queue(string url, string fname, float len);
 void Radio_ClientConnect(void);
+void Radio_Frame(void);
+void Radio_Queue_PlayFirst(void);
+void Radio_Queue_Skip(void);
