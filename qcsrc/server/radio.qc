@@ -63,7 +63,14 @@ void Radio_Stop(void) {
         stuffcmd(e, "cd reset\n");
 }
 
+void Radio_ClientConnect_Delayed(void) {
+    Radio_SendPlay(self);
+}
+
 void Radio_ClientConnect(void) {
-    if(clienttype(self) == CLIENTTYPE_REAL)
-        Radio_SendPlay(self);
+    if(clienttype(self) != CLIENTTYPE_REAL)
+        return;
+
+    Radio_SendPreload(self, radio_url);
+    defer(3, Radio_ClientConnect_Delayed);
 }
