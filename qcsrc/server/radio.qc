@@ -68,6 +68,9 @@ void Radio_ClientConnect_Delayed(void) {
 }
 
 void Radio_ClientConnect(void) {
+    if(!radio_playing)
+        return;
+
     if(clienttype(self) != CLIENTTYPE_REAL)
         return;
 
