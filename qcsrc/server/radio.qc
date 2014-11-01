@@ -129,6 +129,7 @@ void Radio_Queue(string url, string fname, float len) {
         cvar_set("_radio_queue", strcat(q, " ", id));
 
     cvar_set("_radio_queue_count", ftos(stof(id) + 1));
+    cvar_set("_radio_queue_left", ftos(cvar("_radio_queue_left") + 1));
 
     if(radio_playing_queue < 0)
         Radio_Queue_PlayFirst();
