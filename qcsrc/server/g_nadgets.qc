@@ -529,40 +529,42 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
-        if(self.hg_type == HG_TRANSLOC && trace_plane_normal == '0 0 1') {
-            self.velocity = '0 0 0';
-            self.movetype = MOVETYPE_TOSS;
-            
-            // check if it's ok to teleport in this location
-            // if not, remove and refund the translocator
-            
-            if(!self.hg_transloc_solidcheck) {
-                self.hg_transloc_solidcheck = TRUE;
+        if(self.hg_type == HG_TRANSLOC) {
+            if(cvar("g_nadgets_transloc_stick_to_floor") && trace_plane_normal == '0 0 1') {
+                self.velocity = '0 0 0';
+                self.movetype = MOVETYPE_TOSS;
                 
-                vector omins = self.mins;
-                vector omaxs = self.maxs;
-                vector oorig = self.origin;
-                setsize(self, PL_MIN, PL_MAX);
+                // check if it's ok to teleport in this location
+                // if not, remove and refund the translocator
                 
-                if(!move_out_of_solid(self)) {
-                    if(!self.hg_isbonus)
-                        self.owner.hg_ammo += 1;
+                if(!self.hg_transloc_solidcheck) {
+                    self.hg_transloc_solidcheck = TRUE;
                     
-                    bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
-                    HG_Grenade_Remove();
-                    return;
+                    vector omins = self.mins;
+                    vector omaxs = self.maxs;
+                    vector oorig = self.origin;
+                    setsize(self, PL_MIN, PL_MAX);
+                    
+                    if(!move_out_of_solid(self)) {
+                        if(!self.hg_isbonus)
+                            self.owner.hg_ammo += 1;
+                        
+                        bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
+                        HG_Grenade_Remove();
+                        return;
+                    }
+                    
+                    setsize(self, omins, omaxs);
+                    setorigin(self, oorig);
                 }
                 
-                setsize(self, omins, omaxs);
-                setorigin(self, oorig);
+                UpdateCSQCProjectile(self);
             }
             
-            UpdateCSQCProjectile(self);
+            if(cvar("g_nadgets_transloc_bounceresetorigin"))
+                self.spawnorigin = self.origin;
         }
-        
-		if(self.hg_type == HG_TRANSLOC && cvar("g_nadgets_transloc_bounceresetorigin"))
-			self.spawnorigin = self.origin;
-		
+
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
@@ -1519,7 +1521,14 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     setorigin(gren, w_shotorg);
 
     float lt;
-    if(gren.hg_adept) {
+    if(hgtype == HG_TRANSLOC && self.BUTTON_CROUCH) {
+        if(gren.hg_adept) {
+            lt = GV("adept_crouch_lifetime");
+            if(!lt)
+                lt = GV("crouch_lifetime");
+        } else
+            lt = GV("crouch_lifetime");
+    } else if(gren.hg_adept) {
         lt = GV("adept_lifetime");
         if(!lt)
             lt = GV("lifetime");
@@ -1558,13 +1567,22 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         gren.health = GV("health");
     gren.damageforcescale = GV("damageforcescale");
     
-    float spd  = GV("speed");
-    float mspd = GV("speed_min");
+    float spd, mspd, upspd;
+
+    if(hgtype == HG_TRANSLOC && self.BUTTON_CROUCH) {
+        spd   = GV("crouch_speed");
+        mspd  = GV("crouch_speed_min");
+        upspd = GV("crouch_speed_up");
+    } else {
+        spd   = GV("speed");
+        mspd  = GV("speed_min");
+        upspd = GV("speed_up");
+    }
     
     if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
-        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * GV("speed_up") * self.hg_power;
+        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
     } else
-        gren.velocity = w_shotdir * spd + v_up * GV("speed_up");
+        gren.velocity = w_shotdir * spd + v_up * upspd;
         
     W_SetupProjectileVelocity(gren);
     
