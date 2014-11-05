@@ -616,7 +616,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
     if(damage) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
-        
+        damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
+    	
+    	if(damage)
         if(g_nadgets)
         if(attacker.iscreature)
         if(self.hg_shield) {
@@ -674,8 +676,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
     
-    damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
-
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
