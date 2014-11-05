@@ -54,7 +54,7 @@ void HG_Precache() {
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
-    if(p.hg_optout)
+    if(!g_nadgets || p.hg_optout)
         return;
     
 	p.hg_bonus += amount;
