@@ -63,6 +63,7 @@ void HG_Shield_Trigger(void);
 .float hg_optout_nextround;
 .float hg_alwaysask;
 .float hg_adept;
+.float hg_tl_revived;
 
 .float hg_transloc_solidcheck;
 

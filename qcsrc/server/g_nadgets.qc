@@ -522,6 +522,19 @@ void HG_Grenade_Touch() {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
+                    self.hg_tl_revived = TRUE;
+
+                    float m = cvar("g_nadgets_transloc_medic_revive_health_multiplier");
+                    float h = other.health * m;
+                    float a = other.armorvalue * m;
+
+                    if(m > 1.0)
+                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin);
+                    else if(m < 1.0) {
+                        other.health = h;
+                        other.armorvalue = a;
+                        other.pauseregen_finished = time + cvar("g_balance_pause_health_regen");
+                    }
                 }
             } else goto troll;
         } else if(self.hg_type == HG_REMOTE)

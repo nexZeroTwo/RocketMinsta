@@ -18,7 +18,9 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     float medic;
     
     if(tdeath_deathtype == DEATH_HG_TRANSLOC) {
-		if(cvar("g_nadgets_transloc_scaledamagedistance")) {
+    	if(teleporter.hg_tl_revived)
+    		damage = 0;
+		else if(cvar("g_nadgets_transloc_scaledamagedistance")) {
 			float minDamage = cvar("g_nadgets_transloc_mindamage");
 			float maxDamage = cvar("g_nadgets_transloc_maxdamage");
 			float minDist = cvar("g_nadgets_transloc_mindistance"); //min distance needed to inflict the min damage
