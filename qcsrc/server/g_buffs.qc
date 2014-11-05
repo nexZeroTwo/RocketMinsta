@@ -597,13 +597,15 @@ float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float d
     if(targ != inflictor)
     if(attacker.classname == "player")
     if(deathtype != DEATH_HG_TRANSLOC)
-    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC)
-    if(Buffs_BuffPower(attacker, BUFF_IGNITE))
-    if((diffteam = IsDifferentTeam(attacker, targ)) || Buffs_BuffPower(attacker, BUFF_MEDIC)) {
-        float fdamage = damage * cvar("g_buffs_ignite_damage_fire");
-        if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
-            Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
-        damage = damage * cvar("g_buffs_ignite_damage_base");
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC) {
+        float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
+        if(ignite)
+        if((diffteam = IsDifferentTeam(attacker, targ)) || Buffs_BuffPower(attacker, BUFF_MEDIC)) {
+            float fdamage = damage * cvar("g_buffs_ignite_damage_fire") * ignite;
+            if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
+                Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
+            damage = damage * (1 - (1 - cvar("g_buffs_ignite_damage_base")) * ignite);
+        }
     }
     
     return damage;
