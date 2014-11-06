@@ -11,7 +11,6 @@ string radio_filename;
 void Radio_Init(void) {
     registercvar("_radio_queue", "");
     registercvar("_radio_queue_left", "0");
-    registercvar("_radio_queue_count", "0");
     radio_playing_queue = -1;
 
     if(cvar_string("_radio_queue") != "")
@@ -107,8 +106,21 @@ void Radio_Queue_PlayFirst(void) {
     cvar_set("_radio_queue_left", ftos(n-1));
 }
 
+string Radio_Queue_GetFreeID(void) {
+    float id;
+    string qs = strcat(" ", cvar_string("_radio_queue"), " ");
+
+    for(id = 0 ;; ++id) {
+        string s = ftos(id);
+        if(strstrofs(qs, strcat(" ", s, " "), 0) < 0)
+            return s;
+    }
+
+    return "";
+}
+
 void Radio_Queue(string url, string fname, float len) {
-    string id = cvar_string("_radio_queue_count");
+    string id = Radio_Queue_GetFreeID();
 
     string url_var   = strcat("_radio_queue_", id, "_url");
     string fname_var = strcat("_radio_queue_", id, "_fname");
@@ -128,7 +140,6 @@ void Radio_Queue(string url, string fname, float len) {
     else
         cvar_set("_radio_queue", strcat(q, " ", id));
 
-    cvar_set("_radio_queue_count", ftos(stof(id) + 1));
     cvar_set("_radio_queue_left", ftos(cvar("_radio_queue_left") + 1));
 
     if(radio_playing_queue < 0)
