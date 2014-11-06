@@ -194,6 +194,14 @@ void Radio_Queue_Skip(void) {
     if(radio_playing_queue < 0)
         return;
 
+    if(cvar("sv_radio_log_skips")) {
+        float fh = fopen("skiplog", FILE_APPEND);
+        if(fh >= 0) {
+            fputs(fh, strcat(strftime(TRUE, "%a %b %e %H:%M:%S %Z %Y "), radio_url, " ", radio_filename, "\n"));
+            fclose(fh);
+        }
+    }
+
     if(radio_queue_advanceat)
         Radio_Queue_Advance();
     Radio_Queue_PlayFirst();
