@@ -133,6 +133,8 @@ void Radio_Queue(string url, string fname, float len) {
 
     if(radio_playing_queue < 0)
         Radio_Queue_PlayFirst();
+    else if(strstrofs(q, " ", 0) < 0)
+        Radio_Preload(url);
 }
 
 void Radio_Queue_Advance(void) {
