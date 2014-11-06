@@ -12,9 +12,6 @@ void Radio_Init(void) {
     registercvar("_radio_queue", "");
     registercvar("_radio_queue_left", "0");
     radio_playing_queue = -1;
-
-    if(cvar_string("_radio_queue") != "")
-        defer(5, Radio_Queue_PlayFirst);
 }
 
 void Radio_SendPreload(entity e, string url) {
@@ -69,6 +66,9 @@ void Radio_Play(string url, string fname, float loop) {
 void Radio_Stop(void) {
     if(radio_url)       strunzone(radio_url);
     if(radio_filename)  strunzone(radio_filename);
+
+    if(!radio_playing)
+        return;
 
     radio_playing = FALSE;
     radio_url = radio_filename = string_null;

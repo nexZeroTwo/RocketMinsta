@@ -1931,10 +1931,13 @@ void ClientConnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients++;
         
-        if(realclients == 1 && time > game_starttime && !cvar("g_warmup")) {
-            ReadyRestart();
-            lockteams = FALSE;
-        }
+        if(realclients == 1) {
+        	defer(5, Radio_Queue_PlayFirst);
+        	if(time > game_starttime && !cvar("g_warmup")) {
+	            ReadyRestart();
+	            lockteams = FALSE;
+	        }
+	    }
     }
     
     if(clienttype(self) == CLIENTTYPE_REAL)
@@ -2084,6 +2087,9 @@ void ClientDisconnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients--;
         IRC_Announce_ClientDisconnect(self);
+
+        if(!realclients)
+        	Radio_Stop();
     }
     
     Buffs_MEODP_Point_Detach(self);
