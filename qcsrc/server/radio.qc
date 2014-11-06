@@ -9,9 +9,14 @@ string radio_url;
 string radio_filename;
 
 void Radio_Init(void) {
+    radio_playing_queue = -1;
+    sv_radio = cvar("sv_radio");
+
+    if(!sv_radio)
+        return;
+
     registercvar("_radio_queue", "");
     registercvar("_radio_queue_left", "0");
-    radio_playing_queue = -1;
 }
 
 void Radio_SendPreload(entity e, string url) {
@@ -38,11 +43,20 @@ void Radio_SendPlay(entity e) {
 }
 
 void Radio_Preload(string url) {
+    if(!sv_radio)
+        return;
+
+    if(!cvar("sv_radio_preload"))
+        return;
+
     entity e; FOR_EACH_REALCLIENT(e)
         Radio_SendPreload(e, url);
 }
 
 void Radio_Play(string url, string fname, float loop) {
+    if(!sv_radio)
+        return;
+
     if(radio_url)       strunzone(radio_url);
     if(radio_filename)  strunzone(radio_filename);
 
@@ -79,6 +93,9 @@ void Radio_Stop(void) {
 }
 
 void Radio_Queue_PlayFirst(void) {
+    if(!sv_radio)
+        return;
+
     string q = cvar_string("_radio_queue");
 
     if(q == "") {
@@ -96,7 +113,7 @@ void Radio_Queue_PlayFirst(void) {
 
     radio_tracklen = cvar(strcat("_radio_queue_", id, "_len"));
     radio_playing_queue = stof(id);
-    radio_queue_advanceat = radio_starttime + radio_tracklen * 0.4;
+    radio_queue_advanceat = radio_starttime + radio_tracklen * cvar("sv_radio_queue_advanceat");
 
     // preload next track
     id = argv(1);
@@ -120,6 +137,9 @@ string Radio_Queue_GetFreeID(void) {
 }
 
 void Radio_Queue(string url, string fname, float len) {
+    if(!sv_radio)
+        return;
+
     string id = Radio_Queue_GetFreeID();
 
     string url_var   = strcat("_radio_queue_", id, "_url");
@@ -194,6 +214,7 @@ void Radio_ClientConnect(void) {
     if(clienttype(self) != CLIENTTYPE_REAL)
         return;
 
-    Radio_SendPreload(self, radio_url);
+    if(cvar("sv_radio_preload"))
+        Radio_SendPreload(self, radio_url);
     defer(3, Radio_ClientConnect_Delayed);
 }

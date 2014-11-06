@@ -1,4 +1,6 @@
 
+float sv_radio;
+
 void Radio_Init(void);
 void Radio_Play(string url, string fname, float loop);
 void Radio_Stop(void);
