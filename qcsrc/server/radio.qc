@@ -5,6 +5,7 @@ float radio_starttime;
 float radio_tracklen;
 float radio_playing_queue;
 float radio_queue_advanceat;
+float radio_queue_next_request;
 string radio_url;
 string radio_filename;
 
@@ -92,6 +93,12 @@ void Radio_Stop(void) {
         stuffcmd(e, "cd reset\n");
 }
 
+void Radio_Queue_Request(void) {
+    radio_queue_next_request = 0;
+    if(cvar("sv_radio_queue_autofill"))
+        uri_get(cvar_string("sv_radio_queue_autofill_server"), URI_GET_RADIO);
+}
+
 void Radio_Queue_PlayFirst(void) {
     if(!sv_radio)
         return;
@@ -100,6 +107,7 @@ void Radio_Queue_PlayFirst(void) {
 
     if(q == "") {
         Radio_Stop();
+        Radio_Queue_Request();
         return;
     }
 
@@ -139,6 +147,8 @@ string Radio_Queue_GetFreeID(void) {
 void Radio_Queue(string url, string fname, float len) {
     if(!sv_radio)
         return;
+
+    radio_queue_next_request = 0;
 
     string id = Radio_Queue_GetFreeID();
 
@@ -190,6 +200,10 @@ void Radio_Queue_Skip(void) {
 }
 
 void Radio_Frame(void) {
+    if(radio_queue_next_request)
+    if(time > radio_queue_next_request)
+        Radio_Queue_Request();
+
     if(radio_playing_queue < 0)
         return;
 
@@ -197,10 +211,23 @@ void Radio_Frame(void) {
     if(time > radio_queue_advanceat) {
         Radio_Queue_Advance();
         radio_queue_advanceat = 0;
+
+        if(cvar_string("_radio_queue") == "")
+            Radio_Queue_Request();
     }
 
     if(time > radio_starttime + radio_tracklen)
         Radio_Queue_PlayFirst();
+}
+
+void Radio_URI_Get_Callback(float id, float status, string data) {
+    if(status) {
+        radio_queue_next_request = time + cvar("sv_radio_queue_autofill_retry");
+        return;
+    }
+
+    float n = tokenizebyseparator(data, " ");
+    Radio_Queue(argv(0), argv(1), stof(argv(2)));
 }
 
 void Radio_ClientConnect_Delayed(void) {

@@ -2254,6 +2254,7 @@ float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
 //float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
+float URI_GET_RADIO = 18;
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2273,6 +2274,10 @@ void URI_Get_Callback(float id, float status, string data)
     else if (id == URI_GET_IP2C)
     {
         IP2C_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_RADIO)
+    {
+        Radio_URI_Get_Callback(id, status, data);
     }
     else
     {
