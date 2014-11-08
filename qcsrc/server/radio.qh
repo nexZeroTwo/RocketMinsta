@@ -1,8 +1,10 @@
 
 float sv_radio;
+.float radio_enabled;
 
 void Radio_Init(void);
 void Radio_Play(string url, string fname, float loop);
+void Radio_SendPlay(entity e);
 void Radio_Stop(void);
 void Radio_Preload(string url);
 void Radio_Queue(string url, string fname, float len);

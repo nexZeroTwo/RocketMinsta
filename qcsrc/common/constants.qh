@@ -414,6 +414,7 @@ const float JBMSG_TOOLATE = 5;
 #define SPFLAG_FROZEN   1
 #define SPFLAG_MADOKA   2
 #define SPFLAG_AWAY     4
+#define SPFLAG_MUTE     8
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider

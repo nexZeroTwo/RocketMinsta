@@ -79,6 +79,9 @@ void fillNexuizRMConfigDialog(entity me)
 			OPTDEP("freezetag_danger")
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "radio", "Enable the Radio (music broadcast from server)"));
+            OPTDEP("radio")
+    me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD settings:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);
 	me.TR(me);
@@ -102,7 +105,7 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 13, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 14, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

@@ -214,6 +214,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
         OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen_time")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
+        OPTAVAIL_RAW("radio", ftos(sv_radio))
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -277,6 +278,16 @@ void SV_ParseClientCommand(string s) {
 			return;
 			
 		self.rm_nokillsound = stof(argv(1));
+    } else if(cmd == "radio") {
+        if(!self.scorekeeper || !sv_radio)
+            return;
+
+        float o = self.radio_enabled;
+        self.radio_enabled = stof(argv(1));
+        PlayerScore_SetFlagsBoolean(self, SPFLAG_MUTE, !self.radio_enabled);
+
+        if(!o && self.radio_enabled)
+            Radio_SendPlay(self);
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;

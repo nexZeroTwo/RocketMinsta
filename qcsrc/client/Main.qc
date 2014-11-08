@@ -442,6 +442,11 @@ void PostInit(void)
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
+    // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
+    float cfgver = cvar("rm_initialized");
+    if(cfgver >= 44 && !(cvar_type("rm_radio") & CVAR_TYPEFLAG_EXISTS))
+        cvar_set("rm_initialized", "42");
+
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
@@ -526,9 +531,11 @@ void PostInit(void)
         case 42:
             localcmd("seta cl_effects_lightningarc_count 1\n");
             localcmd("seta cl_effects_lightningarc_segmentlength 24\n");
+        case 43:
+            localcmd("seta rm_radio 1; radio 1\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 43\n");
+		localcmd("seta rm_initialized 44\n");
 		RM_OUTDATED
 		break;
 	}
@@ -588,6 +595,7 @@ void PostInit(void)
 	registercmd("freezetag_danger_silent");
     registercmd("showtimer");
     registercmd("shownadgetregen");
+    registercmd("radio");
 	// -- //
 	registercmd("hudskin");
 	
@@ -611,6 +619,7 @@ void PostInit(void)
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+    localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
@@ -730,6 +739,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+        print("^2radio^7: Recieve music broadcasts from the server, if provided (enabled by default)\n");
 		#endif
 		#endif
 		
@@ -910,7 +920,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		return true;
 	}
-	else if (strCmd == "hidecountry")
+	else if(strCmd == "hidecountry")
 	{
 		VALUEREQUIRED
 		cvar_set ("rm_hidecountry", argv (1));
@@ -919,6 +929,18 @@ float CSQC_ConsoleCommand(string strMessage)
 		RMSETTINGREPORT
 		return true;
 	}
+    else if(strCmd == "radio") {
+        VALUEREQUIRED
+        
+        if(!stof(argv(1)))
+        if(find(world, classname, "radio"))
+            localcmd("cd reset\n");
+
+        cvar_set("rm_radio", argv(1));
+        localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
+        RMSETTINGREPORT
+        return true;
+    } 
 
 	if(camera_active)
 	if(strCmd == "+forward" || strCmd == "-back") {
