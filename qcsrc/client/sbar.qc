@@ -721,7 +721,7 @@ string Sbar_GetField(entity pl, float field)
 
             return strcat(chr2str(char0), chr2str(char1));
         case SP_PLAYTIME:
-            if(pl.(scores[SP_AWAYSTATUS]))
+            if(pl.(scores[SP_FLAGS]) & SPFLAG_AWAY)
                 return "AFK";
             if(GetPlayerColor(pl.sv_entnum) == COLOR_SPECTATOR)
                 return "";
@@ -993,6 +993,8 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 		drawfill(pos - '1 1 0', tmp + '2 0 0', rgb, sbar_scoreboard_highlight_alpha, DRAWFLAG_NORMAL);
 
 	tmp_y = 0;
+    float flg = pl.(scores[SP_FLAGS]);
+
 
 	for(i = 0; i < sbar_num_fields; ++i)
 	{
@@ -1016,7 +1018,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			local float tmp_font;
 			tmp_font = drawfont;
 
-			if(pl.(scores[SP_MADOKASTATUS]))
+			if(flg & SPFLAG_MADOKA)
 				drawfont = sbar_madokafont;
 			#endif
 
@@ -1026,7 +1028,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			else
 */
 			{
-				if(pl.(scores[SP_FROZENSTATUS]))
+				if(flg & SPFLAG_FROZEN)
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a * 0.3, DRAWFLAG_NORMAL);
 				else
 					drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
@@ -1048,7 +1050,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
 		tmp_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
 		if(sbar_field_icon0 != "") {
-            float fa = 1 - (pl.(scores[SP_FROZENSTATUS]) * 0.7);
+            float fa = 1 - (!!(flg & SPFLAG_FROZEN)) * 0.7;
 			drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a*fa, DRAWFLAG_NORMAL);
         }
 		if(sbar_field_icon1 != "")
@@ -3761,7 +3763,7 @@ void Sbar_Draw(void)
 	#endif
     
     float jailspec = FALSE;
-    if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FROZENSTATUS])) {
+    if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
         o = Sbar_DrawNoteLine(o, "^1You are imprisoned");
         if(!spectatee_status)
             o = Sbar_DrawNoteLine(o, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team"));
@@ -4099,7 +4101,7 @@ void Sbar_Draw(void)
 			local entity pl;
 			pl = playerslots[slot];
 
-			if(pl.(scores[SP_MADOKASTATUS]))
+			if(pl.(scores[SP_FLAGS]) & SPFLAG_MADOKA)
 				drawfont = sbar_madokafont;
 			#endif
 

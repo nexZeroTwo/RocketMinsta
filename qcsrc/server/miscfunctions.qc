@@ -3179,10 +3179,7 @@ void MarkAway(entity pl, float force)
     pl.is_away = 1;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_SetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
 }
@@ -3202,10 +3199,7 @@ void UnmarkAway(entity pl)
     pl.is_away = 0;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_UnsetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
     

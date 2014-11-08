@@ -159,7 +159,7 @@ void Draw_ShowNames()
                     self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
                     drawfont = GetBigfont();
                     vector clr;
-                    if(playerslots[self.the_entnum-1].(scores[SP_FROZENSTATUS])) {
+                    if(playerslots[self.the_entnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
                         s2 = "Frozen!";
                         clr = '0.2 1 1';
                     } else {

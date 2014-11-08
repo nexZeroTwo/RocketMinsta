@@ -389,7 +389,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 24
+#define MAX_SCORE 22
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -399,19 +399,21 @@ const float JBMSG_TOOLATE = 5;
 #define SP_SCORE 3
 
 #define SP_HOOKFRAGS 10
-#define SP_FROZENSTATUS 11
-#define SP_MADOKASTATUS 12
-#define SP_AWAYSTATUS 13
-#define SP_PLAYTIME 14
-#define SP_COUNTRY 15
-#define SP_ACCURACY 16
-#define SP_FPS 17
-#define SP_NADEMODE 18
-#define SP_NADEFRAGS 19
-#define SP_REVIVALS 20
-#define SP_DAMAGE 21
-#define SP_HEALING 22
-#define SP_QUEUE 23
+#define SP_FLAGS 11
+#define SP_PLAYTIME 12
+#define SP_COUNTRY 13
+#define SP_ACCURACY 14
+#define SP_FPS 15
+#define SP_NADEMODE 16
+#define SP_NADEFRAGS 17
+#define SP_REVIVALS 18
+#define SP_DAMAGE 19
+#define SP_HEALING 20
+#define SP_QUEUE 21
+
+#define SPFLAG_FROZEN   1
+#define SPFLAG_MADOKA   2
+#define SPFLAG_AWAY     4
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
