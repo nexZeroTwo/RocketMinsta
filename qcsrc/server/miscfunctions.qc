@@ -3183,7 +3183,7 @@ void MarkAway(entity pl, float force)
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
 
-    pl.awkmarktime = time;
+    pl.afkmarktime = time;
 }
 
 void UnmarkAway(entity pl)

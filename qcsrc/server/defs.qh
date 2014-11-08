@@ -779,4 +779,4 @@ float sv_showacc;
 
 float IsDifferentTeam(entity a, entity b);
 
-float afkmarktime;
+.float afkmarktime;

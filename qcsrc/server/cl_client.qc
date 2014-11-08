@@ -3743,6 +3743,13 @@ void PlayerPostThink (void)
 		stuffcmd(self, "seta _cl_name Player\n");
 	}
 
+    if(self.movement)
+    if(self.specdelay_ent) {
+        remove(self.specdelay_ent);
+        self.specdelay_ent = world;
+        bigprint_spec(self, "", "^1Cancelled", 1);
+    }
+
 	if(sv_maxidle && frametime)
 	{
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
