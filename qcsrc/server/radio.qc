@@ -106,6 +106,11 @@ void Radio_Queue_PlayFirst(void) {
     if(!sv_radio)
         return;
 
+    if(!realclients || gameover) {
+        Radio_Stop();
+        return;
+    }
+
     string q = cvar_string("_radio_queue");
 
     if(q == "") {
