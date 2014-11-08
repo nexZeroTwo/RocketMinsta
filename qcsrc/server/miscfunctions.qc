@@ -3182,6 +3182,8 @@ void MarkAway(entity pl, float force)
         PlayerScore_SetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+
+    pl.awkmarktime = time;
 }
 
 void UnmarkAway(entity pl)
