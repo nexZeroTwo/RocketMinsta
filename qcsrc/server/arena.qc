@@ -127,7 +127,7 @@ void reset_map(float dorespawn)
 				if(self.classname == "player") {
 					PutClientInServer();
                     if(g_clanarena)
-                        PlayerScore_SetFlags(self, SPFLAG_FROZEN);
+                        PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
                 } else if(g_clanarena && self.jb_specteam) {
                     self.classname = "player";
                     PutClientInServer();
