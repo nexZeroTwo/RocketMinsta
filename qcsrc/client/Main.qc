@@ -489,7 +489,7 @@ void PostInit(void)
 		case 20:
 			//localcmd("seta rm_althud 0; althud 0\n");
 		case 21:
-			localcmd("seta rm_althud 1; althud 1\n");
+			localcmd("seta rm_althud 0; althud 0\n");
 		case 22:
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
@@ -533,9 +533,11 @@ void PostInit(void)
             localcmd("seta cl_effects_lightningarc_segmentlength 24\n");
         case 43:
             localcmd("seta rm_radio 1; radio 1\n");
+        case 44:
+            localcmd("seta rm_althud 0; althud 0\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 44\n");
+		localcmd("seta rm_initialized 45\n");
 		RM_OUTDATED
 		break;
 	}
