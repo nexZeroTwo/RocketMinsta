@@ -7,7 +7,7 @@ void Radio_Play(string url, string fname, float loop);
 void Radio_SendPlay(entity e);
 void Radio_Stop(void);
 void Radio_Preload(string url);
-void Radio_Queue(string url, string fname, float len);
+void Radio_Queue(string url, string fname, float len, string desc);
 void Radio_ClientConnect(void);
 void Radio_Frame(void);
 void Radio_Queue_PlayFirst(void);

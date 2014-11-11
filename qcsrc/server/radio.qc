@@ -31,8 +31,34 @@ void Radio_SendPreload(entity e, string url) {
     WriteString(MSG_ONE, url);
 }
 
+void Radio_Announce(entity e) {
+    if(radio_playing_queue >= 0)
+    if(cvar("sv_radio_announce")) {
+        string desc = cvar_string(strcat("_radio_queue_", ftos(radio_playing_queue), "_desc"));
+        if(desc == "")
+            desc = "^8(unknown track)";
+        desc = strcat("\{1}^1[RADIO] ^2Now playing ^3", desc);
+        if(radio_tracklen)
+            desc = strcat(desc, "^8 (", mmss(radio_tracklen * 10), ")");
+        float left = cvar("_radio_queue_left");
+        if(left)
+            desc = strcat(desc, "^7 - ", ftos(left), " in queue");
+        desc = strcat(desc, "\n");
+
+        if(e)
+            sprint(e, desc);
+        else
+            bprint(desc);
+    }
+}
+
 void Radio_SendPlay(entity e) {
-    if(!radio_playing || !e.radio_enabled)
+    if(!radio_playing)
+        return;
+
+    Radio_Announce(e);
+
+    if(!e.radio_enabled)
         return;
 
     msg_entity = e;
@@ -137,6 +163,7 @@ void Radio_Queue_PlayFirst(void) {
         Radio_Preload(cvar_string(strcat("_radio_queue_", id, "_url")));
 
     cvar_set("_radio_queue_left", ftos(n-1));
+    Radio_Announce(world);
 }
 
 string Radio_Queue_GetFreeID(void) {
@@ -152,7 +179,7 @@ string Radio_Queue_GetFreeID(void) {
     return "";
 }
 
-void Radio_Queue(string url, string fname, float len) {
+void Radio_Queue(string url, string fname, float len, string desc) {
     if(!sv_radio)
         return;
 
@@ -163,14 +190,17 @@ void Radio_Queue(string url, string fname, float len) {
     string url_var   = strcat("_radio_queue_", id, "_url");
     string fname_var = strcat("_radio_queue_", id, "_fname");
     string len_var   = strcat("_radio_queue_", id, "_len");
+    string desc_var  = strcat("_radio_queue_", id, "_desc");
 
     registercvar(url_var, "");
     registercvar(fname_var, "");
     registercvar(len_var, "");
+    registercvar(desc_var, "");
 
     cvar_set(url_var, url);
     cvar_set(fname_var, fname);
     cvar_set(len_var, ftos(len));
+    cvar_set(desc_var, desc);
 
     string q = cvar_string("_radio_queue");
     if(q == "")
@@ -243,7 +273,14 @@ void Radio_URI_Get_Callback(float id, float status, string data) {
     }
 
     float n = tokenizebyseparator(data, " ");
-    Radio_Queue(argv(0), argv(1), stof(argv(2)));
+    string d = "";
+
+    if(n > 3) {
+        d = substring(data, argv_start_index(3), strlen(data));
+        d = strcat(d, " ^8(autoqueue)");
+    }
+
+    Radio_Queue(argv(0), argv(1), stof(argv(2)), d);
 }
 
 void Radio_ClientConnect_Delayed(void) {

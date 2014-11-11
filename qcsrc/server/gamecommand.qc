@@ -1311,7 +1311,7 @@ void GameCommand(string command)
     }
 
     if(argv(0) == "radio_queue") {
-    	Radio_Queue(argv(1), argv(2), stof(argv(3)));
+    	Radio_Queue(argv(1), argv(2), stof(argv(3)), uri_unescape(argv(4)));
     	return;
     }
 
