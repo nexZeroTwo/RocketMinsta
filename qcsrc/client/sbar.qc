@@ -4388,6 +4388,8 @@ void Sbar_Draw(void)
 			hudline_pos_y = bottom_y - 24;
 			hud_sector_y = 21;
 			hud_sector_pos_y = bottom_y - 27;
+            float sector_gap = 8;
+            float sector_vgap = sector_gap - min(hudskin_offset_border_left_y, hudskin_offset_border_right_y);
 
 			if(teamhud_enabled != th_state)
 			{
@@ -4466,14 +4468,14 @@ void Sbar_Draw(void)
 
 				// pre-healtharmor
 				HUDLINE_SLICE({
-					hudline_x = 7 - bw_left;
+					hudline_x = sector_gap - bw_left;
 				})
 
 				// healtharmor
 				//HUDLINE_SECTOR({
                 {
 					hud_sector_x = SECWIDTH_HEALTH;
-					hud_sector_pos_x = 7;
+					hud_sector_pos_x = sector_gap;
 					sector_mod = '0 0 0'; //'-1 0 0';
 
 					s_health = hud_sector_pos;
@@ -4487,12 +4489,12 @@ void Sbar_Draw(void)
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
-					hudline_x = 10 - bw_right - bw_left;
+					hudline_x = sector_gap - bw_right - bw_left;
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 
 				// ammo
-                ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
+                ammosector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + sector_gap;
                 hud_sector_x = SECWIDTH_NORMAL;
                 sector_mod = '0 0 0';
                 
@@ -4506,12 +4508,12 @@ void Sbar_Draw(void)
                 if(g_nadgets && vid_conwidth >= 678) {
                     // ammo | nades
                     HUDLINE_SLICE({
-                        hudline_x = 10 - bw_right - bw_left;
+                        hudline_x = sector_gap - bw_right - bw_left;
                         hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
                     })
                     
                     // nades
-                    nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 10;
+                    nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + sector_gap;
                     hud_sector_x = SECWIDTH_NORMAL;
                     sector_mod = '0 0 0';
                     sector_alphamod = 1;
@@ -4525,12 +4527,14 @@ void Sbar_Draw(void)
 				// separator slice:
 				//		ammo/nades | teamhud
 
-				if(vid_conwidth < 800 || g_nadgets && vid_conwidth <= 1024)
-					next_sector = bottomright_x - SECWIDTH_WIDE - 13;
+                float low = vid_conwidth < 800 || g_nadgets && vid_conwidth <= 1024;
+
+				if(low)
+					next_sector = bottomright_x - SECWIDTH_WIDE - sector_gap * 2;
 				else if(teamhud_wide)
 				{
 					if(vid_conwidth <= 900)
-						next_sector = hud_sector_pos_x + hud_sector_x + 10;
+						next_sector = hud_sector_pos_x + hud_sector_x + sector_gap;
 					else
 						next_sector = bottom_x - SECWIDTH_WIDE/2;
 				}
@@ -4565,14 +4569,14 @@ void Sbar_Draw(void)
 
 				teamhud_pos = hud_sector_pos;
 				
-				if(vid_conwidth >= 800)
+				if(!low)
 				{
 					// teamhud | powerups
-					next_sector = bottomright_x - SECWIDTH_WIDE - 13; //bottomright_x - 103 - 6;
+					next_sector = bottomright_x - SECWIDTH_WIDE - sector_gap * 2;
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 						hudline_x = topright_x - hudline_pos_x - (bottomright_x - 
-							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - SECWIDTH_NORMAL - 6) : next_sector)) - bw_left;
+							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - SECWIDTH_NORMAL - sector_gap) : next_sector)) - bw_left;
 					})
 
 					// powerups
@@ -4580,7 +4584,7 @@ void Sbar_Draw(void)
 					{
 						HUDLINE_SECTOR({
 							hud_sector_x = SECWIDTH_NORMAL;
-							hud_sector_pos_x = next_sector - 2;
+							hud_sector_pos_x = next_sector;
 							powerup_pos = hud_sector_pos;
 							sector_mod = '0 0 0';
 							sector_alphamod = pw_alpha;
@@ -4593,21 +4597,21 @@ void Sbar_Draw(void)
 					{
 						HUDLINE_SLICE({
 							hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
-							hudline_x = 10 - bw_right - bw_left;
+							hudline_x = sector_gap - bw_right - bw_left;
 						})
 					}
 					
 					// scores
 					HUDLINE_SECTOR({
 						hud_sector_x = SECWIDTH_NORMAL;
-						hud_sector_pos_x = next_sector + SECWIDTH_NORMAL + 7;
+						hud_sector_pos_x = next_sector + SECWIDTH_NORMAL + sector_gap;
 						sector_mod = '0 0 0';
 					}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
 				}
 				else // If we don't have enough space, display powerups above the scores sector
 				{
 					// teamhud | scores
-					next_sector = bottomright_x - SECWIDTH_NORMAL - 6;
+					next_sector = bottomright_x - SECWIDTH_NORMAL - sector_gap;
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 						hudline_x = topright_x - hudline_pos_x - (bottomright_x - next_sector) - bw_left;
@@ -4624,7 +4628,7 @@ void Sbar_Draw(void)
 					{
 						// powerups (drawn above scores)
 						HUDLINE_SECTOR({
-							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - sector_vgap;
 							powerup_pos = hud_sector_pos;
 							sector_alphamod = pw_alpha;
 						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
@@ -4641,8 +4645,7 @@ void Sbar_Draw(void)
 			else  	/// emulate the nexuiz layout
 			{
 				float centersector;
-				float low = vid_conwidth < 800;
-				float low2 = vid_conwidth < 675;
+				float low = vid_conwidth < 675;
 				
 				if(hudskin_line_full)
 				{
@@ -4659,7 +4662,7 @@ void Sbar_Draw(void)
 
 				// pre-teamhud
 				HUDLINE_SLICE({
-					hudline_x = 7 - bw_left;
+					hudline_x = sector_gap - bw_left;
 					next_sector = hudline_x + bw_left;
 				})
 
@@ -4692,13 +4695,13 @@ void Sbar_Draw(void)
 
 				if(low)
 				{
-					next_sector = hud_sector_pos_x + SECWIDTH_NORMAL + 10;
-					centersector = next_sector + SECWIDTH_NORMAL + 10;
+					next_sector = hud_sector_pos_x + SECWIDTH_NORMAL + sector_gap;
+					centersector = next_sector + SECWIDTH_NORMAL + sector_gap;
 				}
 				else
 				{
 					centersector = bottom_x - SECWIDTH_HEALTH/2;
-					next_sector = centersector - SECWIDTH_NORMAL - 10;
+					next_sector = centersector - SECWIDTH_NORMAL - sector_gap;
 				}
 
 				HUDLINE_SLICE({
@@ -4720,7 +4723,7 @@ void Sbar_Draw(void)
                 
 				// ammo | health-armor
 				HUDLINE_SLICE({
-					hudline_x = 8 - bw_left - bw_right;
+					hudline_x = sector_gap - bw_left - bw_right;
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 
@@ -4728,8 +4731,7 @@ void Sbar_Draw(void)
 				//HUDLINE_SECTOR({
                 {
 					hud_sector_x = SECWIDTH_HEALTH;
-					//hud_sector_pos_x = centersector;
-					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+					hud_sector_pos_x = centersector;
 					sector_mod = '0 0 0';
 
 					s_health = hud_sector_pos;
@@ -4743,46 +4745,32 @@ void Sbar_Draw(void)
                 
 				// health-armor | nades
 				HUDLINE_SLICE({
-					hudline_x = 8 - bw_left - bw_right;
+					hudline_x = sector_gap - bw_left - bw_right;
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 				})
 				
-				if(!low2)
+				if(!low && g_nadgets)
 				{
-                    if(g_nadgets) {/*
-                        HUDLINE_SECTOR({
-                            hud_sector_x = SECWIDTH_NORMAL;
-                            nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
-                            powerup_pos = hud_sector_pos;
-                            sector_mod = '0 0 0';
-                            sector_alphamod = 1;
-                        }, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-                        */
+                    // nades
+                    nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + sector_gap;
+                    hud_sector_x = SECWIDTH_NORMAL;
+                    sector_mod = '0 0 0';
+                    sector_alphamod = 1;
                         
-                        // nades
-                        nadesector_pos = hud_sector_pos_x = hudline_pos_x - bw_right + 8;
-                        hud_sector_x = SECWIDTH_NORMAL;
-                        sector_mod = '0 0 0';
-                        sector_alphamod = 1;
-                        
-                        DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
-                                                BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
-                                                BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                                sector_alphamod, hud_sector_drawflag);
-                    } else {
-                        hud_sector_pos_x = hudline_pos_x - bw_right + 8;
-                        hud_sector_x = -bw_right - bw_left;
-                    }
+                    DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                            sector_alphamod, hud_sector_drawflag);
 				}
 				else
 				{
-					hud_sector_pos_x = hudline_pos_x - bw_right + 8;
+					hud_sector_pos_x = hudline_pos_x - bw_right + sector_gap;
 					hud_sector_x = -bw_right - bw_left;
 				}
 				
 				// separator slice:
 				// 		powerups/nades | scores
-				next_sector = bottomright_x - SECWIDTH_NORMAL - 6;
+				next_sector = bottomright_x - SECWIDTH_NORMAL - sector_gap;
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					//hudline_x = 10;
@@ -4800,33 +4788,30 @@ void Sbar_Draw(void)
                 if(pw_alpha) {
                     // powerups (drawn above scores)
                     HUDLINE_SECTOR({
-                        hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
+                        hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - sector_vgap;
                         powerup_pos = hud_sector_pos;
                         sector_alphamod = pw_alpha;
                     }, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
                     sector_alphamod = 1;
                 }
                 
-				if(low2)
-				{
-					if(pw_alpha)
-					{
-						// powerups (drawn above scores)
-						HUDLINE_SECTOR({
-							hud_sector_pos_y = hud_sector_pos_y - hud_sector_y - 12;
-							powerup_pos = hud_sector_pos;
-							sector_alphamod = pw_alpha;
-						}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER)
-						sector_alphamod = 1;
-					}
-				}
-
 				// post-scores
 				HUDLINE_SLICE({
 					hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 					hudline_x = topright_x;
 				})
 			}
+
+            /*
+            hud_sector_x = (SECWIDTH_NORMAL + sector_gap) * 2 + SECWIDTH_HEALTH;
+            hud_sector_pos_y -= hud_sector_y + sector_vgap;
+            hud_sector_pos_x = (vid_conwidth - hud_sector_x) * 0.5;
+
+            DrawProgressBarSector(0.5 * sin(time * 1.5) + 0.5, hud_sector_pos, hud_sector,
+                                    BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                    BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
+                                    sector_alphamod, hud_sector_drawflag);
+            */
 		}
 
 		if(rm_oldhud && sbar_hudselector == 2) // combined health and armor display
