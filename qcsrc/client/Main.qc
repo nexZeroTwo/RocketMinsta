@@ -489,7 +489,7 @@ void PostInit(void)
 		case 20:
 			//localcmd("seta rm_althud 0; althud 0\n");
 		case 21:
-			localcmd("seta rm_althud 0; althud 0\n");
+			//localcmd("seta rm_althud 0; althud 0\n");
 		case 22:
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
