@@ -456,6 +456,8 @@ void HG_Grenade_RadiusDamage() {
         }
     }
     
+    dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
+
     RadiusDamage(self, self.owner,
                        GV("damage") * p * dmgmod,
                        GV("edgedamage") * p * dmgmod,
