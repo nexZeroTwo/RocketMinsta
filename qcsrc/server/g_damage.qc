@@ -1899,13 +1899,19 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 		if (targ != inflictor)
 			if (ignore != targ) if(targ.takedamage)
 			{
-				// LordHavoc: measure distance to nearest point on target (not origin)
-				// (this guarentees 100% damage on a touch impact)
-				nearest = NearestPointOnBox(targ, blastorigin);
-				diff = nearest - blastorigin;
-				// round up a little on the damage to ensure full damage on impacts
-				// and turn the distance into a fraction of the radius
-				power = 1 - ((vlen (diff) - 2) / rad);
+                if(targ == directhitentity && cvar("g_blast_directhit_fulldamage"))
+                    power = 1;
+                else {
+    				// LordHavoc: measure distance to nearest point on target (not origin)
+    				// (this guarentees 100% damage on a touch impact)
+                    // Akari: ....... not really.
+    				nearest = NearestPointOnBox(targ, blastorigin);
+    				diff = nearest - blastorigin;
+    				// round up a little on the damage to ensure full damage on impacts
+    				// and turn the distance into a fraction of the radius
+    				power = 1 - ((vlen (diff) - 2) / rad);
+                }
+
 				//bprint(" ");
 				//bprint(ftos(power));
 				//if (targ == attacker)
