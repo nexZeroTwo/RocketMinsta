@@ -62,6 +62,7 @@ void W_CampingRifle_Reload()
 	weapon_thinkf(WFRAME_RELOAD, cvar("g_balance_campingrifle_reloadtime"), W_CampingRifle_ReloadedAndReady);
 
 	self.campingrifle_bulletcounter = -1;
+	self.campingrifle_hitstreak = 0;
 }
 
 void W_CampingRifle_CheckReloadAndReady()
@@ -110,10 +111,12 @@ void W_CampingRifle_Attack2()
 {
     float sprd;
     float add;
-    
+    float streak;
+	float dmgbonus;
+	
     sprd = cvar("g_balance_campingrifle_secondary_spread");
     add  = cvar("g_balance_campingrifle_secondary_spread_addedperbullet");
-    
+	
     if(add) {
         if(time - self.campingrifle_lastburst > cvar("g_balance_campingrifle_secondary_spread_resettime"))
             self.campingrifle_streak = 0;
@@ -121,8 +124,18 @@ void W_CampingRifle_Attack2()
         self.campingrifle_streak += 1;
         self.campingrifle_lastburst = time;
     }
-    
-	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage"), cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
+    if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
+		if(time - self.campingrifle_laststreak > cvar("g_balance_campingrifle_secondary_hitstreak_resettime")){
+			self.campingrifle_hitstreak = 0;
+		}
+		streak = bound(0, self.campingrifle_hitstreak, self.campingrifle_bulletlimit);
+		dmgbonus = streak * cvar("g_balance_campingrifle_secondary_hitstreakbonus");
+	}
+	else{
+		dmgbonus = 0;
+	}
+	
+	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage") + dmgbonus, cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
 }
 
 void spawnfunc_weapon_campingrifle (void)

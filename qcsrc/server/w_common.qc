@@ -233,20 +233,6 @@ void W_BallisticBullet_Hit (void)
         if(!Buffs_BuffPower(self.owner, BUFF_MEDIC))
 			hit = 0;
 		
-		if(hit && self.projectiledeathtype == 271){
-			//hitstreak with secondary
-			self.owner.campingrifle_hitstreak += 1;
-		}
-		else{
-			self.owner.campingrifle_hitstreak = 0;
-		}
-		float streakbonus = cvar("g_balance_campingrifle_secondary_hitstreakbonus");
-		if(cvar("g_balance_campingrifle_secondary_hitstreaks") && self.projectiledeathtype == 271){
-			float currstreak = self.owner.campingrifle_hitstreak;
-			float streakamount = bound(0, (self.owner.campingrifle_hitstreak - 1), cvar("g_balance_campingrifle_magazinecapacity")); //don't grant a bonus on the first hit
-			float bonusdmg = streakbonus * streakamount;
-			self.dmg += bonusdmg;
-		}
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
