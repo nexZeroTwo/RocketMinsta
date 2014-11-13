@@ -3395,7 +3395,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
             }
 
             drawresetcliparea();
-            
+
             break;
         }
         
@@ -3699,6 +3699,7 @@ void Sbar_DrawPlayerName(string s) {
     drawfont = sbar_font;
 }
 
+float hg_nadecount_update;
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -4576,6 +4577,19 @@ void Sbar_Draw(void)
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
             vhealth += (min(mxdmg_x + 1, sv_nicehealth * 2) - vhealth) * frametime * 10;
 
+            vector hg_bg_s, hg_bg_b;
+            float  hg_al_s, hg_al_b;
+
+            if(g_nadgets) {
+                float a1 = bound(0, time - hg_nadecount_update, 1);
+                float a2 = 1 - a1;
+
+                hg_bg_s = BG_SECTOR * a1 + BG_SECTOR_PROGRESS * a2;
+                hg_bg_b = BG_BORDER * a1 + BG_BORDER_PROGRESS * a2;
+                hg_al_s = A_SECTOR  * a1 + A_SECTOR_PROGRESS  * a2;
+                hg_al_b = A_BORDER  * a1 + A_BORDER_PROGRESS  * a2;
+            }
+
 			if(rm_althud)	/// RM hud layout
 			{
 				if(hudskin_line_full)
@@ -4645,9 +4659,9 @@ void Sbar_Draw(void)
                     hud_sector_x = SECWIDTH_NORMAL;
                     sector_mod = '0 0 0';
                     sector_alphamod = 1;
-                    
+
                     DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
-                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            hg_bg_s, hg_bg_b, hg_al_s, hg_al_b,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
 
@@ -4880,7 +4894,7 @@ void Sbar_Draw(void)
                     sector_alphamod = 1;
                         
                     DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
-                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
+                                            hg_bg_s, hg_bg_b, hg_al_s, hg_al_b,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
 				}
