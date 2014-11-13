@@ -75,7 +75,19 @@ void W_CampingRifle_CheckReloadAndReady()
 }
 
 void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAddedDamage, float pForce, float pSpeed, float pLifetime, float pAmmo, float deathtype, float pBulletConstant, float cost)
-{
+{	
+	float dmgbonus;
+	float streak;
+	if(deathtype & HITTYPE_SECONDARY){
+		if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
+			if(time - self.campingrifle_laststreak > cvar("g_balance_campingrifle_secondary_hitstreak_resettime")){
+					self.campingrifle_hitstreak = 0;
+				}
+			streak = bound(0, self.campingrifle_hitstreak, self.campingrifle_bulletlimit);
+			dmgbonus = streak * cvar("g_balance_campingrifle_secondary_hitstreakbonus");
+		}
+	}
+
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_nails -= pAmmo;
 
@@ -92,7 +104,7 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 		w_shotorg = self.origin + self.view_ofs + ((w_shotorg - self.origin - self.view_ofs) * v_forward) * v_forward;
 	}
 
-	fireBallisticBullet(w_shotorg, w_shotdir, pSpread, pSpeed, pLifetime, pDamage, pHeadshotAddedDamage / pDamage, pForce, deathtype, EF_RED, 1, pBulletConstant);
+	fireBallisticBullet(w_shotorg, w_shotdir, pSpread, pSpeed, pLifetime, pDamage + dmgbonus, pHeadshotAddedDamage / pDamage, pForce, deathtype, EF_RED, 1, pBulletConstant);
 	endFireBallisticBullet();
 
 	if (cvar("g_casings") >= 2)
@@ -124,16 +136,6 @@ void W_CampingRifle_Attack2()
         self.campingrifle_streak += 1;
         self.campingrifle_lastburst = time;
     }
-    if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
-		if(time - self.campingrifle_laststreak > cvar("g_balance_campingrifle_secondary_hitstreak_resettime")){
-			self.campingrifle_hitstreak = 0;
-		}
-		streak = bound(0, self.campingrifle_hitstreak, self.campingrifle_bulletlimit);
-		dmgbonus = streak * cvar("g_balance_campingrifle_secondary_hitstreakbonus");
-	}
-	else{
-		dmgbonus = 0;
-	}
 	
 	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage") + dmgbonus, cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
 }
