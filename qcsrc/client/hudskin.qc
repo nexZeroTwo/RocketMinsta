@@ -82,11 +82,17 @@ void HUDSkin_Unload()
     hudskin_progress_sector_alpha = 0;
     hudskin_progress_sector_teamcolor_mod = '0 0 0';
     hudskin_progress_sector_teamcolor_minalpha = 0;
+    hudskin_progress_sector_overcharge_colormod = '0 0 0';
+    hudskin_progress_sector_overcharge_colormul = 0;
+    hudskin_progress_sector_overcharge_alpha = 0;
     hudskin_progress_border_colormode = 0;
     hudskin_progress_border_color = '0 0 0';
     hudskin_progress_border_alpha = 0;
     hudskin_progress_border_teamcolor_mod = '0 0 0';
     hudskin_progress_border_teamcolor_minalpha = 0;
+    hudskin_progress_border_overcharge_colormod = '0 0 0';
+    hudskin_progress_border_overcharge_colormul = 0;
+    hudskin_progress_border_overcharge_alpha = 0;
     hudskin_progress_head_color = '0 0 0';
     hudskin_progress_head_alpha = 0;
     hudskin_progress_head_teamcolor = 0;
@@ -474,7 +480,7 @@ float HUDSkin_Eval(string cmd)
         case "progress_mode":
             hudskin_progress_mode = stof(argv(1));
             
-            if(hudskin_progress_mode < 0 || hudskin_progress_mode > 2) {
+            if(hudskin_progress_mode < 0 || hudskin_progress_mode > 4) {
                 print("HUDSkin_Eval: Invalid value for ", argv(0), ": ", argv(1), "\n");
                 hudskin_progress_mode = 0;
                 return 1;
@@ -546,6 +552,30 @@ float HUDSkin_Eval(string cmd)
             hudskin_progress_border_teamcolor_minalpha = stof(argv(1));
             return 0;
         
+        case "progress_sector_overcharge_alpha":
+            hudskin_progress_sector_overcharge_alpha = stof(argv(1));
+            return 0;
+
+        case "progress_sector_overcharge_colormul":
+            hudskin_progress_sector_overcharge_colormul = stof(argv(1));
+            return 0;
+
+        case "progress_sector_overcharge_colormod":
+            hudskin_progress_sector_overcharge_colormod = HUDSkin_ReadColor();
+            return 0;
+
+        case "progress_border_overcharge_alpha":
+            hudskin_progress_border_overcharge_alpha = stof(argv(1));
+            return 0;
+
+        case "progress_border_overcharge_colormul":
+            hudskin_progress_border_overcharge_colormul = stof(argv(1));
+            return 0;
+
+        case "progress_border_overcharge_colormod":
+            hudskin_progress_border_overcharge_colormod = HUDSkin_ReadColor();
+            return 0;
+
         case "sector_gap":
             hudskin_sector_gap_x = stof(argv(1));
             hudskin_sector_gap_y = stof(argv(2));

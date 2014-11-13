@@ -72,16 +72,23 @@ vector hudskin_progress_sector_color;
 float hudskin_progress_sector_alpha;
 float hudskin_progress_sector_teamcolor_minalpha;
 vector hudskin_progress_sector_teamcolor_mod;
+vector hudskin_progress_sector_overcharge_colormod;
+float hudskin_progress_sector_overcharge_colormul;
+float hudskin_progress_sector_overcharge_alpha;
 float hudskin_progress_border_colormode;
 vector hudskin_progress_border_color;
 float hudskin_progress_border_alpha;
 float hudskin_progress_border_teamcolor_minalpha;
 vector hudskin_progress_border_teamcolor_mod;
+vector hudskin_progress_border_overcharge_colormod;
+float hudskin_progress_border_overcharge_colormul;
+float hudskin_progress_border_overcharge_alpha;
 string hudskin_image_progress_head;
 vector hudskin_size_progress_head;
 vector hudskin_progress_head_color;
 float hudskin_progress_head_alpha;
 float hudskin_progress_head_teamcolor;
+
 
 vector hudskin_sector_gap;
 float hudskin_sector_gap_screen;

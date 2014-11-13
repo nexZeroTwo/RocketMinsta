@@ -3351,43 +3351,151 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 
 void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector, vector c_sector, vector c_border, float a_sector, float a_border, vector c_sector_p, vector c_border_p, float a_sector_p, float a_border_p, float sector_alphamod, float hud_sector_drawflag) {
     float invert;
+    float overcharge;
+
     if(prog < 0) {
         prog *= -1;
         invert = 1;
     }
-    
+
+    if(prog > 1) {
+        prog = prog - 1;
+        overcharge = 1;
+    }
+
     if(prog <= 0.01)
         prog = 0;
     
     switch(hudskin_progress_mode) {
         case 0: { // Use the whole sector as both the background and the bar
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+
+            if(overcharge) {
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+            }
+
             GetSectorFullClipArea(hud_sector_pos, hud_sector);
             drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
+
+            if(overcharge) {
+                if(hudskin_progress_sector_overcharge_alpha)
+                    DrawHUDLineSector(hud_sector_pos, hud_sector,
+                                    a_sector_p * sector_alphamod * hudskin_progress_sector_overcharge_alpha,
+                                    c_sector_p * hudskin_progress_sector_overcharge_colormul + hudskin_progress_sector_overcharge_colormod,
+                                    hud_sector_drawflag);
+                if(hudskin_progress_border_overcharge_alpha)
+                    DrawHUDLineSectorBorder(hud_sector_pos, hud_sector,
+                                    a_border_p * sector_alphamod * hudskin_progress_border_overcharge_alpha,
+                                    c_border_p * hudskin_progress_border_overcharge_colormul + hudskin_progress_border_overcharge_colormod);
+            } else {
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+            }
+
             drawresetcliparea();
+            
             break;
         }
         
         case 1: { // Use the border for progressbar, rest as background
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod, c_sector, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod*hudskin_progress_bgalpha, c_border);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+
+            if(overcharge)
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+
             GetSectorBorderClipArea(hud_sector_pos, hud_sector);
             drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p*sector_alphamod, c_border_p);
+
+            if(overcharge) { 
+                if(hudskin_progress_border_overcharge_alpha)
+                    DrawHUDLineSectorBorder(hud_sector_pos, hud_sector,
+                                    a_border_p * sector_alphamod * hudskin_progress_border_overcharge_alpha,
+                                    c_border_p * hudskin_progress_border_overcharge_colormul + hudskin_progress_border_overcharge_colormod);
+            } else
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+
             drawresetcliparea();
+
             break;
         }
         
         case 2: { // Draw border with full opacity, use the rest as progressbar
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector*sector_alphamod*hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border*sector_alphamod, c_border);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
+            if(overcharge)
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+
             GetSectorClipArea(hud_sector_pos, hud_sector);
             drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p*sector_alphamod, c_sector_p, hud_sector_drawflag);
+
+            if(overcharge) {
+                if(hudskin_progress_sector_overcharge_alpha)
+                    DrawHUDLineSector(hud_sector_pos, hud_sector,
+                                    a_sector_p * sector_alphamod * hudskin_progress_sector_overcharge_alpha,
+                                    c_sector_p * hudskin_progress_sector_overcharge_colormul + hudskin_progress_sector_overcharge_colormod,
+                                    hud_sector_drawflag);
+            } else
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+
             drawresetcliparea();
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod, c_border);
+
+            break;
+        }
+
+        case 3: { // Use the border for the normal progress bar and the sector background for overcharge
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod, c_sector, hud_sector_drawflag);
+
+            if(overcharge) {
+                GetSectorClipArea(hud_sector_pos, hud_sector);
+                drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+
+                if(hudskin_progress_sector_overcharge_alpha)
+                    DrawHUDLineSector(hud_sector_pos, hud_sector,
+                                    a_sector_p * sector_alphamod * hudskin_progress_sector_overcharge_alpha,
+                                    c_sector_p * hudskin_progress_sector_overcharge_colormul + hudskin_progress_sector_overcharge_colormod,
+                                    hud_sector_drawflag);
+
+                drawresetcliparea();
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+            } else {
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+                GetSectorBorderClipArea(hud_sector_pos, hud_sector);
+                drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
+                drawresetcliparea();
+            }
+
+            break;
+        }
+
+        case 4: { // Use the sector background for the normal progress bar and the border for overcharge
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod, c_sector, hud_sector_drawflag);
+
+            if(overcharge) {
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod, c_border);
+
+                GetSectorBorderClipArea(hud_sector_pos, hud_sector);
+                drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+
+                if(hudskin_progress_border_overcharge_alpha)
+                    DrawHUDLineSectorBorder(hud_sector_pos, hud_sector,
+                                    a_border_p * sector_alphamod * hudskin_progress_border_overcharge_alpha,
+                                    c_border_p * hudskin_progress_border_overcharge_colormul + hudskin_progress_border_overcharge_colormod);
+
+                drawresetcliparea();
+            } else {
+                GetSectorClipArea(hud_sector_pos, hud_sector);
+                drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
+                DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
+                drawresetcliparea();
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod, c_border);
+            }
+
+            break;
         }
     }
     
@@ -4466,7 +4574,7 @@ void Sbar_Draw(void)
 			}
 
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
-            vhealth += (min(mxdmg_x + 1, sv_nicehealth) - vhealth) * frametime * 10;
+            vhealth += (min(mxdmg_x + 1, sv_nicehealth * 2) - vhealth) * frametime * 10;
 
 			if(rm_althud)	/// RM hud layout
 			{
@@ -4501,7 +4609,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
                 
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 2), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
@@ -4752,7 +4860,7 @@ void Sbar_Draw(void)
 				}//, BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM)
 				
                 vdmg_dmgtakenorigin = '1 0 0' * (hud_sector_pos_x + 0.5 * hud_sector_x) + '0 1 0' * hud_sector_pos_y;
-                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 1), hud_sector_pos, hud_sector,
+                DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 2), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag);
