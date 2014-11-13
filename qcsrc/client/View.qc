@@ -403,8 +403,10 @@ float hg_nadecount_firstframepassed;
 void HG_NadeGainSound() {
     float c = getstati(STAT_HGAMMO);
     
-    if(c > hg_nadecount && hg_nadecount_firstframepassed)
+    if(c > hg_nadecount && hg_nadecount_firstframepassed) {
         localcmd("play2 misc/poweroff\n");
+        hg_nadecount_update = time;
+    }
     
     hg_nadecount_firstframepassed = TRUE;
     hg_nadecount = c;
