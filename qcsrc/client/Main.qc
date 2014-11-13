@@ -535,9 +535,10 @@ void PostInit(void)
             localcmd("seta rm_radio 1; radio 1\n");
         case 44:
             localcmd("seta rm_althud 0; althud 0\n");
+        case 45:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 45\n");
+		localcmd("seta rm_initialized 46\n");
 		RM_OUTDATED
 		break;
 	}
