@@ -102,13 +102,13 @@ void WeaponStats_LogKill(float awep, float vwep)
 .entity pusher;
 .float pushltime;
 
-void CopyBody(float keepvelocity)
+entity CopyBody(float keepvelocity)
 {
-	local entity oldself;
+	entity body, oldself;
 	if (self.effects & EF_NODRAW)
-		return;
+		return world;
 	oldself = self;
-	self = spawn();
+	self = body = spawn();
 	self.enemy = oldself;
 	self.lip = oldself.lip;
 	self.colormap = oldself.colormap;
@@ -162,6 +162,7 @@ void CopyBody(float keepvelocity)
 	Drag_MoveDrag(oldself, self);
 
 	self = oldself;
+    return body;
 }
 
 float player_getspecies()
@@ -726,14 +727,11 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-	if (!g_minstagib)
-	{
+    if(!g_minstagib) {
 		v = healtharmor_applydamage(self.armorvalue, cvar("g_balance_armor_blockpercent"), damage);
 		take = v_x;
 		save = v_y;
-	}
-	else
-	{
+	} else {
 		save = 0;
 		take = damage;
 	}
@@ -755,7 +753,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
 	if (time > self.spawnshieldtime || cvar("g_spawnshieldmode"))
 	{
-		if (!(self.flags & FL_GODMODE))
+		if (!(self.flags & FL_GODMODE)) if(self.classname != "bait_body")
         {
             self.armorvalue = self.armorvalue - save;
 
@@ -1098,7 +1096,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 float SendEntity_ShowNames(entity to, float sendflags)
 {
     WriteByte(MSG_ENTITY, ENT_CLIENT_SHOWNAMES);
-    WriteByte(MSG_ENTITY, num_for_edict(self.owner));
+    WriteByte(MSG_ENTITY, (self.cnt? self.cnt : num_for_edict(self.owner)));
 
     sendflags = sendflags & 127;
     if(teams_matter && ((to.hg_stealth && !self.owner.hg_stealth) || self.owner.team == to.team || (to.classname == "spectator" && to.enemy.team == self.owner.team)))
@@ -1239,9 +1237,12 @@ void UpdateSelectedPlayer() {
     makevectors(self.v_angle); // sets v_forward
 
     // 1. cursor trace is always right
-    if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent))
-        selected = self.cursor_trace_ent;
-    else {
+    if(self.cursor_trace_ent && (self.cursor_trace_ent.classname == "player" || self.cursor_trace_ent.classname == "bait_body") && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent)) {
+        if(self.cursor_trace_ent.classname == "bait_body")
+            selected = self.cursor_trace_ent.aiment;
+        else
+            selected = self.cursor_trace_ent;
+    } else {
         // 2. if we don't have a cursor trace, find the player which is least
         //    mis-aimed at
         entity p;

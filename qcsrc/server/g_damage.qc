@@ -756,6 +756,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                         bprint ("^1", s, "^1 took ", a, "^1's blazing charge\n");
                    	else if(deathtype == DEATH_MEODP)
                         bprint ("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                    else if(deathtype == DEATH_HG_BAIT)
+                        bprint ("^1", s, "^1 took ", a, "^1's bait\n");
 					else
 						bprint ("^1",s, "^1 was fragged by ", a, "\n");
 				}
@@ -1881,7 +1883,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
-    
+
     if(!inflictor.damage_noinfo && deathtype != (WEP_HOOK | HITTYPE_SECONDARY | HITTYPE_BOUNCE)) // only send gravity bomb damage once
 	{
 		force = inflictor.velocity;

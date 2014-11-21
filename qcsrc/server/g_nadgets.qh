@@ -25,6 +25,7 @@ void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
+void HG_Bait_Body_Boom(entity body);
 
 .vector org_explosion;
 .float nextparticle;

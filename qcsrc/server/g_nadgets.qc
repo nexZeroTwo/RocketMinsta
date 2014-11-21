@@ -772,11 +772,11 @@ void HG_RemoveAll(entity plr) {
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32', self.owner, 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + (self.hg_type == HG_BAIT)), self.owner, 0, self, hg_waypoint, 1);
         if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
-        } else if(self.hg_type == HG_TRANSLOC) {
+        } else if(self.hg_type == HG_TRANSLOC || self.hg_type == HG_BAIT) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_deathtime);
         }
@@ -793,22 +793,26 @@ void HG_Grenade_Waypoint() {
     if(time < self.hg_wp_nextthink)
         return;
     
-    if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
-        rng = GRENVAR(self.hg_type, "adept_detect_enemies");
-    else
-        rng = GRENVAR(self.hg_type, "detect_enemies");
-    
-    if(!rng) {
-        if(self.hg_waypoint)
-            WaypointSprite_Disown(self.hg_waypoint, 0.5);
-        return;
-    }
-    
-    if(rng > 0) FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
-        if(vlen(self.origin - plr.origin) < rng)
-        if(checkpvs(self.origin, plr)) {
-            detected = TRUE;
-            break;
+    if(self.hg_type == HG_BAIT)
+        detected = self.revprogress;
+    else {
+        if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
+            rng = GRENVAR(self.hg_type, "adept_detect_enemies");
+        else
+            rng = GRENVAR(self.hg_type, "detect_enemies");
+        
+        if(!rng) {
+            if(self.hg_waypoint)
+                WaypointSprite_Disown(self.hg_waypoint, 0.5);
+            return;
+        }
+        
+        if(rng > 0) FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
+            if(vlen(self.origin - plr.origin) < rng)
+            if(checkpvs(self.origin, plr)) {
+                detected = TRUE;
+                break;
+            }
         }
     }
     
@@ -1620,6 +1624,122 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     return gren;
 }
 
+void HG_Bait_Body_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+    PlayerDamage(inflictor, attacker, damage, deathtype, hitloc, force * Freeze_CVar("frozen_force"));
+}
+
+void HG_Bait_Body_Remove(entity body) {
+    if(body.shownames)
+        remove(body.shownames);
+
+    if(body.freeze_waypoint)
+        WaypointSprite_Disown(body.freeze_waypoint, 0.5);
+
+    if(body.hg_waypoint)
+        WaypointSprite_Disown(body.hg_waypoint, 0.5);
+
+    if(body.iceblock)
+        remove(body.iceblock);
+
+    remove(body);
+}
+
+void HG_Bait_Body_Think(void) {
+    Freeze_Hook_PlayerPreThink();
+    SV_PlayerPhysics();
+
+    if(time > self.hg_deathtime || self.realowner.team != self.hg_state) {
+        HG_Bait_Body_Remove(self);
+        return;
+    }
+
+    if(self.shownames)
+    if(self.aiment.classname != "player")
+        remove(self.shownames);
+
+    // freeze sound doesn't work properly if this is not delayed
+    if(!self.iceblock) {
+        Freeze_SpawnIceBlock(self);
+        if(Freeze_CVar("iceblocks_teamcolored"))
+            self.iceblock.skin = TeamColorSkin(self.team);
+    }
+
+    if(time > self.hg_nextsnd)
+    if(self.revprogress > 0.85) {
+        self.hg_nextsnd = time + 0.1;
+        sound(self, CHAN_PROJECTILE, "weapons/rm_nadebeep.wav", VOL_BASE * 0.5, ATTN_NORM * 2);
+    }
+
+    HG_Grenade_Waypoint();
+    self.nextthink = time;
+}
+
+void HG_Bait_Body_Boom(entity body) {
+    entity oldself = self;
+    self = body;
+    body.owner = body.realowner;
+    HG_Grenade_RadiusDamage();
+    HG_Bait_Body_Remove(body);
+    self = oldself;
+}
+
+entity HG_Bait_Create(entity ref) {
+    entity oldself = self;
+    self = ref;
+
+    entity body = CopyBody(FALSE);
+    
+    body.classname = "bait_body";
+    body.team = ref.team;
+    body.health = Freeze_CVar("frozen_health");
+    body.armorvalue = Freeze_CVar("frozen_armor");
+    body.think = HG_Bait_Body_Think;
+    body.event_damage = HG_Bait_Body_Damage;
+    body.reset = HG_Bait_Body_Remove;
+    body.nextthink = time;
+    body.frozen = TRUE;
+    body.realowner = oldself;
+    body.hg_type = body.projectiledeathtype = HG_BAIT;
+    body.hg_deathtime = time + GRENVAR(HG_BAIT, "lifetime");
+    body.aiment = ref;
+    body.hg_state = oldself.team;
+
+    setorigin(body, oldself.origin);
+
+    if(cvar("sv_shownames")) {
+        body.shownames = spawn();
+        body.shownames.owner = body;
+        body.shownames.think = shownames_think;
+        body.shownames.nextthink = time;
+        body.shownames.customizeentityforclient = shownames_customize;
+        body.shownames.cnt = num_for_edict(ref);
+        Net_LinkEntity(body.shownames, FALSE, 0, SendEntity_ShowNames);
+    }
+
+    self = oldself;
+    return body;
+}
+
+entity HG_Bait_PickRef(void) {
+    entity plr;
+
+    RandomSelection_Init();
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team)
+        RandomSelection_Add(plr, 0, string_null, 1, 1);
+
+    return RandomSelection_chosen_ent;
+}
+
+float HG_Bait(void) {
+    entity ref = HG_Bait_PickRef();
+
+    if(!ref)
+        return FALSE;
+
+    HG_Bait_Create(ref);
+    return TRUE;
+}
+
 void HG_Attack()
 {
     float hgtype;
@@ -1657,6 +1777,12 @@ void HG_Attack()
     } else if(hgtype == HG_GG) {
         if(!HG_GG_Button(hgtype)) {
             bigprint_spec(self, "Nobody to win against!", "", 1);
+            self.hg_next = time + 1;
+            return;
+        }
+    } else if(hgtype == HG_BAIT) {
+        if(!HG_Bait()) {
+            bigprint_spec(self, "No enemies!", "", 1);
             self.hg_next = time + 1;
             return;
         }

@@ -562,26 +562,29 @@ void SV_PlayerPhysics()
 	string temps;
 	float buttons_prev;
 	float not_allowed_to_move;
-    float isplayer;
+    float isplayer, isbait;
 	//string c;
     
-    isplayer = self.classname == "player";
+    isplayer = (self.classname == "player");
     
-    // XXX: why is this in Physics? Move to PlayerPreThink/PostThink later
-	if(self.movement != '0 0 0')
-	{
-		self.parm_idlesince = time;
-		if(self.is_away)
-			UnmarkAway(self);
-	}
-	else if(!self.is_away)
-	{
-		local float a = sv_autoaway;
+    if(isplayer) {
+        // XXX: why is this in Physics? Move to PlayerPreThink/PostThink later
+    	if(self.movement != '0 0 0')
+    	{
+    		self.parm_idlesince = time;
+    		if(self.is_away)
+    			UnmarkAway(self);
+    	}
+    	else if(!self.is_away)
+    	{
+    		local float a = sv_autoaway;
 
-		if(a)
-		if(time - self.parm_idlesince >= a * 60)
-			MarkAway(self, 0);
-	}
+    		if(a)
+    		if(time - self.parm_idlesince >= a * 60)
+    			MarkAway(self, 0);
+    	}
+    } else
+        isplayer = isbait = (self.classname == "bait_body");
 
 	if(g_race || g_cts)
 	{
@@ -902,7 +905,7 @@ void SV_PlayerPhysics()
         maxspd_mod = 0;
 
 	spd = max(sv_maxspeed, sv_maxairspeed) * maxspd_mod * swampspd_mod;
-	if(self.speed != spd)
+	if(self.speed != spd) if(!isbait)
 	{
 		self.speed = spd;
 		temps = ftos(spd);

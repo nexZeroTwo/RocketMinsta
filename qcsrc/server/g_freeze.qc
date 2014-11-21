@@ -117,7 +117,7 @@ void Freeze_RecountPlayers(void) {
 void Freeze_IceBlock_MEODP_Death(entity attacker, entity inflictor) {
     attacker.chain = world;
     
-    if(IsDifferentTeam(self.owner, attacker))
+    if(IsDifferentTeam(self.owner, attacker) && self.owner.classname != "bait_body")
         Freeze_UnfreezePlayer(self.owner);
     else
         Freeze_RevivePlayer(self.owner, attacker);
@@ -346,6 +346,11 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     entity e;
     float pcnt = 1;
     
+    if(plr.classname == "bait_body") {
+        HG_Bait_Body_Boom(plr);
+        return;
+    }
+
     if(!plr.frozen)
         return;
     
@@ -398,7 +403,9 @@ void Freeze_Hook_PlayerPreThink(void) {
     if(!g_freeze)
         return;
     
-    if(roundstate == ROUNDSTATE_WARMUP)
+    float bait = (self.classname == "bait_body");
+
+    if(roundstate == ROUNDSTATE_WARMUP) if(!bait)
         PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
     
     if(!Freeze_GameInProgress()) {
@@ -407,7 +414,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         return;
     }
     
-    if(!self.frozen) {
+    if(!bait) if(!self.frozen) {
         if(time > self.revresettime)
             self.revprogress = 0;
         
@@ -427,35 +434,40 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     // frozen
+
+    if(!bait) {
+        float ftime = Freeze_CVar("respawn");
+        if(ftime)
+        if(time - self.freezetime_real > ftime) {
+            Freeze_UnfreezePlayer(self);
+            Freeze_RespawnPlayer(self);
+            centerprint_spec(self, strcat("^5You have been respawned after staying frozen for ", ftos(ftime), " seconds\n"));
+            bprint(self.netname, " ^5has been respawned after staying frozen for ", ftos(ftime), " seconds\n");
+            return;
+        }
     
-    float ftime = Freeze_CVar("respawn");
-    if(ftime)
-    if(time - self.freezetime_real > ftime) {
-        Freeze_UnfreezePlayer(self);
-        Freeze_RespawnPlayer(self);
-        centerprint_spec(self, strcat("^5You have been respawned after staying frozen for ", ftos(ftime), " seconds\n"));
-        bprint(self.netname, " ^5has been respawned after staying frozen for ", ftos(ftime), " seconds\n");
-        return;
-    }
-    
-    if(!self.iceblock)
-        Freeze_SpawnIceBlock(self);
-    
-    if(self.iceblock.team != self.team) {
-        if(Freeze_CVar("iceblocks_teamcolored"))
-            self.iceblock.skin = TeamColorSkin(self.team);
-        self.iceblock.team = self.team;
-        WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        if(!self.iceblock)
+            Freeze_SpawnIceBlock(self);
+        
+        if(self.iceblock.team != self.team) {
+            if(Freeze_CVar("iceblocks_teamcolored"))
+                self.iceblock.skin = TeamColorSkin(self.team);
+            self.iceblock.team = self.team;
+            WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        }
     }
     
     if(!self.freeze_waypoint) {
-        PlayerScore_SetFlags(self, SPFLAG_FROZEN);
+        if(!bait)
+            PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         Freeze_SpawnWaypoint(self);
         Freeze_RecountPlayers();
     }
     
-    Freeze_DangerShortcut();
-    self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
+    if(!bait) {
+        Freeze_DangerShortcut();
+        self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
+    }
     
     float rmod;
     float allow;
@@ -525,7 +537,7 @@ void Freeze_Hook_PlayerPreThink(void) {
             other.revresettime = time + frametime * 2;
         }
     } else if(self.revfinished) {
-        if(Freeze_CVar("melt"))
+        if(!bait) if(Freeze_CVar("melt"))
         {
             for(h = world; (h = find(h, classname, "grapplinghook")); )
                 if(h.aiment == self)
