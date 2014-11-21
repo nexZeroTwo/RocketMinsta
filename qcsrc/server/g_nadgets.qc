@@ -1703,6 +1703,7 @@ entity HG_Bait_Create(entity ref) {
     body.hg_deathtime = time + GRENVAR(HG_BAIT, "lifetime");
     body.aiment = ref;
     body.hg_state = oldself.team;
+    body.colormod = ref.colormod;
 
     setorigin(body, oldself.origin);
 
