@@ -772,7 +772,7 @@ void HG_RemoveAll(entity plr) {
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + (self.hg_type == HG_BAIT)), self.owner, 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + (self.hg_type == HG_BAIT)), ((self.hg_type == HG_BAIT)? self.realowner : self.owner), 0, self, hg_waypoint, 1);
         if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
