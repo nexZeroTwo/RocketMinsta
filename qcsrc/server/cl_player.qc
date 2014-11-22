@@ -1130,6 +1130,9 @@ float SendEntity_ShowNames(entity to, float sendflags)
             WriteShort(MSG_ENTITY, self.armorvalue);
         else
             WriteByte(MSG_ENTITY, self.armorvalue);
+
+        if(sendflags & 128)
+            WriteByte(MSG_ENTITY, self.owner.bait_ref && self.owner.frozen);
     }
     return TRUE;
 }

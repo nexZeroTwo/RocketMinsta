@@ -1588,6 +1588,9 @@ void Ent_ShowNames()
             self.armorvalue = ReadShort();
         else
             self.armorvalue = ReadByte();
+
+        if(sf & 128)
+            self.sn_forcefrozen = ReadByte();
     }
 
     if(sf & 128) // same team
