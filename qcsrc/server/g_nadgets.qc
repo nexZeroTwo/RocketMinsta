@@ -1650,6 +1650,15 @@ void HG_Bait_Body_Remove(entity body) {
     remove(body);
 }
 
+float HG_Bait_Iceblock_Customize(void) {
+    if(other.iscreature && other.team == self.owner.realowner.team)
+        self.colormod = '0 2 0';
+    else
+        self.colormod = '1 1 1';
+
+    return TRUE;
+}
+
 void HG_Bait_Body_Think(void) {
     Freeze_Hook_PlayerPreThink();
     SV_PlayerPhysics();
@@ -1666,8 +1675,12 @@ void HG_Bait_Body_Think(void) {
     // freeze sound doesn't work properly if this is not delayed
     if(!self.iceblock) {
         Freeze_SpawnIceBlock(self);
+        
         if(Freeze_CVar("iceblocks_teamcolored"))
             self.iceblock.skin = TeamColorSkin(self.team);
+
+        if(teams_matter)
+            self.iceblock.customizeentityforclient = HG_Bait_Iceblock_Customize;
     }
 
     if(time > self.hg_nextsnd)
@@ -1752,7 +1765,7 @@ entity HG_Bait_PickRef(void) {
     RandomSelection_Init();
     FOR_EACH_PLAYER(plr) if(plr.team != self.team)
         RandomSelection_Add(plr, 0, string_null, 1, 1);
-    
+
     return RandomSelection_chosen_ent;
 }
 
