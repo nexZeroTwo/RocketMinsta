@@ -878,6 +878,7 @@ void CL_SpawnWeaponentity()
 	self.exteriorweaponentity.angles = '0 0 0';
 	self.exteriorweaponentity.think = CL_ExteriorWeaponentity_Think;
 	self.exteriorweaponentity.nextthink = time;
+
 };
 
 .float hasweapon_complain_spam;

@@ -1641,6 +1641,9 @@ void HG_Bait_Body_Remove(entity body) {
     if(body.iceblock)
         remove(body.iceblock);
 
+    if(body.exteriorweaponentity)
+        remove(body.exteriorweaponentity);
+
     remove(body);
 }
 
@@ -1688,7 +1691,6 @@ entity HG_Bait_Create(entity ref) {
     self = ref;
 
     entity body = CopyBody(FALSE);
-    
     body.classname = "bait_body";
     body.team = ref.team;
     body.health = Freeze_CVar("frozen_health");
@@ -1704,8 +1706,26 @@ entity HG_Bait_Create(entity ref) {
     body.aiment = ref;
     body.hg_state = oldself.team;
     body.colormod = ref.colormod;
-
     setorigin(body, oldself.origin);
+
+    entity w = spawn();
+    w.classname = "exteriorweaponentity";
+    w.solid = SOLID_NOT;
+    w.owner = body;
+    setorigin(w, '0 0 0');
+    w.angles = '0 0 0';
+    w.effects = body.effects | EF_LOWPRECISION;
+    w.effects = w.effects & EFMASK_CHEAP;
+    setmodel(w, ref.exteriorweaponentity.model);
+    
+    float tag_found;
+    if((tag_found = gettagindex(w.owner, "tag_weapon"))) {
+        w.tag_index = tag_found;
+        w.tag_entity = w.owner;
+    } else
+        setattachment(w, w.owner, "bip01 r hand");
+
+    body.exteriorweaponentity = w;
 
     if(cvar("sv_shownames")) {
         body.shownames = spawn();
