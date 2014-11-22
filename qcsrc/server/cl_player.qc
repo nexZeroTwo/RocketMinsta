@@ -934,7 +934,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
-        
+        if(deathtype == HG_BAIT)
+        if(IsDifferentTeam(attacker, self))
+        if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
+            attacker.hg_ammo += 1;
+            HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+        }
+
         float removenadgets;
         if(g_nadgets)
             removenadgets = cvar("g_nadgets_remove_on_death");
