@@ -1096,7 +1096,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 float SendEntity_ShowNames(entity to, float sendflags)
 {
     WriteByte(MSG_ENTITY, ENT_CLIENT_SHOWNAMES);
-    WriteByte(MSG_ENTITY, (self.cnt? self.cnt : num_for_edict(self.owner)));
+    if(self.owner.bait_ref)
+        WriteByte(MSG_ENTITY, num_for_edict(self.owner.bait_ref));
+    else
+        WriteByte(MSG_ENTITY, num_for_edict(self.owner));
 
     sendflags = sendflags & 127;
     if(teams_matter && ((to.hg_stealth && !self.owner.hg_stealth) || self.owner.team == to.team || (to.classname == "spectator" && to.enemy.team == self.owner.team)))

@@ -116,6 +116,8 @@ float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
 
+.entity bait_ref;
+
 #define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))

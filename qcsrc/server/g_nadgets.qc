@@ -1644,6 +1644,9 @@ void HG_Bait_Body_Remove(entity body) {
     if(body.exteriorweaponentity)
         remove(body.exteriorweaponentity);
 
+    if(body.entcs)
+        detach_entcs();
+
     remove(body);
 }
 
@@ -1703,7 +1706,7 @@ entity HG_Bait_Create(entity ref) {
     body.realowner = oldself;
     body.hg_type = body.projectiledeathtype = HG_BAIT;
     body.hg_deathtime = time + GRENVAR(HG_BAIT, "lifetime");
-    body.aiment = ref;
+    body.aiment = body.bait_ref = ref;
     body.hg_state = oldself.team;
     body.colormod = ref.colormod;
     setorigin(body, oldself.origin);
@@ -1733,11 +1736,13 @@ entity HG_Bait_Create(entity ref) {
         body.shownames.think = shownames_think;
         body.shownames.nextthink = time;
         body.shownames.customizeentityforclient = shownames_customize;
-        body.shownames.cnt = num_for_edict(ref);
         Net_LinkEntity(body.shownames, FALSE, 0, SendEntity_ShowNames);
     }
 
+    self = body;
+    attach_entcs();
     self = oldself;
+
     return body;
 }
 
@@ -1747,7 +1752,7 @@ entity HG_Bait_PickRef(void) {
     RandomSelection_Init();
     FOR_EACH_PLAYER(plr) if(plr.team != self.team)
         RandomSelection_Add(plr, 0, string_null, 1, 1);
-
+    
     return RandomSelection_chosen_ent;
 }
 

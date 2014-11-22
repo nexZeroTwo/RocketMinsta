@@ -1866,9 +1866,7 @@ void ClientConnect (void)
 		ctf_clientconnect();
 	}*/
 
-	if(teams_matter || sv_cheats)
-		attach_entcs();
-
+	attach_entcs();
 	bot_relinkplayerlist();
 
 	self.spectatortime = time;
