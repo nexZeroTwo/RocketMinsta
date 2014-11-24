@@ -375,17 +375,19 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         if(ijp) if(strtolower(argv(0)) == irc.target)
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7joined ^2", argv(0), "\n");
     } else if(event == "PART") {
-        if(ijp) if(strtolower(argv(0)) == irc.target)
+        if(ijp) if(strtolower(argv(0)) == irc.target) {
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7left ^2", argv(0));
             if(argv(1) != "" && argv(1) != nick)
                 bprint(" ^8(", argv(1), ")");
             bprint("\n");
+        }
     } else if(event == "QUIT") {
-        if(ijp)
+        if(ijp) {
             bprint("\{1}^5IRC  ^1* ^3", nick, " ^1has quit IRC");
             if(argv(0) != "" && argv(0) != "Quit")
                 bprint(" ^8(", argv(0), ")");
             bprint("\n");
+        }
     } else if(event == "MODE") {
         if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
             irc.skin = 1;
