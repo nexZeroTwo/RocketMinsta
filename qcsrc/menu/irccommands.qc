@@ -176,6 +176,19 @@ void IRC_Command_connect_call(string cmdline, float argc, float b, float s, stri
     }
 }
 
+void IRC_Command_quit_call(string cmdline, float argc, float b, float s, string t) {
+    if(s < 0) {
+        IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, 
+                            "/", argv(0), ": must be used in a session-bound buffer"),
+                            IRC_BUFFER_MSGLEVEL_INFO);
+        return;
+    }
+
+    IRC_Quit(s, ((argc > 1)? substring(cmdline, argv_start_index(1), strlen(cmdline)) : string_null));
+    if(argv(0) == "quit")
+        IRC_TerminateSession(s);
+}
+
 void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("echo",        2, IRC_Command_echo_call,       irc_command_null);
     IRC_Command_Register("msg",         3, IRC_Command_msg_call,        irc_command_null);
@@ -184,5 +197,7 @@ void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("join",        2, IRC_Command_join_call,       irc_command_null);
     IRC_Command_Register("part",        1, IRC_Command_part_call,       irc_command_null);
     IRC_Command_Register("connect",     3, IRC_Command_connect_call,    irc_command_null);
+    IRC_Command_Register("quit",        0, IRC_Command_quit_call,       irc_command_null);
+    IRC_Command_Register("disconnect",  0, IRC_Command_quit_call,       irc_command_null);
 }
 
