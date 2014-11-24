@@ -37,18 +37,19 @@ void Radio_Announce(entity e) {
         string desc = cvar_string(strcat("_radio_queue_", ftos(radio_playing_queue), "_desc"));
         if(desc == "")
             desc = "^8(unknown track)";
-        desc = strcat("\{1}^1[RADIO] ^2Now playing ^3", desc);
+        desc = strcat("^1[RADIO] ^2Now playing ^3", desc);
         if(radio_tracklen)
             desc = strcat(desc, "^8 (", mmss(radio_tracklen * 10), ")");
         float left = cvar("_radio_queue_left");
         if(left)
             desc = strcat(desc, "^7 - ", ftos(left), " in queue");
-        desc = strcat(desc, "\n");
 
         if(e)
-            sprint(e, desc);
-        else
-            bprint(desc);
+            sprint(e, strcat("\{1}", desc, "\n"));
+        else {
+            bprint("\{1}", desc, "\n");
+            IRC_Announce_Radio(desc);
+        }
     }
 }
 
