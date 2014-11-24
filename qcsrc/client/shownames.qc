@@ -159,7 +159,7 @@ void Draw_ShowNames()
                     self.health_v = bound(0, self.health_v + (min(dmg_x, mx) - self.health_v) * frametime * 10, mx);
                     drawfont = GetBigfont();
                     vector clr;
-                    if(playerslots[self.the_entnum-1].(scores[SP_FROZENSTATUS])) {
+                    if(self.sn_forcefrozen || playerslots[self.the_entnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
                         s2 = "Frozen!";
                         clr = '0.2 1 1';
                     } else {
@@ -168,6 +168,7 @@ void Draw_ShowNames()
                     }
                     drawstring(namepos - hsz * '0 1 0' * textsz_y + '0.5 0 0' * (width - stringwidth_svn(s2, TRUE, textsz * hsz)), s2, textsz * hsz, clr, a * 0.7, DRAWFLAG_NORMAL);
                     drawfont = sbar_font;
+                    playerslots[self.the_entnum-1].sn_lastdraw = time;
                 }
             }            
             
@@ -185,8 +186,6 @@ void Draw_ShowNames()
             
             drawfont = oldfont;
             //drawfontscale = '1 1 0';
-            
-            playerslots[self.the_entnum-1].sn_lastdraw = time;
         }
     }
 }

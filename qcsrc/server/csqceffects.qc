@@ -36,3 +36,12 @@ void te_blast(vector loc) {
     WriteCoord(MSG_BROADCAST, loc_y);
     WriteCoord(MSG_BROADCAST, loc_z);
 }
+
+void te_meodp(vector loc) {
+    WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
+    WriteByte(MSG_BROADCAST, TE_CSQC_MEODP);
+    
+    WriteCoord(MSG_BROADCAST, loc_x);
+    WriteCoord(MSG_BROADCAST, loc_y);
+    WriteCoord(MSG_BROADCAST, loc_z);
+}

@@ -125,7 +125,7 @@ void CreatureFrame (void)
 entity GetAFKKickVictim() {
 	entity v, e;
     
-	FOR_EACH_REALCLIENT(e) if(time - e.jointime > 30) if(e.is_away)
+	FOR_EACH_REALCLIENT(e) if(e.is_away) if(time - e.jointime > 30) if(time - e.afkmarktime > 10)
 		if(!v || v.parm_idlesince > e.parm_idlesince)
 			v = e;
 	
@@ -331,6 +331,8 @@ void StartFrame (void)
         TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
     }
     
+    Radio_Frame();
+
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;
 }

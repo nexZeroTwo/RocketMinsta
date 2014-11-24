@@ -27,8 +27,9 @@ float W_WeaponRateFactor()
 		}
 	}
     
-    if(BUFFS_PRESENT(self, BUFF_HASTE))
-        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * Buffs_BuffPower(self, BUFF_HASTE));
+    float haste = Buffs_BuffPower(self, BUFF_HASTE);
+    if(haste)
+        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * haste);
     
 	return t;
 }
@@ -877,6 +878,7 @@ void CL_SpawnWeaponentity()
 	self.exteriorweaponentity.angles = '0 0 0';
 	self.exteriorweaponentity.think = CL_ExteriorWeaponentity_Think;
 	self.exteriorweaponentity.nextthink = time;
+
 };
 
 .float hasweapon_complain_spam;

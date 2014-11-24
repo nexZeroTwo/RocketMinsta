@@ -1,4 +1,4 @@
-void CopyBody(float keepvelocity);
+entity CopyBody(float keepvelocity);
 
 // changes by LordHavoc on 03/30/04
 // cleaned up dummy code

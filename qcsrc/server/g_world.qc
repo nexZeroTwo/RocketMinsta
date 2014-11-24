@@ -486,6 +486,7 @@ void spawnfunc_worldspawn (void)
     RM_CvarCompat();
     sv_damagestats = cvar("sv_damagestats");
 
+    registercvar("g_gametypename", "");
 	
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
@@ -802,7 +803,10 @@ void spawnfunc_worldspawn (void)
 	ClientInit_Spawn();
 	RandomSeed_Spawn();
 
+    cvar_set("g_gametypename", gametype_ID_to_Name(game));
+
 	localcmd("\n_sv_hook_gamestart ", gametype_ID_to_Name(game), ";");
+    localcmd("\nsv_hook_rmcustom_gamestart ", gametype_ID_to_Name(game), ";");
 
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
@@ -869,6 +873,7 @@ void spawnfunc_worldspawn (void)
     
     IRC_Init();
     DPRM_Start();
+    Radio_Init();
 }
 
 void spawnfunc_light (void)
@@ -1525,7 +1530,7 @@ void NextLevel()
 	if(cvar("g_campaign"))
 		CampaignPreIntermission();
 
-	localcmd("\nsv_hook_gameend;");
+	localcmd("\nsv_hook_gameend; sv_hook_rmcustom_gameend;");
 
 	// WriteByte (MSG_ALL, SVC_INTERMISSION);
 };
@@ -2896,7 +2901,7 @@ float GameTypeVote_Finished(float pos)
 	localcmd("gametype ", mapvote_maps[pos], "\n");
 	if(cvar_string("nextmap") != "")
 		Map_Goto_SetStr(cvar_string("nextmap"));
-	Map_Goto();
+	defer(0.2, Map_Goto);
 	alreadychangedlevel = TRUE;
 	return TRUE;
 }

@@ -25,6 +25,7 @@ void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
+void HG_Bait_Body_Boom(entity body);
 
 .vector org_explosion;
 .float nextparticle;
@@ -63,6 +64,7 @@ void HG_Shield_Trigger(void);
 .float hg_optout_nextround;
 .float hg_alwaysask;
 .float hg_adept;
+.float hg_tl_revived;
 
 .float hg_transloc_solidcheck;
 
@@ -113,6 +115,8 @@ float g_nadgets_oldhitboxes;
 float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
+
+.entity bait_ref;
 
 #define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))

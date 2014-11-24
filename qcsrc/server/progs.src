@@ -58,6 +58,7 @@ damagetracker.qh
 ../common/irc.qh
 irc.qh
 joinqueue.qh
+radio.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -204,4 +205,5 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+radio.qc
 

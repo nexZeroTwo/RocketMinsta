@@ -54,7 +54,7 @@ void HG_Precache() {
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
-    if(p.hg_optout)
+    if(!g_nadgets || p.hg_optout)
         return;
     
 	p.hg_bonus += amount;
@@ -86,9 +86,9 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
         return;
     }
 
+    ismedic = Buffs_BuffPower(o, BUFF_MEDIC);
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
-        ismedic = BUFFS_PRESENT(o, BUFF_MEDIC);
         sameteam = !IsDifferentTeam(o, e);
         
         if(!ismedic) {
@@ -142,7 +142,7 @@ void HG_Napalm_Think(void) {
         return;
     }
     
-    if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+    if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
         if(!self.heal_emitter) {
             entity e = spawn();
             e.owner = self;
@@ -210,7 +210,7 @@ void HG_Napalm()
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
-	setsize (proj, '0 0 0', '0 0 0');
+	setsize(proj, '0 0 -3', '0 0 -3');
 	setorigin (proj, self.origin);
 	proj.org_explosion = self.origin;
 	proj.think = HG_Napalm_Think;
@@ -235,6 +235,9 @@ void HG_Napalm()
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
+    
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove);
+    proj.meodp_point_offs = '0 0 64';
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
@@ -352,6 +355,9 @@ void HG_Plasma_Projectile() {
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use);
+    proj.meodp_point_offs = '0 0 16';
+    
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
 	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
@@ -399,7 +405,7 @@ void HG_Translocator_Explode() {
     
     tdeath_hit = 0;
     tdeath_deathtype = self.hg_type;
-    TeleportPlayer(self.owner, self.owner, self.origin, a, v_forward * (0.5 + 0.5 * Buffs_NadgetPower(self.owner)) * (
+    TeleportPlayer(self, self.owner, self.origin, a, v_forward * (0.5 + 0.5 * Buffs_NadgetPower(self.owner)) * (
                     GRENVAR(self.hg_type, "push_base")
                   + GRENVAR(self.hg_type, "push_playerfactor") * vlen(self.owner.velocity)
                   + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
@@ -450,6 +456,8 @@ void HG_Grenade_RadiusDamage() {
         }
     }
     
+    dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
+
     RadiusDamage(self, self.owner,
                        GV("damage") * p * dmgmod,
                        GV("edgedamage") * p * dmgmod,
@@ -512,10 +520,23 @@ void HG_Grenade_Touch() {
     
     if(other.takedamage == DAMAGE_AIM) {
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
-            if(BUFFS_PRESENT(self.owner, BUFF_MEDIC)) {
+            if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
+                    self.hg_tl_revived = TRUE;
+
+                    float m = cvar("g_nadgets_transloc_medic_revive_health_multiplier");
+                    float h = other.health * m;
+                    float a = other.armorvalue * m;
+
+                    if(m > 1.0)
+                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin);
+                    else if(m < 1.0) {
+                        other.health = h;
+                        other.armorvalue = a;
+                        other.pauseregen_finished = time + cvar("g_balance_pause_health_regen");
+                    }
                 }
             } else goto troll;
         } else if(self.hg_type == HG_REMOTE)
@@ -523,37 +544,42 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept && trace_plane_normal == '0 0 1') {
-            self.velocity = '0 0 0';
-            self.movetype = MOVETYPE_TOSS;
-            
-            // check if it's ok to teleport in this location
-            // if not, remove and refund the translocator
-            
-            if(!self.hg_transloc_solidcheck) {
-                self.hg_transloc_solidcheck = TRUE;
+        if(self.hg_type == HG_TRANSLOC) {
+            if(cvar("g_nadgets_transloc_stick_to_floor") && trace_plane_normal == '0 0 1') {
+                self.velocity = '0 0 0';
+                self.movetype = MOVETYPE_TOSS;
                 
-                vector omins = self.mins;
-                vector omaxs = self.maxs;
-                vector oorig = self.origin;
-                setsize(self, PL_MIN, PL_MAX);
+                // check if it's ok to teleport in this location
+                // if not, remove and refund the translocator
                 
-                if(!move_out_of_solid(self)) {
-                    if(!self.hg_isbonus)
-                        self.owner.hg_ammo += 1;
+                if(!self.hg_transloc_solidcheck) {
+                    self.hg_transloc_solidcheck = TRUE;
                     
-                    bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
-                    HG_Grenade_Remove();
-                    return;
+                    vector omins = self.mins;
+                    vector omaxs = self.maxs;
+                    vector oorig = self.origin;
+                    setsize(self, PL_MIN, PL_MAX);
+                    
+                    if(!move_out_of_solid(self)) {
+                        if(!self.hg_isbonus)
+                            self.owner.hg_ammo += 1;
+                        
+                        bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
+                        HG_Grenade_Remove();
+                        return;
+                    }
+                    
+                    setsize(self, omins, omaxs);
+                    setorigin(self, oorig);
                 }
                 
-                setsize(self, omins, omaxs);
-                setorigin(self, oorig);
+                UpdateCSQCProjectile(self);
             }
             
-            UpdateCSQCProjectile(self);
+            if(cvar("g_nadgets_transloc_bounceresetorigin"))
+                self.spawnorigin = self.origin;
         }
-        
+
         self.hg_normal = trace_plane_normal;
         if(self.cnt <= 0) {
             if(self.hg_type == HG_REMOTE) {
@@ -638,6 +664,12 @@ void HG_Remote_Stick() {
     e.hg_adept = self.hg_adept;
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
+    
+    e.meodp_point = self.meodp_point;
+    e.meodp_point_offs = self.meodp_point_offs;
+    e.meodp_death = self.meodp_death;
+    if(e.meodp_point)
+        e.meodp_point.owner = e;
     
     if(normal_x)
         setorigin(e, e.origin - normal * 4.5);
@@ -740,11 +772,11 @@ void HG_RemoveAll(entity plr) {
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32', self.owner, 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + (self.hg_type == HG_BAIT)), ((self.hg_type == HG_BAIT)? self.realowner : self.owner), 0, self, hg_waypoint, 1);
         if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
-        } else if(self.hg_type == HG_TRANSLOC) {
+        } else if(self.hg_type == HG_TRANSLOC || self.hg_type == HG_BAIT) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_deathtime);
         }
@@ -761,22 +793,26 @@ void HG_Grenade_Waypoint() {
     if(time < self.hg_wp_nextthink)
         return;
     
-    if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
-        rng = GRENVAR(self.hg_type, "adept_detect_enemies");
-    else
-        rng = GRENVAR(self.hg_type, "detect_enemies");
-    
-    if(!rng) {
-        if(self.hg_waypoint)
-            WaypointSprite_Disown(self.hg_waypoint, 0.5);
-        return;
-    }
-    
-    if(rng > 0) FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
-        if(vlen(self.origin - plr.origin) < rng)
-        if(checkpvs(self.origin, plr)) {
-            detected = TRUE;
-            break;
+    if(self.hg_type == HG_BAIT)
+        detected = self.revprogress;
+    else {
+        if(self.hg_adept && GRENVAR(self.hg_type, "adept_detect_enemies"))
+            rng = GRENVAR(self.hg_type, "adept_detect_enemies");
+        else
+            rng = GRENVAR(self.hg_type, "detect_enemies");
+        
+        if(!rng) {
+            if(self.hg_waypoint)
+                WaypointSprite_Disown(self.hg_waypoint, 0.5);
+            return;
+        }
+        
+        if(rng > 0) FOR_EACH_PLAYER(plr) if(plr.team != self.team || !teams_matter) if(plr != self.owner) if(!(g_freeze && plr.frozen)) {
+            if(vlen(self.origin - plr.origin) < rng)
+            if(checkpvs(self.origin, plr)) {
+                detected = TRUE;
+                break;
+            }
         }
     }
     
@@ -815,7 +851,7 @@ void HG_Grenade_Think() {
     
     //move_out_of_solid(self);
     if(time >= self.hg_deathtime) {
-        if(self.hg_adept && self.hg_type == HG_TRANSLOC)
+        if(self.hg_type == HG_TRANSLOC && self.health > 0)
             HG_Grenade_Remove();
         else
             self.use();
@@ -879,9 +915,8 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
         return;
     self.health = self.health - damage;
     if(self.health <= 0) {
-        if(self.hg_type == HG_TRANSLOC && self.hg_adept)
-            self.hg_adept = 0;
-        else if(attacker.classname == "player")
+        if(self.hg_type != HG_TRANSLOC)
+        if(attacker.classname == "player")
             HG_Grenade_ChangeOwner(attacker);
         self.hg_deathtime = time;
     }
@@ -984,7 +1019,7 @@ void HG_Grenade_FadeOut(entity n) {
 void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     entity oldself = self;
     float wantteam = targ.team;
-    float targetTeamMates = wantteam == self.team && BUFFS_PRESENT(self, BUFF_MEDIC);
+    float targetTeamMates = wantteam == self.team && Buffs_BuffPower(self, BUFF_MEDIC);
     float dist, shortest;
     vector arcoffset = self.maxs_z * '0 0 0.5';
     entity plr, newtarget;
@@ -1033,7 +1068,7 @@ void HG_Shield_Trigger(void) {
         vector start, end;
         float eff, arc = cvar("g_nadgets_shield_damage_store_arc");
         
-        if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+        if(Buffs_BuffPower(self, BUFF_ADEPT)) {
             extend = cvar("g_nadgets_shield_adept_discharge_extend");
             renew = cvar("g_nadgets_shield_adept_discharge_renew");
         }
@@ -1059,7 +1094,7 @@ void HG_Shield_Trigger(void) {
         te_csqc_lightningarc(start, end, TRUE, self.team);
         te_blast(end);
         
-        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || BUFFS_PRESENT(self, BUFF_MEDIC))) {
+        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || Buffs_BuffPower(self, BUFF_MEDIC))) {
             HG_Shield_Discharge_Arc(self, targ, self.hg_shield_stored);
             entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
                 e.buffs_arc_hit = FALSE;
@@ -1101,7 +1136,7 @@ void HG_Shield_Model_Think(void) {
 void HG_Shield(float hgtype) {
     entity e;
     float d;
-    float adept = BUFFS_PRESENT(self, BUFF_ADEPT);
+    float adept = Buffs_BuffPower(self, BUFF_ADEPT);
     
     if(adept) {
         d = GRENVAR(hgtype, "adept_duration");
@@ -1191,7 +1226,7 @@ void HG_Cloak(float hgtype) {
 }
 
 void HG_Cloak_Trigger(void) {
-    if(!BUFFS_PRESENT(self, BUFF_ADEPT)) {
+    if(!Buffs_BuffPower(self, BUFF_ADEPT)) {
         self.hg_stealth = 0;
         return;
     }
@@ -1338,6 +1373,11 @@ void HG_Linker_Think() {
     self.nextthink = time;
 }
 
+void HG_Linker_MEODP_Death(entity attacker, entity inflictor) {
+    remove(self.enemy);
+    remove(self);
+}
+
 void HG_Linker(float hgtype) {
     entity e = spawn();
     e.classname = "hg_linker";
@@ -1379,6 +1419,8 @@ void HG_Linker(float hgtype) {
     setsize(e, '-32 -32 0', '32 32 32');
     setsize(e.enemy, '-32 -32 0', '32 32 32');
     
+    Buffs_MEODP_Point_Attach(e, HG_Linker_MEODP_Death);
+    
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
 
@@ -1392,7 +1434,7 @@ float HG_GG_Button(float hgtype) {
     
     FOR_EACH_PLAYER(p)
     if(p != self)
-    if(!teams_matter || p.team != self.team || BUFFS_PRESENT(self, BUFF_MEDIC) || BUFFS_PRESENT(self, BUFF_ADEPT))
+    if(!teams_matter || p.team != self.team || Buffs_BuffPower(self, BUFF_MEDIC) || Buffs_BuffPower(self, BUFF_ADEPT))
     if(p.deadflag == DEAD_NO)
     if(!p.frozen)
     if(!p.jb_isprisoned)
@@ -1412,7 +1454,7 @@ float HG_GG_Button(float hgtype) {
             trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), o, e + randomvec() * 10);
             
-            if(BUFFS_PRESENT(self, BUFF_ADEPT)) {
+            if(Buffs_BuffPower(self, BUFF_ADEPT)) {
                 float i; for(i = 0; i < 4; ++i)
                     te_csqc_lightningarc(o, e + randomvec() * 10, TRUE, Team_FromIndex(i));
             }
@@ -1434,6 +1476,14 @@ string HG_TypeToAttackSound(float hgtype) {
         default:
             return "weapons/grenade_fire.wav";
     }
+}
+
+void HG_GenericProjectile_MEODP_Death(entity attacker, entity inflictor) {
+    self.takedamage = DAMAGE_AIM;
+    self.health = max(10, self.health);
+    self.event_damage = HG_Grenade_Damage;
+    self.hg_state = 1;
+    Damage(self, inflictor, attacker, self.health, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
 }
 
 #define GV(v) (GRENVAR(hgtype, v))
@@ -1465,6 +1515,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
+	gren.spawnorigin = self.origin;
     
     if(hgtype != HG_NAPALM)
         gren.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
@@ -1489,7 +1540,14 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     setorigin(gren, w_shotorg);
 
     float lt;
-    if(gren.hg_adept) {
+    if(hgtype == HG_TRANSLOC && self.BUTTON_CROUCH) {
+        if(gren.hg_adept) {
+            lt = GV("adept_crouch_lifetime");
+            if(!lt)
+                lt = GV("crouch_lifetime");
+        } else
+            lt = GV("crouch_lifetime");
+    } else if(gren.hg_adept) {
         lt = GV("adept_lifetime");
         if(!lt)
             lt = GV("lifetime");
@@ -1528,13 +1586,22 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         gren.health = GV("health");
     gren.damageforcescale = GV("damageforcescale");
     
-    float spd  = GV("speed");
-    float mspd = GV("speed_min");
+    float spd, mspd, upspd;
+
+    if(hgtype == HG_TRANSLOC && self.BUTTON_CROUCH) {
+        spd   = GV("crouch_speed");
+        mspd  = GV("crouch_speed_min");
+        upspd = GV("crouch_speed_up");
+    } else {
+        spd   = GV("speed");
+        mspd  = GV("speed_min");
+        upspd = GV("speed_up");
+    }
     
     if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
-        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * GV("speed_up") * self.hg_power;
+        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
     } else
-        gren.velocity = w_shotdir * spd + v_up * GV("speed_up");
+        gren.velocity = w_shotdir * spd + v_up * upspd;
         
     W_SetupProjectileVelocity(gren);
     
@@ -1542,6 +1609,8 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.angles = vectoangles(gren.velocity);
     gren.flags = FL_PROJECTILE;
     gren.hg_nadesused = self.hg_nadesused;
+    
+    Buffs_MEODP_Point_Attach(gren, HG_GenericProjectile_MEODP_Death);
     
     CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
@@ -1553,6 +1622,161 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     self.hg_power = 0;
     return gren;
+}
+
+void HG_Bait_Body_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+    PlayerDamage(inflictor, attacker, damage, deathtype, hitloc, force * Freeze_CVar("frozen_force"));
+}
+
+void HG_Bait_Body_Remove(entity body) {
+    if(body.shownames)
+        remove(body.shownames);
+
+    if(body.freeze_waypoint)
+        WaypointSprite_Disown(body.freeze_waypoint, 0.5);
+
+    if(body.hg_waypoint)
+        WaypointSprite_Disown(body.hg_waypoint, 0.5);
+
+    if(body.iceblock)
+        remove(body.iceblock);
+
+    if(body.exteriorweaponentity)
+        remove(body.exteriorweaponentity);
+
+    if(body.entcs)
+        detach_entcs();
+
+    remove(body);
+}
+
+float HG_Bait_Iceblock_Customize(void) {
+    if(other.iscreature && other.team == self.owner.realowner.team)
+        self.colormod = '0 2 0';
+    else
+        self.colormod = '1 1 1';
+
+    return TRUE;
+}
+
+void HG_Bait_Body_Think(void) {
+    Freeze_Hook_PlayerPreThink();
+    SV_PlayerPhysics();
+
+    if(time > self.hg_deathtime || self.realowner.team != self.hg_state) {
+        HG_Bait_Body_Remove(self);
+        return;
+    }
+
+    if(self.shownames)
+    if(self.aiment.classname != "player")
+        remove(self.shownames);
+
+    // freeze sound doesn't work properly if this is not delayed
+    if(!self.iceblock) {
+        Freeze_SpawnIceBlock(self);
+        
+        if(Freeze_CVar("iceblocks_teamcolored"))
+            self.iceblock.skin = TeamColorSkin(self.team);
+
+        if(teams_matter)
+            self.iceblock.customizeentityforclient = HG_Bait_Iceblock_Customize;
+    }
+
+    if(time > self.hg_nextsnd)
+    if(self.revprogress > 0.85) {
+        self.hg_nextsnd = time + 0.1;
+        sound(self, CHAN_PROJECTILE, "weapons/rm_nadebeep.wav", VOL_BASE * 0.5, ATTN_NORM * 2);
+    }
+
+    HG_Grenade_Waypoint();
+    self.nextthink = time;
+}
+
+void HG_Bait_Body_Boom(entity body) {
+    entity oldself = self;
+    self = body;
+    body.owner = body.realowner;
+    HG_Grenade_RadiusDamage();
+    HG_Bait_Body_Remove(body);
+    self = oldself;
+}
+
+entity HG_Bait_Create(entity ref) {
+    entity oldself = self;
+    self = ref;
+
+    entity body = CopyBody(FALSE);
+    body.classname = "bait_body";
+    body.team = ref.team;
+    body.health = Freeze_CVar("frozen_health");
+    body.armorvalue = Freeze_CVar("frozen_armor");
+    body.think = HG_Bait_Body_Think;
+    body.event_damage = HG_Bait_Body_Damage;
+    body.reset = HG_Bait_Body_Remove;
+    body.nextthink = time;
+    body.frozen = TRUE;
+    body.realowner = oldself;
+    body.hg_type = body.projectiledeathtype = HG_BAIT;
+    body.hg_deathtime = time + GRENVAR(HG_BAIT, "lifetime");
+    body.aiment = body.bait_ref = ref;
+    body.hg_state = oldself.team;
+    body.colormod = ref.colormod;
+    setorigin(body, oldself.origin);
+
+    entity w = spawn();
+    w.classname = "exteriorweaponentity";
+    w.solid = SOLID_NOT;
+    w.owner = body;
+    setorigin(w, '0 0 0');
+    w.angles = '0 0 0';
+    w.effects = body.effects | EF_LOWPRECISION;
+    w.effects = w.effects & EFMASK_CHEAP;
+    setmodel(w, ref.exteriorweaponentity.model);
+    
+    float tag_found;
+    if((tag_found = gettagindex(w.owner, "tag_weapon"))) {
+        w.tag_index = tag_found;
+        w.tag_entity = w.owner;
+    } else
+        setattachment(w, w.owner, "bip01 r hand");
+
+    body.exteriorweaponentity = w;
+
+    if(cvar("sv_shownames")) {
+        body.shownames = spawn();
+        body.shownames.owner = body;
+        body.shownames.think = shownames_think;
+        body.shownames.nextthink = time;
+        body.shownames.customizeentityforclient = shownames_customize;
+        Net_LinkEntity(body.shownames, FALSE, 0, SendEntity_ShowNames);
+    }
+
+    self = body;
+    attach_entcs();
+    self = oldself;
+
+    return body;
+}
+
+entity HG_Bait_PickRef(void) {
+    entity plr;
+
+    RandomSelection_Init();
+    FOR_EACH_PLAYER(plr) if(plr.team != self.team)
+        RandomSelection_Add(plr, 0, string_null, 1, 1);
+
+    return RandomSelection_chosen_ent;
+}
+
+float HG_Bait(void) {
+    entity ref = HG_Bait_PickRef();
+
+    if(!ref)
+        return FALSE;
+
+    HG_Bait_Create(ref);
+    return TRUE;
 }
 
 void HG_Attack()
@@ -1595,8 +1819,14 @@ void HG_Attack()
             self.hg_next = time + 1;
             return;
         }
+    } else if(hgtype == HG_BAIT) {
+        if(!HG_Bait()) {
+            bigprint_spec(self, "No enemies!", "", 1);
+            self.hg_next = time + 1;
+            return;
+        }
     } else {
-        if(BUFFS_PRESENT(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
+        if(Buffs_BuffPower(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
             float split = GV("adept_split");
             float spread = GV("adept_split_spread");
             vector dir;
@@ -1645,7 +1875,7 @@ void HG_UpdateDetonables() {
 float HG_RegenLimit(entity plr) {
     float mx = 0;
     
-    if(BUFFS_PRESENT(plr, BUFF_ADEPT))
+    if(Buffs_BuffPower(plr, BUFF_ADEPT))
         mx = GRENVAR(plr.hg_type, "adept_stacklimit");
     
     if(mx <= 0) mx = GRENVAR(plr.hg_type, "stacklimit");
@@ -1754,7 +1984,7 @@ void HG_Trigger(void) {
         HG_DetonateAll(self);
         
         if(self.hg_type == HG_LASER)
-        if(BUFFS_PRESENT(self, BUFF_ADEPT))
+        if(Buffs_BuffPower(self, BUFF_ADEPT))
             HG_Attack();
     }
 }

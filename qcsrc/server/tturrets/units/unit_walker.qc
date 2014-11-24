@@ -1197,8 +1197,11 @@ void turret_walker_dinit()
     }
 
     traceline(self.origin + '0 0 16', self.origin - '0 0 10000', MOVE_WORLDONLY, self);
-    setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
-    setorigin(self,self.wkr_spawn.origin);
+    
+    if(!self.isboss) {
+        setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
+        setorigin(self,self.wkr_spawn.origin);
+    }
 
     setsize(self,WALKER_MIN,WALKER_MAX);
 
@@ -1257,6 +1260,7 @@ void boss_spawner_spawn(void) {
     self = spawn();
     self.isboss = TRUE;
     self.netname = oself.netname;
+    setorigin(self, oself.origin);
     spawnfunc_turret_walker();
     self = oself;
     

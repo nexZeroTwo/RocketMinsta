@@ -109,3 +109,13 @@ void Net_ReadBlast(void) {
     sound(e, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
     remove(e);
 }
+
+void Net_ReadMEODP(void) {
+    vector loc;
+    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
+    pointparticles(rm_particleeffectnum("RM_MEODP"), loc, '0 0 0', 1);
+    entity e = spawn();
+    setorigin(e, loc);
+    sound(e, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+    remove(e);
+}

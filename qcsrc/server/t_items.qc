@@ -433,8 +433,9 @@ float Item_GiveTo(entity item, entity player)
 			_switchweapon = TRUE;
         
         float pickupfactor = 1;
-        if(BUFFS_PRESENT(player, BUFF_SUPPLY))
-            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * Buffs_BuffPower(player, BUFF_SUPPLY);
+        float supply = Buffs_BuffPower(player, BUFF_SUPPLY);
+        if(supply)
+            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * supply;
         
 		if(item.spawnshieldtime)
 		{

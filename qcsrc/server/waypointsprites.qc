@@ -297,8 +297,12 @@ float WaypointSprite_SendEntity(entity to, float sendflags)
 
     if(sendflags & 2) {
         WriteString(MSG_ENTITY, self.model1);
-        if(self.model1 == "Frozen!")    // hack for Freeze - attach waypoint to shownames
-            WriteByte(MSG_ENTITY, num_for_edict(self.exteriormodeltoclient));
+        if(self.model1 == "Frozen!") {    // hack for Freeze - attach waypoint to shownames
+            entity e = self.exteriormodeltoclient;
+            if(e.bait_ref)
+                e = e.bait_ref;
+            WriteByte(MSG_ENTITY, num_for_edict(e));
+        }
     }
 
 	if(sendflags & 4)

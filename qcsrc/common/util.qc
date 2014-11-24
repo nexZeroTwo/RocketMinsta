@@ -1786,3 +1786,13 @@ string FlagIcon(string cn) {
     return i;
 }
 #endif
+
+
+float fexists(string f) {
+    float fh;
+    fh = fopen(f, FILE_READ);
+    if (fh < 0)
+        return FALSE;
+    fclose(fh);
+    return TRUE;
+}

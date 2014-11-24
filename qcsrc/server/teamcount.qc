@@ -2,6 +2,11 @@
 float TeamCount_TotalTeams(void) {
     float i;
     
+    if(time == 1)
+        CheckAllowedTeams(world);
+        // we must ensure c1..c4 are correct during the world initialization frame
+        // for things like g_buffs_team_swap to work
+    
     if(g_keyhunt)   // TODO: find out what the hell is going on here
         return kh_teams;
     
@@ -9,6 +14,7 @@ float TeamCount_TotalTeams(void) {
     if(c2 >= 0) ++i;
     if(c3 >= 0) ++i;
     if(c4 >= 0) ++i;
+    
     return i;
 }
 

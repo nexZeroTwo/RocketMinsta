@@ -54,7 +54,11 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	// non-solid so we can hit the next, while doing this we spawn effects and
 	// note down which entities were hit so we can damage them later
     
+    entity pts;
     float tries;
+    
+    if(deathtype != DEATH_HG_SHIELD)
+        pts = Buffs_MEODP_Hitscan_Begin(self);
     
 	while (1)
 	{
@@ -146,7 +150,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 		if(teams_matter)
 		if(ent.team == self.team)
-        if(!BUFFS_PRESENT(self, BUFF_MEDIC))
+        if(!Buffs_BuffPower(self, BUFF_MEDIC))
 			did_hit = 0;
 
 		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
@@ -181,7 +185,9 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 	// we're done with the explosion entity, remove it
 	//remove(explosion);
-
+    
+    Buffs_MEODP_Hitscan_End(pts);
+    
 	trace_endpos = endpoint;
 	trace_ent = endent;
 	trace_dphitq3surfaceflags = endq3surfaceflags;
@@ -224,9 +230,9 @@ void W_BallisticBullet_Hit (void)
 
 		if(teamplay)
 		if(other.team == self.owner.team)
-        if(!BUFFS_PRESENT(self.owner, BUFF_MEDIC))
+        if(!Buffs_BuffPower(self.owner, BUFF_MEDIC))
 			hit = 0;
-
+		
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
@@ -244,7 +250,6 @@ void W_BallisticBullet_Hit (void)
 				bigprint_spec(self.owner, "^5Awesome!", "", 1);
 			}
 		}
-
 		//calculate hits for ballistic weapons
 		if not(inWarmupStage)
 		if not(self.owner.isbot)
@@ -488,12 +493,14 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			FOR_EACH_PLAYER(pl)
 				antilag_takeback(pl, time - lag);
 
+        entity pts = Buffs_MEODP_Hitscan_Begin(self);
+        
 		oldself = self;
 		self = proj;
 
 		savetime = frametime;
 		frametime = 0.05;
-
+        
 		for(;;)
 		{
 			// DP tracetoss is stupid and always traces in 0.05s
@@ -529,7 +536,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
 			self.velocity_z -= sv_gravity * dt;
-
+            
 			if(!SUB_OwnerCheck())
 			{
 				if(SUB_NoImpactCheck())
@@ -547,7 +554,9 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		}
 		frametime = savetime;
 		self = oldself;
-
+        
+        Buffs_MEODP_Hitscan_End(pts);
+        
 		if(lag)
 			FOR_EACH_PLAYER(pl)
 				antilag_restore(pl);
