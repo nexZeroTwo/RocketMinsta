@@ -137,7 +137,32 @@ void IRC_Command_connect_call(string cmdline, float argc, float b, float s, stri
         return;
     }
     
-    err = IRC_ConnectSession(s, argv(1), stof(argv(2)), argv(6), argv(3), argv(4), argv(5));
+    string serv, nick, user, realname, password;
+    float port;
+
+    serv = argv(1);
+    port = 6667;
+    nick = argv(2);
+    user = "rmirc";
+    realname = "RM IRC user";
+    password = string_null;
+
+    float o = strstrofs(serv, ":", 0);
+    if(o >= 0) {
+        port = stof(substring(serv, o+1, strlen(serv)));
+        serv = substring(serv, 0, o);
+    }
+
+    if(argc > 3) {
+        user = argv(3);
+        if(argc > 4) {
+            realname = argv(4);
+            if(argc > 5)
+                password = argv(5);
+        }
+    }
+
+    err = IRC_ConnectSession(s, serv, port, password, nick, user, realname);
     if      (err < 0) errstr = "session error";
     else if (err > 0) errstr = IRC_StrError(err);
     
@@ -158,6 +183,6 @@ void IRC_Command_RegisterAll(void) {
     IRC_Command_Register("close",       1, IRC_Command_close_call,      irc_command_null);
     IRC_Command_Register("join",        2, IRC_Command_join_call,       irc_command_null);
     IRC_Command_Register("part",        1, IRC_Command_part_call,       irc_command_null);
-    IRC_Command_Register("connect",     6, IRC_Command_connect_call,    irc_command_null);
+    IRC_Command_Register("connect",     3, IRC_Command_connect_call,    irc_command_null);
 }
 
