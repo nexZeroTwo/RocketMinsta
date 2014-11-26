@@ -56,7 +56,7 @@ void HG_Precache() {
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
     if(!g_nadgets || p.hg_optout)
         return;
-    
+
     amount *= GRENVAR(hgtype, "bonus_amount_multiplier");
 
     if(amount < 1)
@@ -1854,11 +1854,14 @@ void HG_Attack()
         }
     }
     
-    self.cdfield = time + GV("cooldown") * Buffs_NadgetCooldown(self);
+    float cdmul = Buffs_NadgetCooldown(self);
+    self.cdfield = time + GV("cooldown") * cdmul;
 
     if(!freebonus) {
         self.hg_ammo -= used;
         HG_SetRegenTime(self, HG_RegenTime(self));
+    } else {
+        self.hg_next = min(self.hg_bonus_next, time + GRENVAR(self.hg_type, "cooldown") * cdmul);
     }
     
     if(self.hg_bonus)
