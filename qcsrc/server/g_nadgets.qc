@@ -72,10 +72,21 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
 	
-	FOR_EACH_PLAYER(e)
-		bigprint_spec(e, strcat("^3", p.netname), strcat("Got a ^3", n, "^7 bonus (", reason, ")"), 3);
+	FOR_EACH_REALCLIENT(e) if(e.iscreature || e.classname == "spectator") {
+        entity check = e;
+        if(!e.iscreature)
+            check = e.enemy;
+
+        if(check == p)
+            bigprint(e, strcat("^7You got a ^3", n, "^7 bonus!"), reason, 3);
+        else if(IsDifferentTeam(check, p))
+            bigprint(e, strcat("^3Enemy got a ^1", n, " ^3bonus!"), strcat("Given to ^3", p.netname, " ^7(", reason, ")"), 3);
+        else
+            centerprint(e, strcat("^3", p.netname, "^7 got a ^3", n, " ^7bonus (", reason, ")"));
+    }
+
 	bprint(strcat("^3", p.netname, " ^7got a ^3", n, "^7 bonus (", reason, ")\n"));
-	play2all("kh/alarm.wav");
+    play2all("kh/alarm.wav");
 }
 
 void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
