@@ -1325,6 +1325,11 @@ void GameCommand(string command)
     	return;
     }
 
+    if(argv(0) == "hg_bonustest") {
+        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called");
+        return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 
