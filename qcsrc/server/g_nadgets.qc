@@ -57,7 +57,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float all
     if(!g_nadgets || (allowOptout && p.hg_optout))
         return;
 
-    amount *= GRENVAR(hgtype, "bonus_amount_multiplier");
+    amount *= GRENVAR(hgtype, "bonus_amount_multiplier") * Buffs_NadgetBonusMultiplier(p);
 
     if(amount < 1)
         return;

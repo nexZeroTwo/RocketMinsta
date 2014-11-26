@@ -589,6 +589,15 @@ float Buffs_NadgetRegenDmgPause(entity plr) {
     return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
 }
 
+float Buffs_NadgetBonusMultiplier(entity plr) {
+    float wrath = Buffs_BuffPower(plr, BUFF_WRATH);
+
+    if(!wrath)
+        return 1;
+
+    return rint(1 + (cvar("g_buffs_wrath_hgbonusmultiplier") - 1) * wrath);
+}
+
 float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
     float diffteam;
     
