@@ -62,6 +62,9 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
     if(amount < 1)
         return;
 
+    if(p.hg_bonustype != hgtype)
+        p.hg_bonus = 0;
+
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
     p.hg_bonus_next = 0;
