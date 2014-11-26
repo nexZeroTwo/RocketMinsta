@@ -59,6 +59,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
     
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
+    p.hg_bonus_next = 0;
     
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
@@ -1250,7 +1251,8 @@ void HG_Cloak_Frame() {
     } else {
         if(self.hg_wasstealth) {
             self.hg_wasstealth = FALSE;
-            self.hg_next = max(self.hg_next, time + cvar("g_nadgets_cloak_cooldown_decloak"));
+            if(self.hg_type == HG_CLOAK)
+                self.hg_next = max(self.hg_next, time + cvar("g_nadgets_cloak_cooldown_decloak"));
             sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
         }
         if(self.hg_stealthalpha)
@@ -1782,23 +1784,25 @@ void HG_Attack()
     float freebonus;
     float used = 1;
     float avail = self.hg_ammo;
+    var .float cdfield = hg_next;
     
     if(self.deadflag != DEAD_NO)
         return;
-    
+
     HG_FixNadeType(self);
-    
+
     if(self.hg_bonus) {
         hgtype = self.hg_bonustype;
         freebonus = TRUE;
         avail = self.hg_bonus;
+        cdfield = hg_bonus_next;
     } else {
-        if(time < self.hg_next)
-            return;
-            
         hgtype = self.hg_type;
     }
     
+    if(time < self.cdfield)
+        return;
+
     if(!freebonus && !self.hg_ammo)
         return;
     
@@ -1813,13 +1817,13 @@ void HG_Attack()
     } else if(hgtype == HG_GG) {
         if(!HG_GG_Button(hgtype)) {
             bigprint_spec(self, "Nobody to win against!", "", 1);
-            self.hg_next = time + 1;
+            self.cdfield = time + 1;
             return;
         }
     } else if(hgtype == HG_BAIT) {
         if(!HG_Bait()) {
             bigprint_spec(self, "No enemies!", "", 1);
-            self.hg_next = time + 1;
+            self.cdfield = time + 1;
             return;
         }
     } else {
@@ -1845,8 +1849,8 @@ void HG_Attack()
         }
     }
     
-    self.hg_next = time + GV("cooldown") * Buffs_NadgetCooldown(self);
-    
+    self.cdfield = time + GV("cooldown") * Buffs_NadgetCooldown(self);
+
     if(!freebonus) {
         self.hg_ammo -= used;
         HG_SetRegenTime(self, HG_RegenTime(self));

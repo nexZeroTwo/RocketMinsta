@@ -33,6 +33,7 @@ void HG_Bait_Body_Boom(entity body);
 .float hg_power;
 .float hg_state;
 .float hg_next;
+.float hg_bonus_next;
 .float hg_ammo;
 .float hg_type;
 .float hg_type_picked;
