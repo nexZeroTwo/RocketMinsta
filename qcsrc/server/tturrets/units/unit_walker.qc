@@ -1012,7 +1012,7 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         }
         
         if(g_nadgets)
-            HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"));
+            HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"), FALSE);
     }
     
     return damage;

@@ -376,8 +376,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         if(Freeze_CVar("revive_bonusgrenade"))
         if(e.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
             HG_GiveBonus(e, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
-                        strcat(ftos(e.revrow), " revivals in a row")
-            );
+                        strcat(ftos(e.revrow), " revivals in a row"), TRUE);
             e.revrow = 0;
         }
         

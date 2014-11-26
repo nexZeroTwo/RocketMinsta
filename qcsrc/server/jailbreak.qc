@@ -235,8 +235,7 @@ void JB_Imprison(entity attacker) {
 		if(cvar("g_jailbreak_frag_bonusgrenade"))
 		if(attacker.jb_fragrow >= cvar("g_jailbreak_frag_bonusgrenade_requirement")) {
 			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_jailbreak_frag_bonusgrenade_type")), 1,
-								   strcat(ftos(attacker.jb_fragrow), " frags in a row")
-			);
+								   strcat(ftos(attacker.jb_fragrow), " frags in a row"), TRUE);
 			attacker.jb_fragrow = 0;
 		}
 	}

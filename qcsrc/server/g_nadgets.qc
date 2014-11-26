@@ -53,8 +53,8 @@ void HG_Precache() {
     precache_model("models/shield_inner.md3");
 }
 
-void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
-    if(!g_nadgets || p.hg_optout)
+void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float allowOptout) {
+    if(!g_nadgets || (allowOptout && p.hg_optout))
         return;
 
     amount *= GRENVAR(hgtype, "bonus_amount_multiplier");
@@ -87,6 +87,26 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 
 	bprint(strcat("^3", p.netname, " ^7got a ^3", n, "^7 bonus (", reason, ")\n"));
     play2all("kh/alarm.wav");
+}
+
+void HG_GiveRandomBonus(entity p, float amount, string reason, float allowOptout) {
+    if(!g_nadgets || (allowOptout && p.hg_optout))
+        return;
+
+    RandomSelection_Init();
+
+    float n;
+    for(n = DEATH_HG_START; n <= DEATH_HG_END; ++n) {
+        if(n != DEATH_HG_PLASMA_SHARD) // please remove this stupid type somehow
+        if(g_freeze || (n != DEATH_HG_BAIT)) {
+            float w = GRENVAR(n, "bonus_random_weight");
+            if(w)
+                RandomSelection_Add(world, n, string_null, w, 1);
+        }
+    }
+
+    if(RandomSelection_chosen_float)
+        HG_GiveBonus(p, RandomSelection_chosen_float, amount, reason, allowOptout);
 }
 
 void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float burntime, float dtype)
