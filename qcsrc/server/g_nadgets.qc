@@ -60,9 +60,6 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason) {
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
     
-    if(!cvar("g_nadgets_bonus_free"))
-        p.hg_ammo += amount;
-	
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
 	
@@ -699,7 +696,7 @@ void HG_SetRegenTime(entity e, float t) {
 }
 
 float HG_PlayerMayFire(entity p) {
-    return p.hg_ammo || (p.hg_bonus && cvar("g_nadgets_bonus_free"));
+    return p.hg_ammo || p.hg_bonus;
 }
 
 float HG_PlayerMayDetonate(entity p) {
@@ -1793,7 +1790,7 @@ void HG_Attack()
     
     if(self.hg_bonus) {
         hgtype = self.hg_bonustype;
-        freebonus = cvar("g_nadgets_bonus_free");
+        freebonus = TRUE;
         avail = self.hg_bonus;
     } else {
         if(time < self.hg_next)

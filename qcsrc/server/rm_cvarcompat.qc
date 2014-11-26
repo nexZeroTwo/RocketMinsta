@@ -1585,16 +1585,6 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_bonus_free ---> g_nadgets_bonus_free
-	
-	if COMPATVAR_ACTIVE("g_handgrenades_bonus_free") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_bonus_free^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_bonus_free^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_bonus_free", cvar_string("g_handgrenades_bonus_free"));
-		if(mode == 2)
-			cvar_set("g_handgrenades_bonus_free", "__COMPATVAR_DISABLED__");
-		++corrections;
-	}
-	
 	// g_handgrenades_oldhitboxes ---> g_nadgets_oldhitboxes
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_oldhitboxes") {
