@@ -483,6 +483,6 @@ void IRC_Announce_Name(entity plr, string name) { if(!irc) return;
 }
 
 void IRC_Announce_Radio(string rstr) {
-    if(cvar("sv_ircbot_annouce_radio"))
+    if(cvar("sv_ircbot_announce_radio"))
         IRC_Privmsg(irc.cnt, irc.target, rstr);
 }
