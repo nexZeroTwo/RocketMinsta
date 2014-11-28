@@ -1608,6 +1608,11 @@ void Sbar_Score(float p)
  	bottomright_y = vid_conheight;
  	bottomright_z = 0;
 
+	vector rpos, rsize = '100 100 0';
+	rpos = bottomright;
+	rpos_y -= 150;
+	rpos_x -= 105;
+
 	if(rm_oldhud)
 	{
 		score_pos = bottomright - '196 42 0';
@@ -1619,11 +1624,6 @@ void Sbar_Score(float p)
 		score_pos = bottomright - '178 38 0';
 		secondary_score_pos = score_pos + '72 0 0';
 	}
-
-	vector rpos, rsize = '100 100 0';
-	rpos = bottomright;
-	rpos_y -= 150;
-	rpos_x -= 105;
 
 	if((scores_flags[ps_primary] & SFL_TIME) && !teamplay) { // race/cts record display on HUD
 		pl = players.sort_next;
