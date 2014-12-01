@@ -655,6 +655,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
             }
         }
+
+        if(self.hg_stealth) if(time < self.hg_stealth_protectionexpiretime) {
+            damage *= cvar("g_nadgets_cloak_damagereduction_factor");
+        }
     }
 	
 	if(cvar("g_balance_campingrifle_secondary_hitstreaks")){

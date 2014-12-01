@@ -93,6 +93,7 @@ void HG_Bait_Body_Boom(entity body);
 .float hg_stealthtime;
 .float hg_wasstealth;
 .float hg_stealth_saved;
+.float hg_stealth_protectionexpiretime;
 
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;
