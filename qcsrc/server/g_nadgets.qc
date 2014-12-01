@@ -1368,6 +1368,8 @@ void HG_Linker_Think() {
                 HG_Linker_Adept_Push(p);
     }
     
+    self.buffs &~= cvar("g_nadgets_linker_sharedbuffs_banmask");
+
     if(self.hg_adept)
         for(p = findchainflags(flags, FL_PROJECTILE); p; p = p.chain)
             if(p.classname != "bullet" && p.owner != self.owner && (!teams_matter || p.owner.team != self.team))
