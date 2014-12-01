@@ -1258,6 +1258,7 @@ void HG_Shield_Frame(void) {
 
 void HG_Cloak(float hgtype) {
     self.hg_stealth = self.hg_stealth + cvar("g_nadgets_cloak_duration") * Buffs_NadgetPower(self);
+    self.fire_endtime = 0;
     pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
     sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
 }
@@ -1275,6 +1276,7 @@ void HG_Cloak_Trigger(void) {
         sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
         self.hg_stealth = self.hg_stealth_saved;
         self.hg_stealth_saved = 0;
+        self.fire_endtime = 0;
     }
 }
 
