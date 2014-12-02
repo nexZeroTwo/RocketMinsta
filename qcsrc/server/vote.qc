@@ -58,7 +58,7 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 	else {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
 	}
-	if(e)
+	if(e && (clienttype(e) != CLIENTTYPE_NOTACLIENT))
 	{
 		if(ParseCommandPlayerSlotTarget_firsttoken < tokens)
 			GetKickVoteVictim_reason = substring(vote, argv_start_index(ParseCommandPlayerSlotTarget_firsttoken), argv_end_index(-1) - argv_start_index(ParseCommandPlayerSlotTarget_firsttoken));
@@ -253,9 +253,8 @@ float RemapVote(string vote, string cmd, entity e)
 		if(argv(0) == "pointkick" && victim.classname != "player"){
 			return FALSE;
 		}
-		
 		RemapVote_vote = GetKickVoteVictim_newcommand;
-		RemapVote_display = strcat("^1", vote, " (^7", victim.netname, "^1): ", GetKickVoteVictim_reason);
+		RemapVote_display = strcat("(^1", vote, " (^7", victim.netname, strcat(" (", ftos(num_for_edict(victim)), ") "), "^1): ", GetKickVoteVictim_reason);
 	}
 	else if(argv(0) == "config" || argv(0) == "rmcustom")
 	{
@@ -526,7 +525,7 @@ float GameCommand_Vote(string s, entity e) {
 							e.vote_vote = 1; // of course you vote yes
 							e.vote_next = time + cvar("sv_vote_wait");
 						}
-                        tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote for ", votecalledvote_display);
+                        tmp = strcat("^2* ^3", VoteNetname(votecaller), " (", ftos(num_for_edict(votecaller)), ") ",  "^2 calls a vote for ", votecalledvote_display);
 						bprint("\{1}", tmp, "\n");
                         IRC_Announce_Vote(tmp);
 						if(cvar("sv_eventlog"))
@@ -870,6 +869,7 @@ void VoteAccept() {
 	{
 		if(votecaller) {
 			votecaller.vote_master = 1;
+			votecaller.vote_mastername = cvar_string("sv_vote_master_default_login");
 		}
 	} else {
 		localcmd(strcat(votecalledvote, "\n"));
