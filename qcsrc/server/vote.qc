@@ -51,8 +51,13 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 
 	tokens = tokenize_console(vote);
 	ns = "";
-
-	e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
+	
+	if(argv(0) == "pointkick") {
+		e = caller.cursor_trace_ent;
+	}
+	else {
+		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
+	}
 	if(e)
 	{
 		if(ParseCommandPlayerSlotTarget_firsttoken < tokens)
@@ -89,10 +94,18 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 		{
 			GetKickVoteVictim_newcommand = strcat(GetKickVoteVictim_newcommand, " ", reason);
 		}
+		else if(argv(0) == "pointkick"){
+			GetKickVoteVictim_newcommand = strcat("kick", " # ", ftos(num_for_edict(e)));
+			GetKickVoteVictim_newcommand = strcat(GetKickVoteVictim_newcommand, " ", reason);
+		}
 		return e;
 	}
-
-	print_to(caller, strcat("Usage: ", cmd, " ", argv(0), " #playernumber (as in \"status\")\n"));
+	if(argv(0) != "pointkick"){
+		print_to(caller, strcat("Usage: ", cmd, " ", argv(0), " #playernumber (as in \"status\")\n"));
+	}
+	else{
+		print_to(caller, "Look at a player and then call pointkick\n");
+	}
 	return world;
 }
 
@@ -227,7 +240,7 @@ float RemapVote(string vote, string cmd, entity e)
     }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban" || argv(0) == "pointkick")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
@@ -235,6 +248,9 @@ float RemapVote(string vote, string cmd, entity e)
 		if(argv(0) == "kill" && victim.classname != "player")
 		{
 			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));
+			return FALSE;
+		}
+		if(argv(0) == "pointkick" && victim.classname != "player"){
 			return FALSE;
 		}
 		
