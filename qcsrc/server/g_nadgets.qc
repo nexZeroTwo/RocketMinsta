@@ -1220,6 +1220,7 @@ void HG_Shield(float hgtype) {
         e.scale = 0.5;
         e.hg_adept = adept;
         e.skin = 10 + !!adept;
+        e.exteriormodeltoclient = self;
         setsize(e, e.scale * e.mins, e.scale * e.maxs);
         
         self.hg_shieldmodel = e;
