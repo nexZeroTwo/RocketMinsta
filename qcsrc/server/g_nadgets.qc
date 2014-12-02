@@ -50,7 +50,6 @@ void HG_Precache() {
     precache_sound(RM_SOUND_LASER_SECONDARY);
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
-    precache_model("models/shield_inner.md3");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float allowOptout) {
@@ -1220,6 +1219,7 @@ void HG_Shield(float hgtype) {
         setmodel(e, "models/ctf/shield.md3");
         e.scale = 0.5;
         e.hg_adept = adept;
+        e.skin = 10 + !!adept;
         setsize(e, e.scale * e.mins, e.scale * e.maxs);
         
         self.hg_shieldmodel = e;
@@ -1319,7 +1319,6 @@ void HG_Linker_Think() {
     float denom, thealth, tarmor;
     
     if(!self.owner.iscreature || self.owner.team != self.team) {
-        remove(self.enemy);
         remove(self);
         return;
     }
@@ -1327,7 +1326,6 @@ void HG_Linker_Think() {
     /*
     if(self.hg_adept) {
         setorigin(self, self.owner.origin);
-        setorigin(self.enemy, self.origin);
     }
     */
     
@@ -1405,19 +1403,16 @@ void HG_Linker_Think() {
     self.alpha = bound(0, (self.cnt - time) * 2, 1);
     
     if(self.alpha == 0) {
-        remove(self.enemy);
         remove(self);
         return;
     }
     
     self.alpha = max(0.01, self.alpha * bound(0, (time - self.spawntime) * 2, 1));
-    self.enemy.alpha = self.alpha * 0.5;
     self.glow_size = self.hg_linker_range * self.alpha * 3;
     self.nextthink = time;
 }
 
 void HG_Linker_MEODP_Death(entity attacker, entity inflictor) {
-    remove(self.enemy);
     remove(self);
 }
 
@@ -1430,7 +1425,7 @@ void HG_Linker(float hgtype) {
     e.nextthink = time;
     e.spawntime = time;
     e.reset = SUB_Remove;
-    e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+    e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION | EF_DOUBLESIDED;
     e.gravity = 100;
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
@@ -1439,31 +1434,22 @@ void HG_Linker(float hgtype) {
     e.cnt = time + GRENVAR(hgtype, "duration") * Buffs_NadgetPower(self);
     e.alpha = 0.01;
     setmodel(e, "models/ctf/shield.md3");
-    if(e.team) e.skin = TeamColorSkin(e.team);
     e.scale = e.hg_linker_range / e.maxs_x;
     e.glow_color = 0xF5;
     e.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
     e.movetype = MOVETYPE_TOSS;
+
+    if(e.team)
+        e.skin = TeamColorSkin(e.team);
+
+    if(e.hg_adept)
+        e.skin += 5;
+
     setorigin(e, self.origin + self.view_ofs);
-    
-    e.enemy = spawn();
-    e.enemy.owner = e;
-    e.enemy.effects = e.effects;
-    //e.enemy.colormod = TeamColor(e.team);
-    e.enemy.movetype = e.movetype;
-    e.enemy.scale = e.scale;
-    e.enemy.reset = SUB_Remove;
-    e.enemy.alpha = e.alpha;
-    e.enemy.skin = e.skin;
-    e.enemy.gravity = e.gravity;
-    setmodel(e.enemy, "models/shield_inner.md3");
-    setorigin(e.enemy, e.origin);
-    
     setsize(e, '-32 -32 0', '32 32 32');
-    setsize(e.enemy, '-32 -32 0', '32 32 32');
     
     Buffs_MEODP_Point_Attach(e, HG_Linker_MEODP_Death);
-    
+
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
 
