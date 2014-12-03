@@ -1159,10 +1159,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(targ.hg_linker)
         if((deathtype != HG_TRANSLOC || cvar("g_nadgets_transloc_damage")) && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype))
         IF_HG_LINKER_APPLICABLE(targ) {
+            if(teams_matter && targ.team == attacker.team)
+                return;
+            
             if(cvar("g_nadgets_linker_split_damage")) {
-                if(teams_matter && targ.team == attacker.team)
-                    return;
-                
                 damage_linkmode = TRUE;
                 entity e, linklist = findchainentity(hg_linker, targ.hg_linker);
                 float denom;
