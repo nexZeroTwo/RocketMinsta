@@ -51,9 +51,14 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 
 	tokens = tokenize_console(vote);
 	ns = "";
-
-	e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
-	if(e)
+	
+	if(argv(0) == "pointkick") {
+		e = caller.cursor_trace_ent;
+	}
+	else {
+		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
+	}
+	if(e && (clienttype(e) != CLIENTTYPE_NOTACLIENT))
 	{
 		if(ParseCommandPlayerSlotTarget_firsttoken < tokens)
 			GetKickVoteVictim_reason = substring(vote, argv_start_index(ParseCommandPlayerSlotTarget_firsttoken), argv_end_index(-1) - argv_start_index(ParseCommandPlayerSlotTarget_firsttoken));
@@ -89,10 +94,18 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 		{
 			GetKickVoteVictim_newcommand = strcat(GetKickVoteVictim_newcommand, " ", reason);
 		}
+		else if(argv(0) == "pointkick"){
+			GetKickVoteVictim_newcommand = strcat("kick", " # ", ftos(num_for_edict(e)));
+			GetKickVoteVictim_newcommand = strcat(GetKickVoteVictim_newcommand, " ", reason);
+		}
 		return e;
 	}
-
-	print_to(caller, strcat("Usage: ", cmd, " ", argv(0), " #playernumber (as in \"status\")\n"));
+	if(argv(0) != "pointkick"){
+		print_to(caller, strcat("Usage: ", cmd, " ", argv(0), " #playernumber (as in \"status\")\n"));
+	}
+	else{
+		print_to(caller, "Look at a player and then call pointkick\n");
+	}
 	return world;
 }
 
@@ -227,7 +240,7 @@ float RemapVote(string vote, string cmd, entity e)
     }
 
 	// make kick and kickban votes a bit nicer (and reject them if formatted badly)
-	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban")
+	if(argv(0) == "kick" || argv(0) == "kickban" || argv(0) == "kill" || argv (0) == "nickban" || argv(0) == "pointkick")
 	{
 		if(!(victim = GetKickVoteVictim(vote, cmd, e)))
 			return FALSE;
@@ -237,9 +250,11 @@ float RemapVote(string vote, string cmd, entity e)
 			sprint(self, strcat(victim.netname, "^1 is not playing.\n"));
 			return FALSE;
 		}
-		
+		if(argv(0) == "pointkick" && victim.classname != "player"){
+			return FALSE;
+		}
 		RemapVote_vote = GetKickVoteVictim_newcommand;
-		RemapVote_display = strcat("^1", vote, " (^7", victim.netname, "^1): ", GetKickVoteVictim_reason);
+		RemapVote_display = strcat("(^1", vote, " (^7", VoteNetname(victim), "^1): ", GetKickVoteVictim_reason);
 	}
 	else if(argv(0) == "config" || argv(0) == "rmcustom")
 	{
@@ -734,7 +749,12 @@ void VoteHelp(entity e) {
 string VoteNetname(entity e)
 {
 	if(e) {
-		return e.netname;
+		if(cvar("sv_vote_showids")){
+			return strcat(e.netname, " ^6(#", ftos(num_for_edict(e)), ")");
+		}
+		else{
+			return e.netname;
+		}
 	} else {
 		if(cvar_string("sv_adminnick") != "") {
 			return cvar_string("sv_adminnick");
@@ -854,6 +874,11 @@ void VoteAccept() {
 	{
 		if(votecaller) {
 			votecaller.vote_master = 1;
+			string tmpMasterName = cvar_string("sv_vote_master_default_login");
+			if(votecaller.vote_mastername){
+				strunzone(votecaller.vote_mastername);
+			}
+			votecaller.vote_mastername = strzone(tmpMasterName);
 		}
 	} else {
 		localcmd(strcat(votecalledvote, "\n"));
