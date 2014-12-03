@@ -3459,6 +3459,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
                                     hud_sector_drawflag);
 
                 drawresetcliparea();
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
                 DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
             } else {
                 DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
