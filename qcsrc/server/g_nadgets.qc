@@ -1321,20 +1321,16 @@ void HG_Linker_Adept_Push(entity p) {
 
 void HG_Linker_Think() {
     entity p, e;
-    float denom, thealth, tarmor;
+    float denom, thealth, tarmor, sharefactor;
     
     if(!self.owner.iscreature || self.owner.team != self.team) {
         remove(self);
         return;
     }
     
-    /*
-    if(self.hg_adept) {
-        setorigin(self, self.owner.origin);
-    }
-    */
-    
-    if(time > self.hg_linker_nexteffect)
+    float sharingframe = (time > self.hg_linker_nexteffect);
+
+    if(sharingframe)
         self.buffs = 0;
     
     FOR_EACH_PLAYER(p) {
@@ -1349,21 +1345,21 @@ void HG_Linker_Think() {
                 p.hg_linker = self;
         }
         
+        if(sharingframe)
         if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-            if(time > self.hg_linker_nexteffect) {
-                ++denom;
-                thealth += p.health;
-                tarmor += p.armorvalue;
+            ++denom;
+            thealth += p.health;
+            tarmor += p.armorvalue;
                 
-                self.buffs |= p.buffs;
+            self.buffs |= p.buffs;
                 
-                if(time > p.hg_linker_effecttime) {
-                    FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
-                        te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
-                    }
+            if(time > p.hg_linker_effecttime) {
+                FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
+                    te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
                 }
-                p.hg_linker_effecttime = time;
             }
+
+            p.hg_linker_effecttime = time;
         }
         
         if(self.hg_adept)
@@ -1378,16 +1374,25 @@ void HG_Linker_Think() {
             if(p.classname != "bullet" && p.owner != self.owner && (!teams_matter || p.owner.team != self.team))
                 HG_Linker_Adept_Push(p);
         
-    if(time > self.hg_linker_nexteffect) {
+    if(sharingframe) {
         self.hg_linker_nexteffect = time + 1;
         
         if(denom >= 1) {
             if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
+            sharefactor = (g_clanarena? 1 : cvar("g_nadgets_linker_sharefactor"));
+
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
                 if(denom > 1) {
-                    float newhealth = thealth / denom;
-                    float newarmor = tarmor / denom;
+                    float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
+                    float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
                     
+                    if(self.hg_linker_hps) {
+                        float lim = g_balance_health_limit;
+                        if(g_clanarena)
+                            lim = min(lim, cvar("g_clanarena_heal_limit"));
+                        newhealth = newhealth + min(self.hg_linker_hps, max(0, lim - newhealth));
+                    }
+
                     Heal(p, self, self.owner,
                             max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, DEATH_LINKER_SHARE,
                             HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
@@ -1398,9 +1403,6 @@ void HG_Linker_Think() {
                     p.pauserothealth_finished = max(p.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
                     p.pauserotarmor_finished  = max(p.pauserotarmor_finished,  time + cvar("g_balance_pause_armor_rot"));
                 }
-                
-                if(self.hg_linker_hps)
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER, 0, 0, '0 0 0');
             }
         }
     }
