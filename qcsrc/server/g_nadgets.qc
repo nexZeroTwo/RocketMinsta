@@ -1061,6 +1061,10 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     entity plr, newtarget;
     
     damage *= cvar("g_nadgets_shield_damage_store_arc");
+
+    if(damage < 1)
+        return;
+
     shortest = cvar("g_nadgets_shield_damage_store_arc_range");
     newtarget = world;
     targ.buffs_arc_hit = TRUE;
