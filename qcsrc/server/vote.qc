@@ -254,7 +254,7 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		RemapVote_vote = GetKickVoteVictim_newcommand;
-		RemapVote_display = strcat("(^1", vote, " (^7", victim.netname, strcat(" ^6(#", ftos(num_for_edict(victim)),")"), "^1): ", GetKickVoteVictim_reason);
+		RemapVote_display = strcat("(^1", vote, " (^7", VoteNetname(victim), "^1): ", GetKickVoteVictim_reason);
 	}
 	else if(argv(0) == "config" || argv(0) == "rmcustom")
 	{
@@ -525,7 +525,7 @@ float GameCommand_Vote(string s, entity e) {
 							e.vote_vote = 1; // of course you vote yes
 							e.vote_next = time + cvar("sv_vote_wait");
 						}
-                        tmp = strcat("^2* ^3", VoteNetname(votecaller), "^6 (#", ftos(num_for_edict(votecaller)), ")",  "^2 calls a vote for ", votecalledvote_display);
+                        tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote for ", votecalledvote_display);
 						bprint("\{1}", tmp, "\n");
                         IRC_Announce_Vote(tmp);
 						if(cvar("sv_eventlog"))
@@ -571,7 +571,7 @@ float GameCommand_Vote(string s, entity e) {
 						e.vote_vote = 1; // of course you vote yes
 						e.vote_next = time + cvar("sv_vote_wait");
 					}
-                    tmp = strcat("^2* ^3", VoteNetname(votecaller), " ^6(#", ftos(num_for_edict(votecaller)), ")", "^2 calls a vote to become ^3master^2");
+                    tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote to become ^3master^2");
 					bprint("\{1}", tmp, "\n");
                     IRC_Announce_Vote(tmp);
 					if(cvar("sv_eventlog"))
@@ -591,7 +591,7 @@ float GameCommand_Vote(string s, entity e) {
 				} else if(VoteCheckNasty(dovote)) {
 					print_to(e, "Syntax error in command. See 'vhelp' for more info.");
 				} else if(RemapVote(dovote, "vdo", e)) { // strcat seems to be necessary
-                    tmp = strcat("^2* ^3", VoteNetname(e), strcat(" ^6(#", ftos(num_for_edict(e)), ")"), "^2 used his ^3", e.vote_mastername, "^2 status to do ^2", RemapVote_display, "^2");
+                    tmp = strcat("^2* ^3", VoteNetname(e), "^2 used his ^3", e.vote_mastername, "^2 status to do ^2", RemapVote_display, "^2");
 					bprint("\{1}", tmp, "\n");
                     IRC_Announce_Vote(tmp);
 					if(cvar("sv_eventlog"))
@@ -749,7 +749,12 @@ void VoteHelp(entity e) {
 string VoteNetname(entity e)
 {
 	if(e) {
-		return e.netname;
+		if(cvar("sv_vote_showids")){
+			return strcat(e.netname, " ^6(#", ftos(num_for_edict(e)), ")");
+		}
+		else{
+			return e.netname;
+		}
 	} else {
 		if(cvar_string("sv_adminnick") != "") {
 			return cvar_string("sv_adminnick");
@@ -862,14 +867,18 @@ void VoteReset() {
 }
 
 void VoteAccept() {
-    string tmp = strcat("^2* ^3", VoteNetname(votecaller), " ^6(#", ftos(num_for_edict(votecaller)), ")", "^2's vote for ^1", votecalledvote_display, "^2 was accepted");
+    string tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2's vote for ^1", votecalledvote_display, "^2 was accepted");
 	bprint("\{1}", tmp, "\n");
     IRC_Announce_Vote(tmp);
 	if(votecalledmaster)
 	{
 		if(votecaller) {
 			votecaller.vote_master = 1;
-			votecaller.vote_mastername = cvar_string("sv_vote_master_default_login");
+			string tmpMasterName = cvar_string("sv_vote_master_default_login");
+			if(votecaller.vote_mastername){
+				strunzone(votecaller.vote_mastername);
+			}
+			votecaller.vote_mastername = strzone(tmpMasterName);
 		}
 	} else {
 		localcmd(strcat(votecalledvote, "\n"));
@@ -882,7 +891,7 @@ void VoteAccept() {
 }
 
 void VoteReject() {
-	string tmp = strcat("^2* ^3", VoteNetname(votecaller), " ^6(#", ftos(num_for_edict(votecaller)), ")", "^2's vote for ", votecalledvote_display, "^2 was rejected");
+	string tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 was rejected");
 	bprint("\{1}", tmp, "\n");
     IRC_Announce_Vote(tmp);
 	VoteReset();
@@ -890,7 +899,7 @@ void VoteReject() {
 }
 
 void VoteTimeout() {
-	string tmp = strcat("^2* ^3", VoteNetname(votecaller), " ^6(#", ftos(num_for_edict(votecaller)), ")", "^2's vote for ", votecalledvote_display, "^2 timed out");
+	string tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2's vote for ", votecalledvote_display, "^2 timed out");
 	bprint("\{1}", tmp, "\n");
     IRC_Announce_Vote(tmp);
 	VoteReset();
@@ -898,9 +907,7 @@ void VoteTimeout() {
 }
 
 void VoteStop(entity stopper) {
-	string stopperid = strcat(" ^6(#", ftos(num_for_edict(stopper)), ")");
-	string callerid = strcat(" ^6(#", ftos(num_for_edict(votecaller)), ")");
-	string tmp = strcat("^2* ^3", VoteNetname(stopper), stopperid, "^2 stopped ^3", VoteNetname(votecaller), callerid , "^2's vote");
+	string tmp = strcat("^2* ^3", VoteNetname(stopper), "^2 stopped ^3", VoteNetname(votecaller), "^2's vote");
 	bprint("\{1}", tmp, "\n");
     IRC_Announce_Vote(tmp);
 	if(cvar("sv_eventlog"))
