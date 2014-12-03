@@ -54,6 +54,7 @@ entity GetKickVoteVictim(string vote, string cmd, entity caller)
 	
 	if(argv(0) == "pointkick") {
 		e = caller.cursor_trace_ent;
+        ParseCommandPlayerSlotTarget_firsttoken = 1;
 	}
 	else {
 		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
@@ -254,7 +255,9 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		RemapVote_vote = GetKickVoteVictim_newcommand;
-		RemapVote_display = strcat("(^1", vote, " (^7", VoteNetname(victim), "^1): ", GetKickVoteVictim_reason);
+		RemapVote_display = strcat("^1", vote, " (^7", VoteNetname(victim), "^1)");
+        if(GetKickVoteVictim_reason != "")
+            RemapVote_display = strcat(RemapVote_display, ": ", GetKickVoteVictim_reason);
 	}
 	else if(argv(0) == "config" || argv(0) == "rmcustom")
 	{
