@@ -1400,8 +1400,8 @@ void HG_Linker_Think() {
                     p.health = newhealth;
                     p.armorvalue = newarmor;
                 } else {
-                    p.pauserothealth_finished = max(p.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
-                    p.pauserotarmor_finished  = max(p.pauserotarmor_finished,  time + cvar("g_balance_pause_armor_rot"));
+                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER,
+                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
                 }
             }
         }
