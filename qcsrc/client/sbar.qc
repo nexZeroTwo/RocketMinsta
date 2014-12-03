@@ -3349,7 +3349,7 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 	}
 }
 
-void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector, vector c_sector, vector c_border, float a_sector, float a_border, vector c_sector_p, vector c_border_p, float a_sector_p, float a_border_p, float sector_alphamod, float hud_sector_drawflag) {
+void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector, vector c_sector, vector c_border, float a_sector, float a_border, vector c_sector_p, vector c_border_p, float a_sector_p, float a_border_p, float sector_alphamod, float hud_sector_drawflag, float transition) {
     float invert;
     float overcharge;
 
@@ -3366,10 +3366,24 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
     if(prog <= 0.01)
         prog = 0;
     
+    float prog_bgalpha = hudskin_progress_bgalpha;
+
+    if(transition) {
+        float t1 = transition;
+        float t2 = (1 - transition);
+
+        c_sector = c_sector * t1 + c_sector_p * t2;
+        c_border = c_border * t1 + c_border_p * t2;
+        a_sector = a_sector * t1 + a_sector_p * t2;
+        a_border = a_border * t1 + a_border_p * t2;
+
+        prog_bgalpha = prog_bgalpha + t2 * (1 - prog_bgalpha);
+    }
+
     switch(hudskin_progress_mode) {
         case 0: { // Use the whole sector as both the background and the bar
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * prog_bgalpha, c_sector, hud_sector_drawflag);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * prog_bgalpha, c_border);
 
             if(overcharge) {
                 DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
@@ -3401,7 +3415,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
         
         case 1: { // Use the border for progressbar, rest as background
             DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod, c_sector, hud_sector_drawflag);
-            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+            DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * prog_bgalpha, c_border);
 
             if(overcharge)
                 DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
@@ -3423,7 +3437,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
         }
         
         case 2: { // Draw border with full opacity, use the rest as progressbar
-            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * hudskin_progress_bgalpha, c_sector, hud_sector_drawflag);
+            DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector * sector_alphamod * prog_bgalpha, c_sector, hud_sector_drawflag);
             if(overcharge)
                 DrawHUDLineSector(hud_sector_pos, hud_sector, a_sector_p * sector_alphamod, c_sector_p, hud_sector_drawflag);
 
@@ -3459,10 +3473,10 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
                                     hud_sector_drawflag);
 
                 drawresetcliparea();
-                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * prog_bgalpha, c_border);
                 DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
             } else {
-                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * hudskin_progress_bgalpha, c_border);
+                DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border * sector_alphamod * prog_bgalpha, c_border);
                 GetSectorBorderClipArea(hud_sector_pos, hud_sector);
                 drawsetcliparea(sector_clip_pos_x + sector_clip_size_x * (1-prog) * invert, sector_clip_pos_y, sector_clip_size_x * prog, sector_clip_size_y);
                 DrawHUDLineSectorBorder(hud_sector_pos, hud_sector, a_border_p * sector_alphamod, c_border_p);
@@ -4581,19 +4595,6 @@ void Sbar_Draw(void)
             vector mxdmg = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
             vhealth += (min(mxdmg_x + 1, sv_nicehealth * 2) - vhealth) * frametime * 10;
 
-            vector hg_bg_s, hg_bg_b;
-            float  hg_al_s, hg_al_b;
-
-            if(g_nadgets) {
-                float a1 = bound(0, time - hg_nadecount_update, 1);
-                float a2 = 1 - a1;
-
-                hg_bg_s = BG_SECTOR * a1 + BG_SECTOR_PROGRESS * a2;
-                hg_bg_b = BG_BORDER * a1 + BG_BORDER_PROGRESS * a2;
-                hg_al_s = A_SECTOR  * a1 + A_SECTOR_PROGRESS  * a2;
-                hg_al_b = A_BORDER  * a1 + A_BORDER_PROGRESS  * a2;
-            }
-
 			if(rm_althud)	/// RM hud layout
 			{
 				if(hudskin_line_full)
@@ -4630,7 +4631,7 @@ void Sbar_Draw(void)
                 DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 2), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, 0);
 
 				// healtharmor | ammo
 				HUDLINE_SLICE({
@@ -4648,7 +4649,7 @@ void Sbar_Draw(void)
                     DrawProgressBarSector(bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, 0);
 				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
 				
                 if(g_nadgets) if(ammosector_pos + (SECWIDTH_NORMAL + sector_gap) * 2 < bottomright_x - sector_sgap - sector_gap - SECWIDTH_NORMAL * 2) {
@@ -4665,9 +4666,9 @@ void Sbar_Draw(void)
                     sector_alphamod = 1;
 
                     DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
-                                            hg_bg_s, hg_bg_b, hg_al_s, hg_al_b,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, bound(0, time - hg_nadecount_update, 1));
 
                     thlimit = hud_sector_pos_x + hud_sector_x + sector_gap;
                 }
@@ -4858,7 +4859,7 @@ void Sbar_Draw(void)
                     DrawProgressBarSector(-bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, 0);
 				else { HUDLINE_SECTOR({}, BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER) }
                 
 				// ammo | health-armor
@@ -4881,7 +4882,7 @@ void Sbar_Draw(void)
                 DrawProgressBarSector(bound(0.01, vhealth/sv_nicehealth, 2), hud_sector_pos, hud_sector,
                                             BG_SECTOR_TEAM, BG_BORDER_TEAM, A_SECTOR_TEAM, A_BORDER_TEAM,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, 0);
                 
 				// health-armor | nades
 				HUDLINE_SLICE({
@@ -4898,9 +4899,9 @@ void Sbar_Draw(void)
                     sector_alphamod = 1;
                         
                     DrawProgressBarSector(1-hgregen, hud_sector_pos, hud_sector,
-                                            hg_bg_s, hg_bg_b, hg_al_s, hg_al_b,
+                                            BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                            sector_alphamod, hud_sector_drawflag);
+                                            sector_alphamod, hud_sector_drawflag, bound(0, time - hg_nadecount_update, 1));
 				}
 				else
 				{
@@ -4951,7 +4952,7 @@ void Sbar_Draw(void)
             DrawProgressBarSector(0.5 * sin(time * 1.5) + 0.5, hud_sector_pos, hud_sector,
                                     BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                     BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
-                                    sector_alphamod, hud_sector_drawflag);
+                                    sector_alphamod, hud_sector_drawflag, 0);
             */
 		}
 
