@@ -661,14 +661,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         }
     }
 	
-	if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
-		if(DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE) && deathtype & HITTYPE_SECONDARY){
+	if(cvar("g_balance_campingrifle_hitstreaks_bothmodes")){
+		if(DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE)){
 			attacker.campingrifle_hitstreak += 1;
 			attacker.campingrifle_laststreak = time;
 		}
 	}
-	
-    
+	else if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
+		if(DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE) && (deathtype & HITTYPE_SECONDARY)) {
+			attacker.campingrifle_hitstreak += 1;
+			attacker.campingrifle_laststreak = time;
+		}
+	}
+	if(cvar("g_balance_campingrifle_primary_hitstreaks")){
+		if(DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE)){
+			attacker.campingrifle_primary_hitstreak += 1;
+			attacker.campingrifle_primary_laststreak = time;
+
+		}
+	}
+
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)
     if(deathtype != DEATH_TEAMCHANGE)
