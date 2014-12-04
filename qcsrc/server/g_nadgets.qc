@@ -50,7 +50,6 @@ void HG_Precache() {
     precache_sound(RM_SOUND_LASER_SECONDARY);
     precache_model("models/mine.md3");
     precache_model("models/ctf/shield.md3");
-    precache_model("models/shield_inner.md3");
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float allowOptout) {
@@ -1062,6 +1061,10 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     entity plr, newtarget;
     
     damage *= cvar("g_nadgets_shield_damage_store_arc");
+
+    if(damage < 1)
+        return;
+
     shortest = cvar("g_nadgets_shield_damage_store_arc_range");
     newtarget = world;
     targ.buffs_arc_hit = TRUE;
@@ -1220,6 +1223,8 @@ void HG_Shield(float hgtype) {
         setmodel(e, "models/ctf/shield.md3");
         e.scale = 0.5;
         e.hg_adept = adept;
+        e.skin = 10 + !!adept;
+        e.exteriormodeltoclient = self;
         setsize(e, e.scale * e.mins, e.scale * e.maxs);
         
         self.hg_shieldmodel = e;
@@ -1258,6 +1263,8 @@ void HG_Shield_Frame(void) {
 
 void HG_Cloak(float hgtype) {
     self.hg_stealth = self.hg_stealth + cvar("g_nadgets_cloak_duration") * Buffs_NadgetPower(self);
+    self.fire_endtime = 0;
+    self.hg_stealth_protectionexpiretime = time + cvar("g_nadgets_cloak_damagereduction_time");
     pointparticles(particleeffectnum("smoke_ring"), self.origin + self.maxs_z * '0 0 0.5', '0 0 0', 10);
     sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
 }
@@ -1275,6 +1282,7 @@ void HG_Cloak_Trigger(void) {
         sound(self, CHAN_AUTO, "misc/stealth.wav", VOL_BASE, ATTN_NORM);
         self.hg_stealth = self.hg_stealth_saved;
         self.hg_stealth_saved = 0;
+        self.fire_endtime = 0;
     }
 }
 
@@ -1313,22 +1321,16 @@ void HG_Linker_Adept_Push(entity p) {
 
 void HG_Linker_Think() {
     entity p, e;
-    float denom, thealth, tarmor;
+    float denom, thealth, tarmor, sharefactor;
     
     if(!self.owner.iscreature || self.owner.team != self.team) {
-        remove(self.enemy);
         remove(self);
         return;
     }
     
-    /*
-    if(self.hg_adept) {
-        setorigin(self, self.owner.origin);
-        setorigin(self.enemy, self.origin);
-    }
-    */
-    
-    if(time > self.hg_linker_nexteffect)
+    float sharingframe = (time > self.hg_linker_nexteffect);
+
+    if(sharingframe)
         self.buffs = 0;
     
     FOR_EACH_PLAYER(p) {
@@ -1343,21 +1345,21 @@ void HG_Linker_Think() {
                 p.hg_linker = self;
         }
         
+        if(sharingframe)
         if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-            if(time > self.hg_linker_nexteffect) {
-                ++denom;
-                thealth += p.health;
-                tarmor += p.armorvalue;
+            ++denom;
+            thealth += p.health;
+            tarmor += p.armorvalue;
                 
-                self.buffs |= p.buffs;
+            self.buffs |= p.buffs;
                 
-                if(time > p.hg_linker_effecttime) {
-                    FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
-                        te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
-                    }
+            if(time > p.hg_linker_effecttime) {
+                FOR_EACH_PLAYER(e) if(e != p) if(e.hg_linker == self) if(time > e.hg_linker_effecttime) IF_HG_LINKER_APPLICABLE(e) {
+                    te_csqc_lightningarc(p.origin, e.origin, FALSE, e.team);
                 }
-                p.hg_linker_effecttime = time;
             }
+
+            p.hg_linker_effecttime = time;
         }
         
         if(self.hg_adept)
@@ -1365,21 +1367,32 @@ void HG_Linker_Think() {
                 HG_Linker_Adept_Push(p);
     }
     
+    self.buffs &~= cvar("g_nadgets_linker_sharedbuffs_banmask");
+
     if(self.hg_adept)
         for(p = findchainflags(flags, FL_PROJECTILE); p; p = p.chain)
             if(p.classname != "bullet" && p.owner != self.owner && (!teams_matter || p.owner.team != self.team))
                 HG_Linker_Adept_Push(p);
         
-    if(time > self.hg_linker_nexteffect) {
+    if(sharingframe) {
         self.hg_linker_nexteffect = time + 1;
         
         if(denom >= 1) {
             if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
+            sharefactor = (g_clanarena? 1 : cvar("g_nadgets_linker_sharefactor"));
+
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
                 if(denom > 1) {
-                    float newhealth = thealth / denom;
-                    float newarmor = tarmor / denom;
+                    float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
+                    float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
                     
+                    if(self.hg_linker_hps) {
+                        float lim = g_balance_health_limit;
+                        if(g_clanarena)
+                            lim = min(lim, cvar("g_clanarena_heal_limit"));
+                        newhealth = newhealth + min(self.hg_linker_hps, max(0, lim - newhealth));
+                    }
+
                     Heal(p, self, self.owner,
                             max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, DEATH_LINKER_SHARE,
                             HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
@@ -1387,12 +1400,9 @@ void HG_Linker_Think() {
                     p.health = newhealth;
                     p.armorvalue = newarmor;
                 } else {
-                    p.pauserothealth_finished = max(p.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
-                    p.pauserotarmor_finished  = max(p.pauserotarmor_finished,  time + cvar("g_balance_pause_armor_rot"));
+                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER,
+                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
                 }
-                
-                if(self.hg_linker_hps)
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER, 0, 0, '0 0 0');
             }
         }
     }
@@ -1400,19 +1410,16 @@ void HG_Linker_Think() {
     self.alpha = bound(0, (self.cnt - time) * 2, 1);
     
     if(self.alpha == 0) {
-        remove(self.enemy);
         remove(self);
         return;
     }
     
     self.alpha = max(0.01, self.alpha * bound(0, (time - self.spawntime) * 2, 1));
-    self.enemy.alpha = self.alpha * 0.5;
     self.glow_size = self.hg_linker_range * self.alpha * 3;
     self.nextthink = time;
 }
 
 void HG_Linker_MEODP_Death(entity attacker, entity inflictor) {
-    remove(self.enemy);
     remove(self);
 }
 
@@ -1425,7 +1432,7 @@ void HG_Linker(float hgtype) {
     e.nextthink = time;
     e.spawntime = time;
     e.reset = SUB_Remove;
-    e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
+    e.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION | EF_DOUBLESIDED;
     e.gravity = 100;
     e.hg_linker_range = GRENVAR(hgtype, "range");
     e.hg_linker_factor = GRENVAR(hgtype, "damagefactor");
@@ -1434,31 +1441,22 @@ void HG_Linker(float hgtype) {
     e.cnt = time + GRENVAR(hgtype, "duration") * Buffs_NadgetPower(self);
     e.alpha = 0.01;
     setmodel(e, "models/ctf/shield.md3");
-    if(e.team) e.skin = TeamColorSkin(e.team);
     e.scale = e.hg_linker_range / e.maxs_x;
     e.glow_color = 0xF5;
     e.hg_adept = Buffs_BuffPower(self, BUFF_ADEPT);
     e.movetype = MOVETYPE_TOSS;
+
+    if(e.team)
+        e.skin = TeamColorSkin(e.team);
+
+    if(e.hg_adept)
+        e.skin += 5;
+
     setorigin(e, self.origin + self.view_ofs);
-    
-    e.enemy = spawn();
-    e.enemy.owner = e;
-    e.enemy.effects = e.effects;
-    //e.enemy.colormod = TeamColor(e.team);
-    e.enemy.movetype = e.movetype;
-    e.enemy.scale = e.scale;
-    e.enemy.reset = SUB_Remove;
-    e.enemy.alpha = e.alpha;
-    e.enemy.skin = e.skin;
-    e.enemy.gravity = e.gravity;
-    setmodel(e.enemy, "models/shield_inner.md3");
-    setorigin(e.enemy, e.origin);
-    
     setsize(e, '-32 -32 0', '32 32 32');
-    setsize(e.enemy, '-32 -32 0', '32 32 32');
     
     Buffs_MEODP_Point_Attach(e, HG_Linker_MEODP_Death);
-    
+
     sound(e, CHAN_PROJECTILE, "misc/powerup.wav", 1, 1.5);
 }
 

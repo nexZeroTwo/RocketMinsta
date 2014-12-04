@@ -1156,33 +1156,38 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
         
         damage_origtarget = targ;
-        if(targ.hg_linker && (deathtype != HG_TRANSLOC || cvar("g_nadgets_transloc_damage")) && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype))
+        if(targ.hg_linker)
+        if((deathtype != HG_TRANSLOC || cvar("g_nadgets_transloc_damage")) && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype))
         IF_HG_LINKER_APPLICABLE(targ) {
             if(teams_matter && targ.team == attacker.team)
                 return;
             
-            damage_linkmode = TRUE;
-            entity e, linklist = findchainentity(hg_linker, targ.hg_linker);
-            float denom;
-            
-            for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e)
-                ++denom;
-            
-            if(denom) for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e) {
-                float d = damage / denom;
+            if(cvar("g_nadgets_linker_split_damage")) {
+                damage_linkmode = TRUE;
+                entity e, linklist = findchainentity(hg_linker, targ.hg_linker);
+                float denom;
                 
-                if(e != targ)
-                    te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
+                for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e)
+                    ++denom;
+                
+                if(denom) for(e = linklist; e; e = e.chain) IF_HG_LINKER_APPLICABLE(e) {
+                    float d = damage / denom;
                     
-                damage_origtarget = e;
-                Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
+                    if(e != targ)
+                        te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
+                        
+                    damage_origtarget = e;
+                    Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
+                    
+                    if(targ.hg_linker.owner.scorekeeper)
+                        HealScore(targ, targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
+                }
                 
-                if(targ.hg_linker.owner.scorekeeper)
-                    HealScore(targ, targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
+                damage_linkmode = FALSE;
+                return;
+            } else {
+                damage = damage * targ.hg_linker.hg_linker_factor;
             }
-            
-            damage_linkmode = FALSE;
-            return;
         }
     }
 

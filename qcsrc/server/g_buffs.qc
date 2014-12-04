@@ -341,7 +341,7 @@ void Buffs_SetTeamWaypoint(entity plr, string txt, vector clr, float btype) {
     
     if(!wp) {
         wp = WaypointSprite_Spawn(txt, 0, 0, plr, '0 0 120', world, plr.team, plr, buff_teamwp, TRUE);
-        wp.buff_waypoint.waypointsprite_visible_for_player = Buffs_TeamWaypoint_VisibleForPlayer;
+        wp.waypointsprite_visible_for_player = Buffs_TeamWaypoint_VisibleForPlayer;
     } else
         WaypointSprite_UpdateSprites(wp, txt, "", "");
     
@@ -1180,6 +1180,7 @@ BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
 BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
 BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
 BUFF_SPAWNFUNCS(adept,      BUFF_ADEPT)
+BUFF_SPAWNFUNCS(meodp,      BUFF_MEODP)
 BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 // older RM compatibility
