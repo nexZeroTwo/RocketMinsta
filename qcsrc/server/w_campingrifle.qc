@@ -165,12 +165,6 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 		SpawnCasing (((random () * 50 + 50) * v_right) - (v_forward * (random () * 25 + 25)) - ((random () * 5 - 70) * v_up), 2, vectoangles(v_forward),'0 250 0', 100, 3, self);
 	
 	self.campingrifle_bulletcounter = max(0, self.campingrifle_bulletcounter - cost);
-	if("g_balance_campingrifle_lowammowarning") {
-		if(self.campingrifle_bulletcounter == cvar("g_balance_campingrifle_lowammowarning_remainingmagazine")) {
-			bigprint_spec(self, "Low ammo warning!", "", 3);
-			sound(self, CHAN_TRIGGER, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
-		}
-	}
 	W_CampingRifle_CheckMaxBullets();
 }
 
