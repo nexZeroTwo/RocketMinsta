@@ -1934,6 +1934,10 @@ float HG_RegenLimit(entity plr) {
 
     if(Buffs_BuffPower(plr, BUFF_ADEPT))
         mx += GRENVAR(plr.hg_type, "adept_regen_limit_extend");
+
+    float supply = Buffs_BuffPower(plr, BUFF_SUPPLY);
+    if(supply)
+        mx += cvar("g_buffs_supply_hg_extra_regen_limit") * rint(supply);
     
     return mx;
 }
