@@ -1894,8 +1894,15 @@ void HG_Attack()
     self.cdfield = time + GV("cooldown") * cdmul;
 
     if(!freebonus) {
-        self.hg_ammo -= used;
-        HG_SetRegenTime(self, HG_RegenTime(self));
+        if(cvar("g_nadgets_regen_compensate")) {
+            float oregen = HG_RegenTime(self);
+            self.hg_ammo -= used;
+            self.hg_maxregentime = HG_RegenTime(self);
+            self.hg_regentime = self.hg_regentime - oregen + self.hg_maxregentime;
+        } else {
+            self.hg_ammo -= used;
+            HG_SetRegenTime(self, HG_RegenTime(self));
+        }
     } else {
         self.hg_next = min(self.hg_bonus_next, time + GRENVAR(self.hg_type, "cooldown") * cdmul);
     }
