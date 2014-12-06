@@ -252,7 +252,7 @@ void JB_Imprison(entity attacker) {
         bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
         
         if(g_nadgets) {
-            if(!cvar("g_nadgets_regen_time"))
+            if(!cvar("g_nadgets_regen"))
                 self.hg_ammo = 0;
             self.hg_bonus = 0;
         }
@@ -295,7 +295,7 @@ void JB_Release(entity saviour) {
     }
     
 	if(g_nadgets)
-    if(!cvar("g_nadgets_regen_time"))
+    if(!cvar("g_nadgets_regen"))
 		HG_PlayerSpawn();
 	
     PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);

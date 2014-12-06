@@ -726,7 +726,11 @@ void HG_Remote_Stick() {
 }
 
 float HG_RegenTime(entity e) {
-    return cvar("g_nadgets_regen_time") + pow(e.hg_ammo, cvar("g_nadgets_regen_power")) * cvar("g_nadgets_regen_time") * cvar("g_nadgets_regen_factor");
+    float base      = GRENVAR(e.hg_type, "regen_time");
+    float exponent  = GRENVAR(e.hg_type, "regen_exponent");
+    float factor    = GRENVAR(e.hg_type, "regen_factor");
+
+    return base * (1 + pow(e.hg_ammo, exponent) * factor);
 }
 
 void HG_SetRegenTime(entity e, float t) {
@@ -1916,12 +1920,14 @@ void HG_UpdateDetonables() {
 float HG_RegenLimit(entity plr) {
     float mx = 0;
     
+    mx = GRENVAR(plr.hg_type, "regen_limit");
+
+    if(mx < 1)
+        return 0;
+
     if(Buffs_BuffPower(plr, BUFF_ADEPT))
-        mx = GRENVAR(plr.hg_type, "adept_stacklimit");
+        mx += GRENVAR(plr.hg_type, "adept_regen_limit_extend");
     
-    if(mx <= 0) mx = GRENVAR(plr.hg_type, "stacklimit");
-    if(mx <= 0) mx = cvar("g_nadgets_regen_max");
-    if(mx <= 0) mx = cvar("g_nadgets_ammo");
     return mx;
 }
 
@@ -1987,15 +1993,15 @@ void HG_Frame()
 	
 	self.hg_state = held;
     
-    if(cvar("g_nadgets_regen_time")) {
+    if(cvar("g_nadgets_regen")) {
         float mx = HG_RegenLimit(self);
         float dpause = cvar("g_nadgets_regen_damagepause") * Buffs_NadgetRegenDmgPause(self);
         
-        self.hg_regenrate = GRENVAR(self.hg_type, "regenscale");
+        self.hg_regenrate = GRENVAR(self.hg_type, "regen_scale");
         dpause = min(dpause, dpause / self.hg_regenrate);
         self.hg_regenpaused = (self.hg_stealth || self.hg_stealth_saved || (time - self.lastdamage <= dpause));
         
-        if(self.hg_ammo < mx) {
+        if(self.hg_ammo < mx || !mx) {
             if(!self.hg_regenpaused) {
                 if(g_freeze && self.frozen)
                     self.hg_regenrate *= cvar("g_nadgets_regen_frozenfactor");

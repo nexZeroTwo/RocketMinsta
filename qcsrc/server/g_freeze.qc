@@ -202,7 +202,7 @@ void Freeze_UnfreezePlayer(entity plr)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
     if(g_nadgets) {
-        if(cvar("g_nadgets_regen_time")) {
+        if(cvar("g_nadgets_regen")) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }

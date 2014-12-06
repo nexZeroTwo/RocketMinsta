@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cvars="$(dirname "$0")"/cvars.compat
+cvars="$(readlink -f "$(dirname "$0")"/cvars.compat)"
 cd "$(dirname "$0")/../../.."
 
 function gen-qc {

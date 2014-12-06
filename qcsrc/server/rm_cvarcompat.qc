@@ -1495,43 +1495,13 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_regen_time ---> g_nadgets_regen_time
+	// g_handgrenades_regen_time ---> g_nadgets_regen
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_regen_time") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_regen_time^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_regen_time^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_regen_time", cvar_string("g_handgrenades_regen_time"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_regen_time^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_regen^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_regen", cvar_string("g_handgrenades_regen_time"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_regen_time", "__COMPATVAR_DISABLED__");
-		++corrections;
-	}
-	
-	// g_handgrenades_regen_factor ---> g_nadgets_regen_factor
-	
-	if COMPATVAR_ACTIVE("g_handgrenades_regen_factor") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_regen_factor^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_regen_factor^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_regen_factor", cvar_string("g_handgrenades_regen_factor"));
-		if(mode == 2)
-			cvar_set("g_handgrenades_regen_factor", "__COMPATVAR_DISABLED__");
-		++corrections;
-	}
-	
-	// g_handgrenades_regen_power ---> g_nadgets_regen_power
-	
-	if COMPATVAR_ACTIVE("g_handgrenades_regen_power") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_regen_power^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_regen_power^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_regen_power", cvar_string("g_handgrenades_regen_power"));
-		if(mode == 2)
-			cvar_set("g_handgrenades_regen_power", "__COMPATVAR_DISABLED__");
-		++corrections;
-	}
-	
-	// g_handgrenades_regen_max ---> g_nadgets_regen_max
-	
-	if COMPATVAR_ACTIVE("g_handgrenades_regen_max") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_regen_max^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_regen_max^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_regen_max", cvar_string("g_handgrenades_regen_max"));
-		if(mode == 2)
-			cvar_set("g_handgrenades_regen_max", "__COMPATVAR_DISABLED__");
 		++corrections;
 	}
 	
@@ -1825,11 +1795,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_normal_regenscale ---> g_nadgets_normal_regenscale
+	// g_handgrenades_normal_regenscale ---> g_nadgets_normal_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_normal_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_normal_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_normal_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_normal_regenscale", cvar_string("g_handgrenades_normal_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_normal_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_normal_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_normal_regen_scale", cvar_string("g_handgrenades_normal_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_normal_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -2175,11 +2145,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_remote_regenscale ---> g_nadgets_remote_regenscale
+	// g_handgrenades_remote_regenscale ---> g_nadgets_remote_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_remote_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_remote_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_remote_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_remote_regenscale", cvar_string("g_handgrenades_remote_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_remote_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_remote_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_remote_regen_scale", cvar_string("g_handgrenades_remote_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_remote_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -2625,11 +2595,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_plasma_regenscale ---> g_nadgets_plasma_regenscale
+	// g_handgrenades_plasma_regenscale ---> g_nadgets_plasma_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_plasma_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_plasma_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_plasma_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_plasma_regenscale", cvar_string("g_handgrenades_plasma_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_plasma_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_plasma_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_plasma_regen_scale", cvar_string("g_handgrenades_plasma_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_plasma_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -2995,11 +2965,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_napalm_regenscale ---> g_nadgets_napalm_regenscale
+	// g_handgrenades_napalm_regenscale ---> g_nadgets_napalm_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_napalm_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_napalm_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_napalm_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_napalm_regenscale", cvar_string("g_handgrenades_napalm_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_napalm_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_napalm_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_napalm_regen_scale", cvar_string("g_handgrenades_napalm_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_napalm_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3285,11 +3255,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_transloc_regenscale ---> g_nadgets_transloc_regenscale
+	// g_handgrenades_transloc_regenscale ---> g_nadgets_transloc_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_transloc_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_transloc_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_transloc_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_transloc_regenscale", cvar_string("g_handgrenades_transloc_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_transloc_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_transloc_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_transloc_regen_scale", cvar_string("g_handgrenades_transloc_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_transloc_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3335,11 +3305,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_shield_regenscale ---> g_nadgets_shield_regenscale
+	// g_handgrenades_shield_regenscale ---> g_nadgets_shield_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_shield_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_shield_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_shield_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_shield_regenscale", cvar_string("g_handgrenades_shield_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_shield_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_shield_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_shield_regen_scale", cvar_string("g_handgrenades_shield_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_shield_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3525,11 +3495,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_linker_regenscale ---> g_nadgets_linker_regenscale
+	// g_handgrenades_linker_regenscale ---> g_nadgets_linker_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_linker_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_linker_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_linker_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_linker_regenscale", cvar_string("g_handgrenades_linker_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_linker_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_linker_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_linker_regen_scale", cvar_string("g_handgrenades_linker_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_linker_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3785,11 +3755,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_laser_regenscale ---> g_nadgets_laser_regenscale
+	// g_handgrenades_laser_regenscale ---> g_nadgets_laser_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_laser_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_laser_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_laser_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_laser_regenscale", cvar_string("g_handgrenades_laser_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_laser_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_laser_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_laser_regen_scale", cvar_string("g_handgrenades_laser_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_laser_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3815,11 +3785,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_cloak_regenscale ---> g_nadgets_cloak_regenscale
+	// g_handgrenades_cloak_regenscale ---> g_nadgets_cloak_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_cloak_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_cloak_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_cloak_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_cloak_regenscale", cvar_string("g_handgrenades_cloak_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_cloak_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_cloak_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_cloak_regen_scale", cvar_string("g_handgrenades_cloak_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_cloak_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3925,11 +3895,11 @@ void RM_CvarCompat() {
 		++corrections;
 	}
 	
-	// g_handgrenades_gg_regenscale ---> g_nadgets_gg_regenscale
+	// g_handgrenades_gg_regenscale ---> g_nadgets_gg_regen_scale
 	
 	if COMPATVAR_ACTIVE("g_handgrenades_gg_regenscale") {
-		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_gg_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_gg_regenscale^7, but no stability is guaranteed at this point!\n");
-		cvar_set("g_nadgets_gg_regenscale", cvar_string("g_handgrenades_gg_regenscale"));
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_handgrenades_gg_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_gg_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_gg_regen_scale", cvar_string("g_handgrenades_gg_regenscale"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_gg_regenscale", "__COMPATVAR_DISABLED__");
 		++corrections;
@@ -3952,6 +3922,216 @@ void RM_CvarCompat() {
 		cvar_set("g_nadgets_gg_damage", cvar_string("g_handgrenades_gg_damage"));
 		if(mode == 2)
 			cvar_set("g_handgrenades_gg_damage", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_normal_regenscale ---> g_nadgets_normal_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_normal_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_normal_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_normal_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_normal_regen_scale", cvar_string("g_nadgets_normal_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_normal_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_remote_regenscale ---> g_nadgets_remote_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_remote_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_remote_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_remote_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_remote_regen_scale", cvar_string("g_nadgets_remote_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_remote_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_plasma_regenscale ---> g_nadgets_plasma_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_plasma_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_plasma_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_plasma_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_plasma_regen_scale", cvar_string("g_nadgets_plasma_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_plasma_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_napalm_regenscale ---> g_nadgets_napalm_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_napalm_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_napalm_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_napalm_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_napalm_regen_scale", cvar_string("g_nadgets_napalm_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_napalm_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_transloc_regenscale ---> g_nadgets_transloc_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_transloc_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_transloc_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_transloc_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_transloc_regen_scale", cvar_string("g_nadgets_transloc_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_transloc_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_shield_regenscale ---> g_nadgets_shield_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_shield_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_shield_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_shield_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_shield_regen_scale", cvar_string("g_nadgets_shield_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_shield_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_linker_regenscale ---> g_nadgets_linker_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_linker_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_linker_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_linker_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_linker_regen_scale", cvar_string("g_nadgets_linker_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_linker_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_laser_regenscale ---> g_nadgets_laser_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_laser_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_laser_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_laser_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_laser_regen_scale", cvar_string("g_nadgets_laser_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_laser_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_cloak_regenscale ---> g_nadgets_cloak_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_cloak_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_cloak_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_cloak_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_cloak_regen_scale", cvar_string("g_nadgets_cloak_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_cloak_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_bait_regenscale ---> g_nadgets_bait_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_bait_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_bait_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_bait_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_bait_regen_scale", cvar_string("g_nadgets_bait_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_bait_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_gg_regenscale ---> g_nadgets_gg_regen_scale
+	
+	if COMPATVAR_ACTIVE("g_nadgets_gg_regenscale") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_gg_regenscale^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_gg_regen_scale^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_gg_regen_scale", cvar_string("g_nadgets_gg_regenscale"));
+		if(mode == 2)
+			cvar_set("g_nadgets_gg_regenscale", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_normal_stacklimit ---> g_nadgets_normal_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_normal_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_normal_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_normal_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_normal_regen_limit", cvar_string("g_nadgets_normal_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_normal_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_remote_stacklimit ---> g_nadgets_remote_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_remote_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_remote_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_remote_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_remote_regen_limit", cvar_string("g_nadgets_remote_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_remote_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_plasma_stacklimit ---> g_nadgets_plasma_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_plasma_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_plasma_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_plasma_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_plasma_regen_limit", cvar_string("g_nadgets_plasma_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_plasma_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_napalm_stacklimit ---> g_nadgets_napalm_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_napalm_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_napalm_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_napalm_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_napalm_regen_limit", cvar_string("g_nadgets_napalm_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_napalm_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_transloc_stacklimit ---> g_nadgets_transloc_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_transloc_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_transloc_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_transloc_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_transloc_regen_limit", cvar_string("g_nadgets_transloc_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_transloc_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_shield_stacklimit ---> g_nadgets_shield_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_shield_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_shield_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_shield_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_shield_regen_limit", cvar_string("g_nadgets_shield_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_shield_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_linker_stacklimit ---> g_nadgets_linker_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_linker_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_linker_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_linker_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_linker_regen_limit", cvar_string("g_nadgets_linker_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_linker_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_laser_stacklimit ---> g_nadgets_laser_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_laser_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_laser_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_laser_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_laser_regen_limit", cvar_string("g_nadgets_laser_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_laser_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_cloak_stacklimit ---> g_nadgets_cloak_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_cloak_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_cloak_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_cloak_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_cloak_regen_limit", cvar_string("g_nadgets_cloak_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_cloak_stacklimit", "__COMPATVAR_DISABLED__");
+		++corrections;
+	}
+	
+	// g_nadgets_bait_stacklimit ---> g_nadgets_bait_regen_limit
+	
+	if COMPATVAR_ACTIVE("g_nadgets_bait_stacklimit") {
+		print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_bait_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_bait_regen_limit^7, but no stability is guaranteed at this point!\n");
+		cvar_set("g_nadgets_bait_regen_limit", cvar_string("g_nadgets_bait_stacklimit"));
+		if(mode == 2)
+			cvar_set("g_nadgets_bait_stacklimit", "__COMPATVAR_DISABLED__");
 		++corrections;
 	}
 	
