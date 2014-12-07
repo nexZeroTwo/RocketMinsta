@@ -72,9 +72,9 @@ EOF
     cat $cvars | while read line; do
         old=${line%% *}
         new=${line##* }
-        echo "set $old __COMPATVAR_DISABLED__ \"Compatbility cvar: DO NOT USE. Use $new instead.\""
+        echo "unset $old"
     done
 }
 
 gen-qc  > qcsrc/server/rm_cvarcompat.qc
-#gen-cfg > modfiles/rocketminsta-compat.cfg
+gen-cfg > modfiles/rocketminsta-compat.cfg
