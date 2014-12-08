@@ -38,28 +38,23 @@ void Buffs_Init(void) {
     
     float enabled;
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
-        g_buffs_enabled[i] = cvar(strcat("g_buffs_", Buffs_TypeToName(b)));
+        if(b == BUFF_MEDIC)
+        if(!teams_matter)
+            continue;
         
-        switch(b) {
-            case BUFF_MEDIC:
-                if(!teams_matter)
-                    g_buffs_enabled[i] = FALSE;
-                break;
-            
-            case BUFF_ADEPT:
-                g_buffs_adept = TRUE;
-            case BUFF_WRATH:
-                if(!g_nadgets)
-                    g_buffs_enabled[i] = FALSE;
-                break;
-            
-            case BUFF_MEODP:
-                if(g_buffs_enabled[i])
-                    g_buffs_meodp = TRUE;
-                break;
+        if(b == BUFF_WRATH || b == BUFF_ADEPT)
+        if(!g_nadgets)
+            continue;
+        
+        if(cvar(strcat("g_buffs_", Buffs_TypeToName(b)))) {
+            g_buffs_enabled |= b;
+            ++enabled;
         }
         
-        if(g_buffs_enabled[i]) {
+        if(cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline")))
+            g_buffs_baseline |= b;
+        
+        if(g_buffs_enabled & b || g_buffs_baseline & b) {
             string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
             if(!fexists(s)) {
                 s = "models/buffs/buff.md3";
@@ -68,18 +63,14 @@ void Buffs_Init(void) {
             
             g_buffs_model[i] = strzone(s);
             precache_model(g_buffs_model[i]);
-            ++enabled;
-        }
-        
-        if(cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline"))) {
-            g_buffs_baseline |= b;
-            if(b == BUFF_MEODP)
-                g_buffs_meodp = TRUE;
         }
     }
     
     if(enabled < 2)
         g_buffs_randomize_dual = 0;
+    
+    g_buffs_adept = (g_buffs_enabled & BUFF_ADEPT || g_buffs_baseline & BUFF_ADEPT);
+    g_buffs_meodp = (g_buffs_enabled & BUFF_MEODP || g_buffs_baseline & BUFF_MEODP);
     
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
@@ -97,13 +88,13 @@ void Buffs_Randomize_Reset(void) {
 }
 
 float Buffs_Randomize_Yield(void) {
-    float found, sub, choosen, j;
+    float found, sub, choosen, j, b;
     RandomSelection_Init();
     
     while(!found) {
-        for(j = 0; j < BUFF_COUNT; ++j)
-            if(g_buffs_enabled[j] && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
-                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
+        for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
+            if(g_buffs_enabled & b && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
+                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                 ++found;
             }
         
@@ -120,9 +111,9 @@ float Buffs_Randomize_Yield(void) {
         found = 0;
         
         while(!found) {
-            for(j = 0; j < BUFF_COUNT; ++j)
-                if(g_buffs_enabled[j] && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
-                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(pow(2, j)), "_randomspawn_weight")), 1);
+            for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
+                if(g_buffs_enabled & b && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
+                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                     ++found;
                 }
             
@@ -1068,7 +1059,7 @@ void Buffs_BuffPickup_Setup(void) {
     }
     
     if not(g_buffs_randomize)
-    if not(g_buffs_enabled[Buffs_TypeToIndex(self.buffs)]) {
+    if not(g_buffs_enabled & self.buffs != self.buffs) {
         remove(self);
         return;
     }
