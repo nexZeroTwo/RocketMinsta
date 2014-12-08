@@ -62,7 +62,7 @@ void W_CampingRifle_Reload()
 	weapon_thinkf(WFRAME_RELOAD, cvar("g_balance_campingrifle_reloadtime"), W_CampingRifle_ReloadedAndReady);
 
 	self.campingrifle_bulletcounter = -1;
-	self.campingrifle_hitstreak = 0;
+	self.campingrifle_hitstreak1 = self.campingrifle_hitstreak2 = 0;
 }
 
 void W_CampingRifle_CheckReloadAndReady()
@@ -74,18 +74,72 @@ void W_CampingRifle_CheckReloadAndReady()
 		w_ready();
 }
 
+var .float campingrifle_varfield_hitstreak;
+var .float campingrifle_varfield_hitstreak_expiretime;
+
+void W_CampingRifle_SetHitstreakFields(float deathtype) {
+    //set the campingrifle_varfield_* globals to point to fields appropriate for the current firing mode
+
+    if((deathtype & HITTYPE_SECONDARY) || cvar("g_balance_campingrifle_hitstreaks_shared")) {
+        campingrifle_varfield_hitstreak = campingrifle_hitstreak2;
+        campingrifle_varfield_hitstreak_expiretime = campingrifle_hitstreak2_expiretime;
+    } else {
+        campingrifle_varfield_hitstreak = campingrifle_hitstreak1;
+        campingrifle_varfield_hitstreak_expiretime = campingrifle_hitstreak1_expiretime;
+    }
+}
+
+void W_CampingRifle_ResetHitstreaksIfNeeded(float deathtype) {
+	//reset the streak if no hit has been made with either mode if both are enabled or just each fire mode individually
+
+    W_CampingRifle_SetHitstreakFields(deathtype);
+    if(time > self.campingrifle_varfield_hitstreak_expiretime)
+        self.campingrifle_varfield_hitstreak = 0;
+}
+
+float W_CampingRifle_ReturnHitstreakBonus(float deathtype) {
+	//return the bonus for whatever mode was fired, regardless of which mode built up the streak
+	//if both modes can build up a streak, use secondary's value as a shared pool
+
+    W_CampingRifle_SetHitstreakFields(deathtype);
+    float streak = bound(0, self.campingrifle_varfield_hitstreak, self.campingrifle_bulletlimit);
+
+    if(streak) {
+        return streak * cvar((deathtype & HITTYPE_SECONDARY)?
+                    "g_balance_campingrifle_secondary_hitstreakbonus" :
+                    "g_balance_campingrifle_primary_hitstreakbonus");
+    }
+
+    return 0;
+}
+
+void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype) {
+    if(!DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE))
+        return;
+
+    if(deathtype & HITTYPE_SECONDARY) {
+        if(!cvar("g_balance_campingrifle_secondary_hitstreaks"))
+            return;
+    } else if(!cvar("g_balance_campingrifle_primary_hitstreaks"))
+        return;
+
+    W_CampingRifle_SetHitstreakFields(deathtype);
+
+    attacker.campingrifle_varfield_hitstreak += 1;
+    attacker.campingrifle_varfield_hitstreak_expiretime = max(
+        attacker.campingrifle_varfield_hitstreak_expiretime, 
+        time + cvar((deathtype & HITTYPE_SECONDARY)?
+                    "g_balance_campingrifle_secondary_hitstreak_resettime" :
+                    "g_balance_campingrifle_primary_hitstreak_resettime")
+    );
+}
+
 void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAddedDamage, float pForce, float pSpeed, float pLifetime, float pAmmo, float deathtype, float pBulletConstant, float cost)
 {	
 	float dmgbonus;
-	float streak;
-	if(deathtype & HITTYPE_SECONDARY){
-		if(cvar("g_balance_campingrifle_secondary_hitstreaks")){
-			if(time - self.campingrifle_laststreak > cvar("g_balance_campingrifle_secondary_hitstreak_resettime")){
-					self.campingrifle_hitstreak = 0;
-				}
-			streak = bound(0, self.campingrifle_hitstreak, self.campingrifle_bulletlimit);
-			dmgbonus = streak * cvar("g_balance_campingrifle_secondary_hitstreakbonus");
-		}
+	if(cvar("g_balance_campingrifle_hitstreaks")){
+		W_CampingRifle_ResetHitstreaksIfNeeded(deathtype);
+		dmgbonus = W_CampingRifle_ReturnHitstreakBonus(deathtype);
 	}
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
@@ -123,8 +177,6 @@ void W_CampingRifle_Attack2()
 {
     float sprd;
     float add;
-    float streak;
-	float dmgbonus;
 	
     sprd = cvar("g_balance_campingrifle_secondary_spread");
     add  = cvar("g_balance_campingrifle_secondary_spread_addedperbullet");
@@ -137,7 +189,7 @@ void W_CampingRifle_Attack2()
         self.campingrifle_lastburst = time;
     }
 	
-	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage") + dmgbonus, cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
+	W_CampingRifle_FireBullet(sprd, cvar("g_balance_campingrifle_secondary_damage"), cvar("g_balance_campingrifle_secondary_headshotaddeddamage"), cvar("g_balance_campingrifle_secondary_force"), cvar("g_balance_campingrifle_secondary_speed"), cvar("g_balance_campingrifle_secondary_lifetime"), cvar("g_balance_campingrifle_secondary_ammo"), WEP_CAMPINGRIFLE | HITTYPE_SECONDARY, cvar("g_balance_campingrifle_secondary_bulletconstant"), cvar("g_balance_campingrifle_secondary_bulletcost"));
 }
 
 void spawnfunc_weapon_campingrifle (void)

@@ -1121,13 +1121,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     
                     if(attacker == targ)
                         heal *= cvar("g_buffs_medic_selfhealfactor");
-                    
-                    if(cvar("g_balance_campingrifle_secondary_hitstreaks"))
-					if(DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE) && deathtype & HITTYPE_SECONDARY) {
-						attacker.campingrifle_hitstreak += 1;
-                        attacker.campingrifle_laststreak = time;
-                    }
 					
+                    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+
                     if(damage_headshotbonus)
                     if(cvar("g_buffs_medic_headshot"))
                     if(IsHeadshot(targ, attacker, hitloc)) {

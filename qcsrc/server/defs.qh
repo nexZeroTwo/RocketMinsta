@@ -618,8 +618,12 @@ float client_cefc_accumulatortime;
 
 .float campingrifle_bulletcounter;
 .float campingrifle_bulletlimit;
-.float campingrifle_hitstreak;
-.float campingrifle_laststreak;
+.float campingrifle_hitstreak1;
+.float campingrifle_hitstreak2;
+.float campingrifle_hitstreak1_expiretime;
+.float campingrifle_hitstreak2_expiretime;
+
+void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype);
 
 #define PROJECTILE_MAKETRIGGER(e) (e).solid = SOLID_CORPSE; (e).dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
 // when doing this, hagar can go through clones
