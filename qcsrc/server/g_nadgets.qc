@@ -1685,7 +1685,7 @@ void HG_Bait_Body_Remove(entity body) {
         remove(body.exteriorweaponentity);
 
     if(body.entcs)
-        detach_entcs();
+        remove(body.entcs);
 
     remove(body);
 }
