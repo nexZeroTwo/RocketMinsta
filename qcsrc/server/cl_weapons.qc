@@ -273,6 +273,8 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 		return;
 	if (!cvar("g_pickup_items"))
 		return;
+	if (g_ca)
+		return;
 	if(!W_IsWeaponThrowable(w))
 		return;
 
@@ -299,7 +301,7 @@ void W_WeaponFrame()
 {
 	vector fo, ri, up;
 
-	if((arena_roundbased && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
+	if(((arena_roundbased || g_ca) && time < warmup) || ((time < game_starttime) && !cvar("sv_ready_restart_after_countdown")))
 		return;
 
 	if (!self.weaponentity || self.health < 1)

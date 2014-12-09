@@ -22,6 +22,7 @@ CLASS(NewMenuMapInfoDialog) EXTENDS(NewMenuDialog)
 	ATTRIB(NewMenuMapInfoDialog, typeDominationLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeKeyHuntLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeCTFLabel, entity, NULL)
+	ATTRIB(NewMenuMapInfoDialog, typeCALabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeAssaultLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeOnslaughtLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeRaceLabel, entity, NULL)
@@ -76,6 +77,7 @@ void loadMapInfoNewMenuMapInfoDialog(entity me, float i, entity mlb)
 	me.typeRuneLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RUNEMATCH);
 	me.typeKeyHuntLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_KEYHUNT);
 	me.typeCTFLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTF);
+	me.typeCALabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CA);
 	me.typeAssaultLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ASSAULT);
 	me.typeOnslaughtLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ONSLAUGHT);
 	me.typeRaceLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RACE);
@@ -132,6 +134,8 @@ void fillNewMenuMapInfoDialog(entity me)
 			me.typeKeyHuntLabel = e;
 		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "CTF"));
 			me.typeCTFLabel = e;
+		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "CA"));
+			me.typeCALabel = e;
 		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Assault"));
 			me.typeAssaultLabel = e;
 		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Onslaught"));

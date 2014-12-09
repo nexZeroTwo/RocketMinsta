@@ -2392,7 +2392,7 @@ void Sbar_Draw (void)
 			o = Sbar_DrawNoteLine(o, s);
 		}
 	}
-	if(teamplay && !intermission && !spectatee_status)
+	if(teamplay && !intermission && !spectatee_status && gametype != GAME_CA)
 	{
 		entity tm;
 		float ts_min, ts_max;

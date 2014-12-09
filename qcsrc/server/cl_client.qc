@@ -314,7 +314,7 @@ entity SelectSpawnPoint (float anypoint)
 		// there is 50/50 chance of choosing a random spot or the furthest spot
 		// (this means that roughly every other spawn will be furthest, so you
 		// usually won't get fragged at spawn twice in a row)
-		if (arena_roundbased)
+		if (arena_roundbased && !g_ca)
 		{
 			firstspot_new = Spawn_FilterOutBadSpots(firstspot, playerlist, 800, teamcheck);
 			if(firstspot_new)
@@ -560,6 +560,9 @@ void PutObserverInServer (void)
 
 	WaypointSprite_PlayerDead();
 
+	if not(g_ca)  // don't reset teams when moving a ca player to the spectators
+		self.team = -1;  // move this as it is needed to log the player spectating in eventlog
+
 	if(self.killcount != -666)
 	{
 		if(g_lms)
@@ -783,14 +786,14 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
 
-	if(g_arena)
+	if(g_arena || (g_ca && !allowed_to_spawn))
 	if(!self.spawned)
 		self.classname = "observer";
 
 	if(gameover)
 		self.classname = "observer";
 
-	if(self.classname == "player") {
+	if(self.classname == "player" && (!g_ca || (g_ca && allowed_to_spawn))) {
 		entity spot, oldself;
 		float j;
 
@@ -934,6 +937,9 @@ void PutClientInServer (void)
 			Spawnqueue_Mark(self);
 		}
 
+		else if(g_ca)
+			self.caplayer = 1;
+
 		self.event_damage = PlayerDamage;
 
 		self.bot_attack = TRUE;
@@ -991,7 +997,7 @@ void PutClientInServer (void)
 				SUB_UseTargets();
 			activator = world;
 		self = oldself;
-	} else if(self.classname == "observer") {
+	} else if(self.classname == "observer" || (g_ca && !allowed_to_spawn)) {
 		PutObserverInServer ();
 	}
 
@@ -1404,10 +1410,11 @@ void ClientConnect (void)
 
 	stuffcmd(self, strcat("set gametype ", ftos(game), "\n"));
 
-	if(g_arena)
+	if(g_arena || g_ca)
 	{
 		self.classname = "observer";
-		Spawnqueue_Insert(self);
+		if(g_arena)
+			Spawnqueue_Insert(self);
 	}
 	/*else if(g_ctf)
 	{
@@ -1930,10 +1937,10 @@ void player_regen (void)
 	limita = limita * limit_mod;
 	//limitf = limitf * limit_mod;
 
-	if(g_lms)
+	if(g_lms && g_ca)
 		rot_mod = 0;
 
-	if (!g_minstagib && (!g_lms || cvar("g_lms_regenerate")))
+	if (!g_minstagib && !g_ca && (!g_lms || cvar("g_lms_regenerate")))
 	{
 		self.armorvalue = CalcRotRegen(self.armorvalue, mina, cvar("g_balance_armor_regen"), cvar("g_balance_armor_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxa, cvar("g_balance_armor_rot"), cvar("g_balance_armor_rotlinear"), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
 		self.health = CalcRotRegen(self.health, minh, cvar("g_balance_health_regen"), cvar("g_balance_health_regenlinear"), regen_mod * frametime * (time > self.pauseregen_finished), maxh, cvar("g_balance_health_rot"), cvar("g_balance_health_rotlinear"), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
@@ -2119,7 +2126,10 @@ void LeaveSpectatorMode()
 				centerprint(self,""); // clear MOTD
 			return;
 		} else {
-			stuffcmd(self,"menu_showteamselect\n");
+			if (g_ca && self.caplayer) {
+			}	// do nothing
+			else
+				stuffcmd(self,"menu_showteamselect\n");
 			return;
 		}
 	}
@@ -2406,7 +2416,7 @@ void PlayerPreThink (void)
 				if(frametime)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
-				force_respawn = (g_lms || cvar("g_forced_respawn"));
+				force_respawn = (g_lms || (g_ca) || cvar("g_forced_respawn"));
 				if (self.deadflag == DEAD_DYING)
 				{
 					if(force_respawn)
