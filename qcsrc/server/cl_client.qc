@@ -930,6 +930,9 @@ float RestrictSkin(float s)
 	return mod(s, 3);
 }
 
+.string forcedmodel;
+.float forcedskin;
+
 void FixPlayermodel()
 {
 	local string defaultmodel;
@@ -938,7 +941,10 @@ void FixPlayermodel()
 
 	defaultmodel = "";
     
-	if(sv_defaultcharacter == 1) {
+    if(self.forcedmodel) {
+        defaultmodel = self.forcedmodel;
+        defaultskin = self.forcedskin;
+    } else if(sv_defaultcharacter == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
