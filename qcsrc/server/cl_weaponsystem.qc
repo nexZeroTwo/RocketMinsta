@@ -34,6 +34,14 @@ float W_WeaponRateFactor()
 	return t;
 }
 
+float W_WeaponRateFactorFor(entity plr) {
+    entity o = self;
+    self = plr;
+    float r = W_WeaponRateFactor();
+    self = o;
+    return r;
+}
+
 void W_SwitchWeapon_Force(entity e, float w)
 {
 	e.cnt = e.switchweapon;
@@ -49,6 +57,8 @@ float WFRAME_FIRE2 = 1;
 float WFRAME_IDLE = 2;
 float WFRAME_RELOAD = 3;
 .float wframe;
+
+.vector shotorg_visual;
 
 void(float fr, float t, void() func) weapon_thinkf;
 
@@ -126,6 +136,8 @@ void W_HitPlotAnalysis(entity player, vector screenforward, vector screenright, 
 
 vector w_shotorg;
 vector w_shotdir;
+vector w_shotorg_visual;
+vector w_shotdir_visual;
 
 // this function calculates w_shotorg and w_shotdir based on the weapon model
 // offset, trueaim and antilag, and won't put w_shotorg inside a wall.
@@ -313,6 +325,22 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	if (!g_minstagib)
 		sound (ent, CHAN_AUTO, "weapons/strength_fire.wav", VOL_BASE, ATTN_NORM);
 };
+
+void W_SetHitscanVisuals(entity p, vector end) {
+    vector vecs, dv;
+
+    w_shotorg_visual = w_shotorg;
+    w_shotdir_visual = w_shotdir;
+
+    if(p.weaponentity.shotorg_visual_x > 0) {
+        vecs = p.weaponentity.shotorg_visual;
+        vecs_y = -vecs_y;
+
+        dv = v_right * vecs_y + v_up * vecs_z;
+        w_shotorg_visual = p.origin + p.view_ofs + dv;
+        w_shotdir_visual = normalize(end - w_shotorg_visual);
+    }
+}
 
 #define W_SetupShot_ProjectileSize(ent,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage)
 #define W_SetupShot_Dir(ent,s_forward,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, s_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
@@ -583,6 +611,7 @@ void CL_Weaponentity_Think()
 				remove(self.weaponentity);
 			self.weaponentity = world;
 			self.movedir = '0 0 0';
+            self.shotorg_visual = '0 0 0';
 			self.spawnorigin = '0 0 0';
 			self.oldorigin = '0 0 0';
 			self.anim_fire1  = '0 1 0.01';
@@ -598,7 +627,8 @@ void CL_Weaponentity_Think()
 			vector v0;
 			v0 = self.movedir;
 			self.movedir = shotorg_adjust(v0, FALSE, FALSE);
-			self.view_ofs = shotorg_adjust(v0, FALSE, TRUE) - v0;
+            self.shotorg_visual = shotorg_adjust(v0, FALSE, TRUE);
+			self.view_ofs = self.shotorg_visual - v0;
 		}
 		self.owner.stat_shotorg = compressShotOrigin(self.movedir);
 		self.movedir = decompressShotOrigin(self.owner.stat_shotorg); // make them match perfectly

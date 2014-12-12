@@ -57,6 +57,7 @@ wall.qc
 modeleffects.qc
 visualdamage.qc
 radio.qc
+zapper.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc

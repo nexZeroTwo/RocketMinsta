@@ -220,6 +220,16 @@ void Ent_DamageInfo(float isNew)
 				if(!issilent)
 					sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
 				break;
+            case WEP_ZAPPER:
+                org2 = org + backoff * 6;
+                if(secondary) {
+                    pointparticles(particleeffectnum("nex_impact"), org2, '0 0 0', 1);
+                    if(!issilent)
+                        sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
+                } else if(!issilent) {
+                    sound(self, CHAN_PROJECTILE, "weapons/zapper_impact.wav", VOL_BASE, ATTN_NORM);
+                }
+                break;
 			case WEP_HAGAR:
 				org2 = org + backoff * 6;
 				pointparticles(particleeffectnum("hagar_explode"), org2, '0 0 0', 1);
@@ -317,7 +327,8 @@ void DamageInfo_Precache()
 	precache_sound("weapons/rocket_impact.wav");
 	precache_sound("weapons/fireball_impact.wav");
 	precache_sound("weapons/fireball_impact2.wav");
-	precache_sound (RM_SOUND_LASER_PRIMARY);
-	precache_sound (RM_SOUND_LASER_SECONDARY);
-	precache_sound (RM_SOUND_MINSTA);
+    precache_sound("weapons/zapper_impact.wav");
+	precache_sound(RM_SOUND_LASER_PRIMARY);
+	precache_sound(RM_SOUND_LASER_SECONDARY);
+	precache_sound(RM_SOUND_MINSTA);
 }

@@ -1100,7 +1100,7 @@ void readplayerstartcvars()
 				start_ammo_rockets = 999;
 			if (g_weaponarena & WEPBIT_SHOTGUN)
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
 			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
@@ -2614,8 +2614,6 @@ vector shotorg_adjust(vector vecs, float y_is_right, float visual)
 	}
 	return vecs;
 }
-
-
 
 void attach_sameorigin(entity e, entity to, string tag)
 {

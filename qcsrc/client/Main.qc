@@ -536,9 +536,13 @@ void PostInit(void)
         case 44:
             localcmd("seta rm_althud 0; althud 0\n");
         case 45:
+        case 46:
+            localcmd("seta cl_effects_lightningarc_branchfactor_add 0\n");
+            localcmd("seta cl_effects_lightningarc_branchfactor_start 0.05\n");
+            localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 46\n");
+		localcmd("seta rm_initialized 47\n");
 		RM_OUTDATED
 		break;
 	}
@@ -1657,6 +1661,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
 		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
+        case ENT_CLIENT_ZAPPER: Zapper_Read(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -2218,6 +2223,9 @@ float CSQC_Parse_TempEntity()
        	case TE_CSQC_RADIO:
        		Net_ReadRadio();
        		return TRUE;
+        case TE_CSQC_ZAPPERLIGHTNING:
+            Zapper_ReadLightning();
+            return TRUE;
     }
 
 	// pass to the engine

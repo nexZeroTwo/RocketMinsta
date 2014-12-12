@@ -82,6 +82,10 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	vector pos, vsize, fill_colour;
 	float value, idx, imp, sp, weapon_hit, weapon_damage, weapon_stats;
 
+    float iconidx = nr;
+    if(iconidx == WEP_ZAPPER-1)
+        iconidx = WEP_HOOK-1;
+
 	imp = weaponimpulse[nr];
 	weapon_hit = weapon_hits[wc];
  	weapon_damage = weapon_fired[wc];
@@ -107,7 +111,7 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	vsize_z = 0;
 	if (active)
 		drawpic(pos, "gfx/hud/sb_ammobg", vsize, color, value * fade * sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(nr)), vsize, color, value * fade * sbar_alpha_fg, DRAWFLAG_NORMAL);
+	drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(iconidx)), vsize, color, value * fade * sbar_alpha_fg, DRAWFLAG_NORMAL);
 	pos_x += w_space;
 	pos_y += w_space;
 	vsize_x = font_size;
@@ -2691,6 +2695,11 @@ void Sbar_DrawAccuracyStats()
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
 	{
+        float iconidx = i;
+        if(iconidx == WEP_ZAPPER)
+            iconidx = WEP_HOOK;
+
+
 		weapon_hit = weapon_hits[i];
 		weapon_damage = weapon_fired[i];
 		self = get_weaponinfo(i);
@@ -2732,7 +2741,7 @@ void Sbar_DrawAccuracyStats()
 				drawborderlines(sbar_border_thickness, pos, fill_size, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
 
 				// the weapon
-				drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(i-1)), '1 0.5 0' * fill_size_x , '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+				drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(iconidx-1)), '1 0.5 0' * fill_size_x , '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
 				// the amount of shots fired or max damage
 				drawstringright(pos + '4.5 0 0' * sbar_fontsize_x + '0 3 0' * sbar_fontsize_y, ftos(weapon_damage), sbar_fontsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -2782,7 +2791,7 @@ void Sbar_DrawAccuracyStats()
 				drawborderlines(sbar_border_thickness, pos, fill_size, '0 0 0', sbar_alpha_bg, DRAWFLAG_NORMAL);
 
 				// the weapon
-				drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(i-1)), '1 0.5 0' * fill_size_x , '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+				drawpic(pos, strcat("gfx/hud/inv_weapon", ftos(iconidx-1)), '1 0.5 0' * fill_size_x , '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
 				// the amount of shots fired or max damage
 				drawstringright(pos + '4.5 0 0' * sbar_fontsize_x + '0 3 0' * sbar_fontsize_y, ftos(weapon_damage), sbar_fontsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);

@@ -224,6 +224,7 @@ float announcer_5min;
 // database for misc stuff
 float tempdb;
 vector hook_shotorigin;
+vector zapper_shotorigin;
 
 #ifdef BLURTEST
 float blurtest_time0, blurtest_time1, blurtest_radius, blurtest_power;

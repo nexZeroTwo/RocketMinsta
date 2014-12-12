@@ -24,6 +24,21 @@ void W_GiveWeapon (entity e, float wep, string name)
 	self = oldself;
 }
 
+float W_IsGoodHit(entity attacker, entity ent) {
+    float did_hit;
+
+    if(ent.flags & FL_CLIENT)
+    if(ent.deadflag == DEAD_NO)
+        did_hit = 1;
+
+    if(teams_matter)
+    if(ent.team == attacker.team)
+    if(!Buffs_BuffPower(attacker, BUFF_MEDIC))
+        did_hit = 0;
+
+    return did_hit;
+}
+
 void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype)
 {
 	local vector hitloc, force, endpoint, dir;
@@ -143,15 +158,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		ent.railgunhitsolidbackup = SOLID_NOT;
 		ent.railgunhit = FALSE;
 
-		//for stats so that team hit will count as a miss
-		if(ent.flags & FL_CLIENT)
-		if(ent.deadflag == DEAD_NO)
-			did_hit = 1;
-
-		if(teams_matter)
-		if(ent.team == self.team)
-        if(!Buffs_BuffPower(self, BUFF_MEDIC))
-			did_hit = 0;
+        did_hit = W_IsGoodHit(self, ent);
 
 		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
 		ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
@@ -224,15 +231,8 @@ void W_BallisticBullet_Hit (void)
 		railgun_start = self.origin - 2 * frametime * self.velocity;
 		railgun_end = self.origin + 2 * frametime * self.velocity;
 
-		if(other.flags & FL_CLIENT)
-		if(other.deadflag == DEAD_NO)
-			hit = 1;
+        hit = W_IsGoodHit(self, other);
 
-		if(teamplay)
-		if(other.team == self.owner.team)
-        if(!Buffs_BuffPower(self.owner, BUFF_MEDIC))
-			hit = 0;
-		
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
