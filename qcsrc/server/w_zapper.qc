@@ -54,8 +54,30 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     return TRUE;
 }
 
+float W_Zapper_Beam_Expired(void) {
+    if(time > self.zapper_expire)
+        return TRUE;
+
+    if(self.owner.weapon != WEP_ZAPPER)
+        return TRUE;
+
+    if(self.owner.deadflag != DEAD_NO)
+        return TRUE;
+
+    if(self.owner.frozen)
+        return TRUE;
+
+    if(self.owner.hg_stealth)
+        return TRUE;
+
+    if(!W_Zapper_Attack1_CheckAmmo(self.owner))
+        return TRUE;
+
+    return FALSE;
+}
+
 void W_Zapper_Beam_Think(void) {
-    if(time > self.zapper_expire || self.owner.weapon != WEP_ZAPPER || !W_Zapper_Attack1_CheckAmmo(self.owner)) {
+    if(W_Zapper_Beam_Expired()) {
         if(self.owner.zapper_beam == self)
             self.owner.zapper_beam = world;
         remove(self);
