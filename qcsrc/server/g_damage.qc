@@ -121,7 +121,7 @@ void GiveFrags (entity attacker, entity targ, float f)
 
 	PlayerScore_Add(targ, SP_DEATHS, 1);
 
-	if(g_arena || g_ca)
+	if(g_arena)
 		if(cvar("g_arena_roundbased"))
 			return;
 
@@ -684,13 +684,10 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 						{
 							teamdamage0 = max(attacker.dmg_team, cvar("g_teamdamage_threshold"));
 							attacker.dmg_team = attacker.dmg_team + damage;
-							if(attacker.dmg_team > teamdamage0 && !g_ca)
+							if(attacker.dmg_team > teamdamage0)
 								mirrordamage = cvar("g_mirrordamage") * (attacker.dmg_team - teamdamage0);
 							mirrorforce = cvar("g_mirrordamage") * vlen(force);
-							if(g_ca)
-								damage = 0;
-							else
-								damage = cvar("g_friendlyfire") * damage;
+							damage = cvar("g_friendlyfire") * damage;
 							// mirrordamage will be used LATER
 						}
 						else
@@ -771,12 +768,7 @@ void Damage (entity targ, entity inflictor, entity attacker, float damage, float
 			damage = damage * cvar("g_balance_powerup_invincible_takedamage");
 
 		if (targ == attacker)
-		{
-			if(g_ca || (g_cts && !cvar("g_cts_selfdamage")))
-				damage = 0;
-			else
-				damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
-		}
+			damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
 
 		// CTF: reduce damage/force
 		if(g_ctf)

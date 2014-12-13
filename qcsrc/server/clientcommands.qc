@@ -255,8 +255,6 @@ void SV_ParseClientCommand(string s) {
 			kh_Key_DropAll(self, TRUE);
 			WaypointSprite_PlayerDead();
 			self.classname = "observer";
-			if(g_ca)
-				self.caplayer = 0;
 			if(blockSpectators)
 				sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
 			PutClientInServer();
@@ -269,8 +267,6 @@ void SV_ParseClientCommand(string s) {
 		{
 			if(isJoinAllowed()) {
 				self.classname = "player";
-				if(g_ca)
-					self.caplayer = 1;
 				PlayerScore_Clear(self);
 				bprint ("^4", self.netname, "^4 is playing now\n");
 				PutClientInServer();
@@ -774,8 +770,6 @@ void ReadyRestartForce()
 
 	readyrestart_happened = 1;
 	game_starttime = time + RESTART_COUNTDOWN;
-	if(!g_ca)
-		game_starttime += RESTART_COUNTDOWN;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage

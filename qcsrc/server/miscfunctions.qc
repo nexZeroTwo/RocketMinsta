@@ -878,7 +878,7 @@ void readplayerstartcvars()
     }
     else
     {
-	if (g_lms || g_ca)
+        if (g_lms)
         {
             start_ammo_shells = cvar("g_lms_start_ammo_shells");
             start_ammo_nails = cvar("g_lms_start_ammo_nails");
@@ -914,21 +914,19 @@ void readplayerstartcvars()
 
             t = cvar(strcat("g_start_weapon_", e.netname));
 
-	    if (t < 0) // "default" weapon selection
-	    {
-		    if (g_lms || g_ca || (inWarmupStage && cvar("g_warmup_allguns")))
-			    t = (e.spawnflags & WEPSPAWNFLAG_NORMAL);
-		    else if(t < -1)
-			    t = 0;
-		    else if (g_race || g_cts)
-			    t = (i == WEP_LASER);
-		    else if (g_nexball)
-			    t = 0; // weapon is set a few lines later
-			    else
-				    t = (i == WEP_LASER || i == WEP_SHOTGUN);
-			    if(g_grappling_hook) // if possible, redirect off-hand hook to on-hand hook
-				    t |= (i == WEP_HOOK);
-	    }
+            if (t < 0) // "default" weapon selection
+            {
+                if (g_lms)
+                    t = (e.spawnflags & WEPSPAWNFLAG_NORMAL);
+                else if (g_race || g_cts)
+                    t = (i == WEP_LASER);
+                else if (g_nexball)
+                    t = 0; // weapon is set a few lines later
+                else
+                    t = (i == WEP_LASER || i == WEP_SHOTGUN);
+                if (g_grappling_hook) // if possible, redirect off-hand hook to on-hand hook
+                    t += (i == WEP_HOOK);
+            }
 
             if (g_nexball && i == WEP_PORTO)
                 t=1;
@@ -952,7 +950,7 @@ void readplayerstartcvars()
         warmup_start_armorvalue = start_armorvalue;
         warmup_start_weapons = start_weapons;
 
-	if (!g_weaponarena && !g_nixnex && !g_minstagib && !g_ca)
+        if (!g_weaponarena && !g_nixnex && !g_minstagib)
         {
             if (cvar("g_use_ammunition"))
             {
@@ -1167,8 +1165,8 @@ void readlevelcvars(void)
 	if(g_ghost_items >= 1)
 		g_ghost_items = 0.13; // default alpha value
 
-	if not(inWarmupStage && !g_ca)
-		game_starttime = cvar("g_start_delay");
+    if not(inWarmupStage)
+        game_starttime                 = cvar("g_start_delay");
 
     readplayerstartcvars();
 }
