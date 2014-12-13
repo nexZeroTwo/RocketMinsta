@@ -17,8 +17,8 @@ float WEP_HLAC				= 13; float WEPBIT_HLAC			        = 4096;
 float WEP_SEEKER			= 14; float WEPBIT_SEEKER			= 8192;
 float WEP_TUBA        	   	 	= 15; float WEPBIT_TUBA          		= 16384;
 float WEP_CAMPINGRIFLE	   	 	= 16; float WEPBIT_CAMPINGRIFLE  		= 32768;
-float WEP_FIREBALL          		= 17; float WEPBIT_FIREBALL			= 65535;
-float WEP_LAST				= 17; float WEPBIT_ALL				= 131070;
+float WEP_FIREBALL          		= 17; float WEPBIT_FIREBALL			= 65536;
+float WEP_LAST				= 17; float WEPBIT_ALL				= 131071;
 float WEP_COUNT				= 18;
 
 float BOT_PICKUP_RATING_LOW	= 2500;
