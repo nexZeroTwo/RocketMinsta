@@ -22,6 +22,7 @@ void Zapper_Draw(void) {
 
     vector end1 = self.zapper_end;
     vector end2 = self.zapper_end + self.zapper_offs * 70;
+    end2 = end2 + normalize(start - end2) * 70;
 
     string tex;
     vector rgb;
