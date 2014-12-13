@@ -609,7 +609,7 @@ float Client_customizeentityforclient()
     float sa = 1 - self.hg_stealthalpha;
     
     if((teams_matter && other.team == self.team) || 
-       (other.hg_stealth && (!BUFFS_PRESENT(self, BUFF_ADEPT) || BUFFS_PRESENT(other, BUFF_ADEPT))) ||
+       (other.hg_stealth && (!self.buffpower_adept || other.buffpower_adept)) ||
        !other.iscreature)
         sa = 0.3 + 0.7 * sa;
     
@@ -916,6 +916,7 @@ void PutObserverInServer (void)
 		self.frags = FRAGS_SPECTATOR;
     
     self.justconnected = FALSE;
+    Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
 }
@@ -929,6 +930,10 @@ float RestrictSkin(float s)
 	return mod(s, 3);
 }
 
+.string forcedmodel;
+.float forcedskin;
+.float forcedbrightness;
+
 void FixPlayermodel()
 {
 	local string defaultmodel;
@@ -937,7 +942,10 @@ void FixPlayermodel()
 
 	defaultmodel = "";
     
-	if(sv_defaultcharacter == 1) {
+    if(self.forcedmodel) {
+        defaultmodel = self.forcedmodel;
+        defaultskin = self.forcedskin;
+    } else if(sv_defaultcharacter == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
@@ -1329,7 +1337,7 @@ void PutClientInServer (void)
 
 		CL_SpawnWeaponentity();
 		self.alpha = default_player_alpha;
-		self.colormod = '1 1 1' * cvar("g_player_brightness");
+		self.colormod = '1 1 1' * (self.forcedbrightness? self.forcedbrightness : cvar("g_player_brightness"));
 		self.exteriorweaponentity.alpha = default_weapon_alpha;
 
 		self.lms_nextcheck = time + cvar("g_lms_campcheck_interval")*2;
@@ -1389,6 +1397,8 @@ void PutClientInServer (void)
         self.hg_stealth = 0;
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.lastdamage = 0;
+    
+        Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1864,9 +1874,7 @@ void ClientConnect (void)
 		ctf_clientconnect();
 	}*/
 
-	if(teams_matter || sv_cheats)
-		attach_entcs();
-
+	attach_entcs();
 	bot_relinkplayerlist();
 
 	self.spectatortime = time;
@@ -1929,10 +1937,13 @@ void ClientConnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients++;
         
-        if(realclients == 1 && time > game_starttime && !cvar("g_warmup")) {
-            ReadyRestart();
-            lockteams = FALSE;
-        }
+        if(realclients == 1) {
+        	defer(5, Radio_Queue_PlayFirst);
+        	if(time > game_starttime && !cvar("g_warmup")) {
+	            ReadyRestart();
+	            lockteams = FALSE;
+	        }
+	    }
     }
     
     if(clienttype(self) == CLIENTTYPE_REAL)
@@ -1951,6 +1962,8 @@ void ClientConnect (void)
             break;
         }
     }
+
+    Radio_ClientConnect();
 }
 
 /*
@@ -2080,8 +2093,12 @@ void ClientDisconnect (void)
     if(clienttype(self) == CLIENTTYPE_REAL) {
         realclients--;
         IRC_Announce_ClientDisconnect(self);
+
+        if(!realclients)
+        	Radio_Stop();
     }
     
+    Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
     JoinQ_Pop();
@@ -2491,11 +2508,11 @@ void player_regen (void)
 	limith = limith * limit_mod;
 	limita = limita * limit_mod;
 	//limitf = limitf * limit_mod;
-
-    if(BUFFS_PRESENT(self, BUFF_GUARD)) {
-        float ghealth, garmor, ghregen, garegen, gpower;
+    
+    float gpower = Buffs_BuffPower(self, BUFF_GUARD);
+    if(gpower) {
+        float ghealth, garmor, ghregen, garegen;
         
-        gpower  = Buffs_BuffPower(self, BUFF_GUARD);
         ghealth = minh   + (cvar("g_buffs_guard_health")       - minh)   * gpower;
         garmor  = mina   + (cvar("g_buffs_guard_armor")        - mina)   * gpower;
         ghregen = hregen + (cvar("g_buffs_guard_health_regen") - hregen) * gpower;
@@ -2513,12 +2530,13 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
-    if(!g_clanarena)
-    if(BUFFS_PRESENT(self, BUFF_MEDIC)) {
+    if(!g_clanarena) {
         float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
-        mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
-        maxa = max(mina, maxa);
-        aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
+        if(mpower) {
+            mina = max(mina, mina + (cvar("g_buffs_medic_armor") - mina) * mpower);
+            maxa = max(mina, maxa);
+            aregen = max(aregen + (cvar("g_buffs_medic_armor_regen") - aregen) * mpower, aregen);
+        }
     }
 
 	if(g_lms || g_clanarena)
@@ -3730,6 +3748,13 @@ void PlayerPostThink (void)
 		self.netname = "Player";
 		stuffcmd(self, "seta _cl_name Player\n");
 	}
+
+    if(self.movement)
+    if(self.specdelay_ent) {
+        remove(self.specdelay_ent);
+        self.specdelay_ent = world;
+        bigprint_spec(self, "", "^1Cancelled", 1);
+    }
 
 	if(sv_maxidle && frametime)
 	{

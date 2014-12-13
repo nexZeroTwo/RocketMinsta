@@ -24,6 +24,21 @@ void W_GiveWeapon (entity e, float wep, string name)
 	self = oldself;
 }
 
+float W_IsGoodHit(entity attacker, entity ent) {
+    float did_hit;
+
+    if(ent.flags & FL_CLIENT)
+    if(ent.deadflag == DEAD_NO)
+        did_hit = 1;
+
+    if(teams_matter)
+    if(ent.team == attacker.team)
+    if(!Buffs_BuffPower(attacker, BUFF_MEDIC))
+        did_hit = 0;
+
+    return did_hit;
+}
+
 void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype)
 {
 	local vector hitloc, force, endpoint, dir;
@@ -54,7 +69,11 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 	// non-solid so we can hit the next, while doing this we spawn effects and
 	// note down which entities were hit so we can damage them later
     
+    entity pts;
     float tries;
+    
+    if(deathtype != DEATH_HG_SHIELD)
+        pts = Buffs_MEODP_Hitscan_Begin(self);
     
 	while (1)
 	{
@@ -139,15 +158,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		ent.railgunhitsolidbackup = SOLID_NOT;
 		ent.railgunhit = FALSE;
 
-		//for stats so that team hit will count as a miss
-		if(ent.flags & FL_CLIENT)
-		if(ent.deadflag == DEAD_NO)
-			did_hit = 1;
-
-		if(teams_matter)
-		if(ent.team == self.team)
-        if(!BUFFS_PRESENT(self, BUFF_MEDIC))
-			did_hit = 0;
+        did_hit = W_IsGoodHit(self, ent);
 
 		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
 		ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
@@ -181,7 +192,9 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 
 	// we're done with the explosion entity, remove it
 	//remove(explosion);
-
+    
+    Buffs_MEODP_Hitscan_End(pts);
+    
 	trace_endpos = endpoint;
 	trace_ent = endent;
 	trace_dphitq3surfaceflags = endq3surfaceflags;
@@ -218,14 +231,7 @@ void W_BallisticBullet_Hit (void)
 		railgun_start = self.origin - 2 * frametime * self.velocity;
 		railgun_end = self.origin + 2 * frametime * self.velocity;
 
-		if(other.flags & FL_CLIENT)
-		if(other.deadflag == DEAD_NO)
-			hit = 1;
-
-		if(teamplay)
-		if(other.team == self.owner.team)
-        if(!BUFFS_PRESENT(self.owner, BUFF_MEDIC))
-			hit = 0;
+        hit = W_IsGoodHit(self, other);
 
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
@@ -244,7 +250,6 @@ void W_BallisticBullet_Hit (void)
 				bigprint_spec(self.owner, "^5Awesome!", "", 1);
 			}
 		}
-
 		//calculate hits for ballistic weapons
 		if not(inWarmupStage)
 		if not(self.owner.isbot)
@@ -488,12 +493,14 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			FOR_EACH_PLAYER(pl)
 				antilag_takeback(pl, time - lag);
 
+        entity pts = Buffs_MEODP_Hitscan_Begin(self);
+        
 		oldself = self;
 		self = proj;
 
 		savetime = frametime;
 		frametime = 0.05;
-
+        
 		for(;;)
 		{
 			// DP tracetoss is stupid and always traces in 0.05s
@@ -529,7 +536,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
 			self.velocity_z -= sv_gravity * dt;
-
+            
 			if(!SUB_OwnerCheck())
 			{
 				if(SUB_NoImpactCheck())
@@ -547,7 +554,9 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		}
 		frametime = savetime;
 		self = oldself;
-
+        
+        Buffs_MEODP_Hitscan_End(pts);
+        
 		if(lag)
 			FOR_EACH_PLAYER(pl)
 				antilag_restore(pl);

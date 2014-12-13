@@ -4,3 +4,4 @@
 .float the_entnum;
 
 .float sn_lastdraw;
+.float sn_forcefrozen;

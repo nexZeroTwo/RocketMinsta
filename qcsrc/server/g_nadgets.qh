@@ -7,7 +7,8 @@ void HG_PlayerSpawn();
 void HG_PlayerSpawnEx(entity);
 void HG_PlayerJoin();
 void HG_ResetState(entity);
-void HG_GiveBonus(entity, float, float, string);
+void HG_GiveBonus(entity, float, float, string, float);
+void HG_GiveRandomBonus(entity, float, string, float);
 void HG_Napalm();
 float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
@@ -25,6 +26,7 @@ void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
+void HG_Bait_Body_Boom(entity body);
 
 .vector org_explosion;
 .float nextparticle;
@@ -32,6 +34,7 @@ void HG_Shield_Trigger(void);
 .float hg_power;
 .float hg_state;
 .float hg_next;
+.float hg_bonus_next;
 .float hg_ammo;
 .float hg_type;
 .float hg_type_picked;
@@ -63,6 +66,7 @@ void HG_Shield_Trigger(void);
 .float hg_optout_nextround;
 .float hg_alwaysask;
 .float hg_adept;
+.float hg_tl_revived;
 
 .float hg_transloc_solidcheck;
 
@@ -89,6 +93,7 @@ void HG_Shield_Trigger(void);
 .float hg_stealthtime;
 .float hg_wasstealth;
 .float hg_stealth_saved;
+.float hg_stealth_protectionexpiretime;
 
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;
@@ -113,6 +118,8 @@ float g_nadgets_oldhitboxes;
 float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
+
+.entity bait_ref;
 
 #define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))

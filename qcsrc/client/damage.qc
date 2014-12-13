@@ -115,7 +115,8 @@ void Ent_DamageInfo(float isNew)
                 case DEATH_HG_NORMAL:
                 case DEATH_HG_REMOTE:
                 case DEATH_HG_NAPALM:
-                    pointparticles (rm_particleeffectnum("RM_EXPLOSION"), self.origin, '0 0 0', 1);
+                case DEATH_HG_BAIT:
+                    pointparticles(rm_particleeffectnum("RM_EXPLOSION"), self.origin, '0 0 0', 1);
                     break;
                 
                 case DEATH_HG_PLASMA_SHARD: case DEATH_HG_LASER:
@@ -219,6 +220,16 @@ void Ent_DamageInfo(float isNew)
 				if(!issilent)
 					sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
 				break;
+            case WEP_ZAPPER:
+                org2 = org + backoff * 6;
+                if(secondary) {
+                    pointparticles(particleeffectnum("nex_impact"), org2, '0 0 0', 1);
+                    if(!issilent)
+                        sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
+                } else if(!issilent) {
+                    sound(self, CHAN_PROJECTILE, "weapons/zapper_impact.wav", VOL_BASE, ATTN_NORM);
+                }
+                break;
 			case WEP_HAGAR:
 				org2 = org + backoff * 6;
 				pointparticles(particleeffectnum("hagar_explode"), org2, '0 0 0', 1);
@@ -363,6 +374,7 @@ void DamageInfo_Precache()
 	precache_sound("weapons/tagexp2.wav");
 	precache_sound("weapons/tagexp3.wav");
 	precache_sound("weapons/tag_impact.wav");
+    precache_sound("weapons/zapper_impact.wav");
 	precache_sound(RM_SOUND_LASER_PRIMARY);
 	precache_sound(RM_SOUND_LASER_SECONDARY);
 	precache_sound(RM_SOUND_MINSTA);

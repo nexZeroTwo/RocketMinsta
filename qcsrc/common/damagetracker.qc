@@ -80,6 +80,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Arc Buff";
     else if(dtype == DEATH_IGNITE)
         return "Ignite Buff";
+    else if(dtype == DEATH_MEODP)
+        return "Mystic Eyes of Death Perception";
     else { 
         r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
         
@@ -108,7 +110,11 @@ float DamageTracker_TransformDamageSource(float dtype) {
         return DEATH_HG_PLASMA;
     
     if(!DEATH_ISHG(dtype) && !DEATH_ISSPECIAL(dtype)) {
-        dtype &~= HITTYPE_BOUNCE | HITTYPE_SPLASH;
+        dtype &~= HITTYPE_SPLASH;
+
+        if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER))
+            dtype &~= HITTYPE_BOUNCE;
+
         if(!DEATH_ISWEAPON(dtype, WEP_CAMPINGRIFLE))
             dtype &~= HITTYPE_HEADSHOT; // only the rifle actually uses headshots
     }

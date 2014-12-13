@@ -355,6 +355,52 @@ float PlayerScore_Set(entity player, float scorefield, float score) {
 	return score;
 }
 
+float PlayerScore_SetFlags(entity player, float flg) {
+    entity s = player.scorekeeper;
+
+    if(!s) {
+        if(gameover)
+            return 0;
+        error("Setting score of unknown player!");
+    }
+
+    float oflg = s.(scores[SP_FLAGS]);
+
+    if(oflg & flg != flg) {
+        oflg |= flg;
+        s.(scores[SP_FLAGS]) = oflg;
+        s.SendFlags |= pow(2, SP_FLAGS);
+    }
+
+    return oflg;
+}
+
+float PlayerScore_UnsetFlags(entity player, float flg) {
+    entity s = player.scorekeeper;
+
+    if(!s) {
+        if(gameover)
+            return 0;
+        error("Setting score of unknown player!");
+    }
+
+    float oflg = s.(scores[SP_FLAGS]);
+
+    if(oflg & flg) {
+        oflg &~= flg;
+        s.(scores[SP_FLAGS]) = oflg;
+        s.SendFlags |= pow(2, SP_FLAGS);
+    }
+
+    return oflg;
+}
+
+float PlayerScore_SetFlagsBoolean(entity player, float flg, float b) {
+    if(b)
+        return PlayerScore_SetFlags(player, flg);
+    return PlayerScore_UnsetFlags(player, flg);
+}
+
 float PlayerTeamScore_Add(entity player, float pscorefield, float tscorefield, float score)
 {
 	float r;

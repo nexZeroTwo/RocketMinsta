@@ -336,3 +336,4 @@ entity dtrack_taken_spec;
 float sv_damagestats;
 
 float GetBigfont();
+void cvar_clientsettemp(string cv, string val);

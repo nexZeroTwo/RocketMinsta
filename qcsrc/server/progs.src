@@ -57,6 +57,7 @@ domination.qh
 damagetracker.qh
 irc.qh
 joinqueue.qh
+radio.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -117,6 +118,7 @@ w_seeker.qc
 w_campingrifle.qc
 w_tuba.qc
 w_fireball.qc
+w_zapper.qc
 
 t_items.qc
 cl_weapons.qc
@@ -204,4 +206,5 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+radio.qc
 

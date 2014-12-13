@@ -102,13 +102,13 @@ void WeaponStats_LogKill(float awep, float vwep)
 .entity pusher;
 .float pushltime;
 
-void CopyBody(float keepvelocity)
+entity CopyBody(float keepvelocity)
 {
-	local entity oldself;
+	entity body, oldself;
 	if (self.effects & EF_NODRAW)
-		return;
+		return world;
 	oldself = self;
-	self = spawn();
+	self = body = spawn();
 	self.enemy = oldself;
 	self.lip = oldself.lip;
 	self.colormap = oldself.colormap;
@@ -162,6 +162,7 @@ void CopyBody(float keepvelocity)
 	Drag_MoveDrag(oldself, self);
 
 	self = oldself;
+    return body;
 }
 
 float player_getspecies()
@@ -609,17 +610,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oa = self.armorvalue;
     
     if(self != attacker)
-    if(!DEATH_ISSPECIAL(deathtype))
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_MEODP)
     if(deathtype != DEATH_ARC)
     if(deathtype != DEATH_HG_SHIELD)
-    if(BUFFS_PRESENT(attacker, BUFF_ARC)) {
         Buffs_ArcDamage(self, attacker, damage, deathtype);
-        Buffs_ArcDamage_Finalize();
-    }
 
     if(damage) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
-        
+        damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
+    	
+    	if(damage)
         if(g_nadgets)
         if(attacker.iscreature)
         if(self.hg_shield) {
@@ -655,8 +655,14 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
             }
         }
+
+        if(self.hg_stealth) if(time < self.hg_stealth_protectionexpiretime) {
+            damage *= cvar("g_nadgets_cloak_damagereduction_factor");
+        }
     }
-    
+
+    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)
     if(deathtype != DEATH_TEAMCHANGE)
@@ -677,8 +683,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
     
-    damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
-
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
@@ -721,14 +725,11 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-	if (!g_minstagib)
-	{
+    if(!g_minstagib) {
 		v = healtharmor_applydamage(self.armorvalue, cvar("g_balance_armor_blockpercent"), damage);
 		take = v_x;
 		save = v_y;
-	}
-	else
-	{
+	} else {
 		save = 0;
 		take = damage;
 	}
@@ -750,7 +751,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
 	if (time > self.spawnshieldtime || cvar("g_spawnshieldmode"))
 	{
-		if (!(self.flags & FL_GODMODE))
+		if (!(self.flags & FL_GODMODE)) if(self.classname != "bait_body")
         {
             self.armorvalue = self.armorvalue - save;
 
@@ -759,15 +760,21 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             float sameteam = (teams_matter && self.team == attacker.team);
             float htype = VDMG_TYPE_HIT;
             
-            if(deathtype & HITTYPE_HEADSHOT)
+            if(deathtype & HITTYPE_HEADSHOT || deathtype == DEATH_MEODP)
                 htype |= VDMG_TYPE_CRIT;
             
             if(take >= self.health)
                 htype |= VDMG_TYPE_LETHAL;
             
-            if(!g_minstagib)
-                VisualDamage(attacker, self, cdmg, save, htype, hitloc);
-            
+            if(!g_minstagib) {
+            	vector vdloc = hitloc;
+
+            	if(deathtype == DEATH_HG_TRANSLOC)
+            		vdloc = vdloc + 0.5 * attacker.velocity;
+
+                VisualDamage(attacker, self, cdmg, save, htype, vdloc);
+            }
+
             if(attacker != self)
             if(!sameteam)
             if(attacker.classname == "player") {
@@ -778,8 +785,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 if(g_clanarena)
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * cvar("g_clanarena_score_damage"));
                 
-                if(BUFFS_PRESENT(attacker, BUFF_VAMPIRE))
-                    Buffs_VampireDamage(self, attacker, cdmg, deathtype);
+                Buffs_VampireDamage(self, attacker, cdmg, deathtype);
                 
                 if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
                     PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
@@ -926,7 +932,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
-        
+        if(deathtype == HG_BAIT)
+        if(IsDifferentTeam(attacker, self))
+        if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
+            attacker.hg_ammo += 1;
+            HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+        }
+
         float removenadgets;
         if(g_nadgets)
             removenadgets = cvar("g_nadgets_remove_on_death");
@@ -983,6 +995,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			self.angles_z = 0;
 		}
 		
+        Buffs_MEODP_Point_Detach(self);
+        
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
         
@@ -1086,7 +1100,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 float SendEntity_ShowNames(entity to, float sendflags)
 {
     WriteByte(MSG_ENTITY, ENT_CLIENT_SHOWNAMES);
-    WriteByte(MSG_ENTITY, num_for_edict(self.owner));
+    if(self.owner.bait_ref)
+        WriteByte(MSG_ENTITY, num_for_edict(self.owner.bait_ref));
+    else
+        WriteByte(MSG_ENTITY, num_for_edict(self.owner));
 
     sendflags = sendflags & 127;
     if(teams_matter && ((to.hg_stealth && !self.owner.hg_stealth) || self.owner.team == to.team || (to.classname == "spectator" && to.enemy.team == self.owner.team)))
@@ -1117,6 +1134,9 @@ float SendEntity_ShowNames(entity to, float sendflags)
             WriteShort(MSG_ENTITY, self.armorvalue);
         else
             WriteByte(MSG_ENTITY, self.armorvalue);
+
+        if(sendflags & 128)
+            WriteByte(MSG_ENTITY, self.owner.bait_ref && self.owner.frozen);
     }
     return TRUE;
 }
@@ -1227,9 +1247,12 @@ void UpdateSelectedPlayer() {
     makevectors(self.v_angle); // sets v_forward
 
     // 1. cursor trace is always right
-    if(self.cursor_trace_ent && self.cursor_trace_ent.classname == "player" && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent))
-        selected = self.cursor_trace_ent;
-    else {
+    if(self.cursor_trace_ent && (self.cursor_trace_ent.classname == "player" || self.cursor_trace_ent.classname == "bait_body") && UpdateSelectedPlayer_isVisible(self.cursor_trace_ent)) {
+        if(self.cursor_trace_ent.classname == "bait_body")
+            selected = self.cursor_trace_ent.aiment;
+        else
+            selected = self.cursor_trace_ent;
+    } else {
         // 2. if we don't have a cursor trace, find the player which is least
         //    mis-aimed at
         entity p;

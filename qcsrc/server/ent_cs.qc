@@ -26,7 +26,7 @@ float entcs_customize()
 	o = self.owner;
 	if(o.deadflag != DEAD_NO)
 		return FALSE;
-	if(o.classname != "player")
+	if(o.classname != "player") if(o.bait_ref.classname != "player")
 		return FALSE;
 	if(other == o)
 		return FALSE;
@@ -42,7 +42,7 @@ float entcs_send(entity to, float sf)
 	entity o;
 	o = self.owner;
 	WriteByte(MSG_ENTITY, ENT_CLIENT_ENTCS);
-	WriteByte(MSG_ENTITY, num_for_edict(o));
+	WriteByte(MSG_ENTITY, num_for_edict(o.bait_ref? o.bait_ref : o));
 	WriteShort(MSG_ENTITY, o.origin_x);
 	WriteShort(MSG_ENTITY, o.origin_y);
 	WriteShort(MSG_ENTITY, o.origin_z);
@@ -67,7 +67,10 @@ void entcs_think()
 
 entity attach_entcs()
 {
-	local entity ent;
+	entity ent;
+
+    if(!teams_matter && !sv_cheats)
+        return world;
 
 	ent = spawn();
 	ent.classname = "entcs_sender_v2";

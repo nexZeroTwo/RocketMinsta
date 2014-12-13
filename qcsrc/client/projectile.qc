@@ -19,74 +19,6 @@ void SUB_Stop()
 .float snd_looping;
 .float silent;
 
-float rm_particleeffectnum(string p) {
-    float n = particleeffectnum(p);
-    
-    if(n < 0) {
-        print("ERROR: RM particle effect ", p, " missing! Will try to use a fallback. Try restarting the game to fix this problem.\n");
-        
-        switch(p) {
-            case "RM_HG_PLASMA_TEAM1":
-            case "RM_HG_PLASMA_TEAM2":
-            case "RM_HG_PLASMA_TEAM3":
-            case "RM_HG_PLASMA_TEAM4":
-                return particleeffectnum("TR_NEXUIZPLASMA");
-                
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM1":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM2":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM3":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM4":
-                return particleeffectnum("electro_ballexplode");
-            
-            case "RM_HG_PLASMA_EXPLODE_TEAM1":
-            case "RM_HG_PLASMA_EXPLODE_TEAM2":
-            case "RM_HG_PLASMA_EXPLODE_TEAM3":
-            case "RM_HG_PLASMA_EXPLODE_TEAM4":
-                return particleeffectnum("hookbomb_explode");
-            
-            case "RM_HG_NAPALM_FIRE_TEAM1":
-            case "RM_HG_NAPALM_FIRE_TEAM2":
-            case "RM_HG_NAPALM_FIRE_TEAM3":
-            case "RM_HG_NAPALM_FIRE_TEAM4":
-                return particleeffectnum("fire_big");
-            
-            case "RM_HG_NAPALM_TRAIL_TEAM1":
-            case "RM_HG_NAPALM_TRAIL_TEAM2":
-            case "RM_HG_NAPALM_TRAIL_TEAM3":
-            case "RM_HG_NAPALM_TRAIL_TEAM4":
-                return particleeffectnum("firemine");
-            
-            case "RM_HEAL":
-                return particleeffectnum("electro_impact");
-            
-            case "RM_EXPLOSION":
-                return particleeffectnum("rocket_explode");
-        }
-    }
-    
-    return n;
-}
-
-#define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
-
-float TeamNumber(float t, float d) {
-    if(!rm_teamlasers)
-        return d;
-    
-    switch(t) {
-        case COLOR_TEAM1:
-            return 1;
-        case COLOR_TEAM2:
-            return 2;
-        case COLOR_TEAM3:
-            return 3;
-        case COLOR_TEAM4:
-            return 4;
-        default:
-            return d;
-    }
-} 
-
 .float nextparticle;
 void Projectile_DrawTrail(vector to)
 {
@@ -627,4 +559,5 @@ void Projectile_Precache()
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
+    precache_sound("weapons/zapper_fly.wav");
 }

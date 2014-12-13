@@ -8,6 +8,7 @@ float tdeath_hit;
 float tdeath_deathtype;
 void tdeath(entity player, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
 {
+	
 	entity head;
 	vector deathmin;
 	vector deathmax;
@@ -16,13 +17,31 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     float damage;
     float medic;
     
-    if(tdeath_deathtype == DEATH_HG_TRANSLOC)
-        damage = cvar("g_nadgets_transloc_damage") * Buffs_NadgetPower(player);
+    if(tdeath_deathtype == DEATH_HG_TRANSLOC) {
+    	if(teleporter.hg_tl_revived)
+    		damage = 0;
+		else if(cvar("g_nadgets_transloc_scaledamagedistance")) {
+			float minDamage = cvar("g_nadgets_transloc_mindamage");
+			float maxDamage = cvar("g_nadgets_transloc_maxdamage");
+			float minDist = cvar("g_nadgets_transloc_mindistance"); //min distance needed to inflict the min damage
+			float maxDist = cvar("g_nadgets_transloc_maxdistance"); //distance needed to inflict the maximum damage
+			float dist = vlen(teleporter.spawnorigin - player.origin);
+
+			if(dist < minDist)
+				damage = 0;
+			else
+				damage = bound(minDamage, maxDamage * (dist / maxDist), maxDamage) * Buffs_NadgetPower(player);
+		} else {
+			damage = cvar("g_nadgets_transloc_damage");
+			if(damage)
+				damage = damage * Buffs_NadgetPower(player);
+			else
+				damage = 10000;
+		}
+	} else if(tdeath_deathtype == DEATH_TELEFRAG)
+		damage = 10000;
     
-    if(!damage)
-        damage = 10000;
-    
-    medic = BUFFS_PRESENT(telefragger, BUFF_MEDIC);
+    medic = Buffs_BuffPower(telefragger, BUFF_MEDIC);
     
 	deathmin = player.absmin;
 	deathmax = player.absmax;
@@ -162,9 +181,10 @@ void Teleport_Touch (void)
 {
 	entity oldself, e;
     
-	if (other.health < 1)
+	if (other.deadflag != DEAD_NO)
 		return;
-	if not(other.flags & FL_CLIENT)	// FIXME: Make missiles firable through the teleport too
+
+	if not(other.flags & FL_CLIENT || (other.flags & FL_PROJECTILE && cvar("g_teleport_projectiles")))
 		return;
 
 	if(self.team)

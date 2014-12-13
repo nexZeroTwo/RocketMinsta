@@ -11,6 +11,7 @@
 #define HG_GG           DEATH_HG_GG
 #define HG_LASER        DEATH_HG_LASER
 #define HG_CLOAK        DEATH_HG_CLOAK
+#define HG_BAIT         DEATH_HG_BAIT
 
 string HG_TypeToName(float);
 float HG_NameToType(string);

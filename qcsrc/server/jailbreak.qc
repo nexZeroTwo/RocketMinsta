@@ -235,8 +235,7 @@ void JB_Imprison(entity attacker) {
 		if(cvar("g_jailbreak_frag_bonusgrenade"))
 		if(attacker.jb_fragrow >= cvar("g_jailbreak_frag_bonusgrenade_requirement")) {
 			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_jailbreak_frag_bonusgrenade_type")), 1,
-								   strcat(ftos(attacker.jb_fragrow), " frags in a row")
-			);
+								   strcat(ftos(attacker.jb_fragrow), " frags in a row"), TRUE);
 			attacker.jb_fragrow = 0;
 		}
 	}
@@ -253,13 +252,13 @@ void JB_Imprison(entity attacker) {
         bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
         
         if(g_nadgets) {
-            if(!cvar("g_nadgets_regen_time"))
+            if(!cvar("g_nadgets_regen"))
                 self.hg_ammo = 0;
             self.hg_bonus = 0;
         }
     }
     
-	PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+    PlayerScore_SetFlags(self, SPFLAG_FROZEN);
 	JB_CountPlayers();
 }
 
@@ -296,10 +295,10 @@ void JB_Release(entity saviour) {
     }
     
 	if(g_nadgets)
-    if(!cvar("g_nadgets_regen_time"))
+    if(!cvar("g_nadgets_regen"))
 		HG_PlayerSpawn();
 	
-	PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
 	JB_CountPlayers();
 }
 
@@ -658,7 +657,7 @@ void JB_PlayerSpawn() {
     DEPENDON(g_jailbreak)
     
     self.jb_isprisoned = FALSE;
-    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+    PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
     
     self.jb_fragrow = 0;
     
@@ -698,7 +697,7 @@ void JB_PlayerPreThink() {
         return;
     
     if(roundstate == ROUNDSTATE_WARMUP) {
-        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+        PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
         self.jb_isprisoned_prev = 0;
     }
         
@@ -717,9 +716,9 @@ void JB_PlayerPreThink() {
     if(ps != self.jb_isprisoned_prev) {
         if(!ps) {
             bprint(self.netname, "^3 has broken free!\n");
-            PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+            PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
         } else
-            PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+            PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         self.jb_isprisoned_prev = ps;
     }
     
@@ -870,8 +869,8 @@ void JB_SetupJailSpawnpoint() {
 }
 
 void JB_Jail_Touch() {
-	//JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
-	
+    //JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
+    
     if(g_nadgets)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {

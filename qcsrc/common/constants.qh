@@ -50,6 +50,9 @@ const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
 const float TE_CSQC_DTRACK = 121;
+const float TE_CSQC_MEODP = 122;
+const float TE_CSQC_RADIO = 123;
+const float TE_CSQC_ZAPPERLIGHTNING = 124;
 
 #define VDMG_TYPE_HIT 1
 #define VDMG_TYPE_CRIT 2
@@ -93,6 +96,7 @@ const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
 const float ENT_CLIENT_SHOWNAMES = 23;
+const float ENT_CLIENT_ZAPPER = 24;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -387,7 +391,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 24
+#define MAX_SCORE 22
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -397,19 +401,22 @@ const float JBMSG_TOOLATE = 5;
 #define SP_SCORE 3
 
 #define SP_HOOKFRAGS 10
-#define SP_FROZENSTATUS 11
-#define SP_MADOKASTATUS 12
-#define SP_AWAYSTATUS 13
-#define SP_PLAYTIME 14
-#define SP_COUNTRY 15
-#define SP_ACCURACY 16
-#define SP_FPS 17
-#define SP_NADEMODE 18
-#define SP_NADEFRAGS 19
-#define SP_REVIVALS 20
-#define SP_DAMAGE 21
-#define SP_HEALING 22
-#define SP_QUEUE 23
+#define SP_FLAGS 11
+#define SP_PLAYTIME 12
+#define SP_COUNTRY 13
+#define SP_ACCURACY 14
+#define SP_FPS 15
+#define SP_NADEMODE 16
+#define SP_NADEFRAGS 17
+#define SP_REVIVALS 18
+#define SP_DAMAGE 19
+#define SP_HEALING 20
+#define SP_QUEUE 21
+
+#define SPFLAG_FROZEN   1
+#define SPFLAG_MADOKA   2
+#define SPFLAG_AWAY     4
+#define SPFLAG_MUTE     8
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
@@ -545,6 +552,7 @@ float DEATH_IGNITE = 10103;
 float DEATH_LINKER_SHARE = 10104;
 float DEATH_VAMPIRE = 10105;
 float DEATH_ITEM = 10106;
+float DEATH_MEODP = 10107;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;
@@ -558,7 +566,8 @@ float DEATH_HG_LINKER = 107;
 float DEATH_HG_GG = 108;
 float DEATH_HG_LASER = 109;
 float DEATH_HG_CLOAK = 110;
-float DEATH_HG_END = 110;
+float DEATH_HG_BAIT = 111;
+float DEATH_HG_END = 111;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

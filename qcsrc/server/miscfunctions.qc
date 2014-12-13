@@ -778,16 +778,6 @@ void GetCvars(float f)
 	}
 }
 
-float fexists(string f)
-{
-    float fh;
-    fh = fopen(f, FILE_READ);
-    if (fh < 0)
-        return FALSE;
-    fclose(fh);
-    return TRUE;
-}
-
 void GameCommand(string);
 void backtrace(string msg)
 {
@@ -1110,7 +1100,7 @@ void readplayerstartcvars()
 				start_ammo_rockets = 999;
 			if (g_weaponarena & WEPBIT_SHOTGUN)
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
 			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
@@ -2275,6 +2265,7 @@ float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
 //float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
+float URI_GET_RADIO = 18;
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2294,6 +2285,10 @@ void URI_Get_Callback(float id, float status, string data)
     else if (id == URI_GET_IP2C)
     {
         IP2C_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_RADIO)
+    {
+        Radio_URI_Get_Callback(id, status, data);
     }
     else
     {
@@ -2630,8 +2625,6 @@ vector shotorg_adjust(vector vecs, float y_is_right, float visual)
 	}
 	return vecs;
 }
-
-
 
 void attach_sameorigin(entity e, entity to, string tag)
 {
@@ -3195,12 +3188,11 @@ void MarkAway(entity pl, float force)
     pl.is_away = 1;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_SetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+
+    pl.afkmarktime = time;
 }
 
 void UnmarkAway(entity pl)
@@ -3218,10 +3210,7 @@ void UnmarkAway(entity pl)
     pl.is_away = 0;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_UnsetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
     

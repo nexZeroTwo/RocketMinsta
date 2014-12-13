@@ -619,6 +619,12 @@ float client_cefc_accumulatortime;
 
 .float campingrifle_bulletcounter;
 .float campingrifle_bulletlimit;
+.float campingrifle_hitstreak1;
+.float campingrifle_hitstreak2;
+.float campingrifle_hitstreak1_expiretime;
+.float campingrifle_hitstreak2_expiretime;
+
+void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype);
 
 #define PROJECTILE_MAKETRIGGER(e) (e).solid = SOLID_CORPSE; (e).dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
 // when doing this, hagar can go through clones
@@ -761,7 +767,8 @@ float sv_scoreboard_heal_column;
 
 float hack_forcenextmap;
 
-float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity);
+float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc);
+float RadiusDamage(entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity);
 
 .void(void) teamswap;
 void SwapTeams(void);
@@ -777,3 +784,8 @@ float sv_nicehealth;
 float sv_showacc;
 
 #define HEAL_PAUSEROT_DEFAULT -1
+
+float IsDifferentTeam(entity a, entity b);
+
+.float afkmarktime;
+
