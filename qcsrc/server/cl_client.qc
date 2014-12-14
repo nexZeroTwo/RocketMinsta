@@ -2742,6 +2742,7 @@ void SpectateCopy(entity spectatee) {
     self.dom_captureprogress = spectatee.dom_captureprogress;
     self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
     self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
+    self.zapper_heat = spectatee.zapper_heat;
     self.buffstat = spectatee.buffstat;
 	setorigin(self, spectatee.origin);
     // TODO: find out if this is actually needed
