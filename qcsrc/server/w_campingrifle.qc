@@ -47,11 +47,11 @@ void W_CampingRifle_Reload()
 	{
 		if (self.weaponentity.wframe == WFRAME_RELOAD)
 			return;
-
-		// allow to switch away while reloading, but this will cause a new reload!
-		//self.weaponentity.state = WS_READY;
-		// .....no, this is a bad idea.
-		self.weaponentity.state = WS_INUSE;
+        
+        if(cvar("g_balance_campingrifle_switch_while_reloading"))
+            self.weaponentity.state = WS_READY;
+        else
+            self.weaponentity.state = WS_INUSE;
 	}
 
 	sound (self, CHAN_WEAPON2, "weapons/campingrifle_reload.wav", VOL_BASE, ATTN_NORM);
