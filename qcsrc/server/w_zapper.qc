@@ -150,7 +150,7 @@ void W_Zapper_Beam_Think(void) {
         if(targ.takedamage)
             Damage(targ, self, self.owner, damage, WEP_ZAPPER, end, force * w_shotdir);
 
-        if(trace_fraction < 1)
+        if(fract < 1)
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
             Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
 
