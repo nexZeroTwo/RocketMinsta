@@ -473,6 +473,8 @@ void ForceModeSpawns(void) {
     }
 }
 
+.float zapper_heat;
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -744,6 +746,7 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
+    addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
     
     if(g_domination)
     {

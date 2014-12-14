@@ -3628,7 +3628,8 @@ float hg_alpha;
 
 float hgregen;
 
-float ammo_useprogress;
+float ammo_progress;
+
 float vhealth;
 float vshield;
 
@@ -4654,8 +4655,8 @@ void Sbar_Draw(void)
                 sector_mod = '0 0 0';
                 thlimit = hud_sector_pos_x + hud_sector_x + sector_gap;
                 
-                if(ammo_useprogress)
-                    DrawProgressBarSector(bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                if(ammo_progress)
+                    DrawProgressBarSector(ammo_progress, hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag, 0);
@@ -4864,8 +4865,8 @@ void Sbar_Draw(void)
                 hud_sector_x = SECWIDTH_NORMAL;
                 sector_mod = '0 0 0';
                 
-                if(ammo_useprogress)
-                    DrawProgressBarSector(-bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                if(ammo_progress)
+                    DrawProgressBarSector(ammo_progress, hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag, 0);
@@ -5108,17 +5109,29 @@ void Sbar_Draw(void)
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
             float isrifle;
             
-            if(activeweapon == WEP_CAMPINGRIFLE && a == 999) {
-                a = getstati(STAT_BULLETS_LOADED);
-                isrifle = TRUE;
-                ammo_useprogress = TRUE;
-            } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
+            float itemcode = GetAmmoItemCode(i);
+
+            if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
+                ammo_progress = -bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
+                if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
+                    a = getstati(STAT_BULLETS_LOADED);
+                    isrifle = TRUE;
+                }
+            } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
+                float h = getstatf(STAT_ZAPPER_HEAT);
+                if(h >= 0) {
+                    if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
+                        a = floor((1 - h) * 100);
+                    ammo_progress = -h;
+                }
+            } else
+                ammo_progress = 0;
             
-            if(a < 0 || (!a && !(stat_items & GetAmmoItemCode(i))))
+            if(a < 0 || (!a && !(stat_items & itemcode)))
                 continue;
             
 			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
-				if (stat_items & GetAmmoItemCode(i)) {
+				if (stat_items & itemcode) {
 					if(!a)
 					{
 						if(ammonotifytime < time)
@@ -5171,17 +5184,17 @@ void Sbar_Draw(void)
 
                     pos = bottom - pos;
                     
-                    if (stat_items & GetAmmoItemCode(i))
+                    if (stat_items & itemcode)
                         drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
                     drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
                     
                     if (a < 10) {
-                        if(stat_items & GetAmmoItemCode(i))
+                        if(stat_items & itemcode)
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
                     } else {
-                        if(stat_items & GetAmmoItemCode(i))
+                        if(stat_items & itemcode)
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
@@ -5193,7 +5206,7 @@ void Sbar_Draw(void)
                     pos = bottom - pos;
                     pos_x = ammosector_pos;
                     
-                    if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
+                    if(stat_items & itemcode || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
                     {
                         ammo_last = i;
                         
@@ -5204,7 +5217,7 @@ void Sbar_Draw(void)
                         else
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                     }
-                    else
+                    else if(!(stat_items & IT_UNLIMITED_AMMO))
                     {
                         pos_y -= 10;
                         pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));

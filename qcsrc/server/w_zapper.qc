@@ -6,6 +6,9 @@
 .float zapper_lastdmg;
 .float zapper_dmgdelay;
 .float zapper_arc_hit;
+.float zapper_heat;
+.float zapper_coolofftime;
+.float zapper_switchtime;
 
 .vector zapper_beam_start, zapper_beam_end;
 
@@ -56,6 +59,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 
 float W_Zapper_Beam_Expired(void) {
     if(time > self.zapper_expire)
+        return TRUE;
+
+    if(self.owner.zapper_heat >= 1)
         return TRUE;
 
     if(self.owner.weapon != WEP_ZAPPER)
@@ -200,6 +206,11 @@ void W_Zapper_Beam_Think(void) {
         self.zapper_beam_end = end;
     }
 
+    if(self.owner.zapper_heat >= 0) {
+        self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_primary_heatup") * frametime) / rate, 1);
+        self.owner.zapper_coolofftime = time;
+    }
+
     self.nextthink = time;
 }
 
@@ -331,17 +342,37 @@ void W_Zapper_Attack2(void) {
 
 }
 
+void W_Zapper_Cooloff(void) {
+    if(self.zapper_heat < 0)
+        return;
+
+    float a = bound(0, (time - self.zapper_coolofftime) * cvar("g_balance_zapper_primary_cooloff_accel"), 1);
+
+    if(!a)
+        return;
+
+    self.zapper_heat = bound(0, self.zapper_heat - cvar("g_balance_zapper_primary_cooloff") * frametime * a, 1);
+}
+
 float w_zapper(float req) {
     if(req == WR_AIM)
         self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
     else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
             if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
-                if(self.zapper_beam)
-                    self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
-                else if(weapon_prepareattack(0, cvar("g_balance_zapper_primary_refire")))
-                    W_Zapper_Attack1();
-                weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                if(self.zapper_heat >= 1) {
+                    if(time - self.zapper_switchtime > 1) {
+                        play2(self, "weapons/unavailable.wav");
+                        W_SwitchWeapon_Force(self, w_getbestweapon(self));
+                        self.zapper_switchtime = time;
+                    }
+                } else {
+                    if(self.zapper_beam)
+                        self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
+                    else if(weapon_prepareattack(0, cvar("g_balance_zapper_primary_refire")))   
+                        W_Zapper_Attack1();
+                    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                }
             }
         } else if(self.BUTTON_ATCK2) {
             if(weapon_prepareattack(0, cvar("g_balance_zapper_secondary_refire"))) {
@@ -355,8 +386,12 @@ float w_zapper(float req) {
         precache_model("models/weapons/h_hookgun.dpm");
         precache_sound("sounds/weapons/zapper_fire.wav");
         precache_sound("sounds/weapons/zapper_fly.wav");
-    }
-    else if(req == WR_SETUP)
+    } else if(req == WR_RESETPLAYER){
+        if(cvar("g_balance_zapper_primary_heatup"))
+            self.zapper_heat = 0;
+        else
+            self.zapper_heat = -1;
+    } else if(req == WR_SETUP)
         weapon_setup(WEP_ZAPPER);
     else if(req == WR_CHECKAMMO1)
         return W_Zapper_Attack1_CheckAmmo(self);

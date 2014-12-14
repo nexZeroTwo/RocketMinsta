@@ -3495,6 +3495,8 @@ void PlayerPreThink (void)
 		self.dmg_team = max(0, self.dmg_team - cvar("g_teamdamage_resetspeed") * frametime);
 
 		//self.angles_y=self.v_angle_y + 90;   // temp
+
+        W_Zapper_Cooloff();
 	} else {
         if(self.solid) {
             bprint("BUG: spectator/observer was solid\n");
