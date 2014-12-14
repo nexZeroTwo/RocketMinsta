@@ -147,8 +147,19 @@ void W_Zapper_Beam_Think(void) {
         }
         
         float hit = W_IsGoodHit(self.owner, targ);
-        if(targ.takedamage)
+        if(targ.takedamage) {
+            float d = (end - w_shotorg) * w_shotdir;
+
+            float mindist = cvar("g_balance_zapper_primary_damagefalloff_mindist");
+            float maxdist = cvar("g_balance_zapper_primary_damagefalloff_maxdist");
+            float halflifedist = cvar("g_balance_zapper_primary_damagefalloff_halflife");
+            float forcehalflifedist = cvar("g_balance_zapper_primary_damagefalloff_forcehalflife");
+
+            damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
+            force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
+
             Damage(targ, self, self.owner, damage, WEP_ZAPPER, end, force * w_shotdir);
+        }
 
         if(fract < 1)
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
@@ -282,6 +293,16 @@ void W_Zapper_Attack2(void) {
     float hit = W_IsGoodHit(self.owner, targ);
 
     if(targ.takedamage) {
+        float d = (end - w_shotorg) * w_shotdir;
+
+        float mindist = cvar("g_balance_zapper_secondary_damagefalloff_mindist");
+        float maxdist = cvar("g_balance_zapper_secondary_damagefalloff_maxdist");
+        float halflifedist = cvar("g_balance_zapper_secondary_damagefalloff_halflife");
+        float forcehalflifedist = cvar("g_balance_zapper_secondary_damagefalloff_forcehalflife");
+
+        damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
+        force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
+
         Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
 
         if(targ.iscreature)
