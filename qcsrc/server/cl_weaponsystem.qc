@@ -343,7 +343,8 @@ void W_SetHitscanVisuals(entity p, vector end) {
     w_shotorg_visual = w_shotorg;
     w_shotdir_visual = w_shotdir;
 
-    if(p.weaponentity.shotorg_visual_x > 0) {
+    if(p.weaponentity.shotorg_visual_x > 0)
+    if(cvar("g_fakeshotorigin")) {
         vecs = p.weaponentity.shotorg_visual;
         vecs_y = -vecs_y;
 

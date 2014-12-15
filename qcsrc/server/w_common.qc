@@ -417,7 +417,9 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     else
         eff = particleeffectnum("tr_bullet");
     
-    trailparticles(world, eff, w_shotorg, end);
+    W_SetHitscanVisuals(self, end);
+    trailparticles(world, eff, w_shotorg_visual, end);
+
     Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
 }
 
@@ -430,6 +432,9 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         fireHitscanBullet(start, dir, spread, damage, headshotbonus, force, dtype, tracereffects);
         return;
     }
+
+    // used only for muzzleflashes later
+    W_SetHitscanVisuals(self, w_shotorg + dir);
 
 	entity proj;
 	proj = spawn();
