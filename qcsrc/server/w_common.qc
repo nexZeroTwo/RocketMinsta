@@ -80,10 +80,10 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
         if(deathtype == DEATH_HG_SHIELD)
             traceline(start, end, FALSE, self);
 		else if(self.antilag_debug)
-			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
+			traceline_antilag(self, start, end, FALSE, world, self.antilag_debug);
 		else
-			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
-
+			traceline_antilag(self, start, end, FALSE, world, ANTILAG_LATENCY(self));
+        
 		// if it is world we can't hurt it so stop now
 		if(trace_ent == world || trace_fraction == 1) {
             if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)

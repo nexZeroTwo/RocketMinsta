@@ -106,14 +106,14 @@ void W_Zapper_Beam_Think(void) {
     }
 
     if(self.owner.antilag_debug)
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, self.antilag_debug);
+        traceline_antilag(self.owner, w_shotorg, end, FALSE, self, self.antilag_debug);
     else
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, ANTILAG_LATENCY(self.owner));
+        traceline_antilag(self.owner, w_shotorg, end, FALSE, self, ANTILAG_LATENCY(self.owner));
 
     targ = trace_ent;
     end = trace_endpos;
     fract = trace_fraction;
-
+    
     float dt = time - self.zapper_lastdmg;
     float rate = W_WeaponRateFactorFor(self.owner);
     float damageIsDps = FALSE;
