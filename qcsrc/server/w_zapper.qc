@@ -113,7 +113,7 @@ void W_Zapper_Beam_Think(void) {
     targ = trace_ent;
     end = trace_endpos;
     fract = trace_fraction;
-    
+
     float dt = time - self.zapper_lastdmg;
     float rate = W_WeaponRateFactorFor(self.owner);
     float damageIsDps = FALSE;
@@ -291,9 +291,9 @@ void W_Zapper_Attack2(void) {
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
     if(self.antilag_debug)
-        traceline_antilag(self, w_shotorg, end, FALSE, self, self.antilag_debug);
+        traceline_antilag(self, w_shotorg, end, FALSE, world, self.antilag_debug);
     else
-        traceline_antilag(self, w_shotorg, end, FALSE, self, ANTILAG_LATENCY(self));
+        traceline_antilag(self, w_shotorg, end, FALSE, world, ANTILAG_LATENCY(self));
 
     targ = trace_ent;
     end = trace_endpos;
