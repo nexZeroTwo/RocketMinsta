@@ -319,7 +319,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	// check whether antilagged traces are enabled
 	if (lag < 0.001)
 		lag = 0;
-	if (clienttype(forent) != CLIENTTYPE_REAL)
+	if (clienttype(source) != CLIENTTYPE_REAL)
 		lag = 0; // only antilag for clients
 
 	// change shooter to SOLID_BBOX so the shot can hit corpses
