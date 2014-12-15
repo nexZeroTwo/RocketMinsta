@@ -8,7 +8,6 @@
 .float zapper_arc_hit;
 .float zapper_heat;
 .float zapper_coolofftime;
-.float zapper_switchtime;
 
 .vector zapper_beam_start, zapper_beam_end;
 
@@ -361,11 +360,7 @@ float w_zapper(float req) {
         if(self.BUTTON_ATCK) {
             if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
                 if(self.zapper_heat >= 1) {
-                    if(time - self.zapper_switchtime > 1) {
-                        play2(self, "weapons/unavailable.wav");
-                        W_SwitchWeapon_Force(self, w_getbestweapon(self));
-                        self.zapper_switchtime = time;
-                    }
+                    W_SwitchWeapon_OutOfAmmo(self);
                 } else {
                     if(self.zapper_beam)
                         self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");

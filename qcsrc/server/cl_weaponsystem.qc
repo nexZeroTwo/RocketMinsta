@@ -48,6 +48,17 @@ void W_SwitchWeapon_Force(entity e, float w)
 	e.switchweapon = w;
 }
 
+void W_SwitchWeapon_OutOfAmmo(entity plr) {
+    float best = w_getbestweapon(plr);
+
+    if(!best)
+        best = -1;
+
+    if(plr.switchweapon != best)
+    if(client_hasweapon(plr, best, TRUE, TRUE))
+        W_SwitchWeapon_Force(plr, best);
+}
+
 .float antilag_debug;
 
 // VorteX: static frame globals
@@ -913,91 +924,86 @@ void CL_SpawnWeaponentity()
 
 .float hasweapon_complain_spam;
 
-float client_hasweapon(entity cl, float wpn, float andammo, float complain)
-{
-	local float weaponbit, f;
-	local entity oldself;
+float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
+    float weaponbit, f;
+    entity oldself;
 
-	if(time < self.hasweapon_complain_spam)
-		complain = 0;
-	if(complain)
-		self.hasweapon_complain_spam = time + 0.2;
+    if(time < cl.hasweapon_complain_spam)
+        complain = 0;
+    if(complain)
+        cl.hasweapon_complain_spam = time + 0.2;
 
-	if (wpn < WEP_FIRST || wpn > WEP_LAST)
-	{
-		if (complain)
-			sprint(self, "Invalid weapon\n");
-		return FALSE;
-	}
-	weaponbit = W_WeaponBit(wpn);
-	if (cl.weapons & weaponbit)
-	{
-		if (andammo)
-		{
-			if(cl.items & IT_UNLIMITED_WEAPON_AMMO)
-			{
-				f = 1;
-			}
-			else
-			{
-				oldself = self;
-				self = cl;
-				f = weapon_action(wpn, WR_CHECKAMMO1);
-				f = f + weapon_action(wpn, WR_CHECKAMMO2);
-				self = oldself;
-			}
-			if (!f)
-			{
-				if (complain)
-				if(clienttype(cl) == CLIENTTYPE_REAL)
-				{
-					play2(cl, "weapons/unavailable.wav");
-					sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
-				}
-				return FALSE;
-			}
-		}
-		return TRUE;
-	}
-	if (complain)
-	{
-		// DRESK - 3/16/07
-		// Report Proper Weapon Status / Modified Weapon Ownership Message
-		if(weaponsInMap & weaponbit)
-		{
-			sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
+    if(wpn < 0) {
+        if(complain) {
+            play2(cl, "weapons/unavailable.wav");
+        }
+        return FALSE;
+    }
 
-			if(cvar("g_showweaponspawns"))
-			{
-				entity e;
-				string s;
+    if(wpn < WEP_FIRST || wpn > WEP_LAST) {
+        if (complain)
+            sprint(cl, "Invalid weapon\n");
+        return FALSE;
+    }
 
-				e = get_weaponinfo(wpn);
-				s = e.model2;
+    weaponbit = W_WeaponBit(wpn);
+    if(cl.weapons & weaponbit) {
+        if(andammo) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+                f = 1;
+            } else {
+                oldself = self;
+                self = cl;
+                f = weapon_action(wpn, WR_CHECKAMMO1);
+                f = f + weapon_action(wpn, WR_CHECKAMMO2);
+                self = oldself;
+            } if(!f) {
+                if(complain)
+                if(clienttype(cl) == CLIENTTYPE_REAL) {
+                    play2(cl, "weapons/unavailable.wav");
+                    sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
+                }
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
 
-				for(e = world; (e = findfloat(e, weapons, weaponbit)); )
-				{
-					if(e.classname == "droppedweapon")
-						continue;
-					if not(e.flags & FL_ITEM)
-						continue;
-					WaypointSprite_Spawn(
-						s,
-						1, 0,
-						world, e.origin,
-						self, 0,
-						world, enemy,
-						0
-					);
-				}
-			}
-		}
-		else
-			sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+    if(complain) {
+        // DRESK - 3/16/07
+        // Report Proper Weapon Status / Modified Weapon Ownership Message
+        if(weaponsInMap & weaponbit) {
+            sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
 
-		play2(cl, "weapons/unavailable.wav");
-	}
-	return FALSE;
+            if(cvar("g_showweaponspawns")) {
+                entity e;
+                string s;
+
+                e = get_weaponinfo(wpn);
+                s = e.model2;
+
+                for(e = world; (e = findfloat(e, weapons, weaponbit)); ) {
+                    if(e.classname == "droppedweapon")
+                        continue;
+                    if not(e.flags & FL_ITEM)
+                        continue;
+                    WaypointSprite_Spawn(
+                        s,
+                        1, 0,
+                        world, e.origin,
+                        self, 0,
+                        world, enemy,
+                        0
+                    );
+                }
+            }
+        } else
+            sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+
+        play2(cl, "weapons/unavailable.wav");
+    }
+
+    return FALSE;
 };
 
 // Weapon subs
@@ -1063,9 +1069,8 @@ float weapon_prepareattack(float secondary, float attacktime)
         return FALSE;
     
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
-	{
-		W_SwitchWeapon_Force(self, w_getbestweapon(self));
+	if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
+        W_SwitchWeapon_OutOfAmmo(self);
 		return FALSE;
 	}
 
