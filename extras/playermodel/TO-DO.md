@@ -1,7 +1,7 @@
 To-do :
 -------
 
-[ ] Export test ( can this basic girl can be exported in game ? does it works ? )
+[X] Export test ( can this basic girl can be exported in game ? does it works ? )
 [ ] Concept artwork, what do we want ?
 [ ] Breast reduction
 [ ] Hips reduction
