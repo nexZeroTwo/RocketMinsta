@@ -386,6 +386,10 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void Menu_ShowNagger(void) {
+    localcmd("menu_cmd directmenu engineNagger\n");
+}
+
 void ReloadMenu_f()
 {
 	if(!self.cnt)
@@ -400,6 +404,7 @@ void ReloadMenu_f()
 		if(rm_helptime)
 			localcmd("menu_cmd directmenu RMConfig\n");
 			
+        Menu_ShowNagger();
 		gui_reloading = 0;
 		remove(self);
 	}
@@ -642,6 +647,8 @@ void PostInit(void)
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
+    defer(1, Menu_ShowNagger);
+
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
 	DPRM_Start();
