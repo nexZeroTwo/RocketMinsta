@@ -267,7 +267,7 @@ void Buffs_Model_Read(void) {
     }
 
     if(sf & 16) {
-        self.team = ReadByte()-1;
+        self.team = max(0, ReadByte()-1);
         Buffs_Model_UpdateColor(self);
     }
     
