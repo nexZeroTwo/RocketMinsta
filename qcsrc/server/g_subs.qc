@@ -306,6 +306,9 @@ void main (void)
 .entity trace_savedowner;
 
 void trace_start_for(entity o) {
+    if(!cvar("sv_gameplayfix_shootownentities"))
+        return;
+
     entity e; for(;(e = findentity(e, owner, o));) {
         e.trace_savedowner = o;
         e.owner = world;
