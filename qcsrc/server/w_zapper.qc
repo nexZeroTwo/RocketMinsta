@@ -8,6 +8,7 @@
 .float zapper_arc_hit;
 .float zapper_heat;
 .float zapper_coolofftime;
+.float zapper_shotorgknown;
 
 .vector zapper_beam_start, zapper_beam_end;
 
@@ -28,16 +29,20 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
+    if(sf & 1)
+    if(!to.zapper_shotorgknown)
+    if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
+        sf |= 8;
+    }
+
     WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER);
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
         WriteByte(MSG_ENTITY, num_for_edict(self.owner));
-        if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
-            vector shorg = W_Zapper_LocalShotOrg(self.owner);
-            WriteCoord(MSG_ENTITY, shorg_x);
-            WriteCoord(MSG_ENTITY, shorg_y);
-            WriteCoord(MSG_ENTITY, shorg_z);
+        if(sf & 8) {
+            WriteInt24_t(MSG_ENTITY, compressShotOrigin(W_Zapper_LocalShotOrg(self.owner)));
+            to.zapper_shotorgknown = TRUE;
         }
     }
 
