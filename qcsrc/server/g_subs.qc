@@ -303,6 +303,22 @@ void main (void)
 
 // Misc
 
+.entity trace_savedowner;
+
+void trace_start_for(entity o) {
+    entity e; for(;(e = findentity(e, owner, o));) {
+        e.trace_savedowner = o;
+        e.owner = world;
+    }
+}
+
+void trace_end_for(entity o) {
+    entity e; for(;(e = findentity(e, trace_savedowner, o));) {
+        e.trace_savedowner = world;
+        e.owner = o;
+    }
+}
+
 /*
 ==================
 traceline_antilag
@@ -319,7 +335,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	// check whether antilagged traces are enabled
 	if (lag < 0.001)
 		lag = 0;
-	if (clienttype(source) != CLIENTTYPE_REAL)
+	if (clienttype(forent) != CLIENTTYPE_REAL)
 		lag = 0; // only antilag for clients
 
 	// change shooter to SOLID_BBOX so the shot can hit corpses

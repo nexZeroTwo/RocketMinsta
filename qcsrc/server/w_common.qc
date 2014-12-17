@@ -75,14 +75,16 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
     if(deathtype != DEATH_HG_SHIELD)
         pts = Buffs_MEODP_Hitscan_Begin(self);
     
+    trace_start_for(self);
+
 	while (1)
 	{
         if(deathtype == DEATH_HG_SHIELD)
             traceline(start, end, FALSE, self);
 		else if(self.antilag_debug)
-			traceline_antilag(self, start, end, FALSE, world, self.antilag_debug);
+			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
 		else
-			traceline_antilag(self, start, end, FALSE, world, ANTILAG_LATENCY(self));
+			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
         
 		// if it is world we can't hurt it so stop now
 		if(trace_ent == world || trace_fraction == 1) {
@@ -108,6 +110,8 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		// make the entity non-solid
 		trace_ent.solid = SOLID_NOT;
 	}
+
+    trace_end_for(self);
 
 	endpoint = trace_endpos;
 	endent = trace_ent;
@@ -585,10 +589,13 @@ void fireBullet (vector start, vector dir, float spread, float damage, float for
 
 	dir = normalize(dir + randomvec() * spread);
 	end = start + dir * MAX_SHOT_DISTANCE;
+
+    trace_start_for(self);
 	if(self.antilag_debug)
 		traceline_antilag (self, start, end, FALSE, self, self.antilag_debug);
 	else
 		traceline_antilag (self, start, end, FALSE, self, ANTILAG_LATENCY(self));
+    trace_end_for(self);
 
     end = trace_endpos;
 

@@ -95,6 +95,7 @@ void W_Zapper_Beam_Think(void) {
     float fract;
     entity targ;
     vector end = w_shotorg + w_shotdir * self.zapper_range;
+    entity o = self.owner;
 
     if(self.zapper_tracespeed) {
         if(!self.origin)
@@ -105,10 +106,12 @@ void W_Zapper_Beam_Think(void) {
         end = self.origin;
     }
 
+    trace_start_for(o);
     if(self.owner.antilag_debug)
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self, self.antilag_debug);
+        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, self.antilag_debug);
     else
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self, ANTILAG_LATENCY(self.owner));
+        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, ANTILAG_LATENCY(self.owner));
+    trace_end_for(o);
 
     targ = trace_ent;
     end = trace_endpos;
@@ -169,8 +172,6 @@ void W_Zapper_Beam_Think(void) {
         if(fract < 1)
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
             Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
-
-        entity o = self.owner;
 
         if not(inWarmupStage)
         if not(o.isbot) {
@@ -290,10 +291,12 @@ void W_Zapper_Attack2(void) {
     vector end = w_shotorg + w_shotdir * range;
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
+    trace_start_for(self);
     if(self.antilag_debug)
         traceline_antilag(self, w_shotorg, end, FALSE, world, self.antilag_debug);
     else
         traceline_antilag(self, w_shotorg, end, FALSE, world, ANTILAG_LATENCY(self));
+    trace_end_for(self);
 
     targ = trace_ent;
     end = trace_endpos;
