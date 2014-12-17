@@ -36,7 +36,8 @@ void Buffs_Model_Draw(void) {
     if(self.light_lev)
         R_AddDynamicLight(self.origin, self.light_lev, self.lightcolor);
 
-    // TODO: handle EF_STARDUST?
+    if(self.effects & EF_STARDUST)
+        pointparticles(particleeffectnum("EF_STARDUST"), self.origin, '0 0 0', frametime);
 }
 
 void Buffs_Model_Multi_Think(void) {
@@ -247,7 +248,6 @@ void Buffs_Model_Read(void) {
 
             Buffs_Model_AttachRing(self);
         }
-
     }
 
     if(sf & 2) {
