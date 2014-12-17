@@ -309,6 +309,17 @@ void Buffs_Model_Update(entity e) {
     }
 } 
 
+float Buffs_Model_Overhead_Customize(void) {
+    if(!other.iscreature)
+        return TRUE;
+    
+    if(self.owner.hg_stealth)
+    if(IsDifferentTeam(self.owner, other))
+        return FALSE;
+
+    return TRUE;
+}
+
 float Buffs_TeamWaypoint_VisibleForPlayer(entity plr) {
     if(plr == self.owner)
         return FALSE;
@@ -396,6 +407,7 @@ void Buffs_ClientFrame(void) {
             float bi = Buffs_TypeToIndex(self.buffstat);
             setsize(m, '0 0 -40', '0 0 40');
             m.owner = self;
+            m.customizeentityforclient = Buffs_Model_Overhead_Customize;
             Net_LinkEntity(m, FALSE, 0, Buffs_Model_Send);
             self.buff_model = m;
         }
