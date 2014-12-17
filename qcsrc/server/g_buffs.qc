@@ -53,17 +53,6 @@ void Buffs_Init(void) {
         
         if(cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline")))
             g_buffs_baseline |= b;
-        
-        if(g_buffs_enabled & b || g_buffs_baseline & b) {
-            string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
-            if(!fexists(s)) {
-                s = "models/buffs/buff.md3";
-                print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
-            }
-            
-            g_buffs_model[i] = strzone(s);
-            precache_model(g_buffs_model[i]);
-        }
     }
     
     if(enabled < 2)
@@ -262,64 +251,63 @@ float Buffs_BuffPower(entity p, float b) {
     return pw;
 }
 
-string Buffs_GenName(float b) {
-    string r;
-    float o, first = TRUE;
-    
-    r = Buffs_TypeToExpandedName(b);
-    
-    if(r != "Unknown")
-        return r;
-    
-    for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2)
-        if(b & o) {
-            if(first) {
-                r = Buffs_TypeToExpandedName(o);
-                first = FALSE;
-            } else {
-                r = strcat(r, " + ", Buffs_TypeToExpandedName(o));
-            }
-        }
-    
-    return r;
-}
+float Buffs_Model_Send(entity to, float sf) {
+    entity o = self.owner;
 
-vector Buffs_GenColor(float b) {
-    vector c;
-    float o, n;
-    
-    c = Buffs_TypeToColor(b);
-    
-    if(c != '0 0 0')
-        return c;
-    
-    for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2)
-        if(b & o) {
-            c += Buffs_TypeToColor(o);
-            ++n;
-        }
-    
-    // actually, this looks like shit
-    return c * (1/n);
-}
+    if(self.flags & FL_ITEM)
+        o = world;
+    else if(o)
+        sf &~= (2 | 16);
 
-float Buffs_BuffModel_Customize(void) {
-    entity oself = self;
-    if(!self.owner.iscreature)  // called for a multibuff model - check against the parent model
-        self = self.owner;
-    
-    float sameteam = (teams_matter && (other.team == self.owner.team || (other.classname == "spectator" && other.enemy.team == self.owner.team)));
-    if(self.owner.hg_stealth && !sameteam)
-        return FALSE;
-    
-    if(other == self.owner || (other.classname == "spectator" && other.enemy == self.owner)) {
-        oself.alpha = -1;
-    } else {
-        oself.alpha = 1;
+    WriteByte(MSG_ENTITY, ENT_CLIENT_BUFFMODEL);
+    WriteByte(MSG_ENTITY, sf);
+
+    if(sf & 1) {
+        WriteByte(MSG_ENTITY, num_for_edict(o));
     }
-    
+
+    if(sf & 2) {
+        WriteByte(MSG_ENTITY, self.buff_active);
+    }
+
+    if(sf & 4) {
+        WriteShort(MSG_ENTITY, self.buffs);
+    }
+
+    if(sf & 8) {
+        WriteCoord(MSG_ENTITY, self.origin_x);
+        WriteCoord(MSG_ENTITY, self.origin_y);
+        WriteCoord(MSG_ENTITY, self.origin_z);
+    }
+
+    if(sf & 16) {
+        WriteByte(MSG_ENTITY, self.team);
+    }
+
     return TRUE;
 }
+
+void Buffs_Model_Update(entity e) {
+    if(e.buff_active != e.buff_active_old) {
+        e.buff_active_old = e.buff_active;
+        e.SendFlags |= 2;
+    }
+
+    if(e.buffs != e.oldbuffs) {
+        e.oldbuffs = e.buffs;
+        e.SendFlags |= 4;
+    }
+
+    if(e.origin != e.oldorigin) {
+        e.oldorigin = e.origin;
+        e.SendFlags |= 8;
+    }
+
+    if(e.oldteam != e.team) {
+        e.oldteam = e.team;
+        e.SendFlags |= 16;
+    }
+} 
 
 float Buffs_TeamWaypoint_VisibleForPlayer(entity plr) {
     if(plr == self.owner)
@@ -343,98 +331,6 @@ void Buffs_SetTeamWaypoint(entity plr, string txt, vector clr, float btype) {
 
 void Buffs_RemoveTeamWaypoint(entity plr) {
     WaypointSprite_Disown(plr.buff_teamwp, 0.5);
-}
-
-.entity buffmdl[BUFF_COUNT];
-
-void Buffs_SetBuffModel_MultiBuffModel_Think(void) {
-    if(!self.owner || wasfreed(self.owner) || self.owner.buffs != self.buffstat) {
-        remove(self);
-        return;
-    }
-    
-    self.effects = self.owner.effects;
-    self.effects &~= EF_NODRAW;
-    self.light_lev = self.owner.light_lev * 0.7;
-    self.pflags = self.owner.pflags;
-    self.color = self.colormod = Buffs_GenColor(self.buffs);
-    self.alpha = self.owner.alpha;
-    
-    if(self.buffs == BUFF_MEODP) {
-        self.color = '1 0 0';
-        self.effects &~= EF_ADDITIVE;
-    }
-    
-    vector ang;
-    ang_y = mod(time * 120 + self.cnt, 360);
-    makevectors(ang);
-    setorigin(self, self.owner.origin + v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt));
-    self.angles_y = ang_y + 90;
-    
-    self.nextthink = time;
-    return;
-}
-
-void Buffs_SetBuffModel_SetupMultiBuffModel(entity bmdl, entity parent, float offs) {
-    bmdl.owner = parent;
-    float bi = Buffs_TypeToIndex(bmdl.buffs);
-    Buffs_SetBuffModel(bmdl, bmdl.buffs);
-    bmdl.owner = parent;
-    bmdl.customizeentityforclient = parent.customizeentityforclient;
-    bmdl.pflags = PFLAGS_FULLDYNAMIC;
-    bmdl.scale = (parent.scale? parent.scale : 1); // * 0.90;
-    bmdl.cnt = offs;
-    bmdl.think = Buffs_SetBuffModel_MultiBuffModel_Think;
-    bmdl.buffstat = parent.buffs;
-    bmdl.nextthink = time;
-}
-
-void Buffs_SetBuffModel(entity ment, float thebuffs) {
-    float idx = Buffs_TypeToIndex(thebuffs);
-    float i, j, b;
-    
-    if(idx >= 0) {
-        // single model - use ment to display it
-        
-        for(i = 0; i < BUFF_COUNT; ++i) {
-            if(ment.(buffmdl[i])) {
-                remove(ment.(buffmdl[i]));
-                ment.(buffmdl[i]) = world;
-            }
-        }
-        
-        ment.effects &~= EF_NODRAW;
-        
-        vector omins = ment.mins;
-        vector omaxs = ment.maxs;
-        
-        setmodel(ment, g_buffs_model[Buffs_TypeToIndex(thebuffs)]);
-        setsize(ment, omins, omaxs);
-        
-        if(thebuffs == BUFF_MEODP)
-            ment.color = '1 0 0';
-    } else {
-        // multiple buffs - hide ment and use additional models
-        
-        ment.effects |= EF_NODRAW;
-        
-        for(i = 0, b = 1; b <= BUFF_LAST; b *= 2) if(thebuffs & b) {
-            if(!ment.(buffmdl[i]) || wasfreed(ment.(buffmdl[i])))
-                ment.(buffmdl[i]) = spawn();
-            ment.(buffmdl[i]).buffs = b;
-            ++i;
-        }
-        
-        for(j = 0; j < BUFF_COUNT; ++j) {
-            if(j >= i) {
-                if(ment.(buffmdl[j])) {
-                    remove(ment.(buffmdl[j]));
-                    ment.(buffmdl[j]) = world;
-                }
-            } else Buffs_SetBuffModel_SetupMultiBuffModel(ment.(buffmdl[j]), ment, (j/i)*360);
-            
-        }
-    }
 }
 
 void Buffs_ClientFrame(void) {
@@ -494,31 +390,20 @@ void Buffs_ClientFrame(void) {
         self.oldbuffs = self.buffs;
     }
     
-    if(self.buffstat != self.oldbuffstat) {
-        if(self.buff_model && self.buffstat) {
-            self.buff_model.color = self.buff_model.colormod = Buffs_GenColor(self.buffstat);
-            Buffs_SetBuffModel(self.buff_model, self.buffstat);
-        }
-        self.oldbuffstat = self.buffstat;
-    }
-    
     if(self.buffstat) {
         if(!self.buff_model) {
             entity m = spawn();
             float bi = Buffs_TypeToIndex(self.buffstat);
             setsize(m, '0 0 -40', '0 0 40');
-            m.customizeentityforclient = Buffs_BuffModel_Customize;
             m.owner = self;
-            m.pflags = PFLAGS_FULLDYNAMIC;
-            m.color = m.colormod = Buffs_GenColor(self.buffstat);
-            m.light_lev = 200;
-            m.effects = EF_ADDITIVE | EF_FULLBRIGHT;
-            Buffs_SetBuffModel(m, self.buffstat);
+            Net_LinkEntity(m, FALSE, 0, Buffs_Model_Send);
             self.buff_model = m;
         }
         
+        self.buff_model.buffs = self.buffstat;
         setorigin(self.buff_model, self.origin + '0 0 70');
-        self.buff_model.angles_y = 200 * time;
+        Buffs_Model_Update(self.buff_model);
+
     } else if(self.buff_model) {
         remove(self.buff_model);
         self.buff_model = world;
@@ -883,9 +768,10 @@ float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
 }
 
 void Buffs_BuffPickup_SpawnWaypoint(entity e) {
-    WaypointSprite_Spawn(Buffs_GenName(e.buffs), 0, 0, e, '0 0 40', world, e.team, e, buff_waypoint, TRUE);
-    WaypointSprite_UpdateTextColors(e.buff_waypoint, e.colormod, '0 0 0', '0 0 0');
-    WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, e.colormod);
+    vector c = Buffs_TypeToColor(e.buffs);
+    WaypointSprite_Spawn(Buffs_TypeToExpandedName(e.buffs), 0, 0, e, '0 0 40', world, e.team, e, buff_waypoint, TRUE);
+    WaypointSprite_UpdateTextColors(e.buff_waypoint,c, '0 0 0', '0 0 0');
+    WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, c);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
     
     if(e.buff_activetime && roundstate == ROUNDSTATE_GAME)
@@ -922,15 +808,12 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(self.buffs != self.oldbuffs) {
-        self.color = self.colormod = Buffs_GenColor(self.buffs);
-        self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
-        
         if(self.buff_waypoint) {
             WaypointSprite_Disown(self.buff_waypoint, 1);
             Buffs_BuffPickup_SpawnWaypoint(self);
         }
         
-        Buffs_SetBuffModel(self, self.buffs);
+        self.SendFlags |= 4;
         self.oldbuffs = self.buffs;
     }
     
@@ -955,40 +838,13 @@ void Buffs_BuffPickup_Think(void) {
         }
     }
     
-    if(!self.buff_active) {
-        self.alpha = 0.3;
-        self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
-        self.pflags = 0;
-    } else {
-        self.alpha = 1;
-        self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
-        
-        if(self.buffs == BUFF_MEODP)
-            self.effects &~= EF_ADDITIVE;
-        
-        self.light_lev = 220 + 36 * sin(time);
-        self.pflags = PFLAGS_FULLDYNAMIC;
-        
-        if(self.team && !self.buff_waypoint)
-            Buffs_BuffPickup_SpawnWaypoint(self);
-    }
-    
+    if(self.buff_active && !self.buff_waypoint)
+        Buffs_BuffPickup_SpawnWaypoint(self);
+
     self.nextthink = time;
     self.angles_y = time * 110.1;
-}
 
-void Buffs_BuffPickup_Ring_Think(void) {
-    self.nextthink = time;
-    self.angles_y = time * 157.1;
-    self.alpha = self.owner.alpha;
-    self.effects = self.owner.effects;
-    
-    self.effects &~= EF_STARDUST | EF_NODRAW;
-    
-    if(self.owner.team)
-        self.effects &~= EF_ADDITIVE;
-    
-    setorigin(self, self.owner.origin + '0 0 15');
+    Buffs_Model_Update(self);
 }
 
 void Buffs_BuffPickup_ResetWaypoint(void) {
@@ -1004,6 +860,7 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_BuffPickup_SetInitialCooldown(self);
     Buffs_BuffPickup_ResetWaypoint();
     self.buff_activetime_updated = FALSE;
+    Buffs_Model_Update(self);
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
@@ -1013,7 +870,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    string bname = strcat(rgb_to_hexcolor(self.colormod), Buffs_GenName(self.buffs), "^7 Buff!");
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
     string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
     
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
@@ -1057,7 +914,6 @@ void Buffs_BuffPickup_TeamSwap(void) {
     self.team = TeamCount_NextTeam(self.team);
     if(self.buff_waypoint)
         self.buff_waypoint.team = self.team;
-    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
 }
 
 void Buffs_BuffPickup_Setup(void) {
@@ -1089,48 +945,28 @@ void Buffs_BuffPickup_Setup(void) {
     self.solid = SOLID_TRIGGER;
     self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY;
     self.movetype = MOVETYPE_TOSS;
-    self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_STARDUST | EF_NOSHADOW;
     self.think = Buffs_BuffPickup_Think;
     self.touch = Buffs_BuffPickup_Touch;
     self.reset = Buffs_BuffPickup_Reset;
     self.teamswap = Buffs_BuffPickup_TeamSwap;
     self.nextthink = time;
-    self.scale = 1.5;
     Buffs_BuffPickup_SetInitialCooldown(self);
     self.buff_active = !self.buff_activetime;
-    self.color = self.colormod = Buffs_GenColor(self.buffs);
-    self.pflags = PFLAGS_FULLDYNAMIC;
     self.gravity = 100;
     
     setsize(self, '-15 -15 -40', '15 15 40');
-    Buffs_SetBuffModel(self, self.buffs);
-    
-    self.enemy = spawn();
-    self.enemy.owner = self;
-    self.enemy.think = Buffs_BuffPickup_Ring_Think;
-    self.enemy.nextthink = time;
-    self.enemy.effects = self.effects;
-    self.enemy.alpha = self.alpha;
-    self.enemy.scale = self.scale * 1.2;
-    self.enemy.team = self.team;
-    self.enemy.gravity = self.gravity;
-    self.enemy.colormod = (self.team? TeamColor(self.team) + '0.1 0.1 0.1' : self.colormod);
     
     move_out_of_solid(self);
     droptofloor();
     
-    setsize(self.enemy, self.mins, self.maxs);
-    setorigin(self.enemy, self.origin + self.maxs * 0.5 * self.scale);
-    setmodel(self.enemy, "models/buffs/buff_ring.md3");
-    
+    Net_LinkEntity(self, FALSE, 0, Buffs_Model_Send);
+
     ++g_buffs_count;
 }
 
 void Buffs_BuffPickup_Remove(void) {
     if(self.buff_waypoint)
         WaypointSprite_Kill(self.buff_waypoint);
-    if(self.enemy)
-        remove(self.enemy);
     remove(self);
 }
 

@@ -1464,6 +1464,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_damagestats);
     WriteShort(MSG_ENTITY, sv_nicehealth);
     WriteByte(MSG_ENTITY, sv_showacc);
+    WriteShort(MSG_ENTITY, g_buffs_enabled);
 	return TRUE;
 }
 

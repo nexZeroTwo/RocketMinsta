@@ -17,7 +17,6 @@ float g_buffs_baseline;
 float g_buffs_replacements[BUFF_COUNT];
 float g_buffs_used[BUFF_COUNT];
 float g_buffs_used_dual[BUFF_COUNT];
-string g_buffs_model[BUFF_COUNT];
 
 float g_buffs_randomize_ulevel;
 float g_buffs_randomize_ulevel_dual;
@@ -72,7 +71,6 @@ float Buffs_NadgetRegen(entity);
 float Buffs_NadgetCooldown(entity);
 float Buffs_NadgetRegenDmgPause(entity);
 float Buffs_NadgetBonusMultiplier(entity);
-void Buffs_SetBuffModel(entity, float);
 void Buffs_BuffPickup_SetInitialCooldown(entity);
 void Buffs_BuffPickup_SetCooldown(entity, float);
 
@@ -96,3 +94,6 @@ void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deat
 
 float g_buffs_adept;
 float g_buffs_meodp;
+
+.float buff_active_old;
+.float oldteam;
