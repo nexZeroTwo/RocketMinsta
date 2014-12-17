@@ -8,7 +8,8 @@
 .float zapper_arc_hit;
 .float zapper_heat;
 .float zapper_coolofftime;
-.float zapper_shotorgknown;
+
+.entity zapper_shotorgsentfor;
 
 .vector zapper_beam_start, zapper_beam_end;
 
@@ -29,10 +30,12 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    if(sf & 1)
-    if(!to.zapper_shotorgknown)
-    if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
-        sf |= 8;
+    sf &~= 8;
+
+    if(to.zapper_shotorgsentfor != self) {
+        if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
+            sf |= 8;
+        }
     }
 
     WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER);
@@ -40,10 +43,6 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 
     if(sf & 1) {
         WriteByte(MSG_ENTITY, num_for_edict(self.owner));
-        if(sf & 8) {
-            WriteInt24_t(MSG_ENTITY, compressShotOrigin(W_Zapper_LocalShotOrg(self.owner)));
-            to.zapper_shotorgknown = TRUE;
-        }
     }
 
     if(sf & 2) {
@@ -56,6 +55,11 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_x);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_y);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_z);
+    }
+
+    if(sf & 8) {
+        WriteInt24_t(MSG_ENTITY, compressShotOrigin(W_Zapper_LocalShotOrg(self.owner)));
+        to.zapper_shotorgsentfor = self;
     }
 
     return TRUE;
@@ -237,6 +241,8 @@ void W_Zapper_Attack1(void) {
     e.zapper_lastdmg = time - e.zapper_dmgdelay;
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
+
+    self.zapper_shotorgsentfor = world;
 
     o = self;
     self = e;

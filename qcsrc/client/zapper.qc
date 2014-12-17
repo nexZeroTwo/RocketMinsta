@@ -60,10 +60,6 @@ void Zapper_Read(void) {
         self.team = GetPlayerColor(self.sv_entnum - 1);
 
         sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
-
-        if(sf & 8) {
-            zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
-        }
     }
 
     if(sf & 2) {
@@ -78,6 +74,10 @@ void Zapper_Read(void) {
         self.zapper_end_z = ReadCoord();
         setorigin(self, self.zapper_end);
         InterpolateOrigin_Note();
+    }
+    
+    if(sf & 8) {
+        zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
     }
 }
 
