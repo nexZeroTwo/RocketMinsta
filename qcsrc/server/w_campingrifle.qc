@@ -5,6 +5,8 @@
 .float campingrifle_accumulator;
 .float campingrifle_streak;
 .float campingrifle_lastburst;
+.float campingrifle_bulletcounter_old;
+.float campingrifle_reloadfinished;
 
 float W_CampingRifle_CheckMaxBullets()
 {
@@ -56,11 +58,12 @@ void W_CampingRifle_Reload()
 
 	sound (self, CHAN_WEAPON2, "weapons/campingrifle_reload.wav", VOL_BASE, ATTN_NORM);
 
-	t = max(time, ATTACK_FINISHED(self)) + cvar("g_balance_campingrifle_reloadtime") + 1;
-	ATTACK_FINISHED(self) = t;
+	t = max(time, ATTACK_FINISHED(self)) + cvar("g_balance_campingrifle_reloadtime");
+    self.campingrifle_reloadfinished = t;
 
 	weapon_thinkf(WFRAME_RELOAD, cvar("g_balance_campingrifle_reloadtime"), W_CampingRifle_ReloadedAndReady);
 
+    self.campingrifle_bulletcounter_old = self.campingrifle_bulletcounter;
 	self.campingrifle_bulletcounter = -1;
 	self.campingrifle_hitstreak1 = self.campingrifle_hitstreak2 = 0;
 }
@@ -241,13 +244,13 @@ float w_campingrifle(float req)
             self.campingrifle_updatelimit = time + frametime * 3;
         }
         
-		if(self.campingrifle_bulletcounter < 0) // forced reload (e.g. because interrupted)
+		if(self.campingrifle_bulletcounter <= 0) // forced reload (e.g. because interrupted)
 		{
 			if(self.switchweapon == self.weapon)
 			if(self.weaponentity.state == WS_READY)
 				W_CampingRifle_Reload();
 		}
-		else
+		else if(time > self.campingrifle_reloadfinished)
 		{
 			self.campingrifle_accumulator = bound(time - cvar("g_balance_campingrifle_bursttime"), self.campingrifle_accumulator, time);
 			if (self.BUTTON_ATCK)
@@ -272,6 +275,8 @@ float w_campingrifle(float req)
                 } else 
                     W_CampingRifle_Reload();
 			}
+
+            self.campingrifle_bulletcounter_old = self.campingrifle_bulletcounter;
 		}
 	}
 	else if (req == WR_PRECACHE)
@@ -350,6 +355,16 @@ float w_campingrifle(float req)
     {
         TimeTravel_RestoreTime(self,    tt_moment, campingrifle_accumulator);
         TimeTravel_RestoreFloat(self,   tt_moment, campingrifle_bulletcounter);
+    }
+    else if (req == WR_LOWER)
+    {
+        if(cvar("g_balance_campingrifle_switch_cancels_reload")) {
+            if(self.campingrifle_bulletcounter <= 0) {
+                self.campingrifle_bulletcounter = self.campingrifle_bulletcounter_old;
+                self.campingrifle_reloadfinished = time;
+            } else
+                self.campingrifle_bulletcounter_old = self.campingrifle_bulletcounter;
+        }
     }
 	return TRUE;
 };

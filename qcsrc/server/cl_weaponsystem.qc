@@ -44,6 +44,11 @@ float W_WeaponRateFactorFor(entity plr) {
 
 void W_SwitchWeapon_Force(entity e, float w)
 {
+    entity o = self;
+    self = e;
+    weapon_action(self.weapon, WR_LOWER);
+    self = o;
+
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
 }
