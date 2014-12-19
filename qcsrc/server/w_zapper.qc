@@ -327,10 +327,10 @@ void W_Zapper_Attack2(void) {
         damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
         force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
 
-        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
-
         if(targ.iscreature)
             W_Zapper_Attack2_Arc(targ, self, damage);
+
+        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
     }
 
     Buffs_MEODP_Hitscan_End(pts);
