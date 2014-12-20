@@ -766,10 +766,6 @@ void PutObserverInServer (void)
 		WriteEntity(MSG_ONE, self);
 	}
 	
-    if(self.shownames) {
-        remove(self.shownames);
-        self.shownames = world;
-    }
 	DropAllRunes(self);
     
     if(!self.justconnected) {
@@ -1406,18 +1402,6 @@ void PutClientInServer (void)
 	//if(g_ctf)
 	//	ctf_playerchanged();
 	
-	if(cvar("sv_shownames"))
-	if(self.classname == "player")
-	if(self.shownames == world)
-	{
-		self.shownames = spawn();
-		self.shownames.owner = self;
-		self.shownames.think = shownames_think;
-		self.shownames.nextthink = time;
-		self.shownames.customizeentityforclient = shownames_customize;
-		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
-	}
-    
 	if(self.fire_burner) {
 		remove(self.fire_burner);
 		self.fire_burner = world;
@@ -1914,16 +1898,6 @@ void ClientConnect (void)
 	if(clienttype(self) == CLIENTTYPE_REAL)
 		defer(5, ServerTopic);
 	
-	if(cvar("sv_shownames"))
-	{
-		self.shownames = spawn();
-		self.shownames.owner = self;
-		self.shownames.think = shownames_think;
-		self.shownames.nextthink = time;
-		self.shownames.customizeentityforclient = shownames_customize;
-		Net_LinkEntity(self.shownames, FALSE, 0, SendEntity_ShowNames);
-	}
-	
 	self.g_minstagib_stat = g_minstagib;
 	IP2C_SetCountry(self);
 	
@@ -2070,9 +2044,6 @@ void ClientDisconnect (void)
 
 	self.playerid = 0;
 	ReadyCount();
-
-    if(self.shownames)
-        remove(self.shownames);
 
     if(self.specdelay_ent)
         remove(self.specdelay_ent);

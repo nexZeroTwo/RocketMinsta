@@ -1669,9 +1669,6 @@ void HG_Bait_Body_Damage(entity inflictor, entity attacker, float damage, float 
 }
 
 void HG_Bait_Body_Remove(entity body) {
-    if(body.shownames)
-        remove(body.shownames);
-
     if(body.freeze_waypoint)
         WaypointSprite_Disown(body.freeze_waypoint, 0.5);
 
@@ -1707,10 +1704,6 @@ void HG_Bait_Body_Think(void) {
         HG_Bait_Body_Remove(self);
         return;
     }
-
-    if(self.shownames)
-    if(self.aiment.classname != "player")
-        remove(self.shownames);
 
     // freeze sound doesn't work properly if this is not delayed
     if(!self.iceblock) {
@@ -1782,16 +1775,7 @@ entity HG_Bait_Create(entity ref) {
         setattachment(w, w.owner, "bip01 r hand");
 
     body.exteriorweaponentity = w;
-
-    if(cvar("sv_shownames")) {
-        body.shownames = spawn();
-        body.shownames.owner = body;
-        body.shownames.think = shownames_think;
-        body.shownames.nextthink = time;
-        body.shownames.customizeentityforclient = shownames_customize;
-        Net_LinkEntity(body.shownames, FALSE, 0, SendEntity_ShowNames);
-    }
-
+    
     self = body;
     attach_entcs();
     self = oldself;

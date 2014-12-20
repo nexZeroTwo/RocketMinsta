@@ -5,3 +5,5 @@
 
 .float sn_lastdraw;
 .float sn_forcefrozen;
+.float sn_culled;
+

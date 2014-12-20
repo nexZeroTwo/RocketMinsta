@@ -515,7 +515,8 @@ void spawnfunc_worldspawn (void)
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
-	
+	sv_shownames = cvar("sv_shownames");
+
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
@@ -2981,7 +2982,6 @@ string GotoMap(string m)
 	else
 		return "Map switch will happen after scoreboard.";
 }
-
 
 void EndFrame()
 {

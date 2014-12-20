@@ -651,9 +651,6 @@ float keeptopic;
 
 .float totalpoints_stat, redpoints_stat, bluepoints_stat;
 
-.entity shownames;
-void shownames_think();
-
 .float killsound;
 .float instakillsound;
 
@@ -788,3 +785,5 @@ float sv_showacc;
 float IsDifferentTeam(entity a, entity b);
 
 .float afkmarktime;
+
+float sv_shownames;
