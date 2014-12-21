@@ -19,14 +19,32 @@ void entcs_init(void) {
     print("Initializing ClientSide information entities\n");
 }
 
+.float entcs_culled[256];
+
 float entcs_cull(entity what, entity forwhom) {
     if(what.owner == forwhom) {
         return TRUE;
     }
 
-    if(vlen(what.owner.origin - forwhom.origin) > 2500) {
-        return TRUE;
+    float isspect;
+
+    if(!forwhom.iscreature) if(forwhom.classname == "spectator") {
+        if(what.owner == forwhom.enemy)
+            return TRUE;
+        isspect = TRUE;
     }
+
+    if(what.owner.deadflag != DEAD_NO)
+        return TRUE;
+
+    if(what.owner.classname != "player") if(what.owner.bait_ref.classname != "player")
+        return TRUE;
+
+    if(vlen(what.owner.origin - forwhom.origin) > SHOWNAMES_MAXDISTANCE)
+        return TRUE;
+
+    if(isspect)
+        return FALSE;
 
     if(IsDifferentTeam(what.owner, forwhom)) {
         if(what.owner.hg_stealth)
@@ -56,27 +74,7 @@ float entcs_cull(entity what, entity forwhom) {
 }
 
 float entcs_customize(void) {
-    entity o;
-    o = self.owner;
-
-    if(o.deadflag != DEAD_NO)
-        return FALSE;
-
-    if(other == o)
-        return FALSE;
-
-    if(o.classname != "player") if(o.bait_ref.classname != "player")
-        return FALSE;
-
-    if(IsDifferentTeam(o, other)) if(!sv_cheats) {
-        if(!sv_shownames)
-            return FALSE;
-        
-        if(entcs_cull(self, other))
-            return FALSE;
-    }
-
-    return TRUE;
+    return !(self.(entcs_culled[num_for_edict(other)]));
 }
 
 //
@@ -182,6 +180,13 @@ void entcs_think(void) {
     if(self.armorvalue != a) {
         self.armorvalue = a;
         self.SendFlags |= 32;
+    }
+
+    float i; for(i = 0; i < maxclients; ++i) {
+        entity c = edict_num(i);
+
+        if(clienttype(c) == CLIENTTYPE_REAL)
+            self.(entcs_culled[i]) = entcs_cull(self, c);
     }
 }
 
