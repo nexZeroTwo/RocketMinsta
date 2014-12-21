@@ -21,6 +21,7 @@ void entcs_init(void) {
 
 .float entcs_culled[256];
 
+
 float entcs_cull(entity what, entity forwhom) {
     if(what.owner == forwhom) {
         return TRUE;
@@ -63,13 +64,21 @@ float entcs_cull(entity what, entity forwhom) {
         }
 
         if(cvar("sv_cullentities_trace")) {
+            save_nasty_globals();
+
             makevectors(forwhom.v_angle);
-            if(normalize(v1 - v2) * v_forward < 0)
+            if(normalize(v1 - v2) * v_forward < 0) {
+                restore_nasty_globals();
                 return TRUE;
+            }
 
             traceline(forwhom.origin + forwhom.view_ofs, what.owner.origin + what.owner.view_ofs, MOVE_NOMONSTERS, forwhom);
-            if(trace_fraction < 1)
+            if(trace_fraction < 1) {
+                restore_nasty_globals();
                 return TRUE;
+            }
+
+            restore_nasty_globals();
         }
     }
 

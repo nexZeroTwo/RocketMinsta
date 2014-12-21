@@ -3511,3 +3511,40 @@ void SetCameraWithAngles(entity player, entity cam, float timeout) {
     player.angles_z = 0;
     player.fixangle = TRUE;
 }
+
+float               trace_allsolid_saved;
+float               trace_startsolid_saved;
+float               trace_fraction_saved;
+vector              trace_endpos_saved;
+vector              trace_plane_normal_saved;
+float               trace_plane_dist_saved;
+entity              trace_ent_saved;
+vector              v_forward_saved;
+vector              v_up_saved;
+vector              v_right_saved;
+
+void save_nasty_globals(void) {
+    trace_allsolid_saved = trace_allsolid;
+    trace_startsolid_saved = trace_startsolid;
+    trace_fraction_saved = trace_fraction;
+    trace_endpos_saved = trace_endpos;
+    trace_plane_normal_saved = trace_plane_normal;
+    trace_plane_dist_saved = trace_plane_dist;
+    trace_ent_saved = trace_ent;
+    v_forward_saved = v_forward;
+    v_up_saved = v_up;
+    v_right_saved = v_right;
+}
+
+void restore_nasty_globals(void) {
+    trace_allsolid = trace_allsolid_saved;
+    trace_startsolid = trace_startsolid_saved;
+    trace_fraction = trace_fraction_saved;
+    trace_endpos = trace_endpos_saved;
+    trace_plane_normal = trace_plane_normal_saved;
+    trace_plane_dist = trace_plane_dist_saved;
+    trace_ent = trace_ent_saved;
+    v_forward = v_forward_saved;
+    v_up = v_up_saved;
+    v_right = v_right_saved;
+}
