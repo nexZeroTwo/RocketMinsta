@@ -1313,9 +1313,7 @@ void Ent_ReadEntCS()
 	self.classname = "entcs_receiver";
 
     float sf = ReadByte();
-
-    print("^1", ftos(sf), "\n");
-
+    
     if(sf & 1) {
         self.sv_entnum = ReadByte() - 1;
         self.sn_forcefrozen = ReadByte();
