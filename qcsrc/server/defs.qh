@@ -787,3 +787,5 @@ float IsDifferentTeam(entity a, entity b);
 .float afkmarktime;
 
 float sv_shownames;
+
+.float client_dprmversion;

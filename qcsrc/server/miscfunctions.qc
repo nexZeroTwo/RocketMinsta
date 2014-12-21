@@ -768,6 +768,7 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromnexuiz, "cl_forceplayermodelsfromnexuiz");
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
+    GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
