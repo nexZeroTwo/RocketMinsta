@@ -28,10 +28,13 @@ float entcs_cull(entity what, entity forwhom) {
 
     float isspect;
 
-    if(!forwhom.iscreature) if(forwhom.classname == "spectator") {
+    if(!forwhom.iscreature) {
         if(what.owner == forwhom.enemy)
+        if(forwhom.classname == "spectator")
             return TRUE;
-        isspect = TRUE;
+
+        if(!forwhom.jb_specteam)
+            isspect = TRUE;
     }
 
     if(what.owner.deadflag != DEAD_NO)
