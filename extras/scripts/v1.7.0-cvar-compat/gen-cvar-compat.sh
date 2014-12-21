@@ -11,6 +11,8 @@ function gen-qc {
 //  DO NOT LOOK, EITHER
 //
 
+//#NO AUTOCVARS START
+
 #define COMPATVAR_ACTIVE(v) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS))
 
 void RM_CvarCompat() {
@@ -19,7 +21,10 @@ void RM_CvarCompat() {
     
     if(!mode)
         return;
-    
+
+#ifdef RM_AUTOCVARS
+    print("sv_rm_cvarcompat doesn't work with autocvars.\n");
+#else
     print("Checking config compatibility...\n");
     
 $(cat $cvars | while read line; do
@@ -52,9 +57,11 @@ done)
         cvar_set("sv_rm_cvarcompat", "0");
         print("sv_rm_cvarcompat is now DISABLED\n");
     }
+#endif
 }
 
 #undef COMPATVAR_ACTIVE
+//#NO AUTOCVARS END
 
 EOF
 }

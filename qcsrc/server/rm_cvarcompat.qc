@@ -4,6 +4,8 @@
 //  DO NOT LOOK, EITHER
 //
 
+//#NO AUTOCVARS START
+
 #define COMPATVAR_ACTIVE(v) ((cvar_type(v) & CVAR_TYPEFLAG_EXISTS))
 
 void RM_CvarCompat() {
@@ -12,7 +14,10 @@ void RM_CvarCompat() {
     
     if(!mode)
         return;
-    
+
+#ifdef RM_AUTOCVARS
+    print("sv_rm_cvarcompat doesn't work with autocvars.\n");
+#else
     print("Checking config compatibility...\n");
     
     // g_balance_minstanex_explosive ---> g_rocketminsta
@@ -5381,7 +5386,9 @@ void RM_CvarCompat() {
         cvar_set("sv_rm_cvarcompat", "0");
         print("sv_rm_cvarcompat is now DISABLED\n");
     }
+#endif
 }
 
 #undef COMPATVAR_ACTIVE
+//#NO AUTOCVARS END
 

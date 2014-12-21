@@ -20,7 +20,7 @@ void W_Plasma_TriggerCombo(vector org, float rad, entity own)
 				e.takedamage = DAMAGE_NO;
 				e.classname = "plasma_chain";
 				e.think = W_Plasma_Explode_Combo;
-				e.nextthink = time + vlen(e.origin - org) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
+				e.nextthink = time + vlen(e.origin - org) / CVAR(g_balance_electro_combo_speed); // delay combo chains, looks cooler
 			}
 		}
 		e = e.chain;
@@ -40,12 +40,12 @@ void W_Plasma_Explode (void)
 	self.takedamage = DAMAGE_NO;
 	if (self.movetype == MOVETYPE_BOUNCE)
 	{
-		RadiusDamage (self, self.owner, cvar("g_balance_electro_secondary_damage"), cvar("g_balance_electro_secondary_edgedamage"), cvar("g_balance_electro_secondary_radius"), world, cvar("g_balance_electro_secondary_force"), self.projectiledeathtype, other);
+		RadiusDamage (self, self.owner, CVAR(g_balance_electro_secondary_damage), CVAR(g_balance_electro_secondary_edgedamage), CVAR(g_balance_electro_secondary_radius), world, CVAR(g_balance_electro_secondary_force), self.projectiledeathtype, other);
 	}
 	else
 	{
-		W_Plasma_TriggerCombo(self.origin, cvar("g_balance_electro_primary_comboradius"), self.owner);
-		RadiusDamage (self, self.owner, cvar("g_balance_electro_primary_damage"), cvar("g_balance_electro_primary_edgedamage"), cvar("g_balance_electro_primary_radius"), world, cvar("g_balance_electro_primary_force"), self.projectiledeathtype, other);
+		W_Plasma_TriggerCombo(self.origin, CVAR(g_balance_electro_primary_comboradius), self.owner);
+		RadiusDamage (self, self.owner, CVAR(g_balance_electro_primary_damage), CVAR(g_balance_electro_primary_edgedamage), CVAR(g_balance_electro_primary_radius), world, CVAR(g_balance_electro_primary_force), self.projectiledeathtype, other);
 	}
 
 	remove (self);
@@ -54,10 +54,10 @@ void W_Plasma_Explode (void)
 void W_Plasma_Explode_Combo (void)
 {
 
-	W_Plasma_TriggerCombo(self.origin, cvar("g_balance_electro_combo_comboradius"), self.owner);
+	W_Plasma_TriggerCombo(self.origin, CVAR(g_balance_electro_combo_comboradius), self.owner);
 
 	self.event_damage = SUB_Null;
-	RadiusDamage (self, self.owner, cvar("g_balance_electro_combo_damage"), cvar("g_balance_electro_combo_edgedamage"), cvar("g_balance_electro_combo_radius"), world, cvar("g_balance_electro_combo_force"), WEP_ELECTRO | HITTYPE_BOUNCE, world); // use THIS type for a combo because primary can't bounce
+	RadiusDamage (self, self.owner, CVAR(g_balance_electro_combo_damage), CVAR(g_balance_electro_combo_edgedamage), CVAR(g_balance_electro_combo_radius), world, CVAR(g_balance_electro_combo_force), WEP_ELECTRO | HITTYPE_BOUNCE, world); // use THIS type for a combo because primary can't bounce
 	remove (self);
 }
 
@@ -94,7 +94,7 @@ void W_Plasma_Damage (entity inflictor, entity attacker, float damage, float dea
 			self.owner = inflictor.owner;
 			self.classname = "plasma_chain";
 			self.think = W_Plasma_Explode_Combo;
-			self.nextthink = time + vlen(self.origin - inflictor.origin) / cvar("g_balance_electro_combo_speed"); // delay combo chains, looks cooler
+			self.nextthink = time + vlen(self.origin - inflictor.origin) / CVAR(g_balance_electro_combo_speed); // delay combo chains, looks cooler
 		}
 		else
 		{
@@ -108,7 +108,7 @@ void W_Electro_Attack()
 {
 	local entity proj;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire.wav", cvar("g_balance_electro_primary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire.wav", CVAR(g_balance_electro_primary_damage));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -116,18 +116,18 @@ void W_Electro_Attack()
 	proj.classname = "plasma_prim";
 	proj.owner = self;
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar("g_balance_electro_primary_damage");
+	proj.bot_dodgerating = CVAR(g_balance_electro_primary_damage);
 	proj.use = W_Plasma_Explode;
 	proj.think = adaptor_think2use;
-	proj.nextthink = time + cvar("g_balance_electro_primary_lifetime");
+	proj.nextthink = time + CVAR(g_balance_electro_primary_lifetime);
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = WEP_ELECTRO;
 	setorigin(proj, w_shotorg);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - cvar("g_balance_electro_primary_ammo");
+		self.ammo_cells = self.ammo_cells - CVAR(g_balance_electro_primary_ammo);
 	proj.movetype = MOVETYPE_FLY;
-	proj.velocity = w_shotdir * cvar("g_balance_electro_primary_speed");
+	proj.velocity = w_shotdir * CVAR(g_balance_electro_primary_speed);
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_Plasma_TouchExplode;
@@ -145,7 +145,7 @@ void W_Electro_Attack2()
 {
 	local entity proj;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", cvar("g_balance_electro_secondary_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", CVAR(g_balance_electro_secondary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -156,24 +156,24 @@ void W_Electro_Attack2()
 	proj.use = W_Plasma_Explode;
 	proj.think = adaptor_think2use;
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar("g_balance_electro_secondary_damage");
-	proj.nextthink = time + cvar("g_balance_electro_secondary_lifetime");
+	proj.bot_dodgerating = CVAR(g_balance_electro_secondary_damage);
+	proj.nextthink = time + CVAR(g_balance_electro_secondary_lifetime);
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = WEP_ELECTRO | HITTYPE_SECONDARY;
 	setorigin(proj, w_shotorg);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - cvar("g_balance_electro_secondary_ammo");
+		self.ammo_cells = self.ammo_cells - CVAR(g_balance_electro_secondary_ammo);
 	//proj.glow_size = 50;
 	//proj.glow_color = 45;
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.velocity = (w_shotdir + randomvec() * cvar("g_balance_electro_secondary_spread")) * cvar("g_balance_electro_secondary_speed") + v_up * cvar("g_balance_electro_secondary_speed_up");
+	proj.velocity = (w_shotdir + randomvec() * CVAR(g_balance_electro_secondary_spread)) * CVAR(g_balance_electro_secondary_speed) + v_up * CVAR(g_balance_electro_secondary_speed_up);
 	W_SetupProjectileVelocity(proj);
 	proj.touch = W_Plasma_Touch;
 	setsize(proj, '0 0 -3', '0 0 -3');
 	proj.takedamage = DAMAGE_YES;
-	proj.damageforcescale = cvar("g_balance_electro_secondary_damageforcescale");
-	proj.health = cvar("g_balance_electro_secondary_health");
+	proj.damageforcescale = CVAR(g_balance_electro_secondary_damageforcescale);
+	proj.health = CVAR(g_balance_electro_secondary_health);
 	proj.event_damage = W_Plasma_Damage;
 	proj.flags = FL_PROJECTILE;
     PROJECTILE_FIX(proj)
@@ -202,7 +202,7 @@ void w_electro_checkattack()
 	{
 		W_Electro_Attack2();
 		self.electro_count -= 1;
-		weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_electro_secondary_animtime"), w_electro_checkattack);
+		weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_electro_secondary_animtime), w_electro_checkattack);
 		return;
 	}
 
@@ -220,7 +220,7 @@ float w_electro(float req)
 			self.bot_secondary_electromooth = 0;
 		if(self.bot_secondary_electromooth == 0)
 		{
-			if(bot_aim(cvar("g_balance_electro_primary_speed"), 0, cvar("g_balance_electro_primary_lifetime"), FALSE))
+			if(bot_aim(CVAR(g_balance_electro_primary_speed), 0, CVAR(g_balance_electro_primary_lifetime), FALSE))
 			{
 				self.BUTTON_ATCK = TRUE;
 				if(random() < 0.01) self.bot_secondary_electromooth = 1;
@@ -228,7 +228,7 @@ float w_electro(float req)
 		}
 		else
 		{
-			if(bot_aim(cvar("g_balance_electro_secondary_speed"), cvar("g_balance_grenadelauncher_secondary_speed_up"), cvar("g_balance_electro_secondary_lifetime"), TRUE))
+			if(bot_aim(CVAR(g_balance_electro_secondary_speed), CVAR(g_balance_grenadelauncher_secondary_speed_up), CVAR(g_balance_electro_secondary_lifetime), TRUE))
 			{
 				self.BUTTON_ATCK2 = TRUE;
 				if(random() < 0.03) self.bot_secondary_electromooth = 0;
@@ -238,19 +238,19 @@ float w_electro(float req)
 	else if (req == WR_THINK)
 	{
 		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, cvar("g_balance_electro_primary_refire")))
+		if (weapon_prepareattack(0, CVAR(g_balance_electro_primary_refire)))
 		{
 			W_Electro_Attack();
-			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_electro_primary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_electro_primary_animtime), w_ready);
 		}
 		if (self.BUTTON_ATCK2)
 		if (time >= self.electro_secondarytime)
-		if (weapon_prepareattack(1, cvar("g_balance_electro_secondary_refire")))
+		if (weapon_prepareattack(1, CVAR(g_balance_electro_secondary_refire)))
 		{
 			W_Electro_Attack2();
-			self.electro_count = cvar("g_balance_electro_secondary_count");
-			weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_electro_secondary_animtime"), w_electro_checkattack);
-			self.electro_secondarytime = time + cvar("g_balance_electro_secondary_refire2");
+			self.electro_count = CVAR(g_balance_electro_secondary_count);
+			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_electro_secondary_animtime), w_electro_checkattack);
+			self.electro_secondarytime = time + CVAR(g_balance_electro_secondary_refire2);
 		}
 	}
 	else if (req == WR_PRECACHE)
@@ -267,9 +267,9 @@ float w_electro(float req)
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_ELECTRO);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_cells >= cvar("g_balance_electro_primary_ammo");
+		return self.ammo_cells >= CVAR(g_balance_electro_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_cells >= cvar("g_balance_electro_secondary_ammo");
+		return self.ammo_cells >= CVAR(g_balance_electro_secondary_ammo);
 	else if (req == WR_SUICIDEMESSAGE)
 	{
 		if(w_deathtype & HITTYPE_SECONDARY)

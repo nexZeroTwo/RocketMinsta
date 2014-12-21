@@ -102,7 +102,7 @@ float IsFavorite(string srv)
 {
 	float i, n;
 	srv = netaddress_resolve(srv, 26000);
-	n = tokenize_console(cvar_string("net_slist_favorites"));
+	n = tokenize_console(CVAR_STR(net_slist_favorites));
 	for(i = 0; i < n; ++i)
 		if(srv == netaddress_resolve(argv(i), 26000))
 			return TRUE;
@@ -114,7 +114,7 @@ void ToggleFavorite(string srv)
 	string s, s0, s1, s2, srv_resolved;
 	float i, n;
 	srv_resolved = netaddress_resolve(srv, 26000);
-	s = cvar_string("net_slist_favorites");
+	s = CVAR_STR(net_slist_favorites);
 	n = tokenize_console(s);
 	for(i = 0; i < n; ++i)
 		if(srv_resolved == netaddress_resolve(argv(i), 26000))
@@ -209,7 +209,7 @@ void refreshServerListNexuizServerList(entity me, float mode)
 		else
 			typestr = "";
 
-		modstr = cvar_string("menu_slist_modfilter");
+		modstr = CVAR_STR(menu_slist_modfilter);
 
 		m = SLIST_MASK_AND - 1;
 		resethostcachemasks();
@@ -598,7 +598,7 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	}
 
 	local string cn;
-    if(cvar("sv_ip2country"))
+    if(CVAR(sv_ip2country))
 	{
 		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
 		ip = substring(ip, 0, strstrofs(ip, ":", 0));

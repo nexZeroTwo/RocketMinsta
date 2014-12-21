@@ -306,7 +306,7 @@ void main (void)
 .entity trace_savedowner;
 
 void trace_start_for(entity o) {
-    if(!cvar("sv_gameplayfix_shootownentities"))
+    if(!CVAR(sv_gameplayfix_shootownentities))
         return;
 
     entity e; for(;(e = findentity(e, owner, o));) {
@@ -383,13 +383,13 @@ void traceline_antilag_force (entity source, vector v1, vector v2, float nomonst
 }
 void traceline_antilag (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
 {
-	if (cvar("g_antilag") != 2)
+	if (CVAR(g_antilag) != 2)
 		lag = 0;
 	traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
 }
 void tracebox_antilag (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
 {
-	if (cvar("g_antilag") != 2)
+	if (CVAR(g_antilag) != 2)
 		lag = 0;
 	tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
 }
@@ -613,9 +613,9 @@ float LOD_customize()
 {
 	float d;
 
-	if(cvar("loddebug"))
+	if(CVAR(loddebug))
 	{
-		d = cvar("loddebug");
+		d = CVAR(loddebug);
 		if(d == 1)
 			self.modelindex = self.lodmodelindex0;
 		else if(d == 2)
@@ -671,7 +671,7 @@ void LODmodel_attach()
 		}
 	}
 
-	if(cvar("loddebug") < 0)
+	if(CVAR(loddebug) < 0)
 	{
 		self.lodmodel1 = self.lodmodel2 = ""; // don't even initialize
 	}

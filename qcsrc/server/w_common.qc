@@ -88,7 +88,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
         
 		// if it is world we can't hurt it so stop now
 		if(trace_ent == world || trace_fraction == 1) {
-            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
+            if(!CVAR(sv_gameplayfix_zerohitcontents) || trace_dphitcontents)
                 break;
             else {
                 if(++tries == 3)
@@ -217,7 +217,7 @@ void W_BallisticBullet_Hit (void)
 
 	f = pow(bound(0, vlen(self.velocity) / vlen(self.oldvelocity), 1), 2); // energy multiplier
     
-    if(cvar("g_ballistics_constantdamage"))
+    if(CVAR(g_ballistics_constantdamage))
         fd = 1;
     else
         fd = f;
@@ -326,12 +326,12 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 	// maxdist = 0.5 * v0 * v0 / constant
 	// dprint("max dist = ", ftos(maxdist), "\n");
 
-	if(maxdist <= cvar("g_ballistics_mindistance"))
+	if(maxdist <= CVAR(g_ballistics_mindistance))
 		return 0;
     
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
     
-	if not(cvar("g_ballistics_gothroughsolid"))
+	if not(CVAR(g_ballistics_gothroughsolid))
 	if not(trace_ent)
 		return 0;
 
@@ -432,7 +432,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	float lag, dt, savetime;
 	entity pl, oldself;
     
-    if(cvar("g_ballistics_simplehitscan")) {
+    if(CVAR(g_ballistics_simplehitscan)) {
         fireHitscanBullet(start, dir, spread, damage, headshotbonus, force, dtype, tracereffects);
         return;
     }
@@ -457,7 +457,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.velocity = (dir + randomvec() * spread) * pSpeed;
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
-	proj.dmg_radius = cvar("g_ballistics_materialconstant") / bulletconstant;
+	proj.dmg_radius = CVAR(g_ballistics_materialconstant) / bulletconstant;
 	// so: bulletconstant = bullet mass / area of bullet circle
 	setorigin(proj, start);
 	proj.flags = FL_PROJECTILE;
@@ -479,8 +479,8 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
 	}
 
-	if(cvar("g_antilag_bullets"))
-	if(pSpeed >= cvar("g_antilag_bullets"))
+	if(CVAR(g_antilag_bullets))
+	if(pSpeed >= CVAR(g_antilag_bullets))
 	{
 		float eff;
 
@@ -495,7 +495,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			lag = 0;
 		if(clienttype(self) != CLIENTTYPE_REAL)
 			lag = 0;
-		if(cvar("g_antilag") == 0)
+		if(CVAR(g_antilag) == 0)
 			lag = 0; // only do hitscan, but no antilag
 
 		if(lag)

@@ -44,7 +44,7 @@ void dodging_Initialize() {
 
 // returns 1 if the player is close to a wall
 float check_close_to_wall(float threshold) {
-	if (cvar("g_dodging_wall_dodging") == 0)
+	if (CVAR(g_dodging_wall_dodging) == 0)
 		return 0;
 
 	vector trace_start;
@@ -108,7 +108,7 @@ float dodging_GetPressedKeys()
     //    return 0;
 
     if(self.hg_shield)
-    if(!cvar("g_dodging_shielded"))
+    if(!CVAR(g_dodging_shielded))
         return 0;
     
 	dodge_detected = 0;
@@ -118,11 +118,11 @@ float dodging_GetPressedKeys()
 	if ((time - self.last_dodging_time) < g_dodging_delay)
 		return 0;
     
-    //if(check_close_to_wall(cvar("g_dodging_wall_distance_threshold")))
+    //if(check_close_to_wall(CVAR(g_dodging_wall_distance_threshold)))
     //    sprint(self, strcat("close to wall ", ftos(time), "\n"));
     
-	if not(check_close_to_ground(cvar("g_dodging_height_threshold")))
-    if not(check_close_to_wall(cvar("g_dodging_wall_distance_threshold")))
+	if not(check_close_to_ground(CVAR(g_dodging_height_threshold)))
+    if not(check_close_to_wall(CVAR(g_dodging_wall_distance_threshold)))
 		return 0;
 
 	if (self.movement_x > 0) {
@@ -189,7 +189,7 @@ float dodging_GetPressedKeys()
 		self.dodging_action = 1;
 		self.dodging_single_action = 1;
 
-		self.dodging_velocity_gain = cvar("g_dodging_horiz_speed");
+		self.dodging_velocity_gain = CVAR(g_dodging_horiz_speed);
 
 		self.dodging_direction_x = tap_direction_x;
 		self.dodging_direction_y = tap_direction_y;
@@ -240,7 +240,7 @@ float dodging_PlayerPhysics()
 	if (common_factor > 1) 
 		common_factor = 1;
 
-	new_velocity_gain = self.dodging_velocity_gain - (common_factor * cvar("g_dodging_horiz_speed") * forcemod);
+	new_velocity_gain = self.dodging_velocity_gain - (common_factor * CVAR(g_dodging_horiz_speed) * forcemod);
 	if (new_velocity_gain < 0)
 		new_velocity_gain = 0;
 
@@ -265,9 +265,9 @@ float dodging_PlayerPhysics()
 
 		self.velocity = 
 			  self.velocity 
-			+ (cvar("g_dodging_up_speed") * forcemod * v_up);
+			+ (CVAR(g_dodging_up_speed) * forcemod * v_up);
 
-		if(cvar("g_dodging_sound"))
+		if(CVAR(g_dodging_sound))
 			PlayerSound(playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
 
 		setanim(self, self.anim_jump, TRUE, FALSE, TRUE);

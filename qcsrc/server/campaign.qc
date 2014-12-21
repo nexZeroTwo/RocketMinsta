@@ -64,13 +64,13 @@ void CampaignPreInit()
 {
 	float baseskill;
 	string title;
-	if(cvar("sv_cheats"))
+	if(CVAR(sv_cheats))
 	{
 		CampaignBailout("JOLLY CHEATS AHAHAHAHAHAHAH))");
 		return;
 	}
-	campaign_level = cvar("_campaign_index");
-	campaign_name = strzone(cvar_string("_campaign_name"));
+	campaign_level = CVAR(_campaign_index);
+	campaign_name = strzone(CVAR_STR(_campaign_name));
 	campaign_index_var = strzone(strcat("g_campaign", campaign_name, "_index"));
 	CampaignFile_Load(campaign_level, 2);
 	if(campaign_entries < 1)
@@ -79,7 +79,7 @@ void CampaignPreInit()
 		return;
 	}
 
-	baseskill = cvar("g_campaign_skill");
+	baseskill = CVAR(g_campaign_skill);
 	baseskill = baseskill + campaign_botskill[0];
 	if(baseskill < 0)
 		baseskill = 0;
@@ -100,7 +100,7 @@ void CampaignPreInit()
 
 	// copy sv_gravity cvar, as the engine needs it too (sorry, this will mess
 	// with the menu a little still...)
-	cvar_set_builtin("sv_gravity", cvar_string("sv_gravity"));
+	cvar_set_builtin("sv_gravity", ftos(CVAR(sv_gravity)));
 
 	if(Campaign_Invalid())
 		return;

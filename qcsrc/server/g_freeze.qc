@@ -1,6 +1,6 @@
 
 void Freeze_Init(void) {
-    if(!teams_matter || g_jailbreak || g_clanarena || (!cvar("g_freeze") && !g_freezetag))
+    if(!teams_matter || g_jailbreak || g_clanarena || (!CVAR(g_freeze) && !g_freezetag))
         return;
     
     g_freeze = TRUE;
@@ -202,7 +202,7 @@ void Freeze_UnfreezePlayer(entity plr)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
     if(g_nadgets) {
-        if(cvar("g_nadgets_regen")) {
+        if(CVAR(g_nadgets_regen)) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
@@ -479,7 +479,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         
         FOR_EACH_PLAYER(other)
-            if(time - other.hg_stealthtime >= cvar("g_nadgets_cloak_actiondelay"))
+            if(time - other.hg_stealthtime >= CVAR(g_nadgets_cloak_actiondelay))
             if(self != other && !other.frozen && other.team == self.team)
             if(time - other.revtime >= Freeze_CVar("revive_delay_after_revived"))
             if(time - other.lastdamage >= Freeze_CVar("revive_delay_for_reviver"))
@@ -510,11 +510,11 @@ void Freeze_Hook_PlayerPreThink(void) {
                     
                     float lmod = 1;
                     if(other.hg_shield)
-                        lmod *= cvar("g_nadgets_shield_progressrate");
+                        lmod *= CVAR(g_nadgets_shield_progressrate);
                     
                     float med = Buffs_BuffPower(other, BUFF_MEDIC);
                     if(med)
-                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * med;
+                        lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
                     
                     rmod = max(rmod, lmod);
                 }

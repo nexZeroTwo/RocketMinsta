@@ -57,12 +57,12 @@ float entcs_cull(entity what, entity forwhom) {
         v1 = what.owner.origin + what.owner.view_ofs;
         v2 = forwhom.origin + forwhom.view_ofs;
 
-        if(cvar("sv_cullentities_pvs")) {
+        if(CVAR(sv_cullentities_pvs)) {
             if(!checkpvs(v1, forwhom))
                 return TRUE;
         }
 
-        if(cvar("sv_cullentities_trace")) {
+        if(CVAR(sv_cullentities_trace)) {
             makevectors(forwhom.v_angle);
             if(normalize(v1 - v2) * v_forward < 0)
                 return TRUE;
@@ -144,7 +144,7 @@ float entcs_send(entity to, float sf) {
 }
 
 void entcs_think(void) {
-    self.nextthink = time + cvar("sv_shownames_update");
+    self.nextthink = time + CVAR(sv_shownames_update);
 
     vector org;
     entity o;

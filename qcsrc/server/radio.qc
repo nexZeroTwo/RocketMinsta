@@ -11,7 +11,7 @@ string radio_filename;
 
 void Radio_Init(void) {
     radio_playing_queue = -1;
-    sv_radio = cvar("sv_radio");
+    sv_radio = CVAR(sv_radio);
 
     if(!sv_radio)
         return;
@@ -33,14 +33,14 @@ void Radio_SendPreload(entity e, string url) {
 
 void Radio_Announce(entity e) {
     if(radio_playing_queue >= 0)
-    if(cvar("sv_radio_announce")) {
+    if(CVAR(sv_radio_announce)) {
         string desc = cvar_string(strcat("_radio_queue_", ftos(radio_playing_queue), "_desc"));
         if(desc == "")
             desc = "^8(unknown track)";
         desc = strcat("^1[RADIO] ^2Now playing ^3", desc);
         if(radio_tracklen)
             desc = strcat(desc, "^8 (", mmss(radio_tracklen * 10), ")");
-        float left = cvar("_radio_queue_left");
+        float left = CVAR(_radio_queue_left);
         if(left)
             desc = strcat(desc, "^7 - ", ftos(left), " in queue");
 
@@ -77,7 +77,7 @@ void Radio_Preload(string url) {
     if(!sv_radio)
         return;
 
-    if(!cvar("sv_radio_preload"))
+    if(!CVAR(sv_radio_preload))
         return;
 
     entity e; FOR_EACH_REALCLIENT(e)
@@ -125,8 +125,8 @@ void Radio_Stop(void) {
 
 void Radio_Queue_Request(void) {
     radio_queue_next_request = 0;
-    if(cvar("sv_radio_queue_autofill"))
-        uri_get(cvar_string("sv_radio_queue_autofill_server"), URI_GET_RADIO);
+    if(CVAR(sv_radio_queue_autofill))
+        uri_get(CVAR_STR(sv_radio_queue_autofill_server), URI_GET_RADIO);
 }
 
 void Radio_Queue_PlayFirst(void) {
@@ -138,7 +138,7 @@ void Radio_Queue_PlayFirst(void) {
         return;
     }
 
-    string q = cvar_string("_radio_queue");
+    string q = CVAR_STR(_radio_queue);
 
     if(q == "") {
         Radio_Stop();
@@ -156,7 +156,7 @@ void Radio_Queue_PlayFirst(void) {
 
     radio_tracklen = cvar(strcat("_radio_queue_", id, "_len"));
     radio_playing_queue = stof(id);
-    radio_queue_advanceat = radio_starttime + radio_tracklen * cvar("sv_radio_queue_advanceat");
+    radio_queue_advanceat = radio_starttime + radio_tracklen * CVAR(sv_radio_queue_advanceat);
 
     // preload next track
     id = argv(1);
@@ -169,7 +169,7 @@ void Radio_Queue_PlayFirst(void) {
 
 string Radio_Queue_GetFreeID(void) {
     float id;
-    string qs = strcat(" ", cvar_string("_radio_queue"), " ");
+    string qs = strcat(" ", CVAR_STR(_radio_queue), " ");
 
     for(id = 0 ;; ++id) {
         string s = ftos(id);
@@ -203,13 +203,13 @@ void Radio_Queue(string url, string fname, float len, string desc) {
     cvar_set(len_var, ftos(len));
     cvar_set(desc_var, desc);
 
-    string q = cvar_string("_radio_queue");
+    string q = CVAR_STR(_radio_queue);
     if(q == "")
         cvar_set("_radio_queue", id);
     else
         cvar_set("_radio_queue", strcat(q, " ", id));
 
-    cvar_set("_radio_queue_left", ftos(cvar("_radio_queue_left") + 1));
+    cvar_set("_radio_queue_left", ftos(CVAR(_radio_queue_left) + 1));
 
     if(radio_playing_queue < 0)
         Radio_Queue_PlayFirst();
@@ -218,7 +218,7 @@ void Radio_Queue(string url, string fname, float len, string desc) {
 }
 
 void Radio_Queue_Advance(void) {
-    string q = cvar_string("_radio_queue");
+    string q = CVAR_STR(_radio_queue);
     float sp = strstrofs(q, " ", 0);
 
     if(sp < 0) {
@@ -233,7 +233,7 @@ void Radio_Queue_Skip(void) {
     if(radio_playing_queue < 0)
         return;
 
-    if(cvar("sv_radio_log_skips")) {
+    if(CVAR(sv_radio_log_skips)) {
         float fh = fopen("skiplog", FILE_APPEND);
         if(fh >= 0) {
             fputs(fh, strcat(strftime(TRUE, "%a %b %e %H:%M:%S %Z %Y "), radio_url, " ", radio_filename, "\n"));
@@ -259,7 +259,7 @@ void Radio_Frame(void) {
         Radio_Queue_Advance();
         radio_queue_advanceat = 0;
 
-        if(cvar_string("_radio_queue") == "")
+        if(CVAR_STR(_radio_queue) == "")
             Radio_Queue_Request();
     }
 
@@ -269,7 +269,7 @@ void Radio_Frame(void) {
 
 void Radio_URI_Get_Callback(float id, float status, string data) {
     if(status) {
-        radio_queue_next_request = time + cvar("sv_radio_queue_autofill_retry");
+        radio_queue_next_request = time + CVAR(sv_radio_queue_autofill_retry);
         return;
     }
 
@@ -295,7 +295,7 @@ void Radio_ClientConnect(void) {
     if(clienttype(self) != CLIENTTYPE_REAL)
         return;
 
-    if(cvar("sv_radio_preload"))
+    if(CVAR(sv_radio_preload))
         Radio_SendPreload(self, radio_url);
     defer(3, Radio_ClientConnect_Delayed);
 }

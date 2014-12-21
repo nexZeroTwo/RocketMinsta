@@ -57,7 +57,7 @@ void VisualDamage_PreDraw(void) {
     float tmp;
     
     drawfont = sbar_bigfont;
-    rm_visualdamage_fontsize = cvar("rm_visualdamage_fontsize");
+    rm_visualdamage_fontsize = CVAR(rm_visualdamage_fontsize);
     for(e = vd_head; e; e = e.vd_next) {
         if(!(e.vd_type & VDMG_TYPE_TOSELF)) {
             o = e.vd_projected = project_3d_to_2d(e.origin);
@@ -213,7 +213,7 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     
     ++vd_cnt;
     
-    if(vd_cnt > cvar("rm_visualdamage_limit")) {
+    if(vd_cnt > CVAR(rm_visualdamage_limit)) {
         entity oldtail = vd_tail;
         for(p = vd_head; p; p = p.vd_next) {
             if(p.vd_next == vd_tail) {

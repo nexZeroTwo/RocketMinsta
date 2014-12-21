@@ -53,6 +53,18 @@ CACHEDIR="pkgcache"
 # Like CACHEPKGS, but caches compilled QuakeC code
 CACHEQC=0
 
+# Use the DarkPlaces autocvars instead of cvar/cvar_string calls where possible
+# This increases performance, however, it's not supported by the default Nexuiz engine.
+
+# Use autocvars in the server program. Enable this if your server runs DPRM.
+AUTOCVARS_SVQC=0
+
+# Use autocvars in the client program. Not recommended, as it will make vanilla clients incompatible with your server.
+AUTOCVARS_CSQC=0
+
+# Use autocvars in the menu program. Not recommended, as it will make vanilla clients incompatible with your server.
+AUTOCVARS_MENU=0
+
 # If enabled, some graphics in client packages will be compressed as lower quality jpgs to reduce the package size
 # The list of directories to compress is specified in the "compressdirs" file of the package's directory, if present
 # Requires ImageMagick, will be automatically disabled if not installed

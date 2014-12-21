@@ -17,19 +17,19 @@ float W_WeaponRateFactor()
 		if(self.runes & RUNE_SPEED)
 		{
 			if(self.runes & CURSE_SLOW)
-				t = t * cvar("g_balance_rune_speed_combo_atkrate");
+				t = t * CVAR(g_balance_rune_speed_combo_atkrate);
 			else
-				t = t * cvar("g_balance_rune_speed_atkrate");
+				t = t * CVAR(g_balance_rune_speed_atkrate);
 		}
 		else if(self.runes & CURSE_SLOW)
 		{
-			t = t * cvar("g_balance_curse_slow_atkrate");
+			t = t * CVAR(g_balance_curse_slow_atkrate);
 		}
 	}
     
     float haste = Buffs_BuffPower(self, BUFF_HASTE);
     if(haste)
-        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * haste);
+        t = t * (1 - (1 - CVAR(g_buffs_haste_refire_rate)) * haste);
     
 	return t;
 }
@@ -230,7 +230,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	if (ent.cursor_trace_ent != ent)         // just to make sure
 	if (ent.cursor_trace_ent.takedamage)      // and that person is killable
 	if (ent.cursor_trace_ent.classname == "player") // and actually a player
-	if (cvar("g_antilag") == 1)
+	if (CVAR(g_antilag) == 1)
 	{
 		// verify that the shot would miss without antilag
 		// (avoids an issue where guns would always shoot at their origin)
@@ -262,7 +262,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 					dprint("WARNING: antilag ghost trace for ", ent.netname, " failed!\n");
 				}
 
-				if(cvar("developer") >= 2)
+				if(CVAR(developer) >= 2)
 				{
 					vector v, vplus, vel;
 					float X;
@@ -287,7 +287,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 #else
 	if (antilag)
 	{
-		if (cvar("g_antilag") == 1) // switch to "ghost" if not hitting original
+		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
 		{
 			traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
@@ -303,7 +303,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				}
 			}
 		}
-		else if(cvar("g_antilag") == 3) // client side hitscan
+		else if(CVAR(g_antilag) == 3) // client side hitscan
 		{
 			if (ent.cursor_trace_ent)                 // client was aiming at someone
 			if (ent.cursor_trace_ent != ent)         // just to make sure
@@ -349,7 +349,7 @@ void W_SetHitscanVisuals(entity p, vector end) {
     w_shotdir_visual = w_shotdir;
 
     if(p.weaponentity.shotorg_visual_x > 0)
-    if(cvar("g_fakeshotorigin")) {
+    if(CVAR(g_fakeshotorigin)) {
         vecs = p.weaponentity.shotorg_visual;
         vecs_y = -vecs_y;
 
@@ -699,7 +699,7 @@ void CL_Weaponentity_Think()
 	f = 0;
 	if (self.state == WS_RAISE && !intermission_running)
 	{
-		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
+		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 		self.angles_x = -90 * f * f;
 		if (qcweaponanimation)
 		{
@@ -709,7 +709,7 @@ void CL_Weaponentity_Think()
 	}
 	else if (self.state == WS_DROP && !intermission_running)
 	{
-		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
+		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 		self.angles_x = -90 * f * f;
 		if (qcweaponanimation)
 		{
@@ -981,7 +981,7 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
         if(weaponsInMap & weaponbit) {
             sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
 
-            if(cvar("g_showweaponspawns")) {
+            if(CVAR(g_showweaponspawns)) {
                 entity e;
                 string s;
 
@@ -1035,7 +1035,7 @@ void w_ready()
 void weapon_setup(float windex)
 {
 	entity e;
-	qcweaponanimation = cvar("sv_qcweaponanimation");
+	qcweaponanimation = CVAR(sv_qcweaponanimation);
 	e = get_weaponinfo(windex);
 	self.items &~= IT_AMMO;
 	self.items = self.items | e.items;
@@ -1071,7 +1071,7 @@ float weapon_prepareattack(float secondary, float attacktime)
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
-    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    if(time - self.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
         return FALSE;
     
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
@@ -1099,7 +1099,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.weaponentity.state = WS_INUSE;
 
-    if(!cvar("g_spawnshieldmode"))
+    if(!CVAR(g_spawnshieldmode))
         self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
 
 	// if the weapon hasn't been firing continuously, reset the timer
@@ -1275,7 +1275,7 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 	mdirection = normalize(mvelocity);
 	mspeed = vlen(mvelocity);
 
-	nstyle = cvar("g_projectiles_newton_style");
+	nstyle = CVAR(g_projectiles_newton_style);
 	if(nstyle == 0)
 	{
 		// absolute velocity
@@ -1312,7 +1312,7 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 			//dprint("impossible shot, adjusting\n");
 		}
 
-		outspeed = bound(mspeed * cvar("g_projectiles_newton_style_2_minfactor"), outspeed, mspeed * cvar("g_projectiles_newton_style_2_maxfactor"));
+		outspeed = bound(mspeed * CVAR(g_projectiles_newton_style_2_minfactor), outspeed, mspeed * CVAR(g_projectiles_newton_style_2_maxfactor));
 		outvelocity = mdirection * outspeed;
 	}
 	else if(nstyle == 3)

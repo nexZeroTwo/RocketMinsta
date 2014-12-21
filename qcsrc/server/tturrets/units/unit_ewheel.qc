@@ -82,7 +82,7 @@ float ewheel_moveverb_roam(float eval)
         self.moveto = v_forward * 128;
         self.steerto = steerlib_beamsteer(v_forward,1024,32,36,128);
         self.frame += 1;
-        movelib_move_simple(v_forward,cvar("g_turrets_unit_ewheel_speed_fast"),0.4);
+        movelib_move_simple(v_forward,CVAR(g_turrets_unit_ewheel_speed_fast),0.4);
 
         return VS_CALL_YES_DOING;
 
@@ -134,7 +134,7 @@ void ewheel_move_path()
         self.moveto = self.pathcurrent.origin;
         self.steerto = steerlib_attract2(self.moveto,0.5,500,0.95);
 
-        movelib_move_simple(v_forward,cvar("g_turrets_unit_ewheel_speed_fast"),0.4);
+        movelib_move_simple(v_forward,CVAR(g_turrets_unit_ewheel_speed_fast),0.4);
 
         return;
     }
@@ -154,29 +154,29 @@ void  ewheel_move_enemy()
         if ( self.tur_head.spawnshieldtime < 1 )
         {
             self.frame = ewheel_amin_fwd_fast;
-            movelib_move_simple(v_forward ,cvar("g_turrets_unit_ewheel_speed_fast"),0.4);
+            movelib_move_simple(v_forward ,CVAR(g_turrets_unit_ewheel_speed_fast),0.4);
         }
         else if (self.tur_head.spawnshieldtime < 2)
         {
 
             self.frame = ewheel_amin_fwd_slow;
-            movelib_move_simple(v_forward,cvar("g_turrets_unit_ewheel_speed_slow"),0.4);
+            movelib_move_simple(v_forward,CVAR(g_turrets_unit_ewheel_speed_slow),0.4);
        }
         else
         {
             self.frame = ewheel_amin_fwd_slow;
-            movelib_move_simple(v_forward,cvar("g_turrets_unit_ewheel_speed_slower"),0.4);
+            movelib_move_simple(v_forward,CVAR(g_turrets_unit_ewheel_speed_slower),0.4);
         }
     }
     else if (self.tur_dist_enemy < self.target_range_optimal - 10)
     {
         self.frame = ewheel_amin_bck_slow;
-        movelib_move_simple(v_forward * -1,cvar("g_turrets_unit_ewheel_speed_slow"),0.4);
+        movelib_move_simple(v_forward * -1,CVAR(g_turrets_unit_ewheel_speed_slow),0.4);
     }
     else
     {
         self.frame = ewheel_amin_stop;
-        movelib_beak_simple(cvar("g_turrets_unit_ewheel_speed_stop"));
+        movelib_beak_simple(CVAR(g_turrets_unit_ewheel_speed_stop));
     }
 
 
@@ -202,7 +202,7 @@ float ewheel_moveverb_runaway(float eval)
         self.moveto  = self.origin + self.steerto * 1000;
 
         self.frame += 2;
-        movelib_move_simple(v_forward ,cvar("g_turrets_unit_ewheel_speed_fast"),0.4);
+        movelib_move_simple(v_forward ,CVAR(g_turrets_unit_ewheel_speed_fast),0.4);
 
         return VS_CALL_YES_DOING;
 
@@ -216,7 +216,7 @@ void ewheel_move_idle()
 {
     self.frame = 0;
     if (vlen(self.velocity))
-        movelib_beak_simple(cvar("g_turrets_unit_ewheel_speed_stop"));
+        movelib_beak_simple(CVAR(g_turrets_unit_ewheel_speed_stop));
 }
 
 void ewheel_postthink()
@@ -366,7 +366,7 @@ void turret_ewheel_dinit()
     //verbstack_push(self.verbs_move, ewheel_moveverb_runaway,WVM_PANIC,  0, self);
 
     // Convert from dgr / sec to dgr / tic
-    self.tur_head.aim_speed = cvar("g_turrets_unit_ewheel_turnrate");
+    self.tur_head.aim_speed = CVAR(g_turrets_unit_ewheel_turnrate);
     self.tur_head.aim_speed = self.tur_head.aim_speed / (1 / self.ticrate);
 
     if (self.target != "")

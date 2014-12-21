@@ -4,6 +4,9 @@
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+
 sys.qh
 pre-builtins.qh
 builtins.qh

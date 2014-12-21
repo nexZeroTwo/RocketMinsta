@@ -20,11 +20,11 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     if(tdeath_deathtype == DEATH_HG_TRANSLOC) {
     	if(teleporter.hg_tl_revived)
     		damage = 0;
-		else if(cvar("g_nadgets_transloc_scaledamagedistance")) {
-			float minDamage = cvar("g_nadgets_transloc_mindamage");
-			float maxDamage = cvar("g_nadgets_transloc_maxdamage");
-			float minDist = cvar("g_nadgets_transloc_mindistance"); //min distance needed to inflict the min damage
-			float maxDist = cvar("g_nadgets_transloc_maxdistance"); //distance needed to inflict the maximum damage
+		else if(CVAR(g_nadgets_transloc_scaledamagedistance)) {
+			float minDamage = CVAR(g_nadgets_transloc_mindamage);
+			float maxDamage = CVAR(g_nadgets_transloc_maxdamage);
+			float minDist = CVAR(g_nadgets_transloc_mindistance); //min distance needed to inflict the min damage
+			float maxDist = CVAR(g_nadgets_transloc_maxdistance); //distance needed to inflict the maximum damage
 			float dist = vlen(teleporter.spawnorigin - player.origin);
 
 			if(dist < minDist)
@@ -32,7 +32,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 			else
 				damage = bound(minDamage, maxDamage * (dist / maxDist), maxDamage) * Buffs_NadgetPower(player);
 		} else {
-			damage = cvar("g_nadgets_transloc_damage");
+			damage = CVAR(g_nadgets_transloc_damage);
 			if(damage)
 				damage = damage * Buffs_NadgetPower(player);
 			else
@@ -60,7 +60,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	for(head = findradius(player.origin, deathradius); head; head = head.chain)
 		if(head != player)
 			if(head.takedamage)
-                if(!cvar("g_telefrags_noteam") || IsDifferentTeam(player, head) || medic)
+                if(!CVAR(g_telefrags_noteam) || IsDifferentTeam(player, head) || medic)
 				if(boxesoverlap(deathmin, deathmax, head.absmin, head.absmax))
 				{
 					if(player.iscreature && (player.health >= 1)) {
@@ -122,7 +122,7 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 
 	if(player.classname == "player")
 	{
-		if(player.takedamage && player.deadflag == DEAD_NO && !g_race && !g_cts && cvar("g_telefrags") && !(g_jailbreak && player.jb_isprisoned))
+		if(player.takedamage && player.deadflag == DEAD_NO && !g_race && !g_cts && CVAR(g_telefrags) && !(g_jailbreak && player.jb_isprisoned))
 			tdeath(player, teleporter, telefragger, telefragmin, telefragmax);
 
 		// player no longer is on ground
@@ -135,7 +135,7 @@ void TeleportPlayer(entity teleporter, entity player, vector to, vector to_angle
 		if(teleporter.owner)
 		{
 			player.pusher = teleporter.owner;
-			player.pushltime = time + cvar("g_maxpushtime");
+			player.pushltime = time + CVAR(g_maxpushtime);
 		}
 		else
 		{
@@ -184,7 +184,7 @@ void Teleport_Touch (void)
 	if (other.deadflag != DEAD_NO)
 		return;
 
-	if not(other.flags & FL_CLIENT || (other.flags & FL_PROJECTILE && cvar("g_teleport_projectiles")))
+	if not(other.flags & FL_CLIENT || (other.flags & FL_PROJECTILE && CVAR(g_teleport_projectiles)))
 		return;
 
 	if(self.team)
