@@ -104,7 +104,8 @@ float entcs_customize(void) {
 float entcs_send(entity to, float sf) {
     entity o;
     o = self.owner;
-    WriteByte(MSG_ENTITY, ENT_CLIENT_ENTCS);
+
+    sf = sf & 255;
 
     entity check = to;
     if(check.classname == "spectator")
@@ -113,7 +114,7 @@ float entcs_send(entity to, float sf) {
     if(!IsDifferentTeam(check, o) || (check.hg_stealth && !o.hg_stealth) || sv_cheats) {
         sf |= 64;
     } else {
-        sf &~= (8 | 16 | 32);
+        sf &~= (8 | 16 | 32 | 64);
     }
     
     if(entcs_cull(self, check)) {
@@ -121,6 +122,7 @@ float entcs_send(entity to, float sf) {
         sf &~= (4 | 16 | 32);
     }
 
+    WriteByte(MSG_ENTITY, ENT_CLIENT_ENTCS);
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
