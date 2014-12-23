@@ -180,7 +180,7 @@ void CSQC_Init(void)
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
-    
+
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
