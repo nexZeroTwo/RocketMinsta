@@ -91,8 +91,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
             
             #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
             string mods;
-            if(dtype & HITTYPE_SECONDARY)   ADDMOD("secondary");
-            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("headshot");
+            if(dtype & HITTYPE_SECONDARY)   ADDMOD("alt");
+            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("head");
             if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
             if(dtype & HITTYPE_BOUNCE)      ADDMOD("bounce");
             #undef ADDMOD
