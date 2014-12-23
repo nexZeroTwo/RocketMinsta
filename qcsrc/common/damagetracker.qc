@@ -112,7 +112,9 @@ float DamageTracker_TransformDamageSource(float dtype) {
     if(!DEATH_ISHG(dtype) && !DEATH_ISSPECIAL(dtype)) {
         dtype &~= HITTYPE_SPLASH;
 
-        if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER))
+        if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER)           &&   // secondary arc
+           !DEATH_ISWEAPON(dtype, WEP_ELECTRO)          &&   // combo
+           !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))      // remote detonation
             dtype &~= HITTYPE_BOUNCE;
 
         if(!DEATH_ISWEAPON(dtype, WEP_CAMPINGRIFLE))
