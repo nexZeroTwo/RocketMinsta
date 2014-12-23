@@ -2,6 +2,8 @@
 
 #pragma flag off fastarrays // make dp behave with new fteqcc versions. remove when dp bug with fteqcc fastarrays is fixed
 #pragma flag on subscope
+#pragma flag on lo
+#pragma flag on iffloat
 
 //NOTE: THIS IS AN INTERFACE FILE. DO NOT EDIT.
 //MODIFYING THIS FILE CAN RESULT IN CRC ERRORS.
