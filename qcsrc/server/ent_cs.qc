@@ -51,7 +51,7 @@ float entcs_cull(entity what, entity forwhom) {
         return FALSE;
 
     if(IsDifferentTeam(what.owner, forwhom)) {
-        if(what.owner.hg_stealth)
+        if(!sv_shownames || what.owner.hg_stealth)
             return TRUE;
 
         vector v1, v2;
@@ -111,10 +111,12 @@ float entcs_send(entity to, float sf) {
     if(check.classname == "spectator")
         check = to.enemy;
 
-    if(!IsDifferentTeam(check, o) || (check.hg_stealth && !o.hg_stealth) || sv_cheats) {
+    if(!IsDifferentTeam(check, o) || (sv_shownames && check.hg_stealth && !o.hg_stealth) || sv_cheats) {
         sf |= 64;
     } else {
         sf &~= (8 | 16 | 32 | 64);
+        if(!sv_shownames)
+            sf &~= (2 | 4); // never send enemy origins in case the cull failed for some reason (e.g. early send)
     }
     
     if(entcs_cull(self, check)) {
@@ -180,20 +182,19 @@ void entcs_think(void) {
         self.SendFlags |= 8;
     }
 
-    if(!sv_shownames)
-        return;
+    if(sv_shownames) {
+        float h = max(0, floor(self.owner.health));
+        float a = max(0, floor(self.owner.armorvalue));
 
-    float h = max(0, floor(self.owner.health));
-    float a = max(0, floor(self.owner.armorvalue));
+        if(self.health != h) {
+            self.health = h;
+            self.SendFlags |= 16;
+        }
 
-    if(self.health != h) {
-        self.health = h;
-        self.SendFlags |= 16;
-    }
-
-    if(self.armorvalue != a) {
-        self.armorvalue = a;
-        self.SendFlags |= 32;
+        if(self.armorvalue != a) {
+            self.armorvalue = a;
+            self.SendFlags |= 32;
+        }
     }
 
     float i; for(i = 0; i < maxclients; ++i) {
