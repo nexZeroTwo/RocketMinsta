@@ -95,10 +95,22 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
             
             #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
             string mods;
+
             if(dtype & HITTYPE_SECONDARY)   ADDMOD("alt");
             if(dtype & HITTYPE_HEADSHOT)    ADDMOD("head");
             if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
-            if(dtype & HITTYPE_BOUNCE)      ADDMOD("bounce");
+
+            if(dtype & HITTYPE_BOUNCE) {
+                if(DEATH_ISWEAPON(dtype, WEP_ZAPPER))
+                    ADDMOD("arc");
+                else if(DEATH_ISWEAPON(dtype, WEP_ELECTRO))
+                    ADDMOD("combo");
+                else if(DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))
+                    ADDMOD("remote");
+                else
+                    ADDMOD("bounce");
+            }
+
             #undef ADDMOD
             
             if(mods != "")
