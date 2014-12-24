@@ -85,9 +85,13 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
     else { 
         r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
         
-        if(extended) {
-            if(r == "")
-                return strcat("Unknown damage source (", ftos(dtype), ")");
+        //if(extended) {
+            if(r == "") {
+                if(extended)
+                    return strcat("Unknown damage source (", ftos(dtype), ")");
+                else
+                    return r;
+            }
             
             #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
             string mods;
@@ -99,7 +103,7 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
             
             if(mods != "")
                 return strcat(r, " (", mods, ")");
-        }
+        //}
         
         return r;
     }
