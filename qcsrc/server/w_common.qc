@@ -39,169 +39,99 @@ float W_IsGoodHit(entity attacker, entity ent) {
     return did_hit;
 }
 
-void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype)
-{
-	local vector hitloc, force, endpoint, dir;
-	local entity ent, endent;
-	local float endq3surfaceflags;
-	//local entity explosion;
-	float did_hit;
-	float length;
-	vector beampos;
-	string snd;
-	entity pseudoprojectile;
-	float f, ffs;
+void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
+    vector hitloc, force, endpoint, dir;
+    entity ent, endent;
+    float endq3surfaceflags;
+    float did_hit;
+    float length;
+    vector beampos;
+    string snd;
+    entity pseudoprojectile;
+    float f, ffs;
+    entity pts, hitents;
     
-	did_hit = 0;
+    did_hit = 0;
 
-	railgun_start = start;
-	railgun_end = end;
+    railgun_start = start;
+    railgun_end = end;
 
-	dir = normalize(end - start);
-	length = vlen(end - start);
-	force = dir * bforce;
+    dir = normalize(end - start);
+    length = vlen(end - start);
+    force = dir * bforce;
 
+    // go a little bit into the wall because we need to hit this wall later
+    end = end + dir;
 
-	// go a little bit into the wall because we need to hit this wall later
-	end = end + dir;
-
-	// trace multiple times until we hit a wall, each obstacle will be made
-	// non-solid so we can hit the next, while doing this we spawn effects and
-	// note down which entities were hit so we can damage them later
-    
-    entity pts;
-    float tries;
-    
-    if(deathtype != DEATH_HG_SHIELD)
-        pts = Buffs_MEODP_Hitscan_Begin(self);
+    pts = Buffs_MEODP_Hitscan_Begin(self);
     
     trace_start_for(self);
-
-	while (1)
-	{
-        if(deathtype == DEATH_HG_SHIELD)
-            traceline(start, end, FALSE, self);
-		else if(self.antilag_debug)
-			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
-		else
-			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
-        
-		// if it is world we can't hurt it so stop now
-		if(trace_ent == world || trace_fraction == 1) {
-            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
-                break;
-            else {
-                if(++tries == 3)
-                    break;
-                start = trace_endpos;
-                continue;
-            }
-        }
-
-		// make the entity non-solid so we can hit the next one
-		trace_ent.railgunhit = TRUE;
-		trace_ent.railgunhitloc = trace_endpos; // was = end. WHY?
-		trace_ent.railgunhitsolidbackup = trace_ent.solid;
-
-		// stop if this is a wall
-		if(trace_ent.solid == SOLID_BSP)
-            break;
-        
-		// make the entity non-solid
-		trace_ent.solid = SOLID_NOT;
-	}
-
+    if(self.antilag_debug)
+        hitents = tracerail_antilag(self, start, end, FALSE, self, self.antilag_debug);
+    else
+        hitents = tracerail_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
     trace_end_for(self);
 
-	endpoint = trace_endpos;
-	endent = trace_ent;
-	endq3surfaceflags = trace_dphitq3surfaceflags;
+    endpoint = trace_endpos;
+    endent = trace_ent;
+    endq3surfaceflags = trace_dphitq3surfaceflags;
 
-	// find all the entities the railgun hit and restore their solid state
-	ent = findfloat(world, railgunhit, TRUE);
-	while (ent)
-	{
-		// restore their solid type
-		ent.solid = ent.railgunhitsolidbackup;
-		ent = findfloat(ent, railgunhit, TRUE);
-	}
+    // Find all non-hit players the beam passed close by
+    if(deathtype == WEP_MINSTANEX || deathtype == WEP_NEX) {
+        FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
+        if(msg_entity != self)
+        if not(msg_entity.tracerail_hit)
+        if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
+            // nearest point on the beam
+            beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
 
-	// spawn a temporary explosion entity for RadiusDamage calls
-	//explosion = spawn();
+            f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
+            if(f <= 0)
+                continue;
 
-	// Find all non-hit players the beam passed close by
-	if(deathtype == WEP_MINSTANEX || deathtype == WEP_NEX)
-	{
-		FOR_EACH_REALCLIENT(msg_entity) if(msg_entity != self) if(!msg_entity.railgunhit) if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) // we use realclient, so spectators can hear the whoosh too
-		{
-			// nearest point on the beam
-			beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
+            snd = strcat("weapons/nexwhoosh", ftos(floor(random() * 3) + 1), ".wav");
 
-			f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
-			if(f <= 0)
-				continue;
+            if(!pseudoprojectile)
+                pseudoprojectile = spawn(); // we need this so the sound uses the "entchannel4" volume
+            soundtoat(MSG_ONE, pseudoprojectile, beampos, CHAN_PROJECTILE, snd, VOL_BASE * f, ATTN_NONE);
+        }
 
-			snd = strcat("weapons/nexwhoosh", ftos(floor(random() * 3) + 1), ".wav");
+        if(pseudoprojectile)
+            remove(pseudoprojectile);
+    }
 
-			if(!pseudoprojectile)
-				pseudoprojectile = spawn(); // we need this so the sound uses the "entchannel4" volume
-			soundtoat(MSG_ONE, pseudoprojectile, beampos, CHAN_PROJECTILE, snd, VOL_BASE * f, ATTN_NONE);
-		}
-
-		if(pseudoprojectile)
-			remove(pseudoprojectile);
-	}
-
-	// find all the entities the railgun hit and hurt them
-	ent = findfloat(world, railgunhit, TRUE);
-	while (ent)
-	{
-		// get the details we need to call the damage function
-		hitloc = ent.railgunhitloc;
-		ent.railgunhitloc = '0 0 0';
-		ent.railgunhitsolidbackup = SOLID_NOT;
-		ent.railgunhit = FALSE;
-
+    // find all the entities the railgun hit and hurt them
+    for(ent = hitents; ent; ent = ent.tracerail_next) {
+        hitloc = ent.tracerail_endpos;
         did_hit = W_IsGoodHit(self, ent);
 
-		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
-		ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
+        f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
+        ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
 
-		// apply the damage
-		if (ent.takedamage)
-			Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
+        // apply the damage
+        if (ent.takedamage)
+            Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
+    }
 
-		// create a small explosion to throw gibs around (if applicable)
-		//setorigin (explosion, hitloc);
-		//RadiusDamage (explosion, self, 10, 0, 50, world, 300, deathtype);
+    //calculate hits and fired shots for hitscan
+    if not(inWarmupStage)
+    if not(self.isbot) {
+        self.bullets_fired[self.weapon] += 1;
 
-		// advance to the next entity
-		ent = findfloat(ent, railgunhit, TRUE);
-	}
+        if(did_hit)
+            self.bullets_hit[self.weapon] += 1;
 
-	//calculate hits and fired shots for hitscan
-	if not(inWarmupStage)
-	if not(self.isbot)
-    if not(deathtype == DEATH_HG_SHIELD)
-	{
-		self.bullets_fired[self.weapon] += 1;
+        // update the client and store in addstat() in g_world
+        self.damage_hits = self.weapon + 64 * rint(self.bullets_hit[self.weapon]);
+        self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
+    }
 
-		if(did_hit)
-			self.bullets_hit[self.weapon] += 1;
-
-		// update the client and store in addstat() in g_world
-		self.damage_hits = self.weapon + 64 * rint(self.bullets_hit[self.weapon]);
-		self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-	}
-
-	// we're done with the explosion entity, remove it
-	//remove(explosion);
-    
     Buffs_MEODP_Hitscan_End(pts);
-    
-	trace_endpos = endpoint;
-	trace_ent = endent;
-	trace_dphitq3surfaceflags = endq3surfaceflags;
+    tracerail_finalize(hitents);
+
+    trace_endpos = endpoint;
+    trace_ent = endent;
+    trace_dphitq3surfaceflags = endq3surfaceflags;
 }
 
 .float dmg_edge;

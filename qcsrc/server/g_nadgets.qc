@@ -1265,6 +1265,51 @@ void HG_Shield_Frame(void) {
     }
 }
 
+float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
+    if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
+        return damage;
+
+    if(deathtype == DEATH_HG_TRANSLOC && cvar("g_nadgets_transloc_counters_shield")) {
+        self.hg_shield = 0;
+        return damage;
+    }
+
+    if not(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG)
+        return damage;
+
+    vector offs = '0 0 1' * self.maxs_z * 0.5;
+    float reflect    = damage * cvar("g_nadgets_shield_damage_reflect") * self.hg_shieldpower;
+    float takefactor = 1 - (1 - cvar("g_nadgets_shield_damage_take"))   * self.hg_shieldpower;
+    float absorb     = damage * (1 - takefactor);
+
+    self.hg_shield_stored = min(cvar("g_nadgets_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_nadgets_shield_damage_store"));
+    damage *= takefactor;
+
+    if(deathtype == DEATH_HG_TRANSLOC)
+        reflect = 0;
+    else if(DEATH_ISHG(deathtype))
+        reflect *= cvar("g_nadgets_shield_damage_reflect_hg");
+    
+    if(reflect) {
+        vector start = self.origin + offs;
+        vector end   = attacker.origin + offs;
+
+        traceline(start, end, FALSE, self);
+        end = trace_endpos;
+
+        if(trace_ent.takedamage)
+            Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), start, end);
+    }
+
+    self.hg_shieldhealth -= absorb;
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+
+    return damage;
+}
+
 void HG_Cloak(float hgtype) {
     self.hg_stealth = self.hg_stealth + cvar("g_nadgets_cloak_duration") * Buffs_NadgetPower(self);
     self.fire_endtime = 0;
