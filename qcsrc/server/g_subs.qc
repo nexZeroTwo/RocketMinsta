@@ -377,21 +377,34 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	if(source)
 		source.dphitcontentsmask = _oldsolid;
 }
-void traceline_antilag_force (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
-{
-	tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag);
+
+void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst, entity forent, float lag) {
+    tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag);
 }
-void traceline_antilag (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
-{
-	if (cvar("g_antilag") != 2)
-		lag = 0;
-	traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
+
+void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
+    float lag;
+    if(cvar("g_antilag") != 2)
+        lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
+    traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
 }
-void tracebox_antilag (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
-{
-	if (cvar("g_antilag") != 2)
-		lag = 0;
-	tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
+
+void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
+    float lag;
+
+    if(cvar("g_antilag") != 2)
+        lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
+    tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
 }
 
 
@@ -546,9 +559,16 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
     return e;
 }
 
-entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent, float lag) {
+entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
+    float lag;
+
     if(cvar("g_antilag") != 2)
         lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
     return tracerail_antilag_force(source, start, end, t, forent, lag);
 }
 

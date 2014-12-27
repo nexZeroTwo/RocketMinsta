@@ -116,10 +116,7 @@ void W_Zapper_Beam_Think(void) {
     }
 
     trace_start_for(o);
-    if(o.antilag_debug)
-        traceline_antilag(o, w_shotorg, end, FALSE, o, o.antilag_debug);
-    else
-        traceline_antilag(o, w_shotorg, end, FALSE, o, ANTILAG_LATENCY(o));
+    traceline_antilag(o, w_shotorg, end, FALSE, o);
     trace_end_for(o);
 
     targ = trace_ent;
@@ -303,10 +300,7 @@ void W_Zapper_Attack2(void) {
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
     trace_start_for(self);
-    if(self.antilag_debug)
-        traceline_antilag(self, w_shotorg, end, FALSE, self, self.antilag_debug);
-    else
-        traceline_antilag(self, w_shotorg, end, FALSE, self, ANTILAG_LATENCY(self));
+    traceline_antilag(self, w_shotorg, end, FALSE, self);
     trace_end_for(self);
 
     targ = trace_ent;

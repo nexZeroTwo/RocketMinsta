@@ -66,10 +66,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     pts = Buffs_MEODP_Hitscan_Begin(self);
     
     trace_start_for(self);
-    if(self.antilag_debug)
-        hitents = tracerail_antilag(self, start, end, FALSE, self, self.antilag_debug);
-    else
-        hitents = tracerail_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
+    hitents = tracerail_antilag(self, start, end, FALSE, self);
     trace_end_for(self);
 
     endpoint = trace_endpos;
@@ -512,8 +509,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 }
 
 
-void fireBullet (vector start, vector dir, float spread, float damage, float force, float dtype, float tracer)
-{
+void fireBullet(vector start, vector dir, float spread, float damage, float force, float dtype, float tracer) {
 	vector  end;
 	//local entity e;
 
@@ -521,10 +517,7 @@ void fireBullet (vector start, vector dir, float spread, float damage, float for
 	end = start + dir * MAX_SHOT_DISTANCE;
 
     trace_start_for(self);
-	if(self.antilag_debug)
-		traceline_antilag (self, start, end, FALSE, self, self.antilag_debug);
-	else
-		traceline_antilag (self, start, end, FALSE, self, ANTILAG_LATENCY(self));
+	traceline_antilag(self, start, end, FALSE, self);
     trace_end_for(self);
 
     end = trace_endpos;
