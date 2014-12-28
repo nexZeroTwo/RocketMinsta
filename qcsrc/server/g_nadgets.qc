@@ -49,6 +49,7 @@ void HG_Precache() {
     precache_sound(RM_SOUND_LASER_PRIMARY);
     precache_sound(RM_SOUND_LASER_SECONDARY);
     precache_model("models/mine.md3");
+    precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
 }
 
@@ -678,7 +679,13 @@ void HG_Stick(void) {
     e.bot_dodge = self.bot_dodge;
     e.bot_dodgerating = self.bot_dodgerating;
     e.owner = self.owner;
-    e.angles = vectoangles(-normal);
+
+    if(self.hg_type == HG_TRANSLOC)
+        e.angles = randomvec() * 360;
+    else
+        e.angles = vectoangles(-normal);
+    
+
     e.skin = TeamColorSkin(e.owner.team);
 
     // FIXME: a better way to sync this with client code?
@@ -687,8 +694,10 @@ void HG_Stick(void) {
             setmodel(e, "models/mine.md3");
             break;
         case HG_TRANSLOC:
-            setmodel(e, "models/runematch/rune.mdl");
-            e.colormod = '1 1 1' * 0.3 + TeamColor(self.team) * 1.5;
+            setmodel(e, "models/hg_transloc.md3");
+            e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+            e.light_lev = 50;
+            e.color = TeamColor((self.team > 0)? self.team : COLOR_TEAM4);
             break;
         case HG_LASER:
             setmodel(e, "models/elaser.mdl");
@@ -697,7 +706,7 @@ void HG_Stick(void) {
             setmodel(e, "models/grenademodel.md3");
             break;
     }
-
+    
     e.damageforcescale = self.damageforcescale;
     e.health = self.health;
     e.max_health = self.max_health;
