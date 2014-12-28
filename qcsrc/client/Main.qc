@@ -180,7 +180,7 @@ void CSQC_Init(void)
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
-    
+
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
@@ -386,6 +386,10 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void Menu_ShowNagger(void) {
+    localcmd("menu_cmd directmenu engineNagger\n");
+}
+
 void ReloadMenu_f()
 {
 	if(!self.cnt)
@@ -400,6 +404,7 @@ void ReloadMenu_f()
 		if(rm_helptime)
 			localcmd("menu_cmd directmenu RMConfig\n");
 			
+        Menu_ShowNagger();
 		gui_reloading = 0;
 		remove(self);
 	}
@@ -642,6 +647,8 @@ void PostInit(void)
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
+    defer(1, Menu_ShowNagger);
+
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
 	DPRM_Start();
@@ -1302,17 +1309,43 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 // BEGIN OPTIONAL CSQC FUNCTIONS
 void Ent_ReadEntCS()
 {
-	InterpolateOrigin_Undo();
 
 	self.classname = "entcs_receiver";
-	self.sv_entnum = ReadByte() - 1;
-	self.origin_x = ReadShort();
-	self.origin_y = ReadShort();
-	self.origin_z = ReadShort();
-	self.angles_y = ReadByte() * 360.0 / 256;
-	self.origin_z = self.angles_x = self.angles_z = 0;
 
-	InterpolateOrigin_Note();
+    float sf = ReadByte();
+    
+    if(sf & 1) {
+        self.sv_entnum = ReadByte() - 1;
+        self.sn_forcefrozen = ReadByte();
+    }
+
+    if(sf & 2) {
+        InterpolateOrigin_Undo();
+        self.origin_x = ReadShort();
+        self.origin_y = ReadShort();
+        InterpolateOrigin_Note();
+    }
+
+    if(sf & 4) {
+        InterpolateOrigin_Undo();
+        self.origin_z = ReadShort();
+        InterpolateOrigin_Note();
+    }
+
+    if(sf & 8) {
+        self.angles_y = ReadByte() * 360.0 / 256;
+    }
+
+    if(sf & 16) {
+        self.healthvalue = ReadShort();
+    }
+
+    if(sf & 32) {
+        self.armorvalue = ReadShort();
+    }
+
+    self.sameteam = (sf & 64);
+
 }
 
 void Ent_Remove();
@@ -1562,47 +1595,6 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
-void Ent_ShowNames()
-{
-    float sf;
-
-    // entity init, TODO can this be done only once somehow?
-    self.the_entnum = ReadByte(); // TODO: fixme to only send once somehow
-    self.draw2d = Draw_ShowNames;
-    //self.movetype = MOVETYPE_FLY; // movetype needed so we can traceline?
-    self.mins = '-20 -20 -24';
-    self.maxs = '20 20 45';
-
-    sf = ReadByte();
-
-    if(sf & 1)
-    {
-        self.origin_x = ReadShort();
-        self.origin_y = ReadShort();
-        self.origin_z = ReadShort();
-    }
-    if(sf & 2)
-    {
-        if(sf & 16)
-            self.healthvalue = ReadShort();
-        else
-            self.healthvalue = ReadByte();
-        
-        if(sf & 32)
-            self.armorvalue = ReadShort();
-        else
-            self.armorvalue = ReadByte();
-
-        if(sf & 128)
-            self.sn_forcefrozen = ReadByte();
-    }
-
-    if(sf & 128) // same team
-        self.sameteam = TRUE;
-    else
-        self.sameteam = FALSE;
-}
-
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1660,8 +1652,8 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
-		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
         case ENT_CLIENT_ZAPPER: Zapper_Read(); break;
+        case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -1814,6 +1806,9 @@ void Ent_Init()
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
     sv_showacc = ReadByte();
+    g_buffs_enabled = ReadShort();
+
+    Buffs_LoadModels();
 
 	if(!postinit)
 		PostInit();

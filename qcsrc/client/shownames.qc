@@ -1,84 +1,65 @@
-// self.isactive = player is in range and coordinates/status (health and armor) are up to date
-// self.origin = player origin TODO: should maybe move this so it's the origin of the shownames tag already in SSQC for culling?
-// self.healthvalue
-// self.armorvalue
-// self.sameteam = player is on same team as local client
+// plr.isactive = player is in range and coordinates/status (health and armor) are up to date
+// plr.origin = player origin TODO: should maybe move this so it's the origin of the shownames tag already in SSQC for culling?
+// plr.healthvalue
+// plr.armorvalue
+// plr.sameteam = player is on same team as local client
 //
 
 .float health_v;
 
-void Draw_ShowNames()
-{
-    if(!autocvar_hud_shownames)
-        return;
-
+void ShowNames_Draw(entity plr) {
     float oldfont;
     oldfont = drawfont;
     
-    if(self.sameteam || (!self.sameteam && !rm_shownames_teamonly))
-    {
+    if(plr.sameteam || !rm_shownames_teamonly) {
         //InterpolateOrigin_Do();
-        
-        if(self.iorigin == '0 0 0')
-            self.iorigin = self.origin;
+
+        if(plr.iorigin == '0 0 0')
+            plr.iorigin = plr.origin;
         else
-            self.iorigin = self.iorigin + (self.origin - self.iorigin) * frametime * 15;
-        
+            plr.iorigin = plr.iorigin + (plr.origin - plr.iorigin) * frametime * 15;
 
-        if(!self.sameteam)
-        {
-            traceline(self.iorigin, view_origin, 1, self);
-            if(trace_endpos != view_origin) // fade out
-            {
-                self.alpha = max(0, self.alpha - 4 * frametime);
-                if(!self.alpha)
+        //plr.iorigin = plr.origin;
+
+        if(self.sn_culled) { // fade out
+            plr.alpha = max(0, plr.alpha - 4 * frametime);
+            if(!plr.alpha)
+                return;
+        } else if(!plr.sameteam) {
+            traceline(plr.iorigin, view_origin, 1, plr);
+            if(trace_fraction < 1) { // fade out
+                plr.alpha = max(0, plr.alpha - 4 * frametime);
+                if(!plr.alpha)
                     return;
-            }
-            else // fade in
-                self.alpha = min(1, self.alpha + 4 * frametime);
-
-
-            /* WIP, why does trace_ent != self not work as intended here?
-            if(autocvar_hud_shownames_enemies != 2) // player has to point at enemy if so
-            {
-                traceline(view_origin, view_origin + view_forward * MAX_SHOT_DISTANCE, MOVETYPE_FLY, world);
-                print("trace_endpos: ", vtos(trace_endpos), " view_origin: ", vtos(view_origin), "\n");
-                if(trace_ent != self)
-                    return;
-            }*/
+            } else // fade in
+                plr.alpha = min(1, plr.alpha + 4 * frametime);
         }
 
         // otherwise, increase alpha until 1
 
         float dist;
-        dist = vlen(self.iorigin - view_origin);
+        dist = vlen(plr.iorigin - view_origin);
 
         float a;
-        a = autocvar_hud_shownames_alpha;
-        if(self.alpha)
-            a *= self.alpha;
-        //if(autocvar_hud_shownames_maxdistance)
-        {
-            if(dist >= autocvar_hud_shownames_maxdistance)
-                return;
-            a *= ((autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance) - max(0, dist - autocvar_hud_shownames_mindistance)) / (autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance);
-        }
+        a = SHOWNAMES_ALPHA;
+        if(plr.alpha)
+            a *= plr.alpha;
+
+        if(dist >= SHOWNAMES_MAXDISTANCE)
+            return;
+        a *= ((SHOWNAMES_MAXDISTANCE - SHOWNAMES_MINDISTANCE) - max(0, dist - SHOWNAMES_MINDISTANCE)) / (SHOWNAMES_MAXDISTANCE - SHOWNAMES_MINDISTANCE);
 
         float resize;
         resize = 1;
-        //if(autocvar_hud_shownames_resize) // limit resize so its never smaller than 0.5... gets unreadable
-        //    resize = 0.5 + 0.5 * ((autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance) - max(0, dist - autocvar_hud_shownames_mindistance)) / (autocvar_hud_shownames_maxdistance - autocvar_hud_shownames_mindistance);
 
-        // draw the sprite image
         vector o;
-        o = project_3d_to_2d(self.iorigin);
+        o = project_3d_to_2d(plr.iorigin + SHOWNAMES_ORIGIN_OFFSET);
 
-        if not(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight)
-        {
+        if not(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight) {
             o_z = 0;
 
             vector myPos, mySize;
-            mySize = (eX * autocvar_hud_shownames_aspect + eY) * autocvar_hud_shownames_height;
+            mySize = (eX * SHOWNAMES_ASPECT + eY) * SHOWNAMES_HEIGHT;
             myPos = o - '0.5 0 0' * mySize_x - '0 1 0' * mySize_y;
 
             // size scaling
@@ -91,12 +72,12 @@ void Draw_ShowNames()
             vector namepos; // this is where the origin of the string
             float namesize; // total area where we can draw the string
 
-            namepos = myPos + eY * 0.5 * resize * (autocvar_hud_shownames_height - autocvar_hud_shownames_fontsize);
+            namepos = myPos + eY * 0.5 * resize * (SHOWNAMES_HEIGHT - SHOWNAMES_FONTSIZE);
             namesize = mySize_x;
 
             string s, s2;
-            s = GetPlayerName(self.the_entnum-1);
-            vector textsz = '1 1 0' * autocvar_hud_shownames_fontsize * resize;
+            s = GetPlayerName(plr.sv_entnum);
+            vector textsz = '1 1 0' * SHOWNAMES_FONTSIZE * resize;
 
             if(teamplay) {
                 s = strdecolorize(s);
@@ -111,9 +92,9 @@ void Draw_ShowNames()
             
             float nade;
             if(g_nadgets)
-                nade = playerslots[self.the_entnum-1].(scores[SP_NADEMODE]);
+                nade = playerslots[plr.sv_entnum].(scores[SP_NADEMODE]);
             
-            if(self.sameteam) {
+            if(plr.sameteam) {
                 drawfont = GetBigfont();
 
                 vector hScale;
@@ -123,12 +104,12 @@ void Draw_ShowNames()
                 vector posCenter, posHealth, posArmor;
                 float fade = 0.7;
 
-                float frozen = (self.sn_forcefrozen || playerslots[self.the_entnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN);
+                float frozen = (plr.sn_forcefrozen || playerslots[plr.sv_entnum].(scores[SP_FLAGS]) & SPFLAG_FROZEN);
 
                 if(frozen) {
                     hScale = textsz * 2;
                 } else if(getstati(STAT_BUFFS) & BUFF_MEDIC) {
-                    vector dmg = healtharmor_maxdamage(self.healthvalue, self.armorvalue, armorblockpercent);
+                    vector dmg = healtharmor_maxdamage(plr.healthvalue, plr.armorvalue, armorblockpercent);
                     float u = 1 - bound(0, dmg_x / sv_nicehealth, 1);
                     hScale = textsz * (1.5 + 3 * u);
                     fade = fade + (1 - fade) * u;
@@ -141,13 +122,13 @@ void Draw_ShowNames()
                 if(frozen) {
                     s2 = "Frozen!";
                     drawstring(posCenter - '0.5 0 0' * stringwidth_svn(s2, TRUE, hScale), s2, hScale, '0.2 1 1', a * fade, DRAWFLAG_NORMAL);
-                    playerslots[self.the_entnum-1].sn_lastdraw = time;
-                } else if(self.healthvalue) {
-                    txtHealth = ftos(self.healthvalue);
+                    playerslots[plr.sv_entnum].sn_lastdraw = time;
+                } else if(plr.healthvalue) {
+                    txtHealth = ftos(plr.healthvalue);
                     szHealth = stringwidth_svn(txtHealth, TRUE, hScale);
 
-                    if(self.armorvalue) {
-                        txtArmor  = ftos(self.armorvalue);
+                    if(plr.armorvalue) {
+                        txtArmor  = ftos(plr.armorvalue);
                         szArmor   = stringwidth_svn(txtArmor, TRUE, hScale);
                         posArmor  = posCenter + '2 0 0';
                         posHealth = posCenter - '1 0 0' * (szHealth + 2 + hScale_x);
@@ -156,11 +137,11 @@ void Draw_ShowNames()
                     }
 
                     drawpic(posHealth, "gfx/hud/sb_health", hScale, '1 1 1', a * 0.7, DRAWFLAG_NORMAL);
-                    drawstring(posHealth + '1 0 0' * hScale_x, txtHealth, hScale, healthcolor(self.healthvalue) * fade, a * fade, DRAWFLAG_NORMAL);
+                    drawstring(posHealth + '1 0 0' * hScale_x, txtHealth, hScale, healthcolor(plr.healthvalue) * fade, a * fade, DRAWFLAG_NORMAL);
 
-                    if(self.armorvalue) {
+                    if(plr.armorvalue) {
                         drawpic(posArmor,  "gfx/hud/sb_armor",  hScale, '1 1 1', a * 0.7, DRAWFLAG_NORMAL);
-                        drawstring(posArmor  + '1 0 0' * hScale_x, txtArmor,  hScale, healthcolor(self.armorvalue) * fade, a * fade, DRAWFLAG_NORMAL);
+                        drawstring(posArmor  + '1 0 0' * hScale_x, txtArmor,  hScale, healthcolor(plr.armorvalue) * fade, a * fade, DRAWFLAG_NORMAL);
                     }
                 }
 
@@ -173,11 +154,19 @@ void Draw_ShowNames()
             }
             
             if(teamplay)
-                drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(self.the_entnum - 1)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+                drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(plr.sv_entnum)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
             else
                 drawcolorcodedstring(namepos, s, textsz, a, DRAWFLAG_NORMAL);
             
             drawfont = oldfont;
         }
     }
+}
+
+void ShowNames_DrawAll(void) {
+    if(!rm_shownames)
+        return;
+
+    entity e; for(;(e = find(e, classname, "entcs_receiver"));)
+        ShowNames_Draw(e);
 }

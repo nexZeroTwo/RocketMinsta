@@ -3806,9 +3806,6 @@ void Sbar_Draw(void)
 		minstasbar_fixed = TRUE;
 	}
 
-    if(g_nadgets)
-        hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
-
 	if(spectatee_status == -1 || !spectatee_status)
 	{
 		//release madoka and HUD locks. Perhaps should be done elsewhere?
@@ -3960,6 +3957,9 @@ void Sbar_Draw(void)
         float spn = cvar("rm_showplayername");
         if((spn > 1) || (spn && isdemo()))
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
+        
+        if(g_nadgets)
+            hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
     }
     
 	if(warmup_stage && !intermission)
@@ -4866,7 +4866,7 @@ void Sbar_Draw(void)
                 sector_mod = '0 0 0';
                 
                 if(ammo_progress)
-                    DrawProgressBarSector(ammo_progress, hud_sector_pos, hud_sector,
+                    DrawProgressBarSector(-ammo_progress, hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag, 0);
@@ -5112,7 +5112,7 @@ void Sbar_Draw(void)
             float itemcode = GetAmmoItemCode(i);
 
             if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
-                ammo_progress = -bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
+                ammo_progress = bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
                 if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
                     a = getstati(STAT_BULLETS_LOADED);
                     isrifle = TRUE;
@@ -5122,7 +5122,7 @@ void Sbar_Draw(void)
                 if(h >= 0) {
                     if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
                         a = floor((1 - h) * 100);
-                    ammo_progress = -h;
+                    ammo_progress = h;
                 }
             } else
                 ammo_progress = 0;

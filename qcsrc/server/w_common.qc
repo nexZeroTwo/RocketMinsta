@@ -75,6 +75,8 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
     if(deathtype != DEATH_HG_SHIELD)
         pts = Buffs_MEODP_Hitscan_Begin(self);
     
+    trace_start_for(self);
+
 	while (1)
 	{
         if(deathtype == DEATH_HG_SHIELD)
@@ -83,7 +85,7 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
 		else
 			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
-
+        
 		// if it is world we can't hurt it so stop now
 		if(trace_ent == world || trace_fraction == 1) {
             if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
@@ -108,6 +110,8 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 		// make the entity non-solid
 		trace_ent.solid = SOLID_NOT;
 	}
+
+    trace_end_for(self);
 
 	endpoint = trace_endpos;
 	endent = trace_ent;
@@ -417,7 +421,9 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     else
         eff = particleeffectnum("tr_bullet");
     
-    trailparticles(world, eff, w_shotorg, end);
+    W_SetHitscanVisuals(self, end);
+    trailparticles(world, eff, w_shotorg_visual, end);
+
     Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
 }
 
@@ -430,6 +436,9 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         fireHitscanBullet(start, dir, spread, damage, headshotbonus, force, dtype, tracereffects);
         return;
     }
+
+    // used only for muzzleflashes later
+    W_SetHitscanVisuals(self, w_shotorg + dir);
 
 	entity proj;
 	proj = spawn();
@@ -580,10 +589,13 @@ void fireBullet (vector start, vector dir, float spread, float damage, float for
 
 	dir = normalize(dir + randomvec() * spread);
 	end = start + dir * MAX_SHOT_DISTANCE;
+
+    trace_start_for(self);
 	if(self.antilag_debug)
 		traceline_antilag (self, start, end, FALSE, self, self.antilag_debug);
 	else
 		traceline_antilag (self, start, end, FALSE, self, ANTILAG_LATENCY(self));
+    trace_end_for(self);
 
     end = trace_endpos;
 

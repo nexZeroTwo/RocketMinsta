@@ -9,6 +9,8 @@
 .float zapper_heat;
 .float zapper_coolofftime;
 
+.entity zapper_shotorgsentfor;
+
 .vector zapper_beam_start, zapper_beam_end;
 
 float W_Zapper_Attack1_CheckAmmo(entity p) {
@@ -28,17 +30,19 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
+    sf &~= 8;
+
+    if(to.zapper_shotorgsentfor != self) {
+        if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
+            sf |= 8;
+        }
+    }
+
     WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER);
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
         WriteByte(MSG_ENTITY, num_for_edict(self.owner));
-        if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
-            vector shorg = W_Zapper_LocalShotOrg(self.owner);
-            WriteCoord(MSG_ENTITY, shorg_x);
-            WriteCoord(MSG_ENTITY, shorg_y);
-            WriteCoord(MSG_ENTITY, shorg_z);
-        }
     }
 
     if(sf & 2) {
@@ -51,6 +55,11 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_x);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_y);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_z);
+    }
+
+    if(sf & 8) {
+        WriteInt24_t(MSG_ENTITY, compressShotOrigin(W_Zapper_LocalShotOrg(self.owner)));
+        to.zapper_shotorgsentfor = self;
     }
 
     return TRUE;
@@ -95,6 +104,7 @@ void W_Zapper_Beam_Think(void) {
     float fract;
     entity targ;
     vector end = w_shotorg + w_shotdir * self.zapper_range;
+    entity o = self.owner;
 
     if(self.zapper_tracespeed) {
         if(!self.origin)
@@ -105,10 +115,12 @@ void W_Zapper_Beam_Think(void) {
         end = self.origin;
     }
 
-    if(self.owner.antilag_debug)
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, self.antilag_debug);
+    trace_start_for(o);
+    if(o.antilag_debug)
+        traceline_antilag(o, w_shotorg, end, FALSE, o, o.antilag_debug);
     else
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, ANTILAG_LATENCY(self.owner));
+        traceline_antilag(o, w_shotorg, end, FALSE, o, ANTILAG_LATENCY(o));
+    trace_end_for(o);
 
     targ = trace_ent;
     end = trace_endpos;
@@ -170,8 +182,6 @@ void W_Zapper_Beam_Think(void) {
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
             Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
 
-        entity o = self.owner;
-
         if not(inWarmupStage)
         if not(o.isbot) {
             o.bullets_fired[o.weapon] += 1;
@@ -232,6 +242,8 @@ void W_Zapper_Attack1(void) {
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
 
+    self.zapper_shotorgsentfor = world;
+
     o = self;
     self = e;
     self.think();
@@ -290,10 +302,12 @@ void W_Zapper_Attack2(void) {
     vector end = w_shotorg + w_shotdir * range;
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
+    trace_start_for(self);
     if(self.antilag_debug)
         traceline_antilag(self, w_shotorg, end, FALSE, self, self.antilag_debug);
     else
         traceline_antilag(self, w_shotorg, end, FALSE, self, ANTILAG_LATENCY(self));
+    trace_end_for(self);
 
     targ = trace_ent;
     end = trace_endpos;
@@ -313,10 +327,10 @@ void W_Zapper_Attack2(void) {
         damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
         force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
 
-        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
-
         if(targ.iscreature)
             W_Zapper_Attack2_Arc(targ, self, damage);
+
+        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
     }
 
     Buffs_MEODP_Hitscan_End(pts);

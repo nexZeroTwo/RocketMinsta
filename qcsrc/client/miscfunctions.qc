@@ -572,6 +572,12 @@ float rm_particleeffectnum(string p) {
             case "RM_ZAPPER_TEAM4":
                 return particleeffectnum("TR_NEXUIZPLASMA");
 
+            case "RM_LIGHTNING_TEAM1":
+            case "RM_LIGHTNING_TEAM2":
+            case "RM_LIGHTNING_TEAM3":
+            case "RM_LIGHTNING_TEAM4":
+                return -1;
+
             case "RM_ZAPPER_MUZZLEFLASH_TEAM1":
             case "RM_ZAPPER_MUZZLEFLASH_TEAM2":
             case "RM_ZAPPER_MUZZLEFLASH_TEAM3":
