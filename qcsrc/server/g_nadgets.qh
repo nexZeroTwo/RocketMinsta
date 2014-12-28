@@ -19,7 +19,7 @@ float HG_ShowMenu(float);
 void HG_Grenade_Remove(void);
 void HG_Grenade_FadeOut(entity);
 void HG_Grenade_Think();
-void HG_Remote_Stick();
+void HG_Stick(void);
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
 void HG_SetRegenTime(entity e, float t);
@@ -61,7 +61,7 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 .float hg_ranthink;
 .float hg_wp_nextthink;
 .float hg_wp_state;
-.float hg_remote_sticked;
+.float hg_sticked;
 .float hg_nadesused;
 .float hg_optout;
 .float hg_optout_nextround;
@@ -112,7 +112,6 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 // for hud only
 .float hg_launchspeed;
 
-.vector hg_normal;
 .entity hg_waypoint;
 
 float g_nadgets_oldhitboxes;

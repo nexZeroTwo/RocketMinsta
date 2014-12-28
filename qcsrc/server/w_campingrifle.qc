@@ -345,6 +345,7 @@ float w_campingrifle(float req)
         self.weaponentity.state = WS_READY;
         self.weapon_think = w_ready;
         self.weapon_nextthink = time;
+        self.campingrifle_reloadfinished = time;
 	}
     else if (req == WR_TT_STORE)
     {
