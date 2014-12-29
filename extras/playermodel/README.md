@@ -2,13 +2,12 @@ General infos
 =============
 
 
-
 License info
 ============
 
 ## Neo-Ayumi
 
-A derivative from the Sorceress and Ayumi model of OpenArena. An open-source FPS under GNU GENERAL PUBLIC LICENSE, so model is GPL. 
+An heavy derivative (almost rewrite from scratch) of the Sorceress and Ayumi model, woman base model : modeling by enki (enkithan(at)free.fr) and leileilol. (c) OpenArena Team , Theses meshes are released under the GPL license v2
 
 ## Armored-Mulder
 
