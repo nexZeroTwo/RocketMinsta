@@ -27,14 +27,24 @@ void W_GiveWeapon (entity e, float wep, string name)
 float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
     float did_hit;
 
-    if(ent.flags & FL_CLIENT)
-    if(ent.deadflag == DEAD_NO)
-        did_hit = 1;
+    if(ent.takedamage == DAMAGE_NO)
+        return FALSE;
 
-    if(teams_matter)
-    if(ent.team == attacker.team)
-    if(!Buffs_BuffPower(attacker, BUFF_MEDIC))
-        did_hit = 0;
+    float sameteam = !IsDifferentTeam(ent, attacker);
+
+    if(ent.flags & FL_CLIENT) {
+        if(ent.deadflag == DEAD_NO)
+            did_hit = TRUE;
+    } else if(ent.flags & FL_PROJECTILE) {
+        if(ent.owner == attacker)
+            return TRUE;
+        did_hit = TRUE;
+    } else if(ent.classname == "meodp_point") {
+        return TRUE;
+    }
+
+    if(sameteam && !Buffs_BuffPower(attacker, BUFF_MEDIC))
+        did_hit = FALSE;
 
     return did_hit;
 }
