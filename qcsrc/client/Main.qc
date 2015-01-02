@@ -1319,6 +1319,8 @@ void Ent_ReadEntCS()
         self.sn_forcefrozen = ReadByte();
     }
 
+    entity plr = playerslots[self.sv_entnum];
+
     if(sf & 2) {
         InterpolateOrigin_Undo();
         self.origin_x = ReadShort();
@@ -1335,10 +1337,12 @@ void Ent_ReadEntCS()
 
     if(sf & 16) {
         self.healthvalue = ReadShort();
+        plr.healthvalue = self.healthvalue;
     }
 
     if(sf & 32) {
         self.armorvalue = ReadShort();
+        plr.armorvalue = self.armorvalue;
     }
 
     self.sameteam = (sf & 64);
@@ -2129,6 +2133,15 @@ void Net_DamageTracker() {
     }
 }
 
+void Net_ReadUpdateSelectedPlayer() {
+    sbar_selectedplayer = ReadByte();
+    sbar_selectedplayer_fadetime = time + 2;
+    
+    if(sbar_selectedplayer_name)
+        strunzone(sbar_selectedplayer_name);
+    sbar_selectedplayer_name = strzone(GetPlayerName(sbar_selectedplayer - 1));
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2217,6 +2230,9 @@ float CSQC_Parse_TempEntity()
        		return TRUE;
         case TE_CSQC_ZAPPERLIGHTNING:
             Zapper_ReadLightning();
+            return TRUE;
+        case TE_CSQC_UPDATESELECTEDPLAYER:
+            Net_ReadUpdateSelectedPlayer();
             return TRUE;
     }
 
@@ -2331,18 +2347,6 @@ void bigprint(string bigstr, string comment, float staytime)
     
 	if(comment != "")
 	{
-		
-		if(substring(comment, 0, 1) == "\x01")
-		{
-			if(rm_shownames)
-				return;
-			
-			comment = substring(comment, 1, strlen(comment));
-			bigprint_nofadein = 1;
-		}
-		else
-			bigprint_nofadein = 0;
-		
 		bpc_draw = 1;
 		
 		if(bigprint_comment)

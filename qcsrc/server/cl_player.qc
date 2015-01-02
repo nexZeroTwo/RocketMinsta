@@ -1091,6 +1091,13 @@ void ClearSelectedPlayer() {
         self.selected_player = world;
 }
 
+void UpdateSelectedPlayer_Send(entity to, entity p) {
+    msg_entity = to;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_UPDATESELECTEDPLAYER);
+    WriteByte(MSG_ONE, num_for_edict(p));
+}
+
 void UpdateSelectedPlayer() {
     entity selected;
     float selected_score;
@@ -1142,14 +1149,7 @@ void UpdateSelectedPlayer() {
     if(selected) {
         if(selected == self.selected_player) {
             if(time > self.selected_player_next_update) {
-                string namestr;
-                namestr = playername(selected);
-                
-                if(teams_matter)
-                    if(self.team == selected.team)
-                        namestr = strcat(namestr, " (", ftos(floor(selected.health)), "h ", ftos(floor(selected.armorvalue)), "a)");
-                
-                bigprint_spec(self, "", strcat("\x01", namestr), self.cvar_scr_centertime);
+                UpdateSelectedPlayer_Send(self, selected);
                 self.selected_player_next_update = time + self.cvar_scr_centertime * 0.8;
             }
         }
