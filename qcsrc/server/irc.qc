@@ -97,6 +97,17 @@ void IRC_Think(void) {
     }
 }
 
+string IRC_DP2IRC_NoColors(string s) {
+    string v1 = cvar_string("irc_translate_dp2irc_color");
+    string v2 = cvar_string("irc_translate_dp2irc_qfont");
+    cvar_set("irc_translate_dp2irc_color", "1");
+    cvar_set("irc_translate_dp2irc_qfont", "1");
+    s = IRC_DP2IRC(s);
+    cvar_set("irc_translate_dp2irc_color", v1);
+    cvar_set("irc_translate_dp2irc_qfont", v2);
+    return s;
+}
+
 void IRC_Init(void) {
     float s;
     
@@ -144,9 +155,13 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         case "status": case "list": case "players": {
             IRC_Notice(handle, nick, strcat("^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, "^7, ^1", 
                                      strcat(ftos(realclients), "^7/", ftos(maxclients), " clients")));
+
+            string search;
+            if(argc > 1)
+                search = strtolower(substring(cmdline, argv_start_index(1), strlen(cmdline)));
+
             FOR_EACH_CLIENT(e) {
-                s = IRC_DP2IRC(e.netname);
-                if(argc < 2 || strstrofs(strdecolorize(s), argv(1), 0) >= 0) {
+                if(!search || strstrofs(strtolower(IRC_DP2IRC_NoColors(e.netname)), search, 0) >= 0) {
                     s = strcat("^3#", ftos(num_for_edict(e)));
                     l = strlen(s);
                     for(i = 0; i < 7 - l; ++i) s = strcat(s, " ");
