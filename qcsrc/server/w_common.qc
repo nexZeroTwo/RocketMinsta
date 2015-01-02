@@ -24,7 +24,7 @@ void W_GiveWeapon (entity e, float wep, string name)
 	self = oldself;
 }
 
-float W_IsGoodHit(entity attacker, entity ent) {
+float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
     float did_hit;
 
     if(ent.flags & FL_CLIENT)
@@ -39,19 +39,51 @@ float W_IsGoodHit(entity attacker, entity ent) {
     return did_hit;
 }
 
+void W_Accuracy_RegisterShot(entity attacker, float w) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.bullets_fired[w] += 1;
+    attacker.maxdamage_fired = w + 64 * rint(attacker.bullets_fired[w]);
+}
+
+void W_Accuracy_RegisterHit(entity attacker, entity targ, float w) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    if(!W_Accuracy_IsGoodHit(attacker, targ))
+        return;
+
+    attacker.bullets_hit[w] += 1;
+    attacker.damage_hits = w + 64 * rint(attacker.bullets_hit[w]);
+}
+
+void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.max_damage[w] += damage;
+    attacker.maxdamage_fired = w + 64 * rint(attacker.max_damage[w]);
+}
+
+void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.actual_damage[w] += damage;
+    attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
+}
+
 void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
     vector hitloc, force, endpoint, dir;
     entity ent, endent;
     float endq3surfaceflags;
-    float did_hit;
     float length;
     vector beampos;
     string snd;
     entity pseudoprojectile;
     float f, ffs;
     entity pts, hitents;
-    
-    did_hit = 0;
 
     railgun_start = start;
     railgun_end = end;
@@ -97,30 +129,20 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             remove(pseudoprojectile);
     }
 
+    W_Accuracy_RegisterShot(self, self.weapon);
+
     // find all the entities the railgun hit and hurt them
     for(ent = hitents; ent; ent = ent.tracerail_next) {
+        W_Accuracy_RegisterHit(self, ent, self.weapon);
+
         hitloc = ent.tracerail_endpos;
-        did_hit = W_IsGoodHit(self, ent);
 
         f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
         ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
 
         // apply the damage
-        if (ent.takedamage)
+        if(ent.takedamage)
             Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
-    }
-
-    //calculate hits and fired shots for hitscan
-    if not(inWarmupStage)
-    if not(self.isbot) {
-        self.bullets_fired[self.weapon] += 1;
-
-        if(did_hit)
-            self.bullets_hit[self.weapon] += 1;
-
-        // update the client and store in addstat() in g_world
-        self.damage_hits = self.weapon + 64 * rint(self.bullets_hit[self.weapon]);
-        self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
     }
 
     Buffs_MEODP_Hitscan_End(pts);
@@ -138,10 +160,6 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 void W_BallisticBullet_Hit (void)
 {
 	float f, fd;
-
-	float hit;
-	hit = 0;
-
 	f = pow(bound(0, vlen(self.velocity) / vlen(self.oldvelocity), 1), 2); // energy multiplier
     
     if(cvar("g_ballistics_constantdamage"))
@@ -162,8 +180,6 @@ void W_BallisticBullet_Hit (void)
 		railgun_start = self.origin - 2 * frametime * self.velocity;
 		railgun_end = self.origin + 2 * frametime * self.velocity;
 
-        hit = W_IsGoodHit(self, other);
-
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
@@ -181,17 +197,8 @@ void W_BallisticBullet_Hit (void)
 				bigprint_spec(self.owner, "^5Awesome!", "", 1);
 			}
 		}
-		//calculate hits for ballistic weapons
-		if not(inWarmupStage)
-		if not(self.owner.isbot)
-		{
-			if(hit)
-				self.owner.bullets_hit[self.owner.weapon] += 1;
-			// update the client
-			self.owner.damage_hits = self.owner.weapon + 64 * rint(self.owner.bullets_hit[self.owner.weapon]);
-		}
 
-		//sound (self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+        W_Accuracy_RegisterHit(self.owner, other, self.weapon);
 	}
 
 	self.enemy = other; // don't hit the same player twice with the same bullet
@@ -398,13 +405,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.oldvelocity = proj.velocity;
     PROJECTILE_FIX(proj)
     
-	//calculate fired bullets for ballistics
-	if not(inWarmupStage)
-	if not(self.isbot)
-	{
-		self.bullets_fired[self.weapon] += 1;
-		self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-	}
+    W_Accuracy_RegisterShot(self, self.weapon);
 
 	if(cvar("g_antilag_bullets"))
 	if(pSpeed >= cvar("g_antilag_bullets"))
@@ -452,13 +453,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			tracetoss(self, oldself);
 			self.velocity = v0;
 			self.gravity = g0;
-
-			if not(inWarmupStage)
-			if not(self.isbot)
-			{
-				self.bullets_fired[self.weapon] += 1;
-				self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-			}
 
 			if(vlen(trace_endpos - self.origin) > 16)
 				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);

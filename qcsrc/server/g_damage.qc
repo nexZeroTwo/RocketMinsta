@@ -1836,11 +1836,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
     if(!DEATH_ISHG(deathtype))
     if(!g_minstagib || DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
 	if(clienttype(attacker) == CLIENTTYPE_REAL)
-	{
-		// Track damage done and update the stat to be sent later in g_world.qc
-		attacker.actual_damage[weaponid] += damage;
-		attacker.damage_hits = weaponid + 64 * rint(attacker.actual_damage[weaponid]);
-	}
+        W_Accuracy_RegisterActualDamage(attacker, weaponid, damage);
 }
 
 .float damage_noinfo;
