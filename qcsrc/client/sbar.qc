@@ -3741,7 +3741,7 @@ void Sbar_DrawSelectedPlayer(void) {
         float team1 = GetPlayerColorForce(player_localentnum-1);
         float team2 = GetPlayerColorForce(sbar_selectedplayer-1);
 
-        drawstring(namepos, sbar_selectedplayer_name, fs, GetTeamRGB(team2) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+        drawstring(namepos, strdecolorize(sbar_selectedplayer_name), fs, GetTeamRGB(team2) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
 
         if(plr.healthvalue && (team1 == team2)) {
             pos = pos + '0 1 0' * fs_y;
