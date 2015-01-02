@@ -486,42 +486,15 @@ void Boobs_DropAll(vector);
 
 float VisualDamage_CheckLOS(entity viewer, entity targ, vector hitloc) {
     vector p1, p2;
-    float found;
-    
+
     p1 = viewer.origin + viewer.view_ofs;
     if(hitloc != '0 0 0')
         p2 = hitloc;
     else
         p2 = targ.origin + targ.view_ofs;
     
-    while(TRUE) {
-        traceline(p2, p1, FALSE, targ);
-        
-        if(trace_ent == viewer) {
-            found = TRUE;
-            break;
-        }
-        
-        if(!trace_ent || trace_fraction == 1)
-            break;
-        
-        trace_ent.loscheck_found = TRUE;
-        trace_ent.loscheck_solid = trace_ent.solid;
-        
-        if(trace_ent.solid == SOLID_BSP)
-            break;
-        
-        trace_ent.solid = SOLID_NOT;
-    }
-    
-    entity e = findfloat(world, loscheck_found, TRUE);
-    while(e) {
-        e.solid = e.loscheck_solid;
-        e.loscheck_found = FALSE;
-        e = findfloat(e, loscheck_found, TRUE);
-    }
-    
-    return found;
+    traceline(p1, p2, MOVE_NOMONSTERS, viewer);
+    return almost_equals(trace_fraction, 1);
 }
 
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc) {
@@ -618,36 +591,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(damage) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
-    	
-    	if(damage)
-        if(g_nadgets)
-        if(attacker.iscreature)
-        if(self.hg_shield) {
-            if(deathtype == DEATH_HG_TRANSLOC && cvar("g_nadgets_transloc_counters_shield"))
-                self.hg_shield = 0;
-            else if(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG) {
-                vector offs = '0 0 1' * self.maxs_z*0.5;
-                float reflect = damage * cvar("g_nadgets_shield_damage_reflect") * self.hg_shieldpower;
-                float takefactor = 1 - (1 - cvar("g_nadgets_shield_damage_take")) * self.hg_shieldpower;
-                float absorb = damage * (1 - takefactor);
-                self.hg_shield_stored = min(cvar("g_nadgets_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_nadgets_shield_damage_store"));
-                damage *= takefactor;
-                
-                if(deathtype == DEATH_HG_TRANSLOC)
-                    reflect = 0;
-                else if(DEATH_ISHG(deathtype))
-                    reflect *= cvar("g_nadgets_shield_damage_reflect_hg");
-                
-                if(reflect) {
-                    FireRailgunBullet(self.origin+offs, attacker.origin+offs, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
-                    trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin+offs, trace_endpos);
-                }
-                
-                self.hg_shieldhealth -= absorb;
-                if(self.hg_shieldhealth <= 0)
-                    self.hg_shield = 0;
-            }
-        }
+    	damage = HG_Shield_Damage(attacker, damage, deathtype);
         
         if(deathtype == HG_PLASMA_SHARD) {
             if(time > inflictor.damage_nextarceffect) {

@@ -789,3 +789,5 @@ float IsDifferentTeam(entity a, entity b);
 float sv_shownames;
 
 .float client_dprmversion;
+
+.float antilag_debug;

@@ -273,7 +273,7 @@ void HG_Napalm()
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove_Multiple);
     proj.meodp_point_offs = '0 0 64';
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
@@ -392,7 +392,7 @@ void HG_Plasma_Projectile() {
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use_Multiple);
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
@@ -1170,7 +1170,7 @@ void HG_Shield_Trigger(void) {
         
         // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
         
-        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, ANTILAG_LATENCY(self));
+        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
         targ = trace_ent;
         start = w_shotorg;
         end = trace_endpos;
@@ -1311,6 +1311,51 @@ void HG_Shield_Frame(void) {
         if(cvar("g_nadgets_shield_diminish"))
             self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
     }
+}
+
+float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
+    if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
+        return damage;
+
+    if(deathtype == DEATH_HG_TRANSLOC && cvar("g_nadgets_transloc_counters_shield")) {
+        self.hg_shield = 0;
+        return damage;
+    }
+
+    if not(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG)
+        return damage;
+
+    vector offs = '0 0 1' * self.maxs_z * 0.5;
+    float reflect    = damage * cvar("g_nadgets_shield_damage_reflect") * self.hg_shieldpower;
+    float takefactor = 1 - (1 - cvar("g_nadgets_shield_damage_take"))   * self.hg_shieldpower;
+    float absorb     = damage * (1 - takefactor);
+
+    self.hg_shield_stored = min(cvar("g_nadgets_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_nadgets_shield_damage_store"));
+    damage *= takefactor;
+
+    if(deathtype == DEATH_HG_TRANSLOC)
+        reflect = 0;
+    else if(DEATH_ISHG(deathtype))
+        reflect *= cvar("g_nadgets_shield_damage_reflect_hg");
+    
+    if(reflect) {
+        vector start = self.origin + offs;
+        vector end   = attacker.origin + offs;
+
+        traceline(start, end, FALSE, self);
+        end = trace_endpos;
+
+        if(trace_ent.takedamage)
+            Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), start, end);
+    }
+
+    self.hg_shieldhealth -= absorb;
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+
+    return damage;
 }
 
 void HG_Cloak(float hgtype) {
