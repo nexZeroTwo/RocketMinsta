@@ -303,6 +303,9 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     float ijp;
     string nick, user, host;
     
+    if(!irc)
+        return;
+
     if(handle != irc.cnt)    // not our session
         return;
     
