@@ -1325,6 +1325,12 @@ void GameCommand(string command)
     	return;
     }
 
+    if(argv(0) == "radio_evil") {
+        FOR_EACH_REALCLIENT(e)
+            stuffcmd(e, "radio 1\n");
+        return;
+    }
+
     if(argv(0) == "hg_bonustest") {
         HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
         return;
