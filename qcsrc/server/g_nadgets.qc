@@ -273,7 +273,7 @@ void HG_Napalm()
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove_Multiple);
     proj.meodp_point_offs = '0 0 64';
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
@@ -392,7 +392,7 @@ void HG_Plasma_Projectile() {
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use_Multiple);
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
