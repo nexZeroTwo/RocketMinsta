@@ -94,7 +94,7 @@ float entcs_customize(void) {
 //
 //  id           1
 //  origin_xy    2
-//  origin_z     4
+//  <unused>     4
 //  angles_y     8
 //  health       16
 //  armor        32
@@ -135,11 +135,10 @@ float entcs_send(entity to, float sf) {
     if(sf & 2) {
         WriteShort(MSG_ENTITY, o.origin_x);
         WriteShort(MSG_ENTITY, o.origin_y);
-    }
-
-    if(sf & 4) {
         WriteShort(MSG_ENTITY, o.origin_z);
     }
+
+    // sf & 4 unused
 
     if(sf & 8) {
         WriteByte(MSG_ENTITY, o.angles_y * 256.0 / 360);
@@ -158,23 +157,13 @@ float entcs_send(entity to, float sf) {
 
 void entcs_think(void) {
     self.nextthink = time + cvar("sv_shownames_update");
-
-    vector org;
+    
     entity o;
     o = self.owner;
 
-    if(o.origin_x != self.origin_x || o.origin_z != self.origin_z) {
-        org = o.origin;
-        org_z = self.origin_z;
-        setorigin(self, org);
+    if(o.origin != self.origin) {
+        setorigin(self, o.origin);
         self.SendFlags |= 2;
-    }
-
-    if(o.origin_z != self.origin_z) {
-        org = self.origin;
-        org_z = o.origin_z;
-        setorigin(self, org);
-        self.SendFlags |= 4;
     }
 
     if(o.angles_y != self.angles_y) {

@@ -1323,14 +1323,11 @@ void Ent_ReadEntCS()
         InterpolateOrigin_Undo();
         self.origin_x = ReadShort();
         self.origin_y = ReadShort();
-        InterpolateOrigin_Note();
-    }
-
-    if(sf & 4) {
-        InterpolateOrigin_Undo();
         self.origin_z = ReadShort();
         InterpolateOrigin_Note();
     }
+
+    // sf & 4 unused
 
     if(sf & 8) {
         self.angles_y = ReadByte() * 360.0 / 256;
