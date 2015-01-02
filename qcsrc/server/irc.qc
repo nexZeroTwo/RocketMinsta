@@ -1,22 +1,38 @@
 
 entity irc;
 
+float irc_was_connected;
+float irc_reconnect_time;
+float irc_disconnections;
+
 float IRC_CheckSession(float s) {
     if(!IRC_SessionExists(s))
         s = IRC_CreateSession();
     
     if(!IRC_SessionIsConnected(s)) {
-        if(IRC_ConnectSession(s,
-            cvar_string("sv_ircbot_server"),
-            cvar("sv_ircbot_server_port"),
-            cvar_string("sv_ircbot_server_password"),
-            cvar_string("sv_ircbot_nick"),
-            cvar_string("sv_ircbot_user"),
-            cvar_string("sv_ircbot_realname")
-        ) == IRC_ERR_STATE)
-            IRC_TerminateSession(s);
-    }
-    
+        if(irc_was_connected) {
+            float d = cvar("sv_ircbot_reconnect_interval") + cvar("sv_ircbot_reconnect_interval_add") * irc_disconnections;
+            print("IRC_CheckSession: trying to reconnect in ", ftos(d), " seconds\n");
+
+            irc_was_connected = FALSE;
+            irc_reconnect_time = time + d;
+            irc_disconnections += 1;
+        }
+
+        if(!irc || time >= irc_reconnect_time) {
+            if(IRC_ConnectSession(s,
+                cvar_string("sv_ircbot_server"),
+                cvar("sv_ircbot_server_port"),
+                cvar_string("sv_ircbot_server_password"),
+                cvar_string("sv_ircbot_nick"),
+                cvar_string("sv_ircbot_user"),
+                cvar_string("sv_ircbot_realname")
+            ) == IRC_ERR_STATE)
+                IRC_TerminateSession(s);
+        }
+    } else
+        irc_was_connected = TRUE;
+
     cvar_set("_sv_ircbot_session", ftos(s));
     return s;
 }
@@ -73,7 +89,7 @@ void IRC_UpdateTopic(void) {
 
 void IRC_Think(void) {
     self.cnt = IRC_CheckSession(self.cnt);
-    self.nextthink = time + 5;
+    self.nextthink = time + 1;
     
     if(self.skin) {
         IRC_UpdateTopic();
@@ -316,6 +332,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     host = substring(src, strstrofs(src, "@", 0) + 1, strlen(src));
     
     if(event == "CONNECT") {
+        irc_disconnections = 0;
         IRC_JoinChannel(handle, irc.target, irc.targetname);
         if(cvar_string("sv_ircbot_connectcommand") != "")
             IRC_SendRaw(handle, cvar_string("sv_ircbot_connectcommand"));
