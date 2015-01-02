@@ -1092,10 +1092,11 @@ void ClearSelectedPlayer() {
 }
 
 void UpdateSelectedPlayer_Send(entity to, entity p) {
-    msg_entity = to;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_UPDATESELECTEDPLAYER);
-    WriteByte(MSG_ONE, num_for_edict(p));
+    FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == to || (msg_entity.enemy == to && msg_entity.classname == "spectator")) {
+        WriteByte(MSG_ONE, SVC_TEMPENTITY);
+        WriteByte(MSG_ONE, TE_CSQC_UPDATESELECTEDPLAYER);
+        WriteByte(MSG_ONE, num_for_edict(p));
+    }
 }
 
 void UpdateSelectedPlayer() {
