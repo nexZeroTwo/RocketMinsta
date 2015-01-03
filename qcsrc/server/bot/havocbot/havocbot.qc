@@ -5,20 +5,7 @@
 #include "role_freeze.qc"
 #include "roles.qc"
 
-float IsDifferentTeam(entity a, entity b)
-{
-	if(teams_matter)
-	{
-		if(a.team == b.team)
-			return 0;
-	}
-	else
-	{
-		if(a == b)
-			return 0;
-	}
-	return 1;
-}
+float IsDifferentTeam(entity a, entity b);
 
 void havocbot_ai()
 {

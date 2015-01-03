@@ -129,20 +129,20 @@ float damage_headshotbonus; // bonus multiplier for head shots, set to 0 after u
 .float taunt_soundtime;
 
 
-//float IsDifferentTeam(entity a, entity b)
-//{
-//	if(teams_matter)
-//	{
-//		if(a.team == b.team)
-//			return 0;
-//	}
-//	else
-//	{
-//		if(a == b)
-//			return 0;
-//	}
-//	return 1;
-//}
+float IsDifferentTeam(entity a, entity b)
+{
+	if(teams_matter)
+	{
+		if(a.team == b.team)
+			return 0;
+	}
+	else
+	{
+		if(a == b)
+			return 0;
+	}
+	return 1;
+}
 
 float IsFlying(entity a)
 {
