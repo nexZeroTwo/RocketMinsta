@@ -243,7 +243,7 @@ void HG_Napalm()
 	proj.classname = "hg_napalm";
 	proj.bot_dodge = TRUE;
 	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 300; //Havoc said set at least +60 to hit radius
-	proj.movetype = (self.hg_adept? MOVETYPE_TOSS : MOVETYPE_BOUNCE);
+	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
