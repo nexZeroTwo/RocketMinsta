@@ -2369,12 +2369,15 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
 {
     float m, i;
     vector start, org, delta, end, enddown, mstart;
+    entity sp;
 
     m = e.dphitcontentsmask;
     e.dphitcontentsmask = goodcontents | badcontents;
 
     org = world.mins;
     delta = world.maxs - world.mins;
+
+    start = end = org;
 
     for (i = 0; i < attempts; ++i)
     {
@@ -2406,20 +2409,35 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
         // these can be traceLINES as we already verified the starting box
         mstart = start + 0.5 * (e.mins + e.maxs);
         traceline(mstart, mstart + '1 0 0' * delta_x, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart - '1 0 0' * delta_x, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart + '0 1 0' * delta_y, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart - '0 1 0' * delta_y, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart + '0 0 1' * delta_z, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
+
+	// rule 4: we must "see" some spawnpoint or item
+	for(sp = world; (sp = find(sp, classname, "info_player_deathmatch")); )
+		if(checkpvs(mstart, sp))
+			if((traceline(mstart, sp.origin, MOVE_NORMAL, e), trace_fraction) >= 1)
+				break;
+	if(!sp)
+	{
+		for(sp = world; (sp = findflags(sp, flags, FL_ITEM)); )
+			if(checkpvs(mstart, sp))
+				if((traceline(mstart, sp.origin + (sp.mins + sp.maxs) * 0.5, MOVE_NORMAL, e), trace_fraction) >= 1)
+					break;
+		if(!sp)
+			continue;
+	}
 
         // find a random vector to "look at"
         end_x = org_x + random() * delta_x;
@@ -2440,10 +2458,7 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
 
         // rule 6: we must not end up in trigger_hurt
         if (tracebox_hits_trigger_hurt(start, e.mins, e.maxs, enddown))
-        {
-            dprint("trigger_hurt! ouch! and nothing else could find it!\n");
             continue;
-        }
 
         break;
     }

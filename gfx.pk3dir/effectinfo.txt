@@ -6147,4 +6147,3 @@ velocityoffset 0 0 15
 airfriction 12
 originjitter 1 1 1
 velocityjitter 50 50 50
-

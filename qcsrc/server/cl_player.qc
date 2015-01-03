@@ -492,7 +492,7 @@ float VisualDamage_CheckLOS(entity viewer, entity targ, vector hitloc) {
         p2 = hitloc;
     else
         p2 = targ.origin + targ.view_ofs;
-    
+
     traceline(p1, p2, MOVE_NOMONSTERS, viewer);
     return almost_equals(trace_fraction, 1);
 }
@@ -554,7 +554,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
                 if(teams_matter && check != targ && check.team == targ.team && !(targ.flags & FL_PROJECTILE && targ.owner == check))
                     stype |= VDMG_TYPE_TEAMHIT;
             }
-            
+
             msg_entity = e;
             WriteByte(MSG_ONE, SVC_TEMPENTITY);
             WriteByte(MSG_ONE, TE_CSQC_VISUALDAMAGE);
@@ -626,7 +626,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
-    
+
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
 		damage *= sqrt(bound(1.0, self.cvar_cl_handicap, 100.0));
@@ -718,7 +718,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
                 VisualDamage(attacker, self, cdmg, save, htype, vdloc);
             }
-
+            
             if(attacker != self)
             if(!sameteam)
             if(attacker.classname == "player") {
@@ -944,7 +944,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
         
-        if(removenadgets < 2)
+        if(removenadgets == 1) // was < 2
             HG_RemoveAll(self);
         
 		Boobs_DropAll(force);

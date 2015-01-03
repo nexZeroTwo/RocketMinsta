@@ -3857,7 +3857,7 @@ void Sbar_Draw(void)
 		localcmd("cl_cmd sbar_columns_set default\n");
 		minstasbar_fixed = TRUE;
 	}
-
+    
 	if(spectatee_status == -1 || !spectatee_status)
 	{
 		//release madoka and HUD locks. Perhaps should be done elsewhere?
@@ -6239,5 +6239,3 @@ void CSQC_vip_hud(vector hudpos)
 	pbfill_x *= healthpercent;
 	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 }
-
-
