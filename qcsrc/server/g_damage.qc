@@ -1058,13 +1058,12 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         }
     }
    
-    	// apply push
-	if (targ.damageforcescale)
-	if (vlen(force))
-	{
-		targ.velocity = targ.velocity + targ.damageforcescale * force;
-		targ.flags &~= FL_ONGROUND;
-	}
+    // apply push
+    if(targ.damageforcescale)
+    if(vlen(force)) {
+        targ.velocity = targ.velocity + targ.damageforcescale * force;
+        targ.flags &~= FL_ONGROUND;
+    }
     
     return heal + aheal;
 }
@@ -1141,6 +1140,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     }
                 }
                 
+                if(attacker == targ)
+                    force = force * cvar("g_buffs_medic_forcefactor_self");
+                else
+                    force = force * cvar("g_buffs_medic_forcefactor_team");
+
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
                 heal = Heal(targ, inflictor, attacker, heal, 0, cvar("g_buffs_medic_maxhealth"), 0, deathtype, cvar("g_buffs_medic_pauserot"), 0, hitloc, force);
                 
