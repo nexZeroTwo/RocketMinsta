@@ -5823,3 +5823,327 @@ tex 33 33
 size 100 50
 sizeincrease -250
 alpha 256 256 400
+
+/////// Red Zapper
+
+// Red Zapper impact
+effect RM_ZAPPER_TEAM1
+count 1
+type smoke
+color 0xa10d00 0xa10d00
+size 5 5
+tex 38 38
+alpha 270 270 700
+lightradius 90
+lighttime 0
+lightcolor 6 2 2
+velocitymultiplier -0.1
+// decal
+effect RM_ZAPPER_TEAM1
+countabsolute 1
+type decal
+tex 59 59
+size 4 8
+alpha 256 256 0
+originjitter 34 34 34
+lightradius 10
+lightradiusfade 200
+lightcolor 6 3 3
+
+// Red Zapper muzzleflash
+effect RM_ZAPPER_MUZZLEFLASH_TEAM1
+count 1
+type smoke
+color 0xf11d1d 0xf11d1d
+tex 45 45
+size 5 5
+alpha 128 128 256
+originjitter 1.5 1.5 1.5
+velocityjitter 6 6 6
+velocitymultiplier 0.01
+lightradius 50
+lightradiusfade 2000
+lightcolor 6 2 2
+effect RM_ZAPPER_MUZZLEFLASH_TEAM1
+count 10
+type spark
+tex 40 40
+color 0xa10d00 0xa10d00
+size 3 3
+alpha 0 128 1024
+originjitter 1 1 1
+velocityjitter 200 200 200
+velocitymultiplier 0.3
+airfriction 12
+
+/////// Blue Zapper
+
+// Blue Zapper impact
+effect RM_ZAPPER_TEAM2
+count 1
+type smoke
+color 0x283880 0x283880
+size 5 5
+tex 38 38
+alpha 270 270 700
+lightradius 90
+lighttime 0
+lightcolor 1.5 3 6
+velocitymultiplier -0.1
+// decal
+effect RM_ZAPPER_TEAM2
+countabsolute 1
+type decal
+tex 59 59
+size 4 8
+alpha 256 256 0
+originjitter 34 34 34
+lightradius 10
+lightradiusfade 200
+lightcolor 2 2.5 3
+
+// Blue Zapper muzzleflash
+effect RM_ZAPPER_MUZZLEFLASH_TEAM2
+count 1
+type smoke
+color 0x283880 0x283880
+tex 45 45
+size 5 5
+alpha 128 128 256
+originjitter 1.5 1.5 1.5
+velocityjitter 6 6 6
+velocitymultiplier 0.01
+lightradius 50
+lightradiusfade 2000
+lightcolor 1.5 3 6
+effect RM_ZAPPER_MUZZLEFLASH_TEAM2
+count 10
+type spark
+tex 40 40
+color 0x283880 0x283880
+size 3 3
+alpha 0 128 1024
+originjitter 1 1 1
+velocityjitter 200 200 200
+velocitymultiplier 0.3
+airfriction 12
+
+/////// Yellow Zapper
+
+// Yellow Zapper impact
+effect RM_ZAPPER_TEAM3
+count 1
+type smoke
+color 0xc6bc03 0xc6bc03
+size 5 5
+tex 38 38
+alpha 270 270 700
+lightradius 90
+lighttime 0
+lightcolor 6 5.5 2
+velocitymultiplier -0.1
+// decal
+effect RM_ZAPPER_TEAM3
+countabsolute 1
+type decal
+tex 59 59
+size 4 8
+alpha 256 256 0
+originjitter 34 34 34
+lightradius 10
+lightradiusfade 200
+lightcolor 6 5.5 3
+
+// Yellow Zapper muzzleflash
+effect RM_ZAPPER_MUZZLEFLASH_TEAM3
+count 1
+type smoke
+color 0xc6bc03 0xc6bc03
+tex 45 45
+size 5 5
+alpha 128 128 256
+originjitter 1.5 1.5 1.5
+velocityjitter 6 6 6
+velocitymultiplier 0.01
+lightradius 50
+lightradiusfade 2000
+lightcolor 6 5.5 2
+effect RM_ZAPPER_MUZZLEFLASH_TEAM3
+count 10
+type spark
+tex 40 40
+color 0xc6bc03 0xc6bc03
+size 3 3
+alpha 0 128 1024
+originjitter 1 1 1
+velocityjitter 200 200 200
+velocitymultiplier 0.3
+airfriction 12
+
+/////// Pink Zapper
+
+// Pink Zapper impact
+effect RM_ZAPPER_TEAM4
+count 1
+type smoke
+color 0xff34f8 0xff34f8
+size 5 5
+tex 38 38
+alpha 270 270 700
+lightradius 90
+lighttime 0
+lightcolor 6 3 5
+velocitymultiplier -0.1
+// decal
+effect RM_ZAPPER_TEAM4
+countabsolute 1
+type decal
+tex 59 59
+size 4 8
+alpha 256 256 0
+originjitter 34 34 34
+lightradius 10
+lightradiusfade 200
+lightcolor 6 3 5
+
+// Pink Zapper muzzleflash
+effect RM_ZAPPER_MUZZLEFLASH_TEAM4
+count 1
+type smoke
+color 0xff34f8 0xff34f8
+tex 45 45
+size 5 5
+alpha 128 128 256
+originjitter 1.5 1.5 1.5
+velocityjitter 6 6 6
+velocitymultiplier 0.01
+lightradius 50
+lightradiusfade 2000
+lightcolor 6 3 5
+effect RM_ZAPPER_MUZZLEFLASH_TEAM4
+count 10
+type spark
+tex 40 40
+color 0xff34f8 0xff34f8
+size 3 3
+alpha 0 128 1024
+originjitter 1 1 1
+velocityjitter 200 200 200
+velocitymultiplier 0.3
+airfriction 12
+
+/////// Red Lightning
+
+effect RM_LIGHTNING_TEAM1
+trailspacing 1
+type static
+color 0xa10d00 0xa10d00
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 2 2
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM1
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xa10d00 0xa10d00
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Blue Lightning
+
+effect RM_LIGHTNING_TEAM2
+trailspacing 1
+type static
+color 0x283880 0x283880
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 1.5 3 6
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM2
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0x283880 0x283880
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Yellow Lightning
+
+effect RM_LIGHTNING_TEAM3
+trailspacing 1
+type static
+color 0xc6bc03 0xc6bc03
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 5.5 2
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM3
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xc6bc03 0xc6bc03
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Pink Lightning
+
+effect RM_LIGHTNING_TEAM4
+trailspacing 1
+type static
+color 0xff34f8 0xff34f8
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 3 5
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM4
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xff34f8 0xff34f8
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50

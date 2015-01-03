@@ -671,7 +671,6 @@ void GameCommand(string command)
             GotoMap_f(argv(1), 0);
         }
         
-        print(GotoMap(argv(1)), "\n");
         return;
     }
 
@@ -695,6 +694,7 @@ void GameCommand(string command)
             if(time > 1) {
                 cvar_set("_sv_rm_nextgametype", s);
                 bprint("The gametype will be switched to ", gametype_Name_to_LongName(s), " on next map\n");
+                localcmd("\nsv_hook_rmcustom_gameswitch ", s, ";");
             } else {
                 //MapInfo_SwitchGameType(t);
                 gametype_Set(gametype_Name_to_ID(s));
@@ -1294,8 +1294,56 @@ void GameCommand(string command)
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
     }
+
     if(argv(0) == "hg_bonustest") {
-        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called");
+        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
+        return;
+    }
+
+    if(argv(0) == "netmusic" || argv(0) == "radio_play") {
+    	Radio_Play(argv(1), argv(2), (argv(3) == "loop"));
+    	return;
+    }
+    
+    if(argv(0) == "stopmusic" || argv(0) == "radio_stop") {
+    	Radio_Stop();
+    	return;
+    }
+
+    if(argv(0) == "radio_preload") {
+    	Radio_Preload(argv(1));
+    	return;
+    }
+
+    if(argv(0) == "radio_queue") {
+    	Radio_Queue(argv(1), argv(2), stof(argv(3)), uri_unescape(argv(4)));
+    	return;
+    }
+
+    if(argv(0) == "radio_queue_skip") {
+    	Radio_Queue_Skip();
+    	return;
+    }
+
+    if(argv(0) == "radio_queue_restart") {
+    	Radio_Queue_PlayFirst();
+    	return;
+    }
+
+    if(argv(0) == "radio_evil") {
+        FOR_EACH_REALCLIENT(e)
+            stuffcmd(e, "radio 1\n");
+        return;
+    }
+
+    if(argv(0) == "hg_bonustest") {
+        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
+        return;
+    }
+
+    if(argv(0) == "dprmstats") {
+        FOR_EACH_REALCLIENT(e)
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", ((e.client_dprmversion >= DPRM_MINVERSION)? "^2" : "^1"), ftos(e.client_dprmversion), "\n");
         return;
     }
 

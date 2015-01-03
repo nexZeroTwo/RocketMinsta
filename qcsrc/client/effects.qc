@@ -10,7 +10,7 @@ void LightingArc_Draw(void) {
     }   else              tex = (self.team? "particles/hook_blue" : "particles/hook_green");
     
     float i; for(i = 0; i < 5; ++i)
-        Draw_CylindricLine(self.origin + randomvec() * 10 * self.alpha, self.velocity + randomvec() * 10 * self.alpha, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
+        Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
     
     self.alpha = self.alpha - frametime * 3;
     if(self.alpha < 0)
@@ -24,6 +24,8 @@ void LightingArc_Segment(vector start, vector end, float ateam) {
     e.velocity = end;
     e.draw = LightingArc_Draw;
     e.team = ateam;
+    
+    trailparticles(world, rm_particleeffectnum_team("RM_LIGHTNING", ateam, 2), start, end);
 }
 
 void LightingArc_Full(vector from, vector to, float seglength, float drifts, float drifte, float branchfactor, float branchfactor_add, float ateam)
@@ -72,12 +74,12 @@ void LightingArc_Default(vector from, vector to, float ateam) {
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
-        seglength    = cvar("cl_effects_lightningarc_segmentlength");
-        drifts       = cvar("cl_effects_lightningarc_drift_start");
-        drifte       = cvar("cl_effects_lightningarc_drift_end");
-        branchfactor = cvar("cl_effects_lightningarc_branchfactor_start");
-        branchfactor = cvar("cl_effects_lightningarc_branchfactor_add");
-        lcount       = cvar("cl_effects_lightningarc_count");
+        seglength        = cvar("cl_effects_lightningarc_segmentlength");
+        drifts           = cvar("cl_effects_lightningarc_drift_start");
+        drifte           = cvar("cl_effects_lightningarc_drift_end");
+        branchfactor     = cvar("cl_effects_lightningarc_branchfactor_start");
+        branchfactor_add = cvar("cl_effects_lightningarc_branchfactor_add");
+        lcount           = cvar("cl_effects_lightningarc_count");
         
         for(; lcount; --lcount)
             LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
@@ -107,5 +109,15 @@ void Net_ReadBlast(void) {
     entity e = spawn();
     setorigin(e, loc);
     sound(e, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+    remove(e);
+}
+
+void Net_ReadMEODP(void) {
+    vector loc;
+    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
+    pointparticles(rm_particleeffectnum("RM_MEODP"), loc, '0 0 0', 1);
+    entity e = spawn();
+    setorigin(e, loc);
+    sound(e, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
     remove(e);
 }

@@ -473,6 +473,8 @@ void ForceModeSpawns(void) {
     }
 }
 
+.float zapper_heat;
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -486,6 +488,7 @@ void spawnfunc_worldspawn (void)
     RM_CvarCompat();
     sv_damagestats = cvar("sv_damagestats");
 
+    registercvar("g_gametypename", "");
 	
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
@@ -512,7 +515,8 @@ void spawnfunc_worldspawn (void)
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
-	
+	sv_shownames = cvar("sv_shownames");
+
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
@@ -743,6 +747,7 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
+    addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
     
     if(g_domination)
     {
@@ -802,7 +807,10 @@ void spawnfunc_worldspawn (void)
 	ClientInit_Spawn();
 	RandomSeed_Spawn();
 
+    cvar_set("g_gametypename", gametype_ID_to_Name(game));
+
 	localcmd("\n_sv_hook_gamestart ", gametype_ID_to_Name(game), ";");
+    localcmd("\nsv_hook_rmcustom_gamestart ", gametype_ID_to_Name(game), ";");
 
 	localcmd("exec startup_allmaps.cfg;");
 	localcmd(strcat("exec startup_map_", mapname, ".cfg;"));
@@ -869,6 +877,7 @@ void spawnfunc_worldspawn (void)
     
     IRC_Init();
     DPRM_Start();
+    Radio_Init();
 }
 
 void spawnfunc_light (void)
@@ -1525,7 +1534,7 @@ void NextLevel()
 	if(cvar("g_campaign"))
 		CampaignPreIntermission();
 
-	localcmd("\nsv_hook_gameend;");
+	localcmd("\nsv_hook_gameend; sv_hook_rmcustom_gameend;");
 
 	// WriteByte (MSG_ALL, SVC_INTERMISSION);
 };
@@ -2973,7 +2982,6 @@ string GotoMap(string m)
 	else
 		return "Map switch will happen after scoreboard.";
 }
-
 
 void EndFrame()
 {

@@ -19,74 +19,6 @@ void SUB_Stop()
 .float snd_looping;
 .float silent;
 
-float rm_particleeffectnum(string p) {
-    float n = particleeffectnum(p);
-    
-    if(n < 0) {
-        print("ERROR: RM particle effect ", p, " missing! Will try to use a fallback. Try restarting the game to fix this problem.\n");
-        
-        switch(p) {
-            case "RM_HG_PLASMA_TEAM1":
-            case "RM_HG_PLASMA_TEAM2":
-            case "RM_HG_PLASMA_TEAM3":
-            case "RM_HG_PLASMA_TEAM4":
-                return particleeffectnum("TR_NEXUIZPLASMA");
-                
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM1":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM2":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM3":
-            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM4":
-                return particleeffectnum("electro_ballexplode");
-            
-            case "RM_HG_PLASMA_EXPLODE_TEAM1":
-            case "RM_HG_PLASMA_EXPLODE_TEAM2":
-            case "RM_HG_PLASMA_EXPLODE_TEAM3":
-            case "RM_HG_PLASMA_EXPLODE_TEAM4":
-                return particleeffectnum("hookbomb_explode");
-            
-            case "RM_HG_NAPALM_FIRE_TEAM1":
-            case "RM_HG_NAPALM_FIRE_TEAM2":
-            case "RM_HG_NAPALM_FIRE_TEAM3":
-            case "RM_HG_NAPALM_FIRE_TEAM4":
-                return particleeffectnum("fire_big");
-            
-            case "RM_HG_NAPALM_TRAIL_TEAM1":
-            case "RM_HG_NAPALM_TRAIL_TEAM2":
-            case "RM_HG_NAPALM_TRAIL_TEAM3":
-            case "RM_HG_NAPALM_TRAIL_TEAM4":
-                return particleeffectnum("firemine");
-            
-            case "RM_HEAL":
-                return particleeffectnum("electro_impact");
-            
-            case "RM_EXPLOSION":
-                return particleeffectnum("rocket_explode");
-        }
-    }
-    
-    return n;
-}
-
-#define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
-
-float TeamNumber(float t, float d) {
-    if(!rm_teamlasers)
-        return d;
-    
-    switch(t) {
-        case COLOR_TEAM1:
-            return 1;
-        case COLOR_TEAM2:
-            return 2;
-        case COLOR_TEAM3:
-            return 3;
-        case COLOR_TEAM4:
-            return 4;
-        default:
-            return d;
-    }
-} 
-
 .float nextparticle;
 void Projectile_DrawTrail(vector to)
 {
@@ -99,6 +31,9 @@ void Projectile_DrawTrail(vector to)
 
 	g_minstagib = getstati(STAT_MINSTA);
 
+    if(self.cnt == PROJECTILE_HG_TRANSLOC)
+        R_AddDynamicLight(self.origin, 50, GetTeamRGB((self.team > 0)? self.team : COLOR_TEAM4));
+    
 	if(from == to)
 	{
 		switch(self.cnt)
@@ -107,9 +42,10 @@ void Projectile_DrawTrail(vector to)
                 goto flame;
             case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
+                to_z += 1;
+                break;
             case PROJECTILE_HG_TRANSLOC:
-				to_z += 1;
-				break;
+				return;
 			case PROJECTILE_ELECTRO:
                 //trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
@@ -289,6 +225,9 @@ void Projectile_Draw()
 			case PROJECTILE_HOOKBOMB:
 				rot = '1000 0 0'; // forward
 				break;
+            case PROJECTILE_HG_TRANSLOC:
+                rot = '700 643 721';
+                break;
 			default:
 				break;
 		}
@@ -466,7 +405,11 @@ void Ent_Projectile()
                 self.skin = TeamColorSkin(self.team);
                 break;
             case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
-            case PROJECTILE_HG_TRANSLOC: setmodel(self, "models/runematch/rune.mdl"); self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP; break;
+            case PROJECTILE_HG_TRANSLOC:
+                setmodel(self, "models/hg_transloc.md3");
+                self.skin = TeamColorSkin(self.team);
+                self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
+                break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -487,9 +430,6 @@ void Ent_Projectile()
 		self.colormod = '0 0 0';
 		self.move_touch = SUB_Stop;
 		self.move_movetype = MOVETYPE_TOSS;
-        
-        if(self.cnt == PROJECTILE_HG_TRANSLOC)
-            self.colormod = '1 1 1' * 0.3 + GetTeamRGB(self.team) * 0.7;
         
 		switch(self.cnt)
 		{
@@ -600,9 +540,10 @@ void Projectile_Precache()
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
-    precache_model("models/runematch/rune.mdl");
+    precache_model("models/hg_transloc.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
+    precache_sound("weapons/zapper_fly.wav");
 }

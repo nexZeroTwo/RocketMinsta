@@ -990,9 +990,17 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         if(attacker.iscreature)
         if(deathtype != DEATH_HG_SHIELD)
         if(deathtype != DEATH_HG_TRANSLOC) {
-            FireRailgunBullet(hitloc, attacker.origin + '0 0 0.5' * attacker.maxs_z, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
-            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), hitloc, trace_endpos);
-            te_csqc_lightningarc(hitloc, trace_endpos, TRUE, COLOR_TEAM3);
+            vector start = hitloc;
+            vector end   = attacker.origin + '0 0 0.5' * attacker.maxs_z;
+
+            traceline(start, end, FALSE, self);
+            end = trace_endpos;
+
+            if(trace_ent.takedamage)
+                Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+
+            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), start, end);
+            te_csqc_lightningarc(start, end, TRUE, COLOR_TEAM3);
         }
         
         damage = take;
@@ -1012,7 +1020,7 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         }
         
         if(g_nadgets)
-            HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"));
+            HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"), FALSE);
     }
     
     return damage;
@@ -1197,8 +1205,11 @@ void turret_walker_dinit()
     }
 
     traceline(self.origin + '0 0 16', self.origin - '0 0 10000', MOVE_WORLDONLY, self);
-    setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
-    setorigin(self,self.wkr_spawn.origin);
+    
+    if(!self.isboss) {
+        setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
+        setorigin(self,self.wkr_spawn.origin);
+    }
 
     setsize(self,WALKER_MIN,WALKER_MAX);
 
@@ -1257,6 +1268,7 @@ void boss_spawner_spawn(void) {
     self = spawn();
     self.isboss = TRUE;
     self.netname = oself.netname;
+    setorigin(self, oself.origin);
     spawnfunc_turret_walker();
     self = oself;
     

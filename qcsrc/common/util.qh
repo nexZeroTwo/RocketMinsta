@@ -212,3 +212,5 @@ string FormatDamage(float f);
 #ifndef SVQC
 string FlagIcon(string cn);
 #endif
+
+float fexists(string f);

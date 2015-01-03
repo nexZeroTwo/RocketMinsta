@@ -180,7 +180,7 @@ void CSQC_Init(void)
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
-    
+
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
@@ -386,6 +386,10 @@ void SetMadokaFont(float v)
 	#endif
 }
 
+void Menu_ShowNagger(void) {
+    localcmd("menu_cmd directmenu engineNagger\n");
+}
+
 void ReloadMenu_f()
 {
 	if(!self.cnt)
@@ -400,6 +404,7 @@ void ReloadMenu_f()
 		if(rm_helptime)
 			localcmd("menu_cmd directmenu RMConfig\n");
 			
+        Menu_ShowNagger();
 		gui_reloading = 0;
 		remove(self);
 	}
@@ -442,6 +447,11 @@ void PostInit(void)
 
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
+    // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
+    float cfgver = cvar("rm_initialized");
+    if(cfgver >= 44 && !(cvar_type("rm_radio") & CVAR_TYPEFLAG_EXISTS))
+        cvar_set("rm_initialized", "42");
+
 	switch(cvar("rm_initialized"))
 	{
 		case 0:
@@ -524,16 +534,22 @@ void PostInit(void)
         case 41:
             localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
         case 42:
-            localcmd("seta rm_nododging 0; nododging 0\n");
-	case 43:
             localcmd("seta cl_effects_lightningarc_count 1\n");
             localcmd("seta cl_effects_lightningarc_segmentlength 24\n");
+        case 43:
+            localcmd("seta rm_radio 1; radio 1\n");
         case 44:
             localcmd("seta rm_althud 0; althud 0\n");
         case 45:
+        case 46:
+            localcmd("seta cl_effects_lightningarc_branchfactor_add 0\n");
+            localcmd("seta cl_effects_lightningarc_branchfactor_start 0.05\n");
+            localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
+        case 47:
+            localcmd("seta rm_nododging 0; nododging 0\n");
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 46\n");
+		localcmd("seta rm_initialized 48\n");
 		RM_OUTDATED
 		break;
 	}
@@ -593,6 +609,7 @@ void PostInit(void)
 	registercmd("freezetag_danger_silent");
     registercmd("showtimer");
     registercmd("shownadgetregen");
+    registercmd("radio");
     registercmd("nododging");
 	// -- //
 	registercmd("hudskin");
@@ -617,6 +634,8 @@ void PostInit(void)
 	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+    localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
+    localcmd("cmd nododging ", cvar_string("rm_nododging"), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
@@ -632,6 +651,8 @@ void PostInit(void)
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
+    defer(1, Menu_ShowNagger);
+
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
 	DPRM_Start();
@@ -737,6 +758,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		#ifdef RM_SHOW_MADOKA_IN_RMHELP
 		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
 		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
+        print("^2radio^7: Recieve music broadcasts from the server, if provided (enabled by default)\n");
 		#endif
 		#endif
 		
@@ -921,7 +943,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		return true;
 	}
-	else if (strCmd == "hidecountry")
+	else if(strCmd == "hidecountry")
 	{
 		VALUEREQUIRED
 		cvar_set ("rm_hidecountry", argv (1));
@@ -930,6 +952,18 @@ float CSQC_ConsoleCommand(string strMessage)
 		RMSETTINGREPORT
 		return true;
 	}
+    else if(strCmd == "radio") {
+        VALUEREQUIRED
+        
+        if(!stof(argv(1)))
+        if(find(world, classname, "radio"))
+            localcmd("cd reset\n");
+
+        cvar_set("rm_radio", argv(1));
+        localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
+        RMSETTINGREPORT
+        return true;
+    } 
 
 	if(camera_active)
 	if(strCmd == "+forward" || strCmd == "-back") {
@@ -1284,17 +1318,44 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 // BEGIN OPTIONAL CSQC FUNCTIONS
 void Ent_ReadEntCS()
 {
-	InterpolateOrigin_Undo();
 
 	self.classname = "entcs_receiver";
-	self.sv_entnum = ReadByte() - 1;
-	self.origin_x = ReadShort();
-	self.origin_y = ReadShort();
-	self.origin_z = ReadShort();
-	self.angles_y = ReadByte() * 360.0 / 256;
-	self.origin_z = self.angles_x = self.angles_z = 0;
 
-	InterpolateOrigin_Note();
+    float sf = ReadByte();
+    
+    if(sf & 1) {
+        self.sv_entnum = ReadByte() - 1;
+        self.sn_forcefrozen = ReadByte();
+    }
+
+    entity plr = playerslots[self.sv_entnum];
+
+    if(sf & 2) {
+        InterpolateOrigin_Undo();
+        self.origin_x = ReadShort();
+        self.origin_y = ReadShort();
+        self.origin_z = ReadShort();
+        InterpolateOrigin_Note();
+    }
+
+    // sf & 4 unused
+
+    if(sf & 8) {
+        self.angles_y = ReadByte() * 360.0 / 256;
+    }
+
+    if(sf & 16) {
+        self.healthvalue = ReadShort();
+        plr.healthvalue = self.healthvalue;
+    }
+
+    if(sf & 32) {
+        self.armorvalue = ReadShort();
+        plr.armorvalue = self.armorvalue;
+    }
+
+    self.sameteam = (sf & 64);
+
 }
 
 void Ent_Remove();
@@ -1544,44 +1605,6 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
-void Ent_ShowNames()
-{
-    float sf;
-
-    // entity init, TODO can this be done only once somehow?
-    self.the_entnum = ReadByte(); // TODO: fixme to only send once somehow
-    self.draw2d = Draw_ShowNames;
-    //self.movetype = MOVETYPE_FLY; // movetype needed so we can traceline?
-    self.mins = '-20 -20 -24';
-    self.maxs = '20 20 45';
-
-    sf = ReadByte();
-
-    if(sf & 1)
-    {
-        self.origin_x = ReadShort();
-        self.origin_y = ReadShort();
-        self.origin_z = ReadShort();
-    }
-    if(sf & 2)
-    {
-        if(sf & 16)
-            self.healthvalue = ReadShort();
-        else
-            self.healthvalue = ReadByte();
-        
-        if(sf & 32)
-            self.armorvalue = ReadShort();
-        else
-            self.armorvalue = ReadByte();
-    }
-
-    if(sf & 128) // same team
-        self.sameteam = TRUE;
-    else
-        self.sameteam = FALSE;
-}
-
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1639,8 +1662,8 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
-		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
-//		case ENT_CLIENT_LGBEAM: Ent_ReadHook(bIsNewEntity, ENT_CLIENT_LGBEAM); break; //as in xonotic
+        case ENT_CLIENT_ZAPPER: Zapper_Read(); break;
+        case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -1793,6 +1816,9 @@ void Ent_Init()
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
     sv_showacc = ReadByte();
+    g_buffs_enabled = ReadShort();
+
+    Buffs_LoadModels();
 
 	if(!postinit)
 		PostInit();
@@ -2116,6 +2142,15 @@ void Net_DamageTracker() {
     }
 }
 
+void Net_ReadUpdateSelectedPlayer() {
+    sbar_selectedplayer = ReadByte();
+    sbar_selectedplayer_fadetime = time + 2;
+    
+    if(sbar_selectedplayer_name)
+        strunzone(sbar_selectedplayer_name);
+    sbar_selectedplayer_name = strzone(GetPlayerName(sbar_selectedplayer - 1));
+}
+
 // CSQC_Parse_TempEntity : Handles all temporary entity network data in the CSQC layer.
 // You must ALWAYS first acquire the temporary ID, which is sent as a byte.
 // Return value should be 1 if CSQC handled the temporary entity, otherwise return 0 to have the engine process the event.
@@ -2195,6 +2230,18 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_DTRACK:
             Net_DamageTracker();
+            return TRUE;
+        case TE_CSQC_MEODP:
+            Net_ReadMEODP();
+            return TRUE;
+       	case TE_CSQC_RADIO:
+       		Net_ReadRadio();
+       		return TRUE;
+        case TE_CSQC_ZAPPERLIGHTNING:
+            Zapper_ReadLightning();
+            return TRUE;
+        case TE_CSQC_UPDATESELECTEDPLAYER:
+            Net_ReadUpdateSelectedPlayer();
             return TRUE;
     }
 
@@ -2309,18 +2356,6 @@ void bigprint(string bigstr, string comment, float staytime)
     
 	if(comment != "")
 	{
-		
-		if(substring(comment, 0, 1) == "\x01")
-		{
-			if(rm_shownames)
-				return;
-			
-			comment = substring(comment, 1, strlen(comment));
-			bigprint_nofadein = 1;
-		}
-		else
-			bigprint_nofadein = 0;
-		
 		bpc_draw = 1;
 		
 		if(bigprint_comment)

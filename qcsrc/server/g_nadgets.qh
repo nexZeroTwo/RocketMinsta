@@ -7,7 +7,8 @@ void HG_PlayerSpawn();
 void HG_PlayerSpawnEx(entity);
 void HG_PlayerJoin();
 void HG_ResetState(entity);
-void HG_GiveBonus(entity, float, float, string);
+void HG_GiveBonus(entity, float, float, string, float);
+void HG_GiveRandomBonus(entity, float, string, float);
 void HG_Napalm();
 float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
@@ -18,13 +19,15 @@ float HG_ShowMenu(float);
 void HG_Grenade_Remove(void);
 void HG_Grenade_FadeOut(entity);
 void HG_Grenade_Think();
-void HG_Remote_Stick();
+void HG_Stick(void);
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
 void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
+void HG_Bait_Body_Boom(entity body);
+float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 
 .vector org_explosion;
 .float nextparticle;
@@ -58,7 +61,7 @@ void HG_Shield_Trigger(void);
 .float hg_ranthink;
 .float hg_wp_nextthink;
 .float hg_wp_state;
-.float hg_remote_sticked;
+.float hg_sticked;
 .float hg_nadesused;
 .float hg_optout;
 .float hg_optout_nextround;
@@ -109,13 +112,14 @@ void HG_Shield_Trigger(void);
 // for hud only
 .float hg_launchspeed;
 
-.vector hg_normal;
 .entity hg_waypoint;
 
 float g_nadgets_oldhitboxes;
 float g_nadgets_detonatelaunches;
 
 float hg_plasma_group;
+
+.entity bait_ref;
 
 #define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))

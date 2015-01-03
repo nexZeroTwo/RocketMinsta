@@ -659,7 +659,7 @@ void vip_PlayerPreThink()
 	}
 	
     // XXX: this code needs an update for the new grenade regen mechanics
-    if(!cvar("g_nadgets_regen_time"))
+    if(!cvar("g_nadgets_regen"))
 	if(cvar("g_vip_regenerate_grenades"))
 	if(self.hg_ammo < cvar("g_nadgets_ammo"))
 	if(time >= self.vip_grenregen_next)

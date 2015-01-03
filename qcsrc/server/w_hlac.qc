@@ -153,7 +153,7 @@ void HLAC_fire1_02()
 	{
 		if (!weapon_action(self.weapon, WR_CHECKAMMO1))
 		{
-			W_SwitchWeapon_Force(self, w_getbestweapon(self));
+			W_SwitchWeapon_OutOfAmmo(self);
 			w_ready();
 			return;
 		}

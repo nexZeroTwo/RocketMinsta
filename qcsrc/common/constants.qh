@@ -50,6 +50,10 @@ const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
 const float TE_CSQC_BLAST = 120;
 const float TE_CSQC_DTRACK = 121;
+const float TE_CSQC_MEODP = 122;
+const float TE_CSQC_RADIO = 123;
+const float TE_CSQC_ZAPPERLIGHTNING = 124;
+const float TE_CSQC_UPDATESELECTEDPLAYER = 125;
 
 #define VDMG_TYPE_HIT 1
 #define VDMG_TYPE_CRIT 2
@@ -92,7 +96,8 @@ const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
 const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
-const float ENT_CLIENT_SHOWNAMES = 23;
+const float ENT_CLIENT_ZAPPER = 23;
+const float ENT_CLIENT_BUFFMODEL = 24;
 
 //const float ENT_CLIENT_LGBEAM = 28; //as in xonotic
 
@@ -290,6 +295,7 @@ const float ROUNDSTATE_OVER = 2;
 const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
+const float STAT_ZAPPER_HEAT = 53;
 
 const float STAT_SPIDERBOT_HEALTH  = 60;
 const float STAT_SPIDERBOT_ROCKETS = 61;
@@ -389,7 +395,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 24
+#define MAX_SCORE 22
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -414,6 +420,7 @@ const float JBMSG_TOOLATE = 5;
 #define SPFLAG_FROZEN   1
 #define SPFLAG_MADOKA   2
 #define SPFLAG_AWAY     4
+#define SPFLAG_MUTE     8
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
@@ -546,6 +553,7 @@ float DEATH_IGNITE = 10103;
 float DEATH_LINKER_SHARE = 10104;
 float DEATH_VAMPIRE = 10105;
 float DEATH_ITEM = 10106;
+float DEATH_MEODP = 10107;
 
 float DEATH_HG_START = 100;
 float DEATH_HG_NORMAL = 100;
@@ -559,7 +567,8 @@ float DEATH_HG_LINKER = 107;
 float DEATH_HG_GG = 108;
 float DEATH_HG_LASER = 109;
 float DEATH_HG_CLOAK = 110;
-float DEATH_HG_END = 110;
+float DEATH_HG_BAIT = 111;
+float DEATH_HG_END = 111;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
@@ -618,23 +627,14 @@ float MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
 
-
-// xonotic compat
-
-#define autocvar_hud_shownames (rm_shownames)
-#define autocvar_sv_shownames_cull_distance 2500
-#define autocvar_hud_shownames_enemies 2
-#define autocvar_hud_shownames_height 15
-#define autocvar_hud_shownames_status 0
-#define autocvar_hud_panel_healtharmor_maxhealth 0
-#define autocvar_hud_panel_healtharmor_maxarmor 0
-#define autocvar_hud_shownames_aspect 8
-#define autocvar_hud_shownames_fontsize 10
-#define autocvar_hud_shownames_decolorize 1
-#define autocvar_hud_shownames_alpha 0.9
-#define autocvar_hud_shownames_resize 0
-#define autocvar_hud_shownames_mindistance 1000
-#define autocvar_hud_shownames_maxdistance 2500
+// TODO: cvars for these
+#define SHOWNAMES_ALPHA 0.9
+#define SHOWNAMES_MAXDISTANCE 2500
+#define SHOWNAMES_MINDISTANCE 1000
+#define SHOWNAMES_FONTSIZE 10
+#define SHOWNAMES_ASPECT 8
+#define SHOWNAMES_HEIGHT 15
+#define SHOWNAMES_ORIGIN_OFFSET '0 0 64'
 
 #ifndef MENUQC
 const vector eX = '1 0 0';

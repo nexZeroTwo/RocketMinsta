@@ -209,11 +209,13 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("showspec", "sv_showspecs")
 		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
 		//OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
-		OPTAVAIL	("shownames", "sv_shownames")
+		OPTAVAIL_RAW("shownames", ftos(sv_shownames))
 		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
-        OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen_time")))
+        OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
+        OPTAVAIL_RAW("radio", ftos(sv_radio))
+        OPTAVAIL    ("dodging", "g_dodging")
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -269,7 +271,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self.scorekeeper)
 			return;
 		
-	PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
+        PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
 		WriteSpectatorInfo(self);
 		return;
 	} else if(cmd == "nokillsound") {
@@ -282,6 +284,16 @@ void SV_ParseClientCommand(string s) {
 			return;
 			
 		self.rm_nododging = stof(argv(1));
+    } else if(cmd == "radio") {
+        if(!self.scorekeeper || !sv_radio)
+            return;
+
+        float o = self.radio_enabled;
+        self.radio_enabled = stof(argv(1));
+        PlayerScore_SetFlagsBoolean(self, SPFLAG_MUTE, !self.radio_enabled);
+
+        if(!o && self.radio_enabled)
+            Radio_SendPlay(self);
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;
@@ -397,6 +409,11 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "reportcvar") { // old system
 		if(substring(argv(2), 0, 1) == "$") // undefined cvar: use the default value on the server then
 		{
+            if(argv(1) == "dprm_version") {
+                self.client_dprmversion = 0;
+                return;
+            }
+            
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}
@@ -404,6 +421,11 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "sentcvar") { // new system
 		if(tokens == 2) // undefined cvar: use the default value on the server then
 		{
+            if(argv(1) == "dprm_version") {
+                self.client_dprmversion = 0;
+                return;
+            }
+
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}

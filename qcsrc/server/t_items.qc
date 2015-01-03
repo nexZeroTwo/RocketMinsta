@@ -433,8 +433,9 @@ float Item_GiveTo(entity item, entity player)
 			_switchweapon = TRUE;
         
         float pickupfactor = 1;
-        if(BUFFS_PRESENT(player, BUFF_SUPPLY))
-            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * Buffs_BuffPower(player, BUFF_SUPPLY);
+        float supply = Buffs_BuffPower(player, BUFF_SUPPLY);
+        if(supply)
+            pickupfactor = 1 + (cvar("g_buffs_supply_pickup_multiplier") - 1) * supply;
         
 		if(item.spawnshieldtime)
 		{
@@ -527,19 +528,25 @@ float Item_GiveTo(entity item, entity player)
                 heal_a = item.armorvalue * pickupfactor;
             }
             
-	    if(heal_h || heal_a)
-                Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM, (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0', '0 0 0');
+            if(heal_h || heal_a)
+                Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM,
+                    (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0', '0 0 0');
 		}
 	}
 
     if(g_nadgets)
-    if(item.hg_ammo)
-    if(player.hg_ammo <= HG_RegenLimit(player)) {
-        float oregen = HG_RegenTime(player);
-        pickedup = TRUE;
-        player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
-        player.hg_maxregentime = HG_RegenTime(player);
-        player.hg_regentime = player.hg_regentime - oregen + player.hg_maxregentime;
+    if(item.hg_ammo) {
+        float b = cvar("g_nadgets_pickup_random_bonus");
+        if(b) {
+            pickedup = TRUE;
+            HG_GiveRandomBonus(player, b, "Picked up a random bonus", FALSE);
+        } else if(player.hg_ammo <= HG_RegenLimit(player)) {
+            float oregen = HG_RegenTime(player);
+            pickedup = TRUE;
+            player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
+            player.hg_maxregentime = HG_RegenTime(player);
+            player.hg_regentime = player.hg_regentime - oregen + player.hg_maxregentime;
+        }
     }
 
 :skip

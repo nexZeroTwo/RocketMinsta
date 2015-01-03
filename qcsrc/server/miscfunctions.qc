@@ -7,6 +7,9 @@ void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
 
+void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage);
+void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage);
+
 float DistributeEvenly_amount;
 float DistributeEvenly_totalweight;
 void DistributeEvenly_Init(float amount, float totalweight)
@@ -768,6 +771,7 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromnexuiz, "cl_forceplayermodelsfromnexuiz");
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
+    GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -776,16 +780,6 @@ void GetCvars(float f)
 		if (s == "cl_weaponpriority")
 			self.switchweapon = w_getbestweapon(self);
 	}
-}
-
-float fexists(string f)
-{
-    float fh;
-    fh = fopen(f, FILE_READ);
-    if (fh < 0)
-        return FALSE;
-    fclose(fh);
-    return TRUE;
 }
 
 void GameCommand(string);
@@ -1110,7 +1104,7 @@ void readplayerstartcvars()
 				start_ammo_rockets = 999;
 			if (g_weaponarena & WEPBIT_SHOTGUN)
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
 			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
@@ -2264,6 +2258,7 @@ float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
 //float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
+float URI_GET_RADIO = 18;
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2283,6 +2278,10 @@ void URI_Get_Callback(float id, float status, string data)
     else if (id == URI_GET_IP2C)
     {
         IP2C_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_RADIO)
+    {
+        Radio_URI_Get_Callback(id, status, data);
     }
     else
     {
@@ -2634,8 +2633,6 @@ vector shotorg_adjust(vector vecs, float y_is_right, float visual)
 	}
 	return vecs;
 }
-
-
 
 void attach_sameorigin(entity e, entity to, string tag)
 {
@@ -3202,6 +3199,8 @@ void MarkAway(entity pl, float force)
         PlayerScore_SetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+
+    pl.afkmarktime = time;
 }
 
 void UnmarkAway(entity pl)
@@ -3530,4 +3529,41 @@ void SetCameraWithAngles(entity player, entity cam, float timeout) {
     player.angles = cam.angles;
     player.angles_z = 0;
     player.fixangle = TRUE;
+}
+
+float               trace_allsolid_saved;
+float               trace_startsolid_saved;
+float               trace_fraction_saved;
+vector              trace_endpos_saved;
+vector              trace_plane_normal_saved;
+float               trace_plane_dist_saved;
+entity              trace_ent_saved;
+vector              v_forward_saved;
+vector              v_up_saved;
+vector              v_right_saved;
+
+void save_nasty_globals(void) {
+    trace_allsolid_saved = trace_allsolid;
+    trace_startsolid_saved = trace_startsolid;
+    trace_fraction_saved = trace_fraction;
+    trace_endpos_saved = trace_endpos;
+    trace_plane_normal_saved = trace_plane_normal;
+    trace_plane_dist_saved = trace_plane_dist;
+    trace_ent_saved = trace_ent;
+    v_forward_saved = v_forward;
+    v_up_saved = v_up;
+    v_right_saved = v_right;
+}
+
+void restore_nasty_globals(void) {
+    trace_allsolid = trace_allsolid_saved;
+    trace_startsolid = trace_startsolid_saved;
+    trace_fraction = trace_fraction_saved;
+    trace_endpos = trace_endpos_saved;
+    trace_plane_normal = trace_plane_normal_saved;
+    trace_plane_dist = trace_plane_dist_saved;
+    trace_ent = trace_ent_saved;
+    v_forward = v_forward_saved;
+    v_up = v_up_saved;
+    v_right = v_right_saved;
 }

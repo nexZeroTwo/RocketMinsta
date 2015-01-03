@@ -53,3 +53,5 @@ s/g_explosive_hidedamage/sv_hidedamage/g
 s/g_explosive_ctf/g_ctf/g
 s/g_explosive_/g_rocketminsta_/g
 s/g_handgrenades/g_nadgets/g
+s/g_\(nadgets\|handgrenades\)_\([a-zA-Z]*\)_regenscale/g_nadgets_\2_regen_scale/g
+s/g_\(nadgets\|handgrenades\)_\([a-zA-Z]*\)_stacklimit/g_nadgets_\2_regen_limit/g

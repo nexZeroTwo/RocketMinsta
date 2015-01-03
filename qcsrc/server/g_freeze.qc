@@ -114,6 +114,15 @@ void Freeze_RecountPlayers(void) {
     TeamCount_RecountPlayers(Freeze_AliveCheck);
 }
 
+void Freeze_IceBlock_MEODP_Death(entity attacker, entity inflictor) {
+    attacker.chain = world;
+    
+    if(IsDifferentTeam(self.owner, attacker) && self.owner.classname != "bait_body")
+        Freeze_UnfreezePlayer(self.owner);
+    else
+        Freeze_RevivePlayer(self.owner, attacker);
+}
+
 entity Freeze_SpawnIceBlock(entity plr) {
     entity ice = spawn();
     ice.owner = plr;
@@ -122,11 +131,13 @@ entity Freeze_SpawnIceBlock(entity plr) {
     ice.nextthink = time;
     ice.frame = floor(random() * 21); // ice model has 20 different looking frames
     ice.effects |= EF_ADDITIVE;
+    ice.angles = random() * '0 360 0';
     setmodel(ice, "models/ice/ice.md3");
     setorigin(ice, plr.origin - '0 0 16');
     plr.iceblock = ice;
     if(Freeze_CVar("freezesound"))
         sound(self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
+    Buffs_MEODP_Point_Attach(ice, Freeze_IceBlock_MEODP_Death);
     return ice;
 }
 
@@ -191,13 +202,14 @@ void Freeze_UnfreezePlayer(entity plr)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
     if(g_nadgets) {
-        if(cvar("g_nadgets_regen_time")) {
+        if(cvar("g_nadgets_regen")) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
     
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
+    Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -334,6 +346,11 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     entity e;
     float pcnt = 1;
     
+    if(plr.classname == "bait_body") {
+        HG_Bait_Body_Boom(plr);
+        return;
+    }
+
     if(!plr.frozen)
         return;
     
@@ -350,15 +367,16 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
         PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
         
-        e.health = max(e.health, Freeze_CVar("revive_heal"));
+        float heal = Freeze_CVar("revive_heal");
+        if(heal)
+            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
         if(Freeze_CVar("revive_bonusgrenade"))
         if(e.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
             HG_GiveBonus(e, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
-                        strcat(ftos(e.revrow), " revivals in a row")
-            );
+                        strcat(ftos(e.revrow), " revivals in a row"), TRUE);
             e.revrow = 0;
         }
         
@@ -384,7 +402,9 @@ void Freeze_Hook_PlayerPreThink(void) {
     if(!g_freeze)
         return;
     
-    if(roundstate == ROUNDSTATE_WARMUP)
+    float bait = (self.classname == "bait_body");
+
+    if(roundstate == ROUNDSTATE_WARMUP) if(!bait)
         PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
     
     if(!Freeze_GameInProgress()) {
@@ -393,7 +413,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         return;
     }
     
-    if(!self.frozen) {
+    if(!bait) if(!self.frozen) {
         if(time > self.revresettime)
             self.revprogress = 0;
         
@@ -413,35 +433,40 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     // frozen
+
+    if(!bait) {
+        float ftime = Freeze_CVar("respawn");
+        if(ftime)
+        if(time - self.freezetime_real > ftime) {
+            Freeze_UnfreezePlayer(self);
+            Freeze_RespawnPlayer(self);
+            centerprint_spec(self, strcat("^5You have been respawned after staying frozen for ", ftos(ftime), " seconds\n"));
+            bprint(self.netname, " ^5has been respawned after staying frozen for ", ftos(ftime), " seconds\n");
+            return;
+        }
     
-    float ftime = Freeze_CVar("respawn");
-    if(ftime)
-    if(time - self.freezetime_real > ftime) {
-        Freeze_UnfreezePlayer(self);
-        Freeze_RespawnPlayer(self);
-        centerprint_spec(self, strcat("^5You have been respawned after staying frozen for ", ftos(ftime), " seconds\n"));
-        bprint(self.netname, " ^5has been respawned after staying frozen for ", ftos(ftime), " seconds\n");
-        return;
-    }
-    
-    if(!self.iceblock)
-        Freeze_SpawnIceBlock(self);
-    
-    if(self.iceblock.team != self.team) {
-        if(Freeze_CVar("iceblocks_teamcolored"))
-            self.iceblock.skin = TeamColorSkin(self.team);
-        self.iceblock.team = self.team;
-        WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        if(!self.iceblock)
+            Freeze_SpawnIceBlock(self);
+        
+        if(self.iceblock.team != self.team) {
+            if(Freeze_CVar("iceblocks_teamcolored"))
+                self.iceblock.skin = TeamColorSkin(self.team);
+            self.iceblock.team = self.team;
+            WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        }
     }
     
     if(!self.freeze_waypoint) {
-        PlayerScore_SetFlags(self, SPFLAG_FROZEN);
+        if(!bait)
+            PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         Freeze_SpawnWaypoint(self);
         Freeze_RecountPlayers();
     }
     
-    Freeze_DangerShortcut();
-    self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
+    if(!bait) {
+        Freeze_DangerShortcut();
+        self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
+    }
     
     float rmod;
     float allow;
@@ -486,8 +511,11 @@ void Freeze_Hook_PlayerPreThink(void) {
                     float lmod = 1;
                     if(other.hg_shield)
                         lmod *= cvar("g_nadgets_shield_progressrate");
-                    if(BUFFS_PRESENT(other, BUFF_MEDIC))
-                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * Buffs_BuffPower(other, BUFF_MEDIC);
+                    
+                    float med = Buffs_BuffPower(other, BUFF_MEDIC);
+                    if(med)
+                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * med;
+                    
                     rmod = max(rmod, lmod);
                 }
             }
@@ -508,7 +536,7 @@ void Freeze_Hook_PlayerPreThink(void) {
             other.revresettime = time + frametime * 2;
         }
     } else if(self.revfinished) {
-        if(Freeze_CVar("melt"))
+        if(!bait) if(Freeze_CVar("melt"))
         {
             for(h = world; (h = find(h, classname, "grapplinghook")); )
                 if(h.aiment == self)

@@ -112,7 +112,6 @@ void VisualDamage_Draw(void) {
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
     
     smod2 = 1;
-
     if(self.vd_type & VDMG_TYPE_CRIT)
         smod = 2;
     else if(self.vd_type & VDMG_TYPE_TOSELF && self.vd_type & VDMG_TYPE_HIT)
@@ -126,10 +125,10 @@ void VisualDamage_Draw(void) {
         smod = smod * 0.8;
     
     if(self.vd_type & VDMG_TYPE_ALIEN) {
-        smod = smod * 0.4;
-        a = a * 0.4;
+        smod2 = smod2 * 0.8;
+        a = a * 0.35;
     }
-
+    
     float fs = VDMG_FONTSIZE * max(1, a * smod) * smod2;
     o = self.vd_projected + offs - '0 0.5 0' * fs;
     

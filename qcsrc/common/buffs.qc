@@ -11,6 +11,7 @@ string Buffs_TypeToName(float buff) {
         case BUFF_TENACITY  :      return "tenacity";
         case BUFF_WRATH     :      return "wrath";
         case BUFF_ADEPT     :      return "adept";
+        case BUFF_MEODP     :      return "meodp";
         default             :      return "unknown";
     }
 }
@@ -27,6 +28,7 @@ float Buffs_NameToType(string name) {
         case "tenacity"     :      return BUFF_TENACITY;
         case "wrath"        :      return BUFF_WRATH;
         case "adept"        :      return BUFF_ADEPT;
+        case "meodp"        :      return BUFF_MEODP;
         
         // compatibility
         case "bash"         :      return BUFF_IGNITE;
@@ -47,7 +49,29 @@ string Buffs_TypeToExpandedName(float buff) {
         case BUFF_TENACITY  :      return "Tenacity";
         case BUFF_WRATH     :      return "Wrath";
         case BUFF_ADEPT     :      return "Adept";
-        default             :      return "Unknown";
+        case BUFF_MEODP     :      return "Mystic Eyes of Death Perception";
+        // default             :      return "Unknown";
+
+        default: {
+            string r;
+            float o, first = TRUE;
+            
+            for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+                if(buff & o) {
+                    if(first) {
+                        r = Buffs_TypeToExpandedName(o);
+                        first = FALSE;
+                    } else {
+                        r = strcat(r, " + ", Buffs_TypeToExpandedName(o));
+                    }
+                }
+            }
+            
+            if(!r)
+                return "Unknown";
+
+            return r;
+        }
     }
 }
 
@@ -67,7 +91,22 @@ vector Buffs_TypeToColor(float buff) {
         case BUFF_TENACITY  :      return '0.66  0.66  0.73';    // Silver
         case BUFF_WRATH     :      return '0.55  0.50  1.00';    // Bright Blue
         case BUFF_ADEPT     :      return '0.57  0.00  1.00';    // Viole(n)t
-        default             :      return '0.00  0.00  0.00';
+        case BUFF_MEODP     :      return '0.10  0.10  0.10';    // Black
+        //default             :      return '0.00  0.00  0.00';
+
+        default: {
+            vector c;
+            float o, n;
+
+            for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+                if(buff & o) {
+                    c += Buffs_TypeToColor(o);
+                    ++n;
+                }
+            }
+
+            return c * (1/n);
+        }
     }
 }
 
