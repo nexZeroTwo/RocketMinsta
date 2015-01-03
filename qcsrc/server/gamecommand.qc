@@ -1294,12 +1294,7 @@ void GameCommand(string command)
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
     }
-
-    if(argv(0) == "hg_bonustest") {
-        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
-        return;
-    }
-
+    
     if(argv(0) == "netmusic" || argv(0) == "radio_play") {
     	Radio_Play(argv(1), argv(2), (argv(3) == "loop"));
     	return;
