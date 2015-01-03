@@ -99,8 +99,6 @@ const float ENT_CLIENT_MODELEFFECT = 22;
 const float ENT_CLIENT_ZAPPER = 23;
 const float ENT_CLIENT_BUFFMODEL = 24;
 
-//const float ENT_CLIENT_LGBEAM = 28; //as in xonotic
-
 const float ENT_CLIENT_TURRET = 40;
 
 const float SPRITERULE_DEFAULT = 0;
