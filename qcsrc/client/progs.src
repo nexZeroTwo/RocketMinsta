@@ -29,6 +29,7 @@ prandom.qh
 bgmscript.qh
 visualdamage.qh
 radio.qh
+buffs.qh
 
 ../common/damagetracker.qh
 main.qh
@@ -58,6 +59,7 @@ modeleffects.qc
 visualdamage.qc
 radio.qc
 zapper.qc
+buffs.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc

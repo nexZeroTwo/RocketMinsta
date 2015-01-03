@@ -5828,31 +5828,16 @@ alpha 256 256 400
 
 // Red Zapper impact
 effect RM_ZAPPER_TEAM1
-trailspacing 1
-type static
+count 1
+type smoke
 color 0xa10d00 0xa10d00
-size 7 7
+size 5 5
 tex 38 38
-alpha 270 270 650
+alpha 270 270 700
 lightradius 90
 lighttime 0
 lightcolor 6 2 2
 velocitymultiplier -0.1
-// bright sparks
-effect RM_ZAPPER_TEAM1
-trailspacing 6
-count 3
-type snow
-tex 42 42
-color 0xa10d00 0xa10d00
-size 2 4
-sizeincrease -20
-alpha 444 512 620
-bounce 1
-velocityoffset 0 0 15
-airfriction 12
-originjitter 1 1 1
-velocityjitter 50 50 50
 // decal
 effect RM_ZAPPER_TEAM1
 countabsolute 1
@@ -5895,31 +5880,16 @@ airfriction 12
 
 // Blue Zapper impact
 effect RM_ZAPPER_TEAM2
-trailspacing 1
-type static
+count 1
+type smoke
 color 0x283880 0x283880
-size 7 7
+size 5 5
 tex 38 38
-alpha 270 270 650
+alpha 270 270 700
 lightradius 90
 lighttime 0
 lightcolor 1.5 3 6
 velocitymultiplier -0.1
-// bright sparks
-effect RM_ZAPPER_TEAM2
-trailspacing 6
-count 3
-type snow
-tex 42 42
-color 0x283880 0x283880
-size 2 4
-sizeincrease -20
-alpha 444 512 620
-bounce 1
-velocityoffset 0 0 15
-airfriction 12
-originjitter 1 1 1
-velocityjitter 50 50 50
 // decal
 effect RM_ZAPPER_TEAM2
 countabsolute 1
@@ -5962,31 +5932,16 @@ airfriction 12
 
 // Yellow Zapper impact
 effect RM_ZAPPER_TEAM3
-trailspacing 1
-type static
+count 1
+type smoke
 color 0xc6bc03 0xc6bc03
-size 7 7
+size 5 5
 tex 38 38
-alpha 270 270 650
+alpha 270 270 700
 lightradius 90
 lighttime 0
 lightcolor 6 5.5 2
 velocitymultiplier -0.1
-// bright sparks
-effect RM_ZAPPER_TEAM3
-trailspacing 6
-count 3
-type snow
-tex 42 42
-color 0xc6bc03 0xc6bc03
-size 2 4
-sizeincrease -20
-alpha 444 512 620
-bounce 1
-velocityoffset 0 0 15
-airfriction 12
-originjitter 1 1 1
-velocityjitter 50 50 50
 // decal
 effect RM_ZAPPER_TEAM3
 countabsolute 1
@@ -6029,31 +5984,16 @@ airfriction 12
 
 // Pink Zapper impact
 effect RM_ZAPPER_TEAM4
-trailspacing 1
-type static
+count 1
+type smoke
 color 0xff34f8 0xff34f8
-size 7 7
+size 5 5
 tex 38 38
-alpha 270 270 650
+alpha 270 270 700
 lightradius 90
 lighttime 0
 lightcolor 6 3 5
 velocitymultiplier -0.1
-// bright sparks
-effect RM_ZAPPER_TEAM4
-trailspacing 6
-count 3
-type snow
-tex 42 42
-color 0xff34f8 0xff34f8
-size 2 4
-sizeincrease -20
-alpha 444 512 620
-bounce 1
-velocityoffset 0 0 15
-airfriction 12
-originjitter 1 1 1
-velocityjitter 50 50 50
 // decal
 effect RM_ZAPPER_TEAM4
 countabsolute 1
@@ -6091,3 +6031,120 @@ originjitter 1 1 1
 velocityjitter 200 200 200
 velocitymultiplier 0.3
 airfriction 12
+
+/////// Red Lightning
+
+effect RM_LIGHTNING_TEAM1
+trailspacing 1
+type static
+color 0xa10d00 0xa10d00
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 2 2
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM1
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xa10d00 0xa10d00
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Blue Lightning
+
+effect RM_LIGHTNING_TEAM2
+trailspacing 1
+type static
+color 0x283880 0x283880
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 1.5 3 6
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM2
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0x283880 0x283880
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Yellow Lightning
+
+effect RM_LIGHTNING_TEAM3
+trailspacing 1
+type static
+color 0xc6bc03 0xc6bc03
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 5.5 2
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM3
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xc6bc03 0xc6bc03
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+/////// Pink Lightning
+
+effect RM_LIGHTNING_TEAM4
+trailspacing 1
+type static
+color 0xff34f8 0xff34f8
+size 7 7
+tex 38 38
+alpha 270 270 650
+lightradius 90
+lighttime 0
+lightcolor 6 3 5
+velocitymultiplier -0.1
+// bright sparks
+effect RM_LIGHTNING_TEAM4
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xff34f8 0xff34f8
+size 2 4
+sizeincrease -20
+alpha 444 512 620
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+

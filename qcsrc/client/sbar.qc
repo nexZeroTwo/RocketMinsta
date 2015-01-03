@@ -2135,8 +2135,6 @@ void centerprint(string strRealMessage)
 	string s, strMessage;
 	float scrtime = cvar("scr_centertime");
 
-	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
-
 	centerprint_expire = min(centerprint_expire, time); // if any of the returns happens, this message will fade out
 
 	if(scrtime <= 0)
@@ -2145,25 +2143,6 @@ void centerprint(string strRealMessage)
 	if(strRealMessage == "")
 		return;
 
-	if(substring(strRealMessage, 0, 2) == "\x01\x02") //Damage indicator
-	{
-		if(!rm_showdamage)
-			return;
-
-		strRealMessage = substring(strRealMessage, 2, strlen(strRealMessage) - 2);
-	} else if(substring(strRealMessage, 0, 1) == "\x01") {	// player name spam
-		if(rm_shownames)
-			return;
-		
-		strRealMessage = substring(strRealMessage, 1, strlen(strRealMessage));
-		
-		for(i = 0; i < centerprint_msgnum; ++i)
-			if(centerprint_msgs[i])
-				strunzone(centerprint_msgs[i]);
-			
-		centerprint_msgnum = 0;
-	}
-	
 	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
 
@@ -3632,7 +3611,8 @@ float hg_alpha;
 
 float hgregen;
 
-float ammo_useprogress;
+float ammo_progress;
+
 float vhealth;
 float vshield;
 
@@ -3727,6 +3707,78 @@ void Sbar_DrawPlayerName(string s) {
     drawfont = sbar_font;
 }
 
+void Sbar_DrawSelectedPlayer(void) {
+    vector pos, namepos, fs = centerprint_fontsize;
+    float a, b, sw;
+    entity plr;
+
+    if(!sbar_selectedplayer_name || rm_shownames)
+        return;
+
+    if(time > sbar_selectedplayer_fadetime)
+        sbar_selectedplayer_alpha = approach(sbar_selectedplayer_alpha, 0, frametime * 3);
+    else
+        sbar_selectedplayer_alpha = approach(sbar_selectedplayer_alpha, 1, frametime * 3);
+
+    b = 0.7;
+    a = sbar_selectedplayer_alpha * b;
+
+    if(!a)
+        return;
+
+    plr = playerslots[sbar_selectedplayer-1];
+
+    pos = '0.5 0 0' * vid_conwidth + '0 0.7 0' * vid_conheight;
+    sw = stringwidth(sbar_selectedplayer_name, TRUE) * fs_x;
+    namepos = pos - '0.5 0 0' * sw;
+
+    if(g_nadgets) {
+        float n = plr.(scores[SP_NADEMODE]);
+        if(n) {
+            vector offs = '1 0 0' * (fs_x / 9);
+            drawpic(namepos - '0.5 0 0' * fs_x - offs, HG_TypeToIcon(n, FALSE, FALSE), fs, HG_TypeToColor(n) * b, a, DRAWFLAG_NORMAL);
+            namepos = '0.5 0 0' * fs_x + offs + namepos;
+        }
+    }
+
+    if(teamplay) {
+        float team1 = GetPlayerColorForce(player_localentnum-1);
+        float team2 = GetPlayerColorForce(sbar_selectedplayer-1);
+
+        drawstring(namepos, strdecolorize(sbar_selectedplayer_name), fs, GetTeamRGB(team2) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+
+        if(plr.healthvalue && (team1 == team2)) {
+            pos = pos + '0 1 0' * fs_y;
+
+            string txtHealth, txtArmor;
+            float   szHealth,  szArmor;
+            vector posHealth, posArmor;
+
+            txtHealth = ftos(plr.healthvalue);
+            szHealth  = stringwidth(txtHealth, FALSE) * fs_x;
+
+            if(plr.armorvalue) {
+                txtArmor  = ftos(plr.armorvalue);
+                szArmor   = stringwidth(txtArmor, FALSE) * fs_x;
+                posArmor  = pos + '2 0 0';
+                posHealth = pos - '1 0 0' * (szHealth + 2 + fs_x);
+            } else {
+                posHealth = pos - '0.5 0 0' * (szHealth + fs_x);
+            }
+
+            drawpic(posHealth, "gfx/hud/sb_health", fs, '1 1 1', a, DRAWFLAG_NORMAL);
+            drawstring(posHealth + '1 0 0' * fs_x, txtHealth, fs, healthcolor(plr.healthvalue), a, DRAWFLAG_NORMAL);
+
+            if(plr.armorvalue) {
+                drawpic(posArmor,  "gfx/hud/sb_armor",  fs, '1 1 1', a * 0.7, DRAWFLAG_NORMAL);
+                drawstring(posArmor  + '1 0 0' * fs_x, txtArmor, fs, healthcolor(plr.armorvalue), a, DRAWFLAG_NORMAL);
+            }
+        }
+    } else {
+        drawcolorcodedstring(namepos, sbar_selectedplayer_name, fs, a, DRAWFLAG_NORMAL);
+    }
+}
+
 float hg_nadecount_update;
 void Sbar_Draw(void)
 {
@@ -3799,6 +3851,7 @@ void Sbar_Draw(void)
     
 	sbar_fontsize = Sbar_GetFontsize("sbar_fontsize");
 	sbar_fontsize_spec = Sbar_GetFontsize("sbar_fontsize_spec");
+    centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
 
 	o2_y += sbar_fontsize_y * 1.5;
 
@@ -3808,9 +3861,6 @@ void Sbar_Draw(void)
 		localcmd("cl_cmd sbar_columns_set default\n");
 		minstasbar_fixed = TRUE;
 	}
-
-    if(g_nadgets)
-        hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
 
 	if(spectatee_status == -1 || !spectatee_status)
 	{
@@ -3963,6 +4013,9 @@ void Sbar_Draw(void)
         float spn = cvar("rm_showplayername");
         if((spn > 1) || (spn && isdemo()))
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
+        
+        if(g_nadgets)
+            hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
     }
     
 	if(warmup_stage && !intermission)
@@ -4197,9 +4250,6 @@ void Sbar_Draw(void)
 
 		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
 		{
-			if(bigprint_nofadein) if(i)
-				continue;
-
 			if(rm_simpleeffects) if(i)
 				break;
 
@@ -4216,6 +4266,8 @@ void Sbar_Draw(void)
 				bpc_draw = 0;
 		}
 	}
+
+    Sbar_DrawSelectedPlayer();
 
 	if(rm_showspec)
 	if(spectatee_status != -1)
@@ -4658,8 +4710,8 @@ void Sbar_Draw(void)
                 sector_mod = '0 0 0';
                 thlimit = hud_sector_pos_x + hud_sector_x + sector_gap;
                 
-                if(ammo_useprogress)
-                    DrawProgressBarSector(bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                if(ammo_progress)
+                    DrawProgressBarSector(ammo_progress, hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag, 0);
@@ -4868,8 +4920,8 @@ void Sbar_Draw(void)
                 hud_sector_x = SECWIDTH_NORMAL;
                 sector_mod = '0 0 0';
                 
-                if(ammo_useprogress)
-                    DrawProgressBarSector(-bound(0.01, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1), hud_sector_pos, hud_sector,
+                if(ammo_progress)
+                    DrawProgressBarSector(-ammo_progress, hud_sector_pos, hud_sector,
                                             BG_SECTOR, BG_BORDER, A_SECTOR, A_BORDER,
                                             BG_SECTOR_PROGRESS, BG_BORDER_PROGRESS, A_SECTOR_PROGRESS, A_BORDER_PROGRESS,
                                             sector_alphamod, hud_sector_drawflag, 0);
@@ -5112,17 +5164,29 @@ void Sbar_Draw(void)
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
             float isrifle;
             
-            if(activeweapon == WEP_CAMPINGRIFLE && a == 999) {
-                a = getstati(STAT_BULLETS_LOADED);
-                isrifle = TRUE;
-                ammo_useprogress = TRUE;
-            } else if(GetAmmoItemCode(i) == IT_NAILS) ammo_useprogress = FALSE;
+            float itemcode = GetAmmoItemCode(i);
+
+            if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
+                ammo_progress = bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
+                if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
+                    a = getstati(STAT_BULLETS_LOADED);
+                    isrifle = TRUE;
+                }
+            } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
+                float h = getstatf(STAT_ZAPPER_HEAT);
+                if(h >= 0) {
+                    if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
+                        a = floor((1 - h) * 100);
+                    ammo_progress = h;
+                }
+            } else
+                ammo_progress = 0;
             
-            if(a < 0 || (!a && !(stat_items & GetAmmoItemCode(i))))
+            if(a < 0 || (!a && !(stat_items & itemcode)))
                 continue;
             
 			if(g_minstagib || sbar_currentammo || vid_conwidth < (800 + 100 * !rm_oldhud)) {
-				if (stat_items & GetAmmoItemCode(i)) {
+				if (stat_items & itemcode) {
 					if(!a)
 					{
 						if(ammonotifytime < time)
@@ -5175,17 +5239,17 @@ void Sbar_Draw(void)
 
                     pos = bottom - pos;
                     
-                    if (stat_items & GetAmmoItemCode(i))
+                    if (stat_items & itemcode)
                         drawpic(pos + '0 1.5 0', "gfx/hud/sb_ammobg", '80 22 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
                     drawpic(pos + '56 3 0', GetAmmoPicture(i), '18 18 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
                     
                     if (a < 10) {
-                        if(stat_items & GetAmmoItemCode(i))
+                        if(stat_items & itemcode)
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0 0', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
                     } else {
-                        if(stat_items & GetAmmoItemCode(i))
+                        if(stat_items & itemcode)
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '6 4.5 0', a, 3, 0, 16, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
@@ -5197,7 +5261,7 @@ void Sbar_Draw(void)
                     pos = bottom - pos;
                     pos_x = ammosector_pos;
                     
-                    if(stat_items & GetAmmoItemCode(i) || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
+                    if(stat_items & itemcode || ((!rm_althud || vid_conwidth < 950) && a_unused == 4 && i == ammo_last))
                     {
                         ammo_last = i;
                         
@@ -5208,7 +5272,7 @@ void Sbar_Draw(void)
                         else
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                     }
-                    else
+                    else if(!(stat_items & IT_UNLIMITED_AMMO))
                     {
                         pos_y -= 10;
                         pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));

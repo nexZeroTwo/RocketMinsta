@@ -22,6 +22,11 @@ void Zapper_Draw(void) {
 
     vector end1 = self.zapper_end;
     vector end2 = self.zapper_end + self.zapper_offs * 70;
+    vector d = end2 - start;
+    float maxlen = vlen(end1 - start);
+
+    if(vlen(d) > maxlen)
+        end2 = start + normalize(d) * maxlen;
 
     string tex;
     vector rgb;
@@ -59,13 +64,6 @@ void Zapper_Read(void) {
         self.team = GetPlayerColor(self.sv_entnum - 1);
 
         sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
-
-        float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
-        if(self.sv_entnum == me) {
-            zapper_shotorigin_x = ReadCoord();
-            zapper_shotorigin_y = ReadCoord();
-            zapper_shotorigin_z = ReadCoord();
-        }
     }
 
     if(sf & 2) {
@@ -80,6 +78,10 @@ void Zapper_Read(void) {
         self.zapper_end_z = ReadCoord();
         setorigin(self, self.zapper_end);
         InterpolateOrigin_Note();
+    }
+    
+    if(sf & 8) {
+        zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
     }
 }
 

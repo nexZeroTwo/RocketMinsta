@@ -1325,8 +1325,20 @@ void GameCommand(string command)
     	return;
     }
 
+    if(argv(0) == "radio_evil") {
+        FOR_EACH_REALCLIENT(e)
+            stuffcmd(e, "radio 1\n");
+        return;
+    }
+
     if(argv(0) == "hg_bonustest") {
         HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
+        return;
+    }
+
+    if(argv(0) == "dprmstats") {
+        FOR_EACH_REALCLIENT(e)
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", ((e.client_dprmversion >= DPRM_MINVERSION)? "^2" : "^1"), ftos(e.client_dprmversion), "\n");
         return;
     }
 

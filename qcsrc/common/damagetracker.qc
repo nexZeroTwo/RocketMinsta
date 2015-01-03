@@ -85,21 +85,37 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
     else { 
         r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
         
-        if(extended) {
-            if(r == "")
-                return strcat("Unknown damage source (", ftos(dtype), ")");
+        //if(extended) {
+            if(r == "") {
+                if(extended)
+                    return strcat("Unknown damage source (", ftos(dtype), ")");
+                else
+                    return r;
+            }
             
             #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
             string mods;
-            if(dtype & HITTYPE_SECONDARY)   ADDMOD("secondary");
-            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("headshot");
+
+            if(dtype & HITTYPE_SECONDARY)   ADDMOD("alt");
+            if(dtype & HITTYPE_HEADSHOT)    ADDMOD("head");
             if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
-            if(dtype & HITTYPE_BOUNCE)      ADDMOD("bounce");
+
+            if(dtype & HITTYPE_BOUNCE) {
+                if(DEATH_ISWEAPON(dtype, WEP_ZAPPER))
+                    ADDMOD("arc");
+                else if(DEATH_ISWEAPON(dtype, WEP_ELECTRO))
+                    ADDMOD("combo");
+                else if(DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))
+                    ADDMOD("remote");
+                else
+                    ADDMOD("bounce");
+            }
+
             #undef ADDMOD
             
             if(mods != "")
                 return strcat(r, " (", mods, ")");
-        }
+        //}
         
         return r;
     }
@@ -112,7 +128,9 @@ float DamageTracker_TransformDamageSource(float dtype) {
     if(!DEATH_ISHG(dtype) && !DEATH_ISSPECIAL(dtype)) {
         dtype &~= HITTYPE_SPLASH;
 
-        if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER))
+        if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER)           &&   // secondary arc
+           !DEATH_ISWEAPON(dtype, WEP_ELECTRO)          &&   // combo
+           !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))      // remote detonation
             dtype &~= HITTYPE_BOUNCE;
 
         if(!DEATH_ISWEAPON(dtype, WEP_CAMPINGRIFLE))

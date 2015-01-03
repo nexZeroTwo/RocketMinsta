@@ -473,6 +473,8 @@ void ForceModeSpawns(void) {
     }
 }
 
+.float zapper_heat;
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -513,7 +515,8 @@ void spawnfunc_worldspawn (void)
 	sv_showspecs_extra = cvar("sv_showspecs_extra");
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
-	
+	sv_shownames = cvar("sv_shownames");
+
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
 	world_already_spawned = TRUE;
@@ -744,6 +747,7 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
 	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
 	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
+    addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
     
     if(g_domination)
     {
@@ -2958,7 +2962,6 @@ string GotoMap(string m)
 	else
 		return "Map switch will happen after scoreboard.";
 }
-
 
 void EndFrame()
 {

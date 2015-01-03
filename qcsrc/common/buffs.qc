@@ -50,7 +50,28 @@ string Buffs_TypeToExpandedName(float buff) {
         case BUFF_WRATH     :      return "Wrath";
         case BUFF_ADEPT     :      return "Adept";
         case BUFF_MEODP     :      return "Mystic Eyes of Death Perception";
-        default             :      return "Unknown";
+        // default             :      return "Unknown";
+
+        default: {
+            string r;
+            float o, first = TRUE;
+            
+            for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+                if(buff & o) {
+                    if(first) {
+                        r = Buffs_TypeToExpandedName(o);
+                        first = FALSE;
+                    } else {
+                        r = strcat(r, " + ", Buffs_TypeToExpandedName(o));
+                    }
+                }
+            }
+            
+            if(!r)
+                return "Unknown";
+
+            return r;
+        }
     }
 }
 
@@ -71,7 +92,21 @@ vector Buffs_TypeToColor(float buff) {
         case BUFF_WRATH     :      return '0.55  0.50  1.00';    // Bright Blue
         case BUFF_ADEPT     :      return '0.57  0.00  1.00';    // Viole(n)t
         case BUFF_MEODP     :      return '0.10  0.10  0.10';    // Black
-        default             :      return '0.00  0.00  0.00';
+        //default             :      return '0.00  0.00  0.00';
+
+        default: {
+            vector c;
+            float o, n;
+
+            for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+                if(buff & o) {
+                    c += Buffs_TypeToColor(o);
+                    ++n;
+                }
+            }
+
+            return c * (1/n);
+        }
     }
 }
 

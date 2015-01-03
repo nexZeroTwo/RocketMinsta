@@ -241,6 +241,7 @@ float WR_RELOAD         = 9; // does not need to do anything
 float WR_RESETPLAYER    = 10; // does not need to do anything
 float WR_TT_STORE       = 11; // save weapon-specific fields into tt_moment for time travel
 float WR_TT_RESTORE     = 12; // restore weapon-specific fields from tt_moment for time travel
+float WR_LOWER          = 13; // weapon is being switched from
 
 void weapon_defaultspawnfunc(float wpn);
 
@@ -651,9 +652,6 @@ float keeptopic;
 
 .float totalpoints_stat, redpoints_stat, bluepoints_stat;
 
-.entity shownames;
-void shownames_think();
-
 .float killsound;
 .float instakillsound;
 
@@ -789,3 +787,8 @@ float IsDifferentTeam(entity a, entity b);
 
 .float afkmarktime;
 
+float sv_shownames;
+
+.float client_dprmversion;
+
+.float antilag_debug;

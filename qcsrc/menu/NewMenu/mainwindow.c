@@ -37,7 +37,14 @@ void configureMainWindowMainWindow(entity me)
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
     
-	me.rmDialog = i = spawnNewMenuRMConfigDialog();
+    if(!DPRM_VersionIsSuitable()) {
+        i = spawnNewMenuNaggerDialog();
+        i.configureDialog(i);
+        me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    }
+
+    me.rmDialog = i = spawnNewMenuRMConfigDialog();
+
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
     

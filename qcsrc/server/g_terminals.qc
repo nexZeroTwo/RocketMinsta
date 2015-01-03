@@ -103,7 +103,7 @@ void Term_Hook_PlayerPreThink(void) {
     
     FOR_EACH_TERMINAL(e) if(vlen(self.origin - e.origin) < cvar("g_terminals_auth_range")) {
         makevectors(e.angles);
-        if(normalize(e.origin - self.origin + self.view_ofs) * v_right> 0)
+        if(normalize(e.origin - self.origin + self.view_ofs) * v_right > 0)
             continue;
         
         found = TRUE;

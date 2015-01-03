@@ -657,6 +657,8 @@ void CSQC_UpdateView(float w, float h)
 			self.draw2d();
 	self = e;
 	
+    ShowNames_DrawAll();
+
 	// draw radar
 	if(
 		ons_showmap

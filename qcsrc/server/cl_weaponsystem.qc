@@ -44,11 +44,25 @@ float W_WeaponRateFactorFor(entity plr) {
 
 void W_SwitchWeapon_Force(entity e, float w)
 {
+    entity o = self;
+    self = e;
+    weapon_action(self.weapon, WR_LOWER);
+    self = o;
+
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
 }
 
-.float antilag_debug;
+void W_SwitchWeapon_OutOfAmmo(entity plr) {
+    float best = w_getbestweapon(plr);
+
+    if(!best)
+        best = -1;
+
+    if(plr.switchweapon != best)
+    if(client_hasweapon(plr, best, TRUE, TRUE))
+        W_SwitchWeapon_Force(plr, best);
+}
 
 // VorteX: static frame globals
 float WFRAME_DONTCHANGE = -1;
@@ -154,21 +168,15 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	else
 		ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	if(antilag)
-		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
+		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
 	else
 		traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
 	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	trueaimpoint = trace_endpos;
 
-	// Track max damage and set the stat to be sent later in g_world.qc
-    if(maxdamage >= 0)
-	if not(inWarmupStage)
-    if not(g_minstagib) {
-		ent.max_damage[ent.weapon] += maxdamage;
-		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
-	}
-
+    if(maxdamage > 0)
+        W_Accuracy_RegisterPotentialDamage(ent, ent.weapon, maxdamage);
 	W_HitPlotAnalysis(ent, v_forward, v_right, v_up);
 
 	if(ent.weaponentity.movedir_x > 0)
@@ -187,12 +195,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 
 	// now move the shotorg forward as much as requested if possible
 	if(antilag)
-	{
-		if(ent.antilag_debug)
-			tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, ent.antilag_debug);
-		else
-			tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
-	}
+		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	else
 		tracebox(w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	w_shotorg = trace_endpos - v_forward * nudge;
@@ -332,7 +335,8 @@ void W_SetHitscanVisuals(entity p, vector end) {
     w_shotorg_visual = w_shotorg;
     w_shotdir_visual = w_shotdir;
 
-    if(p.weaponentity.shotorg_visual_x > 0) {
+    if(p.weaponentity.shotorg_visual_x > 0)
+    if(cvar("g_fakeshotorigin")) {
         vecs = p.weaponentity.shotorg_visual;
         vecs_y = -vecs_y;
 
@@ -913,91 +917,86 @@ void CL_SpawnWeaponentity()
 
 .float hasweapon_complain_spam;
 
-float client_hasweapon(entity cl, float wpn, float andammo, float complain)
-{
-	local float weaponbit, f;
-	local entity oldself;
+float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
+    float weaponbit, f;
+    entity oldself;
 
-	if(time < self.hasweapon_complain_spam)
-		complain = 0;
-	if(complain)
-		self.hasweapon_complain_spam = time + 0.2;
+    if(time < cl.hasweapon_complain_spam)
+        complain = 0;
+    if(complain)
+        cl.hasweapon_complain_spam = time + 0.2;
 
-	if (wpn < WEP_FIRST || wpn > WEP_LAST)
-	{
-		if (complain)
-			sprint(self, "Invalid weapon\n");
-		return FALSE;
-	}
-	weaponbit = W_WeaponBit(wpn);
-	if (cl.weapons & weaponbit)
-	{
-		if (andammo)
-		{
-			if(cl.items & IT_UNLIMITED_WEAPON_AMMO)
-			{
-				f = 1;
-			}
-			else
-			{
-				oldself = self;
-				self = cl;
-				f = weapon_action(wpn, WR_CHECKAMMO1);
-				f = f + weapon_action(wpn, WR_CHECKAMMO2);
-				self = oldself;
-			}
-			if (!f)
-			{
-				if (complain)
-				if(clienttype(cl) == CLIENTTYPE_REAL)
-				{
-					play2(cl, "weapons/unavailable.wav");
-					sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
-				}
-				return FALSE;
-			}
-		}
-		return TRUE;
-	}
-	if (complain)
-	{
-		// DRESK - 3/16/07
-		// Report Proper Weapon Status / Modified Weapon Ownership Message
-		if(weaponsInMap & weaponbit)
-		{
-			sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
+    if(wpn < 0) {
+        if(complain) {
+            play2(cl, "weapons/unavailable.wav");
+        }
+        return FALSE;
+    }
 
-			if(cvar("g_showweaponspawns"))
-			{
-				entity e;
-				string s;
+    if(wpn < WEP_FIRST || wpn > WEP_LAST) {
+        if (complain)
+            sprint(cl, "Invalid weapon\n");
+        return FALSE;
+    }
 
-				e = get_weaponinfo(wpn);
-				s = e.model2;
+    weaponbit = W_WeaponBit(wpn);
+    if(cl.weapons & weaponbit) {
+        if(andammo) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+                f = 1;
+            } else {
+                oldself = self;
+                self = cl;
+                f = weapon_action(wpn, WR_CHECKAMMO1);
+                f = f + weapon_action(wpn, WR_CHECKAMMO2);
+                self = oldself;
+            } if(!f) {
+                if(complain)
+                if(clienttype(cl) == CLIENTTYPE_REAL) {
+                    play2(cl, "weapons/unavailable.wav");
+                    sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
+                }
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
 
-				for(e = world; (e = findfloat(e, weapons, weaponbit)); )
-				{
-					if(e.classname == "droppedweapon")
-						continue;
-					if not(e.flags & FL_ITEM)
-						continue;
-					WaypointSprite_Spawn(
-						s,
-						1, 0,
-						world, e.origin,
-						self, 0,
-						world, enemy,
-						0
-					);
-				}
-			}
-		}
-		else
-			sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+    if(complain) {
+        // DRESK - 3/16/07
+        // Report Proper Weapon Status / Modified Weapon Ownership Message
+        if(weaponsInMap & weaponbit) {
+            sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
 
-		play2(cl, "weapons/unavailable.wav");
-	}
-	return FALSE;
+            if(cvar("g_showweaponspawns")) {
+                entity e;
+                string s;
+
+                e = get_weaponinfo(wpn);
+                s = e.model2;
+
+                for(e = world; (e = findfloat(e, weapons, weaponbit)); ) {
+                    if(e.classname == "droppedweapon")
+                        continue;
+                    if not(e.flags & FL_ITEM)
+                        continue;
+                    WaypointSprite_Spawn(
+                        s,
+                        1, 0,
+                        world, e.origin,
+                        self, 0,
+                        world, enemy,
+                        0
+                    );
+                }
+            }
+        } else
+            sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+
+        play2(cl, "weapons/unavailable.wav");
+    }
+
+    return FALSE;
 };
 
 // Weapon subs
@@ -1063,9 +1062,8 @@ float weapon_prepareattack(float secondary, float attacktime)
         return FALSE;
     
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
-	{
-		W_SwitchWeapon_Force(self, w_getbestweapon(self));
+	if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
+        W_SwitchWeapon_OutOfAmmo(self);
 		return FALSE;
 	}
 

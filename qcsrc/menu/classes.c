@@ -89,3 +89,4 @@
 #include "NewMenu/colorpicker.c"
 #include "NewMenu/cvarlist.c"
 #include "NewMenu/dialog_settings_misc_cvars.c"
+#include "NewMenu/dialog_nagger.c"

@@ -25,7 +25,7 @@ void LightingArc_Segment(vector start, vector end, float ateam) {
     e.draw = LightingArc_Draw;
     e.team = ateam;
     
-    trailparticles(world, rm_particleeffectnum_team("RM_ZAPPER", ateam, 2), start, end);
+    trailparticles(world, rm_particleeffectnum_team("RM_LIGHTNING", ateam, 2), start, end);
 }
 
 void LightingArc_Full(vector from, vector to, float seglength, float drifts, float drifte, float branchfactor, float branchfactor_add, float ateam)
