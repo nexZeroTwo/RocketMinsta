@@ -149,6 +149,9 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_FIREBALL:
 			trailparticles(self, particleeffectnum("fireball"), from, to);
 			break;
+        case PROJECTILE_FLAK:
+            trailparticles(self, particleeffectnum("tr_rifle"), from, to);
+            break;
         case PROJECTILE_HG_NAPALMSHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
 :flame
@@ -265,11 +268,9 @@ void Projectile_Draw()
 
 	switch(self.cnt)
 	{
-		/*
-		case PROJECTILE_BULLET_GLOWING:
+		case PROJECTILE_FLAK:
 			R_AddDynamicLight(self.origin, 50, '1 1 0');
 			break;
-		*/
 		default:
 			break;
 	}
@@ -420,6 +421,7 @@ void Ent_Projectile()
 			case PROJECTILE_FIREBALL: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
 			case PROJECTILE_FIREMINE: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
+            case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -450,7 +452,13 @@ void Ent_Projectile()
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';
 				break;
+            case PROJECTILE_FLAK:
 			case PROJECTILE_GRENADE_BOUNCING:
+                self.mins = '0 0 -3';
+                self.maxs = '0 0 -3';
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
+                break;
 			case PROJECTILE_HG_GENERIC:
             case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
