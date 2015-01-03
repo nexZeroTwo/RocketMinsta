@@ -172,7 +172,6 @@ string bigprint_oldstring;
 float bigprint_oldfadetime;
 float bigprint_commentfadetime;
 float bigprint_commentappeartime;
-float bigprint_nofadein;
 float bigprint_oldappeartime;
 
 void bigprint(string, string, float);
@@ -337,3 +336,11 @@ float sv_damagestats;
 
 float GetBigfont();
 void cvar_clientsettemp(string cv, string val);
+
+float sbar_selectedplayer;
+float sbar_selectedplayer_alpha;
+float sbar_selectedplayer_fadetime;
+string sbar_selectedplayer_name;
+
+.float healthvalue;
+.float armorvalue;

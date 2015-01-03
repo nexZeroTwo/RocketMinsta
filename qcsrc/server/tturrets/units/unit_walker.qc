@@ -990,9 +990,17 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         if(attacker.iscreature)
         if(deathtype != DEATH_HG_SHIELD)
         if(deathtype != DEATH_HG_TRANSLOC) {
-            FireRailgunBullet(hitloc, attacker.origin + '0 0 0.5' * attacker.maxs_z, reflect, 0, 0, 0, 0, 0, DEATH_HG_SHIELD);
-            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), hitloc, trace_endpos);
-            te_csqc_lightningarc(hitloc, trace_endpos, TRUE, COLOR_TEAM3);
+            vector start = hitloc;
+            vector end   = attacker.origin + '0 0 0.5' * attacker.maxs_z;
+
+            traceline(start, end, FALSE, self);
+            end = trace_endpos;
+
+            if(trace_ent.takedamage)
+                Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+
+            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), start, end);
+            te_csqc_lightningarc(start, end, TRUE, COLOR_TEAM3);
         }
         
         damage = take;

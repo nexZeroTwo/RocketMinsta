@@ -685,6 +685,37 @@ void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
     self = oself;
 }
 
+float buffs_meodp_triggermultiple_running;
+
+void Buffs_MEODP_TriggerDeath_Multiple(entity attacker, entity inflictor, float(entity, entity) filter, entity pass) {
+    if(buffs_meodp_triggermultiple_running) {
+        backtrace("Buffs_MEODP_TriggerDeath_Multiple called recursively");
+        return;
+    }
+
+    buffs_meodp_triggermultiple_running = TRUE;
+
+    entity p;
+    for(;(p = find(p, classname, "meodp_point"));)
+        if(filter(p.owner, pass))
+            Buffs_MEODP_TriggerDeath(p.owner, attacker, inflictor);
+
+    buffs_meodp_triggermultiple_running = FALSE;
+}
+
+float Buffs_MEODP_Filter_NearbyRelated(entity ent, entity pass) {
+    if(ent.owner != pass.owner)
+        return FALSE;
+    
+    if(ent.classname != pass.classname)
+        return FALSE;
+
+    if(vlen(ent.meodp_point.origin - pass.meodp_point.origin) > 100)
+        return FALSE;
+
+    return TRUE;
+}
+
 void Buffs_MEODP_Point_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
     if(self.solid == SOLID_NOT || RadiusDamage_running)
         return; // hitscan only
@@ -771,6 +802,26 @@ void Buffs_MEODP_Death_Remove(entity attacker, entity inflictor) {
 
 void Buffs_MEODP_Death_Use(entity attacker, entity inflictor) {
     self.use();
+}
+
+void Buffs_MEODP_Death_Remove_Multiple(entity attacker, entity inflictor) {
+    if(buffs_meodp_triggermultiple_running) {
+        Buffs_MEODP_Death_Remove(attacker, inflictor);
+        return;
+    }
+
+    Buffs_MEODP_TriggerDeath_Multiple(attacker, inflictor,
+                                      Buffs_MEODP_Filter_NearbyRelated, self);
+}
+
+void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor) {
+    if(buffs_meodp_triggermultiple_running) {
+        Buffs_MEODP_Death_Use(attacker, inflictor);
+        return;
+    }
+
+    Buffs_MEODP_TriggerDeath_Multiple(attacker, inflictor,
+                                      Buffs_MEODP_Filter_NearbyRelated, self);
 }
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {

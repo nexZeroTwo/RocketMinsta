@@ -87,7 +87,7 @@ void ShowNames_Draw(entity plr) {
             float width;
             width = stringwidth_svn(s, TRUE, textsz);
 
-            if (width != namesize)
+            if(width != namesize)
                 namepos_x += (namesize - width) / 2;
             
             float nade;

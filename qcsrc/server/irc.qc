@@ -1,22 +1,38 @@
 
 entity irc;
 
+float irc_was_connected;
+float irc_reconnect_time;
+float irc_disconnections;
+
 float IRC_CheckSession(float s) {
     if(!IRC_SessionExists(s))
         s = IRC_CreateSession();
     
     if(!IRC_SessionIsConnected(s)) {
-        if(IRC_ConnectSession(s,
-            CVAR_STR(sv_ircbot_server),
-            CVAR(sv_ircbot_server_port),
-            CVAR_STR(sv_ircbot_server_password),
-            CVAR_STR(sv_ircbot_nick),
-            CVAR_STR(sv_ircbot_user),
-            CVAR_STR(sv_ircbot_realname)
-        ) == IRC_ERR_STATE)
-            IRC_TerminateSession(s);
-    }
-    
+        if(irc_was_connected) {
+            float d = CVAR(sv_ircbot_reconnect_interval) + CVAR(sv_ircbot_reconnect_interval_add) * irc_disconnections;
+            print("IRC_CheckSession: trying to reconnect in ", ftos(d), " seconds\n");
+
+            irc_was_connected = FALSE;
+            irc_reconnect_time = time + d;
+            irc_disconnections += 1;
+        }
+
+        if(!irc || time >= irc_reconnect_time) {
+            if(IRC_ConnectSession(s,
+                CVAR_STR(sv_ircbot_server),
+                CVAR(sv_ircbot_server_port),
+                CVAR_STR(sv_ircbot_server_password),
+                CVAR_STR(sv_ircbot_nick),
+                CVAR_STR(sv_ircbot_user),
+                CVAR_STR(sv_ircbot_realname)
+            ) == IRC_ERR_STATE)
+                IRC_TerminateSession(s);
+        }
+    } else
+        irc_was_connected = TRUE;
+
     cvar_set("_sv_ircbot_session", ftos(s));
     return s;
 }
@@ -73,12 +89,23 @@ void IRC_UpdateTopic(void) {
 
 void IRC_Think(void) {
     self.cnt = IRC_CheckSession(self.cnt);
-    self.nextthink = time + 5;
+    self.nextthink = time + 1;
     
     if(self.skin) {
         IRC_UpdateTopic();
         self.skin = 0;
     }
+}
+
+string IRC_DP2IRC_NoColors(string s) {
+    string v1 = CVAR_STR(irc_translate_dp2irc_color);
+    string v2 = CVAR_STR(irc_translate_dp2irc_qfont);
+    cvar_set("irc_translate_dp2irc_color", "1");
+    cvar_set("irc_translate_dp2irc_qfont", "1");
+    s = IRC_DP2IRC(s);
+    cvar_set("irc_translate_dp2irc_color", v1);
+    cvar_set("irc_translate_dp2irc_qfont", v2);
+    return s;
 }
 
 void IRC_Init(void) {
@@ -128,9 +155,13 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         case "status": case "list": case "players": {
             IRC_Notice(handle, nick, strcat("^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, "^7, ^1", 
                                      strcat(ftos(realclients), "^7/", ftos(maxclients), " clients")));
+
+            string search;
+            if(argc > 1)
+                search = strtolower(substring(cmdline, argv_start_index(1), strlen(cmdline)));
+
             FOR_EACH_CLIENT(e) {
-                s = IRC_DP2IRC(e.netname);
-                if(argc < 2 || strstrofs(strdecolorize(s), argv(1), 0) >= 0) {
+                if(!search || strstrofs(strtolower(IRC_DP2IRC_NoColors(e.netname)), search, 0) >= 0) {
                     s = strcat("^3#", ftos(num_for_edict(e)));
                     l = strlen(s);
                     for(i = 0; i < 7 - l; ++i) s = strcat(s, " ");
@@ -303,6 +334,9 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     float ijp;
     string nick, user, host;
     
+    if(!irc)
+        return;
+
     if(handle != irc.cnt)    // not our session
         return;
     
@@ -313,6 +347,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     host = substring(src, strstrofs(src, "@", 0) + 1, strlen(src));
     
     if(event == "CONNECT") {
+        irc_disconnections = 0;
         IRC_JoinChannel(handle, irc.target, irc.targetname);
         if(CVAR_STR(sv_ircbot_connectcommand) != "")
             IRC_SendRaw(handle, CVAR_STR(sv_ircbot_connectcommand));

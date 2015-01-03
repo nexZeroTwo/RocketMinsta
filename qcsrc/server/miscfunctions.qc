@@ -7,6 +7,9 @@ void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
 
+void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage);
+void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage);
+
 float DistributeEvenly_amount;
 float DistributeEvenly_totalweight;
 void DistributeEvenly_Init(float amount, float totalweight)

@@ -2131,8 +2131,6 @@ void centerprint(string strRealMessage)
 	string s, strMessage;
 	float scrtime = CVAR(scr_centertime);
 
-	centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
-
 	centerprint_expire = min(centerprint_expire, time); // if any of the returns happens, this message will fade out
 
 	if(scrtime <= 0)
@@ -2141,25 +2139,6 @@ void centerprint(string strRealMessage)
 	if(strRealMessage == "")
 		return;
 
-	if(substring(strRealMessage, 0, 2) == "\x01\x02") //Damage indicator
-	{
-		if(!rm_showdamage)
-			return;
-
-		strRealMessage = substring(strRealMessage, 2, strlen(strRealMessage) - 2);
-	} else if(substring(strRealMessage, 0, 1) == "\x01") {	// player name spam
-		if(rm_shownames)
-			return;
-		
-		strRealMessage = substring(strRealMessage, 1, strlen(strRealMessage));
-		
-		for(i = 0; i < centerprint_msgnum; ++i)
-			if(centerprint_msgs[i])
-				strunzone(centerprint_msgs[i]);
-			
-		centerprint_msgnum = 0;
-	}
-	
 	if(centerprint_msgnum >= CENTERPRINT_MAX_MSGS)
 	{
 
@@ -3724,6 +3703,78 @@ void Sbar_DrawPlayerName(string s) {
     drawfont = sbar_font;
 }
 
+void Sbar_DrawSelectedPlayer(void) {
+    vector pos, namepos, fs = centerprint_fontsize;
+    float a, b, sw;
+    entity plr;
+
+    if(!sbar_selectedplayer_name || rm_shownames)
+        return;
+
+    if(time > sbar_selectedplayer_fadetime)
+        sbar_selectedplayer_alpha = approach(sbar_selectedplayer_alpha, 0, frametime * 3);
+    else
+        sbar_selectedplayer_alpha = approach(sbar_selectedplayer_alpha, 1, frametime * 3);
+
+    b = 0.7;
+    a = sbar_selectedplayer_alpha * b;
+
+    if(!a)
+        return;
+
+    plr = playerslots[sbar_selectedplayer-1];
+
+    pos = '0.5 0 0' * vid_conwidth + '0 0.7 0' * vid_conheight;
+    sw = stringwidth(sbar_selectedplayer_name, TRUE) * fs_x;
+    namepos = pos - '0.5 0 0' * sw;
+
+    if(g_nadgets) {
+        float n = plr.(scores[SP_NADEMODE]);
+        if(n) {
+            vector offs = '1 0 0' * (fs_x / 9);
+            drawpic(namepos - '0.5 0 0' * fs_x - offs, HG_TypeToIcon(n, FALSE, FALSE), fs, HG_TypeToColor(n) * b, a, DRAWFLAG_NORMAL);
+            namepos = '0.5 0 0' * fs_x + offs + namepos;
+        }
+    }
+
+    if(teamplay) {
+        float team1 = GetPlayerColorForce(player_localentnum-1);
+        float team2 = GetPlayerColorForce(sbar_selectedplayer-1);
+
+        drawstring(namepos, strdecolorize(sbar_selectedplayer_name), fs, GetTeamRGB(team2) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
+
+        if(plr.healthvalue && (team1 == team2)) {
+            pos = pos + '0 1 0' * fs_y;
+
+            string txtHealth, txtArmor;
+            float   szHealth,  szArmor;
+            vector posHealth, posArmor;
+
+            txtHealth = ftos(plr.healthvalue);
+            szHealth  = stringwidth(txtHealth, FALSE) * fs_x;
+
+            if(plr.armorvalue) {
+                txtArmor  = ftos(plr.armorvalue);
+                szArmor   = stringwidth(txtArmor, FALSE) * fs_x;
+                posArmor  = pos + '2 0 0';
+                posHealth = pos - '1 0 0' * (szHealth + 2 + fs_x);
+            } else {
+                posHealth = pos - '0.5 0 0' * (szHealth + fs_x);
+            }
+
+            drawpic(posHealth, "gfx/hud/sb_health", fs, '1 1 1', a, DRAWFLAG_NORMAL);
+            drawstring(posHealth + '1 0 0' * fs_x, txtHealth, fs, healthcolor(plr.healthvalue), a, DRAWFLAG_NORMAL);
+
+            if(plr.armorvalue) {
+                drawpic(posArmor,  "gfx/hud/sb_armor",  fs, '1 1 1', a * 0.7, DRAWFLAG_NORMAL);
+                drawstring(posArmor  + '1 0 0' * fs_x, txtArmor, fs, healthcolor(plr.armorvalue), a, DRAWFLAG_NORMAL);
+            }
+        }
+    } else {
+        drawcolorcodedstring(namepos, sbar_selectedplayer_name, fs, a, DRAWFLAG_NORMAL);
+    }
+}
+
 float hg_nadecount_update;
 void Sbar_Draw(void)
 {
@@ -3796,6 +3847,7 @@ void Sbar_Draw(void)
     
 	sbar_fontsize = Sbar_GetFontsize("sbar_fontsize");
 	sbar_fontsize_spec = Sbar_GetFontsize("sbar_fontsize_spec");
+    centerprint_fontsize = Sbar_GetFontsize("scr_centersize");
 
 	o2_y += sbar_fontsize_y * 1.5;
 
@@ -4194,9 +4246,6 @@ void Sbar_Draw(void)
 
 		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
 		{
-			if(bigprint_nofadein) if(i)
-				continue;
-
 			if(rm_simpleeffects) if(i)
 				break;
 
@@ -4213,6 +4262,8 @@ void Sbar_Draw(void)
 				bpc_draw = 0;
 		}
 	}
+
+    Sbar_DrawSelectedPlayer();
 
 	if(rm_showspec)
 	if(spectatee_status != -1)

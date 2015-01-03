@@ -49,6 +49,7 @@ void HG_Precache() {
     precache_sound(RM_SOUND_LASER_PRIMARY);
     precache_sound(RM_SOUND_LASER_SECONDARY);
     precache_model("models/mine.md3");
+    precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
 }
 
@@ -272,7 +273,7 @@ void HG_Napalm()
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove_Multiple);
     proj.meodp_point_offs = '0 0 64';
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
@@ -391,7 +392,7 @@ void HG_Plasma_Projectile() {
     proj.csqcprojectile_extradata = hg_plasma_group;
     proj.damage_noinfo = TRUE;
     
-    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use_Multiple);
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
@@ -546,7 +547,7 @@ void HG_Grenade_Touch() {
         return;
     }
     
-    if(!self.hg_remote_sticked)
+    if(!self.hg_sticked)
     if(trace_ent && trace_ent.solid > SOLID_TRIGGER) {
         UpdateCSQCProjectileNextFrame(self);
     }
@@ -580,49 +581,58 @@ void HG_Grenade_Touch() {
             
         self.use();
     } else {
-        if(self.hg_type == HG_TRANSLOC) {
-            if(CVAR(g_nadgets_transloc_stick_to_floor) && trace_plane_normal == '0 0 1') {
-                self.velocity = '0 0 0';
-                self.movetype = MOVETYPE_TOSS;
-                
-                // check if it's ok to teleport in this location
-                // if not, remove and refund the translocator
-                
-                if(!self.hg_transloc_solidcheck) {
-                    self.hg_transloc_solidcheck = TRUE;
-                    
-                    vector omins = self.mins;
-                    vector omaxs = self.maxs;
-                    vector oorig = self.origin;
-                    setsize(self, PL_MIN, PL_MAX);
-                    
-                    if(!move_out_of_solid(self)) {
-                        if(!self.hg_isbonus)
-                            self.owner.hg_ammo += 1;
-                        
-                        bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
-                        HG_Grenade_Remove();
-                        return;
-                    }
-                    
-                    setsize(self, omins, omaxs);
-                    setorigin(self, oorig);
-                }
-                
-                UpdateCSQCProjectile(self);
-            }
-            
-            if(CVAR(g_nadgets_transloc_bounceresetorigin))
-                self.spawnorigin = self.origin;
-        }
+        vector normal = trace_plane_normal;
 
-        self.hg_normal = trace_plane_normal;
+        if(self.hg_type == HG_TRANSLOC && CVAR(g_nadgets_transloc_bounceresetorigin))
+            self.spawnorigin = self.origin;
+
+        // Check if we should stop bouncing around, then stick or explode if so.
         if(self.cnt <= 0) {
-            if(self.hg_type == HG_REMOTE) {
-                spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
-                HG_Remote_Stick();
+            float isFloor = (normal == '0 0 1');
+            float doStick;
+
+            if(self.hg_adept)
+                doStick = GRENVAR(self.hg_type, "adept_stick");
+            else
+                doStick = GRENVAR(self.hg_type, "stick");
+
+            if(doStick) {
+                self.velocity = '0 0 0';
+
+                if(self.hg_type == HG_TRANSLOC) {
+                    // Check if it's ok to teleport in this location
+                    // by assuming a player-sized bbox and trying to move out of solid.
+                    // If that fails, remove and refund the translocator
+                    
+                    if(!self.hg_transloc_solidcheck) {
+                        self.hg_transloc_solidcheck = TRUE;
+                        
+                        vector omins = self.mins;
+                        vector omaxs = self.maxs;
+                        vector oorig = self.origin;
+                        setsize(self, PL_MIN, PL_MAX);
+                        
+                        if(!move_out_of_solid(self)) {
+                            if(!self.hg_isbonus)
+                                self.owner.hg_ammo += 1;
+                            
+                            bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
+                            HG_Grenade_Remove();
+                            return;
+                        }
+                        
+                        setsize(self, omins, omaxs);
+                        setorigin(self, oorig);
+                    }
+                }
+
+                trace_plane_normal = normal;
+                HG_Stick();
+
+                return;
             } else
                 self.use();
+
             return;
         } else if(self.hg_type == HG_LASER)
             HG_Grenade_RadiusDamage();
@@ -653,7 +663,9 @@ void HG_Grenade_Touch() {
     }
 }
 
-void HG_Remote_Stick() {
+void HG_Stick(void) {
+    spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
+
     vector normal = trace_plane_normal;
 
     // TODO: A better, more general fix
@@ -667,9 +679,34 @@ void HG_Remote_Stick() {
     e.bot_dodge = self.bot_dodge;
     e.bot_dodgerating = self.bot_dodgerating;
     e.owner = self.owner;
-    e.angles = vectoangles(-normal);
+
+    if(self.hg_type == HG_TRANSLOC)
+        e.angles = randomvec() * 360;
+    else
+        e.angles = vectoangles(-normal);
+    
+
     e.skin = TeamColorSkin(e.owner.team);
-    setmodel(e, "models/mine.md3");
+
+    // FIXME: a better way to sync this with client code?
+    switch(self.hg_type) {
+        case HG_REMOTE:
+            setmodel(e, "models/mine.md3");
+            break;
+        case HG_TRANSLOC:
+            setmodel(e, "models/hg_transloc.md3");
+            e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+            e.light_lev = 50;
+            e.color = TeamColor((self.team > 0)? self.team : COLOR_TEAM4);
+            break;
+        case HG_LASER:
+            setmodel(e, "models/elaser.mdl");
+            break;
+        default:
+            setmodel(e, "models/grenademodel.md3");
+            break;
+    }
+    
     e.damageforcescale = self.damageforcescale;
     e.health = self.health;
     e.max_health = self.max_health;
@@ -685,7 +722,7 @@ void HG_Remote_Stick() {
     e.nextthink = self.nextthink;
     e.flags = self.flags;
     e.team = self.team;
-    e.hg_remote_sticked = TRUE;
+    e.hg_sticked = TRUE;
     e.hg_deathtime = self.hg_deathtime;
     e.hg_sndcount = self.hg_sndcount;
     e.hg_nextsnd = self.hg_nextsnd;
@@ -701,14 +738,23 @@ void HG_Remote_Stick() {
     setsize(e, '-5 -5 -5', '5 5 5');
     setorigin(e, self.origin);
     
+    // For the translocator (face against the wall when teleporting)
+    if(normal == '0 0 1')
+        e.hg_lastvel = self.hg_lastvel;
+    else
+        e.hg_lastvel = normal;
+
     e.meodp_point = self.meodp_point;
     e.meodp_point_offs = self.meodp_point_offs;
     e.meodp_death = self.meodp_death;
     if(e.meodp_point)
         e.meodp_point.owner = e;
-    
-    if(normal_x)
-        setorigin(e, e.origin - normal * 4.5);
+
+    if(self.hg_type == HG_REMOTE) {    
+        if(normal_x)
+            setorigin(e, e.origin - normal * 4.5);
+    }
+
     move_out_of_solid(e);
     
     if(self.hg_waypoint) {
@@ -872,6 +918,8 @@ void HG_Grenade_Waypoint() {
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
     
+    //print(vtos(self.velocity), " ^6", vtos(self.hg_lastvel), "\n");
+
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
     
@@ -1122,7 +1170,7 @@ void HG_Shield_Trigger(void) {
         
         // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
         
-        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, ANTILAG_LATENCY(self));
+        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
         targ = trace_ent;
         start = w_shotorg;
         end = trace_endpos;
@@ -1263,6 +1311,51 @@ void HG_Shield_Frame(void) {
         if(CVAR(g_nadgets_shield_diminish))
             self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
     }
+}
+
+float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
+    if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
+        return damage;
+
+    if(deathtype == DEATH_HG_TRANSLOC && CVAR(g_nadgets_transloc_counters_shield)) {
+        self.hg_shield = 0;
+        return damage;
+    }
+
+    if not(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG)
+        return damage;
+
+    vector offs = '0 0 1' * self.maxs_z * 0.5;
+    float reflect    = damage * CVAR(g_nadgets_shield_damage_reflect) * self.hg_shieldpower;
+    float takefactor = 1 - (1 - CVAR(g_nadgets_shield_damage_take))   * self.hg_shieldpower;
+    float absorb     = damage * (1 - takefactor);
+
+    self.hg_shield_stored = min(CVAR(g_nadgets_shield_damage_store_limit), self.hg_shield_stored + damage * CVAR(g_nadgets_shield_damage_store));
+    damage *= takefactor;
+
+    if(deathtype == DEATH_HG_TRANSLOC)
+        reflect = 0;
+    else if(DEATH_ISHG(deathtype))
+        reflect *= CVAR(g_nadgets_shield_damage_reflect_hg);
+    
+    if(reflect) {
+        vector start = self.origin + offs;
+        vector end   = attacker.origin + offs;
+
+        traceline(start, end, FALSE, self);
+        end = trace_endpos;
+
+        if(trace_ent.takedamage)
+            Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), start, end);
+    }
+
+    self.hg_shieldhealth -= absorb;
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+
+    return damage;
 }
 
 void HG_Cloak(float hgtype) {
@@ -1596,6 +1689,11 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     } else
         lt = GV("lifetime");
 
+    if(gren.hg_adept)
+        gren.cnt = GV("adept_bouncelimit");
+    else
+        gren.cnt = GV("bouncelimit");
+
     gren.hg_deathtime = ((self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))? 
                           time + 0.01 : time + lt * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
                           
@@ -1605,7 +1703,6 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.touch = HG_Grenade_Touch;
     gren.reset = HG_Grenade_Remove;
     gren.team = self.team;
-    gren.cnt = GV("bouncelimit");
     gren.hg_isbonus = self.hg_bonus;
     
     if(gren.hg_type == HG_TRANSLOC)

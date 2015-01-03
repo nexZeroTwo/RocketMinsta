@@ -377,21 +377,199 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	if(source)
 		source.dphitcontentsmask = _oldsolid;
 }
-void traceline_antilag_force (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
-{
-	tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag);
+
+void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst, entity forent, float lag) {
+    tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag);
 }
-void traceline_antilag (entity source, vector v1, vector v2, float nomonst, entity forent, float lag)
-{
-	if (CVAR(g_antilag) != 2)
-		lag = 0;
-	traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
+
+void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
+    float lag;
+    if(CVAR(g_antilag) != 2)
+        lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
+    traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
 }
-void tracebox_antilag (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
-{
-	if (CVAR(g_antilag) != 2)
-		lag = 0;
-	tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
+
+void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
+    float lag;
+
+    if(CVAR(g_antilag) != 2)
+        lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
+    tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
+}
+
+
+/*
+==================
+tracerail
+
+Traces a straight line from start to end, passing through solid entities and marking them. Stops upon hitting a BSP_SOLID.
+Stores the trace state for each hit entity in its .tracerail_* fields (e.g. trace_endpos -> e.tracerail_endpos).
+Each hit entity gets a reference to the next one stored in .tracerail_next and TRUE in .tracerail_hit.
+Returns the first hit entity.
+
+You HAVE to call tracerail_finalize() on the first hit entity as soon as you don't need the trace information anymore.
+You can't call another tracerail() before tracerail_finalize().
+(hint: do NOT call it inside of Damage())
+==================
+*/
+
+float tracerail_active;
+.float tracerail_hit;
+.entity tracerail_next;
+.float tracerail_allsolid;
+.float tracerail_startsolid;
+.float tracerail_fraction;
+.vector tracerail_endpos;
+.vector tracerail_plane_normal;
+.float tracerail_plane_dist;
+.float tracerail_inopen;
+.float tracerail_inwater;
+.float tracerail_oldsolid;
+.float tracerail_dpstartcontents;
+.float tracerail_dphitcontents;
+.float tracerail_dphitq3surfaceflags;
+.string tracerail_dphittexturename;
+
+entity tracerail(vector start, vector end, float t, entity forent) {
+    float tries;
+    entity first, last, e;
+    
+    if(tracerail_active) {
+        backtrace("Attempted to tracerail before finalizing a previous tracerail - things will break.");
+        traceline(start, end, t, forent);
+        return trace_ent;
+    }
+
+    tracerail_active = TRUE;
+
+    while(TRUE) {
+        traceline(start, end, t, forent);
+
+        if(trace_ent == world || trace_fraction == 1) {
+            if(!CVAR(sv_gameplayfix_zerohitcontents) || trace_dphitcontents)
+                break;
+            else {
+                if(++tries == 3)
+                    break;
+                start = trace_endpos;
+                continue;
+            }
+        }
+
+        if(!first)
+            first = trace_ent;
+
+        if(last)
+            last.tracerail_next = trace_ent;
+
+        last = trace_ent;
+        last.tracerail_hit = TRUE;
+        last.tracerail_oldsolid = last.solid;
+        last.tracerail_allsolid = trace_allsolid;
+        last.tracerail_startsolid = trace_startsolid;
+        last.tracerail_fraction = trace_fraction;
+        last.tracerail_endpos = trace_endpos;
+        last.tracerail_plane_normal = trace_plane_normal;
+        last.tracerail_plane_dist = trace_plane_dist;
+        last.tracerail_inopen = trace_inopen;
+        last.tracerail_inwater = trace_inwater;
+        last.tracerail_dpstartcontents = trace_dpstartcontents;
+        last.tracerail_dphitcontents = trace_dphitcontents;
+        last.tracerail_dphitq3surfaceflags = trace_dphitq3surfaceflags;
+        last.tracerail_dphittexturename = trace_dphittexturename;
+
+        if(trace_ent.solid == SOLID_BSP)
+            break;
+
+        // make it non-solid so we can hit the next one
+        trace_ent.solid = SOLID_NOT;
+    }
+
+    // restore solid
+    for(e = first; e; e = e.tracerail_next)
+        e.solid = e.tracerail_oldsolid;
+
+    return first;
+}
+
+void tracerail_finalize(entity ents) {
+    entity ent, ent2;
+
+    for(ent = ents; ent; ent = ent2) {
+        ent2 = ent.tracerail_next;
+
+        ent.tracerail_oldsolid = 0;
+        ent.tracerail_allsolid = 0;
+        ent.tracerail_startsolid = 0;
+        ent.tracerail_fraction = 0;
+        ent.tracerail_endpos = '0 0 0';
+        ent.tracerail_plane_normal = '0 0 0';
+        ent.tracerail_plane_dist = 0;
+        ent.tracerail_inopen = 0;
+        ent.tracerail_inwater = 0;
+        ent.tracerail_dpstartcontents = 0;
+        ent.tracerail_dphitcontents = 0;
+        ent.tracerail_dphitq3surfaceflags = 0;
+        ent.tracerail_dphittexturename = string_null;
+
+        ent.tracerail_hit = FALSE;
+        ent.tracerail_next = world;
+    }
+
+    tracerail_active = FALSE;
+}
+
+entity tracerail_antilag_force(entity source, vector start, vector end, float t, entity forent, float lag) {
+    entity player, e;
+    float oldmask;
+
+    if(lag < 0.001)
+        lag = 0;
+
+    if(lag)
+    if(clienttype(source) != CLIENTTYPE_REAL)
+        lag = 0;
+
+    if(source) {
+        oldmask = source.dphitcontentsmask;
+        source.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
+    }
+
+    if(lag) for(player = player_list; player; player = player.nextplayer)
+        antilag_takeback(player, time - lag);
+
+    e = tracerail(start, end, t, forent);
+
+    if(lag) for(player = player_list; player; player = player.nextplayer)
+        antilag_restore(player);
+
+    if(source)
+        source.dphitcontentsmask = oldmask;
+
+    return e;
+}
+
+entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
+    float lag;
+
+    if(CVAR(g_antilag) != 2)
+        lag = 0;
+    else if(forent.antilag_debug)
+        lag = forent.antilag_debug;
+    else
+        lag = ANTILAG_LATENCY(forent);
+
+    return tracerail_antilag_force(source, start, end, t, forent, lag);
 }
 
 float tracebox_inverted (vector v1, vector mi, vector ma, vector v2, float nomonsters, entity forent) // returns the number of traces done, for benchmarking

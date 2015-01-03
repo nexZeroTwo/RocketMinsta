@@ -149,8 +149,6 @@ void Buffs_Model_Set(entity ment, float thebuffs) {
         
         setmodel(ment, buff_modelnames[Buffs_TypeToIndex(thebuffs)]);
         setsize(ment, omins, omaxs);
-
-        Buffs_Model_UpdateColor(ment);
     } else {
         // multiple buffs - hide ment and use additional models
         
@@ -173,6 +171,8 @@ void Buffs_Model_Set(entity ment, float thebuffs) {
             
         }
     }
+    
+    Buffs_Model_UpdateColor(ment);
 }
 
 void Buffs_Model_Remove(void) {
@@ -203,20 +203,23 @@ void Buffs_Model_Ring_Think(void) {
 }
 
 void Buffs_Model_AttachRing(entity bmdl) {
+    if(bmdl.buff_ring)
+        return;
+
     entity e = spawn();
-    e.owner = self;
-    e.effects = self.effects;
-    e.alpha = self.alpha;
-    e.scale = self.scale * 1.2;
+    e.owner = bmdl;
+    e.effects = bmdl.effects;
+    e.alpha = bmdl.alpha;
+    e.scale = bmdl.scale * 1.2;
     e.draw = Buffs_Model_Draw;
     e.think = Buffs_Model_Ring_Think;
     e.nextthink = time;
 
-    setsize(e, self.mins, self.maxs);
-    setorigin(e, self.origin + self.maxs * 0.5 * self.scale);
+    setsize(e, bmdl.mins, bmdl.maxs);
+    setorigin(e, bmdl.origin + bmdl.maxs * 0.5 * bmdl.scale);
     setmodel(e, "models/buffs/buff_ring.md3");
 
-    self.buff_ring = e;
+    bmdl.buff_ring = e;
 }
 
 void Buffs_Model_Read(void) {

@@ -116,10 +116,7 @@ void W_Zapper_Beam_Think(void) {
     }
 
     trace_start_for(o);
-    if(self.owner.antilag_debug)
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, self.antilag_debug);
-    else
-        traceline_antilag(self.owner, w_shotorg, end, FALSE, self.owner, ANTILAG_LATENCY(self.owner));
+    traceline_antilag(o, w_shotorg, end, FALSE, o);
     trace_end_for(o);
 
     targ = trace_ent;
@@ -163,7 +160,9 @@ void W_Zapper_Beam_Think(void) {
             force  = targetFps * dt;
         }
         
-        float hit = W_IsGoodHit(self.owner, targ);
+        W_Accuracy_RegisterShot(o, o.weapon);
+        W_Accuracy_RegisterHit(o, targ, o.weapon);
+
         if(targ.takedamage) {
             float d = (end - w_shotorg) * w_shotdir;
 
@@ -181,16 +180,6 @@ void W_Zapper_Beam_Think(void) {
         if(fract < 1)
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
             Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
-
-        if not(inWarmupStage)
-        if not(o.isbot) {
-            o.bullets_fired[o.weapon] += 1;
-            if(hit) {
-                o.bullets_hit[o.weapon] += 1;
-            }
-            o.damage_hits = o.weapon + 64 * rint(o.bullets_hit[o.weapon]);
-            o.maxdamage_fired = o.weapon + 64 * rint(o.bullets_fired[o.weapon]);
-        }
 
         if(!(o.items & IT_UNLIMITED_AMMO))
             o.ammo_cells -= CVAR(g_balance_zapper_primary_ammo);
@@ -303,18 +292,13 @@ void W_Zapper_Attack2(void) {
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
     trace_start_for(self);
-    if(self.antilag_debug)
-        traceline_antilag(self, w_shotorg, end, FALSE, world, self.antilag_debug);
-    else
-        traceline_antilag(self, w_shotorg, end, FALSE, world, ANTILAG_LATENCY(self));
+    traceline_antilag(self, w_shotorg, end, FALSE, self);
     trace_end_for(self);
 
     targ = trace_ent;
     end = trace_endpos;
 
     W_SetHitscanVisuals(self, end);
-
-    float hit = W_IsGoodHit(self.owner, targ);
 
     if(targ.takedamage) {
         float d = (end - w_shotorg) * w_shotdir;
@@ -335,15 +319,8 @@ void W_Zapper_Attack2(void) {
 
     Buffs_MEODP_Hitscan_End(pts);
 
-    if not(inWarmupStage)
-    if not(self.isbot) {
-        self.bullets_fired[self.weapon] += 1;
-        if(hit) {
-            self.bullets_hit[self.weapon] += 1;
-        }
-        self.damage_hits = self.weapon + 64 * rint(self.bullets_hit[self.weapon]);
-        self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-    }
+    W_Accuracy_RegisterShot(self, self.weapon);
+    W_Accuracy_RegisterHit(self, targ, self.weapon);
 
     W_Zapper_Attack2_Effect(self.team, w_shotorg_visual, end);
 
