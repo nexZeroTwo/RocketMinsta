@@ -9,6 +9,7 @@ float g_buffs_randomize_byinstance;
 float g_buffs_randomize_chaos;
 float g_buffs_randomize_interval;
 float g_buffs_spawn_on_powerups;
+float g_buffs_random_spawns;
 float g_buffs_lockon;
 
 float g_buffs_enabled;
@@ -51,9 +52,6 @@ float g_buffs_count;
 
 #define BUFF_RANDOM -1337
 
-void Buffs_Rand_All_remove(void);
-void Buffs_Rand_spawn(void);
-
 typedef void(entity, entity) meodp_death_f;
 .meodp_death_f meodp_death;
 
@@ -76,6 +74,7 @@ float Buffs_NadgetRegenDmgPause(entity);
 float Buffs_NadgetBonusMultiplier(entity);
 void Buffs_BuffPickup_SetInitialCooldown(entity);
 void Buffs_BuffPickup_SetCooldown(entity, float);
+void Buffs_Random_Spawn(void);
 
 .vector meodp_point_offs;
 

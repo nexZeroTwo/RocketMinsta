@@ -2,28 +2,14 @@
 #define ON_BUFF_ADDED(b) if(self.buffs & (b)) if not(self.oldbuffs & (b))
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
-void Buffs_Rand_All_remove(void) {
-	entity ent;
-	// ent = findchain(classname, "item_buff");
-	ent = find(world, classname, "item_buff");
-	while (ent) {
-		if(ent.buff_waypoint)
-			WaypointSprite_Kill(ent.buff_waypoint);
-		if(ent.enemy)
-			remove(ent.enemy);
-		remove(ent);
-		// ent = ent.chain;
-		ent = find(ent, classname, "item_buff");
-	}
-}
-
-void Buffs_Rand_spawn(void) {
-	local entity e;
-	e = spawn();
-	self = e;
-	self.buffs = BUFF_RANDOM;
-	Buffs_BuffPickup_Setup();
-	MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+void Buffs_Random_Spawn(void) {
+    entity o = self;
+    self = spawn();
+    self.buffs = BUFF_RANDOM;
+    self.classname = "item_buff_randomspawn";
+    Buffs_BuffPickup_Setup();
+    MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+    self = o;
 }
 
 void Buffs_Init(void) {
@@ -46,6 +32,7 @@ void Buffs_Init(void) {
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     g_buffs_randomize_interval = cvar("g_buffs_randomize_interval");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
+    g_buffs_random_spawns = cvar("g_buffs_random_spawns");
     g_buffs_lockon = cvar("g_buffs_lockon");
     
     if(g_clanarena)
@@ -185,17 +172,16 @@ void Buffs_Randomizer_Reset(void) {
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
     entity blist, b, o;
-    float idx, teams_found, teams_total, bcnt = g_buffs_count, arrlimit, j;
+    float idx, teams_found, teams_total, bcnt = g_buffs_count, j;
     
-	if(cvar("g_buffs_movetorandom")) {
-		Buffs_Rand_All_remove();
-		arrlimit = bound(3, random() * 10, 9); // replace 9 with totalclients
-		for(j = 0; j < arrlimit; ++j) {
-			Buffs_Rand_spawn();
-		}
-	}
-    
-    if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
+	if(g_buffs_random_spawns) {
+        float mi = cvar("g_buffs_random_spawns_min");
+        float ma = cvar("g_buffs_random_spawns_max");
+        float bcount = rint(random() * (ma - mi) + mi);
+
+		for(j = 0; j < bcount; ++j)
+			Buffs_Random_Spawn();
+	} else if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
         o = self;
         for(b = findchain(classname, "buff_placeholder"); b; b = b.chain) {
             if(bcnt) {
@@ -210,9 +196,6 @@ void Buffs_Init_Delayed(void) {
                     self.owner = world;
                 }
             }
-	    if(cvar("g_buffs_movetorandom")) {
-		    MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
-	    }
         }
         self = o;
     }
@@ -1020,8 +1003,13 @@ void Buffs_BuffPickup_Setup(void) {
         return;
     }
     
+    if(g_buffs_random_spawns && self.classname != "item_buff_randomspawn") {
+        remove(self);
+        return;
+    }
+
     if not(g_buffs_randomize)
-    if not(g_buffs_enabled & self.buffs != self.buffs) {
+    if not(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
         remove(self);
         return;
     }
