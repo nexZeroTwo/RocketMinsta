@@ -3857,10 +3857,7 @@ void Sbar_Draw(void)
 		localcmd("cl_cmd sbar_columns_set default\n");
 		minstasbar_fixed = TRUE;
 	}
-
-    if(g_nadgets)
-        hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
-
+    
 	if(spectatee_status == -1 || !spectatee_status)
 	{
 		//release madoka and HUD locks. Perhaps should be done elsewhere?
