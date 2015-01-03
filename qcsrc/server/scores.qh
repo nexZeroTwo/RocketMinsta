@@ -144,3 +144,7 @@ var .float scores_primary;
 var .float teamscores_primary;
 float scores_flags_primary;
 float teamscores_flags_primary;
+
+float PlayerScore_SetFlags(entity player, float flg);
+float PlayerScore_UnsetFlags(entity player, float flg);
+float PlayerScore_SetFlagsBoolean(entity player, float flg, float b);

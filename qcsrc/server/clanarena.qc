@@ -132,7 +132,7 @@ void CA_PlayerDies(entity attacker) {
     }
     
     PlayerScore_Add(self, SP_SCORE, -cvar("g_clanarena_penalty_death"));
-    PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+    PlayerScore_SetFlags(self, SPFLAG_FROZEN);
     
     AloneWarning(self.team, CA_AliveCheck);
     CA_RecountPlayers();
@@ -149,7 +149,7 @@ void CA_PlayerJoins(void) {
         if(roundstate == ROUNDSTATE_GAME)
         if(self.classname == "player") 
         if(teamcount_playerstotal[Team_Index(self.team)]) {
-            PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+            PlayerScore_SetFlags(self, SPFLAG_FROZEN);
             JB_JailSpectate();
         }
         CA_RecountPlayers();

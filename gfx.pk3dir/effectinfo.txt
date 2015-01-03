@@ -5801,3 +5801,25 @@ alpha 644 956 2500
 originjitter 64 64 64
 velocityjitter 324 324 324
 rotate -180 180 -100 100
+
+/////// Mystic Eyes of Death Perception effect
+
+// black rings
+effect RM_MEODP
+count 32
+type smoke
+color 0x000000 0x000000
+tex 33 33
+size 50 10
+sizeincrease 50
+alpha 128 128 80
+blend alpha
+// red rings
+effect RM_MEODP
+count 32
+type smoke
+color 0xFF0000 0xFF0000
+tex 33 33
+size 100 50
+sizeincrease -250
+alpha 256 256 400

@@ -32,6 +32,7 @@ void HG_Shield_Trigger(void);
 .float hg_power;
 .float hg_state;
 .float hg_next;
+.float hg_bonus_next;
 .float hg_ammo;
 .float hg_type;
 .float hg_type_picked;
@@ -63,6 +64,7 @@ void HG_Shield_Trigger(void);
 .float hg_optout_nextround;
 .float hg_alwaysask;
 .float hg_adept;
+.float hg_tl_revived;
 
 .float hg_transloc_solidcheck;
 
@@ -89,6 +91,7 @@ void HG_Shield_Trigger(void);
 .float hg_stealthtime;
 .float hg_wasstealth;
 .float hg_stealth_saved;
+.float hg_stealth_protectionexpiretime;
 
 .float hg_plasma_projrange;
 .float hg_plasma_projdps;

@@ -266,14 +266,10 @@ void SV_ParseClientCommand(string s) {
 		else
 			self.madoka = 0;
 		
-		if(!self)
-			return;
-		
 		if(!self.scorekeeper)
 			return;
 		
-		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
-		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
+	PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
 		WriteSpectatorInfo(self);
 		return;
 	} else if(cmd == "nokillsound") {

@@ -19,6 +19,11 @@ void te_heal(entity e) {
     vector o = e.origin + e.view_ofs;
     
     FOR_EACH_REALCLIENT(c) if(c != e) if(!(c.classname == "spectator" && c.enemy == e)) {
+        if(c.iscreature)
+        if(e.hg_stealth)
+        if(IsDifferentTeam(c, e))
+            continue;
+
         msg_entity = c;
         WriteByte(MSG_ONE, SVC_TEMPENTITY);
         WriteByte(MSG_ONE, TE_CSQC_HEAL);

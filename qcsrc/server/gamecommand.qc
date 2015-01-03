@@ -576,6 +576,24 @@ void make_mapinfo_Think()
 
 .float ispicked;
 
+void GotoMap_f_delayed(void) {
+    print(GotoMap(self.netname), "\n");
+    strunzone(self.netname);
+    remove(self);
+}
+
+void GotoMap_f(string m, float d) {
+    if(!d) {
+        print(GotoMap(m), "\n");
+        return;
+    }
+    
+    entity e = spawn();
+    e.netname = strzone(m);
+    e.think = GotoMap_f_delayed;
+    e.nextthink = time + d;
+}
+
 void GameCommand(string command)
 {
 	float argc;
@@ -646,8 +664,12 @@ void GameCommand(string command)
 
     if(argv(0) == "gotomap") if(argc >= 2)
     {
-        if(argc > 2)
+        if(argc > 2) {
             localcmd("gametype ", argv(2), "\n");
+            GotoMap_f(argv(1), 0.2);
+        } else {
+            GotoMap_f(argv(1), 0);
+        }
         
         print(GotoMap(argv(1)), "\n");
         return;
@@ -1272,7 +1294,11 @@ void GameCommand(string command)
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
     }
-    
+    if(argv(0) == "hg_bonustest") {
+        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called");
+        return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
 

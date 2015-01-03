@@ -109,7 +109,7 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
-    registercvar("cl_effects_lightningarc_count", "3", CVAR_SAVE);
+    registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
     gametype = 0;
@@ -484,7 +484,7 @@ void PostInit(void)
 		case 20:
 			//localcmd("seta rm_althud 0; althud 0\n");
 		case 21:
-			localcmd("seta rm_althud 1; althud 1\n");
+			//localcmd("seta rm_althud 0; althud 0\n");
 		case 22:
 			//localcmd("alias afk \"cmd afk\"\n");
 		case 23:
@@ -524,10 +524,16 @@ void PostInit(void)
         case 41:
             localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
         case 42:
-            localcmd("seta rm_nododging 0; rm_nododging 0\n");
+            localcmd("seta rm_nododging 0; nododging 0\n");
+	case 43:
+            localcmd("seta cl_effects_lightningarc_count 1\n");
+            localcmd("seta cl_effects_lightningarc_segmentlength 24\n");
+        case 44:
+            localcmd("seta rm_althud 0; althud 0\n");
+        case 45:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 43\n");
+		localcmd("seta rm_initialized 46\n");
 		RM_OUTDATED
 		break;
 	}
@@ -1634,6 +1640,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
 		case ENT_CLIENT_SHOWNAMES: Ent_ShowNames(); break;
+//		case ENT_CLIENT_LGBEAM: Ent_ReadHook(bIsNewEntity, ENT_CLIENT_LGBEAM); break; //as in xonotic
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;

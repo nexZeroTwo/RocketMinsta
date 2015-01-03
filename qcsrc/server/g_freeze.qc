@@ -169,7 +169,7 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
             PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar("penalty_teamkill"));
     }
     
-    PlayerScore_Set(plr, SP_FROZENSTATUS, 1);
+    PlayerScore_SetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
 }
 
@@ -196,7 +196,7 @@ void Freeze_UnfreezePlayer(entity plr)
         } else HG_PlayerSpawnEx(plr);
     }
     
-    PlayerScore_Set(plr, SP_FROZENSTATUS, 0);
+    PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
 }
 
@@ -385,7 +385,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         return;
     
     if(roundstate == ROUNDSTATE_WARMUP)
-        PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+        PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
     
     if(!Freeze_GameInProgress()) {
         self.revprogress = 0;
@@ -404,7 +404,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         
         if(self.freeze_waypoint) {
             WaypointSprite_Disown(self.freeze_waypoint, 0.5);
-            PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+            PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
             Freeze_RecountPlayers();
         }
         
@@ -435,7 +435,7 @@ void Freeze_Hook_PlayerPreThink(void) {
     }
     
     if(!self.freeze_waypoint) {
-        PlayerScore_Set(self, SP_FROZENSTATUS, 1);
+        PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         Freeze_SpawnWaypoint(self);
         Freeze_RecountPlayers();
     }

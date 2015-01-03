@@ -513,26 +513,22 @@ float Item_GiveTo(entity item, entity player)
 			//	player.slowmo_finished = max(player.slowmo_finished, time) + (cvar("g_balance_powerup_slowmo_time") * cvar("g_balance_powerup_slowmo_speed"));
 			//}
             
-            float oh = player.health;
-            float oa = player.armorvalue;
+            float heal_h, heal_a;
             
-			if (item.health)
-			if (player.health < item.max_health)
-			{
-				pickedup = TRUE;
-				player.health = min(player.health + item.health * pickupfactor, item.max_health);
-				player.pauserothealth_finished = max(player.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
-			}
-			if (item.armorvalue)
-			if (player.armorvalue < item.max_armorvalue)
-			{
-				pickedup = TRUE;
-				player.armorvalue = min(player.armorvalue + item.armorvalue * pickupfactor, item.max_armorvalue);
-				player.pauserotarmor_finished = max(player.pauserotarmor_finished, time + cvar("g_balance_pause_armor_rot"));
-			}
+            if(item.health)
+            if(player.health < item.max_health) {
+                pickedup = TRUE;
+                heal_h = item.health * pickupfactor;
+            }
             
-            if(oh != player.health || oa != player.armorvalue)
-                VisualDamage(player, player, rint(player.health - oh), rint(player.armorvalue - oa), VDMG_TYPE_HEAL, '0 0 0');
+            if(item.armorvalue)
+            if(player.armorvalue < item.max_armorvalue) {
+                pickedup = TRUE;
+                heal_a = item.armorvalue * pickupfactor;
+            }
+            
+	    if(heal_h || heal_a)
+                Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM, (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0', '0 0 0');
 		}
 	}
 

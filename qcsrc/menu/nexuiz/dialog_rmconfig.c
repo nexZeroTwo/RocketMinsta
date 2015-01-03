@@ -3,7 +3,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	METHOD(NexuizRMConfigDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
-	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
+	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
 	ATTRIB(NexuizRMConfigDialog, rows, float, 19)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")

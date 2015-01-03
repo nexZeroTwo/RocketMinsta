@@ -51,6 +51,8 @@ float g_buffs_count;
 
 #define BUFF_RANDOM -1337
 
+void Buffs_Rand_All_remove(void);
+void Buffs_Rand_spawn(void);
 void Buffs_Init(void);
 void Buffs_Init_Delayed(void);
 void Buffs_ClientFrame(void);
@@ -68,6 +70,7 @@ float Buffs_NadgetPower(entity);
 float Buffs_NadgetRegen(entity);
 float Buffs_NadgetCooldown(entity);
 float Buffs_NadgetRegenDmgPause(entity);
+float Buffs_NadgetBonusMultiplier(entity);
 void Buffs_SetBuffModel(entity, float);
 void Buffs_BuffPickup_SetInitialCooldown(entity);
 void Buffs_BuffPickup_SetCooldown(entity, float);

@@ -139,7 +139,7 @@ float bot_shouldattack(entity e)
 			return FALSE;
 	
 	//this part will work only with RM
-	if ((e.hg_shield) && (random() < 0.7))
+	if ((e.hg_shield) && (random() < 0.2)) // 0.7 replaced to 0.2
 		return FALSE;
 	
 	if(teams_matter)
@@ -155,7 +155,7 @@ float bot_shouldattack(entity e)
 		return FALSE;
 	if (e.deadflag)
 		return FALSE;
-	if ((e.BUTTON_CHAT) && (random() < 0.5)) //lets kill chatters who trying to avoid bots
+	if ((e.BUTTON_CHAT) && (random() < 0.4)) //lets kill chatters who trying to avoid bots
 		return FALSE;
 	if(g_minstagib)
 	if(e.items & IT_STRENGTH)

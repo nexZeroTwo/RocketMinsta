@@ -202,5 +202,7 @@ monsters/fight.qc
 monsters/ai.qc
 monsters/m_monsters.qc
 
+//rspawn.qc //random spawn items test
+
 csqcprojectile.qc
 

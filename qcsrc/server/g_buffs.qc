@@ -2,6 +2,30 @@
 #define ON_BUFF_ADDED(b) if(self.buffs & (b)) if not(self.oldbuffs & (b))
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
+void Buffs_Rand_All_remove(void) {
+	entity ent;
+	// ent = findchain(classname, "item_buff");
+	ent = find(world, classname, "item_buff");
+	while (ent) {
+		if(ent.buff_waypoint)
+			WaypointSprite_Kill(ent.buff_waypoint);
+		if(ent.enemy)
+			remove(ent.enemy);
+		remove(ent);
+		// ent = ent.chain;
+		ent = find(ent, classname, "item_buff");
+	}
+}
+
+void Buffs_Rand_spawn(void) {
+	local entity e;
+	e = spawn();
+	self = e;
+	self.buffs = BUFF_RANDOM;
+	Buffs_BuffPickup_Setup();
+	MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+}
+
 void Buffs_Init(void) {
     float i, b;
     
@@ -12,7 +36,7 @@ void Buffs_Init(void) {
     
     if(!g_buffs)
         return;
-    
+
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
     g_buffs_noteam = cvar("g_buffs_noteam");
@@ -164,7 +188,15 @@ void Buffs_Randomizer_Reset(void) {
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
     entity blist, b, o;
-    float idx, teams_found, teams_total, bcnt = g_buffs_count;
+    float idx, teams_found, teams_total, bcnt = g_buffs_count, arrlimit, j;
+    
+	if(cvar("g_buffs_movetorandom")) {
+		Buffs_Rand_All_remove();
+		arrlimit = bound(3, random() * 10, 9); // replace 9 with totalclients
+		for(j = 0; j < arrlimit; ++j) {
+			Buffs_Rand_spawn();
+		}
+	}
     
     if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
         o = self;
@@ -181,10 +213,13 @@ void Buffs_Init_Delayed(void) {
                     self.owner = world;
                 }
             }
+	    if(cvar("g_buffs_movetorandom")) {
+		    MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+	    }
         }
         self = o;
     }
-    
+
     if(teams_matter) {
         teams_total = TeamCount_TotalTeams();
 
@@ -492,7 +527,7 @@ void Buffs_ClientFrame(void) {
     if(BUFFS_PRESENT(self, BUFF_VAMPIRE)) {
         if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
             float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
-            Heal(self, world, self, heal, cvar("g_buffs_vampire_pauserot"), '0 0 0', '0 0 0');
+            Heal(self, world, self, heal, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
             self.buff_vamp_healthpool -= heal;
             self.buff_vamp_ticks -= 1;
             self.buff_vamp_nexttick = time + 1;
@@ -536,6 +571,15 @@ float Buffs_NadgetRegenDmgPause(entity plr) {
     return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
 }
 
+float Buffs_NadgetBonusMultiplier(entity plr) {
+    float wrath = Buffs_BuffPower(plr, BUFF_WRATH);
+
+    if(!wrath)
+        return 1;
+
+    return rint(1 + (cvar("g_buffs_wrath_hgbonusmultiplier") - 1) * wrath);
+}
+
 float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
     float diffteam;
     
@@ -544,13 +588,15 @@ float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float d
     if(targ != inflictor)
     if(attacker.classname == "player")
     if(deathtype != DEATH_HG_TRANSLOC)
-    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC)
-    if(BUFFS_PRESENT(attacker, BUFF_IGNITE))
-    if((diffteam = IsDifferentTeam(attacker, targ)) || BUFFS_PRESENT(attacker, BUFF_MEDIC)) {
-        float fdamage = damage * cvar("g_buffs_ignite_damage_fire");
-        if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
-            Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
-        damage = damage * cvar("g_buffs_ignite_damage_base");
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC) {
+        float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
+        if(ignite)
+        if((diffteam = IsDifferentTeam(attacker, targ)) || Buffs_BuffPower(attacker, BUFF_MEDIC)) {
+            float fdamage = damage * cvar("g_buffs_ignite_damage_fire") * ignite;
+            if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
+                Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
+            damage = damage * (1 - (1 - cvar("g_buffs_ignite_damage_base")) * ignite);
+        }
     }
     
     return damage;
@@ -590,7 +636,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_healthpool += damage * factor;
     } else {
         // instant-healing mode, don't use the buffer, just heal
-        Heal(a, world, a, damage * factor, cvar("g_buffs_vampire_pauserot"), '0 0 0', '0 0 0');
+        Heal(a, world, a, damage * factor, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
     }
 }
 
@@ -676,7 +722,7 @@ float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
 }
 
 void Buffs_BuffPickup_SpawnWaypoint(entity e) {
-    WaypointSprite_Spawn(Buffs_GenName(e.buffs), 0, 0, world, e.origin + '0 0 40', world, e.team, e, buff_waypoint, TRUE);
+    WaypointSprite_Spawn(Buffs_GenName(e.buffs), 0, 0, e, '0 0 40', world, e.team, e, buff_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(e.buff_waypoint, e.colormod, '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, e.colormod);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
@@ -868,6 +914,11 @@ void Buffs_BuffPickup_Setup(void) {
         self.team = TeamCount_NextTeam(self.team);
     
     self.origbuffs = self.buffs;
+    
+    if(time > 1)
+    if(self.buffs == BUFF_RANDOM)
+        self.buffs = Buffs_Randomize_Yield();
+  
     self.classname = "item_buff";
     self.flags = FL_ITEM;
     self.solid = SOLID_TRIGGER;
