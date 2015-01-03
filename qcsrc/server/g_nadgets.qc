@@ -1950,7 +1950,8 @@ void HG_Attack()
     } else if(hgtype == HG_GG) {
         if(!HG_GG_Button(hgtype)) {
             bigprint_spec(self, "Nobody to win against!", "", 1);
-            self.cdfield = time + 1;            return;
+            self.cdfield = time + 1;
+            return;
         }
     } else if(hgtype == HG_BAIT) {
         if(!HG_Bait()) {
