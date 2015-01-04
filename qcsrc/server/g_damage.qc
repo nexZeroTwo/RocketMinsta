@@ -1148,9 +1148,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
                 heal = Heal(targ, inflictor, attacker, heal, 0, cvar("g_buffs_medic_maxhealth"), 0, deathtype, cvar("g_buffs_medic_pauserot"), 0, hitloc, force);
                 
-                if(heal)
-                    Damage_RecordDamage(attacker, deathtype, heal);
-                
                 targ.hg_plasmalock = 0;
                 
                 if(attacker != targ)
@@ -2007,7 +2004,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team)
+								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;
