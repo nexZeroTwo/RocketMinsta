@@ -93,18 +93,27 @@ void W_Flak_Attack1(void) {
 }
 
 void W_Flak_Attack2(void) {
+    float pcount = cvar("g_balance_flak_secondary_projectiles"), i;
+
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_shells -= cvar("g_balance_flak_secondary_ammo");
 
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", cvar("g_balance_flak_secondary_damage"));
+    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", cvar("g_balance_flak_secondary_damage") * pcount);
     w_shotdir = v_forward;
 
-    W_Flak_Projectile(cvar("g_balance_flak_secondary_damage"),
-                      cvar("g_balance_flak_secondary_gravity"),
-                      cvar("g_balance_flak_secondary_lifetime"),
-                      cvar("g_balance_flak_secondary_speed"),
-                      cvar("g_balance_flak_secondary_speed_up"),
-                      WEP_FLAK | HITTYPE_SECONDARY);
+    for(i = 0; i < pcount; ++i) {
+        vector a = vectoangles(w_shotdir);
+
+        fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_secondary_spread_up")
+                           + '0 1 0' * crandom() * cvar("g_balance_flak_secondary_spread_side"));
+
+        W_Flak_Projectile(cvar("g_balance_flak_secondary_damage"),
+                          cvar("g_balance_flak_secondary_gravity"),
+                          cvar("g_balance_flak_secondary_lifetime"),
+                          cvar("g_balance_flak_secondary_speed"),
+                          cvar("g_balance_flak_secondary_speed_up"),
+                          WEP_FLAK | HITTYPE_SECONDARY);
+    }
 
     entity flash = spawn();
     setmodel(flash, "models/uziflash.md3");
