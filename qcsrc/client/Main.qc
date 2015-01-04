@@ -1956,10 +1956,6 @@ void Net_ReadSpecInfo()
 		fovlock = ReadByte();
 		speczoom_speed  = ReadByte() * 0.1;
 		speczoom_factor = ReadByte() * 0.1;
-
-        // workaround: set spectatee_status to some garbage value
-        // to prevent the locks from being discarded immediately
-        spectatee_status = -2;
 	}
 	
 	num_spectators = ReadByte();
