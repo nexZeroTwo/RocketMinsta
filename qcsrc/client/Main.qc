@@ -1957,7 +1957,7 @@ void Net_ReadSpecInfo()
 		speczoom_speed  = ReadByte() * 0.1;
 		speczoom_factor = ReadByte() * 0.1;
 
-        // workaround: spectatee_status to some garbage value
+        // workaround: set spectatee_status to some garbage value
         // to prevent the locks from being discarded immediately
         spectatee_status = -2;
 	}
