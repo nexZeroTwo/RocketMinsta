@@ -2135,8 +2135,8 @@ void HG_ResetState(entity p) {
     p.hg_bonustype = HG_NORMAL;
     p.hg_clearammo = 0;
     p.hg_shield = 0;
-    HG_SetRegenTime(p, HG_RegenTime(p));
     HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    HG_SetRegenTime(p, HG_RegenTime(p));
 }
 
 void HG_PlayerSpawn()
