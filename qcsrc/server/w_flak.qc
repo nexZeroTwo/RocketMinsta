@@ -73,7 +73,7 @@ void W_Flak_Projectile_Think(void) {
     self.nextthink = time;
 }
 
-void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upspd, float deathtype) {
+void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upspd, float bnc, float deathtype) {
     entity e = spawn();
     e.owner = e.realowner = self;
     e.classname = "flak_proj";
@@ -83,6 +83,7 @@ void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upsp
     PROJECTILE_MAKETRIGGER(e);
     e.projectiledeathtype = deathtype;
     e.gravity = grav;
+    e.bouncefactor = bnc;
     setorigin(e, w_shotorg);
     setsize(e, '0 0 -3', '0 0 -3');
     PROJECTILE_FIX(e)
@@ -120,6 +121,7 @@ void W_Flak_Attack1(void) {
                           cvar("g_balance_flak_primary_lifetime"),
                           cvar("g_balance_flak_primary_speed"),
                           cvar("g_balance_flak_primary_speed_up"),
+                          cvar("g_balance_flak_primary_bouncefactor"),
                           WEP_FLAK);
     }
 
@@ -151,6 +153,7 @@ void W_Flak_Attack2(void) {
                           cvar("g_balance_flak_secondary_lifetime"),
                           cvar("g_balance_flak_secondary_speed"),
                           cvar("g_balance_flak_secondary_speed_up"),
+                          cvar("g_balance_flak_secondary_bouncefactor"),
                           WEP_FLAK | HITTYPE_SECONDARY);
     }
 
