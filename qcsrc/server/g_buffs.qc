@@ -174,14 +174,17 @@ void Buffs_Init_Delayed(void) {
     entity blist, b, o;
     float idx, teams_found, teams_total, bcnt = g_buffs_count, j;
     
-	if(g_buffs_random_spawns) {
+	if(g_buffs_random_spawns)
+    if((g_buffs_random_spawns == 2 && !bcnt) || g_buffs_random_spawns < 2 || g_buffs_random_spawns > 2) {
         float mi = cvar("g_buffs_random_spawns_min");
         float ma = cvar("g_buffs_random_spawns_max");
         float bcount = rint(random() * (ma - mi) + mi);
 
 		for(j = 0; j < bcount; ++j)
 			Buffs_Random_Spawn();
-	} else if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
+	} 
+
+    if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
         o = self;
         for(b = findchain(classname, "buff_placeholder"); b; b = b.chain) {
             if(bcnt) {
@@ -1003,7 +1006,7 @@ void Buffs_BuffPickup_Setup(void) {
         return;
     }
     
-    if(g_buffs_random_spawns && self.classname != "item_buff_randomspawn") {
+    if(g_buffs_random_spawns == 1 && self.classname != "item_buff_randomspawn") {
         remove(self);
         return;
     }
@@ -1057,7 +1060,7 @@ void Buffs_BuffPickup_Remove(void) {
 }
 
 void Buffs_BuffPickup_Placeholder(void) {
-    if(!g_buffs || !g_buffs_spawn_on_powerups)
+    if(!g_buffs || !g_buffs_spawn_on_powerups || g_buffs_team_only)
         return;
     
     entity e = spawn();
