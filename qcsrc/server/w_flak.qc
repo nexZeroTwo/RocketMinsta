@@ -3,15 +3,17 @@ void W_Flak_Projectile_Touch(void) {
     PROJECTILE_TOUCH;
 
     if(other.takedamage) {
-        float damage, frc;
+        float damage, bnc, frc;
 
         if(other != self.enemy && (other != self.realowner || self.projectiledeathtype & HITTYPE_BOUNCE)) {
             if(self.projectiledeathtype & HITTYPE_SECONDARY) {
-                damage = cvar("g_balance_flak_secondary_damage") * pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
-                frc = cvar("g_balance_flak_secondary_force");
+                bnc = pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
+                damage = cvar("g_balance_flak_secondary_damage") * bnc;
+                frc = cvar("g_balance_flak_secondary_force") * bnc;
             } else {
-                damage = cvar("g_balance_flak_primary_damage") * pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
-                frc = cvar("g_balance_flak_primary_force");
+                bnc = pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
+                damage = cvar("g_balance_flak_primary_damage") * bnc;
+                frc = cvar("g_balance_flak_primary_force") * bnc;
             }
 
             vector force = normalize(NearestPointOnBox(other, self.origin) - self.origin + self.velocity) * frc;
