@@ -8,7 +8,6 @@ float tdeath_hit;
 float tdeath_deathtype;
 void tdeath(entity player, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
 {
-	
 	entity head;
 	vector deathmin;
 	vector deathmax;

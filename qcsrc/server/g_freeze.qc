@@ -369,7 +369,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         
         float heal = Freeze_CVar("revive_heal");
         if(heal)
-            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
+            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;

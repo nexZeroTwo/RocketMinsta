@@ -112,7 +112,6 @@ void VisualDamage_Draw(void) {
     vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
     
     smod2 = 1;
-    
     if(self.vd_type & VDMG_TYPE_CRIT)
         smod = 2;
     else if(self.vd_type & VDMG_TYPE_TOSELF && self.vd_type & VDMG_TYPE_HIT)

@@ -146,7 +146,7 @@ void ShowNames_Draw(entity plr) {
                 }
 
                 drawfont = sbar_font;
-            }            
+            }
             
             if(nade) {
                 drawpic(namepos - '0.5 0 0' * textsz_x - '2 0 0', HG_TypeToIcon(nade, FALSE, FALSE), textsz, HG_TypeToColor(nade), a * 0.7, DRAWFLAG_NORMAL);
