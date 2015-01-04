@@ -7,10 +7,10 @@ void W_Flak_Projectile_Touch(void) {
 
         if(self.projectiledeathtype & HITTYPE_SECONDARY) {
             damage = cvar("g_balance_flak_secondary_damage") * pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
-            frc = cvar("g_balanace_flag_secondary_force");
+            frc = cvar("g_balance_flak_secondary_force");
         } else {
             damage = cvar("g_balance_flak_primary_damage") * pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
-            frc = cvar("g_balanace_flag_primary_force");
+            frc = cvar("g_balance_flak_primary_force");
         }
 
         vector center = other.origin + (other.mins + other.maxs) * 0.5;
