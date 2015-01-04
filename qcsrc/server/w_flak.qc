@@ -51,7 +51,7 @@ void W_Flak_Projectile_Touch(void) {
             self.enemy = other;
     } else if(other.solid == SOLID_BSP) {   
         spamsound(self, CHAN_PROJECTILE, strcat("weapons/casings", ftos(floor(random() * 3) + 1), ".wav"), VOL_BASE * 0.7, ATTN_NORM);
-        pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
+        //pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
         self.owner = world;
         self.projectiledeathtype |= HITTYPE_BOUNCE;
         self.cnt += 1;

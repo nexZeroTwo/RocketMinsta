@@ -301,6 +301,10 @@ void Ent_RemoveProjectile()
 	}
 }
 
+void Flak_Touch(void) {
+    pointparticles(particleeffectnum("hagar_bounce"), self.move_origin, self.move_velocity, 1);
+}
+
 void Ent_Projectile()
 {
 	float f;
@@ -453,6 +457,11 @@ void Ent_Projectile()
 				self.maxs = '0 0 -3';
 				break;
             case PROJECTILE_FLAK:
+                self.mins = '0 0 -3';
+                self.maxs = '0 0 -3';
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = Flak_Touch;
+                break;
 			case PROJECTILE_GRENADE_BOUNCING:
                 self.mins = '0 0 -3';
                 self.maxs = '0 0 -3';
