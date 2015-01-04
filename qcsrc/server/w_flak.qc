@@ -5,26 +5,48 @@ void W_Flak_Projectile_Touch(void) {
     if(other.takedamage) {
         float damage, frc;
 
-        if(self.projectiledeathtype & HITTYPE_SECONDARY) {
-            damage = cvar("g_balance_flak_secondary_damage") * pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
-            frc = cvar("g_balance_flak_secondary_force");
-        } else {
-            damage = cvar("g_balance_flak_primary_damage") * pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
-            frc = cvar("g_balance_flak_primary_force");
+        if(other != self.enemy && (other != self.realowner || self.projectiledeathtype & HITTYPE_BOUNCE)) {
+            if(self.projectiledeathtype & HITTYPE_SECONDARY) {
+                damage = cvar("g_balance_flak_secondary_damage") * pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
+                frc = cvar("g_balance_flak_secondary_force");
+            } else {
+                damage = cvar("g_balance_flak_primary_damage") * pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
+                frc = cvar("g_balance_flak_primary_force");
+            }
+
+            vector force = normalize(NearestPointOnBox(other, self.origin) - self.origin + self.velocity) * frc;
+
+            self.owner = self.realowner;
+            Damage(other, self, self.realowner, damage, self.projectiledeathtype, self.origin, force);
+
+            if(W_Accuracy_IsGoodHit(self.realowner, other))
+                W_Accuracy_RegisterActualDamage(self.realowner, WEP_FLAK, damage);
         }
 
-        vector center = other.origin + (other.mins + other.maxs) * 0.5;
-        if(other.classname == "player")
-            center = other.origin + other.view_ofs;
-        vector force = normalize(center - self.origin) * frc;
+        pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
 
-        Damage(other, self, self.realowner, damage, self.projectiledeathtype, self.origin, force);
+        float passThrough;
+        if(self.projectiledeathtype & HITTYPE_SECONDARY)
+            passThrough = cvar("g_balance_flak_secondary_passthrough");
+        else
+            passThrough = cvar("g_balance_flak_primary_passthrough");
 
-        if(W_Accuracy_IsGoodHit(self.realowner, other))
-            W_Accuracy_RegisterActualDamage(self.realowner, WEP_FLAK, damage);
+        if(passThrough <= 0) {
+            remove(self);
+            return;
+        }
 
-        remove(self);
-        return;
+        // semi-fix for "melee" hits
+        if(other == self.realowner && !(self.projectiledeathtype & HITTYPE_BOUNCE))
+            self.velocity = self.velocity * -1;
+
+        // pass through - we don't want to bounce here, overwrite velocity later
+        self.oldvelocity = self.velocity * passThrough;
+
+        // we don't want to hit the same entity again right away
+        self.owner = other;
+        if(other.iscreature)
+            self.enemy = other;
     } else if(other.solid == SOLID_BSP) {   
         spamsound(self, CHAN_PROJECTILE, strcat("weapons/casings", ftos(floor(random() * 3) + 1), ".wav"), VOL_BASE * 0.7, ATTN_NORM);
         pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
@@ -32,6 +54,21 @@ void W_Flak_Projectile_Touch(void) {
         self.projectiledeathtype |= HITTYPE_BOUNCE;
         self.cnt += 1;
     }
+}
+
+void W_Flak_Projectile_Think(void) {
+    if(time > self.spawnshieldtime) {
+        remove(self);
+        return;
+    }
+
+    if(self.oldvelocity) {
+        self.velocity = self.oldvelocity;
+        self.oldvelocity = '0 0 0';
+        UpdateCSQCProjectile(self);
+    }
+
+    self.nextthink = time;
 }
 
 void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upspd, float deathtype) {
@@ -48,8 +85,9 @@ void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upsp
     setsize(e, '0 0 -3', '0 0 -3');
     PROJECTILE_FIX(e)
 
-    e.nextthink = time + lt;
-    e.think = SUB_Remove;
+    e.spawnshieldtime = time + lt;
+    e.nextthink = time;
+    e.think = W_Flak_Projectile_Think;
     e.touch = W_Flak_Projectile_Touch;
     e.velocity = v_forward * spd + v_up * upspd;
     W_SetupProjectileVelocity(e);
