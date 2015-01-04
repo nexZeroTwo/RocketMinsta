@@ -6,7 +6,9 @@
 float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, float shotspeed, float shotspeedupward, float maxtime, float shotdelay, entity ignore)
 {
 	local float c, savesolid, shottime;
-	local vector dir, end, v;
+	//local vector dir, end, v;
+	local vector dir, end, v, o;
+	
 	if (shotspeed < 1)
 		return FALSE; // could cause division by zero if calculated
 	if (targ.solid < SOLID_BBOX) // SOLID_NOT and SOLID_TRIGGER
@@ -17,9 +19,14 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	setsize(tracetossent, m1, m2);
 	savesolid = targ.solid;
 	targ.solid = SOLID_NOT;
-	shottime = ((vlen(targ.origin - org) / shotspeed) + shotdelay);
-	v = targ.velocity * shottime + targ.origin;
-	tracebox(targ.origin, targ.mins, targ.maxs, v, FALSE, targ);
+	//shottime = ((vlen(targ.origin - org) / shotspeed) + shotdelay);
+	//v = targ.velocity * shottime + targ.origin;
+	//tracebox(targ.origin, targ.mins, targ.maxs, v, FALSE, targ);
+	o = (targ.absmin + targ.absmax) * 0.5;
+	shottime = ((vlen(o - org) / shotspeed) + shotdelay);
+	v = targ.velocity * shottime + o;
+	tracebox(o, targ.mins, targ.maxs, v, FALSE, targ);
+	
 	v = trace_endpos;
 	end = v + (targ.mins + targ.maxs) * 0.5;
 	if ((vlen(end - org) / shotspeed + 0.2) > maxtime)
@@ -40,6 +47,12 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	setorigin(tracetossfaketarget, v);
 
 	c = 0;
+	//headshot option
+	if(self.weapon == WEP_CAMPINGRIFLE)
+	if(!self.enemy.crouch)
+	if(random() < 0.7)
+		end_z = end_z + 10;
+	//
 	dir = normalize(end - org);
 	while (c < 10) // 10 traces
 	{
@@ -60,7 +73,15 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 
 			return TRUE;
 		}
-		dir_z = dir_z + 0.1; // aim up a little more
+		if(self.weapon == WEP_CAMPINGRIFLE)
+		if(!self.enemy.crouch)
+		{
+			dir_z = dir_z;
+		}
+		else
+		{
+			dir_z = dir_z + 0.1; // aim up a little more
+		}
 		c = c + 1;
 	}
 	targ.solid = savesolid;
@@ -113,6 +134,14 @@ float bot_shouldattack(entity e)
 			return FALSE;
 	}
 
+	if (g_freeze)
+		if (e.frozen)
+			return FALSE;
+	
+	//this part will work only with RM
+	if ((e.hg_shield) && (random() < 0.2)) // 0.7 replaced to 0.2
+		return FALSE;
+	
 	if(teams_matter)
 	{
 		if(e.team==0)
@@ -126,9 +155,8 @@ float bot_shouldattack(entity e)
 		return FALSE;
 	if (e.deadflag)
 		return FALSE;
-	if (e.BUTTON_CHAT)
-		if(!g_prec || e.prec_rune.classname == "prec_rune")
-			return FALSE;
+	if ((e.BUTTON_CHAT) && (random() < 0.4)) //lets kill chatters who trying to avoid bots
+		return FALSE;
 	if(g_minstagib)
 	if(e.items & IT_STRENGTH)
 		return FALSE;
