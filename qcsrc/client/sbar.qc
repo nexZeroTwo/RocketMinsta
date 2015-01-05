@@ -2887,21 +2887,23 @@ void Sbar_ShowLowammo(){
 	float currammo;
 	float currammotype;
 	float ammocode;
-	float magazineratio = cvar("cl_lowammowarnings_magazineratio") ? cvar("cl_lowammowarnings_magazineratio") : 0.25; //ratio of bullets left
+	float bulletthreshold = cvar("cl_lowammowarnings_campingrifle_bulletsremaining") ? cvar("cl_lowammowarnings_campingrifle_bulletsremaining") : 2;
 	float bulletwarn = cvar("cl_lowammowarnings_bullets") ? cvar("cl_lowammowarnings_bullets") : 20;
 	float cellwarn = cvar("cl_lowammowarnings_cells") ? cvar("cl_lowammowarnings_cells") : 15;
 	float rocketwarn = cvar("cl_lowammowarnings_rockets") ? cvar("cl_lowammowarnings_rockets") : 10;
 	float shellwarn = cvar("cl_lowammowarnings_shells") ? cvar("cl_lowammowarnings_shells") : 10;
-	pos_y = vid_conheight / 9;
-	scale_x = cvar("cl_lowammowarnings_scalex");
-	scale_y = cvar("cl_lowammowarnings_scaley");
+	pos_y = cvar("cl_lowammowarnings_height") ? cvar("cl_lowammowarnings_height") : vid_conheight / 9;
+	scale_x = cvar("cl_lowammowarnings_width") ? cvar("cl_lowammowarnings_width") : 20;
+	scale_y = cvar("cl_lowammowarnings_height") ? cvar("cl_lowammowarnings_height") : 20;
 	
 	//low ammo warning if either unlimited ammo and low on rifle clip size or limited ammo and low on ammo pool amount
 	if((currweapon == WEP_CAMPINGRIFLE) && (getstati(STAT_ITEMS) & IT_UNLIMITED_AMMO)){
-		float currratio = getstati(STAT_BULLETS_LOADED) / getstati(STAT_BULLETS_MAX);
-		magazineratio = bound(0, magazineratio, 1);
-		if(currratio <= magazineratio){
-			showwarning = 1;
+		float currbullets = getstati(STAT_BULLETS_LOADED);
+		if(cvar("cl_lowammowarnings_campingrifle_bulletsremaining") >= 0){ //allow disabling warnings for the rifle if the cvar is < 1 
+			bulletthreshold = bound(0, bulletthreshold, getstati(STAT_BULLETS_MAX));
+			if(currbullets <= bulletthreshold){
+				showwarning = 1;
+			}
 		}
 	}
 	else{
