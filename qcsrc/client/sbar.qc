@@ -2854,6 +2854,19 @@ float GetAmmoItemCode(float i)
 	}
 }
 
+float GetAmmoStatFromCode(float i)
+{
+	switch(i){
+		case IT_SHELLS: return STAT_SHELLS;
+		case IT_NAILS: return STAT_NAILS;
+		case IT_ROCKETS: return STAT_ROCKETS;
+		case IT_CELLS: return STAT_CELLS;
+		case IT_FUEL: return STAT_FUEL;
+		default: return -1;
+	
+	}
+}
+
 string GetAmmoPicture(float i)
 {
 	switch(i)
@@ -2864,6 +2877,63 @@ string GetAmmoPicture(float i)
 		case 3: return "gfx/hud/sb_cells";
 		case 4: return "gfx/hud/sb_fuel";
 		default: return "";
+	}
+}
+
+void Sbar_ShowLowammo(){
+	vector pos, scale;
+	float currweapon = getstati(STAT_SWITCHWEAPON);
+	float showwarning = 0;
+	float currammo;
+	float currammotype;
+	float ammocode;
+	float magazineratio = cvar("cl_lowammowarnings_magazineratio") ? cvar("cl_lowammowarnings_magazineratio") : 0.25; //ratio of bullets left
+	float bulletwarn = cvar("cl_lowammowarnings_bullets") ? cvar("cl_lowammowarnings_bullets") : 20;
+	float cellwarn = cvar("cl_lowammowarnings_cells") ? cvar("cl_lowammowarnings_cells") : 15;
+	float rocketwarn = cvar("cl_lowammowarnings_rockets") ? cvar("cl_lowammowarnings_rockets") : 10;
+	float shellwarn = cvar("cl_lowammowarnings_shells") ? cvar("cl_lowammowarnings_shells") : 10;
+	pos_y = vid_conheight / 9;
+	scale_x = cvar("cl_lowammowarnings_scalex");
+	scale_y = cvar("cl_lowammowarnings_scaley");
+	
+	//low ammo warning if either unlimited ammo and low on rifle clip size or limited ammo and low on ammo pool amount
+	if((currweapon == WEP_CAMPINGRIFLE) && (getstati(STAT_ITEMS) & IT_UNLIMITED_AMMO)){
+		float currratio = getstati(STAT_BULLETS_LOADED) / getstati(STAT_BULLETS_MAX);
+		magazineratio = bound(0, magazineratio, 1);
+		if(currratio <= magazineratio){
+			showwarning = 1;
+		}
+	}
+	else{
+		currammotype = get_weaponinfo(currweapon).items;
+		ammocode = GetAmmoStatFromCode(currammotype);
+		if(ammocode > 0) //prevent sending <0 to getstati
+			currammo = getstati(GetAmmoStatFromCode(currammotype));
+		
+		switch(currammotype){
+			case IT_SHELLS:
+			if(currammo <= shellwarn)
+				showwarning = 1;
+			break;
+			case IT_NAILS:
+			if(currammo <= bulletwarn)
+				showwarning = 1;
+			break;
+			case IT_ROCKETS:
+			if(currammo <= rocketwarn)
+				showwarning = 1;
+			break;
+			case IT_CELLS:
+			if(currammo <= cellwarn)
+				showwarning = 1;
+			break;
+			default:
+				showwarning = 0;
+			break;
+		}
+	}
+	if(showwarning){
+		drawstringcenter(pos, "Low ammo warning!", scale, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
 }
 

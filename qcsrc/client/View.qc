@@ -688,6 +688,8 @@ void CSQC_UpdateView(float w, float h)
 			Sbar_ShowSpeed();
 		if (cvar("cl_showacceleration"))
 			Sbar_ShowAcceleration();
+		if (cvar("cl_lowammowarnings"))
+			Sbar_ShowLowammo();
 		
  		Sbar_DrawCenterPrint(); // draw centerprint messages even if viewsize >= 120
 	}
