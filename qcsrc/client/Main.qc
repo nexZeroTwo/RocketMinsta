@@ -108,6 +108,9 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("rm_visualdamage_spreadout", "1", CVAR_SAVE);
+    registercvar("rm_visualdamage_nooverlap", "0", CVAR_SAVE);
+    registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
@@ -432,6 +435,19 @@ void FPSReporter_Init() {
 	e.nextthink = time + 1;
 }
 
+#define TARGET_RATE 40000
+
+void UpdateClRate(void) {
+    float oldrate = cvar("_cl_rate");
+
+    if(oldrate >= TARGET_RATE)
+        return;
+
+    // save it just in case we ever have to roll back
+    localcmd("seta _rm_cl_rate_saved ", ftos(oldrate), "\n");
+    localcmd("rate ", ftos(TARGET_RATE), "\n");
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -547,9 +563,11 @@ void PostInit(void)
             localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
         case 47:
             localcmd("seta rm_nododging 0; nododging 0\n");
+        case 48:
+            UpdateClRate();
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 48\n");
+		localcmd("seta rm_initialized 49\n");
 		RM_OUTDATED
 		break;
 	}
@@ -1956,10 +1974,6 @@ void Net_ReadSpecInfo()
 		fovlock = ReadByte();
 		speczoom_speed  = ReadByte() * 0.1;
 		speczoom_factor = ReadByte() * 0.1;
-
-        // workaround: set spectatee_status to some garbage value
-        // to prevent the locks from being discarded immediately
-        spectatee_status = -2;
 	}
 	
 	num_spectators = ReadByte();
