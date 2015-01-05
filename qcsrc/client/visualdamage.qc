@@ -15,11 +15,12 @@ entity vd_head;
 entity vd_tail;
 .entity  vd_next;
 float vd_cnt;
+float vd_dirswitch;
 
 float rm_visualdamage_fontsize;
 
 #define VDMG_FONTSIZE rm_visualdamage_fontsize
-#define VDMG_ALPHAOFFSET '0 -50 0'
+#define VDMG_ALPHAOFFSET 50
 #define VDMG_ALPHA 0.8
 
 void VisualDamage_FixPositions(void) {
@@ -102,14 +103,16 @@ void VisualDamage_PreDraw(void) {
             e.vd_projected = vdmg_dmgtakenorigin - '0 10 0';
     }
     
-    VisualDamage_FixPositions();
+    if(cvar("rm_visualdamage_nooverlap"))
+        VisualDamage_FixPositions();
+
     drawfont = sbar_font;
 }
 
 void VisualDamage_Draw(void) {
     float a = ipol_swingInOut(self.alpha), sw, sw2, smod, smod2, a2, s2;
     vector o, clr;
-    vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
+    vector offs = self.movedir * VDMG_ALPHAOFFSET * (1 - self.alpha);
     
     smod2 = 1;
     if(self.vd_type & VDMG_TYPE_CRIT)
@@ -204,6 +207,20 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     e.vd_flag = TRUE;
     setorigin(e, org);
     
+    if(!vd_dirswitch)
+        vd_dirswitch = 1;
+    else
+        vd_dirswitch *= -1;
+
+    if(cvar("rm_visualdamage_spreadout")) {
+        e.movedir_x = 5 * random() * vd_dirswitch;
+        e.movedir_y = -2;
+        e.movedir = normalize(e.movedir) * (1.1 - 0.3 * random());
+    } else
+        e.movedir = '0 -1 0';
+
+    e.movedir = e.movedir * cvar("rm_visualdamage_movespeed");
+
     e.vd_next = vd_head;
     vd_head = e;
     
@@ -223,6 +240,34 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
         remove(oldtail);
         --vd_cnt;
     }
+}
+
+float vd_test_next;
+
+void VisualDamage_Test_SpawnOne(void) {
+    float f = VDMG_TYPE_HIT | VDMG_TYPE_TOSELF;
+
+    if(random() < 0.4) {
+        f |= VDMG_TYPE_HEAL;
+        f &~= VDMG_TYPE_HIT;
+    }
+
+    if(random() < 0.3)
+        f |= VDMG_TYPE_CRIT;
+
+    VisualDamage_Spawn(150 * random(), 150 * random(), f, '0 0 0');
+}
+
+void VisualDamage_Test(void) {
+    if(time < vd_test_next)
+        return;
+
+    vd_test_next = time + 0.2 * random();
+
+    float i, l = ceil(10 * random());
+
+    for(i = 0; i < l; ++i)
+        VisualDamage_Test_SpawnOne();
 }
 
 void Net_VisualDamage(void) {
