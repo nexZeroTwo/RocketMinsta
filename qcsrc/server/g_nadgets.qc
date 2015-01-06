@@ -397,7 +397,7 @@ void HG_Plasma_Projectile() {
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
-	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_PLASMA_SHARD, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
 

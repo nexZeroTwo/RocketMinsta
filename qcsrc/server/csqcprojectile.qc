@@ -34,7 +34,7 @@ float CSQCProjectile_SendEntity(entity to, float sf)
         WriteByte(MSG_ENTITY, bound(0, self.team, 255));
         
         if(self.csqcprojectile_type == PROJECTILE_HG_NAPALMSHARD        || // Burn radius
-           self.csqcprojectile_type == PROJECTILE_ELECTRO               || // Plasma group ID
+           self.csqcprojectile_type == PROJECTILE_HG_PLASMA_SHARD       || // Plasma group ID
            self.csqcprojectile_type == PROJECTILE_HEAL_PARTICLE_EMITTER)   // Healing radius
             WriteByte(MSG_ENTITY, min(255, self.csqcprojectile_extradata)); 
     }
