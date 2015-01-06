@@ -455,15 +455,18 @@ entity tracerail(vector start, vector end, float t, entity forent) {
     while(TRUE) {
         traceline(start, end, t, forent);
 
-        if(trace_ent == world || trace_fraction == 1) {
+        if(!trace_ent) {
+            if(trace_fraction == 1)
+                break;
+
             if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
                 break;
-            else {
-                if(++tries == 3)
-                    break;
-                start = trace_endpos;
-                continue;
-            }
+            
+            if(++tries == 3)
+                break;
+            
+            start = trace_endpos;
+            continue;
         }
 
         if(!first)

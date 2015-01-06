@@ -3939,7 +3939,7 @@ void Sbar_Draw(void)
 		localcmd("cl_cmd sbar_columns_set default\n");
 		minstasbar_fixed = TRUE;
 	}
-
+    
 	if(spectatee_status == -1 || !spectatee_status)
 	{
 		//release madoka and HUD locks. Perhaps should be done elsewhere?
@@ -4091,11 +4091,11 @@ void Sbar_Draw(void)
         float spn = cvar("rm_showplayername");
         if((spn > 1) || (spn && isdemo()))
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
-        
-        if(g_nadgets)
-            hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
     }
     
+    if(g_nadgets)
+        hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
+
 	if(warmup_stage && !intermission)
 	{
 		s = "^2Currently in ^1warmup^2 stage!";
@@ -6321,5 +6321,3 @@ void CSQC_vip_hud(vector hudpos)
 	pbfill_x *= healthpercent;
 	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 }
-
-

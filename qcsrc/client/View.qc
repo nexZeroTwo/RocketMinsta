@@ -422,6 +422,7 @@ void CSQC_UpdateView(float w, float h)
 	float f, i, j;
 	vector v;
     
+    // VisualDamage_Test();
     HG_NadeGainSound();
 
 	dprint_load();

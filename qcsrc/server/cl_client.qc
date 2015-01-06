@@ -3028,12 +3028,16 @@ float vercmp(string v1, string v2)
 	return vercmp_recursive(v1, v2);
 }
 
+void WriteSpectatorInfoDelayed(void) {
+    WriteSpectatorInfo(self.enemy);
+}
+
 void ObserverThink()
 {
     if(self.jb_specteam) {
         if(SpectateNext()) {
             self.classname = "spectator";
-            WriteSpectatorInfo(self.enemy);
+            defer(0, WriteSpectatorInfoDelayed);
         } else {
             self.flags &~= FL_SPAWNING;
             LeaveSpectatorMode();
@@ -3046,7 +3050,7 @@ void ObserverThink()
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
-				WriteSpectatorInfo(self.enemy);
+                defer(0, WriteSpectatorInfoDelayed);
 			}
 		}
 	} else {
