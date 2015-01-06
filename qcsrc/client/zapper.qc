@@ -5,7 +5,7 @@
 .vector zapper_offs;
 
 vector Zapper_BeamRGB(float t) {
-    switch(self.team) {
+    switch(t) {
         case COLOR_TEAM1:            return '5.0   1.0   0.5';
         case COLOR_TEAM2: default:   return '0.5   1.0   5.0';
         case COLOR_TEAM3:            return '4.0   2.5   0.5';
