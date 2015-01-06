@@ -2892,6 +2892,7 @@ void Sbar_ShowLowammo(){
 	float cellwarn = cvar("cl_lowammowarnings_cells") ? cvar("cl_lowammowarnings_cells") : 15;
 	float rocketwarn = cvar("cl_lowammowarnings_rockets") ? cvar("cl_lowammowarnings_rockets") : 10;
 	float shellwarn = cvar("cl_lowammowarnings_shells") ? cvar("cl_lowammowarnings_shells") : 10;
+	float heatwarn = cvar("cl_lowammowarnings_zapper_heat") ? cvar("cl_lowammowarnings_zapper_heat") : 25;
 	scale_x = cvar("cl_lowammowarnings_width") ? cvar("cl_lowammowarnings_width") : 20;
 	scale_y = cvar("cl_lowammowarnings_height") ? cvar("cl_lowammowarnings_height") : 20;
 	pos_y = cvar("cl_lowammowarnings_position") ? cvar("cl_lowammowarnings_position") : 20;
@@ -2902,6 +2903,15 @@ void Sbar_ShowLowammo(){
 		if(cvar("cl_lowammowarnings_campingrifle_bulletsremaining")){
 			bulletthreshold = bound(0, bulletthreshold, getstati(STAT_BULLETS_MAX));
 			if(currbullets <= bulletthreshold){
+				showwarning = 1;
+			}
+		}
+	}
+	else if((currweapon == WEP_ZAPPER) && (getstati(STAT_ITEMS) & IT_UNLIMITED_AMMO)){
+		float currheat = getstatf(STAT_ZAPPER_HEAT);
+		currheat = floor((1 - currheat) * 100);
+		if(cvar("cl_lowammowarnings_zapper_heat")){
+			if(currheat <= heatwarn){
 				showwarning = 1;
 			}
 		}
