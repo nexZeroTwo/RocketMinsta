@@ -379,6 +379,9 @@ void Ent_Projectile()
 	{
 		self.cnt = ReadByte();
         self.team = ReadByte() - 1;
+        
+        if(f & 32)
+            self.move_bounce_factor = ReadCoord();
 
         if(!rm_teamlasers)
             self.team = 0;
