@@ -529,7 +529,8 @@ float Item_GiveTo(entity item, entity player)
             }
             
             if(heal_h || heal_a)
-                Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM, (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0');
+                Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM,
+                    (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0', '0 0 0');
 		}
 	}
 

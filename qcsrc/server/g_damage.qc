@@ -1006,7 +1006,7 @@ void HealScore(entity targ, entity healer, float heal) {
     PlayerScore_Add(healer, SP_SCORE, heal * cvar(strcat("g_healing_score_", gametype_ID_to_Name(game))));
 }
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc) {
+float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
     if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
     else        hlimit = g_balance_health_limit;
     if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
@@ -1056,6 +1056,13 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
             if(heal)  sound(targ, CHAN_AUTO, "misc/mediumhealth.wav", VOL_BASE, ATTN_NORM);
             if(aheal) sound(targ, CHAN_AUTO, "misc/armor10.wav", VOL_BASE, ATTN_NORM);
         }
+    }
+   
+    // apply push
+    if(targ.damageforcescale)
+    if(vlen(force)) {
+        targ.velocity = targ.velocity + targ.damageforcescale * force;
+        targ.flags &~= FL_ONGROUND;
     }
     
     return heal + aheal;
@@ -1121,7 +1128,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     
                     if(attacker == targ)
                         heal *= CVAR(g_buffs_medic_selfhealfactor);
-					
+                    
                     W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
 
                     if(damage_headshotbonus)
@@ -1133,11 +1140,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     }
                 }
                 
+                if(attacker == targ)
+                    force = force * CVAR(g_buffs_medic_forcefactor_self);
+                else
+                    force = force * CVAR(g_buffs_medic_forcefactor_team);
+
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
-                heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc);
-                
-                if(heal)
-                    Damage_RecordDamage(attacker, deathtype, heal);
+                heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
                 
                 targ.hg_plasmalock = 0;
                 
@@ -1866,7 +1875,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 		print("RadiusDamage called recursively!\n");
 		print("Expect stuff to go HORRIBLY wrong.\n");
 		print("Causing a stack trace...\n");
-		save = ftos(CVAR(prvm_backtraceforwarnings));
+		save = CVAR_STR(prvm_backtraceforwarnings);
 		cvar_set("prvm_backtraceforwarnings", "1");
 		fclose(-1); // calls VM_Warning
 		cvar_set("prvm_backtraceforwarnings", save);
@@ -1995,7 +2004,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team)
+								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;

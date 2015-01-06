@@ -673,6 +673,8 @@ float forbidrestart;
 
 .float hidecountry;
 
+.float rm_nododging;
+
 // precious
 .string netname2; // 2nd person netname
 .string netname3; // 3rd person netname
@@ -764,7 +766,7 @@ float sv_scoreboard_heal_column;
 
 float hack_forcenextmap;
 
-float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc);
+float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force);
 float RadiusDamage(entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity);
 
 .void(void) teamswap;

@@ -47,7 +47,9 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_TRANSLOC:
 				return;
 			case PROJECTILE_ELECTRO:
-                //trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                break;
+            case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
             case PROJECTILE_HEAL_PARTICLE_EMITTER:
@@ -70,7 +72,10 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			//trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+            break;
+
+        case PROJECTILE_HG_PLASMA_SHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
 			break;
 			
@@ -370,8 +375,11 @@ void Ent_Projectile()
 		self.cnt = ReadByte();
         self.team = ReadByte() - 1;
 
+        if(!rm_teamlasers)
+            self.team = 0;
+
         if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
-           self.cnt == PROJECTILE_ELECTRO ||
+           self.cnt == PROJECTILE_HG_PLASMA_SHARD ||
            self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER)
             self.extradata = ReadByte();
 
@@ -410,6 +418,10 @@ void Ent_Projectile()
                 self.skin = TeamColorSkin(self.team);
                 self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
                 break;
+            case PROJECTILE_HG_PLASMA_SHARD:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -433,6 +445,7 @@ void Ent_Projectile()
         
 		switch(self.cnt)
 		{
+            case PROJECTILE_HG_PLASMA_SHARD:
 			case PROJECTILE_ELECTRO:
 				// only new engines support sound moving with object
 				loopsound(self, CHAN_PROJECTILE, "weapons/electro_fly.wav", VOL_BASE, ATTN_NORM);

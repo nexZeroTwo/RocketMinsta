@@ -42,6 +42,7 @@ void W_CampingRifle_Reload()
 	if(self.ammo_nails < min(CVAR(g_balance_campingrifle_primary_ammo), CVAR(g_balance_campingrifle_secondary_ammo)))
 	{
 		self.campingrifle_bulletcounter = -1; // reload later
+        W_SwitchWeapon_OutOfAmmo(self);
 		return;
 	}
 	

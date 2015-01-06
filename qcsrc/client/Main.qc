@@ -108,6 +108,9 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("rm_visualdamage_spreadout", "1", CVAR_SAVE);
+    registercvar("rm_visualdamage_nooverlap", "0", CVAR_SAVE);
+    registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
@@ -432,6 +435,19 @@ void FPSReporter_Init() {
 	e.nextthink = time + 1;
 }
 
+#define TARGET_RATE 40000
+
+void UpdateClRate(void) {
+    float oldrate = CVAR(_cl_rate);
+
+    if(oldrate >= TARGET_RATE)
+        return;
+
+    // save it just in case we ever have to roll back
+    localcmd("seta _rm_cl_rate_saved ", ftos(oldrate), "\n");
+    localcmd("rate ", ftos(TARGET_RATE), "\n");
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -545,9 +561,13 @@ void PostInit(void)
             localcmd("seta cl_effects_lightningarc_branchfactor_add 0\n");
             localcmd("seta cl_effects_lightningarc_branchfactor_start 0.05\n");
             localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
+        case 47:
+            localcmd("seta rm_nododging 0; nododging 0\n");
+        case 48:
+            UpdateClRate();
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 47\n");
+		localcmd("seta rm_initialized 49\n");
 		RM_OUTDATED
 		break;
 	}
@@ -576,7 +596,7 @@ void PostInit(void)
 	rm_oldbigfont = CVAR(rm_oldbigfont);
     rm_showtimer = CVAR(rm_showtimer);
     rm_shownadgetregen = CVAR(rm_shownadgetregen);
-	
+    
 	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
@@ -608,6 +628,7 @@ void PostInit(void)
     registercmd("showtimer");
     registercmd("shownadgetregen");
     registercmd("radio");
+    registercmd("nododging");
 	// -- //
 	registercmd("hudskin");
 	
@@ -632,6 +653,7 @@ void PostInit(void)
 	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 	localcmd("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
     localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
+    localcmd("cmd nododging ", CVAR_STR(rm_nododging), "\n");
 	
 	if(CVAR(_cl_afkstate))
 		localcmd("cmd afk\n");
@@ -739,6 +761,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2oldhud^7: If enabled, standard Nexuiz HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2nododging^7: If enabled, ingame dodging will be switched off (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
@@ -781,6 +804,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
+		strCmd == "nododging"		||
 		strCmd == "showrankings"		||
         strCmd == "showtimer"           ||
         strCmd == "shownadgetregen"     ||
@@ -810,6 +834,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_oldbigfont = CVAR(rm_oldbigfont);
         rm_showtimer = CVAR(rm_showtimer);
         rm_shownadgetregen = CVAR(rm_shownadgetregen);
+        //rm_nododging = stof(CVAR_STR(rm_nododging));
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -827,6 +852,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cl_cmd sbar_columns_set default\n");
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
+		else if(strCmd == "nododging")
+			localcmd("cmd nododging ", ftos(stof(CVAR_STR(rm_nododging))), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT

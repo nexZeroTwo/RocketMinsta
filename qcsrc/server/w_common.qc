@@ -208,7 +208,7 @@ void W_BallisticBullet_Hit (void)
 			}
 		}
 
-        W_Accuracy_RegisterHit(self.owner, other, self.weapon);
+        W_Accuracy_RegisterHit(self.owner, other, self.owner.weapon);
 	}
 
 	self.enemy = other; // don't hit the same player twice with the same bullet

@@ -86,7 +86,7 @@ float entcs_cull(entity what, entity forwhom) {
 }
 
 float entcs_customize(void) {
-    return !(self.(entcs_culled[num_for_edict(other)]));
+    return !(self.(entcs_culled[num_for_edict(other)-1]));
 }
 
 //
@@ -186,11 +186,11 @@ void entcs_think(void) {
         }
     }
 
-    float i; for(i = 0; i < maxclients; ++i) {
+    float i; for(i = 1; i <= maxclients; ++i) {
         entity c = edict_num(i);
 
         if(clienttype(c) == CLIENTTYPE_REAL)
-            self.(entcs_culled[i]) = entcs_cull(self, c);
+            self.(entcs_culled[i-1]) = entcs_cull(self, c);
     }
 }
 

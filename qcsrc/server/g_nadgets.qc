@@ -68,7 +68,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float all
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
     p.hg_bonus_next = 0;
-    
+
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
 	
@@ -242,7 +242,7 @@ void HG_Napalm()
     proj.hg_type = self.hg_type;
 	proj.classname = "hg_napalm";
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage");
+	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 300; //Havoc said set at least +60 to hit radius
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.projectiledeathtype = DEATH_HG_NAPALM;
 	proj.touch = HG_Napalm_Projectile_Touch;
@@ -359,9 +359,10 @@ void HG_Plasma_Projectile() {
 	proj.think = HG_Plasma_Projectile_Think;
     proj.nextthink = time;
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = CVAR(g_nadgets_plasma_projectile_damage);
+	proj.bot_dodgerating = CVAR(g_nadgets_plasma_projectile_damage) + 300; // just avoid plasma
     proj.hg_detonatetime = time + CVAR(g_nadgets_plasma_projectile_lifetime) + random() * CVAR(g_nadgets_plasma_projectile_lifetime_randomfactor);
-	PROJECTILE_MAKETRIGGER(proj);
+
+    PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = HG_PLASMA_SHARD;
 	setorigin(proj, self.origin);
     
@@ -396,7 +397,7 @@ void HG_Plasma_Projectile() {
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
-	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_PLASMA_SHARD, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
 
@@ -492,6 +493,8 @@ void HG_Grenade_RadiusDamage() {
             frcmod = frcmod * (1 + (GV("adept_forcemod")  - 1) * self.hg_adept);
         }
     }
+
+    dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
     
     dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
 
@@ -557,7 +560,9 @@ void HG_Grenade_Touch() {
     
     if(other.takedamage == DAMAGE_AIM) {
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
-            if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
+            float adeptRev = (Buffs_BuffPower(self.owner, BUFF_ADEPT) && CVAR(g_nadgets_transloc_adept_revive));
+
+            if(adeptRev || Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
@@ -567,8 +572,11 @@ void HG_Grenade_Touch() {
                     float h = other.health * m;
                     float a = other.armorvalue * m;
 
+                    if(adeptRev)
+                        m = max(1.0, m);
+
                     if(m > 1.0)
-                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin);
+                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin, '0 0 0');
                     else if(m < 1.0) {
                         other.health = h;
                         other.armorvalue = a;
@@ -1447,7 +1455,7 @@ void HG_Linker_Think() {
             ++denom;
             thealth += p.health;
             tarmor += p.armorvalue;
-                
+
             self.buffs |= p.buffs;
                 
             if(time > p.hg_linker_effecttime) {
@@ -1482,7 +1490,7 @@ void HG_Linker_Think() {
                 if(denom > 1) {
                     float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
                     float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
-                    
+
                     if(self.hg_linker_hps) {
                         float lim = g_balance_health_limit;
                         if(g_clanarena)
@@ -1492,13 +1500,13 @@ void HG_Linker_Think() {
 
                     Heal(p, self, self.owner,
                             max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, DEATH_LINKER_SHARE,
-                            HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
+                            HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
                     
                     p.health = newhealth;
                     p.armorvalue = newarmor;
                 } else {
                     Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER,
-                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
+                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
                 }
             }
         }
@@ -1644,7 +1652,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.owner = self;
     gren.classname = "hg_grenade";
     gren.bot_dodge = TRUE;
-    gren.bot_dodgerating = GV("damage");
+    gren.bot_dodgerating = GV("damage") + 300; //added +100 by Havocs words about at least +60 to radius;
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
@@ -1921,6 +1929,9 @@ void HG_Attack()
     } else {
         hgtype = self.hg_type;
     }
+
+    if(time < self.cdfield)
+        return;
     
     if(time < self.cdfield)
         return;
@@ -2135,8 +2146,8 @@ void HG_ResetState(entity p) {
     p.hg_bonustype = HG_NORMAL;
     p.hg_clearammo = 0;
     p.hg_shield = 0;
-    HG_SetRegenTime(p, HG_RegenTime(p));
     HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    HG_SetRegenTime(p, HG_RegenTime(p));
 }
 
 void HG_PlayerSpawn()

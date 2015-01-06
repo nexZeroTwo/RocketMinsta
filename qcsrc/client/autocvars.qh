@@ -5,6 +5,7 @@
 #define CVAR_OR(c,d) autocvar_##c
 
 float autocvar__cl_afkstate;
+float autocvar__cl_rate;
 float autocvar__g_nadgets_select_available;
 float autocvar__g_rocketminsta;
 float autocvar__menu_alpha;
@@ -134,6 +135,7 @@ float autocvar_rm_legacyvote;
 string autocvar_rm_loadedmenu;
 float autocvar_rm_madoka;
 float autocvar_rm_nobigtext;
+string autocvar_rm_nododging;
 float autocvar_rm_noflags;
 float autocvar_rm_nokillsound;
 float autocvar_rm_notimer;
@@ -153,6 +155,9 @@ float autocvar_rm_specmadoka;
 float autocvar_rm_teamlasers;
 float autocvar_rm_visualdamage_fontsize;
 float autocvar_rm_visualdamage_limit;
+float autocvar_rm_visualdamage_movespeed;
+float autocvar_rm_visualdamage_nooverlap;
+float autocvar_rm_visualdamage_spreadout;
 float autocvar_rm_visualscore;
 float autocvar_sbar_alpha_bg;
 float autocvar_sbar_alpha_fg;
