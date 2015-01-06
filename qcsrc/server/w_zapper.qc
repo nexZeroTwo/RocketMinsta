@@ -24,7 +24,7 @@ float W_Zapper_Attack2_CheckAmmo(entity p) {
 vector W_Zapper_LocalShotOrg(entity p) {
     entity o = self.owner;
     self.owner = p;
-    vector v = shotorg_adjust('26.2148 9.2059 -15.9772', TRUE, TRUE);
+    vector v = shotorg_adjust('30 10 -18', TRUE, TRUE);
     self.owner = o;
     return v;
 }
