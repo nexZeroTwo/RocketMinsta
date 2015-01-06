@@ -83,8 +83,6 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	float value, idx, imp, sp, weapon_hit, weapon_damage, weapon_stats;
 
     float iconidx = nr;
-    if(iconidx == WEP_ZAPPER-1)
-        iconidx = WEP_HOOK-1;
 
 	imp = weaponimpulse[nr];
 	weapon_hit = weapon_hits[wc];
@@ -2675,9 +2673,6 @@ void Sbar_DrawAccuracyStats()
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
 	{
         float iconidx = i;
-        if(iconidx == WEP_ZAPPER)
-            iconidx = WEP_HOOK;
-
 
 		weapon_hit = weapon_hits[i];
 		weapon_damage = weapon_fired[i];
