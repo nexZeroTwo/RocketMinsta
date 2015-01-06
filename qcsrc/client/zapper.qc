@@ -95,6 +95,9 @@ void Zapper_Read(void) {
         self.team = GetPlayerColor(self.sv_entnum - 1);
         self.alpha = 1;
 
+        if(!rm_teamlasers)
+            self.team = COLOR_TEAM2;
+
         sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
     }
 
@@ -124,6 +127,9 @@ void Zapper_ReadLightning(void) {
     ateam  = ReadByte();
     from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
     to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
+
+    if(!rm_teamlasers)
+        ateam = COLOR_TEAM2;
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
 
