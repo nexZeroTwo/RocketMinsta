@@ -73,9 +73,9 @@ void W_Flak_Projectile_Think(void) {
     self.nextthink = time;
 }
 
-void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upspd, float bnc, float deathtype) {
+entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd, float upspd, float bnc, float deathtype) {
     entity e = spawn();
-    e.owner = e.realowner = self;
+    e.owner = e.realowner = o;
     e.classname = "flak_proj";
     e.bot_dodge = TRUE;
     e.bot_dodgerating = damage;
@@ -99,6 +99,7 @@ void W_Flak_Projectile(float damage, float grav, float lt, float spd, float upsp
     e.flags = FL_PROJECTILE;
 
     CSQCProjectile(e, TRUE, PROJECTILE_FLAK, TRUE);   
+    return e;
 }
 
 void W_Flak_Attack1(void) {
@@ -116,7 +117,8 @@ void W_Flak_Attack1(void) {
         fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_primary_spread_up")
                            + '0 1 0' * crandom() * cvar("g_balance_flak_primary_spread_side"));
 
-        W_Flak_Projectile(cvar("g_balance_flak_primary_damage"),
+        W_Flak_Projectile(self,
+                          cvar("g_balance_flak_primary_damage"),
                           cvar("g_balance_flak_primary_gravity"),
                           cvar("g_balance_flak_primary_lifetime"),
                           cvar("g_balance_flak_primary_speed"),
@@ -148,13 +150,14 @@ void W_Flak_Attack2(void) {
         fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_secondary_spread_up")
                            + '0 1 0' * crandom() * cvar("g_balance_flak_secondary_spread_side"));
 
-        W_Flak_Projectile(cvar("g_balance_flak_secondary_damage"),
+        W_Flak_Projectile(self,
+                          cvar("g_balance_flak_secondary_damage"),
                           cvar("g_balance_flak_secondary_gravity"),
                           cvar("g_balance_flak_secondary_lifetime"),
                           cvar("g_balance_flak_secondary_speed"),
                           cvar("g_balance_flak_secondary_speed_up"),
                           cvar("g_balance_flak_secondary_bouncefactor"),
-                          WEP_FLAK | HITTYPE_SECONDARY);
+                          WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
     }
 
     entity flash = spawn();
@@ -163,6 +166,88 @@ void W_Flak_Attack2(void) {
     flash.nextthink = time + 0.06;
     flash.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
     W_AttachToShotorg(flash, '5 0 0');
+}
+
+void W_Flak_Bomb_Explode(void) {
+    vector dir = normalize(self.velocity);
+    dir = dir - 2 * (dir * trace_plane_normal) * trace_plane_normal; 
+
+    if(other.takedamage == DAMAGE_AIM)
+        if(other.classname == "player")
+            if(IsDifferentTeam(self.owner, other))
+                if(IsFlying(other))
+                    announce(self.owner, "announcer/male/airshot.wav");
+
+    self.event_damage = SUB_Null;
+    self.takedamage = DAMAGE_NO;
+    RadiusDamage(self, self.owner, cvar("g_balance_flak_secondary_bomb_damage"), cvar("g_balance_flak_secondary_bomb_edgedamage"), cvar("g_balance_flak_secondary_bomb_radius"), world, cvar("g_balance_flak_secondary_bomb_force"), self.projectiledeathtype, other);
+
+    float i, c = cvar("g_balance_flak_secondary_projectiles");
+    w_shotorg = self.origin;
+
+    for(i = 0; i < c; ++i) {
+        vector a = vectoangles(dir);
+
+        fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_secondary_spread_up")
+                           + '0 1 0' * crandom() * cvar("g_balance_flak_secondary_spread_side"));
+
+        W_Flak_Projectile(self.owner,
+                          cvar("g_balance_flak_secondary_damage"),
+                          cvar("g_balance_flak_secondary_gravity"),
+                          cvar("g_balance_flak_secondary_lifetime"),
+                          cvar("g_balance_flak_secondary_speed"),
+                          cvar("g_balance_flak_secondary_speed_up"),
+                          cvar("g_balance_flak_secondary_bouncefactor"),
+                          WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE).owner = world;
+    }
+
+    remove (self);
+}
+
+void W_Flak_Bomb_Touch(void) {
+    //W_Grenade_Touch2();
+    PROJECTILE_TOUCH;
+    self.use();
+}
+
+void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+    W_Grenade_Damage(inflictor, attacker, damage, deathtype, hitloc, force);
+}
+
+void W_Flak_Attack3(void) {
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+        self.ammo_cells = self.ammo_cells - cvar("g_balance_flak_secondary_ammo");
+
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", cvar("g_balance_flak_secondary_bomb_damage"));
+    w_shotdir = v_forward;
+
+    entity e = spawn();
+    e.owner = self;
+    e.classname = "flak_bomb";
+    e.bot_dodge = TRUE;
+    e.bot_dodgerating = cvar("g_balance_flak_secondary_bomb_damage");
+    e.movetype = MOVETYPE_BOUNCE;
+    PROJECTILE_MAKETRIGGER(e);
+    e.projectiledeathtype = WEP_FLAK | HITTYPE_SECONDARY;
+    setsize(e, '0 0 -3', '0 0 -3');
+    setorigin(e, w_shotorg);
+    PROJECTILE_FIX(e)
+
+    e.nextthink = time + cvar("g_balance_flak_secondary_bomb_lifetime");
+    e.think = adaptor_think2use;
+    e.use = W_Flak_Bomb_Explode;
+    e.touch = W_Flak_Bomb_Touch;
+    e.takedamage = DAMAGE_YES;
+    e.health = cvar("g_balance_flak_secondary_bomb_health");
+    e.damageforcescale = cvar("g_balance_flak_secondary_bomb_damageforcescale");
+    e.event_damage = W_Flak_Bomb_Damage;
+    e.velocity = w_shotdir * cvar("g_balance_flak_secondary_bomb_speed") + v_up * cvar("g_balance_flak_secondary_bomb_speed_up");
+    W_SetupProjectileVelocity(e);
+
+    e.angles = vectoangles(e.velocity);
+    e.flags = FL_PROJECTILE;
+
+    CSQCProjectile(e, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
 }
 
 void spawnfunc_weapon_flak(void) {
@@ -181,7 +266,10 @@ float w_flak(float req) {
 
         if(self.BUTTON_ATCK2)
         if(weapon_prepareattack(1, cvar("g_balance_flak_secondary_refire"))) {
-            W_Flak_Attack2();
+            if(cvar("g_balance_flak_secondary_bomb"))
+                W_Flak_Attack3();
+            else
+                W_Flak_Attack2();
             weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_flak_secondary_animtime"), w_ready);
         }
     } else if(req == WR_PRECACHE) {
