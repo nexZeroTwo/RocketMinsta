@@ -142,22 +142,13 @@ void W_Zapper_Beam_Think(void) {
         adjustDamage = FALSE;
     }
     
-    if(dt >= wantedTicrate) {
+    for ( ;dt >= wantedTicrate; dt -= wantedTicrate) {
         float damage = cvar("g_balance_zapper_primary_damage");
         float force  = cvar("g_balance_zapper_primary_force");
         
         if(damageIsDps) {
             damage = damage * wantedTicrate;
             force = force * wantedTicrate;
-        } else if(adjustDamage) {
-            // In case we can't run at the wanted ticrate,
-            // adjust damage and force to preserve the intended DPS
-        
-            float targetDps = damage / wantedTicrate;
-            float targetFps = force  / wantedTicrate;
-            
-            damage = targetDps * dt;
-            force  = targetFps * dt;
         }
         
         W_Accuracy_RegisterShot(o, o.weapon);
@@ -184,7 +175,7 @@ void W_Zapper_Beam_Think(void) {
         if(!(o.items & IT_UNLIMITED_AMMO))
             o.ammo_cells -= cvar("g_balance_zapper_primary_ammo");
 
-        self.zapper_lastdmg = time;
+        self.zapper_lastdmg += wantedTicrate;
     }
 
     vector org = gettaginfo(self.owner.exteriorweaponentity, gettagindex(self.owner.exteriorweaponentity, "_"));
