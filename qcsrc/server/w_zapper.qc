@@ -126,7 +126,6 @@ void W_Zapper_Beam_Think(void) {
     float dt = time - self.zapper_lastdmg;
     float rate = W_WeaponRateFactorFor(self.owner);
     float damageIsDps = FALSE;
-    float adjustDamage = TRUE;
     
     if(dt < frametime)
     if(almost_equals(dt, frametime))
@@ -139,7 +138,6 @@ void W_Zapper_Beam_Think(void) {
         damageIsDps = TRUE;
     } else if(almost_equals(dt, wantedTicrate)) {
         dt = wantedTicrate;
-        adjustDamage = FALSE;
     }
     
     for ( ;dt >= wantedTicrate; dt -= wantedTicrate) {
