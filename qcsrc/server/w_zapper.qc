@@ -216,7 +216,7 @@ void W_Zapper_Attack1(void) {
     e.zapper_range = cvar("g_balance_zapper_primary_range");
     e.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
     e.zapper_dmgdelay = cvar("g_balance_zapper_primary_ticrate");
-    e.zapper_lastdmg = time - e.zapper_dmgdelay;
+    e.zapper_lastdmg = time - e.zapper_dmgdelay * W_WeaponRateFactorFor(self);
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
 
