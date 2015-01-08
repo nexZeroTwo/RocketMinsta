@@ -214,3 +214,11 @@ string FlagIcon(string cn);
 #endif
 
 float fexists(string f);
+
+#ifndef MENUQC
+string Team_ColorCode(float t);
+string Team_ColorName(float t);
+string Team_ColorNameLowerCase(float t);
+string TeamName(float t);
+string ColoredTeamName(float t);
+#endif

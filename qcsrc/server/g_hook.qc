@@ -274,7 +274,7 @@ void GrapplingHookThink()
 	{
 		self.last_dmg = time + 0.1;
 		self.owner.hitsound += 1;
-		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_HOOKFRAG, self.origin, '0 0 0');
 		self.owner.health += 1;
 	}
 	
@@ -402,14 +402,10 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 		
 		if (self.health <= 0)
 		{
-			if(attacker != self.owner)
+			//if(attacker != self.owner)
 			{
 				self.owner.pusher = attacker;
-				
-				//<akari>
-				//Please fucking shoot me. I use this number to identify a hookfrag in g_damage.qc.
-				self.owner.pushltime = 1337; //time + cvar("g_maxpushtime");
-				//</akari>
+				self.owner.pushltime = PUSHLTIME_HOOKFRAG;
 			}
 			RemoveGrapplingHook(self.owner);
 		}

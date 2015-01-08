@@ -1,0 +1,5 @@
+
+#define CSQCMESSAGE_SPECTATABLE(o,e,s) msg_entity = o; e = msg_entity; FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == e || (msg_entity.classname == STR_SPECTATOR && msg_entity.enemy == e)) statement msg_entity = e
+
+void CSQCMessage_Obituary(entity targ, entity attacker, float deathtype);
+

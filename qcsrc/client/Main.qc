@@ -2261,6 +2261,9 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_UPDATESELECTEDPLAYER:
             Net_ReadUpdateSelectedPlayer();
             return TRUE;
+        case TE_CSQC_MESSAGE:
+            Message_Read();
+            return TRUE;
     }
 
 	// pass to the engine

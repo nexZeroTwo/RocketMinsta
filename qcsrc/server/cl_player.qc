@@ -889,6 +889,18 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         
         if(removenadgets > 1)
             HG_RemoveAll(self);
+
+        if(self.hg_power > 0) {
+            self.hg_power = 0;
+            HG_Attack();
+        }
+        
+        HG_DetonateAll(self);
+        
+        if(!g_freezetag && !g_jailbreak) {
+            if(cvar("g_nadgets_resetonrespawn"))
+                self.hg_ammo = 0;
+        }
         
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);

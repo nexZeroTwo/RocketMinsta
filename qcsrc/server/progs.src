@@ -31,6 +31,7 @@ campaign.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
+csqcmessage.qh
 
 teamcount.qh
 portals.qh
@@ -205,5 +206,6 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+csqcmessage.qc
 radio.qc
 
