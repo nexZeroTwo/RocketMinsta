@@ -565,4 +565,5 @@ void Projectile_Precache()
 	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
     precache_sound("weapons/zapper_fly.wav");
+    precache_sound("weapons/zapper_fire.wav");
 }
