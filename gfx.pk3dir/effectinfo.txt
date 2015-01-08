@@ -6147,3 +6147,471 @@ velocityoffset 0 0 15
 airfriction 12
 originjitter 1 1 1
 velocityjitter 50 50 50
+
+/////// Red Crylink
+
+// Red Crylink Trail
+effect RM_CRYLINK_TEAM1
+trailspacing 64
+type static
+color 0xB40A00 0xB41D00
+size 2 2
+sizeincrease 8
+tex 32 32
+alpha 256 256 1024
+velocityjitter 8 8 8
+velocitymultiplier -0.01
+// crylink main trail
+effect RM_CRYLINK_TEAM1
+trailspacing 8
+type static
+color 0xB40A00 0xB41D00
+size 3 3
+sizeincrease 15
+tex 3 3
+alpha 256 256 2600
+velocityjitter 2 2 2
+velocitymultiplier 0.01
+
+// Red Crylink Impact
+effect RM_CRYLINK_IMPACT_TEAM1
+countabsolute 1
+type decal
+tex 47 47
+size 8 8
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 60
+lightradiusfade 300
+lightcolor 3.2 1 0.4
+// flare effect
+effect RM_CRYLINK_IMPACT_TEAM1
+countabsolute 1
+type static
+tex 39 39
+color 0x8C1D00 0x8C1D00
+size 8 8
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_TEAM1
+count 20
+type spark
+tex 41 41
+color 0xC02123 0xC02123
+bounce 2
+size 4 4
+alpha 256 256 1024
+velocityjitter 256 256 256
+// splash
+effect RM_CRYLINK_IMPACT_TEAM1
+count 3
+type static
+color 0xFD5335 0xFD5335
+size 8 8
+alpha 256 256 512
+velocityjitter 8 8 8
+// splash
+effect RM_CRYLINK_IMPACT_TEAM1
+count 3
+type static
+color 0xFD5335 0xFD5335
+size 8 8
+alpha 256 256 1024
+velocityjitter 32 32 32
+
+// Red Crylink Impact (big)
+effect RM_CRYLINK_IMPACT_BIG_TEAM1
+countabsolute 1
+type decal
+tex 47 47
+size 24 24
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 3.2 1 0.4
+// flare effect
+effect RM_CRYLINK_IMPACT_BIG_TEAM1
+countabsolute 1
+type static
+tex 39 39
+color 0x8C1D00 0x8C1D00
+size 24 24
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_BIG_TEAM1
+count 80
+type spark
+tex 41 41
+color 0xC02123 0xC02123
+bounce 2
+size 6 6
+alpha 256 256 1024
+velocityjitter 512 512 512
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM1
+count 3
+type static
+color 0xFD5335 0xFD5335
+size 16 16
+alpha 256 256 512
+velocityjitter 32 32 32
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM1
+count 6
+type static
+color 0xFD5335 0xFD5335
+size 16 16
+alpha 256 256 1024
+velocityjitter 256 256 256
+
+/////// Blue Crylink
+
+// Blue Crylink Trail
+effect RM_CRYLINK_TEAM2
+trailspacing 64
+type static
+color 0x2240AA 0x224DAA
+size 2 2
+sizeincrease 8
+tex 32 32
+alpha 256 256 1024
+velocityjitter 8 8 8
+velocitymultiplier -0.01
+// crylink main trail
+effect RM_CRYLINK_TEAM2
+trailspacing 8
+type static
+color 0x2240AA 0x224DAA
+size 3 3
+sizeincrease 15
+tex 3 3
+alpha 256 256 2600
+velocityjitter 2 2 2
+velocitymultiplier 0.01
+
+// Blue Crylink Impact
+effect RM_CRYLINK_IMPACT_TEAM2
+countabsolute 1
+type decal
+tex 47 47
+size 8 8
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 0.7 0.65 4
+// flare effect
+effect RM_CRYLINK_IMPACT_TEAM2
+countabsolute 1
+type static
+tex 39 39
+color 0x2D5F9A 0x2D5F9A
+size 8 8
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_TEAM2
+count 20
+type spark
+tex 41 41
+color 0x407BC0 0x407BC0
+bounce 2
+size 4 4
+alpha 256 256 1024
+velocityjitter 256 256 256
+// splash
+effect RM_CRYLINK_IMPACT_TEAM2
+count 3
+type static
+color 0x70ADFF 0x70ADFF
+size 8 8
+alpha 256 256 512
+velocityjitter 8 8 8
+// splash
+effect RM_CRYLINK_IMPACT_TEAM2
+count 3
+type static
+color 0x70ADFF 0x70ADFF
+size 8 8
+alpha 256 256 1024
+velocityjitter 32 32 32
+
+// Blue Crylink Impact (big)
+effect RM_CRYLINK_IMPACT_BIG_TEAM2
+countabsolute 1
+type decal
+tex 47 47
+size 24 24
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 0.7 0.65 4
+// flare effect
+effect RM_CRYLINK_IMPACT_BIG_TEAM2
+countabsolute 1
+type static
+tex 39 39
+color 0x2D5F9A 0x2D5F9A
+size 24 24
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_BIG_TEAM2
+count 80
+type spark
+tex 41 41
+color 0x407BC0 0x407BC0
+bounce 2
+size 6 6
+alpha 256 256 1024
+velocityjitter 512 512 512
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM2
+count 3
+type static
+color 0x70ADFF 0x70ADFF
+size 16 16
+alpha 256 256 512
+velocityjitter 32 32 32
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM2
+count 6
+type static
+color 0x70ADFF 0x70ADFF
+size 16 16
+alpha 256 256 1024
+velocityjitter 256 256 256
+
+/////// Yellow Crylink
+
+// Yellow Crylink Trail
+effect RM_CRYLINK_TEAM3
+trailspacing 64
+type static
+color 0xA4AA00 0xA4AA00
+size 2 2
+sizeincrease 8
+tex 32 32
+alpha 256 256 1024
+velocityjitter 8 8 8
+velocitymultiplier -0.01
+// crylink main trail
+effect RM_CRYLINK_TEAM3
+trailspacing 8
+type static
+color 0xA4AA00 0xA4AA00
+size 3 3
+sizeincrease 15
+tex 3 3
+alpha 256 256 2600
+velocityjitter 2 2 2
+velocitymultiplier 0.01
+
+// Yellow Crylink Impact
+effect RM_CRYLINK_IMPACT_TEAM3
+countabsolute 1
+type decal
+tex 47 47
+size 8 8
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 4 3.2 0.4
+// flare effect
+effect RM_CRYLINK_IMPACT_TEAM3
+countabsolute 1
+type static
+tex 39 39
+color 0x9D9800 0x9D9800
+size 8 8
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_TEAM3
+count 20
+type spark
+tex 41 41
+color 0xD1903B 0xD1903B
+bounce 2
+size 4 4
+alpha 256 256 1024
+velocityjitter 256 256 256
+// splash
+effect RM_CRYLINK_IMPACT_TEAM3
+count 3
+type static
+color 0xFFE470 0xFFE470
+size 8 8
+alpha 256 256 512
+velocityjitter 8 8 8
+// splash
+effect RM_CRYLINK_IMPACT_TEAM3
+count 3
+type static
+color 0xFFE470 0xFFE470
+size 8 8
+alpha 256 256 1024
+velocityjitter 32 32 32
+
+// Yellow Crylink Impact (big)
+effect RM_CRYLINK_IMPACT_BIG_TEAM3
+countabsolute 1
+type decal
+tex 47 47
+size 24 24
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 4 3.2 0.4
+// flare effect
+effect RM_CRYLINK_IMPACT_BIG_TEAM3
+countabsolute 1
+type static
+tex 39 39
+color 0x9D9800 0x9D9800
+size 24 24
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_BIG_TEAM3
+count 80
+type spark
+tex 41 41
+color 0xD1903B 0xD1903B
+bounce 2
+size 6 6
+alpha 256 256 1024
+velocityjitter 512 512 512
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM3
+count 3
+type static
+color 0xFFE470 0xFFE470
+size 16 16
+alpha 256 256 512
+velocityjitter 32 32 32
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM3
+count 6
+type static
+color 0xFFE470 0xFFE470
+size 16 16
+alpha 256 256 1024
+velocityjitter 256 256 256
+
+/////// Pink Crylink
+
+// Pink Crylink Trail
+effect RM_CRYLINK_TEAM4
+trailspacing 64
+type static
+color 0x5522aa 0x6622ff
+size 2 2
+sizeincrease 8
+tex 32 32
+alpha 256 256 1024
+velocityjitter 8 8 8
+velocitymultiplier -0.01
+// crylink main trail
+effect RM_CRYLINK_TEAM4
+trailspacing 8
+type static
+color 0x5522aa 0x6622ff
+size 3 3
+sizeincrease 15
+tex 3 3
+alpha 256 256 2600
+velocityjitter 2 2 2
+velocitymultiplier 0.01
+
+// Pink Crylink Impact
+effect RM_CRYLINK_IMPACT_TEAM4
+countabsolute 1
+type decal
+tex 47 47
+size 8 8
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 3.2 0.4 4
+// flare effect
+effect RM_CRYLINK_IMPACT_TEAM4
+countabsolute 1
+type static
+tex 39 39
+color 0x504060 0x504060
+size 8 8
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_TEAM4
+count 20
+type spark
+tex 41 41
+color 0xA040C0 0xA040C0
+bounce 2
+size 4 4
+alpha 256 256 1024
+velocityjitter 256 256 256
+// splash
+effect RM_CRYLINK_IMPACT_TEAM4
+count 3
+type static
+color 0xE070FF 0xE070FF
+size 8 8
+alpha 256 256 512
+velocityjitter 8 8 8
+// splash
+effect RM_CRYLINK_IMPACT_TEAM4
+count 3
+type static
+color 0xE070FF 0xE070FF
+size 8 8
+alpha 256 256 1024
+velocityjitter 32 32 32
+
+// Pink Crylink Impact (big)
+effect RM_CRYLINK_IMPACT_BIG_TEAM4
+countabsolute 1
+type decal
+tex 47 47
+size 24 24
+alpha 256 256 0
+originjitter 12 12 12
+lightradius 200
+lightradiusfade 800
+lightcolor 3.2 0.4 4
+// flare effect
+effect RM_CRYLINK_IMPACT_BIG_TEAM4
+countabsolute 1
+type static
+tex 39 39
+color 0x504060 0x504060
+size 24 24
+alpha 256 256 512
+// sparks
+effect RM_CRYLINK_IMPACT_BIG_TEAM4
+count 80
+type spark
+tex 41 41
+color 0xA040C0 0xA040C0
+bounce 2
+size 6 6
+alpha 256 256 1024
+velocityjitter 512 512 512
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM4
+count 3
+type static
+color 0xE070FF 0xE070FF
+size 16 16
+alpha 256 256 512
+velocityjitter 32 32 32
+// splash
+effect RM_CRYLINK_IMPACT_BIG_TEAM4
+count 6
+type static
+color 0xE070FF 0xE070FF
+size 16 16
+alpha 256 256 1024
+velocityjitter 256 256 256

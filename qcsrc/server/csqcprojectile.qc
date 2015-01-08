@@ -31,7 +31,7 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 
 	if(sf & 2) {
 		WriteByte(MSG_ENTITY, self.csqcprojectile_type); // TODO maybe put this into sf?
-        WriteByte(MSG_ENTITY, bound(0, self.team, 255));
+        WriteByte(MSG_ENTITY, bound(0, self.team - 1, 255));
         
         if(self.csqcprojectile_type == PROJECTILE_HG_NAPALMSHARD        || // Burn radius
            self.csqcprojectile_type == PROJECTILE_HG_PLASMA_SHARD       || // Plasma group ID

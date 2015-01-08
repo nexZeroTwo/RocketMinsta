@@ -203,13 +203,13 @@ void Ent_DamageInfo(float isNew)
 				org2 = org + backoff * 2;
 				if(secondary)
 				{
-					pointparticles(particleeffectnum("crylink_impact"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_CRYLINK_IMPACT", self.team, 4), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/crylink_impact2.wav", VOL_BASE, ATTN_NORM);
 				}
 				else
 				{
-					pointparticles(particleeffectnum("crylink_impactbig"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_CRYLINK_IMPACT_BIG", self.team, 4), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/crylink_impact.wav", VOL_BASE, ATTN_NORM);
 				}

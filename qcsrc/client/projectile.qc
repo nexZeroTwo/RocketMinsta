@@ -65,10 +65,10 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_ROCKET"), from, to);
 			break;
 		case PROJECTILE_CRYLINK:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 		case PROJECTILE_CRYLINK_BOUNCING:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO:
@@ -305,6 +305,8 @@ void Ent_RemoveProjectile()
 	}
 }
 
+vector Zapper_BeamRGB(float t);
+
 void Ent_Projectile()
 {
 	float f;
@@ -373,7 +375,7 @@ void Ent_Projectile()
 	if(f & 2)
 	{
 		self.cnt = ReadByte();
-        self.team = ReadByte() - 1;
+        self.team = ReadByte();
 
         if(!rm_teamlasers)
             self.team = 0;
@@ -387,6 +389,7 @@ void Ent_Projectile()
 		self.cnt = (self.cnt & 0x7F);
 
 		self.scale = 1;
+        self.colormod = '0 0 0';
         
 		switch(self.cnt)
 		{
@@ -394,8 +397,12 @@ void Ent_Projectile()
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
-			case PROJECTILE_CRYLINK: setmodel(self, "models/plasmatrail.mdl"); break;
-			case PROJECTILE_CRYLINK_BOUNCING: setmodel(self, "models/plasmatrail.mdl"); break;
+			case PROJECTILE_CRYLINK: case PROJECTILE_CRYLINK_BOUNCING: 
+                setmodel(self, "models/plasmatrail.mdl");
+                if(!self.team)
+                    self.team = COLOR_TEAM4;
+                self.colormod = Zapper_BeamRGB(self.team);
+                break;
 			case PROJECTILE_RM_LASER_RED:
 			case PROJECTILE_RM_LASER_BLUE:
 			case PROJECTILE_RM_LASER_YELLOW:
@@ -439,7 +446,6 @@ void Ent_Projectile()
 
 		self.mins = '0 0 0';
 		self.maxs = '0 0 0';
-		self.colormod = '0 0 0';
 		self.move_touch = SUB_Stop;
 		self.move_movetype = MOVETYPE_TOSS;
         
