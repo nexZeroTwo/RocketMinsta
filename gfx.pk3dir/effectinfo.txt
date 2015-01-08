@@ -5654,21 +5654,21 @@ size 10 10
 alpha 256 256 512
 // cloud of bouncing sparks
 effect RM_HEAL
-count 60
+count 15
 type smoke
-tex 42 42
+tex 63 63
 color 0x62FF6A 0x00FF65
-size 24 24
-sizeincrease -50
-alpha 256 256 1024
+size 5 10
+sizeincrease -2
+alpha 256 256 256
 bounce 2
 gravity -0.3
 airfriction 6
-originjitter 1 1 1
-velocityjitter 512 512 512
+originjitter 16 16 16
+//velocityjitter 512 512 512
 // inner cloud of smoke
 effect RM_HEAL
-count 30
+count 12
 type smoke
 color 0x62FF6A 0x55FF65
 tex 0 8
