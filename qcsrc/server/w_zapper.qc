@@ -361,6 +361,8 @@ float w_zapper(float req) {
         precache_model("models/weapons/h_zapper.dpm");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
+        precache_sound("misc/arc1.wav");
+        precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
         if(cvar("g_balance_zapper_primary_heatup"))
             self.zapper_heat = 0;
