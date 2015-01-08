@@ -162,33 +162,32 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 }
 
 .entity heal_emitter;
+.float heal_emitter_radius;
 
-void HG_Napalm_HealEmitter_Think(void) {
+void HG_HealEmitter_Think(void) {
     if(!self.owner || wasfreed(self.owner)) {
         remove(self);
         return;
     }
     
-    UpdateCSQCProjectile(self);
-    self.nextthink = time + 0.5;
+    if(self.origin != self.oldorigin)
+        UpdateCSQCProjectile(self);
+
+    self.oldorigin = self.origin;
+    self.nextthink = time;
 }
 
-void HG_Napalm_Think(void) {
-    if(time > self.pushltime) {
-        remove(self);
-        return;
-    }
-    
+void HG_HealEmitter(void) {
     if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
         if(!self.heal_emitter) {
             entity e = spawn();
             e.owner = self;
             e.movetype = MOVETYPE_FOLLOW;
             e.aiment = self;
-            e.think = HG_Napalm_HealEmitter_Think;
+            e.think = HG_HealEmitter_Think;
             e.nextthink = time;
-            e.velocity = self.velocity;
-            e.csqcprojectile_extradata = self.csqcprojectile_extradata;
+            //e.velocity = self.velocity;
+            e.csqcprojectile_extradata = self.heal_emitter_radius;
             
             CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
             self.heal_emitter = e;
@@ -199,7 +198,16 @@ void HG_Napalm_Think(void) {
             self.heal_emitter = world;
         }
     }
-    
+}
+
+void HG_Napalm_Think(void) {
+    if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
+
+    HG_HealEmitter();
+
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
     self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
@@ -270,6 +278,7 @@ void HG_Napalm()
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
+    proj.heal_emitter_radius = proj.csqcprojectile_extradata;
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
     
@@ -338,6 +347,8 @@ void HG_Plasma_Projectile_Think() {
         self.hg_plasma_projdps_last = time;
     }
     
+    HG_HealEmitter();
+
     self.nextthink = time;
 }
 
@@ -391,6 +402,7 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps_next = time + cvar("g_nadgets_plasma_projectile_dps_pause") + random() * cvar("g_nadgets_plasma_projectile_dps_pause_randomfactor");
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
     proj.csqcprojectile_extradata = hg_plasma_group;
+    proj.heal_emitter_radius = proj.hg_plasma_projrange;
     proj.damage_noinfo = TRUE;
     
     Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use_Multiple);
