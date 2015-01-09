@@ -9,11 +9,7 @@ entity porto;
 vector polyline[16];
 float trace_dphitcontents;
 float trace_networkentity;
-float Q3SURFACEFLAG_SLICK = 2; // low friction surface
-float DPCONTENTS_SOLID = 1; // blocks player movement
-float DPCONTENTS_BODY = 32; // blocks player movement
-float DPCONTENTS_CORPSE = 64; // blocks player movement
-float DPCONTENTS_PLAYERCLIP = 256; // blocks player movement
+
 void Porto_Draw()
 {
 	vector p, dir, ang, q, nextdir;
@@ -85,6 +81,23 @@ void Porto_Draw()
 		}
 		--idx;
 	}
+}
+
+.float plasma_drawn;
+void Plasma_Draw() {
+    entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    string tex = "particles/zapper";
+    
+    for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
+        vector rgb = Zapper_BeamRGB(rm_teamlasers? e.team : COLOR_TEAM2);
+        
+        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
+            Draw_CylindricLine(n.origin, e.origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE);
+            //n.plasma_drawn = time;
+        }
+        
+        e.plasma_drawn = time;
+    }
 }
 
 /**
@@ -226,7 +239,7 @@ vector GetCurrentFov(float fov)
 	fovx = atan2(frustumx, 1) / 0.00872664625997164788;
 	fovy = atan2(frustumy, 1) / 0.00872664625997164788;
 
-	if(forcefog == "nyan") {
+	if(whatsgoingon || forcefog == "nyan") {
 		float factor = 2 * bound(1, vlen(pmove_vel) * 0.006, 6);
 		float t = time * 0.3;
 		fovx += factor * sin(1.11 * t) * cos(1.45 * t * 2);
@@ -376,12 +389,34 @@ float view_set;
 float camera_mode;
 string NextFrameCommand;
 void CSQC_spider_HUD();
+
+float hg_nadecount;
+float hg_nadecount_firstframepassed;
+
+void HG_NadeGainSound() {
+    float c = getstati(STAT_HGAMMO);
+    
+    if(hg_nadecount_firstframepassed)
+    if(c != hg_nadecount) {
+        hgregen = 1;
+        hg_nadecount_update = time;
+        if(c > hg_nadecount)
+            localcmd("play2 misc/poweroff\n");
+    }
+
+    hg_nadecount_firstframepassed = TRUE;
+    hg_nadecount = c;
+}
+
 void CSQC_UpdateView(float w, float h)
 {
 	entity e;
 	float fov;
 	float f, i, j;
 	vector v;
+    
+    // VisualDamage_Test();
+    HG_NadeGainSound();
 
 	dprint_load();
 	WaypointSprite_Load();
@@ -514,29 +549,26 @@ void CSQC_UpdateView(float w, float h)
 		R_SetView(VF_FOV, GetCurrentFov(fov));
 	
 	if(spectatee_status < 0)
-		jb_camera_expiretime = -1;
+		camera_expiretime = -1;
 	
-	float jbcamera = time < jb_camera_expiretime;
-	
+	float tempcamera = (time < camera_expiretime || camera_expiretime < -1);
+    
 	if(getstati(STAT_ROUNDLOST))
 	if(getstati(STAT_HEALTH) > 0)
-		jbcamera = FALSE;
+		tempcamera = FALSE;
 	
-	if(jbcamera) {
-		if(!jb_chasecam_locked) {
-			jb_chasecam_locked = TRUE;
-			jb_chasecam_backup = cvar("chase_active");
+	if(tempcamera) {
+		if(!camera_drawviewmodel_locked) {
+			camera_drawviewmodel_locked = TRUE;
+			camera_drawviewmodel_backup = cvar("r_drawviewmodel");
 		}
 		
-		R_SetView(VF_ORIGIN, jb_camera_origin);
-		cvar_clientsettemp("chase_active", "1");
-		//R_SetView(VF_ANGLES, jb_camera_angles);
-	} else if(jb_chasecam_locked) {
-		jb_chasecam_locked = FALSE;
-		chase_active_backup = jb_chasecam_backup;
-		cvar_set("chase_active", ftos(jb_chasecam_backup));
-	} else if(camera_active) // Camera for demo playback
-	{
+		R_SetView(VF_ORIGIN, camera_origin);
+		cvar_clientsettemp("r_drawviewmodel", "0");
+	} else if(camera_drawviewmodel_locked) {
+		camera_drawviewmodel_locked = FALSE;
+		cvar_set("r_drawviewmodel", ftos(camera_drawviewmodel_backup));
+	} else if(camera_active) { // Camera for demo playback
 		if(cvar("camera_enable"))
 			CSQC_Demo_Camera();
 		else
@@ -584,6 +616,7 @@ void CSQC_UpdateView(float w, float h)
 		if(self.draw)
 			self.draw();
 	self = e;
+    Plasma_Draw();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();
@@ -611,12 +644,15 @@ void CSQC_UpdateView(float w, float h)
 
 	// draw 2D entities
 	
+    VisualDamage_PreDraw();
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw2d)
 			self.draw2d();
 	self = e;
 	
+    ShowNames_DrawAll();
+
 	// draw radar
 	if(
 		ons_showmap
@@ -633,7 +669,7 @@ void CSQC_UpdateView(float w, float h)
 			)
 		)
 	)
-		if not(jbcamera) teamradar_view();
+		if not(tempcamera) teamradar_view();
 
 	// draw sbar
  	if(cvar("r_letterbox") == 0) {
@@ -668,7 +704,7 @@ void CSQC_UpdateView(float w, float h)
 				CSQC_common_hud();
 
         // crosshair goes VERY LAST
-        if not(jbcamera)
+        if not(tempcamera)
         if(spectatee_status != -1)
         if(!scoreboard_active && !ons_showmap && !camera_active) {
 			// TrueAim check
@@ -704,57 +740,15 @@ void CSQC_UpdateView(float w, float h)
                 string wcross_wep, wcross_name;
                 float wcross_alpha, wcross_sizefloat;
 
-				if(rm_crosshealth)
-					{
-					local float x = getstati(STAT_HEALTH);
-					
-					//x = red
-					//y = green
-					//z = blue
-					
-					wcross_color_z = 0;
-					
-					if(x > 200)
-					{
-						wcross_color_x = 0;
-						wcross_color_y = 1;
-					}
-					else if(x > 150)
-					{
-						wcross_color_x = 0.4 - (x-150)*0.02 * 0.4;
-						wcross_color_y = 0.9 + (x-150)*0.02 * 0.1;
-					}
-					else if(x > 100)
-					{
-						wcross_color_x = 1 - (x-100)*0.02 * 0.6;
-						wcross_color_y = 1 - (x-100)*0.02 * 0.1;
-						wcross_color_z = 1 - (x-100)*0.02;
-					}
-					else if(x > 50)
-					{
-						wcross_color_x = 1;
-						wcross_color_y = 1;
-						wcross_color_z = 0.2 + (x-50)*0.02 * 0.8;  
-					}
-					else if(x > 20)
-					{
-						wcross_color_x = 1;
-						wcross_color_y = (x-20)*90/27/100;
-						wcross_color_z = (x-20)*90/27/100 * 0.2;
-					}
-					else
-					{
-						wcross_color_x = 1;
-						wcross_color_y = 0;
-					}
-				}
-				else
-				{
-					wcross_color_x = cvar("crosshair_color_red");
-					wcross_color_y = cvar("crosshair_color_green");
-					wcross_color_z = cvar("crosshair_color_blue");
-				}
-				
+                if(rm_crosshealth) {
+                    vector x = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+                    wcross_color = healthcolor(x_x);
+                } else {
+                    wcross_color_x = cvar("crosshair_color_red");
+                    wcross_color_y = cvar("crosshair_color_green");
+                    wcross_color_z = cvar("crosshair_color_blue");
+                }
+                
                 wcross_alpha = cvar("crosshair_color_alpha") * m * (1 - sbar_scoreboard_fade_alpha);
                 wcross_sizefloat = cvar("crosshair_size") * m * (1 - sbar_scoreboard_fade_alpha);
                 if (cvar("crosshair_per_weapon")) {
@@ -790,29 +784,53 @@ void CSQC_UpdateView(float w, float h)
                 wcross_size_y *= wcross_sizefloat;
 				
 				// ring around crosshair representing bullets left in camping rifle clip
+                float bullet, maxbullets, distance = 14;
+                maxbullets = getstati(STAT_BULLETS_MAX);
 				if (activeweapon == WEP_CAMPINGRIFLE)
 				{
-					ring_scale = cvar("crosshair_campingrifle_ring_size");
-					bullets = bound(0, getstati(STAT_BULLETS_LOADED), 8);
+					ring_scale = cvar("crosshair_campingrifle_ring_size") * (10 / 128);
+					bullets = bound(0, getstati(STAT_BULLETS_LOADED), maxbullets);
 				}
 				else
 					bullets = 0;
-				
+                
                 if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && cvar("crosshair_hittest_blur") && !cvar("chase_active")))
                 {
                     wcross_alpha *= 0.04 * 0.75;
                     for(i = -2; i <= 2; ++i)
                         for(j = -2; j <= 2; ++j)
 						{
-							if (bullets)
-								drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j), strcat("gfx/hud/rifle_ring_", ftos(bullets)), wcross_size * ring_scale, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+							if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                                float b_angle = PI*2*(bullet/maxbullets);
+								drawpic
+                                (
+                                    distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                                    wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j),
+                                    "gfx/hud/rifle_ring",
+                                    wcross_size * ring_scale,
+                                    wcross_color,
+                                    wcross_alpha,
+                                    DRAWFLAG_NORMAL
+                                );
+                            }
                             drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
 						}
                 }
                 else
                 {
-					if (bullets)
-						drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale), strcat("gfx/hud/rifle_ring_", ftos(bullets)), wcross_size * ring_scale, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+					if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                        float b_angle = PI*2*(bullet/maxbullets);
+						drawpic
+                        (
+                            distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                            wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale),
+                            "gfx/hud/rifle_ring",
+                            wcross_size * ring_scale,
+                            wcross_color,
+                            wcross_alpha,
+                            DRAWFLAG_NORMAL
+                        );
+                    }
                     drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                 }
             }
@@ -870,7 +888,13 @@ void CSQC_UpdateView(float w, float h)
 	}
 	
 	FPSCounter_Update();
-	
+    
+    if(getstati(STAT_ROUNDSTATE) == ROUNDSTATE_GAME) {
+        entity pl; for(pl = players.sort_next; pl; pl = pl.sort_next)
+            if(GetPlayerColor(pl.sv_entnum) != COLOR_SPECTATOR)
+                pl.(scores[SP_PLAYTIME]) += drawframetime;
+    }
+    
 	// be safe against triggerbots until everyone has the fixed engine
 	// this call is meant to overwrite the trace globals by something
 	// unsuspicious

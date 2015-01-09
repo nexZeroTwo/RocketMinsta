@@ -81,6 +81,7 @@ void W_Crylink_Attack (void)
 		proj.classname = "spike";
 		proj.bot_dodge = TRUE;
 		proj.bot_dodgerating = cvar("g_balance_crylink_primary_damage");
+        proj.team = self.team;
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
 		PROJECTILE_MAKETRIGGER(proj);
@@ -89,8 +90,8 @@ void W_Crylink_Attack (void)
 
 		setorigin (proj, w_shotorg);
 		setsize(proj, '0 0 0', '0 0 0');
-
-
+        PROJECTILE_FIX2(proj)
+        
 		s = '0 0 0';
 		if (counter == 0)
 			s = '0 0 0';
@@ -145,6 +146,7 @@ void W_Crylink_Attack2 (void)
 		proj.classname = "spike";
 		proj.bot_dodge = TRUE;
 		proj.bot_dodgerating = cvar("g_balance_crylink_secondary_damage");
+        proj.team = self.team;
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
 		PROJECTILE_MAKETRIGGER(proj);
@@ -153,6 +155,7 @@ void W_Crylink_Attack2 (void)
 
 		setorigin (proj, w_shotorg);
 		setsize(proj, '0 0 0', '0 0 0');
+        PROJECTILE_FIX2(proj)
 
 		proj.velocity = (w_shotdir + (((counter + 0.5) / shots) * 2 - 1) * v_right * cvar("g_balance_crylink_secondary_spread")) * cvar("g_balance_crylink_secondary_speed");
 		W_SetupProjectileVelocity(proj);

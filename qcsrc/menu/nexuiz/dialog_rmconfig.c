@@ -3,7 +3,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	METHOD(NexuizRMConfigDialog, fill, void(entity)) // to be overridden by user to fill the dialog with controls
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
-	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 0.8)
+	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
 	ATTRIB(NexuizRMConfigDialog, rows, float, 19)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
@@ -34,8 +34,8 @@ void fillNexuizRMConfigDialog(entity me)
 			OPTDEP("shownames")
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Teamcolored lasers"));
-			OPTDEP("teamlasers")
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Team-colored particles"));
+			//OPTDEP("teamlasers")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "legacyvote", "Simple voting screen"));
 	me.TR(me);
@@ -53,7 +53,7 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "noflags", "Country flags in scoreboard"));
 	me.TR(me);
-		me.TD (me, 1, 4, e = makeRMCheckBox (0, "hidecountry", "Hide my country"));
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "hidecountry", "Hide my country"));
 			OPTDEP("hidecountry")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "notimer", "\"time\" column in scoreboard"));
@@ -79,25 +79,36 @@ void fillNexuizRMConfigDialog(entity me)
 			OPTDEP("freezetag_danger")
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
+            OPTDEP("dodging")
+	me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "radio", "Enable the Radio (music broadcast from server)"));
+            OPTDEP("radio")
+    me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD settings:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldhud", "Use default Nexuiz HUD"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
-		setDependent(e, "rm_oldhud", 0, 0);
+            setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use default Nexuiz fonts"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showrankings", "Show top players in the HUD"));
+    me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showtimer", "Always show the timer"));
+    me.TR(me);
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownadgetregen", "Show Nadget regeneration in seconds"));
+            setDependentAND(e, "rm_oldhud", 0, 0, "_rm_optavail_shownadgetregen", 1, 1);
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 		me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 11, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 15, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

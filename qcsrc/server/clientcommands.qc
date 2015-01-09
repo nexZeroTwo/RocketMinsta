@@ -71,7 +71,7 @@ void Nagger_ReadyCounted()
 }
 
 void ReadyCount();
-string MapVote_Suggest(string m);
+string MapVote_Suggest(string m, float ismaster);
 
 entity GetPlayer(string name)
 {
@@ -179,7 +179,6 @@ void SV_ParseClientCommand(string s) {
 	if(cmd != "prespawn")
 	if(cmd != "spawn")
 	if(cmd != "begin")
-	if(cmd != "rmcfgreport")
 	if(cmd != "hudinfo")
 	if(cmd != "fovreport")
 	if(cmd != "zoomreport")
@@ -193,25 +192,12 @@ void SV_ParseClientCommand(string s) {
 		return;
 	} else if(GameCommand_MapVote(argv(0))) {
 		return;
-	} else if(cmd == "rmcfgreport") {
-		print("^2Received rmcfgreport from ", self.netname, "^2: ", s, "\n");
-		
-		if(!self)
-			return;
-			
-		if(self.rmcfgreport)
-			strunzone(self.rmcfgreport);
-		
-		if(!self)
-			return;
-		
-		self.rmcfgreport = strzone(s);
-	} else if(cmd == "menu_request"){
+    } else if(cmd == "menu_request"){
 		// Report that this server is running RM
 		stuffcmd(self, "set _rm_server 1\n");
 		
 		// Report available votes
-		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(), "\"\n"));
+		stuffcmd(self, strcat("set _vote_commands \"", GetVoteList_Filtered(FALSE, FALSE), "\"\n"));
 		stuffcmd(self, strcat("set _voting_allowed ", cvar_string("sv_vote_call"), "\n"));
 		
 		// Report availability of certain RM options
@@ -222,11 +208,14 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL	("anonspec", "sv_anonspecs")
 		OPTAVAIL	("showspec", "sv_showspecs")
 		//OPTAVAIL	("teamlasers", "g_rocketminsta_laser_teamcolor")
-		OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
-		OPTAVAIL	("shownames", "sv_shownames")
-		OPTAVAIL_NOT("showdamage", "sv_hidedamage")
+		//OPTAVAIL_RAW("teamlasers", ftos(cvar("g_rocketminsta_laser_teamcolor") && g_minstagib && cvar("g_rocketminsta")))
+		OPTAVAIL_RAW("shownames", ftos(sv_shownames))
+		OPTAVAIL    ("showdamage", "sv_showdamage")
 		OPTAVAIL	("hidecountry", "sv_hidecountry")
+        OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
+        OPTAVAIL_RAW("radio", ftos(sv_radio))
+        OPTAVAIL    ("dodging", "g_dodging")
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -239,21 +228,6 @@ void SV_ParseClientCommand(string s) {
 		
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
-	} else if(cmd == "spyrmcfg") {
-		e = GetCommandPlayerSlotTargetFromTokenizedCommand(tokens, 1);
-		
-		if(e && e != world)
-		{
-			if(clienttype(e) != CLIENTTYPE_REAL)
-			{
-				sprint(self, strcat(e.netname, "^1: not a real client\n"));
-				return;
-			}
-			
-			sprint(self, strcat("^3rmcfgreport from ", e.netname, "^3 (cached):\n^2", e.rmcfgreport, "\n"));
-		}
-		else
-			sprint(self, strcat(argv(1), "^1: failed to find player\n"));
 	} else if(cmd == "anonspec") {
 		local string val = argv(1);
 		
@@ -294,14 +268,10 @@ void SV_ParseClientCommand(string s) {
 		else
 			self.madoka = 0;
 		
-		if(!self)
-			return;
-		
 		if(!self.scorekeeper)
 			return;
 		
-		self.scorekeeper.SendFlags |= pow(2, SP_MADOKASTATUS);
-		self.scorekeeper.(scores[SP_MADOKASTATUS]) = self.madoka;
+        PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
 		WriteSpectatorInfo(self);
 		return;
 	} else if(cmd == "nokillsound") {
@@ -309,6 +279,21 @@ void SV_ParseClientCommand(string s) {
 			return;
 			
 		self.rm_nokillsound = stof(argv(1));
+	} else if(cmd == "nododging") {
+		if(!self)
+			return;
+			
+		self.rm_nododging = stof(argv(1));
+    } else if(cmd == "radio") {
+        if(!self.scorekeeper || !sv_radio)
+            return;
+
+        float o = self.radio_enabled;
+        self.radio_enabled = stof(argv(1));
+        PlayerScore_SetFlagsBoolean(self, SPFLAG_MUTE, !self.radio_enabled);
+
+        if(!o && self.radio_enabled)
+            Radio_SendPlay(self);
 	} else if(cmd == "hudinfo") {
 		if(!self)
 			return;
@@ -325,7 +310,7 @@ void SV_ParseClientCommand(string s) {
 		if(!self)
 			return;
 		
-		if(!cvar("sv_fakeflag"))
+		if(!cvar("sv_fakeflag") && !self.vote_master)
 		{
 			sprint(self, "^1'fakeflag' is forbidden on this server.");
 			
@@ -335,11 +320,44 @@ void SV_ParseClientCommand(string s) {
 			
 			return;
 		}
-		
-		if(strlen(argv(1)) != 2)
-			return;
-		
-		IP2C_SetCountry_Internal(self, strtoupper(argv(1)));
+        
+        if(strlen(argv(1)) != 2) {
+            sprint(self, "^1The flag code must be exactly 2 characters long.\n");
+            return;
+        }
+        
+        string cn = strtoupper(argv(1));
+        
+        if(!self.vote_master || tokens < 3) {
+            IP2C_SetCountry_Internal(self, cn);
+            return;
+        }
+        
+        float targetteam;
+        
+               if(argv(2) == "red")       targetteam = COLOR_TEAM1;
+        else   if(argv(2) == "blue")      targetteam = COLOR_TEAM2;
+        else   if(argv(2) == "yellow")    targetteam = COLOR_TEAM3;
+        else   if(argv(2) == "pink")      targetteam = COLOR_TEAM4;
+        else   if(argv(2) == "spec") {
+            FOR_EACH_CLIENT(e) if(!e.iscreature)
+                IP2C_SetCountry_Internal(e, cn);
+        } else if(argv(2) == "all") {
+            FOR_EACH_CLIENT(e)
+                IP2C_SetCountry_Internal(e, cn);
+        } else {
+            f = stof(argv(2));
+            e = edict_num(f);
+            if(!(e.flags & FL_CLIENT)) {
+                sprint(self, strcat("^1Client not found: ", ftos(f), "\n"));
+                return;
+            }
+            IP2C_SetCountry_Internal(e, cn);
+        }
+        
+        if(targetteam) FOR_EACH_CLIENT(e)
+            if(e.team == targetteam || e.jb_specteam == targetteam)
+                IP2C_SetCountry_Internal(e, cn);
 	} else if(cmd == "fovreport") {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
@@ -391,6 +409,11 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "reportcvar") { // old system
 		if(substring(argv(2), 0, 1) == "$") // undefined cvar: use the default value on the server then
 		{
+            if(argv(1) == "dprm_version") {
+                self.client_dprmversion = 0;
+                return;
+            }
+            
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}
@@ -398,6 +421,11 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "sentcvar") { // new system
 		if(tokens == 2) // undefined cvar: use the default value on the server then
 		{
+            if(argv(1) == "dprm_version") {
+                self.client_dprmversion = 0;
+                return;
+            }
+
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}
@@ -407,7 +435,10 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(g_arena)
+        if(self.joinqueue) {
+            JoinQ_Remove(self);
+            self.hg_type_picked = 0;
+		} if(g_arena)
 			return;
 		if(g_lms)
 		{
@@ -423,37 +454,54 @@ void SV_ParseClientCommand(string s) {
 				return;
 			}
 		}
-		if(self.classname == "player" && cvar("sv_spectate") == 1) {
-			if(self.flagcarried)
-				DropFlag(self.flagcarried, world, world);
-			if(self.ballcarried)
-				DropBall(self.ballcarried, self.origin, self.velocity);
-			kh_Key_DropAll(self, TRUE);
-			prec_player_die(self);
-			inf_player_leave(self);
-			WaypointSprite_PlayerDead();
-			self.classname = "observer";
-			if(blockSpectators)
-				sprint(self, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
-			PutClientInServer();
-		}
+        if(cvar("sv_spectate") == 1) {
+            if(self.classname == "player") {
+                EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? cvar("sv_spectate_delay") : 0);
+            } else {
+                /*
+                 * Actually no, this is probably a bad idea
+                 * 
+                if(self.jb_specteam) {
+                    self.jb_specteam = 0;
+                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
+                    PutObserverInServer();
+                }
+                */
+            }
+        }
 	} else if(cmd == "join") {
 		if not(self.flags & FL_CLIENT)
 			return;
-		if(!g_arena)
-		if (self.classname != "player" && !lockteams)
-		{
+		
+        if(g_arena)
+            return;
+        
+		if(self.classname != "player") {            
+            if(lockteams) {
+                bigprint(self, "The teams are locked", "", 2);
+                return;
+            }
+            
 			if(isJoinAllowed()) {
+                if(HG_ShowMenu(FALSE))
+                    return;
+                
 				self.classname = "player";
 				PlayerScore_Clear(self);
+                
 				bprint ("^4", self.netname, "^4 is playing now\n");
-				PutClientInServer();
+                PutClientInServer();
+                
 				if(cvar("g_campaign"))
 					campaign_bots_may_start = 1;
 			}
 			else {
 				//player may not join because of g_maxplayers is set
-				centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+				//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
+                
+                if(!self.joinqueue)
+                if(!HG_ShowMenu(FALSE))
+                    JoinQ_Push(self);
 			}
 		}
 		UnmarkAway(self);
@@ -461,13 +509,15 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 		if( !teams_matter ) {
-			sprint( self, "selecteam can only be used in teamgames\n");
+			sprint(self, "selectteam can only be used in teamgames\n");
+        } else if(self.jb_specteam) {
+            sprint(self, "selectteam can't be used while spectating in the jail\n");
 		} else if(g_inf) {
 			//don't allow players to switch their team when playing infection
 		} else if(cvar("g_campaign")) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
-			sprint( self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
+			sprint(self, "^7The game has already begun, you must wait until the next map to be able to join a team.\n");
 		} else if( argv(1) == "red" ) {
 			DoTeamChange(COLOR_TEAM1);
 		} else if( argv(1) == "blue" ) {
@@ -481,7 +531,76 @@ void SV_ParseClientCommand(string s) {
 		} else {
 			sprint( self, strcat( "selectteam none/red/blue/yellow/pink/auto - \"", argv(1), "\" not recognised\n" ) );
 		}
-	} else if(cmd == "ready") {
+	} else if(cmd == "picknade") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        if(!g_nadgets)
+            return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        float term = (self.term_authed && !self.term_used);
+        float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
+        
+        float t = HG_NameToType(argv(1));
+        float i;
+        float argc = tokenize_console(cvar_string("g_nadgets_type_selectable"));
+        
+        if(argc)
+            for(i = 0; i < argc; ++i)
+                if(t == HG_NameToType(argv(i))) {
+                    sprint(self, strcat("^1Your nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
+                    self.(nr? hg_type_picked_nextround : hg_type_picked) = t;
+                    
+                    if(!nr) {
+                        float o;
+                        if(term) {
+                            if(self.hg_ammo < 1)
+                                o = TRUE;
+                                
+                            if(self.hg_type != t) {
+                                self.hg_ammo = 1;
+                                o = TRUE;
+                            } else
+                                self.hg_ammo = max(1, self.hg_ammo);
+                            
+                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+                        }
+                        
+                        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
+                        
+                        if(o || !term) {
+                            HG_SetRegenTime(self, HG_RegenTime(self));
+                            if(!term)
+                                self.hg_ammo = cvar("g_nadgets_ammo");
+                        }
+                        
+                        if(term) {
+                            self.term_used = TRUE;
+                            self.term_nextuse = time + cvar("g_terminals_auth_cooldown");
+                        }
+                    }
+                    
+                    return;
+                }
+                
+        sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
+        return;
+    } else if(cmd == "hg_optout") {
+        if not(self.flags & FL_CLIENT)
+            return;
+            
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        
+        self.((isplayer && gamestarted)? hg_optout_nextround : hg_optout) = stof(argv(1));
+    } else if(cmd == "hg_alwaysask") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        self.hg_alwaysask = stof(argv(1));
+    } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;
 
@@ -508,6 +627,12 @@ void SV_ParseClientCommand(string s) {
 				sprint(self, "^1Game has already been restarted\n");
 			}
 		}
+    } else if(cmd == "tt_save" && sv_cheats) {
+        if(self.tt_lastmoment)
+            TimeTravel_EraseMoment(self.tt_lastmoment);
+        self.tt_lastmoment = TimeTravel_SaveMoment(self);
+    } else if(cmd == "tt_takeback" && sv_cheats) {
+        TimeTravel_TakeBack(self, self.tt_lastmoment);
 	} else if(cmd == "maplist") {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {
@@ -544,14 +669,24 @@ void SV_ParseClientCommand(string s) {
 		}
 		UnmarkAway(self);
 		//clientcommand(self, formatmessage(s));
-	} else if(cmd == "info") {
+	}
+	else if (cmd == "reply") {
+		if(self.lasttell){
+			Say(self, FALSE, self.lasttell, substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)), TRUE);
+		}
+		else{
+			sprint(self, "No one has sent you any tell messages to reply to.\n");
+		}
+		UnmarkAway(self);
+	}
+	else if(cmd == "info") {
 		cmd = cvar_string(strcat("sv_info_", argv(1)));
 		if(cmd == "")
 			sprint(self, "ERROR: unsupported info command\n");
 		else
 			wordwrap_sprint(cmd, 1111);
 	} else if(cmd == "suggestmap") {
-		sprint(self, strcat(MapVote_Suggest(argv(1)), "\n"));
+		sprint(self, strcat(MapVote_Suggest(argv(1), self.vote_master), "\n"));
 	} else if(cmd == "timeout") {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -577,6 +712,9 @@ void SV_ParseClientCommand(string s) {
 		sprint(self, cvar_changes);
 	} else if(cmd == "afk") {
 		MarkAway(self, 1);
+    } else if(cmd == "removenadgets") {
+        if(sv_cheats || self.maycheat)
+            HG_RemoveAll(self);
 	} else if(cmd == "pointparticles") {
 		if((sv_cheats || self.maycheat) && tokens == 5)
 		{
@@ -889,6 +1027,24 @@ void SV_ParseClientCommand(string s) {
 		}
 		self.hidecountry = stof (argv (1));
 		IP2C_SetCountry (self);
+    } else if (cmd == "dmgstats") {
+        if(!sv_damagestats) {
+            sprint(self, "^1Damage statistics are not available on this server.\n");
+            return;
+        }
+        
+        float entno = stof(argv(1));
+        entity client = world;
+        if(entno <= maxclients)
+            client = edict_num(entno);
+        
+        entity k = ((argv(2) == "taken")? client.dtrack_taken : client.dtrack_total);
+        
+        if(k)
+            DamageTracker_Print(k, self);
+        else
+            sprint(self, "^1Usage: cmd dmgstats player_id\n");
+        return;
 	} else {
 		//if(ctf_clientcommand())
 		//	return;
@@ -942,13 +1098,12 @@ void SV_ParseClientCommand(string s) {
 			UnmarkAway(self);
 		}
 
-		clientcommand(self,s);
-
-        if(cmd == "name") if(self.classname != "")
-        {
-            WriteSpectatorInfo(self);
-            WriteSpectatorInfo(self.enemy);
+        if(cmd == "name" && self.netname != "unconnected") {
+            IRC_Announce_Name(self, substring(s, argv_start_index(1) + 1, strlen(s) - argv_start_index(1) - 2));
         }
+        
+        clientcommand(self, s);
+
 	}
 }
 
@@ -974,7 +1129,8 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + RESTART_COUNTDOWN;
+	game_starttime = time + cvar("g_start_delay");
+    roundstate = ROUNDSTATE_PREGAME;
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage

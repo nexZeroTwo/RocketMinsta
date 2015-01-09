@@ -10,6 +10,7 @@ CLASS(MainWindow) EXTENDS(ModalController)
 	ATTRIB(MainWindow, radarDialog, entity, NULL)
 	ATTRIB(MainWindow, rmDialog, entity, NULL)
 	ATTRIB(MainWindow, gameMenuDialog, entity, NULL)
+	ATTRIB(MainWindow, nadeMenuDialog, entity, NULL)
 	ATTRIB(MainWindow, vcallDialog, entity, NULL)
 	ATTRIB(MainWindow, serverInfoDialog, entity, NULL)
 	ATTRIB(MainWindow, cvarsDialog, entity, NULL)
@@ -35,12 +36,22 @@ void configureMainWindowMainWindow(entity me)
 	i = spawnNexuizTeamSelectDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+    if(!DPRM_VersionIsSuitable()) {
+        i = spawnNexuizNaggerDialog();
+        i.configureDialog(i);
+        me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    }
 
 	me.rmDialog = i = spawnNexuizRMConfigDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-
+    
 	me.gameMenuDialog = i = spawnNexuizGameMenuDialog();
+	i.configureDialog(i);
+	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+    
+    me.nadeMenuDialog = i = spawnNexuizNadeMenuDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 
@@ -94,20 +105,23 @@ void configureMainWindowMainWindow(entity me)
 			n.setNexposee(n, i, '0.1 0.1 0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 		}
 	*/
+    
+    /*
 		i = spawnNexuizSingleplayerDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 		n.setNexposee(n, i, SKINPOSITION_DIALOG_SINGLEPLAYER, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
-		
+    */
+        
 		i = spawnNexuizMultiplayerDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, SKINPOSITION_DIALOG_MULTIPLAYER, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.5 0.1 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNexuizSettingsDialog();
 		i.configureDialog(i);
 		n.addItemCentered(n, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-		n.setNexposee(n, i, SKINPOSITION_DIALOG_SETTINGS, SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
+		n.setNexposee(n, i, '0.5 0.9 0.0', SKINALPHAS_MAINMENU_x, SKINALPHAS_MAINMENU_y);
 
 		i = spawnNexuizCreditsDialog();
 		i.configureDialog(i);

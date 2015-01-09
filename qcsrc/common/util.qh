@@ -202,3 +202,17 @@ float approach(float v, float t, float d);
 #ifdef MENUQC
 float sv_oldfag;		// just to make it compile
 #endif
+
+float TeamColorSkin(float);
+float approach(float v, float t, float d);
+
+// TODO: serverside setting with a list of those maybe? :p
+#define ISFAGGOTMAP(m) (substring(m, 0, 7) == "fagcity" || substring(m, 0, 7) == "ikzbdsm")
+
+string FormatDamage(float f);
+
+#ifndef SVQC
+string FlagIcon(string cn);
+#endif
+
+float fexists(string f);

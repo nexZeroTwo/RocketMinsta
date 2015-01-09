@@ -3,6 +3,8 @@ vector draw_scale;
 float draw_alpha;
 
 void draw_reset();
+void draw_reset_full();
+void draw_reset_custom(float cw, float ch, float ox, float oy);
 void draw_setMousePointer(string pic, vector theSize, vector theOffset);
 void draw_drawMousePointer(vector where);
 
@@ -32,6 +34,15 @@ vector globalToBoxSize(vector v, vector scale);
 float draw_NeedResizeNotify;
 
 string draw_currentSkin;
+string draw_originalSkin;
+float draw_overrides;
+float draw_overrideCount;
+string rm_watermark;
 
 float draw_TextWidth_WithColors(string s);
 float draw_TextWidth_WithoutColors(string s);
+
+float conwidth_s, conheight_s, realconwidth, realconheight, screenconwidth, screenconheight;
+
+#define MENU_ASPECT 1.25
+#define MENU_MINHEIGHT 600

@@ -7,6 +7,9 @@ void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
 
+void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage);
+void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage);
+
 float DistributeEvenly_amount;
 float DistributeEvenly_totalweight;
 void DistributeEvenly_Init(float amount, float totalweight)
@@ -59,7 +62,7 @@ float move_out_of_solid(entity e)
     tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
     if (!trace_startsolid)
         return 1;
-
+    
     m0 = e.mins;
     m1 = e.maxs;
     e.mins = '0 0 0';
@@ -101,8 +104,8 @@ string STR_OBSERVER = "observer";
 #define FOR_EACH_CLIENTSLOT(v) for(v = world; (v = nextent(v)) && (num_for_edict(v) <= maxclients); )
 #define FOR_EACH_CLIENT(v) FOR_EACH_CLIENTSLOT(v) if(v.flags & FL_CLIENT)
 #define FOR_EACH_REALCLIENT(v) FOR_EACH_CLIENT(v) if(clienttype(v) == CLIENTTYPE_REAL)
-#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.classname == STR_PLAYER)
-#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.classname == STR_PLAYER)
+#define FOR_EACH_PLAYER(v) FOR_EACH_CLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
+#define FOR_EACH_REALPLAYER(v) FOR_EACH_REALCLIENT(v) if(v.iscreature) //if(v.classname == STR_PLAYER)
 #define FOR_EACH_DEVELOPER(v) FOR_EACH_REALCLIENT(v) if(v.isdeveloper)
 #endif
 
@@ -169,6 +172,31 @@ void GameLogClose()
     }
 }
 
+float check_team_spawns(void) {
+    float r, b, y, p, c;
+    float tc = TeamCount_TotalTeams();
+    entity e;
+    
+    #define HANDLETEAM(n,o,p) case o: if(tc >= n) if(!p) c++; p = 1; break;
+    for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) switch(e.team) {
+        HANDLETEAM(1, COLOR_TEAM1, r)
+        HANDLETEAM(2, COLOR_TEAM2, b)
+        HANDLETEAM(3, COLOR_TEAM3, y)
+        HANDLETEAM(4, COLOR_TEAM4, p)
+    }
+    #undef HANDLETEAM
+    
+    return (c >= tc);
+}
+
+void fix_team_spawns(void) {
+    if(have_team_spawns)
+    if(!check_team_spawns()) {
+        print("Not enough team spawnpoints, not using them\n");
+        have_team_spawns = 0;
+    }
+}
+
 float spawnpoint_nag;
 void relocate_spawnpoint()
 {
@@ -214,7 +242,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt || g_clanarena)
         if (self.team)
             have_team_spawns = 1;
 
@@ -229,27 +257,6 @@ void relocate_spawnpoint()
         setsize(e, '-8 -8 -8', '8 8 8');
         e.solid = SOLID_TRIGGER;
     }
-}
-
-float count_team_spawns()
-{
-	float r, b, y, p, c;
-	entity e;
-	
-	#define HANDLETEAM(o,p) case o: if(!p) c++; p = 1; break;
-	for(e = world; (e = find(e, classname, "info_player_deathmatch")); ) if(e.team)
-	{
-		switch(e.team)
-		{
-			HANDLETEAM(COLOR_TEAM1, r)
-			HANDLETEAM(COLOR_TEAM2, b)
-			HANDLETEAM(COLOR_TEAM3, y)
-			HANDLETEAM(COLOR_TEAM4, p)
-		}
-	}
-	#undef HANDLETEAM
-	
-	return c;
 }
 
 #define strstr strstrofs
@@ -395,6 +402,7 @@ string reptable_src[MAXREPS];
 string reptable_rep[MAXREPS];
 float reptable_srclen[MAXREPS];
 float reptable_replen[MAXREPS];
+float reptable_wordmode[MAXREPS];
 float reptable_count;
 float reptable_init;
 float reptable_maxsrclen;
@@ -427,6 +435,7 @@ void reptable_free() {
 		strunzone(reptable_rep[i]);
 		reptable_srclen[i] = 0;
 		reptable_replen[i] = 0;
+		reptable_wordmode[i] = FALSE;
 	}
 	reptable_count = 0;
 	reptable_maxsrclen = 0;
@@ -443,6 +452,12 @@ void reptable_make(string replacements) {
 	float i;
 	for(i = 0; i < reptable_count; ++i) {
 		string id = argv(i);
+        
+        if(substring(id, 0, 1) == "%") {
+            id = substring(id, 1, strlen(id) - 1);
+            reptable_wordmode[i] = TRUE;
+        }
+        
 		string src = strzone(getsrc(id));
 		string rep = strzone(getrep(id));
 		float srclen = strlen(src);
@@ -474,6 +489,9 @@ string apply_autoreplace(string msg) {
 		reptable_make(reps);
 	}
 	
+    float a = 97,  A = 65;
+    float z = 122, Z = 90;
+    
 	float i, len;
 	len = strlen(msg);
 	
@@ -495,6 +513,22 @@ string apply_autoreplace(string msg) {
 			if(p == reptable_src[id]) {
 				//print("apply_autoreplace: success\n");
 				
+                if(reptable_wordmode[id]) {
+                    float c;
+                    
+                    if(i > 0) {
+                        c = str2chr(msg, i - 1);
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                            continue;
+                    }
+                    
+                    if(i + slen < len) {
+                        c = str2chr(msg, i + slen);
+                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                            continue;
+                    }
+                }
+                
 				string head = substring(msg, 0, i);
 				string tail = substring(msg, i + slen, len);
 				msg = strcat(head, reptable_rep[id], tail);
@@ -509,6 +543,33 @@ string apply_autoreplace(string msg) {
 	}
 	
 	return msg;
+}
+
+string apply_faggotry(string msg) {
+    string result, c;
+    float len, i, o;
+    
+    msg = strdecolorize(msg);
+    
+    len = strlen(msg);
+    c = substring(msg, len-1, 1);
+    if(c != "." && c != "?" && c != "!")
+        msg = strcat(msg, ".");
+    msg = strcat(msg, " Also, I'm a huge faggot.");
+    len = strlen(msg);
+    
+    for(i = 0; i < len; ++i, ++o) {
+        c = substring(msg, i, 1);
+        if(c == "^") {
+            c = "^^";
+            if(substring(msg, i+1, 1) == "^")
+                i++;
+        }
+            
+        result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(o * 0.07) + 3, 0.1, 1)), c);
+    }
+    
+    return result;
 }
 
 string formatmessage(string msg)
@@ -590,6 +651,10 @@ string formatmessage(string msg)
         msg = strcat(substring(msg, 0, p), replacement, substring(msg, p+2, strlen(msg) - (p+2)));
         p = p + strlen(replacement);
     }
+    
+    if(whatsgoingon)
+        msg = apply_faggotry(msg);
+    
     return msg;
 }
 
@@ -705,7 +770,8 @@ void GetCvars(float f)
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodels, "cl_forceplayermodels");
 	GetCvars_handleFloat(s, f, cvar_cl_forceplayermodelsfromnexuiz, "cl_forceplayermodelsfromnexuiz");
 #endif
-	GetCvars_handleFloatOnce(s, f, cvar_cl_gunalign, "cl_gunalign");
+	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
+    GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -714,16 +780,6 @@ void GetCvars(float f)
 		if (s == "cl_weaponpriority")
 			self.switchweapon = w_getbestweapon(self);
 	}
-}
-
-float fexists(string f)
-{
-    float fh;
-    fh = fopen(f, FILE_READ);
-    if (fh < 0)
-        return FALSE;
-    fclose(fh);
-    return TRUE;
 }
 
 void GameCommand(string);
@@ -783,6 +839,28 @@ string Team_ColorNameLowerCase(float t)
     if (t == COLOR_TEAM4)
         return "pink";
     return "neutral";
+}
+
+float Team_Index(float t) {
+    switch(t) {
+        case COLOR_TEAM1: return 0;
+        case COLOR_TEAM2: return 1;
+        case COLOR_TEAM3: return 2;
+        case COLOR_TEAM4: return 3;
+    }
+    
+    return -1;
+}
+
+float Team_FromIndex(float i) {
+    switch(i) {
+        case 0: return COLOR_TEAM1;
+        case 1: return COLOR_TEAM2;
+        case 2: return COLOR_TEAM3;
+        case 3: return COLOR_TEAM4;
+    }
+    
+    return 0;
 }
 
 #define CENTERPRIO_POINT 1
@@ -928,8 +1006,18 @@ void readplayerstartcvars()
 	g_weaponarena_limitammo = cvar("g_weaponarena_limitammo");
 
     g_weaponarena = 0;
-    s = cvar_string("g_weaponarena");
-    if (s == "0")
+    
+    if(g_clanarena) {
+        s = cvar_string("g_clanarena_start_weapons");
+        if(s == "0")
+            s = cvar_string("g_weaponarena");
+    } else {
+        s = cvar_string("g_weaponarena");
+        if(s == "0")
+            s = "most";
+    }
+    
+    if(s == "0")
     {
     }
     else if (s == "all")
@@ -990,7 +1078,12 @@ void readplayerstartcvars()
 		g_weaponarena_random = cvar("g_weaponarena_random");
 	else
 		g_weaponarena_random = 0;
-
+    
+    if (g_clanarena) {
+        start_health = cvar("g_clanarena_start_health");
+        start_armorvalue = cvar("g_clanarena_start_armor");
+    }
+    
     if (g_nixnex)
     {
         start_weapons = 0;
@@ -1011,7 +1104,7 @@ void readplayerstartcvars()
 				start_ammo_rockets = 999;
 			if (g_weaponarena & WEPBIT_SHOTGUN)
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK))
+			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
 			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
@@ -1019,6 +1112,14 @@ void readplayerstartcvars()
 				start_ammo_fuel = 999;
 			start_items |= IT_UNLIMITED_AMMO;
 		}
+        else if (g_clanarena)
+        {
+            start_ammo_shells = cvar("g_clanarena_start_shells");
+            start_ammo_nails = cvar("g_clanarena_start_nails");
+            start_ammo_rockets = cvar("g_clanarena_start_rockets");
+            start_ammo_cells = cvar("g_clanarena_start_cells");
+            start_ammo_fuel = cvar("g_clanarena_start_fuel");
+        }
 		else
 		{
 			start_ammo_shells = cvar("g_start_ammo_shells");
@@ -1157,7 +1258,7 @@ void readplayerstartcvars()
         start_items |= IT_JETPACK;
 
 	if(g_jetpack /*|| g_grappling_hook*/)
-		g_handgrenades = 0;
+		g_nadgets = 0;
 
     if (g_weapon_stay == 2)
     {
@@ -1250,7 +1351,7 @@ void readlevelcvars(void)
     g_footsteps = cvar("g_footsteps");
     g_grappling_hook = cvar("g_grappling_hook");
     g_jetpack = cvar("g_jetpack");
-    g_handgrenades = cvar("g_handgrenades");
+    g_nadgets = cvar("g_nadgets");
     g_laserguided_missile = cvar("g_laserguided_missile");
     g_midair = cvar("g_midair");
     g_minstagib = cvar("g_minstagib");
@@ -1764,10 +1865,14 @@ void precache()
     precache_sound ("weapons/weapon_switch.wav");
     precache_sound ("weapons/weaponpickup.wav");
     precache_sound ("weapons/unavailable.wav");
-    if (g_grappling_hook)
-    {
+    
+    if(g_grappling_hook) {
         precache_sound ("weapons/hook_fire.wav"); // hook
         precache_sound ("weapons/hook_impact.wav"); // hook
+    }
+
+    if(g_nadgets) {
+        HG_Precache();
     }
 
     if (cvar("sv_precacheweapons") || g_nixnex)
@@ -2131,7 +2236,7 @@ float SUB_NoImpactCheck()
         {
             dprint("Odd... did not hit...?\n");
         }
-        else if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+        else if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) if(self.classname == "grapplinghook")
         {
             dprint("Detected and prevented the sky-grapple bug.\n");
             return 1;
@@ -2144,6 +2249,8 @@ float SUB_NoImpactCheck()
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
+#define PROJECTILE_FIX(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); }
+#define PROJECTILE_FIX2(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
 
 float MAX_IPBAN_URIS = 16;
 
@@ -2151,6 +2258,7 @@ float URI_GET_DISCARD   = 0;
 float URI_GET_IPBAN     = 1;
 float URI_GET_IPBAN_END = 16;
 //float URI_GET_IP2C = 17; // Moved to common/ip2c.qh
+float URI_GET_RADIO = 18;
 
 void URI_Get_Callback(float id, float status, string data)
 {
@@ -2170,6 +2278,10 @@ void URI_Get_Callback(float id, float status, string data)
     else if (id == URI_GET_IP2C)
     {
         IP2C_URI_Get_Callback(id, status, data);
+    }
+    else if (id == URI_GET_RADIO)
+    {
+        Radio_URI_Get_Callback(id, status, data);
     }
     else
     {
@@ -2257,12 +2369,15 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
 {
     float m, i;
     vector start, org, delta, end, enddown, mstart;
+    entity sp;
 
     m = e.dphitcontentsmask;
     e.dphitcontentsmask = goodcontents | badcontents;
 
     org = world.mins;
     delta = world.maxs - world.mins;
+
+    start = end = org;
 
     for (i = 0; i < attempts; ++i)
     {
@@ -2294,20 +2409,35 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
         // these can be traceLINES as we already verified the starting box
         mstart = start + 0.5 * (e.mins + e.maxs);
         traceline(mstart, mstart + '1 0 0' * delta_x, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart - '1 0 0' * delta_x, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart + '0 1 0' * delta_y, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart - '0 1 0' * delta_y, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
         traceline(mstart, mstart + '0 0 1' * delta_z, MOVE_NORMAL, e);
-        if (trace_fraction >= 1)
+        if (trace_fraction >= 1 || trace_dphittexturename == "common/caulk")
             continue;
+
+	// rule 4: we must "see" some spawnpoint or item
+	for(sp = world; (sp = find(sp, classname, "info_player_deathmatch")); )
+		if(checkpvs(mstart, sp))
+			if((traceline(mstart, sp.origin, MOVE_NORMAL, e), trace_fraction) >= 1)
+				break;
+	if(!sp)
+	{
+		for(sp = world; (sp = findflags(sp, flags, FL_ITEM)); )
+			if(checkpvs(mstart, sp))
+				if((traceline(mstart, sp.origin + (sp.mins + sp.maxs) * 0.5, MOVE_NORMAL, e), trace_fraction) >= 1)
+					break;
+		if(!sp)
+			continue;
+	}
 
         // find a random vector to "look at"
         end_x = org_x + random() * delta_x;
@@ -2328,10 +2458,7 @@ float MoveToRandomMapLocation(entity e, float goodcontents, float badcontents, f
 
         // rule 6: we must not end up in trigger_hurt
         if (tracebox_hits_trigger_hurt(start, e.mins, e.maxs, enddown))
-        {
-            dprint("trigger_hurt! ouch! and nothing else could find it!\n");
             continue;
-        }
 
         break;
     }
@@ -2506,8 +2633,6 @@ vector shotorg_adjust(vector vecs, float y_is_right, float visual)
 	}
 	return vecs;
 }
-
-
 
 void attach_sameorigin(entity e, entity to, string tag)
 {
@@ -3004,14 +3129,14 @@ void hudflash_teamcolor_default_spec(entity e)
 }
 
 // universal endround for all supported gametypes
-void freezetag_EndRound();
+void FreezeTag_EndRound();
 void vip_EndRound();
 void tdom_EndRound();
 
 void EndRound()
 {
     if(g_freezetag)
-        freezetag_EndRound();
+        FreezeTag_EndRound();
 else
     if(g_vip)
         vip_EndRound();
@@ -3023,7 +3148,10 @@ else
         kh_FinishRound();
 else
 	if(g_jailbreak)
-		JB_EndRound();
+		JB_EndRound(5);
+else
+    if(g_clanarena)
+        CA_EndRound();
 else
     bprint("EndRound() for an unsupported gametype!?\n");
 }
@@ -3034,33 +3162,8 @@ float EndRound_Allowed()
          || g_vip
          || g_totaldomination
          || g_keyhunt
-         || g_jailbreak);
-}
-
-void SendSpeedRecord(entity e)
-{
-    if(e.classname == "")
-        return;
-    
-    msg_entity = e;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_SPEEDRECORD);
-    WriteShort(MSG_ONE, highest_velocity);
-    WriteString(MSG_ONE, highest_velocity_name);
-}
-
-void UpdateHighestVelocity(float v, entity e)
-{
-    highest_velocity = v;
-    highest_velocity_entity = e;
-    
-    if(highest_velocity_name)
-        strunzone(highest_velocity_name);
-        
-    highest_velocity_name = strzone(e.netname);
-    
-    FOR_EACH_REALCLIENT(other)
-        SendSpeedRecord(other);
+         || g_jailbreak
+         || g_clanarena);
 }
 
 .float is_away;
@@ -3093,12 +3196,11 @@ void MarkAway(entity pl, float force)
     pl.is_away = 1;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 1;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_SetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to mark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
+
+    pl.afkmarktime = time;
 }
 
 void UnmarkAway(entity pl)
@@ -3116,10 +3218,7 @@ void UnmarkAway(entity pl)
     pl.is_away = 0;
     
     if(pl.scorekeeper)
-    {
-        pl.scorekeeper.(scores[SP_AWAYSTATUS]) = 0;
-        pl.scorekeeper.SendFlags |= pow(2, SP_AWAYSTATUS);
-    }
+        PlayerScore_UnsetFlags(pl, SPFLAG_AWAY);
     else
         bprint("^1Tried to unmark ", pl.netname, "^1 AFK, but they don't have a scorekeeper!\n");
     
@@ -3151,6 +3250,10 @@ float GameTypeFilter_Allowed (string map, string gametype)
 
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
 		return 1; // maps always support dm-gametypes, even when they don't claim to
+
+    if(cvar("g_domination_always_available"))
+    if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
+        return 1;
 
 	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
 	if(fh < 0)
@@ -3195,13 +3298,22 @@ float Banning_UnbanPlayerByName (string name)
 	return 1;
 }
 
-string GetVoteList_All()
+string GetVoteList_VoteCommands(float ismaster, float isvdo) {
+    string s = cvar_string("sv_vote_commands");
+    if(ismaster)
+        s = strcat(s, " ", cvar_string("sv_vote_master_commands"));
+    if(!isvdo)
+        s = strcat(s, " ", cvar_string("sv_vote_only_commands"));
+    return s;
+}
+
+string GetVoteList_All(float ismaster, float isvdo)
 {
 	if(!cvar("sv_vote_gametype_call"))
-		return cvar_string("sv_vote_commands");
+		return GetVoteList_VoteCommands(ismaster, isvdo);
 	
 	local string votes;
-	local float i, n = tokenizebyseparator(cvar_string("sv_vote_commands"), " ");
+	local float i, n = tokenizebyseparator(GetVoteList_VoteCommands(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
@@ -3212,17 +3324,17 @@ string GetVoteList_All()
 	return strcat(votes, cvar_string("sv_vote_gametype_options"));
 }
 
-string GetVoteList_Filtered()
+string GetVoteList_Filtered(float ismaster, float isvdo)
 {
 	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_All(), " ");
+	local float i, n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
 		float c = ListContains(cvar_string("sv_vote_secretcommands"), argv(i), " ");
 		
 		// ListContains tokenizes
-		n = tokenizebyseparator(GetVoteList_All(), " ");
+		n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
 		
 		if not(c)
 			votes = strcat(votes, argv(i), " ");
@@ -3231,12 +3343,12 @@ string GetVoteList_Filtered()
 	return votes;
 }
 
-string GetVoteList()
+string GetVoteList(float ismaster, float isvdo)
 {
 	if(cvar("sv_vote_secretcommands_enabled"))
-		return GetVoteList_All();
+		return GetVoteList_All(ismaster, isvdo);
 	else
-		return GetVoteList_Filtered();
+		return GetVoteList_Filtered(ismaster, isvdo);
 }
 
 void GameCommand(string);
@@ -3288,7 +3400,6 @@ string GetForcedFog() {
 
 // ========================================== //
 
-.string endround_typename;
 .float endround_warmuptime;
 .float endround_announced;
 .void() endround_think;
@@ -3310,23 +3421,22 @@ void G_EndRound_Think()
     
     if(timeleft <= self.endround_warmuptime)
     {
+        roundstate = ROUNDSTATE_WARMUP;
+        
 		if(!self.endround_announced) {
-			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
+			sound(world, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
 			self.endround_announced = TRUE;
 		}
 		
         if(timeleft <= 0)
         {
+            roundstate = ROUNDSTATE_GAME;
             FOR_EACH_PLAYER(e)
-            {
-                bigprint_clear_spec(e);
-                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", 1);
-            }
+                bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", -1);
             
-			sound(self, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
+            sound(world, CHAN_VOICE, "announcer/robotic/begin.wav", VOL_BASEVOICE, ATTN_NONE);
             if(self.endround_finalize)
-				self.endround_finalize();
-            strunzone(self.endround_typename);
+                self.endround_finalize();
             remove(self);
             shooting_forbidden = FALSE;
             return;
@@ -3337,28 +3447,27 @@ void G_EndRound_Think()
 		shooting_forbidden = TRUE;
         
         FOR_EACH_PLAYER(e)
-        {
-            bigprint_clear_spec(e);
-            bigprint_spec(e, strcat(self.endround_typename, " starts in: ", ftos(timeleft)), "", 1);
-        }
+            bigprint_spec(e, strcat(gametype_ID_to_LongName(game), " starts in: ", ftos(timeleft)), "", -1);
         
         if(timeleft <= 3)
-			sound(e, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+			sound(world, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
     }
     self.nextthink = time + 1;
 }
 
-void G_EndRound(string tname, float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
+void G_EndRound(float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
 {
     local entity e = spawn();
     e.think = G_EndRound_Think;
     e.nextthink = time + 1;
-    e.endround_typename = strzone(tname);
     e.endround_think = callback;
+    e.endround_think2 = callback2;
     e.endround_finalize = callbackfin;
     e.endround_warmuptime = warmuptime;
     next_round = time + thedelay;
-    e.cnt = warmuptime + next_round;
+    next_round_starttime = next_round + warmuptime;
+    e.cnt = next_round_starttime;
+    roundstate = ROUNDSTATE_OVER;
 }
 
 // ========================================== //
@@ -3371,5 +3480,90 @@ void SendServerInfo(entity player) {
 	WriteString(MSG_ONE, RM_BUILD_NAME);
 	WriteString(MSG_ONE, RM_BUILD_VERSION);
 	WriteString(MSG_ONE, RM_BUILD_DATE);
+	WriteString(MSG_ONE, RM_BUILD_COMMIT);
 	WriteString(MSG_ONE, strreplace("\\n", "\n", cvar_string("sv_motd")));
+}
+
+void AloneWarning(float t, float(entity) alivecheck) {
+    float alive;
+    entity e;
+    entity p;
+    
+    FOR_EACH_PLAYER(e) if(e.team == t) if(alivecheck(e)) {
+        p = e;
+        alive++;
+        
+        if(alive > 1)
+            return;
+    }
+    
+    if(p) {
+        bigprint_spec(p, "Warning! You are on your own!", "", 3);
+    }
+}
+
+void SetCamera(entity player, entity cam, float timeout) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, TRUE);
+	WriteShort(MSG_ONE, cam.origin_x);
+	WriteShort(MSG_ONE, cam.origin_y);
+	WriteShort(MSG_ONE, cam.origin_z);
+	WriteShort(MSG_ONE, timeout);
+}
+
+void ClearCamera(entity player) {
+	msg_entity = player;
+	WriteByte(MSG_ONE, SVC_TEMPENTITY);
+	WriteByte(MSG_ONE, TE_CSQC_CAMERA);
+	WriteByte(MSG_ONE, FALSE);
+}
+
+void JB_ClearCameraForAll() {
+	entity p; FOR_EACH_REALCLIENT(p) JB_ClearCamera(p);
+}
+
+void SetCameraWithAngles(entity player, entity cam, float timeout) {
+    SetCamera(player, cam, timeout);
+    player.angles = cam.angles;
+    player.angles_z = 0;
+    player.fixangle = TRUE;
+}
+
+float               trace_allsolid_saved;
+float               trace_startsolid_saved;
+float               trace_fraction_saved;
+vector              trace_endpos_saved;
+vector              trace_plane_normal_saved;
+float               trace_plane_dist_saved;
+entity              trace_ent_saved;
+vector              v_forward_saved;
+vector              v_up_saved;
+vector              v_right_saved;
+
+void save_nasty_globals(void) {
+    trace_allsolid_saved = trace_allsolid;
+    trace_startsolid_saved = trace_startsolid;
+    trace_fraction_saved = trace_fraction;
+    trace_endpos_saved = trace_endpos;
+    trace_plane_normal_saved = trace_plane_normal;
+    trace_plane_dist_saved = trace_plane_dist;
+    trace_ent_saved = trace_ent;
+    v_forward_saved = v_forward;
+    v_up_saved = v_up;
+    v_right_saved = v_right;
+}
+
+void restore_nasty_globals(void) {
+    trace_allsolid = trace_allsolid_saved;
+    trace_startsolid = trace_startsolid_saved;
+    trace_fraction = trace_fraction_saved;
+    trace_endpos = trace_endpos_saved;
+    trace_plane_normal = trace_plane_normal_saved;
+    trace_plane_dist = trace_plane_dist_saved;
+    trace_ent = trace_ent_saved;
+    v_forward = v_forward_saved;
+    v_up = v_up_saved;
+    v_right = v_right_saved;
 }

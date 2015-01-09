@@ -357,7 +357,13 @@ void bot_clientconnect()
 	self.createdtime = self.nextthink;
 	self.clientfov = 90;
 	self.hudskin = "default";
-
+	//grenades to bots
+// 	if(cvar("g_handgrenades"))
+// 	{
+// 		self.hg_optout = 1;
+// 		self.hg_type = HG_LASER;
+// 	}
+	//
 	if(!self.bot_config_loaded) // This is needed so team overrider doesn't break between matches
 		bot_setnameandstuff();
 
@@ -525,7 +531,7 @@ void bot_serverframe()
 
 	FOR_EACH_REALCLIENT(head)
 	{
-		if(head.classname == "player" || g_lms || g_arena)
+		if(head.classname == "player" || g_lms || g_arena || ((g_jailbreak || g_clanarena) && head.jb_specteam))
 			++activerealplayers;
 		++realplayers;
 	}
