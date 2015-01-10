@@ -408,8 +408,13 @@ void Ent_Projectile()
 			case PROJECTILE_RM_LASER_YELLOW:
 			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
-			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_GRENADE: case PROJECTILE_GRENADE_BOUNCING:
+                if(!g_minstagib) {
+                    // TODO: fucking fix g_rocketminsta god damn it
+                    setmodel(self, "models/grenademodel.md3");
+                    self.skin = TeamColorSkin(self.team);
+                }
+                break;
 			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
                 setmodel(self, "models/grenademodel.md3");
                 self.skin = TeamColorSkin(self.team);
