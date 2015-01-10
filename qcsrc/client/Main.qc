@@ -401,7 +401,8 @@ void SetMadokaFont(float v)
 }
 
 void Menu_ShowNagger(void) {
-    localcmd("menu_cmd directmenu engineNagger\n");
+    if(!DPRM_VersionIsSuitable())
+        localcmd("menu_cmd directmenu engineNagger\n");
 }
 
 void ReloadMenu_f()
