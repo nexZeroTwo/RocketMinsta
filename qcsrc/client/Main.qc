@@ -123,8 +123,7 @@ void CSQC_Init(void)
 	registercvar("cl_lowammowarnings_cells", "10", CVAR_SAVE);
 	registercvar("cl_lowammowarnings_zapper_heat", "25", CVAR_SAVE);
 	registercvar("cl_lowammowarnings_campingrifle_bulletsremaining", "2", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_width", "20", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_height", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_size", "20", CVAR_SAVE);
 	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
 	
     gametype = 0;

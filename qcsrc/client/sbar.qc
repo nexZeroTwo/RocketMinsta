@@ -2928,8 +2928,8 @@ void Sbar_ShowLowammo(){
 	float currammo, currammotype, ammocode;
 	float clipheatwarn = GetSpecialCaseWarn(currweapon);
 	float warn = GetLowAmmoCvar(currweapon);
-	scale_x = cvar("cl_lowammowarnings_width");
-	scale_y = cvar("cl_lowammowarnings_height");
+	scale_x = cvar("cl_lowammowarnings_size");
+	scale_y = cvar("cl_lowammowarnings_size");
 	pos_y = cvar("cl_lowammowarnings_position");
 	
 	//carrying either camping rifle or zapper
@@ -2958,6 +2958,7 @@ void Sbar_ShowLowammo(){
 			showwarning = 1;
 		}
 	}
+	drawfont = sbar_bigfont;
 	if(showwarning){
 		string ammoname = GetFriendlyAmmoName(currammotype);
 		drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
@@ -2965,9 +2966,10 @@ void Sbar_ShowLowammo(){
 	if(showspecialwarning){
 		string weaponname = get_weaponinfo(currweapon).message;
 		string specialwarn = GetSpecialCaseWarnString(currweapon);
-		pos_y = pos_y - 20;
+		pos_y = pos_y - scale_y;
 		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
+	drawfont = sbar_font;
 }
 
 void Sbar_Reset (void)
