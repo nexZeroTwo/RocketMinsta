@@ -60,7 +60,7 @@ void W_CampingRifle_Reload()
 	sound (self, CHAN_WEAPON2, "weapons/campingrifle_reload.wav", VOL_BASE, ATTN_NORM);
 
 	t = max(time, ATTACK_FINISHED(self)) + cvar("g_balance_campingrifle_reloadtime");
-    self.campingrifle_reloadfinished = t;
+    self.campingrifle_reloadfinished = t * W_WeaponRateFactor();
 
 	weapon_thinkf(WFRAME_RELOAD, cvar("g_balance_campingrifle_reloadtime"), W_CampingRifle_ReloadedAndReady);
 
