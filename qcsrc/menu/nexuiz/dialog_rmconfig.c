@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 19)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 20)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -17,6 +17,12 @@ ENDCLASS(NexuizRMConfigDialog)
 void fillNexuizRMConfigDialog(entity me)
 {
 	entity e;
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
+            OPTDEP("dodging")
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "radio", "Enable the Radio (music broadcast from server)"));
+            OPTDEP("radio")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "showspec", "Show spectators"));
 			OPTDEP("showspec")
@@ -44,13 +50,6 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "anonspec", "Spectate anonymously"));
 			OPTDEP("anonspec")
 	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nobigtext", "Enable big notifications"));
-	me.setFirstColumn(me, me.firstColumn + 0.1);
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidebigcomments", "with comments"));
-		setDependent(e, "rm_nobigtext", 0, 0);
-	me.setFirstColumn(me, me.firstColumn - 0.1);
-	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "noflags", "Country flags in scoreboard"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "hidecountry", "Hide my country"));
@@ -62,8 +61,14 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nogamemenu", "Enable the Game Menu"));
 	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
-	me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger", "Danger shortcut for freezetag"));
+            OPTDEP("freezetag_danger")
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger_silent", "Without teamchat notification"));
+            OPTDEP("freezetag_danger")
+    me.setFirstColumn(me, me.firstColumn - 0.1);
+    me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Note: You can access these options through Multiplayer -> Player Setup"));
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizButton("Ok", '0 0 0'));
@@ -71,20 +76,6 @@ void fillNexuizRMConfigDialog(entity me)
 			e.onClickEntity = me;
 	
 	me.gotoRC(me, 0, 8); me.setFirstColumn(me, me.currentColumn);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger", "Danger shortcut for freezetag"));
-			OPTDEP("freezetag_danger")
-	me.setFirstColumn(me, me.firstColumn + 0.1);
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger_silent", "Without teamchat notification"));
-			OPTDEP("freezetag_danger")
-	me.setFirstColumn(me, me.firstColumn - 0.1);
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
-            OPTDEP("dodging")
-	me.TR(me);
-        me.TD(me, 1, 4, e = makeRMCheckBox(0, "radio", "Enable the Radio (music broadcast from server)"));
-            OPTDEP("radio")
-    me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD settings:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);
 	me.TR(me);
@@ -94,6 +85,13 @@ void fillNexuizRMConfigDialog(entity me)
             setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use default Nexuiz fonts"));
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(1, "nobigtext", "Enable big notifications"));
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidebigcomments", "with comments"));
+        setDependent(e, "rm_nobigtext", 0, 0);
+    me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
 	me.TR(me);
@@ -103,12 +101,16 @@ void fillNexuizRMConfigDialog(entity me)
     me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownadgetregen", "Show Nadget regeneration in seconds"));
             setDependentAND(e, "rm_oldhud", 0, 0, "_rm_optavail_shownadgetregen", 1, 1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "cl_lowammowarnings", "Low ammo warnings"));
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
 	me.setFirstColumn(me, me.firstColumn - 0.1);
 		me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 15, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 14, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

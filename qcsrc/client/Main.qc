@@ -576,9 +576,10 @@ void PostInit(void)
             localcmd("seta rm_nododging 0; nododging 0\n");
         case 48:
             UpdateClRate();
+        case 49:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 49\n");
+		localcmd("seta rm_initialized 50\n");
 		RM_OUTDATED
 		break;
 	}
