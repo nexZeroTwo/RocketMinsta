@@ -115,6 +115,18 @@ void CSQC_Init(void)
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_bullets", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "15", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_rockets", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_shells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_zapper_heat", "25", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_campingrifle_bulletsremaining", "2", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_width", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_height", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
+	
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
