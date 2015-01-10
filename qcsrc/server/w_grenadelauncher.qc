@@ -97,6 +97,7 @@ void W_Grenade_Attack (void)
 	setsize(gren, '0 0 -3', '0 0 -3');
     PROJECTILE_FIX(gren)
 
+    gren.team = self.team;
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_primary_lifetime");
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
@@ -133,6 +134,7 @@ void W_Grenade_Attack2 (void)
 	setorigin(gren, w_shotorg);
     PROJECTILE_FIX(gren)
 
+    gren.team = self.team;
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode2;

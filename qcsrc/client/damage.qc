@@ -176,7 +176,7 @@ void Ent_DamageInfo(float isNew)
 				org2 = org + backoff * 6;
 				if(secondary)
 				{
-					pointparticles(particleeffectnum("electro_ballexplode"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
 				}
@@ -185,13 +185,13 @@ void Ent_DamageInfo(float isNew)
 					if(bounce)
 					{
 						// this is sent as "primary bounce" to distinguish it from secondary bounced balls
-						pointparticles(particleeffectnum("electro_combo"), org2, '0 0 0', 1);
+						pointparticles(rm_particleeffectnum_team("RM_ELECTRO_COMBO", self.team, 2), org2, '0 0 0', 1);
 						if(!issilent)
 							sound(self, CHAN_PROJECTILE, "weapons/electro_impact_combo.wav", VOL_BASE, ATTN_NORM);
 					}
 					else
 					{
-						pointparticles(particleeffectnum("electro_impact"), org2, '0 0 0', 1);
+						pointparticles(rm_particleeffectnum_team("RM_ELECTRO_IMPACT", self.team, 2), org2, '0 0 0', 1);
 						//if(!issilent)
 							//sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
 						if(!issilent)

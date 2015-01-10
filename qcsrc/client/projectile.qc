@@ -47,7 +47,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_TRANSLOC:
 				return;
 			case PROJECTILE_ELECTRO:
-                trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
@@ -72,7 +72,7 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
             break;
 
         case PROJECTILE_HG_PLASMA_SHARD:
@@ -80,7 +80,7 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
@@ -157,17 +157,13 @@ void Projectile_DrawTrail(vector to)
         case PROJECTILE_HG_NAPALMSHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
 :flame
-            if(time >= self.nextparticle) {
-                vector v = randomvec();
-                v_z = (v_z + 1) * 0.25;
-                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
-                self.nextparticle = time + 0.15 + random() * 0.15;
-            }
+            vector v = randomvec();
+            v_z = (v_z + 1) * 0.25;
+            pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 3 * drawframetime);
             break;
         case PROJECTILE_HEAL_PARTICLE_EMITTER:
             if(time >= self.nextparticle) {
-                vector v = randomvec();
-                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + v * self.extradata * 0.5, '0 0 0', 1);
+                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + randomvec() * self.extradata * 0.5, '0 0 0', 1);
                 self.nextparticle = time + 0.15 + random() * 0.15;
             }
             break;
@@ -393,7 +389,12 @@ void Ent_Projectile()
         
 		switch(self.cnt)
 		{
-			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
+			case PROJECTILE_ELECTRO:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                if(self.skin)
+                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
@@ -408,8 +409,13 @@ void Ent_Projectile()
 			case PROJECTILE_RM_LASER_YELLOW:
 			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
-			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_GRENADE: case PROJECTILE_GRENADE_BOUNCING:
+                if(!g_minstagib) {
+                    // TODO: fucking fix g_rocketminsta god damn it
+                    setmodel(self, "models/grenademodel.md3");
+                    self.skin = TeamColorSkin(self.team);
+                }
+                break;
 			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
                 setmodel(self, "models/grenademodel.md3");
                 self.skin = TeamColorSkin(self.team);
@@ -565,4 +571,5 @@ void Projectile_Precache()
 	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
     precache_sound("weapons/zapper_fly.wav");
+    precache_sound("weapons/zapper_fire.wav");
 }

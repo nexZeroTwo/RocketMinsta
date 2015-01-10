@@ -356,11 +356,13 @@ float w_zapper(float req) {
             }
         }
     } else if(req == WR_PRECACHE) {
-        precache_model("models/weapons/g_hookgun.md3");
-        precache_model("models/weapons/v_hookgun.md3");
-        precache_model("models/weapons/h_hookgun.dpm");
-        precache_sound("sounds/weapons/zapper_fire.wav");
-        precache_sound("sounds/weapons/zapper_fly.wav");
+        precache_model("models/weapons/g_zapper.md3");
+        precache_model("models/weapons/v_zapper.md3");
+        precache_model("models/weapons/h_zapper.dpm");
+        precache_sound("weapons/zapper_fire.wav");
+        precache_sound("weapons/zapper_fly.wav");
+        precache_sound("misc/arc1.wav");
+        precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
         if(cvar("g_balance_zapper_primary_heatup"))
             self.zapper_heat = 0;
