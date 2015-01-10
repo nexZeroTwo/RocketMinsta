@@ -334,9 +334,14 @@ void W_Zapper_Cooloff(void) {
 }
 
 float w_zapper(float req) {
-    if(req == WR_AIM)
-        self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
-    else if(req == WR_THINK) {
+	if (req == WR_AIM)
+		if(vlen(self.origin-self.enemy.origin) < cvar("g_balance_zapper_primary_range"))
+			self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+		else
+		{
+			self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+		}
+	else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
             if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
                 if(self.zapper_heat >= 1) {
