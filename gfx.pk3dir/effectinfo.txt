@@ -4509,7 +4509,7 @@ effect EF_FLAME
 //notunderwater
 count 200
 type smoke
-tex 48 55
+tex 9 24
 size 5 21
 alpha 200 356 512
 gravity -0.5
@@ -5156,7 +5156,7 @@ effect RM_HG_NAPALM_FIRE_TEAM1
 //notunderwater
 count 52
 type smoke
-tex 48 55
+tex 9 24
 size 11 31
 alpha 100 178 128
 gravity -0.25
@@ -5279,7 +5279,7 @@ effect RM_HG_NAPALM_FIRE_TEAM2
 //notunderwater
 count 52
 type smoke
-tex 48 55
+tex 9 24
 size 11 31
 alpha 100 178 128
 gravity -0.25
@@ -5402,7 +5402,7 @@ effect RM_HG_NAPALM_FIRE_TEAM3
 //notunderwater
 count 52
 type smoke
-tex 48 55
+tex 9 24
 size 11 31
 alpha 100 178 128
 gravity -0.25
@@ -5525,7 +5525,7 @@ effect RM_HG_NAPALM_FIRE_TEAM4
 //notunderwater
 count 52
 type smoke
-tex 48 55
+tex 9 24
 size 11 31
 alpha 100 178 128
 gravity -0.25

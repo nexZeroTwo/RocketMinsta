@@ -157,17 +157,13 @@ void Projectile_DrawTrail(vector to)
         case PROJECTILE_HG_NAPALMSHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
 :flame
-            if(time >= self.nextparticle) {
-                vector v = randomvec();
-                v_z = (v_z + 1) * 0.25;
-                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
-                self.nextparticle = time + 0.15 + random() * 0.15;
-            }
+            vector v = randomvec();
+            v_z = (v_z + 1) * 0.25;
+            pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 3 * drawframetime);
             break;
         case PROJECTILE_HEAL_PARTICLE_EMITTER:
             if(time >= self.nextparticle) {
-                vector v = randomvec();
-                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + v * self.extradata * 0.5, '0 0 0', 1);
+                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + randomvec() * self.extradata * 0.5, '0 0 0', 1);
                 self.nextparticle = time + 0.15 + random() * 0.15;
             }
             break;
