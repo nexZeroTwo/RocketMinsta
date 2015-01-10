@@ -47,7 +47,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_TRANSLOC:
 				return;
 			case PROJECTILE_ELECTRO:
-                trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
@@ -72,7 +72,7 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
             break;
 
         case PROJECTILE_HG_PLASMA_SHARD:
@@ -80,7 +80,7 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
@@ -393,7 +393,12 @@ void Ent_Projectile()
         
 		switch(self.cnt)
 		{
-			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
+			case PROJECTILE_ELECTRO:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                if(self.skin)
+                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;

@@ -4695,7 +4695,7 @@ effect RM_HG_PLASMA_SHARD_EXPLODE_TEAM1
 count 128
 type spark
 tex 40 40
-color 0xFDFFD9 0xFDFFD9
+color 0xFF5555 0xFF5555
 size 16 16
 alpha 256 256 1024
 bounce 2
@@ -5079,7 +5079,7 @@ effect RM_HG_PLASMA_SHARD_EXPLODE_TEAM4
 count 128
 type spark
 tex 41 41
-color 0xFDFFD9 0xFDFFD9
+color 0xFF88FF 0xFF88FF
 size 16 16
 alpha 256 256 1024
 bounce 2
@@ -6615,3 +6615,522 @@ color 0xE070FF 0xE070FF
 size 16 16
 alpha 256 256 1024
 velocityjitter 256 256 256
+
+/////// Red Electro
+
+// Red Electro Trail
+effect RM_ELECTRO_TEAM1
+trailspacing 1
+type static
+color 0x802E28 0x802E28
+size 3 3
+tex 38 38
+alpha 256 256 968
+lightradius 90
+lighttime 0
+lightcolor 6 2 1.5
+velocitymultiplier -0.1
+// bright sparks
+effect RM_ELECTRO_TEAM1
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xFF7050 0xFF2500
+size 2 4
+sizeincrease -20
+alpha 444 512 1866
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+// Red Electro Impact
+effect RM_ELECTRO_IMPACT_TEAM1
+countabsolute 1
+type decal
+tex 59 59
+size 32 32
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 250
+lightradiusfade 250
+lightcolor 10 4.375 3.125
+// flare effect
+effect RM_ELECTRO_IMPACT_TEAM1
+countabsolute 1
+type static
+tex 38 38
+color 0xFF7266 0xFF7266
+size 12 32
+alpha 256 256 512
+// cloud of bouncing sparks
+effect RM_ELECTRO_IMPACT_TEAM1
+count 60
+type smoke
+tex 42 42
+color 0xFF6262 0xFF0006
+size 36 36
+sizeincrease -50
+alpha 256 256 1024
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_IMPACT_TEAM1
+count 60
+type smoke
+color 0xFF6262 0xFF0006
+tex 0 8
+size 20 24
+sizeincrease 50
+alpha 200 256 512
+airfriction 30
+originjitter 20 20 20
+velocityjitter 320 320 320
+
+// Red Electro Combo
+effect RM_ELECTRO_COMBO_TEAM1
+countabsolute 1
+type decal
+tex 59 59
+size 64 64
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 400
+lightradiusfade 300
+lightcolor 6 3 2
+// flare effect
+effect RM_ELECTRO_COMBO_TEAM1
+countabsolute 1
+type static
+tex 38 38
+color 0xFF9B80 0xFF9B80
+size 48 48
+alpha 128 128 64
+// large sparks
+effect RM_ELECTRO_COMBO_TEAM1
+count 20
+type static
+color 0xC6070B 0xFF5735
+size 32 32
+alpha 256 256 256
+bounce 2
+airfriction 6
+liquidfriction 16
+//velocityoffset 0 0 120
+velocityjitter 512 512 512
+effect RM_ELECTRO_COMBO_TEAM1
+count 64
+type spark
+tex 40 40
+color 0xFF5555 0xFF5555
+size 16 16
+alpha 444 512 866
+bounce 2
+//airfriction 2
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_COMBO_TEAM1
+count 0.25
+type smoke
+color 0x202020 0x404040
+tex 0 8
+size 24 24
+alpha 256 256 256
+originjitter 20 20 20
+velocityjitter 32 32 32
+
+/////// Blue Electro
+
+// Blue Electro trail
+effect RM_ELECTRO_TEAM2
+trailspacing 1
+type static
+color 0x283880 0x283880
+size 3 3
+tex 38 38
+alpha 256 256 968
+//velocityjitter 16 16 16
+lightradius 90
+lighttime 0
+lightcolor 1.5 3 6
+velocitymultiplier -0.1
+// bright sparks
+effect RM_ELECTRO_TEAM2
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0x629dff 0x0018ff
+size 2 4
+sizeincrease -20
+alpha 444 512 1866
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+// Blue Electro impact
+effect RM_ELECTRO_IMPACT_TEAM2
+countabsolute 1
+type decal
+tex 59 59
+size 32 32
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 250
+lightradiusfade 250
+lightcolor 3.125 4.375 10
+// flare effect
+effect RM_ELECTRO_IMPACT_TEAM2
+countabsolute 1
+type static
+tex 38 38
+color 0x80C0FF 0x80C0FF
+size 12 32
+alpha 256 256 512
+// cloud of bouncing sparks
+effect RM_ELECTRO_IMPACT_TEAM2
+count 60
+type smoke
+tex 42 42
+color 0x629dff 0x0018ff
+size 36 36
+sizeincrease -50
+alpha 256 256 1024
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_IMPACT_TEAM2
+count 60
+type smoke
+color 0x629dff 0x0018ff
+tex 0 8
+size 20 24
+sizeincrease 50
+alpha 200 256 512
+airfriction 30
+originjitter 20 20 20
+velocityjitter 320 320 320
+
+// Blue Electro combo
+effect RM_ELECTRO_COMBO_TEAM2
+countabsolute 1
+type decal
+tex 59 59
+size 64 64
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 400
+lightradiusfade 300
+lightcolor 4 5 6
+// flare effect
+effect RM_ELECTRO_COMBO_TEAM2
+countabsolute 1
+type static
+tex 38 38
+color 0x80C0FF 0x80C0FF
+size 48 48
+alpha 128 128 64
+// large sparks
+effect RM_ELECTRO_COMBO_TEAM2
+count 20
+type static
+color 0x2030FF 0x80C0FF
+size 32 32
+alpha 256 256 256
+bounce 2
+airfriction 6
+liquidfriction 16
+//velocityoffset 0 0 120
+velocityjitter 512 512 512
+effect RM_ELECTRO_COMBO_TEAM2
+count 64
+type spark
+tex 41 41
+color 0xFDFFD9 0xFDFFD9
+size 16 16
+alpha 444 512 866
+bounce 2
+//airfriction 2
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_COMBO_TEAM2
+count 0.25
+type smoke
+color 0x202020 0x404040
+tex 0 8
+size 24 24
+alpha 256 256 256
+originjitter 20 20 20
+velocityjitter 32 32 32
+
+/////// Yellow Electro
+
+// Yellow Electro trail
+effect RM_ELECTRO_TEAM3
+trailspacing 1
+type static
+color 0x808028 0x808028
+size 3 3
+tex 38 38
+alpha 256 256 968
+//velocityjitter 16 16 16
+lightradius 90
+lighttime 0
+lightcolor 6 5.7 1.5
+velocitymultiplier -0.1
+// bright sparks
+effect RM_ELECTRO_TEAM3
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xFFFF50 0xFFFF00
+size 2 4
+sizeincrease -20
+alpha 444 512 1866
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+// Yellow Electro impact
+effect RM_ELECTRO_IMPACT_TEAM3
+countabsolute 1
+type decal
+tex 59 59
+size 32 32
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 250
+lightradiusfade 250
+lightcolor 7 6.5 2
+// flare effect
+effect RM_ELECTRO_IMPACT_TEAM3
+countabsolute 1
+type static
+tex 38 38
+color 0xFFE680 0xFFE680
+size 12 32
+alpha 256 256 512
+// cloud of bouncing sparks
+effect RM_ELECTRO_IMPACT_TEAM3
+count 60
+type smoke
+tex 42 42
+color 0xFFE262 0xFFA800
+size 36 36
+sizeincrease -50
+alpha 256 256 1024
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_IMPACT_TEAM3
+count 60
+type smoke
+color 0xFFE262 0xFFA800
+tex 0 8
+size 20 24
+sizeincrease 50
+alpha 200 256 512
+airfriction 30
+originjitter 20 20 20
+velocityjitter 320 320 320
+
+// Yellow Electro combo
+effect RM_ELECTRO_COMBO_TEAM3
+countabsolute 1
+type decal
+tex 59 59
+size 64 64
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 400
+lightradiusfade 300
+lightcolor 6 5 2
+// flare effect
+effect RM_ELECTRO_COMBO_TEAM3
+countabsolute 1
+type static
+tex 38 38
+color 0xFFE680 0xFFE680
+size 48 48
+alpha 128 128 64
+// large sparks
+effect RM_ELECTRO_COMBO_TEAM3
+count 20
+type static
+color 0xFFB020 0xFFE380
+size 32 32
+alpha 256 256 256
+bounce 2
+airfriction 6
+liquidfriction 16
+//velocityoffset 0 0 120
+velocityjitter 512 512 512
+effect RM_ELECTRO_COMBO_TEAM3
+count 64
+type spark
+tex 40 40
+color 0xFDFFD9 0xFDFFD9
+size 16 16
+alpha 444 512 866
+bounce 2
+//airfriction 2
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_COMBO_TEAM3
+count 0.25
+type smoke
+color 0x202020 0x404040
+tex 0 8
+size 24 24
+alpha 256 256 256
+originjitter 20 20 20
+velocityjitter 32 32 32
+
+/////// Pink Electro
+
+// Pink Electro trail
+effect RM_ELECTRO_TEAM4
+trailspacing 1
+type static
+color 0x803880 0x803880
+size 3 3
+tex 38 38
+alpha 256 256 968
+//velocityjitter 16 16 16
+lightradius 90
+lighttime 0
+lightcolor 6 3 5.5
+velocitymultiplier -0.1
+// bright sparks
+effect RM_ELECTRO_TEAM4
+trailspacing 6
+count 3
+type snow
+tex 42 42
+color 0xff9dff 0xff18ff
+size 2 4
+sizeincrease -20
+alpha 444 512 1866
+bounce 1
+velocityoffset 0 0 15
+airfriction 12
+originjitter 1 1 1
+velocityjitter 50 50 50
+
+// Pink Electro impact
+effect RM_ELECTRO_IMPACT_TEAM4
+countabsolute 1
+type decal
+tex 59 59
+size 32 32
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 250
+lightradiusfade 250
+lightcolor 8 3 7
+// flare effect
+effect RM_ELECTRO_IMPACT_TEAM4
+countabsolute 1
+type static
+tex 38 38
+color 0xFF80CC 0xFF80CC
+size 12 32
+alpha 256 256 512
+// cloud of bouncing sparks
+effect RM_ELECTRO_IMPACT_TEAM4
+count 60
+type smoke
+tex 42 42
+color 0xFF62D2 0xFF0075
+size 36 36
+sizeincrease -50
+alpha 256 256 1024
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_IMPACT_TEAM4
+count 60
+type smoke
+color 0xFF62D2 0xFF0075
+tex 0 8
+size 20 24
+sizeincrease 50
+alpha 200 256 512
+airfriction 30
+originjitter 20 20 20
+velocityjitter 320 320 320
+
+// Pink Electro combo
+effect RM_ELECTRO_COMBO_TEAM4
+countabsolute 1
+type decal
+tex 59 59
+size 64 64
+alpha 256 256 0
+originjitter 17 17 17
+lightradius 400
+lightradiusfade 300
+lightcolor 6 2 5.5
+// flare effect
+effect RM_ELECTRO_COMBO_TEAM4
+countabsolute 1
+type static
+tex 38 38
+color 0xFF80CC 0xFF80CC
+size 48 48
+alpha 128 128 64
+// large sparks
+effect RM_ELECTRO_COMBO_TEAM4
+count 20
+type static
+color 0xFF207A 0xFF80D2
+size 32 32
+alpha 256 256 256
+bounce 2
+airfriction 6
+liquidfriction 16
+//velocityoffset 0 0 120
+velocityjitter 512 512 512
+effect RM_ELECTRO_COMBO_TEAM4
+count 64
+type spark
+tex 41 41
+color 0xFF88FF 0xFF88FF
+size 16 16
+alpha 444 512 866
+bounce 2
+//airfriction 2
+originjitter 1 1 1
+velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_ELECTRO_COMBO_TEAM4
+count 0.25
+type smoke
+color 0x202020 0x404040
+tex 0 8
+size 24 24
+alpha 256 256 256
+originjitter 20 20 20
+velocityjitter 32 32 32
