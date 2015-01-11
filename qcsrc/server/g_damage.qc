@@ -320,7 +320,6 @@ float CheckJailDM(entity attacker, entity targ) {
 void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 {
 	string	s, a;
-	float p, w;
     float spawnfrag;
     float jaildm;
 	float rage_timeout = 3;
@@ -370,8 +369,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	}
 
     CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.rage);
-
-	float _hfrag;
 
 	if(targ.classname == "player" || targ.classname == "corpse") {
 		if (targ.classname == "corpse")
@@ -463,7 +460,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bigprint_spec(targ, "^0Bot^7like!", "", 1);
 				}
 			}
-            
+
 			LogDeath("accident", deathtype, targ, targ);
 		}
 
