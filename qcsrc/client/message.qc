@@ -278,22 +278,22 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
     if(shortspree < 2)
         return;
 
-    string spreebar = "^1";
+    string spreebar = "^1\x1d\x1e";
     float i = 2;
 
     while(i < 5) {
         if(shortspree == i)
-            spreebar = strcat(spreebar, "^0");
+            spreebar = strcat(spreebar, "^0\x1e\x1e");
         else
-            spreebar = strcat(spreebar, "");
+            spreebar = strcat(spreebar, "\x1e\x1e");
 
         ++i;
     }
 
     if(shortspree - 1 >= 5)
-        spreebar = strcat(spreebar, "");
+        spreebar = strcat(spreebar, "\x1e\x1f");
     else
-        spreebar = strcat(spreebar, "^0");
+        spreebar = strcat(spreebar, "^0\x1e\x1f");
 
     switch(shortspree) {
         case 2:
@@ -317,7 +317,7 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
             print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
             break;
     }
-    
+
     sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
 }
 
