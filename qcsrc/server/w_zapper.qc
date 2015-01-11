@@ -126,7 +126,6 @@ void W_Zapper_Beam_Think(void) {
     float dt = time - self.zapper_lastdmg;
     float rate = W_WeaponRateFactorFor(self.owner);
     float damageIsDps = FALSE;
-    float adjustDamage = TRUE;
     
     if(dt < frametime)
     if(almost_equals(dt, frametime))
@@ -139,25 +138,15 @@ void W_Zapper_Beam_Think(void) {
         damageIsDps = TRUE;
     } else if(almost_equals(dt, wantedTicrate)) {
         dt = wantedTicrate;
-        adjustDamage = FALSE;
     }
     
-    if(dt >= wantedTicrate) {
+    for ( ;dt >= wantedTicrate; dt -= wantedTicrate) {
         float damage = cvar("g_balance_zapper_primary_damage");
         float force  = cvar("g_balance_zapper_primary_force");
         
         if(damageIsDps) {
             damage = damage * wantedTicrate;
             force = force * wantedTicrate;
-        } else if(adjustDamage) {
-            // In case we can't run at the wanted ticrate,
-            // adjust damage and force to preserve the intended DPS
-        
-            float targetDps = damage / wantedTicrate;
-            float targetFps = force  / wantedTicrate;
-            
-            damage = targetDps * dt;
-            force  = targetFps * dt;
         }
         
         W_Accuracy_RegisterShot(o, o.weapon);
@@ -184,7 +173,7 @@ void W_Zapper_Beam_Think(void) {
         if(!(o.items & IT_UNLIMITED_AMMO))
             o.ammo_cells -= cvar("g_balance_zapper_primary_ammo");
 
-        self.zapper_lastdmg = time;
+        self.zapper_lastdmg += wantedTicrate;
     }
 
     vector org = gettaginfo(self.owner.exteriorweaponentity, gettagindex(self.owner.exteriorweaponentity, "_"));
@@ -227,7 +216,7 @@ void W_Zapper_Attack1(void) {
     e.zapper_range = cvar("g_balance_zapper_primary_range");
     e.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
     e.zapper_dmgdelay = cvar("g_balance_zapper_primary_ticrate");
-    e.zapper_lastdmg = time - e.zapper_dmgdelay;
+    e.zapper_lastdmg = time - e.zapper_dmgdelay * W_WeaponRateFactorFor(self);
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
 
@@ -345,9 +334,12 @@ void W_Zapper_Cooloff(void) {
 }
 
 float w_zapper(float req) {
-    if(req == WR_AIM)
-        self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
-    else if(req == WR_THINK) {
+    if (req == WR_AIM) {
+        if(vlen(self.origin-self.enemy.origin) < cvar("g_balance_zapper_primary_range"))
+            self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+        else
+            self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+    } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
             if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
                 if(self.zapper_heat >= 1) {
@@ -367,11 +359,13 @@ float w_zapper(float req) {
             }
         }
     } else if(req == WR_PRECACHE) {
-        precache_model("models/weapons/g_hookgun.md3");
-        precache_model("models/weapons/v_hookgun.md3");
-        precache_model("models/weapons/h_hookgun.dpm");
-        precache_sound("sounds/weapons/zapper_fire.wav");
-        precache_sound("sounds/weapons/zapper_fly.wav");
+        precache_model("models/weapons/g_zapper.md3");
+        precache_model("models/weapons/v_zapper.md3");
+        precache_model("models/weapons/h_zapper.dpm");
+        precache_sound("weapons/zapper_fire.wav");
+        precache_sound("weapons/zapper_fly.wav");
+        precache_sound("misc/arc1.wav");
+        precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
         if(cvar("g_balance_zapper_primary_heatup"))
             self.zapper_heat = 0;

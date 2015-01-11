@@ -47,7 +47,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_TRANSLOC:
 				return;
 			case PROJECTILE_ELECTRO:
-                trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+                trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
@@ -65,14 +65,14 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_ROCKET"), from, to);
 			break;
 		case PROJECTILE_CRYLINK:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 		case PROJECTILE_CRYLINK_BOUNCING:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
             break;
 
         case PROJECTILE_HG_PLASMA_SHARD:
@@ -80,7 +80,7 @@ void Projectile_DrawTrail(vector to)
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
@@ -160,17 +160,13 @@ void Projectile_DrawTrail(vector to)
         case PROJECTILE_HG_NAPALMSHARD:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
 :flame
-            if(time >= self.nextparticle) {
-                vector v = randomvec();
-                v_z = (v_z + 1) * 0.25;
-                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
-                self.nextparticle = time + 0.15 + random() * 0.15;
-            }
+            vector v = randomvec();
+            v_z = (v_z + 1) * 0.25;
+            pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 3 * drawframetime);
             break;
         case PROJECTILE_HEAL_PARTICLE_EMITTER:
             if(time >= self.nextparticle) {
-                vector v = randomvec();
-                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + v * self.extradata * 0.5, '0 0 0', 1);
+                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + randomvec() * self.extradata * 0.5, '0 0 0', 1);
                 self.nextparticle = time + 0.15 + random() * 0.15;
             }
             break;
@@ -310,6 +306,8 @@ void Flak_Touch(void) {
     pointparticles(particleeffectnum("hagar_bounce"), self.move_origin, self.move_velocity, 1);
 }
 
+vector Zapper_BeamRGB(float t);
+
 void Ent_Projectile()
 {
 	float f;
@@ -378,7 +376,7 @@ void Ent_Projectile()
 	if(f & 2)
 	{
 		self.cnt = ReadByte();
-        self.team = ReadByte() - 1;
+        self.team = ReadByte();
         
         if(f & 32)
             self.move_bounce_factor = ReadCoord();
@@ -395,22 +393,37 @@ void Ent_Projectile()
 		self.cnt = (self.cnt & 0x7F);
 
 		self.scale = 1;
+        self.colormod = '0 0 0';
         
 		switch(self.cnt)
 		{
-			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
+			case PROJECTILE_ELECTRO:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                if(self.skin)
+                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
-			case PROJECTILE_CRYLINK: setmodel(self, "models/plasmatrail.mdl"); break;
-			case PROJECTILE_CRYLINK_BOUNCING: setmodel(self, "models/plasmatrail.mdl"); break;
+			case PROJECTILE_CRYLINK: case PROJECTILE_CRYLINK_BOUNCING: 
+                setmodel(self, "models/plasmatrail.mdl");
+                if(!self.team)
+                    self.team = COLOR_TEAM4;
+                self.colormod = Zapper_BeamRGB(self.team);
+                break;
 			case PROJECTILE_RM_LASER_RED:
 			case PROJECTILE_RM_LASER_BLUE:
 			case PROJECTILE_RM_LASER_YELLOW:
 			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
-			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_GRENADE: case PROJECTILE_GRENADE_BOUNCING:
+                if(!g_minstagib) {
+                    // TODO: fucking fix g_rocketminsta god damn it
+                    setmodel(self, "models/grenademodel.md3");
+                    self.skin = TeamColorSkin(self.team);
+                }
+                break;
 			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
                 setmodel(self, "models/grenademodel.md3");
                 self.skin = TeamColorSkin(self.team);
@@ -448,7 +461,6 @@ void Ent_Projectile()
 
 		self.mins = '0 0 0';
 		self.maxs = '0 0 0';
-		self.colormod = '0 0 0';
 		self.move_touch = SUB_Stop;
 		self.move_movetype = MOVETYPE_TOSS;
         
@@ -579,4 +591,5 @@ void Projectile_Precache()
 	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
     precache_sound("weapons/zapper_fly.wav");
+    precache_sound("weapons/zapper_fire.wav");
 }

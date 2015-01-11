@@ -36,6 +36,12 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 		WriteByte(MSG_ENTITY, self.csqcprojectile_type); // TODO maybe put this into sf?
         WriteByte(MSG_ENTITY, bound(0, self.team, 255));
 
+        float t = self.team;
+        if(!t)
+            t = self.owner.team;
+
+        WriteByte(MSG_ENTITY, bound(0, t - 1, 255));
+
         if(sf & 32)
             WriteCoord(MSG_ENTITY, self.bouncefactor);
         
