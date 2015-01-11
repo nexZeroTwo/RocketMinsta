@@ -9,7 +9,7 @@ string WeaponDeathString(float deathtype) {
     return "was blasted by";
 }
 
-void Message_Obituary(float targ, float attacker, float deathtype) {
+void Message_Obituary(float targ, float attacker, float deathtype, string customMessage) {
     string tname = GetPlayerName(targ - 1);
     string aname = GetPlayerName(attacker - 1);
     float teamkill, suicide;
@@ -28,9 +28,6 @@ void Message_Obituary(float targ, float attacker, float deathtype) {
 
     // TODO: client setting for this
     float extendfragmessages = TRUE;
-
-    // TODO: somehow pass the custom death messages from trigger_hurt/doors/etc here
-    string customMessage = string_null;
 
     if(targ == attacker)
         suicide = TRUE;
@@ -115,7 +112,7 @@ void Message_Obituary(float targ, float attacker, float deathtype) {
                 }
 
                 if(iKilled)
-                centerprint(strcat("^4You ", fragmod, "^4fragged ^7", s, "^4", fragmod_tail));
+                    centerprint(strcat("^4You ", fragmod, "^4fragged ^7", s, "^4", fragmod_tail));
                 else if(iDied)
                     centerprint(strcat("^1You were ", fragmod, "^1fragged by ^7", a, "^1", fragmod_tail));
             }
@@ -223,11 +220,17 @@ void Message_Read(void) {
     float type = ReadByte();
 
     switch(type) {
-        case CSQCMSG_OBITUARY: {
+        case CSQCMSG_OBITUARY:
+        case CSQCMSG_OBITUARY_CUSTOM: {
             float targ = ReadByte();
             float attacker = ReadByte();
             float deathtype = ReadShort();
-            Message_Obituary(targ, attacker, deathtype);
+            string customMessage;
+
+            if(type == CSQCMSG_OBITUARY_CUSTOM)
+                customMessage = ReadString();
+
+            Message_Obituary(targ, attacker, deathtype, customMessage);
             break;
         }
 

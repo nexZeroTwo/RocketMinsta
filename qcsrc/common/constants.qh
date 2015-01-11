@@ -57,6 +57,7 @@ const float TE_CSQC_UPDATESELECTEDPLAYER = 125;
 const float TE_CSQC_MESSAGE = 126;
 
 const float CSQCMSG_OBITUARY = 0;
+const float CSQCMSG_OBITUARY_CUSTOM = 1;
 
 #define VDMG_TYPE_HIT 1
 #define VDMG_TYPE_CRIT 2

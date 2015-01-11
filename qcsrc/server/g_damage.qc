@@ -329,6 +329,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 	local string ragemeter;
 
+    string customMessage;
+
 	if(g_prec) if(inflictor.classname == "prec_rune") {
 		prec_check_aggression(attacker, inflictor, targ); return; }
 
@@ -343,7 +345,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 	}
     
-    CSQCMessage_Obituary(targ, attacker, deathtype);
+    if(deathtype == DEATH_HURTTRIGGER) {
+        if(attacker == targ || attacker.classname != "player") {
+            customMessage = inflictor.message;
+            print("^1custom message 1 ", inflictor.message, "\n");
+        } else if(IsDifferentTeam(attacker, targ)) {
+            customMessage = inflictor.message2;
+            print("^1custom message 2 ", inflictor.message2, "\n");
+        }
+    }
+
+    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage);
 
     jaildm = CheckJailDM(attacker, targ);
     targ.hg_shield = 0;
