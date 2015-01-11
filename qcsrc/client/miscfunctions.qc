@@ -626,3 +626,7 @@ float rm_particleeffectnum(string p) {
 }
 
 #define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
+
+void announce(string v) {
+    sound(self, CHAN_VOICE, v, VOL_BASEVOICE, ATTN_NONE);
+}

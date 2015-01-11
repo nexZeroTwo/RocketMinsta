@@ -323,12 +323,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	float p, w;
     float spawnfrag;
     float jaildm;
-
-	local float maxrage = 5;
-	local float rage_timeout = 3;
-
-	local string ragemeter;
-
+	float rage_timeout = 3;
     string customMessage;
 
 	if(g_prec) if(inflictor.classname == "prec_rune") {
@@ -375,24 +370,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
 
-		ragemeter = "^1";
-
-		local float i;
-		i = 2;
-		while(i < maxrage)
-		{
-			if(attacker.rage == i)
-				ragemeter = strcat(ragemeter, "^0");
-			else
-				ragemeter = strcat(ragemeter, "");
-
-			++i;
-		}
-		if(attacker.rage-1 >= maxrage)
-			ragemeter = strcat(ragemeter, "");
-		else
-			ragemeter = strcat(ragemeter, "^0");
-        
         spawnfrag = (cvar("g_spawnshieldmode") && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
@@ -498,85 +475,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 				LogDeath("frag", deathtype, attacker, targ);
 
-				if(attacker.killcount == 5) {
-					bprint(a, "^7 unleashes ^1RAGE\n");
-					announce(attacker, "announcer/male/05kills.wav");
-					bigprint_spec(attacker, "^xFA0Rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				} else if(attacker.killcount == 10) {
-					bprint (a, "^7 starts the ^1MASSACRE!\n");
-					announce(attacker, "announcer/male/10kills.wav");
-					bigprint_spec(attacker, "^xF80Massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				} else if(attacker.killcount == 15) {
-					bprint(a, "^7 executes ^1MAYHEM!\n");
-					announce(attacker, "announcer/male/15kills.wav");
-					bigprint_spec(attacker, "^xF60Mayhem!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				} else if(attacker.killcount == 20) {
-					bprint (a, "^7 is a ^1BERSERKER!\n");
-					announce(attacker, "announcer/male/20kills.wav");
-					bigprint_spec(attacker, "^xF40Berserker!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				} else if(attacker.killcount == 25) {
-					bprint (a, "^7 inflicts ^1CARNAGE!\n");
-					announce(attacker, "announcer/male/25kills.wav");
-					bigprint_spec(attacker, "^xF20Carnage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				} else if(attacker.killcount == 30) {
-					bprint (a, "^7 unleashes ^1ARMAGEDDON!\n");
-					announce(attacker, "announcer/male/30kills.wav");
-					bigprint_spec(attacker, "^1Armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-				}
+                if(attacker.rage > 1 || (attacker.killcount && !mod(attacker.killcount, 5)))
+                    CSQCMessage_KillingSpree(attacker, attacker.killcount, attacker.rage);
 
-                #define RAGESOUND announce(attacker, "porto/fire.wav");
-                switch(attacker.rage) {
-                    case 0:
-                    case 1:
-                        break;
-
-                    case 2: RAGESOUND
-                        bigprint_spec(attacker, "^2Double ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^2DOUBLE ^7KILL!\n");
-                        break;
-                    case 3: RAGESOUND
-                        bigprint_spec(attacker, "^3Triple ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^3TRIPLE ^7KILL!\n");
-                        break;
-                    case 4: RAGESOUND
-                        bigprint_spec(attacker, "^6Quad ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^6QUAD ^7KILL!\n");
-                        break;
-                    case 5: RAGESOUND
-                        bigprint_spec(attacker, "^5Ultra ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored an ^5ULTRA ^7KILL!\n");
-                        break;
-                    case 6: RAGESOUND
-                        bigprint_spec(attacker, "^1Monster ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^1MONSTER ^7KILL!\n");
-                        break;
-                    case 7: RAGESOUND
-                        bigprint_spec(attacker, "^2Hax ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^2HAX ^7KILL!\n");
-                        break;
-                    case 8: RAGESOUND
-                        bigprint_spec(attacker, "^3Aimbot ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored an ^3AIMBOT ^7KILL!\n");
-                        break;
-                    case 9: RAGESOUND
-                        bigprint_spec(attacker, "^6Fegget ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^6FEGGET ^7KILL!\n");
-                        break;
-                    case 10: RAGESOUND
-                        bigprint_spec(attacker, "^5Yo Momma ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^5YO MOMMA ^7KILL!\n");
-                        break;
-                    case 11: RAGESOUND
-                        bigprint_spec(attacker, "^xE90Potato ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^xE90POTATO ^7KILL!\n");
-                        break;
-                    default: case 12: RAGESOUND
-                        bigprint_spec(attacker, "^1Kill la ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^1KILL LA ^7KILL!\n");
-                        break;
-                }
-                #undef RAGESOUND
-                
                 if(g_nadgets)
                 if(DEATH_ISHG(deathtype))
                     PlayerScore_Add(attacker, SP_NADEFRAGS, 1);

@@ -17,7 +17,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
     float tteam = GetPlayerColorForce(targ - 1);
     float ateam = GetPlayerColorForce(attacker - 1);
 
-    float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+    float me = ID_ME;
     float iKilled = (attacker == me);
     float iDied = (targ == me);
 
@@ -216,6 +216,102 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
     }
 }
 
+void Message_KillingSpree(float attacker, float longspree, float shortspree) {
+    float me = ID_ME;
+    float iKilled = (me == attacker);
+
+    string a = GetPlayerName(attacker - 1);
+
+    if(longspree == 5) {
+        print(a, "^7 unleashes ^1RAGE\n");
+
+        if(iKilled) {
+            announce("announcer/male/05kills.wav");
+            bigprint("^xFA0Rage!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    } else if(longspree == 10) {
+        print(a, "^7 starts the ^1MASSACRE!\n");
+
+        if(iKilled) {
+            announce("announcer/male/10kills.wav");
+            bigprint("^xF80Massacre!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    } else if(longspree == 15) {
+        print(a, "^7 executes ^1MAYHEM!\n");
+
+        if(iKilled) {
+            announce("announcer/male/15kills.wav");
+            bigprint("^xF60Mayhem!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    } else if(longspree == 20) {
+        print(a, "^7 is a ^1BERSERKER!\n");
+
+        if(iKilled) {
+            announce("announcer/male/20kills.wav");
+            bigprint("^xF40Berserker!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    } else if(longspree == 25) {
+        print(a, "^7 inflicts ^1CARNAGE!\n");
+
+        if(iKilled) {
+            announce("announcer/male/25kills.wav");
+            bigprint("^xF20Carnage!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    } else if(longspree == 30) {
+        print(a, "^7 unleashes ^1ARMAGEDDON!\n");
+
+        if(iKilled) {
+            announce("announcer/male/30kills.wav");
+            bigprint("^1Armageddon!", strcat(ftos(longspree), " frags in a row"), 1);
+        }
+    }
+
+    if(shortspree < 2)
+        return;
+
+    string spreebar = "^1";
+    float i = 2;
+
+    while(i < 5) {
+        if(shortspree == i)
+            spreebar = strcat(spreebar, "^0");
+        else
+            spreebar = strcat(spreebar, "");
+
+        ++i;
+    }
+
+    if(shortspree - 1 >= 5)
+        spreebar = strcat(spreebar, "");
+    else
+        spreebar = strcat(spreebar, "^0");
+
+    switch(shortspree) {
+        case 2:
+            if(iKilled) bigprint("^2Double ^7Kill!", spreebar, 1);
+            print(a, " ^7scored a ^2DOUBLE ^7KILL!\n");
+            break;
+        case 3:
+            if(iKilled) bigprint("^3Triple ^7Kill!", spreebar, 1);
+            print(a, " ^7scored a ^3TRIPLE ^7KILL!\n");
+            break;
+        case 4:
+            if(iKilled) bigprint("^6Quad ^7Kill!", spreebar, 1);
+            print(a, " ^7scored a ^6QUAD ^7KILL!\n");
+            break;
+        case 5:
+            if(iKilled) bigprint("^5Ultra ^7Kill!", spreebar, 1);
+            print(a, " ^7scored an ^5ULTRA ^7KILL!\n");
+            break;
+        default: case 6:
+            if(iKilled) bigprint("^1Monster ^7Kill!", spreebar, 1);
+            print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            break;
+    }
+
+    announce("porto/fire.wav");
+}
+
 void Message_Read(void) {
     float type = ReadByte();
 
@@ -231,6 +327,15 @@ void Message_Read(void) {
                 customMessage = ReadString();
 
             Message_Obituary(targ, attacker, deathtype, customMessage);
+            break;
+        }
+
+        case CSQCMSG_KILLINGSPREE: {
+            float attacker = ReadByte();
+            float longspree = ReadByte();
+            float shortspree = ReadByte();
+
+            Message_KillingSpree(attacker, longspree, shortspree);
             break;
         }
 
