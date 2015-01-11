@@ -2849,6 +2849,31 @@ float GetAmmoItemCode(float i)
 	}
 }
 
+float GetAmmoStatFromCode(float i)
+{
+	switch(i){
+		case IT_SHELLS: return STAT_SHELLS;
+		case IT_NAILS: return STAT_NAILS;
+		case IT_ROCKETS: return STAT_ROCKETS;
+		case IT_CELLS: return STAT_CELLS;
+		case IT_FUEL: return STAT_FUEL;
+		default: return -1;
+	
+	}
+}
+
+string GetFriendlyAmmoName(float i){
+	switch(i){
+		case IT_SHELLS: return "shells";
+		case IT_NAILS: return "bullets";
+		case IT_ROCKETS: return "rockets";
+		case IT_CELLS: return "cells";
+		case IT_FUEL: return "fuel";
+		default: return "";
+	}
+
+}
+
 string GetAmmoPicture(float i)
 {
 	switch(i)
@@ -2860,6 +2885,86 @@ string GetAmmoPicture(float i)
 		case 4: return "gfx/hud/sb_fuel";
 		default: return "";
 	}
+}
+
+float GetLowAmmoCvar(float currweapon){
+	float currammotype = get_weaponinfo(currweapon).items;
+	switch(currammotype){
+		case IT_SHELLS: return cvar("cl_lowammowarnings_shells");
+		case IT_NAILS: return cvar("cl_lowammowarnings_bullets");
+		case IT_ROCKETS: return cvar("cl_lowammowarnings_rockets");
+		case IT_CELLS: return cvar("cl_lowammowarnings_cells");
+		default: return 0;
+	}
+}
+
+float GetSpecialCaseWarn(float currweapon){
+	//return any unique ammo system warning such as camping rifle clip or zapper heat
+	switch(currweapon){
+		case WEP_CAMPINGRIFLE: return cvar("cl_lowammowarnings_campingrifle_bulletsremaining");
+		case WEP_ZAPPER: return cvar("cl_lowammowarnings_zapper_heat");
+		default: return 0;
+	}
+}
+
+string GetSpecialCaseWarnString(float currweapon){
+	switch(currweapon){
+		case WEP_CAMPINGRIFLE: return "magazine low";
+		case WEP_ZAPPER: return "heat high";
+		default: return "";
+	}
+}
+
+void Sbar_ShowLowammo(){
+	vector pos, scale;
+	float currweapon = getstati(STAT_SWITCHWEAPON);
+	float showwarning = 0;
+	float showspecialwarning = 0;
+	float currammo, currammotype, ammocode;
+	float clipheatwarn = GetSpecialCaseWarn(currweapon);
+	float warn = GetLowAmmoCvar(currweapon);
+	scale_x = cvar("cl_lowammowarnings_size");
+	scale_y = cvar("cl_lowammowarnings_size");
+	pos_y = cvar("cl_lowammowarnings_position");
+	
+	//carrying either camping rifle or zapper
+	if(clipheatwarn){
+		if(currweapon == WEP_CAMPINGRIFLE){
+			float currbullets = getstati(STAT_BULLETS_LOADED);
+			if(currbullets <= clipheatwarn){
+				showspecialwarning = 1;
+			}
+		}
+		else if(currweapon == WEP_ZAPPER){
+			float currheat = getstatf(STAT_ZAPPER_HEAT);
+			currheat = floor((1 - currheat) * 100);
+			if(currheat <= clipheatwarn){
+				showspecialwarning = 1;
+			}
+		}
+	}
+	if(warn){
+		currammotype = get_weaponinfo(currweapon).items;
+		ammocode = GetAmmoStatFromCode(currammotype);
+		if(ammocode > 0) //prevent sending <0 to getstati
+			currammo = getstati(GetAmmoStatFromCode(currammotype));
+		
+		if(currammo <= warn){
+			showwarning = 1;
+		}
+	}
+	drawfont = sbar_bigfont;
+	if(showwarning){
+		string ammoname = GetFriendlyAmmoName(currammotype);
+		drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+	}
+	if(showspecialwarning){
+		string weaponname = get_weaponinfo(currweapon).message;
+		string specialwarn = GetSpecialCaseWarnString(currweapon);
+		pos_y = pos_y - scale_y;
+		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+	}
+	drawfont = sbar_font;
 }
 
 void Sbar_Reset (void)

@@ -501,7 +501,7 @@ float Item_GiveTo(entity item, entity player)
 			if (item.invincible_finished)
 			{
 				pickedup = TRUE;
-				player.invincible_finished = max(player.invincible_finished, time) + item.strength_finished; // + cvar("g_balance_powerup_invincible_time");
+				player.invincible_finished = max(player.invincible_finished, time) + item.invincible_finished; // + cvar("g_balance_powerup_invincible_time");
 			}
 			//if (item.speed_finished)
 			//{
