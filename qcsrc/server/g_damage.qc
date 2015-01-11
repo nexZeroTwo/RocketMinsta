@@ -343,10 +343,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
     if(deathtype == DEATH_HURTTRIGGER) {
         if(attacker == targ || attacker.classname != "player") {
             customMessage = inflictor.message;
-            print("^1custom message 1 ", inflictor.message, "\n");
         } else if(IsDifferentTeam(attacker, targ)) {
             customMessage = inflictor.message2;
-            print("^1custom message 2 ", inflictor.message2, "\n");
         }
     }
 
@@ -432,7 +430,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                     else if(deathtype == DEATH_HOOKFRAG) {
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_hookfrag"));
-                        
+
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
                     } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
