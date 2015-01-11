@@ -89,6 +89,7 @@ void maptimeAnnouncer() {
 void Announcer_Precache () {
     precache_sound ("announcer/robotic/1minuteremains.wav");
 	precache_sound ("announcer/robotic/5minutesremain.wav");
+    precache_sound ("porto/fire.wav");
 }
 
 void AuditLists()

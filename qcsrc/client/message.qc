@@ -317,8 +317,8 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
             print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
             break;
     }
-
-    announce("porto/fire.wav");
+    
+    sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
 }
 
 void Message_Read(void) {
