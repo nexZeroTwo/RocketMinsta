@@ -9,7 +9,7 @@ string WeaponDeathString(float deathtype) {
     return "was blasted by";
 }
 
-void Message_Obituary(float targ, float attacker, float deathtype, string customMessage) {
+void Message_Obituary(float targ, float attacker, float deathtype, string customMessage, float attackerSpree, float targetSpree, float attackerSpreeShort) {
     string tname = GetPlayerName(targ - 1);
     string aname = GetPlayerName(attacker - 1);
     float teamkill, suicide;
@@ -81,6 +81,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 was too noisy to live\n");
         else if(deathtype != DEATH_TEAMCHANGE)
             print("^1", s, "^1 couldn't resist the urge to self-destruct\n");
+
+        if(targetSpree > 2 && deathtype != DEATH_AUTOTEAMCHANGE)
+            print("^1", s, "^1 ended it all after a ", ftos(targetSpree), " kill spree\n");
     } else if(attacker) {
         if(teamkill) {
             if(iKilled)
@@ -89,6 +92,12 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                 centerprint(strcat("^1You were fragged by ^7", a, "^1, the teamkilling moron"));
 
             print("^1", a, "^1 mows down a team mate\n");
+
+            if(targetSpree > 2)
+                print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by a team mate!\n");
+
+            if(attackerSpree > 2)
+                print("^1", a, "^1 ended a ", ftos(attackerSpree), " kill spree by killing a team mate\n");
         } else {
             if(iKilled || iDied) {
                 string fragmod, fragmod_tail;
@@ -193,6 +202,17 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     print("^1", s, "^1 took ", a, "^1's bait\n");
                 else
                     print("^1", s, "^1 was fragged by ", a, "\n");
+
+                if(targetSpree > 2)
+                    print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by ", a, "\n");
+
+                // server sends this message before registering the spree
+                ++attackerSpree;
+
+                if(attackerSpree > 2)
+                    print("^1", a, "^1 has ", ftos(attackerSpree), " frags in a row\n");
+
+                Message_KillingSpree(attacker, attackerSpree, attackerSpreeShort);
         }
     } else {
         if(iDied)
@@ -222,6 +242,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 burnt to death\n");
         else if(getstati(STAT_ROUNDSTATE) != ROUNDSTATE_OVER)
             print("^1", s, "^1 died\n");
+
+        if(targetSpree > 2)
+            print("^1", s, "^1 died with a ", ftos(targetSpree), " kill spree\n");
     }
 }
 
@@ -335,16 +358,11 @@ void Message_Read(void) {
             if(type == CSQCMSG_OBITUARY_CUSTOM)
                 customMessage = ReadString();
 
-            Message_Obituary(targ, attacker, deathtype, customMessage);
-            break;
-        }
+            float attackerSpree = ReadByte();
+            float targetSpree = ReadByte();
+            float attackerSpreeShort = ReadByte();
 
-        case CSQCMSG_KILLINGSPREE: {
-            float attacker = ReadByte();
-            float longspree = ReadByte();
-            float shortspree = ReadByte();
-
-            Message_KillingSpree(attacker, longspree, shortspree);
+            Message_Obituary(targ, attacker, deathtype, customMessage, attackerSpree, targetSpree, attackerSpreeShort);
             break;
         }
 

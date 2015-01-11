@@ -1,2 +1,3 @@
 
 void Message_Read(void);
+void Message_KillingSpree(float attacker, float longspree, float shortspree);

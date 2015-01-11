@@ -348,8 +348,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
         }
     }
 
-    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage);
-
     jaildm = CheckJailDM(attacker, targ);
     targ.hg_shield = 0;
     
@@ -371,6 +369,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
         spawnfrag = (cvar("g_spawnshieldmode") && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
+    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.rage);
+
 	float _hfrag;
 
 	if(targ.classname == "player" || targ.classname == "corpse") {
@@ -390,21 +390,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				LogDeath("suicide", deathtype, targ, targ);
 				GiveFrags(attacker, inflictor, targ, -1);
 			}
-
-            if(targ.killcount > 2)
-				bprint ("^1", s, "^1 ended it all after a ", ftos(targ.killcount), " kill spree\n");
-
 		} else if(attacker.classname == "player" || attacker.classname == "gib") {
 			if(teams_matter && attacker.team == targ.team && !jaildm) {
 				GiveFrags(attacker, inflictor, targ, -1);
-
-				if(targ.killcount > 2) {
-					bprint("^1", s, "'s ^1", ftos(targ.killcount), " kill spree was ended by a team mate!\n");
-				}
-
-				if(attacker.killcount > 2) {
-					bprint("^1", a, "^1 ended a ", ftos(attacker.killcount), " kill spree by killing a team mate\n");
-				}
 
 				attacker.killcount = 0;
 				LogDeath("tk", deathtype, attacker, targ);
@@ -459,18 +447,8 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				else if(!spawnfrag && !jaildm)
 					GiveFrags(attacker, inflictor, targ, 1);
 
-				if(targ.killcount > 2)
-					bprint("^1", s, "'s ^1", ftos(targ.killcount), " kill spree was ended by ", a, "\n");
-
 				attacker.killcount = attacker.killcount + 1;
-
-				if(attacker.killcount > 2)
-					bprint("^1", a, "^1 has ",ftos(attacker.killcount)," frags in a row\n");
-
 				LogDeath("frag", deathtype, attacker, targ);
-
-                if(attacker.rage > 1 || (attacker.killcount && !mod(attacker.killcount, 5)))
-                    CSQCMessage_KillingSpree(attacker, attacker.killcount, attacker.rage);
 
                 if(g_nadgets)
                 if(DEATH_ISHG(deathtype))
@@ -485,10 +463,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bigprint_spec(targ, "^0Bot^7like!", "", 1);
 				}
 			}
-
-			if(targ.killcount > 2)
-				bprint ("^1", s, "^1 died with a ", ftos(targ.killcount), " kill spree\n");
-
+            
 			LogDeath("accident", deathtype, targ, targ);
 		}
 
