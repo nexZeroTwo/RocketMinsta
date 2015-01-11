@@ -96,14 +96,23 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                 if(spawnfrag) {
                     fragmod = "^2spawn";
                 } else if(extendfragmessages) {
-                    if(g_minstagib) {    // g_rocketminsta bullshit
-                        if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
+                    if(g_minstagib && cvar("_g_rocketminsta")) {    // g_rocketminsta bullshit
+                        if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
+                            if(iKilled)
+                                announce("announcer/male/awesome.wav");
+
                             fragmod = "^xF80laser";
-                        else if(deathtype == DEATH_HOOKFRAG)
+                        } else if(deathtype == DEATH_HOOKFRAG) {
+                            if(iKilled) {                            
+                                announce("announcer/male/awesome.wav");
+                                bigprint("Holy ^1Shit", "Awesome frag", 1);
+                            }
+
                             fragmod = "^7hook";
-                        else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
+                        } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
                             fragmod = "^5insta";
-                    } else {
+                        }
+                    } else if(!g_minstagib) {
                         fragmod_tail = DamageTracker_DamageSourceName(deathtype, FALSE);
                             
                         if(fragmod_tail != "")

@@ -426,17 +426,13 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				if(g_minstagib) {
                     if(spawnfrag) { }
                     else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
-                        play2(attacker, "announcer/male/awesome.wav");
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_laserfrag"));
                     }
                     else if(deathtype == DEATH_HOOKFRAG) {
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_hookfrag"));
-
-                        play2(attacker, "announcer/male/awesome.wav");
-                        bigprint_spec(attacker, "Holy ^1Shit", "Awesome frag", 1);
-
+                        
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
                     } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
