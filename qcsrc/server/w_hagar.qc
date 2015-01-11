@@ -152,14 +152,5 @@ float w_hagar(float req)
 		return self.ammo_rockets >= cvar("g_balance_hagar_primary_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= cvar("g_balance_hagar_secondary_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "played with tiny rockets";
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_BOUNCE) // must be secondary; unchecked: SPLASH
-			w_deathtypestring = "hoped #'s missiles wouldn't bounce";
-		else // unchecked: SPLASH, SECONDARY
-			w_deathtypestring = "was pummeled by";
-	}
 	return TRUE;
 };

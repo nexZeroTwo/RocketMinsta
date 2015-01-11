@@ -1,12 +1,252 @@
 
+//
+// maybe later: client-side weapon functions like in xonotic instead of these switches
+//
+
 string WeaponSuicideString(float deathtype) {
-    // TODO: weapon-specific suicide strings here
-    return "couldn't resist the urge to self-destruct";
+    float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
+
+    switch(w) {
+        case WEP_LASER:
+            return "lasered himself to hell";
+
+        case WEP_SHOTGUN:
+            return "did the impossible";
+
+        case WEP_UZI:
+            return "did the impossible";
+
+        case WEP_GRENADE_LAUNCHER:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "tried out his own grenade";
+            else
+                return "detonated";
+
+        case WEP_ELECTRO:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "could not remember where he put plasma";
+            else
+                return "played with plasma";
+
+        case WEP_CRYLINK:
+            return "succeeded at self-destructing himself with the Crylink";
+
+        case WEP_NEX:
+            return "did the impossible";
+
+        case WEP_HAGAR:
+            return "played with tiny rockets";
+
+        case WEP_ROCKET_LAUNCHER:
+            return "exploded";
+
+        case WEP_PORTO:
+            return "did the impossible";
+
+        case WEP_MINSTANEX:
+            return "should have used a smaller gun";
+
+        case WEP_HOOK:
+            return "did the impossible";
+
+        case WEP_HLAC:
+            return "should have used a smaller gun";
+
+        case WEP_TUBA:
+            return "hurt his own ears with the @!#%'n Tuba";
+
+        case WEP_CAMPINGRIFLE:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "shot himself automatically";
+            else
+                return "sniped himself somehow";
+
+        case WEP_FIREBALL:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "should have used a smaller gun";
+            else
+                return "forgot about some firemine";
+
+        case WEP_ZAPPER:
+            return "zapped himself";
+
+        //
+        // Nadgets
+        //
+
+        case HG_NAPALM:
+            return "played with fire";
+
+        default:
+            return "couldn't resist the urge to self-destruct";
+    }
 }
 
 string WeaponDeathString(float deathtype) {
-    // TODO: weapon-specific frag strings here
-    return "was blasted by";
+    float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
+
+    switch(w) {
+        case WEP_LASER:
+            return "was lasered to death by";
+
+        case WEP_SHOTGUN:
+            return "was gunned by";
+
+        case WEP_UZI:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "was sniped by";
+            else
+                return "was riddled full of holes by";
+
+        case WEP_GRENADE_LAUNCHER:
+            if(deathtype & HITTYPE_SPLASH) {
+                if(deathtype & HITTYPE_BOUNCE)
+                    return "didn't see #'s grenade";
+                else
+                    return "almost dodged #'s grenade";
+            } else
+                return "ate #'s grenade";
+
+        case WEP_ELECTRO:
+            if(deathtype & HITTYPE_SECONDARY) {
+                if(deathtype & HITTYPE_SPLASH)
+                    return "just noticed #'s blue ball";
+                else
+                    return "got in touch with #'s blue ball";
+            } else {
+                if(!g_minstagib) {
+                    if(deathtype & HITTYPE_BOUNCE) // combo
+                        return "felt the electrifying air of #'s combo";
+                    else if(deathtype & HITTYPE_SPLASH)
+                        return "got too close to #'s blue beam";
+                    else
+                        return "was blasted by #'s blue beam";
+                } else
+                    return "was blasted by #'s laser";
+            }
+
+        case WEP_CRYLINK:
+            if(deathtype & HITTYPE_BOUNCE)
+                return "could not hide from #'s Crylink";
+            else if(deathtype & HITTYPE_SPLASH)
+                return "was too close to #'s Crylink";
+            else
+                return "took a close look at #'s Crylink";
+
+        case WEP_NEX:
+            return "has been vaporized by";
+
+        case WEP_HAGAR:
+            if(deathtype & HITTYPE_BOUNCE)
+                return "hoped #'s missiles wouldn't bounce";
+            else
+                return "was pummeled by";
+
+        case WEP_ROCKET_LAUNCHER:
+            if(!g_minstagib) {
+                if(deathtype & HITTYPE_BOUNCE) // (remote detonation)
+                    return "got too close to #'s rocket";
+                else if(deathtype & HITTYPE_SPLASH)
+                    return "almost dodged #'s rocket";
+                else
+                    return "ate #'s rocket";
+            } else
+                return "has been blown up by #";
+
+        case WEP_PORTO:
+            return "felt # doing the impossible to him";
+
+        case WEP_MINSTANEX:
+            return "has been vaporized by";
+
+        case WEP_HOOK:
+            return "has run into #'s gravity bomb";
+
+        case WEP_HLAC:
+            return "was cut down by";
+
+        case WEP_TUBA:
+            return "died of #'s great playing on the @!#%'n Tuba";
+
+        case WEP_CAMPINGRIFLE:
+            if(deathtype & HITTYPE_SECONDARY) {
+                if(deathtype & HITTYPE_BOUNCE)
+                    return "failed to hide from #'s bullet hail";
+                else
+                    return "died in #'s bullet hail";
+            } else {
+                if(deathtype & HITTYPE_BOUNCE) {
+                    // TODO special headshot message here too?
+                    return "failed to hide from #'s rifle";
+                } else {
+                    if(deathtype & HITTYPE_HEADSHOT)
+                        return "got hit in the head by #";
+                    else
+                        return "was sniped by #";
+                }
+            }
+
+        case WEP_FIREBALL:
+            if(deathtype & HITTYPE_SECONDARY) {
+                if(deathtype & HITTYPE_BOUNCE) {
+                    if(deathtype & HITTYPE_SPLASH) // BFG effect
+                        return "could not hide from #'s fireball";
+                    else // laser
+                        return "saw the pretty lights of #'s fireball";
+                } else if(deathtype & HITTYPE_SPLASH)
+                    return "got too close to #'s fireball";
+                else
+                    return "tasted #'s fireball";
+            } else {
+                if(deathtype & HITTYPE_HEADSHOT)
+                    return "tried to catch #'s firemine";
+                else
+                    return "fatefully ignored #'s firemine";
+            }
+
+        case WEP_ZAPPER:
+            if(deathtype & HITTYPE_SECONDARY) {
+                if(deathtype & HITTYPE_BOUNCE)
+                    return "couldn't hide from #'s chain lightning";
+                else
+                    return "was struck by #'s lightning bolt";
+            } else
+                return "has been zapped by";
+
+        //
+        // Nadgets
+        //
+
+        case HG_NORMAL:
+            return "didn't notice #'s grenade";
+
+        case HG_REMOTE:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "was incinerated by #'s fire trap";
+            else
+                return "fell for #'s trap";
+
+        case HG_PLASMA:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "took a walk over #'s hot plasma";
+            else
+                return "was blasted by #'s plasma bomb";
+
+        case HG_SHIELD:
+            return "suffered from death feedback induced by #'s reflective shield";
+
+        case HG_GG:
+            return "has been outskilled by #'s gg button, gg!";
+
+        case HG_LASER:
+            return "took #'s blazing charge";
+
+        case HG_BAIT:
+            return "took #'s bait";
+
+        default:
+            return "was blasted by";
+    }
 }
 
 void Message_Obituary(float targ, float attacker, float deathtype, string customMessage, float attackerSpree, float targetSpree, float attackerSpreeShort) {
@@ -25,7 +265,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
     string a = aname;
 
     float spawnfrag = FALSE;
-    
+
     float extendfragmessages = cvar("cl_extendfragmessages");
 
     if(targ == attacker)
@@ -54,8 +294,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             }
         }
 
-        float w = DEATH_WEAPONOF(deathtype);
-        if(WEP_VALID(w)) {
+        float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
+        
+        if(WEP_VALID(w) || DEATH_ISHG(w)) {
             print("^1", s, "^1 ", WeaponSuicideString(deathtype), "\n");
         } else if(deathtype == DEATH_KILL)
             print("^1", s, "^1 couldn't take it anymore\n");
@@ -71,8 +312,6 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 unfairly eliminated himself\n");
         else if(deathtype == DEATH_FIRE)
             print("^1", s, "^1 burned to death\n");
-        else if(DEATH_HGTYPE(deathtype) == HG_NAPALM)
-            print("^1", s, "^1 played with fire\n");
         else if(deathtype == DEATH_NOISE)
             print("^1", s, "^1 was too noisy to live\n");
         else if(deathtype != DEATH_TEAMCHANGE)
@@ -131,8 +370,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     centerprint(strcat("^1You were ", fragmod, "^1fragged by ^7", a, "^1", fragmod_tail));
             }
 
-                float w = DEATH_WEAPONOF(deathtype);
-                if(WEP_VALID(w)) {
+                float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
+
+                if(WEP_VALID(w) || DEATH_ISHG(w)) {
                     string w_deathtypestring = WeaponDeathString(deathtype);
                     float p = strstrofs(w_deathtypestring, "#", 0);
                     if(p < 0)
@@ -173,38 +413,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     print("^1", s, "^1 was burnt to death by ^1", a, "\n");
                 else if(deathtype == DEATH_MEODP)
                         print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
-                else if(DEATH_ISHG(deathtype)) {
-                    float hgtype = DEATH_HGTYPE(deathtype);
-
-                    if(hgtype == HG_NORMAL)
-                        print("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
-                    else if(hgtype == HG_NAPALM)
-                        print("^1", s, "^1 engaged in ", a, "^1's hot napalm action\n");
-                    else if(hgtype == HG_REMOTE) {
-
-                        if(deathtype & HITTYPE_SECONDARY)
-                            print("^1", s, "^1 was incinerated by ", a, "^1's fire trap\n");
-                        else
-                            print("^1", s, "^1 fell for ", a, "^1's trap\n");
-
-                    } else if(hgtype == HG_PLASMA) {
-
-                        if(deathtype & HITTYPE_SECONDARY)
-                            print("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
-                        else
-                            print("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
-
-                    } else if(hgtype == HG_SHIELD)
-                        print("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
-                    else if(hgtype == HG_GG)
-                        print("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
-                    else if(hgtype == HG_LASER)
-                        print("^1", s, "^1 took ", a, "^1's blazing charge\n");
-                    else if(hgtype == HG_BAIT)
-                        print("^1", s, "^1 took ", a, "^1's bait\n");
-                    else
-                        print("^1", s, "^1 was fragged by ", a, "\n");
-                } else
+                else
                     print("^1", s, "^1 was fragged by ", a, "\n");
 
                 if(targetSpree > 2)

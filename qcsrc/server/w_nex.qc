@@ -70,9 +70,5 @@ float w_nex(float req)
 		return self.ammo_cells >= cvar("g_balance_nex_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return FALSE;
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "did the impossible";
-	else if (req == WR_KILLMESSAGE)
-		w_deathtypestring = "has been vaporized by";
 	return TRUE;
 };
