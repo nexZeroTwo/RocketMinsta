@@ -33,10 +33,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
         suicide = TRUE;
     else if(teamplay)
         teamkill = (tteam == ateam);
-
-    print("^5 -- ^6CSQC OBITUARY FOLLOWS ^5 --\n");
-    //print("^1", tname, "^1 fragged ", aname, "^1 with ", ftos(deathtype), "\n");
-
+    
     if(suicide) {
         if(iDied) {
             if(deathtype == DEATH_TEAMCHANGE) {
