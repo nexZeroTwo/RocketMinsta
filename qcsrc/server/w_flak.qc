@@ -185,27 +185,39 @@ void W_Flak_Bomb_Explode(void) {
     float i, c = cvar("g_balance_flak_secondary_projectiles");
     w_shotorg = self.origin;
 
+    float spread_up, spread_side;
+
+    if(other.takedamage == DAMAGE_AIM && other.iscreature) {
+        spread_side = 360;
+        spread_up = 360;
+    } else {
+        spread_side = cvar("g_balance_flak_secondary_spread_side");
+        spread_up = cvar("g_balance_flak_secondary_spread_up");
+    }
+
     for(i = 0; i < c; ++i) {
         vector a = vectoangles(dir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_secondary_spread_up")
-                           + '0 1 0' * crandom() * cvar("g_balance_flak_secondary_spread_side"));
+        fixedmakevectors(a + '1 0 0' *  random() * spread_up
+                           + '0 1 0' * crandom() * spread_side);
 
-        W_Flak_Projectile(self.owner,
+        entity p = W_Flak_Projectile(self.owner,
                           cvar("g_balance_flak_secondary_damage"),
                           cvar("g_balance_flak_secondary_gravity"),
                           cvar("g_balance_flak_secondary_lifetime"),
                           cvar("g_balance_flak_secondary_speed"),
                           cvar("g_balance_flak_secondary_speed_up"),
                           cvar("g_balance_flak_secondary_bouncefactor"),
-                          WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE).owner = world;
+                          WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
+
+        // do not hit the direct hit entity with shrapnel (causes very inconsistent behavior)
+        p.enemy = p.owner = other;
     }
 
     remove (self);
 }
 
 void W_Flak_Bomb_Touch(void) {
-    //W_Grenade_Touch2();
     PROJECTILE_TOUCH;
     self.use();
 }
