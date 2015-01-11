@@ -461,7 +461,7 @@ void JB_Torture_Napalm() {
 	proj.owner = self;
 	proj.classname = "jb_torture_napalm";
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = DEATH_HG_NAPALM;
+	proj.projectiledeathtype = HG_NAPALM;
 	proj.touch = JB_Torture_Napalm_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
 	setsize (proj, '0 0 0', '0 0 0');
@@ -540,7 +540,7 @@ void JB_Torture_Grenades() {
 	gren.movetype = MOVETYPE_BOUNCE;
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
-	gren.hg_type = DEATH_HG_NORMAL;		// HG_Grenade_Explode and such use this -- I don't feel like copypasting them too
+	gren.hg_type = HG_NORMAL;		// HG_Grenade_Explode and such use this -- I don't feel like copypasting them too
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
 

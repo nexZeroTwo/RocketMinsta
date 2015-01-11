@@ -514,7 +514,7 @@ float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float d
     if(targ != attacker)
     if(targ != inflictor)
     if(attacker.classname == "player")
-    if(deathtype != DEATH_HG_TRANSLOC)
+    if(DEATH_HGTYPE(deathtype) != HG_TRANSLOC)
     if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC) {
         float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
         if(ignite)

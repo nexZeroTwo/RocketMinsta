@@ -16,7 +16,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
     float damage;
     float medic;
     
-    if(tdeath_deathtype == DEATH_HG_TRANSLOC) {
+    if(DEATH_HGTYPE(tdeath_deathtype) == HG_TRANSLOC) {
     	if(teleporter.hg_tl_revived)
     		damage = 0;
 		else if(cvar("g_nadgets_transloc_scaledamagedistance")) {

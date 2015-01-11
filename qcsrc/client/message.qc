@@ -33,7 +33,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
         suicide = TRUE;
     else if(teamplay)
         teamkill = (tteam == ateam);
-    
+
     if(suicide) {
         if(iDied) {
             if(deathtype == DEATH_TEAMCHANGE) {
@@ -72,7 +72,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 unfairly eliminated himself\n");
         else if(deathtype == DEATH_FIRE)
             print("^1", s, "^1 burned to death\n");
-        else if(deathtype == DEATH_HG_NAPALM)
+        else if(DEATH_HGTYPE(deathtype) == HG_NAPALM)
             print("^1", s, "^1 played with fire\n");
         else if(deathtype == DEATH_NOISE)
             print("^1", s, "^1 was too noisy to live\n");
@@ -172,32 +172,40 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     print("^1", s, "^1 was unfairly eliminated by ^1", a, "\n");
                 else if(deathtype == DEATH_FIRE)
                     print("^1", s, "^1 was burnt to death by ^1", a, "\n");
-                else if(deathtype == DEATH_HG_NORMAL)
-                    print("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
-                else if(deathtype == DEATH_HG_NAPALM)
-                    print("^1", s, "^1 engaged in ", a, "^1's hot napalm action\n");
-                else if(deathtype == DEATH_HG_REMOTE) {
-                    /*
-                    if(targ == inflictor)   // fire damage does this
-                        print("^1", s, "^1 was incinerated by ", a, "^1's fire trap\n");
-                    else
-                    */
-                        print("^1", s, "^1 fell for ", a, "^1's trap\n");
-                } else if(deathtype == DEATH_HG_PLASMA)
-                    print("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
-                else if(deathtype == DEATH_HG_PLASMA_SHARD)
-                    print("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
-                else if(deathtype == DEATH_HG_SHIELD)
-                    print("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
-                else if(deathtype == DEATH_HG_GG)
-                    print("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
-                else if(deathtype == DEATH_HG_LASER)
-                    print("^1", s, "^1 took ", a, "^1's blazing charge\n");
                 else if(deathtype == DEATH_MEODP)
-                    print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
-                else if(deathtype == DEATH_HG_BAIT)
-                    print("^1", s, "^1 took ", a, "^1's bait\n");
-                else
+                        print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                else if(DEATH_ISHG(deathtype)) {
+                    float hgtype = DEATH_HGTYPE(deathtype);
+
+                    if(hgtype == HG_NORMAL)
+                        print("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
+                    else if(hgtype == HG_NAPALM)
+                        print("^1", s, "^1 engaged in ", a, "^1's hot napalm action\n");
+                    else if(hgtype == HG_REMOTE) {
+
+                        if(deathtype & HITTYPE_SECONDARY)
+                            print("^1", s, "^1 was incinerated by ", a, "^1's fire trap\n");
+                        else
+                            print("^1", s, "^1 fell for ", a, "^1's trap\n");
+
+                    } else if(hgtype == HG_PLASMA) {
+
+                        if(deathtype & HITTYPE_SECONDARY)
+                            print("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
+                        else
+                            print("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
+
+                    } else if(hgtype == HG_SHIELD)
+                        print("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
+                    else if(hgtype == HG_GG)
+                        print("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
+                    else if(hgtype == HG_LASER)
+                        print("^1", s, "^1 took ", a, "^1's blazing charge\n");
+                    else if(hgtype == HG_BAIT)
+                        print("^1", s, "^1 took ", a, "^1's bait\n");
+                    else
+                        print("^1", s, "^1 was fragged by ", a, "\n");
+                } else
                     print("^1", s, "^1 was fragged by ", a, "\n");
 
                 if(targetSpree > 2)

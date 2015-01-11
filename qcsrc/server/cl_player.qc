@@ -587,7 +587,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_MEODP)
     if(deathtype != DEATH_ARC)
-    if(deathtype != DEATH_HG_SHIELD)
+    if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
         Buffs_ArcDamage(self, attacker, damage, deathtype);
 
     if(damage) {
@@ -595,7 +595,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
     	damage = HG_Shield_Damage(attacker, damage, deathtype);
         
-        if(deathtype == HG_PLASMA_SHARD) {
+        if(DEATH_HGTYPE(deathtype) == HG_PLASMA && deathtype & HITTYPE_SECONDARY) {
             if(time > inflictor.damage_nextarceffect) {
                 te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
                 inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
@@ -622,7 +622,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         force = '0 0 0';
     }
     
-    if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
+    if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
         if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + cvar("g_nadgets_plasma_projectile_frozenlock") * Buffs_NadgetPower(attacker);
             self.hg_plasmalock_owner = attacker;
@@ -715,7 +715,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(!g_minstagib) {
             	vector vdloc = hitloc;
 
-            	if(deathtype == DEATH_HG_TRANSLOC)
+            	if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
             		vdloc = vdloc + 0.5 * attacker.velocity;
 
                 VisualDamage(attacker, self, cdmg, save, htype, vdloc);
@@ -878,7 +878,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
-        if(deathtype == HG_BAIT)
+        if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
             attacker.hg_ammo += 1;

@@ -559,21 +559,6 @@ float DEATH_ITEM = 10106;
 float DEATH_MEODP = 10107;
 float DEATH_HOOKFRAG = 10108;
 
-float DEATH_HG_START = 100;
-float DEATH_HG_NORMAL = 100;
-float DEATH_HG_NAPALM = 101;
-float DEATH_HG_REMOTE = 102;
-float DEATH_HG_PLASMA = 103;
-float DEATH_HG_PLASMA_SHARD = 104;
-float DEATH_HG_TRANSLOC = 105;
-float DEATH_HG_SHIELD = 106;
-float DEATH_HG_LINKER = 107;
-float DEATH_HG_GG = 108;
-float DEATH_HG_LASER = 109;
-float DEATH_HG_CLOAK = 110;
-float DEATH_HG_BAIT = 111;
-float DEATH_HG_END = 111;
-
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
 float HITTYPE_SECONDARY = 0x100;
@@ -584,9 +569,10 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
-#define DEATH_ISHG(t)				  ((t) >= DEATH_HG_START && (t) <= DEATH_HG_END)
+#define DEATH_HGTYPE(t)               ((t) & DEATH_WEAPONMASK)
+#define DEATH_ISHG(t)				  (DEATH_HGTYPE(t) >= HG_START && DEATH_HGTYPE(t) <= HG_END)
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISWEAPON(t,w)           (!DEATH_ISHG(t) && !DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
+#define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
