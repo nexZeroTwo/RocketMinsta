@@ -25,9 +25,8 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
     string a = aname;
 
     float spawnfrag = FALSE;
-
-    // TODO: client setting for this
-    float extendfragmessages = TRUE;
+    
+    float extendfragmessages = cvar("cl_extendfragmessages");
 
     if(targ == attacker)
         suicide = TRUE;
