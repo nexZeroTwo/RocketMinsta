@@ -31,7 +31,6 @@ s/g_explosive_allow_fakeflag/sv_fakeflag/g
 s/g_explosive_secretvotes/sv_vote_secretcommands/g
 s/g_explosive_allowmadoka/sv_madoka/g
 s/g_explosive_oldnex/sv_oldnex/g
-s/g_explosive_extendfragmessages/sv_extendfragmessages/g
 s/g_explosive_powerupsonbases/g_balance_powerupsonbases/g
 s/g_explosive_spawnclosetoteam/g_spawnclosetoteam/g
 s/g_explosive_allow_hidecountry/sv_hidecountry/g
