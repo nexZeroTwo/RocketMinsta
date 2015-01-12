@@ -1100,7 +1100,7 @@ void readplayerstartcvars()
         
         if(!g_weaponarena_limitammo)
         {
-			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
+			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
 				start_ammo_rockets = 999;
 			if (g_weaponarena & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
 				start_ammo_shells = 999;
