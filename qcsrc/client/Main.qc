@@ -125,6 +125,12 @@ void CSQC_Init(void)
 	registercvar("cl_lowammowarnings_campingrifle_bulletsremaining", "2", CVAR_SAVE);
 	registercvar("cl_lowammowarnings_size", "20", CVAR_SAVE);
 	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
+    registercvar("crosshair_zapper", "", CVAR_SAVE);
+    registercvar("crosshair_zapper_size", "0.5", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_red", "0", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_green", "0.7", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_blue", "1", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_alpha", "1", CVAR_SAVE);
 	
     gametype = 0;
 
