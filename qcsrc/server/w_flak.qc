@@ -198,7 +198,7 @@ void W_Flak_Bomb_Explode(void) {
     for(i = 0; i < c; ++i) {
         vector a = vectoangles(dir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * spread_up
+        fixedmakevectors(a + '1 0 0' * crandom() * spread_up
                            + '0 1 0' * crandom() * spread_side);
 
         entity p = W_Flak_Projectile(self.owner,
