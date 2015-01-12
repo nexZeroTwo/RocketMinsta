@@ -35,7 +35,10 @@ void Buffs_Init(void) {
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
     g_buffs_random_spawns = cvar("g_buffs_random_spawns");
     g_buffs_lockon = cvar("g_buffs_lockon");
-    
+
+    if(g_buffs_stack)
+        g_buffs_replace = FALSE;
+
     if(g_clanarena)
         g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
     
@@ -851,7 +854,7 @@ float Buffs_BuffPickup_PickupAllowed(entity buff, entity plr) {
 
     if(allowReplace > 1)
         allowReplace = plr.BUTTON_USE;
-    
+
     return ((plr.buffs & buff.buffs != buff.buffs) && (!plr.buffs || g_buffs_stack || allowReplace));
 }
 
