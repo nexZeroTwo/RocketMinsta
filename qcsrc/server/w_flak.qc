@@ -228,7 +228,7 @@ void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float d
 
 void W_Flak_Attack3(void) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO) {
-        self.ammo_cells = self.ammo_cells - cvar("g_balance_flak_secondary_ammo");
+        self.ammo_shells = self.ammo_shells - cvar("g_balance_flak_secondary_ammo");
         self.ammo_rockets = self.ammo_rockets - cvar("g_balance_flak_secondary_ammo_rockets");
     }
 
