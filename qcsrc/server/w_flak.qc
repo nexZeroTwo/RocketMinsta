@@ -210,8 +210,8 @@ void W_Flak_Bomb_Explode(void) {
                           cvar("g_balance_flak_secondary_bouncefactor"),
                           WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
 
-        // do not hit the direct hit entity with shrapnel (causes very inconsistent behavior)
-        p.enemy = p.owner = other;
+        // do not hit the direct hit entity with shrapnel right away (causes very inconsistent behavior)
+        p.owner = other;
     }
 
     remove (self);
