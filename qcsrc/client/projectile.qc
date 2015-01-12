@@ -105,7 +105,7 @@ void Projectile_DrawTrail(vector to)
 			else
 				trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC:
+		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC: case PROJECTILE_FLAK_BOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
         case PROJECTILE_HG_PLASMA:
@@ -454,6 +454,7 @@ void Ent_Projectile()
 			case PROJECTILE_FIREMINE: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
+            case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -480,6 +481,7 @@ void Ent_Projectile()
 				self.mins = '-3 -3 -3';
 				self.maxs = '3 3 3';
 				break;
+            case PROJECTILE_FLAK_BOMB:
 			case PROJECTILE_GRENADE:
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';

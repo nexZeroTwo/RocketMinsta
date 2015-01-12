@@ -230,7 +230,7 @@ void W_Flak_Attack3(void) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - cvar("g_balance_flak_secondary_ammo");
 
-    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", cvar("g_balance_flak_secondary_bomb_damage"));
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire3.wav", cvar("g_balance_flak_secondary_bomb_damage"));
     w_shotdir = v_forward;
 
     entity e = spawn();
@@ -259,7 +259,7 @@ void W_Flak_Attack3(void) {
     e.angles = vectoangles(e.velocity);
     e.flags = FL_PROJECTILE;
 
-    CSQCProjectile(e, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
+    CSQCProjectile(e, TRUE, PROJECTILE_FLAK_BOMB, TRUE);
 }
 
 void spawnfunc_weapon_flak(void) {
@@ -290,6 +290,7 @@ float w_flak(float req) {
         precache_model("models/weapons/h_flak.dpm");
         precache_sound("weapons/flak_fire.wav");
         precache_sound("weapons/flak_fire2.wav");
+        precache_sound("weapons/flak_fire3.wav");
         precache_sound("weapons/casings1.wav");
         precache_sound("weapons/casings2.wav");
         precache_sound("weapons/casings3.wav");
