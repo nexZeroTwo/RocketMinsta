@@ -243,7 +243,7 @@ void Ent_DamageInfo(float isNew)
 						sound(self, CHAN_PROJECTILE, "weapons/hagexp3.wav", VOL_BASE, ATTN_NORM);
 				}
 				break;
-			case WEP_ROCKET_LAUNCHER:
+			case WEP_ROCKET_LAUNCHER: case WEP_FLAK:
 				org2 = org + backoff * 12;
 				pointparticles(particleeffectnum("rocket_explode"), org2, '0 0 0', 1);
 				if(!issilent)
