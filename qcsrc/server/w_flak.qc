@@ -227,8 +227,10 @@ void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float d
 }
 
 void W_Flak_Attack3(void) {
-    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO) {
         self.ammo_cells = self.ammo_cells - cvar("g_balance_flak_secondary_ammo");
+        self.ammo_rockets = self.ammo_rockets - cvar("g_balance_flak_secondary_ammo_rockets");
+    }
 
     W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire3.wav", cvar("g_balance_flak_secondary_bomb_damage"));
     w_shotdir = v_forward;
@@ -299,7 +301,7 @@ float w_flak(float req) {
     else if(req == WR_CHECKAMMO1)
         return self.ammo_shells >= cvar("g_balance_flak_primary_ammo");
     else if(req == WR_CHECKAMMO2)
-        return self.ammo_shells >= cvar("g_balance_flak_secondary_ammo");
+        return self.ammo_shells >= cvar("g_balance_flak_secondary_ammo") && self.ammo_rockets >= cvar("g_balance_flak_secondary_ammo_rockets");
     else if(req == WR_SUICIDEMESSAGE) {
         w_deathtypestring = "was mutilated by his own Flak Cannon";
     } else if(req == WR_KILLMESSAGE) {
