@@ -270,7 +270,10 @@ void spawnfunc_weapon_flak(void) {
 
 float w_flak(float req) {
     if(req == WR_AIM) {
-        self.BUTTON_ATCK = bot_aim(cvar("g_balance_flak_primary_speed"), cvar("g_balance_flak_primary_speed_up"), cvar("g_balance_flak_primary_lifetime"), TRUE);
+        if(random() < 0.35 && cvar("g_balance_flak_secondary_bomb") && self.ammo_rockets >= cvar("g_balance_flak_secondary_ammo_rockets"))
+            self.BUTTON_ATCK2 = bot_aim(cvar("g_balance_flak_secondary_bomb_speed"), cvar("g_balance_flak_secondary_bomb_speed_up"), cvar("g_balance_flak_secondary_bomb_lifetime"), TRUE);
+        else
+            self.BUTTON_ATCK = bot_aim(cvar("g_balance_flak_primary_speed"), cvar("g_balance_flak_primary_speed_up"), cvar("g_balance_flak_primary_lifetime"), TRUE);
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK)
         if(weapon_prepareattack(0, cvar("g_balance_flak_primary_refire"))) {
