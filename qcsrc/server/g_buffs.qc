@@ -25,6 +25,7 @@ void Buffs_Init(void) {
 
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
+    g_buffs_replace = cvar("g_buffs_replace");
     g_buffs_noteam = cvar("g_buffs_noteam");
     g_buffs_randomize = cvar("g_buffs_randomize");
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
@@ -846,7 +847,9 @@ void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor) {
 }
 
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
-    if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
+    if((!self.owner.buff_active && !self.owner.buff_activetime) ||
+       (plr.buffs & self.owner.buffs == self.owner.buffs)       ||
+       (plr.buffs && !g_buffs_stack && !g_buffs_replace))
         return FALSE;
     return WaypointSprite_visible_for_player(plr);
 }
@@ -948,7 +951,7 @@ void Buffs_BuffPickup_Reset(void) {
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
-    if(self.owner || plr.buffs & self.buffs == self.buffs || (plr.buffs && !g_buffs_stack))
+    if(self.owner || plr.buffs & self.buffs == self.buffs || (plr.buffs && !g_buffs_stack && !g_buffs_replace))
         return;
     
     self.owner = plr;
@@ -957,6 +960,9 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
     string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
     
+    if(g_buffs_replace)
+        plr.buffs = 0;
+
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
     bigprint_spec(plr, strcat("You got the ", bname), "", 3);
     sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
