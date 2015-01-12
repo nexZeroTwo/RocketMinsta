@@ -846,10 +846,17 @@ void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor) {
                                       Buffs_MEODP_Filter_NearbyRelated, self);
 }
 
+float Buffs_BuffPickup_PickupAllowed(entity buff, entity plr) {
+    float allowReplace = g_buffs_replace;
+
+    if(allowReplace > 1)
+        allowReplace = plr.BUTTON_USE;
+    
+    return ((plr.buffs & buff.buffs != buff.buffs) && (!plr.buffs || g_buffs_stack || allowReplace));
+}
+
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
-    if((!self.owner.buff_active && !self.owner.buff_activetime) ||
-       (plr.buffs & self.owner.buffs == self.owner.buffs)       ||
-       (plr.buffs && !g_buffs_stack && !g_buffs_replace))
+    if((!self.owner.buff_active && !self.owner.buff_activetime) || !Buffs_BuffPickup_PickupAllowed(self.owner, plr))
         return FALSE;
     return WaypointSprite_visible_for_player(plr);
 }
@@ -951,7 +958,7 @@ void Buffs_BuffPickup_Reset(void) {
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
-    if(self.owner || plr.buffs & self.buffs == self.buffs || (plr.buffs && !g_buffs_stack && !g_buffs_replace))
+    if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
     
     self.owner = plr;
