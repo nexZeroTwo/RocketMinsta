@@ -210,9 +210,5 @@ float w_hlac(float req)
 		return self.ammo_cells >= cvar("g_balance_hlac_primary_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_cells >= cvar("g_balance_hlac_secondary_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "should have used a smaller gun";
-	else if (req == WR_KILLMESSAGE)
-		w_deathtypestring = "was cut down by";
 	return TRUE;
 };

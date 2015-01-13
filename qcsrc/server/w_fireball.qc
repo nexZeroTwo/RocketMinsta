@@ -347,41 +347,6 @@ float w_fireball(float req)
 		return self.ammo_rockets >= cvar("g_balance_fireball_primary_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= cvar("g_balance_fireball_secondary_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "should have used a smaller gun";
-		else
-			w_deathtypestring = "forgot about some firemine";
-	}
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SECONDARY)
-		{
-			if(w_deathtype & HITTYPE_BOUNCE)
-			{
-				if(w_deathtype & HITTYPE_SPLASH) // BFG effect
-				{
-					w_deathtypestring = "could not hide from #'s fireball";
-				}
-				else // laser
-				{
-					w_deathtypestring = "saw the pretty lights of #'s fireball";
-				}
-			}
-			else if(w_deathtype & HITTYPE_SPLASH)
-				w_deathtypestring = "got too close to #'s fireball";
-			else
-				w_deathtypestring = "tasted #'s fireball";
-		}
-		else
-		{
-			if(w_deathtype & HITTYPE_HEADSHOT)
-				w_deathtypestring = "tried to catch #'s firemine";
-			else
-				w_deathtypestring = "fatefully ignored #'s firemine";
-		}
-	}
 	else if (req == WR_RESETPLAYER)
 	{
 		self.fireball_secondarytime = time;

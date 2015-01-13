@@ -45,14 +45,6 @@ vector TeamColor(float teem)
 	}
 }
 
-string TeamName(float t)
-{
-	return strcat(Team_ColorName(t), " Team");
-}
-string ColoredTeamName(float t)
-{
-	return strcat(Team_ColorCode(t), Team_ColorName(t), " Team^7");
-}
 string TeamNoName(float t)
 {
 	// fixme: Search for team entities and get their .netname's!

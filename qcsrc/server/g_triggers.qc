@@ -457,7 +457,12 @@ void trigger_hurt_touch()
 		{
 			EXACTTRIGGER_TOUCH;
 			other.triggerhurttime = time + 1;
-			Damage (other, self, self, self.dmg, DEATH_HURTTRIGGER, other.origin, '0 0 0');
+
+            float d = DEATH_HURTTRIGGER;
+            if(other.pushltime == PUSHLTIME_HOOKFRAG)
+                d = DEATH_HOOKFRAG;
+
+			Damage(other, self, self, self.dmg, d, other.origin, '0 0 0');
 		}
 	}
 	else

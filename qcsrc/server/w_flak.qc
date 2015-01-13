@@ -305,16 +305,6 @@ float w_flak(float req) {
         return self.ammo_shells >= cvar("g_balance_flak_primary_ammo");
     else if(req == WR_CHECKAMMO2)
         return self.ammo_shells >= cvar("g_balance_flak_secondary_ammo") && self.ammo_rockets >= cvar("g_balance_flak_secondary_ammo_rockets");
-    else if(req == WR_SUICIDEMESSAGE) {
-        w_deathtypestring = "was mutilated by his own Flak Cannon";
-    } else if(req == WR_KILLMESSAGE) {
-        if(w_deathtype & HITTYPE_BOUNCE)
-            w_deathtypestring = "could not hide from #'s Flak Cannon";
-        else if(w_deathtype & HITTYPE_SPLASH)
-            w_deathtypestring = "was blown away by #'s Flak Cannon";
-        else
-            w_deathtypestring = "was shredded by #'s Flak Cannon";
-    }
 
     return TRUE;
 }

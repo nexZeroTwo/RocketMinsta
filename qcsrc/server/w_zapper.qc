@@ -377,17 +377,6 @@ float w_zapper(float req) {
         return W_Zapper_Attack1_CheckAmmo(self);
     else if(req == WR_CHECKAMMO2)
         return W_Zapper_Attack2_CheckAmmo(self);
-    else if(req == WR_SUICIDEMESSAGE)
-        w_deathtypestring = "zapped himself";
-    else if(req == WR_KILLMESSAGE) {
-        if(w_deathtype & HITTYPE_SECONDARY) {
-            if(w_deathtype & HITTYPE_BOUNCE)
-                w_deathtypestring = "couldn't hide from #'s chain lightning";
-            else
-                w_deathtypestring = "was struck by #'s lightning bolt";
-        } else
-            w_deathtypestring = "has been zapped by";
-    }
     return TRUE;
 };
 

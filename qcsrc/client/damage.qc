@@ -108,29 +108,29 @@ void Ent_DamageInfo(float isNew)
 				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
 				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
 			}
-			
+
 			hittype &~= DEATH_HITTYPEMASK;
 			switch (hittype)
 			{
-                case DEATH_HG_NORMAL:
-                case DEATH_HG_REMOTE:
-                case DEATH_HG_NAPALM:
-                case DEATH_HG_BAIT:
+                case HG_NORMAL:
+                case HG_REMOTE:
+                case HG_NAPALM:
+                case HG_BAIT:
                     pointparticles(rm_particleeffectnum("RM_EXPLOSION"), self.origin, '0 0 0', 1);
                     break;
                 
-                case DEATH_HG_PLASMA_SHARD: case DEATH_HG_LASER:
-                    org2 = org + backoff * 6;
-                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == DEATH_HG_LASER)), org2, '0 0 0', 1);
-                    if(!issilent)
-                        sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
-                    break;
-                    
-                case DEATH_HG_PLASMA:
-                    org2 = org + backoff * 2;
-                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
-                    if(!issilent)
-                        sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+                case HG_PLASMA: case HG_LASER:
+                    if((hittype == HG_PLASMA && (secondary || bounce)) || hittype == HG_LASER) {
+                        org2 = org + backoff * 6;
+                        pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == HG_LASER)), org2, '0 0 0', 1);
+                        if(!issilent)
+                            sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+                    } else { // plasma bomb explosion
+                        org2 = org + backoff * 2;
+                        pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
+                        if(!issilent)
+                            sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+                    }
                     break;
 			}
 		}

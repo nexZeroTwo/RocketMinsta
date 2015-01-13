@@ -74,16 +74,19 @@ void DamageTracker_Wipe(entity keeper) {
 string DamageTracker_DamageSourceName(float dtype, float extended) {
     string r;
     
-    if(DEATH_ISHG(dtype))
-        return HG_TypeToExpandedName(dtype);
-    else if(dtype == DEATH_ARC)
+    if(dtype == DEATH_ARC)
         return "Arc Buff";
     else if(dtype == DEATH_IGNITE)
         return "Ignite Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
-    else { 
-        r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
+    else {
+        float hgtype = DEATH_HGTYPE(dtype);
+
+        if(DEATH_ISHG(dtype))
+            r = HG_TypeToExpandedName(hgtype);
+        else
+            r = get_weaponinfo(DEATH_WEAPONOF(dtype)).message;
         
         //if(extended) {
             if(r == "") {
@@ -96,7 +99,17 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
             #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
             string mods;
 
-            if(dtype & HITTYPE_SECONDARY)   ADDMOD("alt");
+            if(dtype & HITTYPE_SECONDARY) {
+                if(hgtype == HG_PLASMA)
+                    ADDMOD("shard");
+                else if(hgtype == HG_NAPALM || hgtype == HG_REMOTE)
+                    ADDMOD("fire");
+                else if(hgtype == HG_SHIELD)
+                    ADDMOD("discharge");
+                else
+                    ADDMOD("alt");
+            }
+
             if(dtype & HITTYPE_HEADSHOT)    ADDMOD("head");
             if(dtype & HITTYPE_SPLASH)      ADDMOD("splash");
 
@@ -107,6 +120,10 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     ADDMOD("combo");
                 else if(DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))
                     ADDMOD("remote");
+                else if(hgtype == HG_PLASMA)
+                    ADDMOD("burst");
+                else if(hgtype == HG_SHIELD)
+                    ADDMOD("arc");
                 else
                     ADDMOD("bounce");
             }
@@ -122,15 +139,15 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
 }
 
 float DamageTracker_TransformDamageSource(float dtype) {
-    if(dtype == DEATH_HG_PLASMA_SHARD)
-        return DEATH_HG_PLASMA;
-    
-    if(!DEATH_ISHG(dtype) && !DEATH_ISSPECIAL(dtype)) {
+    if(!DEATH_ISSPECIAL(dtype)) {
+        float hgtype = DEATH_HGTYPE(dtype);
         dtype &~= HITTYPE_SPLASH;
 
         if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER)           &&   // secondary arc
            !DEATH_ISWEAPON(dtype, WEP_ELECTRO)          &&   // combo
-           !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))      // remote detonation
+           !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER)  &&   // remote detonation
+           !(hgtype == HG_SHIELD)                       &&   // discharge arc
+           !(hgtype == HG_PLASMA))                           // burst
             dtype &~= HITTYPE_BOUNCE;
 
         if(!DEATH_ISWEAPON(dtype, WEP_CAMPINGRIFLE))
