@@ -137,6 +137,7 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
     registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
+    registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
 	
     gametype = 0;
 
@@ -2285,6 +2286,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_UPDATESELECTEDPLAYER:
             Net_ReadUpdateSelectedPlayer();
+            return TRUE;
+        case TE_CSQC_MESSAGE:
+            Message_Read();
             return TRUE;
     }
 

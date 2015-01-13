@@ -242,18 +242,5 @@ float w_crylink(float req)
 		return self.ammo_cells >= cvar("g_balance_crylink_primary_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_cells >= cvar("g_balance_crylink_secondary_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-	{
-		w_deathtypestring = "succeeded at self-destructing himself with the Crylink";
-	}
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_BOUNCE)
-			w_deathtypestring = "could not hide from #'s Crylink"; // unchecked: SPLASH (SECONDARY can't be)
-		else if(w_deathtype & HITTYPE_SPLASH)
-			w_deathtypestring = "was too close to #'s Crylink"; // unchecked: SECONDARY
-		else
-			w_deathtypestring = "took a close look at #'s Crylink"; // unchecked: SECONDARY
-	}
 	return TRUE;
 };

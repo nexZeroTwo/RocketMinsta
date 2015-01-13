@@ -3,7 +3,6 @@
 *.dat
 *.lno
 *.log
-*.kate-swp
 config.sh
 updconfig.sh
 releaseconfig.sh
