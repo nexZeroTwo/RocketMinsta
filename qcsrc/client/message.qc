@@ -70,6 +70,9 @@ string WeaponSuicideString(float deathtype) {
         case WEP_ZAPPER:
             return "zapped himself";
 
+        case WEP_FLAK:
+            return "was mutilated by his own Flak Cannon";
+
         //
         // Nadgets
         //
@@ -212,6 +215,14 @@ string WeaponDeathString(float deathtype) {
                     return "was struck by #'s lightning bolt";
             } else
                 return "has been zapped by";
+
+        case WEP_FLAK:
+            if(deathtype & HITTYPE_BOUNCE)
+                return "could not hide from #'s Flak Cannon";
+            else if(deathtype & HITTYPE_SPLASH)
+                return "was blown away by #'s Flak Cannon";
+            else
+                return "was shredded by #'s Flak Cannon";
 
         //
         // Nadgets

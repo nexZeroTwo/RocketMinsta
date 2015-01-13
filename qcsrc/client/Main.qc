@@ -131,6 +131,12 @@ void CSQC_Init(void)
     registercvar("crosshair_zapper_color_green", "0.7", CVAR_SAVE);
     registercvar("crosshair_zapper_color_blue", "1", CVAR_SAVE);
     registercvar("crosshair_zapper_color_alpha", "1", CVAR_SAVE);
+    registercvar("crosshair_flak", "", CVAR_SAVE);
+    registercvar("crosshair_flak_size", "0.6", CVAR_SAVE);
+    registercvar("crosshair_flak_color_red", "1", CVAR_SAVE);
+    registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
+    registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
+    registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
     registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
 	
     gametype = 0;

@@ -2894,8 +2894,10 @@ void ShowRespawnCountdown()
 		if(number <= self.respawn_countdown)
 		{
 			self.respawn_countdown = number - 1;
+            /*
 			if(ceil(self.death_time - (time + 0.5)) == number) // only say it if it is the same number even in 0.5s; to prevent overlapping sounds
 				announce(self, strcat("announcer/robotic/", ftos(number), ".wav"));
+            */
 		}
 	}
 }
