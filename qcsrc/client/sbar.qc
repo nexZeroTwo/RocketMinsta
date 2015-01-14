@@ -2907,9 +2907,9 @@ float GetSpecialCaseWarn(float currweapon){
 	}
 }
 
-string GetSpecialCaseWarnString(float currweapon){
+string GetSpecialCaseWarnString(float currweapon, float currbullets){
 	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return "magazine low";
+		case WEP_CAMPINGRIFLE: return (currbullets > 0) ? "magazine low" : "reloading";
 		case WEP_ZAPPER: return "heat high";
 		default: return "";
 	}
@@ -2920,7 +2920,7 @@ void Sbar_ShowLowammo(){
 	float currweapon = getstati(STAT_SWITCHWEAPON);
 	float showwarning = 0;
 	float showspecialwarning = 0;
-	float currammo, currammotype, ammocode;
+	float currammo, currammotype, ammocode, currbullets;
 	float clipheatwarn = GetSpecialCaseWarn(currweapon);
 	float warn = GetLowAmmoCvar(currweapon);
 	scale_x = cvar("cl_lowammowarnings_size");
@@ -2930,7 +2930,7 @@ void Sbar_ShowLowammo(){
 	//carrying either camping rifle or zapper
 	if(clipheatwarn){
 		if(currweapon == WEP_CAMPINGRIFLE){
-			float currbullets = getstati(STAT_BULLETS_LOADED);
+			currbullets = getstati(STAT_BULLETS_LOADED);
 			if(currbullets <= clipheatwarn){
 				showspecialwarning = 1;
 			}
@@ -2960,7 +2960,7 @@ void Sbar_ShowLowammo(){
 	}
 	if(showspecialwarning){
 		string weaponname = get_weaponinfo(currweapon).message;
-		string specialwarn = GetSpecialCaseWarnString(currweapon);
+		string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
 		pos_y = pos_y - scale_y;
 		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
 	}
