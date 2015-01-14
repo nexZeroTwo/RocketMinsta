@@ -565,7 +565,8 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
             break;
     }
 
-    sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
+    if(iKilled)
+        sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
 }
 
 void Message_Read(void) {
