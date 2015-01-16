@@ -58,10 +58,12 @@ void Zapper_Draw(void) {
     vector rgb = Zapper_BeamRGB(self.team);
     vector rgb2 = GetTeamRGB(self.team);
 
-    float t = self.cnt + time;
-    vector o1 = '60 60 0' * sin(t * 4.0) + '0 0 60' * sin(t * 4.2);
-    vector o2 = '60 60 0' * sin(t * 4.1) + '0 0 60' * sin(t * 4.0);
+    vectorvectors(normalize(d));
 
+    float t = self.cnt + time;
+    vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
+    vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
+    
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
     Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
     Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
