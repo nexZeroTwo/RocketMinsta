@@ -2819,29 +2819,54 @@ float SpectateUpdate() {
     return 1;
 }
 
-entity SpectateNext_Yield(entity p) {
-    if(self.jb_specteam) {
-        p = find(p, classname, "player");
-        while(p && p.team != self.jb_specteam || p.jb_isprisoned)
-            p = find(p, classname, "player");
-        return p;
-    } else
-        return find(p, classname, "player");
+float MaySpectate(entity plr) {
+    if(!self.jb_specteam)
+        return TRUE;
+
+    return (plr.team == self.jb_specteam && !plr.jb_isprisoned);
 }
 
-float SpectateNext() {
+entity SpectateNext_Yield_NoLoop(entity p) {
+    do {
+        p = find(p, classname, "player");
+    } while(p && !MaySpectate(p));
+
+    return p;
+}
+
+entity SpectateNext_Yield(entity p) {
+    entity r = SpectateNext_Yield_NoLoop(p);
+
+    if(p && !r)
+        return SpectateNext_Yield_NoLoop(world);
+
+    return r;
+}
+
+entity SpectatePrev_Yield(entity p) {
+    entity o, r;
+
+    do {
+        r = o;
+    } while((o = SpectateNext_Yield_NoLoop(o)) != p);
+
+    if(r)
+        return r;
+
+    do {
+        r = o;
+    } while((o = SpectateNext_Yield_NoLoop(o)));
+
+    return r;
+}
+
+float SpectatePlayer(entity plr) {
     entity oldenemy = self.enemy;
     
     UnmarkAway(self);
     
-    other = SpectateNext_Yield(self.enemy);
-    
-    if(!other)
-        other = SpectateNext_Yield(world);
-
-    if(other) {
-        self.enemy = other;
-    }
+    if(plr)
+        self.enemy = plr;
     
 	if(self.enemy.classname == "player") {
         if(clienttype(self) == CLIENTTYPE_REAL) {
@@ -2872,6 +2897,47 @@ float SpectateNext() {
 	} else {
 		return 0;
 	}
+}
+
+float SpectateNext(void) {
+    return SpectatePlayer(SpectateNext_Yield(self.enemy));
+}
+
+float SpectatePrev(void) {
+    return SpectatePlayer(SpectatePrev_Yield(self.enemy));
+}
+
+.float specbest_ignore;
+
+float SpectateBest(float pos) {
+    float mx;
+    entity plr, pick;
+
+    // this line is needed because our compiller has strong homosexual tendencies
+    pick = world;
+
+    FOR_EACH_PLAYER(plr) if(!plr.specbest_ignore && MaySpectate(plr)) {
+        float s = PlayerScore_Get(plr, SP_SCORE);
+
+        if(!pick || s > mx || (s == mx && (num_for_edict(plr) < num_for_edict(pick)))) {
+            mx = s;
+            pick = plr;
+        }
+    }
+
+    if(pick) {
+        --pos;
+
+        if(pos > 0) {
+            pick.specbest_ignore = TRUE;
+            return SpectateBest(pos);
+        }
+    }
+
+    for(plr = world; (plr = findfloat(plr, specbest_ignore, TRUE));)
+        plr.specbest_ignore = FALSE;
+
+    return SpectatePlayer(pick);
 }
 
 /*
@@ -3076,6 +3142,24 @@ void SpectatorThink()
         return;
     }
     
+    if(self.impulse >= 1 && self.impulse <= 9)
+        SpectateBest(self.impulse);
+    else switch(self.impulse) {
+        case 10: case 14: case 15: case 18:
+            SpectateNext();
+            break;
+
+        case 12: case 16: case 19:
+            SpectatePrev();
+            break;
+
+        case 13:
+            SpectateBest(1);
+            break;
+    }
+
+    self.impulse = 0;
+
 	if (self.flags & FL_JUMPRELEASED) {
 		if (self.BUTTON_JUMP && !self.version_mismatch && (!g_clanarena || !self.jb_specteam)) {
 			self.flags &~= FL_JUMPRELEASED;

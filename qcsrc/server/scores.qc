@@ -355,6 +355,17 @@ float PlayerScore_Set(entity player, float scorefield, float score) {
 	return score;
 }
 
+float PlayerScore_Get(entity player, float scorefield) {
+    if(!scores_initialized) return 0;
+    
+    entity s = player.scorekeeper;
+
+    if(!s)
+        return 0;
+
+    return s.(scores[scorefield]);
+}
+
 float PlayerScore_SetFlags(entity player, float flg) {
     entity s = player.scorekeeper;
 

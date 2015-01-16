@@ -30,6 +30,11 @@ float PlayerScore_Add(entity player, float scorefield, float score);
 float PlayerScore_Set(entity player, float scorefield, float score);
 
 /**
+ * Returns a score of a player.
+ */
+float PlayerScore_Get(entity player, float scorefield);
+
+/**
  * Initialize the score of this player if needed.
  * Does nothing in teamplay.
  * Use that when a spectator becomes a player.
