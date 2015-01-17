@@ -1949,8 +1949,6 @@ float autocvar_sv_randomspawns;
 float autocvar_sv_ready_restart;
 float autocvar_sv_ready_restart_after_countdown;
 float autocvar_sv_ready_restart_repeatable;
-float autocvar_sv_rm_cvarcompat;
-float autocvar_sv_rm_cvarcompat_autodisable;
 float autocvar_sv_rmcustom_votable;
 float autocvar_sv_rmcustom_votable_restrict;
 string autocvar_sv_rmcustom_votable_restrictions;

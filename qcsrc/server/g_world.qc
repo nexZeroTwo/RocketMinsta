@@ -484,8 +484,7 @@ void spawnfunc_worldspawn (void)
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
-
-    RM_CvarCompat();
+    
     sv_damagestats = CVAR(sv_damagestats);
 
     registercvar("g_gametypename", "");
