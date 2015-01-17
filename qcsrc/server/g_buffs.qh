@@ -2,6 +2,7 @@
 float g_buffs;
 float g_buffs_team_only;
 float g_buffs_stack;
+float g_buffs_replace;
 float g_buffs_noteam;
 float g_buffs_randomize;
 float g_buffs_randomize_dual;

@@ -729,6 +729,7 @@ float w_nexball_weapon(float req)
 	}
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_PORTO);
+    /*
 	else if (req == WR_SUICIDEMESSAGE)
 	{
 		w_deathtypestring = "is a weirdo";
@@ -737,6 +738,7 @@ float w_nexball_weapon(float req)
 	{
 		w_deathtypestring = "got killed by #'s black magic";
 	}
+    */
 	// No need to check WR_CHECKAMMO* or WR_AIM, it should always return TRUE
 	return TRUE;
 }

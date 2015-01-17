@@ -274,7 +274,7 @@ void GrapplingHookThink()
 	{
 		self.last_dmg = time + 0.1;
 		self.owner.hitsound += 1;
-		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_NOAMMO, self.origin, '0 0 0');
+		Damage(self.aiment, self.owner.hook, self.owner, 1, DEATH_HOOKFRAG, self.origin, '0 0 0');
 		self.owner.health += 1;
 	}
 	
@@ -321,7 +321,7 @@ void GrapplingHookTouch (void)
             
             if(time < other.hg_plasmalock) {
                 te_csqc_lightningarc(other.origin + other.maxs_z * '0 0 0.5', self.owner.origin + self.owner.maxs_z * '0 0 0.5', TRUE, other.hg_plasmalock_owner.team);
-                Damage(self.owner, other.hg_plasmalock_owner, other.hg_plasmalock_owner, CVAR(g_nadgets_plasma_projectile_frozenlock_hookdamage), DEATH_HG_PLASMA, '0 0 0', '0 0 0');
+                Damage(self.owner, other.hg_plasmalock_owner, other.hg_plasmalock_owner, CVAR(g_nadgets_plasma_projectile_frozenlock_hookdamage), HG_PLASMA, '0 0 0', '0 0 0');
                 RemoveGrapplingHook(self.owner);
                 return;
             }
@@ -402,14 +402,10 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 		
 		if (self.health <= 0)
 		{
-			if(attacker != self.owner)
+			//if(attacker != self.owner)
 			{
 				self.owner.pusher = attacker;
-				
-				//<akari>
-				//Please fucking shoot me. I use this number to identify a hookfrag in g_damage.qc.
-				self.owner.pushltime = 1337; //time + CVAR(g_maxpushtime);
-				//</akari>
+				self.owner.pushltime = PUSHLTIME_HOOKFRAG;
 			}
 			RemoveGrapplingHook(self.owner);
 		}

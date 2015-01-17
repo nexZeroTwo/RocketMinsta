@@ -551,7 +551,7 @@ void spawnfunc_worldspawn (void)
 	if(sv_cheats)
 		ServerProgsDB = db_create();
 	else
-		ServerProgsDB = db_load("server.db");
+		ServerProgsDB = db_load(strcat("server.db", CVAR_STR(sessionid)));
 
 	TemporaryDB = db_create();
 
@@ -3104,7 +3104,7 @@ void RestoreGame()
 	if(sv_cheats)
 		ServerProgsDB = db_create();
 	else
-		ServerProgsDB = db_load("server.db");
+		ServerProgsDB = db_load(strcat("server.db", CVAR_STR(sessionid)));
 
 	// Mapinfo
 	MapInfo_Shutdown();
@@ -3128,10 +3128,10 @@ void SV_Shutdown()
 		print("Saving persistent data...\n");
 		Ban_SaveBans();
 		if(!sv_cheats)
-			db_save(ServerProgsDB, "server.db");
+			db_save(ServerProgsDB, strcat("server.db", CVAR_STR(sessionid)));
 		IP2C_Shutdown();
 		if(CVAR(developer))
-			db_save(TemporaryDB, "server-temp.db");
+			db_save(TemporaryDB, strcat("server-temp.db", CVAR_STR(sessionid)));
 		db_close(ServerProgsDB);
 		db_close(TemporaryDB);
 		print("done!\n");

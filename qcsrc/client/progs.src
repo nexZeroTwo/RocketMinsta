@@ -32,6 +32,7 @@ bgmscript.qh
 visualdamage.qh
 radio.qh
 buffs.qh
+message.qh
 
 ../common/damagetracker.qh
 main.qh
@@ -62,6 +63,7 @@ visualdamage.qc
 radio.qc
 zapper.qc
 buffs.qc
+message.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc

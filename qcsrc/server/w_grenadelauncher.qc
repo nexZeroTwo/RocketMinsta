@@ -97,6 +97,7 @@ void W_Grenade_Attack (void)
 	setsize(gren, '0 0 -3', '0 0 -3');
     PROJECTILE_FIX(gren)
 
+    gren.team = self.team;
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_primary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
@@ -133,6 +134,7 @@ void W_Grenade_Attack2 (void)
 	setorigin(gren, w_shotorg);
     PROJECTILE_FIX(gren)
 
+    gren.team = self.team;
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_secondary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode2;
@@ -213,22 +215,5 @@ float w_glauncher(float req)
 		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_secondary_ammo);
-	else if (req == WR_SUICIDEMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "tried out his own grenade";
-		else
-			w_deathtypestring = "detonated";
-	}
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SPLASH)
-			if(w_deathtype & HITTYPE_BOUNCE) // (must be secondary then)
-				w_deathtypestring = "didn't see #'s grenade";
-			else // unchecked: SECONDARY
-				w_deathtypestring = "almost dodged #'s grenade";
-		else // unchecked: SECONDARY, BOUNCE
-			w_deathtypestring = "ate #'s grenade";
-	}
 	return TRUE;
 };

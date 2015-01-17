@@ -153,6 +153,8 @@ vector w_shotdir;
 vector w_shotorg_visual;
 vector w_shotdir_visual;
 
+.float strengthsound_next;
+
 // this function calculates w_shotorg and w_shotdir based on the weapon model
 // offset, trueaim and antilag, and won't put w_shotorg inside a wall.
 // make sure you call makevectors first (FIXME?)
@@ -324,9 +326,12 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		sound (ent, CHAN_WEAPON, snd, VOL_BASE, ATTN_NORM);
 	}
 
-	if (ent.items & IT_STRENGTH)
-	if (!g_minstagib)
+	if(ent.items & IT_STRENGTH)
+	if(!g_minstagib)
+    if(time > self.strengthsound_next) {
 		sound (ent, CHAN_AUTO, "weapons/strength_fire.wav", VOL_BASE, ATTN_NORM);
+        self.strengthsound_next = time + 0.09;
+    }
 };
 
 void W_SetHitscanVisuals(entity p, vector end) {

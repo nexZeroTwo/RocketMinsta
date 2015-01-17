@@ -137,11 +137,5 @@ float w_shotgun(float req)
 		return self.ammo_shells >= CVAR(g_balance_shotgun_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_shells >= CVAR(g_balance_shotgun_secondary_ammo) * 3;
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "did the impossible";
-	else if (req == WR_KILLMESSAGE)
-	{
-		w_deathtypestring = "was gunned by"; // unchecked: SECONDARY
-	}
 	return TRUE;
 };

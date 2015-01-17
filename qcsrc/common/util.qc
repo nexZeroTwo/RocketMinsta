@@ -1777,3 +1777,52 @@ float fexists(string f) {
     fclose(fh);
     return TRUE;
 }
+
+#ifndef MENUQC
+
+string Team_ColorCode(float t) {
+    if (t == COLOR_TEAM1)
+        return "^1";
+    else if (t == COLOR_TEAM2)
+        return "^4";
+    else if (t == COLOR_TEAM3)
+        return "^3";
+    else if (t == COLOR_TEAM4)
+        return "^6";
+    else
+        return "^7";
+}
+
+string Team_ColorName(float t) {
+    if (t == COLOR_TEAM1)
+        return "Red";
+    if (t == COLOR_TEAM2)
+        return "Blue";
+    if (t == COLOR_TEAM3)
+        return "Yellow";
+    if (t == COLOR_TEAM4)
+        return "Pink";
+    return "Neutral";
+}
+
+string Team_ColorNameLowerCase(float t) {
+    if (t == COLOR_TEAM1)
+        return "red";
+    if (t == COLOR_TEAM2)
+        return "blue";
+    if (t == COLOR_TEAM3)
+        return "yellow";
+    if (t == COLOR_TEAM4)
+        return "pink";
+    return "neutral";
+}
+
+string ColoredTeamName(float t) {
+    return strcat(Team_ColorCode(t), Team_ColorName(t), " Team^7");
+}
+
+string TeamName(float t) {
+    return strcat(Team_ColorName(t), " Team");
+}
+
+#endif

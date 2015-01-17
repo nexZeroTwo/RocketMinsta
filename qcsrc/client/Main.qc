@@ -115,6 +115,30 @@ void CSQC_Init(void)
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_bullets", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "15", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_rockets", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_shells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_zapper_heat", "25", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_campingrifle_bulletsremaining", "2", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_size", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
+    registercvar("crosshair_zapper", "", CVAR_SAVE);
+    registercvar("crosshair_zapper_size", "0.5", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_red", "0", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_green", "0.7", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_blue", "1", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_alpha", "1", CVAR_SAVE);
+    registercvar("crosshair_flak", "", CVAR_SAVE);
+    registercvar("crosshair_flak_size", "0.6", CVAR_SAVE);
+    registercvar("crosshair_flak_color_red", "1", CVAR_SAVE);
+    registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
+    registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
+    registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
+    registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
+	
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -390,7 +414,8 @@ void SetMadokaFont(float v)
 }
 
 void Menu_ShowNagger(void) {
-    localcmd("menu_cmd directmenu engineNagger\n");
+    if(!DPRM_VersionIsSuitable())
+        localcmd("menu_cmd directmenu engineNagger\n");
 }
 
 void ReloadMenu_f()
@@ -565,9 +590,10 @@ void PostInit(void)
             localcmd("seta rm_nododging 0; nododging 0\n");
         case 48:
             UpdateClRate();
+        case 49:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 49\n");
+		localcmd("seta rm_initialized 50\n");
 		RM_OUTDATED
 		break;
 	}
@@ -2260,6 +2286,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_UPDATESELECTEDPLAYER:
             Net_ReadUpdateSelectedPlayer();
+            return TRUE;
+        case TE_CSQC_MESSAGE:
+            Message_Read();
             return TRUE;
     }
 

@@ -450,7 +450,7 @@ void ClearPowerup(float id) {
 	}
 }
 
-void DropPowerup(float id, vector force) {
+void DropPowerup(float id, vector force, .float timefield, float timeleft) {
 	var spawnfunc_t spawnfunc;
 	spawnfunc = GetPowerupSpawnfunc(id);
 	if(!spawnfunc) return;
@@ -466,6 +466,8 @@ void DropPowerup(float id, vector force) {
 	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
 	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
 	p.reset = SUB_Remove;
+    p.timefield = timeleft;
+    print("time = ", ftos(timeleft), "\n");
 	ClearPowerup(id);
 }
 
@@ -473,9 +475,9 @@ void DropPowerups(vector force) {
 	DEPENDON(CVAR(g_droppowerups))
 	
 	if(self.items & IT_STRENGTH)
-		DropPowerup(IT_STRENGTH, force);
+		DropPowerup(IT_STRENGTH, force, strength_finished, self.strength_finished - time);
 	if(self.items & IT_INVINCIBLE)
-		DropPowerup(IT_INVINCIBLE, force);
+		DropPowerup(IT_INVINCIBLE, force, invincible_finished, self.invincible_finished - time);
 }
 
 void Boobs_Clear();
@@ -585,7 +587,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_MEODP)
     if(deathtype != DEATH_ARC)
-    if(deathtype != DEATH_HG_SHIELD)
+    if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
         Buffs_ArcDamage(self, attacker, damage, deathtype);
 
     if(damage) {
@@ -593,7 +595,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
     	damage = HG_Shield_Damage(attacker, damage, deathtype);
         
-        if(deathtype == HG_PLASMA_SHARD) {
+        if(DEATH_HGTYPE(deathtype) == HG_PLASMA && deathtype & HITTYPE_SECONDARY) {
             if(time > inflictor.damage_nextarceffect) {
                 te_csqc_lightningarc(inflictor.origin, self.origin + '0 0 0.5' * self.maxs_z, FALSE, attacker.team);
                 inflictor.damage_nextarceffect = time + inflictor.hg_plasma_projdps_delay + 0.2 * (random() - 0.5);
@@ -620,7 +622,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         force = '0 0 0';
     }
     
-    if(deathtype == HG_PLASMA_SHARD || deathtype == HG_PLASMA)
+    if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
         if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
             self.hg_plasmalock_owner = attacker;
@@ -713,7 +715,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(!g_minstagib) {
             	vector vdloc = hitloc;
 
-            	if(deathtype == DEATH_HG_TRANSLOC)
+            	if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
             		vdloc = vdloc + 0.5 * attacker.velocity;
 
                 VisualDamage(attacker, self, cdmg, save, htype, vdloc);
@@ -876,7 +878,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
 		
-        if(deathtype == HG_BAIT)
+        if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
             attacker.hg_ammo += 1;
@@ -889,7 +891,21 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         
         if(removenadgets > 1)
             HG_RemoveAll(self);
+
+        if(self.hg_power > 0) {
+            self.hg_power = 0;
+            HG_Attack();
+        }
         
+        HG_DetonateAll(self);
+        
+        if(!g_freezetag && !g_jailbreak) {
+            if(CVAR(g_nadgets_resetonrespawn))
+                self.hg_ammo = 0;
+        }
+        
+        DropPowerups(force);
+
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
@@ -903,7 +919,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.fire_endtime = time;
         
 		prec_player_die(self, attacker);
-		DropPowerups(force);
 		sm_PlayerDies();
 		
 		if(vip_PlayerDies(attacker, self, deathtype))

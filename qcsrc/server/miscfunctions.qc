@@ -801,46 +801,6 @@ void backtrace(string msg)
     GameCommand("time");
 }
 
-string Team_ColorCode(float teamid)
-{
-    if (teamid == COLOR_TEAM1)
-        return "^1";
-    else if (teamid == COLOR_TEAM2)
-        return "^4";
-    else if (teamid == COLOR_TEAM3)
-        return "^3";
-    else if (teamid == COLOR_TEAM4)
-        return "^6";
-    else
-        return "^7";
-}
-string Team_ColorName(float t)
-{
-    // fixme: Search for team entities and get their .netname's!
-    if (t == COLOR_TEAM1)
-        return "Red";
-    if (t == COLOR_TEAM2)
-        return "Blue";
-    if (t == COLOR_TEAM3)
-        return "Yellow";
-    if (t == COLOR_TEAM4)
-        return "Pink";
-    return "Neutral";
-}
-string Team_ColorNameLowerCase(float t)
-{
-    // fixme: Search for team entities and get their .netname's!
-    if (t == COLOR_TEAM1)
-        return "red";
-    if (t == COLOR_TEAM2)
-        return "blue";
-    if (t == COLOR_TEAM3)
-        return "yellow";
-    if (t == COLOR_TEAM4)
-        return "pink";
-    return "neutral";
-}
-
 float Team_Index(float t) {
     switch(t) {
         case COLOR_TEAM1: return 0;
@@ -1100,9 +1060,9 @@ void readplayerstartcvars()
         
         if(!g_weaponarena_limitammo)
         {
-			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER))
+			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
 				start_ammo_rockets = 999;
-			if (g_weaponarena & WEPBIT_SHOTGUN)
+			if (g_weaponarena & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
 				start_ammo_shells = 999;
 			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;

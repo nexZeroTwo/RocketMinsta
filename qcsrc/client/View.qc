@@ -89,7 +89,7 @@ void Plasma_Draw() {
     string tex = "particles/zapper";
     
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
-        vector rgb = Zapper_BeamRGB(rm_teamlasers? e.team : COLOR_TEAM2);
+        vector rgb = Zapper_BeamRGB(rm_teamlasers? e.team : COLOR_TEAM2) * 0.5;
         
         for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
             Draw_CylindricLine(n.origin, e.origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE);
@@ -682,6 +682,8 @@ void CSQC_UpdateView(float w, float h)
 			Sbar_ShowSpeed();
 		if (CVAR(cl_showacceleration))
 			Sbar_ShowAcceleration();
+		if (CVAR(cl_lowammowarnings))
+			Sbar_ShowLowammo();
 		
  		Sbar_DrawCenterPrint(); // draw centerprint messages even if viewsize >= 120
 	}

@@ -552,14 +552,6 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_CHECKAMMO2)
 		return TRUE;
-	else if (req == WR_SUICIDEMESSAGE)
-		//<akari>
-		//Since suiciding with the nexgun is now possible, I think we should replace this message
-		//w_deathtypestring = "did the impossible";
-		w_deathtypestring = "should use a smaller gun";
-		//</akari>
-	else if (req == WR_KILLMESSAGE)
-		w_deathtypestring = "has been vaporized by";
 	else if (req == WR_RESETPLAYER)
 	{
 		self.minstanex_lasthit = 0;

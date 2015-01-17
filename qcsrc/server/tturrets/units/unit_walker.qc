@@ -925,7 +925,7 @@ void walker_boss_laser_think(void) {
         entity p = spawn();
         p.owner = self.owner;
         p.movetype = MOVETYPE_BOUNCEMISSILE;
-        p.projectiledeathtype = DEATH_HG_LASER;
+        p.projectiledeathtype = HG_LASER;
         setsize(p, '0 0 0', '0 0 1');
         setorigin(p, sorg);
         PROJECTILE_MAKETRIGGER(p);
@@ -988,8 +988,8 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         float reflect = damage - take;
         
         if(attacker.iscreature)
-        if(deathtype != DEATH_HG_SHIELD)
-        if(deathtype != DEATH_HG_TRANSLOC) {
+        if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
+        if(DEATH_HGTYPE(deathtype) != HG_TRANSLOC) {
             vector start = hitloc;
             vector end   = attacker.origin + '0 0 0.5' * attacker.maxs_z;
 
@@ -997,7 +997,7 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
             end = trace_endpos;
 
             if(trace_ent.takedamage)
-                Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+                Damage(trace_ent, self, self, reflect, HG_SHIELD, end, '0 0 0');
 
             trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), start, end);
             te_csqc_lightningarc(start, end, TRUE, COLOR_TEAM3);

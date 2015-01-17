@@ -1,5 +1,4 @@
 
-.float zapper_range;
 .vector zapper_start;
 .vector zapper_end;
 .vector zapper_offs;
@@ -10,6 +9,24 @@ vector Zapper_BeamRGB(float t) {
         case COLOR_TEAM2: default:   return '0.5   1.0   5.0';
         case COLOR_TEAM3:            return '4.0   2.5   0.5';
         case COLOR_TEAM4:            return '5.0   0.7   3.0';
+    }
+}
+
+float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float thickness, string texture, float aspect, float shift, vector rgb, float aalpha, float drawflag, float depth) {
+    vector mid;
+    mid = (start + end) * 0.5;
+
+    end_d *= 0.25;
+    mid += end_d;
+
+    --depth;
+    if(depth < 0 || normalize(mid - start) * normalize(end - start) > 0.999999) {
+        Draw_CylindricLine(start, end, thickness, texture, aspect, shift, rgb, aalpha, drawflag);
+        return shift + aspect * vlen(start - end) / thickness;
+    } else {
+        shift = Draw_CylindricLine_Curved(start, mid, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
+        shift = Draw_CylindricLine_Curved(mid, end, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
+        return shift;
     }
 }
 
@@ -39,9 +56,17 @@ void Zapper_Draw(void) {
 
     string tex = "particles/zapper";
     vector rgb = Zapper_BeamRGB(self.team);
+    vector rgb2 = GetTeamRGB(self.team);
 
-    Draw_CylindricLine(end1, start, 12, "particles/zapper", 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
-    Draw_CylindricLine(end2, start,  7, "particles/zapper", 0.03, 7 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    vectorvectors(normalize(d));
+
+    float t = self.cnt + time;
+    vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
+    vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
+    
+    Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+    Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
 
     if(self.alpha < 1)
         return;
@@ -74,6 +99,7 @@ void Zapper_Fader_Spawn(entity ref) {
     e.zapper_start = ref.zapper_start;
     e.zapper_end = ref.zapper_end;
     e.origin = ref.origin;
+    e.cnt = ref.cnt;
     e.alpha = 1;
     e.think = Zapper_Fader_Think;
     e.nextthink = time;
@@ -94,8 +120,9 @@ void Zapper_Read(void) {
         self.sv_entnum = ReadByte();
         self.team = GetPlayerColor(self.sv_entnum - 1);
         self.alpha = 1;
+        self.cnt = random() * 1000;
 
-        if(!rm_teamlasers)
+        if(!rm_teamlasers || !self.team)
             self.team = COLOR_TEAM2;
 
         sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);

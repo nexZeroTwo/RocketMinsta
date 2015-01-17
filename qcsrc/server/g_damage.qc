@@ -320,14 +320,10 @@ float CheckJailDM(entity attacker, entity targ) {
 void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 {
 	string	s, a;
-	float p, w;
     float spawnfrag;
     float jaildm;
-
-	local float maxrage = 5;
-	local float rage_timeout = 3;
-
-	local string ragemeter;
+	float rage_timeout = 3;
+    string customMessage;
 
 	if(g_prec) if(inflictor.classname == "prec_rune") {
 		prec_check_aggression(attacker, inflictor, targ); return; }
@@ -343,6 +339,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		}
 	}
     
+    if(deathtype == DEATH_HURTTRIGGER) {
+        if(attacker == targ || attacker.classname != "player") {
+            customMessage = inflictor.message;
+        } else if(IsDifferentTeam(attacker, targ)) {
+            customMessage = inflictor.message2;
+        }
+    }
+
     jaildm = CheckJailDM(attacker, targ);
     targ.hg_shield = 0;
     
@@ -361,48 +365,12 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
 
-		ragemeter = "^1";
-
-		local float i;
-		i = 2;
-		while(i < maxrage)
-		{
-			if(attacker.rage == i)
-				ragemeter = strcat(ragemeter, "^0");
-			else
-				ragemeter = strcat(ragemeter, "");
-
-			++i;
-		}
-		if(attacker.rage-1 >= maxrage)
-			ragemeter = strcat(ragemeter, "");
-		else
-			ragemeter = strcat(ragemeter, "^0");
-        
         spawnfrag = (CVAR(g_spawnshieldmode) && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
-	float _hfrag;
+    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.rage);
 
-	if (targ.classname == "player" || targ.classname == "corpse")
-	{
-		if(targ.hg_power > 0)
-		{
-			targ.hg_power = 0;
-			entity o;
-			o = self;
-			self = targ;
-			HG_Attack();
-			self = o;
-		}
-        
-        HG_DetonateAll(targ);
-        
-        if(!g_freezetag && !g_jailbreak) {
-            if(CVAR(g_nadgets_resetonrespawn))
-                targ.hg_ammo = 0;
-        }
-		
+	if(targ.classname == "player" || targ.classname == "corpse") {
 		if (targ.classname == "corpse")
 			s = "A corpse";
 		else
@@ -411,359 +379,63 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 		prec_check_aggression(attacker, inflictor, targ); // only called here for point keeping
 
-		if (targ == attacker)
-		{
-			if (deathtype == DEATH_TEAMCHANGE) {
-				centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You are now on: ", ColoredTeamName(targ.team)));
-			} else if (deathtype == DEATH_AUTOTEAMCHANGE) {
-				centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "You have been moved into a different team to improve team balance\nYou are now on: ", ColoredTeamName(targ.team)));
+		if(targ == attacker) {
+			if(deathtype == DEATH_AUTOTEAMCHANGE)
 				return;
-			} else if (deathtype == DEATH_CAMP) {
-				if(sv_gentle)
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Reconsider your tactics, camper!"));
-				else
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Die camper!"));
-			} else if (deathtype == DEATH_NOAMMO) {
-				if(sv_gentle)
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You are reinserted into the game for running out of ammo..."));
-				else
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were killed for running out of ammo..."));
-			} else if (deathtype == DEATH_ROT) {
-				if(sv_gentle)
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to preserve your health"));
-				else
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You grew too old without taking your medicine"));
-			} else if(deathtype == DEATH_MIRRORDAMAGE) {
-                                if(g_prec) {
-			        	if(sv_gentle)
-				        	centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Go aginst the rune carrier!"));
-				        else
-					        centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Shoot the rune carrier!"));
-                                } else {
-			        	if(sv_gentle)
-				        	centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't go against team mates!"));
-				        else
-					        centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Don't shoot your team mates!"));
-                                }
-            } else if(deathtype == DEATH_NOISE) {
-                centerprint_spec(targ, "^1You were too noisy to live");
-			} else {
-				if(sv_gentle)
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You need to be more careful!"));
-				else
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You killed your own dumb self!"));
-			}
 
-			if(sv_gentle) {
-				if (deathtype == DEATH_CAMP)
-					bprint ("^1",s, "^1 thought he found a nice camping ground\n");
-				else if (deathtype == DEATH_MIRRORDAMAGE) {
-                                        if(!g_prec)
-				        	bprint ("^1",s, "^1 didn't become friends with the Lord of Teamplay\n");
-				} else
-					bprint ("^1",s, "^1 will be reinserted into the game due to his own actions\n");
-
-				if(deathtype != DEATH_TEAMCHANGE)
-				{
-					LogDeath("suicide", deathtype, targ, targ);
-					GiveFrags(attacker, inflictor, targ, -1);
-				}
-				if (targ.killcount > 2)
-					bprint ("^1",s,"^1 faded after a ",ftos(targ.killcount)," point spree\n");
-			} else {
-				w = DEATH_WEAPONOF(deathtype);
-				if(WEP_VALID(w))
-				{
-					w_deathtypestring = "couldn't resist the urge to self-destruct";
-					w_deathtype = deathtype;
-					weapon_action(w, WR_SUICIDEMESSAGE);
- 					bprint("^1", s, "^1 ", w_deathtypestring, "\n");
-				}
-				else if (deathtype == DEATH_KILL)
-					bprint ("^1",s, "^1 couldn't take it anymore\n");
-				else if (deathtype == DEATH_ROT)
-					bprint ("^1",s, "^1 died\n");
-				else if (deathtype == DEATH_NOAMMO)
-					bprint ("^7",s, "^7 committed suicide. What's the point of living without ammo?\n");
-				else if (deathtype == DEATH_CAMP)
-					bprint ("^1",s, "^1 thought he found a nice camping ground\n");
-				else if (deathtype == DEATH_MIRRORDAMAGE) {
-                                        if(!g_prec)
-				        	bprint ("^1",s, "^1 didn't become friends with the Lord of Teamplay\n");
-				} else if (deathtype == DEATH_CHEAT)
-					bprint ("^1",s, "^1 unfairly eliminated himself\n");
-				else if (deathtype == DEATH_FIRE)
-					bprint ("^1",s, "^1 burned to death\n");
-				else if (deathtype == DEATH_HG_NAPALM)
-					bprint ("^1",s, "^1 played with fire\n");
-                else if (deathtype == DEATH_NOISE)
-                    bprint ("^1",s, "^1 was too noisy to live\n");
-				else if (deathtype != DEATH_TEAMCHANGE)
-					bprint ("^1",s, "^1 couldn't resist the urge to self-destruct\n");
-					
-				if(deathtype != DEATH_TEAMCHANGE)
-				{
-					LogDeath("suicide", deathtype, targ, targ);
-					GiveFrags(attacker, inflictor, targ, -1);
-				}
-				if (targ.killcount > 2)
-					bprint ("^1",s,"^1 ended it all after a ",ftos(targ.killcount)," kill spree\n");
-			}
-		}
-		else if (attacker.classname == "player" || attacker.classname == "gib")
-		{
-			if(teams_matter && attacker.team == targ.team && !jaildm)
-			{
-				if(sv_gentle) {
-					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
-					bprint ("^1", a, "^1 took action against a team mate\n");
-				} else {
-					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, "^1, a team mate!"));
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1You were fragged by ^7", a, "^1, the teamkilling moron"));
-					bprint ("^1", a, "^1 mows down a team mate\n");
-				}
+			if(deathtype != DEATH_TEAMCHANGE) {
+				LogDeath("suicide", deathtype, targ, targ);
 				GiveFrags(attacker, inflictor, targ, -1);
-				if (targ.killcount > 2) {
-					if(sv_gentle)
-						bprint ("^1",s,"'s ^1",ftos(targ.killcount)," scoring spree was ended by a team mate!\n");
-					else
-						bprint ("^1",s,"'s ^1",ftos(targ.killcount)," kill spree was ended by a team mate!\n");
-				}
-				if (attacker.killcount > 2) {
-					if(sv_gentle)
-						bprint ("^1",a,"^1 ended a ",ftos(attacker.killcount)," scoring spree by going against a team mate\n");
-					else
-						bprint ("^1",a,"^1 ended a ",ftos(attacker.killcount)," kill spree by killing a team mate\n");
-				}
-				attacker.killcount = 0;
-
-				LogDeath("tk", deathtype, attacker, targ);
 			}
-			else
-			{
+		} else if(attacker.classname == "player" || attacker.classname == "gib") {
+			if(teams_matter && attacker.team == targ.team && !jaildm) {
+				GiveFrags(attacker, inflictor, targ, -1);
+
+				attacker.killcount = 0;
+				LogDeath("tk", deathtype, attacker, targ);
+			} else {
 				inf_infect_player(attacker, targ);
 
 				attacker.killsound = 1;
 
-				string blood_message, victim_message;
-				if (!checkrules_firstblood)
-				if(prec_check_aggression(attacker, inflictor, targ))
-				{
+				if(!checkrules_firstblood)
+				if(prec_check_aggression(attacker, inflictor, targ)) {
 					checkrules_firstblood = TRUE;
-					if(sv_gentle)
-					{
-						bprint("^1",a, "^1 was the first to score", "\n");
-						blood_message = "^1First point\n";
-						//victim_message = "^1First victim\n";  // or First casualty
-					}
-					else
-					{
-						bprint("^1",a, "^1 drew first blood", "\n");
-						//blood_message = "^1First blood\n";
-						//victim_message = "^1First victim\n";  // or First casualty
-
-						bigprint_spec(attacker, "^7First ^1Blood", "", 1);
-						bigprint_spec(targ, "^7First ^0Victim", "", 1);
-					}
+					bprint("^1",a, "^1 drew first blood", "\n");
+					bigprint_spec(attacker, "^7First ^1Blood", "", 1);
+					bigprint_spec(targ, "^7First ^0Victim", "", 1);
 				}
 
-				if(sv_gentle > 0) {
-					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^4You scored against ^7", s));
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, a,"^1 scored against you ^7"));
-				} else {
-					if(g_minstagib)
-					{
-                        if(spawnfrag)
-                        {
-                            centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^2spawn^4fragged ^7", s));
-                            centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^2spawn^1fragged by ^7", a));
-                        }
-						else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-						{
-							play2(attacker, "announcer/male/awesome.wav");
-					                if(prec_check_aggression(attacker, inflictor, targ))
-						                PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
-							
-							if(CVAR(sv_extendfragmessages))
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^xF80laser^4fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^xF80laser^1fragged by ^7", a));
-							}
-							else
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-							}
-						}
-						else if(deathtype == DEATH_NOAMMO)
-						{
-							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-					                if(prec_check_aggression(attacker, inflictor, targ))
-						        	PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
+				if(g_minstagib) {
+                    if(spawnfrag) { }
+                    else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
+                        if(prec_check_aggression(attacker, inflictor, targ))
+                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
+                    }
+                    else if(deathtype == DEATH_HOOKFRAG) {
+                        if(prec_check_aggression(attacker, inflictor, targ))
+                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
 
-							if(CVAR(sv_extendfragmessages))
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-							}
-							else
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-							}
+                        if(prec_check_aggression(attacker, inflictor, targ))
+                            PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+                    } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
 
-							play2(attacker, "announcer/male/awesome.wav");
-							bigprint_spec(attacker, "Holy ^1Shit", "Awesome frag", 1);
-					                if(prec_check_aggression(attacker, inflictor, targ))
-						        	PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-						}
-						else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX))
-						{
-							if(CVAR(sv_extendfragmessages))
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^5insta^4fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^5insta^1fragged by ^7", a));
-							}
-							else
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-							}
-
-							if(!g_dm && !g_tdm) if(g_minstagib) if(CVAR(g_rocketminsta))
-					                        if(prec_check_aggression(attacker, inflictor, targ))
-							        	PlayerScore_Add(attacker, SP_SCORE, 1);
-						}
-						//That's how I detect hookfrags. No, seriously!
-						else if(targ.pushltime == 1337)
-						{
-							bprint("^1", s, "^1 was hookfragged by ", a, "\n");
-					                if(prec_check_aggression(attacker, inflictor, targ))
-							        PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
-							        //centerprint(attacker, "^7Hookfrag!");
-
-							if(CVAR(sv_extendfragmessages))
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ^7hook^4fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ^7hook^1fragged by ^7", a));
-							}
-							else
-							{
-								centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-								centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-							}
-
+                        if(!g_dm && !g_tdm) if(CVAR(g_rocketminsta))
                             if(prec_check_aggression(attacker, inflictor, targ))
-                                PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
-							play2(attacker, "announcer/male/awesome.wav");
-							_hfrag = 1;
-						}
-						else
-						{
-							centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You fragged ^7", s));
-							centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were fragged by ^7", a));
-							
-							if(g_vip) if(prec_check_aggression(attacker, inflictor, targ))
-								PlayerScore_Add(attacker, SP_SCORE, 1);
-						}
-					}
-					else
-					{
-						string tail;
-						
-						if(CVAR(sv_extendfragmessages)) {
-							tail = DamageTracker_DamageSourceName(deathtype, FALSE);
-                            
-							if(tail != "")
-								tail = strcat(" with ^7", tail);
-						}
-						
-						centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, blood_message, "^4You ", (spawnfrag? "^2spawn^4":""), "fragged ^7", s, "^4", tail));
-						centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, victim_message, "^1You were ", (spawnfrag? "^2spawn^1":""), "fragged by ^7", a, "^1", tail));
-						
-						if(g_vip) if(prec_check_aggression(attacker, inflictor, targ)) if(!spawnfrag)
-							PlayerScore_Add(attacker, SP_SCORE, 1);
-					}
-					attacker.taunt_soundtime = time + 1;
-				}
+                                PlayerScore_Add(attacker, SP_SCORE, 1);
+                    }
+                    else {
+                        if(g_vip) if(prec_check_aggression(attacker, inflictor, targ))
+                            PlayerScore_Add(attacker, SP_SCORE, 1);
+                    }
+                } else {
+                    if(g_vip) if(prec_check_aggression(attacker, inflictor, targ)) if(!spawnfrag)
+                        PlayerScore_Add(attacker, SP_SCORE, 1);
+                }
 
-				if(sv_gentle) {
-					bprint ("^1",s, "^1 needs a restart thanks to ", a, "\n");
-				} else {
-					w = DEATH_WEAPONOF(deathtype);
-					if(WEP_VALID(w))
-					{
-						w_deathtypestring = "was blasted by";
-						w_deathtype = deathtype;
-						weapon_action(w, WR_KILLMESSAGE);
-						p = strstrofs(w_deathtypestring, "#", 0);
-						if(p < 0)
-							bprint("^1", s, "^1 ", w_deathtypestring, " ", a, "\n");
-						else
-							bprint("^1", s, "^1 ", substring(w_deathtypestring, 0, p), a, "^1", substring(w_deathtypestring, p+1, strlen(w_deathtypestring) - (p+1)), "\n");
-					}
-					else if (deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
-						bprint ("^1",s, "^1 was telefragged by ", a, "\n");
-					else if (deathtype == DEATH_DROWN)
-						bprint ("^1",s, "^1 was drowned by ", a, "\n");
-					else if (deathtype == DEATH_SLIME)
-						bprint ("^1",s, "^1 was slimed by ", a, "\n");
-					else if (deathtype == DEATH_LAVA)
-						bprint ("^1",s, "^1 was cooked by ", a, "\n");
-					else if (deathtype == DEATH_FALL)
-						bprint ("^1",s, "^1 was grounded by ", a, "\n");
-					else if (deathtype == DEATH_SHOOTING_STAR)
-						bprint ("^1",s, "^1 was shot into space by ", a, "\n");
-					else if (deathtype == DEATH_SWAMP)
-						bprint ("^1",s, "^1 was conserved by ", a, "\n");
-					else if (deathtype == DEATH_HURTTRIGGER && inflictor.message2 != "")
-					{
-						if(!_hfrag)
-						{
-							p = strstrofs(inflictor.message2, "#", 0);
-							if(p < 0)
-								bprint("^1", s, "^1 ", inflictor.message2, " ", a, "\n");
-							else
-								bprint("^1", s, "^1 ", substring(inflictor.message2, 0, p), a, "^1", substring(inflictor.message2, p+1, strlen(inflictor.message2) - (p+1)), "\n");
-						}
-					}
-					else if(deathtype == DEATH_TURRET)
-						bprint ("^1",s, "^1 was pushed into the line of fire by ^1", a, "\n");
-					else if(deathtype == DEATH_TOUCHEXPLODE)
-						bprint ("^1",s, "^1 was pushed into an accident by ^1", a, "\n");
-					else if(deathtype == DEATH_CHEAT)
-						bprint ("^1",s, "^1 was unfairly eliminated by ^1", a, "\n");
-					else if(deathtype == DEATH_FIRE)
-						bprint ("^1",s, "^1 was burnt to death by ^1", a, "\n");
-					else if(deathtype == DEATH_HG_NORMAL)
-						bprint ("^1", s, "^1 didn't notice ", a, "^1's grenade\n");
-					else if(deathtype == DEATH_HG_NAPALM)
-                        bprint ("^1", s, "^1 engaged in ", a, "^1's hot napalm action\n");
-                    else if(deathtype == DEATH_HG_REMOTE) {
-                        if(targ == inflictor)   // fire damage does this
-                            bprint ("^1", s, "^1 was incinerated by ", a, "^1's fire trap\n");
-                        else
-                            bprint ("^1", s, "^1 fell for ", a, "^1's trap\n");
-                    } else if(deathtype == DEATH_HG_PLASMA)
-                        bprint ("^1", s, "^1 was blasted by ", a, "^1's plasma bomb\n");
-                    else if(deathtype == DEATH_HG_PLASMA_SHARD)
-                        bprint ("^1", s, "^1 took a walk over ", a, "^1's hot plasma\n");
-                    else if(deathtype == DEATH_HG_SHIELD)
-                        bprint ("^1", s, "^1 suffered from death feedback induced by ", a, "^1's reflective shield\n");
-                    else if(deathtype == DEATH_HG_GG)
-                        bprint ("^1", s, "^1 has been outskilled by ", a, "^1's gg button, gg!\n");
-                   	else if(deathtype == DEATH_HG_LASER)
-                        bprint ("^1", s, "^1 took ", a, "^1's blazing charge\n");
-                   	else if(deathtype == DEATH_MEODP)
-                        bprint ("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
-                    else if(deathtype == DEATH_HG_BAIT)
-                        bprint ("^1", s, "^1 took ", a, "^1's bait\n");
-					else
-						bprint ("^1",s, "^1 was fragged by ", a, "\n");
-				}
+                attacker.taunt_soundtime = time + 1;
 
-				if(g_ctf && targ.flagcarried)
-				{
+				if(g_ctf && targ.flagcarried) {
 					UpdateFrags(attacker, ctf_score_value("score_kill"));
 					PlayerScore_Add(attacker, SP_CTF_FCKILLS, 1);
 					hudflash_teamcolor_default_spec(attacker);
@@ -772,201 +444,14 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				else if(!spawnfrag && !jaildm)
 					GiveFrags(attacker, inflictor, targ, 1);
 
-				if (targ.killcount > 2) {
-					if(sv_gentle)
-						bprint ("^1",s,"'s ^1", ftos(targ.killcount), " scoring spree was ended by ", a, "\n");
-					else
-						bprint ("^1",s,"'s ^1", ftos(targ.killcount), " kill spree was ended by ", a, "\n");
-				}
-
 				attacker.killcount = attacker.killcount + 1;
-
-				if (attacker.killcount > 2) {
-					if(sv_gentle)
-						bprint ("^1",a,"^1 made ",ftos(attacker.killcount)," scores in a row\n");
-					else
-						bprint ("^1",a,"^1 has ",ftos(attacker.killcount)," frags in a row\n");
-				}
-
 				LogDeath("frag", deathtype, attacker, targ);
 
-				if (attacker.killcount == 3)
-				{
-					//We already have a triple kill in another context
-
-					/*if(sv_gentle) {
-						bprint (a,"^7 made a ^1TRIPLE SCORE\n");
-					} else {
-						bprint (a,"^7 made a ^1TRIPLE FRAG\n");
-						announce(attacker, "announcer/male/03kills.wav");
-						bigprint_spec(attacker, "^xFB0triple^7frag", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}*/
-				}
-				else if (attacker.killcount == 5)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 unleashes ^1SCORING RAGE\n");
-					} else {
-						bprint (a,"^7 unleashes ^1RAGE\n");
-						announce(attacker, "announcer/male/05kills.wav");
-						bigprint_spec(attacker, "^xFA0Rage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-				else if (attacker.killcount == 10)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 made ^1TEN SCORES IN A ROW!\n");
-					} else {
-						bprint (a,"^7 starts the ^1MASSACRE!\n");
-						announce(attacker, "announcer/male/10kills.wav");
-						bigprint_spec(attacker, "^xF80Massacre!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-				else if (attacker.killcount == 15)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 made ^1FIFTEEN SCORES IN A ROW!\n");
-					} else {
-						bprint (a,"^7 executes ^1MAYHEM!\n");
-						announce(attacker, "announcer/male/15kills.wav");
-						bigprint_spec(attacker, "^xF60Mayhem!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-				else if (attacker.killcount == 20)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 made ^1TWENTY SCORES IN A ROW!\n");
-					} else {
-						bprint (a,"^7 is a ^1BERSERKER!\n");
-						announce(attacker, "announcer/male/20kills.wav");
-						bigprint_spec(attacker, "^xF40Berserker!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-				else if (attacker.killcount == 25)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 made ^1TWENTY FIFE SCORES IN A ROW!\n");
-					} else {
-						bprint (a,"^7 inflicts ^1CARNAGE!\n");
-						announce(attacker, "announcer/male/25kills.wav");
-						bigprint_spec(attacker, "^xF20Carnage!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-				else if (attacker.killcount == 30)
-				{
-					if(sv_gentle) {
-						bprint (a,"^7 made ^1THIRTY SCORES IN A ROW!\n");
-					} else {
-						bprint (a,"^7 unleashes ^1ARMAGEDDON!\n");
-						announce(attacker, "announcer/male/30kills.wav");
-						bigprint_spec(attacker, "^1Armageddon!", strcat(ftos(attacker.killcount), " frags in a row"), 1);
-					}
-				}
-
-                #define RAGESOUND announce(attacker, "porto/fire.wav");
-                switch(attacker.rage) {
-                    case 0:
-                    case 1:
-                        break;
-
-                    case 2: RAGESOUND
-                        bigprint_spec(attacker, "^2Double ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^2DOUBLE ^7KILL!\n");
-                        break;
-                    case 3: RAGESOUND
-                        bigprint_spec(attacker, "^3Triple ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^3TRIPLE ^7KILL!\n");
-                        break;
-                    case 4: RAGESOUND
-                        bigprint_spec(attacker, "^6Quad ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^6QUAD ^7KILL!\n");
-                        break;
-                    case 5: RAGESOUND
-                        bigprint_spec(attacker, "^5Ultra ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored an ^5ULTRA ^7KILL!\n");
-                        break;
-                    case 6: RAGESOUND
-                        bigprint_spec(attacker, "^1Monster ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^1MONSTER ^7KILL!\n");
-                        break;
-                    case 7: RAGESOUND
-                        bigprint_spec(attacker, "^2Hax ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^2HAX ^7KILL!\n");
-                        break;
-                    case 8: RAGESOUND
-                        bigprint_spec(attacker, "^3Aimbot ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored an ^3AIMBOT ^7KILL!\n");
-                        break;
-                    case 9: RAGESOUND
-                        bigprint_spec(attacker, "^6Fegget ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^6FEGGET ^7KILL!\n");
-                        break;
-                    case 10: RAGESOUND
-                        bigprint_spec(attacker, "^5Yo Momma ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^5YO MOMMA ^7KILL!\n");
-                        break;
-                    case 11: RAGESOUND
-                        bigprint_spec(attacker, "^xE90Potato ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^xE90POTATO ^7KILL!\n");
-                        break;
-                    default: case 12: RAGESOUND
-                        bigprint_spec(attacker, "^1Kill la ^7Kill!", ragemeter, 1);
-                        bprint(attacker.netname, " ^7scored a ^1KILL LA ^7KILL!\n");
-                        break;
-                }
-                #undef RAGESOUND
-                
                 if(g_nadgets)
                 if(DEATH_ISHG(deathtype))
                     PlayerScore_Add(attacker, SP_NADEFRAGS, 1);
 			}
-		}
-		else
-		{
-			centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Watch your step!"));
-			if (deathtype == DEATH_HURTTRIGGER && inflictor.message != "")
-				bprint ("^1",s, "^1 ", inflictor.message, "\n");
-			else if (deathtype == DEATH_DROWN)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 was in the water for too long\n");
-				else
-					bprint ("^1",s, "^1 drowned\n");
-			else if (deathtype == DEATH_SLIME)
-				bprint ("^1",s, "^1 was slimed\n");
-			else if (deathtype == DEATH_LAVA)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 found a hot place\n");
-				else
-					bprint ("^1",s, "^1 turned into hot slag\n");
-			else if (deathtype == DEATH_FALL)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 tested gravity (and it worked)\n");
-				else
-					bprint ("^1",s, "^1 hit the ground with a crunch\n");
-			else if (deathtype == DEATH_SHOOTING_STAR)
-				bprint ("^1",s, "^1 became a shooting star\n");
-			else if (deathtype == DEATH_SWAMP)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 discovered a swamp\n");
-				else
-					bprint ("^1",s, "^1 is now conserved for centuries to come\n");
-			else if(deathtype == DEATH_TURRET)
-				bprint ("^1",s, "^1 was mowed down by a turret \n");
-			else if(deathtype == DEATH_TOUCHEXPLODE)
-				bprint ("^1",s, "^1 died in an accident\n");
-			else if(deathtype == DEATH_CHEAT)
-				bprint ("^1",s, "^1 was unfairly eliminated\n");
-			else if(deathtype == DEATH_FIRE)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 felt a little hot\n");
-				else
-					bprint ("^1",s, "^1 burnt to death\n");
-			else if(!jb_roundover)
-				if(sv_gentle)
-					bprint ("^1",s, "^1 needs a restart\n");
-				else
-					bprint ("^1",s, "^1 died\n");
-			
+		} else {
 			if(!jb_roundover) {
 				GiveFrags(targ, inflictor, targ, -1);
 					
@@ -975,12 +460,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					bigprint_spec(targ, "^0Bot^7like!", "", 1);
 				}
 			}
-
-			if (targ.killcount > 2)
-				if(sv_gentle)
-					bprint ("^1",s,"^1 needs a restart after a ",ftos(targ.killcount)," scoring spree\n");
-				else
-					bprint ("^1",s,"^1 died with a ",ftos(targ.killcount)," kill spree\n");
 
 			LogDeath("accident", deathtype, targ, targ);
 		}
@@ -1012,7 +491,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
     if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
     else        alimit = g_balance_armor_limit;
     
-    if(g_clanarena) if(healtype != DEATH_LINKER_SHARE) {
+    if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
         float lim = CVAR(g_clanarena_heal_limit);
         hlimit = min(hlimit, lim);
         alimit = min(alimit, lim);
@@ -1110,7 +589,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		return;
     
     if not(damage_linkmode) {
-        if(targ.hg_shield && deathtype == DEATH_HG_TRANSLOC)
+        if(targ.hg_shield && DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         if(CVAR(g_nadgets_transloc_counters_shield))
             damage = CVAR(g_nadgets_transloc_damage_shield) * Buffs_NadgetPower(attacker);
         
@@ -1162,7 +641,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         damage_origtarget = targ;
         if(targ.hg_linker)
-        if((deathtype != HG_TRANSLOC || CVAR(g_nadgets_transloc_damage)) && deathtype != HG_GG && !DEATH_ISSPECIAL(deathtype))
+        if((DEATH_HGTYPE(deathtype) != HG_TRANSLOC || CVAR(g_nadgets_transloc_damage)) && DEATH_HGTYPE(deathtype) != HG_GG && !DEATH_ISSPECIAL(deathtype))
         IF_HG_LINKER_APPLICABLE(targ) {
             if(teams_matter && targ.team == attacker.team)
                 return;
@@ -1298,7 +777,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 			}
             
-            if(deathtype == DEATH_TELEFRAG || (deathtype == HG_TRANSLOC && !CVAR(g_nadgets_transloc_damage)))
+            if(deathtype == DEATH_TELEFRAG || (DEATH_HGTYPE(deathtype) == HG_TRANSLOC && !CVAR(g_nadgets_transloc_damage)))
             if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
                 damage = 0;
                 force = '0 0 0';
@@ -1307,7 +786,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		// nullify damage if teamplay is on
         if(!jaildm)
-		if(deathtype != DEATH_TELEFRAG && deathtype != HG_TRANSLOC && deathtype != HG_GG)
+		if(deathtype != DEATH_TELEFRAG && DEATH_HGTYPE(deathtype) != HG_TRANSLOC && DEATH_HGTYPE(deathtype) != HG_GG)
 		if(attacker_is_player)
 		{
 			if(targ_is_player && targ != attacker && (IS_INDEPENDENT_PLAYER(attacker) || IS_INDEPENDENT_PLAYER(targ)))
@@ -1875,7 +1354,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 		print("RadiusDamage called recursively!\n");
 		print("Expect stuff to go HORRIBLY wrong.\n");
 		print("Causing a stack trace...\n");
-		save = CVAR_STR(prvm_backtraceforwarnings);
+		save = ftos(CVAR(prvm_backtraceforwarnings));
 		cvar_set("prvm_backtraceforwarnings", "1");
 		fclose(-1); // calls VM_Warning
 		cvar_set("prvm_backtraceforwarnings", save);
@@ -2081,7 +1560,11 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 		maxtime = max(mintime, t);
 
 		mindps = e.fire_damagepersec;
-		maxdps = max(mindps, dps);
+        
+        if(CVAR(g_fire_damage_stack))
+            maxdps = (mindps * mintime) / maxtime + dps;
+        else
+            maxdps = max(mindps, dps);
 
 		if(maxtime > mintime || maxdps > mindps)
 		{
