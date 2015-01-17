@@ -459,15 +459,7 @@ float w_seeker(float req)
 		return self.ammo_rockets >= cvar("g_balance_seeker_tag_ammo") + cvar("g_balance_seeker_missile_ammo");
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= cvar("g_balance_seeker_flac_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "played with tiny rockets";
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "ran into #'s flac";
-		else
-			w_deathtypestring = "was tagged by";
-	}
+    
 	return TRUE;
 };
 

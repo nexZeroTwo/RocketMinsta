@@ -215,6 +215,7 @@ void SV_ParseClientCommand(string s) {
         OPTAVAIL_RAW("shownadgetregen", ftos(g_nadgets && cvar("g_nadgets_regen")))
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
         OPTAVAIL_RAW("radio", ftos(sv_radio))
+        OPTAVAIL    ("dodging", "g_dodging")
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -278,6 +279,11 @@ void SV_ParseClientCommand(string s) {
 			return;
 			
 		self.rm_nokillsound = stof(argv(1));
+	} else if(cmd == "nododging") {
+		if(!self)
+			return;
+			
+		self.rm_nododging = stof(argv(1));
     } else if(cmd == "radio") {
         if(!self.scorekeeper || !sv_radio)
             return;

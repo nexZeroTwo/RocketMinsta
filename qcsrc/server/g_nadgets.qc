@@ -68,7 +68,7 @@ void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float all
 	p.hg_bonus += amount;
 	p.hg_bonustype = hgtype;
     p.hg_bonus_next = 0;
-    
+
 	string n = HG_TypeToExpandedName(hgtype);
 	entity e;
 	
@@ -96,9 +96,8 @@ void HG_GiveRandomBonus(entity p, float amount, string reason, float allowOptout
     RandomSelection_Init();
 
     float n;
-    for(n = DEATH_HG_START; n <= DEATH_HG_END; ++n) {
-        if(n != DEATH_HG_PLASMA_SHARD) // please remove this stupid type somehow
-        if(g_freeze || (n != DEATH_HG_BAIT)) {
+    for(n = HG_START; n <= HG_END; ++n) {
+        if(g_freeze || (n != HG_BAIT)) {
             float w = GRENVAR(n, "bonus_random_weight");
             if(w)
                 RandomSelection_Add(world, n, string_null, w, 1);
@@ -162,33 +161,32 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
 }
 
 .entity heal_emitter;
+.float heal_emitter_radius;
 
-void HG_Napalm_HealEmitter_Think(void) {
+void HG_HealEmitter_Think(void) {
     if(!self.owner || wasfreed(self.owner)) {
         remove(self);
         return;
     }
     
-    UpdateCSQCProjectile(self);
-    self.nextthink = time + 0.5;
+    if(self.origin != self.oldorigin)
+        UpdateCSQCProjectile(self);
+
+    self.oldorigin = self.origin;
+    self.nextthink = time;
 }
 
-void HG_Napalm_Think(void) {
-    if(time > self.pushltime) {
-        remove(self);
-        return;
-    }
-    
+void HG_HealEmitter(void) {
     if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
         if(!self.heal_emitter) {
             entity e = spawn();
             e.owner = self;
             e.movetype = MOVETYPE_FOLLOW;
             e.aiment = self;
-            e.think = HG_Napalm_HealEmitter_Think;
+            e.think = HG_HealEmitter_Think;
             e.nextthink = time;
-            e.velocity = self.velocity;
-            e.csqcprojectile_extradata = self.csqcprojectile_extradata;
+            //e.velocity = self.velocity;
+            e.csqcprojectile_extradata = self.heal_emitter_radius;
             
             CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
             self.heal_emitter = e;
@@ -199,8 +197,17 @@ void HG_Napalm_Think(void) {
             self.heal_emitter = world;
         }
     }
-    
-    HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.hg_type);
+}
+
+void HG_Napalm_Think(void) {
+    if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
+
+    HG_HealEmitter();
+
+    HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
     self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
@@ -223,7 +230,7 @@ void HG_Napalm_Middlefire_Think() {
 	}
     */
     
-	HG_Napalm_Burn(0.1, cvar("g_nadgets_napalm_middleburnradius"), cvar("g_nadgets_napalm_burndamage"), cvar("g_nadgets_napalm_edgeburndamage"), cvar("g_nadgets_napalm_burntime"), DEATH_HG_NAPALM);
+	HG_Napalm_Burn(0.1, cvar("g_nadgets_napalm_middleburnradius"), cvar("g_nadgets_napalm_burndamage"), cvar("g_nadgets_napalm_edgeburndamage"), cvar("g_nadgets_napalm_burntime"), self.projectiledeathtype);
 	self.nextthink = time + 0.1;
 }
 
@@ -242,9 +249,9 @@ void HG_Napalm()
     proj.hg_type = self.hg_type;
 	proj.classname = "hg_napalm";
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = GRENVAR(self.hg_type, "burndamage");
+	proj.bot_dodgerating = GRENVAR(self.hg_type, "burnradius") + 300; //Havoc said set at least +60 to hit radius
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = DEATH_HG_NAPALM;
+	proj.projectiledeathtype = self.projectiledeathtype | HITTYPE_SECONDARY;
 	proj.touch = HG_Napalm_Projectile_Touch;
 	PROJECTILE_MAKETRIGGER(proj);
 	setsize(proj, '0 0 -3', '0 0 -3');
@@ -270,6 +277,7 @@ void HG_Napalm()
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
     proj.csqcprojectile_extradata = GRENVAR(self.hg_type, "burnradius");
+    proj.heal_emitter_radius = proj.csqcprojectile_extradata;
     proj.team = self.owner.team;
     proj.effects = EF_NODEPTHTEST;
     
@@ -293,6 +301,7 @@ void HG_Napalm_Explode() {
 	mid.nextthink = time;
 	mid.pushltime = time + cvar("g_nadgets_napalm_fire_lifetime");
     mid.team = self.team;
+    mid.projectiledeathtype = HG_NAPALM;
     mid.csqcprojectile_extradata = cvar("g_nadgets_napalm_middleburnradius");
 	setsize(mid, '0 0 0', '0 0 0');
     
@@ -304,7 +313,7 @@ void HG_Plasma_Projectile_Explode() {
 	self.takedamage = DAMAGE_NO;
     self.damage_noinfo = FALSE;
     float p = Buffs_NadgetPower(self.owner);
-	RadiusDamage(self, self.owner, cvar("g_nadgets_plasma_projectile_damage")*p, cvar("g_nadgets_plasma_projectile_edgedamage")*p, cvar("g_nadgets_plasma_projectile_radius"), world, cvar("g_nadgets_plasma_projectile_force")*p, self.projectiledeathtype, other);
+	RadiusDamage(self, self.owner, cvar("g_nadgets_plasma_projectile_damage")*p, cvar("g_nadgets_plasma_projectile_edgedamage")*p, cvar("g_nadgets_plasma_projectile_radius"), world, cvar("g_nadgets_plasma_projectile_force")*p, HG_PLASMA | HITTYPE_BOUNCE, other);
 	remove(self);
 }
 
@@ -338,6 +347,8 @@ void HG_Plasma_Projectile_Think() {
         self.hg_plasma_projdps_last = time;
     }
     
+    HG_HealEmitter();
+
     self.nextthink = time;
 }
 
@@ -359,10 +370,11 @@ void HG_Plasma_Projectile() {
 	proj.think = HG_Plasma_Projectile_Think;
     proj.nextthink = time;
 	proj.bot_dodge = TRUE;
-	proj.bot_dodgerating = cvar("g_nadgets_plasma_projectile_damage");
+	proj.bot_dodgerating = cvar("g_nadgets_plasma_projectile_damage") + 300; // just avoid plasma
     proj.hg_detonatetime = time + cvar("g_nadgets_plasma_projectile_lifetime") + random() * cvar("g_nadgets_plasma_projectile_lifetime_randomfactor");
-	PROJECTILE_MAKETRIGGER(proj);
-	proj.projectiledeathtype = HG_PLASMA_SHARD;
+
+    PROJECTILE_MAKETRIGGER(proj);
+	proj.projectiledeathtype = HG_PLASMA | HITTYPE_SECONDARY;
 	setorigin(proj, self.origin);
     
 	proj.movetype = MOVETYPE_BOUNCE;
@@ -390,13 +402,14 @@ void HG_Plasma_Projectile() {
     proj.hg_plasma_projdps_next = time + cvar("g_nadgets_plasma_projectile_dps_pause") + random() * cvar("g_nadgets_plasma_projectile_dps_pause_randomfactor");
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
     proj.csqcprojectile_extradata = hg_plasma_group;
+    proj.heal_emitter_radius = proj.hg_plasma_projrange;
     proj.damage_noinfo = TRUE;
     
     Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Use_Multiple);
     proj.meodp_point_offs = '0 0 16';
     
     sound(proj, CHAN_WEAPON, "weapons/electro_fire2.wav", VOL_BASE, ATTN_NORM);
-	CSQCProjectile(proj, TRUE, PROJECTILE_ELECTRO, FALSE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_PLASMA_SHARD, FALSE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
 }
 
@@ -492,6 +505,8 @@ void HG_Grenade_RadiusDamage() {
             frcmod = frcmod * (1 + (GV("adept_forcemod")  - 1) * self.hg_adept);
         }
     }
+
+    dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
     
     dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
 
@@ -557,7 +572,9 @@ void HG_Grenade_Touch() {
     
     if(other.takedamage == DAMAGE_AIM) {
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
-            if(Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
+            float adeptRev = (Buffs_BuffPower(self.owner, BUFF_ADEPT) && cvar("g_nadgets_transloc_adept_revive"));
+
+            if(adeptRev || Buffs_BuffPower(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
                     Freeze_RevivePlayer(other, self.owner);
@@ -567,8 +584,11 @@ void HG_Grenade_Touch() {
                     float h = other.health * m;
                     float a = other.armorvalue * m;
 
+                    if(adeptRev)
+                        m = max(1.0, m);
+
                     if(m > 1.0)
-                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin);
+                        Heal(other, self, self.owner, other.health - h, other.armorvalue - a, 0, 0, HG_TRANSLOC, 0, 0, self.origin, '0 0 0');
                     else if(m < 1.0) {
                         other.health = h;
                         other.armorvalue = a;
@@ -1142,7 +1162,7 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     
     if(newtarget) {
         te_csqc_lightningarc(targ.origin + arcoffset, newtarget.origin + arcoffset, TRUE, attacker.team);
-        Damage(newtarget, attacker, attacker, damage, DEATH_HG_SHIELD, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_nadgets_shield_damage_store_arc_pushback"));
+        Damage(newtarget, attacker, attacker, damage, HG_SHIELD | HITTYPE_SECONDARY | HITTYPE_BOUNCE, '0 0 0', normalize(newtarget.origin - targ.origin) * cvar("g_nadgets_shield_damage_store_arc_pushback"));
         HG_Shield_Discharge_Arc(attacker, newtarget, damage);
         sound(newtarget, CHAN_PROJECTILE, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM * 0.3);
     }
@@ -1179,7 +1199,7 @@ void HG_Shield_Trigger(void) {
         setorigin(infl, end);
         RadiusDamage(infl, self, self.hg_shield_stored, self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_edgefactor"),
                      cvar("g_nadgets_shield_damage_store_radius"), world,
-                     self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_forcefactor"), HG_SHIELD, targ);
+                     self.hg_shield_stored * cvar("g_nadgets_shield_damage_store_forcefactor"), HG_SHIELD | HITTYPE_SECONDARY, targ);
         remove(infl);
         
         trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, end);
@@ -1317,12 +1337,12 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
     if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
         return damage;
 
-    if(deathtype == DEATH_HG_TRANSLOC && cvar("g_nadgets_transloc_counters_shield")) {
+    if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC && cvar("g_nadgets_transloc_counters_shield")) {
         self.hg_shield = 0;
         return damage;
     }
 
-    if not(deathtype != DEATH_HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && deathtype != DEATH_HG_GG)
+    if not(DEATH_HGTYPE(deathtype) != HG_SHIELD && deathtype != DEATH_NOISE && deathtype != DEATH_ARC && DEATH_HGTYPE(deathtype) != HG_GG)
         return damage;
 
     vector offs = '0 0 1' * self.maxs_z * 0.5;
@@ -1333,7 +1353,7 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
     self.hg_shield_stored = min(cvar("g_nadgets_shield_damage_store_limit"), self.hg_shield_stored + damage * cvar("g_nadgets_shield_damage_store"));
     damage *= takefactor;
 
-    if(deathtype == DEATH_HG_TRANSLOC)
+    if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         reflect = 0;
     else if(DEATH_ISHG(deathtype))
         reflect *= cvar("g_nadgets_shield_damage_reflect_hg");
@@ -1346,7 +1366,7 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
         end = trace_endpos;
 
         if(trace_ent.takedamage)
-            Damage(trace_ent, self, self, reflect, DEATH_HG_SHIELD, end, '0 0 0');
+            Damage(trace_ent, self, self, reflect, HG_SHIELD, end, '0 0 0');
 
         trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), start, end);
     }
@@ -1447,7 +1467,7 @@ void HG_Linker_Think() {
             ++denom;
             thealth += p.health;
             tarmor += p.armorvalue;
-                
+
             self.buffs |= p.buffs;
                 
             if(time > p.hg_linker_effecttime) {
@@ -1482,7 +1502,7 @@ void HG_Linker_Think() {
                 if(denom > 1) {
                     float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
                     float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
-                    
+
                     if(self.hg_linker_hps) {
                         float lim = g_balance_health_limit;
                         if(g_clanarena)
@@ -1491,14 +1511,14 @@ void HG_Linker_Think() {
                     }
 
                     Heal(p, self, self.owner,
-                            max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, DEATH_LINKER_SHARE,
-                            HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
+                            max(0, newhealth - p.health), max(0, newarmor - p.armorvalue), 0, 0, HG_LINKER | HITTYPE_SECONDARY,
+                            HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
                     
                     p.health = newhealth;
                     p.armorvalue = newarmor;
                 } else {
-                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, DEATH_HG_LINKER,
-                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0');
+                    Heal(p, self, self.owner, self.hg_linker_hps, 0, 0, 0, HG_LINKER,
+                         HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
                 }
             }
         }
@@ -1581,7 +1601,7 @@ float HG_GG_Button(float hgtype) {
             allow = (vlen(trace_endpos - e) < 5);
         
         if(allow) {
-            Damage(p, world, self, damage, DEATH_HG_GG, e, normalize(e - o) * 1000);
+            Damage(p, world, self, damage, HG_GG, e, normalize(e - o) * 1000);
             trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), o, e + randomvec() * 10);
             trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), o, e + randomvec() * 10);
@@ -1644,7 +1664,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.owner = self;
     gren.classname = "hg_grenade";
     gren.bot_dodge = TRUE;
-    gren.bot_dodgerating = GV("damage");
+    gren.bot_dodgerating = GV("damage") + 300; //added +100 by Havocs words about at least +60 to radius;
     PROJECTILE_MAKETRIGGER(gren);
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
@@ -1752,7 +1772,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
     if(hgtype == HG_NAPALM && self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))
-        Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), DEATH_HG_NAPALM, self.origin, '0 0 0');
+        Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), HG_NAPALM, self.origin, '0 0 0');
     
     if(hgtype == HG_TRANSLOC)
         self.hg_transloc_last = gren;
@@ -1921,6 +1941,9 @@ void HG_Attack()
     } else {
         hgtype = self.hg_type;
     }
+
+    if(time < self.cdfield)
+        return;
     
     if(time < self.cdfield)
         return;
@@ -2135,8 +2158,8 @@ void HG_ResetState(entity p) {
     p.hg_bonustype = HG_NORMAL;
     p.hg_clearammo = 0;
     p.hg_shield = 0;
-    HG_SetRegenTime(p, HG_RegenTime(p));
     HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    HG_SetRegenTime(p, HG_RegenTime(p));
 }
 
 void HG_PlayerSpawn()

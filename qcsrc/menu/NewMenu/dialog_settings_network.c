@@ -32,11 +32,12 @@ void fillNewMenuNetworkSettingsTab(entity me)
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Network speed:"));
 		me.TD(me, 1, 2, e = makeNewMenuTextSlider("_cl_rate"));
-			e.addValue(e, "56k", "4000");
-			e.addValue(e, "ISDN", "7000");
-			e.addValue(e, "Slow ADSL", "15000");
-			e.addValue(e, "Fast ADSL", "20000");
-			e.addValue(e, "Broadband", "25000");
+            e.addValue(e, "56k (4000 Bps)", "4000");
+            e.addValue(e, "ISDN (7000 Bps)", "7000");
+            e.addValue(e, "Slow ADSL (15000 Bps)", "15000");
+            e.addValue(e, "Fast ADSL (20000 Bps)", "20000");
+            e.addValue(e, "Broadband (25000 Bps)", "25000");
+            e.addValue(e, "21st century (40000 Bps)", "40000");
 			e.configureNewMenuTextSliderValues(e);
 	if(cvar("menu_advanced") > 0){
 		me.TR(me);

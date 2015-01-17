@@ -31,6 +31,7 @@ campaign.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
+csqcmessage.qh
 
 teamcount.qh
 portals.qh
@@ -119,6 +120,7 @@ w_campingrifle.qc
 w_tuba.qc
 w_fireball.qc
 w_zapper.qc
+w_flak.qc
 
 t_items.qc
 cl_weapons.qc
@@ -206,5 +208,6 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+csqcmessage.qc
 radio.qc
 

@@ -12,10 +12,11 @@ void Announcer_Precache() {
 	//"cl_announcer" does NOT end in a '/' so one must be added for the file paths to work correctly.
 	precache_sound (strcat(cvar_string("cl_announcer"), "/1minuteremains.wav"));
 	precache_sound (strcat(cvar_string("cl_announcer"), "/5minutesremain.wav"));
+    precache_sound ("porto/fire.wav");
 }
 
-void announce(string msg){
-	localcmd("play2 sound/announcer/$cl_announcer/", msg, "\n");
+void announce(string msg) {
+    localcmd("play2 sound/announcer/$cl_announcer/", msg, "\n");
 }
 
 void restartAnnouncer_Think() {
@@ -585,6 +586,42 @@ float rm_particleeffectnum(string p) {
             case "RM_ZAPPER_MUZZLEFLASH_TEAM3":
             case "RM_ZAPPER_MUZZLEFLASH_TEAM4":
                 return particleeffectnum("electro_muzzleflash");
+
+            case "RM_CRYLINK_TEAM1":
+            case "RM_CRYLINK_TEAM2":
+            case "RM_CRYLINK_TEAM3":
+            case "RM_CRYLINK_TEAM4":
+                return particleeffectnum("TR_CRYLINKPLASMA");
+
+            case "RM_CRYLINK_IMPACT_TEAM1":
+            case "RM_CRYLINK_IMPACT_TEAM2":
+            case "RM_CRYLINK_IMPACT_TEAM3":
+            case "RM_CRYLINK_IMPACT_TEAM4":
+                return particleeffectnum("crylink_impact");
+
+            case "RM_CRYLINK_IMPACT_BIG_TEAM1":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM2":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM3":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM4":
+                return particleeffectnum("crylink_impactbig");
+
+            case "RM_ELECTRO_TEAM1":
+            case "RM_ELECTRO_TEAM2":
+            case "RM_ELECTRO_TEAM3":
+            case "RM_ELECTRO_TEAM4":
+                return particleeffectnum("TR_NEXUIZPLASMA");
+
+            case "RM_ELECTRO_IMPACT_TEAM1":
+            case "RM_ELECTRO_IMPACT_TEAM2":
+            case "RM_ELECTRO_IMPACT_TEAM3":
+            case "RM_ELECTRO_IMPACT_TEAM4":
+                return particleeffectnum("electro_impact");
+
+            case "RM_ELECTRO_COMBO_TEAM1":
+            case "RM_ELECTRO_COMBO_TEAM2":
+            case "RM_ELECTRO_COMBO_TEAM3":
+            case "RM_ELECTRO_COMBO_TEAM4":
+                return particleeffectnum("electro_combo");
         }
     }
     

@@ -106,7 +106,11 @@ float dodging_GetPressedKeys()
     
     //if(self.hg_stealth)
     //    return 0;
-
+    if(self.rm_nododging)
+    if(!self.frozen) {
+	return 0;
+    }
+    
     if(self.hg_shield)
     if(!cvar("g_dodging_shielded"))
         return 0;

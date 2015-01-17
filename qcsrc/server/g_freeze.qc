@@ -356,7 +356,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     
     Freeze_UnfreezePlayer(plr);
     plr.revtime = time;
-    
+
     // EVERY team mate nearby gets a point (even if multiple!)
     
     if(Freeze_CVar("score_revival_shared"))
@@ -369,7 +369,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         
         float heal = Freeze_CVar("revive_heal");
         if(heal)
-            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
+            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
@@ -389,7 +389,13 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         e.revprogress = plr.revprogress;
         e.revresettime = time + frametime * 2;
     }
-    
+
+    float minh = Freeze_CVar("revived_minhealth");
+    float mina = Freeze_CVar("revived_minarmor");
+        
+    if(minh || mina)
+        Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
+
     plr.hg_plasmalock = 0;
     centerprint_spec(plr, strcat("^5You were revived by ^7", names, "\n"));
     bprint("^7", names, "^5 revived ^7", plr.netname, "\n");

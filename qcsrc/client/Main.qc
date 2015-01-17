@@ -108,10 +108,37 @@ void CSQC_Init(void)
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
     registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
+    registercvar("rm_visualdamage_spreadout", "1", CVAR_SAVE);
+    registercvar("rm_visualdamage_nooverlap", "0", CVAR_SAVE);
+    registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_bullets", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "15", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_rockets", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_shells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_cells", "10", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_zapper_heat", "25", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_campingrifle_bulletsremaining", "2", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_size", "20", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
+    registercvar("crosshair_zapper", "", CVAR_SAVE);
+    registercvar("crosshair_zapper_size", "0.5", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_red", "0", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_green", "0.7", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_blue", "1", CVAR_SAVE);
+    registercvar("crosshair_zapper_color_alpha", "1", CVAR_SAVE);
+    registercvar("crosshair_flak", "", CVAR_SAVE);
+    registercvar("crosshair_flak_size", "0.6", CVAR_SAVE);
+    registercvar("crosshair_flak_color_red", "1", CVAR_SAVE);
+    registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
+    registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
+    registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
+    registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
+	
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -396,7 +423,8 @@ void SetMadokaFont(float v)
 }
 
 void Menu_ShowNagger(void) {
-    localcmd("menu_cmd directmenu engineNagger\n");
+    if(!DPRM_VersionIsSuitable())
+        localcmd("menu_cmd directmenu engineNagger\n");
 }
 
 void ReloadMenu_f()
@@ -439,6 +467,19 @@ void FPSReporter_Init() {
 	entity e = spawn();
 	e.think = FPSReporter_Think;
 	e.nextthink = time + 1;
+}
+
+#define TARGET_RATE 40000
+
+void UpdateClRate(void) {
+    float oldrate = cvar("_cl_rate");
+
+    if(oldrate >= TARGET_RATE)
+        return;
+
+    // save it just in case we ever have to roll back
+    localcmd("seta _rm_cl_rate_saved ", ftos(oldrate), "\n");
+    localcmd("rate ", ftos(TARGET_RATE), "\n");
 }
 
 void PostInit(void)
@@ -554,9 +595,14 @@ void PostInit(void)
             localcmd("seta cl_effects_lightningarc_branchfactor_add 0\n");
             localcmd("seta cl_effects_lightningarc_branchfactor_start 0.05\n");
             localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
+        case 47:
+            localcmd("seta rm_nododging 0; nododging 0\n");
+        case 48:
+            UpdateClRate();
+        case 49:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 47\n");
+		localcmd("seta rm_initialized 50\n");
 		RM_OUTDATED
 		break;
 	}
@@ -585,7 +631,7 @@ void PostInit(void)
 	// rm_oldbigfont = cvar("rm_oldbigfont");
     rm_showtimer = cvar("rm_showtimer");
     rm_shownadgetregen = cvar("rm_shownadgetregen");
-	
+    
 	registercmd("rmhelp");
 	registercmd("showspec");
 	registercmd("showdamage");
@@ -617,6 +663,7 @@ void PostInit(void)
     registercmd("showtimer");
     registercmd("shownadgetregen");
     registercmd("radio");
+    registercmd("nododging");
 	// -- //
 	registercmd("hudskin");
 	
@@ -641,6 +688,7 @@ void PostInit(void)
 	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
 	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
     localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
+    localcmd("cmd nododging ", cvar_string("rm_nododging"), "\n");
 	
 	if(cvar("_cl_afkstate"))
 		localcmd("cmd afk\n");
@@ -770,6 +818,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2oldhud^7: If enabled, standard Vecxis HUD will be used (disabled by default)\n");
 		print("^2althud^7: If enabled, use an alternative layout for the HUD (disabled by default)\n");
 		print("^2noflags^7: If enabled, plain-text country codes will be shown instead of flags (disabled by default)\n");
+		print("^2nododging^7: If enabled, ingame dodging will be switched off (disabled by default)\n");
 		print("^2notimer^7: If enabled, the 'time' column will not be shown in the scoreboard (disabled by default)\n");
 		print("^2nogamemenu^7: If enabled, will go directly to the main menu when activating menu in-game (disabled by default)\n");
 		print("^2nokillsound^7: If enabled, the kill sound will not be used (you'll hear the default hit sound instead) (disabled by default)\n");
@@ -812,6 +861,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
+		strCmd == "nododging"		||
 		strCmd == "showrankings"		||
         strCmd == "showtimer"           ||
         strCmd == "shownadgetregen"     ||
@@ -841,6 +891,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		// rm_oldbigfont = cvar("rm_oldbigfont");
         rm_showtimer = cvar("rm_showtimer");
         rm_shownadgetregen = cvar("rm_shownadgetregen");
+        //rm_nododging = cvar("rm_nododging");
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -858,6 +909,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cl_cmd sbar_columns_set default\n");
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+		else if(strCmd == "nododging")
+			localcmd("cmd nododging ", ftos(cvar("rm_nododging")), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT
@@ -2264,6 +2317,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_UPDATESELECTEDPLAYER:
             Net_ReadUpdateSelectedPlayer();
+            return TRUE;
+        case TE_CSQC_MESSAGE:
+            Message_Read();
             return TRUE;
     }
 

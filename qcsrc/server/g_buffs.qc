@@ -2,6 +2,16 @@
 #define ON_BUFF_ADDED(b) if(self.buffs & (b)) if not(self.oldbuffs & (b))
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
+void Buffs_Random_Spawn(void) {
+    entity o = self;
+    self = spawn();
+    self.buffs = BUFF_RANDOM;
+    self.classname = "item_buff_randomspawn";
+    Buffs_BuffPickup_Setup();
+    MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+    self = o;
+}
+
 void Buffs_Init(void) {
     float i, b;
     
@@ -12,9 +22,10 @@ void Buffs_Init(void) {
     
     if(!g_buffs)
         return;
-    
+
     g_buffs_team_only = cvar("g_buffs_team_only");
     g_buffs_stack = cvar("g_buffs_stack");
+    g_buffs_replace = cvar("g_buffs_replace");
     g_buffs_noteam = cvar("g_buffs_noteam");
     g_buffs_randomize = cvar("g_buffs_randomize");
     g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
@@ -22,8 +33,12 @@ void Buffs_Init(void) {
     g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
     g_buffs_randomize_interval = cvar("g_buffs_randomize_interval");
     g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
+    g_buffs_random_spawns = cvar("g_buffs_random_spawns");
     g_buffs_lockon = cvar("g_buffs_lockon");
-    
+
+    if(g_buffs_stack)
+        g_buffs_replace = FALSE;
+
     if(g_clanarena)
         g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
     
@@ -161,8 +176,18 @@ void Buffs_Randomizer_Reset(void) {
 float buff_teamfound[4];
 void Buffs_Init_Delayed(void) {
     entity blist, b, o;
-    float idx, teams_found, teams_total, bcnt = g_buffs_count;
+    float idx, teams_found, teams_total, bcnt = g_buffs_count, j;
     
+	if(g_buffs_random_spawns)
+    if((g_buffs_random_spawns == 2 && !bcnt) || g_buffs_random_spawns < 2 || g_buffs_random_spawns > 2) {
+        float mi = cvar("g_buffs_random_spawns_min");
+        float ma = cvar("g_buffs_random_spawns_max");
+        float bcount = rint(random() * (ma - mi) + mi);
+
+		for(j = 0; j < bcount; ++j)
+			Buffs_Random_Spawn();
+	} 
+
     if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
         o = self;
         for(b = findchain(classname, "buff_placeholder"); b; b = b.chain) {
@@ -181,7 +206,7 @@ void Buffs_Init_Delayed(void) {
         }
         self = o;
     }
-    
+
     if(teams_matter) {
         teams_total = TeamCount_TotalTeams();
 
@@ -423,7 +448,7 @@ void Buffs_ClientFrame(void) {
     
     if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
         float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
-        Heal(self, world, self, heal, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0');
+        Heal(self, world, self, heal, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
         self.buff_vamp_healthpool -= heal;
         self.buff_vamp_ticks -= 1;
         self.buff_vamp_nexttick = time + 1;
@@ -493,7 +518,7 @@ float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float d
     if(targ != attacker)
     if(targ != inflictor)
     if(attacker.classname == "player")
-    if(deathtype != DEATH_HG_TRANSLOC)
+    if(DEATH_HGTYPE(deathtype) != HG_TRANSLOC)
     if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC) {
         float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
         if(ignite)
@@ -549,7 +574,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_healthpool += damage * factor;
     } else {
         // instant-healing mode, don't use the buffer, just heal
-        Heal(a, world, a, damage * factor, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0');
+        Heal(a, world, a, damage * factor, 0, 0, 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
     }
 }
 
@@ -824,8 +849,17 @@ void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor) {
                                       Buffs_MEODP_Filter_NearbyRelated, self);
 }
 
+float Buffs_BuffPickup_PickupAllowed(entity buff, entity plr) {
+    float allowReplace = g_buffs_replace;
+
+    if(allowReplace > 1)
+        allowReplace = plr.BUTTON_USE;
+
+    return ((plr.buffs & buff.buffs != buff.buffs) && (!plr.buffs || g_buffs_stack || allowReplace));
+}
+
 float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
-    if((!self.owner.buff_active && !self.owner.buff_activetime) || plr.buffs & self.owner.buffs || (plr.buffs && !g_buffs_stack))
+    if((!self.owner.buff_active && !self.owner.buff_activetime) || !Buffs_BuffPickup_PickupAllowed(self.owner, plr))
         return FALSE;
     return WaypointSprite_visible_for_player(plr);
 }
@@ -927,7 +961,7 @@ void Buffs_BuffPickup_Reset(void) {
 }
 
 void Buffs_BuffPickup_GiveTo(entity plr) {
-    if(self.owner || plr.buffs & self.buffs == self.buffs || (plr.buffs && !g_buffs_stack))
+    if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
     
     self.owner = plr;
@@ -936,6 +970,9 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
     string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
     
+    if(g_buffs_replace)
+        plr.buffs = 0;
+
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
     bigprint_spec(plr, strcat("You got the ", bname), "", 3);
     sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
@@ -985,8 +1022,13 @@ void Buffs_BuffPickup_Setup(void) {
         return;
     }
     
+    if(g_buffs_random_spawns == 1 && self.classname != "item_buff_randomspawn") {
+        remove(self);
+        return;
+    }
+
     if not(g_buffs_randomize)
-    if not(g_buffs_enabled & self.buffs != self.buffs) {
+    if not(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
         remove(self);
         return;
     }
@@ -1034,7 +1076,7 @@ void Buffs_BuffPickup_Remove(void) {
 }
 
 void Buffs_BuffPickup_Placeholder(void) {
-    if(!g_buffs || !g_buffs_spawn_on_powerups)
+    if(!g_buffs || !g_buffs_spawn_on_powerups || g_buffs_team_only)
         return;
     
     entity e = spawn();

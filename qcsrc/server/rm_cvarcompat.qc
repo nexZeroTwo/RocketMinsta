@@ -444,19 +444,6 @@ void RM_CvarCompat() {
             localcmd("unset g_explosive_droppowerups_activatedelay\n");
     }
     
-    // g_explosive_extendfragmessages ---> sv_extendfragmessages
-    
-    if COMPATVAR_ACTIVE("g_explosive_extendfragmessages") {
-        if(cvar_string("g_explosive_extendfragmessages") != "__COMPATVAR_DISABLED__") {
-            print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_explosive_extendfragmessages^7. Will _TRY_ to stay compatible by updating ^3sv_extendfragmessages^7, but no stability is guaranteed at this point!\n");
-            cvar_set("sv_extendfragmessages", cvar_string("g_explosive_extendfragmessages"));
-            corrections++;
-        }
-
-        if(mode == 2)
-            localcmd("unset g_explosive_extendfragmessages\n");
-    }
-    
     // g_explosive_gametypevote ---> sv_vote_gametype
     
     if COMPATVAR_ACTIVE("g_explosive_gametypevote") {
@@ -5369,6 +5356,19 @@ void RM_CvarCompat() {
 
         if(mode == 2)
             localcmd("unset g_nadgets_bait_stacklimit\n");
+    }
+    
+    // g_nadgets_gg_stacklimit ---> g_nadgets_gg_regen_limit
+    
+    if COMPATVAR_ACTIVE("g_nadgets_gg_stacklimit") {
+        if(cvar_string("g_nadgets_gg_stacklimit") != "__COMPATVAR_DISABLED__") {
+            print("^1WARNING: ^7Your configuration uses an OUTDATED cvar name: ^3g_nadgets_gg_stacklimit^7. Will _TRY_ to stay compatible by updating ^3g_nadgets_gg_regen_limit^7, but no stability is guaranteed at this point!\n");
+            cvar_set("g_nadgets_gg_regen_limit", cvar_string("g_nadgets_gg_stacklimit"));
+            corrections++;
+        }
+
+        if(mode == 2)
+            localcmd("unset g_nadgets_gg_stacklimit\n");
     }
     
 
