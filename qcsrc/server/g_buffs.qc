@@ -8,7 +8,28 @@ void Buffs_Random_Spawn(void) {
     self.buffs = BUFF_RANDOM;
     self.classname = "item_buff_randomspawn";
     Buffs_BuffPickup_Setup();
-    MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+
+    float a = max(1, cvar("g_buffs_random_spawns_distant")), i, mx = -1;
+    vector org;
+    entity b, blist = findchain(classname, "item_buff");
+
+    for(i = 0; i < a; ++i) {
+        MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
+
+        float d = 1000000;
+
+        for(b = blist; b; b = b.chain) if(b != self) {
+            d = min(d, vlen(self.origin - b.origin));
+        }
+
+        if(d > mx) {
+            org = self.origin;
+            mx = d;
+        }
+    }
+
+    setorigin(self, org);
+
     self = o;
 }
 
