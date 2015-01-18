@@ -15,39 +15,13 @@ string(string format, ...) sprintf = #627;
 
 #define MAX_DAMAGEEXTRARADIUS 16
 
-void W_Crylink_CheckLinks(entity e)
-{
-    float i;
-    entity p;
-
-    if(e == world)
-        print("W_Crylink_CheckLinks: entity is world\n");
-    if(e.classname != "spike" || wasfreed(e))
-        print(sprintf("W_Crylink_CheckLinks: entity is not a spike but a %s (freed: %d)\n", e.classname, wasfreed(e)));
-
-    p = e;
-    for(i = 0; i < 1000; ++i)
-    {
-        if(p.queuenext.queueprev != p || p.queueprev.queuenext != p)
-            print("W_Crylink_CheckLinks: queue is inconsistent\n");
-        p = p.queuenext;
-        if(p == e)
-            break;
-    }
-    if(i >= 1000)
-        print("W_Crylink_CheckLinks: infinite chain\n");
-}
-
 void W_Crylink_Dequeue_Raw(entity own, entity prev, entity me, entity next)
 {
-    W_Crylink_CheckLinks(next);
     if(me == own.crylink_lastgroup)
         own.crylink_lastgroup = ((me == next) ? world : next);
     prev.queuenext = next;
     next.queueprev = prev;
     me.classname = "spike_oktoremove";
-    if(me != next)
-        W_Crylink_CheckLinks(next);
 }
 
 void W_Crylink_Dequeue(entity e)
@@ -97,9 +71,6 @@ vector W_Crylink_LinkJoin(entity e, float jspeed)
     vector targ_origin;
     float avg_dist, n;
     entity p;
-
-    // FIXME remove this debug code
-    W_Crylink_CheckLinks(e);
 
     w_crylink_linkjoin_time = 0;
 
@@ -166,8 +137,6 @@ vector W_Crylink_LinkJoin(entity e, float jspeed)
         //      targ_origin -> avg_origin
         //      p->velocity -> HUEG away from center
     }
-
-    W_Crylink_CheckLinks(e);
 
     return targ_origin;
 }
@@ -403,7 +372,6 @@ void W_Crylink_Attack(void)
     if(WEP_CVAR_PRI(crylink, joinspread) != 0)
     {
         self.crylink_lastgroup = proj;
-        W_Crylink_CheckLinks(proj);
         self.crylink_waitrelease = 1;
     }
 }
@@ -519,7 +487,6 @@ void W_Crylink_Attack2(void)
     if(WEP_CVAR_SEC(crylink, joinspread) != 0)
     {
         self.crylink_lastgroup = proj;
-        W_Crylink_CheckLinks(proj);
         self.crylink_waitrelease = 2;
     }
 }
