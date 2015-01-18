@@ -6,9 +6,12 @@
 .entity queueprev;
 .entity realowner;
 
-// These are pretty nitfy.
+string(string format, ...) sprintf = #627;
+
+// These are pretty nifty.
 // TODO: maybe move them elsewhere and use for the rest of the weapons?
 // Also, this needs a manual update when the autocvars branch is merged.
+
 #define WEP_CVAR(wepname,name) cvar("g_balance_" #wepname "_" #name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
@@ -21,10 +24,13 @@ void W_Crylink_CheckLinks(entity e)
     float i;
     entity p;
 
+    if not(cvar("developer"))
+        return;
+
     if(e == world)
         print("W_Crylink_CheckLinks: entity is world\n");
     if(e.classname != "spike" || wasfreed(e))
-        print(sprintf("W_Crylink_CheckLinks: entity is not a spike but a %s (freed: %d)\n", e.classname, wasfreed(e)));
+        print("W_Crylink_CheckLinks: entity is not a spike but a ", e.classname, " (freed: ", ftos(wasfreed(e)), ")\n");
 
     p = e;
     for(i = 0; i < 1000; ++i)
@@ -99,7 +105,6 @@ vector W_Crylink_LinkJoin(entity e, float jspeed)
     float avg_dist, n;
     entity p;
 
-    // FIXME remove this debug code
     W_Crylink_CheckLinks(e);
 
     w_crylink_linkjoin_time = 0;
@@ -109,11 +114,6 @@ vector W_Crylink_LinkJoin(entity e, float jspeed)
     n = 1;
     for(p = e; (p = p.queuenext) != e; )
     {
-        if(n > 1000) {
-            print("Infinite crylink queue bug detected!\n");
-            return '0 0 0';
-        }
-
         avg_origin += p.origin;
         avg_velocity += p.velocity;
         ++n;
@@ -248,7 +248,20 @@ void W_Crylink_Touch(void)
     float finalhit;
     float f;
     float isprimary = !(self.projectiledeathtype & HITTYPE_SECONDARY);
-    PROJECTILE_TOUCH;
+
+    // We can not just use PROJECTILE_TOUCH here, because we have to dequeue before removing.
+
+    if(SUB_OwnerCheck())
+        return;
+
+    if(SUB_NoImpactCheck()) {
+        W_Crylink_Dequeue(self);
+        remove(self);
+        return;
+    }
+
+    if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
+        UpdateCSQCProjectileNextFrame(self);
 
     float a;
     a = bound(0, 1 - (time - self.fade_time) * self.fade_rate, 1);
