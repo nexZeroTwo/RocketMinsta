@@ -3527,3 +3527,20 @@ void restore_nasty_globals(void) {
     v_up = v_up_saved;
     v_right = v_right_saved;
 }
+
+.entity realowner;
+
+float ProjectileTeam(entity p) {
+    if(!teams_matter)
+        return 0;
+
+    float t = p.team;
+
+    if(!t)
+        t = p.realowner.team;
+
+    if(!t)
+        t = p.owner.team;
+
+    return t;
+}
