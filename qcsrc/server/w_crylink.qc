@@ -80,6 +80,11 @@ vector W_Crylink_LinkJoin(entity e, float jspeed)
     n = 1;
     for(p = e; (p = p.queuenext) != e; )
     {
+        if(n > 1000) {
+            print("Infinite crylink queue bug detected!\n");
+            return '0 0 0';
+        }
+
         avg_origin += p.origin;
         avg_velocity += p.velocity;
         ++n;
