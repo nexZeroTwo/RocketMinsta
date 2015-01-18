@@ -6,8 +6,6 @@
 .entity queueprev;
 .entity realowner;
 
-string(string format, ...) sprintf = #627;
-
 #define WEP_CVAR(wepname,name) cvar("g_balance_" #wepname "_" #name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
