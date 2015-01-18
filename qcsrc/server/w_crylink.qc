@@ -6,6 +6,9 @@
 .entity queueprev;
 .entity realowner;
 
+// These are pretty nitfy.
+// TODO: maybe move them elsewhere and use for the rest of the weapons?
+// Also, this needs a manual update when the autocvars branch is merged.
 #define WEP_CVAR(wepname,name) cvar("g_balance_" #wepname "_" #name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
