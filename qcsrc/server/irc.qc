@@ -83,7 +83,7 @@ void IRC_UpdateTopic(void) {
     else if(totalclients == maxclients && cvar("sv_ircbot_update_topic_serverfull"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
-    if(cvar_string("_sv_ircbot_lasttopic") != s || irc.skin > 1) {
+    if(cvar_string("_sv_ircbot_lasttopic") != IRC_DP2IRC(s) || irc.skin > 1) {
         IRC_Topic(irc.cnt, irc.target, s);
     }
 
