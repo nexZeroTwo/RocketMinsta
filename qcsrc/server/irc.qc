@@ -83,7 +83,10 @@ void IRC_UpdateTopic(void) {
     else if(totalclients == maxclients && cvar("sv_ircbot_update_topic_serverfull"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
-    IRC_Topic(irc.cnt, irc.target, s);
+    if(cvar_string("_sv_ircbot_lasttopic") != s || irc.skin > 1) {
+        IRC_Topic(irc.cnt, irc.target, s);
+    }
+
     irc.skin = 0;
 }
 
@@ -128,6 +131,7 @@ void IRC_Init(void) {
     registercvar("_sv_ircbot_session", "-1");
     registercvar("_sv_ircbot_joinlog", "");
     registercvar("_sv_ircbot_msgsent", "0");
+    registercvar("_sv_ircbot_lasttopic", "");
     
     s = IRC_CheckSession(cvar("_sv_ircbot_session"));
     
@@ -429,6 +433,8 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "NICK") {
         if(cvar("sv_ircbot_announce_irc_nick"))
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7is now known as ^3", argv(0), "\n");
+    } else if(event == "TOPIC") {
+        cvar_set("_sv_ircbot_lasttopic", argv(1));
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
         IRC_ChangeNick(handle, strcat(argv(1), "`"));
     }
