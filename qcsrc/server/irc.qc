@@ -20,14 +20,18 @@ float IRC_CheckSession(float s) {
         }
 
         if(!irc || time >= irc_reconnect_time) {
-            if(IRC_ConnectSession(s,
+            float err = IRC_ConnectSession(s,
                 cvar_string("sv_ircbot_server"),
                 cvar("sv_ircbot_server_port"),
                 cvar_string("sv_ircbot_server_password"),
                 cvar_string("sv_ircbot_nick"),
                 cvar_string("sv_ircbot_user"),
                 cvar_string("sv_ircbot_realname")
-            ) == IRC_ERR_STATE)
+            );
+
+            if(!err)
+                irc_was_connected = TRUE;
+            else if(err == IRC_ERR_STATE)
                 IRC_TerminateSession(s);
         }
     } else
