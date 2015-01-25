@@ -30,7 +30,7 @@ float W_WeaponRateFactor()
     float haste = Buffs_BuffPower(self, BUFF_HASTE);
     if(haste)
         t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * haste);
-    
+
 	return t;
 }
 
@@ -326,7 +326,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		sound (ent, CHAN_WEAPON, snd, VOL_BASE, ATTN_NORM);
 	}
 
-	if(ent.items & IT_STRENGTH)
+	if(ent.items & IT_STRENGTH || self.hg_shield)
 	if(!g_minstagib)
     if(time > self.strengthsound_next) {
 		sound (ent, CHAN_AUTO, "weapons/strength_fire.wav", VOL_BASE, ATTN_NORM);
@@ -348,6 +348,11 @@ void W_SetHitscanVisuals(entity p, vector end) {
         dv = v_right * vecs_y + v_up * vecs_z;
         w_shotorg_visual = p.origin + p.view_ofs + dv;
         w_shotdir_visual = normalize(end - w_shotorg_visual);
+    }
+
+    if(p.hg_shield) {
+        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg_visual, end);
+        pointparticles(particleeffectnum("smoke_ring"), end, -w_shotdir_visual, 3);
     }
 }
 

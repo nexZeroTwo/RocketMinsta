@@ -1008,7 +1008,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if (targ.items & IT_INVINCIBLE && !g_minstagib)
             damage = damage * cvar("g_balance_powerup_invincible_takedamage");
 
-        if(deathtype != DEATH_ARC) {
+        if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
             if not(DEATH_ISSPECIAL(deathtype))
             {
                 damage *= g_weapondamagefactor;
@@ -1030,6 +1030,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     damage = damage * cvar("g_balance_powerup_strength_damage");
                     force = force * cvar("g_balance_powerup_strength_force");
                 }
+            }
+
+            if(attacker.hg_shield) {
+                damage = damage * 1.20;
+                force = force * 1.20;
             }
 
             if (targ == attacker) {
