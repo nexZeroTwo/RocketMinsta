@@ -434,9 +434,20 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         if(cvar("sv_ircbot_announce_irc_nick"))
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7is now known as ^3", argv(0), "\n");
     } else if(event == "TOPIC") {
-        cvar_set("_sv_ircbot_lasttopic", argv(1));
+        if(strtolower(argv(0)) == irc.target) {
+            cvar_set("_sv_ircbot_lasttopic", argv(1));
+
+            if(nick != IRC_CurrentNick(handle))
+                IRC_UpdateTopic();
+        }
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
         IRC_ChangeNick(handle, strcat(argv(1), "`"));
+    } else if(numeric == IRC_RFC_RPL_TOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", argv(2));
+    } else if(numeric == IRC_RFC_RPL_NOTOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", "");
     }
 }
 
