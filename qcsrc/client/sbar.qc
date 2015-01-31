@@ -5731,14 +5731,14 @@ void Sbar_Draw(void)
 }
 
 // CTF HUD
-//float redflag_prevframe, blueflag_prevframe; // status during previous frame
+float redflag_prevframe, blueflag_prevframe; // status during previous frame
 float redflag_prevstatus, blueflag_prevstatus; // last remembered status
 float redflag_statuschange_time, blueflag_statuschange_time; // time when the status changed
 
 void CSQC_ctf_hudreset(void)
 {
 	redflag_prevstatus = blueflag_prevstatus = redflag_statuschange_time = blueflag_statuschange_time = 0;
-	//redflag_prevframe = blueflag_prevframe = 0;
+	redflag_prevframe = blueflag_prevframe = 0;
 }
 
 void CSQC_ctf_hud(vector hudpos)
@@ -5760,7 +5760,6 @@ void CSQC_ctf_hud(vector hudpos)
 	redflag = (stat_items/IT_RED_FLAG_TAKEN) & 3;
 	blueflag = (stat_items/IT_BLUE_FLAG_TAKEN) & 3;
 
-/*
 	// when status CHANGES, set old status into prevstatus and current status into status
 	if (redflag != redflag_prevframe)
 	{
@@ -5775,7 +5774,6 @@ void CSQC_ctf_hud(vector hudpos)
 		blueflag_prevstatus = blueflag_prevframe;
 		blueflag_prevframe = blueflag;
 	}
-*/
 
 	redflag_statuschange_elapsedtime = time - redflag_statuschange_time;
 	blueflag_statuschange_elapsedtime = time - blueflag_statuschange_time;
