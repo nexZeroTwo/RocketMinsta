@@ -352,7 +352,7 @@ float w_zapper(float req) {
                     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                 }
             }
-        } else if(self.BUTTON_ATCK2) {
+        } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
             if(weapon_prepareattack(0, cvar("g_balance_zapper_secondary_refire"))) {
                 W_Zapper_Attack2();
                 weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
