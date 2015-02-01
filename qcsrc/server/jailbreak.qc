@@ -593,7 +593,7 @@ void JB_Torture_Zap() {
 	
 	FireRailgunBullet (self.origin, self.origin + v_forward * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
 	w_shotorg = self.origin;	// needed for the beam to appear correctly
-	SendCSQCNexBeamParticle();
+	SendCSQCNexBeamParticle(0);
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))

@@ -1,4 +1,4 @@
-void SendCSQCNexBeamParticle() {
+void SendCSQCNexBeamParticle(float theteam) {
 	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte(MSG_BROADCAST, TE_CSQC_NEXGUNBEAMPARTICLE);
 
@@ -8,6 +8,7 @@ void SendCSQCNexBeamParticle() {
 	WriteCoord(MSG_BROADCAST, trace_endpos_x);
 	WriteCoord(MSG_BROADCAST, trace_endpos_y);
 	WriteCoord(MSG_BROADCAST, trace_endpos_z);
+    WriteByte(MSG_BROADCAST, theteam);
 }
 
 void W_Nex_Attack (void)
@@ -26,7 +27,7 @@ void W_Nex_Attack (void)
     W_SetHitscanVisuals(self, trace_endpos);
 
 	//beam and muzzle flash done on client
-	SendCSQCNexBeamParticle();
+	SendCSQCNexBeamParticle(self.team);
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
