@@ -756,7 +756,7 @@ float Buffs_MEODP_Filter_NearbyRelated(entity ent, entity pass) {
     if(ent.classname != pass.classname)
         return FALSE;
 
-    if(vlen(ent.meodp_point.origin - pass.meodp_point.origin) > 100)
+    if(vlen(ent.meodp_point.origin - pass.meodp_point.origin) > 200)
         return FALSE;
 
     return TRUE;
