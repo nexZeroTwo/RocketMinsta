@@ -1,0 +1,6 @@
+
+entity MG_Projectile_Spawn(entity own, vector org, float sz, float damage, mg_movefunc_t movefunc);
+void MG_Projectile_Explode(entity p);
+float MG_Projectile_CalculateDamage(entity p, entity o);
+
+.float mg_proj_damage;

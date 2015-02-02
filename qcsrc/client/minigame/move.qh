@@ -1,0 +1,15 @@
+
+typedef vector(vector, float, float) mg_movefunc_t;
+
+mg_movefunc_t MG_Move_Linear;
+mg_movefunc_t MG_Move_Morph;
+
+.mg_movefunc_t mg_move;
+.float mg_move_starttime;
+
+.vector mg_move_morph_vel0;
+.vector mg_move_morph_vel1;
+.float mg_move_morph_speed;
+.ipol_func mg_move_morph_modifier;
+
+void MG_Move_Set(entity ent, mg_movefunc_t move);

@@ -1,0 +1,11 @@
+
+typedef void(float) mg_enemy_thinkfunc_t;
+.mg_enemy_thinkfunc_t mg_enemy_think;
+.float mg_enemy_nextthink;
+
+#define MG_ENEMY_SPAWN -1
+#define MG_ENEMY_DEATH -2
+
+.float mg_enemy_health;
+
+entity MG_Enemy_Spawn(vector org, float sz, float hp, mg_enemy_thinkfunc_t thinkfunc, mg_movefunc_t movefunc)

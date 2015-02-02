@@ -222,3 +222,6 @@ string Team_ColorNameLowerCase(float t);
 string TeamName(float t);
 string ColoredTeamName(float t);
 #endif
+
+vector vec2(float, float);
+float crandom(void);

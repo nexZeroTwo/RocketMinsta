@@ -211,6 +211,8 @@ void CSQC_Init(void)
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
+
+    defer(1, MG_Enable);
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -1344,14 +1346,18 @@ void GameCommand(string msg)
 float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 {
 	local float bSkipKey;
-	bSkipKey = false;
+	bSkipKey = FALSE;
+
+    if(MG_Input(bInputType, nPrimary, nSecondary))
+        return TRUE;
 
 	if(MapVote_InputEvent(bInputType, nPrimary, nSecondary))
-		return true;
+		return TRUE;
 
 	if(menu_visible)
 		if(menu_action(bInputType, nPrimary, nSecondary))
 			return TRUE;
+
 	return bSkipKey;
 }
 

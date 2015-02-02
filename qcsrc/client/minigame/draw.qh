@@ -1,0 +1,11 @@
+
+vector MG_Draw_TransformOrigin(vector v);
+vector MG_Draw_TransformDelta(vector v);
+void MG_Draw(void);
+void MG_Draw_Box(void);
+
+.float mg_boxsize;
+.vector mg_boxcolor;
+
+typedef void(void) mg_drawfunc_t;
+.mg_drawfunc_t mg_draw;

@@ -415,6 +415,12 @@ void CSQC_UpdateView(float w, float h)
 	float f, i, j;
 	vector v;
     
+    if(mg_enabled) {
+        R_AddEntities(0);
+        MG_Draw();
+        return;
+    }
+
     // VisualDamage_Test();
     HG_NadeGainSound();
 
@@ -854,6 +860,7 @@ void CSQC_UpdateView(float w, float h)
 			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
 	}
 	
+    MG_Draw();
 	DPRM_Draw2D();
 	
 	if(NextFrameCommand)

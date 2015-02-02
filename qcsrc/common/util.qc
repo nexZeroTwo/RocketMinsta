@@ -1826,3 +1826,11 @@ string TeamName(float t) {
 }
 
 #endif
+
+vector vec2(float f1, float f2) {
+    return '1 0 0' * f1 + '0 1 0' * f2;
+}
+
+float crandom(void) {
+    return 2 * (random() - 0.5);
+}

@@ -739,18 +739,6 @@ vector findbetterlocation (vector org, float mindist)
 
 /*
 ==================
-crandom
-
-Returns a random number between -1.0 and 1.0
-==================
-*/
-float crandom (void)
-{
-	return 2 * (random () - 0.5);
-}
-
-/*
-==================
 Angc used for animations
 ==================
 */

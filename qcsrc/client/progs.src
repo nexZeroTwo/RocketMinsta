@@ -32,6 +32,14 @@ radio.qh
 buffs.qh
 message.qh
 
+minigame.qh
+minigame/draw.qh
+minigame/player.qh
+minigame/familiar.qh
+minigame/move.qh
+minigame/projectile.qh
+minigame/enemy.qh
+
 ../common/damagetracker.qh
 main.qh
 hudskin.qh
@@ -62,6 +70,14 @@ radio.qc
 zapper.qc
 buffs.qc
 message.qc
+
+minigame.qc
+minigame/draw.qc
+minigame/player.qc
+minigame/familiar.qc
+minigame/move.qc
+minigame/projectile.qc
+minigame/enemy.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc
