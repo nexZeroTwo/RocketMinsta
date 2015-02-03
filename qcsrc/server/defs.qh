@@ -352,6 +352,7 @@ float sv_clforceplayermodels;
 float sv_loddistance1;
 float sv_loddistance2;
 .float cvar_cl_gunalign;
+.float gunswitchmode;
 
 .float version_nagtime;
 

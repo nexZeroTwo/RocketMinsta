@@ -779,6 +779,18 @@ void GetCvars(float f)
 	{
 		if (s == "cl_weaponpriority")
 			self.switchweapon = w_getbestweapon(self);
+
+        self.gunswitchmode = bound(0, self.cvar_cl_gunalign, 4);
+
+        if(self.gunswitchmode > 2) {
+            if(!cvar("g_shootfromclient"))
+                self.gunswitchmode = 1;
+            else if(!cvar("g_shootfromeye") && !cvar("g_shootfromcenter") && cvar("g_shootfromclient") < 2)
+                self.gunswitchmode -= 2;
+        }
+
+        if(self.gunswitchmode > 3)
+            self.gunswitchmode = 3;
 	}
 }
 
