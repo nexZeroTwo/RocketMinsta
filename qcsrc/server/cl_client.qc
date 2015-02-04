@@ -2846,12 +2846,14 @@ entity SpectateNext_Yield(entity p) {
 entity SpectatePrev_Yield(entity p) {
     entity o, r;
 
-    do {
-        r = o;
-    } while((o = SpectateNext_Yield_NoLoop(o)) != p);
+    if(MaySpectate(p)) {
+        do {
+            r = o;
+        } while((o = SpectateNext_Yield_NoLoop(o)) != p);
 
-    if(r)
-        return r;
+        if(r)
+            return r;
+    }
 
     do {
         r = o;
