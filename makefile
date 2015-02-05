@@ -19,11 +19,6 @@ pack_menu: base_menu.pk3
 base_menu.pk3: menu.dat
 	$(PK3ZIP) $(PK3ZIPOPTS) base_menu.pk3 menu.dat
 
-build_all: build_menu build_client build_server
-
-build_progs: build_client build_server
-
-
 clean:
 	$(RM) menu.dat server.dat client.dat menu.lno server.lno client.lno base_progs.pk3 base_menu.pk3
 	find -iname '*.log' -exec $(RM) {} \;
