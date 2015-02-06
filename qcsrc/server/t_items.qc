@@ -1286,7 +1286,7 @@ void weapon_defaultspawnfunc(float wpn)
 	//Replaced e.model with _model; "weapons/weaponpickup.wav" with _sound here <akari/>
 	StartItem(_model, _sound, self.respawntime, self.respawntimejitter, e.message, 0, e.weapons, FL_WEAPON, weapon_pickupevalfunc, e.bot_pickupbasevalue);
 	if (self.modelindex) // don't precache if self was removed
-		weapon_action(e.weapon, WR_PRECACHE);
+		weapon_precache(e.weapon);
 }
 
 void spawnfunc_weapon_shotgun (void);
@@ -1821,7 +1821,7 @@ void spawnfunc_target_items (void)
 				{
 					self.weapons |= e.weapons;
 					if(self.spawnflags == 0 || self.spawnflags == 2)
-						weapon_action(e.weapon, WR_PRECACHE);
+						weapon_precache(e.weapon);
 					break;
 				}
 			}
