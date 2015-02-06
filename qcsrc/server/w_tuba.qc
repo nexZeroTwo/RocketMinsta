@@ -92,7 +92,7 @@ void W_Tuba_Attack(float hittype)
 
 void spawnfunc_weapon_tuba (void)
 {
-	if(!sv_cheats && !cvar("developer"))
+	if(!sv_cheats && !cvar("developer") && !self.spawninarena)
 	{
 		print("The @!#%'n Tuba awaits you... not.\n");
 		remove(self);
