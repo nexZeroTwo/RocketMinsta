@@ -13,8 +13,13 @@ void register_weapon_real(float id, float(float) func, float ammotype, float i, 
 	e.message = wname;
 	e.items = ammotype;
 	e.weapon_func = func;
-	e.mdl = modelname;
+#ifdef SVQC
+	e.model = strzone(strcat("models/weapons/g_", weapon_modelname(modelname), ".md3"));
+	e.mdl = strzone(weapon_modelname(modelname));
+#else
 	e.model = strzone(strcat("models/weapons/g_", modelname, ".md3"));
+	e.mdl = modelname;
+#endif
 	e.spawnflags = 0;
 	e.model2 = strzone(strcat("wpn-", e.mdl));
 	if(normalweapon > 0)

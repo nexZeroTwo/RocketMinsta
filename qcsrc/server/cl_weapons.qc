@@ -151,6 +151,15 @@ float weapon_action(float wpn, float wrequest)
 	return (get_weaponinfo(wpn)).weapon_func(wrequest);
 };
 
+string weapon_modelname(string name) {
+	string model_replacement;
+	model_replacement = cvar_string(strcat("sv_model_", name));
+	if (model_replacement == "") {
+		model_replacement = name;
+	}
+	return model_replacement;
+};
+
 string W_Name(float weaponid)
 {
 	return (get_weaponinfo(weaponid)).message;
