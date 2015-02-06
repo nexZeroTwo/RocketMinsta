@@ -359,9 +359,6 @@ float w_zapper(float req) {
             }
         }
     } else if(req == WR_PRECACHE) {
-        precache_model("models/weapons/g_zapper.md3");
-        precache_model("models/weapons/v_zapper.md3");
-        precache_model("models/weapons/h_zapper.dpm");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
         precache_sound("misc/arc1.wav");

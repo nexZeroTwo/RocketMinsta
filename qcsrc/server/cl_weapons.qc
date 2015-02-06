@@ -160,6 +160,14 @@ string weapon_modelname(string name) {
 	return model_replacement;
 };
 
+void weapon_precache(float wpn) {
+	string s = get_weaponinfo(wpn).mdl;
+	precache_model(strcat("models/weapons/g_", s, ".md3"));
+	precache_model(strcat("models/weapons/v_", s, ".md3"));
+	precache_model(strcat("models/weapons/h_", s, ".dpm"));
+	(get_weaponinfo(wpn)).weapon_func(WR_PRECACHE);
+};
+
 string W_Name(float weaponid)
 {
 	return (get_weaponinfo(weaponid)).message;

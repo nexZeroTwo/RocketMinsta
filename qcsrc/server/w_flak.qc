@@ -290,9 +290,6 @@ float w_flak(float req) {
             weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_flak_secondary_animtime"), w_ready);
         }
     } else if(req == WR_PRECACHE) {
-        precache_model("models/weapons/g_flak.md3");
-        precache_model("models/weapons/v_flak.md3");
-        precache_model("models/weapons/h_flak.dpm");
         precache_sound("weapons/flak_fire.wav");
         precache_sound("weapons/flak_fire2.wav");
         precache_sound("weapons/flak_fire3.wav");
