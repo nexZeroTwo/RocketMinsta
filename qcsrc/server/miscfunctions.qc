@@ -983,10 +983,10 @@ void readplayerstartcvars()
         s = cvar_string("g_clanarena_start_weapons");
         if(s == "0")
             s = cvar_string("g_weaponarena");
-    } else {
-        s = cvar_string("g_weaponarena");
         if(s == "0")
             s = "most";
+    } else {
+        s = cvar_string("g_weaponarena");
     }
     
     if(s == "0")
