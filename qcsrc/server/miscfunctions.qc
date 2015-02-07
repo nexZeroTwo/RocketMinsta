@@ -999,7 +999,7 @@ void readplayerstartcvars()
         {
             e = get_weaponinfo(j);
             g_weaponarena |= e.weapons;
-            weapon_action(e.weapon, WR_PRECACHE);
+            weapon_precache(e.weapon);
         }
     }
     else if (s == "most")
@@ -1011,7 +1011,7 @@ void readplayerstartcvars()
             if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
             {
                 g_weaponarena |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1033,7 +1033,7 @@ void readplayerstartcvars()
                 if (e.netname == s)
                 {
                     g_weaponarena |= e.weapons;
-                    weapon_action(e.weapon, WR_PRECACHE);
+                    weapon_precache(e.weapon);
                     g_weaponarena_list = strcat(g_weaponarena_list, e.message, " & ");
                     break;
                 }
@@ -1062,7 +1062,7 @@ void readplayerstartcvars()
         // will be done later
         for (i = WEP_FIRST; i <= WEP_LAST; ++i)
             if (NixNex_CanChooseWeapon(i))
-                weapon_action(i, WR_PRECACHE);
+                weapon_precache(i);
         if(!cvar("g_use_ammunition"))
         	start_items |= IT_UNLIMITED_AMMO;
     }
@@ -1106,7 +1106,7 @@ void readplayerstartcvars()
         start_health = 100;
         start_armorvalue = 0;
         start_weapons = WEPBIT_MINSTANEX;
-        weapon_action(WEP_MINSTANEX, WR_PRECACHE);
+        weapon_precache(WEP_MINSTANEX);
         start_ammo_cells = cvar("g_minstagib_ammo_start");
         g_minstagib_invis_alpha = cvar("g_minstagib_invis_alpha");
         start_ammo_fuel = cvar("g_start_ammo_fuel");
@@ -1173,7 +1173,7 @@ void readplayerstartcvars()
             if (t)
             {
                 start_weapons |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1211,7 +1211,7 @@ void readplayerstartcvars()
                     if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
                     {
                         warmup_start_weapons |= e.weapons;
-                        weapon_action(e.weapon, WR_PRECACHE);
+                        weapon_precache(e.weapon);
                     }
                 }
             }
@@ -1866,7 +1866,7 @@ void precache()
         wep = WEP_FIRST;
         while (wep <= WEP_LAST)
         {
-            weapon_action(wep, WR_PRECACHE);
+            weapon_precache(wep);
             wep = wep + 1;
         }
     }
