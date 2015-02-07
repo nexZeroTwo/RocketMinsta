@@ -1178,19 +1178,26 @@ void JB_ControlPoint_Touch() {
     }
     
     entity cp;
-    if(self.team != JB_TEAM_NEUTRAL) FOR_EACH_JB_CONTROLPOINT(cp)
+    if(self.team != JB_TEAM_NEUTRAL) FOR_EACH_JB_CONTROLPOINT(cp) {
         if(cp.team == JB_TEAM_NEUTRAL) if(cp.jb_unlock_progress) if(cp.jb_capturingplayer.team == other.team) {
             other.jb_message = JBMSG_CAPPINGNEUTRAL;
             break;
         }
+    }
     
     if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL) {
+        // this function seems to be called at least two times per frame
+        // we can't just rely on frametime
+        float deltatime = min(frametime, time - self.jb_unlock_lasttime);
+
         float rate = cvar("g_jailbreak_controlpoint_unlock_speed");
         if(other.hg_shield)
             rate *= cvar("g_nadgets_shield_progressrate");
         
-        self.jb_unlock_progress = bound(0, self.jb_unlock_progress + frametime * rate, 1);
+        self.jb_unlock_progress = bound(0, self.jb_unlock_progress + deltatime * rate, 1);
+        self.jb_unlock_lasttime = time;
     }
+
 	self.pointupdatetime = time;
     self.jb_capturingplayer = other;
 	other.jb_unlock_progress = self.jb_unlock_progress;
