@@ -263,7 +263,7 @@ void JB_Imprison(entity attacker) {
 }
 
 float JB_AliveCheck(entity p) {
-    return !p.jb_isprisoned;
+    return p.deadflag == DEAD_NO && !p.jb_isprisoned;
 }
 
 void JB_TorturePrisonersLater_Think() {
@@ -642,15 +642,16 @@ float JB_PlayerDies(entity frag_attacker) {
 			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_jailbreak_penalty_teamkill"));
 		}
 		
-		Boobs_DropAllAndRespawn(frag_force);
-		JB_Imprison(frag_attacker);
+        self.jb_isprisoned = TRUE;
         AloneWarning(self.team, JB_AliveCheck);
+        self.jb_isprisoned = FALSE;
 	} else {
 		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
+        return 1;
 	}
 	
-	return 1;
+	return 0;
 }
 
 void JB_PlayerSpawn() {
