@@ -1882,6 +1882,7 @@ entity HG_Bait_Create(entity ref) {
     w.angles = '0 0 0';
     w.effects = body.effects | EF_LOWPRECISION;
     w.effects = w.effects & EFMASK_CHEAP;
+    w.colormap = ref.exteriorweaponentity.colormap;
     setmodel(w, ref.exteriorweaponentity.model);
     
     float tag_found;
