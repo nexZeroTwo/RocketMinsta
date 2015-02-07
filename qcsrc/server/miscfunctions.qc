@@ -1046,10 +1046,12 @@ void readplayerstartcvars()
 		g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
 	}
 
-	if(g_weaponarena)
+	if(g_weaponarena) {
 		g_weaponarena_random = cvar("g_weaponarena_random");
-	else
+	} else {
 		g_weaponarena_random = 0;
+        g_weaponarena_limitammo = 0;
+    }
     
     if (g_clanarena) {
         start_health = cvar("g_clanarena_start_health");

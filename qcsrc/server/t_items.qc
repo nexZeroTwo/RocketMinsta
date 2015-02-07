@@ -903,7 +903,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 			remove(self);
 			return;
 		}
-		else if (g_weaponarena && ((weaponid & WEPBIT_ALL) || (itemid & IT_AMMO)) && !self.spawninarena)
+		else if (g_weaponarena && ((weaponid & WEPBIT_ALL) || (itemid & IT_AMMO)) && !self.spawninarena && g_weaponarena_limitammo < 2)
 		{
 			startitem_failed = TRUE;
 			remove(self);
@@ -1141,6 +1141,11 @@ void minst_remove_item (void) {
 float weaponswapping;
 float internalteam;
 
+spawnfunc_t spawnfunc_item_shells;
+spawnfunc_t spawnfunc_item_cells;
+spawnfunc_t spawnfunc_item_bullets;
+spawnfunc_t spawnfunc_item_rockets;
+
 void weapon_defaultspawnfunc(float wpn)
 {
 	entity e;
@@ -1149,6 +1154,23 @@ void weapon_defaultspawnfunc(float wpn)
 	string s;
 	entity oldself;
 	float i, j;
+
+    if(g_weaponarena_limitammo == 2 && self.classname != "droppedweapon") {
+        entity info = get_weaponinfo(wpn);
+
+        if(info.items & IT_SHELLS)
+            spawnfunc_item_shells();
+        else if(info.items & IT_CELLS)
+            spawnfunc_item_cells();
+        else if(info.items & IT_NAILS)
+            spawnfunc_item_bullets();
+        else if(info.items & IT_ROCKETS)
+            spawnfunc_item_rockets();
+        else
+            remove(self);
+
+        return;
+    }
 
 	// set the respawntime in advance (so replaced weapons can copy it)
 	
