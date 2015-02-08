@@ -600,8 +600,8 @@ void PostInit(void)
 	
 	localcmd("alias afk \"cmd afk\"\n");
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
-    localcmd("alias vinvite \"cmd vote invite $*\"");
-    
+    localcmd("alias vinvite \"cmd vote invite $*\"\n");
+
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
