@@ -899,8 +899,8 @@ float GameCommand_Generic(string command)
             if(isfunction(s))
                 callfunction(s);
             else {
-                setsize(self, self.mins, self.maxs);
                 setmodel(self, self.model);
+                setsize(self, self.mins, self.maxs);
                 
                 #ifdef SVQC
                 if(self.fade_time)
