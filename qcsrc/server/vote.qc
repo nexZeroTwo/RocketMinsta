@@ -566,8 +566,7 @@ float GameCommand_Vote(string s, entity e) {
                         votecalledvote = strzone(srv);
                         votecalledvote_display = a;
 
-                        string tail;
-                        if(argv(2) != srv)
+                        if(a != srv)
                             votecalledvote_display = strcat(votecalledvote_display, " (^5", srv, "^1)");
                         
                         votecalledvote_display = strzone(votecalledvote_display);
