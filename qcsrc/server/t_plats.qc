@@ -1217,13 +1217,16 @@ void spawnfunc_func_door()
     if(self.dmg && (!self.message2))
 		self.message2 = "was squished by";
 
-	if (self.sounds > 0)
-	{
-		precache_sound ("plats/medplat1.wav");
-		precache_sound ("plats/medplat2.wav");
+	if(self.sounds > 0) {
 		self.noise2 = "plats/medplat1.wav";
 		self.noise1 = "plats/medplat2.wav";
 	}
+
+    if(self.noise1)
+        precache_sound(self.noise1);
+
+    if(self.noise2)
+        precache_sound(self.noise2);
 
 	if (!self.speed)
 		self.speed = 100;
