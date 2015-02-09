@@ -45,7 +45,9 @@ void Projectile_DrawTrail(vector to)
                 to_z += 1;
                 break;
             case PROJECTILE_HG_TRANSLOC:
-				return;
+                to = from = self.origin;
+                to_z += 1;
+				break;
 			case PROJECTILE_ELECTRO:
                 trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
                 break;
@@ -246,13 +248,16 @@ void Projectile_Draw()
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
 		case PROJECTILE_HG_GENERIC:
+        case PROJECTILE_HG_NAPALM:
+            trailorigin += v_right * 1 + v_forward * -10;
+
         case PROJECTILE_HG_PLASMA:
-		case PROJECTILE_HG_NAPALM:
         case PROJECTILE_HG_TRANSLOC:
         case PROJECTILE_HG_REMOTE:
         case PROJECTILE_HG_LASER:
-			trailorigin += v_right * 1 + v_forward * -10;
+			trailorigin += v_forward * -10;
 			break;
+
 		default:
 			break;
 	}
