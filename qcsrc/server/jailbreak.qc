@@ -1,4 +1,6 @@
 
+// NOTE: Maps where different control points are used to unlock different jails of the same team are currently BROKEN!
+
 //
 //	Initialization
 //
@@ -278,7 +280,7 @@ void JB_TorturePrisonersLater(float theteam, float thedelay) {
 	e.nextthink = time + thedelay;
 }
 
-void JB_Release(entity saviour) {
+void JB_Release(void) {
 	if(!self.jb_isprisoned) {
 		JB_Log(strcat("Tried to release a free player (", self.netname, ")"));
 		return;
@@ -646,7 +648,6 @@ float JB_PlayerDies(entity frag_attacker) {
         AloneWarning(self.team, JB_AliveCheck);
         self.jb_isprisoned = FALSE;
 	} else {
-		JB_Log(strcat("Prisoned player ", self.netname, " ^7just died. Should this really happen?"));
 		PutClientInServer();
         return 1;
 	}
@@ -684,7 +685,7 @@ void JB_RemovePlayer() {
 	DEPENDON(g_jailbreak)
 	
 	if(self.jb_isprisoned && !self.jb_specteam)
-		JB_Release(world);
+		JB_Release();
 	
 	self.jb_roundlost = FALSE;
     JB_CountPlayers();
@@ -731,12 +732,9 @@ void JB_PlayerPreThink() {
     if(time - self.jb_prisontime < 0.5)
         return;
     
-    if(self.jb_isprisoned == 1) {
-        print("^1BUG: ^7", self.netname, " ^7somehow got out of jail without touching the jail sector! Trying to put him back in.\n");
-        JB_TeleportToJail(self);
-    } else if(self.jb_isprisoned)
-        if(time > self.jb_jail_resettime)
-            JB_Release(self.jb_saviour);
+    if(self.jb_isprisoned)
+        if(time > self.jb_jail_resettime || JB_JailIsOpen(JB_GetEnemyTeamOf(self.team)))
+            JB_Release();
 }
 
 //
@@ -872,6 +870,9 @@ void JB_SetupJailSpawnpoint() {
 void JB_Jail_Touch() {
     //JB_Log(strcat(other.netname, "^7 is in the ", ColoredTeamName(self.team), " ^7jail"));
     
+    if(JB_JailIsOpen(self.team))
+        return;
+
     if(g_nadgets)
     if(other.hg_type == HG_TRANSLOC)
     if(other.classname == "hg_grenade") {
@@ -886,12 +887,10 @@ void JB_Jail_Touch() {
 		return;
 	
 	if not(other.jb_isprisoned) {
-		other.velocity = other.velocity * -1.5;
+        Damage(other, self, self, 1000000, DEATH_HURTTRIGGER, other.origin, '0 0 0');
 		return;
 	}
 	
-    other.jb_isprisoned = 2;
-    
 	if(other.team == self.team)
 		return;
 	

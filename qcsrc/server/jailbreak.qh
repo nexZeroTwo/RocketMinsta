@@ -60,9 +60,6 @@ void JB_RemovePlayer();
 .float jb_had_unlimited_ammo;
 .float jb_specteam;
 
-.entity jb_prisonedby;
-.entity jb_prisoned_by;
-.entity jb_saviour;
 .entity jb_waypoint;
 .entity jb_capturingplayer;
 .entity jb_jailspec_proxy;
