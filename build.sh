@@ -325,7 +325,7 @@ function buildqc
     local sum=""
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
-        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
         
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
