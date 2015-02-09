@@ -338,18 +338,6 @@ void Net_ReadNexgunBeamParticle()
 	else
 		trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
 
-    vector diff = endpos - shotorg;
-    vector dir = normalize(diff);
-    vector o = shotorg;
-
-    float steplen = 20;
-    vector step = dir * steplen;
-    float maxlen = vlen(diff);
-    float i;
-
-    vectorvectors(dir);
-
-    vector prev = o;
     float eff;
 
     switch(theteam) {
@@ -360,11 +348,6 @@ void Net_ReadNexgunBeamParticle()
         default:          eff = particleeffectnum("TE_TEI_G3");       break;
     }
 
-    for(i = 0; i < maxlen; i += steplen, o += step) {
-        float x = 0.015 * i;
-        vector n = o + 10 * (v_up * sin(x) + v_right * cos(x));
-        trailparticles(world, eff, prev, n);
-        prev = n;
-    }
+    spiralparticles(world, eff, shotorg, endpos, 10, time, 0.015, 20);
 }
 
