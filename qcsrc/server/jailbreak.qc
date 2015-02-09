@@ -1092,6 +1092,15 @@ string JB_ControlPoint_Name(entity p) {
     return strcat(clr, strdecolorize(p.netname), end);
 }
 
+string JB_ControlPoint_WaypointName(entity p) {
+    string id = chr2str(str2chr("A", 0) + p.cnt);
+
+    if(p.netname)
+        return strcat(id, ": ", strdecolorize(p.netname));
+
+    return strcat("Point ", id);
+}
+
 void JB_ControlPoint_Capture(entity player) {
     entity e;
     float pc;
@@ -1281,7 +1290,7 @@ void JB_SetupControlPoint() {
 	waypoint_spawnforitem_force(self, self.origin);
 	self.nearestwaypointtimeout = 0; // activate waypointing again
 	self.basewaypoint = self.nearestwaypoint;
-	WaypointSprite_SpawnFixed(strcat("Point ", chr2str(str2chr("A", 0) + jb_cp_num)), self.origin + '0 0 37', self, jb_waypoint);
+	WaypointSprite_SpawnFixed(JB_ControlPoint_WaypointName(self), self.origin + '0 0 37', self, jb_waypoint);
     self.jb_waypoint.ownerteam = self.team;
     self.jb_waypoint.SendFlags |= 1;
 	WaypointSprite_UpdateTeamRadar(self.jb_waypoint, RADARICON_FLAG, colormapPaletteColor(self.team - 1, FALSE));
