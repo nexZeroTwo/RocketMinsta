@@ -92,8 +92,8 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     vector beampos;
     string snd;
     entity pseudoprojectile;
-    float f, ffs;
     entity pts, hitents;
+    float f;
 
     railgun_start = start;
     railgun_end = end;
@@ -147,12 +147,38 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 
         hitloc = ent.tracerail_endpos;
 
-        f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
-        ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
+        float tdamage = bdamage;
+        vector tforce = force;
+
+        float dst = (hitloc - start) * dir;
+
+        tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
+        tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
+
+        if(deathtype == WEP_NEX) {
+            float maxdst = cvar("g_balance_nex_damagefalloff_linear_maxdist");
+
+            if(maxdst) {
+                float steps = cvar("g_balance_nex_damagefalloff_linear_steps") - 1;
+                float mindmgfactor = cvar("g_balance_nex_damagefalloff_linear_mindamagefactor");
+                float minfrcfactor = cvar("g_balance_nex_damagefalloff_linear_minforcefactor");
+
+                f = min(dst, maxdst) / maxdst;
+
+                if(steps > 0)
+                    f = floor(steps * f) / steps;
+
+                tdamage = tdamage * mindmgfactor + tdamage * (1 - mindmgfactor) * f;
+                tforce = tforce * minfrcfactor + tforce * (1 - minfrcfactor) * f;
+
+                if(cvar("g_balance_nex_damagefalloff_linear_floor"))
+                    tdamage = floor(tdamage);
+            }
+        }
 
         // apply the damage
         if(ent.takedamage)
-            Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
+            Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
     }
 
     Buffs_MEODP_Hitscan_End(pts);
