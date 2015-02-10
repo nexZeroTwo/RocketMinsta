@@ -1449,6 +1449,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteShort(MSG_ENTITY, sv_nicehealth);
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
+    WriteByte(MSG_ENTITY, cvar("g_balance_nex_secondary"));
 	return TRUE;
 }
 

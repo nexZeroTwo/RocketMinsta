@@ -1858,6 +1858,7 @@ void Ent_Init()
     sv_nicehealth = ReadShort();
     sv_showacc = ReadByte();
     g_buffs_enabled = ReadShort();
+    g_balance_nex_secondary = ReadByte();
 
     Buffs_LoadModels();
 
