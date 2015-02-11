@@ -1,4 +1,4 @@
-void SendCSQCNexBeamParticle() {
+void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte(MSG_BROADCAST, TE_CSQC_NEXGUNBEAMPARTICLE);
 
@@ -8,6 +8,8 @@ void SendCSQCNexBeamParticle() {
 	WriteCoord(MSG_BROADCAST, trace_endpos_x);
 	WriteCoord(MSG_BROADCAST, trace_endpos_y);
 	WriteCoord(MSG_BROADCAST, trace_endpos_z);
+    WriteByte(MSG_BROADCAST, theteam);
+    WriteByte(MSG_BROADCAST, secondary);
 }
 
 void W_Nex_Attack (void)
@@ -15,10 +17,10 @@ void W_Nex_Attack (void)
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	W_SetupShot (self, TRUE, 5, "weapons/nexfire.wav", cvar("g_balance_nex_damage"));
+	W_SetupShot(self, TRUE, 5, "weapons/nexfire.wav", cvar("g_balance_nex_damage"));
 
 	yoda = 0;
-	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_damage"), cvar("g_balance_nex_force"), cvar("g_balance_nex_damagefalloff_mindist"), cvar("g_balance_nex_damagefalloff_maxdist"), cvar("g_balance_nex_damagefalloff_halflife"), cvar("g_balance_nex_damagefalloff_forcehalflife"), WEP_NEX);
+	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_damage"), cvar("g_balance_nex_force"), cvar("g_balance_nex_damagefalloff_mindist"), cvar("g_balance_nex_damagefalloff_maxdist"), cvar("g_balance_nex_damagefalloff_halflife"), cvar("g_balance_nex_damagefalloff_forcehalflife"), WEP_NEX);
 
 	if(yoda && flying)
 		announce(self, "yoda.wav");
@@ -26,7 +28,7 @@ void W_Nex_Attack (void)
     W_SetHitscanVisuals(self, trace_endpos);
 
 	//beam and muzzle flash done on client
-	SendCSQCNexBeamParticle();
+	SendCSQCNexBeamParticle(self.team, FALSE);
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
@@ -34,6 +36,33 @@ void W_Nex_Attack (void)
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_cells = self.ammo_cells - cvar("g_balance_nex_ammo");
+}
+
+void W_Nex_Attack2(void) {
+    float flying;
+    flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
+
+    W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", cvar("g_balance_nex_secondary_damage"));
+
+    yoda = 0;
+    FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_secondary_damage"), cvar("g_balance_nex_secondary_force"), cvar("g_balance_nex_secondary_damagefalloff_mindist"), cvar("g_balance_nex_secondary_damagefalloff_maxdist"), cvar("g_balance_nex_secondary_damagefalloff_halflife"), cvar("g_balance_nex_secondary_damagefalloff_forcehalflife"), WEP_NEX | HITTYPE_SECONDARY);
+
+    if(yoda && flying)
+        announce(self, "announcer/male/yoda.wav");
+
+    W_SetHitscanVisuals(self, trace_endpos);
+
+    //beam and muzzle flash done on client
+    SendCSQCNexBeamParticle(self.team, TRUE);
+    
+    // flash and burn the wall
+    if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
+        Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_secondary_damage"), 0, 0, cvar("g_balance_nex_secondary_force") * w_shotdir, WEP_NEX, self);
+
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+        self.ammo_cells = self.ammo_cells - cvar("g_balance_nex_secondary_ammo");
+
+    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_secondary_animtime"), w_ready);
 }
 
 void spawnfunc_weapon_nex (void); // defined in t_items.qc
@@ -45,25 +74,29 @@ float w_nex(float req)
 		self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		{
-			if (weapon_prepareattack(0, cvar("g_balance_nex_refire")))
-			{
-				W_Nex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_animtime"), w_ready);
-			}
-		}
+        if(self.BUTTON_ATCK) {
+            if(weapon_prepareattack(0, cvar("g_balance_nex_refire"))) {
+                W_Nex_Attack();
+                weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_animtime"), w_ready);
+            }
+        }
+
+        if(self.BUTTON_ATCK2 && cvar("g_balance_nex_secondary")) {
+            if(weapon_prepareattack(0, cvar("g_balance_nex_secondary_refire"))) {
+                sound(self, CHAN_WEAPON, "weapons/fireball_prefire2.wav", VOL_BASE, ATTN_NORM);
+                weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_nex_secondary_chargetime"), W_Nex_Attack2);
+            }
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/nexflash.md3");
-		precache_model ("models/weapons/g_nex.md3");
-		precache_model ("models/weapons/v_nex.md3");
-		precache_model ("models/weapons/h_nex.dpm");
-		precache_sound ("weapons/nexfire.wav");
-		precache_sound ("weapons/nexwhoosh1.wav");
-		precache_sound ("weapons/nexwhoosh2.wav");
-		precache_sound ("weapons/nexwhoosh3.wav");
+		precache_model("models/nexflash.md3");
+		precache_sound("weapons/nexfire.wav");
+		precache_sound("weapons/nexwhoosh1.wav");
+		precache_sound("weapons/nexwhoosh2.wav");
+		precache_sound("weapons/nexwhoosh3.wav");
+        precache_sound("weapons/rm_minsta.wav");
+        precache_sound("weapons/fireball_prefire2.wav");
 	}
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_NEX);

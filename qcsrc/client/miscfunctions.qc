@@ -629,3 +629,25 @@ float rm_particleeffectnum(string p) {
 }
 
 #define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
+
+void spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
+    vector diff = end - start;
+    vector dir = normalize(diff);
+    vector o = start;
+
+    vector step = dir * steplen;
+    float maxlen = vlen(diff);
+    float i;
+
+    vectorvectors(dir);
+
+    vector prev = o + dist * (v_up * sin(phase) + v_right * cos(phase));
+
+    for(i = 0; i < maxlen; i += steplen, o += step) {
+        float x = freq * (i + steplen) + phase;
+        vector n = o + dist * (v_up * sin(x) + v_right * cos(x));
+        trailparticles(ent, effectnum, prev, n);
+        prev = n;
+    }
+}
+

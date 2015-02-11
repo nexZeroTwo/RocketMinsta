@@ -92,8 +92,8 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     vector beampos;
     string snd;
     entity pseudoprojectile;
-    float f, ffs;
     entity pts, hitents;
+    float f;
 
     railgun_start = start;
     railgun_end = end;
@@ -116,7 +116,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     endq3surfaceflags = trace_dphitq3surfaceflags;
 
     // Find all non-hit players the beam passed close by
-    if(deathtype == WEP_MINSTANEX || deathtype == WEP_NEX) {
+    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
         if(msg_entity != self)
         if not(msg_entity.tracerail_hit)
@@ -147,12 +147,53 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 
         hitloc = ent.tracerail_endpos;
 
-        f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
-        ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
+        float tdamage = bdamage;
+        vector tforce = force;
+
+        float dst = (hitloc - start) * dir;
+
+        tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
+        tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
+
+        if(DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+            float maxdst;
+
+            if(deathtype & HITTYPE_SECONDARY)
+                maxdst = cvar("g_balance_nex_secondary_damagefalloff_linear_maxdist");
+            else
+                maxdst = cvar("g_balance_nex_damagefalloff_linear_maxdist");
+
+            if(maxdst) {
+                float steps, mindmgfactor, minfrcfactor, flr;
+
+                if(deathtype & HITTYPE_SECONDARY) {
+                    steps = cvar("g_balance_nex_secondary_damagefalloff_linear_steps") - 1;
+                    mindmgfactor = cvar("g_balance_nex_secondary_damagefalloff_linear_mindamagefactor");
+                    minfrcfactor = cvar("g_balance_nex_secondary_damagefalloff_linear_minforcefactor");
+                    flr = cvar("g_balance_nex_secondary_damagefalloff_linear_floor");
+                } else {
+                    steps = cvar("g_balance_nex_damagefalloff_linear_steps") - 1;
+                    mindmgfactor = cvar("g_balance_nex_damagefalloff_linear_mindamagefactor");
+                    minfrcfactor = cvar("g_balance_nex_damagefalloff_linear_minforcefactor");
+                    flr = cvar("g_balance_nex_damagefalloff_linear_floor");
+                }
+
+                f = min(dst, maxdst) / maxdst;
+
+                if(steps > 0)
+                    f = floor(steps * f) / steps;
+
+                tdamage = tdamage * mindmgfactor + tdamage * (1 - mindmgfactor) * f;
+                tforce = tforce * minfrcfactor + tforce * (1 - minfrcfactor) * f;
+
+                if(flr)
+                    tdamage = floor(tdamage);
+            }
+        }
 
         // apply the damage
         if(ent.takedamage)
-            Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
+            Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
     }
 
     Buffs_MEODP_Hitscan_End(pts);

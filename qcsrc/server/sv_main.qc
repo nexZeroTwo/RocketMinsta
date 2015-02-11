@@ -341,9 +341,16 @@ void StartFrame (void)
 .vector originjitter;
 .vector anglesjitter;
 .float anglejitter;
+.string gametypefilter;
 .string cvarfilter;
 void SV_OnEntityPreSpawnFunction()
 {
+	if(self.gametypefilter != "")
+	if not(isGametypeInFilter(game, teams_matter, self.gametypefilter))
+	{
+		remove(self);
+		return;
+	}
 	if(self.cvarfilter != "")
 	{
 		float n, i, o, inv;

@@ -20,14 +20,18 @@ float IRC_CheckSession(float s) {
         }
 
         if(!irc || time >= irc_reconnect_time) {
-            if(IRC_ConnectSession(s,
+            float err = IRC_ConnectSession(s,
                 cvar_string("sv_ircbot_server"),
                 cvar("sv_ircbot_server_port"),
                 cvar_string("sv_ircbot_server_password"),
                 cvar_string("sv_ircbot_nick"),
                 cvar_string("sv_ircbot_user"),
                 cvar_string("sv_ircbot_realname")
-            ) == IRC_ERR_STATE)
+            );
+
+            if(!err)
+                irc_was_connected = TRUE;
+            else if(err == IRC_ERR_STATE)
                 IRC_TerminateSession(s);
         }
     } else
@@ -83,7 +87,10 @@ void IRC_UpdateTopic(void) {
     else if(totalclients == maxclients && cvar("sv_ircbot_update_topic_serverfull"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
-    IRC_Topic(irc.cnt, irc.target, s);
+    if(cvar_string("_sv_ircbot_lasttopic") != IRC_DP2IRC(s) || irc.skin > 1) {
+        IRC_Topic(irc.cnt, irc.target, s);
+    }
+
     irc.skin = 0;
 }
 
@@ -128,6 +135,7 @@ void IRC_Init(void) {
     registercvar("_sv_ircbot_session", "-1");
     registercvar("_sv_ircbot_joinlog", "");
     registercvar("_sv_ircbot_msgsent", "0");
+    registercvar("_sv_ircbot_lasttopic", "");
     
     s = IRC_CheckSession(cvar("_sv_ircbot_session"));
     
@@ -429,8 +437,21 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "NICK") {
         if(cvar("sv_ircbot_announce_irc_nick"))
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7is now known as ^3", argv(0), "\n");
+    } else if(event == "TOPIC") {
+        if(strtolower(argv(0)) == irc.target) {
+            cvar_set("_sv_ircbot_lasttopic", argv(1));
+
+            if(nick != IRC_CurrentNick(handle))
+                IRC_UpdateTopic();
+        }
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
         IRC_ChangeNick(handle, strcat(argv(1), "`"));
+    } else if(numeric == IRC_RFC_RPL_TOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", argv(2));
+    } else if(numeric == IRC_RFC_RPL_NOTOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", "");
     }
 }
 

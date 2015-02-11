@@ -5574,7 +5574,11 @@ void Sbar_Draw(void)
 			{
 				o2 = Sbar_DrawCenterNoteLine(o2, "");
 
-				s = strcat("^2Vote now! ^1", vote_called_vote);
+                if(vote_invite)
+                    s = strcat("^2You are invited to ^1", vote_called_vote);
+                else
+                    s = strcat("^2Vote now! ^1", vote_called_vote);
+
 				o2 = Sbar_DrawCenterNoteLine(o2, s);
 
 				/*s = strcat(blinkcolor, "Press ^3", getcommandkey("vote yes", "vyes"), blinkcolor, " to accept");
@@ -5586,19 +5590,31 @@ void Sbar_Draw(void)
 				s = strcat(blinkcolor, "Press ^3", getcommandkey("vote abstain", "vabstain"), blinkcolor, " to abstain");
 				o = Sbar_DrawNoteLine(o, s);*/
 
-				s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to accept, ^3", getcommandkey("vote no", "vno"), "^2 to reject");
+                if(vote_invite)
+                    s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to go, ^3", getcommandkey("vote no", "vno"), "^2 to stay");
+                else
+                    s = strcat("^3", getcommandkey("vote yes", "vyes"), "^2 to accept, ^3", getcommandkey("vote no", "vno"), "^2 to reject");
+
 				o2 = Sbar_DrawCenterNoteLine(o2, s);
 
-				s = vote_statstring;
-				o2 = Sbar_DrawCenterNoteLine(o2, s);
+                if(!vote_invite) {
+                    s = vote_statstring;
+                    o2 = Sbar_DrawCenterNoteLine(o2, s);
+                }
 			}
 			else
 			{
-				s = strcat("^2Vote: ^1", vote_called_vote);
+                if(vote_invite)
+                    s = strcat("^2Invitation: ^1", vote_called_vote);
+                else
+                    s = strcat("^2Vote: ^1", vote_called_vote);
+
 				o = Sbar_DrawNoteLine(o, s);
 
-				s = vote_statstring;
-				o = Sbar_DrawNoteLine(o, s);
+                if(!vote_invite) {
+                    s = vote_statstring;
+                    o = Sbar_DrawNoteLine(o, s);
+                }
 			}
 		}
 	#ifdef RM_SUPPORT_VOTEGFX
@@ -5640,14 +5656,22 @@ void Sbar_Draw(void)
 
 			vector voteorigin; // = bottomright - '290 135 0';
 
-			if(vote_highlighted)
+			if(vote_highlighted || !vote_waiting_for_me)
 			{
-				s = strcat(ftos(vote_needed), " votes required");
+                if(vote_invite)
+                    s = "Invitation";
+                else
+                    s = strcat(ftos(vote_needed), " votes required");
+
 				voteorigin = bottomright - '290 135 0';
 			}
 			else
 			{
-				s = strcat("Vote now! ", getcommandkey("vote yes", "vyes"), " to accept, ", getcommandkey("vote no", "vno"), " to reject");
+                if(vote_invite)
+                    s = strcat("^3Invitation!^7 ", getcommandkey("vote yes", "vyes"), " to ^2go^7, ", getcommandkey("vote no", "vno"), " to ^1stay");
+                else
+                    s = strcat("^3Vote now!^7 ", getcommandkey("vote yes", "vyes"), " to ^2accept^7, ", getcommandkey("vote no", "vno"), " to ^1reject");
+
 				voteorigin_x = vid_conwidth / 2 - 145;
 				voteorigin_y = vid_conheight * 0.5 + vid_conheight/4 - 37;
 			}
@@ -5656,34 +5680,42 @@ void Sbar_Draw(void)
 			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
 
 
-			drawstring_svn(voteorigin + '0.5 0 0' * votesize_x + '0 0.1 0' * votesize_y - '1 0 0' * stringwidth_svn(s, FALSE, '6 0 0'), s, '12 12 0', '1 1 1', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			s = textShortenToWidth_svn(vote_called_vote, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
+			drawcolorcodedstring(voteorigin + '0.5 0 0' * votesize_x + '0 0.125 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '6 0 0'), s, '12 12 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+            if(vote_invite)
+                s = strcat("Go to server: ^1", vote_called_vote);
+            else
+                s = vote_called_vote;
+
+			s = textShortenToWidth_svn(s, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
 			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-			// print the yes/no counts
-			s = strcat("Yes: ", ftos(vote_yescount));
-			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			s = strcat("No: ", ftos(vote_nocount));
-			drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth_svn(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+            if(!vote_invite) {
+                // print the yes/no counts
+                s = strcat("Yes: ", ftos(vote_yescount));
+                drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                s = strcat("No: ", ftos(vote_nocount));
+                drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth_svn(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-			// draw the progress bars
-			drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5 * (vote_yescount/vote_needed), votesize_y);
-			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                // draw the progress bars
+                drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5 * (vote_yescount/vote_needed), votesize_y);
+                drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-			drawsetcliparea(voteorigin_x + votesize_x - votesize_x * 0.5 * (vote_nocount/vote_needed), voteorigin_y, votesize_x * 0.5, votesize_y);
-			drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                drawsetcliparea(voteorigin_x + votesize_x - votesize_x * 0.5 * (vote_nocount/vote_needed), voteorigin_y, votesize_x * 0.5, votesize_y);
+                drawpic(voteorigin, "gfx/hud/voteprogress_prog", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-			// draw the highlights
-			if(vote_highlighted == 1) {
-				drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5, votesize_y);
-				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			}
-			else if(vote_highlighted == 2) {
-				drawsetcliparea(voteorigin_x + 0.5 * votesize_x, voteorigin_y, votesize_x * 0.5, votesize_y);
-				drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
-			}
+                // draw the highlights
+                if(vote_highlighted == 1) {
+                    drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5, votesize_y);
+                    drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                }
+                else if(vote_highlighted == 2) {
+                    drawsetcliparea(voteorigin_x + 0.5 * votesize_x, voteorigin_y, votesize_x * 0.5, votesize_y);
+                    drawpic(voteorigin, "gfx/hud/voteprogress_voted", votesize, '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                }
 
-			drawresetcliparea();
+                drawresetcliparea();
+            }
 		}
 		else if(!vote_active) {
 			vote_highlighted = 0;
@@ -5735,14 +5767,14 @@ void Sbar_Draw(void)
 }
 
 // CTF HUD
-//float redflag_prevframe, blueflag_prevframe; // status during previous frame
+float redflag_prevframe, blueflag_prevframe; // status during previous frame
 float redflag_prevstatus, blueflag_prevstatus; // last remembered status
 float redflag_statuschange_time, blueflag_statuschange_time; // time when the status changed
 
 void CSQC_ctf_hudreset(void)
 {
 	redflag_prevstatus = blueflag_prevstatus = redflag_statuschange_time = blueflag_statuschange_time = 0;
-	//redflag_prevframe = blueflag_prevframe = 0;
+	redflag_prevframe = blueflag_prevframe = 0;
 }
 
 void CSQC_ctf_hud(vector hudpos)
@@ -5764,7 +5796,6 @@ void CSQC_ctf_hud(vector hudpos)
 	redflag = (stat_items/IT_RED_FLAG_TAKEN) & 3;
 	blueflag = (stat_items/IT_BLUE_FLAG_TAKEN) & 3;
 
-/*
 	// when status CHANGES, set old status into prevstatus and current status into status
 	if (redflag != redflag_prevframe)
 	{
@@ -5779,7 +5810,6 @@ void CSQC_ctf_hud(vector hudpos)
 		blueflag_prevstatus = blueflag_prevframe;
 		blueflag_prevframe = blueflag;
 	}
-*/
 
 	redflag_statuschange_elapsedtime = time - redflag_statuschange_time;
 	blueflag_statuschange_elapsedtime = time - blueflag_statuschange_time;

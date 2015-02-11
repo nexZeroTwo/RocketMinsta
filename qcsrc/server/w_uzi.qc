@@ -101,6 +101,7 @@ float w_uzi(float req)
 			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_uzi_sustained_refire"), uzi_fire1_02);
 		}
 		if (self.BUTTON_ATCK2)
+		if (cvar("g_balance_uzi_first"))
 		if (weapon_prepareattack(1, 0))
 		{
 			self.uzi_bulletcounter = 1;
@@ -111,9 +112,6 @@ float w_uzi(float req)
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/uziflash.md3");
-		precache_model ("models/weapons/g_uzi.md3");
-		precache_model ("models/weapons/v_uzi.md3");
-		precache_model ("models/weapons/h_uzi.dpm");
 		precache_sound ("weapons/uzi_fire.wav");
 	}
 	else if (req == WR_SETUP)

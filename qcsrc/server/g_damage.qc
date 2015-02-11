@@ -83,7 +83,7 @@ float Damage_DamageInfo_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, bound(0, self.dmg_radius, 255));
 	WriteByte(MSG_ENTITY, bound(1, self.dmg_edge, 255));
 	WriteShort(MSG_ENTITY, self.oldorigin_x);
-    WriteByte(MSG_ENTITY, self.team-1);
+    WriteByte(MSG_ENTITY, self.team - 1);
 	return TRUE;
 }
 
@@ -105,9 +105,10 @@ void Damage_DamageInfo(vector org, float coredamage, float edgedamage, float rad
 	e.dmg_radius = rad;
 	e.dmg_force = vlen(force);
 	e.velocity = force;
-    e.team = dmgowner.team;
+    if(teams_matter)
+        e.team = dmgowner.team;
 	e.oldorigin_x = compressShortVector(e.velocity);
-
+    
 	Net_LinkEntity(e, FALSE, 0.2, Damage_DamageInfo_SendEntity);
 }
 
@@ -1556,7 +1557,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 		mindps = e.fire_damagepersec;
         
-        if(cvar("g_fire_damage_stack"))
+        if((dt == DEATH_IGNITE && cvar("g_buffs_ignite_stack")) || cvar("g_fire_damage_stack"))
             maxdps = (mindps * mintime) / maxtime + dps;
         else
             maxdps = max(mindps, dps);
