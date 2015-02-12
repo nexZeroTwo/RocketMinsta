@@ -308,9 +308,7 @@ float MG_Input(float type, float key, float ignore) {
         return FALSE;
 
     // print("KEY: ", ftos(key), " ", ftos(type), "\n");
-
-    string kb = getkeybind(key);
-
+    
     switch(getkeybind(key)) {
         case "+forward":   case "+lookup":      key = MG_KEY_UP;            break;
         case "+back":      case "+lookdown":    key = MG_KEY_DOWN;          break;
