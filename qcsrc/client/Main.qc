@@ -602,6 +602,8 @@ void PostInit(void)
 	
 	localcmd("alias afk \"cmd afk\"\n");
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
+    localcmd("alias vinvite \"cmd vote invite $*\"\n");
+
 	rm_showspec   = cvar("rm_showspec");
 	rm_showdamage = cvar("rm_showdamage");
 	rm_teamlasers = cvar("rm_teamlasers");
@@ -1215,11 +1217,6 @@ void GameCommand(string msg)
 			debug_shotorg = world;
 		}
 		localcmd("sv_cmd debug_shotorg\n");
-	}
-	else if(cmd == "votestat")
-	{
-		strunzone(vote_statstring);
-		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
 	}
 	#ifdef RM_SUPPORT_MADOKA
 	/*else if(cmd == "walpurgis")
@@ -1867,6 +1864,7 @@ void Ent_Init()
     sv_nicehealth = ReadShort();
     sv_showacc = ReadByte();
     g_buffs_enabled = ReadShort();
+    g_balance_nex_secondary = ReadByte();
 
     Buffs_LoadModels();
 
@@ -2023,14 +2021,29 @@ void Net_VoteDialog(float highlight) {
 		return;
 	}
 
+    vote_invite = 0;
 	vote_yescount = ReadShort();
 	vote_nocount = ReadShort();
 	vote_needed = ReadShort();
 	vote_active = 1;
+
+    if(vote_statstring) {
+        strunzone(vote_statstring);
+        vote_statstring = string_null;
+    }
+
+    if(vote_active)
+        vote_statstring = strzone(strcat("^2Yes^7: ", ftos(vote_yescount), " ^1No^7: ", ftos(vote_nocount), " (", ftos(vote_needed), " needed)"));
 }
 
 void Net_VoteDialogReset() {
 	vote_active = 0;
+    // vote_invite = 0;
+}
+
+void Net_ReadVoteInvite(void) {
+    vote_invite = 1;
+    vote_active = 1;
 }
 
 void Net_ReadMorningRescue()
@@ -2295,6 +2308,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_MESSAGE:
             Message_Read();
+            return TRUE;
+        case TE_CSQC_VOTEINVITE:
+            Net_ReadVoteInvite();
             return TRUE;
     }
 

@@ -2700,7 +2700,7 @@ float MapVote_CheckRules_2()
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(i != firstPlace)
-			if(mapvote_maps_availability[other.impulse - 1] == GTV_AVAILABLE)
+			if(mapvote_maps_availability[i] == GTV_AVAILABLE)
 				RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
 
 	secondPlace = RandomSelection_chosen_float;
@@ -2714,7 +2714,6 @@ float MapVote_CheckRules_2()
 	if(secondPlace == -1 || time > mapvote_timeout || (mapvote_voters_real - firstPlaceVotes) < firstPlaceVotes)
 		return MapVote_Finished(firstPlace);
 
-	if(!gametypevote)
 	if(mapvote_keeptwotime)
 		if(time > mapvote_keeptwotime || (mapvote_voters_real - firstPlaceVotes - secondPlaceVotes) < secondPlaceVotes)
 		{
@@ -2922,6 +2921,7 @@ void GameTypeVote_Start()
 	
 	mapvote_count = 0;
 	mapvote_timeout = time + cvar("sv_vote_gametype_timeout");
+    mapvote_keeptwotime = time + cvar("sv_vote_gametype_keeptwotime");
 	mapvote_abstain = 0;
 	
 	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
@@ -2937,6 +2937,9 @@ void GameTypeVote_Start()
 
 	// Chaiomanot: Jan 9th 2012: Bug fix: Not all gametype options will speed-vote (+1 line)
 	mapvote_count_real = mapvote_count;
+
+    if(mapvote_count_real < 3 || mapvote_keeptwotime <= time)
+        mapvote_keeptwotime = 0;
 
 	if(cvar("sv_vote_gametype_shuffle"))
 	{

@@ -323,12 +323,13 @@ void Net_ReadZCurveParticles()
 
 void Net_ReadNexgunBeamParticle()
 {
-    float theteam;
+    float theteam, secondary;
 	vector shotorg, endpos;
 
 	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
 	endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
     theteam = ReadByte() - 1;
+    secondary = ReadByte();
 	
 	pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
 	
@@ -338,18 +339,6 @@ void Net_ReadNexgunBeamParticle()
 	else
 		trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
 
-    vector diff = endpos - shotorg;
-    vector dir = normalize(diff);
-    vector o = shotorg;
-
-    float steplen = 20;
-    vector step = dir * steplen;
-    float maxlen = vlen(diff);
-    float i;
-
-    vectorvectors(dir);
-
-    vector prev = o;
     float eff;
 
     switch(theteam) {
@@ -360,11 +349,18 @@ void Net_ReadNexgunBeamParticle()
         default:          eff = particleeffectnum("TE_TEI_G3");       break;
     }
 
-    for(i = 0; i < maxlen; i += steplen, o += step) {
-        float x = 0.015 * i;
-        vector n = o + 10 * (v_up * sin(x) + v_right * cos(x));
-        trailparticles(world, eff, prev, n);
-        prev = n;
+    spiralparticles(world, eff, shotorg, endpos, 10, time, 0.015, 20);
+
+    if(secondary) {
+        switch(theteam) {
+            case COLOR_TEAM1: eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
+            case COLOR_TEAM2: eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
+            case COLOR_TEAM3: eff = particleeffectnum("TE_TEI_G3YELLOW_HIT"); break;
+            case COLOR_TEAM4: eff = particleeffectnum("TE_TEI_G3PINK_HIT");   break;
+            default: break;
+        }
+
+        spiralparticles(world, eff, shotorg, endpos, 10, time + PI, 0.015, 20);
     }
 }
 

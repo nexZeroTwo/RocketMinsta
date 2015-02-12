@@ -220,6 +220,8 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float switchweapon;
 .float autoswitch;
 float weapon_action(float wpn, float wrequest);
+string weapon_modelname(string name);
+void weapon_precache(float wpn);
 float client_hasweapon(entity cl, float wpn, float andammo, float complain);
 void w_clear();
 void w_ready();
@@ -352,6 +354,7 @@ float sv_clforceplayermodels;
 float sv_loddistance1;
 float sv_loddistance2;
 .float cvar_cl_gunalign;
+.float gunswitchmode;
 
 .float version_nagtime;
 

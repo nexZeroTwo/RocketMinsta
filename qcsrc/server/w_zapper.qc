@@ -352,16 +352,13 @@ float w_zapper(float req) {
                     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                 }
             }
-        } else if(self.BUTTON_ATCK2) {
+        } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
             if(weapon_prepareattack(0, cvar("g_balance_zapper_secondary_refire"))) {
                 W_Zapper_Attack2();
                 weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
             }
         }
     } else if(req == WR_PRECACHE) {
-        precache_model("models/weapons/g_zapper.md3");
-        precache_model("models/weapons/v_zapper.md3");
-        precache_model("models/weapons/h_zapper.dpm");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
         precache_sound("misc/arc1.wav");

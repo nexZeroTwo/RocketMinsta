@@ -779,6 +779,18 @@ void GetCvars(float f)
 	{
 		if (s == "cl_weaponpriority")
 			self.switchweapon = w_getbestweapon(self);
+
+        self.gunswitchmode = bound(0, self.cvar_cl_gunalign, 4);
+
+        if(self.gunswitchmode > 2) {
+            if(!cvar("g_shootfromclient"))
+                self.gunswitchmode = 1;
+            else if(!cvar("g_shootfromeye") && !cvar("g_shootfromcenter") && cvar("g_shootfromclient") < 2)
+                self.gunswitchmode -= 2;
+        }
+
+        if(self.gunswitchmode > 3)
+            self.gunswitchmode = 3;
 	}
 }
 
@@ -971,10 +983,10 @@ void readplayerstartcvars()
         s = cvar_string("g_clanarena_start_weapons");
         if(s == "0")
             s = cvar_string("g_weaponarena");
-    } else {
-        s = cvar_string("g_weaponarena");
         if(s == "0")
             s = "most";
+    } else {
+        s = cvar_string("g_weaponarena");
     }
     
     if(s == "0")
@@ -987,7 +999,7 @@ void readplayerstartcvars()
         {
             e = get_weaponinfo(j);
             g_weaponarena |= e.weapons;
-            weapon_action(e.weapon, WR_PRECACHE);
+            weapon_precache(e.weapon);
         }
     }
     else if (s == "most")
@@ -999,7 +1011,7 @@ void readplayerstartcvars()
             if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
             {
                 g_weaponarena |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1021,7 +1033,7 @@ void readplayerstartcvars()
                 if (e.netname == s)
                 {
                     g_weaponarena |= e.weapons;
-                    weapon_action(e.weapon, WR_PRECACHE);
+                    weapon_precache(e.weapon);
                     g_weaponarena_list = strcat(g_weaponarena_list, e.message, " & ");
                     break;
                 }
@@ -1034,10 +1046,12 @@ void readplayerstartcvars()
 		g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
 	}
 
-	if(g_weaponarena)
+	if(g_weaponarena) {
 		g_weaponarena_random = cvar("g_weaponarena_random");
-	else
+	} else {
 		g_weaponarena_random = 0;
+        g_weaponarena_limitammo = 0;
+    }
     
     if (g_clanarena) {
         start_health = cvar("g_clanarena_start_health");
@@ -1050,7 +1064,7 @@ void readplayerstartcvars()
         // will be done later
         for (i = WEP_FIRST; i <= WEP_LAST; ++i)
             if (NixNex_CanChooseWeapon(i))
-                weapon_action(i, WR_PRECACHE);
+                weapon_precache(i);
         if(!cvar("g_use_ammunition"))
         	start_items |= IT_UNLIMITED_AMMO;
     }
@@ -1094,7 +1108,7 @@ void readplayerstartcvars()
         start_health = 100;
         start_armorvalue = 0;
         start_weapons = WEPBIT_MINSTANEX;
-        weapon_action(WEP_MINSTANEX, WR_PRECACHE);
+        weapon_precache(WEP_MINSTANEX);
         start_ammo_cells = cvar("g_minstagib_ammo_start");
         g_minstagib_invis_alpha = cvar("g_minstagib_invis_alpha");
         start_ammo_fuel = cvar("g_start_ammo_fuel");
@@ -1161,7 +1175,7 @@ void readplayerstartcvars()
             if (t)
             {
                 start_weapons |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1199,7 +1213,7 @@ void readplayerstartcvars()
                     if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
                     {
                         warmup_start_weapons |= e.weapons;
-                        weapon_action(e.weapon, WR_PRECACHE);
+                        weapon_precache(e.weapon);
                     }
                 }
             }
@@ -1854,7 +1868,7 @@ void precache()
         wep = WEP_FIRST;
         while (wep <= WEP_LAST)
         {
-            weapon_action(wep, WR_PRECACHE);
+            weapon_precache(wep);
             wep = wep + 1;
         }
     }

@@ -673,6 +673,7 @@ void MapVote_UpdateMask()
 		if not(mv_maps_mask & power) {
 			mv_votes[i] = -1;
 			mv_removetime[i] = time;
+            mv_avail[i] = GTV_FORBIDDEN;
 		}
 }
 

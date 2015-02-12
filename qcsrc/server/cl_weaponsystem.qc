@@ -692,7 +692,14 @@ void CL_Weaponentity_Think()
 	if (self.state == WS_RAISE && !intermission_running)
 	{
 		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
-		self.angles_x = -90 * f * f;
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -702,7 +709,14 @@ void CL_Weaponentity_Think()
 	else if (self.state == WS_DROP && !intermission_running)
 	{
 		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
-		self.angles_x = -90 * f * f;
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -712,7 +726,9 @@ void CL_Weaponentity_Think()
 	else if (self.state == WS_CLEAR)
 	{
 		f = 1;
-		self.angles_x = -90 * f * f;
+        self.angles_y = -90 * f * f;
+        self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
