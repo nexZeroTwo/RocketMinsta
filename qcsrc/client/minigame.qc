@@ -312,7 +312,7 @@ float MG_Input(float type, float key, float ignore) {
     string kb = getkeybind(key);
 
     switch(getkeybind(key)) {
-        case "+foward":    case "+lookup":      key = MG_KEY_UP;            break;
+        case "+forward":   case "+lookup":      key = MG_KEY_UP;            break;
         case "+back":      case "+lookdown":    key = MG_KEY_DOWN;          break;
         case "+moveleft":  case "+left":        key = MG_KEY_LEFT;          break;
         case "+moveright": case "+right":       key = MG_KEY_RIGHT;         break;
