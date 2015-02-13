@@ -130,6 +130,8 @@ void W_Nex_Attack2_Wait(void) {
     }
 
     W_Nex_Attack2();
+    ATTACK_FINISHED(self) = time + cvar("g_balance_nex_secondary_refire") * W_WeaponRateFactor();
+
     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_secondary_animtime"), w_ready);
 }
 
