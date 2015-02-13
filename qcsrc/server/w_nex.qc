@@ -151,10 +151,12 @@ float w_nex(float req)
         if(self.BUTTON_ATCK2 && cvar("g_balance_nex_secondary")) {
             if(weapon_prepareattack(0, cvar("g_balance_nex_secondary_refire"))) {
                 float ct = cvar("g_balance_nex_secondary_chargetime");
+                weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
+                ct *= W_WeaponRateFactor();
+
                 self.nex_charge_expiretime = time + ct + cvar("g_balance_nex_secondary_chargeholdtime");
                 sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
                 W_Nex_ChargeEffect_Spawn(ct);
-                weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
             }
         }
 	}
