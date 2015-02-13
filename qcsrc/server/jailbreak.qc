@@ -1046,6 +1046,7 @@ void JB_ControlPoint_Think() {
     if(time - self.pointupdatetime >= 0.1) {
         self.jb_unlock_progress = 0;
         self.jb_capturingplayer = world;
+        self.jb_unlock_lasttime = time;
     }
     
     self.jb_cooldown = max(0, self.jb_cooldown - frametime);
@@ -1197,7 +1198,7 @@ void JB_ControlPoint_Touch() {
     if(other.jb_message != JBMSG_CAPPINGNEUTRAL || self.team == JB_TEAM_NEUTRAL) {
         // this function seems to be called at least two times per frame
         // we can't just rely on frametime
-        float deltatime = min(frametime, time - self.jb_unlock_lasttime);
+        float deltatime = time - self.jb_unlock_lasttime;
 
         float rate = cvar("g_jailbreak_controlpoint_unlock_speed");
         if(other.hg_shield)
