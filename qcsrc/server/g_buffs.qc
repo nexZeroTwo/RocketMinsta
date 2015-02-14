@@ -1049,7 +1049,7 @@ void Buffs_BuffPickup_Setup(void) {
     }
 
     if not(g_buffs_randomize)
-    if not(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
+    if(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
         remove(self);
         return;
     }

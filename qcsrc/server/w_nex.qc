@@ -61,6 +61,76 @@ void W_Nex_Attack2(void) {
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - cvar("g_balance_nex_secondary_ammo");
+}
+
+.entity nex_charge_effect;
+.float nex_charge_expiretime;
+
+void W_Nex_ChargeEffect_Think(void) {
+    if(self.owner.deadflag != DEAD_NO || self.owner.frozen || !self.owner.iscreature) {
+        if(self == self.owner.nex_charge_effect)
+            self.owner.nex_charge_effect = world;
+
+        stopsound(self, CHAN_PROJECTILE);
+        remove(self);
+        return;
+    }
+
+    if(self.enemy.cnt < 0) {
+        stopsound(self, CHAN_PROJECTILE);
+
+        self.scale = approach(self.scale, 10, frametime * 50);
+        self.alpha = 1 - self.scale / 10;
+        self.alpha *= self.alpha;
+
+        if(self.scale >= 10)
+            remove(self);
+        else
+            self.nextthink = time;
+
+        return;
+    }
+
+    self.scale = approach(self.scale, 1, (1 / self.cnt) * frametime);
+
+    self.light_lev = self.scale * 200;
+    self.nextthink = time;
+}
+
+void W_Nex_ChargeEffect_Spawn(float ct) {
+    if(self.nex_charge_effect)
+        self.nex_charge_effect.cnt = -1;
+
+    entity e = spawn();
+    setmodel(e, "models/ebomb.mdl");
+    e.skin = TeamColorSkin(self.team);
+    if(!e.skin)
+        e.skin = 2;
+    e.cnt = ct;
+    e.think = W_Nex_ChargeEffect_Think;
+    e.nextthink = time;
+    e.scale = 0.01;
+    e.enemy = e;
+    e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+    e.color = '0.3 0.3 0.3' + 0.7 * TeamColor((self.team > 0)? self.team : COLOR_TEAM2);
+    W_AttachToShotorg(e, '5 0 0');
+
+    sound(e, CHAN_PROJECTILE, "weapons/electro_fly.wav", VOL_BASE, ATTN_NORM);
+    self.nex_charge_effect = e;
+}
+
+void W_Nex_Attack2_Wait(void) {
+    if(self.BUTTON_ATCK2 && time < self.nex_charge_expiretime) {
+        return;
+    }
+
+    if(self.nex_charge_effect) {
+        self.nex_charge_effect.cnt = -1;
+        self.nex_charge_effect = world;
+    }
+
+    W_Nex_Attack2();
+    ATTACK_FINISHED(self) = time + cvar("g_balance_nex_secondary_refire") * W_WeaponRateFactor();
 
     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_secondary_animtime"), w_ready);
 }
@@ -82,8 +152,13 @@ float w_nex(float req)
 
         if(self.BUTTON_ATCK2 && cvar("g_balance_nex_secondary")) {
             if(weapon_prepareattack(0, cvar("g_balance_nex_secondary_refire"))) {
-                sound(self, CHAN_WEAPON, "weapons/fireball_prefire2.wav", VOL_BASE, ATTN_NORM);
-                weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_nex_secondary_chargetime"), W_Nex_Attack2);
+                float ct = cvar("g_balance_nex_secondary_chargetime");
+                weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
+                ct *= W_WeaponRateFactor();
+
+                self.nex_charge_expiretime = time + ct + cvar("g_balance_nex_secondary_chargeholdtime");
+                sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
+                W_Nex_ChargeEffect_Spawn(ct);
             }
         }
 	}
@@ -95,7 +170,8 @@ float w_nex(float req)
 		precache_sound("weapons/nexwhoosh2.wav");
 		precache_sound("weapons/nexwhoosh3.wav");
         precache_sound("weapons/rm_minsta.wav");
-        precache_sound("weapons/fireball_prefire2.wav");
+        precache_sound("weapons/nex_charge.wav");
+        precache_sound("weapons/electro_fly.wav");
 	}
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_NEX);
