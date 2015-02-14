@@ -455,7 +455,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.projectiledeathtype = dtype;
     
 	proj.oldvelocity = proj.velocity;
-    PROJECTILE_FIX(proj)
     
     W_Accuracy_RegisterShot(self, self.weapon);
 

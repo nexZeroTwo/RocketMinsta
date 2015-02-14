@@ -134,7 +134,6 @@ void W_Electro_Attack()
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_Plasma_TouchExplode;
 	setsize(proj, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(proj)
 	proj.flags = FL_PROJECTILE;
 
 	//sound (proj, CHAN_PAIN, "weapons/electro_fly.wav", VOL_BASE, ATTN_NORM);
@@ -178,7 +177,6 @@ void W_Electro_Attack2()
 	proj.health = cvar("g_balance_electro_secondary_health");
 	proj.event_damage = W_Plasma_Damage;
 	proj.flags = FL_PROJECTILE;
-    PROJECTILE_FIX(proj)
 
 #if 0
 	entity p2;

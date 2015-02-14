@@ -97,7 +97,6 @@ void W_Grenade_Attack (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(gren)
 
     gren.team = self.team;
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_primary_lifetime");
@@ -134,7 +133,6 @@ void W_Grenade_Attack2 (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER | HITTYPE_SECONDARY;
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
-    PROJECTILE_FIX(gren)
 
     gren.team = self.team;
 	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");

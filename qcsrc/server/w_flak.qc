@@ -87,7 +87,6 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.bouncefactor = bnc;
     setorigin(e, w_shotorg);
     setsize(e, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(e)
 
     e.spawnshieldtime = time + lt;
     e.nextthink = time;
@@ -247,7 +246,6 @@ void W_Flak_Attack3(void) {
     e.projectiledeathtype = WEP_FLAK | HITTYPE_SECONDARY;
     setsize(e, '0 0 -3', '0 0 -3');
     setorigin(e, w_shotorg);
-    PROJECTILE_FIX(e)
 
     e.nextthink = time + cvar("g_balance_flak_secondary_bomb_lifetime");
     e.think = adaptor_think2use;
