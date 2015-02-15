@@ -586,11 +586,85 @@ void JB_Torture_Zap() {
 		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * a, WEP_NEX, self);
 }
 
+void JB_Torture_Beam_Think(void) {
+    float mindist = 10000000000, pass, d;
+    vector o;
+    entity p;
+
+    if(!self.enemy || self.enemy.deadflag != DEAD_NO || self.enemy.iscreature) {
+        self.enemy = world;
+
+        for(pass = 0; pass < 2; ++pass) {
+            FOR_EACH_PLAYER(p) if(p.team != self.team) {
+                o = p.origin + p.view_ofs;
+                d = vlen(o - self.zapper_beam_start);
+
+                if(d < mindist && (pass || (traceline(self.zapper_beam_start, o, MOVE_NORMAL, self), trace_ent) == p)) {
+                    self.enemy = p;
+                    mindist = d;
+                }
+            }
+
+            if(self.enemy)
+                break;
+        }
+    }
+
+    o = self.enemy.origin + self.enemy.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
+    traceline(self.zapper_beam_start, o, MOVE_NORMAL, self);
+
+    entity targ = trace_ent;
+    vector end = trace_endpos;
+
+    if(!self.origin)
+        self.origin = end;
+    else
+        self.origin += (end - self.origin) * frametime * 10;
+
+    end = self.origin;
+
+    if(targ != self.enemy)
+        self.enemy = world;
+    else if(time > self.cnt) {
+        Damage(targ, self, world, 3, WEP_ZAPPER, end, 10 * normalize(end - self.zapper_beam_start));
+        self.cnt = time + 0.1;
+    }
+
+    end -= normalize(end - self.zapper_beam_start) * 5;
+
+    if(end != self.zapper_beam_end) {
+        self.zapper_beam_end = end;
+        self.SendFlags |= 4;
+    }
+
+    self.nextthink = time;
+}
+
+void JB_Torture_Beam(void) {
+    if(self.enemy)
+        return;
+
+    entity e = spawn();
+    e.classname = "jb_torture_beam";
+    e.reset = SUB_Remove;
+    e.owner = self;
+    makevectors(self.angles);
+    e.zapper_beam_start = self.origin;
+    e.team = self.team;
+    e.think = JB_Torture_Beam_Think;
+    e.nextthink = time;
+
+    Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
+
+    self.enemy = e;
+}
+
 void JB_Torture_RegisterAll() {
     JB_Torture_Register(JB_Torture_Napalm);
 	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
+    JB_Torture_Register(JB_Torture_Beam);
 }
 
 #undef JITTER

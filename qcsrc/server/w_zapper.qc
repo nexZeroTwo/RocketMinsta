@@ -42,7 +42,15 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        WriteByte(MSG_ENTITY, num_for_edict(self.owner));
+        float o = num_for_edict(self.owner);
+
+        if(o > maxclients)
+            o = 0;
+
+        WriteByte(MSG_ENTITY, o);
+
+        if(!o)
+            WriteByte(MSG_ENTITY, self.team);
     }
 
     if(sf & 2) {
