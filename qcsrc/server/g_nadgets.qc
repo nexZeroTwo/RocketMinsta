@@ -117,7 +117,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     o = self.owner;
     df = 1;
 
-    if(o.classname != "player" || o.team != self.team) {
+    if(o.classname != "jailbreak_torture" && (o.classname != "player" || o.team != self.team)) {
         remove(self);
         return;
     }
@@ -126,7 +126,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
     {
         sameteam = !IsDifferentTeam(o, e);
-        
+
         if(!ismedic) {
             if(sameteam && o != e)
                 if(!cvar("g_friendlyfire"))
@@ -208,6 +208,7 @@ void HG_Napalm_Think(void) {
     HG_HealEmitter();
 
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
+
     self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 

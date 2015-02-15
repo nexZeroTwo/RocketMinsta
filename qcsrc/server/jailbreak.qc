@@ -446,44 +446,35 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.use = logic;
 }
 
-void JB_Torture_Napalm_Touch() {
-	self.cnt -= 1;
-	
-	if(!self.cnt)
-		remove(self);
-	
-	W_Firemine_Touch();
-}
-
 void JB_Torture_Napalm() {
-	local entity proj;
-	local vector kick;
+	entity proj;
+	vector kick;
 
-	proj = spawn ();
+	proj = spawn();
 	proj.owner = self;
 	proj.classname = "jb_torture_napalm";
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = HG_NAPALM;
-	proj.touch = JB_Torture_Napalm_Touch;
+	proj.projectiledeathtype = HG_REMOTE | HITTYPE_BOUNCE;
+    proj.hg_type = HG_REMOTE;
 	PROJECTILE_MAKETRIGGER(proj);
-	setsize (proj, '0 0 0', '0 0 0');
-	setorigin (proj, self.origin);
+	setsize(proj, '0 0 0', '0 0 1');
+	setorigin(proj, self.origin);
 	proj.org_explosion = self.origin;
 	proj.think = HG_Napalm_Think;
-	proj.nextthink = time;
+    proj.nextthink = time;
 	proj.damageforcescale = 1;
-	proj.cnt = 3; //	max bounces
 	kick_z = self.jb_torture_suggestedforce;
 	kick_x = (random () - 0.5) * 2 * kick_z;
 	kick_y = (random () - 0.5) * 2 * kick_z;
 	proj.velocity = kick;
 	proj.pushltime = time + 3;
+    proj.team = self.team;
 	W_SetupProjectileVelocity(proj);
 
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
 
-	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
 }
 
 void JB_Torture_Plasma() {
@@ -596,7 +587,7 @@ void JB_Torture_Zap() {
 }
 
 void JB_Torture_RegisterAll() {
-	JB_Torture_Register(JB_Torture_Napalm);
+    JB_Torture_Register(JB_Torture_Napalm);
 	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
