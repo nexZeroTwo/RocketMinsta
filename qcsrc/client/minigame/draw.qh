@@ -3,6 +3,8 @@ vector MG_Draw_TransformOrigin(vector v);
 vector MG_Draw_TransformDelta(vector v);
 void MG_Draw(void);
 void MG_Draw_Box(void);
+void MG_Draw_Picture(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag);
+void MG_Draw_Picture_Centered(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag);
 
 .float mg_boxsize;
 .vector mg_boxcolor;

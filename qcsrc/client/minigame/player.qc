@@ -109,11 +109,15 @@ void MG_Player_Think(void) {
     }
 }
 
+void MG_Player_Draw(void) {
+    MG_Draw_Picture_Centered(self.origin, "gfx/hud/num_0", '4 4' * self.mg_radius, time, '0.5 0.5', '1 1 1', 1, DRAWFLAG_ADDITIVE);
+}
+
 entity MG_Player_Spawn(void) {
     entity p = MG_Spawn(MG_ENT_PLAYER);
-    p.mg_draw = MG_Draw_Box;
+    p.mg_draw = MG_Player_Draw;
     p.mg_radius = p.mg_boxsize = 8;
-    p.mg_boxcolor = '0.7 0.7 0.7';
+    p.mg_boxcolor = '1 0.5 0.3';
 
     p.mg_think = MG_Player_Think;
     p.mg_nextthink = mg_time;

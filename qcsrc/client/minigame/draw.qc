@@ -29,11 +29,11 @@ vector MG_Draw_TransformDelta(vector v) {
  */
 
 void MG_DrawEnts(float t) {
-    entity e;
+    FOR_EACH_MG_ENT(self) {
+        if(self.mg_draw && self.mg_class == t) {
+            if(self.mg_draw != MG_Draw_Box && self.mg_boxsize && cvar("developer"))
+                MG_Draw_Box();
 
-    FOR_EACH_MG_ENT(e) {
-        if(e.mg_draw && e.mg_class == t) {
-            self = e;
             self.mg_draw();
         }
     }
@@ -101,4 +101,30 @@ void MG_Draw_Box(void) {
     vector s = MG_Draw_TransformDelta(vec2(sz, sz));
 
     drawfill(o, s, self.mg_boxcolor, 1, DRAWFLAG_NORMAL);
+}
+
+void MG_Draw_Picture_Raw(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag) {
+    if(cvar("developer"))
+        drawfill(pos, psize, '0 1 1', 0.3, DRAWFLAG_ADDITIVE);
+
+    if(rotation) {
+        hotspot_x *= psize_x;
+        hotspot_y *= psize_y;
+        drawrotpic(pos + hotspot, rotation, pic, psize, hotspot, rgb, palpha, drawflag);
+    } else
+        drawpic(pos, pic, psize, rgb, palpha, drawflag);
+}
+
+void MG_Draw_Picture(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag) {
+    psize = MG_Draw_TransformDelta(psize);
+    pos = MG_Draw_TransformOrigin(pos);
+
+    MG_Draw_Picture_Raw(pos, pic, psize, rotation, hotspot, rgb, palpha, drawflag);
+}
+
+void MG_Draw_Picture_Centered(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag) {
+    psize = MG_Draw_TransformDelta(psize);
+    pos = MG_Draw_TransformOrigin(pos) - psize * 0.5;
+
+    MG_Draw_Picture_Raw(pos, pic, psize, rotation, hotspot, rgb, palpha, drawflag);
 }
