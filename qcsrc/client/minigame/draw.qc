@@ -70,11 +70,19 @@ void MG_Draw(void) {
 
     // TODO: optimize this. Maybe just spawn them in the correct order?
 
+    float clip = !cvar("developer");
+
+    if(clip)
+        drawsetcliparea(o_x, o_y, s_x, s_y);
+
     MG_DrawEnts(MG_ENT_NOCLASS);
     MG_DrawEnts(MG_ENT_PARTICLE);
     MG_DrawEnts(MG_ENT_PROJECTILE);
     MG_DrawEnts(MG_ENT_ENEMY);
     MG_DrawEnts(MG_ENT_PLAYER);
+
+    if(clip)
+        drawresetcliparea();
 
     self = oldself;
 }
