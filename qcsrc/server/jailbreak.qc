@@ -265,7 +265,7 @@ void JB_Imprison(entity attacker) {
 }
 
 float JB_AliveCheck(entity p) {
-    return p.deadflag == DEAD_NO && !p.jb_isprisoned;
+    return !p.jb_isprisoned;
 }
 
 void JB_TorturePrisonersLater_Think() {
