@@ -564,12 +564,6 @@ void JB_Torture_Grenades() {
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
 }
 
-void JB_Torture_Zap_AimAt(vector org, entity targ) {
-	vector shotanle = vectoangles(org - targ.origin);
-	shotanle_y += 180;
-	makevectors(shotanle);
-}
-
 void JB_Torture_Zap() {
 	entity unlucky_guy, p;
 
@@ -590,16 +584,15 @@ void JB_Torture_Zap() {
 	if(!unlucky_guy)
 		return;
 
-	JB_Torture_Zap_AimAt(self.origin, unlucky_guy);
-	sound(self, CHAN_WEAPON, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM);
+    vector a = normalize(unlucky_guy.origin - self.origin);
+	sound(self, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
 	
-	FireRailgunBullet (self.origin, self.origin + v_forward * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
-	w_shotorg = self.origin;	// needed for the beam to appear correctly
-	SendCSQCNexBeamParticle(self.team, FALSE);
+	FireRailgunBullet(self.origin, self.origin + a * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
+    W_Zapper_Attack2_Effect(self.team, self.origin, trace_endpos);
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * v_forward, WEP_NEX, self);
+		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * a, WEP_NEX, self);
 }
 
 void JB_Torture_RegisterAll() {
