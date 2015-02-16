@@ -17,6 +17,10 @@ void MG_Player_Die(void) {
     MG_Player_Reset();
 }
 
+void MG_Player_Proj2_Draw(void) {
+    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/energy_idle", '48 48', time, '0.5 0.5', '1 1 1', 0.7, DRAWFLAG_NORMAL, 8, 0, 25);
+}
+
 void MG_Player_Think(void) {
     vector dir;
 
@@ -96,6 +100,7 @@ void MG_Player_Think(void) {
             e.mg_move_morph_vel1 = normalize(e.mg_move_morph_vel1) * s;
             e.mg_move_morph_speed = 1.5;
             e.mg_move_morph_modifier = ipol_pow2Out;
+            e.mg_draw = MG_Player_Proj2_Draw;
 
             e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
             e.mg_move_morph_vel0 = (' 1 -0.5 0'  * a1 + ' 0.5 -1 0' * a2);
@@ -104,6 +109,7 @@ void MG_Player_Think(void) {
             e.mg_move_morph_vel1 = normalize(e.mg_move_morph_vel1) * s;
             e.mg_move_morph_speed = 1.5;
             e.mg_move_morph_modifier = ipol_pow2Out;
+            e.mg_draw = MG_Player_Proj2_Draw;
 
             self.mg_plr_refire2 = mg_time + 0.2;
         }

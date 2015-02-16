@@ -201,6 +201,8 @@ float MG_CheckCollision(entity e1, entity e2) {
  * spawns other Minigame entities, etc.
  */
 
+mg_drawfunc_t MG_Player_Proj2_Draw;
+
 void MG_TestEnemy1_Think(float t) {
     if(t == MG_ENEMY_SPAWN) {
         self.mg_enemy_nextthink = 0;
@@ -210,6 +212,7 @@ void MG_TestEnemy1_Think(float t) {
 
     entity p = MG_Projectile_Spawn(self, self.origin, 8, 1, MG_Move_Linear);
     p.velocity = normalize(mg_plr.origin - self.origin + '200 0' * crandom() + '0 200' * crandom()) * 125;
+    p.mg_draw = MG_Player_Proj2_Draw;
 
     self.mg_enemy_nextthink = t + 0.1;
 }
