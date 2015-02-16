@@ -204,7 +204,11 @@ float MG_CheckCollision(entity e1, entity e2) {
 mg_drawfunc_t MG_Player_Proj2_Draw;
 
 void MG_TestEnemy1_Draw(void) {
-    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/badcloud_idle", '128 128', 0.1 * sin(mg_time), '0.5 0.5', '1 1 1', 0.5, DRAWFLAG_NORMAL, 8, 0, 13);
+    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/badcloud_idle", '128 128', 0.1 * sin(mg_time), '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL, 8, 0, 13);
+}
+
+void MG_TestEnemy1_Projectile_Draw(void) {
+    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/energy_idle", '48 48', time, '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL, 8, 0, 25);
 }
 
 void MG_TestEnemy1_Think(float t) {
@@ -218,7 +222,7 @@ void MG_TestEnemy1_Think(float t) {
 
     entity p = MG_Projectile_Spawn(self, shotorg, 8, 1, MG_Move_Linear);
     p.velocity = normalize(mg_plr.origin - shotorg + '200 0' * crandom() + '0 200' * crandom()) * 125;
-    p.mg_draw = MG_Player_Proj2_Draw;
+    p.mg_draw = MG_TestEnemy1_Projectile_Draw;
 
     self.mg_enemy_nextthink = t + 0.1;
 }
