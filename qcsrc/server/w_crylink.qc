@@ -50,6 +50,8 @@ void W_Crylink_Dequeue_Raw(entity own, entity prev, entity me, entity next)
     W_Crylink_CheckLinks(next);
     if(me == own.crylink_lastgroup)
         own.crylink_lastgroup = ((me == next) ? world : next);
+    if(me == me.crylink_lastgroup)
+        prev.crylink_lastgroup = prev;
     prev.queuenext = next;
     next.queueprev = prev;
     me.classname = "spike_oktoremove";
@@ -69,7 +71,7 @@ void W_Crylink_Reset(void)
 }
 
 // force projectile to explode
-void W_Crylink_LinkExplode(entity e, entity e2)
+void W_Crylink_LinkExplode(entity e, entity e2, float move_correction)
 {
     float a;
 
@@ -78,6 +80,9 @@ void W_Crylink_LinkExplode(entity e, entity e2)
 
     a = bound(0, 1 - (time - e.fade_time) * e.fade_rate, 1);
 
+    tracebox_skipnonsolid(e.origin, e.mins, e.maxs, e.origin + (e.velocity * move_correction * frametime), FALSE, e);
+    setorigin(e, trace_endpos);
+
     if(e == e.realowner.crylink_lastgroup)
         e.realowner.crylink_lastgroup = world;
         
@@ -85,7 +90,10 @@ void W_Crylink_LinkExplode(entity e, entity e2)
         
     RadiusDamage(e, e.realowner, WEP_CVAR_BOTH(crylink, isprimary, damage) * a, WEP_CVAR_BOTH(crylink, isprimary, edgedamage) * a, WEP_CVAR_BOTH(crylink, isprimary, radius), world, WEP_CVAR_BOTH(crylink, isprimary, force) * a, e.projectiledeathtype, other);
 
-    W_Crylink_LinkExplode(e.queuenext, e2);
+    if (e.crylink_lastgroup == e) // This is last one. The next one and all following allready was moved by engine. Move them backward.
+        move_correction = move_correction - 1;
+
+    W_Crylink_LinkExplode(e.queuenext, e2, move_correction);
 
     e.classname = "spike_oktoremove";
     remove(e);
@@ -246,6 +254,7 @@ float W_Crylink_Touch_WouldHitFriendly(entity projectile, float rad)
 void W_Crylink_Touch(void)
 {
     PROJECTILE_SKIPNONSOLID
+    float move_correction = trace_fraction;
     float finalhit;
     float f;
     float isprimary = !(self.projectiledeathtype & HITTYPE_SECONDARY);
@@ -281,7 +290,7 @@ void W_Crylink_Touch(void)
     {
         if(self == self.realowner.crylink_lastgroup)
             self.realowner.crylink_lastgroup = world;
-        W_Crylink_LinkExplode(self.queuenext, self);
+        W_Crylink_LinkExplode(self.queuenext, self, move_correction);
         self.classname = "spike_oktoremove";
         remove(self);
         return;
@@ -420,6 +429,7 @@ void W_Crylink_Attack(void)
 
         other = proj;
     }
+    proj.crylink_lastgroup = proj; // Reuse crylink_lastgroup to mark last projectile
     if(WEP_CVAR_PRI(crylink, joinspread) != 0)
     {
         self.crylink_lastgroup = proj;
@@ -536,6 +546,7 @@ void W_Crylink_Attack2(void)
 
         other = proj;
     }
+    proj.crylink_lastgroup = proj; // Reuse crylink_lastgroup to mark last projectile
     if(WEP_CVAR_SEC(crylink, joinspread) != 0)
     {
         self.crylink_lastgroup = proj;
