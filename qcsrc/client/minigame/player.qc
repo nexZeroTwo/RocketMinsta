@@ -75,10 +75,11 @@ void MG_Player_Think(void) {
     // Pew pew pew!
 
     if(mg_keyflags & MG_KEYFLAG_FIRE) {
+        vector shotorg = self.origin - '0 40';
         float s = 1000;
 
         if(mg_time > self.mg_plr_refire) {
-            e = MG_Projectile_Spawn(self, self.origin, 8, 10, MG_Move_Linear);
+            e = MG_Projectile_Spawn(self, shotorg, 8, 10, MG_Move_Linear);
             e.velocity = normalize('0 -10 0' + '0.5 0 0' * cos(mg_time * 10)) * s;
             self.mg_plr_refire = mg_time + 0.1;
         }
@@ -88,7 +89,7 @@ void MG_Player_Think(void) {
             float a1 = self.mg_plr_focusalpha;
             float a2 = (1 - self.mg_plr_focusalpha);
 
-            e = MG_Projectile_Spawn(self, self.origin, 8, 20, MG_Move_Morph);
+            e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
             e.mg_move_morph_vel0 = ('-1 -0.5 0'  * a1 + '-0.5 -1 0' * a2);
             e.mg_move_morph_vel1 = (' 1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
@@ -96,7 +97,7 @@ void MG_Player_Think(void) {
             e.mg_move_morph_speed = 0.7;
             e.mg_move_morph_modifier = ipol_pow2Out;
 
-            e = MG_Projectile_Spawn(self, self.origin, 8, 20, MG_Move_Morph);
+            e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
             e.mg_move_morph_vel0 = (' 1 -0.5 0'  * a1 + ' 0.5 -1 0' * a2);
             e.mg_move_morph_vel1 = ('-1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
@@ -111,7 +112,7 @@ void MG_Player_Think(void) {
 
 void MG_Player_Draw(void) {
     // TODO: add generic draw functions for static and animated sprites
-    
+
     MG_Draw_Picture_Centered(self.origin, strcat("gfx/minigame/pepper_idle_frame", ftos(mod(floor(mg_time * 10), 8))), '120 120', 0, '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL);
 }
 
