@@ -135,7 +135,7 @@ void MG_Player_Think(void) {
             float a1 = self.mg_plr_focusalpha;
             float a2 = (1 - self.mg_plr_focusalpha);
 
-            e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
+            e = MG_Projectile_Spawn(self, shotorg, 8, 15, MG_Move_Morph);
             e.mg_move_morph_vel0 = ('-1 -0.5 0'  * a1 + '-0.5 -1 0' * a2);
             e.mg_move_morph_vel1 = (' 1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
@@ -146,7 +146,7 @@ void MG_Player_Think(void) {
             e.mg_think = MG_Player_Proj2_Think;
             e.mg_proj_explode = MG_Player_Proj2_Explode;
 
-            e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
+            e = MG_Projectile_Spawn(self, shotorg, 8, 15, MG_Move_Morph);
             e.mg_move_morph_vel0 = (' 1 -0.5 0'  * a1 + ' 0.5 -1 0' * a2);
             e.mg_move_morph_vel1 = ('-1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
