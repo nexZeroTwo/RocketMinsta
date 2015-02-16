@@ -2238,8 +2238,12 @@ float SUB_NoImpactCheck()
 float projectile_skipnonsolid()
 {
 	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
-		// We need a small step to avoid sticking to surface.
-		setorigin(self, self.origin + (normalize(self.velocity) * 0.01));
+		//Trying correct origin
+		tracebox_skipnonsolid(self.origin, self.mins, self.maxs, self.origin + (self.velocity * (1 - trace_fraction) * frametime), FALSE, self);
+		if (trace_fraction == 1) // The way is clear
+			setorigin(self, trace_endpos);
+		else // We can't move right to trace_endpos, because we can go through solid surface.
+			setorigin(self, self.origin + ((trace_endpos - self.origin) * 0.99));
 		UpdateCSQCProjectile(self);
 		return TRUE;
 	}

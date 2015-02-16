@@ -382,7 +382,8 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         return;
     }
     //Almost full copy of darkplaces tracetoss but with tracebox_skipnonsolid instead tracebox.
-    float i;
+    float i, tries;
+    vector end;
     vector velocity_save = ent.velocity;
     vector avelocity_save = ent.avelocity;
     vector origin_save = ent.origin;
@@ -390,9 +391,17 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
     for (i = 0; i < toss_count; i++) {
         ent.velocity_y = ent.velocity_y - (ent.gravity * (vlen(trace_endpos - ent.origin) / vlen(ent.velocity)));
         ent.angles = ent.angles + (ent.avelocity *  toss_frametime);
-        tracebox_skipnonsolid(ent.origin, ent.mins, ent.maxs, ent.origin + (ent.velocity * toss_frametime), FALSE, ent);
+        end = ent.origin + (ent.velocity * toss_frametime);
+        for (tries = 10; tries > 0; tries--) {
+            tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
+            if (trace_endpos == ent.origin)
+                ent.origin += normalize(ent.velocity) * 0.01;
+            else
+                ent.origin = trace_endpos;
+            if(trace_fraction == 1 || trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
+                break;
+        }
         if (trace_fraction < 1) break;
-        ent.origin = trace_endpos;
     }
     ent.velocity = velocity_save;
     ent.avelocity = avelocity_save;
