@@ -7,6 +7,7 @@ void MG_Draw_Picture(vector pos, string pic, vector psize, float rotation, vecto
 void MG_Draw_Picture_Centered(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag);
 void MG_Draw_Animation(vector pos, string anim, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag, float frames, float offset, float fps);
 void MG_Draw_Animation_Centered(vector pos, string anim, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag, float frames, float offset, float fps);
+string MG_Draw_Animation_GetFrame(string anim, float t, float frames, float offset, float fps);
 
 .float mg_boxsize;
 .vector mg_boxcolor;

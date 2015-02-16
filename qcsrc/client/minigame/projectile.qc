@@ -1,5 +1,12 @@
 
 void MG_Projectile_Explode(entity p) {
+    if(p.mg_proj_explode) {
+        entity o = self;
+        self = p;
+        self.mg_proj_explode();
+        self = o;
+    }
+
     MG_Remove(p);
 }
 
