@@ -1,4 +1,3 @@
-.float gravity;
 .float crylink_waitrelease;
 .entity crylink_lastgroup;
 
