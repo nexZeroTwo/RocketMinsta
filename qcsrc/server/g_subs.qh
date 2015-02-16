@@ -1,0 +1,1 @@
+void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent);

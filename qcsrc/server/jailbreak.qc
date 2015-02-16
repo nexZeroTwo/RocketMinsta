@@ -265,7 +265,7 @@ void JB_Imprison(entity attacker) {
 }
 
 float JB_AliveCheck(entity p) {
-    return p.deadflag == DEAD_NO && !p.jb_isprisoned;
+    return !p.jb_isprisoned;
 }
 
 void JB_TorturePrisonersLater_Think() {
@@ -446,44 +446,35 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.use = logic;
 }
 
-void JB_Torture_Napalm_Touch() {
-	self.cnt -= 1;
-	
-	if(!self.cnt)
-		remove(self);
-	
-	W_Firemine_Touch();
-}
-
 void JB_Torture_Napalm() {
-	local entity proj;
-	local vector kick;
+	entity proj;
+	vector kick;
 
-	proj = spawn ();
+	proj = spawn();
 	proj.owner = self;
 	proj.classname = "jb_torture_napalm";
 	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = HG_NAPALM;
-	proj.touch = JB_Torture_Napalm_Touch;
+	proj.projectiledeathtype = HG_REMOTE | HITTYPE_BOUNCE;
+    proj.hg_type = HG_REMOTE;
 	PROJECTILE_MAKETRIGGER(proj);
-	setsize (proj, '0 0 0', '0 0 0');
-	setorigin (proj, self.origin);
+	setsize(proj, '0 0 0', '0 0 1');
+	setorigin(proj, self.origin);
 	proj.org_explosion = self.origin;
 	proj.think = HG_Napalm_Think;
-	proj.nextthink = time;
+    proj.nextthink = time;
 	proj.damageforcescale = 1;
-	proj.cnt = 3; //	max bounces
 	kick_z = self.jb_torture_suggestedforce;
 	kick_x = (random () - 0.5) * 2 * kick_z;
 	kick_y = (random () - 0.5) * 2 * kick_z;
 	proj.velocity = kick;
 	proj.pushltime = time + 3;
+    proj.team = self.team;
 	W_SetupProjectileVelocity(proj);
 
 	proj.angles = vectoangles(proj.velocity);
 	proj.flags = FL_PROJECTILE;
 
-	CSQCProjectile(proj, TRUE, PROJECTILE_FIREMINE, TRUE);
+	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
 }
 
 void JB_Torture_Plasma() {
@@ -564,12 +555,6 @@ void JB_Torture_Grenades() {
 	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE_BOUNCING, TRUE);
 }
 
-void JB_Torture_Zap_AimAt(vector org, entity targ) {
-	vector shotanle = vectoangles(org - targ.origin);
-	shotanle_y += 180;
-	makevectors(shotanle);
-}
-
 void JB_Torture_Zap() {
 	entity unlucky_guy, p;
 
@@ -590,23 +575,96 @@ void JB_Torture_Zap() {
 	if(!unlucky_guy)
 		return;
 
-	JB_Torture_Zap_AimAt(self.origin, unlucky_guy);
-	sound(self, CHAN_WEAPON, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM);
+    vector a = normalize(unlucky_guy.origin - self.origin);
+	sound(self, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
 	
-	FireRailgunBullet (self.origin, self.origin + v_forward * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
-	w_shotorg = self.origin;	// needed for the beam to appear correctly
-	SendCSQCNexBeamParticle(self.team, FALSE);
+	FireRailgunBullet(self.origin, self.origin + a * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
+    W_Zapper_Attack2_Effect(self.team, self.origin, trace_endpos);
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * v_forward, WEP_NEX, self);
+		Damage_DamageInfo(trace_endpos, 200, 0, 0, 700 * a, WEP_NEX, self);
+}
+
+void JB_Torture_Beam_Think(void) {
+    float mindist = 10000000000, pass, d;
+    vector o;
+    entity p;
+
+    if(!self.enemy || self.enemy.deadflag != DEAD_NO || self.enemy.iscreature) {
+        self.enemy = world;
+
+        for(pass = 0; pass < 2; ++pass) {
+            FOR_EACH_PLAYER(p) if(p.team != self.team) {
+                o = p.origin + p.view_ofs;
+                d = vlen(o - self.zapper_beam_start);
+
+                if(d < mindist && (pass || (traceline(self.zapper_beam_start, o, MOVE_NORMAL, self), trace_ent) == p)) {
+                    self.enemy = p;
+                    mindist = d;
+                }
+            }
+
+            if(self.enemy)
+                break;
+        }
+    }
+
+    o = self.enemy.origin + self.enemy.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
+    traceline(self.zapper_beam_start, o, MOVE_NORMAL, self);
+
+    entity targ = trace_ent;
+    vector end = trace_endpos;
+
+    if(!self.origin)
+        self.origin = end;
+    else
+        self.origin += (end - self.origin) * frametime * 10;
+
+    end = self.origin;
+
+    if(targ != self.enemy)
+        self.enemy = world;
+    else if(time > self.cnt) {
+        Damage(targ, self, world, 3, WEP_ZAPPER, end, 10 * normalize(end - self.zapper_beam_start));
+        self.cnt = time + 0.1;
+    }
+
+    end -= normalize(end - self.zapper_beam_start) * 5;
+
+    if(end != self.zapper_beam_end) {
+        self.zapper_beam_end = end;
+        self.SendFlags |= 4;
+    }
+
+    self.nextthink = time;
+}
+
+void JB_Torture_Beam(void) {
+    if(self.enemy)
+        return;
+
+    entity e = spawn();
+    e.classname = "jb_torture_beam";
+    e.reset = SUB_Remove;
+    e.owner = self;
+    makevectors(self.angles);
+    e.zapper_beam_start = self.origin;
+    e.team = self.team;
+    e.think = JB_Torture_Beam_Think;
+    e.nextthink = time;
+
+    Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
+
+    self.enemy = e;
 }
 
 void JB_Torture_RegisterAll() {
-	JB_Torture_Register(JB_Torture_Napalm);
+    JB_Torture_Register(JB_Torture_Napalm);
 	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
+    JB_Torture_Register(JB_Torture_Beam);
 }
 
 #undef JITTER

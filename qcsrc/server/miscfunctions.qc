@@ -2235,8 +2235,21 @@ float SUB_NoImpactCheck()
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
-#define PROJECTILE_FIX(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); }
-#define PROJECTILE_FIX2(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
+float projectile_skipnonsolid()
+{
+	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
+		//Trying correct origin
+		tracebox_skipnonsolid(self.origin, self.mins, self.maxs, self.origin + (self.velocity * (1 - trace_fraction) * frametime), FALSE, self);
+		if (trace_fraction == 1) // The way is clear
+			setorigin(self, trace_endpos);
+		else // We can't move right to trace_endpos, because we can go through solid surface.
+			setorigin(self, self.origin + ((trace_endpos - self.origin) * 0.99));
+		UpdateCSQCProjectile(self);
+		return TRUE;
+	}
+	return FALSE;
+}
+#define PROJECTILE_SKIPNONSOLID if (cvar("sv_gameplayfix_zerohitcontents") && projectile_skipnonsolid()) { return; }
 
 float MAX_IPBAN_URIS = 16;
 
