@@ -68,7 +68,7 @@ void MG_Player_Think(void) {
         }
     }
 
-    // Smooth focus/unfocus transitions
+    // Smooth focus/unfocus transitions.
 
     self.mg_plr_focusalpha = approach(self.mg_plr_focusalpha, !!(mg_keyflags & MG_KEYFLAG_FOCUS), mg_frametime * 7);
 
@@ -111,9 +111,7 @@ void MG_Player_Think(void) {
 }
 
 void MG_Player_Draw(void) {
-    // TODO: add generic draw functions for static and animated sprites
-
-    MG_Draw_Picture_Centered(self.origin, strcat("gfx/minigame/pepper_idle_frame", ftos(mod(floor(mg_time * 10), 8))), '120 120', 0, '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL);
+    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/pepper_idle", '120 120', 0, '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL, 8, 0, 10);
 }
 
 entity MG_Player_Spawn(void) {

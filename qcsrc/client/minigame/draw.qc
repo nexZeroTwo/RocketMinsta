@@ -128,3 +128,17 @@ void MG_Draw_Picture_Centered(vector pos, string pic, vector psize, float rotati
 
     MG_Draw_Picture_Raw(pos, pic, psize, rotation, hotspot, rgb, palpha, drawflag);
 }
+
+void MG_Draw_Animation(vector pos, string anim, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag, float frames, float offset, float fps) {
+    psize = MG_Draw_TransformDelta(psize);
+    pos = MG_Draw_TransformOrigin(pos);
+
+    MG_Draw_Picture_Raw(pos, strcat(anim, "_frame", ftos(1 + mod(floor((offset + mg_time) * fps), frames))), psize, rotation, hotspot, rgb, palpha, drawflag);
+}
+
+void MG_Draw_Animation_Centered(vector pos, string anim, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag, float frames, float offset, float fps) {
+    psize = MG_Draw_TransformDelta(psize);
+    pos = MG_Draw_TransformOrigin(pos) - psize * 0.5;
+
+    MG_Draw_Picture_Raw(pos, strcat(anim, "_frame", ftos(1 + mod(floor((offset + mg_time) * fps), frames))), psize, rotation, hotspot, rgb, palpha, drawflag);
+}
