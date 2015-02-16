@@ -100,7 +100,7 @@ void MG_Draw_Box(void) {
     vector o = MG_Draw_TransformOrigin(self.origin - '0.5 0 0' * sz - '0 0.5 0' * sz);
     vector s = MG_Draw_TransformDelta(vec2(sz, sz));
 
-    drawfill(o, s, self.mg_boxcolor, 1, DRAWFLAG_NORMAL);
+    drawfill(o, s, self.mg_boxcolor, 1, DRAWFLAG_ADDITIVE);
 }
 
 void MG_Draw_Picture_Raw(vector pos, string pic, vector psize, float rotation, vector hotspot, vector rgb, float palpha, float drawflag) {
