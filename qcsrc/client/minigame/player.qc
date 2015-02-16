@@ -110,7 +110,9 @@ void MG_Player_Think(void) {
 }
 
 void MG_Player_Draw(void) {
-    MG_Draw_Picture_Centered(self.origin, "gfx/hud/num_0", '4 4' * self.mg_radius, time, '0.5 0.5', '1 1 1', 1, DRAWFLAG_ADDITIVE);
+    // TODO: add generic draw functions for static and animated sprites
+    
+    MG_Draw_Picture_Centered(self.origin, strcat("gfx/minigame/pepper_idle_frame", ftos(mod(floor(mg_time * 10), 8))), '120 120', 0, '0.5 0.5', '1 1 1', 1, DRAWFLAG_NORMAL);
 }
 
 entity MG_Player_Spawn(void) {

@@ -31,10 +31,10 @@ vector MG_Draw_TransformDelta(vector v) {
 void MG_DrawEnts(float t) {
     FOR_EACH_MG_ENT(self) {
         if(self.mg_draw && self.mg_class == t) {
+            self.mg_draw();
+
             if(self.mg_draw != MG_Draw_Box && self.mg_boxsize && cvar("developer"))
                 MG_Draw_Box();
-
-            self.mg_draw();
         }
     }
 }
@@ -77,9 +77,9 @@ void MG_Draw(void) {
 
     MG_DrawEnts(MG_ENT_NOCLASS);
     MG_DrawEnts(MG_ENT_PARTICLE);
+    MG_DrawEnts(MG_ENT_PLAYER);
     MG_DrawEnts(MG_ENT_PROJECTILE);
     MG_DrawEnts(MG_ENT_ENEMY);
-    MG_DrawEnts(MG_ENT_PLAYER);
 
     if(clip)
         drawresetcliparea();
