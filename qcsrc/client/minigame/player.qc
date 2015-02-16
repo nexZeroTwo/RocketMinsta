@@ -76,7 +76,7 @@ void MG_Player_Think(void) {
 
     if(mg_keyflags & MG_KEYFLAG_FIRE) {
         vector shotorg = self.origin - '0 40';
-        float s = 1000;
+        float s = 2000;
 
         if(mg_time > self.mg_plr_refire) {
             e = MG_Projectile_Spawn(self, shotorg, 8, 10, MG_Move_Linear);
@@ -94,7 +94,7 @@ void MG_Player_Think(void) {
             e.mg_move_morph_vel1 = (' 1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
             e.mg_move_morph_vel1 = normalize(e.mg_move_morph_vel1) * s;
-            e.mg_move_morph_speed = 0.7;
+            e.mg_move_morph_speed = 1.5;
             e.mg_move_morph_modifier = ipol_pow2Out;
 
             e = MG_Projectile_Spawn(self, shotorg, 8, 20, MG_Move_Morph);
@@ -102,7 +102,7 @@ void MG_Player_Think(void) {
             e.mg_move_morph_vel1 = ('-1 -0.5 0') * a1 + e.mg_move_morph_vel0 * a2;
             e.mg_move_morph_vel0 = normalize(e.mg_move_morph_vel0) * s;
             e.mg_move_morph_vel1 = normalize(e.mg_move_morph_vel1) * s;
-            e.mg_move_morph_speed = 0.7;
+            e.mg_move_morph_speed = 1.5;
             e.mg_move_morph_modifier = ipol_pow2Out;
 
             self.mg_plr_refire2 = mg_time + 0.2;
