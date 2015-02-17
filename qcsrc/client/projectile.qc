@@ -278,15 +278,6 @@ void Projectile_Draw()
 	if(!drawn)
 		return;
 
-	switch(self.cnt)
-	{
-		case PROJECTILE_FLAK:
-			R_AddDynamicLight(self.origin, 50, '1 1 0');
-			break;
-		default:
-			break;
-	}
-
 	self.renderflags = 0;
 
 	R_AddEntity(self);
