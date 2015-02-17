@@ -748,7 +748,11 @@ void SV_ParseClientCommand(string s) {
 				self.nickspamcount = self.nickspamtime = 0;
 		}
 
-		clientcommand(self,s);
+		if(cmd == "name" && self.netname != "unconnected") {
+			IRC_Announce_Name(self, substring(s, argv_start_index(1) + 1, strlen(s) - argv_start_index(1) - 2));
+		}
+		
+		clientcommand(self, s);
 	}
 }
 

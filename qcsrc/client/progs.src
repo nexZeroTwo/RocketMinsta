@@ -3,6 +3,9 @@ pre.qh
 
 ../common/util-pre.qh
 Defs.qc
+
+../common/gametype.qh
+
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc
@@ -39,6 +42,8 @@ casings.qc
 effects.qc
 wall.qc
 modeleffects.qc
+
+../common/gametype.qc
 
 //vehicles/spiderbot.qc
 Main.qc

@@ -574,6 +574,32 @@ void make_mapinfo_Think()
 	}
 }
 
+void GotoMap_f_delayed(void) {
+	print(GotoMap(self.netname), "\n");
+	strunzone(self.netname);
+	remove(self);
+}
+
+void GotoMap_f(string m, float d) {
+	if(!d) {
+		print(GotoMap(m), "\n");
+		return;
+	}
+	
+	entity e = spawn();
+	e.netname = strzone(m);
+	e.think = GotoMap_f_delayed;
+	e.nextthink = time + d;
+}
+
+//I know this is a fugly pos, sorry. --Player_2
+#ifndef RocketMinsta
+void bigprint_spec(entity e, string s, string t, float f)
+{
+	bprint("^5 ", e.netname, s);
+}
+#endif
+
 void GameCommand(string command)
 {
 	float argc;
@@ -582,7 +608,7 @@ void GameCommand(string command)
 	float entno, i;
 	string s;
 	argc = tokenize_console(command);
-
+	
 	if(argv(0) == "help" || argc == 0)
 	{
 		print("Usage: sv_cmd COMMAND..., where possible commands are:\n");
@@ -600,27 +626,32 @@ void GameCommand(string command)
 		print("  bbox\n");
 		print("  cvar_changes\n");
 		print("  find classname\n");
+		print("  redirect clientnum server\n");
+		print("  gotoserver server\n");
+		#ifdef RM_SUPPORT_MADOKA
+		print("  ^0walpurgis^7\n");
+		#endif
 		GameCommand_Vote("help", world);
 		GameCommand_Ban("help");
 		GameCommand_Generic("help");
 		return;
 	}
-
+	
 	if(GameCommand_Vote(command, world))
 		return;
-
+	
 	if(GameCommand_Ban(command))
 		return;
-
+	
 	if(GameCommand_Generic(command))
 		return;
-
+	
 	if(argv(0) == "printstats")
 	{
 		DumpStats(FALSE);
 		return;
 	}
-
+	
 	if(argv(0) == "make_mapinfo")
 	{
 		e = spawn();
@@ -630,45 +661,68 @@ void GameCommand(string command)
 		MapInfo_Enumerate();
 		return;
 	}
-
+	
 	if(argv(0) == "warp") if(argc == 2) if(cvar("g_campaign"))
 	{
 		CampaignLevelWarp(stof(argv(1)));
 		return;
 	}
-
-	if(argv(0) == "gotomap") if(argc == 2)
+	
+	if(argv(0) == "gotomap") if(argc >= 2)
 	{
-		print(GotoMap(argv(1)), "\n");
+		if(argc > 2) {
+			localcmd("gametype ", argv(2), "\n");
+			GotoMap_f(argv(1), 0.2);
+		} else {
+			GotoMap_f(argv(1), 0);
+		}
+		
 		return;
 	}
-
-	if(argv(0) == "gametype") if(argc == 2)
+	
+	if(argv(0) == "gametype" || argv(0) == "forcegametype") if(argc == 2)
 	{
 		float t, tsave;
+		
 		s = argv(1);
-		t = MapInfo_Type_FromString(s);
-		tsave = MapInfo_CurrentGametype();
+		s = NormalizeGametypeName(s);
+		
+		if(s == "")
+		{
+			print("^1Gametype '", argv(1), "' is either invalid or not supported\n");
+			return;
+		}
+		
+		t = gametype_Name_to_ID(s);
+		tsave = game;
 		if(t)
 		{
-			MapInfo_SwitchGameType(t);
-			MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			if(MapInfo_count > 0)
-			{
-				bprint("Game type successfully switched to ", s, "\n");
-			}
-			else
-			{
-				bprint("Cannot use this game type: no map for it found\n");
-				MapInfo_SwitchGameType(tsave);
-				MapInfo_FilterGametype(MapInfo_CurrentGametype(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+			if(time > 1) {
+				cvar_set("_sv_rm_nextgametype", s);
+				bprint("The gametype will be switched to ", gametype_Name_to_LongName(s), " on next map\n");
+				localcmd("\nsv_hook_rmcustom_gameswitch ", s, ";");
+			} else {
+				//MapInfo_SwitchGameType(t);
+				gametype_Set(gametype_Name_to_ID(s));
+				MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+				
+				if(MapInfo_count > 0) {
+					bprint("Game type successfully switched to ", s, "\n");
+				} else if(argv(0) == "forcegametype") {
+					bprint("Not map found for ", s ,", switch forced!\n");
+				} else {
+					bprint("Cannot use this game type: no map for it found\n");
+					error(ftos(game));
+					gametype_Set(tsave);
+					MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+				}
 			}
 		}
 		else
 			bprint("Game type switch to ", s, " failed: this type does not exist!\n");
 		return;
 	}
-
+	
 	if(argv(0) == "adminmsg") if(argc == 3)
 	{
 		entno = stof(argv(1));
@@ -685,21 +739,21 @@ void GameCommand(string command)
 			print("Client not found\n");
 		return;
 	}
-
+	
 	if(argv(0) == "savedb") if(argc == 2)
 	{
 		db_save(ServerProgsDB, argv(1));
 		print("DB saved.\n");
 		return;
 	}
-
+	
 	if(argv(0) == "dumpdb") if(argc == 2)
 	{
 		db_dump(ServerProgsDB, argv(1));
 		print("DB dumped.\n");
 		return;
 	}
-
+	
 	if(argv(0) == "loaddb") if(argc == 2)
 	{
 		db_close(ServerProgsDB);
@@ -755,10 +809,10 @@ void GameCommand(string command)
 			float lt;
 			lt = lockteams;
 			lockteams = 0;
-
+			
 			self = client;
 			SV_ParseClientCommand(strcat("selectteam ", argv(2)));
-
+			
 			lockteams = lt;
 		}
 		else
@@ -808,7 +862,7 @@ void GameCommand(string command)
 		print(records_reply);
 		return;
 	}
-
+	
 	if(argv(0) == "cointoss")
 	{
 		bprint("^3Throwing coin... Result: ");
@@ -818,19 +872,19 @@ void GameCommand(string command)
 			bprint("^1tails ^3!\n");
 		return;
 	}
-
+	
 	if(argv(0) == "__FORCE_READY_RESTART")
 	{
 		reset_map(FALSE);
 		return;
 	}
-
+	
 	if(argv(0) == "debug_shotorg")
 	{
 		debug_shotorg = stov(argv(1));
 		return;
 	}
-
+	
 	if(argv(0) == "gettaginfo") if(argc >= 4)
 	{
 		e = spawn();
@@ -857,7 +911,7 @@ void GameCommand(string command)
 		remove(e);
 		return;
 	}
-
+	
 	if(argv(0) == "time")
 	{
 		print("time = ", ftos(time), "\n");
@@ -869,7 +923,7 @@ void GameCommand(string command)
 		print("gmtime = ", strftime(FALSE, "%a %b %e %H:%M:%S %Z %Y"), "\n");
 		return;
 	}
-
+	
 	if(argv(0) == "tracebug")
 	{
 		print("TEST CASE. If this returns the runaway loop counter error, possibly everything is oaky.\n");
@@ -877,21 +931,21 @@ void GameCommand(string command)
 		{
 			vector org, delta, start, end, p, pos;
 			float safe, unsafe;
-
+			
 			org = world.mins;
 			delta = world.maxs - world.mins;
-
+			
 			start_x = org_x + random() * delta_x;
 			start_y = org_y + random() * delta_y;
 			start_z = org_z + random() * delta_z;
-
+			
 			end_x = org_x + random() * delta_x;
 			end_y = org_y + random() * delta_y;
 			end_z = org_z + random() * delta_z;
-
+			
 			start = stov(vtos(start));
 			end = stov(vtos(end));
-
+			
 			tracebox(start, PL_MIN, PL_MAX, end, MOVE_NOMONSTERS, world);
 			if(!trace_startsolid)
 			{
@@ -902,7 +956,7 @@ void GameCommand(string command)
 					rint(42); // do an engine breakpoint on VM_rint so you can get the trace that errnoeously returns startsolid
 					tracebox(start, PL_MIN, PL_MAX, end, MOVE_NOMONSTERS, world);
 					tracebox(p, PL_MIN, PL_MAX, p, MOVE_NOMONSTERS, world);
-
+					
 					// how much do we need to back off?
 					safe = 1;
 					unsafe = 0;
@@ -923,10 +977,10 @@ void GameCommand(string command)
 							safe = (safe + unsafe) * 0.5;
 						}
 					}
-
+					
 					print("safe distance to back off: ", ftos(safe * vlen(p - start)), "qu\n");
 					print("unsafe distance to back off: ", ftos(unsafe * vlen(p - start)), "qu\n");
-
+					
 					tracebox(p, PL_MIN + '0.1 0.1 0.1', PL_MAX - '0.1 0.1 0.1', p, MOVE_NOMONSTERS, world);
 					if(trace_startsolid)
 						print("trace_endpos much in solid when tracing from ", vtos(start), " to ", vtos(end), " endpos ", vtos(trace_endpos), "\n");
@@ -937,7 +991,7 @@ void GameCommand(string command)
 			}
 		}
 	}
-
+	
 	if(argv(0) == "tracewalk")
 	{
 		e = nextent(world);
@@ -947,18 +1001,18 @@ void GameCommand(string command)
 			print("cannot walk\n");
 		return;
 	}
-
+	
 	if(argv(0) == "onslaught_updatelinks")
 	{
 		onslaught_updatelinks();
 		print("ONS links updated\n");
 		return;
 	}
-
+	
 	if(argv(0) == "bot_cmd")
 	{
 		local entity bot;
-
+		
 		if(argv(1) == "help")
 		{
 			if(argc==2)
@@ -969,18 +1023,18 @@ void GameCommand(string command)
 				print("\nUse sv_cmd bot_cmd help <command> for more\n\n");
 				return;
 			}
-
+			
 			bot_cmdhelp(argv(2));
 			return;
 		}
-
+		
 		// Clear all bot queues
 		if(argv(1) == "reset")
 		{
 			bot_resetqueues();
 			return;
 		}
-
+		
 		// Load cmds from file
 		if(argv(1) == "load" && argc == 3)
 		{
@@ -991,12 +1045,12 @@ void GameCommand(string command)
 				print("cannot open the file\n");
 				return;
 			}
-
+			
 			i = 0;
 			while((s = fgets(fh)))
 			{
 				argc = tokenize_console(s);
-
+				
 				if(argc >= 3 && argv(0) == "sv_cmd" && argv(1) == "bot_cmd")
 				{
 					// let's start at token 2 so we can skip sv_cmd bot_cmd
@@ -1008,17 +1062,17 @@ void GameCommand(string command)
 				}
 				else
 					localcmd(strcat(s, "\n"));
-
+				
 				++i;
 			}
-
+			
 			print(ftos(i), " commands read\n");
-
+			
 			fclose(fh);
-
+			
 			return;
 		}
-
+		
 		if(argc < 3)
 		{
 			print("Usage: sv_cmd bot_cmd <bot name or number> <command> [argument]\n");
@@ -1027,19 +1081,226 @@ void GameCommand(string command)
 			print("          .. or sv_cmd bot_cmd help <command> for more\n");
 			return;
 		}
-
+		
 		bot = find_bot_by_number(stof(argv(1)));
 		if(bot == world)
 			bot = find_bot_by_name(argv(1));
-
+		
 		if(bot)
 			bot_queuecommand(bot, strcat(argv(2), " ", argv(3)));
 		else
 			print(strcat("Error: Unable to find a bot with the name or number '",argv(1),"'\n"));
-
+		
 		return;
 	}
-
+	
+	#ifdef RM_SUPPORT_MADOKA
+	if(argv(0) == "walpurgis")
+	{
+		FOR_EACH_CLIENT(e)
+		{
+			//if(clienttype(e) == CLIENTTYPE_REAL) stuffcmd(e, "cl_cmd walpurgis\n");
+			madokaprint(e, "^1x ^0WALPURGIS NIGHT ^10", "", 5);
+			stuffcmd(e, "play2 sound/misc/scream\n");
+			
+			if(e.classname == "player")
+			{
+				if(random() <= 0.1)
+				{
+					bprint("^5A blessing saved ^7", e.netname, "^5 from his fate\n");
+					Damage(e, world, e, e.health * 0.5, DEATH_NOAMMO, '0 0 0', '0 0 0');
+				}
+				else
+				{
+					e.armorvalue = 0;
+					Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+				}
+			}
+		}
+		
+		return;
+	}
+	#endif
+	
+	if(argv(0) == "kill")
+	{
+		e = edict_num(stof(argv(2)));
+		
+		if(!e)
+		{
+			bprint("^1kill: ^7Could not find victim!\n");
+			return;
+		}
+		
+		#ifdef RM_SUPPORT_MADOKA
+		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+		#else
+		bigprint_spec(e, "^9Votekilled", "", 5);
+		#endif
+		
+		e.armorvalue = 0;
+		Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+		return;
+	}
+	
+	if(argv(0) == "killfc")
+	{
+		if(cvar("g_ctf"))
+		{
+			FOR_EACH_CLIENT(e) if(e.flagcarried)
+			{
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
+				e.armorvalue = 0;
+				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		else if(cvar("g_keyhunt"))
+		{
+			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
+			{
+				#ifdef RM_SUPPORT_MADOKA
+				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
+				#else
+				bigprint_spec(e, "^9Votekilled", "", 5);
+				#endif
+				e.owner.armorvalue = 0;
+				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
+			}
+		}
+		
+		return;
+	}
+	
+	if(argv(0) == "endround")
+	{
+		FOR_EACH_PLAYER(e)
+		bigprint_spec(e, "Round Aborted", "", 5);
+		
+#ifdef 0
+		if(!EndRound_Allowed())
+		{
+			bprint("Attempted to endround, but the gametype doesn't support it!\n");
+			return;
+		}
+		
+		EndRound();
+#endif
+		return;
+	}
+	
+	if(argv(0) == "topic")
+	{
+		if(!keeptopic)
+			cvar_set("_sv_explosive_topicby", "");
+		keeptopic = FALSE;
+		
+		local string topicby = cvar_string("_sv_explosive_topicby");
+		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
+		
+		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		
+		return;
+	}
+	
+	if(argv(0) == "addinfo")
+	{
+		float c = cvar("_sv_infomessages_count");
+		string newvar = strcat("_sv_infomessages_", ftos(c));
+		registercvar(newvar, "");
+		cvar_set(newvar, argv(1));
+		cvar_set("_sv_infomessages_count", ftos(c + 1));
+		return;
+	}
+	
+	if(argv(0) == "redirect") {
+		if(argc < 3) {
+			print("Usage: redirect clientnum server");
+			return;
+		}
+		
+		entno = stof(argv(1));
+		client = world;
+		if(entno <= maxclients)
+			client = edict_num(entno);
+		if(client.flags & FL_CLIENT)
+			stuffcmd(client, strcat("connect ", ResolveServer(argv(2)) ,"\n"));
+		else
+			print("Client not found\n");
+		return;
+	}
+	
+	if(argv(0) == "gotoserver") {
+		if(argc < 2) {
+			print("Usage: gotoserver server");
+			return;
+		}
+		
+		s = ResolveServer(argv(1));
+		bprint("^5Redirecting everyone to ^2", s, "\n");
+		
+		FOR_EACH_CLIENT(client)
+		stuffcmd(client, strcat("connect ", s,"\n"));
+		return;
+	}
+	
+#ifdef 0
+	if(argv(0) == "balanceteams") {
+		bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
+		teamcount_balancenext = TRUE;
+		return;
+	}
+	
+	if(argv(0) == "firetest") {
+		Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
+		return;
+	}
+	
+	if(argv(0) == "netmusic" || argv(0) == "radio_play") {
+		Radio_Play(argv(1), argv(2), (argv(3) == "loop"));
+		return;
+	}
+	
+	if(argv(0) == "stopmusic" || argv(0) == "radio_stop") {
+		Radio_Stop();
+		return;
+	}
+	
+	if(argv(0) == "radio_preload") {
+		Radio_Preload(argv(1));
+		return;
+	}
+	
+	if(argv(0) == "radio_queue") {
+		Radio_Queue(argv(1), argv(2), stof(argv(3)), uri_unescape(argv(4)));
+		return;
+	}
+	
+	if(argv(0) == "radio_queue_skip") {
+		Radio_Queue_Skip();
+		return;
+	}
+	
+	if(argv(0) == "radio_queue_restart") {
+		Radio_Queue_PlayFirst();
+		return;
+	}
+	
+	if(argv(0) == "radio_evil") {
+		FOR_EACH_REALCLIENT(e)
+		stuffcmd(e, "radio 1\n");
+		return;
+	}
+#endif
+	
+	if(argv(0) == "dprmstats") {
+		FOR_EACH_REALCLIENT(e)
+		print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", ((e.client_dprmversion >= DPRM_MINVERSION)? "^2" : "^1"), ftos(e.client_dprmversion), "\n");
+		return;
+	}
+	
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
-

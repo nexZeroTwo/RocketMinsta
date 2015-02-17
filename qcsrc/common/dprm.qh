@@ -1,0 +1,11 @@
+
+#define USE_DPRM
+#define DPRM_WEBSITE_URL "http://rocketminsta.net/dprm"
+#define DPRM_MINVERSION 1
+
+float dprm_version;
+
+void DPRM_Start();
+float DPRM_GetVersion();
+float DPRM_IsDPRMEngine();
+float DPRM_VersionIsSuitable();

@@ -2663,3 +2663,20 @@ float ExponentialFalloff(float mindist, float maxdist, float halflifedist, float
 	else
 		return 1;
 }
+
+string ResolveServer(string s) {
+	string r = cvar_string(strcat("sv_serveralias_", s));
+	if(r != "")
+		return r;
+	return s;
+}
+
+string GetAllowedServers() {
+	return cvar_string("sv_gotoserver_whitelist");
+}
+
+/// Does NOT accept server aliases
+float ServerIsAllowed(string s) {
+	string wl = GetAllowedServers();
+	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
+}

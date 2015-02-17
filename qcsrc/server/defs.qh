@@ -1,3 +1,4 @@
+#define SERVER_SIDE
 #define INDEPENDENT_ATTACK_FINISHED
 
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
@@ -624,3 +625,10 @@ float client_cefc_accumulatortime;
 
 .entity clientdata;
 .entity personal;
+
+.float client_dprmversion;
+
+float totalclients;
+float realclients;
+
+float keeptopic;
