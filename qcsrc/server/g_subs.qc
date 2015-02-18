@@ -302,6 +302,15 @@ void main (void)
 }
 
 // Misc
+//
+entity _pseudo_bullet;
+
+entity pseudo_bullet(entity forent) {
+    if(!_pseudo_bullet)
+        _pseudo_bullet = spawn();
+    _pseudo_bullet.owner = forent;
+    return _pseudo_bullet;
+}
 
 .entity trace_savedowner;
 
@@ -447,7 +456,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	}
 
 	// do the trace
-	tracebox_skipnonsolid (v1, mi, ma, v2, nomonst, forent);
+	tracebox_skipnonsolid (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
 
 	// restore players to current positions
 	if (lag)
@@ -626,7 +635,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_takeback(player, time - lag);
 
-    e = tracerail(start, end, t, forent);
+    e = tracerail(start, end, t, pseudo_bullet(forent));
 
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_restore(player);
