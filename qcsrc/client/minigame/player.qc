@@ -25,17 +25,17 @@ void MG_Player_Proj2_Trail_Draw(void) {
         return;
     }
 
-    MG_Draw_Picture_Centered(self.origin, MG_Draw_Animation_GetFrame("gfx/minigame/energy_idle", self.frame, 8, 0, 25), '48 48' * a, time, '0.5 0.5', '1 1 1', 0.3 * a, DRAWFLAG_NORMAL);
+    MG_Draw_Picture_Centered(self.origin, MG_Draw_Animation_GetFrame("gfx/minigame/energy_idle", self.frame, 8, 0, 25), '48 48' * a, mg_time, '0.5 0.5', '1 1 1', 0.3 * a, DRAWFLAG_NORMAL);
 }
 
 void MG_Player_Proj2_Think(void) {
-    if(time > self.cnt) {
+    if(mg_time > self.cnt) {
         entity e = MG_Spawn(MG_ENT_PARTICLE);
         e.mg_draw = MG_Player_Proj2_Trail_Draw;
-        e.frame = time;
+        e.frame = mg_time;
         e.origin = self.origin;
 
-        self.cnt = time + 0.01;
+        self.cnt = mg_time + 0.01;
     }
 
     MG_Projectile_Think();
@@ -49,18 +49,18 @@ void MG_Player_Proj2_Blast_Draw(void) {
         return;
     }
 
-    MG_Draw_Picture_Centered(self.origin, MG_Draw_Animation_GetFrame("gfx/minigame/energy_idle", self.frame, 8, 0, 25), '48 48' * (4 - 4 * a), time, '0.5 0.5', '1 1 1', 0.3 * a, DRAWFLAG_NORMAL);
+    MG_Draw_Picture_Centered(self.origin, MG_Draw_Animation_GetFrame("gfx/minigame/energy_idle", self.frame, 8, 0, 25), '48 48' * (4 - 4 * a), mg_time, '0.5 0.5', '1 1 1', 0.3 * a, DRAWFLAG_NORMAL);
 }
 
 void MG_Player_Proj2_Explode(void) {
     entity e = MG_Spawn(MG_ENT_PARTICLE);
     e.mg_draw = MG_Player_Proj2_Blast_Draw;
-    e.frame = time;
+    e.frame = mg_time;
     e.origin = self.origin;
 }
 
 void MG_Player_Proj2_Draw(void) {
-    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/energy_idle", '48 48', time, '0.5 0.5', '1 1 1', 0.5, DRAWFLAG_NORMAL, 8, 0, 25);
+    MG_Draw_Animation_Centered(self.origin, "gfx/minigame/energy_idle", '48 48', mg_time, '0.5 0.5', '1 1 1', 0.5, DRAWFLAG_NORMAL, 8, 0, 25);
 }
 
 void MG_Player_Think(void) {
