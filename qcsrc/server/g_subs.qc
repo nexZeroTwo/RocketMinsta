@@ -306,29 +306,12 @@ void main (void)
 entity _pseudo_bullet;
 
 entity pseudo_bullet(entity forent) {
+    if (!cvar("sv_gameplayfix_shootownentities"))
+        return forent;
     if(!_pseudo_bullet)
         _pseudo_bullet = spawn();
     _pseudo_bullet.owner = forent;
     return _pseudo_bullet;
-}
-
-.entity trace_savedowner;
-
-void trace_start_for(entity o) {
-    if(!cvar("sv_gameplayfix_shootownentities"))
-        return;
-
-    entity e; for(;(e = findentity(e, owner, o));) {
-        e.trace_savedowner = o;
-        e.owner = world;
-    }
-}
-
-void trace_end_for(entity o) {
-    entity e; for(;(e = findentity(e, trace_savedowner, o));) {
-        e.trace_savedowner = world;
-        e.owner = o;
-    }
 }
 
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {

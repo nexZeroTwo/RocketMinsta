@@ -107,9 +107,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 
     pts = Buffs_MEODP_Hitscan_Begin(self);
     
-    trace_start_for(self);
     hitents = tracerail_antilag(self, start, end, FALSE, self);
-    trace_end_for(self);
 
     endpoint = trace_endpos;
     endent = trace_ent;
