@@ -1615,16 +1615,6 @@ float announce(entity player, string msg)
     return FALSE;
 }
 
-void announce_publicly(entity player, string filename)
-{
-	//FIXME: this will play the sound using the SERVER's announcer!
-	if (cvar("g_announce_publicly"))
-		sound(player, CHAN_VOICE, strcat("sound/announcer/", cvar_string("cl_announcer"), "/", filename) , VOL_BASEVOICE, ATTN_NORM);
-	else 
-		announce(player, filename);
-		
-}
-
 /*
  *  announce_game_event ( float, string, string, string )
  * 

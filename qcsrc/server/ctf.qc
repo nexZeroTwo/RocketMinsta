@@ -475,7 +475,7 @@ void FlagTouch()
 				h0 = strcat(h0, "^7's"); // h0: display text for previous netname
 			if (flagcaptimerecord == 0)
 			{
-				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds\n"), "");
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds"), "");
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/netname"), h1);
@@ -484,7 +484,7 @@ void FlagTouch()
 			else if (t < flagcaptimerecord)
 			{
 				bigprint_spec(other, "^2Record ^7Set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
-				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds\n")), "");
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds")), "");
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/netname"), h1);
@@ -492,11 +492,11 @@ void FlagTouch()
 			}
 			else
 			{
-				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s), strcat(", failing to break ", h0, " record of ", s0, " seconds\n"));
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds"), strcat(", failing to break ", h0, " record of ", s0, " seconds"));
 			}
 		}
 		else
-			announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, "\n"), "");
+			announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname), "");
 
 		PlayerTeamScore_Add(other, SP_CTF_CAPS, ST_CTF_CAPS, 1);
 		LogCTF("capture", other.flagcarried.team, other);
