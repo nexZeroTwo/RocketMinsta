@@ -1369,10 +1369,24 @@ void announce_publicly(entity player, string filename)
 		
 }
 
-void announce_game_event(string event)
+/*
+ *  announce_game_event ( float, string, string, string )
+ * 
+ * Used to announce in game events to players and to irc.
+ * It will always bprint the announcements.
+ * If the cvar (cv_name) is less than or equal to the announcement's
+ * verbosity level (v), then the FIRST event will be printed to irc.
+ * 
+ * Consider event1 to be used for short messages and event2 for long ones.
+ */
+void announce_game_event(float v, string cv_name, string event1, string event2)
 {
-	bprint(event);
-	IRC_Announce_GameEvent(event);
+	bprint(event1, event2, "\n");
+	
+	if (cvar(cv_name) > v)
+		return;
+	
+	IRC_Announce_GameEvent(event1);
 }
 
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
