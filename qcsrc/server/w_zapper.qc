@@ -123,9 +123,7 @@ void W_Zapper_Beam_Think(void) {
         end = self.origin;
     }
 
-    trace_start_for(o);
     traceline_antilag(o, w_shotorg, end, FALSE, o);
-    trace_end_for(o);
 
     targ = trace_ent;
     end = trace_endpos;
@@ -288,9 +286,7 @@ void W_Zapper_Attack2(void) {
     vector end = w_shotorg + w_shotdir * range;
     entity pts = Buffs_MEODP_Hitscan_Begin(self);
 
-    trace_start_for(self);
     traceline_antilag(self, w_shotorg, end, FALSE, self);
-    trace_end_for(self);
 
     targ = trace_ent;
     end = trace_endpos;
