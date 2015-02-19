@@ -584,6 +584,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oh = self.health;
     float oa = self.armorvalue;
     
+    if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
+        damage = 0;
+            
     if(self != attacker)
     if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_MEODP)
     if(deathtype != DEATH_ARC)
@@ -740,9 +743,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             }
             
             self.health = self.health - take;
-            
-            if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
-                self.health = max(1, self.health);  // the best way to win a fight is to avoid it
             
 			// pause regeneration for 5 seconds
 			self.pauseregen_finished = max(self.pauseregen_finished, time + cvar("g_balance_pause_health_regen"));

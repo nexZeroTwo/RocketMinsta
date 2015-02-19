@@ -1615,6 +1615,7 @@ float announce(entity player, string filename)
         }
     return FALSE;
 }
+
 void announce_publicly(entity player, string filename)
 {
 	//FIXME: this will play the sound using the SERVER's announcer!
@@ -1624,6 +1625,27 @@ void announce_publicly(entity player, string filename)
 		announce(player, filename);
 		
 }
+
+/*
+ *  announce_game_event ( float, string, string, string )
+ * 
+ * Used to announce in game events to players and to irc.
+ * It will always bprint the announcements.
+ * If the cvar (cv_name) is less than or equal to the announcement's
+ * verbosity level (v), then the FIRST event will be printed to irc.
+ * 
+ * Consider event1 to be used for short messages and event2 for long ones.
+ */
+void announce_game_event(float v, string cv_name, string event1, string event2)
+{
+	bprint(event1, event2, "\n");
+	
+	if (cvar(cv_name) > v)
+		return;
+	
+	IRC_Announce_GameEvent(event1);
+}
+
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
 float spamsound(entity e, float chan, string samp, float vol, float atten)
 {
@@ -2246,8 +2268,21 @@ float SUB_NoImpactCheck()
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
-#define PROJECTILE_FIX(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); }
-#define PROJECTILE_FIX2(p) if(cvar("sv_gameplayfix_zerohitcontents")) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
+float projectile_skipnonsolid()
+{
+	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
+		//Trying correct origin
+		tracebox_skipnonsolid(self.origin, self.mins, self.maxs, self.origin + (self.velocity * (1 - trace_fraction) * frametime), FALSE, self);
+		if (trace_fraction == 1) // The way is clear
+			setorigin(self, trace_endpos);
+		else // We can't move right to trace_endpos, because we can go through solid surface.
+			setorigin(self, self.origin + ((trace_endpos - self.origin) * 0.99));
+		UpdateCSQCProjectile(self);
+		return TRUE;
+	}
+	return FALSE;
+}
+#define PROJECTILE_SKIPNONSOLID if (cvar("sv_gameplayfix_zerohitcontents") && projectile_skipnonsolid()) { return; }
 
 float MAX_IPBAN_URIS = 16;
 

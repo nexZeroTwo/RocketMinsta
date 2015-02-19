@@ -71,6 +71,12 @@ float IRC_Privmsg(float handle, string targ, string msg) {
     return r;
 }
 
+float IRC_Announce(float handle, string targ, string msg) {
+	if(cvar("sv_ircbot_announce_when_empty") || realclients > 0)
+		return IRC_Privmsg(handle, targ, msg);
+	return 0;
+}
+
 void IRC_UpdateTopic(void) {
     if(!cvar("sv_ircbot_update_topic"))
         return;
@@ -514,31 +520,36 @@ void IRC_Announce_ClientDisconnect(entity plr) { if(!irc) return;
 
 void IRC_Announce_GameStart(void) { if(!irc) return;
     if(cvar("sv_ircbot_announce_gamestart"))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("^3--> ^7Now playing ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^3<-- "));
+        IRC_Announce(irc.cnt, irc.target, strcat("^3--> ^7Now playing ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^3<-- "));
     defer(10, IRC_UpdateTopic);
 }
 
 void IRC_Announce_GameOver(void) { if(!irc) return;
     if(cvar("sv_ircbot_announce_gameover"))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("^1--> ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^7ended ^1<-- "));
+        IRC_Announce(irc.cnt, irc.target, strcat("^1--> ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^7ended ^1<-- "));
+}
+
+void IRC_Announce_GameEvent(string estr) { if(!irc) return;
+	if(cvar("sv_ircbot_announce_game_events"))
+		IRC_Announce(irc.cnt, irc.target, estr);
 }
 
 void IRC_Announce_Vote(string vstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_votes"))
-        IRC_Privmsg(irc.cnt, irc.target, vstr);
+        IRC_Announce(irc.cnt, irc.target, vstr);
 }
 
 void IRC_Announce_Ban(string bstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_bans"))
-        IRC_Privmsg(irc.cnt, irc.target, bstr);
+        IRC_Announce(irc.cnt, irc.target, bstr);
 }
 
 void IRC_Announce_Name(entity plr, string name) { if(!irc) return;
     if(cvar("sv_ircbot_announce_name") && (strdecolorize(plr.netname) != strdecolorize(name)))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
+        IRC_Announce(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
 }
 
 void IRC_Announce_Radio(string rstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_radio"))
-        IRC_Privmsg(irc.cnt, irc.target, rstr);
+        IRC_Announce(irc.cnt, irc.target, rstr);
 }

@@ -481,4 +481,11 @@ void SV_OnEntityPreSpawnFunction()
 		self.angles_z = self.angles_z + (random() * 2 - 1) * self.anglesjitter_z;
 	if(self.anglejitter != 0)
 		self.angles_y = self.angles_y + (random() * 2 - 1) * self.anglejitter;
+    
+    string repl = cvar_string_builtin(strcat("sv_spawnreplace_", self.classname));
+
+    if(repl != "") {
+        // XXX: this is never strunzoned because darkplaces is stupid and doesn't support a SV_OnEntityPreRemove()
+        self.classname = strzone(repl);
+    }
 }

@@ -59,6 +59,7 @@ damagetracker.qh
 irc.qh
 joinqueue.qh
 radio.qh
+g_subs.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -173,7 +174,6 @@ ipban.qc
 
 
 
-t_quake3.qc
 t_halflife.qc
 t_quake.qc
 

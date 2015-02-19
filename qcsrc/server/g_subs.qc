@@ -302,24 +302,103 @@ void main (void)
 }
 
 // Misc
+//
+entity _pseudo_bullet;
 
-.entity trace_savedowner;
+entity pseudo_bullet(entity forent) {
+    if (!cvar("sv_gameplayfix_shootownentities"))
+        return forent;
+    if(!_pseudo_bullet)
+        _pseudo_bullet = spawn();
+    _pseudo_bullet.owner = forent;
+    return _pseudo_bullet;
+}
 
-void trace_start_for(entity o) {
-    if(!cvar("sv_gameplayfix_shootownentities"))
+void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
+    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+        traceline(start, end, t, forent);
         return;
-
-    entity e; for(;(e = findentity(e, owner, o));) {
-        e.trace_savedowner = o;
-        e.owner = world;
+    }
+    float prev_trace_fract = 0;
+    float tries;
+    for (tries = 10; tries > 0; tries--) {
+        traceline(start, end, t, forent);
+        if(trace_fraction == 1)
+            break;
+        trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
+        if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
+            break;
+        if (trace_endpos == start) {
+            start += normalize(end - start) * 0.01;
+            if (tries == 1) print("Can't escape from nonsolid!\n");
+        } else
+            start = trace_endpos;
+        prev_trace_fract = trace_fraction;
     }
 }
 
-void trace_end_for(entity o) {
-    entity e; for(;(e = findentity(e, trace_savedowner, o));) {
-        e.trace_savedowner = world;
-        e.owner = o;
+void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
+    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+        tracebox(start, mi, ma, end, nomonst, forent);
+        return;
     }
+    float prev_trace_fract = 0;
+    float tries;
+    for (tries = 10; tries > 0; tries--) {
+        tracebox(start, mi, ma, end, nomonst, forent);
+        if(trace_fraction == 1)
+            break;
+        trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
+        if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
+            break;
+        if (trace_endpos == start) {
+            start += normalize(end - start) * 0.01;
+            if (tries == 1) print("Can't escape from nonsolid!\n");
+        } else
+            start = trace_endpos;
+        prev_trace_fract = trace_fraction;
+    }
+}
+
+void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
+    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+        vector v0;
+        float g0;
+        v0 = ent.velocity;
+        g0 = ent.gravity;
+        ent.velocity = ent.velocity * toss_frametime * 20;
+        ent.gravity *= (toss_frametime * toss_frametime * 400);
+        tracetoss(ent, ignore);
+        ent.velocity= v0;
+        ent.gravity = g0;
+        return;
+    }
+    //Almost full copy of darkplaces tracetoss but with tracebox_skipnonsolid instead tracebox.
+    float i, tries;
+    vector end;
+    vector velocity_save = ent.velocity;
+    vector avelocity_save = ent.avelocity;
+    vector origin_save = ent.origin;
+    vector angles_save = ent.angles;
+    for (i = 0; i < toss_count; i++) {
+        ent.velocity_y = ent.velocity_y - (ent.gravity * (vlen(trace_endpos - ent.origin) / vlen(ent.velocity)));
+        ent.angles = ent.angles + (ent.avelocity *  toss_frametime);
+        end = ent.origin + (ent.velocity * toss_frametime);
+        for (tries = 10; tries > 0; tries--) {
+            tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
+            if (trace_endpos == ent.origin)
+                ent.origin += normalize(ent.velocity) * 0.01;
+            else
+                ent.origin = trace_endpos;
+            if(trace_fraction == 1 || trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
+                break;
+        }
+        if (trace_fraction < 1) break;
+    }
+    ent.velocity = velocity_save;
+    ent.avelocity = avelocity_save;
+    ent.origin = origin_save;
+    ent.angles = angles_save;
 }
 
 /*
@@ -360,7 +439,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	}
 
 	// do the trace
-	tracebox (v1, mi, ma, v2, nomonst, forent);
+	tracebox_skipnonsolid (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
 
 	// restore players to current positions
 	if (lag)
@@ -441,7 +520,6 @@ float tracerail_active;
 .string tracerail_dphittexturename;
 
 entity tracerail(vector start, vector end, float t, entity forent) {
-    float tries;
     entity first, last, e;
     
     if(tracerail_active) {
@@ -453,21 +531,10 @@ entity tracerail(vector start, vector end, float t, entity forent) {
     tracerail_active = TRUE;
 
     while(TRUE) {
-        traceline(start, end, t, forent);
+        traceline_skipnonsolid(start, end, t, forent);
 
-        if(!trace_ent) {
-            if(trace_fraction == 1)
-                break;
-
-            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
-                break;
-            
-            if(++tries == 3)
-                break;
-            
-            start = trace_endpos;
-            continue;
-        }
+        if(!trace_ent)
+            break;
 
         if(!first)
             first = trace_ent;
@@ -551,7 +618,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_takeback(player, time - lag);
 
-    e = tracerail(start, end, t, forent);
+    e = tracerail(start, end, t, pseudo_bullet(forent));
 
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_restore(player);
