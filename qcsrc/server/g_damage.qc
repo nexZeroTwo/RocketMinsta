@@ -391,7 +391,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		} else if(attacker.classname == "player" || attacker.classname == "gib") {
 			if(teams_matter && attacker.team == targ.team && !jaildm) {
 				GiveFrags(attacker, inflictor, targ, -1);
-
 				attacker.killcount = 0;
 				LogDeath("tk", deathtype, attacker, targ);
 			} else {

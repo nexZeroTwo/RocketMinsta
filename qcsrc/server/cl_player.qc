@@ -1372,7 +1372,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 		if(teamsay || (cvar("g_chat_nospectators") == 1) || (cvar("g_chat_nospectators") == 2 && !inWarmupStage))
 			teamsay = -1; // spectators
 	}
-
+    
     if(flood)
         print("NOTE: ", playername(source), "^7 is flooding.\n");
     else if(!teamsay && !privatesay)

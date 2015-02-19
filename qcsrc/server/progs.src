@@ -22,6 +22,7 @@ defs.qh		// Should rename this, it has fields and globals
 tturrets/include/turrets_early.qh
 
 ../common/dprm.qh
+irc.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
@@ -184,7 +185,6 @@ teamcount.qc
 damagetracker.qc
 ../common/dprm.qc
 ../common/gametype.qc
-
 
 //// tZork Turrets ////
 tturrets/include/turrets.qh

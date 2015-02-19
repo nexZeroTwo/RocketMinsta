@@ -92,7 +92,7 @@ void IRC_UpdateTopic(void) {
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server empty");
     else if(totalclients == maxclients && cvar("sv_ircbot_update_topic_serverfull"))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
-    
+
     if(cvar_string("_sv_ircbot_lasttopic") != IRC_DP2IRC(s) || irc.skin > 1) {
         IRC_Topic(irc.cnt, irc.target, s);
     }
@@ -494,14 +494,14 @@ void IRC_Announce_Client(entity plr, float ispart) {
     entity ctx = spawn();
     ctx.cnt = ispart;
     ctx.owner = plr;
-    
+
     if(cvar("sv_ircbot_announce_joinparts_showcountry"))
     if(cvar("sv_ip2country"))
     if(cvar_string("sv_ip2country_server") != "") {
         IP2C_Lookup(plr.netaddress, IRC_Announce_Client_Callback, cvar("sv_ircbot_announce_joinparts_showcountry_timeout"), ctx);
         return;
     }
-    
+
     IRC_Announce_Client_Callback(plr.netaddress, "", ctx);
 }
 

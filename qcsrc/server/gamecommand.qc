@@ -602,7 +602,7 @@ void GameCommand(string command)
 	float entno, i;
 	string s;
 	argc = tokenize_console(command);
-
+	
 	if(argv(0) == "help" || argc == 0)
 	{
 		print("Usage: sv_cmd COMMAND..., where possible commands are:\n");
@@ -630,22 +630,22 @@ void GameCommand(string command)
 		GameCommand_Generic("help");
 		return;
 	}
-
+	
 	if(GameCommand_Vote(command, world))
 		return;
-
+	
 	if(GameCommand_Ban(command))
 		return;
-
+	
 	if(GameCommand_Generic(command))
 		return;
-
+	
 	if(argv(0) == "printstats")
 	{
 		DumpStats(FALSE);
 		return;
 	}
-
+	
 	if(argv(0) == "make_mapinfo")
 	{
 		e = spawn();
@@ -655,7 +655,7 @@ void GameCommand(string command)
 		MapInfo_Enumerate();
 		return;
 	}
-
+	
 	if(argv(0) == "warp") if(argc == 2) if(cvar("g_campaign"))
 	{
 		CampaignLevelWarp(stof(argv(1)));
@@ -716,7 +716,7 @@ void GameCommand(string command)
 			bprint("Game type switch to ", s, " failed: this type does not exist!\n");
 		return;
 	}
-
+	
 	if(argv(0) == "adminmsg") if(argc == 3)
 	{
 		entno = stof(argv(1));
@@ -733,21 +733,21 @@ void GameCommand(string command)
 			print("Client not found\n");
 		return;
 	}
-
+	
 	if(argv(0) == "savedb") if(argc == 2)
 	{
 		db_save(ServerProgsDB, argv(1));
 		print("DB saved.\n");
 		return;
 	}
-
+	
 	if(argv(0) == "dumpdb") if(argc == 2)
 	{
 		db_dump(ServerProgsDB, argv(1));
 		print("DB dumped.\n");
 		return;
 	}
-
+	
 	if(argv(0) == "loaddb") if(argc == 2)
 	{
 		db_close(ServerProgsDB);
@@ -803,10 +803,10 @@ void GameCommand(string command)
 			float lt;
 			lt = lockteams;
 			lockteams = 0;
-
+			
 			self = client;
 			SV_ParseClientCommand(strcat("selectteam ", argv(2)));
-
+			
 			lockteams = lt;
 		}
 		else
@@ -856,7 +856,7 @@ void GameCommand(string command)
 		print(records_reply);
 		return;
 	}
-
+	
 	if(argv(0) == "cointoss")
 	{
 		bprint("^3Throwing coin... Result: ");
@@ -866,19 +866,19 @@ void GameCommand(string command)
 			bprint("^1tails ^3!\n");
 		return;
 	}
-
+	
 	if(argv(0) == "__FORCE_READY_RESTART")
 	{
 		reset_map(FALSE);
 		return;
 	}
-
+	
 	if(argv(0) == "debug_shotorg")
 	{
 		debug_shotorg = stov(argv(1));
 		return;
 	}
-
+	
 	if(argv(0) == "gettaginfo") if(argc >= 4)
 	{
 		e = spawn();
@@ -905,7 +905,7 @@ void GameCommand(string command)
 		remove(e);
 		return;
 	}
-
+	
 	if(argv(0) == "time")
 	{
 		print("time = ", ftos(time), "\n");
@@ -917,7 +917,7 @@ void GameCommand(string command)
 		print("gmtime = ", strftime(FALSE, "%a %b %e %H:%M:%S %Z %Y"), "\n");
 		return;
 	}
-
+	
 	if(argv(0) == "tracebug")
 	{
 		print("TEST CASE. If this returns the runaway loop counter error, possibly everything is oaky.\n");
@@ -925,21 +925,21 @@ void GameCommand(string command)
 		{
 			vector org, delta, start, end, p, pos;
 			float safe, unsafe;
-
+			
 			org = world.mins;
 			delta = world.maxs - world.mins;
-
+			
 			start_x = org_x + random() * delta_x;
 			start_y = org_y + random() * delta_y;
 			start_z = org_z + random() * delta_z;
-
+			
 			end_x = org_x + random() * delta_x;
 			end_y = org_y + random() * delta_y;
 			end_z = org_z + random() * delta_z;
-
+			
 			start = stov(vtos(start));
 			end = stov(vtos(end));
-
+			
 			tracebox(start, PL_MIN, PL_MAX, end, MOVE_NOMONSTERS, world);
 			if(!trace_startsolid)
 			{
@@ -950,7 +950,7 @@ void GameCommand(string command)
 					rint(42); // do an engine breakpoint on VM_rint so you can get the trace that errnoeously returns startsolid
 					tracebox(start, PL_MIN, PL_MAX, end, MOVE_NOMONSTERS, world);
 					tracebox(p, PL_MIN, PL_MAX, p, MOVE_NOMONSTERS, world);
-
+					
 					// how much do we need to back off?
 					safe = 1;
 					unsafe = 0;
@@ -971,10 +971,10 @@ void GameCommand(string command)
 							safe = (safe + unsafe) * 0.5;
 						}
 					}
-
+					
 					print("safe distance to back off: ", ftos(safe * vlen(p - start)), "qu\n");
 					print("unsafe distance to back off: ", ftos(unsafe * vlen(p - start)), "qu\n");
-
+					
 					tracebox(p, PL_MIN + '0.1 0.1 0.1', PL_MAX - '0.1 0.1 0.1', p, MOVE_NOMONSTERS, world);
 					if(trace_startsolid)
 						print("trace_endpos much in solid when tracing from ", vtos(start), " to ", vtos(end), " endpos ", vtos(trace_endpos), "\n");
@@ -985,7 +985,7 @@ void GameCommand(string command)
 			}
 		}
 	}
-
+	
 	if(argv(0) == "tracewalk")
 	{
 		e = nextent(world);
@@ -995,18 +995,18 @@ void GameCommand(string command)
 			print("cannot walk\n");
 		return;
 	}
-
+	
 	if(argv(0) == "onslaught_updatelinks")
 	{
 		onslaught_updatelinks();
 		print("ONS links updated\n");
 		return;
 	}
-
+	
 	if(argv(0) == "bot_cmd")
 	{
 		local entity bot;
-
+		
 		if(argv(1) == "help")
 		{
 			if(argc==2)
@@ -1017,18 +1017,18 @@ void GameCommand(string command)
 				print("\nUse sv_cmd bot_cmd help <command> for more\n\n");
 				return;
 			}
-
+			
 			bot_cmdhelp(argv(2));
 			return;
 		}
-
+		
 		// Clear all bot queues
 		if(argv(1) == "reset")
 		{
 			bot_resetqueues();
 			return;
 		}
-
+		
 		// Load cmds from file
 		if(argv(1) == "load" && argc == 3)
 		{
@@ -1039,12 +1039,12 @@ void GameCommand(string command)
 				print("cannot open the file\n");
 				return;
 			}
-
+			
 			i = 0;
 			while((s = fgets(fh)))
 			{
 				argc = tokenize_console(s);
-
+				
 				if(argc >= 3 && argv(0) == "sv_cmd" && argv(1) == "bot_cmd")
 				{
 					// let's start at token 2 so we can skip sv_cmd bot_cmd
@@ -1056,17 +1056,17 @@ void GameCommand(string command)
 				}
 				else
 					localcmd(strcat(s, "\n"));
-
+				
 				++i;
 			}
-
+			
 			print(ftos(i), " commands read\n");
-
+			
 			fclose(fh);
-
+			
 			return;
 		}
-
+		
 		if(argc < 3)
 		{
 			print("Usage: sv_cmd bot_cmd <bot name or number> <command> [argument]\n");
@@ -1075,16 +1075,16 @@ void GameCommand(string command)
 			print("          .. or sv_cmd bot_cmd help <command> for more\n");
 			return;
 		}
-
+		
 		bot = find_bot_by_number(stof(argv(1)));
 		if(bot == world)
 			bot = find_bot_by_name(argv(1));
-
+		
 		if(bot)
 			bot_queuecommand(bot, strcat(argv(2), " ", argv(3)));
 		else
 			print(strcat("Error: Unable to find a bot with the name or number '",argv(1),"'\n"));
-
+		
 		return;
 	}
 	
@@ -1168,7 +1168,7 @@ void GameCommand(string command)
 		
 		return;
 	}
-	
+
 	if(argv(0) == "supermentalrescue")
 	{
 		FOR_EACH_REALCLIENT(e) if(e.classname)
@@ -1344,4 +1344,3 @@ void GameCommand(string command)
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
-

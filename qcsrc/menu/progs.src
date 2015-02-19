@@ -33,6 +33,7 @@ oo/implementation.h
 
 ../common/flag_anim.qc
 ../common/util.qc
+../common/gametype.qc
 ../common/gamecommand.qc
 gamecommand.qc
 menu.qc
@@ -45,6 +46,5 @@ NewMenu/util.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
-../common/gametype.qc            
 ../common/nadgets.qc
 

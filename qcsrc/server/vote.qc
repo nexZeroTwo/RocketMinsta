@@ -477,6 +477,7 @@ void Vote_SendInvitation(void) {
 float GameCommand_Vote(string s, entity e) {
 	float argc;
     string tmp;
+
 	argc = tokenize_console(s);
 	if(argv(0) == "help") {
 		UnmarkAway(e);
@@ -534,9 +535,11 @@ float GameCommand_Vote(string s, entity e) {
 							e.vote_vote = 1; // of course you vote yes
 							e.vote_next = time + cvar("sv_vote_wait");
 						}
+
                         tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote for ", votecalledvote_display);
 						bprint("\{1}", tmp, "\n");
                         IRC_Announce_Vote(tmp);
+
 						if(cvar("sv_eventlog"))
 							GameLogEcho(strcat(":vote:vcall:", ftos(votecaller.playerid), ":", votecalledvote_display));
 						VoteCount(); // needed if you are the only one
@@ -629,7 +632,9 @@ float GameCommand_Vote(string s, entity e) {
 					}
                     tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote to become ^3master^2");
 					bprint("\{1}", tmp, "\n");
+
                     vote_invite = FALSE;
+
                     IRC_Announce_Vote(tmp);
 					if(cvar("sv_eventlog"))
 						GameLogEcho(strcat(":vote:vcall:", ftos(votecaller.playerid), ":", votecalledvote_display));

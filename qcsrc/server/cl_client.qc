@@ -1872,8 +1872,11 @@ void ClientConnect (void)
 	self.jointime = time;
 	self.allowedTimeouts = cvar("sv_timeout_number");
 
+	++totalclients;
 	if(clienttype(self) == CLIENTTYPE_REAL)
 	{
+		++realclients;
+		IRC_Announce_ClientConnect(self);
 		if(cvar("g_bugrigs") || g_weaponarena == WEPBIT_TUBA)
 			stuffcmd(self, "cl_cmd settemp chase_active 1\n");
 	}

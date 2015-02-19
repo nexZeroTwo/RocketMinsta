@@ -2,13 +2,6 @@
 //QUAKE 1 ENTITIES - So people can play quake1 maps with the our weapons
 //***********************
 
-<<<<<<< HEAD
-void spawnfunc_item_spikes (void) {spawnfunc_item_bullets();}
-//void spawnfunc_item_armor1 (void) {spawnfunc_item_armor_medium;}  // FIXME: in Quake this is green armor, in our maps it is an armor shard
-void spawnfunc_item_armor2 (void) {spawnfunc_item_armor_large();}
-void item_armorInv (void) {spawnfunc_item_armor_large();}
-=======
->>>>>>> unstable
 void spawnfunc_item_health (void) {if (self.spawnflags & 2) spawnfunc_item_health_mega();else spawnfunc_item_health_medium();}
 
 //spawnfunc_item_spikes
