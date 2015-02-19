@@ -522,6 +522,11 @@ void IRC_Announce_GameOver(void) { if(!irc) return;
         IRC_Announce(irc.cnt, irc.target, strcat("^1--> ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^7ended ^1<-- "));
 }
 
+void IRC_Announce_GameEvent(string estr) { if(!irc) return;
+	if(cvar("sv_ircbot_announce_game_events"))
+		IRC_Announce(irc.cnt, irc.target, estr);
+}
+
 void IRC_Announce_Vote(string vstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_votes"))
         IRC_Announce(irc.cnt, irc.target, vstr);

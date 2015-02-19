@@ -1368,6 +1368,13 @@ void announce_publicly(entity player, string filename)
 		announce(player, filename);
 		
 }
+
+void announce_game_event(string event)
+{
+	bprint(event);
+	IRC_Announce_GameEvent(event);
+}
+
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
 float spamsound(entity e, float chan, string samp, float vol, float atten)
 {
