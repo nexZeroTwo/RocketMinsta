@@ -328,23 +328,23 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			{
 				if(sv_gentle) {
 					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You went against a team mate!"));
-					bprint ("^1", a, "^1 took action against a team mate\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_team_kill", strcat("^1", a, "^1 took action against team mate ", s), "");
 				} else {
 					centerprint(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^1Moron! You fragged ", s, ", a team mate!"));
-					bprint ("^1", a, "^1 mows down a team mate\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_team_kill", strcat("^1", a, "^1 team kills ", s), "");
 				}
 				GiveFrags(attacker, targ, -1);
 				if (targ.killcount > 2) {
 					if(sv_gentle)
-						bprint ("^1",s,"'s ^1",ftos(targ.killcount)," scoring spree was ended by a team mate!\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_team_kill", strcat("^1",s,"'s ^1",ftos(targ.killcount)," scoring spree was ended by a team mate!"), "");
 					else
-						bprint ("^1",s,"'s ^1",ftos(targ.killcount)," kill spree was ended by a team mate!\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_team_kill", strcat("^1",s,"'s ^1",ftos(targ.killcount)," kill spree was ended by a team mate!"),"");
 				}
 				if (attacker.killcount > 2) {
 					if(sv_gentle)
-						bprint ("^1",a,"^1 ended a ",ftos(attacker.killcount)," scoring spree by going against a team mate\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_team_kill", strcat("^1",a,"^1 ended a ",ftos(attacker.killcount)," scoring spree by going against a team mate"), "");
 					else
-						bprint ("^1",a,"^1 ended a ",ftos(attacker.killcount)," kill spree by killing a team mate\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_team_kill", strcat("^1",a,"^1 ended a ",ftos(attacker.killcount)," kill spree by killing a team mate"), "");
 				}
 				attacker.killcount = 0;
 
@@ -358,13 +358,13 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 					checkrules_firstblood = TRUE;
 					if(sv_gentle)
 					{
-						bprint("^1",a, "^1 was the first to score", "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_first_blood", strcat("^1",a, "^1 was the first to score"), "");
 						blood_message = "^1First point\n";
 						//victim_message = "^1First victim\n";  // or First casualty
 					}
 					else
 					{
-						bprint("^1",a, "^1 drew first blood", "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_first_blood", strcat("^1",a, "^1 draws first blood against ",s), "");
 						blood_message = "^1First blood\n";
 						victim_message = "^1First victim\n";  // or First casualty
 					}
@@ -395,37 +395,37 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 							bprint("^1", s, "^1 ", substring(w_deathtypestring, 0, p), a, "^1", substring(w_deathtypestring, p+1, strlen(w_deathtypestring) - (p+1)), "\n");
 					}
 					else if (deathtype == DEATH_TELEFRAG)
-						bprint ("^1",s, "^1 was telefragged by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was telefragged by ", a), "");
 					else if (deathtype == DEATH_DROWN)
-						bprint ("^1",s, "^1 was drowned by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was drowned by ", a), "");
 					else if (deathtype == DEATH_SLIME)
-						bprint ("^1",s, "^1 was slimed by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was slimed by ", a), "");
 					else if (deathtype == DEATH_LAVA)
-						bprint ("^1",s, "^1 was cooked by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was cooked by ", a), "");
 					else if (deathtype == DEATH_FALL)
-						bprint ("^1",s, "^1 was grounded by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was grounded by ", a), "");
 					else if (deathtype == DEATH_SHOOTING_STAR)
-						bprint ("^1",s, "^1 was shot into space by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was shot into space by ", a), "");
 					else if (deathtype == DEATH_SWAMP)
-						bprint ("^1",s, "^1 was conserved by ", a, "\n");
+						announce_game_event(1, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was conserved by ", a), "");
 					else if (deathtype == DEATH_HURTTRIGGER && inflictor.message2 != "")
 					{
 						p = strstrofs(inflictor.message2, "#", 0);
 						if(p < 0)
-							bprint("^1", s, "^1 ", inflictor.message2, " ", a, "\n");
+							announce_game_event(3, "sv_ircbot_announce_game_events_kills_extra", strcat("^1", s, "^1 ", inflictor.message2, " ", a), "");
 						else
-							bprint("^1", s, "^1 ", substring(inflictor.message2, 0, p), a, "^1", substring(inflictor.message2, p+1, strlen(inflictor.message2) - (p+1)), "\n");
+							announce_game_event(3, "sv_ircbot_announce_game_events_kills_extra", strcat("^1", s, "^1 ", substring(inflictor.message2, 0, p), a, "^1", substring(inflictor.message2, p+1, strlen(inflictor.message2) - (p+1))), "");
 					}
 					else if(deathtype == DEATH_TURRET)
-						bprint ("^1",s, "^1 was pushed into the line of fire by ^1", a, "\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was pushed into the line of fire by ^1", a), "");
 					else if(deathtype == DEATH_TOUCHEXPLODE)
-						bprint ("^1",s, "^1 was pushed into an accident by ^1", a, "\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was pushed into an accident by ^1", a), "");
 					else if(deathtype == DEATH_CHEAT)
-						bprint ("^1",s, "^1 was unfairly eliminated by ^1", a, "\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was unfairly eliminated by ^1", a), "");
 					else if (deathtype == DEATH_FIRE)
-						bprint ("^1",s, "^1 was burnt to death by ^1", a, "\n");
+						announce_game_event(2, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was burnt to death by ^1", a), "");
 					else
-						bprint ("^1",s, "^1 was fragged by ", a, "\n");
+						announce_game_event(4, "sv_ircbot_announce_game_events_kills_extra", strcat("^1",s, "^1 was fragged by ", a), "");
 				}
 
 				if(g_ctf && targ.flagcarried)
@@ -458,72 +458,72 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				if (attacker.killcount == 3)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made a ^1TRIPLE SCORE\n");
+						announce_game_event(3, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made a ^1TRIPLE SCORE"), "");
 					} else {
-						bprint (a,"^7 made a ^1TRIPLE FRAG\n");
+						announce_game_event(3, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made a ^1TRIPLE FRAG"), "");
 						announce_publicly(attacker, "03kills.wav");
 					}
 				}
 				else if (attacker.killcount == 5)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 unleashes ^1SCORING RAGE\n");
+						announce_game_event(5, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 unleashes ^1SCORING RAGE"), "");
 					} else {
-						bprint (a,"^7 unleashes ^1RAGE\n");
+						announce_game_event(5, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 unleashes ^1RAGE"), "");
 						announce_publicly(attacker, "05kills.wav");
 					}
 				}
 				else if (attacker.killcount == 10)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1TEN SCORES IN A ROW!\n");
+						announce_game_event(10, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1TEN SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 starts the ^1MASSACRE!\n");
+						announce_game_event(10, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 starts the ^1MASSACRE!"), "");
 						announce_publicly(attacker, "10kills.wav");
 					}
 				}
 				else if (attacker.killcount == 15)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1FIFTEEN SCORES IN A ROW!\n");
+						announce_game_event(15, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1FIFTEEN SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 executes ^1MAYHEM!\n");
+						announce_game_event(15, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 executes ^1MAYHEM!"), "");
 						announce_publicly(attacker, "15kills.wav");
 					}
 				}
 				else if (attacker.killcount == 20)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1TWENTY SCORES IN A ROW!\n");
+						announce_game_event(20, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1TWENTY SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 is a ^1BERSERKER!\n");
+						announce_game_event(20, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 is a ^1BERSERKER!"), "");
 						announce_publicly(attacker, "20kills.wav");
 					}
 				}
 				else if (attacker.killcount == 25)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1TWENTY FIFE SCORES IN A ROW!\n");
+						announce_game_event(25, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1TWENTY FIFE SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 inflicts ^1CARNAGE!\n");
+						announce_game_event(25, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 inflicts ^1CARNAGE!"), "");
 						announce_publicly(attacker, "25kills.wav");
 					}
 				}
 				else if (attacker.killcount == 30)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1THIRTY SCORES IN A ROW!\n");
+						announce_game_event(30, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1THIRTY SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 unleashes ^1ARMAGEDDON!\n");
+						announce_game_event(30, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 unleashes ^1ARMAGEDDON!"), "");
 						announce_publicly(attacker, "30kills.wav");
 					}
 				}
 				else if (attacker.killcount == 50)
 				{
 					if(sv_gentle) {
-						bprint (a,"^7 made ^1FIFTY SCORES IN A ROW!\n");
+						announce_game_event(50, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 made ^1FIFTY SCORES IN A ROW!"), "");
 					} else {
-						bprint (a,"^7 unleashes ^1BOTLIKE!\n");
+						announce_game_event(50, "sv_ircbot_announce_game_events_kills", strcat(a,"^7 unleashes ^1BOTLIKE!"), "");
 						announce_publicly(attacker, "botlike.wav");
 					}
 				}
@@ -536,44 +536,44 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				bprint ("^1",s, "^1 ", inflictor.message, "\n");
 			else if (deathtype == DEATH_DROWN)
 				if(sv_gentle)
-					bprint ("^1",s, "^1 was in the water for too long\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 was in the water for too long"), "");
 				else
-					bprint ("^1",s, "^1 drowned\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 drowned"), "");
 			else if (deathtype == DEATH_SLIME)
-				bprint ("^1",s, "^1 was slimed\n");
+				announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 was slimed"), "");
 			else if (deathtype == DEATH_LAVA)
 				if(sv_gentle)
-					bprint ("^1",s, "^1 found a hot place\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 found a hot place"), "");
 				else
-					bprint ("^1",s, "^1 turned into hot slag\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 turned into hot slag"), "");
 			else if (deathtype == DEATH_FALL)
 				if(sv_gentle)
-					bprint ("^1",s, "^1 tested gravity (and it worked)\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 tested gravity (and it worked)"), "");
 				else
-					bprint ("^1",s, "^1 hit the ground with a crunch\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 hit the ground with a crunch"), "");
 			else if (deathtype == DEATH_SHOOTING_STAR)
-				bprint ("^1",s, "^1 became a shooting star\n");
+				announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 became a shooting star"), "");
 			else if (deathtype == DEATH_SWAMP)
 				if(sv_gentle)
-					bprint ("^1",s, "^1 discovered a swamp\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 discovered a swamp"), "");
 				else
-					bprint ("^1",s, "^1 is now conserved for centuries to come\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 is now conserved for centuries to come"), "");
 			else if(deathtype == DEATH_TURRET)
-				bprint ("^1",s, "^1 was mowed down by a turret \n");
+				announce_game_event(2, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 was mowed down by a turret"), "");
 			else if(deathtype == DEATH_TOUCHEXPLODE)
-				bprint ("^1",s, "^1 died in an accident\n");
+				announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 died in an accident"), "");
 			else if(deathtype == DEATH_CHEAT)
-				bprint ("^1",s, "^1 was unfairly eliminated\n");
+				announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 was unfairly eliminated"), "");
 			else if(deathtype == DEATH_FIRE)
 				if(sv_gentle)
-					bprint ("^1",s, "^1 felt a little hot\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 felt a little hot"), "");
 				else
-					bprint ("^1",s, "^1 burnt to death\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 burnt to death\n"), "");
 			else
 				if(sv_gentle)
-					bprint ("^1",s, "^1 needs a restart\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 needs a restart"), "");
 				else
-					bprint ("^1",s, "^1 died\n");
+					announce_game_event(1, "sv_ircbot_announce_game_events_suicides", strcat("^1",s, "^1 died"), "");
 			GiveFrags(targ, targ, -1);
 			if(PlayerScore_Add(targ, SP_SCORE, 0) == -5) {
 				announce_publicly(targ, "botlike.wav");
