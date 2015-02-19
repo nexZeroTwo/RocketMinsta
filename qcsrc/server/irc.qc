@@ -546,10 +546,10 @@ void IRC_Announce_Ban(string bstr) { if(!irc) return;
 
 void IRC_Announce_Name(entity plr, string name) { if(!irc) return;
     if(cvar("sv_ircbot_announce_name") && (strdecolorize(plr.netname) != strdecolorize(name)))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
+        IRC_Announce(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
 }
 
 void IRC_Announce_Radio(string rstr) { if(!irc) return;
     if(cvar("sv_ircbot_announce_radio"))
-        IRC_Privmsg(irc.cnt, irc.target, rstr);
+        IRC_Announce(irc.cnt, irc.target, rstr);
 }
