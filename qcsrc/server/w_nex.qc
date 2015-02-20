@@ -178,6 +178,6 @@ float w_nex(float req)
 	else if (req == WR_CHECKAMMO1)
 		return self.ammo_cells >= cvar("g_balance_nex_ammo");
 	else if (req == WR_CHECKAMMO2)
-		return FALSE;
+		return self.ammo_cells >= cvar("g_balance_nex_secondary_ammo");
 	return TRUE;
 };
