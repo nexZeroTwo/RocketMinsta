@@ -151,7 +151,7 @@ float w_nex(float req)
         }
 
         if(self.BUTTON_ATCK2 && cvar("g_balance_nex_secondary")) {
-            if(weapon_prepareattack(0, cvar("g_balance_nex_secondary_refire"))) {
+            if(weapon_prepareattack(1, cvar("g_balance_nex_secondary_refire"))) {
                 float ct = cvar("g_balance_nex_secondary_chargetime");
                 weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
                 ct *= W_WeaponRateFactor();
