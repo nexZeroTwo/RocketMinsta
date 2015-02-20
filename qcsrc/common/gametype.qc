@@ -143,10 +143,10 @@ float gametype_Extrapolate ()
 	return game_new;
 }
 
-void gametype_Set (float gametype)
+void gametype_Set (float type)
 {
 	gametype_Reset ();
-	switch(gametype)
+	switch(type)
 	{
 		case GAME_DEATHMATCH:
 			cvar_set("g_dm", "1"); g_dm = 1;
@@ -218,8 +218,8 @@ void gametype_Set (float gametype)
 		default:
 			return;
 	}
-	game = gametype;
-	cvar_set("gamecfg", ftos(gametype));
+	game = type;
+	cvar_set("gamecfg", ftos(type));
 }
 
 void gametype_Reset ()
