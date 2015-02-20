@@ -378,14 +378,14 @@ void SV_OnEntityPreSpawnFunction()
 				continue;
 			if(strstrofs(self.gametype, s, 0) >= 0)
 			{
-				print(strcat("Founded pattern '", s, "' for entity '", self.classname, "' with gametype '", self.gametype, "'\n"));
+				print(strcat("Found pattern '", s, "' for entity '", self.classname, "' with gametype '", self.gametype, "'\n"));
 				matched = 1;
 				break;
 			}
 		}
 		if not(matched)
 		{
-			print(strcat("Remove entity '", self.classname, "' with gametype '", self.gametype, "' because no patterns found\n"));
+			print(strcat("Removed entity '", self.classname, "' with gametype '", self.gametype, "' because no patterns found\n"));
 			remove(self);
 			return;
 		}
