@@ -103,6 +103,7 @@ const float ENT_CLIENT_SPIDERBOT = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
 const float ENT_CLIENT_ZAPPER = 23;
 const float ENT_CLIENT_BUFFMODEL = 24;
+const float ENT_CLIENT_ZAPPER_SHIELD = 25;
 
 const float ENT_CLIENT_TURRET = 40;
 

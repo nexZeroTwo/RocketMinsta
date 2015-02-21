@@ -1,5 +1,7 @@
 
 .entity zapper_beam;
+.entity zapper_shield;
+
 .float zapper_range;
 .float zapper_expire;
 .float zapper_tracespeed;
@@ -18,6 +20,8 @@ float W_Zapper_Attack1_CheckAmmo(entity p) {
 }
 
 float W_Zapper_Attack2_CheckAmmo(entity p) {
+    if(cvar("g_balance_zapper_secondary_shield"))
+        return p.ammo_cells >= 1;
     return p.ammo_cells >= cvar("g_balance_zapper_secondary_ammo");
 }
 
@@ -38,7 +42,11 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         }
     }
 
-    WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER);
+    if(self.classname == "zapper_shield_beam")
+        WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER_SHIELD);
+    else
+        WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER);
+
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
@@ -73,13 +81,13 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     return TRUE;
 }
 
-float W_Zapper_Beam_Expired(void) {
+float W_Zapper_Beam_Expired(float secondary) {
     if(time > self.zapper_expire)
         return TRUE;
 
     if(self.owner.zapper_heat >= 1)
         return TRUE;
-
+    
     if(self.owner.weapon != WEP_ZAPPER)
         return TRUE;
 
@@ -92,14 +100,19 @@ float W_Zapper_Beam_Expired(void) {
     if(self.owner.hg_stealth)
         return TRUE;
 
-    if(!W_Zapper_Attack1_CheckAmmo(self.owner))
-        return TRUE;
+    if(secondary) {
+        if(!W_Zapper_Attack2_CheckAmmo(self.owner))
+            return TRUE;
+    } else {
+        if(!W_Zapper_Attack1_CheckAmmo(self.owner))
+            return TRUE;
+    }
 
     return FALSE;
 }
 
 void W_Zapper_Beam_Think(void) {
-    if(W_Zapper_Beam_Expired()) {
+    if(W_Zapper_Beam_Expired(FALSE)) {
         if(self.owner.zapper_beam == self)
             self.owner.zapper_beam = world;
         remove(self);
@@ -325,6 +338,158 @@ void W_Zapper_Attack2(void) {
 
 }
 
+void W_Zapper_Shield_Beam_Think(void) {
+    makevectors(self.owner.angles);
+    W_SetupShot(self.owner, FALSE, 0, "", -1);
+
+    vector end = w_shotorg + w_shotdir * 7;
+    entity o = self.owner;
+
+    traceline(w_shotorg, end, FALSE, o);
+
+    end = trace_endpos;
+
+    vector org = gettaginfo(self.owner.exteriorweaponentity, gettagindex(self.owner.exteriorweaponentity, "_"));
+
+    if(org)
+        org = org + v_forward * self.owner.exteriorweaponentity.maxs_x * 0.66 + v_up * self.owner.exteriorweaponentity.maxs_z * 0.4;
+    else
+        org = w_shotorg;
+
+    if(org != self.zapper_beam_start) {
+        self.SendFlags |= 2;
+        self.zapper_beam_start = org;
+    }
+
+    if(end != self.zapper_beam_end) {
+        self.SendFlags |= 4;
+        self.zapper_beam_end = end;
+    }
+
+    self.nextthink = time;
+}
+
+void W_Zapper_Shield_Think(void) {
+    float expired;
+    entity o = self;
+    self = self.enemy;
+    expired = W_Zapper_Beam_Expired(TRUE);
+    self = o;
+
+    if(expired) {
+        self.alpha = approach(self.alpha, 0, frametime * 20);
+
+        if(self.owner.zapper_shield == self)
+            self.owner.zapper_shield = world;
+    } else {
+        self.alpha = approach(self.alpha, 1, frametime * 10);
+
+        if(self == self.enemy) {
+            if(!(self.owner.items & IT_UNLIMITED_AMMO))
+                self.owner.ammo_cells = max(0, self.owner.ammo_cells - frametime * cvar("g_balance_zapper_secondary_ammo"));
+
+            if(self.owner.zapper_heat >= 0) {
+                self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_secondary_shield_heatup") * frametime), 1);
+                // I have no idea why is this + frametime necessary here but not in W_Zapper_Beam_Think
+                self.owner.zapper_coolofftime = time + frametime;
+            }
+
+            ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_secondary_refire");
+        }
+    }
+
+    if(!self.alpha) {
+        if(self.owner.zapper_shield == self)
+            self.owner.zapper_shield = world;
+
+        if(self == self.enemy && self.zapper_beam) {
+            remove(self.zapper_beam);
+            self.zapper_beam = world;
+        }
+
+        remove(self);
+        return;
+    }
+
+    self.nextthink = time;
+}
+
+void W_Zapper_Shield_Blocker_Push(entity p) {
+    if(normalize(p.origin - self.oldorigin) * v_forward < 0.5)
+        return;
+
+    if(vlen(p.origin - self.oldorigin) <= 90) {
+        float v = max(600, vlen(p.velocity));
+        p.velocity = normalize(p.origin - self.oldorigin) * v;
+        UpdateCSQCProjectile(p);
+    }
+}
+
+void W_Zapper_Shield_Blocker_Think(void) {
+    if(self.owner.zapper_shield != self.zapper_shield) {
+        remove(self);
+        return;
+    }
+
+    entity e;
+    vector o = self.owner.origin + self.owner.view_ofs;
+    self.oldorigin = o;
+
+    makevectors(self.owner.angles);
+    self.angles = self.owner.angles;
+    setorigin(self, o - v_forward * 85);
+
+    FOR_EACH_PLAYER(e) if(e != self.owner)
+        W_Zapper_Shield_Blocker_Push(e);
+
+    for(e = findchainflags(flags, FL_PROJECTILE); e; e = e.chain)
+        if(e.classname != "bullet")
+            W_Zapper_Shield_Blocker_Push(e);
+
+    self.nextthink = time;
+}
+
+void W_Zapper_Attack3(void) {
+    entity e = spawn();
+    e.classname = "zapper_shield";
+    setmodel(e, "models/vhshield.md3");
+    e.enemy = e;
+    e.think = W_Zapper_Shield_Think;
+    e.nextthink = time;
+    e.alpha = 0.01;
+    if(teams_matter)
+        e.skin = TeamColorSkin(self.team);
+    if(!e.skin)
+        e.skin = TeamColorSkin(COLOR_TEAM2);
+    W_AttachToShotorg(e, '-120 0 0');
+
+    self.zapper_shield = e;
+
+    sound(self, CHAN_WEAPON, "weapons/zapper_fire.wav", VOL_BASE, ATTN_NORM);
+
+    entity b = spawn();
+    b.classname = "zapper_shield_beam";
+    b.think = W_Zapper_Shield_Beam_Think;
+    b.nextthink = time;
+    b.owner = self;
+
+    Net_LinkEntity(b, FALSE, 0, W_Zapper_Beam_Send);
+
+    e.zapper_beam = b;
+
+    b = spawn();
+    b.classname = "zapper_shield_blocker";
+    b.owner = self;
+    b.think = W_Zapper_Shield_Blocker_Think;
+    b.zapper_shield = e;
+    b.nextthink = time;
+    b.solid = SOLID_BSP;
+    b.alpha = -1;
+    setmodel(b, "models/vhshield.md3");
+
+    e.zapper_shield = b;
+}
+
 void W_Zapper_Cooloff(void) {
     if(self.zapper_heat < 0)
         return;
@@ -357,18 +522,34 @@ float w_zapper(float req) {
                 }
             }
         } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
-            if(weapon_prepareattack(0, cvar("g_balance_zapper_secondary_refire"))) {
+            if(cvar("g_balance_zapper_secondary_shield")) {
+                if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
+                    float dofire;
+
+                    if(self.zapper_shield) {
+                        self.zapper_shield.zapper_expire = time + cvar("g_balance_zapper_secondary_shield_lifetime");
+                        dofire = TRUE;
+                    } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
+                        W_Zapper_Attack3();
+                        dofire = TRUE;
+                    }
+
+                    if(dofire)
+                        weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                }
+            } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
                 W_Zapper_Attack2();
                 weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
             }
         }
     } else if(req == WR_PRECACHE) {
+        precache_model("models/vhshield.md3");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
         precache_sound("misc/arc1.wav");
         precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
-        if(cvar("g_balance_zapper_primary_heatup"))
+        if(cvar("g_balance_zapper_primary_heatup") || (cvar("g_balance_zapper_secondary_shield") && cvar("g_balance_zapper_secondary_shield_heatup")))
             self.zapper_heat = 0;
         else
             self.zapper_heat = -1;
