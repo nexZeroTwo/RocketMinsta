@@ -63,7 +63,6 @@ void W_Plasma_Explode_Combo (void)
 
 void W_Plasma_Touch (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	if (other.takedamage == DAMAGE_AIM) {
 		W_Plasma_Explode ();
@@ -75,7 +74,6 @@ void W_Plasma_Touch (void)
 
 void W_Plasma_TouchExplode (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	W_Plasma_Explode ();
 }
