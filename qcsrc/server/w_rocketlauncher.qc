@@ -268,9 +268,15 @@ void W_Rocket_Think (void)
 void W_Rocket_Touch (void)
 {
 	PROJECTILE_SKIPNONSOLID
+	if(SUB_OwnerCheck())
+		return;
 	W_Rocket_Unregister();
 
-	PROJECTILE_TOUCH;
+	if(SUB_NoImpactCheck()) {
+		remove(self);
+		return;
+	}
+
 	W_Rocket_Explode ();
 }
 
