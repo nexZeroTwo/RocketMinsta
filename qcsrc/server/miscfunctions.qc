@@ -2255,6 +2255,19 @@ float SUB_NoImpactCheck()
 
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
+float WarpZone_Projectile_Touch_ImpactFilter_Callback()
+{
+	if(SUB_OwnerCheck())
+		return TRUE;
+	if(SUB_NoImpactCheck())
+	{
+		remove(self);
+		return TRUE;
+	}
+	if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
+		UpdateCSQCProjectileNextFrame(self);
+	return FALSE;
+}
 #define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 float projectile_skipnonsolid()
 {

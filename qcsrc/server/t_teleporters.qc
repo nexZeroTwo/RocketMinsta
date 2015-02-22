@@ -316,3 +316,14 @@ void spawnfunc_trigger_teleport (void)
 		return;
 	}
 }
+
+void WarpZone_PostTeleportPlayer_Callback(entity pl)
+{
+	UpdateCSQCProjectileAfterTeleport(pl);
+	if(pl.classname == "player")
+	{
+		// reset tracking of oldvelocity for impact damage (sudden velocity changes)
+		pl.oldvelocity = pl.velocity;
+	}
+}
+		

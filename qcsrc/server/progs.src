@@ -14,6 +14,12 @@ constants.qh
 ../common/util.qh
 ../common/items.qh
 
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/util_server.qh
+../warpzonelib/server.qh
+
 defs.qh		// Should rename this, it has fields and globals
 
 ../common/gametype.qh
@@ -210,3 +216,8 @@ csqcprojectile.qc
 csqcmessage.qc
 radio.qc
 
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/util_server.qc
+../warpzonelib/server.qc
