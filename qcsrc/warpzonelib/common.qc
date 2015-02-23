@@ -223,7 +223,8 @@ void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent)
 	WarpZone_TraceBox(org, '0 0 0', '0 0 0', end, nomonsters, forent);
 }
 
-void WarpZone_TraceToss_ThroughZone(entity e, entity forent, entity zone, WarpZone_trace_callback_t cb)
+#ifdef SVQC
+void WarpZone_TraceToss_ThroughZone(entity e, entity forent, float toss_frametime, float toss_count, entity zone, WarpZone_trace_callback_t cb)
 {
 	float g, dt;
 	vector vf, vr, vu, v0, o0;
@@ -256,7 +257,7 @@ void WarpZone_TraceToss_ThroughZone(entity e, entity forent, entity zone, WarpZo
 	WarpZone_tracetoss_time = 0;
 	for(;;)
 	{
-		tracetoss(e, forent);
+		tracetoss_skipnonsolid(e, forent, toss_frametime, toss_count);
 		if(cb)
 			cb(e.origin, trace_endpos, trace_endpos);
 		e.origin = trace_endpos;
@@ -291,10 +292,11 @@ void WarpZone_TraceToss_ThroughZone(entity e, entity forent, entity zone, WarpZo
 	e.origin = o0;
 }
 
-void WarpZone_TraceToss(entity e, entity forent)
+void WarpZone_TraceToss(entity e, entity forent, float toss_frametime, float toss_count)
 {
-	WarpZone_TraceToss_ThroughZone(e, forent, world, WarpZone_trace_callback_t_null);
+	WarpZone_TraceToss_ThroughZone(e, forent, toss_frametime, toss_count, world, WarpZone_trace_callback_t_null);
 }
+#endif
 
 entity WarpZone_TrailParticles_trace_callback_own;
 float WarpZone_TrailParticles_trace_callback_eff;

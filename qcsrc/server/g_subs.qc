@@ -317,13 +317,13 @@ entity pseudo_bullet(entity forent) {
 #define SKIPNONSOLID_ESCAPE_STEP 0.05
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        traceline(start, end, t, forent);
+        WarpZone_TraceLine(start, end, t, forent);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        traceline(start, end, t, forent);
+        WarpZone_TraceLine(start, end, t, forent);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -340,13 +340,13 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        tracebox(start, mi, ma, end, nomonst, forent);
+        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        tracebox(start, mi, ma, end, nomonst, forent);
+        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -386,7 +386,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         ent.angles = ent.angles + (ent.avelocity *  toss_frametime);
         end = ent.origin + (ent.velocity * toss_frametime);
         for (tries = 10; tries > 0; tries--) {
-            tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
+            WarpZone_TraceBox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
             if (trace_endpos == ent.origin)
                 ent.origin += normalize(ent.velocity) * SKIPNONSOLID_ESCAPE_STEP;
             else

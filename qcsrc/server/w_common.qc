@@ -399,6 +399,14 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
 }
 
+entity fireBallisticBullet_trace_callback_ent;
+float fireBallisticBullet_trace_callback_eff;
+void fireBallisticBullet_trace_callback(vector start, vector hit, vector end)
+{
+	if(vlen(trace_endpos - fireBallisticBullet_trace_callback_ent.origin) > 16)
+		zcurveparticles_from_tracetoss(fireBallisticBullet_trace_callback_eff, fireBallisticBullet_trace_callback_ent.origin, trace_endpos, fireBallisticBullet_trace_callback_ent.velocity);
+}
+
 void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, float lifetime, float damage, float headshotbonus, float force, float dtype, float tracereffects, float gravityfactor, float bulletconstant)
 {
 	float lag, dt, savetime;
@@ -477,10 +485,10 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         
 		for(;;)
 		{
-			tracetoss_skipnonsolid(self, oldself, 0.05 * 0.125, 200);
+			fireBallisticBullet_trace_callback_ent = self;
+			fireBallisticBullet_trace_callback_eff = eff;
+			WarpZone_TraceToss_ThroughZone(self, oldself, 0.125 * 0.05, 200, world, fireBallisticBullet_trace_callback);
 
-			if(vlen(trace_endpos - self.origin) > 16)
-				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);
 			if(trace_fraction == 1)
 				break;
 				// won't hit anything anytime soon (DP's
