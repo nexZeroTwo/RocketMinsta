@@ -314,6 +314,7 @@ entity pseudo_bullet(entity forent) {
     return _pseudo_bullet;
 }
 
+#define SKIPNONSOLID_ESCAPE_STEP 0.05
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
         traceline(start, end, t, forent);
@@ -329,12 +330,12 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
         if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
             break;
         if (trace_endpos == start) {
-            start += normalize(end - start) * 0.01;
-            if (tries == 1) print("Can't escape from nonsolid!\n");
+            start += normalize(end - start) * SKIPNONSOLID_ESCAPE_STEP;
         } else
             start = trace_endpos;
         prev_trace_fract = trace_fraction;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
 }
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
@@ -352,12 +353,12 @@ void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float
         if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
             break;
         if (trace_endpos == start) {
-            start += normalize(end - start) * 0.01;
-            if (tries == 1) print("Can't escape from nonsolid!\n");
+            start += normalize(end - start) * SKIPNONSOLID_ESCAPE_STEP;
         } else
             start = trace_endpos;
         prev_trace_fract = trace_fraction;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
 }
 
 void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
@@ -387,7 +388,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         for (tries = 10; tries > 0; tries--) {
             tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
             if (trace_endpos == ent.origin)
-                ent.origin += normalize(ent.velocity) * 0.01;
+                ent.origin += normalize(ent.velocity) * SKIPNONSOLID_ESCAPE_STEP;
             else
                 ent.origin = trace_endpos;
             if(trace_fraction == 1 || trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
@@ -395,6 +396,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         }
         if (trace_fraction < 1) break;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
     ent.velocity = velocity_save;
     ent.avelocity = avelocity_save;
     ent.origin = origin_save;

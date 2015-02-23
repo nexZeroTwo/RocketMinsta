@@ -1328,6 +1328,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
         W_Accuracy_RegisterActualDamage(attacker, weaponid, damage);
 }
 
+.entity zapper_shield;
 .float damage_noinfo;
 .float damage_nextarceffect;
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity)
@@ -1343,8 +1344,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 	vector  nearest;
 	float   total_damage_to_creatures;
 	entity  next;
-	float   tfloordmg;
-	float   tfloorforce;
+	float   tfloordmg, tfloordmg_cvar;
+	float   tfloorforce, tfloorforce_cvar;
 
 	float stat_damagedone;
 	float stat_maxdamage;
@@ -1364,8 +1365,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 	RadiusDamage_running = 1;
 
-	tfloordmg = cvar("g_throughfloor_damage");
-	tfloorforce = cvar("g_throughfloor_force");
+	tfloordmg_cvar = cvar("g_throughfloor_damage");
+	tfloorforce_cvar = cvar("g_throughfloor_force");
 
 	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
@@ -1446,6 +1447,15 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						else
 							total = ceil(bound(1, finaldmg/10, 5));
 						hitloc = nearest;
+
+                        // I know this is lame
+                        if(targ.zapper_shield) {
+                            tfloordmg = tfloorforce = 0;
+                        } else {
+                            tfloordmg = tfloordmg_cvar;
+                            tfloorforce = tfloorforce_cvar;
+                        }
+
 						c = 0;
 						while (c < total)
 						{
@@ -1463,12 +1473,14 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 							nearest_z = targ.origin_z + targ.mins_z + random() * targ.size_z;
 							c = c + 1;
 						}
+
 						nearest = hitloc * (1 / max(1, hits));
 						hitratio = (hits / total);
 						a = bound(0, tfloordmg + (1-tfloordmg) * hitratio, 1);
 						finaldmg = finaldmg * a;
 						a = bound(0, tfloorforce + (1-tfloorforce) * hitratio, 1);
 						force = force * a;
+
 						//if (targ == attacker)
 						//{
 						//	print("hits ", ftos(hits), " / ", ftos(total));

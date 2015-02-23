@@ -579,6 +579,7 @@ void Ent_Projectile()
 
 void Projectile_Precache()
 {
+    precache_model("models/vhshield.md3");
 	precache_model("models/ebomb.mdl");
 	precache_model("models/elaser.mdl");
 	precache_model("models/grenademodel.md3");
@@ -596,4 +597,5 @@ void Projectile_Precache()
 	precache_sound("weapons/fireball_fly2.wav");
     precache_sound("weapons/zapper_fly.wav");
     precache_sound("weapons/zapper_fire.wav");
+    precache_sound("weapons/zapper_shield_loop.wav");
 }

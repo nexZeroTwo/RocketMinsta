@@ -2268,7 +2268,7 @@ float WarpZone_Projectile_Touch_ImpactFilter_Callback()
 		UpdateCSQCProjectileNextFrame(self);
 	return FALSE;
 }
-#define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
+
 float projectile_skipnonsolid()
 {
 	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
@@ -2278,12 +2278,14 @@ float projectile_skipnonsolid()
 			setorigin(self, trace_endpos);
 		else // We can't move right to trace_endpos, because we can go through solid surface.
 			setorigin(self, self.origin + ((trace_endpos - self.origin) * 0.99));
-		UpdateCSQCProjectile(self);
+		UpdateCSQCProjectileNextFrame(self);
 		return TRUE;
 	}
 	return FALSE;
 }
+
 #define PROJECTILE_SKIPNONSOLID if (cvar("sv_gameplayfix_zerohitcontents") && projectile_skipnonsolid()) { return; }
+#define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
 

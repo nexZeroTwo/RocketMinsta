@@ -1,7 +1,6 @@
 .float HLAC_bulletcounter;
 void W_HLAC_Touch (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 
 	self.event_damage = SUB_Null;
@@ -13,7 +12,6 @@ void W_HLAC_Touch (void)
 
 void W_HLAC_Touch2 (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 
 	self.event_damage = SUB_Null;

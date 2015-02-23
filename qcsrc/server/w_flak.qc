@@ -1,6 +1,5 @@
 
 void W_Flak_Projectile_Touch(void) {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
 
     if(other.takedamage) {
@@ -218,7 +217,6 @@ void W_Flak_Bomb_Explode(void) {
 }
 
 void W_Flak_Bomb_Touch(void) {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
     self.use();
 }

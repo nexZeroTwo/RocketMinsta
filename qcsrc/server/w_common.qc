@@ -355,10 +355,8 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 
 void W_BallisticBullet_Touch (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	if(self.think == W_BallisticBullet_LeaveSolid_think) // skip this!
 		return;
-    
 	PROJECTILE_TOUCH;
 	W_BallisticBullet_Hit ();
 

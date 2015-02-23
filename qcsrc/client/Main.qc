@@ -1703,7 +1703,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
-        case ENT_CLIENT_ZAPPER: Zapper_Read(); break;
+        case ENT_CLIENT_ZAPPER: case ENT_CLIENT_ZAPPER_SHIELD: Zapper_Read(t); break;
         case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));

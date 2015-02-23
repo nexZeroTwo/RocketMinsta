@@ -85,6 +85,38 @@ void Zapper_Draw(void) {
         pointparticles(eff_zap, end2, '0 0 0', pcount);
 }
 
+void Zapper_Draw_Shield(void) {
+    InterpolateOrigin_Do();
+    self.zapper_end = self.origin;
+
+    float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+
+    if(self.sv_entnum == me && !cvar("chase_active")) {
+        self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        self.zapper_end = self.zapper_start + view_forward * 30;
+    }
+
+    self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
+
+    vector start = self.zapper_start;
+    vector end = self.zapper_end;
+
+    string tex = "particles/zapper";
+    vector rgb = Zapper_BeamRGB(self.team) * 0.5;
+
+    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+
+    if(self.alpha < 1)
+        return;
+
+    float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
+    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
+    float pcount = frametime * 300;
+
+    pointparticles(eff_zap, end, '0 0 0', pcount);
+    pointparticles(eff_muz, start, end - start, pcount);
+}
+
 void Zapper_Fader_Think(void) {
     self.alpha = approach(self.alpha, 0, frametime * 10);
 
@@ -116,11 +148,18 @@ void Zapper_Remove(void) {
     sound(self, CHAN_PROJECTILE, "misc/null.wav", VOL_BASE, ATTN_NORM);
 }
 
-void Zapper_Read(void) {
+void Zapper_Read(float t) {
     float sf = ReadByte();
 
     if(sf & 1) {
-        self.draw = Zapper_Draw;
+        if(t == ENT_CLIENT_ZAPPER_SHIELD) {
+            self.draw = Zapper_Draw_Shield;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_shield_loop.wav", 1, ATTN_NORM);
+        } else {
+            self.draw = Zapper_Draw;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
+        }
+
         self.entremove = Zapper_Remove;
         self.sv_entnum = ReadByte();
 
@@ -134,8 +173,6 @@ void Zapper_Read(void) {
 
         if(!rm_teamlasers || !self.team)
             self.team = COLOR_TEAM2;
-
-        sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
     }
 
     if(sf & 2) {
