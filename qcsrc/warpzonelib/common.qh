@@ -1,7 +1,8 @@
 // uncomment this if your mod uses the roll angle in fixangle
 // #define KEEP_ROLL
 
-const void func_null(void); // never assign to this one please
+//const void func_null(void); // never assign to this one please
+const var void(void)       func_null;
 
 .vector warpzone_shift;
 .vector warpzone_origin;

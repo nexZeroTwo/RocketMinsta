@@ -118,6 +118,7 @@ float almost_in_bounds(float a, float b, float c);
 
 float power2of(float e);
 float log2of(float x);
+float log(float x);
 
 string HEXDIGITS = "0123456789ABCDEF0123456789abcdef";
 #define HEXDIGIT_TO_DEC_RAW(d) (strstrofs(HEXDIGITS, (d), 0))
