@@ -217,6 +217,8 @@ void W_Zapper_Beam_Think(void) {
         self.owner.zapper_coolofftime = time;
     }
 
+    ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_primary_refire") * rate;
+
     self.nextthink = time;
 }
 
@@ -510,32 +512,29 @@ float w_zapper(float req) {
             self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
-            if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
-                if(self.zapper_heat >= 1) {
+            if(weapon_prepareattack(0, 0)) {
+                if(self.zapper_heat >= 1 && cvar("g_balance_zapper_primary_heatup")) {
                     W_SwitchWeapon_OutOfAmmo(self);
                 } else {
                     if(self.zapper_beam)
                         self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
-                    else if(weapon_prepareattack(0, cvar("g_balance_zapper_primary_refire")))   
+                    else
                         W_Zapper_Attack1();
                     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                 }
             }
         } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
             if(cvar("g_balance_zapper_secondary_shield")) {
-                if(self.weaponentity.state != WS_RAISE && self.weaponentity.state != WS_DROP) {
-                    float dofire;
-
-                    if(self.zapper_shield) {
-                        self.zapper_shield.zapper_expire = time + cvar("g_balance_zapper_secondary_shield_lifetime");
-                        dofire = TRUE;
-                    } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
-                        W_Zapper_Attack3();
-                        dofire = TRUE;
-                    }
-
-                    if(dofire)
+                if(weapon_prepareattack(1, 0)) {
+                    if(self.zapper_heat >= 1 && cvar("g_balance_zapper_secondary_shield_heatup")) {
+                        W_SwitchWeapon_OutOfAmmo(self);
+                    } else {
+                        if(self.zapper_shield)
+                            self.zapper_shield.zapper_expire = time + cvar("g_balance_zapper_secondary_shield_lifetime");
+                        else
+                            W_Zapper_Attack3();
                         weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                    }
                 }
             } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
                 W_Zapper_Attack2();
