@@ -451,6 +451,21 @@ void W_Zapper_Shield_Blocker_Think(void) {
     self.nextthink = time;
 }
 
+void W_Zapper_FixShieldBlockerOrigin(entity plr) {
+    if(!plr.zapper_shield.zapper_shield)
+        return;
+
+    vector fwd = v_forward, up = v_up, right = v_right;
+
+    makevectors(plr.angles);
+    plr.zapper_shield.zapper_shield.angles = plr.angles;
+    setorigin(plr.zapper_shield.zapper_shield, plr.origin + plr.view_ofs - v_forward * 85);
+
+    v_forward = fwd;
+    v_up = up;
+    v_right = right;
+}
+
 void W_Zapper_Attack3(void) {
     entity e = spawn();
     e.classname = "zapper_shield";
