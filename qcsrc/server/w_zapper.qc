@@ -478,7 +478,11 @@ void W_Zapper_Attack3(void) {
         e.skin = TeamColorSkin(self.team);
     if(!e.skin)
         e.skin = TeamColorSkin(COLOR_TEAM2);
+
     W_AttachToShotorg(e, '-120 0 0');
+
+    // needs to be done AFTER W_AttachToShotorg
+    e.customizeentityforclient = CL_Weaponentity_CustomizeEntityForClient;
 
     self.zapper_shield = e;
 
