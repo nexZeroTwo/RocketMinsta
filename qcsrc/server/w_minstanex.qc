@@ -24,7 +24,6 @@ void W_RM_Explode (void)
 
 void W_RM_Touch (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	W_RM_Explode ();
 }
@@ -355,7 +354,6 @@ void W_RM_Alt_Touch(void);
 
 void W_RM_Alt_Touch(void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_rocketminsta_laser_radius"), world, self.rm_force, self.projectiledeathtype, other);
 	remove(self);

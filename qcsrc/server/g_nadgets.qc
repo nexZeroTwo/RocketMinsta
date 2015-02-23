@@ -237,7 +237,6 @@ void HG_Napalm_Middlefire_Think() {
 
 void HG_Napalm_Projectile_Touch()
 {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
 }
 
@@ -356,7 +355,6 @@ void HG_Plasma_Projectile_Think() {
 
 void HG_Plasma_Projectile_Touch()
 {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
     spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 }

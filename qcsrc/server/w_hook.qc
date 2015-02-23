@@ -50,7 +50,6 @@ void W_Hook_Explode2 (void)
 
 void W_Hook_Touch2 (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	self.use();
 }

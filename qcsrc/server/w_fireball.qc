@@ -51,7 +51,6 @@ void W_Fireball_Explode (void)
 
 void W_Fireball_TouchExplode (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	W_Fireball_Explode ();
 }
@@ -222,7 +221,6 @@ void W_Firemine_Think()
 
 void W_Firemine_Touch (void)
 {
-	PROJECTILE_SKIPNONSOLID
 	PROJECTILE_TOUCH;
 	if (other.takedamage == DAMAGE_AIM)
 	if(Fire_AddDamage(other, self.realowner, cvar("g_balance_fireball_primary_damage"), cvar("g_balance_fireball_primary_damagetime"), self.projectiledeathtype | HITTYPE_HEADSHOT) >= 0)
