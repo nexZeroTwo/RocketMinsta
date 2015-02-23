@@ -82,12 +82,12 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 }
 
 float W_Zapper_Beam_Expired(float secondary) {
-    if(time > self.zapper_expire)
+    if(time > self.zapper_expire && ((secondary && !self.owner.BUTTON_ATCK2) || (!secondary && !self.owner.BUTTON_ATCK)))
         return TRUE;
 
     if(self.owner.zapper_heat >= 1)
         return TRUE;
-    
+
     if(self.owner.weapon != WEP_ZAPPER)
         return TRUE;
 
