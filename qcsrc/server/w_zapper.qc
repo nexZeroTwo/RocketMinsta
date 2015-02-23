@@ -394,7 +394,7 @@ void W_Zapper_Shield_Think(void) {
                 self.owner.zapper_coolofftime = time + frametime;
             }
 
-            ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_secondary_refire");
+            ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_secondary_refire") * W_WeaponRateFactorFor(self.owner);
         }
     }
 
