@@ -413,7 +413,7 @@ void CSQC_UpdateView(float w, float h)
 	entity e;
 	float fov;
 	float f, i, j;
-	vector v;
+	vector v, vo;
     
     // VisualDamage_Test();
     HG_NadeGainSound();
@@ -427,6 +427,13 @@ void CSQC_UpdateView(float w, float h)
 		myteam = GetPlayerColor(player_localentnum - 1);
 
 	ticrate = getstatf(STAT_MOVEVARS_TICRATE) * getstatf(STAT_MOVEVARS_TIMESCALE);
+	vo = '0 0 1' * getstati(STAT_VIEWHEIGHT);
+
+	warpzone_fixview_origin = pmove_org + vo;
+	warpzone_fixview_angles = input_angles;
+	WarpZone_FixView();
+	pmove_org = warpzone_fixview_origin - vo;
+	input_angles = warpzone_fixview_angles;
 
 	// Render the Scene
 	if(!intermission || !view_set)

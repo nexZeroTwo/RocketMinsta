@@ -42,6 +42,8 @@ entity (entity e)							nextent = #47;
 vector (vector v)							vectoangles = #51;
 vector (vector v, vector w)							vectoangles2 = #51;
 
+void(entity ent, entity ignore) tracetoss = #64;
+
 void (string var, string val)						cvar_set = #72;
 
 

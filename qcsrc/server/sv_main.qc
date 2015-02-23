@@ -190,6 +190,8 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
+	WarpZone_StartFrame();
+
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
         sv_gravity = cvar("sv_gravity");
         sv_maxairspeed = cvar("sv_maxairspeed");
