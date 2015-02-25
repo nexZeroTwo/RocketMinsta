@@ -172,7 +172,7 @@ void W_Zapper_Beam_Think(void) {
         W_Accuracy_RegisterHit(o, targ, o.weapon);
 
         if(targ.takedamage) {
-            float d = (end - w_shotorg) * w_shotdir;
+            float d = vlen(end - w_shotorg) * fract;
 
             float mindist = cvar("g_balance_zapper_primary_damagefalloff_mindist");
             float maxdist = cvar("g_balance_zapper_primary_damagefalloff_maxdist");
@@ -207,9 +207,10 @@ void W_Zapper_Beam_Think(void) {
         self.zapper_beam_start = org;
     }
 
-    if(end != self.zapper_beam_end) {
+    vector nowarp_end = WarpZone_UnTransformOrigin(WarpZone_trace_transform, end);
+    if(nowarp_end != self.zapper_beam_end) {
         self.SendFlags |= 4;
-        self.zapper_beam_end = end;
+        self.zapper_beam_end = nowarp_end;
     }
 
     if(self.owner.zapper_heat >= 0) {

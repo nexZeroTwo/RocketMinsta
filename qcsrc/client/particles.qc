@@ -322,27 +322,15 @@ void Net_ReadZCurveParticles()
 	while(!(speed & 0x8000));
 }
 
-void Net_ReadNexgunBeamParticle()
+entity nextrail_particles_own;
+float nextrail_particles_eff;
+float nextrail_particles_theteam;
+float nextrail_particles_secondary;
+void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
 {
-    float theteam, secondary;
-	vector shotorg, endpos;
-
-	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
-	endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
-    theteam = ReadByte() - 1;
-    secondary = ReadByte();
-	
-	pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
-	
-	//draw either the old v2.3 beam or the new beam
-	if(cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
-		trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
-	else
-		trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
-
+    trailparticles(nextrail_particles_own, nextrail_particles_eff, from, endpos);
     float eff;
-
-    switch(theteam) {
+    switch(nextrail_particles_theteam) {
         case COLOR_TEAM1: eff = particleeffectnum("TE_TEI_G3RED");    break;
         case COLOR_TEAM2: eff = particleeffectnum("TE_TEI_G3BLUE");   break;
         case COLOR_TEAM3: eff = particleeffectnum("TE_TEI_G3YELLOW"); break;
@@ -350,10 +338,10 @@ void Net_ReadNexgunBeamParticle()
         default:          eff = particleeffectnum("TE_TEI_G3");       break;
     }
 
-    spiralparticles(world, eff, shotorg, endpos, 10, time, 0.015, 20);
+    spiralparticles(world, eff, from, endpos, 10, time, 0.015, 20);
 
-    if(secondary) {
-        switch(theteam) {
+    if(nextrail_particles_secondary) {
+        switch(nextrail_particles_theteam) {
             case COLOR_TEAM1: eff = particleeffectnum("TE_TEI_G3RED_HIT");    break;
             case COLOR_TEAM2: eff = particleeffectnum("TE_TEI_G3BLUE_HIT");   break;
             case COLOR_TEAM3: eff = particleeffectnum("TE_TEI_G3YELLOW_HIT"); break;
@@ -361,7 +349,31 @@ void Net_ReadNexgunBeamParticle()
             default: break;
         }
 
-        spiralparticles(world, eff, shotorg, endpos, 10, time + PI, 0.015, 20);
+        spiralparticles(world, eff, from, endpos, 10, time + PI, 0.015, 20);
     }
+    pointparticles(particleeffectnum("nex_muzzleflash"), from, normalize(endpos - from) * 1000, 1);
 }
 
+void nex_trailparticles(entity own, float eff, vector org, vector end)
+{
+	nextrail_particles_own = own;
+	nextrail_particles_eff = eff;
+	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, nextrail_particles_trace_callback);
+}
+
+void Net_ReadNexgunBeamParticle()
+{
+    float theteam, secondary;
+	vector shotorg, endpos;
+
+	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
+	endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
+    nextrail_particles_theteam = ReadByte() - 1;
+    nextrail_particles_secondary = ReadByte();
+	
+	//draw either the old v2.3 beam or the new beam
+	if(cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
+		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
+	else
+		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
+}

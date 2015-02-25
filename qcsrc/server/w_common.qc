@@ -148,7 +148,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
         float tdamage = bdamage;
         vector tforce = force;
 
-        float dst = (hitloc - start) * dir;
+        float dst = vlen(end - start) * ent.tracerail_fraction;
 
         tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
         tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);

@@ -298,20 +298,6 @@ void WarpZone_TraceToss(entity e, entity forent, float toss_frametime, float tos
 }
 #endif
 
-entity WarpZone_TrailParticles_trace_callback_own;
-float WarpZone_TrailParticles_trace_callback_eff;
-void WarpZone_TrailParticles_trace_callback(vector from, vector endpos, vector to)
-{
-	trailparticles(WarpZone_TrailParticles_trace_callback_own, WarpZone_TrailParticles_trace_callback_eff, from, endpos);
-}
-
-void WarpZone_TrailParticles(entity own, float eff, vector org, vector end)
-{
-	WarpZone_TrailParticles_trace_callback_own = own;
-	WarpZone_TrailParticles_trace_callback_eff = eff;
-	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, WarpZone_TrailParticles_trace_callback);
-}
-
 float WarpZone_PlaneDist(entity wz, vector v)
 {
 	return (v - wz.warpzone_origin) * wz.warpzone_forward;

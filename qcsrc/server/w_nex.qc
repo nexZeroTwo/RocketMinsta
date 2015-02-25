@@ -1,13 +1,16 @@
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
+	vector v;
+	v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
+
 	WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
 	WriteByte(MSG_BROADCAST, TE_CSQC_NEXGUNBEAMPARTICLE);
 
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_x);
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_y);
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_z);
-	WriteCoord(MSG_BROADCAST, trace_endpos_x);
-	WriteCoord(MSG_BROADCAST, trace_endpos_y);
-	WriteCoord(MSG_BROADCAST, trace_endpos_z);
+	WriteCoord(MSG_BROADCAST, v_x);
+	WriteCoord(MSG_BROADCAST, v_y);
+	WriteCoord(MSG_BROADCAST, v_z);
     WriteByte(MSG_BROADCAST, theteam);
     WriteByte(MSG_BROADCAST, secondary);
 }

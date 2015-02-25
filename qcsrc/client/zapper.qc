@@ -30,6 +30,36 @@ float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float th
     }
 }
 
+void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
+    vector rgb = Zapper_BeamRGB(self.team);
+    vector end2 = endpos + self.zapper_offs * 70;
+    string tex = "particles/zapper";
+    vector d = end2 - from;
+    float maxlen = vlen(endpos - from);
+    float t = self.cnt + time;
+
+    if(vlen(d) > maxlen)
+        end2 = from + normalize(d) * maxlen;
+
+    Draw_CylindricLine(endpos, from,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    if(self.sv_entnum) {
+        vectorvectors(normalize(d));
+        vector rgb2 = GetTeamRGB(self.team);
+        vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
+        vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
+
+        Draw_CylindricLine_Curved(end2, from, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+        Draw_CylindricLine_Curved(end2, from, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+    }
+    float pcount = frametime * 300;
+    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
+    if (endpos == to) {
+        float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
+        pointparticles(eff_zap, to, '0 0 0', pcount);
+    }
+    pointparticles(eff_muz, from, to - from, pcount);
+}
+
 void Zapper_Draw(void) {
     vector start;
 
@@ -47,6 +77,7 @@ void Zapper_Draw(void) {
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
     vector end1 = self.zapper_end;
+#if 0
     vector end2 = self.zapper_end + self.zapper_offs * 70;
     vector d = end2 - start;
     float maxlen = vlen(end1 - start);
@@ -56,9 +87,9 @@ void Zapper_Draw(void) {
 
     string tex = "particles/zapper";
     vector rgb = Zapper_BeamRGB(self.team);
-
-    float t = self.cnt + time;
-    
+#endif
+	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, zapper_particles_trace_callback);
+#if 0
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
 
     if(self.sv_entnum) {
@@ -83,6 +114,7 @@ void Zapper_Draw(void) {
 
     if(self.sv_entnum)
         pointparticles(eff_zap, end2, '0 0 0', pcount);
+#endif
 }
 
 void Zapper_Draw_Shield(void) {
