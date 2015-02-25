@@ -214,7 +214,7 @@ void W_Zapper_Beam_Think(void) {
 
     if(self.owner.zapper_heat >= 0) {
         self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_primary_heatup") * frametime) / rate, 1);
-        self.owner.zapper_coolofftime = time;
+        self.owner.zapper_coolofftime = time + frametime;
     }
 
     ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_primary_refire") * rate;
@@ -392,7 +392,6 @@ void W_Zapper_Shield_Think(void) {
 
             if(self.owner.zapper_heat >= 0) {
                 self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_secondary_shield_heatup") * frametime), 1);
-                // I have no idea why is this + frametime necessary here but not in W_Zapper_Beam_Think
                 self.owner.zapper_coolofftime = time + frametime;
             }
 
@@ -523,7 +522,16 @@ void W_Zapper_Cooloff(void) {
     self.zapper_heat = bound(0, self.zapper_heat - cvar("g_balance_zapper_primary_cooloff") * frametime * a, 1);
 }
 
+float W_Zapper_PrepareFirstAttack(float sec) {
+    if(self.weaponentity.state == WS_INUSE)
+        self.weaponentity.state = WS_READY;
+
+    return weapon_prepareattack(sec, 0);
+}
+
 float w_zapper(float req) {
+    float dofire;
+
     if (req == WR_AIM) {
         if(vlen(self.origin-self.enemy.origin) < cvar("g_balance_zapper_primary_range"))
             self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
@@ -531,28 +539,39 @@ float w_zapper(float req) {
             self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
-            if(weapon_prepareattack(0, 0)) {
+            if(weapon_prepareattack(0, -1)) {
                 if(self.zapper_heat >= 1 && cvar("g_balance_zapper_primary_heatup")) {
                     W_SwitchWeapon_OutOfAmmo(self);
                 } else {
-                    if(self.zapper_beam)
+                    if(self.zapper_beam) {
+                        dofire = TRUE;
                         self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
-                    else
+                        print(ftos(time), "\n");
+                    } else if(W_Zapper_PrepareFirstAttack(0)) {
+                        dofire = TRUE;
                         W_Zapper_Attack1();
-                    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                    }
+
+                    if(dofire)
+                        weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                 }
             }
         } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
             if(cvar("g_balance_zapper_secondary_shield")) {
-                if(weapon_prepareattack(1, 0)) {
+                if(weapon_prepareattack(1, -1)) {
                     if(self.zapper_heat >= 1 && cvar("g_balance_zapper_secondary_shield_heatup")) {
                         W_SwitchWeapon_OutOfAmmo(self);
                     } else {
-                        if(self.zapper_shield)
+                        if(self.zapper_shield) {
+                            dofire = TRUE;
                             self.zapper_shield.zapper_expire = time + cvar("g_balance_zapper_secondary_shield_lifetime");
-                        else
+                        } else if(W_Zapper_PrepareFirstAttack(0)) {
+                            dofire = TRUE;
                             W_Zapper_Attack3();
-                        weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                        }
+
+                        if(dofire)
+                            weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                     }
                 }
             } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
