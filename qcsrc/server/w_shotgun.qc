@@ -89,11 +89,21 @@ void W_Shotgun_Attack2 (void)
 // weapon frames
 void shotgun_fire2_03()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Shotgun_Attack2();
 	weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_shotgun_secondary_animtime"), w_ready);
 }
 void shotgun_fire2_02()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Shotgun_Attack2();
 	weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_shotgun_secondary_animtime"), shotgun_fire2_03);
 }
