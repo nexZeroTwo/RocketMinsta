@@ -77,44 +77,7 @@ void Zapper_Draw(void) {
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
     vector end1 = self.zapper_end;
-#if 0
-    vector end2 = self.zapper_end + self.zapper_offs * 70;
-    vector d = end2 - start;
-    float maxlen = vlen(end1 - start);
-
-    if(vlen(d) > maxlen)
-        end2 = start + normalize(d) * maxlen;
-
-    string tex = "particles/zapper";
-    vector rgb = Zapper_BeamRGB(self.team);
-#endif
 	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, zapper_particles_trace_callback);
-#if 0
-    Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
-
-    if(self.sv_entnum) {
-        vectorvectors(normalize(d));
-        vector rgb2 = GetTeamRGB(self.team);
-        vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
-        vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
-
-        Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
-        Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
-    }
-
-    if(self.alpha < 1)
-        return;
-
-    float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
-    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
-    float pcount = frametime * 300;
-
-    pointparticles(eff_zap, end1, '0 0 0', pcount);
-    pointparticles(eff_muz, start, end1 - start, pcount);
-
-    if(self.sv_entnum)
-        pointparticles(eff_zap, end2, '0 0 0', pcount);
-#endif
 }
 
 void Zapper_Draw_Shield(void) {
@@ -226,21 +189,15 @@ void Zapper_Read(float t) {
     }
 }
 
-void Zapper_ReadLightning(void) {
-    float ateam;
-    vector from, to;
-    
-    ateam  = ReadByte();
-    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
-    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
 
+float zapper_lightning_ateam;
+void zapper_lightning_trace_callback(vector from, vector endpos, vector to) {
     if(!rm_teamlasers)
-        ateam = COLOR_TEAM2;
+        zapper_lightning_ateam = COLOR_TEAM2;
 
-    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
-
+    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", zapper_lightning_ateam, 2), to, '0 0 0', 1);
     if(cvar("cl_effects_lightningarc_simple")) {
-        LightingArc_Segment(from, to, ateam);
+        LightingArc_Segment(from, to, zapper_lightning_ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
@@ -252,8 +209,19 @@ void Zapper_ReadLightning(void) {
         lcount           = cvar("cl_effects_lightningarc_count");
         
         for(; lcount; --lcount)
-            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
+            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, zapper_lightning_ateam);
     }
 
     pointparticles(particleeffectnum("electro_muzzleflash"), from, normalize(to - from) * 1000, 1);
+}
+
+void Zapper_ReadLightning(void) {
+    vector from, to;
+    
+    zapper_lightning_ateam  = ReadByte();
+    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
+    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
+
+	WarpZone_TraceBox_ThroughZone(from, '0 0 0', '0 0 0', to, MOVE_NOMONSTERS, world, world, zapper_lightning_trace_callback);
+
 }

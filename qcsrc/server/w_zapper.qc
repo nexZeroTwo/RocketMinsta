@@ -251,6 +251,8 @@ void W_Zapper_Attack1(void) {
 }
 
 void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
+	vector v;
+	v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
     WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
     WriteByte(MSG_BROADCAST, TE_CSQC_ZAPPERLIGHTNING);
     
@@ -258,9 +260,9 @@ void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
     WriteCoord(MSG_BROADCAST, from_x);
     WriteCoord(MSG_BROADCAST, from_y);
     WriteCoord(MSG_BROADCAST, from_z);
-    WriteCoord(MSG_BROADCAST, to_x);
-    WriteCoord(MSG_BROADCAST, to_y);
-    WriteCoord(MSG_BROADCAST, to_z);
+    WriteCoord(MSG_BROADCAST, v_x);
+    WriteCoord(MSG_BROADCAST, v_y);
+    WriteCoord(MSG_BROADCAST, v_z);
 }
 
 void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
