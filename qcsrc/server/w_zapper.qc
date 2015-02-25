@@ -91,13 +91,7 @@ float W_Zapper_Beam_Expired(float secondary) {
     if(self.owner.weapon != WEP_ZAPPER)
         return TRUE;
 
-    if(self.owner.deadflag != DEAD_NO)
-        return TRUE;
-
-    if(self.owner.frozen)
-        return TRUE;
-
-    if(self.owner.hg_stealth)
+    if(!PlayerMayFire(self.owner))
         return TRUE;
 
     if(secondary) {

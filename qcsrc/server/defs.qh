@@ -804,3 +804,5 @@ float sv_shownames;
 .float client_dprmversion;
 
 .float antilag_debug;
+
+float PlayerMayFire(entity plr);
