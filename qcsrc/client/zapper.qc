@@ -95,9 +95,7 @@ void Zapper_Draw_Shield(void) {
         self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_end = self.zapper_start + view_forward * 30;
     }
-
-    self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
-
+    
     vector start = self.zapper_start;
     vector end = self.zapper_end;
 
