@@ -546,7 +546,6 @@ float w_zapper(float req) {
                     if(self.zapper_beam) {
                         dofire = TRUE;
                         self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
-                        print(ftos(time), "\n");
                     } else if(W_Zapper_PrepareFirstAttack(0)) {
                         dofire = TRUE;
                         W_Zapper_Attack1();
