@@ -1709,6 +1709,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
         case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
         case ENT_CLIENT_WARPZONE: WarpZone_Read(bIsNewEntity); break;
         case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
+        case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;

@@ -1,5 +1,7 @@
 .vector warpzone_oldorigin, warpzone_oldvelocity, warpzone_oldangles;
 .float warpzone_teleport_time;
+.float warpzone_teleport_finishtime;
+.entity warpzone_teleport_zone;
 
 void WarpZone_StoreProjectileData(entity e)
 {
@@ -32,93 +34,164 @@ void WarpZone_TeleportPlayer(entity teleporter, entity player, vector to, vector
 	WarpZone_PostTeleportPlayer_Callback(player);
 }
 
-float WarpZone_Teleport(entity player)
+float WarpZone_Teleported_Send(entity to, float sf)
 {
-	vector o0, a0, v0, o1, a1, v1;
+	WriteByte(MSG_ENTITY, ENT_CLIENT_WARPZONE_TELEPORTED);
+	WriteCoord(MSG_ENTITY, self.angles_x);
+	WriteCoord(MSG_ENTITY, self.angles_y);
+	WriteCoord(MSG_ENTITY, self.angles_z);
+	return TRUE;
+}
+
+float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
+{
+	vector o0, a0, v0, o1, a1, v1, o10;
 
 	o0 = player.origin + player.view_ofs;
 	v0 = player.velocity;
 	a0 = player.angles;
 
-	if(WarpZone_PlaneDist(self, o0) >= 0) // wrong side of the trigger_warpzone
-		return 2;
-	// no failure, we simply don't want to teleport yet; TODO in
-	// this situation we may want to create a temporary clone
-	// entity of the player to fix graphics glitch
-
-	o1 = WarpZone_TransformOrigin(self, o0);
-	v1 = WarpZone_TransformVelocity(self, v0);
-	if(player.classname == "player")
-		a1 = WarpZone_TransformVAngles(self, player.v_angle);
+	o10 = o1 = WarpZone_TransformOrigin(wz, o0);
+	v1 = WarpZone_TransformVelocity(wz, v0);
+	if not(clienttype(player) == CLIENTTYPE_NOTACLIENT)
+		a1 = WarpZone_TransformVAngles(wz, player.v_angle);
 	else
-		a1 = WarpZone_TransformAngles(self, a0);
+		a1 = WarpZone_TransformAngles(wz, a0);
 
-	// put him inside solid
+	if(f0 != 0 || f1 != 0)
+	{
+		// retry last move but behind the warpzone!
+		// we must first go back as far as we can, then forward again, to not cause double touch events!
+
+		tracebox(o1 - player.view_ofs + v1 * frametime * f1, player.mins, player.maxs, o1 - player.view_ofs + v1 * frametime * f0, MOVE_WORLDONLY, player);
+		{
+			entity own;
+			own = player.owner;
+			player.owner = world;
+			tracebox(trace_endpos, player.mins, player.maxs, o1 - player.view_ofs + v1 * frametime * f1, MOVE_NORMAL, player); // this should get us through the warpzone
+			player.owner = own;
+		}
+		o1 = trace_endpos + player.view_ofs;
+
+		float d, dv, md;
+		md = max(vlen(player.mins), vlen(player.maxs));
+		d = WarpZone_TargetPlaneDist(wz, o1);
+		dv = WarpZone_TargetPlaneDist(wz, v1);
+		if(d < 0)
+			o1 = o1 - v1 * (d / dv);
+	}
+
+	// put him out of solid
 	tracebox(o1 - player.view_ofs, player.mins, player.maxs, o1 - player.view_ofs, MOVE_NOMONSTERS, player);
 	if(trace_startsolid)
 	{
-		vector mi, ma;
-		mi = player.mins;
-		ma = player.maxs;
-		setsize(player, mi - player.view_ofs, ma - player.view_ofs);
-		setorigin(player, o1);
+		setorigin(player, o1 - player.view_ofs);
 		if(WarpZoneLib_MoveOutOfSolid(player))
 		{
-			o1 = player.origin;
-			setsize(player, mi, ma);
-			setorigin(player, o0);
+			o1 = player.origin + player.view_ofs;
+			setorigin(player, o0 - player.view_ofs);
 		}
 		else
 		{
 			print("would have to put player in solid, won't do that\n");
-			setsize(player, mi, ma);
 			setorigin(player, o0 - player.view_ofs);
-			return 0; // cannot fix
+			return 0;
 		}
 	}
 
-	if(WarpZone_TargetPlaneDist(self, o1) <= 0)
-	{
-		print("inconsistent warp zones or evil roundoff error\n");
-		return 0;
-	}
-
-	//print(sprintf("warpzone: %f %f %f -> %f %f %f\n", o0_x, o0_y, o0_z, o1_x, o1_y, o1_z));
-
-	//o1 = trace_endpos;
-	WarpZone_RefSys_Add(player, self);
-	WarpZone_TeleportPlayer(self, player, o1 - player.view_ofs, a1, v1);
+	// do the teleport
+	WarpZone_RefSys_Add(player, wz);
+	WarpZone_TeleportPlayer(wz, player, o1 - player.view_ofs, a1, v1);
 	WarpZone_StoreProjectileData(player);
 	player.warpzone_teleport_time = time;
+	player.warpzone_teleport_finishtime = time;
+	player.warpzone_teleport_zone = wz;
+
+	// prevent further teleports back
+	float dt = (o1 - o10) * v1 * (1 / (v1 * v1));
+	if(dt < frametime)
+		player.warpzone_teleport_finishtime += frametime - dt;
+
+#ifndef WARPZONE_USE_FIXANGLE
+	if(player.classname == STR_PLAYER)
+	{
+		// instead of fixangle, send the transform to the client for smoother operation
+		player.fixangle = FALSE;
+
+		entity ts = spawn();
+		setmodel(ts, "null");
+		ts.SendEntity = WarpZone_Teleported_Send;
+		ts.SendFlags = 0xFFFFFF;
+		ts.drawonlytoclient = player;
+		ts.think = SUB_Remove;
+		ts.nextthink = time + 1;
+		ts.owner = player;
+		ts.enemy = wz;
+		ts.effects = EF_NODEPTHTEST;
+		ts.classname = "warpzone_teleported";
+		ts.angles = wz.warpzone_transform;
+	}
+#endif
 
 	return 1;
 }
 
 void WarpZone_Touch (void)
 {
-	entity oldself, e;
+	entity oldself;
 
 	if(other.classname == "trigger_warpzone")
 		return;
 
+	if(time <= other.warpzone_teleport_finishtime) // already teleported this frame
+		return;
+
 	// FIXME needs a better check to know what is safe to teleport and what not
-	if(other.movetype == MOVETYPE_NONE)
+	if(other.movetype == MOVETYPE_NONE || other.movetype == MOVETYPE_FOLLOW || other.tag_entity)
 		return;
 
 	if(WarpZoneLib_ExactTrigger_Touch())
 		return;
 
-	e = self.enemy;
-	if(WarpZone_Teleport(other))
+	if(WarpZone_PlaneDist(self, other.origin + other.view_ofs) >= 0) // wrong side of the trigger_warpzone (don't teleport yet)
+		return;
+
+	float f;
+	// number of frames we need to go back:
+	//   dist = 16*sqrt(2) qu
+	//   dist ~ 24 qu
+	//   24 qu = v*t
+	//   24 qu = v*frametime*n
+	//       n = 24 qu/(v*frametime)
+	// for clients go only one frame though, may be too irritating otherwise
+	// but max 0.25 sec = 0.25/frametime frames
+	//       24/(0.25/frametime)
+	//       96*frametime
+	float d;
+	d = 24 + max(vlen(other.mins), vlen(other.maxs));
+	if(clienttype(other) == CLIENTTYPE_NOTACLIENT)
+		f = -d / bound(frametime * d * 1, frametime * vlen(other.velocity), d);
+	else
+		f = -1;
+	if(WarpZone_Teleport(self, other, f, 0))
 	{
-		if(self.aiment.target)
-		{
-			oldself = self;
-			activator = other;
-			self = self.aiment;
-			SUB_UseTargets();
-			self = oldself;
-		}
+		string save1, save2;
+		activator = other;
+
+		save1 = self.target; self.target = string_null;
+		save2 = self.target3; self.target3 = string_null;
+		SUB_UseTargets();
+		if not(self.target) self.target = save1;
+		if not(self.target3) self.target3 = save2;
+
+		oldself = self;
+		self = self.enemy;
+		save1 = self.target; self.target = string_null;
+		save2 = self.target2; self.target2 = string_null;
+		SUB_UseTargets();
+		if not(self.target) self.target = save1;
+		if not(self.target2) self.target2 = save2;
+		self = oldself;
 	}
 	else
 	{

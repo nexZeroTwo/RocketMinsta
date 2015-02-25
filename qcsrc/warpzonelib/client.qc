@@ -82,6 +82,23 @@ void WarpZone_Camera_Read(float isnew)
 	setsize(self, self.mins, self.maxs);
 }
 
+void CL_RotateMoves(vector ang) = #638;
+void WarpZone_Teleported_Read(float isnew)
+{
+	vector v;
+	self.classname = "warpzone_teleported";
+	v_x = ReadCoord();
+	v_y = ReadCoord();
+	v_z = ReadCoord();
+	if(!isnew)
+		return;
+	self.warpzone_transform = v;
+	setproperty(VF_CL_VIEWANGLES, WarpZone_TransformVAngles(self, getpropertyvec(VF_CL_VIEWANGLES)));
+	if(checkextension("DP_CSQC_ROTATEMOVES")) {
+		CL_RotateMoves(v);
+	}
+}
+
 float warpzone_fixingview;
 float warpzone_fixingview_drawexteriormodel;
 //float warpzone_fixingview_sidespeed;
@@ -109,66 +126,85 @@ void WarpZone_Outside()
 	//cvar_set("cl_forwardspeed", ftos(warpzone_fixingview_forwardspeed));
 }
 
-float warpzone_saved;
-vector warpzone_saved_origin;
-vector warpzone_saved_angles;
+vector WarpZone_FixNearClip(vector o, vector c0, vector c1, vector c2, vector c3)
+{
+	vector mi, ma;
+	entity e;
+	float pd;
+
+	mi_x = min(o_x, min(c0_x, min(c1_x, min(c2_x, c3_x))));
+	ma_x = max(o_x, max(c0_x, max(c1_x, max(c2_x, c3_x))));
+	mi_y = min(o_y, min(c0_y, min(c1_y, min(c2_y, c3_y))));
+	ma_y = max(o_y, max(c0_y, max(c1_y, max(c2_y, c3_y))));
+	mi_z = min(o_z, min(c0_z, min(c1_z, min(c2_z, c3_z))));
+	ma_z = max(o_z, max(c0_z, max(c1_z, max(c2_z, c3_z))));
+
+	e = WarpZone_Find(mi, ma);
+	if(e)
+	{
+		if(WarpZone_PlaneDist(e, o) < 0)
+			return '0 0 0';
+			// can't really be, though, but if it is, this is not my warpzone, but a random different one in the same mins/maxs
+		pd = min(
+				WarpZone_PlaneDist(e, c0), min(
+				WarpZone_PlaneDist(e, c1), min(
+				WarpZone_PlaneDist(e, c2), 
+				WarpZone_PlaneDist(e, c3)))
+			);
+		if(pd < 0)
+			return e.warpzone_forward * -pd;
+	}
+
+	return '0 0 0';
+}
+
 #ifndef KEEP_ROLL
-var float autocvar_cl_rollkillspeed = 10;
+var float cl_rollkillspeed = 10;
 #endif
 void WarpZone_FixView()
 {
-	float pd;
 	entity e;
-	warpzone_saved = 0;
-	warpzone_saved_origin = warpzone_fixview_origin;
-	warpzone_saved_angles = warpzone_fixview_angles;
+	vector org, ang, nearclip, corner0, corner1, corner2, corner3, o;
+	float f;
 
-#ifndef KEEP_ROLL
-	if(autocvar_cl_rollkillspeed)
-		R_SetView(VF_CL_VIEWANGLES_Z, input_angles_z * max(0, (1 - frametime * autocvar_cl_rollkillspeed)));
-	else
-		R_SetView(VF_CL_VIEWANGLES_Z, 0);
-#endif
+	org = getpropertyvec(VF_ORIGIN);
+	ang = getpropertyvec(VF_ANGLES);
 
-	e = WarpZone_Find(warpzone_fixview_origin, warpzone_fixview_origin);
+	e = WarpZone_Find(org, org);
 	if(e)
 	{
-		warpzone_saved = 1;
-		warpzone_fixview_origin = WarpZone_TransformOrigin(e, warpzone_fixview_origin);
-		warpzone_fixview_angles = WarpZone_TransformVAngles(e, warpzone_fixview_angles);
+		org = WarpZone_TransformOrigin(e, org);
+		ang = WarpZone_TransformVAngles(e, ang);
 		WarpZone_Inside();
 	}
 	else
 		WarpZone_Outside();
 
-	// if we are near any warpzone planes - MOVE AWAY (work around nearclip)
-	float nearclip = 2;
-	e = WarpZone_Find(warpzone_fixview_origin - '1 1 1' * nearclip, warpzone_fixview_origin + '1 1 1' * nearclip);
-	if(e)
-	{
-		pd = WarpZone_PlaneDist(e, warpzone_fixview_origin);
-		if(pd >= 0 && pd < nearclip)
-		{
-			warpzone_saved = 1;
-			warpzone_fixview_origin = warpzone_fixview_origin + e.warpzone_forward * (nearclip - pd);
-		}
-	}
+#ifndef KEEP_ROLL
+	float rick;
+	if(cl_rollkillspeed)
+		f = max(0, (1 - frametime * cl_rollkillspeed));
+	else
+		f = 0;
 
-	if(warpzone_saved)
-	{
-		R_SetView(VF_ORIGIN, warpzone_fixview_origin);
-		R_SetView(VF_ANGLES, warpzone_fixview_angles);
-	}
-}
-void WarpZone_UnFixView()
-{
-	if(warpzone_saved)
-	{
-		warpzone_fixview_origin = warpzone_saved_origin;
-		warpzone_fixview_angles = warpzone_saved_angles;
-		R_SetView(VF_ORIGIN, warpzone_fixview_origin);
-		R_SetView(VF_ANGLES, warpzone_fixview_angles);
-	}
+	rick = getproperty(VF_CL_VIEWANGLES_Z);
+	rick *= f;
+	setproperty(VF_CL_VIEWANGLES_Z, rick);
+
+	ang_z *= f;
+#endif
+
+	setproperty(VF_ORIGIN, org);
+	setproperty(VF_ANGLES, ang);
+
+	nearclip = '0 0 1' * (cvar("r_nearclip") * 1.125);
+	corner0 = cs_unproject('0 0 0' + nearclip);
+	corner1 = cs_unproject('1 0 0' * cvar("vid_conwidth") + nearclip);
+	corner2 = cs_unproject('0 1 0' * cvar("vid_conheight") + nearclip);
+	corner3 = cs_unproject('1 0 0' * cvar("vid_conwidth") + '0 1 0' * cvar("vid_conheight") + nearclip);
+	o = WarpZone_FixNearClip(org, corner0, corner1, corner2, corner3);
+	if(o != '0 0 0')
+		setproperty(VF_ORIGIN, org + o);
 }
 
 void WarpZone_Init()

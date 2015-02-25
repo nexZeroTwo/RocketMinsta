@@ -429,17 +429,21 @@ void CSQC_UpdateView(float w, float h)
 	ticrate = getstatf(STAT_MOVEVARS_TICRATE) * getstatf(STAT_MOVEVARS_TIMESCALE);
 	vo = '0 0 1' * getstati(STAT_VIEWHEIGHT);
 
-	warpzone_fixview_origin = pmove_org + vo;
-	warpzone_fixview_angles = input_angles;
 	WarpZone_FixView();
-	pmove_org = warpzone_fixview_origin - vo;
-	input_angles = warpzone_fixview_angles;
+
+	// Render the Scene
+	view_origin = getpropertyvec(VF_ORIGIN);
+	view_angles = getpropertyvec(VF_ANGLES);
+	makevectors(view_angles);
+	view_forward = v_forward;
+	view_right = v_right;
+	view_up = v_up;
 
 	// Render the Scene
 	if(!intermission || !view_set)
 	{
-		view_origin = pmove_org + '0 0 1' * getstati(STAT_VIEWHEIGHT);
-		view_angles = input_angles;
+		view_origin = getpropertyvec(VF_ORIGIN);
+		view_angles = getpropertyvec(VF_ANGLES);
 		makevectors(view_angles);
 		view_forward = v_forward;
 		view_right = v_right;
@@ -540,6 +544,8 @@ void CSQC_UpdateView(float w, float h)
 
 	// ALWAYS Clear Current Scene First
 	R_ClearScene();
+	setproperty(VF_ORIGIN, view_origin);
+	setproperty(VF_ANGLES, view_angles);
 
 	// Assign Standard Viewflags
 	// Draw the World (and sky)
