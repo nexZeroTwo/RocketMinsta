@@ -315,15 +315,15 @@ entity pseudo_bullet(entity forent) {
 }
 
 #define SKIPNONSOLID_ESCAPE_STEP 0.05
-void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
+void traceline_skipnonsolid(vector start, vector end, float t, entity forent, WarpZone_trace_callback_t cb) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        WarpZone_TraceLine(start, end, t, forent);
+        WarpZone_TraceLine(start, end, t, forent, cb);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        WarpZone_TraceLine(start, end, t, forent);
+        WarpZone_TraceLine(start, end, t, forent, cb);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -340,13 +340,13 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent);
+        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent, WarpZone_trace_callback_t_null);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent);
+        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent, WarpZone_trace_callback_t_null);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -386,7 +386,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         ent.angles = ent.angles + (ent.avelocity *  toss_frametime);
         end = ent.origin + (ent.velocity * toss_frametime);
         for (tries = 10; tries > 0; tries--) {
-            WarpZone_TraceBox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
+            tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
             if (trace_endpos == ent.origin)
                 ent.origin += normalize(ent.velocity) * SKIPNONSOLID_ESCAPE_STEP;
             else
@@ -511,6 +511,7 @@ float tracerail_active;
 .float tracerail_startsolid;
 .float tracerail_fraction;
 .vector tracerail_endpos;
+.vector tracerail_dir;
 .vector tracerail_plane_normal;
 .float tracerail_plane_dist;
 .float tracerail_inopen;
@@ -521,7 +522,7 @@ float tracerail_active;
 .float tracerail_dphitq3surfaceflags;
 .string tracerail_dphittexturename;
 
-entity tracerail(vector start, vector end, float t, entity forent) {
+entity tracerail(vector start, vector end, float t, entity forent, WarpZone_trace_callback_t cb) {
     entity first, last, e;
     
     if(tracerail_active) {
@@ -533,7 +534,7 @@ entity tracerail(vector start, vector end, float t, entity forent) {
     tracerail_active = TRUE;
 
     while(TRUE) {
-        traceline_skipnonsolid(start, end, t, forent);
+        traceline_skipnonsolid(start, end, t, forent, cb);
 
         if(!trace_ent)
             break;
@@ -551,6 +552,7 @@ entity tracerail(vector start, vector end, float t, entity forent) {
         last.tracerail_startsolid = trace_startsolid;
         last.tracerail_fraction = trace_fraction;
         last.tracerail_endpos = trace_endpos;
+        last.tracerail_dir = WarpZone_trace_dir;
         last.tracerail_plane_normal = trace_plane_normal;
         last.tracerail_plane_dist = trace_plane_dist;
         last.tracerail_inopen = trace_inopen;
@@ -601,7 +603,7 @@ void tracerail_finalize(entity ents) {
     tracerail_active = FALSE;
 }
 
-entity tracerail_antilag_force(entity source, vector start, vector end, float t, entity forent, float lag) {
+entity tracerail_antilag_force(entity source, vector start, vector end, float t, entity forent, float lag, WarpZone_trace_callback_t cb) {
     entity player, e;
     float oldmask;
 
@@ -620,7 +622,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_takeback(player, time - lag);
 
-    e = tracerail(start, end, t, pseudo_bullet(forent));
+    e = tracerail(start, end, t, pseudo_bullet(forent), cb);
 
     if(lag) for(player = player_list; player; player = player.nextplayer)
         antilag_restore(player);
@@ -631,7 +633,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
     return e;
 }
 
-entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
+entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent, WarpZone_trace_callback_t cb) {
     float lag;
 
     if(cvar("g_antilag") != 2)
@@ -641,7 +643,7 @@ entity tracerail_antilag(entity source, vector start, vector end, float t, entit
     else
         lag = ANTILAG_LATENCY(forent);
 
-    return tracerail_antilag_force(source, start, end, t, forent, lag);
+    return tracerail_antilag_force(source, start, end, t, forent, lag, cb);
 }
 
 float tracebox_inverted (vector v1, vector mi, vector ma, vector v2, float nomonsters, entity forent) // returns the number of traces done, for benchmarking

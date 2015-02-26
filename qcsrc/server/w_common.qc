@@ -84,43 +84,24 @@ void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
     attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
 }
 
-void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
-    vector hitloc, force, endpoint, dir;
-    entity ent, endent;
-    float endq3surfaceflags;
+float FireRailgunBullet_trace_deathtype;
+void FireRailgunBullet_trace_callback(vector from, vector end, vector to) {
+    vector dir;
     float length;
     vector beampos;
-    string snd;
-    entity pseudoprojectile;
-    entity pts, hitents;
     float f;
-
-    railgun_start = start;
-    railgun_end = end;
-
-    dir = normalize(end - start);
-    length = vlen(end - start);
-    force = dir * bforce;
-
-    // go a little bit into the wall because we need to hit this wall later
-    end = end + dir;
-
-    pts = Buffs_MEODP_Hitscan_Begin(self);
-    
-    hitents = tracerail_antilag(self, start, end, FALSE, self);
-
-    endpoint = trace_endpos;
-    endent = trace_ent;
-    endq3surfaceflags = trace_dphitq3surfaceflags;
-
+    string snd;
+    length = vlen(to - from);
+    dir = normalize(to - from);
+    entity pseudoprojectile;
     // Find all non-hit players the beam passed close by
-    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+    if(FireRailgunBullet_trace_deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(FireRailgunBullet_trace_deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
         if(msg_entity != self)
         if not(msg_entity.tracerail_hit)
         if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
             // nearest point on the beam
-            beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
+            beampos = from + dir * bound(0, (msg_entity.origin - from) * dir, length);
 
             f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
             if(f <= 0)
@@ -137,6 +118,30 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             remove(pseudoprojectile);
     }
 
+}
+
+void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
+    vector hitloc, force, endpoint;
+    entity ent, endent;
+    float endq3surfaceflags;
+    entity pts, hitents;
+    float f;
+
+    railgun_start = start;
+    railgun_end = end;
+
+    // go a little bit into the wall because we need to hit this wall later
+    //end = end + dir;
+
+    pts = Buffs_MEODP_Hitscan_Begin(self);
+    
+    FireRailgunBullet_trace_deathtype = deathtype;
+    hitents = tracerail_antilag(self, start, end, FALSE, self, FireRailgunBullet_trace_callback);
+
+    endpoint = trace_endpos;
+    endent = trace_ent;
+    endq3surfaceflags = trace_dphitq3surfaceflags;
+
     W_Accuracy_RegisterShot(self, self.weapon);
 
     // find all the entities the railgun hit and hurt them
@@ -146,7 +151,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
         hitloc = ent.tracerail_endpos;
 
         float tdamage = bdamage;
-        vector tforce = force;
+        vector tforce = bforce * ent.tracerail_dir;
 
         float dst = vlen(end - start) * ent.tracerail_fraction;
 
@@ -396,7 +401,7 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     W_SetHitscanVisuals(self, end);
     trailparticles(world, eff, w_shotorg_visual, end);
 
-    Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
+    Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
 }
 
 entity fireBallisticBullet_trace_callback_ent;
@@ -498,7 +503,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			other = trace_ent;
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
-			self.velocity_z -= sv_gravity * dt;
+			self.velocity = WarpZone_tracetoss_velocity;
             
 			if(!SUB_OwnerCheck())
 			{

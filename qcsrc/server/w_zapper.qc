@@ -182,12 +182,12 @@ void W_Zapper_Beam_Think(void) {
             damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
             force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
 
-            Damage(targ, self, self.owner, damage, WEP_ZAPPER, end, force * w_shotdir);
+            Damage(targ, self, self.owner, damage, WEP_ZAPPER, end, force * WarpZone_trace_dir);
         }
 
         if(fract < 1)
         if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-            Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
+            Damage_DamageInfo(end, damage, 0, 0, force * WarpZone_trace_dir, WEP_ZAPPER, self);
 
         if(!(o.items & IT_UNLIMITED_AMMO))
             o.ammo_cells -= cvar("g_balance_zapper_primary_ammo");
@@ -310,7 +310,7 @@ void W_Zapper_Attack2(void) {
     W_SetHitscanVisuals(self, end);
 
     if(targ.takedamage) {
-        float d = (end - w_shotorg) * w_shotdir;
+        float d = vlen(end - w_shotorg) * trace_fraction;
 
         float mindist = cvar("g_balance_zapper_secondary_damagefalloff_mindist");
         float maxdist = cvar("g_balance_zapper_secondary_damagefalloff_maxdist");
@@ -323,7 +323,7 @@ void W_Zapper_Attack2(void) {
         if(targ.iscreature)
             W_Zapper_Attack2_Arc(targ, self, damage);
 
-        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * w_shotdir);
+        Damage(targ, self, self, damage, WEP_ZAPPER | HITTYPE_SECONDARY, end, force * WarpZone_trace_dir);
     }
 
     Buffs_MEODP_Hitscan_End(pts);
@@ -334,7 +334,7 @@ void W_Zapper_Attack2(void) {
     W_Zapper_Attack2_Effect(self.team, w_shotorg_visual, end);
 
     if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-        Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER | HITTYPE_SECONDARY, self);
+        Damage_DamageInfo(end, damage, 0, 0, force * WarpZone_trace_dir, WEP_ZAPPER | HITTYPE_SECONDARY, self);
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - cvar("g_balance_zapper_secondary_ammo");

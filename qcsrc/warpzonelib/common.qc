@@ -181,6 +181,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	frac = 0;
 	for(;;)
 	{
+		WarpZone_trace_dir = normalize(end - org);
 		tracebox(org, mi, ma, end, nomonsters, forent);
 		if(cb)
 			cb(org, trace_endpos, end);
@@ -213,14 +214,14 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	v_up = vu;
 }
 
-void WarpZone_TraceBox(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent)
+void WarpZone_TraceBox(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent, WarpZone_trace_callback_t cb)
 {
-	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, WarpZone_trace_callback_t_null);
+	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, cb);
 }
 
-void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent)
+void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent, WarpZone_trace_callback_t cb)
 {
-	WarpZone_TraceBox(org, '0 0 0', '0 0 0', end, nomonsters, forent);
+	WarpZone_TraceBox(org, '0 0 0', '0 0 0', end, nomonsters, forent, cb);
 }
 
 #ifdef SVQC
