@@ -1067,43 +1067,18 @@ void weapon_setup(float windex)
 .float race_penalty;
 float weapon_prepareattack(float secondary, float attacktime)
 {
-	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
-	//if all players readied up and the countdown is running
-	if((time < game_starttime && !g_inf) || time < self.race_penalty)
-		return FALSE;
-
-    if(roundstate == ROUNDSTATE_OVER)
-        return FALSE;
-
-	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
-		return FALSE;
-
-	if(g_freeze)
-	if(self.frozen) 
-		return FALSE;
-    
-    if(time < self.hg_plasmalock)
-        return FALSE;
-    
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
-    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    if(!PlayerMayFire(self))
         return FALSE;
-    
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
+
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+    if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
         W_SwitchWeapon_OutOfAmmo(self);
-		return FALSE;
-	}
+        return FALSE;
+    }
 
-	if (timeoutStatus == 2) //don't allow the player to shoot while game is paused
-		return FALSE;
-
-	// do not even think about shooting if switching
-	if(self.switchweapon != self.weapon)
-		return FALSE;
-	
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished

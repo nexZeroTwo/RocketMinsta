@@ -1739,3 +1739,40 @@ void VoiceMessage(string type, string msg)
 	if (!flood)
 		PlayerSound(sample, CHAN_VOICE, voicetype);
 }
+
+float PlayerMayFire(entity plr) {
+    //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
+    //if all players readied up and the countdown is running
+    if((time < game_starttime && !g_inf) || time < plr.race_penalty)
+        return FALSE;
+
+    if(roundstate == ROUNDSTATE_OVER)
+        return FALSE;
+
+    if(roundstate == ROUNDSTATE_WARMUP && plr.weapon != WEP_LASER)
+        return FALSE;
+
+    if(plr.deadflag != DEAD_NO)
+        return FALSE;
+
+    if(g_freeze && plr.frozen)
+        return FALSE;
+    
+    if(time < plr.hg_plasmalock)
+        return FALSE;
+    
+    if(plr.hg_stealth)
+        return FALSE;
+
+    if(time - plr.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+        return FALSE;
+    
+    if(timeoutStatus == 2) //don't allow the player to shoot while game is paused
+        return FALSE;
+
+    // do not even think about shooting if switching
+    if(plr.switchweapon != plr.weapon)
+        return FALSE;
+
+    return TRUE;
+}

@@ -161,6 +161,11 @@ void W_Fireball_AttackEffect(float i, vector f_diff)
 
 void W_Fireball_Attack2_Frame4()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Fireball_Attack2();
 	weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_fireball_secondary_animtime"), w_ready);
 }
