@@ -51,13 +51,11 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
         Draw_CylindricLine_Curved(end2, from, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
         Draw_CylindricLine_Curved(end2, from, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
     }
-    float pcount = frametime * 300;
-    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
+
     if (endpos == to) {
         float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
-        pointparticles(eff_zap, to, '0 0 0', pcount);
+        pointparticles(eff_zap, to, '0 0 0', frametime * 300);
     }
-    pointparticles(eff_muz, from, to - from, pcount);
 }
 
 void Zapper_Draw(void) {
@@ -78,6 +76,8 @@ void Zapper_Draw(void) {
 
     vector end1 = self.zapper_end;
 	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, zapper_particles_trace_callback);
+
+    pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
 }
 
 void Zapper_Draw_Shield(void) {
