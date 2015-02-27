@@ -52,7 +52,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
         Draw_CylindricLine_Curved(end2, from, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
     }
 
-    if (endpos == to) {
+    if(vlen(endpos - to) < 1) {
         float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
         pointparticles(eff_zap, to, '0 0 0', frametime * 300);
     }
