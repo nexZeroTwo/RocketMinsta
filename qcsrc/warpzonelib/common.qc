@@ -173,7 +173,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 			goto fail;
 		}
 		WarpZone_Trace_AddTransform(wz);
-		org = WarpZone_TransformOrigin(wz, trace_endpos);
+		org = WarpZone_TransformOrigin(wz, org);
 		end = WarpZone_TransformOrigin(wz, end);
 	}
 	WarpZone_MakeAllSolid();
@@ -213,6 +213,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	}
 	if (i == 0) {
 		print("WarpZone_TraceBox_ThroughZone: escape from loop\n");
+		trace_ent = world;
 	}
 	WarpZone_MakeAllOther();
 :fail

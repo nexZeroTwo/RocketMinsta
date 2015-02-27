@@ -353,8 +353,6 @@ void WarpZone_InitStep_FindTarget()
 
 void WarpZonePosition_InitStep_FindTarget()
 {
-	entity e;
-
 	if(self.target == "")
 	{
 		error("Warp zone position with no target");
@@ -377,8 +375,6 @@ void WarpZonePosition_InitStep_FindTarget()
 
 void WarpZoneCamera_InitStep_FindTarget()
 {
-	entity e;
-
 	if(self.target == "")
 	{
 		error("Camera with no target");
@@ -417,7 +413,6 @@ void WarpZone_InitStep_UpdateTransform()
 		tex = getsurfacetexture(self, i_s);
 		if not(tex)
 			break; // this is beyond the last one
-		print(strcat("tex=", tex, "\n"));
 		if(tex != "textures/common/warpzone" && substring(tex, 0, 25) != "textures/effects_warpzone")
 			continue;
 		n_t = getsurfacenumtriangles(self, i_s);

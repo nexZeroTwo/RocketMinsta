@@ -1,7 +1,9 @@
 // uncomment this if your mod uses the roll angle in fixangle
 // #define KEEP_ROLL
 
+#ifdef SVQC
 const var void(void)       func_null;
+#endif
 
 .vector warpzone_shift;
 .vector warpzone_origin;
