@@ -12,7 +12,7 @@ vector Zapper_BeamRGB(float t) {
     }
 }
 
-float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float thickness, string texture, float aspect, float shift, vector rgb, float aalpha, float drawflag, float depth) {
+float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float thickness, string texture, float aspect, float shift, vector rgb, float aalpha, float drawflag, vector vieworg, float depth) {
     vector mid;
     mid = (start + end) * 0.5;
 
@@ -21,35 +21,43 @@ float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float th
 
     --depth;
     if(depth < 0 || normalize(mid - start) * normalize(end - start) > 0.999999) {
-        Draw_CylindricLine(start, end, thickness, texture, aspect, shift, rgb, aalpha, drawflag);
+        Draw_CylindricLine(start, end, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg);
         return shift + aspect * vlen(start - end) / thickness;
     } else {
-        shift = Draw_CylindricLine_Curved(start, mid, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
-        shift = Draw_CylindricLine_Curved(mid, end, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
+        shift = Draw_CylindricLine_Curved(start, mid, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg, depth);
+        shift = Draw_CylindricLine_Curved(mid, end, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg, depth);
         return shift;
     }
 }
 
+vector zapper_particles_trace_callback_origin;
+float zapper_particles_trace_callback_beamoffs;
+
 void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
+    vector o = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_particles_trace_callback_origin);
     vector rgb = Zapper_BeamRGB(self.team);
-    vector end2 = endpos + self.zapper_offs * 70;
+    vector end2 = to + self.zapper_offs * 70;
     string tex = "particles/zapper";
-    vector d = end2 - from;
-    float maxlen = vlen(endpos - from);
+    vector d = end2 - o;
+    float maxlen = vlen(to - o);
     float t = self.cnt + time;
 
     if(vlen(d) > maxlen)
         end2 = from + normalize(d) * maxlen;
 
-    Draw_CylindricLine(endpos, from,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
+
+    Draw_CylindricLine(endpos, from, 12, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, self.alpha, DRAWFLAG_ADDITIVE, v);
+    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - from) / 12;
+
     if(self.sv_entnum) {
         vectorvectors(normalize(d));
         vector rgb2 = GetTeamRGB(self.team);
         vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
         vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
 
-        Draw_CylindricLine_Curved(end2, from, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
-        Draw_CylindricLine_Curved(end2, from, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+        Draw_CylindricLine_Curved(end2, o, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v, 4);
+        Draw_CylindricLine_Curved(end2, o, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v, 4);
     }
 
     if(vlen(endpos - to) < 1) {
@@ -75,6 +83,8 @@ void Zapper_Draw(void) {
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
     vector end1 = self.zapper_end;
+    zapper_particles_trace_callback_beamoffs = time * 5;
+    zapper_particles_trace_callback_origin = start;
 	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, zapper_particles_trace_callback);
 
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
@@ -97,7 +107,7 @@ void Zapper_Draw_Shield(void) {
     string tex = "particles/zapper";
     vector rgb = Zapper_BeamRGB(self.team) * 0.5;
 
-    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE, view_origin);
 
     if(self.alpha < 1)
         return;

@@ -10,7 +10,7 @@ void LightingArc_Draw(void) {
     }   else              tex = (self.team? "particles/hook_blue" : "particles/hook_green");
     
     float i; for(i = 0; i < 5; ++i)
-        Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
+        Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE, view_origin);
     
     self.alpha = self.alpha - frametime * 3;
     if(self.alpha < 0)

@@ -2,7 +2,7 @@
 .vector HookEnd;
 .float HookKillTime;
 
-void Draw_CylindricLine(vector from, vector to, float thickness, string texture, float aspect, float shift, vector rgb, float alpha, float drawflag)
+void Draw_CylindricLine(vector from, vector to, float thickness, string texture, float aspect, float shift, vector rgb, float alpha, float drawflag, vector vieworg)
 {
 	// I want to draw a quad...
 	// from and to are MIDPOINTS.
@@ -14,7 +14,7 @@ void Draw_CylindricLine(vector from, vector to, float thickness, string texture,
 	length_tex = aspect * vlen(to - from) / thickness;
 
 	// direction is perpendicular to the view normal, and perpendicular to the axis
-	thickdir = normalize(cross(axis, view_origin - from));
+	thickdir = normalize(cross(axis, vieworg - from));
 
 	A = from - thickdir * (thickness / 2);
 	B = from + thickdir * (thickness / 2);
@@ -27,6 +27,16 @@ void Draw_CylindricLine(vector from, vector to, float thickness, string texture,
 	R_PolygonVertex(C, '0 1 0' + (shift + length_tex) * '1 0 0', rgb, alpha);
 	R_PolygonVertex(D, '0 0 0' + (shift + length_tex) * '1 0 0', rgb, alpha);
 	R_EndPolygon();
+}
+
+string Draw_GrapplingHook_trace_callback_tex;
+float Draw_GrapplingHook_trace_callback_offs;
+vector Draw_GrapplingHook_trace_callback_rgb;
+
+void Draw_GrapplingHook_trace_callback(vector start, vector hit, vector end) {
+    vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
+    Draw_CylindricLine(hit, start, 5, Draw_GrapplingHook_trace_callback_tex, 0.1, Draw_GrapplingHook_trace_callback_offs, Draw_GrapplingHook_trace_callback_rgb, 1, DRAWFLAG_ADDITIVE, v);
+    Draw_GrapplingHook_trace_callback_offs += 0.1 * vlen(hit - start) / 5;
 }
 
 void Draw_GrapplingHook()
@@ -71,8 +81,12 @@ void Draw_GrapplingHook()
 		tex = "particles/hook_green";
 		rgb = '.4 1 .4';
 	}
-	//Draw_CylindricLine(b, a, 5, tex, 0.25, random(), rgb, 1, DRAWFLAG_NORMAL);
-	Draw_CylindricLine(b, a, 5, tex, 0.1, -2 * time, rgb, 1, DRAWFLAG_ADDITIVE);
+
+    Draw_GrapplingHook_trace_callback_tex = tex;
+    Draw_GrapplingHook_trace_callback_offs = -2 * time;
+    Draw_GrapplingHook_trace_callback_rgb = rgb;
+    WarpZone_TraceBox_ThroughZone(a, '0 0 0', '0 0 0', b, MOVE_NOMONSTERS, world, world, Draw_GrapplingHook_trace_callback);
+    Draw_GrapplingHook_trace_callback_tex = string_null;
 }
 
 void Net_GrapplingHook()

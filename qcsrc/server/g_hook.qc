@@ -118,7 +118,7 @@ void GrapplingHook_Stop()
 void GrapplingHookThink()
 {
 	float spd, dist, minlength, pullspeed, ropestretch, ropeairfriction, rubberforce, newlength, rubberforce_overstretch, dontpull, dontpull_limit;
-	vector dir, org, end, v0, dv;
+	vector dir, org, end, v0, v, dv, myorg;
 	if(self.owner.health <= 0 || self.owner.hook != self)	// how did that happen?
 	{														// well, better fix it anyway
 		remove(self);
@@ -130,10 +130,14 @@ void GrapplingHookThink()
 		return;
 	}
 
+    if(self.aiment)
+        WarpZone_RefSys_AddIncrementally(self, self.aiment);
+
 	self.nextthink = time;
 
 	makevectors(self.owner.v_angle);
 	org = self.owner.origin + self.owner.view_ofs + v_forward * hook_shotorigin_x + v_right * hook_shotorigin_y + v_up * hook_shotorigin_z;
+    myorg = WarpZone_RefSys_TransformOrigin(self.owner, self, org);
 
 #if 0
 	tracebox(org, self.mins, self.maxs, self.origin, MOVE_NOMONSTERS, self.owner);
@@ -161,7 +165,7 @@ void GrapplingHookThink()
 #endif
 
 	if(self.hook_length < 0)
-		self.hook_length = vlen(org - self.origin);
+		self.hook_length = vlen(myorg - self.origin);
 
 	if(self.state == 1)
 	{
@@ -189,7 +193,7 @@ void GrapplingHookThink()
 		dontpull = cvar("g_balance_grapplehook_dontpull");
 		dontpull_limit = cvar("g_balance_grapplehook_dontpull_limit");
 
-		dir = self.origin - org;
+		dir = self.origin - myorg;
 		dist = vlen(dir);
 		dir = normalize(dir);
         if(self.hook_length_initial < 0)
@@ -197,7 +201,7 @@ void GrapplingHookThink()
 
 		if(cvar("g_grappling_hook_tarzan"))
 		{
-			v0 = self.owner.velocity;
+			v = v0 = WarpZone_RefSys_TransformVelocity(self.owner, self, self.owner.velocity);
 			
 			// first pull the rope...
 			if(self.owner.hook_state & HOOK_PULLING)
@@ -208,8 +212,8 @@ void GrapplingHookThink()
 				if(newlength < dist - ropestretch) // overstretched?
 				{
 					newlength = dist - ropestretch;
-					if(self.owner.velocity * dir < 0) // only if not already moving in hook direction
-						self.owner.velocity = self.owner.velocity + frametime * (dontpull? (dir_x * '1 0 0' + dir_y * '0 1 0') : dir) * rubberforce_overstretch;
+					if(v * dir < 0) // only if not already moving in hook direction
+						v = v + frametime * (dontpull? (dir_x * '1 0 0' + dir_y * '0 1 0') : dir) * rubberforce_overstretch;
 				}
 
 				self.hook_length = newlength;
@@ -228,16 +232,16 @@ void GrapplingHookThink()
 				
 				if(!dontpull || (dontpull_limit && self.hook_length >= self.hook_length_initial)) {
                     pulled = TRUE;
-					self.owner.velocity = self.owner.velocity * (1 - frametime * ropeairfriction);
-					self.owner.velocity = self.owner.velocity + frametime * dir * spd * rubberforce;
+					v = v * (1 - frametime * ropeairfriction);
+					v = v + frametime * dir * spd * rubberforce;
 				}
 
-				dv = ((self.owner.velocity - v0) * dir) * dir;
+				dv = ((v - v0) * dir) * dir;
 				if(cvar("g_grappling_hook_tarzan") >= 2)
 				{
 					if(self.aiment.movetype == MOVETYPE_WALK)
 					{
-						//self.owner.velocity = self.owner.velocity - dv * 0.5;
+						//v = v - dv * 0.5;
 						self.aiment.velocity = self.aiment.velocity - dv; //* 0.5;
 						self.aiment.flags &~= FL_ONGROUND;
 						self.aiment.pusher = self.owner;
@@ -248,11 +252,13 @@ void GrapplingHookThink()
                 if(pulled)
                     self.owner.flags &~= FL_ONGROUND;
 			}
+
+            self.owner.velocity = WarpZone_RefSys_TransformVelocity(self, self.owner, v);
 		}
 		else
 		{
 			end = self.origin - dir*50;
-			dist = vlen(end - org);
+			dist = vlen(end - myorg);
 			if(dist < 200)
 				spd = dist * (pullspeed / 200);
 			else
@@ -279,7 +285,8 @@ void GrapplingHookThink()
 	}
 	
 	makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0');
-	te_beam(self.owner, self.origin + v_forward * (-9), org);
+    myorg = WarpZone_RefSys_TransformOrigin(self, self.owner, self.origin);
+	te_beam(self.owner, myorg, org);
 }
 
 void GrapplingHookTouch (void)
@@ -323,6 +330,7 @@ void GrapplingHookTouch (void)
             }
             
             SetMovetypeFollow(self, other);
+            WarpZone_RefSys_BeginAddingIncrementally(self, self.aiment);
         }
     }
 
@@ -437,7 +445,7 @@ void FireGrapplingHook (void)
 	org = self.origin + self.view_ofs + v_forward * hook_shotorigin_x + v_right * hook_shotorigin_y + v_up * hook_shotorigin_z;
 	pointparticles(particleeffectnum("grapple_muzzleflash"), org, '0 0 0', 1);
 
-	missile = spawn ();
+	missile = WarpZone_RefSys_SpawnSameRefSys(self);
 	missile.owner = self;
 	self.hook = missile;
 	missile.classname = "grapplinghook";
