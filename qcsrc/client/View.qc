@@ -432,14 +432,6 @@ void CSQC_UpdateView(float w, float h)
 	WarpZone_FixView();
 
 	// Render the Scene
-	view_origin = getpropertyvec(VF_ORIGIN);
-	view_angles = getpropertyvec(VF_ANGLES);
-	makevectors(view_angles);
-	view_forward = v_forward;
-	view_right = v_right;
-	view_up = v_up;
-
-	// Render the Scene
 	if(!intermission || !view_set)
 	{
 		view_origin = getpropertyvec(VF_ORIGIN);
