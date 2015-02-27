@@ -315,15 +315,15 @@ entity pseudo_bullet(entity forent) {
 }
 
 #define SKIPNONSOLID_ESCAPE_STEP 0.05
-void traceline_skipnonsolid(vector start, vector end, float t, entity forent, WarpZone_trace_callback_t cb) {
+void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        WarpZone_TraceLine(start, end, t, forent, cb);
+        traceline(start, end, t, forent);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        WarpZone_TraceLine(start, end, t, forent, cb);
+        traceline(start, end, t, forent);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -340,13 +340,13 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent, Wa
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
     if (!cvar("sv_gameplayfix_zerohitcontents")) {
-        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent, WarpZone_trace_callback_t_null);
+        tracebox(start, mi, ma, end, nomonst, forent);
         return;
     }
     float prev_trace_fract = 0;
     float tries;
     for (tries = 10; tries > 0; tries--) {
-        WarpZone_TraceBox(start, mi, ma, end, nomonst, forent, WarpZone_trace_callback_t_null);
+        tracebox(start, mi, ma, end, nomonst, forent);
         if(trace_fraction == 1)
             break;
         trace_fraction = prev_trace_fract + (trace_fraction * (1 - prev_trace_fract));
@@ -441,7 +441,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	}
 
 	// do the trace
-	tracebox_skipnonsolid (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
+	WarpZone_TraceBox (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
 
 	// restore players to current positions
 	if (lag)
@@ -527,14 +527,14 @@ entity tracerail(vector start, vector end, float t, entity forent, WarpZone_trac
     
     if(tracerail_active) {
         backtrace("Attempted to tracerail before finalizing a previous tracerail - things will break.");
-        traceline(start, end, t, forent);
+        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, cb);
         return trace_ent;
     }
 
     tracerail_active = TRUE;
 
     while(TRUE) {
-        traceline_skipnonsolid(start, end, t, forent, cb);
+        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, cb);
 
         if(!trace_ent)
             break;

@@ -121,7 +121,7 @@ void FireRailgunBullet_trace_callback(vector from, vector end, vector to) {
 }
 
 void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
-    vector hitloc, force, endpoint;
+    vector hitloc, endpoint;
     entity ent, endent;
     float endq3surfaceflags;
     entity pts, hitents;
