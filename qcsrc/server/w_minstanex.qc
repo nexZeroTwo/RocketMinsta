@@ -173,6 +173,10 @@ void W_MinstaNex_Attack (void)
 
 	pointparticles(particleeffectnum("nex_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
 
+    // flash and burn the wall
+    if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
+        Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * w_shotdir, WEP_MINSTANEX, self);
+
 	// teamcolor / hit beam effect
     vector v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 	if(teamplay)
@@ -207,10 +211,6 @@ void W_MinstaNex_Attack (void)
 	}
 	else
         WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg_visual, v);
-
-	// flash and burn the wall
-	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * w_shotdir, WEP_MINSTANEX, self);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	{
