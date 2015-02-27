@@ -2682,7 +2682,7 @@ void attach_sameorigin(entity e, entity to, string tag)
     // current forward and up directions
     if (substring(e.model, 0, 1) == "*") // bmodels have their own rules
         e.angles_x = -e.angles_x;
-    fixedmakevectors(e.angles);
+    fixedmakevectors2(e.angles);
 
     // untransform forward, up!
     e_forward_x = v_forward * t_forward;

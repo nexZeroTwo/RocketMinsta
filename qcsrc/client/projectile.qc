@@ -246,7 +246,7 @@ void Projectile_Draw()
 		self.angles = AnglesTransform_Multiply(self.angles, rot * (t - self.spawntime));
 	}
 
-	fixedmakevectors(self.angles);
+	fixedmakevectors2(self.angles);
 
 	trailorigin = self.origin;
 	switch(self.cnt)

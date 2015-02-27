@@ -23,7 +23,7 @@ void InterpolateOrigin_Note()
 
 	if(self.iflags & IFLAG_ANGLES)
 	{
-		fixedmakevectors(self.angles);
+		fixedmakevectors2(self.angles);
 		self.iforward1 = self.iforward2;
 		self.iup1 = self.iup2;
 		self.iforward2 = v_forward;

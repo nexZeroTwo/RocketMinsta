@@ -4,10 +4,12 @@
 #define fixedmakevectors makevectors
 vector fixedvectoangles(vector a);
 vector fixedvectoangles2(vector a, vector b);
+void fixedmakevectors2(vector a);
 #else
 void fixedmakevectors(vector a);
 #define fixedvectoangles2 vectoangles2
 #define fixedvectoangles vectoangles
+#define fixedmakevectors2 fixedmakevectors
 #endif
 
 vector AnglesTransform_Apply(vector transform, vector v);

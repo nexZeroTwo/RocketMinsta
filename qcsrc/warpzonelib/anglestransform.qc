@@ -13,6 +13,12 @@ vector fixedvectoangles2(vector a, vector b)
 	ang_x = -ang_x;
 	return ang;
 }
+void fixedmakevectors2(vector a)
+{
+    // a makevectors that actually inverts vectoangles
+    a_x = -a_x;
+    makevectors(a);
+}
 #else
 void fixedmakevectors(vector a)
 {
