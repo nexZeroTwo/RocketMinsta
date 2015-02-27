@@ -174,38 +174,39 @@ void W_MinstaNex_Attack (void)
 	pointparticles(particleeffectnum("nex_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
 
 	// teamcolor / hit beam effect
+    vector v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 	if(teamplay)
 	{
 	    switch(self.team)
 	    {
             case COLOR_TEAM1:   // Red
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg_visual, v);
                 break;
             case COLOR_TEAM2:   // Blue
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg_visual, v);
                 break;
             case COLOR_TEAM3:   // Yellow
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg_visual, v);
                 break;
             case COLOR_TEAM4:   // Pink
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg_visual, v);
                 break;
 	    }
 	}
 	else
-        trailparticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg_visual, trace_endpos);
+        WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg_visual, v);
 
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
