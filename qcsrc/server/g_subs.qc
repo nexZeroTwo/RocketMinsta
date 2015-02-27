@@ -411,7 +411,7 @@ A version of traceline that must be used by SOLID_SLIDEBOX things that want to h
 Additionally it moves players back into the past before the trace and restores them afterward.
 ==================
 */
-void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag)
+void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag, float wz)
 {
 	local entity player;
 	local float _oldsolid;
@@ -441,7 +441,10 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 	}
 
 	// do the trace
-	WarpZone_TraceBox (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
+	if (wz)
+		WarpZone_TraceBox (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
+	else
+		tracebox (v1, mi, ma, v2, nomonst, pseudo_bullet(forent));
 
 	// restore players to current positions
 	if (lag)
@@ -460,7 +463,7 @@ void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vec
 }
 
 void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst, entity forent, float lag) {
-    tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag);
+    tracebox_antilag_force(source, v1, '0 0 0', '0 0 0', v2, nomonst, forent, lag, 1);
 }
 
 void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
@@ -475,7 +478,7 @@ void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entit
     traceline_antilag_force(source, v1, v2, nomonst, forent, lag);
 }
 
-void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
+void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float wz) {
     float lag;
 
     if(cvar("g_antilag") != 2)
@@ -485,7 +488,7 @@ void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2,
     else
         lag = ANTILAG_LATENCY(forent);
 
-    tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag);
+    tracebox_antilag_force(source, v1, mi, ma, v2, nomonst, forent, lag, wz);
 }
 
 
