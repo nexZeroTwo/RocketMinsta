@@ -44,7 +44,7 @@ vector WarpZone_camera_transform(vector org, vector ang)
 
 void WarpZone_SetUp(entity e, vector my_org, vector my_ang, vector other_org, vector other_ang)
 {
-	e.warpzone_transform = AnglesTransform_Divide(other_ang, AnglesTransform_TurnDirectionFR(my_ang));
+	e.warpzone_transform = AnglesTransform_RightDivide(other_ang, AnglesTransform_TurnDirectionFR(my_ang));
 	e.warpzone_shift = AnglesTransform_PrePostShift_GetPostShift(my_org, e.warpzone_transform, other_org);
 	e.warpzone_origin = my_org;
 	e.warpzone_targetorigin = other_org;
@@ -179,7 +179,8 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	WarpZone_MakeAllSolid();
 	sol = -1;
 	frac = 0;
-	for(;;)
+	float i;
+	for(i = 10; i > 0; i--)
 	{
 		WarpZone_trace_dir = normalize(end - org);
 #ifdef SVQC
@@ -209,6 +210,9 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 		// we hit a warpzone... so, let's perform the trace after the warp again
 		org = WarpZone_TransformOrigin(wz, trace_endpos);
 		end = WarpZone_TransformOrigin(wz, end);
+	}
+	if (i == 0) {
+		print("WarpZone_TraceBox_ThroughZone: escape from loop\n");
 	}
 	WarpZone_MakeAllOther();
 :fail

@@ -1,5 +1,62 @@
+#ifdef POSITIVE_PITCH_IS_DOWN
+vector fixedvectoangles(vector a)
+{
+	vector ang;
+	ang = vectoangles(a);
+	ang_x = -ang_x;
+	return ang;
+}
+vector fixedvectoangles2(vector a, vector b)
+{
+	vector ang;
+	ang = vectoangles2(a, b);
+	ang_x = -ang_x;
+	return ang;
+}
+#else
+void fixedmakevectors(vector a)
+{
+	// a makevectors that actually inverts vectoangles
+	a_x = -a_x;
+	makevectors(a);
+}
+#endif
+
 // angles transforms
 // angles in fixedmakevectors/fixedvectoangles space
+vector AnglesTransform_Apply(vector transform, vector v)
+{
+	fixedmakevectors(transform);
+	return v_forward * v_x
+		+ v_right   * (-v_y)
+		+ v_up      * v_z;
+}
+
+vector AnglesTransform_Multiply(vector t1, vector t2)
+{
+	vector m_forward, m_up;
+	fixedmakevectors(t2); m_forward = v_forward; m_up = v_up;
+	m_forward = AnglesTransform_Apply(t1, m_forward); m_up = AnglesTransform_Apply(t1, m_up);
+	return fixedvectoangles2(m_forward, m_up);
+}
+
+vector AnglesTransform_Invert(vector transform)
+{
+	vector i_forward, i_up;
+	fixedmakevectors(transform);
+	// we want angles that turn v_forward into '1 0 0', v_right into '0 1 0' and v_up into '0 0 1'
+	// but these are orthogonal unit vectors!
+	// so to invert, we can simply fixedvectoangles the TRANSPOSED matrix
+	// TODO is this always -transform?
+	i_forward_x = v_forward_x;
+	i_forward_y = -v_right_x;
+	i_forward_z = v_up_x;
+	i_up_x = v_forward_z;
+	i_up_y = -v_right_z;
+	i_up_z = v_up_z;
+	return fixedvectoangles2(i_forward, i_up);
+}
+
 vector AnglesTransform_TurnDirectionFR(vector transform)
 {
 	// turn 180 degrees around v_up
@@ -25,6 +82,16 @@ vector AnglesTransform_TurnDirectionFU(vector transform)
 	transform_y = 180 + transform_y;
 	transform_z = 180 - transform_z;
 	return transform;
+}
+
+vector AnglesTransform_RightDivide(vector to_transform, vector from_transform)
+{
+	return AnglesTransform_Multiply(to_transform, AnglesTransform_Invert(from_transform));
+}
+
+vector AnglesTransform_LeftDivide(vector from_transform, vector to_transform)
+{
+	return AnglesTransform_Multiply(AnglesTransform_Invert(from_transform), to_transform);
 }
 
 vector AnglesTransform_Normalize(vector t, float minimize_roll)
