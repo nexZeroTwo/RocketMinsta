@@ -116,10 +116,10 @@ function buildall
     [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
-    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
 	echo " -- Calculating sum of common/..."
-	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+	COMMONSUM="$(find "$QCSOURCE"/{common,warpzonelib} -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 	MENUSUM="$MENUSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
