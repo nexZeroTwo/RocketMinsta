@@ -530,14 +530,14 @@ entity tracerail(vector start, vector end, float t, entity forent, WarpZone_trac
     
     if(tracerail_active) {
         backtrace("Attempted to tracerail before finalizing a previous tracerail - things will break.");
-        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, cb);
+        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, FALSE, cb);
         return trace_ent;
     }
 
     tracerail_active = TRUE;
 
     while(TRUE) {
-        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, cb);
+        WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, FALSE, cb);
 
         if(!trace_ent)
             break;

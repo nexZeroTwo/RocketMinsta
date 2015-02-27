@@ -85,7 +85,7 @@ void Zapper_Draw(void) {
     vector end1 = self.zapper_end;
     zapper_particles_trace_callback_beamoffs = time * 5;
     zapper_particles_trace_callback_origin = start;
-	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, zapper_particles_trace_callback);
+	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, TRUE, zapper_particles_trace_callback);
 
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
 }
@@ -230,6 +230,6 @@ void Zapper_ReadLightning(void) {
     from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
     to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
 
-	WarpZone_TraceBox_ThroughZone(from, '0 0 0', '0 0 0', to, MOVE_NOMONSTERS, world, world, zapper_lightning_trace_callback);
+	WarpZone_TraceBox_ThroughZone(from, '0 0 0', '0 0 0', to, MOVE_NOMONSTERS, world, world, TRUE, zapper_lightning_trace_callback);
 
 }

@@ -148,7 +148,7 @@ void WarpZone_Trace_AddTransform(entity wz)
 	WarpZone_Accumulator_Add(WarpZone_trace_transform, wz);
 }
 
-void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent, entity zone, WarpZone_trace_callback_t cb)
+void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent, entity zone, float throughsolid, WarpZone_trace_callback_t cb)
 {
 	float frac, sol;
 	vector o0, e0;
@@ -184,10 +184,21 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	{
 		WarpZone_trace_dir = normalize(end - org);
 #ifdef SVQC
-		tracebox_skipnonsolid(org, mi, ma, end, nomonsters, forent);
+        #define __tracebox tracebox_skipnonsolid
 #else
-		tracebox(org, mi, ma, end, nomonsters, forent);
+        #define __tracebox tracebox
 #endif
+
+        __tracebox(org, mi, ma, end, nomonsters, forent);
+
+        if(throughsolid) {
+            while(trace_fraction < 1 && trace_ent.classname != "trigger_warpzone") {
+                __tracebox(trace_endpos + WarpZone_trace_dir, mi, ma, end, nomonsters, forent);
+            }
+        }
+
+#undef __tracebox
+
 		if(cb)
 			cb(org, trace_endpos, end);
 		if(sol < 0)
@@ -225,7 +236,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 
 void WarpZone_TraceBox(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent)
 {
-	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, WarpZone_trace_callback_t_null);
+	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, FALSE, WarpZone_trace_callback_t_null);
 }
 
 void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent)
@@ -319,7 +330,7 @@ void WarpZone_TrailParticles(entity own, float eff, vector org, vector end)
 {
     WarpZone_TrailParticles_trace_callback_own = own;
     WarpZone_TrailParticles_trace_callback_eff = eff;
-    WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, WarpZone_TrailParticles_trace_callback);
+    WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, TRUE, WarpZone_TrailParticles_trace_callback);
 }
 
 float WarpZone_PlaneDist(entity wz, vector v)
