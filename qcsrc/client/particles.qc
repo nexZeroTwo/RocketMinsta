@@ -326,6 +326,8 @@ entity nextrail_particles_own;
 float nextrail_particles_eff;
 float nextrail_particles_theteam;
 float nextrail_particles_secondary;
+float nextrail_particles_spiraloffs1;
+float nextrail_particles_spiraloffs2;
 void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
 {
     trailparticles(nextrail_particles_own, nextrail_particles_eff, from, endpos);
@@ -338,7 +340,7 @@ void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
         default:          eff = particleeffectnum("TE_TEI_G3");       break;
     }
 
-    spiralparticles(world, eff, from, endpos, 10, time, 0.015, 20);
+    nextrail_particles_spiraloffs1 = spiralparticles(world, eff, from, endpos, 10, nextrail_particles_spiraloffs1, 0.015, 20);
 
     if(nextrail_particles_secondary) {
         switch(nextrail_particles_theteam) {
@@ -349,15 +351,16 @@ void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
             default: break;
         }
 
-        spiralparticles(world, eff, from, endpos, 10, time + PI, 0.015, 20);
+        nextrail_particles_spiraloffs2 = spiralparticles(world, eff, from, endpos, 10, nextrail_particles_spiraloffs2, 0.015, 20);
     }
-    pointparticles(particleeffectnum("nex_muzzleflash"), from, normalize(endpos - from) * 1000, 1);
 }
 
 void nex_trailparticles(entity own, float eff, vector org, vector end)
 {
 	nextrail_particles_own = own;
 	nextrail_particles_eff = eff;
+    nextrail_particles_spiraloffs1 = time;
+    nextrail_particles_spiraloffs2 = time + PI;
 	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, nextrail_particles_trace_callback);
 }
 
@@ -376,4 +379,6 @@ void Net_ReadNexgunBeamParticle()
 		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
 	else
 		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
+
+    pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
 }
