@@ -93,8 +93,8 @@ void WarpZone_Teleported_Read(float isnew)
 	if(!isnew)
 		return;
 	self.warpzone_transform = v;
-	setproperty(VF_CL_VIEWANGLES, WarpZone_TransformVAngles(self, getpropertyvec(VF_CL_VIEWANGLES)));
-	if(checkextension("DP_CSQC_ROTATEMOVES")) {
+	if(warpzone_newstyle) {
+		setproperty(VF_CL_VIEWANGLES, WarpZone_TransformVAngles(self, getpropertyvec(VF_CL_VIEWANGLES)));
 		CL_RotateMoves(v);
 	}
 }
@@ -105,7 +105,7 @@ float warpzone_fixingview_drawexteriormodel;
 //float warpzone_fixingview_forwardspeed;
 void WarpZone_Inside()
 {
-	if(warpzone_fixingview)
+	if(warpzone_fixingview || !warpzone_newstyle)
 		return;
 	warpzone_fixingview = 1;
 	warpzone_fixingview_drawexteriormodel = cvar("r_drawexteriormodel");
@@ -118,7 +118,7 @@ void WarpZone_Inside()
 
 void WarpZone_Outside()
 {
-	if(!warpzone_fixingview)
+	if(!warpzone_fixingview || !warpzone_newstyle)
 		return;
 	warpzone_fixingview = 0;
 	cvar_set("r_drawexteriormodel", ftos(warpzone_fixingview_drawexteriormodel));
@@ -161,20 +161,28 @@ vector WarpZone_FixNearClip(vector o, vector c0, vector c1, vector c2, vector c3
 #ifndef KEEP_ROLL
 var float cl_rollkillspeed = 10;
 #endif
+entity previous_warp;
 void WarpZone_FixView()
 {
 	entity e;
-	vector org, ang, nearclip, corner0, corner1, corner2, corner3, o;
+	vector org, ang, nearclip, corner0, corner1, corner2, corner3, vo;
 	float f;
 
-	org = getpropertyvec(VF_ORIGIN);
-	ang = getpropertyvec(VF_ANGLES);
+	if(warpzone_newstyle) {
+		org = getpropertyvec(VF_ORIGIN);
+		ang = getpropertyvec(VF_ANGLES);
+	} else {
+		vo = '0 0 1' * getstati(STAT_VIEWHEIGHT);
+		org = pmove_org + vo;
+		ang = input_angles;
+	}
 
 	e = WarpZone_Find(org, org);
 	if(e)
 	{
 		org = WarpZone_TransformOrigin(e, org);
-		ang = WarpZone_TransformVAngles(e, ang);
+		if (warpzone_newstyle || e != previous_warp)
+			ang = WarpZone_TransformVAngles(e, ang);
 		WarpZone_Inside();
 	}
 	else
@@ -187,28 +195,39 @@ void WarpZone_FixView()
 	else
 		f = 0;
 
-	rick = getproperty(VF_CL_VIEWANGLES_Z);
+	if(warpzone_newstyle)
+		rick = getproperty(VF_CL_VIEWANGLES_Z);
+	else
+		rick = ang_z;
 	rick *= f;
-	setproperty(VF_CL_VIEWANGLES_Z, rick);
-
-	ang_z *= f;
+	if(warpzone_newstyle)
+		setproperty(VF_CL_VIEWANGLES_Z, rick);
+	else
+		ang_z = rick;
 #endif
 
-	setproperty(VF_ORIGIN, org);
-	setproperty(VF_ANGLES, ang);
 
+	R_SetView(VF_ORIGIN, org);
+	R_SetView(VF_ANGLES, ang);
 	nearclip = '0 0 1' * (cvar("r_nearclip") * 1.125);
 	corner0 = cs_unproject('0 0 0' + nearclip);
 	corner1 = cs_unproject('1 0 0' * cvar("vid_conwidth") + nearclip);
 	corner2 = cs_unproject('0 1 0' * cvar("vid_conheight") + nearclip);
 	corner3 = cs_unproject('1 0 0' * cvar("vid_conwidth") + '0 1 0' * cvar("vid_conheight") + nearclip);
-	o = WarpZone_FixNearClip(org, corner0, corner1, corner2, corner3);
-	if(o != '0 0 0')
-		setproperty(VF_ORIGIN, org + o);
+	org = org + WarpZone_FixNearClip(org, corner0, corner1, corner2, corner3);
+	if(warpzone_newstyle) {
+		R_SetView(VF_ORIGIN, org);
+	} else {
+		R_SetView(VF_CL_VIEWANGLES, ang);
+		pmove_org = org - vo;
+		input_angles = ang;
+	}
+	previous_warp = e;
 }
 
 void WarpZone_Init()
 {
+	warpzone_newstyle = checkextension("DP_CSQC_ROTATEMOVES");
 }
 
 void WarpZone_Shutdown()

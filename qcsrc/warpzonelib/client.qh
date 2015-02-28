@@ -6,3 +6,5 @@ void WarpZone_FixView(); // this saves the previous values
 
 void WarpZone_Init();
 void WarpZone_Shutdown();
+
+float warpzone_newstyle;

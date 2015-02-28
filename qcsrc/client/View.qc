@@ -434,8 +434,13 @@ void CSQC_UpdateView(float w, float h)
 	// Render the Scene
 	if(!intermission || !view_set)
 	{
-		view_origin = getpropertyvec(VF_ORIGIN);
-		view_angles = getpropertyvec(VF_ANGLES);
+		if(warpzone_newstyle) {
+			view_origin = getpropertyvec(VF_ORIGIN);
+			view_angles = getpropertyvec(VF_ANGLES);
+		} else {
+			view_origin = pmove_org + vo;
+			view_angles = input_angles;
+		}
 		makevectors(view_angles);
 		view_forward = v_forward;
 		view_right = v_right;
