@@ -192,7 +192,13 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
         __tracebox(org, mi, ma, end, nomonsters, forent);
 
         if(throughsolid) {
-            while(trace_fraction < 1 && trace_ent.classname != "trigger_warpzone") {
+            float antiloop;
+            for(antiloop = 10; trace_fraction < 1 && trace_ent.classname != "trigger_warpzone" && antiloop > 0; antiloop--) {
+                if(vlen(end - trace_endpos) < 1) {
+                    trace_fraction = 1;
+                    trace_endpos = end;
+                    break;
+                }
                 __tracebox(trace_endpos + WarpZone_trace_dir, mi, ma, end, nomonsters, forent);
             }
         }
