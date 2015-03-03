@@ -20,6 +20,7 @@ void WarpZone_TeleportPlayer(entity teleporter, entity player, vector to, vector
 	setorigin (player, to);
 	player.oldorigin = to; // for DP's unsticking
 	player.angles = to_angles;
+	player.v_angle = to_angles;
 	player.fixangle = TRUE;
 	player.velocity = to_velocity;
 
@@ -106,6 +107,8 @@ float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
 	player.warpzone_teleport_time = time;
 	player.warpzone_teleport_finishtime = time;
 	player.warpzone_teleport_zone = wz;
+	if(player.zapper_beam)
+		player.zapper_beam.origin = WarpZone_TransformOrigin(wz, player.zapper_beam.origin);
 
 	// prevent further teleports back
 	float dt = (o1 - o10) * v1 * (1 / (v1 * v1));
