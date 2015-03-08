@@ -3,6 +3,7 @@ void WarpZone_Camera_Read(float bIsNewEntity);
 void WarpZone_Teleported_Read(float isnew);
 
 void WarpZone_FixView(); // this saves the previous values
+entity WarpZone_FixView_lastwarp;
 
 void WarpZone_Init();
 void WarpZone_Shutdown();

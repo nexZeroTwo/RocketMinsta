@@ -75,14 +75,18 @@ void Zapper_Draw(void) {
     float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
 
     start = self.zapper_start;
+    vector end1 = self.zapper_end;
     if(self.sv_entnum == me) if(!cvar("chase_active")) {
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
+        if (WarpZone_FixView_lastwarp) {
+            InterpolateOrigin_Undo();
+            end1 = self.zapper_end = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.origin);
+        }
     }
 
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
-    vector end1 = self.zapper_end;
     zapper_particles_trace_callback_beamoffs = time * 5;
     zapper_particles_trace_callback_origin = start;
 	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, TRUE, zapper_particles_trace_callback);

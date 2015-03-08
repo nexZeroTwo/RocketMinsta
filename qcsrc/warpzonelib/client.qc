@@ -161,7 +161,6 @@ vector WarpZone_FixNearClip(vector o, vector c0, vector c1, vector c2, vector c3
 #ifndef KEEP_ROLL
 var float cl_rollkillspeed = 10;
 #endif
-entity previous_warp;
 void WarpZone_FixView()
 {
 	entity e;
@@ -181,7 +180,7 @@ void WarpZone_FixView()
 	if(e)
 	{
 		org = WarpZone_TransformOrigin(e, org);
-		if (warpzone_newstyle || e != previous_warp)
+		if (warpzone_newstyle || e != WarpZone_FixView_lastwarp)
 			ang = WarpZone_TransformVAngles(e, ang);
 		WarpZone_Inside();
 	}
@@ -222,7 +221,7 @@ void WarpZone_FixView()
 		pmove_org = org - vo;
 		input_angles = ang;
 	}
-	previous_warp = e;
+	WarpZone_FixView_lastwarp = e;
 }
 
 void WarpZone_Init()
