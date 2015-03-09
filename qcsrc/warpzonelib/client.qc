@@ -96,6 +96,10 @@ void WarpZone_Teleported_Read(float isnew)
 	if(warpzone_newstyle) {
 		setproperty(VF_CL_VIEWANGLES, WarpZone_TransformVAngles(self, getpropertyvec(VF_CL_VIEWANGLES)));
 		CL_RotateMoves(v);
+	} else if (!WarpZone_FixView_lastwarp) {
+		input_angles = WarpZone_TransformVAngles(self, input_angles);
+		R_SetView(VF_ANGLES, input_angles);
+		R_SetView(VF_CL_VIEWANGLES, input_angles);
 	}
 }
 
