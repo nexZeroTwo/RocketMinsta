@@ -64,3 +64,5 @@ vector WarpZone_RefSys_TransformVelocity(entity from, entity to, vector vel);
 vector WarpZone_RefSys_TransformAngles(entity from, entity to, vector ang);
 vector WarpZone_RefSys_TransformVAngles(entity from, entity to, vector ang);
 entity WarpZone_RefSys_SpawnSameRefSys(entity me);
+
+void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nomonster, entity forent, WarpZone_trace_callback_t cb);

@@ -14,6 +14,7 @@
 .entity zapper_shotorgsentfor;
 
 .vector zapper_beam_start, zapper_beam_end;
+.vector zapper_beam_real_start;
 
 float W_Zapper_Attack1_CheckAmmo(entity p) {
     return p.ammo_cells >= cvar("g_balance_zapper_primary_ammo");
@@ -65,6 +66,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_x);
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_y);
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_z);
+        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_x);
+        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_y);
+        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_z);
     }
 
     if(sf & 4) {
@@ -199,6 +203,7 @@ void W_Zapper_Beam_Think(void) {
     if(org != self.zapper_beam_start) {
         self.SendFlags |= 2;
         self.zapper_beam_start = org;
+        self.zapper_beam_real_start = w_shotorg;
     }
 
     vector nowarp_end = WarpZone_UnTransformOrigin(WarpZone_trace_transform, end);

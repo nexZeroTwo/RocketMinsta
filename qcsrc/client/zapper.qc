@@ -1,5 +1,6 @@
 
 .vector zapper_start;
+.vector zapper_real_start;
 .vector zapper_end;
 .vector zapper_offs;
 
@@ -89,7 +90,7 @@ void Zapper_Draw(void) {
 
     zapper_particles_trace_callback_beamoffs = time * 5;
     zapper_particles_trace_callback_origin = start;
-	WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end1, MOVE_NOMONSTERS, world, world, TRUE, zapper_particles_trace_callback);
+    WarpZone_TraceTriangle(self.zapper_real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
 
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
 }
@@ -186,6 +187,9 @@ void Zapper_Read(float t) {
         self.zapper_start_x = ReadCoord();
         self.zapper_start_y = ReadCoord();
         self.zapper_start_z = ReadCoord();
+        self.zapper_real_start_x = ReadCoord();
+        self.zapper_real_start_y = ReadCoord();
+        self.zapper_real_start_z = ReadCoord();
     }
 
     if(sf & 4) {
