@@ -336,7 +336,6 @@ void WarpZone_TrailParticles(entity own, float eff, vector org, vector org_visua
 {
     WarpZone_TrailParticles_trace_callback_own = own;
     WarpZone_TrailParticles_trace_callback_eff = eff;
-    //WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, TRUE, WarpZone_TrailParticles_trace_callback);
     WarpZone_TraceTriangle(org, org_visual, end, MOVE_NOMONSTERS, world, WarpZone_TrailParticles_trace_callback);
 }
 

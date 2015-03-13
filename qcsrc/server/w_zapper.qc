@@ -261,6 +261,9 @@ void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
     WriteCoord(MSG_BROADCAST, from_x);
     WriteCoord(MSG_BROADCAST, from_y);
     WriteCoord(MSG_BROADCAST, from_z);
+    WriteCoord(MSG_BROADCAST, w_shotorg_x);
+    WriteCoord(MSG_BROADCAST, w_shotorg_y);
+    WriteCoord(MSG_BROADCAST, w_shotorg_z);
     WriteCoord(MSG_BROADCAST, v_x);
     WriteCoord(MSG_BROADCAST, v_y);
     WriteCoord(MSG_BROADCAST, v_z);

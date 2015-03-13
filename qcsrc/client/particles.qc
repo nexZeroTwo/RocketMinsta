@@ -361,7 +361,6 @@ void nex_trailparticles(entity own, float eff, vector org, vector real_org, vect
 	nextrail_particles_eff = eff;
     nextrail_particles_spiraloffs1 = time;
     nextrail_particles_spiraloffs2 = time + PI;
-	//WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, TRUE, nextrail_particles_trace_callback);
 	WarpZone_TraceTriangle(real_org, org, end, MOVE_NOMONSTERS, world, nextrail_particles_trace_callback);
 }
 
