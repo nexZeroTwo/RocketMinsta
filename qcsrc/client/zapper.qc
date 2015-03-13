@@ -239,7 +239,6 @@ void Zapper_ReadLightning(void) {
     real_from_x = ReadCoord(); real_from_y = ReadCoord(); real_from_z = ReadCoord();
     to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
 
-	WarpZone_TraceBox_ThroughZone(from, '0 0 0', '0 0 0', to, MOVE_NOMONSTERS, world, world, TRUE, zapper_lightning_trace_callback);
 	WarpZone_TraceTriangle(real_from, from, to, MOVE_NOMONSTERS, world, zapper_lightning_trace_callback);
 
 }
