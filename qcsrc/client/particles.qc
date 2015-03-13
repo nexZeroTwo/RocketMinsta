@@ -366,7 +366,6 @@ void nex_trailparticles(entity own, float eff, vector org, vector real_org, vect
 
 void Net_ReadNexgunBeamParticle()
 {
-    float theteam, secondary;
 	vector shotorg, shotorg_real, endpos;
 
 	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
