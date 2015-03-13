@@ -148,7 +148,7 @@ void WarpZone_Trace_AddTransform(entity wz)
 	WarpZone_Accumulator_Add(WarpZone_trace_transform, wz);
 }
 
-void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent, entity zone, float throughsolid, WarpZone_trace_callback_t cb)
+void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent, entity zone, WarpZone_trace_callback_t cb)
 {
 	float frac, sol;
 	vector o0, e0;
@@ -191,18 +191,6 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 
         __tracebox(org, mi, ma, end, nomonsters, forent);
 
-        if(throughsolid) {
-            float antiloop;
-            for(antiloop = 10; trace_fraction < 1 && trace_ent.classname != "trigger_warpzone" && antiloop > 0; antiloop--) {
-                if(vlen(end - trace_endpos) < 1) {
-                    trace_fraction = 1;
-                    trace_endpos = end;
-                    break;
-                }
-                __tracebox(trace_endpos + WarpZone_trace_dir, mi, ma, end, nomonsters, forent);
-            }
-        }
-
 #undef __tracebox
 
 		if(cb)
@@ -242,7 +230,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 
 void WarpZone_TraceBox(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent)
 {
-	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, FALSE, WarpZone_trace_callback_t_null);
+	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, WarpZone_trace_callback_t_null);
 }
 
 void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent)
@@ -646,5 +634,5 @@ void WarpZone_TraceTriangle_callback(vector from, vector endpos, vector to) {
 void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nomonsters, entity forent, WarpZone_trace_callback_t cb) {
 	WarpZone_TraceTriangle_visual_from = org_visual;
 	WarpZone_TraceTriangle_real_callback = cb;
-	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, nomonsters, forent, world, TRUE, WarpZone_TraceTriangle_callback);
+	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, nomonsters, forent, world, WarpZone_TraceTriangle_callback);
 }
