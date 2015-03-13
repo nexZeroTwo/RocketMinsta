@@ -35,7 +35,7 @@ vector WarpZone_tracetoss_velocity; // ending velocity of a tracetoss (post-tran
 void WarpZone_TraceToss(entity e, entity forent, float toss_frametime, float toss_count);
 void WarpZone_TraceToss_ThroughZone(entity e, entity forent, float toss_frametime, float toss_count, entity zone, WarpZone_trace_callback_t cb);
 #endif
-void WarpZone_TrailParticles(entity own, float eff, vector org, vector end);
+void WarpZone_TrailParticles(entity own, float eff, vector org, vector org_visual, vector end);
 
 .vector WarpZone_findradius_dist;
 .vector WarpZone_findradius_nearest;

@@ -8,6 +8,9 @@ void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_x);
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_y);
 	WriteCoord(MSG_BROADCAST, w_shotorg_visual_z);
+	WriteCoord(MSG_BROADCAST, w_shotorg_x);
+	WriteCoord(MSG_BROADCAST, w_shotorg_y);
+	WriteCoord(MSG_BROADCAST, w_shotorg_z);
 	WriteCoord(MSG_BROADCAST, v_x);
 	WriteCoord(MSG_BROADCAST, v_y);
 	WriteCoord(MSG_BROADCAST, v_z);

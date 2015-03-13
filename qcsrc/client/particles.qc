@@ -355,30 +355,32 @@ void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
     }
 }
 
-void nex_trailparticles(entity own, float eff, vector org, vector end)
+void nex_trailparticles(entity own, float eff, vector org, vector real_org, vector end)
 {
 	nextrail_particles_own = own;
 	nextrail_particles_eff = eff;
     nextrail_particles_spiraloffs1 = time;
     nextrail_particles_spiraloffs2 = time + PI;
-	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, TRUE, nextrail_particles_trace_callback);
+	//WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, MOVE_NOMONSTERS, world, world, TRUE, nextrail_particles_trace_callback);
+	WarpZone_TraceTriangle(real_org, org, end, MOVE_NOMONSTERS, world, nextrail_particles_trace_callback);
 }
 
 void Net_ReadNexgunBeamParticle()
 {
     float theteam, secondary;
-	vector shotorg, endpos;
+	vector shotorg, shotorg_real, endpos;
 
 	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
+	shotorg_real_x = ReadCoord(); shotorg_real_y = ReadCoord(); shotorg_real_z = ReadCoord();
 	endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
     nextrail_particles_theteam = ReadByte() - 1;
     nextrail_particles_secondary = ReadByte();
 	
 	//draw either the old v2.3 beam or the new beam
 	if(cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
-		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
+		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, shotorg_real, endpos);
 	else
-		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);
+		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, shotorg_real, endpos);
 
     pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
 }

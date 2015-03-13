@@ -185,32 +185,32 @@ void W_MinstaNex_Attack (void)
 	    {
             case COLOR_TEAM1:   // Red
                 if(damage_goodhits)
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM2:   // Blue
                 if(damage_goodhits)
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM3:   // Yellow
                 if(damage_goodhits)
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM4:   // Pink
                 if(damage_goodhits)
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg_visual, v);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg, w_shotorg_visual, v);
                 break;
 	    }
 	}
 	else
-        WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg_visual, v);
+        WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg, w_shotorg_visual, v);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	{
