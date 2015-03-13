@@ -594,26 +594,27 @@ entity WarpZone_RefSys_SpawnSameRefSys(entity me)
 vector plane_and_line_cross(vector planep, vector planen, vector linep, vector linev) {
 	//Teh Analytic Geometry
 	vector crosspoint;
+	float common_denom = ((planen_x * linev_x) + (planen_y * linev_y) + (planen_z * linev_z));
 	if (linev_x == 0) {
 		crosspoint_x = linep_x;
 	} else {
 		crosspoint_x = (linev_x * ((planep_x * planen_x) + (planen_y * (planep_y - linep_y)) + (planen_z * (planep_z - linep_z))) + 
 			(linep_x * ((planen_y * linev_y) + (planen_z * linev_z)))) /
-			((planen_x * linev_x) + (planen_y * linev_y) + (planen_z * linev_z));
+			common_denom;
 	}
 	if (linev_y == 0) {
 		crosspoint_y = linep_y;
 	} else {
 		crosspoint_y = (linev_y * ((planep_y * planen_y) + (planen_x * (planep_x - linep_x)) + (planen_z * (planep_z - linep_z))) + 
 			(linep_y * ((planen_x * linev_x) + (planen_z * linev_z)))) /
-			((planen_x * linev_x) + (planen_y * linev_y) + (planen_z * linev_z));
+			common_denom;
 	}
 	if (linev_z == 0) {
 		crosspoint_z = linep_z;
 	} else {
 		crosspoint_z = (linev_z * ((planep_z * planen_z) + (planen_y * (planep_y - linep_y)) + (planen_x * (planep_x - linep_x))) + 
 			(linep_z * ((planen_y * linev_y) + (planen_x * linev_x)))) /
-			((planen_x * linev_x) + (planen_y * linev_y) + (planen_z * linev_z));
+			common_denom;
 	}
 	return crosspoint;
 }
