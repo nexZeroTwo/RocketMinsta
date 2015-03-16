@@ -142,6 +142,7 @@ void Zapper_Fader_Spawn(entity ref) {
     e.sv_entnum = ref.sv_entnum;
     e.team = ref.team;
     e.zapper_start = ref.zapper_start;
+    e.zapper_real_start = ref.zapper_real_start;
     e.zapper_end = ref.zapper_end;
     e.origin = ref.origin;
     e.cnt = ref.cnt;
