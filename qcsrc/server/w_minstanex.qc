@@ -175,7 +175,7 @@ void W_MinstaNex_Attack (void)
 
     // flash and burn the wall
     if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-        Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * w_shotdir, WEP_MINSTANEX, self);
+        Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * WarpZone_trace_dir, WEP_MINSTANEX, self);
 
 	// teamcolor / hit beam effect
     vector v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
