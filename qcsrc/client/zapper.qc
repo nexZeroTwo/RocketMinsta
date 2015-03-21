@@ -13,26 +13,18 @@ vector Zapper_BeamRGB(float t) {
     }
 }
 
-float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float thickness, string texture, float aspect, float shift, vector rgb, float aalpha, float drawflag, vector vieworg, float depth) {
-    vector mid;
-    mid = (start + end) * 0.5;
-
-    end_d *= 0.25;
-    mid += end_d;
-
-    --depth;
-    if(depth < 0 || normalize(mid - start) * normalize(end - start) > 0.999999) {
-        Draw_CylindricLine(start, end, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg);
-        return shift + aspect * vlen(start - end) / thickness;
-    } else {
-        shift = Draw_CylindricLine_Curved(start, mid, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg, depth);
-        shift = Draw_CylindricLine_Curved(mid, end, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, vieworg, depth);
-        return shift;
-    }
+float plane_sign(vector plane_point, vector plane_norm, vector point) {
+	float sign = (plane_norm_x * (point_x - plane_point_x)) +
+		(plane_norm_y * (point_y - plane_point_y)) + (plane_norm_z * (point_z - plane_point_z));
+	return (sign > 0 ? 1 : (sign < 0 ? -1 : 0));
 }
 
 vector zapper_particles_trace_callback_origin;
 float zapper_particles_trace_callback_beamoffs;
+vector zapper_curve_beam_prev_point1;
+vector zapper_curve_beam_prev_point2;
+float zapper_curve_beam_point_num1;
+float zapper_curve_beam_point_num2;
 
 void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
     vector o = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_particles_trace_callback_origin);
@@ -52,13 +44,49 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
     zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - from) / 12;
 
     if(self.sv_entnum) {
+        zapper_curve_beam_prev_point1 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
+        zapper_curve_beam_prev_point2 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
         vectorvectors(normalize(d));
         vector rgb2 = GetTeamRGB(self.team);
-        vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
-        vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
+        vector o1 = v_right *  15 * sin(t * 4.0) + v_up * 15 * cos(t * 4.2);
+        vector o2 = v_right * -15 * cos(t * 4.1) + v_up * 15 * sin(t * 4.0);
 
-        Draw_CylindricLine_Curved(end2, o, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v, 4);
-        Draw_CylindricLine_Curved(end2, o, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v, 4);
+        vector next_point, warp_normal = '0 0 0';
+        float curve_fract, start_warp_sign;
+        if (to != endpos) {
+            if (trace_fraction < 1 && trace_ent && trace_ent.classname == "trigger_warpzone") {
+                 warp_normal = trace_ent.warpzone_forward;
+                 start_warp_sign = plane_sign(endpos, warp_normal, from);
+            }
+        }
+        float before_warp;
+        float curve_parts = 32;
+        for (before_warp = 1; zapper_curve_beam_point_num1 <= curve_parts && before_warp; zapper_curve_beam_point_num1++) {
+            curve_fract = (1 / curve_parts) * zapper_curve_beam_point_num1;
+            next_point = normalize(to - o) * maxlen * curve_fract + (o1 * sin(PI * curve_fract)) + o;
+            if (warp_normal != '0 0 0') {
+                if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
+                    next_point = plane_and_line_cross(trace_endpos, warp_normal, zapper_curve_beam_prev_point1, next_point - zapper_curve_beam_prev_point1);
+                    before_warp = 0;
+                }
+            }
+            Draw_CylindricLine(zapper_curve_beam_prev_point1, next_point, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_prev_point1 = next_point;
+        }
+        for (before_warp = 1; zapper_curve_beam_point_num2 <= curve_parts && before_warp; zapper_curve_beam_point_num2++) {
+            curve_fract = (1 / curve_parts) * zapper_curve_beam_point_num2;
+            next_point = normalize(to - o) * maxlen * curve_fract + (o2 * sin(PI * curve_fract)) + o;
+            if (warp_normal != '0 0 0') {
+                if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
+                    next_point = plane_and_line_cross(trace_endpos, warp_normal, zapper_curve_beam_prev_point2, next_point - zapper_curve_beam_prev_point2);
+                    before_warp = 0;
+                }
+            }
+            Draw_CylindricLine(zapper_curve_beam_prev_point2, next_point, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_prev_point2 = next_point;
+        }
+        zapper_curve_beam_prev_point1 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
+        zapper_curve_beam_prev_point2 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
     }
 
     if(vlen(endpos - to) < 1) {
@@ -90,6 +118,8 @@ void Zapper_Draw(void) {
 
     zapper_particles_trace_callback_beamoffs = time * 5;
     zapper_particles_trace_callback_origin = start;
+    zapper_curve_beam_prev_point1 = zapper_curve_beam_prev_point2 = self.zapper_start;
+    zapper_curve_beam_point_num1 = zapper_curve_beam_point_num2 = 1;
     WarpZone_TraceTriangle(self.zapper_real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
 
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
