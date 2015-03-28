@@ -287,6 +287,8 @@ float WarpZone_CheckProjectileImpact()
 	setorigin(self, trace_endpos);
 	self.angles = WarpZone_TransformAngles(WarpZone_trace_transform, self.angles);
 	self.velocity = WarpZone_TransformVelocity(WarpZone_trace_transform, self.velocity);
+	if (trace_fraction < 1) //We hit something right behind warp
+		return FALSE;
 	
 	// in case we are in our warp zone post-teleport, shift the projectile forward a bit
 	mpd = max(vlen(self.mins), vlen(self.maxs));
