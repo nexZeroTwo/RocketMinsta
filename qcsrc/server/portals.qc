@@ -630,8 +630,7 @@ float Portal_SpawnInPortalAtTrace(entity own, vector dir, float portal_id_val)
 	vector org;
 
 	org = trace_endpos;
-	ang = fixedvectoangles2(trace_plane_normal, dir);
-	fixedmakevectors2(ang);
+	ang = vectoangles2(trace_plane_normal, dir);
 
 	portal = Portal_Spawn(own, org, ang);
 	if(!portal)
@@ -654,8 +653,7 @@ float Portal_SpawnOutPortalAtTrace(entity own, vector dir, float portal_id_val)
 	vector org;
 
 	org = trace_endpos;
-	ang = fixedvectoangles2(trace_plane_normal, dir);
-	fixedmakevectors2(ang);
+	ang = vectoangles2(trace_plane_normal, dir);
 
 	portal = Portal_Spawn(own, org, ang);
 	if(!portal)
