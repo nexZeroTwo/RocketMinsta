@@ -591,7 +591,7 @@ entity WarpZone_RefSys_SpawnSameRefSys(entity me)
 	return e;
 }
 
-vector plane_and_line_cross(vector planep, vector planen, vector linep, vector linev) {
+vector WarpZoneLib_PlaneAndLineCross(vector planep, vector planen, vector linep, vector linev) {
 	//Teh Analytic Geometry
 	vector crosspoint;
 	float common_denom = ((planen_x * linev_x) + (planen_y * linev_y) + (planen_z * linev_z));
@@ -625,7 +625,7 @@ void WarpZone_TraceTriangle_callback(vector from, vector endpos, vector to) {
     vector o = WarpZone_TransformOrigin(WarpZone_trace_transform, WarpZone_TraceTriangle_visual_from);
 	vector to_visual;
 	if (trace_fraction < 1 && trace_ent && trace_ent.classname == "trigger_warpzone") {
-		to_visual = plane_and_line_cross(endpos, trace_ent.warpzone_forward, o, o - to);
+		to_visual = WarpZoneLib_PlaneAndLineCross(endpos, trace_ent.warpzone_forward, o, o - to);
 	} else
 		to_visual = endpos;
 	WarpZone_TraceTriangle_real_callback(o, to_visual, to);

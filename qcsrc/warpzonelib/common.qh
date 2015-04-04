@@ -65,5 +65,5 @@ vector WarpZone_RefSys_TransformAngles(entity from, entity to, vector ang);
 vector WarpZone_RefSys_TransformVAngles(entity from, entity to, vector ang);
 entity WarpZone_RefSys_SpawnSameRefSys(entity me);
 
-vector plane_and_line_cross(vector planep, vector planen, vector linep, vector linev);
+vector WarpZoneLib_PlaneAndLineCross(vector planep, vector planen, vector linep, vector linev);
 void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nomonster, entity forent, WarpZone_trace_callback_t cb);

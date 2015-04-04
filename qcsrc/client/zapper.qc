@@ -66,7 +66,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
             next_point = normalize(to - o) * maxlen * curve_fract + (o1 * sin(PI * curve_fract)) + o;
             if (warp_normal != '0 0 0') {
                 if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
-                    next_point = plane_and_line_cross(trace_endpos, warp_normal, zapper_curve_beam_prev_point1, next_point - zapper_curve_beam_prev_point1);
+                    next_point = WarpZoneLib_PlaneAndLineCross(trace_endpos, warp_normal, zapper_curve_beam_prev_point1, next_point - zapper_curve_beam_prev_point1);
                     before_warp = 0;
                 }
             }
@@ -78,7 +78,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
             next_point = normalize(to - o) * maxlen * curve_fract + (o2 * sin(PI * curve_fract)) + o;
             if (warp_normal != '0 0 0') {
                 if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
-                    next_point = plane_and_line_cross(trace_endpos, warp_normal, zapper_curve_beam_prev_point2, next_point - zapper_curve_beam_prev_point2);
+                    next_point = WarpZoneLib_PlaneAndLineCross(trace_endpos, warp_normal, zapper_curve_beam_prev_point2, next_point - zapper_curve_beam_prev_point2);
                     before_warp = 0;
                 }
             }
