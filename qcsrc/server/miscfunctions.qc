@@ -2255,11 +2255,6 @@ float SUB_NoImpactCheck()
 
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
-float WarpZone_Projectile_Touch_ImpactFilter_Callback()
-{
-	return FALSE;
-}
-
 float projectile_skipnonsolid()
 {
 	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {

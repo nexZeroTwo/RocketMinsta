@@ -321,8 +321,6 @@ float WarpZone_Projectile_Touch()
 {
 	if(other.classname == "trigger_warpzone")
 		return TRUE;
-	if(WarpZone_Projectile_Touch_ImpactFilter_Callback())
-		return TRUE;
 	if(WarpZone_CheckProjectileImpact())
 		return TRUE;
 	if(self.warpzone_teleport_time == time) // already got teleported this frame? no collision then please
