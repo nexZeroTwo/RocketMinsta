@@ -85,7 +85,13 @@ void Draw_GrapplingHook()
     Draw_GrapplingHook_trace_callback_tex = tex;
     Draw_GrapplingHook_trace_callback_offs = -2 * time;
     Draw_GrapplingHook_trace_callback_rgb = rgb;
-    WarpZone_TraceBox_ThroughZone(a, '0 0 0', '0 0 0', b, MOVE_NOMONSTERS, world, world, Draw_GrapplingHook_trace_callback);
+    float antiloop;
+    for (antiloop = 0; antiloop < 10; antiloop++) {
+        WarpZone_TraceBox_ThroughZone(a, '0 0 0', '0 0 0', b, MOVE_NOMONSTERS, world, world, Draw_GrapplingHook_trace_callback);
+        if (trace_fraction >= 1 || vlen(a - b) < 1) break;
+        a = trace_endpos + WarpZone_trace_dir;
+		b = WarpZone_TransformOrigin(WarpZone_trace_transform, b);
+    }
     Draw_GrapplingHook_trace_callback_tex = string_null;
 }
 
