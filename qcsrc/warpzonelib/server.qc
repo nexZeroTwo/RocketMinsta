@@ -273,11 +273,12 @@ float WarpZone_CheckProjectileImpact()
 	float mpd, pd, dpd;
 	entity wz;
 	vector endpos_save = trace_endpos, plane_normal_save = trace_plane_normal;
-	float  dphitq3surfaceflags_save = trace_dphitq3surfaceflags;
+	float  dphitq3surfaceflags_save = trace_dphitq3surfaceflags, fraction_save = trace_fraction;
 	wz = WarpZone_Find(self.origin + self.mins, self.origin + self.maxs);
 	trace_endpos = endpos_save;
 	trace_plane_normal = plane_normal_save;
 	trace_dphitq3surfaceflags = dphitq3surfaceflags_save;
+	trace_fraction = fraction_save;
 	if(!wz)
 		return FALSE;
 	o0 = self.origin;
