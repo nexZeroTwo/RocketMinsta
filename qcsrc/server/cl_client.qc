@@ -1428,9 +1428,15 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, g_nexball_meter_period * 32);
 	for(i = 1; i <= 24; ++i)
 		WriteByte(MSG_ENTITY, (get_weaponinfo(i)).impulse + 1);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_x);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
+	self.owner = to;
+	vector myhook_shotorigin;
+	if(g_grappling_hook)
+		myhook_shotorigin = '8 -8 -12';
+	else
+		myhook_shotorigin = shotorg_adjust('26.2148 9.2059 -15.9772', TRUE, TRUE);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_x);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_y);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_z);
 
 	if(ShouldForceFog())
 		WriteString(MSG_ENTITY, GetForcedFog());
