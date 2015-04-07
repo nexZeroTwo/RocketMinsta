@@ -624,8 +624,13 @@ vector WarpZone_TraceTriangle_visual_from;
 void WarpZone_TraceTriangle_callback(vector from, vector endpos, vector to) {
     vector o = WarpZone_TransformOrigin(WarpZone_trace_transform, WarpZone_TraceTriangle_visual_from);
 	vector to_visual;
-	if (trace_fraction < 1 && trace_ent && trace_ent.classname == "trigger_warpzone") {
-		to_visual = WarpZoneLib_PlaneAndLineCross(endpos, trace_ent.warpzone_forward, o, o - to);
+	if (trace_fraction < 1) {
+		vector normal;
+		if (trace_ent && trace_ent.classname == "trigger_warpzone")
+			normal = trace_ent.warpzone_forward;
+		else
+			normal = WarpZone_trace_dir;
+		to_visual = WarpZoneLib_PlaneAndLineCross(endpos, normal, o, o - to);
 	} else
 		to_visual = endpos;
 	WarpZone_TraceTriangle_real_callback(o, to_visual, to);
@@ -635,5 +640,12 @@ void WarpZone_TraceTriangle_callback(vector from, vector endpos, vector to) {
 void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nomonsters, entity forent, WarpZone_trace_callback_t cb) {
 	WarpZone_TraceTriangle_visual_from = org_visual;
 	WarpZone_TraceTriangle_real_callback = cb;
-	WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, nomonsters, forent, world, WarpZone_TraceTriangle_callback);
+	int antiloop;
+	for (antiloop = 0; antiloop < 10; antiloop++) {
+		WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, nomonsters, forent, world, WarpZone_TraceTriangle_callback);
+		if (trace_fraction == 1 || vlen(trace_endpos - end) < 1) break;
+		org = trace_endpos + WarpZone_trace_dir;
+		end = WarpZone_TransformOrigin(WarpZone_trace_transform, end);
+		WarpZone_TraceTriangle_visual_from = WarpZone_TransformOrigin(WarpZone_trace_transform, WarpZone_TraceTriangle_visual_from);
+	}
 }
