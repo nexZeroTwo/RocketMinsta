@@ -1770,9 +1770,5 @@ float PlayerMayFire(entity plr) {
     if(timeoutStatus == 2) //don't allow the player to shoot while game is paused
         return FALSE;
 
-    // do not even think about shooting if switching
-    if(plr.switchweapon != plr.weapon)
-        return FALSE;
-
     return TRUE;
 }
