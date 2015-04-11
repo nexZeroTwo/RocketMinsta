@@ -643,9 +643,10 @@ void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nom
 	int antiloop;
 	for (antiloop = 0; antiloop < 10; antiloop++) {
 		WarpZone_TraceBox_ThroughZone(org, '0 0 0', '0 0 0', end, nomonsters, forent, world, WarpZone_TraceTriangle_callback);
-		if (trace_fraction == 1 || vlen(trace_endpos - end) < 1) break;
-		org = trace_endpos + WarpZone_trace_dir;
+		if (trace_fraction == 1) break;
 		end = WarpZone_TransformOrigin(WarpZone_trace_transform, end);
+		if (vlen(trace_endpos - end) < 1) break;
+		org = trace_endpos + WarpZone_trace_dir;
 		WarpZone_TraceTriangle_visual_from = WarpZone_TransformOrigin(WarpZone_trace_transform, WarpZone_TraceTriangle_visual_from);
 	}
 }
