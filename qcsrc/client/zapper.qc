@@ -41,7 +41,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
     vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
 
     Draw_CylindricLine(endpos, from, 12, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, self.alpha, DRAWFLAG_ADDITIVE, v);
-    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - from) / 12;
+    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - endpos) / 12;
 
     if(self.sv_entnum) {
         zapper_curve_beam_prev_point1 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
