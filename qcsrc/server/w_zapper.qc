@@ -222,7 +222,7 @@ void W_Zapper_Attack1(void) {
     if(!W_Zapper_Attack1_CheckAmmo(self))
         return;
 
-    sound(self, CHAN_WEAPON2, "weapons/zapper_fire.wav", VOL_BASE, ATTN_NORM);
+    sound(self, CHAN_WEAPON, "weapons/zapper_fire.wav", VOL_BASE, ATTN_NORM);
 
     entity o, e = spawn();
     e.classname = "zapper_beam";
