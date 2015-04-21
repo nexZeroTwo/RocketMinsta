@@ -233,7 +233,7 @@ void spawnfunc_func_plat()
 
 	self.pos1 = self.origin;
 	self.pos2 = self.origin;
-	self.pos2_z = self.origin_z - self.size_z + 8;
+	self.pos2_z = self.origin_z - (self.height ? self.height : self.size_z) + 8;
 
 	plat_spawn_inside_trigger ();	// the "start moving" trigger
 
