@@ -157,7 +157,7 @@ void plat_use()
 
 void plat_reset()
 {
-	IFTARGETED
+	if(!cvar("sv_gameplayfix_forceplatdown") && !self.nottargeted && self.targetname != "")
 	{
 		setorigin (self, self.pos1);
 		self.state = 4;
