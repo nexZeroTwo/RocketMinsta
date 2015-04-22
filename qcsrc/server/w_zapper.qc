@@ -594,7 +594,7 @@ float w_zapper(float req) {
                     }
                 }
             } else if(cvar("g_balance_zapper_secondary_accumulate")) {
-                if (!self.zapper_accumulator && W_Zapper_Attack2_CheckAmmo(self)) {
+                if (!self.zapper_accumulator && weapon_prepareattack(1, -1)) {
                     self.zapper_accumulate = time; //Accumulate start time
                     self.zapper_accumulator = spawn();
                     self.zapper_accumulator.zapper_accumulate = time + cvar("g_balance_zapper_secondary_accumulate"); //Accumulate end time
