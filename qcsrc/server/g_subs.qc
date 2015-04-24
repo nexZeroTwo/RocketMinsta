@@ -314,9 +314,9 @@ entity pseudo_bullet(entity forent) {
     return _pseudo_bullet;
 }
 
-#define SKIPNONSOLID_ESCAPE_STEP 0.05
+#define SKIPNONSOLID_ESCAPE_STEP 0.1
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         traceline(start, end, t, forent);
         return;
     }
@@ -339,7 +339,7 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
 }
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         tracebox(start, mi, ma, end, nomonst, forent);
         return;
     }
@@ -362,7 +362,7 @@ void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float
 }
 
 void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         vector v0;
         float g0;
         v0 = ent.velocity;

@@ -806,3 +806,4 @@ float sv_shownames;
 .float antilag_debug;
 
 float PlayerMayFire(entity plr);
+float sv_gameplayfix_zerohitcontents;

@@ -516,6 +516,7 @@ void spawnfunc_worldspawn (void)
 	sv_showfps = cvar("sv_showfps");
 	sv_oldfag = cvar("sv_oldfag");
 	sv_shownames = cvar("sv_shownames");
+	sv_gameplayfix_zerohitcontents = cvar("sv_gameplayfix_zerohitcontents");
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
