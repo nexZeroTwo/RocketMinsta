@@ -306,11 +306,10 @@ void main (void)
 entity _pseudo_bullet;
 
 entity pseudo_bullet(entity forent) {
-    if (!cvar("sv_gameplayfix_shootownentities"))
+    if(_pseudo_bullet)
+        _pseudo_bullet.owner = forent;
+    else
         return forent;
-    if(!_pseudo_bullet)
-        _pseudo_bullet = spawn();
-    _pseudo_bullet.owner = forent;
     return _pseudo_bullet;
 }
 
