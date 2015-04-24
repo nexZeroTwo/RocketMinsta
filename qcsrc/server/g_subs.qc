@@ -464,7 +464,7 @@ void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst,
 
 void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
     float lag;
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -477,7 +477,7 @@ void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entit
 void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -633,7 +633,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
 entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
