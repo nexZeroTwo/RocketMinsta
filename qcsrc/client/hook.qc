@@ -41,17 +41,18 @@ void Draw_GrapplingHook_trace_callback(vector start, vector hit, vector end) {
 
 void Draw_GrapplingHook()
 {
-	vector a, b;
+	vector a, a_visual, b;
 	string tex;
 	vector rgb;
 	float t;
 
 	if(time >= self.HookKillTime)
 		return;
-	if(self.sv_entnum == player_localentnum - 1)
-		a = view_origin + view_forward * hook_shotorigin_x + view_right * hook_shotorigin_y + view_up * hook_shotorigin_z;
-	else
-		a = self.HookStart;
+	if(self.sv_entnum == player_localentnum - 1) {
+		a_visual = view_origin + view_forward * hook_shotorigin_x + view_right * hook_shotorigin_y + view_up * hook_shotorigin_z;
+		a = view_origin;
+	} else
+		a = a_visual = self.HookStart;
 	b = self.HookEnd;
 
 	t = GetPlayerColorForce(self.sv_entnum);
@@ -85,13 +86,7 @@ void Draw_GrapplingHook()
     Draw_GrapplingHook_trace_callback_tex = tex;
     Draw_GrapplingHook_trace_callback_offs = -2 * time;
     Draw_GrapplingHook_trace_callback_rgb = rgb;
-    float antiloop;
-    for (antiloop = 0; antiloop < 10; antiloop++) {
-        WarpZone_TraceBox_ThroughZone(a, '0 0 0', '0 0 0', b, MOVE_NOMONSTERS, world, world, Draw_GrapplingHook_trace_callback);
-        if (trace_fraction >= 1 || vlen(a - b) < 1) break;
-        a = trace_endpos + WarpZone_trace_dir;
-		b = WarpZone_TransformOrigin(WarpZone_trace_transform, b);
-    }
+    WarpZone_TraceTriangle(a, a_visual, b, MOVE_NOMONSTERS, world, Draw_GrapplingHook_trace_callback);
     Draw_GrapplingHook_trace_callback_tex = string_null;
 }
 
