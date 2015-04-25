@@ -53,7 +53,10 @@ void Draw_GrapplingHook()
 		a = view_origin;
 	} else
 		a = a_visual = self.HookStart;
-	b = self.HookEnd;
+	if (WarpZone_FixView_lastwarp)
+		b = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.HookEnd);
+	else
+		b = self.HookEnd;
 
 	t = GetPlayerColorForce(self.sv_entnum);
 
