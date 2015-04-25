@@ -107,8 +107,14 @@ float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
 	player.warpzone_teleport_time = time;
 	player.warpzone_teleport_finishtime = time;
 	player.warpzone_teleport_zone = wz;
-	if(player.zapper_beam)
+	if(player.zapper_beam) {
 		player.zapper_beam.origin = WarpZone_TransformOrigin(wz, player.zapper_beam.origin);
+		player.zapper_beam.SendFlags |= 16;
+		entity oldself = self;
+		self = player.zapper_beam;
+		W_Zapper_Beam_Think();
+		self = oldself;
+	}
 
 	// prevent further teleports back
 	float dt = (o1 - o10) * v1 * (1 / (v1 * v1));

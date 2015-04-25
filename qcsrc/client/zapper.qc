@@ -102,19 +102,21 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
 void Zapper_Draw(void) {
     vector start;
 
-    InterpolateOrigin_Do();
-    self.zapper_end = self.origin;
-
     float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+
+    if(!(time - WarpZone_FixView_lasttime < 0.2 && self.sv_entnum == me && !cvar("chase_active")))
+        InterpolateOrigin_Do(); //do interpolation for our beam only if not in warpzone
+    self.zapper_end = self.origin;
 
     start = self.zapper_start;
     vector end1 = self.zapper_end;
+    vector real_start = self.zapper_real_start;
     if(self.sv_entnum == me) if(!cvar("chase_active")) {
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
         if (WarpZone_FixView_lastwarp) {
-            InterpolateOrigin_Undo();
             end1 = self.zapper_end = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.origin);
+            real_start = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.zapper_real_start);
         }
     }
 
@@ -126,7 +128,7 @@ void Zapper_Draw(void) {
     zapper_curve_beam_point_num1 = zapper_curve_beam_point_num2 = 1;
     zapper_curve_beam_offset1 = time * 5;
     zapper_curve_beam_offset2 = time * 5;
-    WarpZone_TraceTriangle(self.zapper_real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
+    WarpZone_TraceTriangle(real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
 
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
 }
@@ -240,6 +242,8 @@ void Zapper_Read(float t) {
     if(sf & 8) {
         zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
     }
+    if(sf & 16)
+        InterpolateOrigin_Note();
 }
 
 

@@ -93,6 +93,7 @@ void WarpZone_Teleported_Read(float isnew)
 	if(!isnew)
 		return;
 	self.warpzone_transform = v;
+	WarpZone_FixView_lasttime = time;
 	if(warpzone_newstyle) {
 		setproperty(VF_CL_VIEWANGLES, WarpZone_TransformVAngles(self, getpropertyvec(VF_CL_VIEWANGLES)));
 		CL_RotateMoves(v);
@@ -109,6 +110,7 @@ float warpzone_fixingview_drawexteriormodel;
 //float warpzone_fixingview_forwardspeed;
 void WarpZone_Inside()
 {
+	WarpZone_FixView_lasttime = time;
 	if(warpzone_fixingview || !warpzone_newstyle)
 		return;
 	warpzone_fixingview = 1;
