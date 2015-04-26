@@ -306,17 +306,16 @@ void main (void)
 entity _pseudo_bullet;
 
 entity pseudo_bullet(entity forent) {
-    if (!cvar("sv_gameplayfix_shootownentities"))
+    if(_pseudo_bullet)
+        _pseudo_bullet.owner = forent;
+    else
         return forent;
-    if(!_pseudo_bullet)
-        _pseudo_bullet = spawn();
-    _pseudo_bullet.owner = forent;
     return _pseudo_bullet;
 }
 
-#define SKIPNONSOLID_ESCAPE_STEP 0.05
+#define SKIPNONSOLID_ESCAPE_STEP 0.1
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         traceline(start, end, t, forent);
         return;
     }
@@ -339,7 +338,7 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
 }
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         tracebox(start, mi, ma, end, nomonst, forent);
         return;
     }
@@ -362,7 +361,7 @@ void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float
 }
 
 void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!sv_gameplayfix_zerohitcontents) {
         vector v0;
         float g0;
         v0 = ent.velocity;
@@ -465,7 +464,7 @@ void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst,
 
 void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
     float lag;
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -478,7 +477,7 @@ void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entit
 void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -634,7 +633,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
 entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(g_antilag != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;

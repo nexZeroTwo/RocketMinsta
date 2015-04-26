@@ -2270,7 +2270,7 @@ float projectile_skipnonsolid()
 	}
 	return FALSE;
 }
-#define PROJECTILE_SKIPNONSOLID if (cvar("sv_gameplayfix_zerohitcontents") && projectile_skipnonsolid()) { return; }
+#define PROJECTILE_SKIPNONSOLID if (sv_gameplayfix_zerohitcontents && projectile_skipnonsolid()) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
