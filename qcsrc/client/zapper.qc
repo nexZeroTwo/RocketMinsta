@@ -16,7 +16,7 @@ vector Zapper_BeamRGB(float t) {
 float plane_sign(vector plane_point, vector plane_norm, vector point) {
 	float sign = (plane_norm_x * (point_x - plane_point_x)) +
 		(plane_norm_y * (point_y - plane_point_y)) + (plane_norm_z * (point_z - plane_point_z));
-	return (sign > 0 ? 1 : (sign < 0 ? -1 : 0));
+	return ((sign > 0) ? 1 : ((sign < 0) ? -1 : 0));
 }
 
 vector zapper_particles_trace_callback_origin;
