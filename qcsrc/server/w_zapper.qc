@@ -286,8 +286,16 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 }
 
 void W_Zapper_Attack2(void) {
-    float accum = (cvar("g_balance_zapper_secondary_accumulate") ?
-            min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / cvar("g_balance_zapper_secondary_refire")) : 1);
+    float accum_time = cvar("g_balance_zapper_secondary_accumulate");
+    float charge_time;
+    if (accum_time) {
+        charge_time = cvar("g_balance_zapper_secondary_charge_time");
+        if (!charge_time)
+            charge_time = accum_time;
+    }
+	
+    float accum = (accum_time ?
+            min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / charge_time) : 1);
     float damage = cvar("g_balance_zapper_secondary_damage") * accum;
     float force  = cvar("g_balance_zapper_secondary_force") * accum;
     float range  = cvar("g_balance_zapper_secondary_range") * accum;
@@ -594,7 +602,7 @@ float w_zapper(float req) {
                     }
                 }
             } else if(cvar("g_balance_zapper_secondary_accumulate")) {
-                if (!self.zapper_accumulator && weapon_prepareattack(1, -1)) {
+                if (!self.zapper_accumulator && weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
                     self.zapper_accumulate = time; //Accumulate start time
                     self.zapper_accumulator = spawn();
                     self.zapper_accumulator.zapper_accumulate = time + cvar("g_balance_zapper_secondary_accumulate"); //Accumulate end time
