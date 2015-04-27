@@ -68,7 +68,7 @@ void PlayerJump (void)
 	if(self.frozen)
 		return;
 
-	if (!(self.flags & FL_ONGROUND))
+	if (!(self.flags & (FL_ONGROUND | FL_SLICK)))
 		return;
 
 	if(!sv_pogostick)
@@ -102,7 +102,7 @@ void PlayerJump (void)
 		mjumpheight = mjumpheight * cvar("g_minstagib_speed_jumpheight");
 	}
 
-	if(!(self.lastflags & FL_ONGROUND))
+	if(!(self.lastflags & (FL_ONGROUND | FL_SLICK)))
 	{
 		if(cvar("speedmeter"))
 			dprint(strcat("landing velocity: ", vtos(self.velocity), " (abs: ", ftos(vlen(self.velocity)), ")\n"));
@@ -118,7 +118,7 @@ void PlayerJump (void)
 	if(!self.crouch){
 	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks/stairs/etc. right after the initial jump
 	}
-	self.flags &~= FL_ONGROUND;
+	self.flags &~= (FL_ONGROUND | FL_SLICK);
 	self.flags &~= FL_JUMPRELEASED;
 
 	if (self.crouch)
@@ -927,6 +927,18 @@ void SV_PlayerPhysics()
 		self.angles_x = 0;
 		self.angles_y = self.v_angle_y;
 		self.angles_z = 0;
+	}
+
+	if(sv_slicksurfaces && (self.flags & FL_ONGROUND))
+	{
+		tracebox(self.origin, self.mins, self.maxs, self.origin - '0 0 1', MOVE_NOMONSTERS, self);
+		if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_SLICK)
+		{
+			self.flags &~= FL_ONGROUND;
+			self.flags |= FL_SLICK;
+		}
+		else
+			self.flags &~= FL_SLICK;
 	}
 
 	if(self.flags & FL_ONGROUND)

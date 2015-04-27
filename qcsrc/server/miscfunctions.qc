@@ -1338,6 +1338,7 @@ void readlevelcvars(void)
     sv_maxidle_spectatorsareidle = cvar("sv_maxidle_spectatorsareidle");
     sv_pogostick = cvar("sv_pogostick");
     sv_doublejump = cvar("sv_doublejump");
+    sv_slicksurfaces = cvar("sv_slicksurfaces");
     g_ctf_reverse = cvar("g_ctf_reverse");
 	sv_autotaunt = cvar("sv_autotaunt");
 	sv_taunt = cvar("sv_taunt");
@@ -2270,7 +2271,7 @@ float projectile_skipnonsolid()
 	return FALSE;
 }
 
-#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (cvar("sv_gameplayfix_zerohitcontents") && projectile_skipnonsolid())) { return; }
+#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (sv_gameplayfix_zerohitcontents && projectile_skipnonsolid())) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;

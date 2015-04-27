@@ -228,7 +228,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	if (ent.cursor_trace_ent != ent)         // just to make sure
 	if (ent.cursor_trace_ent.takedamage)      // and that person is killable
 	if (ent.cursor_trace_ent.classname == "player") // and actually a player
-	if (cvar("g_antilag") == 1)
+	if (g_antilag == 1)
 	{
 		// verify that the shot would miss without antilag
 		// (avoids an issue where guns would always shoot at their origin)
@@ -285,7 +285,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 #else
 	if (antilag)
 	{
-		if (cvar("g_antilag") == 1) // switch to "ghost" if not hitting original
+		if (g_antilag == 1) // switch to "ghost" if not hitting original
 		{
 			WarpZone_TraceLine(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
@@ -301,7 +301,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				}
 			}
 		}
-		else if(cvar("g_antilag") == 3) // client side hitscan
+		else if(g_antilag == 3) // client side hitscan
 		{
 			if (ent.cursor_trace_ent)                 // client was aiming at someone
 			if (ent.cursor_trace_ent != ent)         // just to make sure
