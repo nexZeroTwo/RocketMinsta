@@ -12,7 +12,8 @@
 #define HG_CLOAK        108
 #define HG_GG           109
 #define HG_BAIT         110
-#define HG_END          110
+#define HG_SENTRY       111
+#define HG_END          111
 
 string HG_TypeToName(float);
 float HG_NameToType(string);
