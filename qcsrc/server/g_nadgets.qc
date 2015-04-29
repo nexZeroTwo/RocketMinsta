@@ -2465,6 +2465,9 @@ void HG_Frame()
 }
 
 void HG_Trigger(void) {
+    if(self.frozen || self.jb_isprisoned)
+        return;
+
     if(self.hg_stealth || self.hg_stealth_saved)
         HG_Cloak_Trigger();
     else if(self.hg_shield)
