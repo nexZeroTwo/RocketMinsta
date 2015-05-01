@@ -35,7 +35,7 @@ float kh_no_radar_circles;
 
 float test[17] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 //test[0] = status of dropped keys, test[1 - 16] = player #
-//replace 17 with cvar("maxplayers") or similar !!!!!!!!!
+//replace 17 with CVAR(maxplayers) or similar !!!!!!!!!
 //for(i = 0; i < maxplayers; ++i)
 //	test[i] = "0";
 
@@ -965,7 +965,7 @@ void kh_StartRound()  // runs at the start of each round
 	}
 
 	kh_tracking_enabled = FALSE;
-	//kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_tracking"), "\x05Scanning frequency range...", kh_EnableTrackingDevice);
+	//kh_Controller_SetThink(CVAR(g_balance_keyhunt_delay_tracking), "\x05Scanning frequency range...", kh_EnableTrackingDevice);
 	kh_EnableTrackingDevice();
 }
 

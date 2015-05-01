@@ -1455,7 +1455,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteShort(MSG_ENTITY, sv_nicehealth);
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
-    WriteByte(MSG_ENTITY, cvar("g_balance_nex_secondary"));
+    WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
 	return TRUE;
 }
 
@@ -3592,7 +3592,7 @@ void PlayerPreThink (void)
     }
 
 	if(!zoomstate_set)
-		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX && !cvar("g_balance_nex_secondary")));
+		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX && !CVAR(g_balance_nex_secondary)));
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;

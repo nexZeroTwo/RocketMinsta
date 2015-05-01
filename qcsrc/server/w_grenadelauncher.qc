@@ -100,14 +100,14 @@ void W_Grenade_Attack (void)
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_primary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
-	gren.touch = cvar("g_balance_grenadelauncher_primary_bounce") ? W_Grenade_Touch2 : W_Grenade_Touch1;
+	gren.touch = CVAR(g_balance_grenadelauncher_primary_bounce) ? W_Grenade_Touch2 : W_Grenade_Touch1;
 	gren.velocity = w_shotdir * CVAR(g_balance_grenadelauncher_primary_speed) + v_up * CVAR(g_balance_grenadelauncher_primary_speed_up);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 
-	CSQCProjectile(gren, TRUE, (cvar("g_balance_grenadelauncher_primary_bounce") ? PROJECTILE_GRENADE_BOUNCING : PROJECTILE_GRENADE), TRUE);	
+	CSQCProjectile(gren, TRUE, (CVAR(g_balance_grenadelauncher_primary_bounce) ? PROJECTILE_GRENADE_BOUNCING : PROJECTILE_GRENADE), TRUE);	
 }
 
 void W_Grenade_Attack2 (void)
@@ -188,7 +188,7 @@ float w_glauncher(float req)
 			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_grenadelauncher_primary_animtime), w_ready);
 		}
 		if (self.BUTTON_ATCK2)
-		if (cvar("g_balance_grenadelauncher_secondary"))
+		if (CVAR(g_balance_grenadelauncher_secondary))
 		if (weapon_prepareattack(1, CVAR(g_balance_grenadelauncher_secondary_refire)))
 		{
 			W_Grenade_Attack2();

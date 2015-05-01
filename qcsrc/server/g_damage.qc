@@ -1577,7 +1577,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 		mindps = e.fire_damagepersec;
         
-        if((dt == DEATH_IGNITE && cvar("g_buffs_ignite_stack")) || CVAR(g_fire_damage_stack))
+        if((dt == DEATH_IGNITE && CVAR(g_buffs_ignite_stack)) || CVAR(g_fire_damage_stack))
             maxdps = (mindps * mintime) / maxtime + dps;
         else
             maxdps = max(mindps, dps);

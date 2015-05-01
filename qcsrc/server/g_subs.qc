@@ -648,7 +648,7 @@ float tracebox_inverted (vector v1, vector mi, vector ma, vector v2, float nomon
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);
@@ -715,7 +715,7 @@ void traceline_inverted (vector v1, vector v2, float nomonsters, entity forent)
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);

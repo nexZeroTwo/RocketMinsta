@@ -187,7 +187,7 @@ float w_hlac(float req)
 		}
 
 		if (self.BUTTON_ATCK2)
-		if (cvar("g_balance_hlac_secondary"))
+		if (CVAR(g_balance_hlac_secondary))
 		if (weapon_prepareattack(1, CVAR(g_balance_hlac_secondary_refire)))
 		{
 			W_HLAC_Attack2();

@@ -1076,7 +1076,7 @@ void ctf_spawnteams()
 {
 	float numteams;
 
-	numteams = 2;//cvar("g_ctf_default_teams");
+	numteams = 2;//CVAR(g_ctf_default_teams);
 
 	ctf_spawnteam("Red", COLOR_TEAM1 - 1);
 	ctf_spawnteam("Blue", COLOR_TEAM2 - 1);

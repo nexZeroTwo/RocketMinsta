@@ -157,23 +157,23 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             float maxdst;
 
             if(deathtype & HITTYPE_SECONDARY)
-                maxdst = cvar("g_balance_nex_secondary_damagefalloff_linear_maxdist");
+                maxdst = CVAR(g_balance_nex_secondary_damagefalloff_linear_maxdist);
             else
-                maxdst = cvar("g_balance_nex_damagefalloff_linear_maxdist");
+                maxdst = CVAR(g_balance_nex_damagefalloff_linear_maxdist);
 
             if(maxdst) {
                 float steps, mindmgfactor, minfrcfactor, flr;
 
                 if(deathtype & HITTYPE_SECONDARY) {
-                    steps = cvar("g_balance_nex_secondary_damagefalloff_linear_steps") - 1;
-                    mindmgfactor = cvar("g_balance_nex_secondary_damagefalloff_linear_mindamagefactor");
-                    minfrcfactor = cvar("g_balance_nex_secondary_damagefalloff_linear_minforcefactor");
-                    flr = cvar("g_balance_nex_secondary_damagefalloff_linear_floor");
+                    steps = CVAR(g_balance_nex_secondary_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_secondary_damagefalloff_linear_floor);
                 } else {
-                    steps = cvar("g_balance_nex_damagefalloff_linear_steps") - 1;
-                    mindmgfactor = cvar("g_balance_nex_damagefalloff_linear_mindamagefactor");
-                    minfrcfactor = cvar("g_balance_nex_damagefalloff_linear_minforcefactor");
-                    flr = cvar("g_balance_nex_damagefalloff_linear_floor");
+                    steps = CVAR(g_balance_nex_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_damagefalloff_linear_floor);
                 }
 
                 f = min(dst, maxdst) / maxdst;

@@ -783,9 +783,9 @@ void GetCvars(float f)
         self.gunswitchmode = bound(0, self.cvar_cl_gunalign, 4);
 
         if(self.gunswitchmode > 2) {
-            if(!cvar("g_shootfromclient"))
+            if(!CVAR(g_shootfromclient))
                 self.gunswitchmode = 1;
-            else if(!cvar("g_shootfromeye") && !cvar("g_shootfromcenter") && cvar("g_shootfromclient") < 2)
+            else if(!CVAR(g_shootfromeye) && !CVAR(g_shootfromcenter) && CVAR(g_shootfromclient) < 2)
                 self.gunswitchmode -= 2;
         }
 
@@ -1317,63 +1317,63 @@ void readlevelcvars(void)
     sv_loddistance2 = CVAR(sv_loddistance2);
 	if(sv_loddistance2 <= sv_loddistance1)
 		sv_loddistance2 = 1073741824; // enough to turn off LOD 2 reliably
-    sv_clones = cvar("sv_clones");
-    sv_cheats = cvar("sv_cheats");
-    sv_gentle = cvar("sv_gentle");
-    g_cloaked = cvar("g_cloaked");
-    g_jump_grunt = cvar("g_jump_grunt");
-    g_footsteps = cvar("g_footsteps");
-    g_grappling_hook = cvar("g_grappling_hook");
-    g_jetpack = cvar("g_jetpack");
-    g_nadgets = cvar("g_nadgets");
-    g_laserguided_missile = cvar("g_laserguided_missile");
-    g_midair = cvar("g_midair");
-    g_minstagib = cvar("g_minstagib");
-    g_nixnex = cvar("g_nixnex");
-    g_nixnex_with_laser = cvar("g_nixnex_with_laser");
-    g_norecoil = cvar("g_norecoil");
-    g_vampire = cvar("g_vampire");
-    g_bloodloss = cvar("g_bloodloss");
-    sv_maxidle = cvar("sv_maxidle");
-    sv_maxidle_spectatorsareidle = cvar("sv_maxidle_spectatorsareidle");
-    sv_pogostick = cvar("sv_pogostick");
-    sv_doublejump = cvar("sv_doublejump");
-    sv_slicksurfaces = cvar("sv_slicksurfaces");
-    g_ctf_reverse = cvar("g_ctf_reverse");
-	sv_autotaunt = cvar("sv_autotaunt");
-	sv_taunt = cvar("sv_taunt");
+    sv_clones = CVAR(sv_clones);
+    sv_cheats = CVAR(sv_cheats);
+    sv_gentle = CVAR(sv_gentle);
+    g_cloaked = CVAR(g_cloaked);
+    g_jump_grunt = CVAR(g_jump_grunt);
+    g_footsteps = CVAR(g_footsteps);
+    g_grappling_hook = CVAR(g_grappling_hook);
+    g_jetpack = CVAR(g_jetpack);
+    g_nadgets = CVAR(g_nadgets);
+    g_laserguided_missile = CVAR(g_laserguided_missile);
+    g_midair = CVAR(g_midair);
+    g_minstagib = CVAR(g_minstagib);
+    g_nixnex = CVAR(g_nixnex);
+    g_nixnex_with_laser = CVAR(g_nixnex_with_laser);
+    g_norecoil = CVAR(g_norecoil);
+    g_vampire = CVAR(g_vampire);
+    g_bloodloss = CVAR(g_bloodloss);
+    sv_maxidle = CVAR(sv_maxidle);
+    sv_maxidle_spectatorsareidle = CVAR(sv_maxidle_spectatorsareidle);
+    sv_pogostick = CVAR(sv_pogostick);
+    sv_doublejump = CVAR(sv_doublejump);
+    sv_slicksurfaces = CVAR(sv_slicksurfaces);
+    g_ctf_reverse = CVAR(g_ctf_reverse);
+	sv_autotaunt = CVAR(sv_autotaunt);
+	sv_taunt = CVAR(sv_taunt);
 
-    inWarmupStage = cvar("g_warmup");
-    g_warmup_limit = cvar("g_warmup_limit");
-    g_warmup_allguns = cvar("g_warmup_allguns");
-    g_warmup_allow_timeout = cvar("g_warmup_allow_timeout");
+    inWarmupStage = CVAR(g_warmup);
+    g_warmup_limit = CVAR(g_warmup_limit);
+    g_warmup_allguns = CVAR(g_warmup_allguns);
+    g_warmup_allow_timeout = CVAR(g_warmup_allow_timeout);
 
-    if ((g_race && g_race_qualifying == 2) || g_runematch || g_arena || g_assault || cvar("g_campaign"))
+    if ((g_race && g_race_qualifying == 2) || g_runematch || g_arena || g_assault || CVAR(g_campaign))
         inWarmupStage = 0; // these modes cannot work together, sorry
 
-    g_pickup_respawntime_weapon = cvar("g_pickup_respawntime_weapon");
-    g_pickup_respawntime_ammo = cvar("g_pickup_respawntime_ammo");
-    g_pickup_respawntime_powerup = cvar("g_pickup_respawntime_powerup");
-    g_pickup_respawntime_health_small = cvar("g_pickup_respawntime_health_small");
-    g_pickup_respawntime_health_medium = cvar("g_pickup_respawntime_health_medium");
-    g_pickup_respawntime_health_large = cvar("g_pickup_respawntime_health_large");
-    g_pickup_respawntime_health_mega = cvar("g_pickup_respawntime_health_mega");
-    g_pickup_respawntime_armor_small = cvar("g_pickup_respawntime_armor_small");
-    g_pickup_respawntime_armor_medium = cvar("g_pickup_respawntime_armor_medium");
-    g_pickup_respawntime_armor_big = cvar("g_pickup_respawntime_armor_big");
-    g_pickup_respawntime_armor_large = cvar("g_pickup_respawntime_armor_large");
+    g_pickup_respawntime_weapon = CVAR(g_pickup_respawntime_weapon);
+    g_pickup_respawntime_ammo = CVAR(g_pickup_respawntime_ammo);
+    g_pickup_respawntime_powerup = CVAR(g_pickup_respawntime_powerup);
+    g_pickup_respawntime_health_small = CVAR(g_pickup_respawntime_health_small);
+    g_pickup_respawntime_health_medium = CVAR(g_pickup_respawntime_health_medium);
+    g_pickup_respawntime_health_large = CVAR(g_pickup_respawntime_health_large);
+    g_pickup_respawntime_health_mega = CVAR(g_pickup_respawntime_health_mega);
+    g_pickup_respawntime_armor_small = CVAR(g_pickup_respawntime_armor_small);
+    g_pickup_respawntime_armor_medium = CVAR(g_pickup_respawntime_armor_medium);
+    g_pickup_respawntime_armor_big = CVAR(g_pickup_respawntime_armor_big);
+    g_pickup_respawntime_armor_large = CVAR(g_pickup_respawntime_armor_large);
 
-    g_pickup_respawntimejitter_weapon = cvar("g_pickup_respawntimejitter_weapon");
-    g_pickup_respawntimejitter_ammo = cvar("g_pickup_respawntimejitter_ammo");
-    g_pickup_respawntimejitter_powerup = cvar("g_pickup_respawntimejitter_powerup");
-    g_pickup_respawntimejitter_health_small = cvar("g_pickup_respawntimejitter_health_small");
-    g_pickup_respawntimejitter_health_medium = cvar("g_pickup_respawntimejitter_health_medium");
-    g_pickup_respawntimejitter_health_large = cvar("g_pickup_respawntimejitter_health_large");
-    g_pickup_respawntimejitter_health_mega = cvar("g_pickup_respawntimejitter_health_mega");
-    g_pickup_respawntimejitter_armor_small = cvar("g_pickup_respawntimejitter_armor_small");
-    g_pickup_respawntimejitter_armor_medium = cvar("g_pickup_respawntimejitter_armor_medium");
-    g_pickup_respawntimejitter_armor_big = cvar("g_pickup_respawntimejitter_armor_big");
-    g_pickup_respawntimejitter_armor_large = cvar("g_pickup_respawntimejitter_armor_large");
+    g_pickup_respawntimejitter_weapon = CVAR(g_pickup_respawntimejitter_weapon);
+    g_pickup_respawntimejitter_ammo = CVAR(g_pickup_respawntimejitter_ammo);
+    g_pickup_respawntimejitter_powerup = CVAR(g_pickup_respawntimejitter_powerup);
+    g_pickup_respawntimejitter_health_small = CVAR(g_pickup_respawntimejitter_health_small);
+    g_pickup_respawntimejitter_health_medium = CVAR(g_pickup_respawntimejitter_health_medium);
+    g_pickup_respawntimejitter_health_large = CVAR(g_pickup_respawntimejitter_health_large);
+    g_pickup_respawntimejitter_health_mega = CVAR(g_pickup_respawntimejitter_health_mega);
+    g_pickup_respawntimejitter_armor_small = CVAR(g_pickup_respawntimejitter_armor_small);
+    g_pickup_respawntimejitter_armor_medium = CVAR(g_pickup_respawntimejitter_armor_medium);
+    g_pickup_respawntimejitter_armor_big = CVAR(g_pickup_respawntimejitter_armor_big);
+    g_pickup_respawntimejitter_armor_large = CVAR(g_pickup_respawntimejitter_armor_large);
 
 
     if (g_minstagib) g_nixnex = g_weaponarena = 0;

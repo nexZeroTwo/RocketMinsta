@@ -157,7 +157,7 @@ void plat_use()
 
 void plat_reset()
 {
-	if(!cvar("sv_gameplayfix_forceplatdown") && !self.nottargeted && self.targetname != "")
+	if(!CVAR(sv_gameplayfix_forceplatdown) && !self.nottargeted && self.targetname != "")
 	{
 		setorigin (self, self.pos1);
 		self.state = 4;
@@ -234,7 +234,7 @@ void spawnfunc_func_plat()
 	self.pos1 = self.origin;
 	self.pos2 = self.origin;
 	self.pos2_z = self.origin_z -
-			((cvar("sv_gameplayfix_useheightforplat") && self.height) ? self.height : self.size_z) + 8;
+			((CVAR(sv_gameplayfix_useheightforplat) && self.height) ? self.height : self.size_z) + 8;
 
 	plat_spawn_inside_trigger ();	// the "start moving" trigger
 

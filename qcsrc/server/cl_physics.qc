@@ -875,7 +875,7 @@ void SV_PlayerPhysics()
 
 	swampspd_mod = 1;
 	if(self.in_swamp) {
-		swampspd_mod = self.swamp_slowdown; //cvar("g_balance_swamp_moverate");
+		swampspd_mod = self.swamp_slowdown; //CVAR(g_balance_swamp_moverate);
 	}
 
 	if(!isplayer)

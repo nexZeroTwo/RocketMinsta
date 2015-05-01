@@ -1764,7 +1764,7 @@ float PlayerMayFire(entity plr) {
     if(plr.hg_stealth)
         return FALSE;
 
-    if(time - plr.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    if(time - plr.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
         return FALSE;
     
     if(timeoutStatus == 2) //don't allow the player to shoot while game is paused

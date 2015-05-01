@@ -551,7 +551,7 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1Vote calling is NOT allowed.");
 			}
         } else if(argv(1) == "invite") {
-            if(!e || e.vote_master || cvar("sv_vote_invite")) {
+            if(!e || e.vote_master || CVAR(sv_vote_invite)) {
                 if(timeoutStatus) {
                     print_to(e, "^1Error: You can not call an invitation while a timeout is active.");
                 } else if(votecalled) {
@@ -574,18 +574,18 @@ float GameCommand_Vote(string s, entity e) {
                         votecalled = TRUE;
                         votecalledmaster = FALSE;
                         vote_invite = TRUE;
-                        votefinished = time + cvar("sv_vote_invite_timeout");
+                        votefinished = time + CVAR(sv_vote_invite_timeout);
                         votecaller = e;
 
                         if(e) {
-                            e.vote_next = time + cvar("sv_vote_wait");
+                            e.vote_next = time + CVAR(sv_vote_wait);
                         }
 
                         tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 invites everyone to play on ^1", votecalledvote_display);
                         bprint("\{1}", tmp, "\n");
                         IRC_Announce_Vote(tmp);
 
-                        if(cvar("sv_eventlog"))
+                        if(CVAR(sv_eventlog))
                             GameLogEcho(strcat(":vote:invite:", ftos(votecaller.playerid), ":", votecalledvote_display));
 
                         Vote_SendInvitation();

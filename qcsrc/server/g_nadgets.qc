@@ -1973,7 +1973,7 @@ float HG_Sentry_TargetIsValid(entity e) {
     vector o = self.origin + self.view_ofs;
     vector t = e.origin + e.view_ofs;
 
-    if(vlen(o - t) > cvar("g_nadgets_sentry_beam_range"))
+    if(vlen(o - t) > CVAR(g_nadgets_sentry_beam_range))
         return FALSE;
 
     traceline(o, t, MOVE_NORMAL, self);
@@ -1986,7 +1986,7 @@ float HG_Sentry_TargetIsValid(entity e) {
 
 entity HG_Sentry_FindTarget(void) {
     entity targ, p;
-    float range = cvar("g_nadgets_sentry_beam_range"), mindist, dist;
+    float range = CVAR(g_nadgets_sentry_beam_range), mindist, dist;
     float medic = Buffs_BuffPower(self.realowner, BUFF_MEDIC), medicflag, diffteam;
     vector t, o = self.origin + self.view_ofs;
 
@@ -2043,7 +2043,7 @@ void HG_Sentry_Beam_Think(void) {
     end = self.origin;
 
     if(targ.takedamage == DAMAGE_AIM && time > self.cnt) {
-        Damage(targ, self, self.owner.realowner, cvar("g_nadgets_sentry_beam_dps") * 0.1, HG_SENTRY, end, cvar("g_nadgets_sentry_beam_force") * normalize(end - start));
+        Damage(targ, self, self.owner.realowner, CVAR(g_nadgets_sentry_beam_dps) * 0.1, HG_SENTRY, end, CVAR(g_nadgets_sentry_beam_force) * normalize(end - start));
         self.cnt = time + 0.1; // FIXME: this is inaccurate
     }
 
@@ -2129,7 +2129,7 @@ void HG_Sentry_Think(void) {
         }
     }
 
-    self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * cvar("g_nadgets_sentry_energy_regen"));
+    self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * CVAR(g_nadgets_sentry_energy_regen));
     HG_Grenade_Waypoint();
 
     setorigin(self.aiment, self.origin + self.view_ofs);
@@ -2147,23 +2147,23 @@ void HG_Sentry_Think(void) {
 void HG_Sentry_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
     if(IsDifferentTeam(attacker, self.realowner)) {
         if(DEATH_ISHG(deathtype))
-            damage *= cvar("g_nadgets_sentry_damagefactor_nadgets");
+            damage *= CVAR(g_nadgets_sentry_damagefactor_nadgets);
         else
-            damage *= cvar("g_nadgets_sentry_damagefactor");
+            damage *= CVAR(g_nadgets_sentry_damagefactor);
 
         self.health = bound(0, self.health - damage, self.health);
     } else {
         if(DEATH_ISHG(deathtype))
-            damage *= cvar("g_nadgets_sentry_repairfactor_nadgets");
+            damage *= CVAR(g_nadgets_sentry_repairfactor_nadgets);
         else
-            damage *= cvar("g_nadgets_sentry_repairfactor");
+            damage *= CVAR(g_nadgets_sentry_repairfactor);
 
-        Heal(self, inflictor, attacker, damage, 0, cvar("g_nadgets_sentry_health"), 0, deathtype, 0, 0, hitloc, '0 0 0');
+        Heal(self, inflictor, attacker, damage, 0, CVAR(g_nadgets_sentry_health), 0, deathtype, 0, 0, hitloc, '0 0 0');
     }
 
     if(self.health <= 0)
         HG_Sentry_Explode();
-    else if(self.health < cvar("g_nadgets_sentry_health"))
+    else if(self.health < CVAR(g_nadgets_sentry_health))
         self.effects |= EF_FLAME;
     else
         self.effects &~= EF_FLAME;
@@ -2192,7 +2192,7 @@ void HG_Sentry(void) {
     e.view_ofs = '0 0 100';
     e.takedamage = DAMAGE_AIM;
     e.skin = TeamColorSkin(self.team);
-    e.health = cvar("g_nadgets_sentry_health");
+    e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
 
     Buffs_MEODP_Point_Attach(e, HG_Sentry_MEODP_Death);
@@ -2222,14 +2222,14 @@ void HG_Sentry_Trigger(void) {
     aimloc = trace_endpos;
     aimtarg = trace_ent;
 
-    float c_dmg = cvar("g_nadgets_sentry_shock_damage");
-    float c_frc = cvar("g_nadgets_sentry_shock_force");
+    float c_dmg = CVAR(g_nadgets_sentry_shock_damage);
+    float c_frc = CVAR(g_nadgets_sentry_shock_force);
     float c_cost;
 
     if(Buffs_BuffPower(self, BUFF_ADEPT))
-        c_cost = cvar("g_nadgets_sentry_adept_shock_energy_cost");
+        c_cost = CVAR(g_nadgets_sentry_adept_shock_energy_cost);
     else
-        c_cost = cvar("g_nadgets_sentry_shock_energy_cost");
+        c_cost = CVAR(g_nadgets_sentry_shock_energy_cost);
 
     float found, triggered;
 

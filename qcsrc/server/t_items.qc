@@ -506,12 +506,12 @@ float Item_GiveTo(entity item, entity player)
 			//if (item.speed_finished)
 			//{
 			//	pickedup = TRUE;
-			//	player.speed_finished = max(player.speed_finished, time) + cvar("g_balance_powerup_speed_time");
+			//	player.speed_finished = max(player.speed_finished, time) + CVAR(g_balance_powerup_speed_time);
 			//}
 			//if (item.slowmo_finished)
 			//{
 			//	pickedup = TRUE;
-			//	player.slowmo_finished = max(player.slowmo_finished, time) + (cvar("g_balance_powerup_slowmo_time") * cvar("g_balance_powerup_slowmo_speed"));
+			//	player.slowmo_finished = max(player.slowmo_finished, time) + (CVAR(g_balance_powerup_slowmo_time) * CVAR(g_balance_powerup_slowmo_speed));
 			//}
             
             float heal_h, heal_a;

@@ -366,7 +366,7 @@ void LaserTarget_Think()
 	if(self.owner.laser_on && self.owner.weapon == WEP_ROCKET_LAUNCHER && g_laserguided_missile)
 		uselaser = 1;
 	// example
-	//if(self.owner.weapon == WEP_ELECTRO && cvar("g_laserguided_electro"))
+	//if(self.owner.weapon == WEP_ELECTRO && CVAR(g_laserguided_electro))
 	//	uselaser = 1;
 
 

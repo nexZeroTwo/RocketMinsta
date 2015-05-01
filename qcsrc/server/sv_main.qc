@@ -359,7 +359,7 @@ void SV_OnEntityPreSpawnFunction()
 			{
 				s = "team|ctf";
 			}
-			else if(cvar("g_maxplayers") == 2)
+			else if(CVAR(g_maxplayers) == 2)
 			{
 				s = "tournament";
 			}

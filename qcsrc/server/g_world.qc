@@ -515,7 +515,7 @@ void spawnfunc_worldspawn (void)
 	sv_showfps = CVAR(sv_showfps);
 	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
-	_pseudo_bullet = (cvar("sv_gameplayfix_shootownentities") ? spawn() : world); //Fake bullet for pseudo_bullet() function in g_subs.qc
+	_pseudo_bullet = (CVAR(sv_gameplayfix_shootownentities) ? spawn() : world); //Fake bullet for pseudo_bullet() function in g_subs.qc
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -2921,7 +2921,7 @@ void GameTypeVote_Start()
 	
 	mapvote_count = 0;
 	mapvote_timeout = time + CVAR(sv_vote_gametype_timeout);
-    mapvote_keeptwotime = time + cvar("sv_vote_gametype_keeptwotime");
+    mapvote_keeptwotime = time + CVAR(sv_vote_gametype_keeptwotime);
 	mapvote_abstain = 0;
 	
 	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");

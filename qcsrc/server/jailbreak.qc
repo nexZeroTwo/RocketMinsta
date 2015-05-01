@@ -1278,7 +1278,7 @@ void JB_ControlPoint_Touch() {
             if(e.team == other.team)
                 JB_ControlPoint_Deactivate(e, CVAR(g_jailbreak_controlpoint_idletime_global_own));
             else if(e.team == JB_TEAM_NEUTRAL)
-                JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global_neutral"));
+                JB_ControlPoint_Deactivate(e, CVAR(g_jailbreak_controlpoint_idletime_global_neutral));
             else if(e.team == JB_GetEnemyTeamOf(other.team))
                 JB_ControlPoint_Deactivate(e, CVAR(g_jailbreak_controlpoint_idletime_global));
                 

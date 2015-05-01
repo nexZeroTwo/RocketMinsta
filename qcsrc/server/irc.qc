@@ -72,7 +72,7 @@ float IRC_Privmsg(float handle, string targ, string msg) {
 }
 
 float IRC_Announce(float handle, string targ, string msg) {
-	if(cvar("sv_ircbot_announce_when_empty") || realclients > 0)
+	if(CVAR(sv_ircbot_announce_when_empty) || realclients > 0)
 		return IRC_Privmsg(handle, targ, msg);
 	return 0;
 }
@@ -93,7 +93,7 @@ void IRC_UpdateTopic(void) {
     else if(totalclients == maxclients && CVAR(sv_ircbot_update_topic_serverfull))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
-    if(cvar_string("_sv_ircbot_lasttopic") != IRC_DP2IRC(s) || irc.skin > 1) {
+    if(CVAR_STR(_sv_ircbot_lasttopic) != IRC_DP2IRC(s) || irc.skin > 1) {
         IRC_Topic(irc.cnt, irc.target, s);
     }
 
@@ -530,7 +530,7 @@ void IRC_Announce_GameOver(void) { if(!irc) return;
 }
 
 void IRC_Announce_GameEvent(string estr) { if(!irc) return;
-	if(cvar("sv_ircbot_announce_game_events"))
+	if(CVAR(sv_ircbot_announce_game_events))
 		IRC_Announce(irc.cnt, irc.target, estr);
 }
 
