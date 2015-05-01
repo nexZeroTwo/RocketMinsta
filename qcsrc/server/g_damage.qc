@@ -491,13 +491,13 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
     else        hlimit = g_balance_health_limit;
     if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
     else        alimit = g_balance_armor_limit;
-    
+
     if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
         float lim = cvar("g_clanarena_heal_limit");
         hlimit = min(hlimit, lim);
         alimit = min(alimit, lim);
     }
-    
+
     float silent = (healtype == DEATH_ITEM);
     
     if(pauserot  < 0) pauserot  = cvar("g_balance_pause_health_rot");
@@ -515,7 +515,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
     
     targ.armorvalue += aheal;
     targ.pauserotarmor_finished = max(targ.pauserotarmor_finished, time + pausearot);
-    
+
     if(heal || aheal) {
         float vdtype = VDMG_TYPE_HEAL;
         

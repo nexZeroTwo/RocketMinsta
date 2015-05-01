@@ -2131,13 +2131,28 @@ void HG_Sentry_Think(void) {
 }
 
 void HG_Sentry_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-    if(attacker == self.realowner || !IsDifferentTeam(self, attacker))
-        return;
+    if(IsDifferentTeam(attacker, self.realowner)) {
+        if(DEATH_ISHG(deathtype))
+            damage *= cvar("g_nadgets_sentry_damagefactor_nadgets");
+        else
+            damage *= cvar("g_nadgets_sentry_damagefactor");
 
-    self.health = bound(0, self.health - damage, self.health);
+        self.health = bound(0, self.health - damage, self.health);
+    } else {
+        if(DEATH_ISHG(deathtype))
+            damage *= cvar("g_nadgets_sentry_repairfactor_nadgets");
+        else
+            damage *= cvar("g_nadgets_sentry_repairfactor");
 
-    if(!self.health)
+        Heal(self, inflictor, attacker, damage, 0, cvar("g_nadgets_sentry_health"), 0, deathtype, 0, 0, hitloc, '0 0 0');
+    }
+
+    if(self.health <= 0)
         HG_Sentry_Explode();
+    else if(self.health < cvar("g_nadgets_sentry_health"))
+        self.effects |= EF_FLAME;
+    else
+        self.effects &~= EF_FLAME;
 }
 
 void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
