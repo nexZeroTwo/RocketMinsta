@@ -20,7 +20,7 @@ float W_Zapper_Attack1_CheckAmmo(entity p) {
 }
 
 float W_Zapper_Attack2_CheckAmmo(entity p) {
-    if(cvar("g_balance_zapper_secondary_shield"))
+    if(CVAR(g_balance_zapper_secondary_shield))
         return p.ammo_cells >= 1;
     return p.ammo_cells >= CVAR(g_balance_zapper_secondary_ammo);
 }
@@ -211,7 +211,7 @@ void W_Zapper_Beam_Think(void) {
         self.owner.zapper_coolofftime = time + frametime;
     }
 
-    ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_primary_refire") * rate;
+    ATTACK_FINISHED(self.owner) = time + CVAR(g_balance_zapper_primary_refire) * rate;
 
     self.nextthink = time;
 }
@@ -382,14 +382,14 @@ void W_Zapper_Shield_Think(void) {
 
         if(self == self.enemy) {
             if(!(self.owner.items & IT_UNLIMITED_AMMO))
-                self.owner.ammo_cells = max(0, self.owner.ammo_cells - frametime * cvar("g_balance_zapper_secondary_ammo"));
+                self.owner.ammo_cells = max(0, self.owner.ammo_cells - frametime * CVAR(g_balance_zapper_secondary_ammo));
 
             if(self.owner.zapper_heat >= 0) {
-                self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_secondary_shield_heatup") * frametime), 1);
+                self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (CVAR(g_balance_zapper_secondary_shield_heatup) * frametime), 1);
                 self.owner.zapper_coolofftime = time + frametime;
             }
 
-            ATTACK_FINISHED(self.owner) = time + cvar("g_balance_zapper_secondary_refire") * W_WeaponRateFactorFor(self.owner);
+            ATTACK_FINISHED(self.owner) = time + CVAR(g_balance_zapper_secondary_refire) * W_WeaponRateFactorFor(self.owner);
         }
     }
 
@@ -534,7 +534,7 @@ float w_zapper(float req) {
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
             if(weapon_prepareattack(0, -1)) {
-                if(self.zapper_heat >= 1 && cvar("g_balance_zapper_primary_heatup")) {
+                if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_primary_heatup)) {
                     W_SwitchWeapon_OutOfAmmo(self);
                 } else {
                     if(self.zapper_beam) {
@@ -549,22 +549,22 @@ float w_zapper(float req) {
                         weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
                 }
             }
-        } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
-            if(cvar("g_balance_zapper_secondary_shield")) {
+        } else if(self.BUTTON_ATCK2 && CVAR(g_balance_zapper_secondary)) {
+            if(CVAR(g_balance_zapper_secondary_shield)) {
                 if(weapon_prepareattack(1, -1)) {
-                    if(self.zapper_heat >= 1 && cvar("g_balance_zapper_secondary_shield_heatup")) {
+                    if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {
                         W_SwitchWeapon_OutOfAmmo(self);
                     } else {
                         if(self.zapper_shield) {
                             dofire = TRUE;
-                            self.zapper_shield.zapper_expire = time + cvar("g_balance_zapper_secondary_shield_lifetime");
+                            self.zapper_shield.zapper_expire = time + CVAR(g_balance_zapper_secondary_shield_lifetime);
                         } else if(W_Zapper_PrepareFirstAttack(0)) {
                             dofire = TRUE;
                             W_Zapper_Attack3();
                         }
 
                         if(dofire)
-                            weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
                     }
                 }
             } else if(weapon_prepareattack(1, CVAR(g_balance_zapper_secondary_refire))) {
@@ -579,7 +579,7 @@ float w_zapper(float req) {
         precache_sound("misc/arc1.wav");
         precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
-        if(CVAR(g_balance_zapper_primary_heatup) || (cvar("g_balance_zapper_secondary_shield") && cvar("g_balance_zapper_secondary_shield_heatup")))
+        if(CVAR(g_balance_zapper_primary_heatup) || (CVAR(g_balance_zapper_secondary_shield) && CVAR(g_balance_zapper_secondary_shield_heatup)))
             self.zapper_heat = 0;
         else
             self.zapper_heat = -1;
