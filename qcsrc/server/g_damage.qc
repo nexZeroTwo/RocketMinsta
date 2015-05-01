@@ -487,10 +487,13 @@ void HealScore(entity targ, entity healer, float heal) {
 }
 
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
-    if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
-    else        hlimit = g_balance_health_limit;
-    if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
-    else        alimit = g_balance_armor_limit;
+
+    if(targ.classname == "player") {
+        if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
+        else        hlimit = g_balance_health_limit;
+        if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
+        else        alimit = g_balance_armor_limit;
+    }
 
     if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
         float lim = cvar("g_clanarena_heal_limit");
@@ -509,7 +512,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         heal  = max(0, min(heal,  hlimit - targ.health));
         aheal = max(0, min(aheal, alimit - targ.armorvalue));
     }
-    
+
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
@@ -732,7 +735,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
 	{
 		// no processing
 	}
