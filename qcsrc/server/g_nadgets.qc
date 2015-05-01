@@ -1220,7 +1220,7 @@ void HG_Shield_Trigger(void) {
     if(self.hg_shield_stored) {
         entity targ;
         vector start, end;
-        float eff, arc = cvar("g_nadgets_shield_damage_store_arc");
+        float arc = cvar("g_nadgets_shield_damage_store_arc");
         
         if(Buffs_BuffPower(self, BUFF_ADEPT)) {
             extend = cvar("g_nadgets_shield_adept_discharge_extend");
