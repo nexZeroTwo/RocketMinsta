@@ -6,6 +6,7 @@
 ../common/util-pre.qh
 
 autocvars.qh
+../common/autocvars.qh
 
 sys.qh
 pre-builtins.qh

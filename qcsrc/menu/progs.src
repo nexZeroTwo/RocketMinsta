@@ -5,6 +5,7 @@ config.qh
 ../common/util-pre.qh
 
 autocvars.qh
+../common/autocvars.qh
 
 msys.qh
 mbuiltin.qh
