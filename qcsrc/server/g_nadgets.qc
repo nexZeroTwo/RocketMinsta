@@ -883,6 +883,10 @@ void HG_RemoveAll(entity plr) {
     for(n = world; (n = find(n, classname, "hg_linker"));)
         if(n.owner == plr)
             HG_Grenade_FadeOut(n);
+
+    for(n = world; (n = find(n, classname, "hg_sentry"));)
+        if(n.realowner == plr)
+            HG_Grenade_FadeOut(n);
 }
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
@@ -1130,7 +1134,17 @@ void HG_Grenade_FadeOut_Think(void) {
     self.nextthink = time;
 }
 
+void HG_Sentry_Explode(void);
+
 void HG_Grenade_FadeOut(entity n) {
+    if(n.classname == "hg_sentry") {
+        entity o = self;
+        self = n;
+        HG_Sentry_Explode();
+        self = o;
+        return;
+    }
+
     if(n.hg_waypoint)
         WaypointSprite_Disown(n.hg_waypoint, 0.5);
     
