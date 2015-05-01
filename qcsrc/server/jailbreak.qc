@@ -9,7 +9,7 @@ void JB_Init() {
 	if(inWarmupStage)
 		warmup = time;
 	else
-		warmup = time + cvar("g_start_delay");
+		warmup = time + CVAR(g_start_delay);
 	
 	precache_sound("ctf/red_capture.wav");
 	precache_sound("ctf/blue_capture.wav");
@@ -27,7 +27,7 @@ void JB_Init() {
     e.teamswap = JB_TeamSwap;
 	e.nextthink = time;
     
-    g_jailbreak_claim = cvar("g_jailbreak_controlpoint_claim");
+    g_jailbreak_claim = CVAR(g_jailbreak_controlpoint_claim);
     
     addstat(STAT_REDALIVE, AS_INT, redalive_stat);
     addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
@@ -36,7 +36,7 @@ void JB_Init() {
     addstat(STAT_ROUNDLOST, AS_INT, jb_roundlost);
     addstat(STAT_JBMSG, AS_INT, jb_message);
     
-    g_jailbreak_jail_deathmatch = cvar("g_jailbreak_jail_deathmatch");
+    g_jailbreak_jail_deathmatch = CVAR(g_jailbreak_jail_deathmatch);
     InitializeEntity(world, JB_DelayedInit, INITPRIO_GAMETYPE);
 }
 
@@ -113,7 +113,7 @@ void JB_MaybeOpenDoor(entity door, float openjails, vector vdata, string sdata, 
 // This is called for non-jailbreak modes only, to alter jb-specific entities on the map
 void JB_NonJBInit() {
     entity e;
-    float openjails = cvar("g_jailbreak_nonjb_openjails");
+    float openjails = CVAR(g_jailbreak_nonjb_openjails);
     
     SUB_ForEachTarget_Init();
     FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
@@ -219,8 +219,8 @@ void JB_Imprison(entity attacker) {
 		return;
 	}
 	
-    self.health = cvar("g_jailbreak_prisoner_health");
-	self.armorvalue = cvar("g_jailbreak_prisoner_armor");
+    self.health = CVAR(g_jailbreak_prisoner_health);
+	self.armorvalue = CVAR(g_jailbreak_prisoner_armor);
 	
     
     self.jb_had_unlimited_ammo = (self.items & IT_UNLIMITED_WEAPON_AMMO);
@@ -234,9 +234,9 @@ void JB_Imprison(entity attacker) {
 	if(attacker.team != self.team) {
 		attacker.jb_fragrow += 1;
 		
-		if(cvar("g_jailbreak_frag_bonusgrenade"))
-		if(attacker.jb_fragrow >= cvar("g_jailbreak_frag_bonusgrenade_requirement")) {
-			HG_GiveBonus(attacker, HG_NameToType(cvar_string("g_jailbreak_frag_bonusgrenade_type")), 1,
+		if(CVAR(g_jailbreak_frag_bonusgrenade))
+		if(attacker.jb_fragrow >= CVAR(g_jailbreak_frag_bonusgrenade_requirement)) {
+			HG_GiveBonus(attacker, HG_NameToType(CVAR_STR(g_jailbreak_frag_bonusgrenade_type)), 1,
 								   strcat(ftos(attacker.jb_fragrow), " frags in a row"), TRUE);
 			attacker.jb_fragrow = 0;
 		}
@@ -254,7 +254,7 @@ void JB_Imprison(entity attacker) {
         bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
         
         if(g_nadgets) {
-            if(!cvar("g_nadgets_regen"))
+            if(!CVAR(g_nadgets_regen))
                 self.hg_ammo = 0;
             self.hg_bonus = 0;
         }
@@ -292,12 +292,12 @@ void JB_Release(void) {
         self.items &~= IT_UNLIMITED_WEAPON_AMMO;
     
     if(g_jailbreak_jail_deathmatch) {
-        self.health = max(self.health, cvar("g_jailbreak_prisoner_health"));
-        self.armorvalue = max(self.armorvalue, cvar("g_jailbreak_prisoner_armor"));
+        self.health = max(self.health, CVAR(g_jailbreak_prisoner_health));
+        self.armorvalue = max(self.armorvalue, CVAR(g_jailbreak_prisoner_armor));
     }
     
 	if(g_nadgets)
-    if(!cvar("g_nadgets_regen"))
+    if(!CVAR(g_nadgets_regen))
 		HG_PlayerSpawn();
 	
     PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
@@ -678,13 +678,13 @@ float JB_PlayerDies(entity frag_attacker) {
 	
 	if(!self.jb_isprisoned) {
 		if(frag_attacker == self || !frag_attacker)
-			PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));
+			PlayerScore_Add(self, SP_SCORE, -CVAR(g_jailbreak_penalty_death));
 		else if(frag_attacker.classname == "player") {
 			if(frag_attacker.team != self.team) {
-				PlayerScore_Add(self, SP_SCORE, -cvar("g_jailbreak_penalty_death"));
-				PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_jailbreak_score_imprison"));
+				PlayerScore_Add(self, SP_SCORE, -CVAR(g_jailbreak_penalty_death));
+				PlayerScore_Add(frag_attacker, SP_SCORE, CVAR(g_jailbreak_score_imprison));
                 
-                float rng = cvar("g_jailbreak_defense_range");
+                float rng = CVAR(g_jailbreak_defense_range);
                 entity cp;
                 if(rng) FOR_EACH_JB_CONTROLPOINT(cp) {
                     if((cp.team == frag_attacker.team) || (cp.team == JB_TEAM_NEUTRAL && cp.jb_active)) {
@@ -692,14 +692,14 @@ float JB_PlayerDies(entity frag_attacker) {
                         // In case of neutral cp, it has to be active (no defense farming in the beginning of the round)
                         if(vlen(cp.origin - self.origin) < rng) {
                             bigprint_spec(frag_attacker, "^5Defense!", "", 2);
-                            PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_jailbreak_score_defense"));
+                            PlayerScore_Add(frag_attacker, SP_SCORE, CVAR(g_jailbreak_score_defense));
                             PlayerScore_Add(frag_attacker, SP_JB_DEFENSE, 1);
                             break;
                         }
                     }
                 }
 			}
-			else PlayerScore_Add(frag_attacker, SP_SCORE, -cvar("g_jailbreak_penalty_teamkill"));
+			else PlayerScore_Add(frag_attacker, SP_SCORE, -CVAR(g_jailbreak_penalty_teamkill));
 		}
 		
         self.jb_isprisoned = TRUE;
@@ -816,7 +816,7 @@ void JB_PrepareNextRound() {
 }
 
 void JB_EndRound(float t) {
-	G_EndRound(t, cvar("g_jailbreak_warmup"), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
+	G_EndRound(t, CVAR(g_jailbreak_warmup), JB_CountPlayers, JB_PrepareNextRound, JB_EndRound_Finalize);
 	jb_roundover = TRUE;
 	JB_CountPlayers();
 }
@@ -883,8 +883,8 @@ void JB_ActivateCamera(float theteam, float timeout) {
 		return;
 	}
 	
-	jb_ce_pvs = cvar("sv_cullentities_pvs");
-	jb_ce_trace = cvar("sv_cullentities_trace");
+	jb_ce_pvs = CVAR(sv_cullentities_pvs);
+	jb_ce_trace = CVAR(sv_cullentities_trace);
 	
 	// without this we won't be able to watch them burn!
 	cvar_settemp("sv_cullentities_pvs", "0");
@@ -1019,13 +1019,13 @@ float JB_ControlPoint_Cooldown(entity e) {
     c = e.jb_capturecount;
     
     if(e.team == JB_TEAM_NEUTRAL) {
-        base = cvar("g_jailbreak_controlpoint_idletime_neutral");
-        pw   = cvar("g_jailbreak_controlpoint_idletime_neutral_power");
-        f    = cvar("g_jailbreak_controlpoint_idletime_neutral_factor");
+        base = CVAR(g_jailbreak_controlpoint_idletime_neutral);
+        pw   = CVAR(g_jailbreak_controlpoint_idletime_neutral_power);
+        f    = CVAR(g_jailbreak_controlpoint_idletime_neutral_factor);
     } else {
-        base = cvar("g_jailbreak_controlpoint_idletime");
-        pw   = cvar("g_jailbreak_controlpoint_idletime_power");
-        f    = cvar("g_jailbreak_controlpoint_idletime_factor");
+        base = CVAR(g_jailbreak_controlpoint_idletime);
+        pw   = CVAR(g_jailbreak_controlpoint_idletime_power);
+        f    = CVAR(g_jailbreak_controlpoint_idletime_factor);
     }
     
     return base + pow(c, pw) * f * base;
@@ -1069,7 +1069,7 @@ void JB_ControlPoint_DefendWaypoint() {
     if(time < self.jb_defendthink_next)
         return;
     
-    rng = cvar("g_jailbreak_controlpoint_detect_enemies");
+    rng = CVAR(g_jailbreak_controlpoint_detect_enemies);
     
     FOR_EACH_PLAYER(plr) if(plr.team != self.team) if(!plr.jb_isprisoned) {
         if(vlen(self.origin - plr.origin) < rng)
@@ -1197,13 +1197,13 @@ void JB_ControlPoint_Capture(entity player) {
     
     sound(world, CHAN_VOICE, strcat("jailbreak/jb_", ((player.team == COLOR_TEAM1)? "red" : "blue"), ".wav"), VOL_BASEVOICE, ATTN_NONE);
 	bprint(player.netname, " ^5has captured the ", cpname, "^5! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
-	PlayerScore_Add(player, SP_SCORE, ((self.team == JB_TEAM_NEUTRAL)? cvar("g_jailbreak_score_jbreak_neutralmultiplier") : 1)
-                                    * (cvar("g_jailbreak_score_jbreak") + cvar("g_jailbreak_score_jbreak_perplayer") * pc));
+	PlayerScore_Add(player, SP_SCORE, ((self.team == JB_TEAM_NEUTRAL)? CVAR(g_jailbreak_score_jbreak_neutralmultiplier) : 1)
+                                    * (CVAR(g_jailbreak_score_jbreak) + CVAR(g_jailbreak_score_jbreak_perplayer) * pc));
 	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
     PlayerScore_Add(player, SP_JB_FREED, pc);
 	play2all("kh/alarm.wav");
     
-    if(cvar("g_jailbreak_controlpoint_claim_noneutral"))
+    if(CVAR(g_jailbreak_controlpoint_claim_noneutral))
     if(self.team == JB_TEAM_NEUTRAL)
         return;
     
@@ -1220,7 +1220,7 @@ void JB_ControlPoint_Touch() {
     if(other.classname != "player")
         return;
     
-    if(time - other.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    if(time - other.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
         return;
     
     other.pointupdatetime = time;
@@ -1258,9 +1258,9 @@ void JB_ControlPoint_Touch() {
         // we can't just rely on frametime
         float deltatime = time - self.jb_unlock_lasttime;
 
-        float rate = cvar("g_jailbreak_controlpoint_unlock_speed");
+        float rate = CVAR(g_jailbreak_controlpoint_unlock_speed);
         if(other.hg_shield)
-            rate *= cvar("g_nadgets_shield_progressrate");
+            rate *= CVAR(g_nadgets_shield_progressrate);
         
         self.jb_unlock_progress = bound(0, self.jb_unlock_progress + deltatime * rate, 1);
         self.jb_unlock_lasttime = time;
@@ -1276,11 +1276,11 @@ void JB_ControlPoint_Touch() {
         JB_ControlPoint_Deactivate(self, JB_ControlPoint_Cooldown(self));
         entity e; FOR_EACH_JB_CONTROLPOINT(e) if(e != self)
             if(e.team == other.team)
-                JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global_own"));
+                JB_ControlPoint_Deactivate(e, CVAR(g_jailbreak_controlpoint_idletime_global_own));
             else if(e.team == JB_TEAM_NEUTRAL)
                 JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global_neutral"));
             else if(e.team == JB_GetEnemyTeamOf(other.team))
-                JB_ControlPoint_Deactivate(e, cvar("g_jailbreak_controlpoint_idletime_global"));
+                JB_ControlPoint_Deactivate(e, CVAR(g_jailbreak_controlpoint_idletime_global));
                 
         self.jb_capturecount += 1;
 	}
@@ -1294,7 +1294,7 @@ void JB_ControlPoint_Reset() {
     JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
     WaypointSprite_UpdateMaxHealth(self.jb_waypoint, 0);
     WaypointSprite_UpdateHealth(self.jb_waypoint, 0);
-    JB_ControlPoint_SwitchTeam(self, cvar("g_jailbreak_controlpoint_claim_allneutral")? JB_TEAM_NEUTRAL : self.jb_team_initial);
+    JB_ControlPoint_SwitchTeam(self, CVAR(g_jailbreak_controlpoint_claim_allneutral)? JB_TEAM_NEUTRAL : self.jb_team_initial);
 }
 
 void JB_ControlPoint_TeamSwap() {
@@ -1320,7 +1320,7 @@ void JB_SetupControlPoint() {
 	self.classname = "jailbreak_controlpoint";
     self.jb_team_initial = self.team;
     
-    if(cvar("g_jailbreak_controlpoint_claim_allneutral"))
+    if(CVAR(g_jailbreak_controlpoint_claim_allneutral))
         self.team = JB_TEAM_NEUTRAL;
 	
 	setmodel(self, JB_ControlPoint_ModelForTeam(self.team));

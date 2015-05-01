@@ -193,7 +193,7 @@ void() monster_checkbossflag =
 	local float r;
 
 	// monsterbosses cvar or spawnflag 64 causes a monster to be a miniboss
-	if ((self.spawnflags & 64) || (random() * 100 < cvar("monsterbosspercent")))
+	if ((self.spawnflags & 64) || (random() * 100 < CVAR(monsterbosspercent)))
 	{
 		self.radsuit_finished = time + 1000000000;
 		r = random() * 4;

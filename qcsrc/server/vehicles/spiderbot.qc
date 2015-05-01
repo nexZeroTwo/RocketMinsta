@@ -28,14 +28,14 @@
 
 void spider_anim_idle()
 {
-    movelib_beak_simple(cvar("g_vehicle_spiderbot_speed_stop"));
+    movelib_beak_simple(CVAR(g_vehicle_spiderbot_speed_stop));
     if(self.anim_next != self.anim_now)
         self.anim_now = self.anim_next;
 }
 
 void spider_anim_forward()
 {
-    movelib_move_simple(normalize(v_forward),cvar("g_vehicle_spiderbot_speed_walk"),cvar("g_vehicle_spiderbot_movement_inertia"));
+    movelib_move_simple(normalize(v_forward),CVAR(g_vehicle_spiderbot_speed_walk),CVAR(g_vehicle_spiderbot_movement_inertia));
 
     if((self.frame < MODEL_SPIDERBOT_FORWARD_START) || (self.frame > MODEL_SPIDERBOT_FORWARD_END))
         self.frame = MODEL_SPIDERBOT_FORWARD_START;
@@ -48,7 +48,7 @@ void spider_anim_forward()
 
 void spider_anim_backward()
 {
-    movelib_move_simple(normalize(v_forward * -1),cvar("g_vehicle_spiderbot_speed_walk"),cvar("g_vehicle_spiderbot_movement_inertia"));
+    movelib_move_simple(normalize(v_forward * -1),CVAR(g_vehicle_spiderbot_speed_walk),CVAR(g_vehicle_spiderbot_movement_inertia));
 
     if(self.frame < MODEL_SPIDERBOT_BACKWARDS_START)
         self.frame = MODEL_SPIDERBOT_BACKWARDS_START;
@@ -61,7 +61,7 @@ void spider_anim_backward()
 
 void spider_anim_strafel()
 {
-    movelib_move_simple(normalize(v_right * -1),cvar("g_vehicle_spiderbot_speed_strafe"),cvar("g_vehicle_spiderbot_movement_inertia"));
+    movelib_move_simple(normalize(v_right * -1),CVAR(g_vehicle_spiderbot_speed_strafe),CVAR(g_vehicle_spiderbot_movement_inertia));
 
     if(self.frame < MODEL_SPIDERBOT_LEFT_START)
         self.frame = MODEL_SPIDERBOT_LEFT_START;
@@ -74,7 +74,7 @@ void spider_anim_strafel()
 
 void spider_anim_strafer()
 {
-    movelib_move_simple(normalize(v_right),cvar("g_vehicle_spiderbot_speed_strafe"),cvar("g_vehicle_spiderbot_movement_inertia"));
+    movelib_move_simple(normalize(v_right),CVAR(g_vehicle_spiderbot_speed_strafe),CVAR(g_vehicle_spiderbot_movement_inertia));
 
     if(self.frame < MODEL_SPIDERBOT_RIGHT_START)
         self.frame = MODEL_SPIDERBOT_RIGHT_START;
@@ -87,7 +87,7 @@ void spider_anim_strafer()
 
 void spider_anim_jump()
 {
-    //movelib_move_simple(normalize(v_forward),cvar("g_vehicle_spiderbot_speed_walk"),cvar("g_vehicle_spiderbot_movement_inertia"));
+    //movelib_move_simple(normalize(v_forward),CVAR(g_vehicle_spiderbot_speed_walk),CVAR(g_vehicle_spiderbot_movement_inertia));
 
     if(self.frame < MODEL_SPIDERBOT_JUMP_START)
         self.frame = MODEL_SPIDERBOT_JUMP_START;
@@ -95,13 +95,13 @@ void spider_anim_jump()
         self.frame += 1;
 
     if(self.frame <= 8)
-        movelib_beak_simple(cvar("g_vehicle_spiderbot_speed_stop"));
+        movelib_beak_simple(CVAR(g_vehicle_spiderbot_speed_stop));
 
     if(self.frame == 9)
         self.velocity = v_forward * 400 + v_up * 400;
 
     if(self.frame >= 19)
-        movelib_beak_simple(cvar("g_vehicle_spiderbot_speed_stop"));
+        movelib_beak_simple(CVAR(g_vehicle_spiderbot_speed_stop));
 
     if(self.frame > MODEL_SPIDERBOT_JUMP_END)
         self.anim_now = self.anim_next;
@@ -156,10 +156,10 @@ void spiderbot_rocket_explode()
         self.owner = self.realowner;
 
     RadiusDamage (self, self.owner,
-     cvar("g_vehicle_spiderbot_rocket_damage"),
-     cvar("g_vehicle_spiderbot_rocket_edgedamage"),
-     cvar("g_vehicle_spiderbot_rocket_radius"), world,
-     cvar("g_vehicle_spiderbot_rocket_force"), DEATH_TURRET, world);
+     CVAR(g_vehicle_spiderbot_rocket_damage),
+     CVAR(g_vehicle_spiderbot_rocket_edgedamage),
+     CVAR(g_vehicle_spiderbot_rocket_radius), world,
+     CVAR(g_vehicle_spiderbot_rocket_force), DEATH_TURRET, world);
 
     remove (self);
 }
@@ -200,8 +200,8 @@ void spiderbot_rocket_think()
     self.touch      = spiderbot_rocket_touch;
     olddir = normalize(self.velocity);
     newdir = normalize(self.owner.cursor_trace_endpos - self.origin);
-    newdir += randomvec() * cvar("g_vehicle_spiderbot_rocket_noise");
-    self.velocity = normalize(olddir + newdir * cvar("g_vehicle_spiderbot_rocket_turnrate")) * cvar("g_vehicle_spiderbot_rocket_speed");
+    newdir += randomvec() * CVAR(g_vehicle_spiderbot_rocket_noise);
+    self.velocity = normalize(olddir + newdir * CVAR(g_vehicle_spiderbot_rocket_turnrate)) * CVAR(g_vehicle_spiderbot_rocket_speed);
 
     UpdateCSQCProjectile(self);
 }
@@ -221,9 +221,9 @@ void spiderbot_rocket_do()
 
     self.tur_head.frame += 1;
     if(self.tur_head.frame > 7)
-        self.attack_finished_single = cvar("g_vehicle_spiderbot_rocket_reload");
+        self.attack_finished_single = CVAR(g_vehicle_spiderbot_rocket_reload);
     else
-        self.attack_finished_single = cvar("g_vehicle_spiderbot_rocket_refire");
+        self.attack_finished_single = CVAR(g_vehicle_spiderbot_rocket_refire);
 
     self.gun2.cnt = time + self.attack_finished_single;
 
@@ -239,7 +239,7 @@ void spiderbot_rocket_do()
     missile.bot_dodgerating = 75;
     missile.nextthink       = time;// + 0.2;
     missile.movetype        = MOVETYPE_FLYMISSILE;
-    missile.velocity        = normalize(v_forward + (v_up * 0.5) + randomvec() * 0.25) * cvar("g_vehicle_spiderbot_rocket_speed");
+    missile.velocity        = normalize(v_forward + (v_up * 0.5) + randomvec() * 0.25) * CVAR(g_vehicle_spiderbot_rocket_speed);
     missile.angles          = vectoangles(missile.velocity);
     missile.think           = spiderbot_rocket_think;
     missile.flags           = FL_PROJECTILE;
@@ -270,8 +270,8 @@ void spiderbot_minigun_fire(entity gun,float trail)
 
     sound (gun, CHAN_WEAPON, "weapons/uzi_fire.wav", VOL_BASE, ATTN_NORM);
 
-    fireBullet (v, v_forward, cvar("g_vehicle_spiderbot_minigun_spread"), cvar("g_vehicle_spiderbot_minigun_damage"),
-        cvar("g_vehicle_spiderbot_minigun_spread"), DEATH_TURRET, 0);
+    fireBullet (v, v_forward, CVAR(g_vehicle_spiderbot_minigun_spread), CVAR(g_vehicle_spiderbot_minigun_damage),
+        CVAR(g_vehicle_spiderbot_minigun_spread), DEATH_TURRET, 0);
 
     if not (gun.enemy)
     {
@@ -320,22 +320,22 @@ void spiderbot_miniguns_do()
         }
 
         self = self.vehicle;
-        self.owner.vehicle_heat += cvar("g_vehicle_spiderbot_minigun_heat");
+        self.owner.vehicle_heat += CVAR(g_vehicle_spiderbot_minigun_heat);
         if(self.owner.vehicle_heat >= 1)
         {
             self.vehicle_heat = 1;
             self.owner.vehicle_heat = 1;
-            self.tur_head.attack_finished_single = (1/(cvar("g_vehicle_spiderbot_minigun_cooldown") * server_fps))+time;
+            self.tur_head.attack_finished_single = (1/(CVAR(g_vehicle_spiderbot_minigun_cooldown) * server_fps))+time;
         }
         else
-            self.tur_head.attack_finished_single = cvar("g_vehicle_spiderbot_minigun_refire") + time;
+            self.tur_head.attack_finished_single = CVAR(g_vehicle_spiderbot_minigun_refire) + time;
 
         return;
     }
     else
         if(self.vehicle_heat != 0)
         {
-            self.vehicle_heat = max(self.vehicle_heat - cvar("g_vehicle_spiderbot_minigun_cooldown"),0);
+            self.vehicle_heat = max(self.vehicle_heat - CVAR(g_vehicle_spiderbot_minigun_cooldown),0);
             if(self.tur_head.attack_finished_single < time)
             {
                 self.vehicle_heat = 0;
@@ -353,7 +353,7 @@ void spiderbot_miniguns_do()
             }
         }
         else
-            self.owner.vehicle_heat = max(self.owner.vehicle_heat - cvar("g_vehicle_spiderbot_minigun_cooldown"),0);
+            self.owner.vehicle_heat = max(self.owner.vehicle_heat - CVAR(g_vehicle_spiderbot_minigun_cooldown),0);
 
 }
 #define SBS_IDLE  0
@@ -411,23 +411,23 @@ float spiderbot_pplug()
     ad = player.v_angle -  (spider.tur_head.angles + spider.angles);
 
     // Rotate head
-    ftmp = cvar("g_vehicle_spiderbot_head_turnspeed") / server_fps;
+    ftmp = CVAR(g_vehicle_spiderbot_head_turnspeed) / server_fps;
     ftmp2 = ftmp * -1;
     spider.tur_head.angles_y += bound(ftmp2,shortangle_f(ad_y,spider.tur_head.angles_y),ftmp);
-    spider.tur_head.angles_y = bound(cvar("g_vehicle_spiderbot_head_turnlimit") * -1,spider.tur_head.angles_y,cvar("g_vehicle_spiderbot_head_turnlimit"));
+    spider.tur_head.angles_y = bound(CVAR(g_vehicle_spiderbot_head_turnlimit) * -1,spider.tur_head.angles_y,CVAR(g_vehicle_spiderbot_head_turnlimit));
 
     // Pitch head
-    ftmp = cvar("g_vehicle_spiderbot_head_pitchspeed") / server_fps;
+    ftmp = CVAR(g_vehicle_spiderbot_head_pitchspeed) / server_fps;
     ftmp2 = ftmp * -1;
     spider.tur_head.angles_x += bound(ftmp2,shortangle_f(ad_x,spider.tur_head.angles_x),ftmp);
-    spider.tur_head.angles_x = bound(cvar("g_vehicle_spiderbot_head_pitchlimit_down"),spider.tur_head.angles_x,cvar("g_vehicle_spiderbot_head_pitchlimit_up"));
+    spider.tur_head.angles_x = bound(CVAR(g_vehicle_spiderbot_head_pitchlimit_down),spider.tur_head.angles_x,CVAR(g_vehicle_spiderbot_head_pitchlimit_up));
 
     spider.tur_head.angles_x *= -1;
     spider.angles_x *= -1;
     //player.angles_x *= -1;
 
     // Turn Body
-    ftmp = cvar("g_vehicle_spiderbot_turnspeed") / server_fps;
+    ftmp = CVAR(g_vehicle_spiderbot_turnspeed) / server_fps;
     ftmp2 = ftmp * -1;
     ftmp = bound(ftmp2,spider.tur_head.angles_y,ftmp);
 
@@ -448,7 +448,7 @@ float spiderbot_pplug()
         {
             if(vlen(player.movement) == 0)
             {
-                movelib_beak_simple(cvar("g_vehicle_spiderbot_speed_stop"));
+                movelib_beak_simple(CVAR(g_vehicle_spiderbot_speed_stop));
                 spider.anim_start = 0;
                 spider.anim_end = 0;
                 spider.state = SBS_IDLE;
@@ -478,7 +478,7 @@ float spiderbot_pplug()
                         spider.frame = 1;
                     }
                     player.movement_y = 0;
-                    movelib_move_simple(normalize(v_forward * player.movement_x),cvar("g_vehicle_spiderbot_speed_walk"),cvar("g_vehicle_spiderbot_movement_inertia"));
+                    movelib_move_simple(normalize(v_forward * player.movement_x),CVAR(g_vehicle_spiderbot_speed_walk),CVAR(g_vehicle_spiderbot_movement_inertia));
                 }
                 else if(player.movement_y != 0)
                 {
@@ -498,7 +498,7 @@ float spiderbot_pplug()
                         spider.state = SBS_RIGHT;
                         spider.frame = 3;
                     }
-                    movelib_move_simple(normalize(v_right * player.movement_y),cvar("g_vehicle_spiderbot_speed_strafe"),cvar("g_vehicle_spiderbot_movement_inertia"));
+                    movelib_move_simple(normalize(v_right * player.movement_y),CVAR(g_vehicle_spiderbot_speed_strafe),CVAR(g_vehicle_spiderbot_movement_inertia));
                 }
 
             }
@@ -531,7 +531,7 @@ void spiderbot_think()
 {
     if(self.flags & FL_ONGROUND)
     {
-        movelib_beak_simple(cvar("g_vehicle_spiderbot_speed_stop"));
+        movelib_beak_simple(CVAR(g_vehicle_spiderbot_speed_stop));
         //movelib_groundalign4point(300,100);
     }
 
@@ -568,8 +568,8 @@ void spiderbot_enter()
     self.owner.vehicle        = self;
     self.owner.event_damage   = SUB_Null;
     self.owner.hud            = HUD_SPIDERBOT;
-    self.owner.vehicle_health = (self.vehicle_health / cvar("g_vehicle_spiderbot_health"));
-    self.owner.vehicle_shield = (self.vehicle_shield / cvar("g_vehicle_spiderbot_shield"));
+    self.owner.vehicle_health = (self.vehicle_health / CVAR(g_vehicle_spiderbot_health));
+    self.owner.vehicle_shield = (self.vehicle_shield / CVAR(g_vehicle_spiderbot_shield));
     self.team                   = self.owner.team;
 
     //setorigin(self.owner,self.origin);
@@ -684,7 +684,7 @@ void spiderbot_touch()
 
         //todo: add check for velocity here (so we dont cush players runing onto us from behind)
 
-        Damage(other,self,self.owner,cvar("g_vehicle_spiderbot_crush_dmg"),DEATH_TURRET,'0 0 0', normalize(other.origin - self.origin) * cvar("g_vehicle_spiderbot_crush_force") );
+        Damage(other,self,self.owner,CVAR(g_vehicle_spiderbot_crush_dmg),DEATH_TURRET,'0 0 0', normalize(other.origin - self.origin) * CVAR(g_vehicle_spiderbot_crush_force) );
         return;
     }
 

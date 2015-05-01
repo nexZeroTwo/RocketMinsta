@@ -139,9 +139,9 @@ void WaypointSprite_FadeOutIn(entity e, float t)
 float waypointsprite_limitedrange, waypointsprite_deployed_lifetime, waypointsprite_deadlifetime;
 void WaypointSprite_Init()
 {
-	waypointsprite_limitedrange = cvar("g_waypointsprite_limitedrange");
-	waypointsprite_deployed_lifetime = cvar("g_waypointsprite_deployed_lifetime");
-	waypointsprite_deadlifetime = cvar("g_waypointsprite_deadlifetime");
+	waypointsprite_limitedrange = CVAR(g_waypointsprite_limitedrange);
+	waypointsprite_deployed_lifetime = CVAR(g_waypointsprite_deployed_lifetime);
+	waypointsprite_deadlifetime = CVAR(g_waypointsprite_deadlifetime);
 }
 void WaypointSprite_InitClient(entity e)
 {
@@ -458,8 +458,8 @@ entity WaypointSprite_AttachCarrier(
 	e = WaypointSprite_Spawn(spr, 0, 0, carrier, '0 0 64', world, carrier.team, carrier, waypointsprite_attachedforcarrier, FALSE);
 	if(e)
 	{
-		WaypointSprite_UpdateMaxHealth(e, '1 0 0' * healtharmor_maxdamage(start_health, start_armorvalue, cvar("g_balance_armor_blockpercent")) * 2);
-		WaypointSprite_UpdateHealth(e, '1 0 0' * healtharmor_maxdamage(carrier.health, carrier.armorvalue, cvar("g_balance_armor_blockpercent")));
+		WaypointSprite_UpdateMaxHealth(e, '1 0 0' * healtharmor_maxdamage(start_health, start_armorvalue, CVAR(g_balance_armor_blockpercent)) * 2);
+		WaypointSprite_UpdateHealth(e, '1 0 0' * healtharmor_maxdamage(carrier.health, carrier.armorvalue, CVAR(g_balance_armor_blockpercent)));
 	}
 	return e;
 }

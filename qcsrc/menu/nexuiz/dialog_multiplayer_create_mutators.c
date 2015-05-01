@@ -26,7 +26,7 @@ string WeaponArenaString()
 	string s;
 	float n, i, j;
 	entity e;
-	s = cvar_string("g_weaponarena");
+	s = CVAR_STR(g_weaponarena);
 	if(s == "0")
 		return "";
 	if(s == "all")
@@ -64,35 +64,35 @@ string toStringNexuizMutatorsDialog(entity me)
 {
 	string s;
 	s = "";
-	if(cvar("g_minstagib"))
+	if(CVAR(g_minstagib))
 		s = strcat(s, ", MinstaGib");
-	if(cvar("g_nixnex"))
+	if(CVAR(g_nixnex))
 		s = strcat(s, ", NixNex");
-	if(cvar_string("g_weaponarena") != "0")
+	if(CVAR_STR(g_weaponarena) != "0")
 		s = strcat(s, ", ", WeaponArenaString());
-	if(cvar("g_start_weapon_laser") == 0)
+	if(CVAR(g_start_weapon_laser) == 0)
 		s = strcat(s, ", No start weapons");
-	if(cvar("sv_gravity") < 800)
+	if(CVAR(sv_gravity) < 800)
 		s = strcat(s, ", Low gravity");
-	if(cvar("g_cloaked"))
+	if(CVAR(g_cloaked))
 		s = strcat(s, ", Cloaked");
-	if(cvar("g_footsteps"))
+	if(CVAR(g_footsteps))
 		s = strcat(s, ", Steps");
-	if(cvar("g_grappling_hook"))
+	if(CVAR(g_grappling_hook))
 		s = strcat(s, ", Hook");
-	if(cvar("g_laserguided_missile"))
+	if(CVAR(g_laserguided_missile))
 		s = strcat(s, ", LG missiles");
-	if(cvar("g_midair"))
+	if(CVAR(g_midair))
 		s = strcat(s, ", Midair");
-	if(cvar("g_vampire"))
+	if(CVAR(g_vampire))
 		s = strcat(s, ", Vampire");
-	if(cvar("g_pinata"))
+	if(CVAR(g_pinata))
 		s = strcat(s, ", Pinata");
-	if(cvar("g_weapon_stay"))
+	if(CVAR(g_weapon_stay))
 		s = strcat(s, ", Weapons stay");
-	if(cvar("g_bloodloss") > 0)
+	if(CVAR(g_bloodloss) > 0)
 		s = strcat(s, ", Bloodloss");
-	if(cvar("g_jetpack"))
+	if(CVAR(g_jetpack))
 		s = strcat(s, ", Jet pack");
 	if(s == "")
 		return "None";
@@ -105,7 +105,7 @@ string toStringNexuizMutatorsDialog(entity me)
 // WARNING: dirty hack. TODO clean this up by putting this behaviour in extra classes.
 void loadCvarsLaserWeaponArenaWeaponButton(entity me)
 {
-	tokenize_console(cvar_string("g_weaponarena"));
+	tokenize_console(CVAR_STR(g_weaponarena));
 	me.checked = (argv(0) == me.cvarValue);
 }
 
@@ -115,7 +115,7 @@ void saveCvarsLaserWeaponArenaWeaponButton(entity me)
 
 	suffix = "";
 	if(me.cvarValue != "laser" && me.cvarValue != "most")
-		if(cvar("menu_weaponarena_with_laser"))
+		if(CVAR(menu_weaponarena_with_laser))
 			suffix = " laser";
 	if(me.checked)
 		cvar_set("g_weaponarena", strcat(me.cvarValue, suffix));
@@ -130,13 +130,13 @@ void saveCvarsLaserWeaponArenaLaserButton(entity me)
 	// run the old function
 	me.saveCvars_weaponarena(me);
 
-	me.disabled = ((cvar_string("g_weaponarena") == "0") || (cvar_string("g_weaponarena") == "laser") || (cvar_string("g_weaponarena") == "most"));
+	me.disabled = ((CVAR_STR(g_weaponarena) == "0") || (CVAR_STR(g_weaponarena) == "laser") || (CVAR_STR(g_weaponarena) == "most"));
 
 	if not(me.disabled)
 	{
 		// check for the laser suffix
 		string s;
-		s = cvar_string("g_weaponarena");
+		s = CVAR_STR(g_weaponarena);
 		if(me.checked && substring(s, strlen(s) - 6, 6) != " laser")
 			s = strcat(s, " laser");
 		else if(!me.checked && substring(s, strlen(s) - 6, 6) == " laser")
@@ -147,7 +147,7 @@ void saveCvarsLaserWeaponArenaLaserButton(entity me)
 
 void preDrawLaserWeaponArenaLaserButton(entity me)
 {
-	me.disabled = ((cvar_string("g_weaponarena") == "0") || (cvar_string("g_weaponarena") == "laser") || (cvar_string("g_weaponarena") == "most"));
+	me.disabled = ((CVAR_STR(g_weaponarena) == "0") || (CVAR_STR(g_weaponarena) == "laser") || (CVAR_STR(g_weaponarena) == "most"));
 	// run the old function
 	me.draw_weaponarena(me);
 }

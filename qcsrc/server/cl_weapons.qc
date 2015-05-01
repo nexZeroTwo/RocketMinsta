@@ -135,7 +135,7 @@ string W_FixWeaponOrder_AllowIncomplete(string order)
 string W_FixWeaponOrder_ForceComplete(string order)
 {
 	if(order == "")
-		order = cvar_string("cl_weaponpriority");
+		order = CVAR_STR(cl_weaponpriority);
 	return W_FixWeaponOrder(order, 1);
 }
 
@@ -288,7 +288,7 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 		return;
 	if (g_nexball && w == WEP_GRENADE_LAUNCHER)
 		return;
-	if (!cvar("g_pickup_items"))
+	if (!CVAR(g_pickup_items))
 		return;
 	if(!W_IsWeaponThrowable(w))
 		return;
@@ -317,7 +317,7 @@ void W_WeaponFrame()
 {
 	vector fo, ri, up;
 
-	if((arena_roundbased && time < warmup) || ((time < game_starttime && !g_inf) && !cvar("sv_ready_restart_after_countdown")))
+	if((arena_roundbased && time < warmup) || ((time < game_starttime && !g_inf) && !CVAR(sv_ready_restart_after_countdown)))
 		return;
 
 	if (!self.weaponentity || self.health < 1)
@@ -353,7 +353,7 @@ void W_WeaponFrame()
 			weapon_action(self.switchweapon, WR_SETUP);
 			// VorteX: add player model weapon select frame here
 			// setcustomframe(PlayerWeaponRaise);
-			weapon_thinkf(WFRAME_IDLE, cvar("g_balance_weaponswitchdelay") * r, w_ready);
+			weapon_thinkf(WFRAME_IDLE, CVAR(g_balance_weaponswitchdelay) * r, w_ready);
 			weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
 		}
 		else if (self.weaponentity.state == WS_READY)
@@ -366,7 +366,7 @@ void W_WeaponFrame()
 			sound (self, CHAN_WEAPON2, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
 			self.weaponentity.state = WS_DROP;
 			// set up weapon switch think in the future, and start drop anim
-			weapon_thinkf(WFRAME_DONTCHANGE, cvar("g_balance_weaponswitchdelay"), w_clear);
+			weapon_thinkf(WFRAME_DONTCHANGE, CVAR(g_balance_weaponswitchdelay), w_clear);
 			weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, PLAYER_WEAPONSELECTION_RANGE);
 #ifndef INDEPENDENT_ATTACK_FINISHED
 			}
@@ -488,7 +488,7 @@ void Nixnex_GiveCurrentWeapon()
 			nixnex_weapon = nixnex_nextweapon;
 			nixnex_weapon_ammo = nixnex_nextweapon_ammo;
 			nixnex_nextweapon = 0;
-			nixnex_nextchange = time + cvar("g_balance_nixnex_roundtime");
+			nixnex_nextchange = time + CVAR(g_balance_nixnex_roundtime);
 			//weapon_action(nixnex_weapon, WR_PRECACHE); // forget it, too slow
 		}
 		
@@ -498,30 +498,30 @@ void Nixnex_GiveCurrentWeapon()
 			if (self.items & IT_UNLIMITED_WEAPON_AMMO)
 			{
 				self.ammo_shells = (nixnex_weapon_ammo & IT_SHELLS) ?
-					cvar("g_pickup_shells_max") : 0;
+					CVAR(g_pickup_shells_max) : 0;
 				self.ammo_nails = (nixnex_weapon_ammo & IT_NAILS) ?
-					cvar("g_pickup_nails_max") : 0;
+					CVAR(g_pickup_nails_max) : 0;
 				self.ammo_rockets = (nixnex_weapon_ammo & IT_ROCKETS) ?
-					cvar("g_pickup_rockets_max") : 0;
+					CVAR(g_pickup_rockets_max) : 0;
 				self.ammo_cells = (nixnex_weapon_ammo & IT_CELLS) ?
-					cvar("g_pickup_cells_max") : 0;
+					CVAR(g_pickup_cells_max) : 0;
 				self.ammo_fuel = (nixnex_weapon_ammo & IT_FUEL) ?
-					cvar("g_pickup_fuel_max") : 0;
+					CVAR(g_pickup_fuel_max) : 0;
 			}
 			else
 			{
 				self.ammo_shells = (nixnex_weapon_ammo & IT_SHELLS) ?
-					cvar("g_balance_nixnex_ammo_shells") : 0;
+					CVAR(g_balance_nixnex_ammo_shells) : 0;
 				self.ammo_nails = (nixnex_weapon_ammo & IT_NAILS) ?
-					cvar("g_balance_nixnex_ammo_nails") : 0;
+					CVAR(g_balance_nixnex_ammo_nails) : 0;
 				self.ammo_rockets = (nixnex_weapon_ammo & IT_ROCKETS) ?
-					cvar("g_balance_nixnex_ammo_rockets") : 0;
+					CVAR(g_balance_nixnex_ammo_rockets) : 0;
 				self.ammo_cells = (nixnex_weapon_ammo & IT_CELLS) ?
-					cvar("g_balance_nixnex_ammo_cells") : 0;
+					CVAR(g_balance_nixnex_ammo_cells) : 0;
 				self.ammo_fuel = (nixnex_weapon_ammo & IT_FUEL) ?
-					cvar("g_balance_nixnex_ammo_fuel") : 0;
+					CVAR(g_balance_nixnex_ammo_fuel) : 0;
 			}
-			self.nixnex_nextincr = time + cvar("g_balance_nixnex_incrtime");
+			self.nixnex_nextincr = time + CVAR(g_balance_nixnex_incrtime);
 			if(dt >= 1 && dt <= 5)
 				self.nixnex_lastinfotime = -42;
 			else
@@ -537,16 +537,16 @@ void Nixnex_GiveCurrentWeapon()
 		if(!(self.items & IT_UNLIMITED_WEAPON_AMMO) && time > self.nixnex_nextincr)
 		{
 			if (nixnex_weapon_ammo & IT_SHELLS)
-				self.ammo_shells = self.ammo_shells + cvar("g_balance_nixnex_ammoincr_shells");
+				self.ammo_shells = self.ammo_shells + CVAR(g_balance_nixnex_ammoincr_shells);
 			else if (nixnex_weapon_ammo & IT_NAILS)
-				self.ammo_nails = self.ammo_nails + cvar("g_balance_nixnex_ammoincr_nails");
+				self.ammo_nails = self.ammo_nails + CVAR(g_balance_nixnex_ammoincr_nails);
 			else if (nixnex_weapon_ammo & IT_ROCKETS)
-				self.ammo_rockets = self.ammo_rockets + cvar("g_balance_nixnex_ammoincr_rockets");
+				self.ammo_rockets = self.ammo_rockets + CVAR(g_balance_nixnex_ammoincr_rockets);
 			else if (nixnex_weapon_ammo & IT_CELLS)
-				self.ammo_cells = self.ammo_cells + cvar("g_balance_nixnex_ammoincr_cells");
+				self.ammo_cells = self.ammo_cells + CVAR(g_balance_nixnex_ammoincr_cells);
 			if (nixnex_weapon_ammo & IT_FUEL) // hook uses cells and fuel
-				self.ammo_fuel = self.ammo_fuel + cvar("g_balance_nixnex_ammoincr_fuel");
-			self.nixnex_nextincr = time + cvar("g_balance_nixnex_incrtime");
+				self.ammo_fuel = self.ammo_fuel + CVAR(g_balance_nixnex_ammoincr_fuel);
+			self.nixnex_nextincr = time + CVAR(g_balance_nixnex_incrtime);
 		}
 
 		self.weapons = 0;

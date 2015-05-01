@@ -9,7 +9,7 @@ void W_Grenade_Explode (void)
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
-	RadiusDamage (self, self.owner, cvar("g_balance_grenadelauncher_primary_damage"), cvar("g_balance_grenadelauncher_primary_edgedamage"), cvar("g_balance_grenadelauncher_primary_radius"), world, cvar("g_balance_grenadelauncher_primary_force"), self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, CVAR(g_balance_grenadelauncher_primary_damage), CVAR(g_balance_grenadelauncher_primary_edgedamage), CVAR(g_balance_grenadelauncher_primary_radius), world, CVAR(g_balance_grenadelauncher_primary_force), self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -24,7 +24,7 @@ void W_Grenade_Explode2 (void)
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
-	RadiusDamage (self, self.owner, cvar("g_balance_grenadelauncher_secondary_damage"), cvar("g_balance_grenadelauncher_secondary_edgedamage"), cvar("g_balance_grenadelauncher_secondary_radius"), world, cvar("g_balance_grenadelauncher_secondary_force"), self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, CVAR(g_balance_grenadelauncher_secondary_damage), CVAR(g_balance_grenadelauncher_secondary_edgedamage), CVAR(g_balance_grenadelauncher_secondary_radius), world, CVAR(g_balance_grenadelauncher_secondary_force), self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -79,8 +79,8 @@ void W_Grenade_Attack (void)
 	local entity gren;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - cvar("g_balance_grenadelauncher_primary_ammo");
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", cvar("g_balance_grenadelauncher_primary_damage"));
+		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_primary_ammo);
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", CVAR(g_balance_grenadelauncher_primary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -89,7 +89,7 @@ void W_Grenade_Attack (void)
 	gren.owner = self;
 	gren.classname = "grenade";
 	gren.bot_dodge = TRUE;
-	gren.bot_dodgerating = cvar("g_balance_grenadelauncher_primary_damage");
+	gren.bot_dodgerating = CVAR(g_balance_grenadelauncher_primary_damage);
 	gren.movetype = MOVETYPE_BOUNCE;
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
@@ -97,11 +97,11 @@ void W_Grenade_Attack (void)
 	setsize(gren, '0 0 -3', '0 0 -3');
 
     gren.team = self.team;
-	gren.nextthink = time + cvar("g_balance_grenadelauncher_primary_lifetime");
+	gren.nextthink = time + CVAR(g_balance_grenadelauncher_primary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
 	gren.touch = cvar("g_balance_grenadelauncher_primary_bounce") ? W_Grenade_Touch2 : W_Grenade_Touch1;
-	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_primary_speed") + v_up * cvar("g_balance_grenadelauncher_primary_speed_up");
+	gren.velocity = w_shotdir * CVAR(g_balance_grenadelauncher_primary_speed) + v_up * CVAR(g_balance_grenadelauncher_primary_speed_up);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
@@ -115,8 +115,8 @@ void W_Grenade_Attack2 (void)
 	local entity gren;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - cvar("g_balance_grenadelauncher_secondary_ammo");
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", cvar("g_balance_grenadelauncher_secondary_damage"));
+		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_secondary_ammo);
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", CVAR(g_balance_grenadelauncher_secondary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
 	pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -125,7 +125,7 @@ void W_Grenade_Attack2 (void)
 	gren.owner = self;
 	gren.classname = "grenade";
 	gren.bot_dodge = TRUE;
-	gren.bot_dodgerating = cvar("g_balance_grenadelauncher_secondary_damage");
+	gren.bot_dodgerating = CVAR(g_balance_grenadelauncher_secondary_damage);
 	gren.movetype = MOVETYPE_BOUNCE;
 	PROJECTILE_MAKETRIGGER(gren);
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER | HITTYPE_SECONDARY;
@@ -133,15 +133,15 @@ void W_Grenade_Attack2 (void)
 	setorigin(gren, w_shotorg);
 
     gren.team = self.team;
-	gren.nextthink = time + cvar("g_balance_grenadelauncher_secondary_lifetime");
+	gren.nextthink = time + CVAR(g_balance_grenadelauncher_secondary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode2;
 	gren.touch = W_Grenade_Touch2;
 	gren.takedamage = DAMAGE_YES;
-	gren.health = cvar("g_balance_grenadelauncher_secondary_health");
-	gren.damageforcescale = cvar("g_balance_grenadelauncher_secondary_damageforcescale");
+	gren.health = CVAR(g_balance_grenadelauncher_secondary_health);
+	gren.damageforcescale = CVAR(g_balance_grenadelauncher_secondary_damageforcescale);
 	gren.event_damage = W_Grenade_Damage;
-	gren.velocity = w_shotdir * cvar("g_balance_grenadelauncher_secondary_speed") + v_up * cvar("g_balance_grenadelauncher_secondary_speed_up");
+	gren.velocity = w_shotdir * CVAR(g_balance_grenadelauncher_secondary_speed) + v_up * CVAR(g_balance_grenadelauncher_secondary_speed_up);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
@@ -164,7 +164,7 @@ float w_glauncher(float req)
 		self.BUTTON_ATCK2 = FALSE;
 		if (self.bot_secondary_grenademooth == 0)
 		{
-			if(bot_aim(cvar("g_balance_grenadelauncher_primary_speed"), cvar("g_balance_grenadelauncher_primary_speed_up"), cvar("g_balance_grenadelauncher_primary_lifetime"), TRUE))
+			if(bot_aim(CVAR(g_balance_grenadelauncher_primary_speed), CVAR(g_balance_grenadelauncher_primary_speed_up), CVAR(g_balance_grenadelauncher_primary_lifetime), TRUE))
 			{
 				self.BUTTON_ATCK = TRUE;
 				if(random() < 0.01) self.bot_secondary_grenademooth = 1;
@@ -172,7 +172,7 @@ float w_glauncher(float req)
 		}
 		else
 		{
-			if(bot_aim(cvar("g_balance_grenadelauncher_secondary_speed"), cvar("g_balance_grenadelauncher_secondary_speed_up"), cvar("g_balance_grenadelauncher_secondary_lifetime"), TRUE))
+			if(bot_aim(CVAR(g_balance_grenadelauncher_secondary_speed), CVAR(g_balance_grenadelauncher_secondary_speed_up), CVAR(g_balance_grenadelauncher_secondary_lifetime), TRUE))
 			{
 				self.BUTTON_ATCK2 = TRUE;
 				if(random() < 0.02) self.bot_secondary_grenademooth = 0;
@@ -182,17 +182,17 @@ float w_glauncher(float req)
 	else if (req == WR_THINK)
 	{
 		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, cvar("g_balance_grenadelauncher_primary_refire")))
+		if (weapon_prepareattack(0, CVAR(g_balance_grenadelauncher_primary_refire)))
 		{
 			W_Grenade_Attack();
-			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_grenadelauncher_primary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_grenadelauncher_primary_animtime), w_ready);
 		}
 		if (self.BUTTON_ATCK2)
 		if (cvar("g_balance_grenadelauncher_secondary"))
-		if (weapon_prepareattack(1, cvar("g_balance_grenadelauncher_secondary_refire")))
+		if (weapon_prepareattack(1, CVAR(g_balance_grenadelauncher_secondary_refire)))
 		{
 			W_Grenade_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_grenadelauncher_secondary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_grenadelauncher_secondary_animtime), w_ready);
 		}
 	}
 	else if (req == WR_PRECACHE)
@@ -208,8 +208,8 @@ float w_glauncher(float req)
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_GRENADE_LAUNCHER);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_rockets >= cvar("g_balance_grenadelauncher_primary_ammo");
+		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_rockets >= cvar("g_balance_grenadelauncher_secondary_ammo");
+		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_secondary_ammo);
 	return TRUE;
 };

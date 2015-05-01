@@ -16,13 +16,13 @@
 .vector zapper_beam_start, zapper_beam_end;
 
 float W_Zapper_Attack1_CheckAmmo(entity p) {
-    return p.ammo_cells >= cvar("g_balance_zapper_primary_ammo");
+    return p.ammo_cells >= CVAR(g_balance_zapper_primary_ammo);
 }
 
 float W_Zapper_Attack2_CheckAmmo(entity p) {
     if(cvar("g_balance_zapper_secondary_shield"))
         return p.ammo_cells >= 1;
-    return p.ammo_cells >= cvar("g_balance_zapper_secondary_ammo");
+    return p.ammo_cells >= CVAR(g_balance_zapper_secondary_ammo);
 }
 
 vector W_Zapper_LocalShotOrg(entity p) {
@@ -154,8 +154,8 @@ void W_Zapper_Beam_Think(void) {
     }
     
     for ( ;dt >= wantedTicrate; dt -= wantedTicrate) {
-        float damage = cvar("g_balance_zapper_primary_damage");
-        float force  = cvar("g_balance_zapper_primary_force");
+        float damage = CVAR(g_balance_zapper_primary_damage);
+        float force  = CVAR(g_balance_zapper_primary_force);
         
         if(damageIsDps) {
             damage = damage * wantedTicrate;
@@ -168,10 +168,10 @@ void W_Zapper_Beam_Think(void) {
         if(targ.takedamage) {
             float d = (end - w_shotorg) * w_shotdir;
 
-            float mindist = cvar("g_balance_zapper_primary_damagefalloff_mindist");
-            float maxdist = cvar("g_balance_zapper_primary_damagefalloff_maxdist");
-            float halflifedist = cvar("g_balance_zapper_primary_damagefalloff_halflife");
-            float forcehalflifedist = cvar("g_balance_zapper_primary_damagefalloff_forcehalflife");
+            float mindist = CVAR(g_balance_zapper_primary_damagefalloff_mindist);
+            float maxdist = CVAR(g_balance_zapper_primary_damagefalloff_maxdist);
+            float halflifedist = CVAR(g_balance_zapper_primary_damagefalloff_halflife);
+            float forcehalflifedist = CVAR(g_balance_zapper_primary_damagefalloff_forcehalflife);
 
             damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
             force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
@@ -184,7 +184,7 @@ void W_Zapper_Beam_Think(void) {
             Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER, self);
 
         if(!(o.items & IT_UNLIMITED_AMMO))
-            o.ammo_cells -= cvar("g_balance_zapper_primary_ammo");
+            o.ammo_cells -= CVAR(g_balance_zapper_primary_ammo);
 
         self.zapper_lastdmg += wantedTicrate;
     }
@@ -207,7 +207,7 @@ void W_Zapper_Beam_Think(void) {
     }
 
     if(self.owner.zapper_heat >= 0) {
-        self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (cvar("g_balance_zapper_primary_heatup") * frametime) / rate, 1);
+        self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (CVAR(g_balance_zapper_primary_heatup) * frametime) / rate, 1);
         self.owner.zapper_coolofftime = time + frametime;
     }
 
@@ -227,10 +227,10 @@ void W_Zapper_Attack1(void) {
     e.think = W_Zapper_Beam_Think;
     e.owner = self;
 
-    e.zapper_tracespeed = cvar("g_balance_zapper_primary_tracespeed");
-    e.zapper_range = cvar("g_balance_zapper_primary_range");
-    e.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
-    e.zapper_dmgdelay = cvar("g_balance_zapper_primary_ticrate");
+    e.zapper_tracespeed = CVAR(g_balance_zapper_primary_tracespeed);
+    e.zapper_range = CVAR(g_balance_zapper_primary_range);
+    e.zapper_expire = time + CVAR(g_balance_zapper_primary_lifetime);
+    e.zapper_dmgdelay = CVAR(g_balance_zapper_primary_ticrate);
     e.zapper_lastdmg = time - e.zapper_dmgdelay * W_WeaponRateFactorFor(self);
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
@@ -259,7 +259,7 @@ void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
 }
 
 void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
-    float arc = cvar("g_balance_zapper_secondary_arc");
+    float arc = CVAR(g_balance_zapper_secondary_arc);
 
     if(arc <= 0)
         return;
@@ -275,8 +275,8 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 
     Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, deathtype | HITTYPE_BOUNCE, 1,
                          attacker.maxs_z * '0 0 0.5',
-                         cvar("g_balance_zapper_secondary_arc_range"), arc, 1,
-                         cvar("g_balance_zapper_secondary_arc_force"),
+                         CVAR(g_balance_zapper_secondary_arc_range), arc, 1,
+                         CVAR(g_balance_zapper_secondary_arc_force),
                          targetTeamMates, targetFrozen, targetAlive, zapper_arc_hit);
     
     entity e; for(e = world; (e = findfloat(e, zapper_arc_hit, TRUE));)
@@ -284,9 +284,9 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 }
 
 void W_Zapper_Attack2(void) {
-    float damage = cvar("g_balance_zapper_secondary_damage");
-    float force  = cvar("g_balance_zapper_secondary_force");
-    float range  = cvar("g_balance_zapper_secondary_range");
+    float damage = CVAR(g_balance_zapper_secondary_damage);
+    float force  = CVAR(g_balance_zapper_secondary_force);
+    float range  = CVAR(g_balance_zapper_secondary_range);
 
     makevectors(self.v_angle);
     W_SetupShot(self, TRUE, 5, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), damage);
@@ -305,10 +305,10 @@ void W_Zapper_Attack2(void) {
     if(targ.takedamage) {
         float d = (end - w_shotorg) * w_shotdir;
 
-        float mindist = cvar("g_balance_zapper_secondary_damagefalloff_mindist");
-        float maxdist = cvar("g_balance_zapper_secondary_damagefalloff_maxdist");
-        float halflifedist = cvar("g_balance_zapper_secondary_damagefalloff_halflife");
-        float forcehalflifedist = cvar("g_balance_zapper_secondary_damagefalloff_forcehalflife");
+        float mindist = CVAR(g_balance_zapper_secondary_damagefalloff_mindist);
+        float maxdist = CVAR(g_balance_zapper_secondary_damagefalloff_maxdist);
+        float halflifedist = CVAR(g_balance_zapper_secondary_damagefalloff_halflife);
+        float forcehalflifedist = CVAR(g_balance_zapper_secondary_damagefalloff_forcehalflife);
 
         damage *= ExponentialFalloff(mindist, maxdist, halflifedist, d);
         force  *= ExponentialFalloff(mindist, maxdist, forcehalflifedist, d);
@@ -330,7 +330,7 @@ void W_Zapper_Attack2(void) {
         Damage_DamageInfo(end, damage, 0, 0, force * w_shotdir, WEP_ZAPPER | HITTYPE_SECONDARY, self);
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_cells = self.ammo_cells - cvar("g_balance_zapper_secondary_ammo");
+        self.ammo_cells = self.ammo_cells - CVAR(g_balance_zapper_secondary_ammo);
 
 }
 
@@ -508,12 +508,12 @@ void W_Zapper_Cooloff(void) {
     if(self.zapper_heat < 0)
         return;
 
-    float a = bound(0, (time - self.zapper_coolofftime) * cvar("g_balance_zapper_primary_cooloff_accel"), 1);
+    float a = bound(0, (time - self.zapper_coolofftime) * CVAR(g_balance_zapper_primary_cooloff_accel), 1);
 
     if(!a)
         return;
 
-    self.zapper_heat = bound(0, self.zapper_heat - cvar("g_balance_zapper_primary_cooloff") * frametime * a, 1);
+    self.zapper_heat = bound(0, self.zapper_heat - CVAR(g_balance_zapper_primary_cooloff) * frametime * a, 1);
 }
 
 float W_Zapper_PrepareFirstAttack(float sec) {
@@ -527,7 +527,7 @@ float w_zapper(float req) {
     float dofire;
 
     if (req == WR_AIM) {
-        if(vlen(self.origin-self.enemy.origin) < cvar("g_balance_zapper_primary_range"))
+        if(vlen(self.origin-self.enemy.origin) < CVAR(g_balance_zapper_primary_range))
             self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
         else
             self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
@@ -539,14 +539,14 @@ float w_zapper(float req) {
                 } else {
                     if(self.zapper_beam) {
                         dofire = TRUE;
-                        self.zapper_beam.zapper_expire = time + cvar("g_balance_zapper_primary_lifetime");
+                        self.zapper_beam.zapper_expire = time + CVAR(g_balance_zapper_primary_lifetime);
                     } else if(W_Zapper_PrepareFirstAttack(0)) {
                         dofire = TRUE;
                         W_Zapper_Attack1();
                     }
 
                     if(dofire)
-                        weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
                 }
             }
         } else if(self.BUTTON_ATCK2 && cvar("g_balance_zapper_secondary")) {
@@ -567,9 +567,9 @@ float w_zapper(float req) {
                             weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                     }
                 }
-            } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
+            } else if(weapon_prepareattack(1, CVAR(g_balance_zapper_secondary_refire))) {
                 W_Zapper_Attack2();
-                weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
             }
         }
     } else if(req == WR_PRECACHE) {
@@ -579,7 +579,7 @@ float w_zapper(float req) {
         precache_sound("misc/arc1.wav");
         precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
-        if(cvar("g_balance_zapper_primary_heatup") || (cvar("g_balance_zapper_secondary_shield") && cvar("g_balance_zapper_secondary_shield_heatup")))
+        if(CVAR(g_balance_zapper_primary_heatup) || (cvar("g_balance_zapper_secondary_shield") && cvar("g_balance_zapper_secondary_shield_heatup")))
             self.zapper_heat = 0;
         else
             self.zapper_heat = -1;

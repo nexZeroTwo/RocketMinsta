@@ -5,7 +5,7 @@
 
 void FreezeTag_EndRound()
 {
-    G_EndRound(5, cvar("g_freezetag_warmup"), Freeze_RecountPlayers, func_null, func_null);
+    G_EndRound(5, CVAR(g_freezetag_warmup), Freeze_RecountPlayers, func_null, func_null);
     Freeze_RecountPlayers();
     defer(5, sm_Clear);
 }
@@ -18,9 +18,9 @@ void FreezeTag_Frame()
 
 void FreezeTag_Initialize()
 {
-    ft_teams = cvar("g_freezetag_teams_override");
+    ft_teams = CVAR(g_freezetag_teams_override);
     if(ft_teams < 2)
-        ft_teams = cvar("g_freezetag_teams");
+        ft_teams = CVAR(g_freezetag_teams);
     ft_teams = bound(2, ft_teams, 4);
     
     precache_sound("ctf/red_capture.wav");
@@ -30,7 +30,7 @@ void FreezeTag_Initialize()
     if(inWarmupStage)
         warmup = time;
     else
-        warmup = time + cvar("g_start_delay");
+        warmup = time + CVAR(g_start_delay);
     
     ScoreRules_freezetag();
     
