@@ -11,7 +11,7 @@ string(string format, ...) sprintf = #627;
 // TODO: maybe move them elsewhere and use for the rest of the weapons?
 // Also, this needs a manual update when the autocvars branch is merged.
 
-#define WEP_CVAR(wepname,name) cvar("g_balance_" #wepname "_" #name)
+#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
 #define WEP_CVAR_BOTH(wepname,isprimary,name) ((isprimary) ? WEP_CVAR_PRI(wepname, name) : WEP_CVAR_SEC(wepname, name))
@@ -23,7 +23,7 @@ void W_Crylink_CheckLinks(entity e)
     float i;
     entity p;
 
-    if not(cvar("developer"))
+    if not(CVAR(developer))
         return;
 
     if(e == world)
