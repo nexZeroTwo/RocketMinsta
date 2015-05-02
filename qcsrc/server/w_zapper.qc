@@ -609,7 +609,7 @@ float w_zapper(float req) {
                     self.zapper_accumulator.owner = self;
                     self.zapper_accumulator.think = W_Zapper_Accumulate;
                     self.zapper_accumulator.nextthink = time;
-                    self.zapper_accumulator.zapper_expire = time + cvar("g_balance_zapper_secondary_animtime");
+                    self.zapper_accumulator.zapper_expire = time + cvar("g_balance_zapper_animtime");
                     sound(self, CHAN_WEAPON2, "weapons/fireball_fly2.wav", VOL_BASE, ATTN_NORM);
                     weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                 }
