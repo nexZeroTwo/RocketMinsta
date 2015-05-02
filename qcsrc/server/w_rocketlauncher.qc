@@ -267,9 +267,16 @@ void W_Rocket_Think (void)
 
 void W_Rocket_Touch (void)
 {
+	PROJECTILE_SKIPNONSOLID
+	if(SUB_OwnerCheck())
+		return;
 	W_Rocket_Unregister();
 
-	PROJECTILE_TOUCH;
+	if(SUB_NoImpactCheck()) {
+		remove(self);
+		return;
+	}
+
 	W_Rocket_Explode ();
 }
 
@@ -304,7 +311,7 @@ void W_Rocket_Attack (void)
 	missile.pushltime = time + CVAR(g_balance_rocketlauncher_guidedelay);
 	missile.classname = "rocket";
 	missile.bot_dodge = TRUE;
-	missile.bot_dodgerating = CVAR(g_balance_rocketlauncher_primary_damage) * 2; // * 2 because it can be detonated inflight which makes it even more dangerous
+	missile.bot_dodgerating = CVAR(g_balance_rocketlauncher_damage) * 2; // * 2 because it can be detonated inflight which makes it even more dangerous
 
 	missile.takedamage = DAMAGE_YES;
 	missile.damageforcescale = CVAR(g_balance_rocketlauncher_damageforcescale);
@@ -515,9 +522,6 @@ float w_rlauncher(float req)
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/flash.md3");
-		precache_model ("models/weapons/g_rl.md3");
-		precache_model ("models/weapons/v_rl.md3");
-		precache_model ("models/weapons/h_rl.dpm");
 		precache_sound ("weapons/rocket_det.wav");
 		precache_sound ("weapons/rocket_fire.wav");
 		precache_sound ("weapons/rocket_mode.wav");

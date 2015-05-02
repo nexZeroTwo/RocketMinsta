@@ -157,7 +157,7 @@ void plat_use()
 
 void plat_reset()
 {
-	IFTARGETED
+	if(!CVAR(sv_gameplayfix_forceplatdown) && !self.nottargeted && self.targetname != "")
 	{
 		setorigin (self, self.pos1);
 		self.state = 4;
@@ -233,7 +233,8 @@ void spawnfunc_func_plat()
 
 	self.pos1 = self.origin;
 	self.pos2 = self.origin;
-	self.pos2_z = self.origin_z - self.size_z + 8;
+	self.pos2_z = self.origin_z -
+			((CVAR(sv_gameplayfix_useheightforplat) && self.height) ? self.height : self.size_z) + 8;
 
 	plat_spawn_inside_trigger ();	// the "start moving" trigger
 
@@ -1217,13 +1218,16 @@ void spawnfunc_func_door()
     if(self.dmg && (!self.message2))
 		self.message2 = "was squished by";
 
-	if (self.sounds > 0)
-	{
-		precache_sound ("plats/medplat1.wav");
-		precache_sound ("plats/medplat2.wav");
+	if(self.sounds > 0) {
 		self.noise2 = "plats/medplat1.wav";
 		self.noise1 = "plats/medplat2.wav";
 	}
+
+    if(self.noise1)
+        precache_sound(self.noise1);
+
+    if(self.noise2)
+        precache_sound(self.noise2);
 
 	if (!self.speed)
 		self.speed = 100;

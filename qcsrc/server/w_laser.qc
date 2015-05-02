@@ -56,7 +56,6 @@ void W_Laser_Attack (float issecondary)
 
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX(missile)
 
 	if (issecondary)
 		missile.velocity = w_shotdir * CVAR(g_balance_laser_secondary_speed);
@@ -128,9 +127,6 @@ float w_laser(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_laser.md3");
-		precache_model ("models/weapons/v_laser.md3");
-		precache_model ("models/weapons/h_laser.dpm");
 		precache_sound ("weapons/lasergun_fire.wav");
 	}
 	else if (req == WR_SETUP)

@@ -316,8 +316,8 @@ void dompointtouch()
 	self.dmg_inflictor = other;
 
 	// self.state = 1;
-	// self.delay = time + cvar("g_domination_point_capturetime");
-	//self.nextthink = time + cvar("g_domination_point_capturetime");
+	// self.delay = time + CVAR(g_domination_point_capturetime);
+	//self.nextthink = time + CVAR(g_domination_point_capturetime);
 	//self.think = dompoint_captured;
 
 	// go to neutral team in the mean time
@@ -658,7 +658,7 @@ void spawnfunc_dom_controlpoint()
 		self.scale = 1.0; //0.6;
 
 	//if(!self.glow_size)
-	//	self.glow_size = cvar("g_domination_point_glow");
+	//	self.glow_size = CVAR(g_domination_point_glow);
 	self.effects = self.effects | EF_LOWPRECISION;
 	if (CVAR(g_domination_point_fullbright))
 		self.effects |= EF_FULLBRIGHT;

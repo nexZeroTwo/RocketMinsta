@@ -1428,9 +1428,15 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, g_nexball_meter_period * 32);
 	for(i = 1; i <= 24; ++i)
 		WriteByte(MSG_ENTITY, (get_weaponinfo(i)).impulse + 1);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_x);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_y);
-	WriteCoord(MSG_ENTITY, hook_shotorigin_z);
+	self.owner = to;
+	vector myhook_shotorigin;
+	if(g_grappling_hook)
+		myhook_shotorigin = '8 -8 -12';
+	else
+		myhook_shotorigin = shotorg_adjust('26.2148 9.2059 -15.9772', TRUE, TRUE);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_x);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_y);
+	WriteCoord(MSG_ENTITY, myhook_shotorigin_z);
 
 	if(ShouldForceFog())
 		WriteString(MSG_ENTITY, GetForcedFog());
@@ -1449,6 +1455,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteShort(MSG_ENTITY, sv_nicehealth);
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
+    WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
 	return TRUE;
 }
 
@@ -2846,12 +2853,14 @@ entity SpectateNext_Yield(entity p) {
 entity SpectatePrev_Yield(entity p) {
     entity o, r;
 
-    do {
-        r = o;
-    } while((o = SpectateNext_Yield_NoLoop(o)) != p);
+    if(MaySpectate(p)) {
+        do {
+            r = o;
+        } while((o = SpectateNext_Yield_NoLoop(o)) != p);
 
-    if(r)
-        return r;
+        if(r)
+            return r;
+    }
 
     do {
         r = o;
@@ -3414,7 +3423,7 @@ void PlayerPreThink (void)
 				if(frametime)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
-				force_respawn = (g_lms || g_clanarena || CVAR(g_forced_respawn));
+				force_respawn = (g_lms || g_clanarena || g_jailbreak || CVAR(g_forced_respawn));
 				
 				if (jb_roundover || (g_vip && ISVIP(self))) {
 					// lol no respawn for ya
@@ -3583,7 +3592,7 @@ void PlayerPreThink (void)
     }
 
 	if(!zoomstate_set)
-		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX));
+		SetZoomState(self.BUTTON_ZOOM || (self.BUTTON_ATCK2 && self.weapon == WEP_NEX && !CVAR(g_balance_nex_secondary)));
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;

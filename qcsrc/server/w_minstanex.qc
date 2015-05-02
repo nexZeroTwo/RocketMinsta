@@ -72,7 +72,6 @@ void W_Explosive_Attack (float attacktype)
 	
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(gren)
 
 	gren.think = adaptor_think2use;
 	gren.use = W_RM_Explode;
@@ -520,14 +519,6 @@ float w_minstanex(float req)
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/nexflash.md3");
-		
-		precache_model ("models/weapons/g_minstanex.md3");
-		precache_model ("models/weapons/v_minstanex.md3");
-		precache_model ("models/weapons/h_minstanex.dpm");
-		
-		precache_model ("models/weapons/g_nex.md3");
-		precache_model ("models/weapons/v_nex.md3");
-		precache_model ("models/weapons/h_nex.dpm");
 		
 		precache_sound (RM_SOUND_MINSTA);
 		precache_sound ("weapons/nexwhoosh1.wav");

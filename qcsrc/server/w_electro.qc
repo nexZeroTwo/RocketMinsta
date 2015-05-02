@@ -132,7 +132,6 @@ void W_Electro_Attack()
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_Plasma_TouchExplode;
 	setsize(proj, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(proj)
 	proj.flags = FL_PROJECTILE;
 
 	//sound (proj, CHAN_PAIN, "weapons/electro_fly.wav", VOL_BASE, ATTN_NORM);
@@ -176,7 +175,6 @@ void W_Electro_Attack2()
 	proj.health = CVAR(g_balance_electro_secondary_health);
 	proj.event_damage = W_Plasma_Damage;
 	proj.flags = FL_PROJECTILE;
-    PROJECTILE_FIX(proj)
 
 #if 0
 	entity p2;
@@ -255,9 +253,6 @@ float w_electro(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_electro.md3");
-		precache_model ("models/weapons/v_electro.md3");
-		precache_model ("models/weapons/h_electro.dpm");
 		precache_sound ("weapons/electro_bounce.wav");
 		precache_sound ("weapons/electro_fire.wav");
 		precache_sound ("weapons/electro_fire2.wav");

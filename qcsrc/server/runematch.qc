@@ -504,8 +504,8 @@ void spawn_runes()
 		e.alpha = e.enemy.alpha = CVAR(g_runematch_rune_alpha);//0.78;
 		e.effects = e.enemy.effects = CVAR(g_runematch_rune_effects) | EF_LOWPRECISION;//EF_ADDITIVE;// | EF_FULLBRIGHT;
 
-		//e.glow_size = e.enemy.glow_size = cvar("g_runematch_rune_glow_size");
-		//e.glow_color = e.enemy.glow_color = cvar("g_runematch_rune_glow_color");
+		//e.glow_size = e.enemy.glow_size = CVAR(g_runematch_rune_glow_size);
+		//e.glow_color = e.enemy.glow_color = CVAR(g_runematch_rune_glow_color);
 
 		//rn = RUNE_FIRST;
 		//cs = CURSE_FIRST;

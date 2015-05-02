@@ -92,8 +92,8 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     vector beampos;
     string snd;
     entity pseudoprojectile;
-    float f, ffs;
     entity pts, hitents;
+    float f;
 
     railgun_start = start;
     railgun_end = end;
@@ -107,16 +107,14 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 
     pts = Buffs_MEODP_Hitscan_Begin(self);
     
-    trace_start_for(self);
     hitents = tracerail_antilag(self, start, end, FALSE, self);
-    trace_end_for(self);
 
     endpoint = trace_endpos;
     endent = trace_ent;
     endq3surfaceflags = trace_dphitq3surfaceflags;
 
     // Find all non-hit players the beam passed close by
-    if(deathtype == WEP_MINSTANEX || deathtype == WEP_NEX) {
+    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
         if(msg_entity != self)
         if not(msg_entity.tracerail_hit)
@@ -147,12 +145,53 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
 
         hitloc = ent.tracerail_endpos;
 
-        f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
-        ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
+        float tdamage = bdamage;
+        vector tforce = force;
+
+        float dst = (hitloc - start) * dir;
+
+        tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
+        tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
+
+        if(DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+            float maxdst;
+
+            if(deathtype & HITTYPE_SECONDARY)
+                maxdst = CVAR(g_balance_nex_secondary_damagefalloff_linear_maxdist);
+            else
+                maxdst = CVAR(g_balance_nex_damagefalloff_linear_maxdist);
+
+            if(maxdst) {
+                float steps, mindmgfactor, minfrcfactor, flr;
+
+                if(deathtype & HITTYPE_SECONDARY) {
+                    steps = CVAR(g_balance_nex_secondary_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_secondary_damagefalloff_linear_floor);
+                } else {
+                    steps = CVAR(g_balance_nex_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_damagefalloff_linear_floor);
+                }
+
+                f = min(dst, maxdst) / maxdst;
+
+                if(steps > 0)
+                    f = floor(steps * f) / steps;
+
+                tdamage = tdamage * mindmgfactor + tdamage * (1 - mindmgfactor) * f;
+                tforce = tforce * minfrcfactor + tforce * (1 - minfrcfactor) * f;
+
+                if(flr)
+                    tdamage = floor(tdamage);
+            }
+        }
 
         // apply the damage
         if(ent.takedamage)
-            Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
+            Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
     }
 
     Buffs_MEODP_Hitscan_End(pts);
@@ -318,7 +357,6 @@ void W_BallisticBullet_Touch (void)
 {
 	if(self.think == W_BallisticBullet_LeaveSolid_think) // skip this!
 		return;
-    
 	PROJECTILE_TOUCH;
 	W_BallisticBullet_Hit ();
 
@@ -413,7 +451,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.projectiledeathtype = dtype;
     
 	proj.oldvelocity = proj.velocity;
-    PROJECTILE_FIX(proj)
     
     W_Accuracy_RegisterShot(self, self.weapon);
 
@@ -450,19 +487,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         
 		for(;;)
 		{
-			// DP tracetoss is stupid and always traces in 0.05s
-			// ticks. This makes it trace in 0.05*0.125s ticks
-			// instead.
-			vector v0;
-			float g0;
-			v0 = self.velocity;
-			g0 = self.gravity;
-			self.velocity = self.velocity * 0.125;
-			self.gravity *= 0.125 * 0.125;
-			trace_fraction = 0;
-			tracetoss(self, oldself);
-			self.velocity = v0;
-			self.gravity = g0;
+			tracetoss_skipnonsolid(self, oldself, 0.05 * 0.125, 200);
 
 			if(vlen(trace_endpos - self.origin) > 16)
 				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);
@@ -510,31 +535,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET_GLOWING, TRUE);
 	else
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET, TRUE);
-}
-
-
-void fireBullet(vector start, vector dir, float spread, float damage, float force, float dtype, float tracer) {
-	vector  end;
-	//local entity e;
-
-	dir = normalize(dir + randomvec() * spread);
-	end = start + dir * MAX_SHOT_DISTANCE;
-
-    trace_start_for(self);
-	traceline_antilag(self, start, end, FALSE, self);
-    trace_end_for(self);
-
-    end = trace_endpos;
-
-	if ((trace_fraction != 1.0) && (pointcontents (trace_endpos) != CONTENT_SKY))
-	{
-		pointparticles(particleeffectnum("TE_KNIGHTSPIKE"),end,trace_plane_normal * 2500,1);
-		if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-			Damage_DamageInfo(trace_endpos, damage, 0, 0, dir * max(1, force), dtype, self);
-		Damage (trace_ent, self, self, damage, dtype, trace_endpos, dir * force);
-		//void(float effectnum, vector org, vector vel, float howmany) pointparticles = #337; // same as in CSQC
-	}
-	trace_endpos = end;
 }
 
 

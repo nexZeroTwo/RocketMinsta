@@ -469,6 +469,11 @@ void VoteDialog_Reset() {
 	}
 }
 
+void Vote_SendInvitation(void) {
+    WriteByte(MSG_ALL, SVC_TEMPENTITY);
+    WriteByte(MSG_ALL, TE_CSQC_VOTEINVITE);
+}
+
 float GameCommand_Vote(string s, entity e) {
 	float argc;
     string tmp;
@@ -505,7 +510,7 @@ float GameCommand_Vote(string s, entity e) {
 					print_to(e, "^1Error: You can not call a vote while a timeout is active.");
 				}
 				else if(votecalled) {
-					print_to(e, "^1There is already a vote called.");
+					print_to(e, "^1There is already a vote or an invitation called.");
 				} else {
 					local string vote;
 					vote = VoteParse(s, argc);
@@ -514,7 +519,7 @@ float GameCommand_Vote(string s, entity e) {
 					} else if(vote == "$*") {	// happens on "vcall" without arguments
 						stuffcmd(e, "menu_cmd directmenu VcallMenu\n");
 					} else if(e && time < e.vote_next && !e.vote_master) {
-							print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote."));
+						print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote or an invitation."));
 					} else if(VoteCheckNasty(vote)) {
 						print_to(e, "Syntax error in command. See 'vhelp' for more info.");
 					} else if(RemapVote(vote, "vcall", e)) {
@@ -523,6 +528,7 @@ float GameCommand_Vote(string s, entity e) {
 						votecalled = TRUE;
 						votecalledmaster = FALSE;
 						votefinished = time + CVAR(sv_vote_timeout);
+                        vote_invite = FALSE;
 						votecaller = e; // remember who called the vote
 						if(e) {
 							e.vote_vote = 1; // of course you vote yes
@@ -544,6 +550,53 @@ float GameCommand_Vote(string s, entity e) {
 			} else {
 				print_to(e, "^1Vote calling is NOT allowed.");
 			}
+        } else if(argv(1) == "invite") {
+            if(!e || e.vote_master || CVAR(sv_vote_invite)) {
+                if(timeoutStatus) {
+                    print_to(e, "^1Error: You can not call an invitation while a timeout is active.");
+                } else if(votecalled) {
+                    print_to(e, "^1There is already a vote or an invitation called.");
+                } else if(e && time < e.vote_next && !e.vote_master) {
+                    print_to(e, strcat("^1You have to wait ^2", ftos(e.vote_next - time), "^1 seconds before you can again call a vote or an invitation."));
+                } else {
+                    string a = argv(2);
+                    string srv = ResolveServer(a);
+
+                    if(srv && !VoteCheckNasty(srv) && ServerIsAllowed(srv)) {
+                        votecalledvote = strzone(srv);
+                        votecalledvote_display = a;
+
+                        if(a != srv)
+                            votecalledvote_display = strcat(votecalledvote_display, " (^5", srv, "^1)");
+                        
+                        votecalledvote_display = strzone(votecalledvote_display);
+
+                        votecalled = TRUE;
+                        votecalledmaster = FALSE;
+                        vote_invite = TRUE;
+                        votefinished = time + CVAR(sv_vote_invite_timeout);
+                        votecaller = e;
+
+                        if(e) {
+                            e.vote_next = time + CVAR(sv_vote_wait);
+                        }
+
+                        tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 invites everyone to play on ^1", votecalledvote_display);
+                        bprint("\{1}", tmp, "\n");
+                        IRC_Announce_Vote(tmp);
+
+                        if(CVAR(sv_eventlog))
+                            GameLogEcho(strcat(":vote:invite:", ftos(votecaller.playerid), ":", votecalledvote_display));
+
+                        Vote_SendInvitation();
+                        Nagger_VoteChanged();
+                    } else {
+                        sprint(e, strcat("^1Allowed servers are: ^2", GetAllowedServers(), "\n"));
+                    }
+                }
+            } else {
+                print_to(e, "^1Invitations are NOT allowed.");
+            }
 		} else if(argv(1) == "stop") {
 			if(!votecalled) {
 				print_to(e, "^1No vote called.");
@@ -576,6 +629,7 @@ float GameCommand_Vote(string s, entity e) {
 					}
                     tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2 calls a vote to become ^3master^2");
 					bprint("\{1}", tmp, "\n");
+                    vote_invite = FALSE;
                     IRC_Announce_Vote(tmp);
 					if(CVAR(sv_eventlog))
 						GameLogEcho(strcat(":vote:vcall:", ftos(votecaller.playerid), ":", votecalledvote_display));
@@ -647,6 +701,12 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1No vote called.");
 			} else if (!e) {
 				print_to(e, "^1You can't vote from the server console.");
+            } else if(vote_invite) {
+                if(!e.vote_vote) {
+                    stuffcmd(e, strcat("connect ", votecalledvote ,"\n"));
+                    e.vote_vote = 1;
+                    Nagger_VoteCountChanged();
+                }
 			} else if(e.vote_vote == 0
 				  || CVAR(sv_vote_change)) {
 				
@@ -668,6 +728,12 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1No vote called.");
 			} else if (!e) {
 				print_to(e, "^1You can't vote from the server console.");
+            } else if(vote_invite) {
+                if(!e.vote_vote) {
+                    msg_entity = e;
+                    e.vote_vote = -1;
+                    Nagger_VoteCountChanged();
+                }
 			} else if(e.vote_vote == 0
 				  || CVAR(sv_vote_change)) {
 				
@@ -691,6 +757,12 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1No vote called.");
 			} else if (!e) {
 				print_to(e, "^1You can't vote from the server console.");
+            } else if(vote_invite) {
+                if(!e.vote_vote) {
+                    msg_entity = e;
+                    e.vote_vote = -1;
+                    Nagger_VoteCountChanged();
+                }
 			} else if(e.vote_vote == 0
 				  || CVAR(sv_vote_change)) {
 				
@@ -866,6 +938,7 @@ void VoteReset() {
 	votecalled = FALSE;
 	votecalledmaster = FALSE;
 	votefinished = 0;
+    vote_invite = FALSE;
 	Nagger_VoteChanged();
 }
 
@@ -973,6 +1046,18 @@ void VoteCount() {
 	local float realplayerabstaincount;
 	realplayercount = realplayernocount = realplayerabstaincount = realplayeryescount = 0;
 
+    if(vote_invite) {
+        if(time > votefinished) {
+            string tmp = strcat("^2* ^3", VoteNetname(votecaller), "^2's invitation timed out");
+            bprint("\{1}", tmp, "\n");
+            IRC_Announce_Vote(tmp);
+            VoteReset();
+            VoteDialog_Reset();
+        }
+
+        return;
+    }
+
 	FOR_EACH_REALCLIENT(player)
 	{
 		if(player.is_away)
@@ -1075,16 +1160,10 @@ void VoteCount() {
 				VoteSpam(yescount, nocount, abstaincount, playercount - yescount - nocount - abstaincount, floor((playercount - abstaincount) * votefactor) + 1, "timeout");
 				VoteTimeout();
 			}
-		VoteDialog_Reset();
+
+            VoteDialog_Reset();
 		}
 	}
 
-	FOR_EACH_REALCLIENT(player)
-	{
-		stuffcmd(player, strcat("cl_cmd votestat ", ftos(yescount), " ", ftos(nocount), " ",
-		ftos(simplevotefactor? floor(min((playercount - abstaincount) * votefactor, (yescount + nocount) * simplevotefactor)) + 1
-						: floor((playercount - abstaincount) * votefactor) + 1), "\n")
-		);
-	}
 	Nagger_VoteCountChanged();
 }

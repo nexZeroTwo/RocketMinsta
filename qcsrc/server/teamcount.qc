@@ -88,8 +88,6 @@ float TeamCount_PlayerPool_PlayerValue(entity plr) {
         case 5  :   return plr.scorekeeper.(scores[SP_KILLS]) / max(1, plr.scorekeeper.(scores[SP_DEATHS]));
         default :   return plr.scorekeeper.(scores[SP_SCORE]);
     }
-    
-    return 0;
 }
 
 float TeamCount_PlayerPool_GetValue(entity pool, float idx) {

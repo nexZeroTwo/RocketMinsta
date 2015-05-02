@@ -221,16 +221,16 @@ float GameCommand_Generic(string command)
 				print("maplist: ERROR: ", argv(2), " does not exist!\n");
 				return TRUE;
 			}
-			if(cvar_string("g_maplist") == "")
+			if(CVAR_STR(g_maplist) == "")
 				cvar_set("g_maplist", argv(2));
 			else
-				cvar_set("g_maplist", strcat(argv(2), " ", cvar_string("g_maplist")));
+				cvar_set("g_maplist", strcat(argv(2), " ", CVAR_STR(g_maplist)));
 			return TRUE;
 		}
 		else if(argv(1) == "remove" && argc == 3)
 		{
 			s = argv(2);
-			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
+			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
 				if(argv(i) != s)
@@ -241,14 +241,14 @@ float GameCommand_Generic(string command)
 		}
 		else if(argv(1) == "shuffle" && argc == 2)
 		{
-			cvar_set("g_maplist", shufflewords(cvar_string("g_maplist")));
+			cvar_set("g_maplist", shufflewords(CVAR_STR(g_maplist)));
 			return TRUE;
 		}
 		else if(argv(1) == "cleanup")
 		{
 			MapInfo_Enumerate();
 			MapInfo_FilterGametype(gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
+			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
 				if(MapInfo_CheckMap(argv(i)))
@@ -899,8 +899,8 @@ float GameCommand_Generic(string command)
             if(isfunction(s))
                 callfunction(s);
             else {
-                setsize(self, self.mins, self.maxs);
                 setmodel(self, self.model);
+                setsize(self, self.mins, self.maxs);
                 
                 #ifdef SVQC
                 if(self.fade_time)

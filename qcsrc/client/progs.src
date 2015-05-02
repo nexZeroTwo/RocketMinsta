@@ -9,6 +9,7 @@ Defs.qc
 ../common/util-pre.qh
 
 autocvars.qh
+../common/autocvars.qh
 
 csqc_constants.qc
 ../common/constants.qh

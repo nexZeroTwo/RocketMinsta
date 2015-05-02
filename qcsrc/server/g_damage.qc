@@ -83,7 +83,7 @@ float Damage_DamageInfo_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, bound(0, self.dmg_radius, 255));
 	WriteByte(MSG_ENTITY, bound(1, self.dmg_edge, 255));
 	WriteShort(MSG_ENTITY, self.oldorigin_x);
-    WriteByte(MSG_ENTITY, self.team-1);
+    WriteByte(MSG_ENTITY, self.team - 1);
 	return TRUE;
 }
 
@@ -105,9 +105,10 @@ void Damage_DamageInfo(vector org, float coredamage, float edgedamage, float rad
 	e.dmg_radius = rad;
 	e.dmg_force = vlen(force);
 	e.velocity = force;
-    e.team = dmgowner.team;
+    if(teams_matter)
+        e.team = dmgowner.team;
 	e.oldorigin_x = compressShortVector(e.velocity);
-
+    
 	Net_LinkEntity(e, FALSE, 0.2, Damage_DamageInfo_SendEntity);
 }
 
@@ -486,17 +487,20 @@ void HealScore(entity targ, entity healer, float heal) {
 }
 
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
-    if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
-    else        hlimit = g_balance_health_limit;
-    if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
-    else        alimit = g_balance_armor_limit;
-    
+
+    if(targ.classname == "player") {
+        if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
+        else        hlimit = g_balance_health_limit;
+        if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
+        else        alimit = g_balance_armor_limit;
+    }
+
     if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
         float lim = CVAR(g_clanarena_heal_limit);
         hlimit = min(hlimit, lim);
         alimit = min(alimit, lim);
     }
-    
+
     float silent = (healtype == DEATH_ITEM);
     
     if(pauserot  < 0) pauserot  = CVAR(g_balance_pause_health_rot);
@@ -508,13 +512,13 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         heal  = max(0, min(heal,  hlimit - targ.health));
         aheal = max(0, min(aheal, alimit - targ.armorvalue));
     }
-    
+
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
     targ.armorvalue += aheal;
     targ.pauserotarmor_finished = max(targ.pauserotarmor_finished, time + pausearot);
-    
+
     if(heal || aheal) {
         float vdtype = VDMG_TYPE_HEAL;
         
@@ -731,7 +735,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
 	{
 		// no processing
 	}
@@ -1327,6 +1331,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage)
         W_Accuracy_RegisterActualDamage(attacker, weaponid, damage);
 }
 
+.entity zapper_shield;
 .float damage_noinfo;
 .float damage_nextarceffect;
 float RadiusDamage (entity inflictor, entity attacker, float coredamage, float edgedamage, float rad, entity ignore, float forceintensity, float deathtype, entity directhitentity)
@@ -1342,8 +1347,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 	vector  nearest;
 	float   total_damage_to_creatures;
 	entity  next;
-	float   tfloordmg;
-	float   tfloorforce;
+	float   tfloordmg, tfloordmg_cvar;
+	float   tfloorforce, tfloorforce_cvar;
 
 	float stat_damagedone;
 	float stat_maxdamage;
@@ -1363,8 +1368,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 	RadiusDamage_running = 1;
 
-	tfloordmg = CVAR(g_throughfloor_damage);
-	tfloorforce = CVAR(g_throughfloor_force);
+	tfloordmg_cvar = CVAR(g_throughfloor_damage);
+	tfloorforce_cvar = CVAR(g_throughfloor_force);
 
 	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
@@ -1445,6 +1450,15 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						else
 							total = ceil(bound(1, finaldmg/10, 5));
 						hitloc = nearest;
+
+                        // I know this is lame
+                        if(targ.zapper_shield) {
+                            tfloordmg = tfloorforce = 0;
+                        } else {
+                            tfloordmg = tfloordmg_cvar;
+                            tfloorforce = tfloorforce_cvar;
+                        }
+
 						c = 0;
 						while (c < total)
 						{
@@ -1462,12 +1476,14 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 							nearest_z = targ.origin_z + targ.mins_z + random() * targ.size_z;
 							c = c + 1;
 						}
+
 						nearest = hitloc * (1 / max(1, hits));
 						hitratio = (hits / total);
 						a = bound(0, tfloordmg + (1-tfloordmg) * hitratio, 1);
 						finaldmg = finaldmg * a;
 						a = bound(0, tfloorforce + (1-tfloorforce) * hitratio, 1);
 						force = force * a;
+
 						//if (targ == attacker)
 						//{
 						//	print("hits ", ftos(hits), " / ", ftos(total));
@@ -1561,7 +1577,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 		mindps = e.fire_damagepersec;
         
-        if(CVAR(g_fire_damage_stack))
+        if((dt == DEATH_IGNITE && CVAR(g_buffs_ignite_stack)) || CVAR(g_fire_damage_stack))
             maxdps = (mindps * mintime) / maxtime + dps;
         else
             maxdps = max(mindps, dps);
@@ -1646,7 +1662,7 @@ void Fire_ApplyDamage(entity e)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
 
-    if(!e.fire_owner.iscreature)
+    if(!e.fire_owner.iscreature && e.fire_owner.classname != "jailbreak_torture")
         e.fire_endtime = 0;
 
 	if not(Fire_IsBurning(e))

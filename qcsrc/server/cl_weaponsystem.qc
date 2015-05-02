@@ -173,7 +173,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
 	else
-		traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+		traceline_skipnonsolid(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
 	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	trueaimpoint = trace_endpos;
 
@@ -278,7 +278,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	{
 		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
 		{
-			traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+			traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
 			{
 				traceline_antilag_force (ent, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
@@ -286,7 +286,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				{
 					entity e;
 					e = trace_ent;
-					traceline(w_shotorg, e.origin, MOVE_NORMAL, ent);
+					traceline_skipnonsolid(w_shotorg, e.origin, MOVE_NORMAL, ent);
 					if(trace_ent == e)
 						w_shotdir = normalize(trace_ent.origin - w_shotorg);
 				}
@@ -301,11 +301,11 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			{
 				// verify that the shot would miss without antilag
 				// (avoids an issue where guns would always shoot at their origin)
-				traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+				traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 				if (!trace_ent.takedamage)
 				{
 					// verify that the shot would hit if altered
-					traceline(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
+					traceline_skipnonsolid(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
 					if (trace_ent == ent.cursor_trace_ent)
 						w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
 					else
@@ -366,7 +366,7 @@ void LaserTarget_Think()
 	if(self.owner.laser_on && self.owner.weapon == WEP_ROCKET_LAUNCHER && g_laserguided_missile)
 		uselaser = 1;
 	// example
-	//if(self.owner.weapon == WEP_ELECTRO && cvar("g_laserguided_electro"))
+	//if(self.owner.weapon == WEP_ELECTRO && CVAR(g_laserguided_electro))
 	//	uselaser = 1;
 
 
@@ -692,7 +692,14 @@ void CL_Weaponentity_Think()
 	if (self.state == WS_RAISE && !intermission_running)
 	{
 		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
-		self.angles_x = -90 * f * f;
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -702,7 +709,14 @@ void CL_Weaponentity_Think()
 	else if (self.state == WS_DROP && !intermission_running)
 	{
 		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
-		self.angles_x = -90 * f * f;
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -712,7 +726,9 @@ void CL_Weaponentity_Think()
 	else if (self.state == WS_CLEAR)
 	{
 		f = 1;
-		self.angles_x = -90 * f * f;
+        self.angles_y = -90 * f * f;
+        self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -1042,43 +1058,18 @@ void weapon_setup(float windex)
 .float race_penalty;
 float weapon_prepareattack(float secondary, float attacktime)
 {
-	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
-	//if all players readied up and the countdown is running
-	if((time < game_starttime && !g_inf) || time < self.race_penalty)
-		return FALSE;
-
-    if(roundstate == ROUNDSTATE_OVER)
-        return FALSE;
-
-	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
-		return FALSE;
-
-	if(g_freeze)
-	if(self.frozen) 
-		return FALSE;
-    
-    if(time < self.hg_plasmalock)
-        return FALSE;
-    
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
-    if(time - self.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
+    if(!PlayerMayFire(self))
         return FALSE;
-    
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
+
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+    if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
         W_SwitchWeapon_OutOfAmmo(self);
-		return FALSE;
-	}
+        return FALSE;
+    }
 
-	if (timeoutStatus == 2) //don't allow the player to shoot while game is paused
-		return FALSE;
-
-	// do not even think about shooting if switching
-	if(self.switchweapon != self.weapon)
-		return FALSE;
-	
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished

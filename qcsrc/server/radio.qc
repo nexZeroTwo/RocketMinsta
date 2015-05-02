@@ -176,8 +176,6 @@ string Radio_Queue_GetFreeID(void) {
         if(strstrofs(qs, strcat(" ", s, " "), 0) < 0)
             return s;
     }
-
-    return "";
 }
 
 void Radio_Queue(string url, string fname, float len, string desc) {

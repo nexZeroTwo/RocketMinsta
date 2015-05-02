@@ -340,9 +340,56 @@ void StartFrame (void)
 .vector originjitter;
 .vector anglesjitter;
 .float anglejitter;
+.string gametypefilter;
+.string gametype;
 .string cvarfilter;
 void SV_OnEntityPreSpawnFunction()
 {
+	if(self.gametypefilter != "")
+	if not(isGametypeInFilter(game, teams_matter, self.gametypefilter))
+	{
+		remove(self);
+		return;
+	}
+	if (self.gametype != "") {
+		string s = cvar_string("sv_gameplayfix_q3gametype_patterns");
+		if (s == "") //Trying to guess
+		{
+			if (teams_matter)
+			{
+				s = "team|ctf";
+			}
+			else if(CVAR(g_maxplayers) == 2)
+			{
+				s = "tournament";
+			}
+			else
+			{
+				s = "ffa";
+			}
+		}
+		float i, n, matched;
+		matched = 0;
+		n = tokenizebyseparator(s, "|"); 
+		for (i = 0; i < n; i++)
+		{
+			s = argv(i);
+			if(s == "")
+				continue;
+			if(strstrofs(self.gametype, s, 0) >= 0)
+			{
+				print(strcat("Found pattern '", s, "' for entity '", self.classname, "' with gametype '", self.gametype, "'\n"));
+				matched = 1;
+				break;
+			}
+		}
+		if not(matched)
+		{
+			print(strcat("Removed entity '", self.classname, "' with gametype '", self.gametype, "' because no patterns found\n"));
+			remove(self);
+			return;
+		}
+	}
 	if(self.cvarfilter != "")
 	{
 		float n, i, o, inv;
@@ -473,4 +520,11 @@ void SV_OnEntityPreSpawnFunction()
 		self.angles_z = self.angles_z + (random() * 2 - 1) * self.anglesjitter_z;
 	if(self.anglejitter != 0)
 		self.angles_y = self.angles_y + (random() * 2 - 1) * self.anglejitter;
+    
+    string repl = cvar_string_builtin(strcat("sv_spawnreplace_", self.classname));
+
+    if(repl != "") {
+        // XXX: this is never strunzoned because darkplaces is stupid and doesn't support a SV_OnEntityPreRemove()
+        self.classname = strzone(repl);
+    }
 }

@@ -161,6 +161,11 @@ void W_Fireball_AttackEffect(float i, vector f_diff)
 
 void W_Fireball_Attack2_Frame4()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Fireball_Attack2();
 	weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_fireball_secondary_animtime), w_ready);
 }
@@ -333,9 +338,6 @@ float w_fireball(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_fireball.md3");
-		precache_model ("models/weapons/v_fireball.md3");
-		precache_model ("models/weapons/h_fireball.dpm");
 		precache_model ("models/sphere/sphere.md3");
 		precache_sound ("weapons/fireball_fire.wav");
 		precache_sound ("weapons/fireball_fire2.wav");

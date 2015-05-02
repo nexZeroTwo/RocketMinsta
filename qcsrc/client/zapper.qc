@@ -56,17 +56,20 @@ void Zapper_Draw(void) {
 
     string tex = "particles/zapper";
     vector rgb = Zapper_BeamRGB(self.team);
-    vector rgb2 = GetTeamRGB(self.team);
-
-    vectorvectors(normalize(d));
 
     float t = self.cnt + time;
-    vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
-    vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
     
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
-    Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
-    Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+
+    if(self.sv_entnum) {
+        vectorvectors(normalize(d));
+        vector rgb2 = GetTeamRGB(self.team);
+        vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
+        vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
+
+        Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+        Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+    }
 
     if(self.alpha < 1)
         return;
@@ -76,8 +79,40 @@ void Zapper_Draw(void) {
     float pcount = frametime * 300;
 
     pointparticles(eff_zap, end1, '0 0 0', pcount);
-    pointparticles(eff_zap, end2, '0 0 0', pcount);
     pointparticles(eff_muz, start, end1 - start, pcount);
+
+    if(self.sv_entnum)
+        pointparticles(eff_zap, end2, '0 0 0', pcount);
+}
+
+void Zapper_Draw_Shield(void) {
+    InterpolateOrigin_Do();
+    self.zapper_end = self.origin;
+
+    float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+
+    if(self.sv_entnum == me && !CVAR(chase_active)) {
+        self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        self.zapper_end = self.zapper_start + view_forward * 30;
+    }
+    
+    vector start = self.zapper_start;
+    vector end = self.zapper_end;
+
+    string tex = "particles/zapper";
+    vector rgb = Zapper_BeamRGB(self.team) * 0.5;
+
+    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+
+    if(self.alpha < 1)
+        return;
+
+    float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
+    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
+    float pcount = frametime * 300;
+
+    pointparticles(eff_zap, end, '0 0 0', pcount);
+    pointparticles(eff_muz, start, end - start, pcount);
 }
 
 void Zapper_Fader_Think(void) {
@@ -111,21 +146,31 @@ void Zapper_Remove(void) {
     sound(self, CHAN_PROJECTILE, "misc/null.wav", VOL_BASE, ATTN_NORM);
 }
 
-void Zapper_Read(void) {
+void Zapper_Read(float t) {
     float sf = ReadByte();
 
     if(sf & 1) {
-        self.draw = Zapper_Draw;
+        if(t == ENT_CLIENT_ZAPPER_SHIELD) {
+            self.draw = Zapper_Draw_Shield;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_shield_loop.wav", 1, ATTN_NORM);
+        } else {
+            self.draw = Zapper_Draw;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
+        }
+
         self.entremove = Zapper_Remove;
         self.sv_entnum = ReadByte();
-        self.team = GetPlayerColor(self.sv_entnum - 1);
+
+        if(!self.sv_entnum)
+            self.team = ReadByte() - 1;
+        else
+            self.team = GetPlayerColor(self.sv_entnum - 1);
+
         self.alpha = 1;
         self.cnt = random() * 1000;
 
         if(!rm_teamlasers || !self.team)
             self.team = COLOR_TEAM2;
-
-        sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
     }
 
     if(sf & 2) {

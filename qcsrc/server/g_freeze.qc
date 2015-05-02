@@ -367,9 +367,9 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
         PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
         
-        float heal = Freeze_CVar("revive_heal");
+        float heal = max(max(Freeze_CVar("revive_heal") - e.health, 0), Freeze_CVar("revive_heal_min"));
         if(heal)
-            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+            Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;

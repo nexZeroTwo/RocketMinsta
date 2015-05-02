@@ -20,14 +20,18 @@ float IRC_CheckSession(float s) {
         }
 
         if(!irc || time >= irc_reconnect_time) {
-            if(IRC_ConnectSession(s,
+            float err = IRC_ConnectSession(s,
                 CVAR_STR(sv_ircbot_server),
                 CVAR(sv_ircbot_server_port),
                 CVAR_STR(sv_ircbot_server_password),
                 CVAR_STR(sv_ircbot_nick),
                 CVAR_STR(sv_ircbot_user),
                 CVAR_STR(sv_ircbot_realname)
-            ) == IRC_ERR_STATE)
+            );
+
+            if(!err)
+                irc_was_connected = TRUE;
+            else if(err == IRC_ERR_STATE)
                 IRC_TerminateSession(s);
         }
     } else
@@ -67,6 +71,12 @@ float IRC_Privmsg(float handle, string targ, string msg) {
     return r;
 }
 
+float IRC_Announce(float handle, string targ, string msg) {
+	if(CVAR(sv_ircbot_announce_when_empty) || realclients > 0)
+		return IRC_Privmsg(handle, targ, msg);
+	return 0;
+}
+
 void IRC_UpdateTopic(void) {
     if(!CVAR(sv_ircbot_update_topic))
         return;
@@ -83,7 +93,10 @@ void IRC_UpdateTopic(void) {
     else if(totalclients == maxclients && CVAR(sv_ircbot_update_topic_serverfull))
         s = strcat(s, IRC_STRING_SEPARATOR, "^1server full");
     
-    IRC_Topic(irc.cnt, irc.target, s);
+    if(CVAR_STR(_sv_ircbot_lasttopic) != IRC_DP2IRC(s) || irc.skin > 1) {
+        IRC_Topic(irc.cnt, irc.target, s);
+    }
+
     irc.skin = 0;
 }
 
@@ -128,6 +141,7 @@ void IRC_Init(void) {
     registercvar("_sv_ircbot_session", "-1");
     registercvar("_sv_ircbot_joinlog", "");
     registercvar("_sv_ircbot_msgsent", "0");
+    registercvar("_sv_ircbot_lasttopic", "");
     
     s = IRC_CheckSession(CVAR(_sv_ircbot_session));
     
@@ -429,8 +443,21 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "NICK") {
         if(CVAR(sv_ircbot_announce_irc_nick))
             bprint("\{1}^5IRC  ^7* ^3", nick, " ^7is now known as ^3", argv(0), "\n");
+    } else if(event == "TOPIC") {
+        if(strtolower(argv(0)) == irc.target) {
+            cvar_set("_sv_ircbot_lasttopic", argv(1));
+
+            if(nick != IRC_CurrentNick(handle))
+                IRC_UpdateTopic();
+        }
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
         IRC_ChangeNick(handle, strcat(argv(1), "`"));
+    } else if(numeric == IRC_RFC_RPL_TOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", argv(2));
+    } else if(numeric == IRC_RFC_RPL_NOTOPIC) {
+        if(strtolower(argv(1)) == irc.target)
+            cvar_set("_sv_ircbot_lasttopic", "");
     }
 }
 
@@ -493,31 +520,36 @@ void IRC_Announce_ClientDisconnect(entity plr) { if(!irc) return;
 
 void IRC_Announce_GameStart(void) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_gamestart))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("^3--> ^7Now playing ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^3<-- "));
+        IRC_Announce(irc.cnt, irc.target, strcat("^3--> ^7Now playing ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^3<-- "));
     defer(10, IRC_UpdateTopic);
 }
 
 void IRC_Announce_GameOver(void) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_gameover))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("^1--> ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^7ended ^1<-- "));
+        IRC_Announce(irc.cnt, irc.target, strcat("^1--> ^5", gametype_ID_to_LongName(game), "^7 on ^2", mapname, " ^7ended ^1<-- "));
+}
+
+void IRC_Announce_GameEvent(string estr) { if(!irc) return;
+	if(CVAR(sv_ircbot_announce_game_events))
+		IRC_Announce(irc.cnt, irc.target, estr);
 }
 
 void IRC_Announce_Vote(string vstr) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_votes))
-        IRC_Privmsg(irc.cnt, irc.target, vstr);
+        IRC_Announce(irc.cnt, irc.target, vstr);
 }
 
 void IRC_Announce_Ban(string bstr) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_bans))
-        IRC_Privmsg(irc.cnt, irc.target, bstr);
+        IRC_Announce(irc.cnt, irc.target, bstr);
 }
 
 void IRC_Announce_Name(entity plr, string name) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_name) && (strdecolorize(plr.netname) != strdecolorize(name)))
-        IRC_Privmsg(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
+        IRC_Announce(irc.cnt, irc.target, strcat("* ^3", plr.netname, "^7 changed name to ^3", name));
 }
 
 void IRC_Announce_Radio(string rstr) { if(!irc) return;
     if(CVAR(sv_ircbot_announce_radio))
-        IRC_Privmsg(irc.cnt, irc.target, rstr);
+        IRC_Announce(irc.cnt, irc.target, rstr);
 }

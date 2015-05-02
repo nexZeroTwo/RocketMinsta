@@ -389,7 +389,7 @@ void ImpulseCommands (void)
 						wep = WEP_FIRST;
 						while (wep <= WEP_LAST)
 						{
-							weapon_action(wep, WR_PRECACHE);
+							weapon_precache(wep);
 							wep = wep + 1;
 						}
 						break;

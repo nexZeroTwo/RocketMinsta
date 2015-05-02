@@ -192,7 +192,7 @@ vector GetCurrentFov(float fov)
 	else
 	{
 		zoomdir = button_zoom;
-		if(getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
+		if(!g_balance_nex_secondary && getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
 			zoomdir += button_attack2;
 	}
 

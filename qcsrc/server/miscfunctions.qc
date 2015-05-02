@@ -779,6 +779,18 @@ void GetCvars(float f)
 	{
 		if (s == "cl_weaponpriority")
 			self.switchweapon = w_getbestweapon(self);
+
+        self.gunswitchmode = bound(0, self.cvar_cl_gunalign, 4);
+
+        if(self.gunswitchmode > 2) {
+            if(!CVAR(g_shootfromclient))
+                self.gunswitchmode = 1;
+            else if(!CVAR(g_shootfromeye) && !CVAR(g_shootfromcenter) && CVAR(g_shootfromclient) < 2)
+                self.gunswitchmode -= 2;
+        }
+
+        if(self.gunswitchmode > 3)
+            self.gunswitchmode = 3;
 	}
 }
 
@@ -971,10 +983,10 @@ void readplayerstartcvars()
         s = CVAR_STR(g_clanarena_start_weapons);
         if(s == "0")
             s = CVAR_STR(g_weaponarena);
-    } else {
-        s = CVAR_STR(g_weaponarena);
         if(s == "0")
             s = "most";
+    } else {
+        s = CVAR_STR(g_weaponarena);
     }
     
     if(s == "0")
@@ -987,7 +999,7 @@ void readplayerstartcvars()
         {
             e = get_weaponinfo(j);
             g_weaponarena |= e.weapons;
-            weapon_action(e.weapon, WR_PRECACHE);
+            weapon_precache(e.weapon);
         }
     }
     else if (s == "most")
@@ -999,7 +1011,7 @@ void readplayerstartcvars()
             if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
             {
                 g_weaponarena |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1021,7 +1033,7 @@ void readplayerstartcvars()
                 if (e.netname == s)
                 {
                     g_weaponarena |= e.weapons;
-                    weapon_action(e.weapon, WR_PRECACHE);
+                    weapon_precache(e.weapon);
                     g_weaponarena_list = strcat(g_weaponarena_list, e.message, " & ");
                     break;
                 }
@@ -1034,10 +1046,12 @@ void readplayerstartcvars()
 		g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
 	}
 
-	if(g_weaponarena)
+	if(g_weaponarena) {
 		g_weaponarena_random = CVAR(g_weaponarena_random);
-	else
+	} else {
 		g_weaponarena_random = 0;
+        g_weaponarena_limitammo = 0;
+    }
     
     if (g_clanarena) {
         start_health = CVAR(g_clanarena_start_health);
@@ -1050,7 +1064,7 @@ void readplayerstartcvars()
         // will be done later
         for (i = WEP_FIRST; i <= WEP_LAST; ++i)
             if (NixNex_CanChooseWeapon(i))
-                weapon_action(i, WR_PRECACHE);
+                weapon_precache(i);
         if(!CVAR(g_use_ammunition))
         	start_items |= IT_UNLIMITED_AMMO;
     }
@@ -1094,7 +1108,7 @@ void readplayerstartcvars()
         start_health = 100;
         start_armorvalue = 0;
         start_weapons = WEPBIT_MINSTANEX;
-        weapon_action(WEP_MINSTANEX, WR_PRECACHE);
+        weapon_precache(WEP_MINSTANEX);
         start_ammo_cells = CVAR(g_minstagib_ammo_start);
         g_minstagib_invis_alpha = CVAR(g_minstagib_invis_alpha);
         start_ammo_fuel = CVAR(g_start_ammo_fuel);
@@ -1161,7 +1175,7 @@ void readplayerstartcvars()
             if (t)
             {
                 start_weapons |= e.weapons;
-                weapon_action(e.weapon, WR_PRECACHE);
+                weapon_precache(e.weapon);
             }
         }
     }
@@ -1199,7 +1213,7 @@ void readplayerstartcvars()
                     if (e.spawnflags & WEPSPAWNFLAG_NORMAL)
                     {
                         warmup_start_weapons |= e.weapons;
-                        weapon_action(e.weapon, WR_PRECACHE);
+                        weapon_precache(e.weapon);
                     }
                 }
             }
@@ -1324,6 +1338,7 @@ void readlevelcvars(void)
     sv_maxidle_spectatorsareidle = CVAR(sv_maxidle_spectatorsareidle);
     sv_pogostick = CVAR(sv_pogostick);
     sv_doublejump = CVAR(sv_doublejump);
+    sv_slicksurfaces = CVAR(sv_slicksurfaces);
     g_ctf_reverse = CVAR(g_ctf_reverse);
 	sv_autotaunt = CVAR(sv_autotaunt);
 	sv_taunt = CVAR(sv_taunt);
@@ -1338,16 +1353,28 @@ void readlevelcvars(void)
 
     g_pickup_respawntime_weapon = CVAR(g_pickup_respawntime_weapon);
     g_pickup_respawntime_ammo = CVAR(g_pickup_respawntime_ammo);
-    g_pickup_respawntime_short = CVAR(g_pickup_respawntime_short);
-    g_pickup_respawntime_medium = CVAR(g_pickup_respawntime_medium);
-    g_pickup_respawntime_long = CVAR(g_pickup_respawntime_long);
     g_pickup_respawntime_powerup = CVAR(g_pickup_respawntime_powerup);
+    g_pickup_respawntime_health_small = CVAR(g_pickup_respawntime_health_small);
+    g_pickup_respawntime_health_medium = CVAR(g_pickup_respawntime_health_medium);
+    g_pickup_respawntime_health_large = CVAR(g_pickup_respawntime_health_large);
+    g_pickup_respawntime_health_mega = CVAR(g_pickup_respawntime_health_mega);
+    g_pickup_respawntime_armor_small = CVAR(g_pickup_respawntime_armor_small);
+    g_pickup_respawntime_armor_medium = CVAR(g_pickup_respawntime_armor_medium);
+    g_pickup_respawntime_armor_big = CVAR(g_pickup_respawntime_armor_big);
+    g_pickup_respawntime_armor_large = CVAR(g_pickup_respawntime_armor_large);
+
     g_pickup_respawntimejitter_weapon = CVAR(g_pickup_respawntimejitter_weapon);
     g_pickup_respawntimejitter_ammo = CVAR(g_pickup_respawntimejitter_ammo);
-    g_pickup_respawntimejitter_short = CVAR(g_pickup_respawntimejitter_short);
-    g_pickup_respawntimejitter_medium = CVAR(g_pickup_respawntimejitter_medium);
-    g_pickup_respawntimejitter_long = CVAR(g_pickup_respawntimejitter_long);
     g_pickup_respawntimejitter_powerup = CVAR(g_pickup_respawntimejitter_powerup);
+    g_pickup_respawntimejitter_health_small = CVAR(g_pickup_respawntimejitter_health_small);
+    g_pickup_respawntimejitter_health_medium = CVAR(g_pickup_respawntimejitter_health_medium);
+    g_pickup_respawntimejitter_health_large = CVAR(g_pickup_respawntimejitter_health_large);
+    g_pickup_respawntimejitter_health_mega = CVAR(g_pickup_respawntimejitter_health_mega);
+    g_pickup_respawntimejitter_armor_small = CVAR(g_pickup_respawntimejitter_armor_small);
+    g_pickup_respawntimejitter_armor_medium = CVAR(g_pickup_respawntimejitter_armor_medium);
+    g_pickup_respawntimejitter_armor_big = CVAR(g_pickup_respawntimejitter_armor_big);
+    g_pickup_respawntimejitter_armor_large = CVAR(g_pickup_respawntimejitter_armor_large);
+
 
     if (g_minstagib) g_nixnex = g_weaponarena = 0;
     if (g_nixnex) g_weaponarena = 0;
@@ -1588,6 +1615,27 @@ float announce(entity player, string msg)
         }
     return FALSE;
 }
+
+/*
+ *  announce_game_event ( float, string, string, string )
+ * 
+ * Used to announce in game events to players and to irc.
+ * It will always bprint the announcements.
+ * If the cvar (cv_name) is less than or equal to the announcement's
+ * verbosity level (v), then the FIRST event will be printed to irc.
+ * 
+ * Consider event1 to be used for short messages and event2 for long ones.
+ */
+void announce_game_event(float v, string cv_name, string event1, string event2)
+{
+	bprint(event1, event2, "\n");
+	
+	if (cvar(cv_name) > v)
+		return;
+	
+	IRC_Announce_GameEvent(event1);
+}
+
 // use this one if you might be causing spam (e.g. from touch functions that might get called more than once per frame)
 float spamsound(entity e, float chan, string samp, float vol, float atten)
 {
@@ -1842,7 +1890,7 @@ void precache()
         wep = WEP_FIRST;
         while (wep <= WEP_LAST)
         {
-            weapon_action(wep, WR_PRECACHE);
+            weapon_precache(wep);
             wep = wep + 1;
         }
     }
@@ -2208,9 +2256,22 @@ float SUB_NoImpactCheck()
 
 #define SUB_OwnerCheck() (other && (other == self.owner))
 
-#define PROJECTILE_TOUCH do { if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
-#define PROJECTILE_FIX(p) if(CVAR(sv_gameplayfix_zerohitcontents)) { setsize(p, '0 0 0', '0 0 1'); }
-#define PROJECTILE_FIX2(p) if(CVAR(sv_gameplayfix_zerohitcontents)) { setsize(p, '0 0 0', '0 0 1'); (p).dphitcontentsmask &~= DPCONTENTS_CORPSE; }
+float projectile_skipnonsolid()
+{
+	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
+		//Trying correct origin
+		tracebox_skipnonsolid(self.origin, self.mins, self.maxs, self.origin + (self.velocity * (1 - trace_fraction) * frametime), FALSE, self);
+		if (trace_fraction == 1) // The way is clear
+			setorigin(self, trace_endpos);
+		else // We can't move right to trace_endpos, because we can go through solid surface.
+			setorigin(self, self.origin + ((trace_endpos - self.origin) * 0.99));
+		UpdateCSQCProjectileNextFrame(self);
+		return TRUE;
+	}
+	return FALSE;
+}
+#define PROJECTILE_SKIPNONSOLID if (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid()) { return; }
+#define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
 
@@ -3526,4 +3587,21 @@ void restore_nasty_globals(void) {
     v_forward = v_forward_saved;
     v_up = v_up_saved;
     v_right = v_right_saved;
+}
+
+.entity realowner;
+
+float ProjectileTeam(entity p) {
+    if(!teams_matter)
+        return 0;
+
+    float t = p.team;
+
+    if(!t)
+        t = p.realowner.team;
+
+    if(!t)
+        t = p.owner.team;
+
+    return t;
 }

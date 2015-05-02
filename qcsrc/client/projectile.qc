@@ -45,7 +45,9 @@ void Projectile_DrawTrail(vector to)
                 to_z += 1;
                 break;
             case PROJECTILE_HG_TRANSLOC:
-				return;
+                to = from = self.origin;
+                to_z += 1;
+				break;
 			case PROJECTILE_ELECTRO:
                 trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
                 break;
@@ -162,7 +164,13 @@ void Projectile_DrawTrail(vector to)
 :flame
             vector v = randomvec();
             v_z = (v_z + 1) * 0.25;
-            pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 3 * drawframetime);
+
+            if(DPRM_VersionIsSuitable())
+                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 4 * drawframetime);
+            else if(time >= self.nextparticle) {
+                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
+                self.nextparticle = time + 0.15 + random() * 0.10;
+            }
             break;
         case PROJECTILE_HEAL_PARTICLE_EMITTER:
             if(time >= self.nextparticle) {
@@ -246,13 +254,16 @@ void Projectile_Draw()
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
 		case PROJECTILE_HG_GENERIC:
+        case PROJECTILE_HG_NAPALM:
+            trailorigin += v_right * 1 + v_forward * -10;
+
         case PROJECTILE_HG_PLASMA:
-		case PROJECTILE_HG_NAPALM:
         case PROJECTILE_HG_TRANSLOC:
         case PROJECTILE_HG_REMOTE:
         case PROJECTILE_HG_LASER:
-			trailorigin += v_right * 1 + v_forward * -10;
+			trailorigin += v_forward * -10;
 			break;
+
 		default:
 			break;
 	}
@@ -266,15 +277,6 @@ void Projectile_Draw()
 
 	if(!drawn)
 		return;
-
-	switch(self.cnt)
-	{
-		case PROJECTILE_FLAK:
-			R_AddDynamicLight(self.origin, 50, '1 1 0');
-			break;
-		default:
-			break;
-	}
 
 	self.renderflags = 0;
 
@@ -577,6 +579,7 @@ void Ent_Projectile()
 
 void Projectile_Precache()
 {
+    precache_model("models/vhshield.md3");
 	precache_model("models/ebomb.mdl");
 	precache_model("models/elaser.mdl");
 	precache_model("models/grenademodel.md3");
@@ -594,4 +597,5 @@ void Projectile_Precache()
 	precache_sound("weapons/fireball_fly2.wav");
     precache_sound("weapons/zapper_fly.wav");
     precache_sound("weapons/zapper_fire.wav");
+    precache_sound("weapons/zapper_shield_loop.wav");
 }

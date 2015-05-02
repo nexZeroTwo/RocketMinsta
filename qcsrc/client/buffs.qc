@@ -90,15 +90,15 @@ void Buffs_Model_Think(void) {
             self.alpha = 1;
             self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
             
-            if(self.buffs == BUFF_MEODP)
-                self.effects &~= EF_ADDITIVE;
-            
             self.light_lev = 220 + 36 * sin(time);
         }
         
         self.angles_y = time * 110.1;
     }
 
+    if(self.buffs == BUFF_MEODP)
+        self.effects &~= EF_ADDITIVE;
+            
     self.nextthink = time;
 }
 

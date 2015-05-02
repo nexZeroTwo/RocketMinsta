@@ -365,8 +365,6 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
-float rmconfig_initialized;
-
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
 #ifdef RM_SUPPORT_MADOKA
@@ -600,6 +598,8 @@ void PostInit(void)
 	
 	localcmd("alias afk \"cmd afk\"\n");
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
+    localcmd("alias vinvite \"cmd vote invite $*\"\n");
+
 	rm_showspec   = CVAR(rm_showspec);
 	rm_showdamage = CVAR(rm_showdamage);
 	rm_teamlasers = CVAR(rm_teamlasers);
@@ -1214,11 +1214,6 @@ void GameCommand(string msg)
 		}
 		localcmd("sv_cmd debug_shotorg\n");
 	}
-	else if(cmd == "votestat")
-	{
-		strunzone(vote_statstring);
-		vote_statstring = strzone(strcat("^2Yes^7: ", argv(1), " ^1No^7: ", argv(2), " (", argv(3), " needed)"));
-	}
 	#ifdef RM_SUPPORT_MADOKA
 	/*else if(cmd == "walpurgis")
 	{
@@ -1706,7 +1701,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_RANDOMSEED: Ent_RandomSeed(); break;
 		case ENT_CLIENT_WALL: Ent_Wall(); break;
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
-        case ENT_CLIENT_ZAPPER: Zapper_Read(); break;
+        case ENT_CLIENT_ZAPPER: case ENT_CLIENT_ZAPPER_SHIELD: Zapper_Read(t); break;
         case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
@@ -1861,6 +1856,7 @@ void Ent_Init()
     sv_nicehealth = ReadShort();
     sv_showacc = ReadByte();
     g_buffs_enabled = ReadShort();
+    g_balance_nex_secondary = ReadByte();
 
     Buffs_LoadModels();
 
@@ -2017,14 +2013,29 @@ void Net_VoteDialog(float highlight) {
 		return;
 	}
 
+    vote_invite = 0;
 	vote_yescount = ReadShort();
 	vote_nocount = ReadShort();
 	vote_needed = ReadShort();
 	vote_active = 1;
+
+    if(vote_statstring) {
+        strunzone(vote_statstring);
+        vote_statstring = string_null;
+    }
+
+    if(vote_active)
+        vote_statstring = strzone(strcat("^2Yes^7: ", ftos(vote_yescount), " ^1No^7: ", ftos(vote_nocount), " (", ftos(vote_needed), " needed)"));
 }
 
 void Net_VoteDialogReset() {
 	vote_active = 0;
+    // vote_invite = 0;
+}
+
+void Net_ReadVoteInvite(void) {
+    vote_invite = 1;
+    vote_active = 1;
 }
 
 void Net_ReadMorningRescue()
@@ -2289,6 +2300,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_MESSAGE:
             Message_Read();
+            return TRUE;
+        case TE_CSQC_VOTEINVITE:
+            Net_ReadVoteInvite();
             return TRUE;
     }
 

@@ -95,20 +95,19 @@ void W_Grenade_Attack (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER;
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(gren)
 
     gren.team = self.team;
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_primary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
-	gren.touch = W_Grenade_Touch1;
+	gren.touch = CVAR(g_balance_grenadelauncher_primary_bounce) ? W_Grenade_Touch2 : W_Grenade_Touch1;
 	gren.velocity = w_shotdir * CVAR(g_balance_grenadelauncher_primary_speed) + v_up * CVAR(g_balance_grenadelauncher_primary_speed_up);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 
-	CSQCProjectile(gren, TRUE, PROJECTILE_GRENADE, TRUE);	
+	CSQCProjectile(gren, TRUE, (CVAR(g_balance_grenadelauncher_primary_bounce) ? PROJECTILE_GRENADE_BOUNCING : PROJECTILE_GRENADE), TRUE);	
 }
 
 void W_Grenade_Attack2 (void)
@@ -132,7 +131,6 @@ void W_Grenade_Attack2 (void)
 	gren.projectiledeathtype = WEP_GRENADE_LAUNCHER | HITTYPE_SECONDARY;
 	setsize(gren, '0 0 -3', '0 0 -3');
 	setorigin(gren, w_shotorg);
-    PROJECTILE_FIX(gren)
 
     gren.team = self.team;
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_secondary_lifetime);
@@ -190,6 +188,7 @@ float w_glauncher(float req)
 			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_grenadelauncher_primary_animtime), w_ready);
 		}
 		if (self.BUTTON_ATCK2)
+		if (CVAR(g_balance_grenadelauncher_secondary))
 		if (weapon_prepareattack(1, CVAR(g_balance_grenadelauncher_secondary_refire)))
 		{
 			W_Grenade_Attack2();
@@ -198,9 +197,6 @@ float w_glauncher(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_gl.md3");
-		precache_model ("models/weapons/v_gl.md3");
-		precache_model ("models/weapons/h_gl.dpm");
 		precache_sound ("weapons/grenade_bounce1.wav");
 		precache_sound ("weapons/grenade_bounce2.wav");
 		precache_sound ("weapons/grenade_bounce3.wav");

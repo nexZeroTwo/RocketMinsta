@@ -57,7 +57,6 @@ void W_HLAC_Attack (void)
 
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX(missile)
 
     missile.velocity = (w_shotdir + randomvec() * spread) * CVAR(g_balance_hlac_primary_speed);
 
@@ -102,7 +101,6 @@ void W_HLAC_Attack2f (void)
 
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX2(missile)
 
     missile.velocity = (w_shotdir + randomvec() * spread) * CVAR(g_balance_hlac_secondary_speed);
 
@@ -189,6 +187,7 @@ float w_hlac(float req)
 		}
 
 		if (self.BUTTON_ATCK2)
+		if (CVAR(g_balance_hlac_secondary))
 		if (weapon_prepareattack(1, CVAR(g_balance_hlac_secondary_refire)))
 		{
 			W_HLAC_Attack2();
@@ -198,9 +197,6 @@ float w_hlac(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-        precache_model ("models/weapons/g_hlac.md3");
-		precache_model ("models/weapons/v_hlac.md3");
-		precache_model ("models/weapons/h_hlac.dpm");
 		precache_sound ("weapons/lasergun_fire.wav");
 
 	}

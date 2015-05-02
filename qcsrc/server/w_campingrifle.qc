@@ -282,9 +282,6 @@ float w_campingrifle(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{		
-		precache_model ("models/weapons/g_campingrifle.md3");
-		precache_model ("models/weapons/v_campingrifle.md3");
-		precache_model ("models/weapons/h_campingrifle.dpm");
 		precache_sound ("weapons/campingrifle_reload.wav");
 		precache_sound ("weapons/campingrifle_fire.wav");
 		precache_sound ("weapons/campingrifle_fire2.wav");
@@ -294,7 +291,7 @@ float w_campingrifle(float req)
 		weapon_setup(WEP_CAMPINGRIFLE);
 
 		full = W_CampingRifle_CheckMaxBullets();
-		if(cvar("g_balance_campingrifle_auto_reload_after_changing_weapons"))
+		if(CVAR(g_balance_campingrifle_auto_reload_after_changing_weapons))
 			if(!full)
 				self.campingrifle_bulletcounter = -1;
 	}

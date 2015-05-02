@@ -89,11 +89,21 @@ void W_Shotgun_Attack2 (void)
 // weapon frames
 void shotgun_fire2_03()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Shotgun_Attack2();
 	weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), w_ready);
 }
 void shotgun_fire2_02()
 {
+    if(!PlayerMayFire(self)) {
+        w_ready();
+        return;
+    }
+
 	W_Shotgun_Attack2();
 	weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), shotgun_fire2_03);
 }
@@ -116,6 +126,7 @@ float w_shotgun(float req)
 			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_shotgun_primary_animtime), w_ready);
 		}
 		if (self.BUTTON_ATCK2)
+		if (CVAR(g_balance_shotgun_secondary))
 		if (weapon_prepareattack(1, CVAR(g_balance_shotgun_secondary_refire)))
 		{
 			W_Shotgun_Attack2();
@@ -125,9 +136,6 @@ float w_shotgun(float req)
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/uziflash.md3");
-		precache_model ("models/weapons/g_shotgun.md3");
-		precache_model ("models/weapons/v_shotgun.md3");
-		precache_model ("models/weapons/h_shotgun.dpm");
 		precache_sound ("misc/itempickup.wav");
 		precache_sound ("weapons/shotgun_fire.wav");
 	}

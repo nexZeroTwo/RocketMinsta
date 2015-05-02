@@ -59,7 +59,6 @@ void W_Hagar_Attack (void)
 	missile.projectiledeathtype = WEP_HAGAR;
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX(missile)
 
 	missile.movetype = MOVETYPE_FLY;
 	missile.velocity = (w_shotdir + randomvec() * CVAR(g_balance_hagar_primary_spread)) * CVAR(g_balance_hagar_primary_speed);
@@ -96,7 +95,6 @@ void W_Hagar_Attack2 (void)
 	missile.projectiledeathtype = WEP_HAGAR | HITTYPE_SECONDARY;
 	setorigin (missile, w_shotorg);
 	setsize(missile, '0 0 0', '0 0 0');
-    PROJECTILE_FIX(missile)
 
 	missile.movetype = MOVETYPE_BOUNCEMISSILE;
 	missile.velocity = (w_shotdir + randomvec() * CVAR(g_balance_hagar_secondary_spread)) * CVAR(g_balance_hagar_secondary_speed);
@@ -141,9 +139,6 @@ float w_hagar(float req)
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_hagar.md3");
-		precache_model ("models/weapons/v_hagar.md3");
-		precache_model ("models/weapons/h_hagar.dpm");
 		precache_sound ("weapons/hagar_fire.wav");
 	}
 	else if (req == WR_SETUP)

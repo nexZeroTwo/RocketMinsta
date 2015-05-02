@@ -1,9 +1,5 @@
 #ifdef RM_AUTOCVARS
 
-#define CVAR(c) autocvar_##c
-#define CVAR_STR(c) autocvar_##c
-#define CVAR_OR(c,d) autocvar_##c
-
 string autocvar__cl_name;
 string autocvar__cl_playermodel;
 float autocvar__cl_playerskin;
@@ -65,9 +61,4 @@ float autocvar_vid_conwidth;
 float autocvar_vid_height;
 float autocvar_vid_width;
 
-#else
-
-#define CVAR(c) cvar(#c)
-#define CVAR_STR(c) cvar_string(#c)
-#define CVAR_OR(c,d) cvar_or(#c, d)
 #endif
