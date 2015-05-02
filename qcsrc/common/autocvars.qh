@@ -1,4 +1,9 @@
 #ifdef RM_AUTOCVARS
+
+#define CVAR(c) autocvar_##c
+#define CVAR_STR(c) autocvar_##c
+#define CVAR_OR(c,d) autocvar_##c
+
 float autocvar__allow_unacceptable_compiler_bugs;
 float autocvar_developer;
 float autocvar_dprm_version;
@@ -38,7 +43,16 @@ float autocvar_g_rocketarena;
 float autocvar_g_tdm;
 float autocvar_g_total_domination;
 float autocvar_g_vip;
+#ifndef CSQC
 string autocvar_settemp_var;
 string autocvar_settemp_list;
+#endif
 float autocvar_timelimit;
+
+#else
+
+#define CVAR(c) cvar(#c)
+#define CVAR_STR(c) cvar_string(#c)
+#define CVAR_OR(c,d) cvar_or(#c, d)
+
 #endif

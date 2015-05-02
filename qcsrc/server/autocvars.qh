@@ -1,9 +1,5 @@
 #ifdef RM_AUTOCVARS
 
-#define CVAR(c) autocvar_##c
-#define CVAR_STR(c) autocvar_##c
-#define CVAR_OR(c,d) autocvar_##c
-
 string autocvar__angles;
 float autocvar__campaign_index;
 string autocvar__campaign_name;
@@ -2112,9 +2108,4 @@ float autocvar_timelimit_suddendeath;
 float autocvar_waypoint_benchmark;
 float autocvar_welcome_message_time;
 
-#else
-
-#define CVAR(c) cvar(#c)
-#define CVAR_STR(c) cvar_string(#c)
-#define CVAR_OR(c,d) cvar_or(#c, d)
 #endif

@@ -1,9 +1,5 @@
 #ifdef RM_AUTOCVARS
 
-#define CVAR(c) autocvar_##c
-#define CVAR_STR(c) autocvar_##c
-#define CVAR_OR(c,d) autocvar_##c
-
 float autocvar__cl_afkstate;
 float autocvar__cl_rate;
 float autocvar__g_nadgets_select_available;
@@ -186,8 +182,10 @@ float autocvar_sbar_scoreboard_highlight;
 float autocvar_sbar_showbinds;
 float autocvar_sbar_showbinds_limit;
 float autocvar_sbar_showcurrentammo;
+#ifdef WE_DONT_NEED_TO_GO_WIDER
 float autocvar_sbar_width;
-float autocvar_scr_centersize;
+#endif
+//float autocvar_scr_centersize;
 float autocvar_scr_centertime;
 float autocvar_stats_right_margin;
 float autocvar_teamplay;
@@ -199,9 +197,4 @@ float autocvar_vid_pixelheight;
 float autocvar_viewsize;
 float autocvar_volume;
 
-#else
-
-#define CVAR(c) cvar(#c)
-#define CVAR_STR(c) cvar_string(#c)
-#define CVAR_OR(c,d) cvar_or(#c, d)
 #endif
