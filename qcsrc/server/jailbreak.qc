@@ -882,10 +882,12 @@ void JB_ActivateCamera(float theteam, float timeout) {
 		JB_Log(strcat("JB_ActivateCamera: the ", ColoredTeamName(theteam), "^7 has no camera entities, mapper sucks!"));
 		return;
 	}
-	
-	jb_ce_pvs = CVAR(sv_cullentities_pvs);
-	jb_ce_trace = CVAR(sv_cullentities_trace);
-	
+
+//#NO AUTOCVARS START
+	jb_ce_pvs = cvar("sv_cullentities_pvs");
+	jb_ce_trace = cvar("sv_cullentities_trace");
+//#NO AUTOCVARS END
+
 	// without this we won't be able to watch them burn!
 	cvar_settemp("sv_cullentities_pvs", "0");
 	cvar_settemp("sv_cullentities_trace", "0");

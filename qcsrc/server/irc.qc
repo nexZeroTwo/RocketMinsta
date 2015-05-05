@@ -111,14 +111,16 @@ void IRC_Think(void) {
 }
 
 string IRC_DP2IRC_NoColors(string s) {
-    string v1 = CVAR_STR(irc_translate_dp2irc_color);
-    string v2 = CVAR_STR(irc_translate_dp2irc_qfont);
+//#NO AUTOCVARS START
+    string v1 = cvar_string("irc_translate_dp2irc_color");
+    string v2 = cvar_string("irc_translate_dp2irc_qfont");
     cvar_set("irc_translate_dp2irc_color", "1");
     cvar_set("irc_translate_dp2irc_qfont", "1");
     s = IRC_DP2IRC(s);
     cvar_set("irc_translate_dp2irc_color", v1);
     cvar_set("irc_translate_dp2irc_qfont", v2);
     return s;
+//#NO AUTOCVARS END
 }
 
 void IRC_Init(void) {
