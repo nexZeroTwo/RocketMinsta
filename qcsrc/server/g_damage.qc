@@ -479,7 +479,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 .float heal_next_particle;
 
 void HealScore(entity targ, entity healer, float heal) {
-    if(targ == healer)
+    if(targ == healer || targ.classname != "player")
         return;
     
     PlayerScore_Add(healer, SP_HEALING, heal);
