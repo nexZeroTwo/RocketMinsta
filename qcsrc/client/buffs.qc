@@ -73,7 +73,7 @@ void Buffs_Model_Think(void) {
         float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
 
         if(self.sv_entnum == me)
-        if(!cvar("chase_active"))
+        if(!CVAR(chase_active))
             self.alpha = -1;
 
         self.angles_y = 200 * time;

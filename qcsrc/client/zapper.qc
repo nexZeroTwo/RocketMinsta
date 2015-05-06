@@ -111,7 +111,7 @@ void Zapper_Draw(void) {
     start = self.zapper_start;
     vector end1 = self.zapper_end;
     vector real_start = self.zapper_real_start;
-    if(self.sv_entnum == me) if(!cvar("chase_active")) {
+    if(self.sv_entnum == me) if(!CVAR(chase_active)) {
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
         if (WarpZone_FixView_lastwarp) {
@@ -139,7 +139,7 @@ void Zapper_Draw_Shield(void) {
 
     float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
 
-    if(self.sv_entnum == me && !cvar("chase_active")) {
+    if(self.sv_entnum == me && !CVAR(chase_active)) {
         self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_end = self.zapper_start + view_forward * 30;
     }
@@ -253,7 +253,7 @@ void zapper_lightning_trace_callback(vector from, vector endpos, vector to) {
         zapper_lightning_ateam = COLOR_TEAM2;
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", zapper_lightning_ateam, 2), to, '0 0 0', 1);
-    if(cvar("cl_effects_lightningarc_simple")) {
+    if(CVAR(cl_effects_lightningarc_simple)) {
         LightingArc_Segment(from, to, zapper_lightning_ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
@@ -263,7 +263,7 @@ void zapper_lightning_trace_callback(vector from, vector endpos, vector to) {
         drifte           = 0.25;
         branchfactor     = 0;
         branchfactor_add = 0;
-        lcount           = cvar("cl_effects_lightningarc_count");
+        lcount           = CVAR(cl_effects_lightningarc_count);
         
         for(; lcount; --lcount)
             LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, zapper_lightning_ateam);

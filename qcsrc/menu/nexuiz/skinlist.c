@@ -61,7 +61,7 @@ void loadCvarsNexuizSkinList(entity me)
 {
 	string s;
 	float i, n;
-	s = cvar_string("menu_rmskin");
+	s = CVAR_STR(menu_rmskin);
 	n = me.nItems;
 	for(i = 0; i < n; ++i)
 	{

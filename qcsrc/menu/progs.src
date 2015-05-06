@@ -3,6 +3,10 @@
 config.qh
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 msys.qh
 mbuiltin.qh
 ../common/util.qh

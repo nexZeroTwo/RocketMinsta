@@ -99,11 +99,11 @@ void g_maplistCacheToggleNexuizMapList(entity me, float i)
 	if not((bspname = MapInfo_BSPName_ByID(i)))
 		return;
 	if(b == "1")
-		cvar_set("g_maplist", strcat(bspname, " ", cvar_string("g_maplist")));
+		cvar_set("g_maplist", strcat(bspname, " ", CVAR_STR(g_maplist)));
 	else
 	{
 		s = "";
-		n = tokenize_console(cvar_string("g_maplist"));
+		n = tokenize_console(CVAR_STR(g_maplist));
 		for(i = 0; i < n; ++i)
 			if(argv(i) != bspname)
 				s = strcat(s, " ", argv(i));
@@ -211,7 +211,7 @@ void refilterNexuizMapList(entity me)
 	s = "0";
 	for(i = 1; i < MapInfo_count; i *= 2)
 		s = strcat(s, s);
-	n = tokenize_console(cvar_string("g_maplist"));
+	n = tokenize_console(CVAR_STR(g_maplist));
 	for(i = 0; i < n; ++i)
 	{
 		j = MapInfo_FindName(argv(i));
@@ -279,8 +279,8 @@ void MapList_LoadMap(entity btn, entity me)
 	if(MapInfo_CheckMap(m))
 	{
 		localcmd("\nmenu_loadmap_prepare\n");
-		if(cvar("menu_use_default_hostname"))
-			localcmd("hostname \"", strdecolorize(cvar_string("_cl_name")), "'s Nexuiz server\"\n");
+		if(CVAR(menu_use_default_hostname))
+			localcmd("hostname \"", strdecolorize(CVAR_STR(_cl_name)), "'s Nexuiz server\"\n");
 		MapInfo_LoadMap(m);
 	}
 	else

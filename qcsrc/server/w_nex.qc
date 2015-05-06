@@ -23,10 +23,10 @@ void W_Nex_Attack (void)
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	W_SetupShot(self, TRUE, 5, "weapons/nexfire.wav", cvar("g_balance_nex_damage"));
+	W_SetupShot(self, TRUE, 5, "weapons/nexfire.wav", CVAR(g_balance_nex_damage));
 
 	yoda = 0;
-	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_damage"), cvar("g_balance_nex_force"), cvar("g_balance_nex_damagefalloff_mindist"), cvar("g_balance_nex_damagefalloff_maxdist"), cvar("g_balance_nex_damagefalloff_halflife"), cvar("g_balance_nex_damagefalloff_forcehalflife"), WEP_NEX);
+	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_damage), CVAR(g_balance_nex_force), CVAR(g_balance_nex_damagefalloff_mindist), CVAR(g_balance_nex_damagefalloff_maxdist), CVAR(g_balance_nex_damagefalloff_halflife), CVAR(g_balance_nex_damagefalloff_forcehalflife), WEP_NEX);
 
 	if(yoda && flying)
 		announce(self, "announcer/male/yoda.wav");
@@ -38,20 +38,20 @@ void W_Nex_Attack (void)
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_damage"), 0, 0, cvar("g_balance_nex_force") * WarpZone_trace_dir, WEP_NEX, self);
+		Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_damage"), 0, 0, CVAR(g_balance_nex_force) * WarpZone_trace_dir, WEP_NEX, self);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - cvar("g_balance_nex_ammo");
+		self.ammo_cells = self.ammo_cells - CVAR(g_balance_nex_ammo);
 }
 
 void W_Nex_Attack2(void) {
     float flying;
     flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-    W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", cvar("g_balance_nex_secondary_damage"));
+    W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", CVAR(g_balance_nex_secondary_damage));
 
     yoda = 0;
-    FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, cvar("g_balance_nex_secondary_damage"), cvar("g_balance_nex_secondary_force"), cvar("g_balance_nex_secondary_damagefalloff_mindist"), cvar("g_balance_nex_secondary_damagefalloff_maxdist"), cvar("g_balance_nex_secondary_damagefalloff_halflife"), cvar("g_balance_nex_secondary_damagefalloff_forcehalflife"), WEP_NEX | HITTYPE_SECONDARY);
+    FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_secondary_damage), CVAR(g_balance_nex_secondary_force), CVAR(g_balance_nex_secondary_damagefalloff_mindist), CVAR(g_balance_nex_secondary_damagefalloff_maxdist), CVAR(g_balance_nex_secondary_damagefalloff_halflife), CVAR(g_balance_nex_secondary_damagefalloff_forcehalflife), WEP_NEX | HITTYPE_SECONDARY);
 
     if(yoda && flying)
         announce(self, "announcer/male/yoda.wav");
@@ -63,10 +63,10 @@ void W_Nex_Attack2(void) {
     
     // flash and burn the wall
     if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-        Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_secondary_damage"), 0, 0, cvar("g_balance_nex_secondary_force") * w_shotdir, WEP_NEX, self);
+        Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_secondary_damage), 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_cells = self.ammo_cells - cvar("g_balance_nex_secondary_ammo");
+        self.ammo_cells = self.ammo_cells - CVAR(g_balance_nex_secondary_ammo);
 }
 
 .entity nex_charge_effect;
@@ -139,9 +139,9 @@ void W_Nex_Attack2_Wait(void) {
     }
 
     W_Nex_Attack2();
-    ATTACK_FINISHED(self) = time + cvar("g_balance_nex_secondary_refire") * W_WeaponRateFactor();
+    ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
 
-    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_secondary_animtime"), w_ready);
+    weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
 }
 
 void spawnfunc_weapon_nex (void); // defined in t_items.qc
@@ -152,20 +152,22 @@ float w_nex(float req)
 		self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 	else if (req == WR_THINK)
 	{
-        if(self.BUTTON_ATCK) {
-            if(weapon_prepareattack(0, cvar("g_balance_nex_refire"))) {
-                W_Nex_Attack();
-                weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_nex_animtime"), w_ready);
-            }
-        }
+		if (self.BUTTON_ATCK)
+		{
+			if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
+			{
+				W_Nex_Attack();
+				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_animtime), w_ready);
+			}
+		}
 
-        if(self.BUTTON_ATCK2 && cvar("g_balance_nex_secondary")) {
-            if(weapon_prepareattack(1, cvar("g_balance_nex_secondary_refire"))) {
-                float ct = cvar("g_balance_nex_secondary_chargetime");
+        if(self.BUTTON_ATCK2 && CVAR(g_balance_nex_secondary)) {
+            if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
+                float ct = CVAR(g_balance_nex_secondary_chargetime);
                 weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
                 ct *= W_WeaponRateFactor();
 
-                self.nex_charge_expiretime = time + ct + cvar("g_balance_nex_secondary_chargeholdtime");
+                self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
                 sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
                 W_Nex_ChargeEffect_Spawn(ct);
             }
@@ -185,8 +187,8 @@ float w_nex(float req)
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_NEX);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_cells >= cvar("g_balance_nex_ammo");
+		return self.ammo_cells >= CVAR(g_balance_nex_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_cells >= cvar("g_balance_nex_secondary_ammo");
+		return self.ammo_cells >= CVAR(g_balance_nex_secondary_ammo);
 	return TRUE;
 };

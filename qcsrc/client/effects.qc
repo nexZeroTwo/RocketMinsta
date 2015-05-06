@@ -69,17 +69,17 @@ void LightingArc_Full(vector from, vector to, float seglength, float drifts, flo
 }
 
 void LightingArc_Default(vector from, vector to, float ateam) {
-    if(cvar("cl_effects_lightningarc_simple")) {
+    if(CVAR(cl_effects_lightningarc_simple)) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
-        seglength        = cvar("cl_effects_lightningarc_segmentlength");
-        drifts           = cvar("cl_effects_lightningarc_drift_start");
-        drifte           = cvar("cl_effects_lightningarc_drift_end");
-        branchfactor     = cvar("cl_effects_lightningarc_branchfactor_start");
-        branchfactor_add = cvar("cl_effects_lightningarc_branchfactor_add");
-        lcount           = cvar("cl_effects_lightningarc_count");
+        seglength        = CVAR(cl_effects_lightningarc_segmentlength);
+        drifts           = CVAR(cl_effects_lightningarc_drift_start);
+        drifte           = CVAR(cl_effects_lightningarc_drift_end);
+        branchfactor     = CVAR(cl_effects_lightningarc_branchfactor_start);
+        branchfactor_add = CVAR(cl_effects_lightningarc_branchfactor_add);
+        lcount           = CVAR(cl_effects_lightningarc_count);
         
         for(; lcount; --lcount)
             LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);

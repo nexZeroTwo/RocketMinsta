@@ -196,7 +196,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		PlayerScore_Add(targ, SP_DEATHS, 1);
 
 	if(g_arena)
-		if(cvar("g_arena_roundbased"))
+		if(CVAR(g_arena_roundbased))
 			return;
 
 	if(targ != attacker) // not for suicides
@@ -287,7 +287,7 @@ string AppendItemcodes(string s, entity player)
 void LogDeath(string mode, float deathtype, entity killer, entity killed)
 {
 	string s;
-	if(!cvar("sv_eventlog"))
+	if(!CVAR(sv_eventlog))
 		return;
 	s = strcat(":kill:", mode);
 	s = strcat(s, ":", ftos(killer.playerid));
@@ -366,7 +366,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 		attacker.rage = attacker.rage + 1;
 		targ.rage = 0;
 
-        spawnfrag = (cvar("g_spawnshieldmode") && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
+        spawnfrag = (CVAR(g_spawnshieldmode) && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
     CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.rage);
@@ -411,17 +411,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                     if(spawnfrag) { }
                     else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
                         if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_laserfrag"));
+                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
                     }
                     else if(deathtype == DEATH_HOOKFRAG) {
                         if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, cvar("g_rocketminsta_score_hookfrag"));
+                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
 
                         if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
                     } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
 
-                        if(!g_dm && !g_tdm) if(cvar("g_rocketminsta"))
+                        if(!g_dm && !g_tdm) if(CVAR(g_rocketminsta))
                             if(prec_check_aggression(attacker, inflictor, targ))
                                 PlayerScore_Add(attacker, SP_SCORE, 1);
                     }
@@ -495,7 +495,7 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         else        alimit = g_balance_armor_limit;
 
         if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
-            float lim = cvar("g_clanarena_heal_limit");
+            float lim = CVAR(g_clanarena_heal_limit);
             hlimit = min(hlimit, lim);
             alimit = min(alimit, lim);
         }
@@ -503,8 +503,8 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
 
     float silent = (healtype == DEATH_ITEM);
     
-    if(pauserot  < 0) pauserot  = cvar("g_balance_pause_health_rot");
-    if(pausearot < 0) pausearot = cvar("g_balance_pause_armor_rot");
+    if(pauserot  < 0) pauserot  = CVAR(g_balance_pause_health_rot);
+    if(pausearot < 0) pausearot = CVAR(g_balance_pause_armor_rot);
     
     if(roundstate == ROUNDSTATE_OVER)
         heal = aheal = 0;
@@ -594,8 +594,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
     
     if not(damage_linkmode) {
         if(targ.hg_shield && DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
-        if(cvar("g_nadgets_transloc_counters_shield"))
-            damage = cvar("g_nadgets_transloc_damage_shield") * Buffs_NadgetPower(attacker);
+        if(CVAR(g_nadgets_transloc_counters_shield))
+            damage = CVAR(g_nadgets_transloc_damage_shield) * Buffs_NadgetPower(attacker);
         
         float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
         
@@ -607,15 +607,15 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                     // arc and ignite scale off the original heal, so leave it as is
                     heal = damage;
                 else {
-                    heal = damage * cvar("g_buffs_medic_healfactor") * medic;
+                    heal = damage * CVAR(g_buffs_medic_healfactor) * medic;
                     
                     if(attacker == targ)
-                        heal *= cvar("g_buffs_medic_selfhealfactor");
+                        heal *= CVAR(g_buffs_medic_selfhealfactor);
                     
                     W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
 
                     if(damage_headshotbonus)
-                    if(cvar("g_buffs_medic_headshot"))
+                    if(CVAR(g_buffs_medic_headshot))
                     if(IsHeadshot(targ, attacker, hitloc)) {
                         heal *= 1 + damage_headshotbonus;
                         deathtype |= HITTYPE_HEADSHOT;
@@ -624,33 +624,33 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
                 
                 if(attacker == targ)
-                    force = force * cvar("g_buffs_medic_forcefactor_self");
+                    force = force * CVAR(g_buffs_medic_forcefactor_self);
                 else
-                    force = force * cvar("g_buffs_medic_forcefactor_team");
+                    force = force * CVAR(g_buffs_medic_forcefactor_team);
 
                 heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
-                heal = Heal(targ, inflictor, attacker, heal, 0, cvar("g_buffs_medic_maxhealth"), 0, deathtype, cvar("g_buffs_medic_pauserot"), 0, hitloc, force);
+                heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
                 
                 targ.hg_plasmalock = 0;
                 
                 if(attacker != targ)
-                    Buffs_VampireDamage(attacker, attacker, heal * cvar("g_buffs_medic_selfhealfactor"), deathtype);
+                    Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
                 
                 if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
                     Buffs_ArcDamage(targ, attacker, heal, deathtype);
                 return;
             } else if(!g_clanarena) if(!attacker.hg_shield) if(deathtype != DEATH_ARC) if(deathtype != DEATH_IGNITE)
-                damage = damage * (1 - (1 - cvar("g_buffs_medic_damagefactor")) * medic);
+                damage = damage * (1 - (1 - CVAR(g_buffs_medic_damagefactor)) * medic);
         }
         
         damage_origtarget = targ;
         if(targ.hg_linker)
-        if((DEATH_HGTYPE(deathtype) != HG_TRANSLOC || cvar("g_nadgets_transloc_damage")) && DEATH_HGTYPE(deathtype) != HG_GG && !DEATH_ISSPECIAL(deathtype))
+        if((DEATH_HGTYPE(deathtype) != HG_TRANSLOC || CVAR(g_nadgets_transloc_damage)) && DEATH_HGTYPE(deathtype) != HG_GG && !DEATH_ISSPECIAL(deathtype))
         IF_HG_LINKER_APPLICABLE(targ) {
             if(teams_matter && targ.team == attacker.team)
                 return;
             
-            if(cvar("g_nadgets_linker_split_damage")) {
+            if(CVAR(g_nadgets_linker_split_damage)) {
                 damage_linkmode = TRUE;
                 entity e, linklist = findchainentity(hg_linker, targ.hg_linker);
                 float denom;
@@ -685,7 +685,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	float attacker_is_player = (attacker.classname == "player");
     
     if(g_jailbreak && targ_is_player && jb_roundover)   
-        damage = damage * cvar("g_jailbreak_torture_damagefactor");
+        damage = damage * CVAR(g_jailbreak_torture_damagefactor);
     else {
         jaildm = CheckJailDM(attacker, targ);
         if(jaildm)
@@ -747,13 +747,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(!prec_check_aggression(attacker, inflictor, targ))
 				{
 					attacker.typehitsound += 1;
-					mirrordamage = damage * cvar("g_prec_mirrordamage");
+					mirrordamage = damage * CVAR(g_prec_mirrordamage);
 					bigprint_spec(attacker, "", "^1You have to shoot the rune carrier!", 2);
 				}
 			
 			if(g_inf)
 				if(targ.team == COLOR_TEAM1)
-					damage = damage * cvar("g_inf_damage_multiplier");
+					damage = damage * CVAR(g_inf_damage_multiplier);
 
 			// Chaiomanot Feb 25 2012: The below is _really_ cheap. Shame on you, author.
 			if (!targ.isbot)
@@ -764,11 +764,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             if(!jaildm)
 			if not(DEATH_ISSPECIAL(deathtype)) {
 				if(targ.jb_isprisoned)
-					damage = damage * cvar("g_jailbreak_prisonerdamagefactor_take");
+					damage = damage * CVAR(g_jailbreak_prisonerdamagefactor_take);
 				
 				switch(inflictor.jb_proj_ownerstate) {
 					case JB_PROJ_OWNERSTATE_IMPRISONED:
-						damage = damage * cvar("g_jailbreak_prisonerdamagefactor_deal");
+						damage = damage * CVAR(g_jailbreak_prisonerdamagefactor_deal);
 						break;
 						
 					case JB_PROJ_OWNERSTATE_FREE:
@@ -776,12 +776,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 						
 					case JB_PROJ_OWNERSTATE_UNDEFINED: default:
 						if(attacker.jb_isprisoned)
-							damage = damage * cvar("g_jailbreak_prisonerdamagefactor_deal");
+							damage = damage * CVAR(g_jailbreak_prisonerdamagefactor_deal);
 						break;
 				}
 			}
             
-            if(deathtype == DEATH_TELEFRAG || (DEATH_HGTYPE(deathtype) == HG_TRANSLOC && !cvar("g_nadgets_transloc_damage")))
+            if(deathtype == DEATH_TELEFRAG || (DEATH_HGTYPE(deathtype) == HG_TRANSLOC && !CVAR(g_nadgets_transloc_damage)))
             if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
                 damage = 0;
                 force = '0 0 0';
@@ -810,13 +810,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					{
 						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
-                            float ff = cvar("g_friendlyfire");
-                            if(g_clanarena) ff = ff * cvar("g_clanarena_teamdamage");
-							teamdamage0 = max(attacker.dmg_team, cvar("g_teamdamage_threshold"));
+                            float ff = CVAR(g_friendlyfire);
+                            if(g_clanarena) ff = ff * CVAR(g_clanarena_teamdamage);
+							teamdamage0 = max(attacker.dmg_team, CVAR(g_teamdamage_threshold));
 							attacker.dmg_team = attacker.dmg_team + damage;
 							if(attacker.dmg_team > teamdamage0)
-								mirrordamage = cvar("g_mirrordamage") * (attacker.dmg_team - teamdamage0);
-							mirrorforce = cvar("g_mirrordamage") * vlen(force);
+								mirrordamage = CVAR(g_mirrordamage) * (attacker.dmg_team - teamdamage0);
+							mirrorforce = CVAR(g_mirrordamage) * vlen(force);
 							if(g_minstagib)
 							{
 								if(ff == 0)
@@ -837,8 +837,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(attacker_is_player)
 		if(attacker != targ)
 		{
-			targ.lms_traveled_distance = cvar("g_lms_campcheck_distance");
-			attacker.lms_traveled_distance = cvar("g_lms_campcheck_distance");
+			targ.lms_traveled_distance = CVAR(g_lms_campcheck_distance);
+			attacker.lms_traveled_distance = CVAR(g_lms_campcheck_distance);
 		}
 
 		if(roundstate != ROUNDSTATE_GAME && !(g_jailbreak && roundstate == ROUNDSTATE_OVER && targ.jb_isprisoned))
@@ -880,9 +880,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				return;
 			}
 
-			local float ex = cvar("g_rocketminsta");
-			local float ex_armor = cvar("g_rocketminsta_armor");
-			float armor_passthrough = cvar("g_rocketminsta_armor_passthrough");
+			local float ex = CVAR(g_rocketminsta);
+			local float ex_armor = CVAR(g_rocketminsta_armor);
+			float armor_passthrough = CVAR(g_rocketminsta_armor_passthrough);
 
 			if(ex)
 			{
@@ -893,14 +893,14 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				}
 				
 				if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-				if(attacker != targ && cvar("g_rocketminsta_splash_selfonly"))
+				if(attacker != targ && CVAR(g_rocketminsta_splash_selfonly))
 				{
 					damage = 0;
 					force = '0 0 0';
 				}
 			}
 
-			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (cvar("g_balance_minstanex_damage") <= 0))
+			if (targ.armorvalue && DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) && damage && (CVAR(g_balance_minstanex_damage) <= 0))
 			{
 				if(!ex || !ex_armor)
 				{
@@ -922,7 +922,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 					else if(armor_passthrough)
 					{
 						armordamage = targ.armorvalue;
-						damage = (100 - targ.armorvalue) * cvar("g_rocketminsta_armor_factor");
+						damage = (100 - targ.armorvalue) * CVAR(g_rocketminsta_armor_factor);
 						targ.armorvalue = 0;
 					}
 
@@ -945,13 +945,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(damage)
 				if(ex_armor)
 				if(targ.armorvalue)
-				if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (cvar("g_balance_minstanex_damage") >= 0))
+				if(!DEATH_ISWEAPON(deathtype, WEP_MINSTANEX) || (CVAR(g_balance_minstanex_damage) >= 0))
 				if not(DEATH_ISSPECIAL(deathtype))
 				{
-					armordamage = damage * cvar("g_rocketminsta_armor_factor");
+					armordamage = damage * CVAR(g_rocketminsta_armor_factor);
 					
 					if(targ == attacker)
-						armordamage *= cvar("g_balance_selfdamagepercent");
+						armordamage *= CVAR(g_balance_selfdamagepercent);
 					else
 						attacker.armorhitsound += 1;
 
@@ -1009,7 +1009,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
         // apply invincibility multiplier
         if (targ.items & IT_INVINCIBLE && !g_minstagib)
-            damage = damage * cvar("g_balance_powerup_invincible_takedamage");
+            damage = damage * CVAR(g_balance_powerup_invincible_takedamage);
 
         if(deathtype != DEATH_ARC) {
             if not(DEATH_ISSPECIAL(deathtype))
@@ -1025,20 +1025,20 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             {
                 if(targ == attacker)
                 {
-                    damage = damage * cvar("g_balance_powerup_strength_selfdamage");
-                    force = force * cvar("g_balance_powerup_strength_selfforce");
+                    damage = damage * CVAR(g_balance_powerup_strength_selfdamage);
+                    force = force * CVAR(g_balance_powerup_strength_selfforce);
                 }
                 else
                 {
-                    damage = damage * cvar("g_balance_powerup_strength_damage");
-                    force = force * cvar("g_balance_powerup_strength_force");
+                    damage = damage * CVAR(g_balance_powerup_strength_damage);
+                    force = force * CVAR(g_balance_powerup_strength_force);
                 }
             }
 
             if (targ == attacker) {
-                damage = damage * cvar("g_balance_selfdamagepercent");	// Partial damage if the attacker hits himself
+                damage = damage * CVAR(g_balance_selfdamagepercent);	// Partial damage if the attacker hits himself
                 if(g_clanarena)
-                    damage = damage * cvar("g_clanarena_selfdamage");
+                    damage = damage * CVAR(g_clanarena_selfdamage);
             }
 
             // CTF: reduce damage/force
@@ -1046,8 +1046,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             if(targ == attacker)
             if(targ.flagcarried)
             {
-                damage = damage * cvar("g_ctf_flagcarrier_selfdamage");
-                force = force * cvar("g_ctf_flagcarrier_selfforce");
+                damage = damage * CVAR(g_ctf_flagcarrier_selfdamage);
+                force = force * CVAR(g_ctf_flagcarrier_selfforce);
             }
 
             if(g_runematch)
@@ -1057,31 +1057,31 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 {
                     if(attacker.runes & CURSE_WEAK) // have both curse & rune
                     {
-                        damage = damage * cvar("g_balance_rune_strength_combo_damage");
-                        force = force * cvar("g_balance_rune_strength_combo_force");
+                        damage = damage * CVAR(g_balance_rune_strength_combo_damage);
+                        force = force * CVAR(g_balance_rune_strength_combo_force);
                     }
                     else
                     {
-                        damage = damage * cvar("g_balance_rune_strength_damage");
-                        force = force * cvar("g_balance_rune_strength_force");
+                        damage = damage * CVAR(g_balance_rune_strength_damage);
+                        force = force * CVAR(g_balance_rune_strength_force);
                     }
                 }
                 else if (attacker.runes & CURSE_WEAK)
                 {
-                    damage = damage * cvar("g_balance_curse_weak_damage");
-                    force = force * cvar("g_balance_curse_weak_force");
+                    damage = damage * CVAR(g_balance_curse_weak_damage);
+                    force = force * CVAR(g_balance_curse_weak_force);
                 }
 
                 // apply defense rune
                 if (targ.runes & RUNE_DEFENSE)
                 {
                     if (targ.runes & CURSE_VULNER) // have both curse & rune
-                        damage = damage * cvar("g_balance_rune_defense_combo_takedamage");
+                        damage = damage * CVAR(g_balance_rune_defense_combo_takedamage);
                     else
-                        damage = damage * cvar("g_balance_rune_defense_takedamage");
+                        damage = damage * CVAR(g_balance_rune_defense_takedamage);
                 }
                 else if (targ.runes & CURSE_VULNER)
-                    damage = damage * cvar("g_balance_curse_vulner_takedamage");
+                    damage = damage * CVAR(g_balance_curse_vulner_takedamage);
             }
         }
 
@@ -1157,11 +1157,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		self.velocity = self.velocity + self.damageforcescale * force;
 
 		if(DEATH_ISWEAPON(deathtype, WEP_ROCKET_LAUNCHER))
-			self.velocity = self.velocity * cvar("g_rocketminsta_splash_velocity_influence");
+			self.velocity = self.velocity * CVAR(g_rocketminsta_splash_velocity_influence);
 		else if(DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
-			self.velocity = self.velocity * cvar("g_rocketminsta_laser_velocity_influence");
+			self.velocity = self.velocity * CVAR(g_rocketminsta_laser_velocity_influence);
 		else
-			self.velocity = self.velocity * cvar("g_balance_push_velocityinfluence");
+			self.velocity = self.velocity * CVAR(g_balance_push_velocityinfluence);
 
 		self.flags &~= FL_ONGROUND;
 		UpdateCSQCProjectile(self);
@@ -1185,11 +1185,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             if(g_jailbreak && self.jb_unlock_progress) {
                 FOR_EACH_JB_CONTROLPOINT(e)
                     if(e.jb_capturingplayer == self)
-                        e.jb_unlock_progress = bound(0, e.jb_unlock_progress - cvar("g_jailbreak_controlpoint_unlock_damage_pushback"), 1);
+                        e.jb_unlock_progress = bound(0, e.jb_unlock_progress - CVAR(g_jailbreak_controlpoint_unlock_damage_pushback), 1);
             } else if(g_domination && self.dom_captureprogress) {
                 FOR_EACH_DOM_CONTROLPOINT(e)
                     if(e.dom_capturingplayer == self)
-                        e.dom_captureprogress = bound(0, e.dom_captureprogress - cvar("g_domination_capture_damage_pushback"), 1);
+                        e.dom_captureprogress = bound(0, e.dom_captureprogress - CVAR(g_domination_capture_damage_pushback), 1);
             }
         }
         
@@ -1227,7 +1227,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			if(took_extra)
 				PlayerScore_Add(attacker, SP_SCORE, (armordamage * 0.1));
 			else
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage / cvar("g_rocketminsta_armor_factor")) * 0.1);
+				PlayerScore_Add(attacker, SP_SCORE, (armordamage / CVAR(g_rocketminsta_armor_factor)) * 0.1);
 
 			if(attacker != targ) if(damage || armordamage)
 				hudflash_teamcolor_default_spec(attacker);
@@ -1252,35 +1252,35 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			// apply vampire rune
 				if (attacker.runes & CURSE_EMPATHY) // have the curse too
 				{
-					//attacker.health = attacker.health + damage * cvar("g_balance_rune_vampire_combo_absorb");
+					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb);
 					attacker.health = bound(
-						cvar("g_balance_curse_empathy_minhealth"), // LA: was 3, now 40
-						attacker.health + damage * cvar("g_balance_rune_vampire_combo_absorb"),
-						cvar("g_balance_rune_vampire_maxhealth"));	// LA: was 1000, now 500
+						CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 40
+						attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb),
+						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
 				}
 				else
 				{
-					//attacker.health = attacker.health + damage * cvar("g_balance_rune_vampire_absorb");
+					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_absorb);
 					attacker.health = bound(
 						attacker.health,	// LA: was 3, but changed so that you can't lose health
 											// empathy won't let you gain health in the same way...
-						attacker.health + damage * cvar("g_balance_rune_vampire_absorb"),
-						cvar("g_balance_rune_vampire_maxhealth"));	// LA: was 1000, now 500
+						attacker.health + damage * CVAR(g_balance_rune_vampire_absorb),
+						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
 					}
 			}
 			// apply empathy curse
 			else if (attacker.runes & CURSE_EMPATHY)
 			{
 				attacker.health = bound(
-					cvar("g_balance_curse_empathy_minhealth"), // LA: was 3, now 20
-					attacker.health + damage * cvar("g_balance_curse_empathy_takedamage"),
+					CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 20
+					attacker.health + damage * CVAR(g_balance_curse_empathy_takedamage),
 					attacker.health);
 			}
 		}
 	}
 
 	// apply mirror damage if any
-	if not(g_minstagib && cvar("g_rocketminsta"))
+	if not(g_minstagib && CVAR(g_rocketminsta))
 	if(mirrordamage > 0 || mirrorforce > 0)
 	{
 		attacker = attacker_save;
@@ -1359,7 +1359,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 		print("RadiusDamage called recursively!\n");
 		print("Expect stuff to go HORRIBLY wrong.\n");
 		print("Causing a stack trace...\n");
-		save = cvar_string("prvm_backtraceforwarnings");
+		save = ftos(CVAR(prvm_backtraceforwarnings));
 		cvar_set("prvm_backtraceforwarnings", "1");
 		fclose(-1); // calls VM_Warning
 		cvar_set("prvm_backtraceforwarnings", save);
@@ -1368,8 +1368,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 	RadiusDamage_running = 1;
 
-	tfloordmg_cvar = cvar("g_throughfloor_damage");
-	tfloorforce_cvar = cvar("g_throughfloor_force");
+	tfloordmg_cvar = CVAR(g_throughfloor_damage);
+	tfloorforce_cvar = CVAR(g_throughfloor_force);
 
 	RadiusDamage_blastorigin = blastorigin = (inflictor.origin + (inflictor.mins + inflictor.maxs) * 0.5);
 	total_damage_to_creatures = 0;
@@ -1397,7 +1397,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 		if (targ != inflictor)
 			if (ignore != targ) if(targ.takedamage)
 			{
-                if(targ == directhitentity && cvar("g_blast_directhit_fulldamage"))
+                if(targ == directhitentity && CVAR(g_blast_directhit_fulldamage))
                     power = 1;
                 else {
     				// LordHavoc: measure distance to nearest point on target (not origin)
@@ -1436,7 +1436,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 
 						force = normalize(center - WarpZone_TransformOrigin(targ, blastorigin));
                         
-                        if(cvar("g_blast_alwaysfullforce"))
+                        if(CVAR(g_blast_alwaysfullforce))
                             forcescale = 1;
                         else
                             forcescale = finaldmg / coredamage;
@@ -1540,7 +1540,7 @@ float Fire_IsBurning(entity e)
 }
 
 .float fire_last;
-#define FIRE_DELAY cvar("g_fire_damage_frequency")
+#define FIRE_DELAY CVAR(g_fire_damage_frequency)
 
 float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 {
@@ -1578,7 +1578,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 		mindps = e.fire_damagepersec;
         
-        if((dt == DEATH_IGNITE && cvar("g_buffs_ignite_stack")) || cvar("g_fire_damage_stack"))
+        if((dt == DEATH_IGNITE && CVAR(g_buffs_ignite_stack)) || CVAR(g_fire_damage_stack))
             maxdps = (mindps * mintime) / maxtime + dps;
         else
             maxdps = max(mindps, dps);
@@ -1697,8 +1697,8 @@ void Fire_ApplyDamage(entity e)
 		if not(IS_INDEPENDENT_PLAYER(other))
 		if(boxesoverlap(e.absmin, e.absmax, other.absmin, other.absmax))
 		{
-			t = cvar("g_balance_firetransfer_time") * (e.fire_endtime - time);
-			d = cvar("g_balance_firetransfer_damage") * e.fire_damagepersec * t;
+			t = CVAR(g_balance_firetransfer_time) * (e.fire_endtime - time);
+			d = CVAR(g_balance_firetransfer_damage) * e.fire_damagepersec * t;
 			Fire_AddDamage(other, e, d, t, e.fire_deathtype);
 		}
 	}

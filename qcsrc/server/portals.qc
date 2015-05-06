@@ -172,9 +172,9 @@ float Portal_TeleportPlayer(entity teleporter, entity player)
 
 	// reset fade counter
 	teleporter.portal_wants_to_vanish = 0;
-	teleporter.fade_time = time + cvar("g_balance_portal_lifetime");
-	teleporter.health = cvar("g_balance_portal_health");
-	teleporter.enemy.health = cvar("g_balance_portal_health");
+	teleporter.fade_time = time + CVAR(g_balance_portal_lifetime);
+	teleporter.health = CVAR(g_balance_portal_health);
+	teleporter.enemy.health = CVAR(g_balance_portal_health);
 
 	return 1;
 }
@@ -273,8 +273,9 @@ void Portal_Touch()
 		if(other.aiment.classname == "player")
 			if(IS_INDEPENDENT_PLAYER(other.aiment) || IS_INDEPENDENT_PLAYER(self.aiment))
 				return; // cannot go through someone else's portal
+
 	fixedmakevectors2(self.angles);
-	g = frametime * '0 0 -1' * cvar("sv_gravity");
+	g = frametime * '0 0 -1' * CVAR(sv_gravity);
 	if(!Portal_WillHitPlane(other.origin, other.mins, other.maxs, other.velocity + g, self.origin, v_forward, self.maxs_x))
 		return;
 
@@ -354,7 +355,7 @@ void Portal_Connect(entity teleporter, entity destination)
 	destination.enemy = teleporter;
 	Portal_MakeInPortal(teleporter);
 	Portal_MakeOutPortal(destination);
-	teleporter.fade_time = time + cvar("g_balance_portal_lifetime");
+	teleporter.fade_time = time + CVAR(g_balance_portal_lifetime);
 	destination.fade_time = teleporter.fade_time;
 	teleporter.portal_wants_to_vanish = 0;
 	destination.portal_wants_to_vanish = 0;
@@ -440,7 +441,7 @@ void Portal_Think()
 	self.solid = SOLID_BBOX;
 	self.aiment = world;
 
-	g = frametime * '0 0 -1' * cvar("sv_gravity");
+	g = frametime * '0 0 -1' * CVAR(sv_gravity);
 
 	fixedmakevectors2(self.angles);
 
@@ -605,8 +606,8 @@ entity Portal_Spawn(entity own, vector org, vector ang)
 	portal.portal_activatetime = time + 0.1;
 	portal.takedamage = DAMAGE_AIM;
 	portal.event_damage = Portal_Damage;
-	portal.fade_time = time + cvar("g_balance_portal_lifetime");
-	portal.health = cvar("g_balance_portal_health");
+	portal.fade_time = time + CVAR(g_balance_portal_lifetime);
+	portal.health = CVAR(g_balance_portal_health);
 	setmodel(portal, "models/portal.md3");
 	portal.modelindex_lod0 = portal.modelindex;
 	portal.customizeentityforclient = Portal_Customize;

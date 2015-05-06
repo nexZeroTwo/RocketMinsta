@@ -11,7 +11,7 @@ void CA_Frame(void) {
 }
 
 void CA_Initialize(void) {
-    ca_teams = bound(2, cvar("g_clanarena_teams"), 4);
+    ca_teams = bound(2, CVAR(g_clanarena_teams), 4);
     
     addstat(STAT_REDALIVE, AS_INT, redalive_stat);
     addstat(STAT_BLUEALIVE, AS_INT, bluealive_stat);
@@ -22,18 +22,18 @@ void CA_Initialize(void) {
     precache_sound("ctf/blue_capture.wav");
     precache_sound("kh/capture.wav");
     
-    g_clanarena_pickups = cvar("g_clanarena_pickups");
+    g_clanarena_pickups = CVAR(g_clanarena_pickups);
     
     if(inWarmupStage)
         warmup = time;
     else
-        warmup = time + cvar("g_start_delay");
+        warmup = time + CVAR(g_start_delay);
     
     entity ca = spawn();
     ca.think = CA_Frame;
     ca.nextthink = time;
     
-    sv_nicehealth = cvar("g_clanarena_start_health") + cvar("g_clanarena_start_armor");
+    sv_nicehealth = CVAR(g_clanarena_start_health) + CVAR(g_clanarena_start_armor);
 }
 
 float CA_AliveCheck(entity plr) {
@@ -41,7 +41,7 @@ float CA_AliveCheck(entity plr) {
 }
 
 void CA_EndRound(void) {
-    G_EndRound(5, cvar("g_clanarena_warmup"), CA_RecountPlayers, func_null, func_null);
+    G_EndRound(5, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, func_null);
     CA_RecountPlayers();
 }
 
@@ -125,13 +125,13 @@ void CA_PlayerDies(entity attacker) {
     if(attacker.classname == "player") {
         if(self == attacker) {
         } else if(self.team == attacker.team) {
-            PlayerScore_Add(attacker, SP_SCORE, -cvar("g_clanarena_penalty_teamkill"));
+            PlayerScore_Add(attacker, SP_SCORE, -CVAR(g_clanarena_penalty_teamkill));
         } else {
-            PlayerScore_Add(attacker, SP_SCORE,  cvar("g_clanarena_score_kill"));
+            PlayerScore_Add(attacker, SP_SCORE,  CVAR(g_clanarena_score_kill));
         }
     }
     
-    PlayerScore_Add(self, SP_SCORE, -cvar("g_clanarena_penalty_death"));
+    PlayerScore_Add(self, SP_SCORE, -CVAR(g_clanarena_penalty_death));
     PlayerScore_SetFlags(self, SPFLAG_FROZEN);
     
     AloneWarning(self.team, CA_AliveCheck);

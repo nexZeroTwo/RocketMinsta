@@ -331,6 +331,7 @@ float nextrail_particles_spiraloffs2;
 void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
 {
     trailparticles(nextrail_particles_own, nextrail_particles_eff, from, endpos);
+
     float eff;
     switch(nextrail_particles_theteam) {
         case COLOR_TEAM1: eff = particleeffectnum("TE_TEI_G3RED");    break;
@@ -375,7 +376,7 @@ void Net_ReadNexgunBeamParticle()
     nextrail_particles_secondary = ReadByte();
 	
 	//draw either the old v2.3 beam or the new beam
-	if(cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
+	if(CVAR(cl_particles_oldnexbeam) && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
 		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, shotorg_real, endpos);
 	else
 		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, shotorg_real, endpos);
