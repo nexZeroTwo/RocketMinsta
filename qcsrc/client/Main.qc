@@ -367,8 +367,6 @@ void Playerchecker_Think()
 void Porto_Init();
 void TrueAim_Init();
 
-float rmconfig_initialized;
-
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
 #ifdef RM_SUPPORT_MADOKA

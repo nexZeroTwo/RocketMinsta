@@ -479,7 +479,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 .float heal_next_particle;
 
 void HealScore(entity targ, entity healer, float heal) {
-    if(targ == healer)
+    if(targ == healer || targ.classname != "player")
         return;
     
     PlayerScore_Add(healer, SP_HEALING, heal);
@@ -487,17 +487,20 @@ void HealScore(entity targ, entity healer, float heal) {
 }
 
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
-    if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
-    else        hlimit = g_balance_health_limit;
-    if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
-    else        alimit = g_balance_armor_limit;
-    
-    if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
-        float lim = cvar("g_clanarena_heal_limit");
-        hlimit = min(hlimit, lim);
-        alimit = min(alimit, lim);
+
+    if(targ.classname == "player") {
+        if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
+        else        hlimit = g_balance_health_limit;
+        if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
+        else        alimit = g_balance_armor_limit;
+
+        if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
+            float lim = cvar("g_clanarena_heal_limit");
+            hlimit = min(hlimit, lim);
+            alimit = min(alimit, lim);
+        }
     }
-    
+
     float silent = (healtype == DEATH_ITEM);
     
     if(pauserot  < 0) pauserot  = cvar("g_balance_pause_health_rot");
@@ -509,13 +512,13 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         heal  = max(0, min(heal,  hlimit - targ.health));
         aheal = max(0, min(aheal, alimit - targ.armorvalue));
     }
-    
+
     targ.health += heal;
     targ.pauserothealth_finished = max(targ.pauserothealth_finished, time + pauserot);
     
     targ.armorvalue += aheal;
     targ.pauserotarmor_finished = max(targ.pauserotarmor_finished, time + pausearot);
-    
+
     if(heal || aheal) {
         float vdtype = VDMG_TYPE_HEAL;
         
@@ -732,7 +735,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
 	{
 		// no processing
 	}

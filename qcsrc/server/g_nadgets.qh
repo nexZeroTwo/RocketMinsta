@@ -109,6 +109,8 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 .float hg_linker_hps;
 .float hg_linker_buffpower;
 
+.float hg_sentry_energy;
+
 // for hud only
 .float hg_launchspeed;
 

@@ -1704,7 +1704,7 @@ string FormatDamage(float f) {
 
 #ifndef SVQC
 string FlagIcon(string cn) {
-    string i, s;
+    string i;
     
     if(cn == "")
         return "gfx/flagicons/xx";
