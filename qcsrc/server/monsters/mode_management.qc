@@ -164,22 +164,22 @@ string dmmessage;
 void(string m) setdm =
 {
 	dmmessage = m;
-	if (cvar_string("deathmatch") != m)
+	if (ftos(CVAR(deathmatch)) != m)
 		cvar_set("deathmatch", m);
 }
 
 void(string m) setteamplay =
 {
 	dmmessage = m;
-	if (cvar_string("teamplay") != m)
+	if (ftos(CVAR(teamplay)) != m)
 		cvar_set("teamplay", m);
 }
 
 void() mode_updatecvars =
 {
 	local float dm, tp;
-	dm = cvar("deathmatch");
-	tp = cvar("teamplay");
+	dm = CVAR(deathmatch);
+	tp = CVAR(teamplay);
 	// now set deathmatch cvar
 	if (dm ==  0) setdm("0?Dark Places - Coop");
 	else if (dm ==  1) setdm("1?Dark Places - Deathmatch");
@@ -240,11 +240,11 @@ void() modesetup =
 	mode_shirtmustmatchpants = deathmatch >= DM_TEAM_MODS_START && deathmatch < DM_TEAM_MODS_END;
 	mode_initallowedteams();
 
-	itemrespawn = cvar("deathmatch") + cvar("coop");
+	itemrespawn = CVAR(deathmatch) + CVAR(coop);
 
 	// don't spawn any monsters until 15 seconds
 	spawnchecktime = 15;
-	if (deathmatch == 7 || cvar("spawnmonsters") >= 1)
+	if (deathmatch == 7 || CVAR(spawnmonsters) >= 1)
 		precachemonsters();
 
 	superdomination_precache();
@@ -416,7 +416,7 @@ void() spawnmonsters =
 	}
 
 	// pick a type of monster
-	if (cvar("registered"))
+	if (CVAR(registered))
 	{
 		r = floor(random() * 13);
 		if (r > 12)
@@ -468,7 +468,7 @@ void() precachemonsters =
 	precachemonster_shambler();
 	precachemonster_wizard();
 	precachemonster_zombie();
-	if (cvar("registered"))
+	if (CVAR(registered))
 	{
 		precachemonster_enforcer();
 		precachemonster_hell_knight();
@@ -508,7 +508,7 @@ void() deathmatch7update =
 	monsters = 0;
 	if (deathmatch == 7)
 		monsters = 50;
-	f = cvar("spawnmonsters");
+	f = CVAR(spawnmonsters);
 	if (f >= 1)
 		monsters = f;
 	if (monsters < 1)

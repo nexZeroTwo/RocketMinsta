@@ -58,7 +58,7 @@ void VisualDamage_PreDraw(void) {
     float tmp;
     
     drawfont = sbar_bigfont;
-    rm_visualdamage_fontsize = cvar("rm_visualdamage_fontsize");
+    rm_visualdamage_fontsize = CVAR(rm_visualdamage_fontsize);
     for(e = vd_head; e; e = e.vd_next) {
         if(!(e.vd_type & VDMG_TYPE_TOSELF)) {
             o = e.vd_projected = project_3d_to_2d(e.origin);
@@ -103,7 +103,7 @@ void VisualDamage_PreDraw(void) {
             e.vd_projected = vdmg_dmgtakenorigin - '0 10 0';
     }
     
-    if(cvar("rm_visualdamage_nooverlap"))
+    if(CVAR(rm_visualdamage_nooverlap))
         VisualDamage_FixPositions();
 
     drawfont = sbar_font;
@@ -212,14 +212,14 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     else
         vd_dirswitch *= -1;
 
-    if(cvar("rm_visualdamage_spreadout")) {
+    if(CVAR(rm_visualdamage_spreadout)) {
         e.movedir_x = 5 * random() * vd_dirswitch;
         e.movedir_y = -2;
         e.movedir = normalize(e.movedir) * (1.1 - 0.3 * random());
     } else
         e.movedir = '0 -1 0';
 
-    e.movedir = e.movedir * cvar("rm_visualdamage_movespeed");
+    e.movedir = e.movedir * CVAR(rm_visualdamage_movespeed);
 
     e.vd_next = vd_head;
     vd_head = e;
@@ -229,7 +229,7 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     
     ++vd_cnt;
     
-    if(vd_cnt > cvar("rm_visualdamage_limit")) {
+    if(vd_cnt > CVAR(rm_visualdamage_limit)) {
         entity oldtail = vd_tail;
         for(p = vd_head; p; p = p.vd_next) {
             if(p.vd_next == vd_tail) {

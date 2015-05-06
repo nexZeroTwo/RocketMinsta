@@ -197,7 +197,7 @@ void CSQC_Init(void)
 	print("^1", rm_watermark, "\n");
 	
 	// hack for DSN users
-	if(substring(cvar_string("g_nexuizversion"), 0, strlen("2.5.1")) == "2.5.1")
+	if(substring(CVAR_STR(g_nexuizversion), 0, strlen("2.5.1")) == "2.5.1")
 	{
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
@@ -236,7 +236,7 @@ void CSQC_Shutdown(void)
 	if(camera_active)
 		cvar_set("chase_active",ftos(chase_active_backup));
 
-	//if(cvar("rm_madoka"))
+	//if(CVAR(rm_madoka))
 	//	localcmd("loadfont user2 gfx/vera-sans-big\n");
 	
 	if not(isdemo())
@@ -391,7 +391,7 @@ void SetMadokaFont(float v)
 		default: case MDKF_AUTO:
 			if(madoka_locked)
 			{
-				if(cvar("rm_specmadoka"))
+				if(CVAR(rm_specmadoka))
 				{
 					sbar_bigfont = (madokalockstate? sbar_madokafont : GetBigfont());
 					return;
@@ -461,7 +461,7 @@ void FPSReporter_Init() {
 #define TARGET_RATE 40000
 
 void UpdateClRate(void) {
-    float oldrate = cvar("_cl_rate");
+    float oldrate = CVAR(_cl_rate);
 
     if(oldrate >= TARGET_RATE)
         return;
@@ -474,7 +474,7 @@ void UpdateClRate(void) {
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
-	localcmd(strcat("\nsbar_columns_set ", cvar_string("sbar_columns"), ";\n"));
+	localcmd(strcat("\nsbar_columns_set ", CVAR_STR(sbar_columns), ";\n"));
 
 	entity playerchecker;
 	playerchecker = spawn();
@@ -487,11 +487,11 @@ void PostInit(void)
 	MapInfo_Get_ByName(shortmapname, 0, 0);
 	
     // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
-    float cfgver = cvar("rm_initialized");
+    float cfgver = CVAR(rm_initialized);
     if(cfgver >= 44 && !(cvar_type("rm_radio") & CVAR_TYPEFLAG_EXISTS))
         cvar_set("rm_initialized", "42");
 
-	switch(cvar("rm_initialized"))
+	switch(CVAR(rm_initialized))
 	{
 		case 0:
 		case 1:
@@ -564,7 +564,7 @@ void PostInit(void)
 			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 38:
             // fight evil with evil
-            if(cvar("cl_gunalign") == 3)
+            if(CVAR(cl_gunalign) == 3)
                 localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
         case 39:
             cvar_set("_rm_hg_optout", "0");
@@ -600,28 +600,28 @@ void PostInit(void)
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
     localcmd("alias vinvite \"cmd vote invite $*\"\n");
 
-	rm_showspec   = cvar("rm_showspec");
-	rm_showdamage = cvar("rm_showdamage");
-	rm_teamlasers = cvar("rm_teamlasers");
-	rm_nobigtext  = cvar("rm_nobigtext");
-	rm_hidebigcomments = cvar("rm_hidebigcomments");
-	rm_legacyvote = cvar("rm_legacyvote");
-	rm_hidewatermark = cvar("rm_hidewatermark");
-	rm_madoka = cvar("rm_madoka");
-	rm_crosshealth = cvar("rm_crosshealth");
-	rm_simpleeffects = cvar("rm_simpleeffects");
-	rm_shownames = cvar("rm_shownames");
-	rm_visualscore = cvar("rm_visualscore");
-	rm_oldhud_option = cvar("rm_oldhud");
-	rm_althud_option = cvar("rm_althud");
+	rm_showspec   = CVAR(rm_showspec);
+	rm_showdamage = CVAR(rm_showdamage);
+	rm_teamlasers = CVAR(rm_teamlasers);
+	rm_nobigtext  = CVAR(rm_nobigtext);
+	rm_hidebigcomments = CVAR(rm_hidebigcomments);
+	rm_legacyvote = CVAR(rm_legacyvote);
+	rm_hidewatermark = CVAR(rm_hidewatermark);
+	rm_madoka = CVAR(rm_madoka);
+	rm_crosshealth = CVAR(rm_crosshealth);
+	rm_simpleeffects = CVAR(rm_simpleeffects);
+	rm_shownames = CVAR(rm_shownames);
+	rm_visualscore = CVAR(rm_visualscore);
+	rm_oldhud_option = stof(CVAR_STR(rm_oldhud));
+	rm_althud_option = stof(CVAR_STR(rm_althud));
 	rm_oldhud = rm_oldhud_option;
 	rm_althud = rm_althud_option;
-	rm_noflags = cvar("rm_noflags");
-	rm_showrankings = cvar("rm_showrankings");
-	rm_shownames_teamonly = cvar("rm_shownames_teamonly");
-	rm_oldbigfont = cvar("rm_oldbigfont");
-    rm_showtimer = cvar("rm_showtimer");
-    rm_shownadgetregen = cvar("rm_shownadgetregen");
+	rm_noflags = CVAR(rm_noflags);
+	rm_showrankings = CVAR(rm_showrankings);
+	rm_shownames_teamonly = CVAR(rm_shownames_teamonly);
+	rm_oldbigfont = CVAR(rm_oldbigfont);
+    rm_showtimer = CVAR(rm_showtimer);
+    rm_shownadgetregen = CVAR(rm_shownadgetregen);
     
 	registercmd("rmhelp");
 	registercmd("showspec");
@@ -662,7 +662,7 @@ void PostInit(void)
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(sv_showspecs_extra)
-		localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
 	
 	//loadfont("user3", "gfx/madoka-rune");
@@ -674,23 +674,23 @@ void PostInit(void)
 	#endif
 	
 	if(sv_showspecs_extra)
-		localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), "\n");
-	localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
-	localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
-	localcmd("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
-    localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
-    localcmd("cmd nododging ", cvar_string("rm_nododging"), "\n");
+		localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), "\n");
+	localcmd("cmd anonspec ", CVAR_STR(rm_anonspec), "\n");
+	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
+	localcmd("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
+    localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
+    localcmd("cmd nododging ", CVAR_STR(rm_nododging), "\n");
 	
-	if(cvar("_cl_afkstate"))
+	if(CVAR(_cl_afkstate))
 		localcmd("cmd afk\n");
 	
-	HUDSkin_Load(cvar_string("rm_hudskin"));
+	HUDSkin_Load(CVAR_STR(rm_hudskin));
 	
 	screenfade = time + 0.1;
 	fovlock = -1;
 	
 	registercvar("rm_loadedmenu", "");
-	if(cvar_string("rm_loadedmenu") != RM_BUILD_MENUSUM)
+	if(CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
@@ -757,7 +757,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	} else if(strCmd == "+showaccuracy") {
 		//sb_showaccuracy = true;
 		
-		//if(cvar("_g_rocketminsta"))
+		//if(CVAR(_g_rocketminsta))
 		//	bigprint("Accuracy statistics are disabled", "", 2);
 		//else
 			sb_showaccuracy = true;
@@ -841,26 +841,26 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		rm_showspec = cvar("rm_showspec");
-		rm_showdamage = cvar("rm_showdamage");
-		rm_teamlasers = cvar("rm_teamlasers");
-		rm_nobigtext = cvar("rm_nobigtext");
-		rm_hidebigcomments = cvar("rm_hidebigcomments");
-		rm_legacyvote = cvar("rm_legacyvote");
-		rm_hidewatermark = cvar("rm_hidewatermark");
-		rm_crosshealth = cvar("rm_crosshealth");
-		rm_simpleeffects = cvar("rm_simpleeffects");
-		rm_shownames = cvar("rm_shownames");
-		rm_visualscore = cvar("rm_visualscore");
-		rm_oldhud_option = cvar("rm_oldhud");
-		rm_althud_option = cvar("rm_althud");
-		rm_noflags = cvar("rm_noflags");
-		rm_showrankings = cvar("rm_showrankings");
-		rm_shownames_teamonly = cvar("rm_shownames_teamonly");
-		rm_oldbigfont = cvar("rm_oldbigfont");
-        rm_showtimer = cvar("rm_showtimer");
-        rm_shownadgetregen = cvar("rm_shownadgetregen");
-        //rm_nododging = cvar("rm_nododging");
+		rm_showspec = CVAR(rm_showspec);
+		rm_showdamage = CVAR(rm_showdamage);
+		rm_teamlasers = CVAR(rm_teamlasers);
+		rm_nobigtext = CVAR(rm_nobigtext);
+		rm_hidebigcomments = CVAR(rm_hidebigcomments);
+		rm_legacyvote = CVAR(rm_legacyvote);
+		rm_hidewatermark = CVAR(rm_hidewatermark);
+		rm_crosshealth = CVAR(rm_crosshealth);
+		rm_simpleeffects = CVAR(rm_simpleeffects);
+		rm_shownames = CVAR(rm_shownames);
+		rm_visualscore = CVAR(rm_visualscore);
+		rm_oldhud_option = stof(CVAR_STR(rm_oldhud));
+		rm_althud_option = stof(CVAR_STR(rm_althud));
+		rm_noflags = CVAR(rm_noflags);
+		rm_showrankings = CVAR(rm_showrankings);
+		rm_shownames_teamonly = CVAR(rm_shownames_teamonly);
+		rm_oldbigfont = CVAR(rm_oldbigfont);
+        rm_showtimer = CVAR(rm_showtimer);
+        rm_shownadgetregen = CVAR(rm_shownadgetregen);
+        //rm_nododging = stof(CVAR_STR(rm_nododging));
 		
 		if(strCmd == "oldhud" || strCmd == "althud")
 		{
@@ -871,15 +871,15 @@ float CSQC_ConsoleCommand(string strMessage)
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
 				
-				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
 			}
 		}
 		else if(strCmd == "notimer")
 			localcmd("cl_cmd sbar_columns_set default\n");
 		else if(strCmd == "nokillsound")
-			localcmd("cmd nokillsound ", ftos(cvar("rm_nokillsound")), "\n");
+			localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 		else if(strCmd == "nododging")
-			localcmd("cmd nododging ", ftos(cvar("rm_nododging")), "\n");
+			localcmd("cmd nododging ", ftos(stof(CVAR_STR(rm_nododging))), "\n");
 		
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT
@@ -897,19 +897,19 @@ float CSQC_ConsoleCommand(string strMessage)
 		
 		VALUEREQUIRED
 		
-		if(madoka_locked && cvar("rm_specmadoka"))
+		if(madoka_locked && CVAR(rm_specmadoka))
 		{
 			print("^1Won't change madoka while spectating\n");
 			return true;
 		}
 		
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		//loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
-		rm_madoka = cvar("rm_madoka");
+		//loadfont("user2", (CVAR(rm_madoka) ? "madoka-rune" : "vera-sans-big"));
+		rm_madoka = CVAR(rm_madoka);
 		SetMadokaFont(MDKF_AUTO);
 		
 		if(sv_showspecs_extra)
-			localcmd("cmd madoka ", cvar_string("rm_madoka"), "\n");
+			localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 		RMSETTINGREPORT
 		return true;
 		#else
@@ -921,7 +921,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		localcmd("cmd anonspec ", cvar_string("rm_anonspec"), "\n");
+		localcmd("cmd anonspec ", CVAR_STR(rm_anonspec), "\n");
 		RMSETTINGREPORT
 		return true;
 	}
@@ -930,8 +930,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
 		
-		//if(!cvar("rm_specmadoka"))
-		//	loadfont("user2", (cvar("rm_madoka") ? "madoka-rune" : "vera-sans-big"));
+		//if(!CVAR(rm_specmadoka))
+		//	loadfont("user2", (CVAR(rm_madoka) ? "madoka-rune" : "vera-sans-big"));
 		SetMadokaFont(MDKF_AUTO);
 		
 		RMSETTINGREPORT
@@ -977,7 +977,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			cvar_set("rm_hudskin", hudskin_name);
 			localcmd("menu_cmd update_rmvars\n");
 			if(sv_showspecs_extra)
-				localcmd("cmd hudinfo ", cvar_string("rm_oldhud"), " ", cvar_string("rm_althud"), " ", cvar_string("rm_hudskin"), "\n");
+				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
 		}
 		else
 		{
@@ -991,8 +991,8 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set ("rm_hidecountry", argv (1));
-		rm_hidecountry = cvar ("rm_hidecountry");
-		localcmd ("cmd hidecountry ", cvar_string ("rm_hidecountry"), "\n");
+		rm_hidecountry = stof(CVAR_STR(rm_hidecountry));
+		localcmd ("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
 		RMSETTINGREPORT
 		return true;
 	}
@@ -1004,7 +1004,7 @@ float CSQC_ConsoleCommand(string strMessage)
             localcmd("cd reset\n");
 
         cvar_set("rm_radio", argv(1));
-        localcmd("cmd radio ", cvar_string("rm_radio"), "\n");
+        localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
         RMSETTINGREPORT
         return true;
     } 
@@ -1093,7 +1093,7 @@ void ShotOrg_Spawn()
 .float oldspecmadoka;
 void TmpMadoka_Think()
 {
-	//if(!cvar("rm_madoka"))
+	//if(!CVAR(rm_madoka))
 	//	loadfont("user2", "vera-sans-big");
 	
 	cvar_set("rm_specmadoka", ftos(self.oldspecmadoka));
@@ -1110,13 +1110,13 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka_fadetime = time + t + 1;
 	tmpmadoka.think = TmpMadoka_Think;
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
-	tmpmadoka.oldspecmadoka = cvar("rm_specmadoka");
+	tmpmadoka.oldspecmadoka = CVAR(rm_specmadoka);
 	cvar_set("rm_specmadoka", "0");
 	//loadfont("user2", "madoka-rune");
 	SetMadokaFont(MDKF_SET);
 	localcmd("play2 misc/powerup\n");
 	
-	if(!cvar("rm_dontmesswithfonts"))
+	if(!CVAR(rm_dontmesswithfonts))
 	if(!rm_nobigtext)
 	//We will either print runic text here, or won't print anything at all.
 		bigprint(m, c, t);
@@ -1223,7 +1223,7 @@ void GameCommand(string msg)
 	{
 		//print("lockmadoka(", argv(1), ")\n");
 		
-		if(cvar("rm_specmadoka"))
+		if(CVAR(rm_specmadoka))
 		{
 			madoka_locked = 1;
 			madokalockstate = stof(argv(1));
@@ -1305,10 +1305,10 @@ void GameCommand(string msg)
 			print(ftos(crc16(stof(argv(1)), argv(2))), "\n");
 	}
 	else if(cmd == "danger") {
-		if not(cvar("rm_freezetag_danger"))
+		if not(CVAR(rm_freezetag_danger))
 			return;
 		
-		if(cvar("rm_freezetag_danger_silent")) {
+		if(CVAR(rm_freezetag_danger_silent)) {
 			localcmd("g_waypointsprite_team_danger_p\n");
 			return;
 		}
@@ -1316,7 +1316,7 @@ void GameCommand(string msg)
 		// dirty dirty hacks
 		// I love them
 		
-		string userbind = cvar_string("userbind7_press");
+		string userbind = CVAR_STR(userbind7_press);
 		if(strstrofs(userbind, "g_waypointsprite_team_danger_p", 0) >= 0 && strstrofs(userbind, "%p", 0) >= 0)
 			localcmd("_userbind_call userbind7_press\n");
 		else
@@ -1795,12 +1795,12 @@ void Fog_Force()
 			hsl_z = 0.8 - 0.2 * sin(1.11 * time) * cos(2.22 * time);
 			ForceFog(hsl_to_rgb(hsl), 0.02 * (1 - 0.5 * cos(1.13 * time)));
 			
-			if(cvar("r_glsl")) {
+			if(CVAR(r_glsl)) {
 				cvar_clientsettemp("r_glsl_saturation", ftos(3 * cos(time * 0.25)));
 			}
             
-            cvar_clientsettemp("volume", ftos(max(0.1, cvar("volume"))));
-            cvar_clientsettemp("bgmvolume", ftos(max(0.5, cvar("bgmvolume"))));
+            cvar_clientsettemp("volume", ftos(max(0.1, CVAR(volume))));
+            cvar_clientsettemp("bgmvolume", ftos(max(0.5, CVAR(bgmvolume))));
 		}
 		
 		else ForceFogString(forcefog);
@@ -1979,7 +1979,7 @@ void Net_ReadSpecInfo()
 	if(ReadByte()) {
 		float md = ReadByte();
 		
-		if(cvar("rm_specmadoka")) {
+		if(CVAR(rm_specmadoka)) {
 			madoka_locked = TRUE;
 			madokalockstate = md;
 			SetMadokaFont(madokalockstate);
@@ -2126,7 +2126,7 @@ void Net_Camera() {
 	if(time <= camera_expiretime || camera_drawviewmodel_locked)
 		dprint("Warning: Net_Camera while a camera is still active\n");
 	else {
-		camera_drawviewmodel_backup = cvar("r_drawviewmodel");
+		camera_drawviewmodel_backup = CVAR(r_drawviewmodel);
 		camera_drawviewmodel_locked = TRUE;
 	}
 	

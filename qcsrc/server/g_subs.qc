@@ -315,7 +315,7 @@ entity pseudo_bullet(entity forent) {
 
 #define SKIPNONSOLID_ESCAPE_STEP 0.1
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
-    if (!sv_gameplayfix_zerohitcontents) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         traceline(start, end, t, forent);
         return;
     }
@@ -338,7 +338,7 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
 }
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
-    if (!sv_gameplayfix_zerohitcontents) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         tracebox(start, mi, ma, end, nomonst, forent);
         return;
     }
@@ -361,7 +361,7 @@ void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float
 }
 
 void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
-    if (!sv_gameplayfix_zerohitcontents) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         vector v0;
         float g0;
         v0 = ent.velocity;
@@ -464,7 +464,7 @@ void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst,
 
 void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
     float lag;
-    if(g_antilag != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -477,7 +477,7 @@ void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entit
 void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
     float lag;
 
-    if(g_antilag != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -633,7 +633,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
 entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
     float lag;
 
-    if(g_antilag != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -648,7 +648,7 @@ float tracebox_inverted (vector v1, vector mi, vector ma, vector v2, float nomon
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);
@@ -715,7 +715,7 @@ void traceline_inverted (vector v1, vector v2, float nomonsters, entity forent)
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);
@@ -862,9 +862,9 @@ float LOD_customize()
 {
 	float d;
 
-	if(cvar("loddebug"))
+	if(CVAR(loddebug))
 	{
-		d = cvar("loddebug");
+		d = CVAR(loddebug);
 		if(d == 1)
 			self.modelindex = self.lodmodelindex0;
 		else if(d == 2)
@@ -920,7 +920,7 @@ void LODmodel_attach()
 		}
 	}
 
-	if(cvar("loddebug") < 0)
+	if(CVAR(loddebug) < 0)
 	{
 		self.lodmodel1 = self.lodmodel2 = ""; // don't even initialize
 	}

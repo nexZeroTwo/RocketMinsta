@@ -80,7 +80,7 @@ entity TeamCount_PlayerPool_GetPlayer(entity pool, float idx) {
 }
 
 float TeamCount_PlayerPool_PlayerValue(entity plr) {
-    switch(cvar("g_balance_teams_method")) {
+    switch(CVAR(g_balance_teams_method)) {
         case 1  :   return plr.scorekeeper.(scores[SP_SCORE]) / plr.playtime;
         case 2  :   return plr.scorekeeper.(scores[SP_DAMAGE]);
         case 3  :   return plr.scorekeeper.(scores[SP_DAMAGE]) / plr.playtime;

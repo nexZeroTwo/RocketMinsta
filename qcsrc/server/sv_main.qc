@@ -79,7 +79,7 @@ void CreatureFrame (void)
 				{
 					Damage (self, world, world, dm, DEATH_FALL, self.origin, '0 0 0');
 				}
-				else if(vlen(self.velocity) > 100000 && cvar("developer"))
+				else if(vlen(self.velocity) > 100000 && CVAR(developer))
 				{
 					dprint(strcat(self.netname, " became too fast, please investigate: ", vtos(self.spawnorigin), "\n"));
 					Damage (self, world, world, 50000, DEATH_SHOOTING_STAR, self.origin, '0 0 0');
@@ -191,72 +191,72 @@ void StartFrame (void)
 	InitializeEntitiesRun();
 
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        sv_gravity = cvar("sv_gravity");
-        sv_maxairspeed = cvar("sv_maxairspeed");
-        sv_maxspeed = cvar("sv_maxspeed");
-        sv_friction = cvar("sv_friction");
-        sv_accelerate = cvar("sv_accelerate");
-        sv_airaccelerate = cvar("sv_airaccelerate");
-        sv_airaccel_sideways_friction = cvar("sv_airaccel_sideways_friction");
-        sv_airaccel_qw = cvar("sv_airaccel_qw");
-        sv_stopspeed = cvar("sv_stopspeed");
-        sv_airstopaccelerate = cvar("sv_airstopaccelerate");
-        sv_airstrafeaccelerate = cvar("sv_airstrafeaccelerate");
-        sv_maxairstrafespeed = cvar("sv_maxairstrafespeed");
-        sv_aircontrol = cvar("sv_aircontrol");
-        sv_warsowbunny_airforwardaccel = cvar("sv_warsowbunny_airforwardaccel");
-        sv_warsowbunny_accel = cvar("sv_warsowbunny_accel");
-        sv_warsowbunny_topspeed = cvar("sv_warsowbunny_topspeed");
-        sv_warsowbunny_turnaccel = cvar("sv_warsowbunny_turnaccel");
-        sv_warsowbunny_backtosideratio = cvar("sv_warsowbunny_backtosideratio");
-        teamplay = cvar("teamplay");
-        sys_ticrate = cvar("sys_ticrate");
-        sv_jumpvelocity = cvar("sv_jumpvelocity");
-        sv_gameplayfix_q2airaccelerate = cvar("sv_gameplayfix_q2airaccelerate");
-        sv_autoaway = cvar("sv_autoaway");
-        g_walljump = cvar("g_walljump");
-        g_walljump_delay = cvar("g_walljump_delay");
-        g_dodging = cvar("g_dodging");
+        sv_gravity = CVAR(sv_gravity);
+        sv_maxairspeed = CVAR(sv_maxairspeed);
+        sv_maxspeed = CVAR(sv_maxspeed);
+        sv_friction = CVAR(sv_friction);
+        sv_accelerate = CVAR(sv_accelerate);
+        sv_airaccelerate = CVAR(sv_airaccelerate);
+        sv_airaccel_sideways_friction = CVAR(sv_airaccel_sideways_friction);
+        sv_airaccel_qw = CVAR(sv_airaccel_qw);
+        sv_stopspeed = CVAR(sv_stopspeed);
+        sv_airstopaccelerate = CVAR(sv_airstopaccelerate);
+        sv_airstrafeaccelerate = CVAR(sv_airstrafeaccelerate);
+        sv_maxairstrafespeed = CVAR(sv_maxairstrafespeed);
+        sv_aircontrol = CVAR(sv_aircontrol);
+        sv_warsowbunny_airforwardaccel = CVAR(sv_warsowbunny_airforwardaccel);
+        sv_warsowbunny_accel = CVAR(sv_warsowbunny_accel);
+        sv_warsowbunny_topspeed = CVAR(sv_warsowbunny_topspeed);
+        sv_warsowbunny_turnaccel = CVAR(sv_warsowbunny_turnaccel);
+        sv_warsowbunny_backtosideratio = CVAR(sv_warsowbunny_backtosideratio);
+        teamplay = CVAR(teamplay);
+        sys_ticrate = CVAR(sys_ticrate);
+        sv_jumpvelocity = CVAR(sv_jumpvelocity);
+        sv_gameplayfix_q2airaccelerate = CVAR(sv_gameplayfix_q2airaccelerate);
+        sv_autoaway = CVAR(sv_autoaway);
+        g_walljump = CVAR(g_walljump);
+        g_walljump_delay = CVAR(g_walljump_delay);
+        g_dodging = CVAR(g_dodging);
 
         if(g_dodging) {
-            g_dodging_delay = cvar("g_dodging_delay");
-            g_dodging_ramp_time = cvar("g_dodging_ramp_time");
+            g_dodging_delay = CVAR(g_dodging_delay);
+            g_dodging_ramp_time = CVAR(g_dodging_ramp_time);
             
             if(g_freeze)
                 g_freezetag_dodging_frozen = Freeze_CVar("dodging_frozen");
         }
         
-        g_balance_health_rotstable = cvar("g_balance_health_rotstable");
-        g_balance_armor_rotstable = cvar("g_balance_armor_rotstable");
-        g_balance_fuel_rotstable = cvar("g_balance_fuel_rotstable");
-        g_balance_health_regenstable = cvar("g_balance_health_regenstable");
-        g_balance_armor_regenstable = cvar("g_balance_armor_regenstable");
-        g_balance_fuel_regenstable = cvar("g_balance_fuel_regenstable");
-        g_balance_health_limit = cvar("g_balance_health_limit");
-        g_balance_armor_limit = cvar("g_balance_armor_limit");
-        g_balance_fuel_limit = cvar("g_balance_fuel_limit");
+        g_balance_health_rotstable = CVAR(g_balance_health_rotstable);
+        g_balance_armor_rotstable = CVAR(g_balance_armor_rotstable);
+        g_balance_fuel_rotstable = CVAR(g_balance_fuel_rotstable);
+        g_balance_health_regenstable = CVAR(g_balance_health_regenstable);
+        g_balance_armor_regenstable = CVAR(g_balance_armor_regenstable);
+        g_balance_fuel_regenstable = CVAR(g_balance_fuel_regenstable);
+        g_balance_health_limit = CVAR(g_balance_health_limit);
+        g_balance_armor_limit = CVAR(g_balance_armor_limit);
+        g_balance_fuel_limit = CVAR(g_balance_fuel_limit);
         
-        g_balance_falldamage_deadminspeed = cvar("g_balance_falldamage_deadminspeed");
-        g_balance_falldamage_factor = cvar("g_balance_falldamage_factor");
-        g_balance_falldamage_minspeed = cvar("g_balance_falldamage_minspeed");
-        g_balance_falldamage_maxdamage = cvar("g_balance_falldamage_maxdamage");
+        g_balance_falldamage_deadminspeed = CVAR(g_balance_falldamage_deadminspeed);
+        g_balance_falldamage_factor = CVAR(g_balance_falldamage_factor);
+        g_balance_falldamage_minspeed = CVAR(g_balance_falldamage_minspeed);
+        g_balance_falldamage_maxdamage = CVAR(g_balance_falldamage_maxdamage);
         
-        sv_defaultcharacter = cvar("sv_defaultcharacter");
-        sv_defaultplayercolors = cvar("sv_defaultplayercolors");
-        sv_forcespecies = cvar("sv_forcespecies");
+        sv_defaultcharacter = CVAR(sv_defaultcharacter);
+        sv_defaultplayercolors = CVAR(sv_defaultplayercolors);
+        sv_forcespecies = CVAR(sv_forcespecies);
         
         cvarupdatetime = time + 1;
     }
 
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
-		orig_slowmo = cvar("slowmo"); // slowmo will be restored after the timeout
+		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
 	if(teams_matter && !teamplay)
 		teamplay = 3;
 	if(!teams_matter && teamplay)
 		teamplay = 0;
 
-	skill = cvar("skill");
+	skill = CVAR(skill);
 
 	Spawnqueue_Check();
 
@@ -266,7 +266,7 @@ void StartFrame (void)
 	// But not during the god damn intermission you dump piece of shit
 	if (!intermission_running)
 	if ((g_warmup_limit > 0 && time >= g_warmup_limit)
-	 || (g_warmup_limit == 0 && cvar("timelimit") != 0 && time >= cvar("timelimit") * 60))
+	 || (g_warmup_limit == 0 && CVAR(timelimit) != 0 && time >= CVAR(timelimit) * 60))
 	{
 		ReadyRestart();
 		return;
@@ -280,7 +280,7 @@ void StartFrame (void)
 	RuneMatchGivePoints();
 	bot_serverframe();
 
-	if(cvar("spawn_debugview"))
+	if(CVAR(spawn_debugview))
 	{
 		RandomSelection_Init();
 		for(self = world; (self = find(self, classname, "player")); )
@@ -316,7 +316,7 @@ void StartFrame (void)
 		}
 	}
 	
-	if(totalclients >= maxclients) if(cvar("sv_autoaway_kick")) {
+	if(totalclients >= maxclients) if(CVAR(sv_autoaway_kick)) {
 		entity v = GetAFKKickVictim();
 		
 		if(v) {
@@ -359,7 +359,7 @@ void SV_OnEntityPreSpawnFunction()
 			{
 				s = "team|ctf";
 			}
-			else if(cvar("g_maxplayers") == 2)
+			else if(CVAR(g_maxplayers) == 2)
 			{
 				s = "tournament";
 			}

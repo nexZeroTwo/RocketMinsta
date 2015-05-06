@@ -4,6 +4,10 @@
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 sys.qh
 pre-builtins.qh
 builtins.qh
@@ -87,7 +91,6 @@ verbstack.qc
 movelib.qc
 steerlib.qc
 
-rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
