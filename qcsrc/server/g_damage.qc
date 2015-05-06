@@ -479,7 +479,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 .float heal_next_particle;
 
 void HealScore(entity targ, entity healer, float heal) {
-    if(targ == healer)
+    if(targ == healer || targ.classname != "player")
         return;
     
     PlayerScore_Add(healer, SP_HEALING, heal);
@@ -493,12 +493,12 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         else        hlimit = g_balance_health_limit;
         if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
         else        alimit = g_balance_armor_limit;
-    }
 
-    if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
-        float lim = CVAR(g_clanarena_heal_limit);
-        hlimit = min(hlimit, lim);
-        alimit = min(alimit, lim);
+        if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
+            float lim = CVAR(g_clanarena_heal_limit);
+            hlimit = min(hlimit, lim);
+            alimit = min(alimit, lim);
+        }
     }
 
     float silent = (healtype == DEATH_ITEM);
