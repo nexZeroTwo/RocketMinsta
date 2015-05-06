@@ -1,6 +1,7 @@
 
 .entity zapper_beam;
 .entity zapper_shield;
+.entity zapper_accumulator;
 
 .float zapper_range;
 .float zapper_expire;
@@ -10,6 +11,7 @@
 .float zapper_arc_hit;
 .float zapper_heat;
 .float zapper_coolofftime;
+.float zapper_accumulate;
 
 .entity zapper_shotorgsentfor;
 
@@ -284,9 +286,19 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 }
 
 void W_Zapper_Attack2(void) {
-    float damage = cvar("g_balance_zapper_secondary_damage");
-    float force  = cvar("g_balance_zapper_secondary_force");
-    float range  = cvar("g_balance_zapper_secondary_range");
+    float accum_time = cvar("g_balance_zapper_secondary_accumulate");
+    float charge_time;
+    if (accum_time) {
+        charge_time = cvar("g_balance_zapper_secondary_charge_time");
+        if (!charge_time)
+            charge_time = accum_time;
+    }
+	
+    float accum = (accum_time ?
+            min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / charge_time) : 1);
+    float damage = cvar("g_balance_zapper_secondary_damage") * accum;
+    float force  = cvar("g_balance_zapper_secondary_force") * accum;
+    float range  = cvar("g_balance_zapper_secondary_range") * accum;
 
     makevectors(self.v_angle);
     W_SetupShot(self, TRUE, 5, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), damage);
@@ -523,6 +535,28 @@ float W_Zapper_PrepareFirstAttack(float sec) {
     return weapon_prepareattack(sec, 0);
 }
 
+void W_Zapper_Accumulate(void) {
+    setorigin(self, self.owner.origin);
+    self.nextthink = time;
+    self = self.owner;
+    float accumulate_end = 1;
+    if (PlayerMayFire(self) && self.weapon == WEP_ZAPPER) {
+        if (self.zapper_accumulator.zapper_expire < time &&
+               (!self.BUTTON_ATCK2
+               || self.BUTTON_ATCK
+               || time > self.zapper_accumulator.zapper_accumulate)) {
+            W_Zapper_Attack2();
+            weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_zapper_animtime"), w_ready);
+        } else
+            accumulate_end = 0;
+    }
+    if (accumulate_end) {
+        stopsound(self, CHAN_WEAPON2);
+        remove(self.zapper_accumulator);
+        self.zapper_accumulator = world;
+    }
+}
+
 float w_zapper(float req) {
     float dofire;
 
@@ -567,6 +601,18 @@ float w_zapper(float req) {
                             weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
                     }
                 }
+            } else if(cvar("g_balance_zapper_secondary_accumulate")) {
+                if (!self.zapper_accumulator && weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
+                    self.zapper_accumulate = time; //Accumulate start time
+                    self.zapper_accumulator = spawn();
+                    self.zapper_accumulator.zapper_accumulate = time + cvar("g_balance_zapper_secondary_accumulate"); //Accumulate end time
+                    self.zapper_accumulator.owner = self;
+                    self.zapper_accumulator.think = W_Zapper_Accumulate;
+                    self.zapper_accumulator.nextthink = time;
+                    self.zapper_accumulator.zapper_expire = time + cvar("g_balance_zapper_animtime");
+                    sound(self, CHAN_WEAPON2, "weapons/fireball_fly2.wav", VOL_BASE, ATTN_NORM);
+                    weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
+                }
             } else if(weapon_prepareattack(1, cvar("g_balance_zapper_secondary_refire"))) {
                 W_Zapper_Attack2();
                 weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_zapper_animtime"), w_ready);
@@ -576,6 +622,7 @@ float w_zapper(float req) {
         precache_model("models/vhshield.md3");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
+        precache_sound("weapons/fireball_fly2.wav");
         precache_sound("misc/arc1.wav");
         precache_sound("misc/arc2.wav");
     } else if(req == WR_RESETPLAYER){
