@@ -1,5 +1,4 @@
 
-.entity zapper_beam;
 .entity zapper_shield;
 .entity zapper_accumulator;
 

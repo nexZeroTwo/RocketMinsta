@@ -70,6 +70,7 @@ irc.qh
 joinqueue.qh
 radio.qh
 g_subs.qh
+w_zapper.qh
 
 ../common/util.qc
 scores_rules.qc
