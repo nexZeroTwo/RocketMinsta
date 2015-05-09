@@ -2068,6 +2068,7 @@ entity HG_Sentry_Beam_Spawn(void) {
     e.owner = self;
     e.team = self.team;
     e.zapper_beam_start = self.origin + self.view_ofs;
+    e.zapper_beam_end = e.zapper_beam_start;
     e.think = HG_Sentry_Beam_Think;
     e.nextthink = time;
 
