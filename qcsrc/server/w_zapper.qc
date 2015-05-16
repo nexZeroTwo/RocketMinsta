@@ -97,10 +97,12 @@ float W_Zapper_Beam_Expired(float secondary) {
         return TRUE;
 
     if(secondary) {
-        if(!W_Zapper_Attack2_CheckAmmo(self.owner))
+        if(self.owner.ammo_cells < 1)
             return TRUE;
     } else {
         if(!W_Zapper_Attack1_CheckAmmo(self.owner))
+            return TRUE;
+        if(self.owner.zapper_shield)
             return TRUE;
     }
 
@@ -566,7 +568,20 @@ float w_zapper(float req) {
             self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK) {
-            if(weapon_prepareattack(0, -1)) {
+            if (self.BUTTON_ATCK2 && CVAR(g_balance_zapper_secondary_shield == 2)) {
+                if(weapon_prepareattack(1, -1)) {
+                    if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {
+                        W_SwitchWeapon_OutOfAmmo(self);
+                    } else {
+                        if(self.zapper_shield)
+                            self.zapper_shield.zapper_expire = time + CVAR(g_balance_zapper_secondary_shield_lifetime);
+                        else
+                            W_Zapper_Attack3();
+
+                        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
+                    }
+                }
+           } else if(weapon_prepareattack(0, -1)) {
                 if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_primary_heatup)) {
                     W_SwitchWeapon_OutOfAmmo(self);
                 } else {
@@ -583,7 +598,7 @@ float w_zapper(float req) {
                 }
             }
         } else if(self.BUTTON_ATCK2 && CVAR(g_balance_zapper_secondary)) {
-            if(CVAR(g_balance_zapper_secondary_shield)) {
+            if(CVAR(g_balance_zapper_secondary_shield == 1)) {
                 if(weapon_prepareattack(1, -1)) {
                     if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {
                         W_SwitchWeapon_OutOfAmmo(self);
