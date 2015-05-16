@@ -299,3 +299,9 @@ float CVAR_TYPEFLAG_HASDESCRIPTION = 16;
 float CVAR_TYPEFLAG_READONLY = 32;
 
 void(vector dir) vectorvectors = #432;
+
+float() numentityfields = #496;
+string(float fieldnum) entityfieldname = #497;
+float(float fieldnum) entityfieldtype = #498;
+string(float fieldnum, entity ent) getentityfieldstring = #499;
+float(float fieldnum, entity ent, string s) putentityfieldstring = #500;

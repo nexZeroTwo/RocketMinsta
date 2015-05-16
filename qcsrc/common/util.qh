@@ -218,3 +218,5 @@ string Team_ColorNameLowerCase(float t);
 string TeamName(float t);
 string ColoredTeamName(float t);
 #endif
+
+float strcmp(string s1, string s2);

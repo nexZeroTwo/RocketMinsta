@@ -1,4 +1,4 @@
-#define MAX_RPN_STACK 16
+#define MAX_RPN_STACK 32
 float rpn_db;
 float rpn_error;
 float rpn_sp;
@@ -6,6 +6,7 @@ string rpn_stack[MAX_RPN_STACK];
 string rpn_pop() {
 	if(rpn_sp > 0) {
 		--rpn_sp;
+        dprint("rpn: POP ", rpn_stack[rpn_sp], "\n");
 		return rpn_stack[rpn_sp];
 	} else {
 		print("rpn: stack underflow\n");
@@ -16,6 +17,7 @@ string rpn_pop() {
 void rpn_push(string s) {
 	if(rpn_sp < MAX_RPN_STACK) {
 		rpn_stack[rpn_sp] = s;
+        dprint("rpn: PUSH ", s, "\n");
 		++rpn_sp;
 	} else {
 		print("rpn: stack overflow\n");
@@ -43,6 +45,37 @@ float rpn_getf() { return stof(rpn_get()); }
 float rpn_popf() { return stof(rpn_pop()); }
 void rpn_pushf(float f) { return rpn_push(ftos(f)); }
 void rpn_setf(float f) { return rpn_set(ftos(f)); }
+
+vector rpn_popv(void) {
+    vector v;
+    v_z = rpn_popf();
+    v_y = rpn_popf();
+    v_x = rpn_popf(); 
+    return v;
+}
+
+void rpn_pushv(vector v) {
+    rpn_pushf(v_x);
+    rpn_pushf(v_y);
+    rpn_pushf(v_z);
+}
+
+float rpn_popjumpidx(float rpnpos, float argc) {
+    string s = rpn_pop();
+
+    if(substring(s, 0, 1) != "&")
+        return rpnpos + stof(s);
+
+    string needle = strcat("[", substring(s, 1, strlen(s) - 1), "]");
+    float i;
+
+    for(i = 1; i < argc; ++i)
+        if(argv(i) == needle)
+            return i;
+
+    print("rpn: label ", needle, " not found\n");
+    return -1;
+}
 
 #define NUM_MARKUPS	41
 float markup_init;
@@ -154,6 +187,16 @@ string GameCommand_Markup(string s2)
 
 	return s;
 }
+
+#ifndef MENUQC
+float findentityfield(string fname) {
+    float i, n = numentityfields();
+    for(i = 0; i < n; ++i)
+        if(entityfieldname(i) == fname)
+            return i;
+    return -1;
+}
+#endif
 
 .float fade_time;
 .entity attachto;
@@ -360,17 +403,24 @@ float GameCommand_Generic(string command)
 			float rpnpos;
 			string rpncmd;
 			float f2, f3;
+            vector v1, v2;
+
 			rpn_sp = 0;
 			rpn_error = FALSE;
 			for(rpnpos = 1; rpnpos < argc; ++rpnpos)
 			{
 				rpncmd = argv(rpnpos);
 				f = strlen(rpncmd);
-				if(rpncmd == "") {
+
+                dprint(strcat("rpn: [", ftos(rpnpos), "] ", rpncmd, "\n"));
+
+				if(rpncmd == "" || (substring(rpncmd, 0, 1) == "[" && substring(rpncmd, strlen(rpncmd) - 1, 1) == "]")) {
 				} else if(stof(substring(rpncmd, 0, 1)) > 0) {
 					rpn_push(rpncmd);
 				} else if(substring(rpncmd, 0, 1) == "0") {
 					rpn_push(rpncmd);
+                } else if(substring(rpncmd, 0, 1) == "&") {
+                    rpn_push(rpncmd);
 				} else if(f >= 2 && substring(rpncmd, 0, 1) == "+") {
 					rpn_push(rpncmd);
 				} else if(f >= 2 && substring(rpncmd, 0, 1) == "-") {
@@ -479,6 +529,9 @@ float GameCommand_Generic(string command)
 					f2 = rpn_popf();
 					f3 = rpn_getf();
 					rpn_setf(bound(f3, f2, f));
+                } else if(rpncmd == "pow") {
+                    f = rpn_popf();
+                    rpn_setf(pow(rpn_getf(), f));
 				} else if(rpncmd == "when") {
 					f = rpn_popf();
 					f2 = rpn_popf();
@@ -487,6 +540,28 @@ float GameCommand_Generic(string command)
 						rpn_setf(f3);
 					else
 						rpn_setf(f2);
+                } else if(rpncmd == "and") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() && f);
+                } else if(rpncmd == "or") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() || f);
+                } else if(rpncmd == "not") {
+                    rpn_setf(!rpn_getf());
+                } else if(rpncmd == "vadd") {
+                    v1 = rpn_popv();
+                    v2 = rpn_popv();
+                    rpn_pushv(v1 + v2);
+                } else if(rpncmd == "vsub") {
+                    v1 = rpn_popv();
+                    v2 = rpn_popv();
+                    rpn_pushv(v2 - v1);
+                } else if(rpncmd == "vscale") {
+                    f = rpn_popf();
+                    v1 = rpn_popv();
+                    rpn_pushv(v1 * f);
+                } else if(rpncmd == "vlen") {
+                    rpn_pushf(vlen(rpn_popv()));
 				} else if(rpncmd == ">" || rpncmd == "gt") {
 					f = rpn_popf();
 					rpn_setf(rpn_getf() > f);
@@ -781,9 +856,118 @@ float GameCommand_Generic(string command)
 					rpn_set(strftime(FALSE, rpn_get()));
 				} else if(rpncmd == "time") {
 					rpn_pushf(time);
+                } else if(rpncmd == "jump") {
+                    float o = rpnpos;
+                    rpnpos = rpn_popjumpidx(rpnpos, argc);
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "jumpif") {
+                    float o = rpnpos;
+                    float jmp = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(cond) {
+                        rpnpos = jmp;
+
+                        if(rpnpos < 1 || rpnpos >= argc) {
+                            print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                            rpn_error = TRUE;
+                        }
+                    }
+                } else if(rpncmd == "jumpifnot") {
+                    float o = rpnpos;
+                    float jmp = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(!cond) {
+                        rpnpos = jmp;
+
+                        if(rpnpos < 1 || rpnpos >= argc) {
+                            print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                            rpn_error = TRUE;
+                        }
+                    }
+                } else if(rpncmd == "jumpifelse") {
+                    float o = rpnpos;
+                    float jmp0 = rpn_popjumpidx(rpnpos, argc);
+                    float jmp1 = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(cond)
+                        rpnpos = jmp1;
+                    else
+                        rpnpos = jmp0;
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "echo") {
+                    print(rpn_pop(), "\n");
+                } else if(rpncmd == "break") {
+                    break;
+                } else if(rpncmd == "strcat") {
+                    s2 = rpn_pop();
+                    s = rpn_pop();
+                    rpn_push(strcat(s, s2));
+                } else if(rpncmd == "strncat") {
+                    f = rpn_popf();
+                    s = "";
+
+                    for(f2 = 0; f2 < f; ++f2)
+                        s = strcat(rpn_pop(), s);
+
+                    rpn_push(s);
+                } else if(rpncmd == "strjoin") {
+                    s2 = rpn_pop();
+                    f = rpn_popf();
+                    s = "";
+
+                    for(f2 = 0; f2 < f; ++f2) {
+                        if(f2)
+                            s = strcat(s2, s);
+                        s = strcat(rpn_pop(), s);
+                    }
+
+                    rpn_push(s);
+#ifndef MENUQC
+                } else if(rpncmd == "getfield") {
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    rpn_push(getentityfieldstring(f, e));
+                } else if(rpncmd == "getfieldv") {
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    rpn_pushv(stov(getentityfieldstring(f, e)));
+                } else if(rpncmd == "setfield") {
+                    s = rpn_pop();
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    putentityfieldstring(f, e, s);
+#endif
+                } else if(rpncmd == "stov") {
+                    rpn_pushv(stov(rpn_pop()));
+                } else if(rpncmd == "vtos") {
+                    rpn_push(vtos(rpn_popv()));
+#ifdef SVQC
+                } else if(rpncmd == "maxclients") {
+                    rpn_pushf(maxclients);
+#endif
+                } else if(rpncmd == "strcmp") {
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strcmp(s2, s));
+                } else if(rpncmd == "exec") {
+                    localcmd(rpn_pop(), "\n");
+                } else if(rpncmd == "nullstr") {
+                    rpn_push(string_null);
 				} else {
 					rpn_push(cvar_string(rpncmd));
 				}
+
 				if(rpn_error)
 					break;
 			}

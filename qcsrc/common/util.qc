@@ -1749,6 +1749,25 @@ string FormatDamage(float f) {
     return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
 }
 
+float strcmp(string s1, string s2) {
+    float len1 = strlen(s1), len2 = strlen(s2);
+    float i, diff, len = min(len1, len2);
+    
+    for(i = 0; i < len; ++i) {
+        diff = str2chr(s1, i) - str2chr(s2, i);
+        if(diff)
+            return diff;
+    }
+    
+    if(len1 < len2)
+        return -1;
+    
+    if(len2 < len1)
+        return 1;
+    
+    return 0;
+}
+
 #ifndef SVQC
 string FlagIcon(string cn) {
     string i;
