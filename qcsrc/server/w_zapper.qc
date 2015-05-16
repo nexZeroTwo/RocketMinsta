@@ -395,7 +395,7 @@ void W_Zapper_Shield_Think(void) {
 
         if(self == self.enemy) {
             if(!(self.owner.items & IT_UNLIMITED_AMMO))
-                self.owner.ammo_cells = max(0, self.owner.ammo_cells - frametime * CVAR(g_balance_zapper_secondary_ammo));
+                self.owner.ammo_cells = max(0, self.owner.ammo_cells - frametime * CVAR(g_balance_zapper_secondary_shield_ammo));
 
             if(self.owner.zapper_heat >= 0) {
                 self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (CVAR(g_balance_zapper_secondary_shield_heatup) * frametime), 1);
