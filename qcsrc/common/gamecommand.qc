@@ -1038,6 +1038,11 @@ float GameCommand_Generic(string command)
                     s = rpn_pop();
                     s2 = rpn_pop();
                     rpn_pushf(strcmp(s2, s));
+                } else if(rpncmd == "strncmp") {
+                    f = rpn_popf();
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strncmp(s2, s, f));
                 } else if(rpncmd == "strlen") {
                     rpn_setf(strlen(rpn_get()));
                 } else if(rpncmd == "substr") {

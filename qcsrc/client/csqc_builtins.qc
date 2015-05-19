@@ -305,3 +305,6 @@ string(float fieldnum) entityfieldname = #497;
 float(float fieldnum) entityfieldtype = #498;
 string(float fieldnum, entity ent) getentityfieldstring = #499;
 float(float fieldnum, entity ent, string s) putentityfieldstring = #500;
+
+float(string s1, string s2, float len) strncmp = #228;
+float(string s1, string s2) strcmp = #228;
