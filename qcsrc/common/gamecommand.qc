@@ -1,8 +1,12 @@
 #define MAX_RPN_STACK 32
+#define MAX_RPN_CALLSTACK 32
 float rpn_db;
 float rpn_error;
 float rpn_sp;
+float rpn_callsp;
 string rpn_stack[MAX_RPN_STACK];
+float rpn_callstack[MAX_RPN_CALLSTACK];
+
 string rpn_pop() {
 	if(rpn_sp > 0) {
 		--rpn_sp;
@@ -14,6 +18,7 @@ string rpn_pop() {
 		return "";
 	}
 }
+
 void rpn_push(string s) {
 	if(rpn_sp < MAX_RPN_STACK) {
 		rpn_stack[rpn_sp] = s;
@@ -24,6 +29,7 @@ void rpn_push(string s) {
 		rpn_error = TRUE;
 	}
 }
+
 string rpn_get() {
 	if(rpn_sp > 0) {
 		return rpn_stack[rpn_sp - 1];
@@ -33,6 +39,29 @@ string rpn_get() {
 		return "";
 	}
 }
+
+string rpn_getofs(float o) {
+    if(!rpn_sp) {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+        return "";
+    }
+
+    if(o < 0) {
+        print("rpn: invalid offset\n");
+        rpn_error = TRUE;
+        return "";
+    }
+
+    if(rpn_sp - o <= 0) {
+        print("rpn: stack underflow\n");
+        rpn_error = TRUE;
+        return "";
+    }
+
+    return rpn_stack[rpn_sp - 1 - o];
+}
+
 void rpn_set(string s) {
 	if(rpn_sp > 0) {
 		rpn_stack[rpn_sp - 1] = s;
@@ -41,6 +70,7 @@ void rpn_set(string s) {
 		rpn_error = TRUE;
 	}
 }
+
 float rpn_getf() { return stof(rpn_get()); }
 float rpn_popf() { return stof(rpn_pop()); }
 void rpn_pushf(float f) { return rpn_push(ftos(f)); }
@@ -60,13 +90,8 @@ void rpn_pushv(vector v) {
     rpn_pushf(v_z);
 }
 
-float rpn_popjumpidx(float rpnpos, float argc) {
-    string s = rpn_pop();
-
-    if(substring(s, 0, 1) != "&")
-        return rpnpos + stof(s);
-
-    string needle = strcat("[", substring(s, 1, strlen(s) - 1), "]");
+float rpn_findlabel(string s, float argc) {
+    string needle = strcat("[", s, "]");
     float i;
 
     for(i = 1; i < argc; ++i)
@@ -75,6 +100,36 @@ float rpn_popjumpidx(float rpnpos, float argc) {
 
     print("rpn: label ", needle, " not found\n");
     return -1;
+}
+
+float rpn_popjumpidx(float rpnpos, float argc) {
+    string s = rpn_pop();
+
+    if(substring(s, 0, 1) != "&")
+        return rpnpos + stof(s);
+
+    return rpn_findlabel(substring(s, 1, strlen(s) - 1), argc);
+}
+
+float rpn_callpop(void) {
+    if(rpn_callsp > 0) {
+        --rpn_callsp;
+        return rpn_callstack[rpn_callsp];
+    } else {
+        print("rpn: call stack underflow\n");
+        rpn_error = TRUE;
+        return -1;
+    }
+}
+
+void rpn_callpush(float idx) {
+    if(rpn_callsp < MAX_RPN_CALLSTACK) {
+        rpn_callstack[rpn_callsp] = idx;
+        ++rpn_callsp;
+    } else {
+        print("rpn: call stack overflow\n");
+        rpn_error = TRUE;
+    }
 }
 
 #define NUM_MARKUPS	41
@@ -186,6 +241,26 @@ string GameCommand_Markup(string s2)
 	}
 
 	return s;
+}
+
+string rpn_preprocess(string script, float offset) {
+    float argc = tokenize_console(script);
+    float i;
+
+    for(i = offset; i < argc; ++i) {
+        string s = argv(i);
+        if(substring(s, 0, 1) == "{" && substring(s, strlen(s) - 1, 1) == "}") {
+            s = substring(s, 1, strlen(s) - 2);
+            
+            string b = substring(script, 0, argv_start_index(i));
+            string e = substring(script, argv_end_index(i), strlen(script));
+            script = strcat(b, cvar_string(s), e);
+            
+            return rpn_preprocess(script, i);
+        }
+    }
+
+    return script;
 }
 
 #ifndef MENUQC
@@ -404,6 +479,8 @@ float GameCommand_Generic(string command)
 			string rpncmd;
 			float f2, f3;
             vector v1, v2;
+
+            argc = tokenize_console(rpn_preprocess(command, 1));
 
 			rpn_sp = 0;
 			rpn_error = FALSE;
@@ -964,6 +1041,34 @@ float GameCommand_Generic(string command)
                     localcmd(rpn_pop(), "\n");
                 } else if(rpncmd == "nullstr") {
                     rpn_push(string_null);
+                } else if(rpncmd == "call") {
+                    float o = rpnpos;
+                    rpn_callpush(rpnpos);
+                    rpnpos = rpn_popjumpidx(rpnpos, argc);
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "return") {
+                    float o = rpnpos;
+                    rpnpos = rpn_callpop();
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: return from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(substring(rpncmd, 0, 1) == "@") {
+                    float o = rpnpos;
+                    rpn_callpush(rpnpos);
+                    rpnpos = rpn_findlabel(substring(rpncmd, 1, strlen(rpncmd) - 1), argc);
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "get") {
+                    rpn_push(rpn_getofs(rpn_popf()));
 				} else {
 					rpn_push(cvar_string(rpncmd));
 				}
@@ -971,11 +1076,17 @@ float GameCommand_Generic(string command)
 				if(rpn_error)
 					break;
 			}
+
 			while(rpn_sp > 0)
 			{
 				s = rpn_pop();
 				print("rpn: still on stack: ", s, "\n");
 			}
+
+            while(rpn_callsp > 0) {
+                print("rpn: still on call stack: ", ftos(rpn_callpop()), "\n");
+            }
+
 			return TRUE;
 		}
 	} else if(argv(0) == "addtolist") {
