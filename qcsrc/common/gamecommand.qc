@@ -64,6 +64,7 @@ string rpn_getofs(float o) {
 
 void rpn_set(string s) {
 	if(rpn_sp > 0) {
+        dprint("rpn: SET ", rpn_stack[rpn_sp - 1], " ---> ", s, "\n");
 		rpn_stack[rpn_sp - 1] = s;
 	} else {
 		print("rpn: empty stack\n");
@@ -251,11 +252,11 @@ string rpn_preprocess(string script, float offset) {
         string s = argv(i);
         if(substring(s, 0, 1) == "{" && substring(s, strlen(s) - 1, 1) == "}") {
             s = substring(s, 1, strlen(s) - 2);
-            
+
             string b = substring(script, 0, argv_start_index(i));
             string e = substring(script, argv_end_index(i), strlen(script));
             script = strcat(b, cvar_string(s), e);
-            
+
             return rpn_preprocess(script, i);
         }
     }
@@ -1037,6 +1038,12 @@ float GameCommand_Generic(string command)
                     s = rpn_pop();
                     s2 = rpn_pop();
                     rpn_pushf(strcmp(s2, s));
+                } else if(rpncmd == "strlen") {
+                    rpn_setf(strlen(rpn_get()));
+                } else if(rpncmd == "substr") {
+                    float len = rpn_popf();
+                    float start = rpn_popf();
+                    rpn_set(substring(rpn_get(), start, len));
                 } else if(rpncmd == "exec") {
                     localcmd(rpn_pop(), "\n");
                 } else if(rpncmd == "nullstr") {
@@ -1069,6 +1076,10 @@ float GameCommand_Generic(string command)
                     }
                 } else if(rpncmd == "get") {
                     rpn_push(rpn_getofs(rpn_popf()));
+                } else if(rpncmd == "trace") {
+                    print("rpn: stack trace:\n");
+                    for(f = rpn_sp; f; --f)
+                        print("   ", ftos(f), "  ", rpn_stack[f - 1], "\n");
 				} else {
 					rpn_push(cvar_string(rpncmd));
 				}
