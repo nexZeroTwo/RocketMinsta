@@ -481,7 +481,8 @@ float GameCommand_Generic(string command)
 			float f2, f3;
             vector v1, v2;
 
-            argc = tokenize_console(rpn_preprocess(command, 1));
+            command = rpn_preprocess(command, 1);
+            argc = tokenize_console(command);
 
 			rpn_sp = 0;
 			rpn_error = FALSE;
