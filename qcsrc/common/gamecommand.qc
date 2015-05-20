@@ -1043,8 +1043,26 @@ float GameCommand_Generic(string command)
                     s = rpn_pop();
                     s2 = rpn_pop();
                     rpn_pushf(strncmp(s2, s, f));
+                } else if(rpncmd == "strstrofs") {
+                    f = rpn_popf();
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strstrofs(s2, s, f));
+                } else if(rpncmd == "str2chr") {
+                    f = rpn_popf();
+                    rpn_setf(str2chr(rpn_get(), f));
+                } else if(rpncmd == "chr2str") {
+                    rpn_set(chr2str(rpn_getf()));
+                } else if(rpncmd == "strtolower") {
+                    rpn_set(strtolower(rpn_get()));
+                } else if(rpncmd == "strtoupper") {
+                    rpn_set(strtoupper(rpn_get()));
                 } else if(rpncmd == "strlen") {
                     rpn_setf(strlen(rpn_get()));
+                } else if(rpncmd == "strlennocol") {
+                    rpn_setf(strlennocol(rpn_get()));
+                } else if(rpncmd == "strdecolorize") {
+                    rpn_set(strdecolorize(rpn_get()));
                 } else if(rpncmd == "substr") {
                     float len = rpn_popf();
                     float start = rpn_popf();

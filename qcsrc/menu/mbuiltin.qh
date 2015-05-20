@@ -274,6 +274,7 @@ float(string s1, string s2) strcmp = #228;
 float(string s1, string s2) strcasecmp = #229;
 float(string s1, string s2, float len) strncasecmp = #230;
 
+float(string s) strlennocol = #476;
 string(string s) strdecolorize = #477;
 
 //DP_QC_STRINGBUFFERS
@@ -348,3 +349,6 @@ float(float i) argv_end_index = #516;
 string(float, float) getgamedirinfo = #626;
 #define GETGAMEDIRINFO_NAME 0
 #define GETGAMEDIRINFO_DESCRIPTION 1
+
+string(string s) strtolower = #480;
+string(string s) strtoupper = #481;
