@@ -2986,6 +2986,8 @@ string GotoMap(string m)
 		return "Map switch will happen after scoreboard.";
 }
 
+float roundstate_old;
+
 void EndFrame()
 {
 	float altime;
@@ -3048,6 +3050,11 @@ void EndFrame()
         self.armorhitsound = FALSE;
 		antilag_record(self, altime);
 	}
+
+    if(roundstate != roundstate_old) {
+        localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
+        roundstate_old = roundstate;
+    }
 }
 
 
