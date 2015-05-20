@@ -626,6 +626,14 @@ float GameCommand_Generic(string command)
                     rpn_setf(rpn_getf() || f);
                 } else if(rpncmd == "not") {
                     rpn_setf(!rpn_getf());
+                } else if(rpncmd == "bitand") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() & f);
+                } else if(rpncmd == "bitor") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() | f);
+                } else if(rpncmd == "bitnot") {
+                    rpn_setf(-rpn_getf() - 1);
                 } else if(rpncmd == "vadd") {
                     v1 = rpn_popv();
                     v2 = rpn_popv();
