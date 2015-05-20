@@ -1188,8 +1188,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
-	
-	
+
+    float silence = (source? CVAR(sv_silence) : 0);
+
+    if(silence == 1)
+        return;
+
     if(source.iscreature) {
         float damg;
         
@@ -1382,7 +1386,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(privatesay)
 		sourcemsgstr = strcat(privatemsgprefix, substring(sourcemsgstr, privatemsgprefixlen, -1));
 
-	if(source.muted)
+	if(source.muted || silence)
 	{
 		// always fake the message
 		

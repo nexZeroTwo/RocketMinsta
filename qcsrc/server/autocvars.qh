@@ -2109,5 +2109,6 @@ float autocvar_timelimit_overtimes;
 float autocvar_timelimit_suddendeath;
 float autocvar_waypoint_benchmark;
 float autocvar_welcome_message_time;
+float autocvar_sv_silence;
 
 #endif
