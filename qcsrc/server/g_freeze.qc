@@ -210,6 +210,11 @@ void Freeze_UnfreezePlayer(entity plr)
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
     Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
+
+    entity e;
+    for(;(e = find(e, classname, "grapplinghook"));)
+        if(e.aiment == plr)
+            RemoveGrapplingHook(e.owner);
 }
 
 void Freeze_SetGlobalWarming(float d) {
