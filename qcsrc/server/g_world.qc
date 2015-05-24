@@ -9,9 +9,18 @@ float() DoNextMapOverride;
 
 string geh_event;
 string geh_args;
+float geh_mode;
+float geh_argidx;
 
 void CallGameEventHook(string evnt, string args) {
     dprint("Calling game event hook ", evnt, " ", args, "\n");
+
+    if(geh_mode > 1) {
+        registercvar("evargc", "");
+        cvar_set("evargc", ftos(geh_argidx));
+        GameCommand(cvar_string(strcat("sv_gameeventhook_", evnt, "_gamecommand")));
+    }
+
     localcmd("\nsv_hook_gameevent_", evnt, " ", args, "\n");
 }
 
@@ -19,11 +28,13 @@ float CallGameEventHook_Begin(string evnt) {
     if(!CVAR(sv_gameeventhooks))
         return FALSE;
 
-    if(!cvar(strcat("sv_gameeventhook_", evnt)))
+    geh_mode = cvar(strcat("sv_gameeventhook_", evnt));
+    if(!geh_mode)
         return FALSE;
 
     geh_event = evnt;
     geh_args = "";
+    geh_argidx = 0;
     return TRUE;
 }
 
@@ -32,6 +43,13 @@ void CallGameEventHook_Commit(void) {
 }
 
 void CallGameEventHook_ArgRaw(string a) {
+    if(geh_mode > 1) {
+        string cv = strcat("evarg", ftos(geh_argidx));
+        registercvar(cv, "");
+        cvar_set(cv, a);
+        ++geh_argidx;
+    }
+
     geh_args = strcat(geh_args, a, " ");
 }
 
