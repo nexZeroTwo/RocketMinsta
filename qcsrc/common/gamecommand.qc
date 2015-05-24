@@ -611,6 +611,23 @@ float GameCommand_Generic(string command)
                 } else if(rpncmd == "pow") {
                     f = rpn_popf();
                     rpn_setf(pow(rpn_getf(), f));
+                } else if(rpncmd == "sin") {
+                    rpn_setf(sin(rpn_getf()));
+                } else if(rpncmd == "cos") {
+                    rpn_setf(cos(rpn_getf()));
+                } else if(rpncmd == "tan") {
+                    rpn_setf(tan(rpn_getf()));
+                } else if(rpncmd == "asin") {
+                    rpn_setf(asin(rpn_getf()));
+                } else if(rpncmd == "acos") {
+                    rpn_setf(acos(rpn_getf()));
+                } else if(rpncmd == "atan") {
+                    rpn_setf(atan(rpn_getf()));
+                } else if(rpncmd == "atan2") {
+                    f = rpn_popf();
+                    rpn_setf(atan2(rpn_getf(), f));
+                } else if(rpncmd == "sqrt") {
+                    rpn_setf(sqrt(rpn_getf()));
 				} else if(rpncmd == "when") {
 					f = rpn_popf();
 					f2 = rpn_popf();

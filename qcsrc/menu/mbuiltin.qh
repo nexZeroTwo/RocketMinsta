@@ -352,3 +352,9 @@ string(float, float) getgamedirinfo = #626;
 
 string(string s) strtolower = #480;
 string(string s) strtoupper = #481;
+
+float(float s) asin = #471;
+float(float c) acos = #472;
+float(float t) atan = #473;
+float(float c, float s) atan2 = #474;
+float(float a) tan = #475;

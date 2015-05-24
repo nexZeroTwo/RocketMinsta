@@ -308,3 +308,7 @@ float(float fieldnum, entity ent, string s) putentityfieldstring = #500;
 
 float(string s1, string s2, float len) strncmp = #228;
 float(string s1, string s2) strcmp = #228;
+
+float(float s) asin = #471;
+float(float c) acos = #472;
+float(float t) atan = #473;
