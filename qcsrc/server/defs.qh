@@ -805,3 +805,14 @@ float sv_shownames;
 .float antilag_debug;
 
 float PlayerMayFire(entity plr);
+
+#define GAMEEVENT(evnt,argblock) if(CallGameEventHook_Begin(evnt)) { argblock CallGameEventHook_Commit(); }
+#define GAMEEVENTARG(type,arg) CallGameEventHook_Arg##type(arg);
+
+void CallGameEventHook(string evnt, string args);
+float CallGameEventHook_Begin(string evnt);
+void CallGameEventHook_Commit(void);
+void CallGameEventHook_ArgRaw(string a);
+void CallGameEventHook_ArgFloat(float f);
+void CallGameEventHook_ArgVector(vector v);
+void CallGameEventHook_ArgEntity(entity e);

@@ -7,6 +7,46 @@ void GotoNextMap();
 void ShuffleMaplist()
 float() DoNextMapOverride;
 
+string geh_event;
+string geh_args;
+
+void CallGameEventHook(string evnt, string args) {
+    dprint("Calling game event hook ", evnt, " ", args, "\n");
+    localcmd("\nsv_hook_gameevent_", evnt, " ", args, "\n");
+}
+
+float CallGameEventHook_Begin(string evnt) {
+    if(!CVAR(sv_gameeventhooks))
+        return FALSE;
+
+    if(!cvar(strcat("sv_gameeventhook_", evnt)))
+        return FALSE;
+
+    geh_event = evnt;
+    geh_args = "";
+    return TRUE;
+}
+
+void CallGameEventHook_Commit(void) {
+    CallGameEventHook(geh_event, geh_args);
+}
+
+void CallGameEventHook_ArgRaw(string a) {
+    geh_args = strcat(geh_args, a, " ");
+}
+
+void CallGameEventHook_ArgFloat(float f) {
+    CallGameEventHook_ArgRaw(ftos(f));
+}
+
+void CallGameEventHook_ArgVector(vector v) {
+    CallGameEventHook_ArgRaw(strcat("\"", vtos(v), "\""));
+}
+
+void CallGameEventHook_ArgEntity(entity e) {
+    CallGameEventHook_ArgFloat(num_for_edict(e));
+}
+
 void SetDefaultAlpha()
 {
 	if(CVAR(g_running_guns))

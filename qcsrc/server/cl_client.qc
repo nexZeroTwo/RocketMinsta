@@ -1395,6 +1395,10 @@ void PutClientInServer (void)
         self.lastdamage = 0;
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
+
+        GAMEEVENT("playerspawn", {
+            GAMEEVENTARG(Entity, self)
+        })
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}

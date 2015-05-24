@@ -584,6 +584,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oh = self.health;
     float oa = self.armorvalue;
     
+    GAMEEVENT("playerdamage", {
+        GAMEEVENTARG(Entity, self)
+        GAMEEVENTARG(Entity, inflictor)
+        GAMEEVENTARG(Entity, attacker)
+        GAMEEVENTARG(Float, damage)
+        GAMEEVENTARG(Float, deathtype)
+        GAMEEVENTARG(Vector, hitloc)
+        GAMEEVENTARG(Vector, force)
+    })
+
     if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
         damage = 0;
             
@@ -700,7 +710,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
-		if (!(self.flags & FL_GODMODE)) if(self.classname != "bait_body")
+		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
         {
             self.armorvalue = self.armorvalue - save;
 
@@ -782,6 +792,17 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 				self.v_angle_x = self.v_angle_x + (random() * 2 - 1) * shake;
 				self.v_angle_y = self.v_angle_y + (random() * 2 - 1) * shake;
 			}
+
+            GAMEEVENT("playerdamaged", {
+                GAMEEVENTARG(Entity, self)
+                GAMEEVENTARG(Entity, inflictor)
+                GAMEEVENTARG(Entity, attacker)
+                GAMEEVENTARG(Float, take)
+                GAMEEVENTARG(Float, save)
+                GAMEEVENTARG(Float, deathtype)
+                GAMEEVENTARG(Vector, hitloc)
+                GAMEEVENTARG(Vector, force)
+            })
 		}
 		else
 			self.max_armorvalue += (save + take);
@@ -833,7 +854,17 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.health = 1;
             return;
         }
-        
+
+        GAMEEVENT("playerdeath", {
+            GAMEEVENTARG(Entity, self)
+            GAMEEVENTARG(Entity, inflictor)
+            GAMEEVENTARG(Entity, attacker)
+            GAMEEVENTARG(Float, damage)
+            GAMEEVENTARG(Float, deathtype)
+            GAMEEVENTARG(Vector, hitloc)
+            GAMEEVENTARG(Vector, force)
+        })
+
 		float defer_ClientKill_Now_TeamChange;
 		defer_ClientKill_Now_TeamChange = FALSE;
 
@@ -1051,6 +1082,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
         
+        GAMEEVENT("playerdied", {
+            GAMEEVENTARG(Entity, self)
+            GAMEEVENTARG(Entity, inflictor)
+            GAMEEVENTARG(Entity, attacker)
+            GAMEEVENTARG(Float, damage)
+            GAMEEVENTARG(Float, deathtype)
+            GAMEEVENTARG(Vector, hitloc)
+            GAMEEVENTARG(Vector, force)
+        })
+
         CA_PlayerDies(attacker);
 	}
 }
