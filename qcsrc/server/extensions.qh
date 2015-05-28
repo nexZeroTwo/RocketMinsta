@@ -1963,3 +1963,20 @@ void(float pause) setpause = #531;
 //  See libircclient documentation for a list of events and their possible arguments, or play around with irc_eventlog
 
 ///// END DarkPlacesRM EXTENSIONS /////
+
+//DP_RM_CALLFUNCTIONEX
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+void(float idx, float val) CallFunctionEx_SetArgFloat = #150;
+void(float idx, float val) CallFunctionEx_SetArgInt = #151;
+void(float idx, vector val) CallFunctionEx_SetArgVector = #152;
+void(float idx, string val) CallFunctionEx_SetArgString = #153;
+void(float idx, entity val) CallFunctionEx_SetArgEntity = #153;
+void(string fname) CallFunctionEx = #154;
+float(string fname) CallFunctionEx_Float = #154;
+float(string fname, float castretval) CallFunctionEx_Float2 = #154;
+entity(string fname) CallFunctionEx_Entity = #154;
+vector(string fname) CallFunctionEx_Vector = #154;
+string(string fname) CallFunctionEx_String = #154;
+#define CallFunctionEx_Int(fname) CallFunctionEx_Float2(fname, TRUE)

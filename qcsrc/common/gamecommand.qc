@@ -5,29 +5,51 @@ float rpn_error;
 float rpn_sp;
 float rpn_callsp;
 string rpn_stack[MAX_RPN_STACK];
+float rpn_fstack[MAX_RPN_STACK];
 float rpn_callstack[MAX_RPN_CALLSTACK];
 
-string rpn_pop() {
-	if(rpn_sp > 0) {
-		--rpn_sp;
+void rpn_pushraw(string s, float f) {
+    if(rpn_sp < MAX_RPN_STACK) {
+        rpn_stack[rpn_sp] = s;
+        rpn_fstack[rpn_sp] = f;
+        dprint("rpn: PUSH ", s, " ", ftos(f), "\n");
+        ++rpn_sp;
+    } else {
+        print("rpn: stack overflow\n");
+        rpn_error = TRUE;
+    }
+}
+
+void rpn_setraw(string s, float f) {
+    if(rpn_sp > 0) {
+        dprint("rpn: SET ", rpn_stack[rpn_sp - 1], " ---> ", s, "\n");
+        rpn_stack[rpn_sp - 1] = s;
+        rpn_fstack[rpn_sp - 1] = f;
+    } else {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+    }
+}
+
+void rpn_popraw() {
+    if(rpn_sp > 0) {
+        --rpn_sp;
         dprint("rpn: POP ", rpn_stack[rpn_sp], "\n");
-		return rpn_stack[rpn_sp];
-	} else {
-		print("rpn: stack underflow\n");
-		rpn_error = TRUE;
-		return "";
-	}
+    } else {
+        print("rpn: stack underflow\n");
+        rpn_error = TRUE;
+    }
+}
+
+string rpn_pop() {
+    rpn_popraw();
+    if(rpn_error)
+        return "";
+    return rpn_stack[rpn_sp];
 }
 
 void rpn_push(string s) {
-	if(rpn_sp < MAX_RPN_STACK) {
-		rpn_stack[rpn_sp] = s;
-        dprint("rpn: PUSH ", s, "\n");
-		++rpn_sp;
-	} else {
-		print("rpn: stack overflow\n");
-		rpn_error = TRUE;
-	}
+    rpn_pushraw(s, stof(s));
 }
 
 string rpn_get() {
@@ -40,42 +62,55 @@ string rpn_get() {
 	}
 }
 
-string rpn_getofs(float o) {
+float rpn_getf() {
+    if(rpn_sp > 0) {
+        return rpn_fstack[rpn_sp - 1];
+    } else {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+        return 0;
+    }
+}
+
+void rpn_verifystackofs(float o) {
     if(!rpn_sp) {
         print("rpn: empty stack\n");
         rpn_error = TRUE;
-        return "";
+        return;
     }
 
     if(o < 0) {
         print("rpn: invalid offset\n");
         rpn_error = TRUE;
-        return "";
+        return;
     }
 
     if(rpn_sp - o <= 0) {
         print("rpn: stack underflow\n");
         rpn_error = TRUE;
-        return "";
+        return;
     }
 
-    return rpn_stack[rpn_sp - 1 - o];
 }
 
 void rpn_set(string s) {
-	if(rpn_sp > 0) {
-        dprint("rpn: SET ", rpn_stack[rpn_sp - 1], " ---> ", s, "\n");
-		rpn_stack[rpn_sp - 1] = s;
-	} else {
-		print("rpn: empty stack\n");
-		rpn_error = TRUE;
-	}
+    rpn_setraw(s, stof(s));
 }
 
-float rpn_getf() { return stof(rpn_get()); }
-float rpn_popf() { return stof(rpn_pop()); }
-void rpn_pushf(float f) { return rpn_push(ftos(f)); }
-void rpn_setf(float f) { return rpn_set(ftos(f)); }
+void rpn_setf(float f) {
+    rpn_setraw(ftos(f), f);
+}
+
+float rpn_popf() {
+    rpn_popraw();
+    if(rpn_error)
+        return 0;
+    return rpn_fstack[rpn_sp];
+}
+
+void rpn_pushf(float f) {
+    rpn_pushraw(ftos(f), f);
+}
 
 vector rpn_popv(void) {
     vector v;
@@ -480,6 +515,7 @@ float GameCommand_Generic(string command)
 			string rpncmd;
 			float f2, f3;
             vector v1, v2;
+            float syscallsupported = checkextension("DP_RM_CALLFUNCTIONEX");
 
             command = rpn_preprocess(command, 1);
             argc = tokenize_console(command);
@@ -560,7 +596,7 @@ float GameCommand_Generic(string command)
 					rpn_set(s);
 					rpn_push(s2);
 				} else if(rpncmd == "dup") {
-					rpn_push(rpn_get());
+                    rpn_pushraw(rpn_get(), rpn_getf());
 				} else if(rpncmd == "pop") {
 					rpn_pop();
 				} else if(rpncmd == "add" || rpncmd == "+") {
@@ -1124,11 +1160,57 @@ float GameCommand_Generic(string command)
                         rpn_error = TRUE;
                     }
                 } else if(rpncmd == "get") {
-                    rpn_push(rpn_getofs(rpn_popf()));
+                    f = rpn_popf();
+                    rpn_verifystackofs(f);
+
+                    if(!rpn_error) {
+                        f = rpn_sp - 1 - f; 
+                        rpn_pushraw(rpn_stack[f], rpn_fstack[f]);
+                    }
                 } else if(rpncmd == "trace") {
                     print("rpn: stack trace:\n");
                     for(f = rpn_sp; f; --f)
-                        print("   ", ftos(f), "  ", rpn_stack[f - 1], "\n");
+                        print("   ", ftos(f), "  ", rpn_stack[f - 1], " ^8", ftos(rpn_fstack[f - 1]), "\n");
+                } else if(rpncmd == "syscall") {
+                    if(!syscallsupported) {
+                        print("rpn: attempted to use syscall, but the engine doesn't support the DP_RM_CALLFUNCTIONEX extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        string sig = rpn_pop();
+                        string fname = rpn_pop();
+                        float ac = strlen(sig) - 1;
+                        string rtype = substring(sig, 0, 1);
+
+                        for(f = ac - 1; f >= 0; --f) {
+                            string atype = substring(sig, f + 1, 1);
+
+                            if(atype == "f") {
+                                CallFunctionEx_SetArgFloat(f, rpn_popf());
+                            } else if(atype == "v") {
+                                CallFunctionEx_SetArgVector(f, rpn_popv());
+                            } else if(atype == "s") {
+                                CallFunctionEx_SetArgString(f, rpn_pop());
+                            } else {
+                                if(atype != "i" && atype != "e")
+                                    print("rpn: warning: invalid argument type ", atype, ", assuming int\n");
+                                CallFunctionEx_SetArgInt(f, rpn_popf());
+                            }
+                        }
+
+                        if(rtype == "v") {
+                            CallFunctionEx(fname);
+                        } else if(rtype == "f") {
+                            rpn_pushf(CallFunctionEx_Float(fname));
+                        } else if(rtype == "v") {
+                            rpn_pushv(CallFunctionEx_Vector(fname));
+                        } else if(rtype == "s") {
+                            rpn_push(CallFunctionEx_String(fname));
+                        } else {
+                            if(rtype != "i" && rtype != "e")
+                                print("rpn: warning: invalid return type ", rtype, ", assuming int\n");
+                            rpn_pushf(CallFunctionEx_Int(fname));
+                        }
+                    }
 				} else {
 					rpn_push(cvar_string(rpncmd));
 				}
@@ -1285,6 +1367,28 @@ float GameCommand_Generic(string command)
         s = substring(command, argv_start_index(1), strlen(command));
         print(s, ": ^5", ftos(crc16(FALSE, s)), "\n");
         return TRUE;
+#ifdef SVQC
+    } else if(argv(0) == "cftest") {
+        float ff;
+        string ss;
+        vector vv;
+
+        CallFunctionEx_SetArgString(0, "13.37");
+        ff = CallFunctionEx_Float("stof");
+
+        CallFunctionEx_SetArgFloat(0, ff);
+        ss = CallFunctionEx_String("ftos");
+
+        CallFunctionEx_SetArgString(0, "ff = ");
+        CallFunctionEx_SetArgString(1, ss);
+        ss = CallFunctionEx_String("strcat");
+
+        CallFunctionEx_SetArgString(0, "'1 2 3'");
+        vv = CallFunctionEx_Vector("stov");
+
+        print("Result: ", ftos(ff), " ", ss, " ", vtos(vv), "\n");
+        return TRUE;
+#endif
 	} else return IP2C_GameCommand(command);
 
 	return FALSE;

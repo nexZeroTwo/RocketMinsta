@@ -312,3 +312,21 @@ float(string s1, string s2) strcmp = #228;
 float(float s) asin = #471;
 float(float c) acos = #472;
 float(float t) atan = #473;
+
+
+//DP_RM_CALLFUNCTIONEX
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+void(float idx, float val) CallFunctionEx_SetArgFloat = #150;
+void(float idx, float val) CallFunctionEx_SetArgInt = #151;
+void(float idx, vector val) CallFunctionEx_SetArgVector = #152;
+void(float idx, string val) CallFunctionEx_SetArgString = #153;
+void(float idx, entity val) CallFunctionEx_SetArgEntity = #153;
+void(string fname) CallFunctionEx = #154;
+float(string fname) CallFunctionEx_Float = #154;
+float(string fname, float castretval) CallFunctionEx_Float2 = #154;
+entity(string fname) CallFunctionEx_Entity = #154;
+vector(string fname) CallFunctionEx_Vector = #154;
+string(string fname) CallFunctionEx_String = #154;
+#define CallFunctionEx_Int(fname) CallFunctionEx_Float2(fname, TRUE)
