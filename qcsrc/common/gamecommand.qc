@@ -1197,7 +1197,7 @@ float GameCommand_Generic(string command)
                             }
                         }
 
-                        if(rtype == "v") {
+                        if(rtype == "n") {
                             CallFunctionEx(fname);
                         } else if(rtype == "f") {
                             rpn_pushf(CallFunctionEx_Float(fname));
