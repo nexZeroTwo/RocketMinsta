@@ -24,6 +24,7 @@ void() m_init =
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
+    registercvar("menu_rpn_autoload", "", CVAR_SAVE);
     
     localcmd("alias menu_shownadeselect \"menu_cmd directmenu NadeMenu\"\n");
 

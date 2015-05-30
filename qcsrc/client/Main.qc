@@ -104,6 +104,8 @@ void CSQC_Init(void)
 #ifndef CAMERATEST
 	}
 #endif
+
+    registercvar("cl_rpn_autoload", "", CVAR_SAVE);
 	registercvar("sbar_usecsqc", "1");
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
@@ -138,7 +140,7 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
     registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
-	
+
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!

@@ -279,7 +279,7 @@ string GameCommand_Markup(string s2)
 	return s;
 }
 
-string rpn_preprocess(string script, float offset) {
+string rpn_preprocess_expandincludes(string script, float offset) {
     float argc = tokenize_console(script);
     float i;
 
@@ -292,11 +292,30 @@ string rpn_preprocess(string script, float offset) {
             string e = substring(script, argv_end_index(i), strlen(script));
             script = strcat(b, cvar_string(s), e);
 
-            return rpn_preprocess(script, i);
+            return rpn_preprocess_expandincludes(script, i);
         }
     }
 
     return script;
+}
+
+string rpn_preprocess(string script, float offset) {
+#ifdef SVQC
+    string aload = CVAR_STR(sv_rpn_autoload);
+#else
+#ifdef CSQC
+    string aload = CVAR_STR(cl_rpn_autoload);
+#else
+#ifdef MENUQC
+    string aload = CVAR_STR(menu_rpn_autoload);
+#endif
+#endif
+#endif
+
+    if(aload != "")
+        script = strcat(script, " break [autoload] ", aload);
+
+    return rpn_preprocess_expandincludes(script, offset);
 }
 
 #ifndef MENUQC
