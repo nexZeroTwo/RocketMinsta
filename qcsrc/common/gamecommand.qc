@@ -611,10 +611,15 @@ float GameCommand_Generic(string command)
 				} else if(rpncmd == "load") {
 					rpn_set(cvar_string(rpn_get()));
 				} else if(rpncmd == "exch") {
-					s = rpn_pop();
-					s2 = rpn_get();
-					rpn_set(s);
-					rpn_push(s2);
+                    s = rpn_get();
+                    f = rpn_getf();
+                    rpn_popraw();
+
+                    s2 = rpn_get();
+                    f2 = rpn_getf();
+
+					rpn_setraw(s, f);
+					rpn_pushraw(s2, f2);
 				} else if(rpncmd == "dup") {
                     rpn_pushraw(rpn_get(), rpn_getf());
 				} else if(rpncmd == "pop") {
