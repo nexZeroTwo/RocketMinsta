@@ -311,6 +311,11 @@ void HG_Napalm_Explode() {
 }
 
 void HG_Plasma_Projectile_Explode() {
+    if(self.meodp_point.enemy) {
+        self.owner = self.meodp_point.enemy;
+        self.team = self.meodp_point.enemy.team;
+    }
+
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
     self.damage_noinfo = FALSE;

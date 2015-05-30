@@ -726,8 +726,11 @@ void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
     entity oself = self;
     self = targ;
     targ.meodp_point.solid = SOLID_NOT;
+    targ.meodp_point.enemy = attacker;
     te_meodp(targ.meodp_point.origin);
     targ.meodp_death(attacker, inflictor);
+    if(targ.meodp_point && !wasfreed(targ.meodp_point))
+        targ.meodp_point.enemy = world;
     self = oself;
 }
 
