@@ -516,6 +516,7 @@ float GameCommand_Generic(string command)
 			float f2, f3;
             vector v1, v2;
             float syscallsupported = checkextension("DP_RM_CALLFUNCTIONEX");
+            float globalaccsupported = checkextension("DP_RM_GLOBALACCESS");
 
             command = rpn_preprocess(command, 1);
             argc = tokenize_console(command);
@@ -1210,6 +1211,21 @@ float GameCommand_Generic(string command)
                                 print("rpn: warning: invalid return type ", rtype, ", assuming int\n");
                             rpn_pushf(CallFunctionEx_Int(fname));
                         }
+                    }
+                } else if(rpncmd == "globalget") {
+                    if(!globalaccsupported) {
+                        print("rpn: attempted to use globalget, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        rpn_set(GlobalGet(rpn_get()));
+                    }
+                } else if(rpncmd == "globalset") {
+                    if(!globalaccsupported) {
+                        print("rpn: attempted to use globalset, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        s = rpn_pop();
+                        GlobalSet(rpn_pop(), s);
                     }
 				} else {
 					rpn_push(cvar_string(rpncmd));

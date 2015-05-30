@@ -1980,3 +1980,16 @@ entity(string fname) CallFunctionEx_Entity = #154;
 vector(string fname) CallFunctionEx_Vector = #154;
 string(string fname) CallFunctionEx_String = #154;
 #define CallFunctionEx_Int(fname) CallFunctionEx_Float2(fname, TRUE)
+
+//DP_RM_GLOBALACCESS
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string) GlobalOfs = #170;
+float(string) GlobalType = #171;;
+float(float) GlobalInt = #172;
+float(float) GlobalFloat = #173;
+void(float, float) GlobalSetInt = #174;
+void(float, float) GlobalSetFloat = #175;
+string(string) GlobalGet = #176;
+float(string, string) GlobalSet = #177;
