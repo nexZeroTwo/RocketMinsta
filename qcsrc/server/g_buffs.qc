@@ -984,9 +984,9 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_Model_Update(self);
 }
 
-void Buffs_BuffPickup_Notify(entity plr) {
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
-    string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
+void Buffs_BuffPickup_Notify(entity plr, float bfs, float tm) {
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
+    string tn = (tm? strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") : "");
 
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
     bigprint_spec(plr, strcat("You got the ", bname), "", 3);
@@ -1003,7 +1003,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     if(g_buffs_replace)
         plr.buffs = 0;
 
-    Buffs_BuffPickup_Notify(plr);
+    Buffs_BuffPickup_Notify(plr, self.buffs, self.team);
     BUFFS_GIVE(plr, self.buffs);
 }
 
