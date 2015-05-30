@@ -1231,16 +1231,16 @@ float GameCommand_Generic(string command)
                             rpn_pushf(CallFunctionEx_Int(fname));
                         }
                     }
-                } else if(rpncmd == "globalget") {
+                } else if(rpncmd == "getglobal") {
                     if(!globalaccsupported) {
-                        print("rpn: attempted to use globalget, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        print("rpn: attempted to use getglobal, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
                         rpn_error = TRUE;
                     } else {
                         rpn_set(GlobalGet(rpn_get()));
                     }
-                } else if(rpncmd == "globalset") {
+                } else if(rpncmd == "setglobal") {
                     if(!globalaccsupported) {
-                        print("rpn: attempted to use globalset, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        print("rpn: attempted to use setglobal, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
                         rpn_error = TRUE;
                     } else {
                         s = rpn_pop();
