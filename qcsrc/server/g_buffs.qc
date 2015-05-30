@@ -984,6 +984,15 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_Model_Update(self);
 }
 
+void Buffs_BuffPickup_Notify(entity plr) {
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
+    string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
+
+    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
+    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
+    sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
+}
+
 void Buffs_BuffPickup_GiveTo(entity plr) {
     if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
@@ -991,15 +1000,10 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
-    string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
-    
     if(g_buffs_replace)
         plr.buffs = 0;
 
-    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
-    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
-    sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
+    Buffs_BuffPickup_Notify(plr);
     BUFFS_GIVE(plr, self.buffs);
 }
 
