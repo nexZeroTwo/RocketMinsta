@@ -334,6 +334,7 @@ float autocvar_g_balance_grapplehook_force_rubber_overstretch;
 float autocvar_g_balance_grapplehook_gravity;
 float autocvar_g_balance_grapplehook_health;
 float autocvar_g_balance_grapplehook_length_min;
+float autocvar_g_balance_grapplehook_lifetime;
 float autocvar_g_balance_grapplehook_oneperplayer;
 float autocvar_g_balance_grapplehook_speed_fly;
 float autocvar_g_balance_grapplehook_speed_pull;

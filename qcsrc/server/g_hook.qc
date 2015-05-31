@@ -265,6 +265,15 @@ void GrapplingHookThink()
 			self.owner.flags &~= FL_ONGROUND;
 		}
 	}
+	else
+	{
+		if(self.cnt && self.cnt < time)
+		{
+			RemoveGrapplingHook(self.owner);
+			return;
+		}
+	}
+
 
     if(roundstate == ROUNDSTATE_GAME)
 	if(self.aiment.classname == "player") if(self.last_dmg < time)
@@ -467,6 +476,8 @@ void FireGrapplingHook (void)
 	missile.event_damage = GrapplingHook_Damage;
 	missile.takedamage = DAMAGE_AIM;
 	missile.damageforcescale = 0;
+	if (CVAR(g_balance_grapplehook_lifetime) > 0)
+		missile.cnt = CVAR(g_balance_grapplehook_lifetime) + time;
 }
 
 //  void GrapplingHookFrame()
