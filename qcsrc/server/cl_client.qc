@@ -2539,7 +2539,45 @@ void player_regen (void)
 	}
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+	{
 		self.ammo_fuel = CalcRotRegen(self.ammo_fuel, minf, CVAR(g_balance_fuel_regen), CVAR(g_balance_fuel_regenlinear), regen_mod * frametime * (time > self.pauseregen_finished) * (self.items & IT_FUEL_REGEN != 0), maxf, CVAR(g_balance_fuel_rot), CVAR(g_balance_fuel_rotlinear), rot_mod * frametime * (time > self.pauserotfuel_finished), limitf);
+		float ammo_nails_regen, ammo_nails_regen_max,
+				ammo_shells_regen, ammo_shells_regen_max,
+				ammo_cells_regen, ammo_cells_regen_max,
+				ammo_rockets_regen, ammo_rockets_regen_max;
+		ammo_nails_regen = CVAR(g_balance_ammo_nails_regen);
+		ammo_nails_regen_max = CVAR(g_balance_ammo_nails_regen_max);
+		ammo_shells_regen = CVAR(g_balance_ammo_shells_regen);
+		ammo_shells_regen_max = CVAR(g_balance_ammo_shells_regen_max);
+		ammo_cells_regen = CVAR(g_balance_ammo_cells_regen);
+		ammo_cells_regen_max = CVAR(g_balance_ammo_cells_regen_max);
+		ammo_rockets_regen = CVAR(g_balance_ammo_rockets_regen);
+		ammo_rockets_regen_max = CVAR(g_balance_ammo_rockets_regen_max);
+		if (ammo_nails_regen && self.ammo_nails < ammo_nails_regen_max)
+		{
+			self.ammo_nails += ammo_nails_regen * frametime * regen_mod;
+			if (self.ammo_nails > ammo_nails_regen_max)
+				self.ammo_nails = ammo_nails_regen_max;
+		}
+		if (ammo_shells_regen && self.ammo_shells < ammo_shells_regen_max)
+		{
+			self.ammo_shells += ammo_shells_regen * frametime * regen_mod;
+			if (self.ammo_shells > ammo_shells_regen_max)
+				self.ammo_shells = ammo_shells_regen_max;
+		}
+		if (ammo_rockets_regen && self.ammo_rockets < ammo_rockets_regen_max)
+		{
+			self.ammo_rockets += ammo_rockets_regen * frametime * regen_mod;
+			if (self.ammo_rockets > ammo_rockets_regen_max)
+				self.ammo_rockets = ammo_rockets_regen_max;
+		}
+		if (ammo_cells_regen && self.ammo_cells < ammo_cells_regen_max)
+		{
+			self.ammo_cells += ammo_cells_regen * frametime * regen_mod;
+			if (self.ammo_cells > ammo_cells_regen_max)
+				self.ammo_cells = ammo_cells_regen_max;
+		}
+	}
 }
 
 float zoomstate_set;
