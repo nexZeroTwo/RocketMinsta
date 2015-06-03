@@ -1,5 +1,7 @@
 #define MAX_RPN_STACK 32
 #define MAX_RPN_CALLSTACK 32
+#define MAX_RPN_LOCALS 8
+
 float rpn_db;
 float rpn_error;
 float rpn_sp;
@@ -7,6 +9,15 @@ float rpn_callsp;
 string rpn_stack[MAX_RPN_STACK];
 float rpn_fstack[MAX_RPN_STACK];
 float rpn_callstack[MAX_RPN_CALLSTACK];
+.string rpn_localnames[MAX_RPN_LOCALS];
+.string rpn_locals[MAX_RPN_LOCALS];
+.float rpn_flocals[MAX_RPN_LOCALS];
+entity rpn_localscope;
+
+#ifdef MENUQC
+.entity owner;
+.float cnt;
+#endif
 
 void rpn_pushraw(string s, float f) {
     if(rpn_sp < MAX_RPN_STACK) {
@@ -166,6 +177,112 @@ void rpn_callpush(float idx) {
         print("rpn: call stack overflow\n");
         rpn_error = TRUE;
     }
+}
+
+void rpn_pushlocalscope(void) {
+    dprint("rpn: rpn_pushlocalscope()\n");
+    entity s = spawn();
+    s.owner = rpn_localscope;
+    rpn_localscope = s;
+}
+
+void rpn_poplocalscope(void) {
+    dprint("rpn: rpn_poplocalscope()\n");
+    if(!rpn_localscope) {
+        print("rpn: no local scope\n");
+        rpn_error = TRUE;
+        return;
+    }
+
+    entity s = rpn_localscope;
+    rpn_localscope = s.owner;
+    remove(s);
+}
+
+entity rpn_getlocalscope(void) {
+    if(!rpn_localscope)
+        rpn_pushlocalscope();
+    return rpn_localscope;
+}
+
+void rpn_deflocal(string lname) {
+    float i;
+
+    for(i = 0; i < MAX_RPN_LOCALS; ++i) {
+        if(!rpn_localscope.(rpn_localnames[i])) {
+            rpn_localscope.cnt = i;
+            rpn_localscope.(rpn_localnames[i]) = lname;
+            return;
+        }
+    }
+
+    print("rpn: couldn't define local '", lname, "', too many locals\n");
+    rpn_error = TRUE;
+}
+
+entity rpn_findlocal(string lname, float define) {
+    float i, firstfree = -1;
+    entity s;
+    string n;
+
+    for(s = rpn_localscope; s; s = s.owner) {
+        for(i = 0; i < MAX_RPN_LOCALS; ++i) {
+            n = s.(rpn_localnames[i]);
+            if(!n && s == rpn_localscope) {
+                firstfree = i;
+            } else if(n == lname) {
+                s.cnt = i;
+                return s;
+            }
+        }
+    }
+
+    if(define) {
+        if(firstfree >= 0) {
+            rpn_localscope.(rpn_localnames[firstfree]) = lname;
+            rpn_localscope.cnt = firstfree;
+            return rpn_localscope;
+        }
+
+        print("rpn: couldn't define local '", lname, "', too many locals\n");
+        rpn_error = TRUE;
+    } else {
+        print("rpn: local '", lname, "' not found\n");
+        rpn_error = TRUE;
+    }
+
+    return world;
+}
+
+string rpn_getlocal(string lname) {
+    entity s = rpn_findlocal(lname, FALSE);
+    if(!s)
+        return string_null;
+    return s.(rpn_locals[s.cnt]);
+}
+
+float rpn_getlocalf(string lname) {
+    entity s = rpn_findlocal(lname, FALSE);
+    if(!s)
+        return 0;
+    return s.(rpn_flocals[s.cnt]);
+}
+
+void rpn_setlocalraw(string lname, string sval, float fval) {
+    entity s = rpn_findlocal(lname, TRUE);
+    
+    if(s) {
+        s.(rpn_locals[s.cnt]) = sval;
+        s.(rpn_flocals[s.cnt]) = fval;
+    }
+}
+
+void rpn_setlocal(string lname, string sval) {
+    rpn_setlocalraw(lname, sval, stof(sval));
+}
+
+void rpn_setlocalf(string lname, float fval) {
+    rpn_setlocalraw(lname, ftos(fval), fval);
 }
 
 #define NUM_MARKUPS	41
@@ -536,12 +653,16 @@ float GameCommand_Generic(string command)
             vector v1, v2;
             float syscallsupported = checkextension("DP_RM_CALLFUNCTIONEX");
             float globalaccsupported = checkextension("DP_RM_GLOBALACCESS");
+            entity scope;
 
             command = rpn_preprocess(command, 1);
             argc = tokenize_console(command);
 
 			rpn_sp = 0;
 			rpn_error = FALSE;
+
+            rpn_pushlocalscope();
+
 			for(rpnpos = 1; rpnpos < argc; ++rpnpos)
 			{
 				rpncmd = argv(rpnpos);
@@ -1162,6 +1283,7 @@ float GameCommand_Generic(string command)
                     float o = rpnpos;
                     rpn_callpush(rpnpos);
                     rpnpos = rpn_popjumpidx(rpnpos, argc);
+                    rpn_pushlocalscope();
 
                     if(rpnpos < 1 || rpnpos >= argc) {
                         print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
@@ -1170,6 +1292,7 @@ float GameCommand_Generic(string command)
                 } else if(rpncmd == "return") {
                     float o = rpnpos;
                     rpnpos = rpn_callpop();
+                    rpn_poplocalscope();
 
                     if(rpnpos < 1 || rpnpos >= argc) {
                         print("rpn: return from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
@@ -1179,6 +1302,7 @@ float GameCommand_Generic(string command)
                     float o = rpnpos;
                     rpn_callpush(rpnpos);
                     rpnpos = rpn_findlabel(substring(rpncmd, 1, strlen(rpncmd) - 1), argc);
+                    rpn_pushlocalscope();
 
                     if(rpnpos < 1 || rpnpos >= argc) {
                         print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
@@ -1196,6 +1320,23 @@ float GameCommand_Generic(string command)
                     print("rpn: stack trace:\n");
                     for(f = rpn_sp; f; --f)
                         print("   ", ftos(f), "  ", rpn_stack[f - 1], " ^8", ftos(rpn_fstack[f - 1]), "\n");
+
+                    for(f3 = 0, scope = rpn_localscope; scope; ++f3, scope = scope.owner) {
+                        if(!f3)
+                            print("rpn: locals (scope level 0 (topmost)):\n");
+                        else
+                            print("rpn: locals (scope level ", ftos(f3), "):\n");
+
+
+                        for(f = 0; f < MAX_RPN_LOCALS; ++f) {
+                            s = scope.(rpn_localnames[f]);
+                            if(s) {
+                                s2 = scope.(rpn_locals[f]);
+                                f2 = scope.(rpn_flocals[f]);
+                                print("   ", s, " = ", s2, " ^8", ftos(f2), "\n");
+                            }
+                        }
+                    }
                 } else if(rpncmd == "syscall") {
                     if(!syscallsupported) {
                         print("rpn: attempted to use syscall, but the engine doesn't support the DP_RM_CALLFUNCTIONEX extension\n");
@@ -1251,7 +1392,52 @@ float GameCommand_Generic(string command)
                         s = rpn_pop();
                         GlobalSet(rpn_pop(), s);
                     }
+                } else if(rpncmd == "getlocal") {
+                    scope = rpn_findlocal(rpn_pop(), FALSE);
+                    if(!rpn_error) {
+                        s = scope.(rpn_locals[scope.cnt]);
+                        f = scope.(rpn_flocals[scope.cnt]);
+                        rpn_pushraw(s, f);
+                    }
+                } else if(rpncmd == "setlocal") {
+                    s = rpn_get();
+                    f = rpn_getf();
+                    rpn_popraw();
+
+                    s2 = rpn_pop();
+                    rpn_setlocalraw(s2, s, f);
+                } else if(rpncmd == "deflocal") {
+                    rpn_deflocal(rpn_pop());
+                } else if(substring(rpncmd, 0, 1) == "%") {
+                    f2 = strstrofs(rpncmd, "=", 0);
+                    f3 = strlen(rpncmd);
+
+                    if(f2 >= 0) {
+                        string lname = substring(rpncmd, 1, f2 - 1);
+                        string lval = substring(rpncmd, f2 + 1, f3);
+
+                        if(substring(lname, strlen(lname) - 1, 1) == "!") {
+                            lname = substring(lname, 0, strlen(lname) - 1);
+                            rpn_deflocal(lname);
+                        }
+
+                        if(lval == "")
+                            lval = rpn_pop();
+
+                        rpn_setlocal(lname, lval);
+                    } else if(substring(rpncmd, f3 - 1, 1) == "!") {
+                        rpn_deflocal(substring(rpncmd, 1, f3 - 2));
+                    } else {
+                        scope = rpn_findlocal(substring(rpncmd, 1, strlen(rpncmd)), FALSE);
+                        if(!rpn_error) {
+                            s = scope.(rpn_locals[scope.cnt]);
+                            f = scope.(rpn_flocals[scope.cnt]);
+                            rpn_pushraw(s, f);
+                        }
+                    }
 				} else {
+                    if(!(cvar_type(rpncmd) & CVAR_TYPEFLAG_EXISTS))
+                        print("rpn: warning: '", rpncmd, "' is neither a valid command nor a defined cvar\n");
 					rpn_push(cvar_string(rpncmd));
 				}
 
@@ -1259,14 +1445,19 @@ float GameCommand_Generic(string command)
 					break;
 			}
 
-			while(rpn_sp > 0)
-			{
-				s = rpn_pop();
-				print("rpn: still on stack: ", s, "\n");
+            rpn_poplocalscope();
+
+			while(rpn_sp > 0) {
+				print("rpn: still on stack: ", rpn_pop(), "\n");
 			}
 
             while(rpn_callsp > 0) {
                 print("rpn: still on call stack: ", ftos(rpn_callpop()), "\n");
+            }
+
+            while(rpn_localscope) {
+                print("rpn: a localscope still exists, removing\n");
+                rpn_poplocalscope();
             }
 
 			return TRUE;
