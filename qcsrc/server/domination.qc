@@ -40,7 +40,7 @@ void dom_recountpoints()
 
 void tdom_EndRound()
 {
-	G_EndRound(5, cvar("g_totaldomination_warmup"), dom_recountpoints, func_null, func_null);
+	G_EndRound(5, CVAR(g_totaldomination_warmup), dom_recountpoints, func_null, func_null);
 }
 
 void() dom_controlpoint_setup;
@@ -48,7 +48,7 @@ void() dom_controlpoint_setup;
 void LogDom(string mode, float team_before, entity actor)
 {
 	string s;
-	if(!cvar("sv_eventlog"))
+	if(!CVAR(sv_eventlog))
 		return;
 	s = strcat(":dom:", mode);
 	s = strcat(s, ":", ftos(team_before));
@@ -153,11 +153,11 @@ void dompoint_captured ()
 	if (head.noise1 != "")
 		play2all(head.noise1);
 
-	//self.nextthink = time + cvar("g_domination_point_rate");
+	//self.nextthink = time + CVAR(g_domination_point_rate);
 	//self.think = dompointthink;
 
-	if(cvar("g_domination_point_rate"))
-		self.delay = time + cvar("g_domination_point_rate");
+	if(CVAR(g_domination_point_rate))
+		self.delay = time + CVAR(g_domination_point_rate);
 	else
 		self.delay = time + self.wait;
 
@@ -212,7 +212,7 @@ void dompointthink()
     }
     
     if(time - self.pointupdatetime > 0.15) {
-		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * CVAR(g_domination_capture_clearspeed), 1);
         self.dom_capturingplayer = world;
     }
 	
@@ -226,7 +226,7 @@ void dompointthink()
 	if (gameover || self.delay > time || time < game_starttime)	// game has ended, don't keep giving points
 		return;
 
-	waittime = cvar("g_domination_point_rate");
+	waittime = CVAR(g_domination_point_rate);
 	if(!waittime)
 		waittime = self.wait;
 	self.delay = time + waittime;
@@ -235,7 +235,7 @@ void dompointthink()
 	// NOTE: this defaults to 0
 	if (self.goalentity.netname != "")
 	{
-		fragamt = cvar("g_domination_point_amt");
+		fragamt = CVAR(g_domination_point_amt);
 		if(!fragamt)
 			fragamt = self.DOMPOINTFRAGS;
 			
@@ -269,7 +269,7 @@ void dompointtouch()
     if(g_freeze && other.frozen)
         return;
     
-    if(time - other.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    if(time - other.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
         return;
     
 	if(time < self.captime + 0.3)
@@ -289,9 +289,9 @@ void dompointtouch()
 	if(!head || head.netname == "" || head == self.goalentity)
 		return;
 
-    float rate = cvar("g_domination_capture_speed");
+    float rate = CVAR(g_domination_capture_speed);
     if(other.hg_shield)
-        rate *= cvar("g_nadgets_shield_progressrate");
+        rate *= CVAR(g_nadgets_shield_progressrate);
 
 	self.dom_captureprogress = bound(0, self.dom_captureprogress + frametime * rate, 1);
 	self.pointupdatetime = time;
@@ -316,8 +316,8 @@ void dompointtouch()
 	self.dmg_inflictor = other;
 
 	// self.state = 1;
-	// self.delay = time + cvar("g_domination_point_capturetime");
-	//self.nextthink = time + cvar("g_domination_point_capturetime");
+	// self.delay = time + CVAR(g_domination_point_capturetime);
+	//self.nextthink = time + CVAR(g_domination_point_capturetime);
 	//self.think = dompoint_captured;
 
 	// go to neutral team in the mean time
@@ -348,7 +348,7 @@ float domination_PlayerPreThink()
 	DEPENDON_F(g_domination, 0)
 	
 	if(time - self.pointupdatetime >= 0.01)
-		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * cvar("g_domination_capture_clearspeed"), 1);
+		self.dom_captureprogress = bound(0, self.dom_captureprogress - frametime * CVAR(g_domination_capture_clearspeed), 1);
 	
 	return 1;
 }
@@ -381,7 +381,7 @@ Keys:
 
 void spawnfunc_dom_team()
 {
-	if(!g_domination || cvar("g_domination_teams_override") >= 2)
+	if(!g_domination || CVAR(g_domination_teams_override) >= 2)
 	{
 		remove(self);
 		return;
@@ -458,8 +458,8 @@ void dom_controlpoint_setup()
 	float c1, c2, c3, c4, totalteams, smallestteam, smallestteam_count, selectedteam;
 	float balance_teams, force_balance, balance_type;
 
-	balance_teams = cvar("g_balance_teams");
-	balance_teams = cvar("g_balance_teams_force");
+	balance_teams = CVAR(g_balance_teams);
+	balance_teams = CVAR(g_balance_teams_force);
 
 	c1 = c2 = c3 = c4 = -1;
 	totalteams = 0;
@@ -658,9 +658,9 @@ void spawnfunc_dom_controlpoint()
 		self.scale = 1.0; //0.6;
 
 	//if(!self.glow_size)
-	//	self.glow_size = cvar("g_domination_point_glow");
+	//	self.glow_size = CVAR(g_domination_point_glow);
 	self.effects = self.effects | EF_LOWPRECISION;
-	if (cvar("g_domination_point_fullbright"))
+	if (CVAR(g_domination_point_fullbright))
 		self.effects |= EF_FULLBRIGHT;
 };
 
@@ -708,10 +708,10 @@ void dom_spawnteams()
 {
 	float numteams;
 	/*
-	if(cvar("g_domination_teams_override") < 2)
-		numteams = cvar("g_domination_default_teams");
+	if(CVAR(g_domination_teams_override) < 2)
+		numteams = CVAR(g_domination_default_teams);
 	else
-		numteams = cvar("g_domination_teams_override");
+		numteams = CVAR(g_domination_teams_override);
 	*/
 	
 	numteams = 2;
@@ -804,7 +804,7 @@ void dom_cp_placeholder()
 void dom_delayedinit()
 {
 	// if no teams are found, spawn defaults, if custom teams are set, use them
-	//if (find(world, classname, "dom_team") == world || cvar("g_domination_teams_override") >= 2)
+	//if (find(world, classname, "dom_team") == world || CVAR(g_domination_teams_override) >= 2)
 	
 	dom_removeall("dom_team");
 	dom_spawnteams();
@@ -816,13 +816,13 @@ void dom_delayedinit()
 	{
 		//dom_removeall("dom_controlpoint");
 		
-		n = tokenizebyseparator(cvar_string("g_domination_spawnpoints"), " ");
+		n = tokenizebyseparator(CVAR_STR(g_domination_spawnpoints), " ");
 		for(j = 0; j < n; ++j)
 			i += dom_spawnpointsfor(argv(j));
 		
-        i += dom_spawnextrapoints(i, cvar("g_domination_spawnpoints_min"));
+        i += dom_spawnextrapoints(i, CVAR(g_domination_spawnpoints_min));
         
-		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
+		n = tokenizebyseparator(CVAR_STR(g_domination_removeitems), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
         
@@ -832,7 +832,7 @@ void dom_delayedinit()
 	{
 		bprint("^5Domination:^7 map already contains contolpoints, spawning nothing\n");
 		
-		n = tokenizebyseparator(cvar_string("g_domination_removeitems"), " ");
+		n = tokenizebyseparator(CVAR_STR(g_domination_removeitems), " ");
 		for(j = 0; j < n; ++j)
 			dom_removeall(argv(j));
 	}
@@ -846,7 +846,7 @@ void totaldom_init()
 	if(inWarmupStage)
 		warmup = time;
 	else
-		warmup = time + cvar("g_start_delay");
+		warmup = time + CVAR(g_start_delay);
 	
 	precache_sound("ctf/red_capture.wav");
     precache_sound("ctf/blue_capture.wav");

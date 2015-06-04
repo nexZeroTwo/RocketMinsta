@@ -34,16 +34,26 @@ float g_race_qualifying;
 float inWarmupStage;
 float g_pickup_respawntime_weapon;
 float g_pickup_respawntime_ammo;
-float g_pickup_respawntime_short;
-float g_pickup_respawntime_medium;
-float g_pickup_respawntime_long;
 float g_pickup_respawntime_powerup;
 float g_pickup_respawntimejitter_weapon;
 float g_pickup_respawntimejitter_ammo;
-float g_pickup_respawntimejitter_short;
-float g_pickup_respawntimejitter_medium;
-float g_pickup_respawntimejitter_long;
 float g_pickup_respawntimejitter_powerup;
+float g_pickup_respawntime_health_small;
+float g_pickup_respawntime_health_medium;
+float g_pickup_respawntime_health_large;
+float g_pickup_respawntime_health_mega;
+float g_pickup_respawntime_armor_small;
+float g_pickup_respawntime_armor_medium;
+float g_pickup_respawntime_armor_big;
+float g_pickup_respawntime_armor_large;
+float g_pickup_respawntimejitter_health_small;
+float g_pickup_respawntimejitter_health_medium;
+float g_pickup_respawntimejitter_health_large;
+float g_pickup_respawntimejitter_health_mega;
+float g_pickup_respawntimejitter_armor_small;
+float g_pickup_respawntimejitter_armor_medium;
+float g_pickup_respawntimejitter_armor_big;
+float g_pickup_respawntimejitter_armor_large;
 float g_jetpack;
 
 float sv_clones;
@@ -178,7 +188,7 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 
 .float	damageforcescale;
 
-//.float          gravity;
+.float          gravity;
 
 .float		dmg;
 
@@ -210,6 +220,8 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float switchweapon;
 .float autoswitch;
 float weapon_action(float wpn, float wrequest);
+string weapon_modelname(string name);
+void weapon_precache(float wpn);
 float client_hasweapon(entity cl, float wpn, float andammo, float complain);
 void w_clear();
 void w_ready();
@@ -289,13 +301,13 @@ float isJoinAllowed();
 
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
-float sys_ticrate; // gets initialised in worlspawn, saves the value from cvar("sys_ticrate")
+float sys_ticrate; // gets initialised in worlspawn, saves the value from CVAR(sys_ticrate)
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
 .float allowedTimeouts; // contains the number of allowed timeouts for each player
 entity timeoutInitiator; // contains the entity of the player who started the last timeout
-float orig_slowmo; // contains the value of cvar("slowmo") so that, after timeout finished, it isn't set to slowmo 1 necessarily
+float orig_slowmo; // contains the value of CVAR(slowmo) so that, after timeout finished, it isn't set to slowmo 1 necessarily
 .vector lastV_angle; //used when pausing the game in order to force the player to keep his old view angle fixed
 entity timeoutHandler; //responsible for centerprinting the timeout countdowns and playing sounds
 void timeoutHandler_Think();
@@ -342,6 +354,7 @@ float sv_clforceplayermodels;
 float sv_loddistance1;
 float sv_loddistance2;
 .float cvar_cl_gunalign;
+.float gunswitchmode;
 
 .float version_nagtime;
 
@@ -438,6 +451,7 @@ float sv_maxidle_spectatorsareidle;
 
 float sv_pogostick;
 float sv_doublejump;
+float sv_slicksurfaces;
 float tracebox_hits_trigger_hurt(vector start, vector mi, vector ma, vector end);
 
 float next_pingtime;
@@ -698,8 +712,6 @@ float realclients;
 typedef void() spawnfunc_t;
 .float droppedpowerup;
 
-vector frag_force;
-
 void Boobs_DropAllAndRespawn(vector);
 
 float next_round;
@@ -791,3 +803,16 @@ float sv_shownames;
 .float client_dprmversion;
 
 .float antilag_debug;
+
+float PlayerMayFire(entity plr);
+
+#define GAMEEVENT(evnt,argblock) if(CallGameEventHook_Begin(evnt)) { argblock CallGameEventHook_Commit(); }
+#define GAMEEVENTARG(type,arg) CallGameEventHook_Arg##type(arg);
+
+void CallGameEventHook(string evnt, string args);
+float CallGameEventHook_Begin(string evnt);
+void CallGameEventHook_Commit(void);
+void CallGameEventHook_ArgRaw(string a);
+void CallGameEventHook_ArgFloat(float f);
+void CallGameEventHook_ArgVector(vector v);
+void CallGameEventHook_ArgEntity(entity e);

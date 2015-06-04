@@ -8,6 +8,9 @@ Defs.qc
 ../common/rm_auto.qh
 ../common/util-pre.qh
 
+autocvars.qh
+../common/autocvars.qh
+
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc

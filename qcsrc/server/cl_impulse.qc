@@ -381,15 +381,15 @@ void ImpulseCommands (void)
 						self.ammo_fuel = g_pickup_fuel_max;
 						self.health = g_pickup_healthsmall_max;
 						self.armorvalue = g_pickup_armorsmall_max;
-						self.pauserotarmor_finished = time + cvar("g_balance_pause_armor_rot_spawn");
-						self.pauserothealth_finished = time + cvar("g_balance_pause_health_rot_spawn");
-						self.pauserotfuel_finished = time + cvar("g_balance_pause_fuel_rot_spawn");
-						self.pauseregen_finished = time + cvar("g_balance_pause_health_regen_spawn");
+						self.pauserotarmor_finished = time + CVAR(g_balance_pause_armor_rot_spawn);
+						self.pauserothealth_finished = time + CVAR(g_balance_pause_health_rot_spawn);
+						self.pauserotfuel_finished = time + CVAR(g_balance_pause_fuel_rot_spawn);
+						self.pauseregen_finished = time + CVAR(g_balance_pause_health_regen_spawn);
 						// precache weapon models/sounds
 						wep = WEP_FIRST;
 						while (wep <= WEP_LAST)
 						{
-							weapon_action(wep, WR_PRECACHE);
+							weapon_precache(wep);
 							wep = wep + 1;
 						}
 						break;
@@ -425,10 +425,10 @@ void ImpulseCommands (void)
 								self.health = start_health;
 								self.armorvalue = start_armorvalue;
 								self.weapons |= weaponsInMap;
-								self.pauserotarmor_finished = time + cvar("g_balance_pause_armor_rot_spawn");
-								self.pauserothealth_finished = time + cvar("g_balance_pause_health_rot_spawn");
-								self.pauserotfuel_finished = time + cvar("g_balance_pause_fuel_rot_spawn");
-								self.pauseregen_finished = time + cvar("g_balance_pause_health_regen_spawn");
+								self.pauserotarmor_finished = time + CVAR(g_balance_pause_armor_rot_spawn);
+								self.pauserothealth_finished = time + CVAR(g_balance_pause_health_rot_spawn);
+								self.pauserotfuel_finished = time + CVAR(g_balance_pause_fuel_rot_spawn);
+								self.pauseregen_finished = time + CVAR(g_balance_pause_health_regen_spawn);
 								self.strength_finished = 0;
 								self.invincible_finished = 0;
 							}
@@ -524,7 +524,7 @@ void ImpulseCommands (void)
 	}
 	else if(imp >= 103 && imp <= 107)
 	{
-		if(cvar("g_waypointeditor"))
+		if(CVAR(g_waypointeditor))
 		{
 			switch(imp)
 			{

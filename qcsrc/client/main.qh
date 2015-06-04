@@ -214,6 +214,7 @@ float vote_nocount;
 float vote_needed;
 float vote_active;
 float vote_highlighted;
+float vote_invite;
 
 float is_tmpmadoka;
 float tmpmadoka_fadetime;
@@ -346,3 +347,6 @@ string sbar_selectedplayer_name;
 .float armorvalue;
 
 #define ID_ME ((spectatee_status > 0)? spectatee_status : player_localentnum)
+
+// Needed to know if we should zoom on nex secondary or not
+float g_balance_nex_secondary;

@@ -309,15 +309,19 @@ function makedata
 
 function buildqc
 {
-    qcdir="$QCSOURCE/$1"
+    local qcdir="$QCSOURCE/$1"
+    local autocvars=""
 
     # this is ugly, needs fixing
     if [ "$1" = "server/" ]; then
         progname="progs"
+        autocvars="$AUTOCVARS_SVQC"
     elif [ "$1" = "client/" ]; then
         progname="csprogs"
+        autocvars="$AUTOCVARS_CSQC"
     elif [ "$1" = "menu/" ]; then
         progname="menu"
+        autocvars="$AUTOCVARS_MENU"
     else
         error "$1 is unknown"
     fi
@@ -325,7 +329,7 @@ function buildqc
     local sum=""
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
-        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
         
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
@@ -342,7 +346,13 @@ function buildqc
     echo " -- Building $qcdir"
     local olddir="$PWD"
     pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
+
+    if [ "$autocvars" != "0" ]; then
+        autocvars="-DRM_AUTOCVARS"
+        echo " -- Building with autocvars (this program will malfunction on the 2.5.2 engine)"
+    fi
+
+    $USEQCC $QCCFLAGS $autocvars || error "Failed to build $qcdir"
     
     local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
     local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
@@ -509,6 +519,21 @@ fi
 if [ -z "$PACKCSQC" ]; then
     warn-oldconfig "config.sh" "PACKCSQC" "1"
     PACKCSQC=1
+fi
+
+if [ -z "$AUTOCVARS_SVQC" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "0"
+    AUTOCVARS_SVQC=0
+fi
+
+if [ -z "$AUTOCVARS_CSQC" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_CSQC" "0"
+    AUTOCVARS_CSQC=0
+fi
+
+if [ -z "$AUTOCVARS_MENU" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_MENU" "0"
+    AUTOCVARS_MENU=0
 fi
 
 CACHEDIR="$(readlink -f "${CACHEDIR}/")"

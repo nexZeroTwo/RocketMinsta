@@ -17,7 +17,7 @@ void W_RM_Explode (void)
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
-	RadiusDamage (self, self.owner, cvar("g_rocketminsta_splash_damage"), cvar("g_rocketminsta_splash_edgedamage"), cvar("g_rocketminsta_splash_radius"), world, cvar("g_rocketminsta_splash_force"), self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, CVAR(g_rocketminsta_splash_damage), CVAR(g_rocketminsta_splash_edgedamage), CVAR(g_rocketminsta_splash_radius), world, CVAR(g_rocketminsta_splash_force), self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -35,11 +35,11 @@ void W_Explosive_Attack (float attacktype)
 	
 	local entity gren;
 
-	local float expl_damage = cvar("g_rocketminsta_splash_damage") / 2; //I'm not even sure why is this here?
+	local float expl_damage = CVAR(g_rocketminsta_splash_damage) / 2; //I'm not even sure why is this here?
 	local float expl_recoil;
 	expl_recoil = 4;
 	
-	if(cvar("g_rocketminsta_norecoil"))
+	if(CVAR(g_rocketminsta_norecoil))
 		expl_recoil = 0;
 	
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, expl_recoil, "", expl_damage);
@@ -51,12 +51,12 @@ void W_Explosive_Attack (float attacktype)
 	gren.owner = self;
 	gren.classname = "plasma_prim";
 	gren.bot_dodge = TRUE;
-	gren.bot_dodgerating = cvar("g_rocketminsta_splash_damage");
+	gren.bot_dodgerating = CVAR(g_rocketminsta_splash_damage);
 	gren.movetype = MOVETYPE_FLY;
 	PROJECTILE_MAKETRIGGER(gren);
 	
 	//maybe later
-	/*switch(cvar("g_rocketminsta_explostyle"))
+	/*switch(CVAR(g_rocketminsta_explostyle))
 	{
 		case 1:
 			gren.projectiledeathtype = WEP_ELECTRO;
@@ -72,7 +72,6 @@ void W_Explosive_Attack (float attacktype)
 	
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 -3', '0 0 -3');
-    PROJECTILE_FIX(gren)
 
 	gren.think = adaptor_think2use;
 	gren.use = W_RM_Explode;
@@ -97,7 +96,7 @@ void W_Rage_Attack (void)
 
 float RM_TeamLaserEffect(entity pl)
 {
-	if(!cvar("g_rocketminsta_laser_teamcolor"))
+	if(!CVAR(g_rocketminsta_laser_teamcolor))
 		return PROJECTILE_ELECTRO_BEAM;
 	
 	switch(pl.team)
@@ -131,14 +130,14 @@ void W_MinstaNex_Attack (void)
 	//<akari>
 	//Executes the explosive attack
 	
-	if(cvar("g_rocketminsta"))
+	if(CVAR(g_rocketminsta))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
 	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
-	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((cvar("g_balance_minstanex_damage") >= 0)? cvar("g_balance_minstanex_damage") : 10000000000),
-					   cvar("g_balance_minstanex_force"), 0, 0, 0, 0, WEP_MINSTANEX);
+	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((CVAR(g_balance_minstanex_damage) >= 0)? CVAR(g_balance_minstanex_damage) : 10000000000),
+					   CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
 	if(g_minstagib)
@@ -217,7 +216,7 @@ void W_MinstaNex_Attack (void)
 		if (g_minstagib)
 			self.ammo_cells = self.ammo_cells - 1;
 		else
-			self.ammo_cells = self.ammo_cells - cvar("g_balance_minstanex_ammo");
+			self.ammo_cells = self.ammo_cells - CVAR(g_balance_minstanex_ammo);
 	}
 	
 	if(damage_goodhits)
@@ -245,7 +244,7 @@ void minstagib_ammocheck (void)
 		return;
 
 	if(g_minstagib)
-	if(!cvar("g_rocketminsta"))
+	if(!CVAR(g_rocketminsta))
 	if not(g_freeze && self.frozen)
 	if (self.ammo_cells <= 0)
 	{
@@ -321,9 +320,9 @@ void minstagib_ammocheck (void)
 	}
 	
 	if(!g_freeze || !self.frozen)
-	if(cvar("g_rocketminsta") && cvar("g_rocketminsta_health_drain") && self.health > cvar("g_rocketminsta_health_min"))
+	if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_health_drain) && self.health > CVAR(g_rocketminsta_health_min))
 	{
-		self.health -= cvar("g_rocketminsta_health_drain");
+		self.health -= CVAR(g_rocketminsta_health_drain);
 	}
 	
 	self.minstagib_nextthink = time + 1;
@@ -347,7 +346,7 @@ void W_RM_Alt_Explode (void)
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
 
-	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_rocketminsta_laser_radius"), world, self.rm_force, self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, CVAR(g_rocketminsta_laser_radius), world, self.rm_force, self.projectiledeathtype, other);
 	remove (self);
 }
 
@@ -356,7 +355,7 @@ void W_RM_Alt_Touch(void);
 void W_RM_Alt_Touch(void)
 {
 	PROJECTILE_TOUCH;
-	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, cvar("g_rocketminsta_laser_radius"), world, self.rm_force, self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, self.rm_damage, self.rm_edmg, CVAR(g_rocketminsta_laser_radius), world, self.rm_force, self.projectiledeathtype, other);
 	remove(self);
 }
 
@@ -364,12 +363,12 @@ void W_RM_Alt_Attack()
 {
 	local entity proj;
 	float counter;
-	float total = cvar("g_rocketminsta_laser_count");
-	float spread = cvar("g_rocketminsta_laser_spread");
-	float rndspread = cvar("g_rocketminsta_laser_spread_randomize");
+	float total = CVAR(g_rocketminsta_laser_count);
+	float spread = CVAR(g_rocketminsta_laser_spread);
+	float rndspread = CVAR(g_rocketminsta_laser_spread_randomize);
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (cvar("g_rocketminsta_norecoil")? 0 : 2), RM_SOUND_LASER_PRIMARY, cvar("g_rocketminsta_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (CVAR(g_rocketminsta_norecoil)? 0 : 2), RM_SOUND_LASER_PRIMARY, CVAR(g_rocketminsta_laser_damage));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -380,22 +379,22 @@ void W_RM_Alt_Attack()
 		proj.owner = self;
 		proj.bot_dodge = TRUE;
 		
-		proj.rm_force = cvar("g_rocketminsta_laser_force") / total;
-		proj.rm_damage = cvar("g_rocketminsta_laser_damage") / total;
+		proj.rm_force = CVAR(g_rocketminsta_laser_force) / total;
+		proj.rm_damage = CVAR(g_rocketminsta_laser_damage) / total;
 		proj.rm_edmg = proj.rm_damage;
 		
 		proj.bot_dodgerating = self.rm_damage;
 		proj.use = W_RM_Alt_Explode;
 		proj.think = adaptor_think2use;
-		proj.nextthink = time + cvar("g_rocketminsta_laser_lifetime");
+		proj.nextthink = time + CVAR(g_rocketminsta_laser_lifetime);
 		proj.cnt = 3;
 		PROJECTILE_MAKETRIGGER(proj);
 		proj.projectiledeathtype = WEP_ELECTRO;
 		setorigin(proj, w_shotorg);
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
-		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * (spread * (rndspread? random() : 1))) * cvar("g_rocketminsta_laser_speed");
-		proj.velocity_z = proj.velocity_z + cvar("g_rocketminsta_laser_zspread") * (random() - 0.5);
+		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * (spread * (rndspread? random() : 1))) * CVAR(g_rocketminsta_laser_speed);
+		proj.velocity_z = proj.velocity_z + CVAR(g_rocketminsta_laser_zspread) * (random() - 0.5);
 		W_SetupProjectileVelocity(proj);
 		proj.angles = vectoangles(proj.velocity);
 		proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
@@ -411,10 +410,10 @@ void W_RM_Alt_Attack()
 void W_RM_Alt_Attack_Single()
 {
 	local entity proj;
-	float total = cvar("g_rocketminsta_laser_count");
-	float spread = cvar("g_rocketminsta_laser_spread");
+	float total = CVAR(g_rocketminsta_laser_count);
+	float spread = CVAR(g_rocketminsta_laser_spread);
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, RM_SOUND_LASER_SECONDARY, cvar("g_rocketminsta_laser_damage"));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 0, RM_SOUND_LASER_SECONDARY, CVAR(g_rocketminsta_laser_damage));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -423,21 +422,21 @@ void W_RM_Alt_Attack_Single()
 	proj.owner = self;
 	proj.bot_dodge = TRUE;
 	
-	proj.rm_force = cvar("g_rocketminsta_laser_force");
-	proj.rm_damage = cvar("g_rocketminsta_laser_damage") / total;
+	proj.rm_force = CVAR(g_rocketminsta_laser_force);
+	proj.rm_damage = CVAR(g_rocketminsta_laser_damage) / total;
 	proj.rm_edmg = proj.rm_damage;
 	
 	proj.bot_dodgerating = self.rm_damage;
 	proj.use = W_RM_Alt_Explode;
 	proj.think = adaptor_think2use;
-	proj.nextthink = time + cvar("g_rocketminsta_laser_lifetime");
+	proj.nextthink = time + CVAR(g_rocketminsta_laser_lifetime);
 	proj.cnt = 3;
 	PROJECTILE_MAKETRIGGER(proj);
 	proj.projectiledeathtype = WEP_ELECTRO;
 	setorigin(proj, w_shotorg);
 
 	proj.movetype = MOVETYPE_BOUNCEMISSILE;
-	proj.velocity = w_shotdir * cvar("g_rocketminsta_laser_speed");
+	proj.velocity = w_shotdir * CVAR(g_rocketminsta_laser_speed);
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
 	proj.touch = W_RM_Alt_Touch; //W_Plasma_TouchExplode;
@@ -455,7 +454,7 @@ void W_RM_Alt_Attack_Single()
 
 float w_minstanex(float req)
 {
-	float rapid = cvar("g_rocketminsta_laser_rapid");
+	float rapid = CVAR(g_rocketminsta_laser_rapid);
 	
 	if (req == WR_AIM)
 	{
@@ -463,36 +462,36 @@ float w_minstanex(float req)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 		else
 			self.BUTTON_ATCK2 = bot_aim(
-				((cvar("g_rocketminsta_laser_new"))?
-					cvar("g_rocketminsta_laser_speed"):
-					cvar("g_balance_laser_primary_speed"))
+				((CVAR(g_rocketminsta_laser_new))?
+					CVAR(g_rocketminsta_laser_speed):
+					CVAR(g_balance_laser_primary_speed))
 				, 0, 
-				((cvar("g_rocketminsta_laser_new"))?
-					cvar("g_rocketminsta_laser_lifetime"):
-					cvar("g_balance_laser_primary_lifetime")), FALSE);
+				((CVAR(g_rocketminsta_laser_new))?
+					CVAR(g_rocketminsta_laser_lifetime):
+					CVAR(g_balance_laser_primary_lifetime)), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && cvar("g_rocketminsta")))
+		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && CVAR(g_rocketminsta)))
 		{
 			if(g_freeze)
 			if(self.frozen)
 				return TRUE;
 			
-			if(cvar("g_rocketminsta") && cvar("g_rocketminsta_laser_new"))
+			if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_laser_new))
 			{
 				if (self.jump_interval <= time && !self.held_down)
 				{
 					if(rapid)
 						self.held_down = TRUE;
-					self.jump_interval = time + cvar("g_rocketminsta_laser_refire");
-					self.jump_interval2 = time + cvar("g_rocketminsta_laser_rapid_delay");
+					self.jump_interval = time + CVAR(g_rocketminsta_laser_refire);
+					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_delay);
 					//self.goodhits = 0;
 					W_RM_Alt_Attack();
 				}
 				else if(rapid && self.jump_interval2 <= time && self.held_down)
 				{
-					self.jump_interval2 = time + cvar("g_rocketminsta_laser_rapid_refire");
+					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_refire);
 					//self.goodhits = 0;
 					W_RM_Alt_Attack_Single();
 				}
@@ -509,25 +508,17 @@ float w_minstanex(float req)
 		
 		if (self.BUTTON_ATCK)
 		{
-			if (weapon_prepareattack(0, cvar("g_balance_minstanex_refire")))
+			if (weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
 			{
 				W_MinstaNex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_minstanex_animtime"), w_ready);
-				self.nextfiretime = time + cvar("g_balance_minstanex_refire");
+				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_minstanex_animtime), w_ready);
+				self.nextfiretime = time + CVAR(g_balance_minstanex_refire);
 			}
 		}
 	}
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/nexflash.md3");
-		
-		precache_model ("models/weapons/g_minstanex.md3");
-		precache_model ("models/weapons/v_minstanex.md3");
-		precache_model ("models/weapons/h_minstanex.dpm");
-		
-		precache_model ("models/weapons/g_nex.md3");
-		precache_model ("models/weapons/v_nex.md3");
-		precache_model ("models/weapons/h_nex.dpm");
 		
 		precache_sound (RM_SOUND_MINSTA);
 		precache_sound ("weapons/nexwhoosh1.wav");
@@ -548,7 +539,7 @@ float w_minstanex(float req)
 		if (g_minstagib)
 			return self.ammo_cells >= 1;
 		else
-			return self.ammo_cells >= cvar("g_balance_minstanex_ammo");
+			return self.ammo_cells >= CVAR(g_balance_minstanex_ammo);
 	}
 	else if (req == WR_CHECKAMMO2)
 		return TRUE;

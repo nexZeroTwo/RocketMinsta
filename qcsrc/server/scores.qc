@@ -248,7 +248,7 @@ void PlayerScore_Clear(entity player)
 	if(g_race && !g_race_qualifying) return;
 
 	sk = player.scorekeeper;
-	for(i = 0; i < MAX_SCORE; ++i)
+	for(i = 0; i < MAX_SCORE; ++i) if(!SCORE_DONT_CLEAR(i))
 	{
 		if(sk.(scores[i]) != 0)
 			if(scores_label[i] != "")
@@ -351,7 +351,7 @@ float PlayerScore_Set(entity player, float scorefield, float score) {
 	
 	s.SendFlags |= pow(2, scorefield);
 	s.(scores[scorefield]) = score;
-	
+
 	return score;
 }
 
@@ -447,10 +447,10 @@ void WinningConditionHelper()
 	entity sk;
 
 	s = gametype_ID_to_Name(game);
-	s = strcat(s, ":", cvar_string("g_nexuizversion"));
+	s = strcat(s, ":", CVAR_STR(g_nexuizversion));
 	s = strcat(s, "::", GetPlayerScoreString(world, 2)); // make this 1 once we can
 
-	fullstatus = cvar("g_full_getstatus_responses");
+	fullstatus = CVAR(g_full_getstatus_responses);
 
 	if(teamscores_entities_count)
 	{

@@ -106,6 +106,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     ADDMOD("fire");
                 else if(hgtype == HG_SHIELD)
                     ADDMOD("discharge");
+                else if(hgtype == HG_SENTRY)
+                    ADDMOD("shock");
                 else
                     ADDMOD("alt");
             }

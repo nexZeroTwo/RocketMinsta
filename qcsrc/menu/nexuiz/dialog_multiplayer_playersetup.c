@@ -22,7 +22,7 @@ entity makeNexuizPlayerSettingsTab()
 }
 void drawNexuizPlayerSettingsTab(entity me)
 {
-	if(cvar_string("_cl_name") == "Player")
+	if(CVAR_STR(_cl_name) == "Player")
 		me.playerNameLabel.alpha = ((mod(time * 2, 2) < 1) ? 1 : 0);
 	else
 		me.playerNameLabel.alpha = me.playerNameLabelAlpha;
@@ -67,7 +67,7 @@ void fillNexuizPlayerSettingsTab(entity me)
 	me.TR(me);
 		r = me.currentRow;
 		m = me.rows - r - 2;
-		n = 16 - !cvar("developer");
+		n = 16 - !CVAR(developer);
 		m = m / (n - 1);
 		for(i = 0; i < n; ++i)
 		{

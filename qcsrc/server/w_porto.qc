@@ -36,7 +36,7 @@ void W_Porto_Fail (float failhard)
 		{
 			self.flags = FL_ITEM;
 			self.velocity = trigger_push_calculatevelocity(self.origin, self.owner, 128);
-			tracetoss(self, self);
+			tracetoss_skipnonsolid(self, self, 0.05, 200);
 			if(vlen(trace_endpos - self.owner.origin) < 128)
 			{
 				W_ThrowNewWeapon(self.owner, WEP_PORTO, 0, self.origin, self.velocity);
@@ -70,6 +70,7 @@ void W_Porto_Think (void)
 
 void W_Porto_Touch (void)
 {
+	PROJECTILE_SKIPNONSOLID
 	vector norm;
 
 	// do not use PROJECTILE_TOUCH here
@@ -176,12 +177,12 @@ void W_Porto_Attack (void)
 	setorigin(gren, w_shotorg);
 	setsize(gren, '0 0 0', '0 0 0');
 
-	gren.nextthink = time + cvar("g_balance_porto_primary_lifetime");
+	gren.nextthink = time + CVAR(g_balance_porto_primary_lifetime);
 	gren.think = W_Porto_Think;
 	gren.touch = W_Porto_Touch;
-	gren.velocity = w_shotdir * cvar("g_balance_porto_primary_speed");
+	gren.velocity = w_shotdir * CVAR(g_balance_porto_primary_speed);
 	if(self.items & IT_STRENGTH)
-		gren.velocity = gren.velocity * cvar("g_balance_powerup_strength_force");
+		gren.velocity = gren.velocity * CVAR(g_balance_powerup_strength_force);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
@@ -213,7 +214,7 @@ float w_porto(float req)
 	{
 		self.BUTTON_ATCK = FALSE;
 		self.BUTTON_ATCK2 = FALSE;
-		if(bot_aim(cvar("g_balance_porto_primary_speed"), 0, cvar("g_balance_grenadelauncher_primary_lifetime"), FALSE))
+		if(bot_aim(CVAR(g_balance_porto_primary_speed), 0, CVAR(g_balance_grenadelauncher_primary_lifetime), FALSE))
 			self.BUTTON_ATCK = TRUE;
 	}
 	else if (req == WR_THINK)
@@ -244,17 +245,14 @@ float w_porto(float req)
 		if (self.BUTTON_ATCK)
 		if (!self.porto_current)
 		if (!self.porto_forbidden)
-		if (weapon_prepareattack(0, cvar("g_balance_porto_primary_refire")))
+		if (weapon_prepareattack(0, CVAR(g_balance_porto_primary_refire)))
 		{
 			W_Porto_Attack();
-			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_porto_primary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_porto_primary_animtime), w_ready);
 		}
 	}
 	else if (req == WR_PRECACHE)
 	{
-		precache_model ("models/weapons/g_porto.md3");
-		precache_model ("models/weapons/v_porto.md3");
-		precache_model ("models/weapons/h_porto.dpm");
 		precache_model ("models/portal.md3");
 		precache_sound ("porto/bounce.wav");
 		precache_sound ("porto/create.wav");

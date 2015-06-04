@@ -9,7 +9,7 @@ void Buffs_Random_Spawn(void) {
     self.classname = "item_buff_randomspawn";
     Buffs_BuffPickup_Setup();
 
-    float a = max(1, cvar("g_buffs_random_spawns_distant")), i, mx = -1;
+    float a = max(1, CVAR(g_buffs_random_spawns_distant)), i, mx = -1;
     vector org;
     entity b, blist = findchain(classname, "item_buff");
 
@@ -36,32 +36,32 @@ void Buffs_Random_Spawn(void) {
 void Buffs_Init(void) {
     float i, b;
     
-    g_buffs = cvar("g_buffs");
+    g_buffs = CVAR(g_buffs);
     
     if(g_clanarena)
-        g_buffs = (g_buffs && cvar("g_clanarena_buffs"));
+        g_buffs = (g_buffs && CVAR(g_clanarena_buffs));
     
     if(!g_buffs)
         return;
 
-    g_buffs_team_only = cvar("g_buffs_team_only");
-    g_buffs_stack = cvar("g_buffs_stack");
-    g_buffs_replace = cvar("g_buffs_replace");
-    g_buffs_noteam = cvar("g_buffs_noteam");
-    g_buffs_randomize = cvar("g_buffs_randomize");
-    g_buffs_randomize_dual = cvar("g_buffs_randomize_dual");
-    g_buffs_randomize_byinstance = cvar("g_buffs_randomize_byinstance");
-    g_buffs_randomize_chaos = cvar("g_buffs_randomize_chaos");
-    g_buffs_randomize_interval = cvar("g_buffs_randomize_interval");
-    g_buffs_spawn_on_powerups = cvar("g_buffs_spawn_on_powerups");
-    g_buffs_random_spawns = cvar("g_buffs_random_spawns");
-    g_buffs_lockon = cvar("g_buffs_lockon");
+    g_buffs_team_only = CVAR(g_buffs_team_only);
+    g_buffs_stack = CVAR(g_buffs_stack);
+    g_buffs_replace = CVAR(g_buffs_replace);
+    g_buffs_noteam = CVAR(g_buffs_noteam);
+    g_buffs_randomize = CVAR(g_buffs_randomize);
+    g_buffs_randomize_dual = CVAR(g_buffs_randomize_dual);
+    g_buffs_randomize_byinstance = CVAR(g_buffs_randomize_byinstance);
+    g_buffs_randomize_chaos = CVAR(g_buffs_randomize_chaos);
+    g_buffs_randomize_interval = CVAR(g_buffs_randomize_interval);
+    g_buffs_spawn_on_powerups = CVAR(g_buffs_spawn_on_powerups);
+    g_buffs_random_spawns = CVAR(g_buffs_random_spawns);
+    g_buffs_lockon = CVAR(g_buffs_lockon);
 
     if(g_buffs_stack)
         g_buffs_replace = FALSE;
 
     if(g_clanarena)
-        g_buffs_team_only = cvar("g_clanarena_buffs_team_only");
+        g_buffs_team_only = CVAR(g_clanarena_buffs_team_only);
     
     precache_sound("misc/strength_respawn.wav");
     precache_sound("misc/shield_respawn.wav");
@@ -201,8 +201,8 @@ void Buffs_Init_Delayed(void) {
     
 	if(g_buffs_random_spawns)
     if((g_buffs_random_spawns == 2 && !bcnt) || g_buffs_random_spawns < 2 || g_buffs_random_spawns > 2) {
-        float mi = cvar("g_buffs_random_spawns_min");
-        float ma = cvar("g_buffs_random_spawns_max");
+        float mi = CVAR(g_buffs_random_spawns_min);
+        float ma = CVAR(g_buffs_random_spawns_max);
         float bcount = rint(random() * (ma - mi) + mi);
 
 		for(j = 0; j < bcount; ++j)
@@ -256,7 +256,7 @@ void Buffs_Init_Delayed(void) {
     
     if(g_buffs_randomize)
     if(g_buffs_randomize_interval)
-    if(cvar("g_buffs_randomize_interval_force") || !EndRound_Allowed()) {
+    if(CVAR(g_buffs_randomize_interval_force) || !EndRound_Allowed()) {
         entity e = spawn();
         e.classname = "buff_randomizer";
         e.reset = Buffs_Randomize_Reset;
@@ -415,7 +415,7 @@ void Buffs_ClientFrame(void) {
             self.campingrifle_bulletcounter = 9001;
             
             if(!g_weaponarena) {
-                float a = cvar("g_buffs_supply_grant_ammo");
+                float a = CVAR(g_buffs_supply_grant_ammo);
                 self.ammo_cells += a;
                 self.ammo_shells += a;
                 self.ammo_rockets += a;
@@ -425,10 +425,10 @@ void Buffs_ClientFrame(void) {
         
         ON_BUFF_ADDED(BUFF_GUARD) {
             if(g_clanarena)
-                self.health = max(min(cvar("g_clanarena_heal_limit"), cvar("g_buffs_guard_pickup_health")), self.health);
+                self.health = max(min(CVAR(g_clanarena_heal_limit), CVAR(g_buffs_guard_pickup_health)), self.health);
             else {
-                self.health = max(cvar("g_buffs_guard_pickup_health"), self.health);
-                self.armorvalue = max(cvar("g_buffs_guard_pickup_armor"), self.armorvalue);
+                self.health = max(CVAR(g_buffs_guard_pickup_health), self.health);
+                self.armorvalue = max(CVAR(g_buffs_guard_pickup_armor), self.armorvalue);
             }
         }
         
@@ -469,7 +469,7 @@ void Buffs_ClientFrame(void) {
     
     if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
         float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
-        Heal(self, world, self, heal, 0, cvar("g_buffs_vampire_limit"), 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
+        Heal(self, world, self, heal, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
         self.buff_vamp_healthpool -= heal;
         self.buff_vamp_ticks -= 1;
         self.buff_vamp_nexttick = time + 1;
@@ -502,12 +502,12 @@ float Buffs_NadgetPower(entity plr) {
     if(!bp)
         return 1;
     
-    return bp * cvar("g_buffs_wrath_hgpower");
+    return bp * CVAR(g_buffs_wrath_hgpower);
 }
 
 float Buffs_NadgetRegen(entity plr) {
-    return (1 + (cvar("g_buffs_supply_hg_regenscale") - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
-           (1 + (cvar("g_buffs_wrath_hgregen")        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
+    return (1 + (CVAR(g_buffs_supply_hg_regenscale) - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
+           (1 + (CVAR(g_buffs_wrath_hgregen)        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
 }
 
 float Buffs_NadgetCooldown(entity plr) {
@@ -516,11 +516,11 @@ float Buffs_NadgetCooldown(entity plr) {
     if(!bp)
         return 1;
     
-    return bp * cvar("g_buffs_wrath_hgcooldown");
+    return bp * CVAR(g_buffs_wrath_hgcooldown);
 }
 
 float Buffs_NadgetRegenDmgPause(entity plr) {
-    return (1 - (1 - cvar("g_buffs_wrath_hgregen_damagepause")) * Buffs_BuffPower(plr, BUFF_WRATH));
+    return (1 - (1 - CVAR(g_buffs_wrath_hgregen_damagepause)) * Buffs_BuffPower(plr, BUFF_WRATH));
 }
 
 float Buffs_NadgetBonusMultiplier(entity plr) {
@@ -529,7 +529,7 @@ float Buffs_NadgetBonusMultiplier(entity plr) {
     if(!wrath)
         return 1;
 
-    return rint(1 + (cvar("g_buffs_wrath_hgbonusmultiplier") - 1) * wrath);
+    return rint(1 + (CVAR(g_buffs_wrath_hgbonusmultiplier) - 1) * wrath);
 }
 
 float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
@@ -544,10 +544,10 @@ float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float d
         float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
         if(ignite)
         if((diffteam = IsDifferentTeam(attacker, targ)) || Buffs_BuffPower(attacker, BUFF_MEDIC)) {
-            float fdamage = damage * cvar("g_buffs_ignite_damage_fire") * ignite;
+            float fdamage = damage * CVAR(g_buffs_ignite_damage_fire) * ignite;
             if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
-                Fire_AddDamage(targ, attacker, fdamage, cvar("g_buffs_ignite_burntime"), DEATH_IGNITE);
-            damage = damage * (1 - (1 - cvar("g_buffs_ignite_damage_base")) * ignite);
+                Fire_AddDamage(targ, attacker, fdamage, CVAR(g_buffs_ignite_burntime), DEATH_IGNITE);
+            damage = damage * (1 - (1 - CVAR(g_buffs_ignite_damage_base)) * ignite);
         }
     }
     
@@ -564,12 +564,12 @@ float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float dea
         return damage;
     
     if(targ == attacker)
-        return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_self")) * tenacity);
+        return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage_self)) * tenacity);
     
     if(DEATH_ISHG(deathtype) || (deathtype & HITTYPE_SPLASH) || deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
-        return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage_aoe")) * tenacity);
+        return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage_aoe)) * tenacity);
     
-    return damage * (1 - (1 - cvar("g_buffs_tenacity_takedamage")) * tenacity);
+    return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage)) * tenacity);
 }
 
 void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
@@ -586,8 +586,8 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_ticks  && !a.buff_vamp_healthpool)
         a.buff_vamp_ticks  =   a.buff_vamp_healthpool = 0;
     
-    float ticks = cvar("g_buffs_vampire_time");
-    float factor = cvar("g_buffs_vampire_factor") * vamp;
+    float ticks = CVAR(g_buffs_vampire_time);
+    float factor = CVAR(g_buffs_vampire_factor) * vamp;
     
     if(ticks > 0) {
         // refresh duration, extend the pool
@@ -595,7 +595,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_healthpool += damage * factor;
     } else {
         // instant-healing mode, don't use the buffer, just heal
-        Heal(a, world, a, damage * factor, 0, cvar("g_buffs_vampire_limit"), 0, DEATH_VAMPIRE, cvar("g_buffs_vampire_pauserot"), 0, '0 0 0', '0 0 0');
+        Heal(a, world, a, damage * factor, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
     }
 }
 
@@ -680,10 +680,10 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     
     Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, DEATH_ARC, bp,
                          attacker.maxs_z * '0 0 0.5',
-                         cvar("g_buffs_arc_range"),
-                         cvar("g_buffs_arc_multiplier"),
-                         cvar("g_buffs_arc_multiplier_hg"),
-                         cvar("g_buffs_arc_pushback"),
+                         CVAR(g_buffs_arc_range),
+                         CVAR(g_buffs_arc_multiplier),
+                         CVAR(g_buffs_arc_multiplier_hg),
+                         CVAR(g_buffs_arc_pushback),
                          targetTeamMates, targetFrozen, targetAlive, buffs_arc_hit);
     
     entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
@@ -726,8 +726,11 @@ void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
     entity oself = self;
     self = targ;
     targ.meodp_point.solid = SOLID_NOT;
+    targ.meodp_point.enemy = attacker;
     te_meodp(targ.meodp_point.origin);
     targ.meodp_death(attacker, inflictor);
+    if(targ.meodp_point && !wasfreed(targ.meodp_point))
+        targ.meodp_point.enemy = world;
     self = oself;
 }
 
@@ -756,7 +759,7 @@ float Buffs_MEODP_Filter_NearbyRelated(entity ent, entity pass) {
     if(ent.classname != pass.classname)
         return FALSE;
 
-    if(vlen(ent.meodp_point.origin - pass.meodp_point.origin) > 100)
+    if(vlen(ent.meodp_point.origin - pass.meodp_point.origin) > 200)
         return FALSE;
 
     return TRUE;
@@ -833,8 +836,8 @@ void Buffs_MEODP_Hitscan_End(entity pts) {
 }
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
-    float d = attacker.buffpower_meodp * (self.health * cvar("g_buffs_meodp_healthfactor") + self.armorvalue * cvar("g_buffs_meodp_armorfactor"));
-    float s = d * cvar("g_buffs_meodp_selfdamage");
+    float d = attacker.buffpower_meodp * (self.health * CVAR(g_buffs_meodp_healthfactor) + self.armorvalue * CVAR(g_buffs_meodp_armorfactor));
+    float s = d * CVAR(g_buffs_meodp_selfdamage);
     
     Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
     
@@ -981,6 +984,15 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_Model_Update(self);
 }
 
+void Buffs_BuffPickup_Notify(entity plr, float bfs, float tm) {
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
+    string tn = (tm? strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") : "");
+
+    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
+    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
+    sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
+}
+
 void Buffs_BuffPickup_GiveTo(entity plr) {
     if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
@@ -988,15 +1000,10 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
-    string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
-    
     if(g_buffs_replace)
         plr.buffs = 0;
 
-    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
-    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
-    sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
+    Buffs_BuffPickup_Notify(plr, self.buffs, self.team);
     BUFFS_GIVE(plr, self.buffs);
 }
 
@@ -1049,7 +1056,7 @@ void Buffs_BuffPickup_Setup(void) {
     }
 
     if not(g_buffs_randomize)
-    if not(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
+    if(g_buffs_enabled & self.buffs != self.buffs && self.buffs != BUFF_RANDOM) {
         remove(self);
         return;
     }
@@ -1057,7 +1064,7 @@ void Buffs_BuffPickup_Setup(void) {
     if(g_buffs_noteam)
         self.team = 0;
         
-    if(cvar("g_buffs_team_swap"))
+    if(CVAR(g_buffs_team_swap))
         self.team = TeamCount_NextTeam(self.team);
     
     self.origbuffs = self.buffs;

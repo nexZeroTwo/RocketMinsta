@@ -77,7 +77,7 @@ void updateNadeListRMNadeList(entity me)
     me.isUpdating = TRUE;
     me.nadelist_buf = buf_create();
     
-    argc = tokenizebyseparator(cvar_string("_nade_options"), " ");
+    argc = tokenizebyseparator(CVAR_STR(_nade_options), " ");
     
     for(i = 0; i < argc; ++i) {
         bufstr_set(me.nadelist_buf, i, argv(i));

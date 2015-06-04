@@ -4,6 +4,10 @@
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 sys.qh
 pre-builtins.qh
 builtins.qh
@@ -59,6 +63,7 @@ damagetracker.qh
 irc.qh
 joinqueue.qh
 radio.qh
+g_subs.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -86,7 +91,6 @@ verbstack.qc
 movelib.qc
 steerlib.qc
 
-rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
@@ -172,7 +176,6 @@ ipban.qc
 
 
 
-t_quake3.qc
 t_halflife.qc
 t_quake.qc
 

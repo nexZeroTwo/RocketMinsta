@@ -309,9 +309,9 @@ void MapVote_Draw()
 	xmin = vid_conwidth*0.05; // 5% border must suffice
 	xmax = vid_conwidth - xmin;
 	ymin = 20;
-	i = cvar("con_chatpos"); //*cvar("con_chatsize");
+	i = CVAR(con_chatpos); //*CVAR(con_chatsize);
 	if(i < 0)
-		ymax = vid_conheight + (i - cvar("con_chat")) * cvar("con_chatsize");
+		ymax = vid_conheight + (i - CVAR(con_chat)) * CVAR(con_chatsize);
 	if(i >= 0 || ymax < (vid_conheight*0.5))
 		ymax = vid_conheight - ymin;
 
@@ -456,7 +456,7 @@ void MapVote_Draw()
 		++mv_num_maps;
 	}
 	
-	drawpic(mv_mousepos, strcat("gfx/menu/", cvar_string("menu_rmskin"), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+	drawpic(mv_mousepos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
 void Cmd_MapVote_MapDownload(float argc)
@@ -673,6 +673,7 @@ void MapVote_UpdateMask()
 		if not(mv_maps_mask & power) {
 			mv_votes[i] = -1;
 			mv_removetime[i] = time;
+            mv_avail[i] = GTV_FORBIDDEN;
 		}
 }
 

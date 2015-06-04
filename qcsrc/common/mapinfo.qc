@@ -513,7 +513,7 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 	if(pWantedType == MAPINFO_TYPE_CTF) if(!_is_key_hunt)
 	{
 		sa = car(s); if(sa == "") sa = "10";
-		if(cvar("g_ctf_win_mode") < 2)
+		if(CVAR(g_ctf_win_mode) < 2)
 			cvar_set("fraglimit", sa);
 		s = cdr(s);
 	}
@@ -521,25 +521,25 @@ void _MapInfo_Map_ApplyGametype(string s, float pWantedType, float pThisType)
 	// rc = timelimit timelimit_qualification laps laps_teamplay
 	if(pWantedType == MAPINFO_TYPE_RACE)
 	{
-		sa = car(s); if(sa == "") sa = cvar_string("timelimit");
+		sa = car(s); if(sa == "") sa = ftos(CVAR(timelimit));
 		cvar_set("g_race_qualifying_timelimit", sa);
 		s = cdr(s);
 
 		sa = car(s); if(sa == "") sa = "10";
-		if(cvar("g_race_teams") < 2)
+		if(CVAR(g_race_teams) < 2)
 			cvar_set("fraglimit", sa);
 		s = cdr(s);
 
 		sa = car(s); if(sa == "") sa = "20";
-		if(cvar("g_race_teams") >= 2)
+		if(CVAR(g_race_teams) >= 2)
 			cvar_set("fraglimit", sa);
 		s = cdr(s);
 	}
 
 	if(pWantedType == MAPINFO_TYPE_CTS)
 	{
-		sa = car(s); if(sa == "") sa = cvar_string("fraglimit");
-		if(cvar("g_race_teams"))
+		sa = car(s); if(sa == "") sa = ftos(CVAR(fraglimit));
+		if(CVAR(g_race_teams))
 			cvar_set("fraglimit", sa);
 		s = cdr(s);
 	}
@@ -597,7 +597,7 @@ void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurs
 	else
 	{
 		dprint("Applying temporary setting ", t, " := ", s, "\n");
-		if(cvar("g_campaign"))
+		if(CVAR(g_campaign))
 			cvar_set(t, s); // this is a wrapper and is always temporary anyway; no need to backup old values then
 		else
 			cvar_settemp(t, s);
@@ -613,7 +613,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 	float r, f, n, i;
 	string acl;
 
-	acl = cvar_string("g_mapinfo_settemp_acl");
+	acl = CVAR_STR(g_mapinfo_settemp_acl);
 
 	if(strstrofs(pFilename, "/", 0) >= 0)
 	{
@@ -657,8 +657,8 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		}
 		else
 		{
-			n = tokenize_console(cvar_string("g_cdtracks_remaplist"));
-			s = strcat(" ", cvar_string("g_cdtracks_dontusebydefault"), " ");
+			n = tokenize_console(CVAR_STR(g_cdtracks_remaplist));
+			s = strcat(" ", CVAR_STR(g_cdtracks_dontusebydefault), " ");
 			for(;;)
 			{
 				i = floor(random() * n);
@@ -946,7 +946,7 @@ float MapInfo_CurrentFeatures()
 {
 	float req;
 	req = 0;
-	if(!(cvar("g_lms") || cvar("g_instagib") || cvar("g_minstagib") || cvar("g_nixnex") || cvar("g_rocketarena") || !cvar("g_pickup_items") || cvar("g_race") || cvar("g_cts") || cvar("g_nexball")))
+	if(!(CVAR(g_lms) || CVAR(g_instagib) || CVAR(g_minstagib) || CVAR(g_nixnex) || CVAR(g_rocketarena) || !CVAR(g_pickup_items) || CVAR(g_race) || CVAR(g_cts) || CVAR(g_nexball)))
 		req |= MAPINFO_FEATURE_WEAPONS;
 	return req;
 }
@@ -1066,11 +1066,11 @@ float MapInfo_ForbiddenFlags()
 	f = MAPINFO_FLAG_FORBIDDEN;
 
 #ifndef MENUQC
-	if not(cvar("g_maplist_allow_hidden"))
+	if not(CVAR(g_maplist_allow_hidden))
 #endif
 		f |= MAPINFO_FLAG_HIDDEN;
 
-	if not(cvar("g_maplist_allow_frustrating"))
+	if not(CVAR(g_maplist_allow_frustrating))
 		f |= MAPINFO_FLAG_FRUSTRATING;
 
 	return f;
@@ -1081,7 +1081,7 @@ float MapInfo_RequiredFlags()
 	float f;
 	f = 0;
 
-	if(cvar("g_maplist_allow_frustrating") > 1)
+	if(CVAR(g_maplist_allow_frustrating) > 1)
 		f |= MAPINFO_FLAG_FRUSTRATING;
 
 	return f;

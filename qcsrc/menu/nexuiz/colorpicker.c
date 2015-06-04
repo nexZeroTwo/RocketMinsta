@@ -116,8 +116,8 @@ void drawNexuizColorpicker(entity me)
 	drawImage(me);
 
 	float B, C, aC;
-	C = cvar("r_textcontrast");
-	B = cvar("r_textbrightness");
+	C = CVAR(r_textcontrast);
+	B = CVAR(r_textbrightness);
 
 	// for this to work, C/(1-B) must be in 0..1
 	// B must be < 1
