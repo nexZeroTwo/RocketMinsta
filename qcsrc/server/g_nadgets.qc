@@ -1463,7 +1463,7 @@ void HG_Cloak_Frame() {
         if(self.hg_wasstealth) {
             self.hg_wasstealth = FALSE;
             if(self.hg_type == HG_CLOAK)
-                self.hg_next = max(self.hg_next, time + CVAR(g_nadgets_cloak_cooldown_decloak));
+                HG_SetCooldown(hg_next, 0, CVAR(g_nadgets_cloak_cooldown_decloak));
             sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
         }
         if(self.hg_stealthalpha)
@@ -2277,6 +2277,16 @@ void HG_Sentry_Trigger(void) {
         sound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
 }
 
+void HG_SetCooldown(.float cdfield, float gcd, float cd) {
+    float cdmul = Buffs_NadgetCooldown(self);
+    gcd *= cdmul;
+    cd *= cdmul;
+
+    self.hg_next = max(self.hg_next, time + gcd);
+    self.hg_bonus_next = max(self.hg_bonus_next, time + gcd);
+    self.cdfield = max(self.cdfield, time + cd);
+}
+
 void HG_Attack()
 {
     float hgtype;
@@ -2350,8 +2360,7 @@ void HG_Attack()
         }
     }
     
-    float cdmul = Buffs_NadgetCooldown(self);
-    self.cdfield = time + GV("cooldown") * cdmul;
+    HG_SetCooldown(cdfield, GV("global_cooldown"), GV("cooldown"));
 
     if(!freebonus) {
         if(CVAR(g_nadgets_regen_compensate)) {
@@ -2363,8 +2372,6 @@ void HG_Attack()
             self.hg_ammo -= used;
             HG_SetRegenTime(self, HG_RegenTime(self));
         }
-    } else {
-        self.hg_next = min(self.hg_bonus_next, time + GRENVAR(self.hg_type, "cooldown") * cdmul);
     }
     
     if(self.hg_bonus)
@@ -2441,9 +2448,13 @@ void HG_Frame()
 	
     if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
         bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(self.hg_type), "s!"), "", 1);
-        
+    
+    var .float cdfield = hg_next;
+    if(self.hg_bonus)
+        cdfield = hg_bonus_next;
+
     float t = HG_PLAYERNADETYPE(self);
-    if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
+    if(held && time >= self.cdfield && HG_PlayerMayFire(self) && mayfire) {
         float ls;
         
         if(!g_nadgets_detonatelaunches)
