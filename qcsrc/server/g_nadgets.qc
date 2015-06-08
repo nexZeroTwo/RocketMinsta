@@ -2301,9 +2301,6 @@ void HG_Attack()
 
     if(time < self.cdfield)
         return;
-    
-    if(time < self.cdfield)
-        return;
 
     if(!freebonus && !self.hg_ammo)
         return;
