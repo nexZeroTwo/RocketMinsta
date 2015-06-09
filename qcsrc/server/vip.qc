@@ -661,12 +661,20 @@ void vip_PlayerPreThink()
     // XXX: this code needs an update for the new grenade regen mechanics
     if(!CVAR(g_nadgets_regen))
 	if(CVAR(g_vip_regenerate_grenades))
-	if(self.hg_ammo < CVAR(g_nadgets_ammo))
-	if(time >= self.vip_grenregen_next)
-	{
-		self.hg_ammo += CVAR(g_vip_regenerate_grenades_amount);
-		self.vip_grenregen_next = time + CVAR(g_vip_regenerate_grenades_delay);
-	}
+    if(time >= self.vip_grenregen_next) {
+        float regendone;
+
+        HG_DO_IN_ALL_CONTEXTS({
+            if(self.hg_ctx_ammo < CVAR(g_nadgets_ammo)) {
+                self.hg_ctx_ammo += CVAR(g_vip_regenerate_grenades_amount);
+                regendone = TRUE;
+            }
+        })
+
+        if(regendone)
+            self.vip_grenregen_next = time + CVAR(g_vip_regenerate_grenades_delay);
+
+    }
 }
 
 void vip_ResetHealthArmor(entity vip)

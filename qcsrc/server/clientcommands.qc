@@ -437,7 +437,7 @@ void SV_ParseClientCommand(string s) {
 			return;
         if(self.joinqueue) {
             JoinQ_Remove(self);
-            self.hg_type_picked = 0;
+            self.hg_type1_picked = self.hg_type2_picked = 0;
 		} if(g_arena)
 			return;
 		if(g_lms)
@@ -543,27 +543,36 @@ void SV_ParseClientCommand(string s) {
         float term = (self.term_authed && !self.term_used);
         float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
         
-        float t = HG_NameToType(argv(1));
-        float i;
-        float argc = tokenize_console(CVAR_STR(g_nadgets_type_selectable));
-        
-        if(argc)
-            for(i = 0; i < argc; ++i)
+        float t1 = HG_NameToType(argv(1));
+        float t2 = HG_NameToType(argv(2));
+        float success, t, i, argc;
+
+        if(g_nadgets_double && t1 == t2 && t1 != HG_RANDOM && t2 != HG_RANDOM) {
+            sprint(self, "^1Primary and secondary nadgets can't be of the same type\n");
+            return;
+        }
+
+        HG_DO_IN_ALL_CONTEXTS({
+            argc = tokenize_console(CVAR_STR(g_nadgets_type_selectable));
+            success = FALSE;
+            t = (hg_context_isalt? t2 : t1);
+
+            if(argc) for(i = 0; i < argc; ++i) {
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
-                    self.(nr? hg_type_picked_nextround : hg_type_picked) = t;
+                    sprint(self, strcat("^1Your ", (g_nadgets_double? (hg_context_isalt? "secondary " : "primary ") : ""), "nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
+                    self.(nr? hg_ctx_type_picked_nextround : hg_ctx_type_picked) = t;
                     
                     if(!nr) {
                         float o;
                         if(term) {
-                            if(self.hg_ammo < 1)
+                            if(self.hg_ctx_ammo < 1)
                                 o = TRUE;
                                 
-                            if(self.hg_type != t) {
-                                self.hg_ammo = 1;
+                            if(self.hg_ctx_type != t) {
+                                self.hg_ctx_ammo = 1;
                                 o = TRUE;
                             } else
-                                self.hg_ammo = max(1, self.hg_ammo);
+                                self.hg_ctx_ammo = max(1, self.hg_ctx_ammo);
                             
                             sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
                         }
@@ -573,7 +582,7 @@ void SV_ParseClientCommand(string s) {
                         if(o || !term) {
                             HG_SetRegenTime(self, HG_RegenTime(self));
                             if(!term)
-                                self.hg_ammo = CVAR(g_nadgets_ammo);
+                                self.hg_ctx_ammo = CVAR(g_nadgets_ammo);
                         }
                         
                         if(term) {
@@ -582,10 +591,17 @@ void SV_ParseClientCommand(string s) {
                         }
                     }
                     
-                    return;
+                    success = TRUE;
+                    break;
                 }
-                
-        sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
+            }
+
+            if(!success) {
+                sprint(self, "^1This nadget type is either invalid or not allowed on this server.\n");
+                return;
+            }
+        })
+
         return;
     } else if(cmd == "hg_optout") {
         if not(self.flags & FL_CLIENT)

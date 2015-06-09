@@ -21,6 +21,7 @@ CLASS(RMNadeList) EXTENDS(NexuizListBox)
     ATTRIB(RMNadeList, colorC, vector, SKINCOLOR_SCROLLBAR_C)
     ATTRIB(RMNadeList, isUpdating, float, FALSE)
     ATTRIB(RMNadeList, nadelist_buf, float, -1)
+    ATTRIB(RMNadeList, notifyentity, entity, NULL)
 ENDCLASS(RMNadeList)
 entity makeRMNadeList();
 #endif
@@ -48,6 +49,9 @@ void setSelectedRMNadeList(entity me, float i)
     if(!me.disabled)
     {
         setSelectedListBox(me, i);
+
+        if(me.notifyentity)
+            me.notifyentity.selectionUpdated(me.notifyentity);
         
         //if(!me.isUpdating)
         //	localcmd("cmd picknade ", bufstr_get(me.nadelist_buf, me.selectedItem), "\n");

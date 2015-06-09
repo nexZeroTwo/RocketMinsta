@@ -349,6 +349,14 @@ const float STAT_HGSHIELDSTOREMAX = 98;
 const float STAT_HGREGENMAX = 99;
 const float STAT_HGREGENRATE = 100;
 
+const float STAT_HGTYPE2 = 101;
+const float STAT_HGREFIRE2 = 102;
+const float STAT_HGAMMO2 = 103;
+const float STAT_HGREGEN2 = 104;
+const float STAT_HGREGENMAX2 = 105;
+const float STAT_HGREGENPAUSED2 = 106;
+const float STAT_HGREGENRATE2 = 107;
+
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
 const float JBMSG_ALLALIVE = 2;

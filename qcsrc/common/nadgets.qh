@@ -22,3 +22,5 @@ string HG_NameToExpandedName(string);
 vector HG_TypeToColor(float);
 string HG_TypeToIcon(float, float, float);
 string HG_NameToIcon(string, float, float);
+float HG_CompressDualType(float t1, float t2);
+vector HG_DecompressDualType(float t);
