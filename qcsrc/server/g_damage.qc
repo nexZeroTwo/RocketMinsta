@@ -1035,11 +1035,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 }
             }
 
-            if(attacker.hg_shield) {
-                damage = damage * 1.20;
-                force = force * 1.20;
-            }
-
             if (targ == attacker) {
                 damage = damage * CVAR(g_balance_selfdamagepercent);	// Partial damage if the attacker hits himself
                 if(g_clanarena)

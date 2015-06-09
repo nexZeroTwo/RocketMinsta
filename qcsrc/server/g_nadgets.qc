@@ -1208,9 +1208,9 @@ void HG_Grenade_FadeOut(entity n) {
 void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     entity oldself = self;
     float wantteam = targ.team;
-    float targetTeamMates = wantteam == self.team && Buffs_BuffPower(self, BUFF_MEDIC);
+    float targetTeamMates = wantteam == attacker.team && Buffs_BuffPower(attacker, BUFF_MEDIC);
     float dist, shortest;
-    vector arcoffset = self.maxs_z * '0 0 0.5';
+    vector arcoffset = attacker.maxs_z * '0 0 0.5';
     entity plr, newtarget;
     
     damage *= CVAR(g_nadgets_shield_damage_store_arc);
@@ -1251,49 +1251,74 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
     self = oldself;
 }
 
+void HG_Shield_Discharge_Think(void) {
+    entity targ;
+    vector start, end;
+    float damage;
+    float arc = CVAR(g_nadgets_shield_damage_store_arc);
+
+    damage = min(self.owner.hg_shield_stored, CVAR(g_nadgets_shield_damage_store_burstamount));
+
+    if(damage <= 0 || !self.owner || !self.owner.iscreature || !PlayerMayFire(self.owner)) {
+        remove(self);
+        return;
+    }
+
+    makevectors(self.owner.v_angle);
+    W_SetupShot(self.owner, TRUE, 2, "weapons/nexfire.wav", -1);
+    traceline_antilag(self.owner, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self.owner);
+    targ = trace_ent;
+    start = w_shotorg;
+    end = trace_endpos;
+
+    setorigin(self, end);
+    RadiusDamage(self, self.owner, damage, damage * CVAR(g_nadgets_shield_damage_store_edgefactor),
+                 CVAR(g_nadgets_shield_damage_store_radius), world,
+                 damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
+
+    W_SetHitscanVisuals(self.owner, end);
+    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, self.owner.team);
+    //te_blast(end);
+
+    if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_BuffPower(self.owner, BUFF_MEDIC))) {
+        HG_Shield_Discharge_Arc(self.owner, targ, damage);
+        entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
+            e.buffs_arc_hit = FALSE;
+    }
+
+    self.owner.hg_shield_stored -= damage;
+    if(self.owner.hg_shield_stored < 0)
+        self.owner.hg_shield_stored = 0;
+
+    self.nextthink = time + CVAR(g_nadgets_shield_damage_store_burstdelay);
+}
+
 void HG_Shield_Trigger(void) {
+    entity e, o;
+    for(e = world; (e = find(e, classname, "hg_shield_discharge"));)
+        if(e.owner == self)
+            return;
+
     sound(self, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
     
     // Discharge
     float extend, renew;
     if(self.hg_shield_stored) {
-        entity targ;
-        vector start, end;
-        float arc = CVAR(g_nadgets_shield_damage_store_arc);
-        
         if(Buffs_BuffPower(self, BUFF_ADEPT)) {
             extend = CVAR(g_nadgets_shield_adept_discharge_extend);
             renew = CVAR(g_nadgets_shield_adept_discharge_renew);
         }
-        
-        makevectors(self.v_angle);
-        W_SetupShot(self, TRUE, 0, "weapons/nexfire.wav", -1);
-        
-        // FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, plr.hg_shield_stored, plr.hg_shield_stored * 2, 0, 0, 0, 0, HG_SHIELD);
-        
-        traceline_antilag(self, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);
-        targ = trace_ent;
-        start = w_shotorg;
-        end = trace_endpos;
-        
-        entity infl = spawn();
-        setorigin(infl, end);
-        RadiusDamage(infl, self, self.hg_shield_stored, self.hg_shield_stored * CVAR(g_nadgets_shield_damage_store_edgefactor),
-                     CVAR(g_nadgets_shield_damage_store_radius), world,
-                     self.hg_shield_stored * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
-        remove(infl);
-        
-        trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, end);
-        te_csqc_lightningarc(start, end, TRUE, self.team);
-        te_blast(end);
-        
-        if(arc && targ && targ.iscreature && (IsDifferentTeam(self, targ) || Buffs_BuffPower(self, BUFF_MEDIC))) {
-            HG_Shield_Discharge_Arc(self, targ, self.hg_shield_stored);
-            entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
-                e.buffs_arc_hit = FALSE;
-        }
-        
-        self.hg_shield_stored = 0;
+
+        e = spawn();
+        e.classname = "hg_shield_discharge";
+        e.owner = self;
+        e.think = HG_Shield_Discharge_Think;
+        e.reset = SUB_Remove;
+
+        o = self;
+        self = e;
+        self.think();
+        self = o;
     }
     
     if(extend || renew) {
@@ -1405,16 +1430,21 @@ void HG_Shield_Frame(void) {
         self.angles_y = self.v_angle_y;
     }
     
-    if(self.hg_shieldhealth <= 0)
-        self.hg_shield = 0;
-    else {
-        self.hg_shield = max(0, self.hg_shield - frametime);
-        if(CVAR(g_nadgets_shield_diminish))
-            self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
+    if(self.hg_shield) {
+        if(self.hg_shieldhealth <= 0)
+            self.hg_shield = 0;
+        else {
+            self.hg_shield = max(0, self.hg_shield - frametime);
+            if(CVAR(g_nadgets_shield_diminish))
+                self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
+        }
+
+        if(!self.hg_shield)
+            self.hg_shield_stored = 0;
     }
 }
 
-float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
+float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc) {
     if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
         return damage;
 
@@ -1431,8 +1461,12 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype) {
     float takefactor = 1 - (1 - CVAR(g_nadgets_shield_damage_take))   * self.hg_shieldpower;
     float absorb     = damage * (1 - takefactor);
 
+    float o = self.hg_shield_stored;
     self.hg_shield_stored = min(CVAR(g_nadgets_shield_damage_store_limit), self.hg_shield_stored + damage * CVAR(g_nadgets_shield_damage_store));
     damage *= takefactor;
+
+    if(self.hg_shield_stored > o)
+        te_eleblast(hitloc, (teams_matter? self.team : 0));
 
     if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         reflect = 0;

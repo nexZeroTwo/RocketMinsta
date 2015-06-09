@@ -865,6 +865,9 @@ void SV_PlayerPhysics()
     float haste = Buffs_BuffPower(self, BUFF_HASTE);
     if(haste)
         maxspd_mod *= 1 + (CVAR(g_buffs_haste_move_rate) - 1) * haste;
+
+    if(self.hg_shield)
+        maxspd_mod *= CVAR(g_nadgets_shield_movespeed);
     
     if(self.hg_stealth)
         maxspd_mod *= CVAR(g_nadgets_cloak_movespeed);

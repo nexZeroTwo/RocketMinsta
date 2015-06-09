@@ -2387,6 +2387,9 @@ float CSQC_Parse_TempEntity()
         case TE_CSQC_VOTEINVITE:
             Net_ReadVoteInvite();
             return TRUE;
+        case TE_CSQC_ELEBLAST:
+            Net_ReadEleBlast();
+            return TRUE;
     }
 
 	// pass to the engine
