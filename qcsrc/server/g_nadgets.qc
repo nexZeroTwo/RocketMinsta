@@ -874,32 +874,27 @@ void HG_Detonate(entity nade) {
 
 void HG_DetonateAll(entity plr) {
     float c;
-    entity nade;
+    entity nade, tl;
     
     if(!plr.hg_detonables)
         return;
     
     if(!HG_PlayerMayDetonate(plr))
         return;
-    
-    entity tl;
-    for(;(nade = find(nade, classname, "hg_grenade"));)
-        if(nade.owner == plr) {
-            // if(nade.hg_type == HG_TRANSLOC)
-            //    nade.owner.hg_transloc_last = nade;
-            
-            if(nade.hg_type == HG_TRANSLOC) {
-                if(!tl || nade.hg_nadesused < tl.hg_nadesused)
-                    tl = nade;
-            } else {
-                HG_Detonate(nade);
-                ++c;
-            }
+
+    for(nade = world; (nade = find(nade, classname, "hg_grenade"));) {
+        if(nade.owner == plr && nade.hg_type == HG_TRANSLOC) {
+            if(!tl || nade.hg_nadesused < tl.hg_nadesused)
+                tl = nade;
         }
+    }
     
     if(tl) {
         c = 1;
         HG_Detonate(tl);
+    } else for(nade = world; (nade = find(nade, classname, "hg_grenade"));) if(nade.owner == plr) {
+        HG_Detonate(nade);
+        ++c;
     }
 
     if(c)
