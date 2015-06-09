@@ -926,6 +926,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             HG_RemoveAll(self);
 
         if(self.hg_power > 0) {
+            HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
