@@ -6,7 +6,7 @@ string HG_TypeToExpandedName(float t) {
         case HG_REMOTE      :   return "Fire Trap";
         case HG_PLASMA      :   return "Plasma Bomb";
         case HG_TRANSLOC    :   return "Translocator";
-        case HG_SHIELD      :   return "Reflective Shield";
+        case HG_SHIELD      :   return "Powershield";
         case HG_LINKER      :   return "Linking Shell";
         case HG_GG          :   return "GG Button";
         case HG_LASER       :   return "Lasergun";

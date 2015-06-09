@@ -5508,6 +5508,11 @@ void Sbar_Draw(void)
             }
         }
 
+        if(getstati(STAT_HGSHIELDSTORE)) {
+            DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
+                         getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0');
+        }
+
         if(getstati(STAT_STEALTH)) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
@@ -5526,9 +5531,6 @@ void Sbar_Draw(void)
             string smsg;
             
             if(getstati(STAT_HGSHIELDSTORE)) {
-                float a = getstatf(STAT_HGSHIELD);
-                DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
-                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), min(0.7, a), '1 1 0' - a * '0 0.7 0');
                 smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                               " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
                               " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");

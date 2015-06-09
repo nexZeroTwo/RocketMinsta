@@ -606,7 +606,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(damage) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
-    	damage = HG_Shield_Damage(attacker, damage, deathtype);
+    	damage = HG_Shield_Damage(attacker, damage, deathtype, hitloc);
         
         if(DEATH_HGTYPE(deathtype) == HG_PLASMA && deathtype & HITTYPE_SECONDARY) {
             if(time > inflictor.damage_nextarceffect) {

@@ -121,3 +121,14 @@ void Net_ReadMEODP(void) {
     sound(e, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
     remove(e);
 }
+
+void Net_ReadEleBlast(void) {
+    vector loc;
+    float ateam = ReadByte();
+    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
+    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), loc, '0 0 0', 1);
+    entity e = spawn();
+    setorigin(e, loc);
+    sound(e, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+    remove(e);
+}
