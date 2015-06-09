@@ -3,24 +3,36 @@
 // Intended for the Camping Rifle Arena mode
 
 void HG_Init() {
+    g_nadgets_double = CVAR(g_nadgets_double);
+
     addstat(STAT_HGFORCE, AS_FLOAT, hg_power);
-    addstat(STAT_HGAMMO, AS_INT, hg_ammo);
-    addstat(STAT_HGREGEN, AS_FLOAT, hg_regentime);
-    addstat(STAT_HGREGENMAX, AS_FLOAT, hg_maxregentime);
-    addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused);
-    addstat(STAT_HGREGENRATE, AS_FLOAT, hg_regenrate);
+    addstat(STAT_HGAMMO, AS_INT, hg_ammo1);
+    addstat(STAT_HGREGEN, AS_FLOAT, hg_regentime1);
+    addstat(STAT_HGREGENMAX, AS_FLOAT, hg_maxregentime1);
+    addstat(STAT_HGREGENPAUSED, AS_INT, hg_regenpaused1);
+    addstat(STAT_HGREGENRATE, AS_FLOAT, hg_regenrate1);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
     addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
     addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
     addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
-    addstat(STAT_HGTYPE, AS_INT, hg_type);
+    addstat(STAT_HGTYPE, AS_INT, hg_type1);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
     addstat(STAT_STEALTH, AS_INT, hg_stealth);
     addstat(STAT_STEALTH_SAVED, AS_INT, hg_stealth_saved);
-    addstat(STAT_HGREFIRE, AS_FLOAT, hg_next);
+    addstat(STAT_HGREFIRE, AS_FLOAT, hg_next1);
+
+    if(g_nadgets_double) {
+        addstat(STAT_HGTYPE2, AS_INT, hg_type2);
+        addstat(STAT_HGREFIRE2, AS_FLOAT, hg_next2);
+        addstat(STAT_HGAMMO2, AS_INT, hg_ammo2);
+        addstat(STAT_HGREGEN2, AS_FLOAT, hg_regentime2);
+        addstat(STAT_HGREGENMAX2, AS_FLOAT, hg_maxregentime2);
+        addstat(STAT_HGREGENPAUSED2, AS_INT, hg_regenpaused2);
+        addstat(STAT_HGREGENRATE2, AS_FLOAT, hg_regenrate2);
+    }
     
     g_nadgets_oldhitboxes = CVAR(g_nadgets_oldhitboxes);
     g_nadgets_detonatelaunches = CVAR(g_nadgets_detonatelaunches);
@@ -52,6 +64,37 @@ void HG_Precache() {
     precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
     precache_model("models/turrets/tesla.md3");
+}
+
+void HG_SetContext(float isalt) {
+    hg_context_isaltintended = isalt;
+
+    if(!g_nadgets_double)
+        isalt = FALSE;
+
+    if(isalt) {
+        hg_ctx_next = hg_next2;
+        hg_ctx_ammo = hg_ammo2;
+        hg_ctx_type = hg_type2;
+        hg_ctx_type_picked = hg_type2_picked;
+        hg_ctx_type_picked_nextround = hg_type2_picked_nextround;
+        hg_ctx_regentime = hg_regentime2;
+        hg_ctx_maxregentime = hg_maxregentime2;
+        hg_ctx_regenrate = hg_regenrate2;
+        hg_ctx_regenpaused = hg_regenpaused2;
+    } else {
+        hg_ctx_next = hg_next1;
+        hg_ctx_ammo = hg_ammo1;
+        hg_ctx_type = hg_type1;
+        hg_ctx_type_picked = hg_type1_picked;
+        hg_ctx_type_picked_nextround = hg_type1_picked_nextround;
+        hg_ctx_regentime = hg_regentime1;
+        hg_ctx_maxregentime = hg_maxregentime1;
+        hg_ctx_regenrate = hg_regenrate1;
+        hg_ctx_regenpaused = hg_regenpaused1;
+    }
+
+    hg_context_isalt = isalt;
 }
 
 void HG_GiveBonus(entity p, float hgtype, float amount, string reason, float allowOptout) {
@@ -445,8 +488,8 @@ void HG_Translocator_Explode() {
     setsize(self, PL_MIN, PL_MAX);
     
     if(!move_out_of_solid(self)) {
-        if(!self.hg_isbonus)
-            self.owner.hg_ammo += 1;
+        if(!self.hg_isbonus) HG_DO_IN_ALL_CONTEXTS(if(self.owner.hg_ctx_type == HG_TRANSLOC)
+            self.owner.hg_ctx_ammo += 1;)
             
         bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted. Origin: ", vtos(self.origin), ", velocity: ", vtos(self.velocity), "\n");
         return;
@@ -471,10 +514,10 @@ void HG_Translocator_Explode() {
     if(tdeath_hit && !self.hg_isbonus) {
         float b = CVAR(g_nadgets_transloc_telefragbonus);
         
-        if(b) {
-            self.owner.hg_ammo += b * tdeath_hit;
+        if(b) HG_DO_IN_ALL_CONTEXTS({
+            self.owner.hg_ctx_ammo += b * tdeath_hit;
             HG_SetRegenTime(self.owner, HG_RegenTime(self.owner));
-        }
+        })
     }
     
     entity oldself = self;
@@ -641,8 +684,8 @@ void HG_Grenade_Touch() {
                         setsize(self, PL_MIN, PL_MAX);
                         
                         if(!move_out_of_solid(self)) {
-                            if(!self.hg_isbonus)
-                                self.owner.hg_ammo += 1;
+                            if(!self.hg_isbonus) HG_DO_IN_ALL_CONTEXTS(if(self.owner.hg_ctx_type == HG_TRANSLOC) 
+                                self.owner.hg_ctx_ammo += 1;)
                             
                             bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
                             HG_Grenade_Remove();
@@ -800,20 +843,16 @@ void HG_Stick(void) {
 }
 
 float HG_RegenTime(entity e) {
-    float base      = GRENVAR(e.hg_type, "regen_time");
-    float exponent  = GRENVAR(e.hg_type, "regen_exponent");
-    float factor    = GRENVAR(e.hg_type, "regen_factor");
+    float base      = GRENVAR(e.hg_ctx_type, "regen_time");
+    float exponent  = GRENVAR(e.hg_ctx_type, "regen_exponent");
+    float factor    = GRENVAR(e.hg_ctx_type, "regen_factor");
 
-    return base * (1 + pow(e.hg_ammo, exponent) * factor);
+    return base * (1 + pow(e.hg_ctx_ammo, exponent) * factor);
 }
 
 void HG_SetRegenTime(entity e, float t) {
-    e.hg_regentime = t;
-    e.hg_maxregentime = t;
-}
-
-float HG_PlayerMayFire(entity p) {
-    return p.hg_ammo || p.hg_bonus;
+    e.hg_ctx_regentime = t;
+    e.hg_ctx_maxregentime = t;
 }
 
 float HG_PlayerMayDetonate(entity p) {
@@ -835,32 +874,27 @@ void HG_Detonate(entity nade) {
 
 void HG_DetonateAll(entity plr) {
     float c;
-    entity nade;
+    entity nade, tl;
     
     if(!plr.hg_detonables)
         return;
     
     if(!HG_PlayerMayDetonate(plr))
         return;
-    
-    entity tl;
-    for(;(nade = find(nade, classname, "hg_grenade"));)
-        if(nade.owner == plr) {
-            // if(nade.hg_type == HG_TRANSLOC)
-            //    nade.owner.hg_transloc_last = nade;
-            
-            if(nade.hg_type == HG_TRANSLOC) {
-                if(!tl || nade.hg_nadesused < tl.hg_nadesused)
-                    tl = nade;
-            } else {
-                HG_Detonate(nade);
-                ++c;
-            }
+
+    for(nade = world; (nade = find(nade, classname, "hg_grenade"));) {
+        if(nade.owner == plr && nade.hg_type == HG_TRANSLOC) {
+            if(!tl || nade.hg_nadesused < tl.hg_nadesused)
+                tl = nade;
         }
+    }
     
     if(tl) {
         c = 1;
         HG_Detonate(tl);
+    } else for(nade = world; (nade = find(nade, classname, "hg_grenade"));) if(nade.owner == plr) {
+        HG_Detonate(nade);
+        ++c;
     }
 
     if(c)
@@ -1074,8 +1108,8 @@ float HG_PlayerGrenadeType(entity e) {
     
     if(argc)
         for(i = 0; i < argc; ++i)
-            if(e.hg_type_picked == HG_NameToType(argv(i))) {
-                picked = e.hg_type_picked;
+            if(e.hg_ctx_type_picked == HG_NameToType(argv(i))) {
+                picked = e.hg_ctx_type_picked;
                 break;
             }
     
@@ -1084,27 +1118,27 @@ float HG_PlayerGrenadeType(entity e) {
         RandomSelection_Init();
         float n; for(i = 0; i < argc; ++i) {
             n = HG_NameToType(argv(i));
-            if(n != HG_RANDOM)
+            if(n != HG_RANDOM && (!hg_context_isalt || n != e.hg_type1_picked))
                 RandomSelection_Add(world, n, string_null, 1, 0);
         }
         picked = RandomSelection_chosen_float;
     }
     
-    e.hg_type_picked = picked;
-    return e.hg_type_picked;
+    e.hg_ctx_type_picked = picked;
+    return e.hg_ctx_type_picked;
 }
 
 void HG_SetGrenadeType(entity p, float t) {
-    p.hg_type = t;
+    p.hg_ctx_type = t;
     
     if(p.scorekeeper) {
         p.scorekeeper.SendFlags |= pow(2, SP_NADEMODE);
-        p.scorekeeper.(scores[SP_NADEMODE]) = t;
+        p.scorekeeper.(scores[SP_NADEMODE]) = HG_CompressDualType(p.hg_type1, p.hg_type2);
     }
 }
 
 void HG_FixNadeType(entity p) {
-    if(!p.hg_type) {
+    if(!p.hg_ctx_type) {
         print("Player ", p.netname, " ^7doesn't have a grenade type - fixing\n");
         HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
     }
@@ -1462,8 +1496,12 @@ void HG_Cloak_Frame() {
     } else {
         if(self.hg_wasstealth) {
             self.hg_wasstealth = FALSE;
-            if(self.hg_type == HG_CLOAK)
-                self.hg_next = max(self.hg_next, time + CVAR(g_nadgets_cloak_cooldown_decloak));
+
+            HG_DO_IN_ALL_CONTEXTS({
+                if(self.hg_ctx_type == HG_CLOAK)
+                    HG_SetCooldown(hg_ctx_next, 0, CVAR(g_nadgets_cloak_cooldown_decloak));
+            })
+
             sound(self, CHAN_AUTO, "misc/unstealth.wav", VOL_BASE, ATTN_NORM);
         }
         if(self.hg_stealthalpha)
@@ -2277,35 +2315,50 @@ void HG_Sentry_Trigger(void) {
         sound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
 }
 
+void HG_SetCooldown(.float cdfield, float gcd, float cd) {
+    float cdmul = Buffs_NadgetCooldown(self);
+    gcd *= cdmul;
+    cd *= cdmul;
+
+    self.hg_next1 = max(self.hg_next1, time + gcd);
+    self.hg_next2 = max(self.hg_next2, time + gcd);
+    self.hg_bonus_next = max(self.hg_bonus_next, time + gcd);
+    self.cdfield = max(self.cdfield, time + cd);
+}
+
 void HG_Attack()
 {
-    float hgtype;
-    float freebonus;
-    float used = 1;
-    float avail = self.hg_ammo;
-    var .float cdfield = hg_next;
-    
     if(self.deadflag != DEAD_NO)
         return;
 
+    float hgtype;
+    float used = 1;
+    float avail;
+
+    float n_bonus;
+    var .float cdfield;
+
+    if(hg_context_isaltintended)
+        n_bonus = 0;
+    else
+        n_bonus = self.hg_bonus;
+
     HG_FixNadeType(self);
 
-    if(self.hg_bonus) {
+    if(n_bonus) {
         hgtype = self.hg_bonustype;
-        freebonus = TRUE;
         avail = self.hg_bonus;
         cdfield = hg_bonus_next;
     } else {
-        hgtype = self.hg_type;
+        hgtype = self.hg_ctx_type;
+        avail = self.hg_ctx_ammo;
+        cdfield = hg_ctx_next;
     }
 
     if(time < self.cdfield)
         return;
-    
-    if(time < self.cdfield)
-        return;
 
-    if(!freebonus && !self.hg_ammo)
+    if(!n_bonus && !self.hg_ctx_ammo)
         return;
     
     if(hgtype == HG_SHIELD) {
@@ -2352,29 +2405,25 @@ void HG_Attack()
             HG_GenericProjectile(hgtype, '0 0 0', FALSE);
         }
     }
-    
-    float cdmul = Buffs_NadgetCooldown(self);
-    self.cdfield = time + GV("cooldown") * cdmul;
 
-    if(!freebonus) {
+    HG_SetCooldown(cdfield, GV("global_cooldown"), GV("cooldown"));
+
+    if(!n_bonus) {
         if(CVAR(g_nadgets_regen_compensate)) {
             float oregen = HG_RegenTime(self);
-            self.hg_ammo -= used;
-            self.hg_maxregentime = HG_RegenTime(self);
-            self.hg_regentime = self.hg_regentime - oregen + self.hg_maxregentime;
+            self.hg_ctx_ammo -= used;
+            self.hg_ctx_maxregentime = HG_RegenTime(self);
+            self.hg_ctx_regentime = self.hg_ctx_regentime - oregen + self.hg_ctx_maxregentime;
         } else {
-            self.hg_ammo -= used;
+            self.hg_ctx_ammo -= used;
             HG_SetRegenTime(self, HG_RegenTime(self));
         }
-    } else {
-        self.hg_next = min(self.hg_bonus_next, time + GRENVAR(self.hg_type, "cooldown") * cdmul);
     }
     
     if(self.hg_bonus)
         self.hg_bonus -= used;
     
     self.hg_nadesused += used;
-    
 }
 #undef GV
 
@@ -2394,13 +2443,13 @@ void HG_UpdateDetonables() {
 float HG_RegenLimit(entity plr) {
     float mx = 0;
     
-    mx = GRENVAR(plr.hg_type, "regen_limit");
+    mx = GRENVAR(plr.hg_ctx_type, "regen_limit");
 
     if(mx < 1)
         return 0;
 
     if(Buffs_BuffPower(plr, BUFF_ADEPT))
-        mx += GRENVAR(plr.hg_type, "adept_regen_limit_extend");
+        mx += GRENVAR(plr.hg_ctx_type, "adept_regen_limit_extend");
 
     float supply = Buffs_BuffPower(plr, BUFF_SUPPLY);
     if(supply)
@@ -2434,23 +2483,44 @@ void HG_Frame()
     if(time < self.hg_plasmalock)
         mayfire = FALSE;
     
-	float held;
-	held = self.BUTTON_HG;
-	
-	if((self.hg_power && !self.hg_state		)||
-	   (g_freeze && self.frozen)||
+	float held, isalt;
+	held = (self.((g_nadgets_detonatelaunches)? hg_detonatepressed : BUTTON_NADGET));
+
+    float n_type;
+
+    if(!held) {
+        held = (self.BUTTON_NADGET2 || (!g_grappling_hook && self.BUTTON_USE));
+        if(held) {
+            isalt = TRUE;
+        }
+    }
+
+    if(self.hg_power)
+        isalt = self.hg_altstate;
+
+    if((self.hg_power && !self.hg_state) ||
+       (g_freeze && self.frozen) ||
        (g_jailbreak && self.jb_isprisoned))
-			held = 0;
-	
-    if(held && held != self.hg_state && !self.hg_ammo && self.deadflag == DEAD_NO)
-        bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(self.hg_type), "s!"), "", 1);
-        
-    float t = HG_PLAYERNADETYPE(self);
-    if(held && (time >= self.hg_next || self.hg_bonus) && HG_PlayerMayFire(self) && mayfire) {
+            held = 0;
+
+    HG_SetContext(isalt);
+
+    if(!isalt && self.hg_bonus) {
+        hg_ctx_ammo = hg_bonus;
+        hg_ctx_next = hg_bonus_next;
+        n_type = self.hg_bonustype;
+    } else {
+        n_type = self.hg_ctx_type;
+    }
+
+    if(held && held != self.hg_state && !self.hg_ctx_ammo && self.deadflag == DEAD_NO)
+        bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(n_type), "s!"), "", 1);
+    
+    if(held && time >= self.hg_ctx_next && self.hg_ctx_ammo && mayfire) {
         float ls;
         
         if(!g_nadgets_detonatelaunches)
-            ls = GRENVAR(t, "launchspeed");
+            ls = GRENVAR(n_type, "launchspeed");
         
         self.hg_launchspeed = ls;
         
@@ -2466,34 +2536,35 @@ void HG_Frame()
 		self.hg_power = 0;
 	}
 	
-	if(self.hg_power == 1 && mayfire && GRENVAR(t, "launch_fullforce_launches_immediately"))
+	if(self.hg_power == 1 && mayfire && GRENVAR(n_type, "launch_fullforce_launches_immediately"))
 		HG_Attack();
 	
 	self.hg_state = held;
+    self.hg_altstate = isalt;
     
-    if(CVAR(g_nadgets_regen)) {
+    if(CVAR(g_nadgets_regen)) HG_DO_IN_ALL_CONTEXTS({
         float mx = HG_RegenLimit(self);
         float dpause = CVAR(g_nadgets_regen_damagepause) * Buffs_NadgetRegenDmgPause(self);
         
-        self.hg_regenrate = GRENVAR(self.hg_type, "regen_scale");
-        dpause = min(dpause, dpause / self.hg_regenrate);
-        self.hg_regenpaused = (self.hg_stealth || self.hg_stealth_saved || (time - self.lastdamage <= dpause));
+        self.hg_ctx_regenrate = GRENVAR(self.hg_type, "regen_scale");
+        dpause = min(dpause, dpause / self.hg_ctx_regenrate);
+        self.hg_ctx_regenpaused = (((self.hg_stealth || self.hg_stealth_saved) && self.hg_ctx_type == HG_CLOAK) || (time - self.lastdamage <= dpause));
         
-        if(self.hg_ammo < mx || !mx) {
-            if(!self.hg_regenpaused) {
+        if(self.hg_ctx_ammo < mx || !mx) {
+            if(!self.hg_ctx_regenpaused) {
                 if(g_freeze && self.frozen)
-                    self.hg_regenrate *= CVAR(g_nadgets_regen_frozenfactor);
-                self.hg_regenrate *= Buffs_NadgetRegen(self);
+                    self.hg_ctx_regenrate *= CVAR(g_nadgets_regen_frozenfactor);
+                self.hg_ctx_regenrate *= Buffs_NadgetRegen(self);
                 
-                self.hg_regentime -= frametime * self.hg_regenrate;
-                if(self.hg_regentime <= 0) {
-                    self.hg_ammo += 1;
+                self.hg_ctx_regentime -= frametime * self.hg_ctx_regenrate;
+                if(self.hg_ctx_regentime <= 0) {
+                    self.hg_ctx_ammo += 1;
                     HG_SetRegenTime(self, HG_RegenTime(self));
                 }
             }
         } else
-            self.hg_regenrate = 0;
-    }
+            self.hg_ctx_regenrate = 0;
+    })
     
     if(self.hg_detonatepressed)
         self.hg_detonatepressed = FALSE;
@@ -2513,21 +2584,30 @@ void HG_Trigger(void) {
         self.hg_detonatepressed = TRUE;
         HG_DetonateAll(self);
         
-        if(self.hg_type == HG_LASER)
-        if(Buffs_BuffPower(self, BUFF_ADEPT))
-            HG_Attack();
+        if(Buffs_BuffPower(self, BUFF_ADEPT)) {
+            float i;
+            HG_LOOP_FOR_ALL_CONTEXTS(i, {
+                if(self.hg_ctx_type == HG_LASER) {
+                    HG_Attack();
+                    break;
+                }
+            })
+        }
     }
 }
 
 void HG_ResetState(entity p) {
     p.hg_power = 0;
-    p.hg_ammo = (p.hg_clearammo? 0 : CVAR(g_nadgets_ammo));
+    p.hg_ammo1 = p.hg_ammo2 = (p.hg_clearammo? 0 : CVAR(g_nadgets_ammo));
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
     p.hg_clearammo = 0;
     p.hg_shield = 0;
-    HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
-    HG_SetRegenTime(p, HG_RegenTime(p));
+
+    HG_DO_IN_ALL_CONTEXTS({
+        HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+        HG_SetRegenTime(p, HG_RegenTime(p));
+    })
 }
 
 void HG_PlayerSpawn()
@@ -2562,11 +2642,14 @@ void HG_PlayerJoin() {
 }
 
 float HG_ShowMenu(float always) {
-    if(self.hg_type_picked && self.BUTTON_CHAT)
+    if(self.hg_type1_picked && self.BUTTON_CHAT)
         return FALSE;
     
-    if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type_picked)) {
-        stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
+    if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked))) {
+        if(g_nadgets_double)
+            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect2\n"));
+        else
+            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
         return TRUE;
     }
     

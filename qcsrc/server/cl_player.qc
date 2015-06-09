@@ -912,8 +912,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
-            attacker.hg_ammo += 1;
-            HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+            HG_DO_IN_ALL_CONTEXTS(if(attacker.hg_ctx_type == HG_BAIT) {
+                attacker.hg_ctx_ammo += 1;
+                HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+            })
         }
 
         float removenadgets;
@@ -924,6 +926,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             HG_RemoveAll(self);
 
         if(self.hg_power > 0) {
+            HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
@@ -932,7 +935,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         
         if(!g_freezetag && !g_jailbreak) {
             if(CVAR(g_nadgets_resetonrespawn))
-                self.hg_ammo = 0;
+                self.hg_ammo1 = self.hg_ammo2 = 0;
         }
         
         DropPowerups(force);

@@ -314,6 +314,7 @@ float sv_showfps;
 float sv_oldfag;
 
 float g_nadgets;
+float g_nadgets_double;
 float sv_scoreboard_heal_column;
 float g_freeze;
 

@@ -391,21 +391,35 @@ string NextFrameCommand;
 void CSQC_spider_HUD();
 
 float hg_nadecount;
+float hg_nadecount2;
 float hg_nadecount_firstframepassed;
 
 void HG_NadeGainSound() {
-    float c = getstati(STAT_HGAMMO);
+    float c1 = getstati(STAT_HGAMMO);
+    float c2 = getstati(STAT_HGAMMO2);
+    float sndplayed = FALSE;
     
-    if(hg_nadecount_firstframepassed)
-    if(c != hg_nadecount) {
-        hgregen = 1;
-        hg_nadecount_update = time;
-        if(c > hg_nadecount)
-            localcmd("play2 misc/poweroff\n");
+    if(hg_nadecount_firstframepassed) {
+        if(c1 != hg_nadecount) {
+            hgregen = 1;
+            hg_nadecount_update = time;
+            if(c1 > hg_nadecount) {
+                localcmd("play2 misc/poweroff\n");
+                sndplayed = TRUE;
+            }
+        }
+
+        if(c2 != hg_nadecount2) {
+            hgregen2 = 1;
+            hg_nadecount2_update = time;
+            if(c2 > hg_nadecount2 && !sndplayed)
+                localcmd("play2 misc/poweroff\n");
+        }
     }
 
     hg_nadecount_firstframepassed = TRUE;
-    hg_nadecount = c;
+    hg_nadecount = c1;
+    hg_nadecount2 = c2;
 }
 
 void CSQC_UpdateView(float w, float h)

@@ -90,3 +90,14 @@ string HG_NameToIcon(string n, float large, float alt) {
 string HG_TypeToIcon(float t, float large, float alt) {
     return HG_NameToIcon(HG_TypeToName(t), large, alt);
 }
+
+float HG_CompressDualType(float t1, float t2) {
+    return (t1 - HG_START) + (t2 - HG_START) * 16;
+}
+
+vector HG_DecompressDualType(float t) {
+    vector v;
+    v_x = (t & 0x0F)      + HG_START;
+    v_y = (t & 0xF0) / 16 + HG_START;
+    return v;
+}

@@ -37,6 +37,70 @@ void() menu_sub_null =
 {
 };
 
+string TryBind(string cmds, string keys) {
+    float ncmds = tokenize(cmds);
+    float nkeys;
+    float i, j, k;
+    string cmd, kname, prefercmd, kbound;
+
+    for(i = 0; i < ncmds; ++i) {
+        cmd = argv(i);
+        if(!i)
+            prefercmd = cmd;
+
+        nkeys = tokenize(findkeysforcommand(cmd));
+        for(j = 0; j < nkeys; ++j) {
+            k = stof(argv(j));
+            if(k >= 0) {
+                print("Found an acceptable binding: ", cmd, " -> ", keynumtostring(k), "\n");
+                return keys;
+            }
+        }
+        ncmds = tokenize(cmds);
+    }
+
+    print("None of ", cmds, " are bound - trying to bind\n");
+
+    nkeys = tokenize(keys);
+    for(i = 0; i < nkeys; ++i) {
+        k = stringtokeynum(argv(i));
+
+        // I'm not sure when exactly this bug got fixed...
+        if(!checkextension("DP_CSQC_BINDMAPS"))
+            k = fix_int_return_value(k);
+
+        if(k <= 0) {
+            print("Invalid key: ", argv(i), "\n");
+            continue;
+        }
+
+        kname = keynumtostring(k);
+        cmd = getkeybind(k);
+
+        if(cmd) {
+            print(kname, " is already bound to ", getkeybind(k), "\n");
+        } else {
+            print(ftos(k), " ", argv(i), " ", kname, " is free - binding to ", prefercmd, "\n");
+            kbound = kname;
+            localcmd("bind ", kname, " ", prefercmd, "\n");
+            break;
+        }
+    }
+
+    if(kbound) {
+        keys = "";
+        for(i = 0; i < nkeys; ++i) {
+            kname = keynumtostring(stringtokeynum(argv(i)));
+            if(kname != kbound)
+                keys = strcat(keys, "'", kname, "'", " ");
+        }
+        return keys;
+    }
+    
+    print("TryBind(", cmds, ", ", keys, ") failed!\n");
+    return keys;
+}
+
 #ifdef USE_FTE
 float __engine_check;
 #endif
@@ -212,6 +276,7 @@ void CSQC_Init(void)
 
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
+    registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 }
 
@@ -473,6 +538,15 @@ void UpdateClRate(void) {
     localcmd("rate ", ftos(TARGET_RATE), "\n");
 }
 
+void TryBindCRAKeys(void) {
+    string keyprio = "'e' 'q' 'r' 'f' 'c' 'x' 'v' 'g' 'w' 'a' 's' 'd'";
+
+    keyprio = TryBind("'+nadget' '+hook' '+button6'", keyprio);
+    keyprio = TryBind("'+nadget2' '+button9'", keyprio);
+    keyprio = TryBind("'dropweapon' 'impulse 17'", keyprio);
+    keyprio = TryBind("'+use'", keyprio);
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -591,9 +665,11 @@ void PostInit(void)
         case 48:
             UpdateClRate();
         case 49:
+        case 50:
+            TryBindCRAKeys();
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 50\n");
+		localcmd("seta rm_initialized 51\n");
 		RM_OUTDATED
 		break;
 	}
@@ -601,6 +677,10 @@ void PostInit(void)
 	localcmd("alias afk \"cmd afk\"\n");
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
     localcmd("alias vinvite \"cmd vote invite $*\"\n");
+    localcmd("alias +nadget +button6\n");
+    localcmd("alias -nadget -button6\n");
+    localcmd("alias +nadget2 +button9\n");
+    localcmd("alias -nadget2 -button9\n");
 
 	rm_showspec   = CVAR(rm_showspec);
 	rm_showdamage = CVAR(rm_showdamage);
@@ -1852,6 +1932,7 @@ void Ent_Init()
 	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(g_nadgets? ReadByte() : 0));
+    cvar_set("_g_nadgets_select_double", ftos((g_nadgets_double = (g_nadgets? ReadByte() : 0))));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();

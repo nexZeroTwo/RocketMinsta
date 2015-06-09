@@ -271,6 +271,7 @@ string(string info, string key, string value, ...) infoadd = #226;
 string(string in) uri_escape = #510;
 
 string	keynumtostring(float keynum) = #520;
+float   stringtokeynum(string str) = #341;
 string	findkeysforcommand(string command) = #521;
 
 string(float ccase, float calpha, float cnum, string s, ...) strconv = #224;
@@ -343,3 +344,5 @@ void(float, float) GlobalSetInt = #174;
 void(float, float) GlobalSetFloat = #175;
 string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
+
+float(float v) fix_int_return_value = #512;

@@ -1,6 +1,7 @@
 
 void HG_Init();
 void HG_Precache();
+void HG_SetContext(float isalt);
 void HG_Frame();
 void HG_Attack();
 void HG_PlayerSpawn();
@@ -10,7 +11,6 @@ void HG_ResetState(entity);
 void HG_GiveBonus(entity, float, float, string, float);
 void HG_GiveRandomBonus(entity, float, string, float);
 void HG_Napalm();
-float HG_PlayerMayFire(entity);
 void HG_Detonate(entity);
 void HG_DetonateAll(entity);
 void HG_RemoveAll(entity);
@@ -28,25 +28,36 @@ void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
 void HG_Bait_Body_Boom(entity body);
 float HG_Shield_Damage(entity attacker, float damage, float deathtype);
+void HG_SetCooldown(.float cdfield, float gcd, float cd);
 
 .vector org_explosion;
 .float nextparticle;
 
 .float hg_power;
 .float hg_state;
-.float hg_next;
+.float hg_altstate;
+.float hg_next1;
+.float hg_next2;
 .float hg_bonus_next;
-.float hg_ammo;
-.float hg_type;
-.float hg_type_picked;
-.float hg_type_picked_nextround;
+.float hg_ammo1;
+.float hg_ammo2;
+.float hg_type1;
+.float hg_type1_picked;
+.float hg_type1_picked_nextround;
+.float hg_type2;
+.float hg_type2_picked;
+.float hg_type2_picked_nextround;
 .float hg_bonus;
 .float hg_bonustype;
 .float hg_isbonus;
-.float hg_regentime;
-.float hg_maxregentime;
-.float hg_regenrate;
-.float hg_regenpaused;
+.float hg_regentime1;
+.float hg_maxregentime1;
+.float hg_regenrate1;
+.float hg_regenpaused1;
+.float hg_regentime2;
+.float hg_maxregentime2;
+.float hg_regenrate2;
+.float hg_regenpaused2;
 .float hg_deathtime;
 .float hg_detonable;
 .float hg_detonatetime;
@@ -68,6 +79,17 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 .float hg_alwaysask;
 .float hg_adept;
 .float hg_tl_revived;
+
+var .float hg_ctx_next;
+var .float hg_ctx_type;
+var .float hg_ctx_ammo;
+var .float hg_ctx_type;
+var .float hg_ctx_type_picked;
+var .float hg_ctx_type_picked_nextround;
+var .float hg_ctx_regentime;
+var .float hg_ctx_maxregentime;
+var .float hg_ctx_regenrate;
+var .float hg_ctx_regenpaused;
 
 .float hg_transloc_solidcheck;
 
@@ -118,14 +140,21 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype);
 
 float g_nadgets_oldhitboxes;
 float g_nadgets_detonatelaunches;
+float g_nadgets_double;
 
 float hg_plasma_group;
 
 .entity bait_ref;
 
-#define BUTTON_HG ((g_nadgets_detonatelaunches)? hg_detonatepressed : button6)
+float hg_context_isalt;
+float hg_context_isaltintended;
+
+#define hg_type hg_type1
+
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
-#define HG_PLAYERNADETYPE(p) (((p).hg_bonus)? ((p).hg_bonustype) : ((p).hg_type))
 
 #define IF_HG_LINKER_APPLICABLE(p) if(p.takedamage) if(!p.jb_isprisoned) if(p.deadflag == DEAD_NO) if(!p.frozen)
+
+#define HG_DO_IN_ALL_CONTEXTS(block) { HG_SetContext(FALSE); block if(g_nadgets_double) { HG_SetContext(TRUE); block } }
+#define HG_LOOP_FOR_ALL_CONTEXTS(i,block) for(i = 0; i <= g_nadgets_double; ++i) { HG_SetContext(i); block }

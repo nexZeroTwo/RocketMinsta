@@ -255,7 +255,7 @@ void JB_Imprison(entity attacker) {
         
         if(g_nadgets) {
             if(!CVAR(g_nadgets_regen))
-                self.hg_ammo = 0;
+                self.hg_ammo1 = self.hg_ammo2 = 0;
             self.hg_bonus = 0;
         }
     }

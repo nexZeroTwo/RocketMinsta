@@ -27,6 +27,7 @@ void() m_init =
     registercvar("menu_rpn_autoload", "", CVAR_SAVE);
     
     localcmd("alias menu_shownadeselect \"menu_cmd directmenu NadeMenu\"\n");
+    localcmd("alias menu_shownadeselect2 \"menu_cmd directmenu NadeMenuDouble\"\n");
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
@@ -843,6 +844,9 @@ void(string itemname) m_goto =
 	}
 	else
 	{
+        if(itemname == "NadeMenu" && cvar("_g_nadgets_select_double"))
+            itemname = "NadeMenuDouble";
+
 		e = findstring(NULL, name, itemname);
 		if(e)
 		{
