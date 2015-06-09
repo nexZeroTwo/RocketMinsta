@@ -545,7 +545,7 @@ float Item_GiveTo(entity item, entity player)
                 if(player.hg_ctx_ammo <= HG_RegenLimit(player)) {
                     float oregen = HG_RegenTime(player);
                     pickedup = TRUE;
-                    player.hg_ctx_ammo = min(player.hg_ctx_ammo + self.hg_ctx_ammo, HG_RegenLimit(player) + self.hg_ctx_ammo);
+                    player.hg_ctx_ammo = min(player.hg_ctx_ammo + self.hg_ammo1, HG_RegenLimit(player) + self.hg_ammo1);
                     player.hg_ctx_maxregentime = HG_RegenTime(player);
                     player.hg_ctx_regentime = player.hg_ctx_regentime - oregen + player.hg_ctx_maxregentime;
                 }
