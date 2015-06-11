@@ -768,7 +768,7 @@ void HG_Stick(void) {
             setmodel(e, "models/hg_transloc.md3");
             e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
             e.light_lev = 50;
-            e.color = TeamColor((self.team > 0)? self.team : COLOR_TEAM4);
+            e.color = TeamColor(if(self.team > 0) self.team else COLOR_TEAM4);
             break;
         case HG_LASER:
             setmodel(e, "models/elaser.mdl");
@@ -786,7 +786,7 @@ void HG_Stick(void) {
     e.solid = self.solid;
     e.dphitcontentsmask = self.dphitcontentsmask;
     e.use = self.use;
-    e.movetype = (trace_ent? MOVETYPE_TOSS : MOVETYPE_NONE);
+    e.movetype = if(trace_ent) MOVETYPE_TOSS else MOVETYPE_NONE;
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
     e.think = HG_Grenade_Think;
@@ -932,7 +932,7 @@ void HG_Grenade_Remote_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
         float ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
 
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1 * (self.hg_type == HG_SENTRY)), (ownerhack? self.realowner : self.owner), 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
 
         if(self.hg_type == HG_SENTRY) {
             WaypointSprite_UpdateMaxHealth(self.hg_waypoint, 1);
@@ -1466,7 +1466,7 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hi
     damage *= takefactor;
 
     if(self.hg_shield_stored > o)
-        te_eleblast(hitloc, (teams_matter? self.team : 0));
+        te_eleblast(hitloc, if(teams_matter) self.team else 0);
 
     if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         reflect = 0;
@@ -1615,7 +1615,7 @@ void HG_Linker_Think() {
         
         if(denom >= 1) {
             if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
-            sharefactor = (g_clanarena? 1 : CVAR(g_nadgets_linker_sharefactor));
+            sharefactor = if(g_clanarena) 1 else CVAR(g_nadgets_linker_sharefactor);
 
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
                 if(denom > 1) {
@@ -1771,7 +1771,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     }
     
     makevectors(self.v_angle);
-    W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, (silent? "" : HG_TypeToAttackSound(hgtype)), -1);
+    W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, if(silent) "" else HG_TypeToAttackSound(hgtype), -1);
     pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
     
     vector a = vectoangles(w_shotdir);
@@ -1833,8 +1833,10 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     else
         gren.cnt = GV("bouncelimit");
 
-    gren.hg_deathtime = ((self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))? 
-                          time + 0.01 : time + lt * ((hgtype == HG_TRANSLOC)? Buffs_NadgetPower(self) : 1));
+    gren.hg_deathtime = if(self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))
+                            time + 0.01
+                        else
+                            time + lt * (if(hgtype == HG_TRANSLOC) Buffs_NadgetPower(self) else 1);
                           
     gren.think = HG_Grenade_Think;
     gren.nextthink = time;
@@ -2282,7 +2284,7 @@ void HG_Sentry(void) {
     setmodel(c, "models/ebomb.mdl");
     c.skin = TeamColorSkin(self.team);
     c.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
-    c.color = '0.3 0.3 0.3' + 0.7 * TeamColor((self.team > 0)? self.team : COLOR_TEAM2);
+    c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     c.owner = self;
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
 
@@ -2518,7 +2520,7 @@ void HG_Frame()
         mayfire = FALSE;
     
 	float held, isalt;
-	held = (self.((g_nadgets_detonatelaunches)? hg_detonatepressed : BUTTON_NADGET));
+	held = self.(if(g_nadgets_detonatelaunches) hg_detonatepressed else BUTTON_NADGET);
 
     float n_type;
 
@@ -2632,7 +2634,7 @@ void HG_Trigger(void) {
 
 void HG_ResetState(entity p) {
     p.hg_power = 0;
-    p.hg_ammo1 = p.hg_ammo2 = (p.hg_clearammo? 0 : CVAR(g_nadgets_ammo));
+    p.hg_ammo1 = p.hg_ammo2 = if(p.hg_clearammo) 0 else CVAR(g_nadgets_ammo);
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
     p.hg_clearammo = 0;

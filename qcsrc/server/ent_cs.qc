@@ -128,7 +128,7 @@ float entcs_send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        WriteByte(MSG_ENTITY, num_for_edict(o.bait_ref? o.bait_ref : o));
+        WriteByte(MSG_ENTITY, num_for_edict(if(o.bait_ref) o.bait_ref else o));
         WriteByte(MSG_ENTITY, self.owner.bait_ref && self.owner.frozen);
     }
 

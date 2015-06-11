@@ -539,7 +539,7 @@ vector PlayerTouchWall(float dist)
     float pc  = CVAR(g_walljump_playerclip);
     
     for(i = 1; i > -2; i -= 2) {
-        tracebox(self.origin, self.mins + sh * '0 0 1' * (shc? 1 : 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
+        tracebox(self.origin, self.mins + sh * '0 0 1' * (if(shc) 1 else 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if(!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))

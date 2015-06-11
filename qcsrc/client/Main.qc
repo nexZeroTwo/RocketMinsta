@@ -439,7 +439,7 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
+	return if(rm_oldbigfont || sv_oldfag) sbar_bigfont_real else sbar_rmbigfont;
 }
 
 void SetMadokaFont(float v)
@@ -460,7 +460,7 @@ void SetMadokaFont(float v)
 			{
 				if(CVAR(rm_specmadoka))
 				{
-					sbar_bigfont = (madokalockstate? sbar_madokafont : GetBigfont());
+					sbar_bigfont = if(madokalockstate) sbar_madokafont else GetBigfont();
 					return;
 				}
 				/*else
@@ -469,7 +469,7 @@ void SetMadokaFont(float v)
 				}*/
 			}
 			
-			sbar_bigfont = (rm_madoka? sbar_madokafont : GetBigfont());
+			sbar_bigfont = if(rm_madoka) sbar_madokafont else GetBigfont();
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
@@ -740,7 +740,7 @@ void PostInit(void)
 	// -- //
 	registercmd("hudskin");
 	
-	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
+	bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(sv_showspecs_extra)
@@ -794,8 +794,8 @@ void Cmd_Sbar_Help(float);
 
 void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
 
-#define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
+#define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", if(cvar(strcat("rm_", strCmd))) "^2ON" else "^1OFF", "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
+#define RMSETTINGREPORT { print(strCmd, " is now ", if(cvar(strcat("rm_", strCmd))) "^2ON\n" else "^1OFF\n"); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -1931,8 +1931,8 @@ void Ent_Init()
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
-    cvar_set("_g_nadgets_select_available", ftos(g_nadgets? ReadByte() : 0));
-    cvar_set("_g_nadgets_select_double", ftos((g_nadgets_double = (g_nadgets? ReadByte() : 0))));
+    cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
+    cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();

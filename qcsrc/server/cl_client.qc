@@ -1333,7 +1333,7 @@ void PutClientInServer (void)
 
 		CL_SpawnWeaponentity();
 		self.alpha = default_player_alpha;
-		self.colormod = '1 1 1' * (self.forcedbrightness? self.forcedbrightness : CVAR(g_player_brightness));
+		self.colormod = '1 1 1' * (if(self.forcedbrightness) self.forcedbrightness else CVAR(g_player_brightness));
 		self.exteriorweaponentity.alpha = default_weapon_alpha;
 
 		self.lms_nextcheck = time + CVAR(g_lms_campcheck_interval)*2;
@@ -1450,7 +1450,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
-    WriteByte(MSG_ENTITY, g_nadgets? (g_nadgets_oldhitboxes? 2 : 1) : 0);
+    WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
     if(g_nadgets) {
         WriteByte(MSG_ENTITY, (CVAR_STR(g_nadgets_type_selectable) != ""));
         WriteByte(MSG_ENTITY, g_nadgets_double);
@@ -1721,7 +1721,7 @@ void ServerTopic()
 	
 	if(servertopic) if(servertopic != "")
 		sprint(self, strcat("\x01^2* ^3Current topic^7: ", servertopic, "\n"
-			   "\x01^2* ^7Topic set by ^3", ((topicby && topicby != "")? topicby : "<server>"),
+			   "\x01^2* ^7Topic set by ^3", if(topicby && topicby != "") topicby else "<server>",
 		"\n"));
 }
 
@@ -3192,7 +3192,7 @@ void SpectatorThink()
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
 			} else {
-				self.classname = (self.jb_specteam? "player" : "observer");
+				self.classname = if(self.jb_specteam) "player" else "observer";
 				PutClientInServer();
 			}
 			WriteSpectatorInfo(self.enemy);

@@ -573,7 +573,7 @@ void spawnfunc_worldspawn (void)
 	sv_showfps = CVAR(sv_showfps);
 	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
-	_pseudo_bullet = (CVAR(sv_gameplayfix_shootownentities) ? spawn() : world); //Fake bullet for pseudo_bullet() function in g_subs.qc
+	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -895,7 +895,7 @@ void spawnfunc_worldspawn (void)
 	IP2C_Init();
 //	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
 
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, if(strcat(RM_BUILD_SUFFIX, "") != "") strcat("/", RM_BUILD_SUFFIX) else ""));
 
 	registercvar("g_endmatch", "0");
 	cvar_set("g_endmatch", "0");

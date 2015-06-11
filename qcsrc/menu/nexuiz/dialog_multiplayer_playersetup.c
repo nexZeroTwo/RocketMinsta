@@ -23,7 +23,7 @@ entity makeNexuizPlayerSettingsTab()
 void drawNexuizPlayerSettingsTab(entity me)
 {
 	if(CVAR_STR(_cl_name) == "Player")
-		me.playerNameLabel.alpha = ((mod(time * 2, 2) < 1) ? 1 : 0);
+		me.playerNameLabel.alpha = if(mod(time * 2, 2) < 1) 1 else 0;
 	else
 		me.playerNameLabel.alpha = me.playerNameLabelAlpha;
 	drawContainer(me);

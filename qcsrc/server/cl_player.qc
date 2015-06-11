@@ -188,7 +188,7 @@ float player_getspecies()
 				continue;
 			fgets(fh); fgets(fh);
 			sk = stof(fgets(fh));
-			if(sk == (j ? 0 : self.skinindex)) // 2nd pass skips the skin test
+			if(sk == (if(j) 0 else self.skinindex)) // 2nd pass skips the skin test
 			if(fgets(fh) == self.model)
 			{
 				l = fgets(fh);
@@ -1233,7 +1233,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
-    float silence = (source? CVAR(sv_silence) : 0);
+    float silence = if(source) CVAR(sv_silence) else 0;
 
     if(silence == 1)
         return;

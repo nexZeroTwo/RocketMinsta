@@ -589,7 +589,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISHG(t)				  (DEATH_HGTYPE(t) >= HG_START && DEATH_HGTYPE(t) <= HG_END)
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define DEATH_WEAPONOF(t)             (if(DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) 0 else DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
@@ -613,7 +613,7 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA ((cvar("sv_oldnexsound") || sv_oldfag)? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
 	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"

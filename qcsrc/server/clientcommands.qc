@@ -456,7 +456,7 @@ void SV_ParseClientCommand(string s) {
 		}
         if(CVAR(sv_spectate) == 1) {
             if(self.classname == "player") {
-                EnterSpectatorModeDelayed((roundstate == ROUNDSTATE_GAME)? CVAR(sv_spectate_delay) : 0);
+                EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
             } else {
                 /*
                  * Actually no, this is probably a bad idea
@@ -555,12 +555,12 @@ void SV_ParseClientCommand(string s) {
         HG_DO_IN_ALL_CONTEXTS({
             argc = tokenize_console(CVAR_STR(g_nadgets_type_selectable));
             success = FALSE;
-            t = (hg_context_isalt? t2 : t1);
+            t = if(hg_context_isalt) t2 else t1;
 
             if(argc) for(i = 0; i < argc; ++i) {
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your ", (g_nadgets_double? (hg_context_isalt? "secondary " : "primary ") : ""), "nadget type ", (nr? "will be" : "has been"), " set to ^2", HG_TypeToExpandedName(t), (nr? "^1 on the next round\n" : "\n")));
-                    self.(nr? hg_ctx_type_picked_nextround : hg_ctx_type_picked) = t;
+                    sprint(self, strcat("^1Your ", if(g_nadgets_double) (if(hg_context_isalt) "secondary " else "primary ") else "", "nadget type ", if(nr) "will be" else "has been", " set to ^2", HG_TypeToExpandedName(t), if(nr) "^1 on the next round\n" else "\n"));
+                    self.(if(nr) hg_ctx_type_picked_nextround else hg_ctx_type_picked) = t;
                     
                     if(!nr) {
                         float o;
@@ -610,7 +610,7 @@ void SV_ParseClientCommand(string s) {
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         
-        self.((isplayer && gamestarted)? hg_optout_nextround : hg_optout) = stof(argv(1));
+        self.(if(isplayer && gamestarted) hg_optout_nextround else hg_optout) = stof(argv(1));
     } else if(cmd == "hg_alwaysask") {
         if not(self.flags & FL_CLIENT)
             return;
@@ -1054,7 +1054,7 @@ void SV_ParseClientCommand(string s) {
         if(entno <= maxclients)
             client = edict_num(entno);
         
-        entity k = ((argv(2) == "taken")? client.dtrack_taken : client.dtrack_total);
+        entity k = if(argv(2) == "taken") client.dtrack_taken else client.dtrack_total;
         
         if(k)
             DamageTracker_Print(k, self);

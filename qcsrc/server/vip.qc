@@ -483,7 +483,7 @@ float vip_EnemiesMultiplier(entity pl, string cvarname)
 	FOR_EACH_PLAYER(e) if(e.team != pl.team)
 		++c;
 	
-	return (c? c : 1); //NEVER return 0 here
+	return if(c) c else 1; //NEVER return 0 here
 }
 
 void vip_RegenerateHealth()
@@ -816,7 +816,7 @@ void vip_RedVIPDown()
 	if(bluevip && bluevip.classname == "player")
 	{
 		PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
+		PlayerScore_Add(bluevip, SP_SCORE, cvar(if(vip_soulgem) "g_vip_score_survival_soulgem" else "g_vip_score_survival"));
 	}
 	
 	vip_EndRound();
@@ -839,7 +839,7 @@ void vip_BlueVIPDown()
 	if(redvip && redvip.classname == "player")
 	{
 		PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
+		PlayerScore_Add(redvip, SP_SCORE, cvar(if(vip_soulgem) "g_vip_score_survival_soulgem" else "g_vip_score_survival"));
 	}
 	vip_EndRound();
 }

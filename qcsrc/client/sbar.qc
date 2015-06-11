@@ -92,7 +92,7 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	else
 		idx = imp - 1;
 
-	value = (active) ? 1 : 0.6;
+	value = if(active) 1 else 0.6;
 	color_x = color_y = color_z = value;
 
 	// width = 300, height = 100
@@ -102,7 +102,7 @@ void Sbar_DrawWeapon(float nr, float fade, float active, float wc)
 	weaponspace[idx] = sp;
 
 	pos_x = (vid_conwidth + 6 - w_width * 9) * 0.5 + w_width * idx;
-	pos_y = (vid_conheight - w_height * sp) - 38 - (rm_oldhud? 0 : 3); // move 38 pixels up
+	pos_y = (vid_conheight - w_height * sp) - 38 - (if(rm_oldhud) 0 else 3); // move 38 pixels up
 	pos_z = 0;
 	vsize_x = w_width;
 	vsize_y = w_height;
@@ -459,8 +459,8 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", (sv_showfps? " fps" : ""), (CVAR(rm_notimer)? "" : " time"), " cn +ctf/fc name | kdr", strcat(
-        (sv_showacc? " acc" : ""), (g_minstagib? (CVAR(_g_rocketminsta)? " hfs" : "") : " dmg"), (sv_scoreboard_heal_column? " heal" : ""), (g_nadgets? " nfs" : "")),
+		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | kdr", strcat(
+        if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
 		" +ft,jb,vip/kills +ft,vip,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
@@ -468,7 +468,7 @@ string Sbar_DefaultColumnLayout()
 		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
-		strcat("+tdm/dths +tdm/scds ", (g_freeze? "revs " : ""), "+dom,totaldom/takes -lms,race,nexball/score"));
+		strcat("+tdm/dths +tdm/scds ", if(g_freeze) "revs " else "", "+dom,totaldom/takes -lms,race,nexball/score"));
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -976,7 +976,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 	tmp_z = 0;
 
 	local float a;
-	a = (is_self? sbar_scoreboard_alpha_name_self : sbar_scoreboard_alpha_name);
+	a = if(is_self) sbar_scoreboard_alpha_name_self else sbar_scoreboard_alpha_name;
 
 	// alternated rows highlighting
 	/*
@@ -1337,7 +1337,7 @@ void Sbar_DrawScoreboard()
     if(sbar_fontsize_y > 10)
         sbar_fontsize_y = 10;
     */
-	sbar_fontsize = sbar_fontsize * (sbar_woulddrawscoreboard? ipol_linear : ipol_swingOut)(sbar_scoreboard_fade_alpha);
+	sbar_fontsize = sbar_fontsize * (if(sbar_woulddrawscoreboard) ipol_linear else ipol_swingOut)(sbar_scoreboard_fade_alpha);
 	
 	sbar_scoreboard_alpha_bg = CVAR(sbar_scoreboard_alpha_bg) * sbar_scoreboard_fade_alpha;
 	sbar_scoreboard_alpha_fg = 1.0 * sbar_scoreboard_fade_alpha;
@@ -1619,7 +1619,7 @@ void Sbar_Score(float p)
 	float score, distribution, leader;
 	vector score_pos, secondary_score_pos, distribution_color;
 	entity tm, pl, me;
-	me = (spectatee_status > 0) ? playerslots[spectatee_status - 1] : playerslots[player_localentnum - 1];
+	me = if(spectatee_status > 0) playerslots[spectatee_status - 1] else playerslots[player_localentnum - 1];
 
  	vector bottomright;
  	bottomright_x = vid_conwidth;
@@ -1730,10 +1730,10 @@ void Sbar_Score(float p)
 		}
 		else
 		{
-			score_pos = score_pos + ((score > 9)? '24 0 0' : '0 0 0');
+			score_pos = score_pos + (if(score > 9) '24 0 0' else '0 0 0');
 			secondary_score_pos = score_pos + '24 0 0' * 2.7 + '16 0 0' * (distribution > 9);
 			
-			Sbar_DrawXNum(score_pos, score, 4, 0, 24, GetTeamRGB(tm.team) * ((!leader)? 1 : 0.8) + ((!leader)? '0.2 0.2 0.2' : '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			Sbar_DrawXNum(score_pos, score, 4, 0, 24, GetTeamRGB(tm.team) * (if(!leader) 1 else 0.8) + (if(!leader) '0.2 0.2 0.2' else '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
 			Sbar_DrawXNum(secondary_score_pos, distribution, 4, 3, 16, distribution_color, 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 		}
 	} else { // teamgames
@@ -1756,7 +1756,7 @@ void Sbar_Score(float p)
 				if(rm_oldhud)
 					Sbar_DrawXNum(score_pos, score, 4, 0, 34, GetTeamRGB(tm.team) * 0.8, leader, 1, sbar_alpha_fg, DRAWFLAG_NORMAL);
 				else
-					Sbar_DrawXNum(score_pos + ((score > 9)? '24 0 0' : '0 0 0'), score, 4, 0, 24, GetTeamRGB(tm.team) * ((!leader)? 1 : 0.8) + ((!leader)? '0.2 0.2 0.2' : '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
+					Sbar_DrawXNum(score_pos + (if(score > 9) '24 0 0' else '0 0 0'), score, 4, 0, 24, GetTeamRGB(tm.team) * (if(!leader) 1 else 0.8) + (if(!leader) '0.2 0.2 0.2' else '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
 			} else {
 				if (max_fragcount == score)
 					leader = 1;
@@ -1768,7 +1768,7 @@ void Sbar_Score(float p)
 				}
 				else
 				{
-					Sbar_DrawXNum(secondary_score_pos, score, 4, 0, 16, GetTeamRGB(tm.team) * ((!leader)? 1 : 0.8) + ((!leader)? '0.2 0.2 0.2' : '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
+					Sbar_DrawXNum(secondary_score_pos, score, 4, 0, 16, GetTeamRGB(tm.team) * (if(!leader) 1 else 0.8) + (if(!leader) '0.2 0.2 0.2' else '0 0 0'), 0, leader, sbar_alpha_fg, DRAWFLAG_NORMAL);
 					secondary_score_pos = secondary_score_pos + '18 0 0';
 				}
 			}
@@ -2334,7 +2334,7 @@ void Sbar_DrawCenterPrint (void)
 		if(a <= 0)
 			continue;
 
-		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (rm_simpleeffects? 1 : a)) * 0.5;
+		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (if(rm_simpleeffects) 1 else a)) * 0.5;
 		ts = centerprint_messages[i];
 
 		if (ts != "")
@@ -2358,7 +2358,7 @@ void Sbar_DrawCenterPrint (void)
 				pos_y = oldy;
 			}
 			//  - '0 0.5 0' * (sz - 1) * centerprint_fontsize_x - '0.5 0 0' * (sz - 1) * centerprint_width[i] * centerprint_fontsize_y, centerprint_fontsize * sz
-			pos_y = pos_y + centerprint_fontsize_y * (rm_simpleeffects? 1 : a);
+			pos_y = pos_y + centerprint_fontsize_y * (if(rm_simpleeffects) 1 else a);
 		}
 		else
 			// half height for empty lines looks better
@@ -2433,12 +2433,48 @@ void Sbar_DrawPressedKeys(void)
 
 	pressedkeys = getstatf(STAT_PRESSED_KEYS);
 	drawpic(pos + '-15   -6   0', "gfx/hud/keys/key_bg.tga",           bgsize, '1 1 1', 0.1 * sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + ' 83.5  9   0', ((pressedkeys & KEY_CROUCH) ? "gfx/hud/keys/key_crouch_inv.tga" : "gfx/hud/keys/key_crouch.tga"), ' 24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + ' 32   -1.5 0', ((pressedkeys & KEY_FORWARD) ? "gfx/hud/keys/key_forward_inv.tga" : "gfx/hud/keys/key_forward.tga"),  ' 32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + '-11.5  9   0', ((pressedkeys & KEY_JUMP) ? "gfx/hud/keys/key_jump_inv.tga" : "gfx/hud/keys/key_jump.tga"),     ' 24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + ' -1   32   0', ((pressedkeys & KEY_LEFT) ? "gfx/hud/keys/key_left_inv.tga" : "gfx/hud/keys/key_left.tga"),     ' 32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + ' 32   32   0', ((pressedkeys & KEY_BACKWARD) ? "gfx/hud/keys/key_backward_inv.tga" : "gfx/hud/keys/key_backward.tga"), ' 32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
-	drawpic(pos + ' 65   32   0', ((pressedkeys & KEY_RIGHT) ? "gfx/hud/keys/key_right_inv.tga" : "gfx/hud/keys/key_right.tga"),    ' 32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + ' 83.5  9   0',
+        if(pressedkeys & KEY_CROUCH)
+            "gfx/hud/keys/key_crouch_inv.tga"
+        else
+            "gfx/hud/keys/key_crouch.tga",
+    '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + ' 32   -1.5 0',
+        if(pressedkeys & KEY_FORWARD)
+            "gfx/hud/keys/key_forward_inv.tga"
+        else
+            "gfx/hud/keys/key_forward.tga",
+    '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + '-11.5  9   0', 
+        if(pressedkeys & KEY_JUMP)
+            "gfx/hud/keys/key_jump_inv.tga"
+        else
+            "gfx/hud/keys/key_jump.tga",
+    '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + ' -1   32   0', 
+        if(pressedkeys & KEY_LEFT)
+            "gfx/hud/keys/key_left_inv.tga"
+        else
+            "gfx/hud/keys/key_left.tga",
+    '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + ' 32   32   0', 
+        if(pressedkeys & KEY_BACKWARD)
+            "gfx/hud/keys/key_backward_inv.tga"
+        else
+            "gfx/hud/keys/key_backward.tga",
+    '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+
+	drawpic(pos + ' 65   32   0', 
+        if(pressedkeys & KEY_RIGHT)
+            "gfx/hud/keys/key_right_inv.tga"
+        else
+            "gfx/hud/keys/key_right.tga",
+    '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
 void Sbar_ShowSpeed(void)
@@ -2682,8 +2718,8 @@ void Sbar_DrawAccuracyStats()
         //vector dsize = '0.2 0 0' * vid_conwidth + '0 0.3 0' * vid_conheight;
         vector dsize = '0.25 0 0' * vid_conwidth + '0 0.25 0' * vid_conheight;
         vector dpos = '1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan;
-        dpos = Sbar_DrawDamageStats(((spectatee_status > 0)? dtrack_total_spec : dtrack_total), "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
-        Sbar_DrawDamageStats(((spectatee_status > 0)? dtrack_taken_spec : dtrack_taken), "Damage taken", dpos, dsize);
+        dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_total_spec else dtrack_total, "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
+        Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize);
     }
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
@@ -2925,7 +2961,7 @@ float GetSpecialCaseWarn(float currweapon){
 
 string GetSpecialCaseWarnString(float currweapon, float currbullets){
 	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return (currbullets > 0) ? "magazine low" : "reloading";
+		case WEP_CAMPINGRIFLE: return if(currbullets > 0) "magazine low" else "reloading";
 		case WEP_ZAPPER: return "heat high";
 		default: return "";
 	}
@@ -3050,7 +3086,7 @@ void Sbar_MorningRescue(void)
 
 	for(k = 0; k < 2; ++k)
 	{
-		drawfont = (k? sbar_madokafont : sbar_bigfont_real);
+		drawfont = if(k) sbar_madokafont else sbar_bigfont_real;
 		mrpos_y = vid_conheight / 2 - 12;
 		mrpos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(mrstring) * 24);
 		for(j = 0; j < strlen(mrstring); ++j)
@@ -3072,8 +3108,8 @@ void Sbar_MorningRescue(void)
 				continue;
 			}
 
-			offset_y = 10 * ((k*10)+1) * cos(mrpos_x + 3 * time) * (mod(j, 2)? 1 : -1) * (k? 1 : -1);
-			offset_x = offset_y * (mod(j, 2)? -1 : 1);
+			offset_y = 10 * ((k*10)+1) * cos(mrpos_x + 3 * time) * (if(mod(j, 2)) 1 else -1) * (if(k) 1 else -1);
+			offset_x = offset_y * (if(mod(j, 2)) -1 else 1);
 			local string resultstr = strcat(mycolor, mychar);
 
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
@@ -3220,18 +3256,18 @@ float ammo_last;
 
 #define HUDLINE_SLICE(code) code if(!hudskin_line_full || !linedrawn) { DrawHUDLineSlice(hudline_pos, hudline, slice_basecolor, slice_basealpha); linedrawn = 1; }
 #define HUDLINE_SECTOR(code,bg,bbg,a,ba) code DrawHUDLineSector(hud_sector_pos, hud_sector + sector_mod, a*sector_alphamod, bg, hud_sector_drawflag); DrawHUDLineSectorBorder(hud_sector_pos, hud_sector + sector_mod, ba*sector_alphamod, bbg);
-#define BG_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamcolor : sector_basecolor)
-#define BG_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamcolor : sector_basecolor)
-#define BG_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? sector_teamcolor + hudskin_progress_sector_teamcolor_mod : hudskin_progress_sector_color) : BG_SECTOR)
-#define BG_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamcolor : border_basecolor)
-#define BG_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamcolor : border_basecolor)
-#define BG_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? border_teamcolor + hudskin_progress_border_teamcolor_mod : hudskin_progress_border_color) : BG_BORDER)
-#define A_SECTOR ((hudskin_sector_teamcolor == TC_ALWAYS)? sector_teamalpha : sector_basealpha)
-#define A_SECTOR_TEAM ((hudskin_sector_teamcolor != TC_NEVER)? sector_teamalpha : sector_basealpha)
-#define A_SECTOR_PROGRESS (hudskin_progress_sector_colormode? ((hudskin_progress_sector_colormode == 1)? max(A_SECTOR_TEAM, hudskin_progress_sector_teamcolor_minalpha) : hudskin_progress_sector_alpha) : A_SECTOR)
-#define A_BORDER ((hudskin_border_teamcolor == TC_ALWAYS)? border_teamalpha : border_basealpha)
-#define A_BORDER_TEAM ((hudskin_border_teamcolor != TC_NEVER)? border_teamalpha : border_basealpha)
-#define A_BORDER_PROGRESS (hudskin_progress_border_colormode? ((hudskin_progress_border_colormode == 1)? max(A_BORDER_TEAM, hudskin_progress_border_teamcolor_minalpha) : hudskin_progress_border_alpha) : A_BORDER)
+#define BG_SECTOR (if(hudskin_sector_teamcolor == TC_ALWAYS) sector_teamcolor else sector_basecolor)
+#define BG_SECTOR_TEAM (if(hudskin_sector_teamcolor != TC_NEVER) sector_teamcolor else sector_basecolor)
+#define BG_SECTOR_PROGRESS (if(hudskin_progress_sector_colormode) (if(hudskin_progress_sector_colormode == 1) sector_teamcolor + hudskin_progress_sector_teamcolor_mod else hudskin_progress_sector_color) else BG_SECTOR)
+#define BG_BORDER (if(hudskin_border_teamcolor == TC_ALWAYS) border_teamcolor else border_basecolor)
+#define BG_BORDER_TEAM (if(hudskin_border_teamcolor != TC_NEVER) border_teamcolor else border_basecolor)
+#define BG_BORDER_PROGRESS (if(hudskin_progress_border_colormode) (if(hudskin_progress_border_colormode == 1) border_teamcolor + hudskin_progress_border_teamcolor_mod else hudskin_progress_border_color) else BG_BORDER)
+#define A_SECTOR (if(hudskin_sector_teamcolor == TC_ALWAYS) sector_teamalpha else sector_basealpha)
+#define A_SECTOR_TEAM (if(hudskin_sector_teamcolor != TC_NEVER) sector_teamalpha else sector_basealpha)
+#define A_SECTOR_PROGRESS (if(hudskin_progress_sector_colormode) (if(hudskin_progress_sector_colormode == 1) max(A_SECTOR_TEAM, hudskin_progress_sector_teamcolor_minalpha) else hudskin_progress_sector_alpha) else A_SECTOR)
+#define A_BORDER (if(hudskin_border_teamcolor == TC_ALWAYS) border_teamalpha else border_basealpha)
+#define A_BORDER_TEAM (if(hudskin_border_teamcolor != TC_NEVER) border_teamalpha else border_basealpha)
+#define A_BORDER_PROGRESS (if(hudskin_progress_border_colormode) (if(hudskin_progress_border_colormode == 1) max(A_BORDER_TEAM, hudskin_progress_border_teamcolor_minalpha) else hudskin_progress_border_alpha) else A_BORDER)
 
 void DrawHUDLineSlice(vector slicepos, vector slicesize, vector slicecolor, float slicealpha)
 {
@@ -3628,7 +3664,7 @@ void DrawProgressBarSector(float prog, vector hud_sector_pos, vector hud_sector,
     hsize_y = sector_clip_size_y;
     hsize_x *= 0.5;
     hpos_y = sector_clip_pos_y;
-    hpos_x = sector_clip_pos_x + sector_clip_size_x*(invert? 1-prog : prog) - hsize_x * 0.5;
+    hpos_x = sector_clip_pos_x + sector_clip_size_x*(if(invert) 1-prog else prog) - hsize_x * 0.5;
     
     float a = hudskin_progress_head_alpha;
     if(prog > 0.90)
@@ -3741,7 +3777,7 @@ void Sbar_DrawHGShield(void) {
         vshield = approach(vshield, 0, frametime * 3);
     
     if(vshield)
-        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', (st? '1 1 1' : ('0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER))), 0.1 * vshield, DRAWFLAG_ADDITIVE);
+        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', if(st) '1 1 1' else ('0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER)), 0.1 * vshield, DRAWFLAG_ADDITIVE);
 }
 
 float hg_bonusalpha;
@@ -3767,7 +3803,7 @@ void Sbar_DrawHGBonus(void) {
     o = '0.5 0 0' * vid_conwidth + '0 1 0' * (vid_conheight - 85);
     
     drawfont = sbar_bigfont;
-    s = strcat(HG_TypeToExpandedName(hgtype), "!", ((num > 1)? strcat(" x", ftos(num)) : ""));
+    s = strcat(HG_TypeToExpandedName(hgtype), "!", if(num > 1) strcat(" x", ftos(num)) else "");
     sw = stringwidth(s, FALSE) + 1;
     o_x -= (spacing + fs_x * sw) * 0.5;
     
@@ -4092,7 +4128,7 @@ void Sbar_Draw(void)
 		fcolor_y = 1 - revsaved * 0.9;
 		fcolor_z = 1 - revsaved;
 
-		revalpha = (revfadetime? bound(0, 1 - 4 * (time - revfadetime), 0.6) : 0.6);
+		revalpha = if(revfadetime) bound(0, 1 - 4 * (time - revfadetime), 0.6) else 0.6;
 		drawfill('0 0 0', bottomright, fcolor, revalpha, DRAWFLAG_ADDITIVE);
 	}
 
@@ -4156,7 +4192,7 @@ void Sbar_Draw(void)
 				s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
 		}
 		else
-			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), (jailspec? "^1 to leave spectator mode" : "^1 to join"));
+			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), if(jailspec) "^1 to leave spectator mode" else "^1 to join");
 		o = Sbar_DrawNoteLine(o, s);
 
 		//show restart countdown:
@@ -4296,10 +4332,10 @@ void Sbar_Draw(void)
 			if(rm_simpleeffects) if(j)
 				break;
 
-			local float a2 = (j? bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) : a);
+			local float a2 = if(j) bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) else a;
 
 			drawfont = sbar_bigfont_real; // bypass madoka, as many numeric characters are missing
-			drawstringright(mypos, s, '30 30 0' * (j? (1.0 + (1.0 - a2)) : 1), c, a2, DRAWFLAG_NORMAL);
+			drawstringright(mypos, s, '30 30 0' * (if(j) 2 - a2 else 1), c, a2, DRAWFLAG_NORMAL);
 			drawfont = sbar_font;
 		}
 	}
@@ -4317,7 +4353,7 @@ void Sbar_Draw(void)
 		if(bp_alpha > 0)
 		{
             bp_pos = '0 1 0' * bp_ypos;
-			bp_pos_y -= 24 * (rm_simpleeffects? 1 : ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
+			bp_pos_y -= 24 * (if(rm_simpleeffects) 1 else ipol_swingInOut(1 - bound(0, 1 - 4 * (time - bigprint_oldappeartime), 1)));
 			drawfont = sbar_bigfont;
 
 			if(rm_simpleeffects)
@@ -4341,7 +4377,7 @@ void Sbar_Draw(void)
 			if(rm_simpleeffects) if(i)
 				break;
 
-			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_appeartime : bigprint_fadetime)), 1);
+			bp_alpha = bound(0, 1 - 4 * (time - (if(i) bigprint_appeartime else bigprint_fadetime)), 1);
 
 			if(bp_alpha > 0)
 			{
@@ -4378,8 +4414,8 @@ void Sbar_Draw(void)
 								continue;
 							}
 
-							offset_y = 3 * cos(bp_pos_x + 5 * time) * (mod(j, 2)? 1 : -1);
-							offset_x = offset_y * (mod(j, 2)? -1 : 1);
+							offset_y = 3 * cos(bp_pos_x + 5 * time) * (if(mod(j, 2)) 1 else -1);
+							offset_x = offset_y * (if(mod(j, 2)) -1 else 1);
 							local string resultstr = strcat(mycolor, mychar);
 
 							dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
@@ -4409,12 +4445,12 @@ void Sbar_Draw(void)
 	{
 		bp_pos_y += 24;
 
-		for(i = 0; i < (rm_simpleeffects? 1 : 2); ++i)
+		for(i = 0; i < (if(rm_simpleeffects) 1 else 2); ++i)
 		{
 			if(rm_simpleeffects) if(i)
 				break;
 
-			bp_alpha = bound(0, 1 - 4 * (time - (i? bigprint_commentappeartime : bigprint_commentfadetime)), 1);
+			bp_alpha = bound(0, 1 - 4 * (time - (if(i) bigprint_commentappeartime else bigprint_commentfadetime)), 1);
 
 			if(bp_alpha)
 			{
@@ -4915,7 +4951,7 @@ void Sbar_Draw(void)
 				// separator slice:
 				//		ammo/nades | teamhud
 
-                float thwidth = (teamhud_wide? SECWIDTH_WIDE : SECWIDTH_NORMAL);
+                float thwidth = if(teamhud_wide) SECWIDTH_WIDE else SECWIDTH_NORMAL;
                 next_sector = bottom_x - thwidth * 0.5;
                 float low = (hud_sector_x + hud_sector_pos_x + sector_gap > next_sector);
 				if(low) {
@@ -4960,7 +4996,7 @@ void Sbar_Draw(void)
 					HUDLINE_SLICE({
 						hudline_pos_x = hud_sector_pos_x + hud_sector_x + bw_right;
 						hudline_x = topright_x - hudline_pos_x - (bottomright_x - 
-							((!pwhud_enabled || pwhud_enabled != pw_finalstate)? (bottomright_x - SECWIDTH_NORMAL - sector_sgap) : next_sector)) - bw_left;
+							(if(!pwhud_enabled || pwhud_enabled != pw_finalstate) bottomright_x - SECWIDTH_NORMAL - sector_sgap else next_sector)) - bw_left;
 					})
 
 					// powerups
@@ -5472,7 +5508,7 @@ void Sbar_Draw(void)
                     else if(!(stat_items & IT_UNLIMITED_AMMO))
                     {
                         pos_y -= 10;
-                        pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, ((rm_althud && vid_conwidth >= 950)? 4 : 3));
+                        pos_x = ammosector_pos - bw_left + ((SECWIDTH_NORMAL + bw_right)/2) + a_offset - (42/2) * min(a_unused, if(rm_althud && vid_conwidth >= 950) 4 else 3);
                         
                         drawpic(pos, GetAmmoPicture(i), '10 10 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
                         Sbar_DrawXNum(pos + '9 1 0', a, 3, 0, 10, '0.7 0.7 0.7', 0, 0, sbar_alpha_fg * 0.7, DRAWFLAG_NORMAL);
@@ -5516,7 +5552,7 @@ void Sbar_Draw(void)
         if(getstati(STAT_STEALTH)) {
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                         "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                        " ^3to ", (adept? "suspend" : "cancel"), " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
+                                        " ^3to ", if(adept) "suspend" else "cancel", " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             if(adept) drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop flag", "+use")),
@@ -5544,7 +5580,7 @@ void Sbar_Draw(void)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                         "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                         " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
-                                        ((hgdetons > 1)? strcat("s (^2", ftos(hgdetons), "^3)") : "")),
+                                        if(hgdetons > 1) strcat("s (^2", ftos(hgdetons), "^3)") else ""),
                                         sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
         else if(hgtype == HG_GG && hgammo)
             drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("hook / nadget key", "+hook")), " ^3to win!"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
@@ -5782,7 +5818,7 @@ void Sbar_Draw(void)
 			}
 
 			vector votesize = '290 70 0';
-			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, (vote_highlighted? 0 : a * sbar_alpha_bg), DRAWFLAG_NORMAL);
+			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, if(vote_highlighted) 0 else a * sbar_alpha_bg, DRAWFLAG_NORMAL);
 
 
 			drawcolorcodedstring(voteorigin + '0.5 0 0' * votesize_x + '0 0.125 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '6 0 0'), s, '12 12 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5934,9 +5970,9 @@ void CSQC_ctf_hud(vector hudpos)
 	float red_alpha, red_alpha_prevstatus;
 	red_alpha = red_alpha_prevstatus = 1;
 	switch(redflag) {
-		case 1: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_taken" : "gfx/hud/rm_flag_red_taken"); break;
-		case 2: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_lost" : "gfx/hud/rm_flag_red_lost"); break;
-		case 3: red_icon = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); red_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: red_icon = if(rm_oldflags) "gfx/hud/sb_flag_red_taken" else "gfx/hud/rm_flag_red_taken"; break;
+		case 2: red_icon = if(rm_oldflags) "gfx/hud/sb_flag_red_lost" else "gfx/hud/rm_flag_red_lost"; break;
+		case 3: red_icon = if(rm_oldflags) "gfx/hud/sb_flag_red_carrying" else "gfx/hud/rm_flag_red_carrying"; red_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon = "gfx/hud/sb_flag_red_shielded";
@@ -5945,12 +5981,12 @@ void CSQC_ctf_hud(vector hudpos)
 			break;
 	}
 	switch(redflag_prevstatus) {
-		case 1: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_taken" : "gfx/hud/rm_flag_red_taken"); break;
-		case 2: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_lost" : "gfx/hud/rm_flag_red_lost"); break;
-		case 3: red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); red_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: red_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_red_taken" else "gfx/hud/rm_flag_red_taken"; break;
+		case 2: red_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_red_lost" else "gfx/hud/rm_flag_red_lost"; break;
+		case 3: red_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_red_carrying" else "gfx/hud/rm_flag_red_carrying"; red_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if(redflag == 3)
-				red_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_red_carrying" : "gfx/hud/rm_flag_red_carrying"); // make it more visible
+				red_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_red_carrying" else "gfx/hud/rm_flag_red_carrying"; // make it more visible
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon_prevstatus = "gfx/hud/sb_flag_red_shielded";
 			else
@@ -5962,9 +5998,9 @@ void CSQC_ctf_hud(vector hudpos)
 	float blue_alpha, blue_alpha_prevstatus;
 	blue_alpha = blue_alpha_prevstatus = 1;
 	switch(blueflag) {
-		case 1: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_taken" : "gfx/hud/rm_flag_blue_taken"); break;
-		case 2: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_lost" : "gfx/hud/rm_flag_blue_lost"); break;
-		case 3: blue_icon = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); blue_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: blue_icon = if(rm_oldflags) "gfx/hud/sb_flag_blue_taken" else "gfx/hud/rm_flag_blue_taken"; break;
+		case 2: blue_icon = if(rm_oldflags) "gfx/hud/sb_flag_blue_lost" else "gfx/hud/rm_flag_blue_lost"; break;
+		case 3: blue_icon = if(rm_oldflags) "gfx/hud/sb_flag_blue_carrying" else "gfx/hud/rm_flag_blue_carrying"; blue_alpha = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon = "gfx/hud/sb_flag_blue_shielded";
@@ -5973,12 +6009,12 @@ void CSQC_ctf_hud(vector hudpos)
 			break;
 	}
 	switch(blueflag_prevstatus) {
-		case 1: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_taken" : "gfx/hud/rm_flag_blue_taken"); break;
-		case 2: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_lost" : "gfx/hud/rm_flag_blue_lost"); break;
-		case 3: blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); blue_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
+		case 1: blue_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_blue_taken" else "gfx/hud/rm_flag_blue_taken"; break;
+		case 2: blue_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_blue_lost" else "gfx/hud/rm_flag_blue_lost"; break;
+		case 3: blue_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_blue_carrying" else "gfx/hud/rm_flag_blue_carrying"; blue_alpha_prevstatus = BLINK_BASE + BLINK_FACTOR * cos(time * BLINK_FREQ); break;
 		default:
 			if(blueflag == 3)
-				blue_icon_prevstatus = (rm_oldflags? "gfx/hud/sb_flag_blue_carrying" : "gfx/hud/rm_flag_blue_carrying"); // make it more visible
+				blue_icon_prevstatus = if(rm_oldflags) "gfx/hud/sb_flag_blue_carrying" else "gfx/hud/rm_flag_blue_carrying"; // make it more visible
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_shielded";
 			else
@@ -6441,8 +6477,8 @@ void CSQC_vip_hud(vector hudpos)
 	}
 	teamhud_enabled = 1;
 
-	float hudwidth = (teamhud_wide? SECWIDTH_WIDE : SECWIDTH_NORMAL);
-	float textwidth = (teamhud_wide? 11.5 : 5);
+	float hudwidth = if(teamhud_wide) SECWIDTH_WIDE else SECWIDTH_NORMAL;
+	float textwidth = if(teamhud_wide) 11.5 else 5;
 	float hudstart, hudend;
 	float healthpercent;
 	hudstart = hudpos_x;

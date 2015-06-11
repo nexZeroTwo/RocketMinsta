@@ -665,7 +665,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                         te_csqc_lightningarc(targ.origin, e.origin, FALSE, targ.team);
                         
                     damage_origtarget = e;
-                    Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, ((e == targ)? force : 0.5 * vlen(force) * normalize(e.origin - targ.origin)));
+                    Damage(e, inflictor, attacker, d * targ.hg_linker.hg_linker_factor, deathtype, hitloc, if(e == targ) force else 0.5 * vlen(force) * normalize(e.origin - targ.origin));
                     
                     if(targ.hg_linker.owner.scorekeeper)
                         HealScore(targ, targ.hg_linker.owner, max(0, d - d * targ.hg_linker.hg_linker_factor));
@@ -1214,7 +1214,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		armordamage = max(0, min(t_oldarmor, armordamage));
         
         if(damage || armordamage)
-            VisualDamage(attacker, targ, damage, armordamage, ((deathtype & HITTYPE_HEADSHOT)? VDMG_TYPE_CRIT : VDMG_TYPE_HIT), hitloc);
+            VisualDamage(attacker, targ, damage, armordamage, if(deathtype & HITTYPE_HEADSHOT) VDMG_TYPE_CRIT else VDMG_TYPE_HIT, hitloc);
         
 		if(took_extra)
 			armordamage = 100;

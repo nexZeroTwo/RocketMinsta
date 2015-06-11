@@ -3292,7 +3292,7 @@ float GameTypeFilter_Allowed (string map, string gametype)
 				break;
 	}
 	fclose(fh);
-	return (s ? 1 : 0);
+	return if(s) 1 else 0;
 }
 
 float Banning_IsNameBanned (string name)
@@ -3402,7 +3402,7 @@ string GetAllowedServers() {
 /// Does NOT accept server aliases
 float ServerIsAllowed(string s) {
 	string wl = GetAllowedServers();
-	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
+	return if(wl != "") ListContainsEx(wl, s, " ", ResolveServer) else TRUE;
 }
 
 float ShouldForceFog() {

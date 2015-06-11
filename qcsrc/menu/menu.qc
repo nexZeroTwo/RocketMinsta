@@ -578,8 +578,8 @@ void() m_draw =
 
 	if(Menu_Active)
 	{
-		if(getmousetarget() == (menuMouseMode ? MT_CLIENT : MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
-			setkeydest(keyGrabber ? KEY_MENU_GRABBED : KEY_MENU);
+		if(getmousetarget() == (if(menuMouseMode) MT_CLIENT else MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
+			setkeydest(if(keyGrabber) KEY_MENU_GRABBED else KEY_MENU);
 		else
 			m_hide();
 	}
@@ -715,7 +715,7 @@ void() m_display =
 {
 	Menu_Active = true;
 	setkeydest(KEY_MENU);
-	setmousetarget((menuMouseMode ? MT_CLIENT : MT_MENU));
+	setmousetarget(if(menuMouseMode) MT_CLIENT else MT_MENU);
 
 	if(!menuInitialized)
 		return;

@@ -114,7 +114,7 @@ void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelec
 {
     local string s;
     local float amod;
-    amod = (me.disabled? 0.2:1);
+    amod = if(me.disabled) 0.2 else 1;
     
     if(isSelected)
         draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);

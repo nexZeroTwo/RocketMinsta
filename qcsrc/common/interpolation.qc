@@ -7,14 +7,14 @@ float ipol_powIn(float p, float x) {
 
 
 float ipol_powOut(float p, float x) {
-	return pow(x - 1, p) * (mod(p, 2)? 1 : -1) + 1;
+	return pow(x - 1, p) * (if(mod(p, 2)) 1 else -1) + 1;
 }
 
 
 float ipol_powInOut(float p, float x) {
 	if(x <= 0.5f)
 		return pow(x * 2, p) / 2;
-	return pow((x - 1) * 2, p) / (mod(p, 2)? 2 : -2) + 1;
+	return pow((x - 1) * 2, p) / (if(mod(p, 2)) 2 else -2) + 1;
 }
 
 IPOL_SHORTDEF(pow2In, 		ipol_powIn(2, x))

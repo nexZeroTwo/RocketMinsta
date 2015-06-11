@@ -497,29 +497,38 @@ void Nixnex_GiveCurrentWeapon()
 			self.nixnex_lastchange_id = nixnex_nextchange;
 			if (self.items & IT_UNLIMITED_WEAPON_AMMO)
 			{
-				self.ammo_shells = (nixnex_weapon_ammo & IT_SHELLS) ?
-					CVAR(g_pickup_shells_max) : 0;
-				self.ammo_nails = (nixnex_weapon_ammo & IT_NAILS) ?
-					CVAR(g_pickup_nails_max) : 0;
-				self.ammo_rockets = (nixnex_weapon_ammo & IT_ROCKETS) ?
-					CVAR(g_pickup_rockets_max) : 0;
-				self.ammo_cells = (nixnex_weapon_ammo & IT_CELLS) ?
-					CVAR(g_pickup_cells_max) : 0;
-				self.ammo_fuel = (nixnex_weapon_ammo & IT_FUEL) ?
-					CVAR(g_pickup_fuel_max) : 0;
+                self.ammo_shells  = if(nixnex_weapon_ammo & IT_SHELLS)
+                                        CVAR(g_pickup_shells_max)   else 0;
+
+                self.ammo_nails   = if(nixnex_weapon_ammo & IT_NAILS)
+                                        CVAR(g_pickup_nails_max)    else 0;
+
+                self.ammo_rockets = if(nixnex_weapon_ammo & IT_ROCKETS)
+                                        CVAR(g_pickup_rockets_max)  else 0;
+
+                self.ammo_cells   = if(nixnex_weapon_ammo & IT_CELLS)
+                                        CVAR(g_pickup_cells_max)    else 0;
+
+                self.ammo_fuel    = if(nixnex_weapon_ammo & IT_FUEL)
+                                        CVAR(g_pickup_fuel_max)     else 0;
+
 			}
 			else
 			{
-				self.ammo_shells = (nixnex_weapon_ammo & IT_SHELLS) ?
-					CVAR(g_balance_nixnex_ammo_shells) : 0;
-				self.ammo_nails = (nixnex_weapon_ammo & IT_NAILS) ?
-					CVAR(g_balance_nixnex_ammo_nails) : 0;
-				self.ammo_rockets = (nixnex_weapon_ammo & IT_ROCKETS) ?
-					CVAR(g_balance_nixnex_ammo_rockets) : 0;
-				self.ammo_cells = (nixnex_weapon_ammo & IT_CELLS) ?
-					CVAR(g_balance_nixnex_ammo_cells) : 0;
-				self.ammo_fuel = (nixnex_weapon_ammo & IT_FUEL) ?
-					CVAR(g_balance_nixnex_ammo_fuel) : 0;
+                self.ammo_shells  = if(nixnex_weapon_ammo & IT_SHELLS)
+                                        CVAR(g_balance_nixnex_ammo_shells)   else 0;
+
+                self.ammo_nails   = if(nixnex_weapon_ammo & IT_NAILS)
+                                        CVAR(g_balance_nixnex_ammo_nails)    else 0;
+
+                self.ammo_rockets = if(nixnex_weapon_ammo & IT_ROCKETS)
+                                        CVAR(g_balance_nixnex_ammo_rockets)  else 0;
+
+                self.ammo_cells   = if(nixnex_weapon_ammo & IT_CELLS)
+                                        CVAR(g_balance_nixnex_ammo_cells)    else 0;
+
+                self.ammo_fuel    = if(nixnex_weapon_ammo & IT_FUEL)
+                                        CVAR(g_balance_nixnex_ammo_fuel)     else 0;
 			}
 			self.nixnex_nextincr = time + CVAR(g_balance_nixnex_incrtime);
 			if(dt >= 1 && dt <= 5)

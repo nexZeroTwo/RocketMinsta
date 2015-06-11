@@ -251,7 +251,7 @@ void JB_Imprison(entity attacker) {
     
     if(!self.jb_specteam) {
         announce(self, "jailbreak/imprison.wav");
-        bigprint_spec(self, "You're in a jail, prisoner!", ((attacker && attacker != self)? strcat("You've been imprisoned by ^3", attacker.netname) : ""), 10);
+        bigprint_spec(self, "You're in a jail, prisoner!", if(attacker && attacker != self) strcat("You've been imprisoned by ^3", attacker.netname) else "", 10);
         
         if(g_nadgets) {
             if(!CVAR(g_nadgets_regen))
@@ -372,7 +372,7 @@ jb_torture_logic JB_Torture_PickFunction() {
 	return RandomSelection_chosen_ent.use;
 	*/
 	
-	return ((random() < 0.5)? jb_torture_logic1 : jb_torture_logic2);
+	return if(random() < 0.5) jb_torture_logic1 else jb_torture_logic2;
 }
 
 void JB_TorturePrisoners(float theteam) {
@@ -841,7 +841,7 @@ entity JB_ChooseJailSpawnpoint(float theteam) {
 }
 
 float JB_GetEnemyTeamOf(float t) {
-	return ((t == COLOR_TEAM1)? COLOR_TEAM2 : COLOR_TEAM1);
+	return if(t == COLOR_TEAM1) COLOR_TEAM2 else COLOR_TEAM1;
 }
 
 float JB_TotalPlayersOnTeam(float theteam) {
@@ -1034,7 +1034,7 @@ float JB_ControlPoint_Cooldown(entity e) {
 }
 
 float JB_ControlPoint_InitialCooldown(entity e) {
-    return cvar((e.team == JB_TEAM_NEUTRAL)? "g_jailbreak_controlpoint_idletime_neutral_initial" : "g_jailbreak_controlpoint_idletime_initial");
+    return cvar(if(e.team == JB_TEAM_NEUTRAL) "g_jailbreak_controlpoint_idletime_neutral_initial" else "g_jailbreak_controlpoint_idletime_initial");
 }
 
 void JB_ControlPoint_Activate(entity e) {
@@ -1197,9 +1197,9 @@ void JB_ControlPoint_Capture(entity player) {
         
 	}
     
-    sound(world, CHAN_VOICE, strcat("jailbreak/jb_", ((player.team == COLOR_TEAM1)? "red" : "blue"), ".wav"), VOL_BASEVOICE, ATTN_NONE);
+    sound(world, CHAN_VOICE, strcat("jailbreak/jb_", if(player.team == COLOR_TEAM1) "red" else "blue", ".wav"), VOL_BASEVOICE, ATTN_NONE);
 	bprint(player.netname, " ^5has captured the ", cpname, "^5! The ", ColoredTeamName(player.team), " ^5is escaping!\n");
-	PlayerScore_Add(player, SP_SCORE, ((self.team == JB_TEAM_NEUTRAL)? CVAR(g_jailbreak_score_jbreak_neutralmultiplier) : 1)
+	PlayerScore_Add(player, SP_SCORE, (if(self.team == JB_TEAM_NEUTRAL) CVAR(g_jailbreak_score_jbreak_neutralmultiplier) else 1)
                                     * (CVAR(g_jailbreak_score_jbreak) + CVAR(g_jailbreak_score_jbreak_perplayer) * pc));
 	PlayerScore_Add(player, SP_JB_JBREAKS, 1);
     PlayerScore_Add(player, SP_JB_FREED, pc);
@@ -1296,7 +1296,7 @@ void JB_ControlPoint_Reset() {
     JB_ControlPoint_Deactivate(self, JB_ControlPoint_InitialCooldown(self));
     WaypointSprite_UpdateMaxHealth(self.jb_waypoint, 0);
     WaypointSprite_UpdateHealth(self.jb_waypoint, 0);
-    JB_ControlPoint_SwitchTeam(self, CVAR(g_jailbreak_controlpoint_claim_allneutral)? JB_TEAM_NEUTRAL : self.jb_team_initial);
+    JB_ControlPoint_SwitchTeam(self, if(CVAR(g_jailbreak_controlpoint_claim_allneutral)) JB_TEAM_NEUTRAL else self.jb_team_initial);
 }
 
 void JB_ControlPoint_TeamSwap() {

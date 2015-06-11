@@ -242,7 +242,7 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
     img_size -= (sbar_border_thickness * 2) * '1 1 0';
     
     if(id < mv_num_maps)
-        drawborderlines(sbar_border_thickness, pos, img_size, ((rgb == '1 1 1')? '0 0 0' : rgb), 1, DRAWFLAG_NORMAL);
+        drawborderlines(sbar_border_thickness, pos, img_size, if(rgb == '1 1 1') '0 0 0' else rgb, 1, DRAWFLAG_NORMAL);
 
 	if(pic != "") {
         drawpic(pos, pic, img_size, '1 1 1' * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
@@ -320,8 +320,8 @@ void MapVote_Draw()
 
 	pos_y = ymin;
 	pos_z = 0;
-	pos_x = center - stringwidth((gametypevote? "Decide the gametype" : "Vote for a map"), false) * 0.5 * 24;
-	drawstring(pos, (gametypevote? "Decide the gametype" : "Vote for a map"), '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
+	pos_x = center - stringwidth(if(gametypevote) "Decide the gametype" else "Vote for a map", false) * 0.5 * 24;
+	drawstring(pos, if(gametypevote) "Decide the gametype" else "Vote for a map", '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
 	pos_y += 26;
 
 	i = ceil(max(0, mv_timeout - time));
@@ -354,7 +354,7 @@ void MapVote_Draw()
 	tsize = dist_x - 10;
 	isize = min(dist_y - 10, 0.75 * tsize);
 
-	mv_selection = (gametypevote? GametypeVote_Selection() : MapVote_Selection(pos, dist, rows, columns));
+	mv_selection = if(gametypevote) GametypeVote_Selection() else MapVote_Selection(pos, dist, rows, columns);
 
 	pos_x += (xmax - xmin) / (2 * columns);
 	pos_y += (dist_y - isize) / 2;

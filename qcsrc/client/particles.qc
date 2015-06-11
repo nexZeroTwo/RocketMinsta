@@ -61,7 +61,7 @@ void Draw_PointParticles()
 	if(self.absolute == 2)
 	{
 		if(n >= 0)
-			n = self.just_toggled ? self.impulse : 0;
+			n = if(self.just_toggled) self.impulse else 0;
 		else
 			n = self.impulse * drawframetime;
 	}

@@ -155,7 +155,7 @@ void waypoint_think()
 	local vector sv, sm1, sm2, ev, em1, em2, dv;
 
 	stepheightvec = CVAR(sv_stepheight) * '0 0 1';
-	bot_navigation_movemode = ((CVAR(bot_navigation_ignoreplayers)) ? MOVE_NOMONSTERS : MOVE_NORMAL);
+	bot_navigation_movemode = if(CVAR(bot_navigation_ignoreplayers)) MOVE_NOMONSTERS else MOVE_NORMAL;
 
 	//dprint("waypoint_think wpisbox = ", ftos(self.wpisbox), "\n");
 	sm1 = self.origin + self.mins;
