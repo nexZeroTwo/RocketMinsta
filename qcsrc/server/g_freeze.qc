@@ -160,6 +160,8 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
     
+    Buffs_MEODP_Point_Detach(plr);
+
     if(!plr.iceblock)
         Freeze_SpawnIceBlock(plr);
         
