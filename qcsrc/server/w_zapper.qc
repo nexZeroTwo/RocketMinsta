@@ -12,6 +12,7 @@
 .float zapper_heat;
 .float zapper_coolofftime;
 .float zapper_accumulate;
+.float zapper_shieldready; // for g_balance_zapper_shield 2
 
 .entity zapper_shotorgsentfor;
 
@@ -402,7 +403,7 @@ void W_Zapper_Shield_Think(void) {
                 self.owner.zapper_coolofftime = time + frametime;
             }
 
-            ATTACK_FINISHED(self.owner) = time + CVAR(g_balance_zapper_secondary_refire) * W_WeaponRateFactorFor(self.owner);
+            ATTACK_FINISHED(self.owner) = self.owner.zapper_shieldready = time + CVAR(g_balance_zapper_secondary_shield_refire) * W_WeaponRateFactorFor(self.owner);
         }
     }
 
@@ -573,12 +574,16 @@ float w_zapper(float req) {
                     if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {
                         W_SwitchWeapon_OutOfAmmo(self);
                     } else {
-                        if(self.zapper_shield)
+                        if(self.zapper_shield) {
+                            dofire = TRUE;
                             self.zapper_shield.zapper_expire = time + CVAR(g_balance_zapper_secondary_shield_lifetime);
-                        else
+                        } else if(time > self.zapper_shieldready) {
+                            dofire = TRUE;
                             W_Zapper_Attack3();
+                        }
 
-                        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
+                        if(dofire)
+                            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
                     }
                 }
            } else if(weapon_prepareattack(0, -1)) {
