@@ -633,7 +633,8 @@ void WarpZone_TraceTriangle_callback(vector from, vector endpos, vector to) {
 		to_visual = WarpZoneLib_PlaneAndLineCross(endpos, normal, o, o - to);
 	} else
 		to_visual = endpos;
-	WarpZone_TraceTriangle_real_callback(o, to_visual, to);
+	if (WarpZone_TraceTriangle_real_callback)
+		WarpZone_TraceTriangle_real_callback(o, to_visual, to);
 	WarpZone_TraceTriangle_visual_from = WarpZone_UnTransformOrigin(WarpZone_trace_transform, to_visual);
 }
 
@@ -650,3 +651,30 @@ void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nom
 		WarpZone_TraceTriangle_visual_from = WarpZone_TransformOrigin(WarpZone_trace_transform, WarpZone_TraceTriangle_visual_from);
 	}
 }
+
+float WarpZone_FindNearestOrigin_length;
+vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
+{
+	entity e;
+	float length_warped;
+	WarpZone_FindNearestOrigin_length = vlen(to - from);
+	vector to_warped, to_nearest = to;
+	for(e = world; (e = find(e, classname, "trigger_warpzone")); ) {
+		to_warped = WarpZone_TransformOrigin(e, to);
+		length_warped = vlen(to_warped - from);
+		if (length_warped < WarpZone_FindNearestOrigin_length) {
+			if (trace_check) {
+				WarpZone_TraceTriangle(from, from, to_warped, MOVE_NOMONSTERS, world, WarpZone_trace_callback_t_null);
+				if (vlen(trace_endpos - to) < 1) {
+					WarpZone_FindNearestOrigin_length = length_warped;
+					to_nearest = to_warped;
+				}
+			} else {
+				WarpZone_FindNearestOrigin_length = length_warped;
+				to_nearest = to_warped;
+			}
+		}
+	}
+	return to_nearest;
+}
+

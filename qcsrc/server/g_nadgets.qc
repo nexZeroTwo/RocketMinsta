@@ -330,10 +330,12 @@ void HG_Plasma_Projectile_Think() {
     
     if(self.hg_plasma_projdist) {
         for(e = world; (e = findfloat(e, csqcprojectile_extradata, self.csqcprojectile_extradata));) if(e != self)
-            if(e.owner == self.owner) if(e.projectiledeathtype == self.projectiledeathtype)
-            if(vlen(self.origin - e.origin) < self.hg_plasma_projdist) {
-                found = TRUE;
-                break;
+            if(e.owner == self.owner) if(e.projectiledeathtype == self.projectiledeathtype) {
+                WarpZone_FindNearestOrigin(self.origin, e.origin, 0);
+                if(WarpZone_FindNearestOrigin_length < self.hg_plasma_projdist) {
+                    found = TRUE;
+                    break;
+                }
             }
         
         if(!found) {
