@@ -7,6 +7,64 @@ void GotoNextMap();
 void ShuffleMaplist()
 float() DoNextMapOverride;
 
+string geh_event;
+string geh_args;
+float geh_mode;
+float geh_argidx;
+
+void CallGameEventHook(string evnt, string args) {
+    dprint("Calling game event hook ", evnt, " ", args, "\n");
+
+    if(geh_mode > 1) {
+        registercvar("evargc", "");
+        cvar_set("evargc", ftos(geh_argidx));
+        GameCommand(cvar_string(strcat("sv_gameeventhook_", evnt, "_gamecommand")));
+    }
+
+    localcmd("\nsv_hook_gameevent_", evnt, " ", args, "\n");
+}
+
+float CallGameEventHook_Begin(string evnt) {
+    if(!CVAR(sv_gameeventhooks))
+        return FALSE;
+
+    geh_mode = cvar(strcat("sv_gameeventhook_", evnt));
+    if(!geh_mode)
+        return FALSE;
+
+    geh_event = evnt;
+    geh_args = "";
+    geh_argidx = 0;
+    return TRUE;
+}
+
+void CallGameEventHook_Commit(void) {
+    CallGameEventHook(geh_event, geh_args);
+}
+
+void CallGameEventHook_ArgRaw(string a) {
+    if(geh_mode > 1) {
+        string cv = strcat("evarg", ftos(geh_argidx));
+        registercvar(cv, "");
+        cvar_set(cv, a);
+        ++geh_argidx;
+    }
+
+    geh_args = strcat(geh_args, a, " ");
+}
+
+void CallGameEventHook_ArgFloat(float f) {
+    CallGameEventHook_ArgRaw(ftos(f));
+}
+
+void CallGameEventHook_ArgVector(vector v) {
+    CallGameEventHook_ArgRaw(strcat("\"", vtos(v), "\""));
+}
+
+void CallGameEventHook_ArgEntity(entity e) {
+    CallGameEventHook_ArgFloat(num_for_edict(e));
+}
+
 void SetDefaultAlpha()
 {
 	if(CVAR(g_running_guns))
@@ -515,7 +573,7 @@ void spawnfunc_worldspawn (void)
 	sv_showfps = CVAR(sv_showfps);
 	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
-	_pseudo_bullet = (CVAR(sv_gameplayfix_shootownentities) ? spawn() : world); //Fake bullet for pseudo_bullet() function in g_subs.qc
+	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc
 
 	if(world_already_spawned)
 		error("world already spawned - you may have EXACTLY ONE worldspawn!");
@@ -837,7 +895,7 @@ void spawnfunc_worldspawn (void)
 	IP2C_Init();
 //	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
 
-	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, ((strcat(RM_BUILD_SUFFIX, "") != "")? strcat("/", RM_BUILD_SUFFIX) : "")));
+	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, if(strcat(RM_BUILD_SUFFIX, "") != "") strcat("/", RM_BUILD_SUFFIX) else ""));
 
 	registercvar("g_endmatch", "0");
 	cvar_set("g_endmatch", "0");
@@ -2986,6 +3044,8 @@ string GotoMap(string m)
 		return "Map switch will happen after scoreboard.";
 }
 
+float roundstate_old;
+
 void EndFrame()
 {
 	float altime;
@@ -3048,6 +3108,11 @@ void EndFrame()
         self.armorhitsound = FALSE;
 		antilag_record(self, altime);
 	}
+
+    if(roundstate != roundstate_old) {
+        localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
+        roundstate_old = roundstate;
+    }
 }
 
 

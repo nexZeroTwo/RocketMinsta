@@ -483,7 +483,7 @@ float vip_EnemiesMultiplier(entity pl, string cvarname)
 	FOR_EACH_PLAYER(e) if(e.team != pl.team)
 		++c;
 	
-	return (c? c : 1); //NEVER return 0 here
+	return if(c) c else 1; //NEVER return 0 here
 }
 
 void vip_RegenerateHealth()
@@ -661,12 +661,20 @@ void vip_PlayerPreThink()
     // XXX: this code needs an update for the new grenade regen mechanics
     if(!CVAR(g_nadgets_regen))
 	if(CVAR(g_vip_regenerate_grenades))
-	if(self.hg_ammo < CVAR(g_nadgets_ammo))
-	if(time >= self.vip_grenregen_next)
-	{
-		self.hg_ammo += CVAR(g_vip_regenerate_grenades_amount);
-		self.vip_grenregen_next = time + CVAR(g_vip_regenerate_grenades_delay);
-	}
+    if(time >= self.vip_grenregen_next) {
+        float regendone;
+
+        HG_DO_IN_ALL_CONTEXTS({
+            if(self.hg_ctx_ammo < CVAR(g_nadgets_ammo)) {
+                self.hg_ctx_ammo += CVAR(g_vip_regenerate_grenades_amount);
+                regendone = TRUE;
+            }
+        })
+
+        if(regendone)
+            self.vip_grenregen_next = time + CVAR(g_vip_regenerate_grenades_delay);
+
+    }
 }
 
 void vip_ResetHealthArmor(entity vip)
@@ -808,7 +816,7 @@ void vip_RedVIPDown()
 	if(bluevip && bluevip.classname == "player")
 	{
 		PlayerScore_Add(bluevip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(bluevip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
+		PlayerScore_Add(bluevip, SP_SCORE, cvar(if(vip_soulgem) "g_vip_score_survival_soulgem" else "g_vip_score_survival"));
 	}
 	
 	vip_EndRound();
@@ -831,7 +839,7 @@ void vip_BlueVIPDown()
 	if(redvip && redvip.classname == "player")
 	{
 		PlayerScore_Add(redvip, SP_VIP_SURVIVALS, 1);
-		PlayerScore_Add(redvip, SP_SCORE, cvar((vip_soulgem? "g_vip_score_survival_soulgem" : "g_vip_score_survival")));
+		PlayerScore_Add(redvip, SP_SCORE, cvar(if(vip_soulgem) "g_vip_score_survival_soulgem" else "g_vip_score_survival"));
 	}
 	vip_EndRound();
 }

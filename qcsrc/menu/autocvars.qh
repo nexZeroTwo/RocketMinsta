@@ -60,5 +60,6 @@ float autocvar_vid_conheight;
 float autocvar_vid_conwidth;
 float autocvar_vid_height;
 float autocvar_vid_width;
+string autocvar_menu_rpn_autoload;
 
 #endif

@@ -37,6 +37,70 @@ void() menu_sub_null =
 {
 };
 
+string TryBind(string cmds, string keys) {
+    float ncmds = tokenize(cmds);
+    float nkeys;
+    float i, j, k;
+    string cmd, kname, prefercmd, kbound;
+
+    for(i = 0; i < ncmds; ++i) {
+        cmd = argv(i);
+        if(!i)
+            prefercmd = cmd;
+
+        nkeys = tokenize(findkeysforcommand(cmd));
+        for(j = 0; j < nkeys; ++j) {
+            k = stof(argv(j));
+            if(k >= 0) {
+                print("Found an acceptable binding: ", cmd, " -> ", keynumtostring(k), "\n");
+                return keys;
+            }
+        }
+        ncmds = tokenize(cmds);
+    }
+
+    print("None of ", cmds, " are bound - trying to bind\n");
+
+    nkeys = tokenize(keys);
+    for(i = 0; i < nkeys; ++i) {
+        k = stringtokeynum(argv(i));
+
+        // I'm not sure when exactly this bug got fixed...
+        if(!checkextension("DP_CSQC_BINDMAPS"))
+            k = fix_int_return_value(k);
+
+        if(k <= 0) {
+            print("Invalid key: ", argv(i), "\n");
+            continue;
+        }
+
+        kname = keynumtostring(k);
+        cmd = getkeybind(k);
+
+        if(cmd) {
+            print(kname, " is already bound to ", getkeybind(k), "\n");
+        } else {
+            print(ftos(k), " ", argv(i), " ", kname, " is free - binding to ", prefercmd, "\n");
+            kbound = kname;
+            localcmd("bind ", kname, " ", prefercmd, "\n");
+            break;
+        }
+    }
+
+    if(kbound) {
+        keys = "";
+        for(i = 0; i < nkeys; ++i) {
+            kname = keynumtostring(stringtokeynum(argv(i)));
+            if(kname != kbound)
+                keys = strcat(keys, "'", kname, "'", " ");
+        }
+        return keys;
+    }
+    
+    print("TryBind(", cmds, ", ", keys, ") failed!\n");
+    return keys;
+}
+
 #ifdef USE_FTE
 float __engine_check;
 #endif
@@ -104,6 +168,8 @@ void CSQC_Init(void)
 #ifndef CAMERATEST
 	}
 #endif
+
+    registercvar("cl_rpn_autoload", "", CVAR_SAVE);
 	registercvar("sbar_usecsqc", "1");
 	registercvar("sbar_columns", "default", CVAR_SAVE);
     registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
@@ -138,7 +204,7 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
     registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
-	
+
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -210,6 +276,7 @@ void CSQC_Init(void)
 
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
+    registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 }
 
@@ -372,7 +439,7 @@ entity tmpmadoka;
 #endif
 
 float GetBigfont() {
-	return ((rm_oldbigfont || sv_oldfag)? sbar_bigfont_real : sbar_rmbigfont);
+	return if(rm_oldbigfont || sv_oldfag) sbar_bigfont_real else sbar_rmbigfont;
 }
 
 void SetMadokaFont(float v)
@@ -393,7 +460,7 @@ void SetMadokaFont(float v)
 			{
 				if(CVAR(rm_specmadoka))
 				{
-					sbar_bigfont = (madokalockstate? sbar_madokafont : GetBigfont());
+					sbar_bigfont = if(madokalockstate) sbar_madokafont else GetBigfont();
 					return;
 				}
 				/*else
@@ -402,7 +469,7 @@ void SetMadokaFont(float v)
 				}*/
 			}
 			
-			sbar_bigfont = (rm_madoka? sbar_madokafont : GetBigfont());
+			sbar_bigfont = if(rm_madoka) sbar_madokafont else GetBigfont();
 			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
@@ -469,6 +536,15 @@ void UpdateClRate(void) {
     // save it just in case we ever have to roll back
     localcmd("seta _rm_cl_rate_saved ", ftos(oldrate), "\n");
     localcmd("rate ", ftos(TARGET_RATE), "\n");
+}
+
+void TryBindCRAKeys(void) {
+    string keyprio = "'e' 'q' 'r' 'f' 'c' 'x' 'v' 'g' 'w' 'a' 's' 'd'";
+
+    keyprio = TryBind("'+nadget' '+hook' '+button6'", keyprio);
+    keyprio = TryBind("'+nadget2' '+button9'", keyprio);
+    keyprio = TryBind("'dropweapon' 'impulse 17'", keyprio);
+    keyprio = TryBind("'+use'", keyprio);
 }
 
 void PostInit(void)
@@ -589,9 +665,11 @@ void PostInit(void)
         case 48:
             UpdateClRate();
         case 49:
+        case 50:
+            TryBindCRAKeys();
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 50\n");
+		localcmd("seta rm_initialized 51\n");
 		RM_OUTDATED
 		break;
 	}
@@ -599,6 +677,10 @@ void PostInit(void)
 	localcmd("alias afk \"cmd afk\"\n");
 	localcmd("alias rmcfg \"menu_cmd directmenu RMConfig\"\n");
     localcmd("alias vinvite \"cmd vote invite $*\"\n");
+    localcmd("alias +nadget +button6\n");
+    localcmd("alias -nadget -button6\n");
+    localcmd("alias +nadget2 +button9\n");
+    localcmd("alias -nadget2 -button9\n");
 
 	rm_showspec   = CVAR(rm_showspec);
 	rm_showdamage = CVAR(rm_showdamage);
@@ -658,7 +740,7 @@ void PostInit(void)
 	// -- //
 	registercmd("hudskin");
 	
-	bigprint(strcat("^2", shortmapname), ((MapInfo_Map_title != "<TITLE>")? MapInfo_Map_title : ""), 2);
+	bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
 	
 	#ifdef RM_SUPPORT_MADOKA
 	if(sv_showspecs_extra)
@@ -712,8 +794,8 @@ void Cmd_Sbar_Help(float);
 
 void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
 
-#define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", (cvar(strcat("rm_", strCmd))? "^2ON" : "^1OFF"), "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT { print(strCmd, " is now ", (cvar(strcat("rm_", strCmd))? "^2ON\n" : "^1OFF\n")); localcmd("menu_cmd update_rmvars\n"); }
+#define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", if(cvar(strcat("rm_", strCmd))) "^2ON" else "^1OFF", "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
+#define RMSETTINGREPORT { print(strCmd, " is now ", if(cvar(strcat("rm_", strCmd))) "^2ON\n" else "^1OFF\n"); localcmd("menu_cmd update_rmvars\n"); }
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
@@ -1849,7 +1931,8 @@ void Ent_Init()
 	sv_showfps = ReadByte();
 	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
-    cvar_set("_g_nadgets_select_available", ftos(g_nadgets? ReadByte() : 0));
+    cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
+    cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
@@ -2303,6 +2386,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_VOTEINVITE:
             Net_ReadVoteInvite();
+            return TRUE;
+        case TE_CSQC_ELEBLAST:
+            Net_ReadEleBlast();
             return TRUE;
     }
 

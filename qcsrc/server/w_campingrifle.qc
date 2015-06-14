@@ -109,9 +109,10 @@ float W_CampingRifle_ReturnHitstreakBonus(float deathtype) {
     float streak = bound(0, self.campingrifle_varfield_hitstreak, self.campingrifle_bulletlimit);
 
     if(streak) {
-        return streak * cvar((deathtype & HITTYPE_SECONDARY)?
-                    "g_balance_campingrifle_secondary_hitstreakbonus" :
-                    "g_balance_campingrifle_primary_hitstreakbonus");
+        return streak * cvar(if(deathtype & HITTYPE_SECONDARY)
+                                "g_balance_campingrifle_secondary_hitstreakbonus"
+                             else
+                                "g_balance_campingrifle_primary_hitstreakbonus");
     }
 
     return 0;
@@ -132,9 +133,10 @@ void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype) {
     attacker.campingrifle_varfield_hitstreak += 1;
     attacker.campingrifle_varfield_hitstreak_expiretime = max(
         attacker.campingrifle_varfield_hitstreak_expiretime, 
-        time + cvar((deathtype & HITTYPE_SECONDARY)?
-                    "g_balance_campingrifle_secondary_hitstreak_resettime" :
-                    "g_balance_campingrifle_primary_hitstreak_resettime")
+        time + cvar(if(deathtype & HITTYPE_SECONDARY)
+                        "g_balance_campingrifle_secondary_hitstreak_resettime"
+                    else
+                        "g_balance_campingrifle_primary_hitstreak_resettime")
     );
 }
 

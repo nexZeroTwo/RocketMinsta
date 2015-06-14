@@ -530,22 +530,26 @@ float Item_GiveTo(entity item, entity player)
             
             if(heal_h || heal_a)
                 Heal(player, item, player, heal_h, heal_a, item.max_health, item.max_armorvalue, DEATH_ITEM,
-                    (heal_h? HEAL_PAUSEROT_DEFAULT : 0), (heal_a? HEAL_PAUSEROT_DEFAULT : 0), '0 0 0', '0 0 0');
+                    if(heal_h) HEAL_PAUSEROT_DEFAULT else 0, if(heal_a) HEAL_PAUSEROT_DEFAULT else 0, '0 0 0', '0 0 0');
 		}
 	}
 
     if(g_nadgets)
-    if(item.hg_ammo) {
+    if(item.hg_ammo1) {
         float b = CVAR(g_nadgets_pickup_random_bonus);
         if(b) {
             pickedup = TRUE;
             HG_GiveRandomBonus(player, b, "Picked up a random bonus", FALSE);
-        } else if(player.hg_ammo <= HG_RegenLimit(player)) {
-            float oregen = HG_RegenTime(player);
-            pickedup = TRUE;
-            player.hg_ammo = min(player.hg_ammo + self.hg_ammo, HG_RegenLimit(player) + self.hg_bonus);
-            player.hg_maxregentime = HG_RegenTime(player);
-            player.hg_regentime = player.hg_regentime - oregen + player.hg_maxregentime;
+        } else {
+            HG_DO_IN_ALL_CONTEXTS({
+                if(player.hg_ctx_ammo <= HG_RegenLimit(player)) {
+                    float oregen = HG_RegenTime(player);
+                    pickedup = TRUE;
+                    player.hg_ctx_ammo = min(player.hg_ctx_ammo + self.hg_ammo1, HG_RegenLimit(player) + self.hg_ammo1);
+                    player.hg_ctx_maxregentime = HG_RegenTime(player);
+                    player.hg_ctx_regentime = player.hg_ctx_regentime - oregen + player.hg_ctx_maxregentime;
+                }
+            })
         }
     }
 
@@ -1891,8 +1895,8 @@ void spawnfunc_item_nadget(void) {
     if(!CVAR(g_nadgets_pickup))
         return;
     
-    if(!self.hg_ammo)
-        self.hg_ammo = 1;
+    if(!self.hg_ammo1)
+        self.hg_ammo1 = 1;
     
     if(!self.hg_bonus)
         self.hg_bonus = 1;

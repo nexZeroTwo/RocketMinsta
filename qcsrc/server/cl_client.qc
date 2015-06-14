@@ -805,8 +805,8 @@ void PutObserverInServer (void)
     
         if(g_nadgets) {
             if(!self.joinqueue)
-                self.hg_type_picked = 0;
-            self.hg_type = 0;
+                self.hg_type1_picked = self.hg_type2_picked = 0;
+            self.hg_type1 = self.hg_type2 = 0;
             self.hg_nadesused = 0;
             self.hg_shield = 0;
         }
@@ -1333,7 +1333,7 @@ void PutClientInServer (void)
 
 		CL_SpawnWeaponentity();
 		self.alpha = default_player_alpha;
-		self.colormod = '1 1 1' * (self.forcedbrightness? self.forcedbrightness : CVAR(g_player_brightness));
+		self.colormod = '1 1 1' * (if(self.forcedbrightness) self.forcedbrightness else CVAR(g_player_brightness));
 		self.exteriorweaponentity.alpha = default_weapon_alpha;
 
 		self.lms_nextcheck = time + CVAR(g_lms_campcheck_interval)*2;
@@ -1395,6 +1395,10 @@ void PutClientInServer (void)
         self.lastdamage = 0;
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
+
+        GAMEEVENT("playerspawn", {
+            GAMEEVENTARG(Entity, self)
+        })
 	} else if(self.classname == "observer") {
 		PutObserverInServer ();
 	}
@@ -1446,9 +1450,11 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
 	WriteByte(MSG_ENTITY, sv_showfps);
 	WriteByte(MSG_ENTITY, sv_oldfag);
-    WriteByte(MSG_ENTITY, g_nadgets? (g_nadgets_oldhitboxes? 2 : 1) : 0);
-    if(g_nadgets)
+    WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
+    if(g_nadgets) {
         WriteByte(MSG_ENTITY, (CVAR_STR(g_nadgets_type_selectable) != ""));
+        WriteByte(MSG_ENTITY, g_nadgets_double);
+    }
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
@@ -1715,7 +1721,7 @@ void ServerTopic()
 	
 	if(servertopic) if(servertopic != "")
 		sprint(self, strcat("\x01^2* ^3Current topic^7: ", servertopic, "\n"
-			   "\x01^2* ^7Topic set by ^3", ((topicby && topicby != "")? topicby : "<server>"),
+			   "\x01^2* ^7Topic set by ^3", if(topicby && topicby != "") topicby else "<server>",
 		"\n"));
 }
 
@@ -1911,7 +1917,8 @@ void ClientConnect (void)
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && CVAR(g_rocketminsta)), "\n"));
 	SendServerInfo(self);
 	
-    self.hg_type_picked_nextround = -1;
+    self.hg_type1_picked_nextround = -1;
+    self.hg_type2_picked_nextround = -1;
     self.hg_optout_nextround = -1;
 
     totalclients++;
@@ -2697,15 +2704,21 @@ void SpectateCopy(entity spectatee) {
 	self.frozen = spectatee.frozen;
 	self.revprogress = spectatee.revprogress;
 	self.hg_power = spectatee.hg_power;
-	self.hg_ammo = spectatee.hg_ammo;
-    self.hg_type = spectatee.hg_type;
+	self.hg_ammo1 = spectatee.hg_ammo1;
+    self.hg_ammo2 = spectatee.hg_ammo2;
+    self.hg_type1 = spectatee.hg_type1;
+    self.hg_type2 = spectatee.hg_type2;
     self.hg_bonus = spectatee.hg_bonus;
     self.hg_bonustype = spectatee.hg_bonustype;
     self.hg_detonables = spectatee.hg_detonables;
-    self.hg_regentime = spectatee.hg_regentime;
-    self.hg_maxregentime = spectatee.hg_maxregentime;
-    self.hg_regenpaused = spectatee.hg_regenpaused;
-    self.hg_regenrate = spectatee.hg_regenrate;
+    self.hg_regentime1 = spectatee.hg_regentime1;
+    self.hg_maxregentime1 = spectatee.hg_maxregentime1;
+    self.hg_regenpaused1 = spectatee.hg_regenpaused1;
+    self.hg_regenrate1 = spectatee.hg_regenrate1;
+    self.hg_regentime2 = spectatee.hg_regentime2;
+    self.hg_maxregentime2 = spectatee.hg_maxregentime2;
+    self.hg_regenpaused2 = spectatee.hg_regenpaused2;
+    self.hg_regenrate2 = spectatee.hg_regenrate2;
     self.hg_launchspeed = spectatee.hg_launchspeed;
     self.hg_shieldstat = spectatee.hg_shieldstat;
     self.hg_shieldpower = spectatee.hg_shieldpower;
@@ -2713,7 +2726,8 @@ void SpectateCopy(entity spectatee) {
     self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
     self.hg_stealth = spectatee.hg_stealth;
     self.hg_stealth_saved = spectatee.hg_stealth_saved;
-    self.hg_next = spectatee.hg_next;
+    self.hg_next1 = spectatee.hg_next1;
+    self.hg_next2 = spectatee.hg_next2;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
@@ -3178,7 +3192,7 @@ void SpectatorThink()
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
 			} else {
-				self.classname = (self.jb_specteam? "player" : "observer");
+				self.classname = if(self.jb_specteam) "player" else "observer";
 				PutClientInServer();
 			}
 			WriteSpectatorInfo(self.enemy);

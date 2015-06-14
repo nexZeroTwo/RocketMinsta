@@ -1218,7 +1218,7 @@ void GameCommand(string command)
 		local string topicby = CVAR_STR(_sv_explosive_topicby);
 		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
 		
-		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", CVAR_STR(_sv_explosive_topic), "\n");
+		bprint("\x01^2* ^3", if(topicby && topicby != "") topicby else "<server>", "^3 has set the topic: ^7", CVAR_STR(_sv_explosive_topic), "\n");
 		
 		return;
 	}
@@ -1338,10 +1338,9 @@ void GameCommand(string command)
 
     if(argv(0) == "dprmstats") {
         FOR_EACH_REALCLIENT(e)
-            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", ((e.client_dprmversion >= DPRM_MINVERSION)? "^2" : "^1"), ftos(e.client_dprmversion), "\n");
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "\n");
         return;
     }
 
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
-

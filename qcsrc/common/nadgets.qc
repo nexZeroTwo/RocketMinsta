@@ -6,7 +6,7 @@ string HG_TypeToExpandedName(float t) {
         case HG_REMOTE      :   return "Fire Trap";
         case HG_PLASMA      :   return "Plasma Bomb";
         case HG_TRANSLOC    :   return "Translocator";
-        case HG_SHIELD      :   return "Reflective Shield";
+        case HG_SHIELD      :   return "Powershield";
         case HG_LINKER      :   return "Linking Shell";
         case HG_GG          :   return "GG Button";
         case HG_LASER       :   return "Lasergun";
@@ -89,4 +89,15 @@ string HG_NameToIcon(string n, float large, float alt) {
 
 string HG_TypeToIcon(float t, float large, float alt) {
     return HG_NameToIcon(HG_TypeToName(t), large, alt);
+}
+
+float HG_CompressDualType(float t1, float t2) {
+    return (t1 - HG_START) + (t2 - HG_START) * 16;
+}
+
+vector HG_DecompressDualType(float t) {
+    vector v;
+    v_x = (t & 0x0F)      + HG_START;
+    v_y = (t & 0xF0) / 16 + HG_START;
+    return v;
 }

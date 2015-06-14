@@ -24,8 +24,10 @@ void() m_init =
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
+    registercvar("menu_rpn_autoload", "", CVAR_SAVE);
     
     localcmd("alias menu_shownadeselect \"menu_cmd directmenu NadeMenu\"\n");
+    localcmd("alias menu_shownadeselect2 \"menu_cmd directmenu NadeMenuDouble\"\n");
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
@@ -576,8 +578,8 @@ void() m_draw =
 
 	if(Menu_Active)
 	{
-		if(getmousetarget() == (menuMouseMode ? MT_CLIENT : MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
-			setkeydest(keyGrabber ? KEY_MENU_GRABBED : KEY_MENU);
+		if(getmousetarget() == (if(menuMouseMode) MT_CLIENT else MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
+			setkeydest(if(keyGrabber) KEY_MENU_GRABBED else KEY_MENU);
 		else
 			m_hide();
 	}
@@ -713,7 +715,7 @@ void() m_display =
 {
 	Menu_Active = true;
 	setkeydest(KEY_MENU);
-	setmousetarget((menuMouseMode ? MT_CLIENT : MT_MENU));
+	setmousetarget(if(menuMouseMode) MT_CLIENT else MT_MENU);
 
 	if(!menuInitialized)
 		return;
@@ -842,6 +844,9 @@ void(string itemname) m_goto =
 	}
 	else
 	{
+        if(itemname == "NadeMenu" && cvar("_g_nadgets_select_double"))
+            itemname = "NadeMenuDouble";
+
 		e = findstring(NULL, name, itemname);
 		if(e)
 		{

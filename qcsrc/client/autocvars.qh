@@ -196,5 +196,6 @@ float autocvar_vid_conwidth;
 float autocvar_vid_pixelheight;
 float autocvar_viewsize;
 float autocvar_volume;
+string autocvar_cl_rpn_autoload;
 
 #endif

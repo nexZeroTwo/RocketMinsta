@@ -127,8 +127,11 @@ void prec_rune_collect (entity rune, entity player)
 	
 	player.health = max(player.health, 200);
 	player.armorvalue = max(player.armorvalue, 200);
-	if(g_nadgets)
-		player.hg_ammo = max(player.hg_ammo, CVAR(g_nadgets_ammo) * 2);
+	if(g_nadgets) {
+        HG_DO_IN_ALL_CONTEXTS({
+            player.hg_ctx_ammo = max(player.hg_ctx_ammo, CVAR(g_nadgets_ammo) * 2);
+        })
+    }
 }
 
 void prec_rune_drop (entity rune, float deliberate)

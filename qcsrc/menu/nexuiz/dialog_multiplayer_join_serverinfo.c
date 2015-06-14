@@ -106,8 +106,8 @@ void loadServerInfoNexuizServerInfoDialog(entity me, float i)
 
 	me.currentServerVersion = strzone(versionstr);
 	me.versionLabel.setText(me.versionLabel, me.currentServerVersion);
-	me.currentServerRMLabel = strzone(((rmversion && rmversion != "")? strcat("This server is running RocketMinsta ", rmversion) : 
-																	   strcat("This server is running Nexuiz ", versionstr)));
+	me.currentServerRMLabel = strzone(if(rmversion && rmversion != "") strcat("This server is running RocketMinsta ", rmversion)
+																  else strcat("This server is running Nexuiz ", versionstr));
 	me.rmLabel.setText(me.rmLabel, me.currentServerRMLabel);
 
 	SLIST_FIELD_PING = gethostcacheindexforkey("ping");

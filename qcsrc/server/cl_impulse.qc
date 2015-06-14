@@ -457,7 +457,7 @@ void ImpulseCommands (void)
 							sprint(self, "No waypoint set, cheater (use g_waypointsprite_personal to set one)\n");
 						break;
 					case 143:
-						if(MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, ((sv_cheats >= 2) ? 100000 : 100), 1024, 256))
+						if(MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, if(sv_cheats >= 2) 100000 else 100, 1024, 256))
 						{
 							self.angles_x = -self.angles_x;
 							self.fixangle = TRUE;

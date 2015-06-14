@@ -515,7 +515,7 @@ void bot_serverframe()
 		return;
 
 	stepheightvec = CVAR(sv_stepheight) * '0 0 1';
-	bot_navigation_movemode = ((CVAR(bot_navigation_ignoreplayers)) ? MOVE_NOMONSTERS : MOVE_NORMAL);
+	bot_navigation_movemode = if(CVAR(bot_navigation_ignoreplayers)) MOVE_NOMONSTERS else MOVE_NORMAL;
 
 	if(time > autoskill_nextthink)
 	{

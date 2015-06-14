@@ -76,19 +76,19 @@ void VisualDamage_PreDraw(void) {
             s2 = "Immune";
         else {
             if(e.vd_damage) {
-                s = ftos((e.vd_damage < 10)? e.vd_damage : rint(e.vd_damage));
+                s = ftos(if(e.vd_damage < 10) e.vd_damage else rint(e.vd_damage));
                 tmp = strstrofs(s, ".", 0);
                 if(tmp >= 0)
                     s = substring(s, 0, tmp + 2);
             }
             
             if(e.vd_armordamage) {
-                s2 = ftos((e.vd_armordamage < 10)? e.vd_armordamage : rint(e.vd_armordamage));
+                s2 = ftos(if(e.vd_armordamage < 10) e.vd_armordamage else rint(e.vd_armordamage));
                 tmp = strstrofs(s2, ".", 0);
                 if(tmp >= 0)
                     s2 = substring(s2, 0, tmp + 2);
                 
-                s2 = strcat((e.vd_damage? "  [" : "["), s2, "]");
+                s2 = strcat(if(e.vd_damage) "  [" else "[", s2, "]");
             }
         }
         

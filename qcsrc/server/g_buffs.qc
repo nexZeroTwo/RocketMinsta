@@ -3,22 +3,22 @@
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
 void Buffs_Random_Spawn(void) {
-    entity o = self;
+    var o = self;
     self = spawn();
     self.buffs = BUFF_RANDOM;
     self.classname = "item_buff_randomspawn";
     Buffs_BuffPickup_Setup();
 
-    float a = max(1, CVAR(g_buffs_random_spawns_distant)), i, mx = -1;
-    vector org;
-    entity b, blist = findchain(classname, "item_buff");
+    var a = max(1, CVAR(g_buffs_random_spawns_distant)), mx = -1;
+    var org;
+    var blist = findchain(classname, "item_buff");
 
-    for(i = 0; i < a; ++i) {
+    for(var i = 0; i < a; ++i) {
         MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
 
         float d = 1000000;
 
-        for(b = blist; b; b = b.chain) if(b != self) {
+        for(var b = blist; b; b = b.chain) if(b != self) {
             d = min(d, vlen(self.origin - b.origin));
         }
 
@@ -647,7 +647,7 @@ void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deat
     }
     
     if(newtarget) {
-        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, (targetTeamMates? 0 : (teams_matter? attacker.team : COLOR_TEAM2)));
+        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, if(targetTeamMates) 0 else if(teams_matter) attacker.team else COLOR_TEAM2);
         Damage(newtarget, attacker, attacker, damage, arcdeathtype, '0 0 0', normalize(newtarget.origin - targ.origin) * force);
         Buffs_ArcDamage_Proc(newtarget, attacker, damage, arcdeathtype, arcdeathtype,
                              buffpow, arcoffset, range, mul, mul_hg, force,
@@ -726,8 +726,11 @@ void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
     entity oself = self;
     self = targ;
     targ.meodp_point.solid = SOLID_NOT;
+    targ.meodp_point.enemy = attacker;
     te_meodp(targ.meodp_point.origin);
     targ.meodp_death(attacker, inflictor);
+    if(targ.meodp_point && !wasfreed(targ.meodp_point))
+        targ.meodp_point.enemy = world;
     self = oself;
 }
 
@@ -908,7 +911,7 @@ void Buffs_BuffPickup_SetCooldown(entity buff, float cd) {
 }
 
 void Buffs_BuffPickup_SetInitialCooldown(entity buff) {
-    Buffs_BuffPickup_SetCooldown(buff, cvar((buff.buffs & (buff.buffs - 1))? "g_buffs_activate_delay_dual" : "g_buffs_activate_delay"));
+    Buffs_BuffPickup_SetCooldown(buff, cvar(if(buff.buffs & (buff.buffs - 1)) "g_buffs_activate_delay_dual" else "g_buffs_activate_delay"));
 }
 
 void Buffs_BuffPickup_Think(void) {
@@ -941,7 +944,7 @@ void Buffs_BuffPickup_Think(void) {
             Buffs_BuffPickup_SetCooldown(self, max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
         } else
-            Buffs_BuffPickup_SetCooldown(self, cvar((self.buffs & (self.buffs - 1))? "g_buffs_reactivate_delay_dual" : "g_buffs_reactivate_delay") + frametime);
+            Buffs_BuffPickup_SetCooldown(self, cvar(if(self.buffs & (self.buffs - 1)) "g_buffs_reactivate_delay_dual" else "g_buffs_reactivate_delay") + frametime);
         self.owner = world;
     }
     
@@ -981,6 +984,15 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_Model_Update(self);
 }
 
+void Buffs_BuffPickup_Notify(entity plr, float bfs, float tm) {
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
+    string tn = if(tm) strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") else "";
+
+    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
+    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
+    sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
+}
+
 void Buffs_BuffPickup_GiveTo(entity plr) {
     if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
@@ -988,15 +1000,10 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     self.owner = plr;
     self.buff_active = FALSE;
     
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(self.buffs)), Buffs_TypeToExpandedName(self.buffs), "^7 Buff!");
-    string tn = (self.team? strcat(Team_ColorCode(self.team), strtoupper(Team_ColorName(self.team)), " ") : "");
-    
     if(g_buffs_replace)
         plr.buffs = 0;
 
-    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
-    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
-    sound(other, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM); 
+    Buffs_BuffPickup_Notify(plr, self.buffs, self.team);
     BUFFS_GIVE(plr, self.buffs);
 }
 

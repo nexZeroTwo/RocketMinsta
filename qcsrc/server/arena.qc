@@ -107,12 +107,16 @@ void reset_map(float dorespawn)
                 self.frozenrow = 0;
             
             if(g_nadgets) {
-                if(self.hg_type_picked_nextround >= 0)
-                    self.hg_type_picked = self.hg_type_picked_nextround;
+                HG_DO_IN_ALL_CONTEXTS({
+                    if(self.hg_ctx_type_picked_nextround >= 0)
+                        self.hg_ctx_type_picked = self.hg_ctx_type_picked_nextround;
+                    self.hg_ctx_type_picked_nextround = -1;  
+                })
+
                 if(self.hg_optout_nextround >= 0)
                     self.hg_optout = self.hg_optout_nextround;
-                
-                self.hg_type_picked_nextround = self.hg_optout_nextround = -1;
+
+                self.hg_optout_nextround = -1;
             }
             
 			if(g_arena)

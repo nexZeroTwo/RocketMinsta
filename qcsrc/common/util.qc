@@ -1746,7 +1746,7 @@ string FormatDamage(float f) {
     if(!strstrofs(str, "-", 0))
         str = substring(str, 1, strlen(str));
     
-    return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
+    return strcat(str, if(f >= 1000000) "m" else if(f >= 1000) "k" else "");
 }
 
 #ifndef SVQC

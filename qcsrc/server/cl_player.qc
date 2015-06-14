@@ -188,7 +188,7 @@ float player_getspecies()
 				continue;
 			fgets(fh); fgets(fh);
 			sk = stof(fgets(fh));
-			if(sk == (j ? 0 : self.skinindex)) // 2nd pass skips the skin test
+			if(sk == (if(j) 0 else self.skinindex)) // 2nd pass skips the skin test
 			if(fgets(fh) == self.model)
 			{
 				l = fgets(fh);
@@ -584,6 +584,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oh = self.health;
     float oa = self.armorvalue;
     
+    GAMEEVENT("playerdamage", {
+        GAMEEVENTARG(Entity, self)
+        GAMEEVENTARG(Entity, inflictor)
+        GAMEEVENTARG(Entity, attacker)
+        GAMEEVENTARG(Float, damage)
+        GAMEEVENTARG(Float, deathtype)
+        GAMEEVENTARG(Vector, hitloc)
+        GAMEEVENTARG(Vector, force)
+    })
+
     if(self.dmg_jaildm && !self.jb_jaildm_aggressive)
         damage = 0;
             
@@ -596,7 +606,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(damage) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
-    	damage = HG_Shield_Damage(attacker, damage, deathtype);
+    	damage = HG_Shield_Damage(attacker, damage, deathtype, hitloc);
         
         if(DEATH_HGTYPE(deathtype) == HG_PLASMA && deathtype & HITTYPE_SECONDARY) {
             if(time > inflictor.damage_nextarceffect) {
@@ -700,7 +710,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
-		if (!(self.flags & FL_GODMODE)) if(self.classname != "bait_body")
+		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
         {
             self.armorvalue = self.armorvalue - save;
 
@@ -782,6 +792,17 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 				self.v_angle_x = self.v_angle_x + (random() * 2 - 1) * shake;
 				self.v_angle_y = self.v_angle_y + (random() * 2 - 1) * shake;
 			}
+
+            GAMEEVENT("playerdamaged", {
+                GAMEEVENTARG(Entity, self)
+                GAMEEVENTARG(Entity, inflictor)
+                GAMEEVENTARG(Entity, attacker)
+                GAMEEVENTARG(Float, take)
+                GAMEEVENTARG(Float, save)
+                GAMEEVENTARG(Float, deathtype)
+                GAMEEVENTARG(Vector, hitloc)
+                GAMEEVENTARG(Vector, force)
+            })
 		}
 		else
 			self.max_armorvalue += (save + take);
@@ -833,7 +854,17 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.health = 1;
             return;
         }
-        
+
+        GAMEEVENT("playerdeath", {
+            GAMEEVENTARG(Entity, self)
+            GAMEEVENTARG(Entity, inflictor)
+            GAMEEVENTARG(Entity, attacker)
+            GAMEEVENTARG(Float, damage)
+            GAMEEVENTARG(Float, deathtype)
+            GAMEEVENTARG(Vector, hitloc)
+            GAMEEVENTARG(Vector, force)
+        })
+
 		float defer_ClientKill_Now_TeamChange;
 		defer_ClientKill_Now_TeamChange = FALSE;
 
@@ -881,8 +912,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
-            attacker.hg_ammo += 1;
-            HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+            HG_DO_IN_ALL_CONTEXTS(if(attacker.hg_ctx_type == HG_BAIT) {
+                attacker.hg_ctx_ammo += 1;
+                HG_SetRegenTime(attacker, HG_RegenTime(attacker));
+            })
         }
 
         float removenadgets;
@@ -893,6 +926,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             HG_RemoveAll(self);
 
         if(self.hg_power > 0) {
+            HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
@@ -901,7 +935,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         
         if(!g_freezetag && !g_jailbreak) {
             if(CVAR(g_nadgets_resetonrespawn))
-                self.hg_ammo = 0;
+                self.hg_ammo1 = self.hg_ammo2 = 0;
         }
         
         DropPowerups(force);
@@ -1051,6 +1085,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
         
+        GAMEEVENT("playerdied", {
+            GAMEEVENTARG(Entity, self)
+            GAMEEVENTARG(Entity, inflictor)
+            GAMEEVENTARG(Entity, attacker)
+            GAMEEVENTARG(Float, damage)
+            GAMEEVENTARG(Float, deathtype)
+            GAMEEVENTARG(Vector, hitloc)
+            GAMEEVENTARG(Vector, force)
+        })
+
         CA_PlayerDies(attacker);
 	}
 }
@@ -1188,8 +1232,12 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
-	
-	
+
+    float silence = if(source) CVAR(sv_silence) else 0;
+
+    if(silence == 1)
+        return;
+
     if(source.iscreature) {
         float damg;
         
@@ -1382,7 +1430,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(privatesay)
 		sourcemsgstr = strcat(privatemsgprefix, substring(sourcemsgstr, privatemsgprefixlen, -1));
 
-	if(source.muted)
+	if(source.muted || silence)
 	{
 		// always fake the message
 		
