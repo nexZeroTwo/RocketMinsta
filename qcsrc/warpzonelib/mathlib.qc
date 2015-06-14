@@ -169,7 +169,7 @@ float nearbyint(float x)
 }
 float trunc(float x)
 {
-	return (x>=0) ? floor(x) : ceil(x);
+	return (if (x >= 0) floor(x) else ceil(x));
 }
 
 float fmod(float x, float y)
@@ -191,7 +191,7 @@ vector remquo(float x, float y)
 
 float copysign(float x, float y)
 {
-	return fabs(x) * ((y>0) ? 1 : -1);
+	return fabs(x) * (if (y > 0) 1 else -1);
 }
 float nan(string tag)
 {
