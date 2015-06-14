@@ -204,6 +204,8 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
     registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
+    registercvar("cl_drunk_factor", "0 0 0", CVAR_SAVE);
+    registercvar("cl_drunk_speed", "0 0 0", CVAR_SAVE);
 
     gametype = 0;
 
@@ -278,6 +280,9 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
+
+    cl_drunk_factor = stov(cvar_string("cl_drunk_factor"));
+    cl_drunk_speed = stov(cvar_string("cl_drunk_speed"));
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

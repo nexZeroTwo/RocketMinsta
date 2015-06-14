@@ -10,6 +10,18 @@ vector polyline[16];
 float trace_dphitcontents;
 float trace_networkentity;
 
+vector cl_drunk_factor;
+vector cl_drunk_speed;
+vector _drunk_angles;
+vector drunk_angles() {
+	if (cl_drunk_speed == '0 0 0')
+		return '0 0 0';
+	_drunk_angles_x = if (cl_drunk_speed_x) sin(time / cl_drunk_speed_x) * cl_drunk_factor_x else 0;
+	_drunk_angles_y = if (cl_drunk_speed_y) sin(time / cl_drunk_speed_y) * cl_drunk_factor_y else 0;
+	_drunk_angles_z = if (cl_drunk_speed_z) sin(time / cl_drunk_speed_z) * cl_drunk_factor_z else 0;
+	return _drunk_angles;
+}
+
 void Porto_Draw()
 {
 	vector p, dir, ang, q, nextdir;
@@ -633,6 +645,9 @@ void CSQC_UpdateView(float w, float h)
     Plasma_Draw();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
+
+	R_SetView(VF_ANGLES, view_angles + drunk_angles());
+
 	R_RenderScene();
 
 	// now switch to 2D drawing mode by calling a 2D drawing function
