@@ -2283,7 +2283,7 @@ void HG_Sentry(void) {
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
     c.skin = TeamColorSkin(self.team);
-    c.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+    c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     c.owner = self;
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
