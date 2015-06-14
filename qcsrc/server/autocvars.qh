@@ -1931,6 +1931,8 @@ string autocvar_sv_defaultplayermodel_yellow;
 float autocvar_sv_defaultplayerskin;
 float autocvar_sv_doublejump;
 float autocvar_sv_dps;
+string autocvar_sv_drunk_factor;
+string autocvar_sv_drunk_speed;
 float autocvar_sv_eventlog;
 float autocvar_sv_eventlog_console;
 float autocvar_sv_eventlog_files;

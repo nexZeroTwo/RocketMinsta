@@ -1946,6 +1946,19 @@ void Ent_Init()
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
 
+    vector drunk_factor;
+    drunk_factor_x = ReadByte();   
+    drunk_factor_y = ReadByte();   
+    drunk_factor_z = ReadByte();   
+    vector drunk_speed;
+    drunk_speed_x = ReadByte();   
+    drunk_speed_y = ReadByte();   
+    drunk_speed_z = ReadByte();   
+    if (drunk_factor != '0 0 0')
+		cl_drunk_factor = drunk_factor;
+    if (drunk_speed != '0 0 0')
+		cl_drunk_speed = drunk_speed;
+
     Buffs_LoadModels();
 
 	if(!postinit)

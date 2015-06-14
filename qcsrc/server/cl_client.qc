@@ -1462,6 +1462,14 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
+	vector sv_drunk_factor = stov(CVAR_STR(sv_drunk_factor));
+	vector sv_drunk_speed = stov(CVAR_STR(sv_drunk_speed));
+	WriteByte(MSG_ENTITY, sv_drunk_factor_x);
+	WriteByte(MSG_ENTITY, sv_drunk_factor_y);
+	WriteByte(MSG_ENTITY, sv_drunk_factor_z);
+	WriteByte(MSG_ENTITY, sv_drunk_speed_x);
+	WriteByte(MSG_ENTITY, sv_drunk_speed_y);
+	WriteByte(MSG_ENTITY, sv_drunk_speed_z);
 	return TRUE;
 }
 
