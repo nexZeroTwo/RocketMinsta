@@ -2596,7 +2596,7 @@ void HG_Frame()
         float mx = HG_RegenLimit(self);
         float dpause = CVAR(g_nadgets_regen_damagepause) * Buffs_NadgetRegenDmgPause(self);
         
-        self.hg_ctx_regenrate = GRENVAR(self.hg_type, "regen_scale");
+        self.hg_ctx_regenrate = GRENVAR(self.hg_ctx_type, "regen_scale");
         dpause = min(dpause, dpause / self.hg_ctx_regenrate);
         self.hg_ctx_regenpaused = (((self.hg_stealth || self.hg_stealth_saved) && self.hg_ctx_type == HG_CLOAK) || (time - self.lastdamage <= dpause));
         
