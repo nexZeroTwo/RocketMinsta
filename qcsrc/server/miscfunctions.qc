@@ -3605,3 +3605,11 @@ float ProjectileTeam(entity p) {
 
     return t;
 }
+
+entity findfilter(entity e, float(entity) filter) {
+    for(;(e = nextent(e));)
+        if(filter(e))
+            return e;
+
+    return world;
+}

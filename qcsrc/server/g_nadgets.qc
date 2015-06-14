@@ -1438,9 +1438,10 @@ void HG_Shield_Frame(void) {
             if(CVAR(g_nadgets_shield_diminish))
                 self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
         }
-
-        if(!self.hg_shield)
-            self.hg_shield_stored = 0;
+    } else if(self.hg_shield_stored) {
+        if(findfilter(world, inline float(entity e) {
+            return e.owner == self && e.classname == "hg_shield_discharge";
+        })) self.hg_shield_stored = 0;
     }
 }
 
