@@ -90,9 +90,9 @@ void ShowNames_Draw(entity plr) {
             if(width != namesize)
                 namepos_x += (namesize - width) / 2;
             
-            float nade;
+            vector nds;
             if(g_nadgets)
-                nade = playerslots[plr.sv_entnum].(scores[SP_NADEMODE]);
+                nds = HG_DecompressDualType(playerslots[plr.sv_entnum].(scores[SP_NADEMODE]));
             
             if(plr.sameteam) {
                 drawfont = GetBigfont();
@@ -148,9 +148,16 @@ void ShowNames_Draw(entity plr) {
                 drawfont = sbar_font;
             }
             
-            if(nade) {
-                drawpic(namepos - '0.5 0 0' * textsz_x - '2 0 0', HG_TypeToIcon(nade, FALSE, FALSE), textsz, HG_TypeToColor(nade), a * 0.7, DRAWFLAG_NORMAL);
-                namepos = '0.5 0 0' * textsz_x + '2 0 0' + namepos;
+            if(nds) {
+                float icons = textsz_x * (1 + g_nadgets_double);
+
+                drawpic(namepos - '0.5 0 0' * icons - '2 0 0', HG_TypeToIcon(nds_x, FALSE, FALSE), textsz, HG_TypeToColor(nds_x), a * 0.7, DRAWFLAG_NORMAL);
+
+                if(g_nadgets_double) {
+                    drawpic(namepos - '2 0 0', HG_TypeToIcon(nds_y, FALSE, FALSE), textsz, HG_TypeToColor(nds_y), a * 0.7, DRAWFLAG_NORMAL);
+                }
+
+                namepos = '0.5 0 0' * icons + '2 0 0' + namepos;
             }
             
             if(teamplay)

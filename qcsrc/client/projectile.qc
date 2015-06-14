@@ -32,7 +32,7 @@ void Projectile_DrawTrail(vector to)
 	g_minstagib = getstati(STAT_MINSTA);
 
     if(self.cnt == PROJECTILE_HG_TRANSLOC)
-        R_AddDynamicLight(self.origin, 50, GetTeamRGB((self.team > 0)? self.team : COLOR_TEAM4));
+        R_AddDynamicLight(self.origin, 50, GetTeamRGB(if(self.team > 0) self.team else COLOR_TEAM4));
     
 	if(from == to)
 	{
@@ -86,19 +86,19 @@ void Projectile_DrawTrail(vector to)
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3RED_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3RED_HIT"    else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_BLUE:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3BLUE_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3BLUE_HIT"   else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_YELLOW:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3YELLOW_HIT" 	: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3YELLOW_HIT" else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_PINK:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3PINK_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3PINK_HIT"   else "TR_NEXUIZPLASMA"), from, to);
 			break;
 			
 		case PROJECTILE_GRENADE:

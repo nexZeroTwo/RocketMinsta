@@ -398,7 +398,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			// Let's give this another shot
-			if (! GameTypeFilter_Allowed ((DPRM_IsDPRMEngine()? CVAR_STR(sv_worldbasename) : mapname), s))
+			if (! GameTypeFilter_Allowed(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, s))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
@@ -742,8 +742,8 @@ float GameCommand_Vote(string s, entity e) {
 				
 				print_to(e, "^1You rejected the vote.");
 				if(!CVAR(sv_vote_anonymous)) bprint(strcat("^3", e.netname, "^7 votes ^1",
-																((crc16(FALSE, argv(2)) == STUPID_VNO_PASSWORD)?
-																	GetStupidVNoString() : "NO"), "\n"));
+																if(crc16(FALSE, argv(2)) == STUPID_VNO_PASSWORD)
+																	GetStupidVNoString() else "NO", "\n"));
 				e.vote_vote = -1;
 				centerprint_expire(e, CENTERPRIO_VOTE);
 				if(!CVAR(sv_vote_singlecount)) {

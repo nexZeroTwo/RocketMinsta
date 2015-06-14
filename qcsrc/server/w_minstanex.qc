@@ -136,8 +136,7 @@ void W_MinstaNex_Attack (void)
 	}
 	
 	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
-	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, ((CVAR(g_balance_minstanex_damage) >= 0)? CVAR(g_balance_minstanex_damage) : 10000000000),
-					   CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
+	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, if(CVAR(g_balance_minstanex_damage) >= 0) CVAR(g_balance_minstanex_damage) else 10000000000, CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
 	if(g_minstagib)
@@ -369,7 +368,7 @@ void W_RM_Alt_Attack()
 	float rndspread = CVAR(g_rocketminsta_laser_spread_randomize);
 	counter = 0;
 
-	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, (CVAR(g_rocketminsta_norecoil)? 0 : 2), RM_SOUND_LASER_PRIMARY, CVAR(g_rocketminsta_laser_damage));
+	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, if(CVAR(g_rocketminsta_norecoil)) 0 else 2, RM_SOUND_LASER_PRIMARY, CVAR(g_rocketminsta_laser_damage));
 
 	pointparticles(particleeffectnum("electro_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -394,7 +393,7 @@ void W_RM_Alt_Attack()
 		setorigin(proj, w_shotorg);
 
 		proj.movetype = MOVETYPE_BOUNCEMISSILE;
-		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * (spread * (rndspread? random() : 1))) * CVAR(g_rocketminsta_laser_speed);
+		proj.velocity = (w_shotdir + (((counter + 0.5) / total) * 2 - 1) * v_right * (spread * (if(rndspread) random() else 1))) * CVAR(g_rocketminsta_laser_speed);
 		proj.velocity_z = proj.velocity_z + CVAR(g_rocketminsta_laser_zspread) * (random() - 0.5);
 		W_SetupProjectileVelocity(proj);
 		proj.angles = vectoangles(proj.velocity);
@@ -463,13 +462,15 @@ float w_minstanex(float req)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 		else
 			self.BUTTON_ATCK2 = bot_aim(
-				((CVAR(g_rocketminsta_laser_new))?
-					CVAR(g_rocketminsta_laser_speed):
-					CVAR(g_balance_laser_primary_speed))
+				if(CVAR(g_rocketminsta_laser_new))
+					CVAR(g_rocketminsta_laser_speed)
+                else
+					CVAR(g_balance_laser_primary_speed)
 				, 0, 
-				((CVAR(g_rocketminsta_laser_new))?
-					CVAR(g_rocketminsta_laser_lifetime):
-					CVAR(g_balance_laser_primary_lifetime)), FALSE);
+				if(CVAR(g_rocketminsta_laser_new))
+					CVAR(g_rocketminsta_laser_lifetime)
+                else
+					CVAR(g_balance_laser_primary_lifetime), FALSE);
 	}
 	else if (req == WR_THINK)
 	{

@@ -213,7 +213,7 @@ void GrapplingHookThink()
 				{
 					newlength = dist - ropestretch;
 					if(v * dir < 0) // only if not already moving in hook direction
-						v = v + frametime * (dontpull? (dir_x * '1 0 0' + dir_y * '0 1 0') : dir) * rubberforce_overstretch;
+						v = v + frametime * (if(dontpull) dir_x * '1 0 0' + dir_y * '0 1 0' else dir) * rubberforce_overstretch;
 				}
 
 				self.hook_length = newlength;
@@ -450,7 +450,7 @@ void FireGrapplingHook (void)
 	self.hook = missile;
 	missile.classname = "grapplinghook";
 
-	missile.movetype = (CVAR(g_balance_grapplehook_gravity)? MOVETYPE_TOSS : MOVETYPE_FLY);
+	missile.movetype = if(CVAR(g_balance_grapplehook_gravity)) MOVETYPE_TOSS else MOVETYPE_FLY;
 	PROJECTILE_MAKETRIGGER(missile);
 
 	setmodel (missile, "models/hook.md3"); // precision set below

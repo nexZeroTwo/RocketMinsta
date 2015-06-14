@@ -151,7 +151,7 @@ void Draw_WaypointSprite()
 			return; // fixed waypoint
 
 	InterpolateOrigin_Do();
-    me = ((spectatee_status > 0)? spectatee_status : player_localentnum) - 1;
+    me = ID_ME - 1;
     t = GetPlayerColor(me) + 1;
 
 	spriteimage = "";
@@ -369,7 +369,7 @@ void Draw_WaypointSprite()
             sw = stringwidth_svn(self.toptext, FALSE, fs);
             oc_y = bound(m + fs_y*1.5, oc_y - fs_y*1.5, vid_conheight - fs_y*3 - m);
             oc_x = bound(m, o_x - sw * 0.5, vid_conwidth - sw - m);
-            drawstring(oc, self.toptext, fs, ((self.toptextmode == 1)? self.clr2 : self.clr3), a * self.topalpha, DRAWFLAG_NORMAL);
+            drawstring(oc, self.toptext, fs, if(self.toptextmode == 1) self.clr2 else self.clr3, a * self.topalpha, DRAWFLAG_NORMAL);
         }
         drawfont = sbar_font;
     }

@@ -56,6 +56,7 @@ const float TE_CSQC_ZAPPERLIGHTNING = 124;
 const float TE_CSQC_UPDATESELECTEDPLAYER = 125;
 const float TE_CSQC_MESSAGE = 126;
 const float TE_CSQC_VOTEINVITE = 127;
+const float TE_CSQC_ELEBLAST = 128;
 
 const float CSQCMSG_OBITUARY = 0;
 const float CSQCMSG_OBITUARY_CUSTOM = 1;
@@ -352,6 +353,14 @@ const float STAT_HGSHIELDSTOREMAX = 98;
 const float STAT_HGREGENMAX = 99;
 const float STAT_HGREGENRATE = 100;
 
+const float STAT_HGTYPE2 = 101;
+const float STAT_HGREFIRE2 = 102;
+const float STAT_HGAMMO2 = 103;
+const float STAT_HGREGEN2 = 104;
+const float STAT_HGREGENMAX2 = 105;
+const float STAT_HGREGENPAUSED2 = 106;
+const float STAT_HGREGENRATE2 = 107;
+
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
 const float JBMSG_ALLALIVE = 2;
@@ -583,7 +592,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISHG(t)				  (DEATH_HGTYPE(t) >= HG_START && DEATH_HGTYPE(t) <= HG_END)
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
-#define DEATH_WEAPONOF(t)             ((DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) ? 0 : DEATH_WEAPONOFWEAPONDEATH(t))
+#define DEATH_WEAPONOF(t)             (if(DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) 0 else DEATH_WEAPONOFWEAPONDEATH(t))
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
@@ -607,7 +616,7 @@ float MAX_SHOT_DISTANCE = 32768;
 	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA ((cvar("sv_oldnexsound") || sv_oldfag)? "weapons/minstanexfire.wav" : "weapons/rm_minsta.wav")
+	#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
 	#define RM_SOUND_KILL "misc/kill.wav"
 #else
 	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"

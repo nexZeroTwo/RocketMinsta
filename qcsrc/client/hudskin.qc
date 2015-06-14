@@ -159,7 +159,7 @@ float HUDSkin_ReadBool()
             return FALSE;
         
         default:
-            return (stof(argv(1))? TRUE : FALSE);
+            return if(stof(argv(1))) TRUE else FALSE;
     }
 }
 

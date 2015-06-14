@@ -62,7 +62,7 @@ float move_out_of_solid(entity e)
     tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
     if (!trace_startsolid)
         return 1;
-    
+
     m0 = e.mins;
     m1 = e.maxs;
     e.mins = '0 0 0';
@@ -2258,7 +2258,7 @@ float SUB_NoImpactCheck()
 
 float projectile_skipnonsolid()
 {
-	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID)) {
+	if(!other && (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID) && !(trace_dphitcontents & self.dphitcontentsmask)) {
 		//Trying correct origin
 		tracebox_skipnonsolid(self.origin, self.mins, self.maxs, self.origin + (self.velocity * (1 - trace_fraction) * frametime), FALSE, self);
 		if (trace_fraction == 1) // The way is clear
@@ -3293,7 +3293,7 @@ float GameTypeFilter_Allowed (string map, string gametype)
 				break;
 	}
 	fclose(fh);
-	return (s ? 1 : 0);
+	return if(s) 1 else 0;
 }
 
 float Banning_IsNameBanned (string name)
@@ -3403,7 +3403,7 @@ string GetAllowedServers() {
 /// Does NOT accept server aliases
 float ServerIsAllowed(string s) {
 	string wl = GetAllowedServers();
-	return ((wl != "")? ListContainsEx(wl, s, " ", ResolveServer) : TRUE);
+	return if(wl != "") ListContainsEx(wl, s, " ", ResolveServer) else TRUE;
 }
 
 float ShouldForceFog() {

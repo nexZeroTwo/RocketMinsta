@@ -70,7 +70,7 @@ void Buffs_Model_Think(void) {
         // this is an overhead buff model
 
         self.alpha = 1;
-        float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+        float me = ID_ME;
 
         if(self.sv_entnum == me)
         if(!CVAR(chase_active))
@@ -108,7 +108,7 @@ void Buffs_Model_Multi_Set(entity bmdl, entity parent, float offs) {
     Buffs_Model_Set(bmdl, bmdl.buffs);
     bmdl.owner = parent;
     bmdl.draw = Buffs_Model_Draw;
-    bmdl.scale = (parent.scale? parent.scale : 1); // * 0.90;
+    bmdl.scale = if(parent.scale) parent.scale else 1; // * 0.90;
     bmdl.cnt = offs;
     bmdl.think = Buffs_Model_Multi_Think;
     bmdl.buffstat = parent.buffs;
@@ -123,7 +123,7 @@ void Buffs_Model_UpdateColor(entity ment) {
         ment.lightcolor = '1 0 0';
 
     if(ment.buff_ring)
-        ment.buff_ring.colormod = (ment.team? GetTeamRGB(ment.team) + '0.1 0.1 0.1' : ment.colormod);
+        ment.buff_ring.colormod = if(ment.team) GetTeamRGB(ment.team) + '0.1 0.1 0.1' else ment.colormod;
 }
 
 void Buffs_Model_Set(entity ment, float thebuffs) {

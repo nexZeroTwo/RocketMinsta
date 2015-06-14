@@ -93,19 +93,15 @@ entity FindLaserTarget(entity e, float dist_variance, float dot_variance)
 void W_Rocket_RemoteExplode()
 {
 	if(self.owner.deadflag == DEAD_NO)
-	if(self.owner.lastrocket)
-	{
-		if((self.spawnshieldtime >= 0)
-			? (time >= self.spawnshieldtime) // timer
-			: (vlen(NearestPointOnBox(self.owner, self.origin) - self.origin) > CVAR(g_balance_rocketlauncher_radius)) // safety device
-		)
-		{
+	if(self.owner.lastrocket) {
+		if(  (if(self.spawnshieldtime >= 0)
+                  time >= self.spawnshieldtime // timer
+		      else
+                  vlen(NearestPointOnBox(self.owner, self.origin) - self.origin) > CVAR(g_balance_rocketlauncher_radius)) // safety device
+		) {
 			other = world;
 			self.projectiledeathtype |= HITTYPE_BOUNCE;
 			W_Rocket_Explode ();
-		}
-		else
-		{
 		}
 	}
 }

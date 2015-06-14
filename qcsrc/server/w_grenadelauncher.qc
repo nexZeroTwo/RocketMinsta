@@ -100,14 +100,14 @@ void W_Grenade_Attack (void)
 	gren.nextthink = time + CVAR(g_balance_grenadelauncher_primary_lifetime);
 	gren.think = adaptor_think2use;
 	gren.use = W_Grenade_Explode;
-	gren.touch = CVAR(g_balance_grenadelauncher_primary_bounce) ? W_Grenade_Touch2 : W_Grenade_Touch1;
+	gren.touch = if(CVAR(g_balance_grenadelauncher_primary_bounce)) W_Grenade_Touch2 else W_Grenade_Touch1;
 	gren.velocity = w_shotdir * CVAR(g_balance_grenadelauncher_primary_speed) + v_up * CVAR(g_balance_grenadelauncher_primary_speed_up);
 	W_SetupProjectileVelocity(gren);
 
 	gren.angles = vectoangles (gren.velocity);
 	gren.flags = FL_PROJECTILE;
 
-	CSQCProjectile(gren, TRUE, (CVAR(g_balance_grenadelauncher_primary_bounce) ? PROJECTILE_GRENADE_BOUNCING : PROJECTILE_GRENADE), TRUE);	
+	CSQCProjectile(gren, TRUE, if(CVAR(g_balance_grenadelauncher_primary_bounce)) PROJECTILE_GRENADE_BOUNCING else PROJECTILE_GRENADE, TRUE);
 }
 
 void W_Grenade_Attack2 (void)

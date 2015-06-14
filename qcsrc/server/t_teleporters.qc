@@ -12,7 +12,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	vector deathmin;
 	vector deathmax;
 	float deathradius;
-    float deathtype = (tdeath_deathtype? tdeath_deathtype : DEATH_TELEFRAG);
+    float deathtype = if(tdeath_deathtype) tdeath_deathtype else DEATH_TELEFRAG;
     float damage;
     float medic;
     

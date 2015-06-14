@@ -89,9 +89,9 @@ entity jb_door_blue_last;
 #define OPENJAILS_LOCKED_FORCE 2
 #define OPENJAILS_OPEN_FORCE 3
 
-#define JB_FIRSTDOOR(t) (((t) == COLOR_TEAM1)? jb_door_red_first : jb_door_blue_first)
+#define JB_FIRSTDOOR(t) (if((t) == COLOR_TEAM1) jb_door_red_first else jb_door_blue_first)
 #define JB_SETFIRSTDOOR(t,d) if(t == COLOR_TEAM1) jb_door_red_first = d; else jb_door_blue_first = d
-#define JB_LASTDOOR(t) (((t) == COLOR_TEAM1)? jb_door_red_last : jb_door_blue_last)
+#define JB_LASTDOOR(t) (if((t) == COLOR_TEAM1) jb_door_red_last else jb_door_blue_last)
 #define JB_SETLASTDOOR(t,d) if(t == COLOR_TEAM1) jb_door_red_last = d; else jb_door_blue_last = d
 #define JB_NEXTDOOR(e) ((e).jb_door_next)
 

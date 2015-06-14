@@ -302,7 +302,7 @@ void W_Zapper_Attack2(void) {
             charge_time = accum_time;
     }
 	
-    float accum  = (accum_time ? min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / charge_time) : 1);
+    float accum  = if(accum_time) min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / charge_time) else 1;
     float damage = CVAR(g_balance_zapper_secondary_damage) * accum;
     float force  = CVAR(g_balance_zapper_secondary_force) * accum;
     float range  = CVAR(g_balance_zapper_secondary_range) * accum;

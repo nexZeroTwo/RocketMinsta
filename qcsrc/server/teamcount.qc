@@ -46,8 +46,8 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
     FOR_EACH_REALCLIENT(e) {
         e.redalive_stat     = teamcount_playersalive[0];
         e.bluealive_stat    = teamcount_playersalive[1];
-        e.yellowalive_stat  = ((nteams > 2)? teamcount_playersalive[2] : -1);
-        e.pinkalive_stat    = ((nteams > 3)? teamcount_playersalive[3] : -1);
+        e.yellowalive_stat  = if(nteams > 2) teamcount_playersalive[2] else -1;
+        e.pinkalive_stat    = if(nteams > 3) teamcount_playersalive[3] else -1;
     }
 }
 
@@ -63,13 +63,13 @@ float TeamCount_NextTeam(float t) {
             return COLOR_TEAM2;
         
         case COLOR_TEAM2:
-            return ((tc > 2)? COLOR_TEAM3 : COLOR_TEAM1);
+            return if(tc > 2) COLOR_TEAM3 else COLOR_TEAM1;
         
         case COLOR_TEAM3:
-            return ((tc > 3)? COLOR_TEAM4 : ((tc < 3)? COLOR_TEAM3 : COLOR_TEAM1));
+            return if(tc > 3) COLOR_TEAM4 else if(tc < 3) COLOR_TEAM3 else COLOR_TEAM1;
         
         case COLOR_TEAM4:
-            return ((tc < 4)? COLOR_TEAM4 : COLOR_TEAM1);
+            return if(tc < 4) COLOR_TEAM4 else COLOR_TEAM1;
     }
     
     return t;

@@ -278,7 +278,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                 
                 ++l; ++k;
                 
-                s = strcat("^3#", ftos(i), " ", ((i < 10)? " " : ""));
+                s = strcat("^3#", ftos(i), " ", if(i < 10) " " else "");
                 s = strcat(s, "^4", ban_ip[i], "^7 ");
                 for(j = 0; j < 15 - strlen(ban_ip[i]); ++j) s = strcat(s, " ");
                 s = strcat(s, ftos(rint(ban_expire[i] - time)), "s");
@@ -412,7 +412,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "KICK") {
         if(CVAR(sv_ircbot_channel_auto_rejoin))
         if(argv(1) == IRC_CurrentNick(handle)) {
-            IRC_JoinChannel(handle, argv(0), ((strtolower(argv(0)) == irc.target)? irc.targetname : ""));
+            IRC_JoinChannel(handle, argv(0), if(strtolower(argv(0)) == irc.target) irc.targetname else "");
             return;
         }
         

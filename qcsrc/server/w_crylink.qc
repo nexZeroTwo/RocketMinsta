@@ -14,7 +14,7 @@ string(string format, ...) sprintf = #627;
 #define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
-#define WEP_CVAR_BOTH(wepname,isprimary,name) ((isprimary) ? WEP_CVAR_PRI(wepname, name) : WEP_CVAR_SEC(wepname, name))
+#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
 
 #define MAX_DAMAGEEXTRARADIUS 16
 
@@ -48,7 +48,7 @@ void W_Crylink_Dequeue_Raw(entity own, entity prev, entity me, entity next)
 {
     W_Crylink_CheckLinks(next);
     if(me == own.crylink_lastgroup)
-        own.crylink_lastgroup = ((me == next) ? world : next);
+        own.crylink_lastgroup = if(me == next) world else next;
     if(me == me.crylink_lastgroup)
         prev.crylink_lastgroup = prev;
     prev.queuenext = next;
@@ -245,7 +245,7 @@ float W_Crylink_Touch_WouldHitFriendly(entity projectile, float rad)
         head = head.chain;
     }
 
-    return (hit_enemy ? FALSE : hit_friendly);
+    return if(hit_enemy) FALSE else hit_friendly;
 }
 
 
@@ -424,7 +424,7 @@ void W_Crylink_Attack(void)
 
         proj.flags = FL_PROJECTILE;
     
-        CSQCProjectile(proj, TRUE, (proj.cnt ? PROJECTILE_CRYLINK_BOUNCING : PROJECTILE_CRYLINK), TRUE);
+        CSQCProjectile(proj, TRUE, if(proj.cnt) PROJECTILE_CRYLINK_BOUNCING else PROJECTILE_CRYLINK, TRUE);
 
         other = proj;
     }
@@ -541,7 +541,7 @@ void W_Crylink_Attack2(void)
 
         proj.flags = FL_PROJECTILE;
         
-        CSQCProjectile(proj, TRUE, (proj.cnt ? PROJECTILE_CRYLINK_BOUNCING : PROJECTILE_CRYLINK), TRUE);
+        CSQCProjectile(proj, TRUE, if(proj.cnt) PROJECTILE_CRYLINK_BOUNCING else PROJECTILE_CRYLINK, TRUE);
 
         other = proj;
     }

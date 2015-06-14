@@ -11,6 +11,7 @@ CLASS(MainWindow) EXTENDS(ModalController)
 	ATTRIB(MainWindow, rmDialog, entity, NULL)
 	ATTRIB(MainWindow, gameMenuDialog, entity, NULL)
 	ATTRIB(MainWindow, nadeMenuDialog, entity, NULL)
+    ATTRIB(MainWindow, nadeMenu2Dialog, entity, NULL)
 	ATTRIB(MainWindow, vcallDialog, entity, NULL)
 	ATTRIB(MainWindow, serverInfoDialog, entity, NULL)
 	ATTRIB(MainWindow, cvarsDialog, entity, NULL)
@@ -54,6 +55,10 @@ void configureMainWindowMainWindow(entity me)
     me.nadeMenuDialog = i = spawnNexuizNadeMenuDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
+
+    me.nadeMenu2Dialog = i = spawnNexuizNadeMenuDoubleDialog();
+    i.configureDialog(i);
+    me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 
 	me.vcallDialog = i = spawnNexuizVcallDialog();
 	i.configureDialog(i);

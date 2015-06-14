@@ -199,7 +199,7 @@ entity GetTeam(float Team, float add)
 {
 	float num;
 	entity tm;
-	num = (Team == COLOR_SPECTATOR) ? 16 : Team;
+	num = if(Team == COLOR_SPECTATOR) 16 else Team;
 	if(teamslots[num])
 		return teamslots[num];
 	if not(add)
