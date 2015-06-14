@@ -2184,7 +2184,7 @@ void HG_Sentry_Think(void) {
         return;
     }
 
-    if(self.hg_sentry_energy < 1) {
+    if(self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
         if(self.zapper_beam)
             remove(self.zapper_beam);
         self.zapper_beam = world;
