@@ -2253,12 +2253,22 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
     HG_Sentry_Explode();
 }
 
-void HG_Sentry(void) {
+#define HG_SENTRY_MINS '-24.4 -24.4   0.0'
+#define HG_SENTRT_MAXS ' 24.4  24.4 110.0'
+
+float HG_Sentry(void) {
     vector o = self.origin;
 
-    self.hg_detonables += 1;
-
     entity e = spawn();
+    setmodel(e, "models/turrets/tesla.md3");
+    setsize(e, HG_SENTRY_MINS, HG_SENTRT_MAXS);
+    setorigin(e, o);
+
+    if(!move_out_of_solid(e)) {
+        remove(e);
+        return FALSE;
+    }
+
     e.classname = "hg_sentry";
     e.team = self.team;
     e.realowner = self; // can't use owner here because we want to be blocked by it
@@ -2275,10 +2285,9 @@ void HG_Sentry(void) {
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
 
-    Buffs_MEODP_Point_Attach(e, HG_Sentry_MEODP_Death);
+    self.hg_detonables += 1;
 
-    setmodel(e, "models/turrets/tesla.md3");
-    setorigin(e, o);
+    Buffs_MEODP_Point_Attach(e, HG_Sentry_MEODP_Death);
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
@@ -2292,6 +2301,7 @@ void HG_Sentry(void) {
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
+    return TRUE;
 }
 
 void HG_Sentry_Trigger(void) {
@@ -2418,7 +2428,11 @@ void HG_Attack()
             return;
         }
     } else if(hgtype == HG_SENTRY) {
-        HG_Sentry();
+        if(!HG_Sentry()) {
+            bigprint_spec(self, "Can't put a sentry here!", "", 1);
+            self.cdfield = time + 1;
+            return;
+        }
     } else {
         if(Buffs_BuffPower(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
             float split = GV("adept_split");
