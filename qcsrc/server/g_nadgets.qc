@@ -1277,7 +1277,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, self.owner.team);
+    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, if(teams_matter) self.owner.team else COLOR_TEAM3);
     //te_blast(end);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_BuffPower(self.owner, BUFF_MEDIC))) {
