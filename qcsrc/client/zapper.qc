@@ -37,6 +37,7 @@ void Zapper_Draw(void) {
     self.zapper_end = self.origin;
 
     float me = ID_ME;
+    float truezapper;
 
     start = self.zapper_start;
     if(self.sv_entnum == me) if(!CVAR(chase_active)) {
@@ -46,8 +47,12 @@ void Zapper_Draw(void) {
 
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
-    vector end1 = self.zapper_end;
-    vector end2 = self.zapper_end + self.zapper_offs * 70;
+    vector end1;
+    if(self.sv_entnum == me && (truezapper = CVAR(cl_truezapper)) > 0) {
+        end1 = (view_origin + view_forward * (vlen(self.zapper_start - self.zapper_end))) * truezapper + (1 - truezapper) * self.zapper_end;
+    } else
+        end1 = self.zapper_end;
+    vector end2 = end1 + self.zapper_offs * 70;
     vector d = end2 - start;
     float maxlen = vlen(end1 - start);
 
