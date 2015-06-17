@@ -1417,11 +1417,16 @@ void HG_Shield_Frame(void) {
     
     if(!self.hg_shield) {
         self.nobuffs = 0;
+
         if(self.hg_shield_oldmovetype) {
             self.movetype = self.hg_shield_oldmovetype;
             self.hg_shield_oldmovetype = 0;
         }
-        
+
+        if(self.hg_shield_stored && !findfilter(world, inline float(entity e) {
+            return e.owner == self && e.classname == "hg_shield_discharge";
+        })) self.hg_shield_stored = 0;
+
         return;
     }
     
@@ -1430,18 +1435,12 @@ void HG_Shield_Frame(void) {
         self.angles_y = self.v_angle_y;
     }
     
-    if(self.hg_shield) {
-        if(self.hg_shieldhealth <= 0)
-            self.hg_shield = 0;
-        else {
-            self.hg_shield = max(0, self.hg_shield - frametime);
-            if(CVAR(g_nadgets_shield_diminish))
-                self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
-        }
-    } else if(self.hg_shield_stored) {
-        if(findfilter(world, inline float(entity e) {
-            return e.owner == self && e.classname == "hg_shield_discharge";
-        })) self.hg_shield_stored = 0;
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+    else {
+        self.hg_shield = max(0, self.hg_shield - frametime);
+        if(CVAR(g_nadgets_shield_diminish))
+            self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
     }
 }
 
