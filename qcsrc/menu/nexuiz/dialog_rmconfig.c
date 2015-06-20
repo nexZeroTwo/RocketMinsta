@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 20)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 21)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -16,7 +16,7 @@ ENDCLASS(NexuizRMConfigDialog)
 
 void fillNexuizRMConfigDialog(entity me)
 {
-	entity e;
+	entity e, sl;
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
             OPTDEP("dodging")
@@ -31,6 +31,10 @@ void fillNexuizRMConfigDialog(entity me)
 			OPTDEP("showdamage")
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "crosshealth", "Color crosshair by health"));
+	me.TR(me);
+		sl = makeNexuizSlider(0.05, 1, 0.05, "cl_truezapper");
+		me.TD(me, 1, 3, e = makeNexuizSliderCheckBox(0, 1, sl, "True zapper:"));
+		me.TD(me, 1, 3, sl);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames", "Show player names above their heads"));
 			OPTDEP("shownames")
