@@ -61,7 +61,7 @@ void Zapper_Draw(void) {
     
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
 
-    if(self.sv_entnum) {
+    if(self.sv_entnum && !fps_friendly) {
         vectorvectors(normalize(d));
         vector rgb2 = GetTeamRGB(self.team);
         vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);

@@ -130,6 +130,7 @@ string autocvar_rm_althud;
 string autocvar_rm_anonspec;
 float autocvar_rm_crosshealth;
 float autocvar_rm_dontmesswithfonts;
+float autocvar_rm_fps_friendly;
 float autocvar_rm_freezetag_danger;
 float autocvar_rm_freezetag_danger_silent;
 float autocvar_rm_hidebigcomments;
