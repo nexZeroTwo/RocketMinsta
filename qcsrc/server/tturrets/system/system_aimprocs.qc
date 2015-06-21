@@ -79,7 +79,7 @@ vector turret_stdproc_aim_generic()
             vz = self.enemy.velocity_z;
             for(i = 0; i < impact_time; i += sys_ticrate)
             {
-                vz = vz - (sv_gravity * sys_ticrate);
+                vz = vz - (CVAR(sv_gravity) * sys_ticrate);
                 prep_z = prep_z + vz * sys_ticrate;
             }
         }

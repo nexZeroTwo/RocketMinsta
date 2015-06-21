@@ -7,7 +7,6 @@ float sv_maxspeed;
 float sv_airaccelerate;
 float sv_maxairspeed;
 float sv_stopspeed;
-float sv_gravity;
 float sv_airaccel_sideways_friction;
 float sv_airaccel_qw;
 float sv_airstopaccelerate;
@@ -303,7 +302,7 @@ void RaceCarPhysics()
 		vector rigvel_xy, neworigin, up;
 		float mt;
 
-		rigvel_z -= frametime * sv_gravity; // 4x gravity plays better
+		rigvel_z -= frametime * CVAR(sv_gravity); // 4x gravity plays better
 		rigvel_xy = rigvel;
 		rigvel_xy_z = 0;
 
@@ -353,7 +352,7 @@ void RaceCarPhysics()
 	}
 	else
 	{
-		rigvel_z -= frametime * sv_gravity; // 4x gravity plays better
+		rigvel_z -= frametime * CVAR(sv_gravity); // 4x gravity plays better
 		self.velocity = rigvel;
 		self.movetype = MOVETYPE_FLY;
 	}
@@ -1052,9 +1051,9 @@ void SV_PlayerPhysics()
 		//wishvel = v_forward * self.movement_x + v_right * self.movement_y + v_up * self.movement_z;
 		wishvel = v_forward * self.movement_x + v_right * self.movement_y + '0 0 1' * self.movement_z;
 		if (self.gravity)
-			self.velocity_z = self.velocity_z + self.gravity * sv_gravity * frametime;
+			self.velocity_z = self.velocity_z + self.gravity * CVAR(sv_gravity) * frametime;
 		else
-			self.velocity_z = self.velocity_z + sv_gravity * frametime;
+			self.velocity_z = self.velocity_z + CVAR(sv_gravity) * frametime;
 		if (self.ladder_entity.classname == "func_water")
 		{
 			f = vlen(wishvel);
@@ -1105,7 +1104,7 @@ void SV_PlayerPhysics()
 		float a_side, a_up, a_add, a_diff;
 		a_side = CVAR(g_jetpack_acceleration_side);
 		a_up = CVAR(g_jetpack_acceleration_up);
-		a_add = CVAR(g_jetpack_antigravity) * sv_gravity;
+		a_add = CVAR(g_jetpack_antigravity) * CVAR(sv_gravity);
 
 		wishvel_x *= a_side;
 		wishvel_y *= a_side;
@@ -1154,7 +1153,7 @@ void SV_PlayerPhysics()
 
 		float fxy, fz;
 		fxy = bound(0, 1 - (self.velocity * normalize(wishvel_x * '1 0 0' + wishvel_y * '0 1 0')) / CVAR(g_jetpack_maxspeed_side), 1);
-		if(wishvel_z - sv_gravity > 0)
+		if(wishvel_z - CVAR(sv_gravity) > 0)
 			fz = bound(0, 1 - self.velocity_z / CVAR(g_jetpack_maxspeed_up), 1);
 		else
 			fz = bound(0, 1 + self.velocity_z / CVAR(g_jetpack_maxspeed_up), 1);
@@ -1163,7 +1162,7 @@ void SV_PlayerPhysics()
 		fvel = vlen(wishvel);
 		wishvel_x *= fxy;
 		wishvel_y *= fxy;
-		wishvel_z = (wishvel_z - sv_gravity) * fz + sv_gravity;
+		wishvel_z = (wishvel_z - CVAR(sv_gravity)) * fz + CVAR(sv_gravity);
 
 		fvel = min(1, vlen(wishvel) / best);
 		if(CVAR(g_jetpack_fuel) && !(self.items & IT_UNLIMITED_WEAPON_AMMO))

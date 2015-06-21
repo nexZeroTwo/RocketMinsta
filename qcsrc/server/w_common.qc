@@ -500,7 +500,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			other = trace_ent;
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
-			self.velocity_z -= sv_gravity * dt;
+			self.velocity_z -= CVAR(sv_gravity) * dt;
             
 			if(!SUB_OwnerCheck())
 			{
