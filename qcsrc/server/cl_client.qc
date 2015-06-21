@@ -996,7 +996,7 @@ void FixPlayermodel()
 		self.species = player_getspecies(); // model or skin has changed
 
 	if(!teams_matter)
-		if(ftos(CVAR(sv_defaultplayercolors)) != "")
+		if(CVAR_STR(sv_defaultplayercolors) != "")
 			if(self.clientcolors != sv_defaultplayercolors)
 				setcolor(self, sv_defaultplayercolors);
 }
