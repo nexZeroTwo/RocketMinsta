@@ -200,7 +200,6 @@ void StartFrame (void)
         sv_airstopaccelerate = CVAR(sv_airstopaccelerate);
         sv_airstrafeaccelerate = CVAR(sv_airstrafeaccelerate);
         sv_aircontrol = CVAR(sv_aircontrol);
-        sv_warsowbunny_backtosideratio = CVAR(sv_warsowbunny_backtosideratio);
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
         sv_jumpvelocity = CVAR(sv_jumpvelocity);

@@ -10,7 +10,6 @@ float sv_airaccel_qw;
 float sv_airstopaccelerate;
 float sv_airstrafeaccelerate;
 float sv_aircontrol;
-float sv_warsowbunny_backtosideratio;
 
 .float ladder_time;
 .entity ladder_entity;
@@ -482,12 +481,12 @@ void PM_AirAccelerate(vector wishdir, float wishspeed)
 
 	accelspeed = min(addspeed, CVAR(sv_warsowbunny_turnaccel) * CVAR(sv_maxspeed) * frametime);
 
-	if(sv_warsowbunny_backtosideratio < 1)
+	if(CVAR(sv_warsowbunny_backtosideratio) < 1)
 	{
 		curdir = normalize(curvel);
 		dot = acceldir * curdir;
 		if(dot < 0)
-			acceldir = acceldir - (1 - sv_warsowbunny_backtosideratio) * dot * curdir;
+			acceldir = acceldir - (1 - CVAR(sv_warsowbunny_backtosideratio)) * dot * curdir;
 	}
 
 	self.velocity += accelspeed * acceldir;
