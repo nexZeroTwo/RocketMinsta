@@ -205,7 +205,7 @@ void Zapper_ReadLightning(void) {
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
 
-    if(CVAR(cl_effects_lightningarc_simple)) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;

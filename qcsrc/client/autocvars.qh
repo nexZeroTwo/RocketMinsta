@@ -30,7 +30,6 @@ float autocvar_cl_effects_lightningarc_count;
 float autocvar_cl_effects_lightningarc_drift_end;
 float autocvar_cl_effects_lightningarc_drift_start;
 float autocvar_cl_effects_lightningarc_segmentlength;
-float autocvar_cl_effects_lightningarc_simple;
 float autocvar_cl_extendfragmessages;
 float autocvar_cl_gentle;
 var float autocvar_cl_gibs_damageforcescale = 3.5;
