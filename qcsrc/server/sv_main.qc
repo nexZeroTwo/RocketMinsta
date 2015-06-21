@@ -191,8 +191,6 @@ void StartFrame (void)
 	InitializeEntitiesRun();
 
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        sv_maxairspeed = CVAR(sv_maxairspeed);
-        sv_maxspeed = CVAR(sv_maxspeed);
         sv_friction = CVAR(sv_friction);
         sv_accelerate = CVAR(sv_accelerate);
         sv_airaccelerate = CVAR(sv_airaccelerate);
@@ -201,12 +199,7 @@ void StartFrame (void)
         sv_stopspeed = CVAR(sv_stopspeed);
         sv_airstopaccelerate = CVAR(sv_airstopaccelerate);
         sv_airstrafeaccelerate = CVAR(sv_airstrafeaccelerate);
-        sv_maxairstrafespeed = CVAR(sv_maxairstrafespeed);
         sv_aircontrol = CVAR(sv_aircontrol);
-        sv_warsowbunny_airforwardaccel = CVAR(sv_warsowbunny_airforwardaccel);
-        sv_warsowbunny_accel = CVAR(sv_warsowbunny_accel);
-        sv_warsowbunny_topspeed = CVAR(sv_warsowbunny_topspeed);
-        sv_warsowbunny_turnaccel = CVAR(sv_warsowbunny_turnaccel);
         sv_warsowbunny_backtosideratio = CVAR(sv_warsowbunny_backtosideratio);
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
