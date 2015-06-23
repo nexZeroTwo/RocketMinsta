@@ -1279,7 +1279,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, self.owner.team);
+    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, if(teams_matter) self.owner.team else COLOR_TEAM3);
     //te_blast(end);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_BuffPower(self.owner, BUFF_MEDIC))) {
@@ -1419,11 +1419,16 @@ void HG_Shield_Frame(void) {
     
     if(!self.hg_shield) {
         self.nobuffs = 0;
+
         if(self.hg_shield_oldmovetype) {
             self.movetype = self.hg_shield_oldmovetype;
             self.hg_shield_oldmovetype = 0;
         }
-        
+
+        if(self.hg_shield_stored && !findfilter(world, inline float(entity e) {
+            return e.owner == self && e.classname == "hg_shield_discharge";
+        })) self.hg_shield_stored = 0;
+
         return;
     }
     
@@ -1432,17 +1437,12 @@ void HG_Shield_Frame(void) {
         self.angles_y = self.v_angle_y;
     }
     
-    if(self.hg_shield) {
-        if(self.hg_shieldhealth <= 0)
-            self.hg_shield = 0;
-        else {
-            self.hg_shield = max(0, self.hg_shield - frametime);
-            if(CVAR(g_nadgets_shield_diminish))
-                self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
-        }
-
-        if(!self.hg_shield)
-            self.hg_shield_stored = 0;
+    if(self.hg_shieldhealth <= 0)
+        self.hg_shield = 0;
+    else {
+        self.hg_shield = max(0, self.hg_shield - frametime);
+        if(CVAR(g_nadgets_shield_diminish))
+            self.hg_shieldpower = self.hg_shield / self.hg_shieldmax;
     }
 }
 
@@ -2186,7 +2186,7 @@ void HG_Sentry_Think(void) {
         return;
     }
 
-    if(self.hg_sentry_energy < 1) {
+    if(self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
         if(self.zapper_beam)
             remove(self.zapper_beam);
         self.zapper_beam = world;
@@ -2255,12 +2255,22 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
     HG_Sentry_Explode();
 }
 
-void HG_Sentry(void) {
+#define HG_SENTRY_MINS '-24.4 -24.4   0.0'
+#define HG_SENTRT_MAXS ' 24.4  24.4 110.0'
+
+float HG_Sentry(void) {
     vector o = self.origin;
 
-    self.hg_detonables += 1;
-
     entity e = spawn();
+    setmodel(e, "models/turrets/tesla.md3");
+    setsize(e, HG_SENTRY_MINS, HG_SENTRT_MAXS);
+    setorigin(e, o);
+
+    if(!move_out_of_solid(e)) {
+        remove(e);
+        return FALSE;
+    }
+
     e.classname = "hg_sentry";
     e.team = self.team;
     e.realowner = self; // can't use owner here because we want to be blocked by it
@@ -2277,15 +2287,14 @@ void HG_Sentry(void) {
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
 
-    Buffs_MEODP_Point_Attach(e, HG_Sentry_MEODP_Death);
+    self.hg_detonables += 1;
 
-    setmodel(e, "models/turrets/tesla.md3");
-    setorigin(e, o);
+    Buffs_MEODP_Point_Attach(e, HG_Sentry_MEODP_Death);
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
     c.skin = TeamColorSkin(self.team);
-    c.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+    c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     c.owner = self;
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
@@ -2294,6 +2303,7 @@ void HG_Sentry(void) {
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
+    return TRUE;
 }
 
 void HG_Sentry_Trigger(void) {
@@ -2420,7 +2430,11 @@ void HG_Attack()
             return;
         }
     } else if(hgtype == HG_SENTRY) {
-        HG_Sentry();
+        if(!HG_Sentry()) {
+            bigprint_spec(self, "Can't put a sentry here!", "", 1);
+            self.cdfield = time + 1;
+            return;
+        }
     } else {
         if(Buffs_BuffPower(self, BUFF_ADEPT) && (GV("adept_split") > 0 || (hgtype == HG_LASER && self.hg_detonatepressed))) {
             float split = GV("adept_split");
@@ -2584,7 +2598,7 @@ void HG_Frame()
         float mx = HG_RegenLimit(self);
         float dpause = CVAR(g_nadgets_regen_damagepause) * Buffs_NadgetRegenDmgPause(self);
         
-        self.hg_ctx_regenrate = GRENVAR(self.hg_type, "regen_scale");
+        self.hg_ctx_regenrate = GRENVAR(self.hg_ctx_type, "regen_scale");
         dpause = min(dpause, dpause / self.hg_ctx_regenrate);
         self.hg_ctx_regenpaused = (((self.hg_stealth || self.hg_stealth_saved) && self.hg_ctx_type == HG_CLOAK) || (time - self.lastdamage <= dpause));
         

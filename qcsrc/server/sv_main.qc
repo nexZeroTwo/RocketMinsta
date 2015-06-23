@@ -244,7 +244,7 @@ void StartFrame (void)
         g_balance_falldamage_maxdamage = CVAR(g_balance_falldamage_maxdamage);
         
         sv_defaultcharacter = CVAR(sv_defaultcharacter);
-        sv_defaultplayercolors = CVAR(sv_defaultplayercolors);
+        sv_defaultplayercolors = stof(CVAR_STR(sv_defaultplayercolors));
         sv_forcespecies = CVAR(sv_forcespecies);
         
         cvarupdatetime = time + 1;
