@@ -444,18 +444,51 @@ void W_Zapper_Shield_Blocker_Push(entity p) {
     }
 }
 
+.entity zapper_shield_warp_shadow;
+
 void W_Zapper_Shield_Blocker_Think(void) {
     if(self.owner.zapper_shield != self.zapper_shield) {
+        if (self.zapper_shield_warp_shadow && self.zapper_shield_warp_shadow != self)
+            remove(self.zapper_shield_warp_shadow);
         remove(self);
         return;
     }
 
-    entity e;
+    entity e, warp;
     vector o = self.owner.origin + self.owner.view_ofs;
+    vector a = self.owner.angles;
     self.oldorigin = o;
 
-    makevectors(self.owner.angles);
-    self.angles = self.owner.angles;
+    if (self.zapper_shield_warp_shadow == self) {
+        o = WarpZone_TransformOrigin(self, o);
+        a = WarpZone_TransformAngles(self, a);
+    } else {
+        if (warp = WarpZone_Find(self.origin - '200 200 200', self.origin + '200 200 200')) {
+            if (!self.zapper_shield_warp_shadow) {
+                e = spawn();
+                e.classname = "zapper_shield_blocker";
+                e.owner = self.owner;
+                e.think = W_Zapper_Shield_Blocker_Think;
+                e.zapper_shield = self.zapper_shield;
+                e.nextthink = time;
+                e.solid = SOLID_BSP;
+                e.alpha = -1;
+                e.warpzone_transform = warp.warpzone_transform;
+                e.warpzone_shift = warp.warpzone_shift;
+                self.zapper_shield_warp_shadow = e;
+                e.zapper_shield_warp_shadow = e;
+                setmodel(e, "models/vhshield.md3");
+            }
+        } else {
+            if (self.zapper_shield_warp_shadow) {
+                remove(self.zapper_shield_warp_shadow);
+                return;
+            }
+        }
+    }
+
+    makevectors(a);
+    self.angles = a;
     setorigin(self, o - v_forward * 85);
 
     FOR_EACH_PLAYER(e) if(e != self.owner)
