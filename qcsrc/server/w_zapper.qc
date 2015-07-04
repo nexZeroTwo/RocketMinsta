@@ -445,11 +445,13 @@ void W_Zapper_Shield_Blocker_Push(entity p) {
 }
 
 .entity zapper_shield_warp_shadow;
+.entity zapper_shield_warp_shadow_visual;
 
 void W_Zapper_Shield_Blocker_Think(void) {
     if(self.owner.zapper_shield != self.zapper_shield) {
-        if (self.zapper_shield_warp_shadow && self.zapper_shield_warp_shadow != self)
-            remove(self.zapper_shield_warp_shadow);
+        if (self.zapper_shield_warp_shadow && self.zapper_shield_warp_shadow == self) {
+            remove(self.zapper_shield_warp_shadow_visual);
+        }
         remove(self);
         return;
     }
@@ -463,7 +465,7 @@ void W_Zapper_Shield_Blocker_Think(void) {
         o = WarpZone_TransformOrigin(self, o);
         a = WarpZone_TransformAngles(self, a);
     } else {
-        if (warp = WarpZone_Find(self.origin - '200 200 200', self.origin + '200 200 200')) {
+        if ((warp = WarpZone_Find(self.origin - '200 200 200', self.origin + '200 200 200'))) {
             if (!self.zapper_shield_warp_shadow) {
                 e = spawn();
                 e.classname = "zapper_shield_blocker";
@@ -473,16 +475,27 @@ void W_Zapper_Shield_Blocker_Think(void) {
                 e.nextthink = time;
                 e.solid = SOLID_BSP;
                 e.alpha = -1;
-                e.warpzone_transform = warp.warpzone_transform;
-                e.warpzone_shift = warp.warpzone_shift;
                 self.zapper_shield_warp_shadow = e;
                 e.zapper_shield_warp_shadow = e;
                 setmodel(e, "models/vhshield.md3");
+                e = spawn();
+                e.classname = "zapper_shield";
+                setmodel(e, "models/vhshield.md3");
+                e.enemy = e;
+                e.alpha = self.owner.zapper_shield.alpha;
+                if(teams_matter)
+                    e.skin = TeamColorSkin(self.team);
+                if(!e.skin)
+                    e.skin = TeamColorSkin(COLOR_TEAM2);
+                self.zapper_shield_warp_shadow.zapper_shield_warp_shadow_visual = e;
             }
+            self.zapper_shield_warp_shadow.warpzone_transform = warp.warpzone_transform;
+            self.zapper_shield_warp_shadow.warpzone_shift = warp.warpzone_shift;
         } else {
             if (self.zapper_shield_warp_shadow) {
+                remove(self.zapper_shield_warp_shadow.zapper_shield_warp_shadow_visual);
                 remove(self.zapper_shield_warp_shadow);
-                return;
+                self.zapper_shield_warp_shadow = world;
             }
         }
     }
@@ -490,6 +503,17 @@ void W_Zapper_Shield_Blocker_Think(void) {
     makevectors(a);
     self.angles = a;
     setorigin(self, o - v_forward * 85);
+    if (self.zapper_shield_warp_shadow_visual) {
+        self.zapper_shield_warp_shadow_visual.alpha = self.owner.zapper_shield.alpha;
+        o = gettaginfo(self.owner.exteriorweaponentity, gettagindex(self.owner.exteriorweaponentity, "shot"));
+        o = o - (88 * v_forward) + (5 * v_up);
+        vector v_forward_save = v_forward;
+        o = WarpZone_TransformOrigin(self, o);
+        v_forward = v_forward_save;
+        self.zapper_shield_warp_shadow_visual.angles = WarpZone_TransformAngles(self, vectoangles(v_forward));
+        self.zapper_shield_warp_shadow_visual.angles_z = self.owner.zapper_shield.angles_z;
+        setorigin(self.zapper_shield_warp_shadow_visual, o);
+    }
 
     FOR_EACH_PLAYER(e) if(e != self.owner)
         W_Zapper_Shield_Blocker_Push(e);
