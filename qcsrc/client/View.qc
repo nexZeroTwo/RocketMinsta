@@ -428,6 +428,7 @@ void HG_NadeGainSound() {
 
 void CSQC_UpdateView(float w, float h)
 {
+	fps_friendly = CVAR(rm_fps_friendly);
 	entity e;
 	float fov;
 	float f, i, j;
@@ -644,7 +645,8 @@ void CSQC_UpdateView(float w, float h)
 		if(self.draw)
 			self.draw();
 	self = e;
-    Plasma_Draw();
+    if (!fps_friendly)
+        Plasma_Draw();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();

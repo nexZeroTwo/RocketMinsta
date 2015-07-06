@@ -178,6 +178,7 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_nooverlap", "0", CVAR_SAVE);
     registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
+    registercvar("rm_fps_friendly", "0", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);

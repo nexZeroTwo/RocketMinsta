@@ -45,7 +45,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
     Draw_CylindricLine(from, endpos, 12, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, self.alpha, DRAWFLAG_ADDITIVE, v);
     zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - endpos) / 12;
 
-    if(self.sv_entnum) {
+    if(self.sv_entnum && !fps_friendly) {
         zapper_curve_beam_prev_point1 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
         zapper_curve_beam_prev_point2 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
         vectorvectors(normalize(d));
@@ -253,7 +253,7 @@ void zapper_lightning_trace_callback(vector from, vector endpos, vector to) {
         zapper_lightning_ateam = COLOR_TEAM2;
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", zapper_lightning_ateam, 2), to, '0 0 0', 1);
-    if(CVAR(cl_effects_lightningarc_simple)) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, zapper_lightning_ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
