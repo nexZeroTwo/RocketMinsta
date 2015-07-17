@@ -211,7 +211,7 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 			}
 		*/
 		
-		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0);
+		MapInfo_Get_ByName(_MapInfo_GlobItem(i), 1, 0, FALSE);
 		
 		float ok = FALSE;
 		
@@ -292,7 +292,7 @@ string unquote(string s)
 
 float MapInfo_Get_ByID(float i)
 {
-	if(MapInfo_Get_ByName(MapInfo_BSPName_ByID(i), 0, 0))
+	if(MapInfo_Get_ByName(MapInfo_BSPName_ByID(i), 0, 0, FALSE))
 		return 1;
 	return 0;
 }
@@ -605,7 +605,7 @@ void _MapInfo_Parse_Settemp(string pFilename, string acl, string s, float recurs
 }
 
 // load info about a map by name into the MapInfo_Map_* globals
-float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametypeToSet)
+float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametypeToSet, float setup_cvars)
 {
 	string fn;
 	string s, t;
@@ -796,44 +796,50 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		}
 		else if(t == "settemp_for_type")
 		{
-			t = car(s); s = cdr(s);
-			if((f = gametype_Name_to_MapID(t)))
+			if (setup_cvars)
 			{
-				if(f & pGametypeToSet)
+				t = car(s); s = cdr(s);
+				if((f = gametype_Name_to_MapID(t)))
 				{
-					_MapInfo_Parse_Settemp(pFilename, acl, s, 1);
+					if(f & pGametypeToSet || t == "all")
+					{
+						_MapInfo_Parse_Settemp(pFilename, acl, s, 1);
+					}
 				}
-			}
-			else
-			{
-				dprint("Map ", pFilename, " has a setting for unknown game type ", t, ", ignored\n");
+				else
+				{
+					dprint("Map ", pFilename, " has a setting for unknown game type ", t, ", ignored\n");
+				}
 			}
 		}
 		else if(t == "clientsettemp_for_type")
 		{
 			t = car(s); s = cdr(s);
 			
-			if((f = gametype_Name_to_MapID(t)))
+			if (setup_cvars)
 			{
-				if(f & pGametypeToSet || t == "all")
+				if((f = gametype_Name_to_MapID(t)))
 				{
-					t = car(s); s = cdr(s);
-					if not(cvar_value_issafe(t))
-						print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
-					else if not (cvar_value_issafe(s))
-						print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
-					else
+					if(f & pGametypeToSet || t == "all")
 					{
-						dprint("Applying temporary client setting ", t, " := ", s, "\n");
-						MapInfo_Map_clientstuff = strcat(
-							MapInfo_Map_clientstuff, "cl_cmd settemp \"", t, "\" \"", s, "\"\n"
-						);
+						t = car(s); s = cdr(s);
+						if not(cvar_value_issafe(t))
+							print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
+						else if not (cvar_value_issafe(s))
+							print("Map ", pFilename, " contains a potentially harmful client setting, ignored\n");
+						else
+						{
+							dprint("Applying temporary client setting ", t, " := ", s, "\n");
+							MapInfo_Map_clientstuff = strcat(
+								MapInfo_Map_clientstuff, "cl_cmd settemp \"", t, "\" \"", s, "\"\n"
+							);
+						}
 					}
 				}
-			}
-			else
-			{
-				dprint("Map ", pFilename, " has a client setting for unknown game type ", t, ", ignored\n");
+				else
+				{
+					dprint("Map ", pFilename, " has a client setting for unknown game type ", t, ", ignored\n");
+				}
 			}
 		}
 		else if(t == "fog")
@@ -951,38 +957,38 @@ float MapInfo_CurrentFeatures()
 	return req;
 }
 
-float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
+float _MapInfo_CheckMap(string s, float setup_cvars) // returns 0 if the map can't be played with the current settings, 1 otherwise
 {
-	if(!MapInfo_Get_ByName(s, 1, 0))
+	if(!MapInfo_Get_ByName(s, 1, 0, setup_cvars))
 		return 0;
-	return 1;
 	
-	/*
+#if 0
 	if((MapInfo_Map_supportedGametypes & gametype_ID_to_MapID(game)) == 0)
 		return 0;
 	if((MapInfo_Map_supportedFeatures & MapInfo_CurrentFeatures()) != MapInfo_CurrentFeatures())
 		return 0;
+#endif
 	return 1;
-	*/
 }
 
-float MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
+float MapInfo_CheckMap(string s, float setup_cvars) // returns 0 if the map can't be played with the current settings, 1 otherwise
 {
 	float r;
-	r = _MapInfo_CheckMap(s);
+	r = _MapInfo_CheckMap(s, setup_cvars);
 	MapInfo_ClearTemps();
 	return r;
 }
 
 void MapInfo_LoadMap(string s)
 {
+	cvar_settemp_restore();
 	MapInfo_Map_supportedGametypes = 0;
-	if(!MapInfo_CheckMap(s))
+	if(!MapInfo_CheckMap(s, FALSE))
 	{
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
 		//MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
 	}
-	localcmd(strcat("\nsettemp_restore\nchangelevel ", s, "\n"));
+	localcmd(strcat("\nchangelevel ", s, "\n"));
 }
 
 string MapInfo_ListAllowedMaps(float pRequiredFlags, float pForbiddenFlags)
@@ -1004,7 +1010,7 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 {
 	//print("^1MapInfo_LoadMapSettings\n");
 
-	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
+	if(!_MapInfo_CheckMap(s, FALSE)) // with underscore, it keeps temps
 	#ifdef WE_GIVE_A_SHIT_ABOUT_MAPINFO
 	{
 		float t;
@@ -1020,11 +1026,8 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 		}
 
 		t = 1;
-		while(!(MapInfo_Map_supportedGametypes & 1))
-		{
+		while(!(MapInfo_Map_supportedGametypes & t))
 			t *= 2;
-			MapInfo_Map_supportedGametypes = floor(MapInfo_Map_supportedGametypes / 2);
-		}
 		// t is now a supported mode!
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
 		//MapInfo_SwitchGameType(t);
@@ -1032,8 +1035,7 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 	#else
 		print("Warning: _MapInfo_CheckMap failed\n");
 	#endif
-	cvar_settemp_restore();
-	MapInfo_Get_ByName(s, 1, gametype_ID_to_MapID(gametype_GetMenu()));
+	MapInfo_Get_ByName(s, 1, gametype_ID_to_MapID(gametype_GetMenu()), TRUE);
 }
 
 void MapInfo_ClearTemps()

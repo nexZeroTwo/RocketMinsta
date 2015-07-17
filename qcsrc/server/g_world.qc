@@ -847,7 +847,7 @@ void spawnfunc_worldspawn (void)
 	n = tokenize_console(CVAR_STR(g_maplist));
 	for(i = 0, j = 0; i < n; ++i)
 	{
-		if(MapInfo_CheckMap(argv(i)))
+		if(MapInfo_CheckMap(argv(i), FALSE))
 		{
 			if(mod(j, 2))
 				col = "^2";
@@ -1074,7 +1074,7 @@ float Map_Check(float position, float pass)
 			return 0;
 	}
 	filename = Map_Filename(position);
-	if(MapInfo_CheckMap(map_next))
+	if(MapInfo_CheckMap(map_next, 0))
 	{
 		if(pass == 2)
 			return 1;
@@ -2340,7 +2340,7 @@ float DoNextMapOverride()
 		return TRUE;
 	}
 	if(CVAR_STR(nextmap) != "")
-		if(MapInfo_CheckMap(CVAR_STR(nextmap)))
+		if(MapInfo_CheckMap(CVAR_STR(nextmap), 0))
 		{
 			Map_Goto_SetStr(CVAR_STR(nextmap));
 			alreadychangedlevel = TRUE;
@@ -2380,7 +2380,7 @@ string MapVote_Suggest(string m, float ismaster)
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
     
 
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, 0))
 		return "The map you suggested does not support the current game mode.";
 	for(i = 0; i < mapvote_suggestion_ptr; ++i)
 		if(mapvote_suggestions[i] == m)
@@ -3029,7 +3029,7 @@ void GameTypeVote_Start()
 
 string GotoMap(string m)
 {
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, 0))
 		return "The map you chose is not available on this server.";
 	cvar_set("nextmap", m);
 	end_match(1);
