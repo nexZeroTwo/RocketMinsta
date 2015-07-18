@@ -276,7 +276,7 @@ void MapList_LoadMap(entity btn, entity me)
 		print("Huh? Can't play this (m is NULL). Refiltering so this won't happen again.\n");
 		return;
 	}
-	if(MapInfo_CheckMap(m, FALSE))
+	if(MapInfo_CheckMap(m))
 	{
 		localcmd("\nmenu_loadmap_prepare\n");
 		if(CVAR(menu_use_default_hostname))

@@ -957,9 +957,9 @@ float MapInfo_CurrentFeatures()
 	return req;
 }
 
-float _MapInfo_CheckMap(string s, float setup_cvars) // returns 0 if the map can't be played with the current settings, 1 otherwise
+float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
 {
-	if(!MapInfo_Get_ByName(s, 1, 0, setup_cvars))
+	if(!MapInfo_Get_ByName(s, 1, 0, FALSE))
 		return 0;
 	
 #if 0
@@ -971,10 +971,10 @@ float _MapInfo_CheckMap(string s, float setup_cvars) // returns 0 if the map can
 	return 1;
 }
 
-float MapInfo_CheckMap(string s, float setup_cvars) // returns 0 if the map can't be played with the current settings, 1 otherwise
+float MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
 {
 	float r;
-	r = _MapInfo_CheckMap(s, setup_cvars);
+	r = _MapInfo_CheckMap(s);
 	MapInfo_ClearTemps();
 	return r;
 }
@@ -983,7 +983,7 @@ void MapInfo_LoadMap(string s)
 {
 	cvar_settemp_restore();
 	MapInfo_Map_supportedGametypes = 0;
-	if(!MapInfo_CheckMap(s, FALSE))
+	if(!MapInfo_CheckMap(s))
 	{
 		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
 		//MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
@@ -1010,7 +1010,7 @@ void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
 {
 	//print("^1MapInfo_LoadMapSettings\n");
 
-	if(!_MapInfo_CheckMap(s, FALSE)) // with underscore, it keeps temps
+	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
 	#ifdef WE_GIVE_A_SHIT_ABOUT_MAPINFO
 	{
 		float t;

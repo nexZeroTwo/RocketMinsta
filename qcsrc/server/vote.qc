@@ -853,7 +853,7 @@ string ValidateMap(string m, entity e)
 			print_to(e, "This server does not allow for recent maps to be played again. Please be patient for some rounds.");
 			return string_null;
 		}
-	if(!MapInfo_CheckMap(m, FALSE))
+	if(!MapInfo_CheckMap(m))
 	{
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
 		return string_null;

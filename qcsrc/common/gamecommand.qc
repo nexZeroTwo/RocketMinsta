@@ -541,7 +541,7 @@ float GameCommand_Generic(string command)
 			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
-				if(MapInfo_CheckMap(argv(i), FALSE))
+				if(MapInfo_CheckMap(argv(i)))
 					s2 = strcat(s2, " ", argv(i));
 			s2 = substring(s2, 1, strlen(s2) - 1);
 			cvar_set("g_maplist", s2);
