@@ -3266,33 +3266,10 @@ float CountAFKClients()
 //    game types, not just ctf. also, ctf-blacklist bloat has been removed
 float GameTypeFilter_Allowed (string map, string gametype)
 {
-	local float fh;
-	local string s;
-
-	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DEATHMATCH)
-		return 1; // maps always support dm-gametypes, even when they don't claim to
-
-    if(CVAR(g_domination_always_available))
-    if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
-        return 1;
-
-	fh = fopen(strcat("maps/", map, ".mapinfo"), FILE_READ);
-	if(fh < 0)
-	{
-		print("^1Failed to open mapinfo for ^2", map, "^1: Defaulting to supported\n");
-		return 1;
-	}
-
-	while((s = fgets(fh)))
-	{
-		tokenize_console(s);
-		if(argv(0) == "type")
-			if(gametype_MapID_to_Name(gametype_Name_to_MapID(gametype)) ==
-			   gametype_MapID_to_Name(gametype_Name_to_MapID(argv(1))))
-				break;
-	}
-	fclose(fh);
-	return if(s) 1 else 0;
+	if(CVAR(g_domination_always_available))
+	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
+		return MapInfo_CheckMapGametype(map, MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
+	return MapInfo_CheckMapGametype(map, gametype_Name_to_MapID(gametype), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
 }
 
 float Banning_IsNameBanned (string name)

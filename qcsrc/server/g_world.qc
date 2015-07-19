@@ -6,6 +6,7 @@ string GetMapname();
 void GotoNextMap();
 void ShuffleMaplist()
 float() DoNextMapOverride;
+float GameTypeVote_MapIDMask();
 
 string geh_event;
 string geh_args;
@@ -207,7 +208,7 @@ void GotoFirstMap()
 		cvar_set("g_maplist_index", ftos(n - 1)); // jump to map 0 in GotoNextMap
 
 		MapInfo_Enumerate();
-		MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 
 		if(!DoNextMapOverride())
 			GotoNextMap();
@@ -432,7 +433,7 @@ void spawnfunc___init_dedicated_server(void)
 	self.classname = "worldspawn"; // safeguard against various stuff ;)
 
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 }
 
 void Map_MarkAsRecent(string m);
@@ -748,7 +749,7 @@ void spawnfunc_worldspawn (void)
 
 	Ban_LoadBans();
 
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 
 	if(whichpack(strcat("maps/", mapname, ".cfg")) != "")
 	{
@@ -902,7 +903,7 @@ void spawnfunc_worldspawn (void)
 	
 	if(CVAR_STR(g_maplist) == "") {
 		bprint("Empty maplist: resetting to default.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -1202,7 +1203,7 @@ void Maplist_Init()
 	if(Map_Count == 0)
 	{
 		bprint( "Maplist is empty!  Resetting it to default map list.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -1271,7 +1272,7 @@ void GotoNextMap()
 			if(allowReset)
 			{
 				bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
-				cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+				cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 				if(CVAR(g_maplist_shuffle))
 					ShuffleMaplist();
 				localcmd("\nmenu_cmd sync\n");
@@ -2424,26 +2425,7 @@ float MapIsPlayable(string map_name)
     if(!ListContains(CVAR_STR(g_maplist), map_name, " "))
         return 0;
     
-	if(!CVAR(sv_vote_gametype))
-		// if gametype voting isn't enabled, the server will stay on the current gametype
-		// so let's hide any map that isn't allowed in the current mode
-		return GameTypeFilter_Allowed(map_name, gametype_ID_to_Name(game));
-	
-	// Multigametype server: we'll hide the map if it supports none of gametypes that can be played
-	local float ret, i, n;
-	local string gtname;
-	
-	n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
-	for(i = 0; i < n; ++i)
-	{
-		gtname = argv(i);
-		ret += (GameTypeVote_AvailabilityStatus_ForMap(gtname, map_name) == GTV_AVAILABLE);
-		
-		// GameTypeVote_AvailabilityStatus_ForMap tokenizes
-		n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
-	}
-	
-	return ret;
+	return MapInfo_CheckMapGametype(map_name, GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
 }
 
 void MapVote_Spawn();
@@ -2479,7 +2461,7 @@ void MapVote_Init()
 	if(mapvote_count == 0)
 	{
 		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -2868,13 +2850,13 @@ void MapVote_Start()
 		return;
 		
 	MapInfo_Enumerate();
-	if(MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
+	if(MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
 }
 
 float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 {
-	if (! GameTypeFilter_Allowed (map_name, gtname))
+	if(!MapInfo_CheckMapGametype(map_name, gametype_Name_to_MapID(gtname), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()))
 		return GTV_FORBIDDEN;
 	
 	if not(CVAR(sv_vote_gametype_maxmaps))
@@ -2952,6 +2934,24 @@ string GameTypeVote_GetOptions()
 	#else
 	return CVAR_STR(sv_vote_gametype_options);
 	#endif
+}
+
+float GameTypeVote_MapIDMask()
+{
+	float mask = 0;
+	if (CVAR(sv_vote_gametype)) {
+		local float i, n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+		for(i = 0; i < n; i++)
+		{
+			mask |= gametype_Name_to_MapID(argv(i));
+		}
+	}
+	if (!mask)
+		mask = gametype_ID_to_MapID(game);
+	if(CVAR(g_domination_always_available))
+	if(mask & MAPINFO_TYPE_DOMINATION)
+		mask |= MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF;
+	return mask;
 }
 
 float GameTypeVote_Finished(float pos)
@@ -3177,7 +3177,7 @@ void RestoreGame()
 	// Mapinfo
 	MapInfo_Shutdown();
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 	WeaponStats_Init();
 }
 

@@ -63,10 +63,11 @@ string MapInfo_FixName(string s);
 
 // play a map
 float MapInfo_CheckMap(string s); // returns 0 if the map can't be played with the current settings
+float MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden);
 void MapInfo_LoadMap(string s);
 
 // list all maps for the current game type
-string MapInfo_ListAllowedMaps(float pFlagsRequired, float pFlagsForbidden);
+string MapInfo_ListAllowedMaps(float game_tyeps, float pFlagsRequired, float pFlagsForbidden);
 
 // to be called from worldspawn to set up cvars
 void MapInfo_LoadMapSettings(string s);
