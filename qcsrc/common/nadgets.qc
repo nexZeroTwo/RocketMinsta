@@ -13,6 +13,7 @@ string HG_TypeToExpandedName(float t) {
         case HG_CLOAK       :   return "Concealing Cloak";
         case HG_BAIT        :   return "Hero Bait";
         case HG_SENTRY      :   return "Zapper Sentry";
+		case HG_RAZE		:	return "Raze";
         case HG_RANDOM      :   return "Random Nadget";
         default             :   return "Fuckoff Grenade";
     }
@@ -32,6 +33,7 @@ string HG_TypeToName(float t) {
         case HG_CLOAK       :   return "cloak";
         case HG_BAIT        :   return "bait";
         case HG_SENTRY      :   return "sentry";
+		case HG_RAZE		:	return "raze";
         case HG_RANDOM      :   return "random";
         default             :   return strcat("fuckoff", ftos(t));
     }
@@ -50,6 +52,7 @@ float HG_NameToType(string t) {
         case "cloak"        :   return HG_CLOAK;
         case "bait"         :   return HG_BAIT;
         case "sentry"       :   return HG_SENTRY;
+		case "raze"			:	return HG_RAZE;
         case "random"       :   return HG_RANDOM;
         default             :   return HG_NORMAL;
     }
@@ -72,6 +75,7 @@ vector HG_TypeToColor(float t) {
         case HG_CLOAK       :   return '0.7 0.7 0.7';
         case HG_BAIT        :   return '0.2 0.7 1.0';
         case HG_SENTRY      :   return '0.3 1.0 0.7';
+		case HG_RAZE		:	return '0.8 0.6	0.0';
         case HG_GG          :   return '0.5 0.5 0.5' + colormapPaletteColor(15, FALSE);
         case HG_RANDOM      :   return '1.0 1.0 1.0';
         default             :   return '0.5 0.5 0.5';

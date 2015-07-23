@@ -26,6 +26,7 @@ void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
+void HG_Raze_Trigger(void);
 void HG_Bait_Body_Boom(entity body);
 float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
@@ -148,6 +149,10 @@ float hg_plasma_group;
 
 float hg_context_isalt;
 float hg_context_isaltintended;
+
+.vector hg_deferredVel;
+.vector hg_direction;
+.float hg_raze_randelayed;
 
 #define hg_type hg_type1
 

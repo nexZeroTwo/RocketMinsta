@@ -457,6 +457,7 @@ void Ent_Projectile()
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
+			case PROJECTILE_HG_RAZE: setmodel(self, "models/grenademodel.md3"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -505,6 +506,7 @@ void Ent_Projectile()
 			case PROJECTILE_HG_NAPALM:
             case PROJECTILE_HG_TRANSLOC:
             case PROJECTILE_HG_REMOTE:
+			case PROJECTILE_HG_RAZE:
             case PROJECTILE_HG_LASER:
                 if(g_nadgets == 2) {   // g_nadgets_oldhitboxes
                     self.mins = '0 0 -3';
@@ -591,6 +593,7 @@ void Projectile_Precache()
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
     precache_model("models/hg_transloc.md3");
+	precache_model("models/sphere/sphere.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");
