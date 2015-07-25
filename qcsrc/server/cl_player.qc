@@ -621,6 +621,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 
     W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+    Buffs_FocusDamage(self, attacker, damage, deathtype);
 
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)

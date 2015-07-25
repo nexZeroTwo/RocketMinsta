@@ -12,6 +12,7 @@ string Buffs_TypeToName(float buff) {
         case BUFF_WRATH     :      return "wrath";
         case BUFF_ADEPT     :      return "adept";
         case BUFF_MEODP     :      return "meodp";
+        case BUFF_FOCUS     :      return "focus";
         default             :      return "unknown";
     }
 }
@@ -29,6 +30,7 @@ float Buffs_NameToType(string name) {
         case "wrath"        :      return BUFF_WRATH;
         case "adept"        :      return BUFF_ADEPT;
         case "meodp"        :      return BUFF_MEODP;
+        case "focus"        :      return BUFF_FOCUS;
         
         // compatibility
         case "bash"         :      return BUFF_IGNITE;
@@ -50,6 +52,7 @@ string Buffs_TypeToExpandedName(float buff) {
         case BUFF_WRATH     :      return "Wrath";
         case BUFF_ADEPT     :      return "Adept";
         case BUFF_MEODP     :      return "Mystic Eyes of Death Perception";
+        case BUFF_FOCUS     :      return "Focus";
         // default             :      return "Unknown";
 
         default: {
@@ -92,6 +95,7 @@ vector Buffs_TypeToColor(float buff) {
         case BUFF_WRATH     :      return '0.55  0.50  1.00';    // Bright Blue
         case BUFF_ADEPT     :      return '0.57  0.00  1.00';    // Viole(n)t
         case BUFF_MEODP     :      return '0.10  0.10  0.10';    // Black
+        case BUFF_FOCUS     :      return '0.50  1.00  0.80';    // Bright green/cyan-ish
         //default             :      return '0.00  0.00  0.00';
 
         default: {
