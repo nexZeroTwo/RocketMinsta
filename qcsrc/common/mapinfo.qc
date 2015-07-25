@@ -186,15 +186,18 @@ float _MapInfo_FilterList_cmp(float i, float j, entity pass)
 	return strcasecmp(a, b);
 }
 
-float MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
-	float ok = FALSE;
-	
+float _MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
 	MapInfo_Get_ByName(map_name, 1, 0, FALSE);
 	if (!pGametype || (pGametype & MapInfo_Map_supportedGametypes))
 	if (!pFeatures || (pFeatures & MapInfo_Map_supportedFeatures))
 	if (!pFlagsRequired || (pFlagsRequired & MapInfo_Map_flags))
 	if (!pFlagsForbidden || !(pFlagsForbidden & MapInfo_Map_flags))
-		ok = TRUE;
+		return TRUE;
+	return FALSE;
+}
+
+float MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
+	float ok = _MapInfo_CheckMapGametype(map_name, pGametype, pFeatures, pFlagsRequired, pFlagsForbidden);
 	MapInfo_ClearTemps();
 	return ok;
 }
@@ -977,35 +980,26 @@ string MapInfo_ListAllowedMaps(float game_types, float pRequiredFlags, float pFo
 	return substring(out, 1, strlen(out) - 1);
 }
 
-void MapInfo_LoadMapSettings(string s) // to be called from worldspawn
+void MapInfo_LoadMapSettings(string s, float modes) // to be called from worldspawn
 {
-	//print("^1MapInfo_LoadMapSettings\n");
-
-	if(!_MapInfo_CheckMap(s)) // with underscore, it keeps temps
-	#ifdef WE_GIVE_A_SHIT_ABOUT_MAPINFO
+#ifdef SVQC
+	if(!_MapInfo_CheckMapGametype(s, gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()))
 	{
 		float t;
-		if(MapInfo_Map_supportedGametypes <= 0)
-		{
-			//error("Mapinfo system is not functional at all. BAILED OUT.\n");
-			#ifdef SVQC
-			bprint("^1EVERYTHING IS FUCKED UP\n");
-			bprint("^1EVERYTHING IS FUCKED UP\n");
-			bprint("^1EVERYTHING IS FUCKED UP\n");
-			#endif
-			return;
-		}
-
+		MapInfo_Map_supportedGametypes = MapInfo_Map_supportedGametypes & modes;
 		t = 1;
-		while(!(MapInfo_Map_supportedGametypes & t))
+		while(!(MapInfo_Map_supportedGametypes & t) && t <= MapInfo_Map_supportedGametypes)
 			t *= 2;
-		// t is now a supported mode!
-		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to a supported mode.\n");
-		//MapInfo_SwitchGameType(t);
+		if (t <= MapInfo_Map_supportedGametypes) {
+			// t is now a supported mode!
+			print("WARNING: can't play the selected map in the given game mode. Falling back to a supported mode: ", gametype_MapID_to_Name(t), "\n");
+			gametype_Set(gametype_MapID_to_ID(t));
+		} else {
+			bprint("^1EVERYTHING IS FUCKED UP\n");
+			gametype_Set(GAME_DEATHMATCH);
+		}
 	}
-	#else
-		print("Warning: _MapInfo_CheckMap failed\n");
-	#endif
+#endif
 	MapInfo_Get_ByName(s, 1, gametype_ID_to_MapID(gametype_GetMenu()), TRUE);
 }
 

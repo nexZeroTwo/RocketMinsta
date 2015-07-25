@@ -70,7 +70,7 @@ void MapInfo_LoadMap(string s);
 string MapInfo_ListAllowedMaps(float game_tyeps, float pFlagsRequired, float pFlagsForbidden);
 
 // to be called from worldspawn to set up cvars
-void MapInfo_LoadMapSettings(string s);
+void MapInfo_LoadMapSettings(string s, float mode);
 
 void MapInfo_Cache_Destroy(); // disable caching
 void MapInfo_Cache_Create(); // enable caching

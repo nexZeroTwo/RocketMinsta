@@ -6,7 +6,6 @@ string GetMapname();
 void GotoNextMap();
 void ShuffleMaplist()
 float() DoNextMapOverride;
-float GameTypeVote_MapIDMask();
 
 string geh_event;
 string geh_args;
