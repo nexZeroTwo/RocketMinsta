@@ -856,6 +856,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             return;
         }
 
+        Buffs_ReaperFrag(self, attacker);
+
         GAMEEVENT("playerdeath", {
             GAMEEVENTARG(Entity, self)
             GAMEEVENTARG(Entity, inflictor)
