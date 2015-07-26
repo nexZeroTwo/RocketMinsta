@@ -186,8 +186,8 @@ float _MapInfo_FilterList_cmp(float i, float j, entity pass)
 	return strcasecmp(a, b);
 }
 
-float _MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
-	MapInfo_Get_ByName(map_name, 1, 0, FALSE);
+float _MapInfo_CheckMap(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
+	if (MapInfo_Get_ByName(map_name, 1, 0, FALSE))
 	if (!pGametype || (pGametype & MapInfo_Map_supportedGametypes))
 	if (!pFeatures || (pFeatures & MapInfo_Map_supportedFeatures))
 	if (!pFlagsRequired || (pFlagsRequired & MapInfo_Map_flags))
@@ -196,8 +196,8 @@ float _MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeature
 	return FALSE;
 }
 
-float MapInfo_CheckMapGametype(string map_name, float pGametype, float pFeatures, float pFlagsRequired, float pFlagsForbidden) {
-	float ok = _MapInfo_CheckMapGametype(map_name, pGametype, pFeatures, pFlagsRequired, pFlagsForbidden);
+float MapInfo_CheckMap(string map_name, float pGametype) {
+	float ok = _MapInfo_CheckMap(map_name, pGametype, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
 	MapInfo_ClearTemps();
 	return ok;
 }
@@ -212,11 +212,12 @@ float MapInfo_FilterGametype(float pGametype, float pFeatures, float pFlagsRequi
 	}
 	for(i = 0; i < _MapInfo_globcount; ++i)
 	{
-		if (MapInfo_CheckMapGametype(_MapInfo_GlobItem(i), pGametype, pFeatures, pFlagsRequired, pFlagsForbidden)) {
+		if (_MapInfo_CheckMap(_MapInfo_GlobItem(i), pGametype, pFeatures, pFlagsRequired, pFlagsForbidden)) {
 			bufstr_set(_MapInfo_filtered, j, ftos(i));
 			j++;
 		} else
 			print("^1 *** ", _MapInfo_GlobItem(i), " filtered\n");
+		MapInfo_ClearTemps();
 	}
 	MapInfo_count = j;
 
@@ -931,37 +932,9 @@ float MapInfo_CurrentFeatures()
 	return req;
 }
 
-float _MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
-{
-	if(!MapInfo_Get_ByName(s, 1, 0, FALSE))
-		return 0;
-	
-#if 0
-	if((MapInfo_Map_supportedGametypes & gametype_ID_to_MapID(game)) == 0)
-		return 0;
-	if((MapInfo_Map_supportedFeatures & MapInfo_CurrentFeatures()) != MapInfo_CurrentFeatures())
-		return 0;
-#endif
-	return 1;
-}
-
-float MapInfo_CheckMap(string s) // returns 0 if the map can't be played with the current settings, 1 otherwise
-{
-	float r;
-	r = _MapInfo_CheckMap(s);
-	MapInfo_ClearTemps();
-	return r;
-}
-
 void MapInfo_LoadMap(string s)
 {
 	cvar_settemp_restore();
-	MapInfo_Map_supportedGametypes = 0;
-	if(!MapInfo_CheckMap(s))
-	{
-		print("EMERGENCY: can't play the selected map in the given game mode. Falling back to DM.\n");
-		//MapInfo_SwitchGameType(MAPINFO_TYPE_DEATHMATCH);
-	}
 	localcmd(strcat("\nchangelevel ", s, "\n"));
 }
 
@@ -983,7 +956,7 @@ string MapInfo_ListAllowedMaps(float game_types, float pRequiredFlags, float pFo
 void MapInfo_LoadMapSettings(string s, float modes) // to be called from worldspawn
 {
 #ifdef SVQC
-	if(!_MapInfo_CheckMapGametype(s, gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()))
+	if(!_MapInfo_CheckMap(s, gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()))
 	{
 		float t;
 		MapInfo_Map_supportedGametypes = MapInfo_Map_supportedGametypes & modes;

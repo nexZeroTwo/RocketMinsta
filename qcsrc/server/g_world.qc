@@ -847,7 +847,7 @@ void spawnfunc_worldspawn (void)
 	n = tokenize_console(CVAR_STR(g_maplist));
 	for(i = 0, j = 0; i < n; ++i)
 	{
-		if(MapInfo_CheckMap(argv(i)))
+		if(MapInfo_CheckMap(argv(i), GameTypeVote_MapIDMask()))
 		{
 			if(mod(j, 2))
 				col = "^2";
@@ -1074,7 +1074,7 @@ float Map_Check(float position, float pass)
 			return 0;
 	}
 	filename = Map_Filename(position);
-	if(MapInfo_CheckMap(map_next))
+	if(MapInfo_CheckMap(map_next, GameTypeVote_MapIDMask()))
 	{
 		if(pass == 2)
 			return 1;
@@ -2340,7 +2340,7 @@ float DoNextMapOverride()
 		return TRUE;
 	}
 	if(CVAR_STR(nextmap) != "")
-		if(MapInfo_CheckMap(CVAR_STR(nextmap)))
+		if(MapInfo_CheckMap(CVAR_STR(nextmap), GameTypeVote_MapIDMask()))
 		{
 			Map_Goto_SetStr(CVAR_STR(nextmap));
 			alreadychangedlevel = TRUE;
@@ -2380,7 +2380,7 @@ string MapVote_Suggest(string m, float ismaster)
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
     
 
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 		return "The map you suggested does not support the current game mode.";
 	for(i = 0; i < mapvote_suggestion_ptr; ++i)
 		if(mapvote_suggestions[i] == m)
@@ -2424,7 +2424,7 @@ float MapIsPlayable(string map_name)
     if(!ListContains(CVAR_STR(g_maplist), map_name, " "))
         return 0;
     
-	return MapInfo_CheckMapGametype(map_name, GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
+	return MapInfo_CheckMap(map_name, GameTypeVote_MapIDMask());
 }
 
 void MapVote_Spawn();
@@ -2855,7 +2855,7 @@ void MapVote_Start()
 
 float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 {
-	if(!MapInfo_CheckMapGametype(map_name, gametype_Name_to_MapID(gtname), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()))
+	if(!MapInfo_CheckMap(map_name, GameTypeVote_MapIDMask()))
 		return GTV_FORBIDDEN;
 	
 	if not(CVAR(sv_vote_gametype_maxmaps))
@@ -2939,10 +2939,13 @@ float GameTypeVote_MapIDMask()
 {
 	float mask = 0;
 	if (CVAR(sv_vote_gametype)) {
-		local float i, n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
-		for(i = 0; i < n; i++)
-		{
-			mask |= gametype_Name_to_MapID(argv(i));
+		string head, tail = strcat(GameTypeVote_GetOptions(), " ");
+		float space_pos = strstrofs(tail, " ", 0);
+		for (head = substring(tail, 0, space_pos); space_pos > 0; space_pos = strstrofs(tail, " ", 0)) {
+			head = substring(tail, 0, space_pos),
+			tail = substring(tail, space_pos + 1, strlen(tail) - space_pos - 1);
+			if (head == "") continue;
+			mask |= gametype_Name_to_MapID(head);
 		}
 	}
 	if (!mask)
@@ -3028,7 +3031,7 @@ void GameTypeVote_Start()
 
 string GotoMap(string m)
 {
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 		return "The map you chose is not available on this server.";
 	cvar_set("nextmap", m);
 	end_match(1);

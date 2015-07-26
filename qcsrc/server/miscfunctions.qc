@@ -3268,8 +3268,8 @@ float GameTypeFilter_Allowed (string map, string gametype)
 {
 	if(CVAR(g_domination_always_available))
 	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
-		return MapInfo_CheckMapGametype(map, MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF, MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
-	return MapInfo_CheckMapGametype(map, gametype_Name_to_MapID(gametype), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags());
+		return MapInfo_CheckMap(map, MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF);
+	return MapInfo_CheckMap(map, gametype_Name_to_MapID(gametype));
 }
 
 float Banning_IsNameBanned (string name)
