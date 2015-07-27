@@ -535,6 +535,7 @@ void ForceModeSpawns(void) {
 
 void spawnfunc_worldspawn (void)
 {
+	WarpZone_Init();
 	float fd, l, i, j, n;
 	string s, col;
 
@@ -3213,6 +3214,7 @@ void SV_Shutdown()
 	{
 		print("NOTE: crashed before even initializing the world, not saving persistent data\n");
 	}
+	WarpZone_Shutdown();
 }
 
 // Chaiomanot  : This unification was inspired by a bug that caused endmatch to not

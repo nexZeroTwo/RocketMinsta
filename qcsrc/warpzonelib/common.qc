@@ -1,3 +1,5 @@
+.entity warpzone_chain;
+entity warpzone_chain_begin;
 void WarpZone_Accumulator_Clear(entity acc)
 {
 	acc.warpzone_transform = '0 0 0';
@@ -114,7 +116,7 @@ entity WarpZone_Find(vector mi, vector ma)
 {
 	// if we are near any warpzone planes - MOVE AWAY (work around nearclip)
 	entity e;
-	for(e = world; (e = find(e, classname, "trigger_warpzone")); )
+	for(e = warpzone_chain_begin; e; e  = e.warpzone_chain)
 		if(WarpZoneLib_BoxTouchesBrush(mi, ma, e, world))
 			return e;
 	return world;
@@ -123,14 +125,14 @@ entity WarpZone_Find(vector mi, vector ma)
 void WarpZone_MakeAllSolid()
 {
 	entity e;
-	for(e = world; (e = find(e, classname, "trigger_warpzone")); )
+	for(e = warpzone_chain_begin; e; e  = e.warpzone_chain)
 		e.solid = SOLID_BSP;
 }
 
 void WarpZone_MakeAllOther()
 {
 	entity e;
-	for(e = world; (e = find(e, classname, "trigger_warpzone")); )
+	for(e = warpzone_chain_begin; e; e  = e.warpzone_chain)
 		e.solid = SOLID_TRIGGER;
 }
 
@@ -659,7 +661,7 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 	float length_warped;
 	WarpZone_FindNearestOrigin_length = vlen(to - from);
 	vector to_warped, to_nearest = to;
-	for(e = world; (e = find(e, classname, "trigger_warpzone")); ) {
+	for(e = warpzone_chain_begin; e; e  = e.warpzone_chain) {
 		to_warped = WarpZone_TransformOrigin(e, to);
 		length_warped = vlen(to_warped - from);
 		if (length_warped < WarpZone_FindNearestOrigin_length) {
@@ -678,3 +680,23 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 	return to_nearest;
 }
 
+void WarpZone_ChainAdd(entity wz)
+{
+	wz.warpzone_chain = warpzone_chain_begin;
+	warpzone_chain_begin = wz;
+}
+
+void WarpZone_Init()
+{
+#ifdef CSQC
+	warpzone_newstyle = checkextension("DP_CSQC_ROTATEMOVES");
+#endif
+	warpzone_chain_begin = world;
+}
+
+void WarpZone_Shutdown()
+{
+#ifdef CSQC
+	WarpZone_Outside();
+#endif
+}

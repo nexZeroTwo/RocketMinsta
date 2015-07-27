@@ -41,6 +41,8 @@ void WarpZone_Read(float isnew)
 	//setmodel(self, self.model);
 	setorigin(self, self.origin);
 	setsize(self, self.mins, self.maxs);
+
+	WarpZone_ChainAdd(self);
 }
 
 vector WarpZone_Camera_camera_transform(vector org, vector ang)
@@ -228,14 +230,4 @@ void WarpZone_FixView()
 		input_angles = ang;
 	}
 	WarpZone_FixView_lastwarp = e;
-}
-
-void WarpZone_Init()
-{
-	warpzone_newstyle = checkextension("DP_CSQC_ROTATEMOVES");
-}
-
-void WarpZone_Shutdown()
-{
-	WarpZone_Outside();
 }

@@ -69,3 +69,6 @@ vector WarpZoneLib_PlaneAndLineCross(vector planep, vector planen, vector linep,
 void WarpZone_TraceTriangle(vector org, vector org_visual, vector end, float nomonster, entity forent, WarpZone_trace_callback_t cb);
 float WarpZone_FindNearestOrigin_length;
 vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check);
+void WarpZone_Init();
+void WarpZone_Shutdown();
+void WarpZone_ChainAdd(entity wz);

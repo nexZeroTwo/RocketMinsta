@@ -537,6 +537,7 @@ void spawnfunc_trigger_warpzone(void)
 	self.effects |= EF_NODEPTHTEST;
 	self.warpzone_next = warpzone_first;
 	warpzone_first = self;
+	WarpZone_ChainAdd(self);
 }
 void spawnfunc_func_camera(void)
 {
