@@ -2855,7 +2855,7 @@ void MapVote_Start()
 
 float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 {
-	if(!MapInfo_CheckMap(map_name, GameTypeVote_MapIDMask()))
+	if(!MapInfo_CheckMap(map_name, gametype_Name_to_MapID(gtname)))
 		return GTV_FORBIDDEN;
 	
 	if not(CVAR(sv_vote_gametype_maxmaps))
