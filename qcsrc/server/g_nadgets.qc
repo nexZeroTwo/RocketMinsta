@@ -477,8 +477,8 @@ void HG_Remote_Explode() {
     float c;
     for (c = 0; c < CVAR(g_nadgets_remote_numparticles); c ++) HG_Napalm();
 }
-
 void HG_Translocator_Explode() {
+
     if(g_jailbreak && self.owner.jb_isprisoned)
         return;
         
@@ -591,8 +591,8 @@ void HG_Grenade_Explode()
         HG_Remote_Explode();
     } else if(self.hg_type == HG_TRANSLOC) {
         HG_Translocator_Explode();
-    //} else if(self.hg_type == HG_RAZE) {
-	//	HG_Raze_Explode();
+    } else if(self.hg_type == HG_RAZE) {
+		//HG_Raze_Explode();
 	}
     
     HG_Grenade_RadiusDamage();
@@ -1039,25 +1039,18 @@ void HG_Grenade_Think() {
 		}
 		else{
 			if not(self.hg_raze_randelayed){
-				//hg_direction
-				ms = CVAR(g_nadgets_raze_movement_speed);
+				//ms = CVAR(g_nadgets_raze_movement_speed);
 				self.movetype = CVAR(g_nadgets_raze_delayed_movetype);
-				//self.flags &~= FL_ONGROUND;
-				//if this doesn't work try setting FL_ONGROUND or adding a bit of positive _z
-				bprint("Current vel: ",vtos(self.velocity)," direction: ",vtos(self.hg_direction), "ms: ",ftos(ms),"\n");
-				if(self.hg_direction_z > 0)
-					self.hg_direction_z = 0.0;
-					
-				self.velocity = self.hg_direction * ms;
-				bprint("Vel after mult: ",vtos(self.velocity),"\n");
+				self.velocity = self.hg_deferredVel;
+                if(self.velocity_z > 0)
+					self.velocity_z = 0.0;
+                //self.flags &~= FL_ONGROUND;
+				UpdateCSQCProjectile(self);
 				self.hg_raze_randelayed = 1;
 			}
 			else{
-			
 			}
-
 		}
-		//W_SetupProjectileVelocity(self);
 	}
     
     HG_Grenade_Waypoint();
@@ -1784,6 +1777,18 @@ string HG_TypeToAttackSound(float hgtype) {
     }
 }
 
+entity HG_GetLaunchSpeed(entity gren, vector wsd, float spd, float mspd, float mvspd, float launchspeed, vector up, float upspd, float power) {
+    if(launchspeed && !g_nadgets_detonatelaunches) {
+       gren.velocity = wsd * (mspd + (spd-mspd) * power) + up * upspd * power;
+    } else {
+        gren.velocity = wsd * spd + up * upspd;
+    }
+    if(gren.hg_type == HG_RAZE){
+        gren.hg_deferredVel = wsd * mvspd + up * upspd;
+    }
+    return gren;
+}
+
 void HG_GenericProjectile_MEODP_Death(entity attacker, entity inflictor) {
     self.takedamage = DAMAGE_AIM;
     self.health = max(10, self.health);
@@ -1911,15 +1916,13 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         upspd = GV("speed_up");
     }
     
-    if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
-        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
-    } else
-        gren.velocity = w_shotdir * spd + v_up * upspd;
+    gren = HG_GetLaunchSpeed(gren, w_shotdir, spd, mspd, GV("movement_speed"), GV("launchspeed"), v_up, upspd, self.hg_power);
+//    if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
+//        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
+//    } else
+//        gren.velocity = w_shotdir * spd + v_up * upspd;
     
 	if(hgtype == HG_RAZE) {
-		gren.hg_deferredVel = gren.velocity;
-		//gren.velocity = '0 0 1';
-		//gren.flags = FL_TOSSED;
 		gren.health = CVAR(g_nadgets_raze_health);
 		gren.hg_direction = w_shotdir;
 	}
@@ -2405,66 +2408,6 @@ void HG_Sentry_Trigger(void) {
     else if(found)
         sound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
 }
-
-void HG_Raze_Think(){
-	float ms;
-	if(time < (self.spawntime + CVAR(g_nadgets_raze_movement_delay))){
-		//bprint("BEFORE movement delay\n");
-	}
-	else{
-		//ms = CVAR(g_nadgets_raze_movement_speed);
-		self.velocity = self.hg_deferredVel;
-		W_SetupProjectileVelocity(self);
-	}
-	self.nextthink = time;
-}
-
-void HG_Raze_Explode(){
-}
-
-void HG_Raze_Damage(){
-	return;
-}
-
-void HG_Raze_Trigger(){
-	return;
-}
-
-void HG_Raze(){
-	vector o = self.origin;
-
-    entity e = spawn();
-    setmodel(e, "models/grenademodel.md3");
-    setsize(e, '0 0 -3', '0 0 -3');
-    setorigin(e, o);
-
-	e.owner = self;
-    e.classname = "hg_raze";
-    e.team = self.team;
-    e.solid = SOLID_BBOX;
-    e.movetype = MOVETYPE_TOSS; //toss and move are the same?
-	PROJECTILE_MAKETRIGGER(e);
-    e.angles = '0 360 0';
-    //e.reset = HG_Raze_Remove;
-    e.think = HG_Raze_Think;
-    e.nextthink = time;
-    e.hg_type = HG_RAZE;
-	e.reset = SUB_Remove;
-    e.view_ofs = '0 0 100';
-    e.takedamage = DAMAGE_AIM;
-    e.skin = TeamColorSkin(self.team);
-    e.health = CVAR(g_nadgets_raze_health);
-    e.event_damage = HG_Raze_Damage;
-	move_out_of_solid(e);
-	e.spawntime = time;
-	
-	vector a = vectoangles(w_shotdir);
-    a_x = -a_x;
-    makevectors(a);
-	e.hg_deferredVel = v_forward;
-}
-
-
 
 void HG_SetCooldown(.float cdfield, float gcd, float cd) {
     float cdmul = Buffs_NadgetCooldown(self);
