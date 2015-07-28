@@ -10,10 +10,12 @@
 #define BUFF_WRATH      256
 #define BUFF_ADEPT      512
 #define BUFF_MEODP      1024
+#define BUFF_FOCUS      2048
+#define BUFF_REAPER     4096
 
 #define BUFF_FIRST      BUFF_ARC
-#define BUFF_LAST       BUFF_MEODP
-#define BUFF_COUNT      11
+#define BUFF_LAST       BUFF_REAPER
+#define BUFF_COUNT      13
 
 string Buffs_TypeToName(float);
 float Buffs_NameToType(string);

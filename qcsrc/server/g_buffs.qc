@@ -690,6 +690,38 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
         e.buffs_arc_hit = FALSE;
 }
 
+void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathtype) {
+    if(!damage)
+        return;
+
+    if(!DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE))
+        return;
+
+    if(!Buffs_BuffPower(attacker, BUFF_FOCUS))
+        return;
+
+    attacker.campingrifle_bulletcounter = attacker.campingrifle_bulletcounter +
+        if(damage >= targ.health + targ.armorvalue)
+            CVAR(g_buffs_focus_bonus_kill)
+        else if(deathtype & HITTYPE_HEADSHOT)
+            CVAR(g_buffs_focus_bonus_headshot)
+        else
+            CVAR(g_buffs_focus_bonus_hit);
+}
+
+void Buffs_ReaperFrag(entity targ, entity attacker) {
+    if(!Buffs_BuffPower(attacker, BUFF_REAPER) && !Buffs_BuffPower(targ, BUFF_REAPER))
+        return;
+
+    var newbuffs = attacker.buffs | targ.buffs;
+    newbuffs &~= attacker.buffs | BUFF_REAPER;
+
+    if(newbuffs) {
+        Buffs_BuffPickup_Notify(attacker, newbuffs, 0);
+        BUFFS_GIVE(attacker, newbuffs);
+    }
+}
+
 void Buffs_MEODP_Point_Think(void) {
     if(!self.owner || wasfreed(self.owner)) {
         remove(self);
