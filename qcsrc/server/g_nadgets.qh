@@ -150,8 +150,9 @@ float hg_context_isalt;
 float hg_context_isaltintended;
 
 .vector hg_deferredVel;
-.vector hg_direction;
 .float hg_raze_randelayed;
+.vector hg_maxVelocity;
+.vector hg_minVelocity;
 
 #define hg_type hg_type1
 
