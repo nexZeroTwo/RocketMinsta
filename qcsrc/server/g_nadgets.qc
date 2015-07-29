@@ -1018,32 +1018,27 @@ void HG_Grenade_Think() {
         }
     }
 
-	if(self.hg_type == HG_RAZE) {	
-		if(time < (self.spawntime + CVAR(g_nadgets_raze_movement_delay))){
+	if(self.hg_type == HG_RAZE) {
+        if(time < (self.spawntime + GV("movement_delay"))){
 		}
 		else{
 			if not(self.hg_raze_randelayed){
-				self.movetype = CVAR(g_nadgets_raze_delayed_movetype);
+				self.movetype = GV("delayed_movetype");
                 if(CVAR(g_nadgets_raze_speedscale)){                  
                     self.velocity = self.hg_minVelocity;
                 } else {
                     self.velocity = self.hg_deferredVel;
                 }
-                //if(self.velocity_z > 0)
-                //    self.velocity_z = 0.0;
                 self.hg_raze_randelayed = 1;
 			}
 			else{
                 if(CVAR(g_nadgets_raze_speedscale)){
-                    float speedscale = (time - self.spawntime) / CVAR(g_nadgets_raze_speedscale_time);
+                    float speedscale = (time - self.spawntime) / GV("speedscale_time");
                     speedscale = bound(0, speedscale, 1);
                     vector veldiff = self.hg_maxVelocity - self.hg_minVelocity;
-                    //bprint("veldiff BEFORE scale: ", vtos(veldiff), "\n");
                     veldiff = veldiff * speedscale;
-                    //bprint("veldiff AFTER scale: ", vtos(veldiff), "\n");
-                    self.velocity = self.hg_minVelocity + veldiff;
-                    //bprint("vel: ", vtos(self.velocity), " minvel: ", vtos(self.hg_minVelocity), "\n");
-                    
+                    self.velocity_x = self.hg_minVelocity_x + veldiff_x;
+                    self.velocity_y = self.hg_minVelocity_y + veldiff_y;
                 }
 			}
 		}
@@ -1775,8 +1770,6 @@ string HG_TypeToAttackSound(float hgtype) {
 }
 
 entity HG_SetSpeedScale(entity gren, vector wsd, float minspd, float maxspd, vector up, float upspd){
-    if(gren.hg_type == HG_RAZE)
-        wsd_z = 0.0;
     gren.hg_minVelocity = wsd * minspd + up * upspd;
     gren.hg_maxVelocity = wsd * maxspd + up * upspd;
     return gren;
@@ -1789,7 +1782,6 @@ entity HG_GetLaunchSpeed(entity gren, vector wsd, float spd, float mspd, float m
         gren.velocity = wsd * spd + up * upspd;
     }
     if(gren.hg_type == HG_RAZE){
-        wsd_z = 0.0;
         gren.hg_deferredVel = wsd * mvspd + up * upspd;
     }
     return gren;
@@ -1928,10 +1920,6 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren = HG_GetLaunchSpeed(gren, w_shotdir, spd, mspd, GV("movement_speed"), GV("launchspeed"), v_up, upspd, self.hg_power);
     if(GV("speedscale"))
         gren = HG_SetSpeedScale(entity gren, w_shotdir, GV("speedscale_minspeed"), GV("speedscale_maxspeed"), v_up, upspd);
-//    if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
-//        gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
-//    } else
-//        gren.velocity = w_shotdir * spd + v_up * upspd;
     
     W_SetupProjectileVelocity(gren);
     
