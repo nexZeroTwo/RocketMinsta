@@ -2950,9 +2950,6 @@ float GameTypeVote_MapIDMask()
 	}
 	if (!mask)
 		mask = gametype_ID_to_MapID(game);
-	if(CVAR(g_domination_always_available))
-	if(mask & MAPINFO_TYPE_DOMINATION)
-		mask |= MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF;
 	return mask;
 }
 

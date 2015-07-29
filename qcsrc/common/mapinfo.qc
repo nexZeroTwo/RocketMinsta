@@ -862,6 +862,18 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 			*/
 		}
 #endif
+#define MAPINFO_TYPE_FIGHT (MAPINFO_TYPE_CTF | MAPINFO_TYPE_JAILBREAK | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_CLANARENA | MAPINFO_TYPE_KEYHUNT | MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_ARENA | MAPINFO_TYPE_LMS | MAPINFO_TYPE_RUNEMATCH)
+	if(CVAR(g_domination_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_DOMINATION;
+	if(CVAR(g_dm_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_DEATHMATCH;
+	if(CVAR(g_tdm_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_TEAM_DEATHMATCH;
+	if(CVAR(g_keyhunt_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_KEYHUNT;
+	if(CVAR(g_clanarena_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CLANARENA;
+#undef MAPINFO_TYPE_FIGHT
 	MapInfo_Cache_Store();
 	if(MapInfo_Map_supportedGametypes != 0)
 		return r;

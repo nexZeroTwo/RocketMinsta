@@ -3262,16 +3262,6 @@ float CountAFKClients()
     return r;
 }
 
-// Chaiomanot Feb 15 2012: game type disabling improved to support all
-//    game types, not just ctf. also, ctf-blacklist bloat has been removed
-float GameTypeFilter_Allowed (string map, string gametype)
-{
-	if(CVAR(g_domination_always_available))
-	if(gametype_Name_to_MapID(gametype) == MAPINFO_TYPE_DOMINATION)
-		return MapInfo_CheckMap(map, MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_CTF);
-	return MapInfo_CheckMap(map, gametype_Name_to_MapID(gametype));
-}
-
 float Banning_IsNameBanned (string name)
 {
 	return stof (db_get (ServerProgsDB, strcat ("nickbanned/", name)));
