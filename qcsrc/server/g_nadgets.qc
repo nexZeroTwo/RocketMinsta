@@ -1827,7 +1827,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         hitmaxs = ' 8  4  3';
     }
     
-    makevectors(self.v_angle);
+    makevectors(self.(if(hgtype == HG_RAZE) angles else v_angle));
     W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, if(silent) "" else HG_TypeToAttackSound(hgtype), -1);
     pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
     
