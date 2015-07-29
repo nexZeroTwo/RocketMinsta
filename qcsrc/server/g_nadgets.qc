@@ -1044,13 +1044,12 @@ void HG_Grenade_Think() {
 				self.velocity = self.hg_deferredVel;
                 if(self.velocity_z > 0)
 					self.velocity_z = 0.0;
-                //self.flags &~= FL_ONGROUND;
-				UpdateCSQCProjectile(self);
 				self.hg_raze_randelayed = 1;
 			}
 			else{
 			}
 		}
+        UpdateCSQCProjectile(self);
 	}
     
     HG_Grenade_Waypoint();
@@ -1938,7 +1937,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     Buffs_MEODP_Point_Attach(gren, HG_GenericProjectile_MEODP_Death);
     
-    CSQCProjectile(gren, TRUE, HG_TypeToCSQCProjType(hgtype), TRUE);
+    CSQCProjectile(gren, hgtype != HG_RAZE, HG_TypeToCSQCProjType(hgtype), TRUE);
     
     if(hgtype == HG_NAPALM && self.hg_power == 1 && GV("launch_fullforce_explodes_in_yo_face"))
         Damage(self, self, self, GV("kamikaze_damage") * Buffs_NadgetPower(self), HG_NAPALM, self.origin, '0 0 0');
