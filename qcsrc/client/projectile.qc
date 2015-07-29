@@ -54,6 +54,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
+            case PROJECTILE_HG_RAZE:
             case PROJECTILE_HEAL_PARTICLE_EMITTER:
                 break;
 			default:
@@ -110,7 +111,7 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC: case PROJECTILE_FLAK_BOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-        case PROJECTILE_HG_PLASMA:
+        case PROJECTILE_HG_PLASMA: case PROJECTILE_HG_RAZE:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
             break;
         case PROJECTILE_HG_LASER:
@@ -203,6 +204,9 @@ void Projectile_Draw()
 	else
 	{
 		InterpolateOrigin_Do();
+
+        if(self.cnt == PROJECTILE_HG_RAZE)
+            self.angles_x = -90;
 	}
 
 	if(self.count & 0x80)
@@ -216,7 +220,7 @@ void Projectile_Draw()
 		t = time;
 	}
 
-	if(!(f & FL_ONGROUND))
+	if(!(f & FL_ONGROUND) || self.cnt == PROJECTILE_HG_RAZE)
 	{
 		rot = '0 0 0';
 		switch(self.cnt)
@@ -239,6 +243,9 @@ void Projectile_Draw()
 				break;
             case PROJECTILE_HG_TRANSLOC:
                 rot = '700 643 721';
+                break;
+            case PROJECTILE_HG_RAZE:
+                rot = '0 0 1500';
                 break;
 			default:
 				break;
@@ -445,6 +452,10 @@ void Ent_Projectile()
                 setmodel(self, "models/ebomb.mdl");
                 self.skin = TeamColorSkin(self.team);
                 break;
+            case PROJECTILE_HG_RAZE:
+                setmodel(self, "models/raze.md3");
+                self.skin = TeamColorSkin(self.team);
+                break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -457,7 +468,6 @@ void Ent_Projectile()
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
-			case PROJECTILE_HG_RAZE: setmodel(self, "models/grenademodel.md3"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -593,7 +603,8 @@ void Projectile_Precache()
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
     precache_model("models/hg_transloc.md3");
-	precache_model("models/sphere/sphere.md3");
+    precache_model("models/raze.md3");
+    precache_model("models/sphere/sphere.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");

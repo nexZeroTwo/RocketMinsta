@@ -604,10 +604,7 @@ void HG_Grenade_Touch() {
     PROJECTILE_SKIPNONSOLID
     if(SUB_OwnerCheck())
         return;
-	
-	if(self.hg_type == HG_RAZE)
-		return;
-    
+
     if(SUB_NoImpactCheck()) {
         if(self.hg_type == HG_TRANSLOC) {
             if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
@@ -1800,7 +1797,10 @@ void HG_GenericProjectile_MEODP_Death(entity attacker, entity inflictor) {
 entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     vector hitmins, hitmaxs;
     
-    if(g_nadgets_oldhitboxes) {
+    if(hgtype == HG_RAZE) {
+        hitmins = '-16 -16 -3';
+        hitmaxs = ' 16  16  3';
+    } else if(g_nadgets_oldhitboxes) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {
