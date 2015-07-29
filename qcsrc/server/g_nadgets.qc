@@ -2721,7 +2721,7 @@ void HG_PlayerSpawn()
     
     if(CVAR(g_nadgets_resetonrespawn))
         HG_ResetState(self);
-        
+
     self.hg_shield = 0;
     HG_UpdateDetonables();
 }
@@ -2745,15 +2745,19 @@ void HG_PlayerJoin() {
     HG_UpdateDetonables();
 }
 
+void HG_WriteNadgetSelect(void) {
+    msg_entity = self;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_NADGETSELECT);
+    WriteString(MSG_ONE, CVAR_STR(g_nadgets_type_selectable));
+}
+
 float HG_ShowMenu(float always) {
-    if(self.hg_type1_picked && self.BUTTON_CHAT)
+    if((self.hg_type1_picked && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
     if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked))) {
-        if(g_nadgets_double)
-            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect2\n"));
-        else
-            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
+        HG_WriteNadgetSelect();
         return TRUE;
     }
     
