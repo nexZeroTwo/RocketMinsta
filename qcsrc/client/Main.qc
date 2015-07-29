@@ -562,7 +562,7 @@ void PostInit(void)
 	Porto_Init();
 	TrueAim_Init();
 
-	MapInfo_Get_ByName(shortmapname, 0, 0);
+	MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
 	
     // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
     float cfgver = CVAR(rm_initialized);

@@ -266,7 +266,7 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_RUNEMATCH:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_LMS:              return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_ARENA:            return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_KEYHUNT:          return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_KEYHUNT:          return MAPINFO_TYPE_KEYHUNT;
 		case GAME_ASSAULT:          return MAPINFO_TYPE_ASSAULT;
 		case GAME_ONSLAUGHT:        return MAPINFO_TYPE_ONSLAUGHT;
 		case GAME_RACE:             return MAPINFO_TYPE_RACE;
@@ -278,7 +278,7 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_PRECIOUS:         return MAPINFO_TYPE_DEATHMATCH;
 //		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
-        case GAME_CLANARENA:        return MAPINFO_TYPE_DEATHMATCH;
+        case GAME_CLANARENA:        return MAPINFO_TYPE_CLANARENA;
 		case GAME_NOTHING:          return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_ALL:              return MAPINFO_TYPE_ALL;
 		default:                    return 0;

@@ -179,7 +179,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
 				return FALSE;
 			}
-			else if (! GameTypeFilter_Allowed (argv (1), s))
+			else if (!MapInfo_CheckMap(argv(1), gametype_Name_to_MapID(s)))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName (s), " is not allowed on the selected map\n"));
 				return FALSE;
@@ -204,7 +204,7 @@ float RemapVote(string vote, string cmd, entity e)
 		}
 		else
 		{
-			if (! GameTypeFilter_Allowed (argv (1), gametype_ID_to_Name(game)))
+			if (!MapInfo_CheckMap(argv(1), gametype_ID_to_MapID(game)))
 			{
 				// Moved from ValidateMap
 				sprint (e, strcat ("^1", gametype_ID_to_LongName(game), " is not allowed on the selected map\n"));
@@ -398,7 +398,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			// Let's give this another shot
-			if (! GameTypeFilter_Allowed(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, s))
+			if (!MapInfo_CheckMap(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, gametype_Name_to_MapID(s)))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
@@ -853,22 +853,11 @@ string ValidateMap(string m, entity e)
 			print_to(e, "This server does not allow for recent maps to be played again. Please be patient for some rounds.");
 			return string_null;
 		}
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 	{
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
 		return string_null;
 	}
-
-/*
-//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (gametype_ID_to_MapID(game))))
-	if (! GameTypeFilter_Allowed (m, gametype_ID_to_Name(game)))
-	{
-		print_to (e, strcat ("^2Invalid mode ^1", gametype_ID_to_LongName(game), " ^2for map ^1", m));
-		return string_null;
-	}
-	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't
-*/
-
 	return m;
 }
 

@@ -778,7 +778,7 @@ void get_mi_min_max(float mode)
 
 	mi_min = mi;
 	mi_max = ma;
-	MapInfo_Get_ByName(mi_shortname, 0, 0);
+	MapInfo_Get_ByName(mi_shortname, 0, 0, 0);
 	if(MapInfo_Map_mins_x < MapInfo_Map_maxs_x)
 	{
 		mi_min = MapInfo_Map_mins;
