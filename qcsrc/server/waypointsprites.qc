@@ -421,10 +421,22 @@ entity WaypointSprite_DeployFixed(
 .entity waypointsprite_deployed_personal;
 entity WaypointSprite_DeployPersonal(
 	string spr,
-	vector ofs
+	vector ofs,
+    float lifetime
 )
 {
-	return WaypointSprite_Spawn(spr, 0, 0, world, ofs, world, 0, self, waypointsprite_deployed_personal, FALSE);
+	return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, 0, self, waypointsprite_deployed_personal, FALSE);
+}
+
+entity WaypointSprite_DeployTeam(
+    string spr,
+    vector ofs,
+    float lifetime
+)
+{
+    if(!teams_matter)
+        return WaypointSprite_DeployPersonal(spr, ofs, lifetime);
+    return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, self.team, self, waypointsprite_deployed_personal, FALSE);
 }
 
 .entity waypointsprite_attached;

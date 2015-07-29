@@ -763,6 +763,9 @@ float autocvar_g_buffs_wrath_hgcooldown;
 float autocvar_g_buffs_wrath_hgpower;
 float autocvar_g_buffs_wrath_hgregen;
 float autocvar_g_buffs_wrath_hgregen_damagepause;
+float autocvar_g_buffs_focus_bonus_hit;
+float autocvar_g_buffs_focus_bonus_headshot;
+float autocvar_g_buffs_focus_bonus_kill;
 float autocvar_g_bugrigs;
 float autocvar_g_bugrigs_accel;
 float autocvar_g_bugrigs_air_steering;
@@ -2122,5 +2125,7 @@ float autocvar_welcome_message_time;
 float autocvar_sv_silence;
 float autocvar_sv_gameeventhooks;
 string autocvar_sv_rpn_autoload;
+float autocvar_g_waypointsprite_allow_custom_team_waypoints;
+float autocvar_g_waypointsprite_custom_team_waypoint_lifetime;
 
 #endif

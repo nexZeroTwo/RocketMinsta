@@ -37,6 +37,7 @@ void Zapper_Draw(void) {
     self.zapper_end = self.origin;
 
     float me = ID_ME;
+    float truezapper;
 
     start = self.zapper_start;
     if(self.sv_entnum == me) if(!CVAR(chase_active)) {
@@ -46,8 +47,12 @@ void Zapper_Draw(void) {
 
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
-    vector end1 = self.zapper_end;
-    vector end2 = self.zapper_end + self.zapper_offs * 70;
+    vector end1;
+    if(self.sv_entnum == me && (truezapper = CVAR(cl_truezapper)) > 0) {
+        end1 = (view_origin + view_forward * (vlen(self.zapper_start - self.zapper_end))) * truezapper + (1 - truezapper) * self.zapper_end;
+    } else
+        end1 = self.zapper_end;
+    vector end2 = end1 + self.zapper_offs * 70;
     vector d = end2 - start;
     float maxlen = vlen(end1 - start);
 
@@ -61,7 +66,7 @@ void Zapper_Draw(void) {
     
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
 
-    if(self.sv_entnum) {
+    if(self.sv_entnum && !fps_friendly) {
         vectorvectors(normalize(d));
         vector rgb2 = GetTeamRGB(self.team);
         vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
@@ -205,7 +210,7 @@ void Zapper_ReadLightning(void) {
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
 
-    if(CVAR(cl_effects_lightningarc_simple)) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
