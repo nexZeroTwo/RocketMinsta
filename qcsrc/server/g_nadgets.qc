@@ -1029,8 +1029,6 @@ void HG_Grenade_Think() {
                 } else {
                     self.velocity = self.hg_deferredVel;
                 }
-                //if(self.velocity_z > 0)
-                //    self.velocity_z = 0.0;
                 self.hg_raze_randelayed = 1;
 			}
 			else{
@@ -1038,11 +1036,11 @@ void HG_Grenade_Think() {
                     float speedscale = (time - self.spawntime) / CVAR(g_nadgets_raze_speedscale_time);
                     speedscale = bound(0, speedscale, 1);
                     vector veldiff = self.hg_maxVelocity - self.hg_minVelocity;
-                    //bprint("veldiff BEFORE scale: ", vtos(veldiff), "\n");
                     veldiff = veldiff * speedscale;
-                    //bprint("veldiff AFTER scale: ", vtos(veldiff), "\n");
-                    self.velocity = self.hg_minVelocity + veldiff;
-                    //bprint("vel: ", vtos(self.velocity), " minvel: ", vtos(self.hg_minVelocity), "\n");
+                    self.velocity_x = self.hg_minVelocity_x + veldiff_x;
+                    self.velocity_y = self.hg_minVelocity_y + veldiff_y;
+                    //self.velocity = self.hg_minVelocity + veldiff;
+                    
                     
                 }
 			}
@@ -1775,8 +1773,6 @@ string HG_TypeToAttackSound(float hgtype) {
 }
 
 entity HG_SetSpeedScale(entity gren, vector wsd, float minspd, float maxspd, vector up, float upspd){
-    if(gren.hg_type == HG_RAZE)
-        wsd_z = 0.0;
     gren.hg_minVelocity = wsd * minspd + up * upspd;
     gren.hg_maxVelocity = wsd * maxspd + up * upspd;
     return gren;
@@ -1789,7 +1785,6 @@ entity HG_GetLaunchSpeed(entity gren, vector wsd, float spd, float mspd, float m
         gren.velocity = wsd * spd + up * upspd;
     }
     if(gren.hg_type == HG_RAZE){
-        wsd_z = 0.0;
         gren.hg_deferredVel = wsd * mvspd + up * upspd;
     }
     return gren;
