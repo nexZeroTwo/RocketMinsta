@@ -69,7 +69,7 @@ void LightingArc_Full(vector from, vector to, float seglength, float drifts, flo
 }
 
 void LightingArc_Default(vector from, vector to, float ateam) {
-    if(CVAR(cl_effects_lightningarc_simple)) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;

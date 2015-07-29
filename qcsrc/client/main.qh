@@ -351,3 +351,4 @@ string sbar_selectedplayer_name;
 
 // Needed to know if we should zoom on nex secondary or not
 float g_balance_nex_secondary;
+float fps_friendly;
