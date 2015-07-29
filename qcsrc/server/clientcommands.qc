@@ -537,7 +537,12 @@ void SV_ParseClientCommand(string s) {
         
         if(!g_nadgets)
             return;
-            
+        
+        if(tokens < 2) {
+            HG_ShowMenu(2);
+            return;
+        }
+
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         float term = (self.term_authed && !self.term_used);

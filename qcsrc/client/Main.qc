@@ -766,6 +766,9 @@ void PostInit(void)
     localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
     localcmd("cmd nododging ", CVAR_STR(rm_nododging), "\n");
 	
+    localcmd("alias menu_shownadeselect \"cmd picknade\"\n");
+    localcmd("alias menu_shownadeselect2 \"cmd picknade\"\n");
+
 	if(CVAR(_cl_afkstate))
 		localcmd("cmd afk\n");
 	
@@ -1423,16 +1426,17 @@ void GameCommand(string msg)
 // In the case of mouse input, nPrimary is xdelta, nSecondary is ydelta.
 float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 {
-	local float bSkipKey;
-	bSkipKey = false;
-
 	if(MapVote_InputEvent(bInputType, nPrimary, nSecondary))
-		return true;
+		return TRUE;
+
+    if(NS_InputEvent(bInputType, nPrimary, nSecondary))
+        return TRUE;
 
 	if(menu_visible)
 		if(menu_action(bInputType, nPrimary, nSecondary))
 			return TRUE;
-	return bSkipKey;
+
+	return FALSE;
 }
 
 // END REQUIRED CSQC FUNCTIONS
@@ -2392,6 +2396,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_ELEBLAST:
             Net_ReadEleBlast();
+            return TRUE;
+        case TE_CSQC_NADGETSELECT:
+            Net_ReadNadgetSelect();
             return TRUE;
     }
 
