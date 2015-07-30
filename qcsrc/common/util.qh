@@ -197,6 +197,7 @@ string FormatDamage(float f);
 
 #ifndef SVQC
 string FlagIcon(string cn);
+string firstkeyfor(string cmds);
 #endif
 
 float fexists(string f);

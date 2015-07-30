@@ -771,7 +771,7 @@ void get_mi_min_max(float mode)
 
 	mi_min = mi;
 	mi_max = ma;
-	MapInfo_Get_ByName(mi_shortname, 0, 0);
+	MapInfo_Get_ByName(mi_shortname, 0, 0, 0);
 	if(MapInfo_Map_mins_x < MapInfo_Map_maxs_x)
 	{
 		mi_min = MapInfo_Map_mins;
@@ -1719,6 +1719,23 @@ string FlagIcon(string cn) {
     
     return i;
 }
+
+string firstkeyfor(string cmds) {
+    float i, k;
+    float ncmds = tokenize(cmds), nkeys;
+
+    for(i = 0; i < ncmds; ++i) {
+        nkeys = tokenize(findkeysforcommand(argv(0)));
+        for(k = 0; k < nkeys; ++k)
+            if(stof(argv(k)) >= 0)
+                return keynumtostring(stof(argv(k)));
+
+        ncmds = tokenize(cmds);
+    }
+
+    return argv(0);
+}
+
 #endif
 
 

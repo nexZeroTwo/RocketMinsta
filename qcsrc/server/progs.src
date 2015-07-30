@@ -71,6 +71,7 @@ joinqueue.qh
 radio.qh
 g_subs.qh
 w_zapper.qh
+g_world.qh
 
 ../common/util.qc
 scores_rules.qc

@@ -885,6 +885,7 @@ void CSQC_UpdateView(float w, float h)
 	}
 	
 	DPRM_Draw2D();
+    NS_Draw();
 	
 	if(NextFrameCommand)
 	{

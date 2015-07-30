@@ -45,22 +45,6 @@ void selectionUpdatedNexuizNadeMenuDoubleDialog(entity me) {
 
 }
 
-string firstkeyfor(string cmds) {
-    float i, k;
-    float ncmds = tokenize(cmds), nkeys;
-
-    for(i = 0; i < ncmds; ++i) {
-        nkeys = tokenize(findkeysforcommand(argv(0)));
-        for(k = 0; k < nkeys; ++k)
-            if(stof(argv(k)) >= 0)
-                return keynumtostring(stof(argv(k)));
-
-        ncmds = tokenize(cmds);
-    }
-
-    return argv(0);
-}
-
 void fillNexuizNadeMenuDoubleDialog(entity me)
 {
     entity e;

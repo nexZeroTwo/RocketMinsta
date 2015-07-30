@@ -537,7 +537,12 @@ void SV_ParseClientCommand(string s) {
         
         if(!g_nadgets)
             return;
-            
+        
+        if(tokens < 2) {
+            HG_ShowMenu(2);
+            return;
+        }
+
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         float term = (self.term_authed && !self.term_used);
@@ -1060,6 +1065,68 @@ void SV_ParseClientCommand(string s) {
             DamageTracker_Print(k, self);
         else
             sprint(self, "^1Usage: cmd dmgstats player_id\n");
+        return;
+    } else if(cmd == "waypoint") {
+        var action = argv(1);
+
+        if(action == "clear") {
+            if(self.waypointsprite_deployed_personal)
+                WaypointSprite_Disown(self.waypointsprite_deployed_personal, waypointsprite_deadlifetime);
+            return;
+        }
+
+        if(action != "team" && action != "me")
+            goto wp_usage;
+
+        if(!CVAR(g_waypointsprite_allow_custom_team_waypoints) && action == "team") {
+            sprint(self, "^1Custom team waypoints are not allowed on this server\n");
+            return;
+        }
+
+        var loc = argv(2);
+        if(loc != "origin" && loc != "crosshair")
+            goto wp_usage;
+
+        var text = argv(3);
+        if(!text)
+            goto wp_usage;
+
+        var clr = stov(argv(4));
+        if(!clr)
+            clr = '1 1 1';
+
+        var wp = switch(action) {
+            default: case "me"   : WaypointSprite_DeployPersonal,
+                     case "team" : WaypointSprite_DeployTeam
+        } (text,
+            if(loc == "origin")
+                self.origin
+            else
+                self.cursor_trace_endpos,
+
+            {
+                var lt = max(0, stof(argv(5)));
+
+                if(action == "team") {
+                    var lim = CVAR(g_waypointsprite_custom_team_waypoint_lifetime);
+
+                    if(lim > 0) {
+                        if(!lt)
+                            lt = lim;
+                        lt = min(lt, lim);
+                    }
+                }
+
+                lt;
+            }
+        );
+
+        WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, clr);
+        WaypointSprite_UpdateTextColors(wp, clr, '0 0 0', '0 0 0');
+        return;
+
+:wp_usage
+        sprint(self, "^1Usage: waypoint (me|team|clear) (origin|crosshair) text [color] [lifetime]\n");
         return;
 	} else {
 		//if(ctf_clientcommand())

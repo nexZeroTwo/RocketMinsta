@@ -560,8 +560,6 @@ void HG_Grenade_RadiusDamage() {
     }
 
     dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
-    
-    dmgmod *= pow(GV("damage_bouncemultiplier"), GV("bouncelimit") - self.cnt);
 
     RadiusDamage(self, self.owner,
                        GV("damage") * p * dmgmod,
@@ -910,25 +908,17 @@ void HG_RemoveAll(entity plr) {
     if(!g_nadgets)
         return;
     
-    for(n = world; (n = find(n, classname, "hg_grenade"));)
-        if(n.owner == plr)
+    for(n = world; (n = findfilter(n, inline float(entity e) {
+        var c = e.classname;
+        return (c == "hg_grenade")  ||
+               (c == "hg_plasma")   ||
+               (c == "hg_napalm")   ||
+               (c == "hg_linker")   ||
+               (c == "hg_sentry");
+    }));) {
+        if((n.realowner && n.realowner == plr) || n.owner == plr)
             HG_Grenade_FadeOut(n);
-    
-    for(n = world; (n = find(n, classname, "hg_plasma"));)
-        if(n.owner == plr)
-            HG_Grenade_FadeOut(n);
-    
-    for(n = world; (n = find(n, classname, "hg_napalm"));)
-        if(n.owner == plr)
-            HG_Grenade_FadeOut(n);
-    
-    for(n = world; (n = find(n, classname, "hg_linker"));)
-        if(n.owner == plr)
-            HG_Grenade_FadeOut(n);
-
-    for(n = world; (n = find(n, classname, "hg_sentry"));)
-        if(n.realowner == plr)
-            HG_Grenade_FadeOut(n);
+    }
 }
 
 void HG_Grenade_Remote_Waypoint_Update(string wpname) {
@@ -2670,7 +2660,7 @@ void HG_PlayerSpawn()
     
     if(CVAR(g_nadgets_resetonrespawn))
         HG_ResetState(self);
-        
+
     self.hg_shield = 0;
     HG_UpdateDetonables();
 }
@@ -2694,15 +2684,19 @@ void HG_PlayerJoin() {
     HG_UpdateDetonables();
 }
 
+void HG_WriteNadgetSelect(void) {
+    msg_entity = self;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_NADGETSELECT);
+    WriteString(MSG_ONE, CVAR_STR(g_nadgets_type_selectable));
+}
+
 float HG_ShowMenu(float always) {
-    if(self.hg_type1_picked && self.BUTTON_CHAT)
+    if((self.hg_type1_picked && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
     if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked))) {
-        if(g_nadgets_double)
-            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect2\n"));
-        else
-            stuffcmd(self, strcat("set _nade_options \"", CVAR_STR(g_nadgets_type_selectable), "\"; menu_cmd update_rmvars; menu_shownadeselect\n"));
+        HG_WriteNadgetSelect();
         return TRUE;
     }
     

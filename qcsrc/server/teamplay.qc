@@ -137,7 +137,7 @@ void InitGameplayMode()
 	world.mins = mi_min;
 	world.maxs = mi_max;
 
-	MapInfo_LoadMapSettings(mapname);
+	MapInfo_LoadMapSettings(mapname, GameTypeVote_MapIDMask());
 	
 	if not(cvar_value_issafe(world.fog))
 	{

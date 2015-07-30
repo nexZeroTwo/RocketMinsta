@@ -547,6 +547,9 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         targ.velocity = targ.velocity + targ.damageforcescale * force;
         targ.flags &~= FL_ONGROUND;
     }
+
+    if(targ.iscreature)
+        Buffs_FocusDamage(targ, healer, heal + aheal, healtype);
     
     return heal + aheal;
 }
