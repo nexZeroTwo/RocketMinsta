@@ -207,7 +207,7 @@ void GotoFirstMap()
 		cvar_set("g_maplist_index", ftos(n - 1)); // jump to map 0 in GotoNextMap
 
 		MapInfo_Enumerate();
-		MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+		MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 
 		if(!DoNextMapOverride())
 			GotoNextMap();
@@ -432,7 +432,7 @@ void spawnfunc___init_dedicated_server(void)
 	self.classname = "worldspawn"; // safeguard against various stuff ;)
 
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
 }
 
 void Map_MarkAsRecent(string m);
@@ -748,7 +748,7 @@ void spawnfunc_worldspawn (void)
 
 	Ban_LoadBans();
 
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 
 	if(whichpack(strcat("maps/", mapname, ".cfg")) != "")
 	{
@@ -847,7 +847,7 @@ void spawnfunc_worldspawn (void)
 	n = tokenize_console(CVAR_STR(g_maplist));
 	for(i = 0, j = 0; i < n; ++i)
 	{
-		if(MapInfo_CheckMap(argv(i)))
+		if(MapInfo_CheckMap(argv(i), GameTypeVote_MapIDMask()))
 		{
 			if(mod(j, 2))
 				col = "^2";
@@ -902,7 +902,7 @@ void spawnfunc_worldspawn (void)
 	
 	if(CVAR_STR(g_maplist) == "") {
 		bprint("Empty maplist: resetting to default.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -1074,7 +1074,7 @@ float Map_Check(float position, float pass)
 			return 0;
 	}
 	filename = Map_Filename(position);
-	if(MapInfo_CheckMap(map_next))
+	if(MapInfo_CheckMap(map_next, GameTypeVote_MapIDMask()))
 	{
 		if(pass == 2)
 			return 1;
@@ -1202,7 +1202,7 @@ void Maplist_Init()
 	if(Map_Count == 0)
 	{
 		bprint( "Maplist is empty!  Resetting it to default map list.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -1271,7 +1271,7 @@ void GotoNextMap()
 			if(allowReset)
 			{
 				bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
-				cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+				cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 				if(CVAR(g_maplist_shuffle))
 					ShuffleMaplist();
 				localcmd("\nmenu_cmd sync\n");
@@ -2340,7 +2340,7 @@ float DoNextMapOverride()
 		return TRUE;
 	}
 	if(CVAR_STR(nextmap) != "")
-		if(MapInfo_CheckMap(CVAR_STR(nextmap)))
+		if(MapInfo_CheckMap(CVAR_STR(nextmap), GameTypeVote_MapIDMask()))
 		{
 			Map_Goto_SetStr(CVAR_STR(nextmap));
 			alreadychangedlevel = TRUE;
@@ -2380,7 +2380,7 @@ string MapVote_Suggest(string m, float ismaster)
 			return "This server does not allow for recent maps to be played again. Please be patient for some rounds.";
     
 
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 		return "The map you suggested does not support the current game mode.";
 	for(i = 0; i < mapvote_suggestion_ptr; ++i)
 		if(mapvote_suggestions[i] == m)
@@ -2424,26 +2424,7 @@ float MapIsPlayable(string map_name)
     if(!ListContains(CVAR_STR(g_maplist), map_name, " "))
         return 0;
     
-	if(!CVAR(sv_vote_gametype))
-		// if gametype voting isn't enabled, the server will stay on the current gametype
-		// so let's hide any map that isn't allowed in the current mode
-		return GameTypeFilter_Allowed(map_name, gametype_ID_to_Name(game));
-	
-	// Multigametype server: we'll hide the map if it supports none of gametypes that can be played
-	local float ret, i, n;
-	local string gtname;
-	
-	n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
-	for(i = 0; i < n; ++i)
-	{
-		gtname = argv(i);
-		ret += (GameTypeVote_AvailabilityStatus_ForMap(gtname, map_name) == GTV_AVAILABLE);
-		
-		// GameTypeVote_AvailabilityStatus_ForMap tokenizes
-		n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
-	}
-	
-	return ret;
+	return MapInfo_CheckMap(map_name, GameTypeVote_MapIDMask());
 }
 
 void MapVote_Spawn();
@@ -2479,7 +2460,7 @@ void MapVote_Init()
 	if(mapvote_count == 0)
 	{
 		bprint( "Maplist contains no single playable map!  Resetting it to default map list.\n" );
-		cvar_set("g_maplist", MapInfo_ListAllowedMaps(MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
+		cvar_set("g_maplist", MapInfo_ListAllowedMaps(GameTypeVote_MapIDMask(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags()));
 		if(CVAR(g_maplist_shuffle))
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
@@ -2868,13 +2849,13 @@ void MapVote_Start()
 		return;
 		
 	MapInfo_Enumerate();
-	if(MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
+	if(MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1))
 		mapvote_run = TRUE;
 }
 
 float GameTypeVote_AvailabilityStatus_ForMap(string gtname, string map_name)
 {
-	if (! GameTypeFilter_Allowed (map_name, gtname))
+	if(!MapInfo_CheckMap(map_name, gametype_Name_to_MapID(gtname)))
 		return GTV_FORBIDDEN;
 	
 	if not(CVAR(sv_vote_gametype_maxmaps))
@@ -2954,6 +2935,24 @@ string GameTypeVote_GetOptions()
 	#endif
 }
 
+float GameTypeVote_MapIDMask()
+{
+	float mask = 0;
+	if (CVAR(sv_vote_gametype)) {
+		string head, tail = strcat(GameTypeVote_GetOptions(), " ");
+		float space_pos = strstrofs(tail, " ", 0);
+		for (head = substring(tail, 0, space_pos); space_pos > 0; space_pos = strstrofs(tail, " ", 0)) {
+			head = substring(tail, 0, space_pos),
+			tail = substring(tail, space_pos + 1, strlen(tail) - space_pos - 1);
+			if (head == "") continue;
+			mask |= gametype_Name_to_MapID(head);
+		}
+	}
+	if (!mask)
+		mask = gametype_ID_to_MapID(game);
+	return mask;
+}
+
 float GameTypeVote_Finished(float pos)
 {
 	if(!gametypevote)
@@ -3029,7 +3028,7 @@ void GameTypeVote_Start()
 
 string GotoMap(string m)
 {
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 		return "The map you chose is not available on this server.";
 	cvar_set("nextmap", m);
 	end_match(1);
@@ -3177,7 +3176,7 @@ void RestoreGame()
 	// Mapinfo
 	MapInfo_Shutdown();
 	MapInfo_Enumerate();
-	MapInfo_FilterGametype(gametype_ID_to_MapID(game), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
+	MapInfo_FilterGametype(GameTypeVote_MapIDMask(), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 1);
 	WeaponStats_Init();
 }
 

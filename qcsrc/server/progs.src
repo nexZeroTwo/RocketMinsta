@@ -64,6 +64,7 @@ irc.qh
 joinqueue.qh
 radio.qh
 g_subs.qh
+g_world.qh
 
 ../common/util.qc
 scores_rules.qc
