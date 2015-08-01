@@ -260,22 +260,22 @@ float gametype_ID_to_MapID (float l_gametype)
 	switch(l_gametype)
 	{
 		case GAME_DEATHMATCH:       return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_TEAM_DEATHMATCH:  return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_TEAM_DEATHMATCH:  return MAPINFO_TYPE_TEAM_DEATHMATCH;
 		case GAME_DOMINATION:       return MAPINFO_TYPE_DOMINATION;
 		case GAME_CTF:              return MAPINFO_TYPE_CTF;
-		case GAME_RUNEMATCH:        return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_LMS:              return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_ARENA:            return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_RUNEMATCH:        return MAPINFO_TYPE_RUNEMATCH;
+		case GAME_LMS:              return MAPINFO_TYPE_LMS;
+		case GAME_ARENA:            return MAPINFO_TYPE_ARENA;
 		case GAME_KEYHUNT:          return MAPINFO_TYPE_KEYHUNT;
 		case GAME_ASSAULT:          return MAPINFO_TYPE_ASSAULT;
 		case GAME_ONSLAUGHT:        return MAPINFO_TYPE_ONSLAUGHT;
 		case GAME_RACE:             return MAPINFO_TYPE_RACE;
 		case GAME_NEXBALL:          return MAPINFO_TYPE_NEXBALL;
 		case GAME_CTS:              return MAPINFO_TYPE_CTS;
-		case GAME_FREEZETAG:        return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_FREEZETAG:        return MAPINFO_TYPE_FREEZETAG;
 		case GAME_TOTAL_DOMINATION: return MAPINFO_TYPE_DOMINATION;
-		case GAME_VIP:              return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_PRECIOUS:         return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_VIP:              return MAPINFO_TYPE_VIP;
+		case GAME_PRECIOUS:         return MAPINFO_TYPE_PRECIOUS;
 //		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
         case GAME_CLANARENA:        return MAPINFO_TYPE_CLANARENA;
@@ -304,6 +304,9 @@ float gametype_MapID_to_ID (float l_maptype)
 		case MAPINFO_TYPE_CTS:             return GAME_CTS;
 		case MAPINFO_TYPE_JAILBREAK:       return GAME_JAILBREAK;
         case MAPINFO_TYPE_CLANARENA:       return GAME_CLANARENA;
+        case MAPINFO_TYPE_FREEZETAG:       return GAME_FREEZETAG;
+        case MAPINFO_TYPE_VIP:             return GAME_VIP;
+        case MAPINFO_TYPE_PRECIOUS:        return GAME_PRECIOUS;
 		case MAPINFO_TYPE_ALL:             return GAME_ALL;
 		default:                           return 0;
 	}
