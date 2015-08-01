@@ -2693,7 +2693,7 @@ float HG_ShowMenu(float always) {
     if((self.hg_type1_picked && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
-    if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked))) {
+    if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked)) && clienttype(self) == CLIENTTYPE_REAL) {
         HG_WriteNadgetSelect();
         return TRUE;
     }
