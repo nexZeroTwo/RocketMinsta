@@ -41,7 +41,7 @@ string autocvar_g_weaponarena;
 float autocvar_menu_advanced;
 float autocvar_menu_mouse_absolute;
 float autocvar_menu_mouse_speed;
-string autocvar_menu_rmskin;
+var string autocvar_menu_rmskin = "default";
 string autocvar_menu_rpn_autoload;
 string autocvar_menu_slist_modfilter;
 float autocvar_menu_slowmo;
