@@ -861,14 +861,14 @@ float bot_presskeys()
 		return FALSE;
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_FORWARD)
-		self.movement_x = cvar("sv_maxspeed");
+		self.movement_x = CVAR(sv_maxspeed);
 	else if(self.bot_cmd_keys & BOT_CMD_KEY_BACKWARD)
-		self.movement_x = -cvar("sv_maxspeed");
+		self.movement_x = -CVAR(sv_maxspeed);
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_RIGHT)
-		self.movement_y = cvar("sv_maxspeed");
+		self.movement_y = CVAR(sv_maxspeed);
 	else if(self.bot_cmd_keys & BOT_CMD_KEY_LEFT)
-		self.movement_y = -cvar("sv_maxspeed");
+		self.movement_y = -CVAR(sv_maxspeed);
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_JUMP)
 		self.BUTTON_JUMP = TRUE;
@@ -1262,7 +1262,7 @@ float bot_execute_commands_once()
 	}
 	else
 	{
-		if(cvar("g_debug_bot_commands"))
+		if(CVAR(g_debug_bot_commands))
 		{
 			local string parms;
 

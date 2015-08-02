@@ -15,7 +15,7 @@ ENDCLASS(NewMenuNadeMenuDialog)
 
 void NadeMenu_Close(entity button, entity me)
 {
-    localcmd("cmd hg_alwaysask ", ftos(cvar("_rm_hg_alwaysask")), "; cmd hg_optout ", ftos(cvar("_rm_hg_optout")), "\n");
+    localcmd("cmd hg_alwaysask ", ftos(CVAR(_rm_hg_alwaysask)), "; cmd hg_optout ", ftos(CVAR(_rm_hg_optout)), "\n");
     me.nadelist.applyChanges(me.nadelist);
     me.close(me);
 }

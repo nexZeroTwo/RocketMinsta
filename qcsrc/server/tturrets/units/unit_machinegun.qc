@@ -9,7 +9,7 @@ void turret_machinegun_attack()
     entity flash;
 
     sound (self, CHAN_WEAPON, "weapons/uzi_fire.wav", VOL_BASE, ATTN_NORM);
-    fireBallisticBullet (self.tur_shotorg, self.tur_shotdir_updated,self.shot_spread, self.shot_speed, 5, self.shot_dmg, 0, self.shot_force, DEATH_TURRET, 0, 1, cvar("g_balance_uzi_bulletconstant"));
+    fireBallisticBullet (self.tur_shotorg, self.tur_shotdir_updated,self.shot_spread, self.shot_speed, 5, self.shot_dmg, 0, self.shot_force, DEATH_TURRET, 0, 1, CVAR(g_balance_uzi_bulletconstant));
     endFireBallisticBullet();
 
     //w_deathtypestring = "had an alergic reaction due to 10 kilos of led";
@@ -36,7 +36,7 @@ void turret_machinegun_std_init()
     self.turrcaps_flags = TFL_TURRCAPS_PLAYERKILL;
     self.aim_flags = TFL_AIM_LEAD;
 
-    if(cvar("g_antilag_bullets"))
+    if(CVAR(g_antilag_bullets))
         self.turrcaps_flags |= TFL_TURRCAPS_HITSCAN;
     else
         self.aim_flags      |= TFL_AIM_SHOTTIMECOMPENSATE;

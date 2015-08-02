@@ -24,7 +24,7 @@ void CheckBox_Click(entity me, entity other)
 }
 string toStringCheckBox(entity me)
 {
-	return strcat(toStringLabel(me), ", ", me.checked ? "checked" : "unchecked");
+	return strcat(toStringLabel(me), ", ", if(me.checked) "checked" else "unchecked");
 }
 void configureCheckBoxCheckBox(entity me, string txt, float sz, string gfx)
 {
@@ -41,7 +41,7 @@ void drawCheckBox(entity me)
 		me.forcePressed = me.checked;
 	}
 	else
-		me.srcSuffix = (me.checked ? "1" : "0");
+		me.srcSuffix = if(me.checked) "1" else "0";
 	drawButton(me);
 	me.pressed = s;
 }

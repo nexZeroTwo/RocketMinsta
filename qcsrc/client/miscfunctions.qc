@@ -10,8 +10,8 @@ entity teams;
  */
 void Announcer_Precache() {
 	//"cl_announcer" does NOT end in a '/' so one must be added for the file paths to work correctly.
-	precache_sound (strcat(cvar_string("cl_announcer"), "/1minuteremains.wav"));
-	precache_sound (strcat(cvar_string("cl_announcer"), "/5minutesremain.wav"));
+	precache_sound (strcat(CVAR_STR(cl_announcer), "/1minuteremains.wav"));
+	precache_sound (strcat(CVAR_STR(cl_announcer), "/5minutesremain.wav"));
     precache_sound ("porto/fire.wav");
 }
 
@@ -70,7 +70,7 @@ void maptimeAnnouncer() {
     timeleft = max(0, timelimit * 60 + getstatf(STAT_GAMESTARTTIME) - time);
 
     //5 minute check
-    if (cvar("cl_sound_maptime_warning") >= 2) {
+    if (CVAR(cl_sound_maptime_warning) >= 2) {
         //make sure that after connect (and e.g. 4 minutes left) we will not get a wrong sound
         if(announcer_5min)
         {
@@ -85,7 +85,7 @@ void maptimeAnnouncer() {
     }
 
     //1 minute check
-    if (cvar("cl_sound_maptime_warning") == 1 || cvar("cl_sound_maptime_warning") == 3) {
+    if (CVAR(cl_sound_maptime_warning) == 1 || CVAR(cl_sound_maptime_warning) == 3) {
     	if (announcer_1min)
     	{
 			if(timeleft > 60)
@@ -205,7 +205,7 @@ entity GetTeam(float Team, float add)
 {
 	float num;
 	entity tm;
-	num = (Team == COLOR_SPECTATOR) ? 16 : Team;
+	num = if(Team == COLOR_SPECTATOR) 16 else Team;
 	if(teamslots[num])
 		return teamslots[num];
 	if not(add)
@@ -241,7 +241,7 @@ float Sbar_GetWidth(float teamcolumnwidth)
 {
 	#ifdef WE_DONT_NEED_TO_GO_WIDER
 	float f;
-	f = cvar("sbar_width");
+	f = CVAR(sbar_width);
 	if(f == 0)
 		f = 640;
 	if(f < 320)
@@ -259,7 +259,7 @@ float PreviewExists(string name)
 	float f;
 	string file;
 
-	if(cvar("cl_readpicture_force"))
+	if(CVAR(cl_readpicture_force))
 		return false;
 
 	file = strcat(name, ".tga");
@@ -436,7 +436,7 @@ void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, floa
 
 void loadfont(string slot, string font)
 {
-	/*if(cvar("rm_dontmesswithfonts"))
+	/*if(CVAR(rm_dontmesswithfonts))
 	{
 		print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
 		return;

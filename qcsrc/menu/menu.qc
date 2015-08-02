@@ -24,14 +24,13 @@ void() m_init =
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
-    
-    localcmd("alias menu_shownadeselect \"menu_cmd directmenu NadeMenu\"\n");
+    registercvar("menu_rpn_autoload", "", CVAR_SAVE);
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
 
 	// list all game dirs (TEST)
-	if(cvar("developer"))
+	if(CVAR(developer))
 	{
 		float i;
 		string s;
@@ -52,8 +51,8 @@ void UpdateConWidthHeight()
 {
     conwidth_s = conwidth;
     conheight_s = conheight;
-    realconwidth = cvar("vid_conwidth");
-    realconheight = cvar("vid_conheight");
+    realconwidth = CVAR(vid_conwidth);
+    realconheight = CVAR(vid_conheight);
     if(realconwidth / realconheight > MENU_ASPECT)
     {
         // widescreen
@@ -104,9 +103,9 @@ void() m_init_delayed =
 	RegisterWeapons();
 
 	fh = -1;
-	if(cvar_string("menu_rmskin") != "")
+	if(CVAR_STR(menu_rmskin) != "")
 	{
-		draw_currentSkin = strcat("gfx/menu/", cvar_string("menu_rmskin"));
+		draw_currentSkin = strcat("gfx/menu/", CVAR_STR(menu_rmskin));
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
 	}
 	if(fh < 0)
@@ -335,8 +334,8 @@ float m_testtooltipbox(vector tooltippos)
 	if(tooltippos_y + menuTooltipSize_y > 1)
 		return FALSE;
 	/*
-	menuTooltipOrigin_x = rint(tooltippos_x * cvar("vid_width")) / cvar("vid_width");
-	menuTooltipOrigin_y = rint(tooltippos_y * cvar("vid_height")) / cvar("vid_height");
+	menuTooltipOrigin_x = rint(tooltippos_x * CVAR(vid_width)) / CVAR(vid_width);
+	menuTooltipOrigin_y = rint(tooltippos_y * CVAR(vid_height)) / CVAR(vid_height);
 	menuTooltipOrigin_z = 0;
 	*/
 	menuTooltipOrigin = tooltippos;
@@ -538,7 +537,7 @@ void() m_draw =
 	float t;
 	float realFrametime;
 
-	menuMouseMode = cvar("menu_mouse_absolute");
+	menuMouseMode = CVAR(menu_mouse_absolute);
 
 	if(main)
 		UpdateConWidthHeight();
@@ -553,7 +552,7 @@ void() m_draw =
 	{
 		menuNotTheFirstFrame = 1;
 		if(Menu_Active)
-		if(!cvar("menu_video_played"))
+		if(!CVAR(menu_video_played))
 		{
 			localcmd("set menu_video_played 1; cd loop $menu_cdtrack; play $cl_announcer/welcome.ogg\n");
 			menuLogoAlpha = -0.8; // no idea why, but when I start this at zero, it jumps instead of fading
@@ -565,7 +564,7 @@ void() m_draw =
 	menuPrevTime = t;
 	time += frametime;
 
-	t = cvar("menu_slowmo");
+	t = CVAR(menu_slowmo);
 	if(t)
 	{
 		frametime *= t;
@@ -576,14 +575,14 @@ void() m_draw =
 
 	if(Menu_Active)
 	{
-		if(getmousetarget() == (menuMouseMode ? MT_CLIENT : MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
-			setkeydest(keyGrabber ? KEY_MENU_GRABBED : KEY_MENU);
+		if(getmousetarget() == (if(menuMouseMode) MT_CLIENT else MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
+			setkeydest(if(keyGrabber) KEY_MENU_GRABBED else KEY_MENU);
 		else
 			m_hide();
 	}
 
-	if(cvar("cl_capturevideo"))
-		frametime = t / cvar("cl_capturevideo_fps"); // make capturevideo work smoothly
+	if(CVAR(cl_capturevideo))
+		frametime = t / CVAR(cl_capturevideo_fps); // make capturevideo work smoothly
 
 	dprint_load();
 	gamestatus = 0;
@@ -591,7 +590,7 @@ void() m_draw =
 		gamestatus = gamestatus | GAME_ISSERVER;
 	if(clientstate() == CS_CONNECTED)
 		gamestatus = gamestatus | GAME_CONNECTED;
-	if(cvar("developer"))
+	if(CVAR(developer))
 		gamestatus = gamestatus | GAME_DEVELOPER;
 
 	prevMenuAlpha = menuAlpha;
@@ -675,7 +674,7 @@ void() m_draw =
 			if(dMouse != '0 0 0')
 			{
 				dMouse = globalToBoxSize(dMouse, draw_scale);
-				menuMousePos += dMouse * cvar("menu_mouse_speed");
+				menuMousePos += dMouse * CVAR(menu_mouse_speed);
 				menuMousePos_x = bound(0, menuMousePos_x, 1);
 				menuMousePos_y = bound(0, menuMousePos_y, 1);
 				if(mouseButtonsPressed)
@@ -713,7 +712,7 @@ void() m_display =
 {
 	Menu_Active = true;
 	setkeydest(KEY_MENU);
-	setmousetarget((menuMouseMode ? MT_CLIENT : MT_MENU));
+	setmousetarget(if(menuMouseMode) MT_CLIENT else MT_MENU);
 
 	if(!menuInitialized)
 		return;
@@ -746,7 +745,7 @@ void() m_toggle =
 	else
 	{
 		if(gamestatus & (GAME_ISSERVER | GAME_CONNECTED))
-		if(!cvar("rm_nogamemenu") && cvar("_rm_server"))
+		if(!CVAR(rm_nogamemenu) && CVAR(_rm_server))
 			m_activate_window(main.gameMenuDialog);
 		m_display();
 	}
@@ -842,6 +841,9 @@ void(string itemname) m_goto =
 	}
 	else
 	{
+        if(itemname == "NadeMenu" && CVAR(_g_nadgets_select_double))
+            itemname = "NadeMenuDouble";
+
 		e = findstring(NULL, name, itemname);
 		if(e)
 		{

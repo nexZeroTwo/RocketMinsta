@@ -306,16 +306,16 @@ void main (void)
 entity _pseudo_bullet;
 
 entity pseudo_bullet(entity forent) {
-    if (!cvar("sv_gameplayfix_shootownentities"))
+    if(_pseudo_bullet)
+        _pseudo_bullet.owner = forent;
+    else
         return forent;
-    if(!_pseudo_bullet)
-        _pseudo_bullet = spawn();
-    _pseudo_bullet.owner = forent;
     return _pseudo_bullet;
 }
 
+#define SKIPNONSOLID_ESCAPE_STEP 0.1
 void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         traceline(start, end, t, forent);
         return;
     }
@@ -329,16 +329,16 @@ void traceline_skipnonsolid(vector start, vector end, float t, entity forent) {
         if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
             break;
         if (trace_endpos == start) {
-            start += normalize(end - start) * 0.01;
-            if (tries == 1) print("Can't escape from nonsolid!\n");
+            start += normalize(end - start) * SKIPNONSOLID_ESCAPE_STEP;
         } else
             start = trace_endpos;
         prev_trace_fract = trace_fraction;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
 }
 
 void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float nomonst, entity forent) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         tracebox(start, mi, ma, end, nomonst, forent);
         return;
     }
@@ -352,16 +352,16 @@ void tracebox_skipnonsolid(vector start, vector mi, vector ma, vector end, float
         if(trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
             break;
         if (trace_endpos == start) {
-            start += normalize(end - start) * 0.01;
-            if (tries == 1) print("Can't escape from nonsolid!\n");
+            start += normalize(end - start) * SKIPNONSOLID_ESCAPE_STEP;
         } else
             start = trace_endpos;
         prev_trace_fract = trace_fraction;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
 }
 
 void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, float toss_count) {
-    if (!cvar("sv_gameplayfix_zerohitcontents")) {
+    if (!CVAR(sv_gameplayfix_zerohitcontents)) {
         vector v0;
         float g0;
         v0 = ent.velocity;
@@ -387,7 +387,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         for (tries = 10; tries > 0; tries--) {
             tracebox(ent.origin, ent.mins, ent.maxs, end, FALSE, ent);
             if (trace_endpos == ent.origin)
-                ent.origin += normalize(ent.velocity) * 0.01;
+                ent.origin += normalize(ent.velocity) * SKIPNONSOLID_ESCAPE_STEP;
             else
                 ent.origin = trace_endpos;
             if(trace_fraction == 1 || trace_ent || !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NONSOLID))
@@ -395,6 +395,7 @@ void tracetoss_skipnonsolid(entity ent, entity ignore, float toss_frametime, flo
         }
         if (trace_fraction < 1) break;
     }
+    if (tries == 0) print("Can't escape from nonsolid!\n");
     ent.velocity = velocity_save;
     ent.avelocity = avelocity_save;
     ent.origin = origin_save;
@@ -463,7 +464,7 @@ void traceline_antilag_force(entity source, vector v1, vector v2, float nomonst,
 
 void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entity forent) {
     float lag;
-    if(cvar("g_antilag") != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -476,7 +477,7 @@ void traceline_antilag(entity source, vector v1, vector v2, float nomonst, entit
 void tracebox_antilag(entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -632,7 +633,7 @@ entity tracerail_antilag_force(entity source, vector start, vector end, float t,
 entity tracerail_antilag(entity source, vector start, vector end, float t, entity forent) {
     float lag;
 
-    if(cvar("g_antilag") != 2)
+    if(CVAR(g_antilag) != 2)
         lag = 0;
     else if(forent.antilag_debug)
         lag = forent.antilag_debug;
@@ -647,7 +648,7 @@ float tracebox_inverted (vector v1, vector mi, vector ma, vector v2, float nomon
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);
@@ -714,7 +715,7 @@ void traceline_inverted (vector v1, vector v2, float nomonsters, entity forent)
 	vector pos, dir, t;
 	float nudge;
 
-	//nudge = 2 * cvar("collision_impactnudge"); // why not?
+	//nudge = 2 * CVAR(collision_impactnudge); // why not?
 	nudge = 0.5;
 
 	dir = normalize(v2 - v1);
@@ -861,9 +862,9 @@ float LOD_customize()
 {
 	float d;
 
-	if(cvar("loddebug"))
+	if(CVAR(loddebug))
 	{
-		d = cvar("loddebug");
+		d = CVAR(loddebug);
 		if(d == 1)
 			self.modelindex = self.lodmodelindex0;
 		else if(d == 2)
@@ -919,7 +920,7 @@ void LODmodel_attach()
 		}
 	}
 
-	if(cvar("loddebug") < 0)
+	if(CVAR(loddebug) < 0)
 	{
 		self.lodmodel1 = self.lodmodel2 = ""; // don't even initialize
 	}

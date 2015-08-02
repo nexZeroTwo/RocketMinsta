@@ -24,9 +24,9 @@ void fillNewMenuEffectsSettingsTab(entity me)
 	float n;
 	me.TR(me);
 	me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Quality preset:"));
-	if(cvar("menu_advanced") > 0){
-		n = 8; //5 + 2 * !!cvar("developer");
-		//if(cvar("developer"))
+	if(CVAR(menu_advanced) > 0){
+		n = 8; //5 + 2 * !!CVAR(developer);
+		//if(CVAR(developer))
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Nasty!", '0 0 0', "exec effects-omg.cfg", 0));
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Ugly", '0 0 0', "exec effects-ugly.cfg", 0));
 		me.TD(me, 1, 4 / n, e = makeNewMenuCommandButton("Low", '0 0 0', "exec effects-low.cfg", 0));
@@ -45,7 +45,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 	}
 
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Geometry detail:"));
 		me.TD(me, 1, 2, e = makeNewMenuTextSlider("r_subdivisions_tolerance"));
@@ -82,7 +82,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 			e.addValue(e, "Good", "1");
 			e.addValue(e, "Best", "0");
 			e.configureNewMenuTextSliderValues(e);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TDempty(me, 0.2);
 			me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(1, "r_picmipworld", "Reduce model texture quality only"));
@@ -98,7 +98,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 			e.addValue(e, "16x", "16");
 			e.configureNewMenuTextSliderValues(e);
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 #ifdef mini_menu
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "cl_particles", "Enable particles"));
@@ -129,7 +129,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 
 	me.gotoRC(me, 2, 3.5); me.setFirstColumn(me, me.currentColumn);
 	me.TD(me, 1, 2, e = makeNewMenuCheckBox(1, "mod_q3bsp_nolightmaps", "Use lightmaps"));
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TD(me, 1, 1.9, e = makeNewMenuCheckBox(0, "r_glsl_deluxemapping", "Deluxe mapping"));
 			setDependentAND(e, "r_glsl", 1, 1, "mod_q3bsp_nolightmaps", 0, 0);
 		me.TD(me, 1, 0.7, e = makeNewMenuCheckBox(0, "r_shadow_gloss", "Gloss"));
@@ -150,7 +150,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 			e.configureNewMenuTextSliderValues(e);
 			setDependentAND(e, "r_glsl", 1, 1, "r_water", 1, 1);
 	me.TR(me);
-		if(cvar("developer"))
+		if(CVAR(developer))
 			me.TD(me, 1, 3, e = makeNewMenuCheckBoxEx(3, 0, "r_showsurfaces", "Show surfaces"));
 	me.TR(me);
 		me.TD(me, 1, 3, e = makeNewMenuRadioButton(1, string_null, string_null, "No dynamic lighting"));
@@ -166,7 +166,7 @@ void fillNewMenuEffectsSettingsTab(entity me)
 		me.TD(me, 1, 2, e = makeNewMenuCheckBox(0, "r_shadow_realtime_world", "Realtime world lighting"));
 		me.TD(me, 1, 1, e = makeNewMenuCheckBox(0, "r_shadow_realtime_world_shadows", "Shadows"));
 			setDependent(e, "r_shadow_realtime_world", 1, 1);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TDempty(me, 0.2);
 			me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "r_shadow_usenormalmap", "Use normal maps"));

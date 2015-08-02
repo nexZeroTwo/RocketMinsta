@@ -59,7 +59,7 @@ void havocbot_role_ft_offense()
 	if (time > self.bot_strategytime)
 	{
 		//self.bot_strategytime = time + autocvar_bot_ai_strategyinterval;
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		
 		navigation_goalrating_start();
 		havocbot_goalrating_items(10000, self.origin, 10000);
@@ -90,7 +90,7 @@ void havocbot_role_ft_freeing()
 	if (time > self.bot_strategytime)
 	{
 		//self.bot_strategytime = time + autocvar_bot_ai_strategyinterval;
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 
 		navigation_goalrating_start();
 		havocbot_goalrating_items(8000, self.origin, 10000);

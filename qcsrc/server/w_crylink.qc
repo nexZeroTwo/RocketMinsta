@@ -11,10 +11,10 @@ string(string format, ...) sprintf = #627;
 // TODO: maybe move them elsewhere and use for the rest of the weapons?
 // Also, this needs a manual update when the autocvars branch is merged.
 
-#define WEP_CVAR(wepname,name) cvar("g_balance_" #wepname "_" #name)
+#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
 #define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
 #define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
-#define WEP_CVAR_BOTH(wepname,isprimary,name) ((isprimary) ? WEP_CVAR_PRI(wepname, name) : WEP_CVAR_SEC(wepname, name))
+#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
 
 #define MAX_DAMAGEEXTRARADIUS 16
 
@@ -23,7 +23,7 @@ void W_Crylink_CheckLinks(entity e)
     float i;
     entity p;
 
-    if not(cvar("developer"))
+    if not(CVAR(developer))
         return;
 
     if(e == world)
@@ -48,7 +48,7 @@ void W_Crylink_Dequeue_Raw(entity own, entity prev, entity me, entity next)
 {
     W_Crylink_CheckLinks(next);
     if(me == own.crylink_lastgroup)
-        own.crylink_lastgroup = ((me == next) ? world : next);
+        own.crylink_lastgroup = if(me == next) world else next;
     if(me == me.crylink_lastgroup)
         prev.crylink_lastgroup = prev;
     prev.queuenext = next;
@@ -245,7 +245,7 @@ float W_Crylink_Touch_WouldHitFriendly(entity projectile, float rad)
         head = head.chain;
     }
 
-    return (hit_enemy ? FALSE : hit_friendly);
+    return if(hit_enemy) FALSE else hit_friendly;
 }
 
 
@@ -424,7 +424,7 @@ void W_Crylink_Attack(void)
 
         proj.flags = FL_PROJECTILE;
     
-        CSQCProjectile(proj, TRUE, (proj.cnt ? PROJECTILE_CRYLINK_BOUNCING : PROJECTILE_CRYLINK), TRUE);
+        CSQCProjectile(proj, TRUE, if(proj.cnt) PROJECTILE_CRYLINK_BOUNCING else PROJECTILE_CRYLINK, TRUE);
 
         other = proj;
     }
@@ -541,7 +541,7 @@ void W_Crylink_Attack2(void)
 
         proj.flags = FL_PROJECTILE;
         
-        CSQCProjectile(proj, TRUE, (proj.cnt ? PROJECTILE_CRYLINK_BOUNCING : PROJECTILE_CRYLINK), TRUE);
+        CSQCProjectile(proj, TRUE, if(proj.cnt) PROJECTILE_CRYLINK_BOUNCING else PROJECTILE_CRYLINK, TRUE);
 
         other = proj;
     }
@@ -564,24 +564,24 @@ float w_crylink(float req)
 	if (req == WR_AIM)
 	{
 		if (random() > 0.15)
-			self.BUTTON_ATCK = bot_aim(cvar("g_balance_crylink_primary_speed"), 0, cvar("g_balance_crylink_primary_middle_lifetime"), FALSE);
+			self.BUTTON_ATCK = bot_aim(CVAR(g_balance_crylink_primary_speed), 0, CVAR(g_balance_crylink_primary_middle_lifetime), FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(cvar("g_balance_crylink_secondary_speed"), 0, cvar("g_balance_crylink_secondary_middle_lifetime"), FALSE);
+			self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_crylink_secondary_speed), 0, CVAR(g_balance_crylink_secondary_middle_lifetime), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
 		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, cvar("g_balance_crylink_primary_refire")))
+		if (weapon_prepareattack(0, CVAR(g_balance_crylink_primary_refire)))
 		{
 			W_Crylink_Attack();
-			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_crylink_primary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_crylink_primary_animtime), w_ready);
 		}
 
 		if (self.BUTTON_ATCK2)
-		if (weapon_prepareattack(1, cvar("g_balance_crylink_secondary_refire")))
+		if (weapon_prepareattack(1, CVAR(g_balance_crylink_secondary_refire)))
 		{
 			W_Crylink_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_crylink_secondary_animtime"), w_ready);
+			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_crylink_secondary_animtime), w_ready);
 		}
 
         if((self.crylink_waitrelease == 1 && !self.BUTTON_ATCK) || (self.crylink_waitrelease == 2 && !self.BUTTON_ATCK2))
@@ -627,8 +627,8 @@ float w_crylink(float req)
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_CRYLINK);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_cells >= cvar("g_balance_crylink_primary_ammo");
+		return self.ammo_cells >= CVAR(g_balance_crylink_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_cells >= cvar("g_balance_crylink_secondary_ammo");
+		return self.ammo_cells >= CVAR(g_balance_crylink_secondary_ammo);
 	return TRUE;
 };

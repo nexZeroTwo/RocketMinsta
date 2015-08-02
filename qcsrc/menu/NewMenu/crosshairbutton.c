@@ -63,8 +63,8 @@ void drawNewMenuCrosshairButton(entity me)
 	vector sz, rgb;
 	float a;
 
-	rgb = eX * cvar("crosshair_color_red") + eY * cvar("crosshair_color_green") + eZ * cvar("crosshair_color_blue");
-	a = cvar("crosshair_color_alpha");
+	rgb = eX * CVAR(crosshair_color_red) + eY * CVAR(crosshair_color_green) + eZ * CVAR(crosshair_color_blue);
+	a = CVAR(crosshair_color_alpha);
 
 	if(!me.checked && !me.focused)
 	{
@@ -76,7 +76,7 @@ void drawNewMenuCrosshairButton(entity me)
 
 	sz = draw_PictureSize(me.src3);
 	sz = globalToBoxSize(sz, draw_scale);
-	sz = sz * cvar("crosshair_size");
+	sz = sz * CVAR(crosshair_size);
 	if(sz_x > 0.95)
 		sz = sz * (0.95 / sz_x);
 	if(sz_y > 0.95)

@@ -1,6 +1,6 @@
 
 void Freeze_Init(void) {
-    if(!teams_matter || g_jailbreak || g_clanarena || (!cvar("g_freeze") && !g_freezetag))
+    if(!teams_matter || g_jailbreak || g_clanarena || (!CVAR(g_freeze) && !g_freezetag))
         return;
     
     g_freeze = TRUE;
@@ -62,10 +62,10 @@ void Freeze_Frame(void) {
         wr = Freeze_CVar("global_warming_minratio");
         
         if(!g_freeze_globalwarming_warned && wr < 1) {
-            r = min(r, (teamcount_playerstotal[0]? teamcount_playersalive[0]/teamcount_playerstotal[0] : 1));
-            r = min(r, (teamcount_playerstotal[1]? teamcount_playersalive[1]/teamcount_playerstotal[1] : 1));
-            r = min(r, (teamcount_playerstotal[2]? teamcount_playersalive[2]/teamcount_playerstotal[2] : 1));
-            r = min(r, (teamcount_playerstotal[3]? teamcount_playersalive[3]/teamcount_playerstotal[3] : 1));
+            r = min(r, if(teamcount_playerstotal[0]) teamcount_playersalive[0]/teamcount_playerstotal[0] else 1);
+            r = min(r, if(teamcount_playerstotal[1]) teamcount_playersalive[1]/teamcount_playerstotal[1] else 1);
+            r = min(r, if(teamcount_playerstotal[2]) teamcount_playersalive[2]/teamcount_playerstotal[2] else 1);
+            r = min(r, if(teamcount_playerstotal[3]) teamcount_playersalive[3]/teamcount_playerstotal[3] else 1);
         } else r = 0;
         
         if(r <= wr) {
@@ -160,6 +160,8 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
     
+    Buffs_MEODP_Point_Detach(plr);
+
     if(!plr.iceblock)
         Freeze_SpawnIceBlock(plr);
         
@@ -202,7 +204,7 @@ void Freeze_UnfreezePlayer(entity plr)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
     if(g_nadgets) {
-        if(cvar("g_nadgets_regen")) {
+        if(CVAR(g_nadgets_regen)) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
@@ -210,6 +212,11 @@ void Freeze_UnfreezePlayer(entity plr)
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
     Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
+
+    entity e;
+    for(;(e = find(e, classname, "grapplinghook"));)
+        if(e.aiment == plr)
+            RemoveGrapplingHook(e.owner);
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -485,7 +492,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         
         FOR_EACH_PLAYER(other)
-            if(time - other.hg_stealthtime >= cvar("g_nadgets_cloak_actiondelay"))
+            if(time - other.hg_stealthtime >= CVAR(g_nadgets_cloak_actiondelay))
             if(self != other && !other.frozen && other.team == self.team)
             if(time - other.revtime >= Freeze_CVar("revive_delay_after_revived"))
             if(time - other.lastdamage >= Freeze_CVar("revive_delay_for_reviver"))
@@ -516,11 +523,11 @@ void Freeze_Hook_PlayerPreThink(void) {
                     
                     float lmod = 1;
                     if(other.hg_shield)
-                        lmod *= cvar("g_nadgets_shield_progressrate");
+                        lmod *= CVAR(g_nadgets_shield_progressrate);
                     
                     float med = Buffs_BuffPower(other, BUFF_MEDIC);
                     if(med)
-                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * med;
+                        lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
                     
                     rmod = max(rmod, lmod);
                 }
@@ -585,23 +592,20 @@ void Freeze_Hook_PlayerPhysics(void) {
             if(Freeze_CVar("movespeed_dependonmelt"))
                 s *= self.revprogress;
             
-            self.movement_x = (
-                (self.movement_x > 0)?
-                    bound( 0, self.movement_x, s)
-                :	bound(-s, self.movement_x, 0)
-            );
+            self.movement_x = if(self.movement_x > 0)
+                bound( 0, self.movement_x, s)
+            else
+                bound(-s, self.movement_x, 0);
             
-            self.movement_y = (
-                (self.movement_y > 0)?
-                    bound( 0, self.movement_y, s)
-                :	bound(-s, self.movement_y, 0)
-            );
+            self.movement_y = if(self.movement_y > 0)
+                bound( 0, self.movement_y, s)
+            else
+                bound(-s, self.movement_y, 0);
             
-            self.movement_z = (
-                (self.movement_z > 0)?
-                    bound( 0, self.movement_z, s)
-                :	bound(-s, self.movement_z, 0)
-            );
+            self.movement_z = if(self.movement_z > 0)
+                bound( 0, self.movement_z, s)
+            else
+                bound(-s, self.movement_z, 0);
         } else
             self.movement = '0 0 0';
         

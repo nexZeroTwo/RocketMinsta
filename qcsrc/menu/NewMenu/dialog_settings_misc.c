@@ -65,7 +65,7 @@ void fillNewMenuMiscSettingsTab(entity me)
 			setDependent(e, "cl_showacceleration", 1, 1);
 	me.TR(me);
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 	me.TR(me);
 		me.TDempty(me, 0.5);
 		me.TD(me, 1, 2, e = makeNewMenuButton("Advanced settings...", '0 0 0'));
@@ -74,7 +74,7 @@ void fillNewMenuMiscSettingsTab(entity me)
 		me.TDempty(me, 0.5);
 	}
 	me.gotoRC(me, me.rows - 1, 0);
-	if(cvar("menu_advanced") > 0)
+	if(CVAR(menu_advanced) > 0)
 		me.TD(me, 1, me.columns, makeNewMenuCommandButton("Switch to Basic Menu"   , '0 0 0', "set menu_advanced 0; menu_restart; togglemenu", COMMANDBUTTON_APPLY));
 	else
 		me.TD(me, 1, me.columns, makeNewMenuCommandButton("Switch to Advanced Menu", '0 0 0', "set menu_advanced 1; menu_restart; togglemenu", COMMANDBUTTON_APPLY));

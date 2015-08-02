@@ -20,7 +20,7 @@ void fillNewMenuMultiplayerDialog(entity me)
 		me.TD(me, 1, 1, mc.makeTabButton(mc, "Demos",   makeNewMenuDemoBrowserTab()));
         me.TD(me, 1, 1, mc.makeTabButton(mc, "Music",   makeNewMenuMusicBrowserTab()));
 		me.TD(me, 1, 1, e = mc.makeTabButton(mc, "Player Setup",  makeNewMenuPlayerSettingsTab()));
-			if(cvar_string("_cl_name") == "Player")
+			if(CVAR_STR(_cl_name) == "Player")
 				e.onClick(e, e.onClickEntity); // lol animation
 
 	me.TR(me);

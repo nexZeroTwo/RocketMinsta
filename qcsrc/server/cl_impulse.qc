@@ -188,7 +188,7 @@ void ImpulseCommands (void)
 		switch(imp)
 		{
 			case 30:
-				wp = WaypointSprite_DeployPersonal("waypoint", self.origin);
+				wp = WaypointSprite_DeployPersonal("waypoint", self.origin, 0);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');
@@ -224,7 +224,7 @@ void ImpulseCommands (void)
 				sprint(self, "personal waypoint spawned at location\n");
 				break;
 			case 31:
-				wp = WaypointSprite_DeployPersonal("waypoint", self.cursor_trace_endpos);
+				wp = WaypointSprite_DeployPersonal("waypoint", self.cursor_trace_endpos, 0);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');
@@ -235,7 +235,7 @@ void ImpulseCommands (void)
 			case 32:
 				if(vlen(self.death_origin))
 				{
-					wp = WaypointSprite_DeployPersonal("waypoint", self.death_origin);
+					wp = WaypointSprite_DeployPersonal("waypoint", self.death_origin, 0);
 					if(wp)
 					{
 						WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');
@@ -381,10 +381,10 @@ void ImpulseCommands (void)
 						self.ammo_fuel = g_pickup_fuel_max;
 						self.health = g_pickup_healthsmall_max;
 						self.armorvalue = g_pickup_armorsmall_max;
-						self.pauserotarmor_finished = time + cvar("g_balance_pause_armor_rot_spawn");
-						self.pauserothealth_finished = time + cvar("g_balance_pause_health_rot_spawn");
-						self.pauserotfuel_finished = time + cvar("g_balance_pause_fuel_rot_spawn");
-						self.pauseregen_finished = time + cvar("g_balance_pause_health_regen_spawn");
+						self.pauserotarmor_finished = time + CVAR(g_balance_pause_armor_rot_spawn);
+						self.pauserothealth_finished = time + CVAR(g_balance_pause_health_rot_spawn);
+						self.pauserotfuel_finished = time + CVAR(g_balance_pause_fuel_rot_spawn);
+						self.pauseregen_finished = time + CVAR(g_balance_pause_health_regen_spawn);
 						// precache weapon models/sounds
 						wep = WEP_FIRST;
 						while (wep <= WEP_LAST)
@@ -425,10 +425,10 @@ void ImpulseCommands (void)
 								self.health = start_health;
 								self.armorvalue = start_armorvalue;
 								self.weapons |= weaponsInMap;
-								self.pauserotarmor_finished = time + cvar("g_balance_pause_armor_rot_spawn");
-								self.pauserothealth_finished = time + cvar("g_balance_pause_health_rot_spawn");
-								self.pauserotfuel_finished = time + cvar("g_balance_pause_fuel_rot_spawn");
-								self.pauseregen_finished = time + cvar("g_balance_pause_health_regen_spawn");
+								self.pauserotarmor_finished = time + CVAR(g_balance_pause_armor_rot_spawn);
+								self.pauserothealth_finished = time + CVAR(g_balance_pause_health_rot_spawn);
+								self.pauserotfuel_finished = time + CVAR(g_balance_pause_fuel_rot_spawn);
+								self.pauseregen_finished = time + CVAR(g_balance_pause_health_regen_spawn);
 								self.strength_finished = 0;
 								self.invincible_finished = 0;
 							}
@@ -457,7 +457,7 @@ void ImpulseCommands (void)
 							sprint(self, "No waypoint set, cheater (use g_waypointsprite_personal to set one)\n");
 						break;
 					case 143:
-						if(MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, ((sv_cheats >= 2) ? 100000 : 100), 1024, 256))
+						if(MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, if(sv_cheats >= 2) 100000 else 100, 1024, 256))
 						{
 							self.angles_x = -self.angles_x;
 							self.fixangle = TRUE;
@@ -524,7 +524,7 @@ void ImpulseCommands (void)
 	}
 	else if(imp >= 103 && imp <= 107)
 	{
-		if(cvar("g_waypointeditor"))
+		if(CVAR(g_waypointeditor))
 		{
 			switch(imp)
 			{

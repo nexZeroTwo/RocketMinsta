@@ -18,7 +18,7 @@ void ScoreRules_basics(float teams, float sprio, float stprio, float score_enabl
 		ScoreInfo_SetLabel_TeamScore  (ST_SCORE,        "score",     stprio);
 
 	if not(independent_players)
-		ScoreInfo_SetLabel_PlayerScore(SP_KILLS,        "kills",     (g_clanarena? SFL_SORT_PRIO_SECONDARY : 0));
+		ScoreInfo_SetLabel_PlayerScore(SP_KILLS,        "kills",     if(g_clanarena) SFL_SORT_PRIO_SECONDARY else 0);
 
 	ScoreInfo_SetLabel_PlayerScore(SP_DEATHS,           "dths",    SFL_LOWER_IS_BETTER);
 
@@ -46,7 +46,7 @@ void ScoreRules_generic()
 	if(teams_matter)
 	{
 		CheckAllowedTeams(world);
-		ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE);
+		ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE);
 	}
 	else
 		ScoreRules_basics(0, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE);
@@ -112,7 +112,7 @@ void ScoreRules_tdom()
 	*/
 	
 	CheckAllowedTeams(world);
-	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
 	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TICKS,    "ticks",     0);
 	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TAKES,    "takes",     0);
 	ScoreRules_basics_end();
@@ -129,13 +129,13 @@ void ScoreRules_dom()
 	float sp_domticks, sp_score;
 	sp_score = sp_domticks = 0;
 	
-	if(cvar("g_domination_disable_frags"))
+	if(CVAR(g_domination_disable_frags))
 		sp_domticks = SFL_SORT_PRIO_PRIMARY;
 	else
 		sp_score = SFL_SORT_PRIO_PRIMARY;
 	
 	CheckAllowedTeams(world);
-	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), sp_score, sp_score, TRUE);
+	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, sp_score, sp_score, TRUE);
 	ScoreInfo_SetLabel_TeamScore  (ST_DOM_TICKS,    "ticks",     sp_domticks);
 	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TICKS,    "ticks",     sp_domticks);
 	ScoreInfo_SetLabel_PlayerScore(SP_DOM_TAKES,    "takes",     0);
@@ -231,7 +231,7 @@ void ScoreRules_nexball(float teams)
 void ScoreRules_freezetag()
 {
 	CheckAllowedTeams(world);
-	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
 	ScoreInfo_SetLabel_PlayerScore(SP_REVIVALS,		"revs",		SFL_SORT_PRIO_SECONDARY);
 	ScoreRules_basics_end();
 }
@@ -242,7 +242,7 @@ void ScoreRules_freezetag()
 void ScoreRules_vip()
 {
 	CheckAllowedTeams(world);
-	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
 	ScoreInfo_SetLabel_PlayerScore(SP_VIP_VIPKILLS,		"vks",		SFL_SORT_PRIO_SECONDARY);
 	ScoreInfo_SetLabel_PlayerScore(SP_VIP_SURVIVALS,	"surv",	0);
 	ScoreRules_basics_end();
@@ -255,7 +255,7 @@ void ScoreRules_vip()
 void ScoreRules_JB()
 {
 	CheckAllowedTeams(world);
-	ScoreRules_basics(((c4>=0) ? 4 : (c3>=0) ? 3 : 2), SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
+	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
 	ScoreInfo_SetLabel_PlayerScore(SP_JB_JBREAKS,		"jbs",		0);
     ScoreInfo_SetLabel_PlayerScore(SP_JB_FREED,		    "freed",		SFL_SORT_PRIO_SECONDARY);
     ScoreInfo_SetLabel_PlayerScore(SP_JB_DEFENSE,		"def",		0);

@@ -1,6 +1,5 @@
 
 void W_Flak_Projectile_Touch(void) {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
 
     if(other.takedamage) {
@@ -8,13 +7,13 @@ void W_Flak_Projectile_Touch(void) {
 
         if(other != self.enemy && (other != self.realowner || self.projectiledeathtype & HITTYPE_BOUNCE)) {
             if(self.projectiledeathtype & HITTYPE_SECONDARY) {
-                bnc = pow(cvar("g_balance_flak_secondary_damage_bouncefactor"), self.cnt);
-                damage = cvar("g_balance_flak_secondary_damage") * bnc;
-                frc = cvar("g_balance_flak_secondary_force") * bnc;
+                bnc = pow(CVAR(g_balance_flak_secondary_damage_bouncefactor), self.cnt);
+                damage = CVAR(g_balance_flak_secondary_damage) * bnc;
+                frc = CVAR(g_balance_flak_secondary_force) * bnc;
             } else {
-                bnc = pow(cvar("g_balance_flak_primary_damage_bouncefactor"), self.cnt);
-                damage = cvar("g_balance_flak_primary_damage") * bnc;
-                frc = cvar("g_balance_flak_primary_force") * bnc;
+                bnc = pow(CVAR(g_balance_flak_primary_damage_bouncefactor), self.cnt);
+                damage = CVAR(g_balance_flak_primary_damage) * bnc;
+                frc = CVAR(g_balance_flak_primary_force) * bnc;
             }
 
             vector force = normalize(NearestPointOnBox(other, self.origin) - self.origin + self.velocity) * frc;
@@ -30,9 +29,9 @@ void W_Flak_Projectile_Touch(void) {
 
         float passThrough;
         if(self.projectiledeathtype & HITTYPE_SECONDARY)
-            passThrough = cvar("g_balance_flak_secondary_passthrough");
+            passThrough = CVAR(g_balance_flak_secondary_passthrough);
         else
-            passThrough = cvar("g_balance_flak_primary_passthrough");
+            passThrough = CVAR(g_balance_flak_primary_passthrough);
 
         if(passThrough <= 0) {
             remove(self);
@@ -103,27 +102,27 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
 }
 
 void W_Flak_Attack1(void) {
-    float pcount = cvar("g_balance_flak_primary_projectiles"), i;
+    float pcount = CVAR(g_balance_flak_primary_projectiles), i;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_shells -= cvar("g_balance_flak_primary_ammo");
+        self.ammo_shells -= CVAR(g_balance_flak_primary_ammo);
 
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire.wav", cvar("g_balance_flak_primary_damage") * pcount);
+    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire.wav", CVAR(g_balance_flak_primary_damage) * pcount);
     w_shotdir = v_forward;
 
     for(i = 0; i < pcount; ++i) {
         vector a = vectoangles(w_shotdir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_primary_spread_up")
-                           + '0 1 0' * crandom() * cvar("g_balance_flak_primary_spread_side"));
+        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_primary_spread_up)
+                           + '0 1 0' * crandom() * CVAR(g_balance_flak_primary_spread_side));
 
         W_Flak_Projectile(self,
-                          cvar("g_balance_flak_primary_damage"),
-                          cvar("g_balance_flak_primary_gravity"),
-                          cvar("g_balance_flak_primary_lifetime"),
-                          cvar("g_balance_flak_primary_speed"),
-                          cvar("g_balance_flak_primary_speed_up"),
-                          cvar("g_balance_flak_primary_bouncefactor"),
+                          CVAR(g_balance_flak_primary_damage),
+                          CVAR(g_balance_flak_primary_gravity),
+                          CVAR(g_balance_flak_primary_lifetime),
+                          CVAR(g_balance_flak_primary_speed),
+                          CVAR(g_balance_flak_primary_speed_up),
+                          CVAR(g_balance_flak_primary_bouncefactor),
                           WEP_FLAK);
     }
 
@@ -136,27 +135,27 @@ void W_Flak_Attack1(void) {
 }
 
 void W_Flak_Attack2(void) {
-    float pcount = cvar("g_balance_flak_secondary_projectiles"), i;
+    float pcount = CVAR(g_balance_flak_secondary_projectiles), i;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_shells -= cvar("g_balance_flak_secondary_ammo");
+        self.ammo_shells -= CVAR(g_balance_flak_secondary_ammo);
 
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", cvar("g_balance_flak_secondary_damage") * pcount);
+    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", CVAR(g_balance_flak_secondary_damage) * pcount);
     w_shotdir = v_forward;
 
     for(i = 0; i < pcount; ++i) {
         vector a = vectoangles(w_shotdir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * cvar("g_balance_flak_secondary_spread_up")
-                           + '0 1 0' * crandom() * cvar("g_balance_flak_secondary_spread_side"));
+        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_secondary_spread_up)
+                           + '0 1 0' * crandom() * CVAR(g_balance_flak_secondary_spread_side));
 
         W_Flak_Projectile(self,
-                          cvar("g_balance_flak_secondary_damage"),
-                          cvar("g_balance_flak_secondary_gravity"),
-                          cvar("g_balance_flak_secondary_lifetime"),
-                          cvar("g_balance_flak_secondary_speed"),
-                          cvar("g_balance_flak_secondary_speed_up"),
-                          cvar("g_balance_flak_secondary_bouncefactor"),
+                          CVAR(g_balance_flak_secondary_damage),
+                          CVAR(g_balance_flak_secondary_gravity),
+                          CVAR(g_balance_flak_secondary_lifetime),
+                          CVAR(g_balance_flak_secondary_speed),
+                          CVAR(g_balance_flak_secondary_speed_up),
+                          CVAR(g_balance_flak_secondary_bouncefactor),
                           WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
     }
 
@@ -180,9 +179,9 @@ void W_Flak_Bomb_Explode(void) {
 
     self.event_damage = SUB_Null;
     self.takedamage = DAMAGE_NO;
-    RadiusDamage(self, self.owner, cvar("g_balance_flak_secondary_bomb_damage"), cvar("g_balance_flak_secondary_bomb_edgedamage"), cvar("g_balance_flak_secondary_bomb_radius"), world, cvar("g_balance_flak_secondary_bomb_force"), self.projectiledeathtype, other);
+    RadiusDamage(self, self.owner, CVAR(g_balance_flak_secondary_bomb_damage), CVAR(g_balance_flak_secondary_bomb_edgedamage), CVAR(g_balance_flak_secondary_bomb_radius), world, CVAR(g_balance_flak_secondary_bomb_force), self.projectiledeathtype, other);
 
-    float i, c = cvar("g_balance_flak_secondary_projectiles");
+    float i, c = CVAR(g_balance_flak_secondary_projectiles);
     w_shotorg = self.origin;
 
     float spread_up, spread_side;
@@ -191,8 +190,8 @@ void W_Flak_Bomb_Explode(void) {
         spread_side = 360;
         spread_up = 360;
     } else {
-        spread_side = cvar("g_balance_flak_secondary_spread_side");
-        spread_up = cvar("g_balance_flak_secondary_spread_up");
+        spread_side = CVAR(g_balance_flak_secondary_spread_side);
+        spread_up = CVAR(g_balance_flak_secondary_spread_up);
     }
 
     for(i = 0; i < c; ++i) {
@@ -202,12 +201,12 @@ void W_Flak_Bomb_Explode(void) {
                            + '0 1 0' * crandom() * spread_side);
 
         entity p = W_Flak_Projectile(self.owner,
-                          cvar("g_balance_flak_secondary_damage"),
-                          cvar("g_balance_flak_secondary_gravity"),
-                          cvar("g_balance_flak_secondary_lifetime"),
-                          cvar("g_balance_flak_secondary_speed"),
-                          cvar("g_balance_flak_secondary_speed_up"),
-                          cvar("g_balance_flak_secondary_bouncefactor"),
+                          CVAR(g_balance_flak_secondary_damage),
+                          CVAR(g_balance_flak_secondary_gravity),
+                          CVAR(g_balance_flak_secondary_lifetime),
+                          CVAR(g_balance_flak_secondary_speed),
+                          CVAR(g_balance_flak_secondary_speed_up),
+                          CVAR(g_balance_flak_secondary_bouncefactor),
                           WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
 
         // do not hit the direct hit entity with shrapnel right away (causes very inconsistent behavior)
@@ -218,7 +217,6 @@ void W_Flak_Bomb_Explode(void) {
 }
 
 void W_Flak_Bomb_Touch(void) {
-    PROJECTILE_SKIPNONSOLID
     PROJECTILE_TOUCH;
     self.use();
 }
@@ -229,33 +227,33 @@ void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float d
 
 void W_Flak_Attack3(void) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO) {
-        self.ammo_shells = self.ammo_shells - cvar("g_balance_flak_secondary_ammo");
-        self.ammo_rockets = self.ammo_rockets - cvar("g_balance_flak_secondary_ammo_rockets");
+        self.ammo_shells = self.ammo_shells - CVAR(g_balance_flak_secondary_ammo);
+        self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_flak_secondary_ammo_rockets);
     }
 
-    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire3.wav", cvar("g_balance_flak_secondary_bomb_damage"));
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire3.wav", CVAR(g_balance_flak_secondary_bomb_damage));
     w_shotdir = v_forward;
 
     entity e = spawn();
     e.owner = self;
     e.classname = "flak_bomb";
     e.bot_dodge = TRUE;
-    e.bot_dodgerating = cvar("g_balance_flak_secondary_bomb_damage");
+    e.bot_dodgerating = CVAR(g_balance_flak_secondary_bomb_damage);
     e.movetype = MOVETYPE_BOUNCE;
     PROJECTILE_MAKETRIGGER(e);
     e.projectiledeathtype = WEP_FLAK | HITTYPE_SECONDARY;
     setsize(e, '0 0 -3', '0 0 -3');
     setorigin(e, w_shotorg);
 
-    e.nextthink = time + cvar("g_balance_flak_secondary_bomb_lifetime");
+    e.nextthink = time + CVAR(g_balance_flak_secondary_bomb_lifetime);
     e.think = adaptor_think2use;
     e.use = W_Flak_Bomb_Explode;
     e.touch = W_Flak_Bomb_Touch;
     e.takedamage = DAMAGE_YES;
-    e.health = cvar("g_balance_flak_secondary_bomb_health");
-    e.damageforcescale = cvar("g_balance_flak_secondary_bomb_damageforcescale");
+    e.health = CVAR(g_balance_flak_secondary_bomb_health);
+    e.damageforcescale = CVAR(g_balance_flak_secondary_bomb_damageforcescale);
     e.event_damage = W_Flak_Bomb_Damage;
-    e.velocity = w_shotdir * cvar("g_balance_flak_secondary_bomb_speed") + v_up * cvar("g_balance_flak_secondary_bomb_speed_up");
+    e.velocity = w_shotdir * CVAR(g_balance_flak_secondary_bomb_speed) + v_up * CVAR(g_balance_flak_secondary_bomb_speed_up);
     W_SetupProjectileVelocity(e);
 
     e.angles = vectoangles(e.velocity);
@@ -270,24 +268,24 @@ void spawnfunc_weapon_flak(void) {
 
 float w_flak(float req) {
     if(req == WR_AIM) {
-        if(random() < 0.35 && cvar("g_balance_flak_secondary_bomb") && self.ammo_rockets >= cvar("g_balance_flak_secondary_ammo_rockets"))
-            self.BUTTON_ATCK2 = bot_aim(cvar("g_balance_flak_secondary_bomb_speed"), cvar("g_balance_flak_secondary_bomb_speed_up"), cvar("g_balance_flak_secondary_bomb_lifetime"), TRUE);
+        if(random() < 0.35 && CVAR(g_balance_flak_secondary_bomb) && self.ammo_rockets >= CVAR(g_balance_flak_secondary_ammo_rockets))
+            self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_flak_secondary_bomb_speed), CVAR(g_balance_flak_secondary_bomb_speed_up), CVAR(g_balance_flak_secondary_bomb_lifetime), TRUE);
         else
-            self.BUTTON_ATCK = bot_aim(cvar("g_balance_flak_primary_speed"), cvar("g_balance_flak_primary_speed_up"), cvar("g_balance_flak_primary_lifetime"), TRUE);
+            self.BUTTON_ATCK = bot_aim(CVAR(g_balance_flak_primary_speed), CVAR(g_balance_flak_primary_speed_up), CVAR(g_balance_flak_primary_lifetime), TRUE);
     } else if(req == WR_THINK) {
         if(self.BUTTON_ATCK)
-        if(weapon_prepareattack(0, cvar("g_balance_flak_primary_refire"))) {
+        if(weapon_prepareattack(0, CVAR(g_balance_flak_primary_refire))) {
             W_Flak_Attack1();
-            weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_flak_primary_animtime"), w_ready);
+            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_flak_primary_animtime), w_ready);
         }
 
         if(self.BUTTON_ATCK2)
-        if(weapon_prepareattack(1, cvar("g_balance_flak_secondary_refire"))) {
-            if(cvar("g_balance_flak_secondary_bomb"))
+        if(weapon_prepareattack(1, CVAR(g_balance_flak_secondary_refire))) {
+            if(CVAR(g_balance_flak_secondary_bomb))
                 W_Flak_Attack3();
             else
                 W_Flak_Attack2();
-            weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_flak_secondary_animtime"), w_ready);
+            weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_flak_secondary_animtime), w_ready);
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/flak_fire.wav");
@@ -299,9 +297,9 @@ float w_flak(float req) {
     } else if(req == WR_SETUP)
         weapon_setup(WEP_FLAK);
     else if(req == WR_CHECKAMMO1)
-        return self.ammo_shells >= cvar("g_balance_flak_primary_ammo");
+        return self.ammo_shells >= CVAR(g_balance_flak_primary_ammo);
     else if(req == WR_CHECKAMMO2)
-        return self.ammo_shells >= cvar("g_balance_flak_secondary_ammo") && self.ammo_rockets >= cvar("g_balance_flak_secondary_ammo_rockets");
+        return self.ammo_shells >= CVAR(g_balance_flak_secondary_ammo) && self.ammo_rockets >= CVAR(g_balance_flak_secondary_ammo_rockets);
 
     return TRUE;
 }

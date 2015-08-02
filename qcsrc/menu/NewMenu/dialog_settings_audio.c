@@ -96,7 +96,7 @@ void fillNewMenuAudioSettingsTab(entity me)
 		setDependentStringNotEqual(s, "volume", "0");
 
 	me.gotoRC(me, 0, 3.5); me.setFirstColumn(me, me.currentColumn);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Frequency:"));
 			me.TD(me, 1, 2, e = makeNewMenuTextSlider("snd_speed"));
 				e.addValue(e, "8 kHz", "8000");
@@ -121,7 +121,7 @@ void fillNewMenuAudioSettingsTab(entity me)
 			e.addValue(e, "6.1", "7");
 			e.addValue(e, "7.1", "8");
 			e.configureNewMenuTextSliderValues(e);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TDempty(me, 0.2);
 			me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_swapstereo", "Swap Stereo"));
@@ -132,7 +132,7 @@ void fillNewMenuAudioSettingsTab(entity me)
 		me.TD(me, 1, 2.8, e = makeNewMenuCheckBox(0, "snd_spatialization_control", "Headphone friendly mode"));
 		setDependent(e, "snd_channels", 1.5, 0.5);
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Spatial voices:"));
 			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "cl_voice_directional", "0", "None"));

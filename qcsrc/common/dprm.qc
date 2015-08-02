@@ -10,7 +10,7 @@ void DPRM_Start() {
 float DPRM_GetVersion() {
     if(!(cvar_type("dprm_version") & CVAR_TYPEFLAG_ENGINE))
         return 0;
-	return cvar("dprm_version");
+	return CVAR(dprm_version);
 }
 
 float DPRM_VersionIsSuitable() {

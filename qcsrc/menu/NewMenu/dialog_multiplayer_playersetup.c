@@ -22,8 +22,8 @@ entity makeNewMenuPlayerSettingsTab()
 }
 void drawNewMenuPlayerSettingsTab(entity me)
 {
-	if(cvar_string("_cl_name") == "Player")
-		me.playerNameLabel.alpha = ((mod(time * 2, 2) < 1) ? 1 : 0);
+	if(CVAR_STR(_cl_name) == "Player")
+		me.playerNameLabel.alpha = if(mod(time * 2, 2) < 1) 1 else 0;
 	else
 		me.playerNameLabel.alpha = me.playerNameLabelAlpha;
 	drawContainer(me);
@@ -67,7 +67,7 @@ void fillNewMenuPlayerSettingsTab(entity me)
 	me.TR(me);
 		r = me.currentRow;
 		m = me.rows - r - 2;
-		n = 16 - !cvar("developer");
+		n = 16 - !CVAR(developer);
 		m = m / (n - 1);
 		for(i = 0; i < n; ++i)
 		{
@@ -141,16 +141,18 @@ void fillNewMenuPlayerSettingsTab(entity me)
 		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Crosshair Blue:"));
 		me.TD(me, 1, 2, e = makeNewMenuSlider(0, 1, 0.01, "crosshair_color_blue"));
 		setDependentOR(e, "crosshair_per_weapon", 0, 0, "crosshair_color_override", 1, 1);
-	if(cvar("menu_advanced") > 0){
-		me.TR(me);
-			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Hit test:"));
-			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "0",    "None"));
-			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "1",    "TrueAim"));
-			me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "1.25", "Enemies"));
-	}
 	me.TR(me);
-		me.TDempty(me, 0.4);
-		me.TD(me, 1, 2.2, e = makeNewMenuButton("Radar, HUD & Waypoints...", '0 0 0'));
+		me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Hit test:"));
+		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "0",    "None"));
+		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "1",    "TrueAim"));
+		me.TD(me, 1, 2/3, e = makeNewMenuRadioButton(1, "crosshair_hittest", "1.25", "Enemies"));
+	me.TR(me);
+		//me.TDempty(me, 0.4);
+		me.TD(me, 1, 1.5, e = makeNewMenuButton("RocketMinsta Options", '0 0 0'));
+			e.onClick = DialogOpenButton_Click;
+			e.onClickEntity = main.rmDialog;
+			setDependent(e, "_rm_server", 1, 1);
+		me.TD(me, 1, 1.5, e = makeNewMenuButton("Radar, HUD & Waypoints", '0 0 0'));
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.radarDialog;
 		me.TDempty(me, 0.5);

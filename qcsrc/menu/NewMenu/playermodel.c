@@ -54,8 +54,8 @@ void loadCvarsNewMenuPlayerModelSelector(entity me)
 		strunzone(me.currentModelTxtName);
 	if(me.currentModelDescription)
 		strunzone(me.currentModelDescription);
-	me.currentSkin = cvar("_cl_playerskin");
-	me.currentModel = strzone(cvar_string("_cl_playermodel"));
+	me.currentSkin = CVAR(_cl_playerskin);
+	me.currentModel = strzone(CVAR_STR(_cl_playermodel));
 	me.currentModelName = string_null;
 	me.currentModelDescription = string_null;
 	me.currentModelTitle = string_null;

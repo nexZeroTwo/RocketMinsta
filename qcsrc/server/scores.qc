@@ -447,10 +447,10 @@ void WinningConditionHelper()
 	entity sk;
 
 	s = gametype_ID_to_Name(game);
-	s = strcat(s, ":", cvar_string("sys_project_version"));
+	s = strcat(s, ":", CVAR_STR(sys_project_version));
 	s = strcat(s, "::", GetPlayerScoreString(world, 2)); // make this 1 once we can
 
-	fullstatus = cvar("g_full_getstatus_responses");
+	fullstatus = CVAR(g_full_getstatus_responses);
 
 	if(teamscores_entities_count)
 	{

@@ -58,12 +58,12 @@ float entcs_cull(entity what, entity forwhom) {
         v1 = what.owner.origin + what.owner.view_ofs;
         v2 = forwhom.origin + forwhom.view_ofs;
 
-        if(cvar("sv_cullentities_pvs")) {
+        if(CVAR(sv_cullentities_pvs)) {
             if(!checkpvs(v1, forwhom))
                 return TRUE;
         }
 
-        if(cvar("sv_cullentities_trace")) {
+        if(CVAR(sv_cullentities_trace)) {
             save_nasty_globals();
 
             makevectors(forwhom.v_angle);
@@ -128,7 +128,7 @@ float entcs_send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        WriteByte(MSG_ENTITY, num_for_edict(o.bait_ref? o.bait_ref : o));
+        WriteByte(MSG_ENTITY, num_for_edict(if(o.bait_ref) o.bait_ref else o));
         WriteByte(MSG_ENTITY, self.owner.bait_ref && self.owner.frozen);
     }
 
@@ -156,7 +156,7 @@ float entcs_send(entity to, float sf) {
 }
 
 void entcs_think(void) {
-    self.nextthink = time + cvar("sv_shownames_update");
+    self.nextthink = time + CVAR(sv_shownames_update);
     
     entity o;
     o = self.owner;

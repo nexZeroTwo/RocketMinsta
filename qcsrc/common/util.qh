@@ -197,10 +197,6 @@ void defer(float fdelay, void() func);
 
 string mmss(float tenths);
 
-#ifdef MENUQC
-float sv_oldfag;		// just to make it compile
-#endif
-
 float TeamColorSkin(float);
 float approach(float v, float t, float d);
 
@@ -211,6 +207,7 @@ string FormatDamage(float f);
 
 #ifndef SVQC
 string FlagIcon(string cn);
+string firstkeyfor(string cmds);
 #endif
 
 float fexists(string f);

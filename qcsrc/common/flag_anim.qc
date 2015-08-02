@@ -11,6 +11,8 @@ float FlagIcon_Animate(string cn) {
         case "29":    return flag_anim_sine(6, 3, 0);
         case "46":    return flag_anim_linear(12, 9, 0);
         case "63":    return flag_anim_linear(8, 6, 0);
+        case "65":    return flag_anim_linear(98, 11.905, 0);
+        case "66":    return flag_anim_linear(17, 8, 0);
     }
     
     return -1;

@@ -24,7 +24,7 @@ entity prec_rune_create ()
     rune.prec_time = 0;
 	rune.event_damage     = prec_rune_damage;
 	rune.takedamage       = DAMAGE_AIM;
-	rune.damageforcescale = cvar("g_prec_rune_damageforcescale");
+	rune.damageforcescale = CVAR(g_prec_rune_damageforcescale);
 	rune.killindicator    = world;
 	rune.killsound	      = 1;
 	rune.bot_pickup          = 1;
@@ -36,7 +36,7 @@ entity prec_rune_create ()
     rune.velocity         = '0 0 200';
 
     // make the rune glow
-	if(cvar("g_prec_rune_glow"))
+	if(CVAR(g_prec_rune_glow))
 	{
 		rune.glow_size  = 256;
 		rune.glow_color = 11;
@@ -50,7 +50,7 @@ entity prec_rune_create ()
 		bprint(strcat("^1Couldn't find a suitable place to spawn ^7", rune.netname, "^1, will try again\n"));
 		// destroy the rune
 		remove(rune);
-		prec_controller.pain_finished = cvar("g_prec_rune_spawn_delay") + 0.1;
+		prec_controller.pain_finished = CVAR(g_prec_rune_spawn_delay) + 0.1;
 		// hand the world to the caller (our safe null substitute)
 		return world;
 	}
@@ -68,7 +68,7 @@ entity prec_rune_create ()
     WaypointSprite_Spawn("pointer_cyan", 0, 0, rune, '0 0 32', world, 0, rune, waypointsprite_attached, 1);
 
     // hand it to the caller, all prepared
-    rune.pain_finished = cvar("g_prec_rune_patience");
+    rune.pain_finished = CVAR(g_prec_rune_patience);
     rune.nextthink = time + 0.1;
     return rune;
 }
@@ -117,8 +117,8 @@ void prec_rune_collect (entity rune, entity player)
 	rune.killsound = 1;
 
 	// give or take the player points for pickup up the rune
-	if(cvar("g_prec_points_rune_collect"))
-		PlayerScore_Add(player, SP_SCORE, cvar("g_prec_points_rune_collect"));
+	if(CVAR(g_prec_points_rune_collect))
+		PlayerScore_Add(player, SP_SCORE, CVAR(g_prec_points_rune_collect));
 	PlayerScore_Add(player, SP_PREC_PICKUPS, 1);
 
     // update it's waypoint
@@ -127,8 +127,11 @@ void prec_rune_collect (entity rune, entity player)
 	
 	player.health = max(player.health, 200);
 	player.armorvalue = max(player.armorvalue, 200);
-	if(g_nadgets)
-		player.hg_ammo = max(player.hg_ammo, cvar("g_nadgets_ammo") * 2);
+	if(g_nadgets) {
+        HG_DO_IN_ALL_CONTEXTS({
+            player.hg_ctx_ammo = max(player.hg_ctx_ammo, CVAR(g_nadgets_ammo) * 2);
+        })
+    }
 }
 
 void prec_rune_drop (entity rune, float deliberate)
@@ -138,8 +141,8 @@ void prec_rune_drop (entity rune, float deliberate)
         return;
 
 	// give or take the player points for dropping the rune
-	if(cvar("g_prec_points_rune_drop"))
-		PlayerScore_Add(rune.owner, SP_SCORE, cvar("g_prec_points_rune_drop"));
+	if(CVAR(g_prec_points_rune_drop))
+		PlayerScore_Add(rune.owner, SP_SCORE, CVAR(g_prec_points_rune_drop));
 
     // announce the rune's availability
     local string drop_msg;
@@ -163,12 +166,12 @@ void prec_rune_drop (entity rune, float deliberate)
     rune.owner.prec_time = time + 2;
 	setattachment(rune, world, "");
     setorigin(rune, rune.owner.origin);
-	rune.velocity = rune.owner.velocity * cvar("g_prec_rune_throwforcescale");
+	rune.velocity = rune.owner.velocity * CVAR(g_prec_rune_throwforcescale);
 	rune.velocity_z = rune.velocity_z + 300;
     rune.solid = SOLID_TRIGGER;
     rune.owner.prec_rune = world;
     rune.owner = world;
-    rune.pain_finished = cvar("g_prec_rune_patience");
+    rune.pain_finished = CVAR(g_prec_rune_patience);
 
     // update it's waypoint
     WaypointSprite_Kill(rune.waypointsprite_attached);
@@ -187,7 +190,7 @@ void prec_rune_destroy (entity rune, float desired)
 	else if(self.killindicator.classname == "player") {
 		des_msg = strcat("^7", self.killindicator.netname, "^7 broke ", self.netname3);
 		// hold a grudge against who ever is responsible
-		if(cvar("g_prec_rune_revenge"))
+		if(CVAR(g_prec_rune_revenge))
 			rune.killindicator.prec_grudge = rune.killindicator.prec_grudge + 1;
 		//PlayerScore_Add(rune.killindicator, 9, 1);
 	} else
@@ -307,7 +310,7 @@ void prec_player_die (entity player, entity frag_attacker)
         prec_rune_drop(player.prec_rune, 0);
         
         if(frag_attacker.classname == "player" && frag_attacker != self) {
-			PlayerScore_Add(frag_attacker, SP_SCORE, cvar("g_prec_points_rckill"));
+			PlayerScore_Add(frag_attacker, SP_SCORE, CVAR(g_prec_points_rckill));
 			PlayerScore_Add(frag_attacker, SP_PREC_CARRIERKILLS, 1);
 		}
 	}
@@ -353,7 +356,7 @@ void prec_controller_think ()
 
 		// respawn the rune after it's been gone for long enough
 		self.pain_finished = self.pain_finished + 0.1;
-		if(self.pain_finished > cvar("g_prec_rune_spawn_delay"))
+		if(self.pain_finished > CVAR(g_prec_rune_spawn_delay))
 			prec_rune_create();
 	}
 	else

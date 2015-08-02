@@ -96,7 +96,7 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     return r;
             }
             
-            #define ADDMOD(m) mods = ((mods == "")? m : strcat(mods, ", ", m))
+            #define ADDMOD(m) mods = if(mods == "") m else strcat(mods, ", ", m)
             string mods;
 
             if(dtype & HITTYPE_SECONDARY) {
@@ -106,6 +106,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     ADDMOD("fire");
                 else if(hgtype == HG_SHIELD)
                     ADDMOD("discharge");
+                else if(hgtype == HG_SENTRY)
+                    ADDMOD("shock");
                 else
                     ADDMOD("alt");
             }

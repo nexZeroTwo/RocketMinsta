@@ -286,7 +286,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
 
     float spawnfrag = FALSE;
 
-    float extendfragmessages = cvar("cl_extendfragmessages");
+    float extendfragmessages = CVAR(cl_extendfragmessages);
 
     if(targ == attacker)
         suicide = TRUE;
@@ -360,7 +360,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                 if(spawnfrag) {
                     fragmod = "^2spawn";
                 } else if(extendfragmessages) {
-                    if(g_minstagib && cvar("_g_rocketminsta")) {    // g_rocketminsta bullshit
+                    if(g_minstagib && CVAR(_g_rocketminsta)) {    // g_rocketminsta bullshit
                         if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
                             if(iKilled)
                                 announce("awesome.wav");

@@ -61,7 +61,7 @@ void Draw_PointParticles()
 	if(self.absolute == 2)
 	{
 		if(n >= 0)
-			n = self.just_toggled ? self.impulse : 0;
+			n = if(self.just_toggled) self.impulse else 0;
 		else
 			n = self.impulse * drawframetime;
 	}
@@ -334,7 +334,7 @@ void Net_ReadNexgunBeamParticle()
 	pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
 	
 	//draw either the old v2.3 beam or the new beam
-	if(cvar("cl_particles_oldnexbeam") && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
+	if (CVAR(cl_particles_oldnexbeam) && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
 		trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, endpos);
 	else
 		trailparticles(world, particleeffectnum("nex_beam"), shotorg, endpos);

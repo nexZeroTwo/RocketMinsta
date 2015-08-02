@@ -28,7 +28,7 @@ void configureNewMenuCreditsListNewMenuCreditsList(entity me)
 {
 	me.configureNewMenuListBox(me);
 	// load the file
-	me.bufferIndex = buf_load(strcat(cvar_string("sys_project_name"), "-credits.txt"));
+	me.bufferIndex = buf_load(strcat(CVAR_STR(sys_project_name), "-credits.txt"));
 	me.nItems = buf_getsize(me.bufferIndex);
 }
 void destroyNewMenuCreditsList(entity me)

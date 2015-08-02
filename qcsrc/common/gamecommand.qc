@@ -1,27 +1,68 @@
-#define MAX_RPN_STACK 16
+#define MAX_RPN_STACK 32
+#define MAX_RPN_CALLSTACK 32
+#define MAX_RPN_LOCALS 8
+
 float rpn_db;
 float rpn_error;
 float rpn_sp;
+float rpn_callsp;
 string rpn_stack[MAX_RPN_STACK];
+float rpn_fstack[MAX_RPN_STACK];
+float rpn_callstack[MAX_RPN_CALLSTACK];
+.string rpn_localnames[MAX_RPN_LOCALS];
+.string rpn_locals[MAX_RPN_LOCALS];
+.float rpn_flocals[MAX_RPN_LOCALS];
+entity rpn_localscope;
+
+#ifdef MENUQC
+.entity owner;
+.float cnt;
+#endif
+
+void rpn_pushraw(string s, float f) {
+    if(rpn_sp < MAX_RPN_STACK) {
+        rpn_stack[rpn_sp] = s;
+        rpn_fstack[rpn_sp] = f;
+        dprint("rpn: PUSH ", s, " ", ftos(f), "\n");
+        ++rpn_sp;
+    } else {
+        print("rpn: stack overflow\n");
+        rpn_error = TRUE;
+    }
+}
+
+void rpn_setraw(string s, float f) {
+    if(rpn_sp > 0) {
+        dprint("rpn: SET ", rpn_stack[rpn_sp - 1], " ---> ", s, "\n");
+        rpn_stack[rpn_sp - 1] = s;
+        rpn_fstack[rpn_sp - 1] = f;
+    } else {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+    }
+}
+
+void rpn_popraw() {
+    if(rpn_sp > 0) {
+        --rpn_sp;
+        dprint("rpn: POP ", rpn_stack[rpn_sp], "\n");
+    } else {
+        print("rpn: stack underflow\n");
+        rpn_error = TRUE;
+    }
+}
+
 string rpn_pop() {
-	if(rpn_sp > 0) {
-		--rpn_sp;
-		return rpn_stack[rpn_sp];
-	} else {
-		print("rpn: stack underflow\n");
-		rpn_error = TRUE;
-		return "";
-	}
+    rpn_popraw();
+    if(rpn_error)
+        return "";
+    return rpn_stack[rpn_sp];
 }
+
 void rpn_push(string s) {
-	if(rpn_sp < MAX_RPN_STACK) {
-		rpn_stack[rpn_sp] = s;
-		++rpn_sp;
-	} else {
-		print("rpn: stack overflow\n");
-		rpn_error = TRUE;
-	}
+    rpn_pushraw(s, stof(s));
 }
+
 string rpn_get() {
 	if(rpn_sp > 0) {
 		return rpn_stack[rpn_sp - 1];
@@ -31,18 +72,218 @@ string rpn_get() {
 		return "";
 	}
 }
-void rpn_set(string s) {
-	if(rpn_sp > 0) {
-		rpn_stack[rpn_sp - 1] = s;
-	} else {
-		print("rpn: empty stack\n");
-		rpn_error = TRUE;
-	}
+
+float rpn_getf() {
+    if(rpn_sp > 0) {
+        return rpn_fstack[rpn_sp - 1];
+    } else {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+        return 0;
+    }
 }
-float rpn_getf() { return stof(rpn_get()); }
-float rpn_popf() { return stof(rpn_pop()); }
-void rpn_pushf(float f) { return rpn_push(ftos(f)); }
-void rpn_setf(float f) { return rpn_set(ftos(f)); }
+
+void rpn_verifystackofs(float o) {
+    if(!rpn_sp) {
+        print("rpn: empty stack\n");
+        rpn_error = TRUE;
+        return;
+    }
+
+    if(o < 0) {
+        print("rpn: invalid offset\n");
+        rpn_error = TRUE;
+        return;
+    }
+
+    if(rpn_sp - o <= 0) {
+        print("rpn: stack underflow\n");
+        rpn_error = TRUE;
+        return;
+    }
+
+}
+
+void rpn_set(string s) {
+    rpn_setraw(s, stof(s));
+}
+
+void rpn_setf(float f) {
+    rpn_setraw(ftos(f), f);
+}
+
+float rpn_popf() {
+    rpn_popraw();
+    if(rpn_error)
+        return 0;
+    return rpn_fstack[rpn_sp];
+}
+
+void rpn_pushf(float f) {
+    rpn_pushraw(ftos(f), f);
+}
+
+vector rpn_popv(void) {
+    vector v;
+    v_z = rpn_popf();
+    v_y = rpn_popf();
+    v_x = rpn_popf(); 
+    return v;
+}
+
+void rpn_pushv(vector v) {
+    rpn_pushf(v_x);
+    rpn_pushf(v_y);
+    rpn_pushf(v_z);
+}
+
+float rpn_findlabel(string s, float argc) {
+    string needle = strcat("[", s, "]");
+    float i;
+
+    for(i = 1; i < argc; ++i)
+        if(argv(i) == needle)
+            return i;
+
+    print("rpn: label ", needle, " not found\n");
+    return -1;
+}
+
+float rpn_popjumpidx(float rpnpos, float argc) {
+    string s = rpn_pop();
+
+    if(substring(s, 0, 1) != "&")
+        return rpnpos + stof(s);
+
+    return rpn_findlabel(substring(s, 1, strlen(s) - 1), argc);
+}
+
+float rpn_callpop(void) {
+    if(rpn_callsp > 0) {
+        --rpn_callsp;
+        return rpn_callstack[rpn_callsp];
+    } else {
+        print("rpn: call stack underflow\n");
+        rpn_error = TRUE;
+        return -1;
+    }
+}
+
+void rpn_callpush(float idx) {
+    if(rpn_callsp < MAX_RPN_CALLSTACK) {
+        rpn_callstack[rpn_callsp] = idx;
+        ++rpn_callsp;
+    } else {
+        print("rpn: call stack overflow\n");
+        rpn_error = TRUE;
+    }
+}
+
+void rpn_pushlocalscope(void) {
+    dprint("rpn: rpn_pushlocalscope()\n");
+    entity s = spawn();
+    s.owner = rpn_localscope;
+    rpn_localscope = s;
+}
+
+void rpn_poplocalscope(void) {
+    dprint("rpn: rpn_poplocalscope()\n");
+    if(!rpn_localscope) {
+        print("rpn: no local scope\n");
+        rpn_error = TRUE;
+        return;
+    }
+
+    entity s = rpn_localscope;
+    rpn_localscope = s.owner;
+    remove(s);
+}
+
+entity rpn_getlocalscope(void) {
+    if(!rpn_localscope)
+        rpn_pushlocalscope();
+    return rpn_localscope;
+}
+
+void rpn_deflocal(string lname) {
+    float i;
+
+    for(i = 0; i < MAX_RPN_LOCALS; ++i) {
+        if(!rpn_localscope.(rpn_localnames[i])) {
+            rpn_localscope.cnt = i;
+            rpn_localscope.(rpn_localnames[i]) = lname;
+            return;
+        }
+    }
+
+    print("rpn: couldn't define local '", lname, "', too many locals\n");
+    rpn_error = TRUE;
+}
+
+entity rpn_findlocal(string lname, float define) {
+    float i, firstfree = -1;
+    entity s;
+    string n;
+
+    for(s = rpn_localscope; s; s = s.owner) {
+        for(i = 0; i < MAX_RPN_LOCALS; ++i) {
+            n = s.(rpn_localnames[i]);
+            if(!n && s == rpn_localscope) {
+                firstfree = i;
+            } else if(n == lname) {
+                s.cnt = i;
+                return s;
+            }
+        }
+    }
+
+    if(define) {
+        if(firstfree >= 0) {
+            rpn_localscope.(rpn_localnames[firstfree]) = lname;
+            rpn_localscope.cnt = firstfree;
+            return rpn_localscope;
+        }
+
+        print("rpn: couldn't define local '", lname, "', too many locals\n");
+        rpn_error = TRUE;
+    } else {
+        print("rpn: local '", lname, "' not found\n");
+        rpn_error = TRUE;
+    }
+
+    return world;
+}
+
+string rpn_getlocal(string lname) {
+    entity s = rpn_findlocal(lname, FALSE);
+    if(!s)
+        return string_null;
+    return s.(rpn_locals[s.cnt]);
+}
+
+float rpn_getlocalf(string lname) {
+    entity s = rpn_findlocal(lname, FALSE);
+    if(!s)
+        return 0;
+    return s.(rpn_flocals[s.cnt]);
+}
+
+void rpn_setlocalraw(string lname, string sval, float fval) {
+    entity s = rpn_findlocal(lname, TRUE);
+    
+    if(s) {
+        s.(rpn_locals[s.cnt]) = sval;
+        s.(rpn_flocals[s.cnt]) = fval;
+    }
+}
+
+void rpn_setlocal(string lname, string sval) {
+    rpn_setlocalraw(lname, sval, stof(sval));
+}
+
+void rpn_setlocalf(string lname, float fval) {
+    rpn_setlocalraw(lname, ftos(fval), fval);
+}
 
 #define NUM_MARKUPS	41
 float markup_init;
@@ -155,6 +396,55 @@ string GameCommand_Markup(string s2)
 	return s;
 }
 
+string rpn_preprocess_expandincludes(string script, float offset) {
+    float argc = tokenize_console(script);
+    float i;
+
+    for(i = offset; i < argc; ++i) {
+        string s = argv(i);
+        if(substring(s, 0, 1) == "{" && substring(s, strlen(s) - 1, 1) == "}") {
+            s = substring(s, 1, strlen(s) - 2);
+
+            string b = substring(script, 0, argv_start_index(i));
+            string e = substring(script, argv_end_index(i), strlen(script));
+            script = strcat(b, cvar_string(s), e);
+
+            return rpn_preprocess_expandincludes(script, i);
+        }
+    }
+
+    return script;
+}
+
+string rpn_preprocess(string script, float offset) {
+#ifdef SVQC
+    string aload = CVAR_STR(sv_rpn_autoload);
+#else
+#ifdef CSQC
+    string aload = CVAR_STR(cl_rpn_autoload);
+#else
+#ifdef MENUQC
+    string aload = CVAR_STR(menu_rpn_autoload);
+#endif
+#endif
+#endif
+
+    if(aload != "")
+        script = strcat(script, " break [autoload] ", aload);
+
+    return rpn_preprocess_expandincludes(script, offset);
+}
+
+#ifndef MENUQC
+float findentityfield(string fname) {
+    float i, n = numentityfields();
+    for(i = 0; i < n; ++i)
+        if(entityfieldname(i) == fname)
+            return i;
+    return -1;
+}
+#endif
+
 .float fade_time;
 .entity attachto;
 .entity aiment;
@@ -221,16 +511,16 @@ float GameCommand_Generic(string command)
 				print("maplist: ERROR: ", argv(2), " does not exist!\n");
 				return TRUE;
 			}
-			if(cvar_string("g_maplist") == "")
+			if(CVAR_STR(g_maplist) == "")
 				cvar_set("g_maplist", argv(2));
 			else
-				cvar_set("g_maplist", strcat(argv(2), " ", cvar_string("g_maplist")));
+				cvar_set("g_maplist", strcat(argv(2), " ", CVAR_STR(g_maplist)));
 			return TRUE;
 		}
 		else if(argv(1) == "remove" && argc == 3)
 		{
 			s = argv(2);
-			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
+			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
 				if(argv(i) != s)
@@ -241,17 +531,17 @@ float GameCommand_Generic(string command)
 		}
 		else if(argv(1) == "shuffle" && argc == 2)
 		{
-			cvar_set("g_maplist", shufflewords(cvar_string("g_maplist")));
+			cvar_set("g_maplist", shufflewords(CVAR_STR(g_maplist)));
 			return TRUE;
 		}
 		else if(argv(1) == "cleanup")
 		{
 			MapInfo_Enumerate();
 			MapInfo_FilterGametype(gametype_ID_to_MapID(gametype_GetMenu()), MapInfo_CurrentFeatures(), MapInfo_RequiredFlags(), MapInfo_ForbiddenFlags(), 0);
-			n = tokenizebyseparator(cvar_string("g_maplist"), " ");
+			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
-				if(MapInfo_CheckMap(argv(i)))
+				if(MapInfo_CheckMap(argv(i), gametype_ID_to_MapID(gametype_GetMenu())))
 					s2 = strcat(s2, " ", argv(i));
 			s2 = substring(s2, 1, strlen(s2) - 1);
 			cvar_set("g_maplist", s2);
@@ -360,17 +650,33 @@ float GameCommand_Generic(string command)
 			float rpnpos;
 			string rpncmd;
 			float f2, f3;
+            vector v1, v2;
+            float syscallsupported = checkextension("DP_RM_CALLFUNCTIONEX");
+            float globalaccsupported = checkextension("DP_RM_GLOBALACCESS");
+            entity scope;
+
+            command = rpn_preprocess(command, 1);
+            argc = tokenize_console(command);
+
 			rpn_sp = 0;
 			rpn_error = FALSE;
+
+            rpn_pushlocalscope();
+
 			for(rpnpos = 1; rpnpos < argc; ++rpnpos)
 			{
 				rpncmd = argv(rpnpos);
 				f = strlen(rpncmd);
-				if(rpncmd == "") {
+
+                dprint(strcat("rpn: [", ftos(rpnpos), "] ", rpncmd, "\n"));
+
+				if(rpncmd == "" || (substring(rpncmd, 0, 1) == "[" && substring(rpncmd, strlen(rpncmd) - 1, 1) == "]")) {
 				} else if(stof(substring(rpncmd, 0, 1)) > 0) {
 					rpn_push(rpncmd);
 				} else if(substring(rpncmd, 0, 1) == "0") {
 					rpn_push(rpncmd);
+                } else if(substring(rpncmd, 0, 1) == "&") {
+                    rpn_push(rpncmd);
 				} else if(f >= 2 && substring(rpncmd, 0, 1) == "+") {
 					rpn_push(rpncmd);
 				} else if(f >= 2 && substring(rpncmd, 0, 1) == "-") {
@@ -426,12 +732,17 @@ float GameCommand_Generic(string command)
 				} else if(rpncmd == "load") {
 					rpn_set(cvar_string(rpn_get()));
 				} else if(rpncmd == "exch") {
-					s = rpn_pop();
-					s2 = rpn_get();
-					rpn_set(s);
-					rpn_push(s2);
+                    s = rpn_get();
+                    f = rpn_getf();
+                    rpn_popraw();
+
+                    s2 = rpn_get();
+                    f2 = rpn_getf();
+
+					rpn_setraw(s, f);
+					rpn_pushraw(s2, f2);
 				} else if(rpncmd == "dup") {
-					rpn_push(rpn_get());
+                    rpn_pushraw(rpn_get(), rpn_getf());
 				} else if(rpncmd == "pop") {
 					rpn_pop();
 				} else if(rpncmd == "add" || rpncmd == "+") {
@@ -479,6 +790,26 @@ float GameCommand_Generic(string command)
 					f2 = rpn_popf();
 					f3 = rpn_getf();
 					rpn_setf(bound(f3, f2, f));
+                } else if(rpncmd == "pow") {
+                    f = rpn_popf();
+                    rpn_setf(pow(rpn_getf(), f));
+                } else if(rpncmd == "sin") {
+                    rpn_setf(sin(rpn_getf()));
+                } else if(rpncmd == "cos") {
+                    rpn_setf(cos(rpn_getf()));
+                } else if(rpncmd == "tan") {
+                    rpn_setf(tan(rpn_getf()));
+                } else if(rpncmd == "asin") {
+                    rpn_setf(asin(rpn_getf()));
+                } else if(rpncmd == "acos") {
+                    rpn_setf(acos(rpn_getf()));
+                } else if(rpncmd == "atan") {
+                    rpn_setf(atan(rpn_getf()));
+                } else if(rpncmd == "atan2") {
+                    f = rpn_popf();
+                    rpn_setf(atan2(rpn_getf(), f));
+                } else if(rpncmd == "sqrt") {
+                    rpn_setf(sqrt(rpn_getf()));
 				} else if(rpncmd == "when") {
 					f = rpn_popf();
 					f2 = rpn_popf();
@@ -487,6 +818,36 @@ float GameCommand_Generic(string command)
 						rpn_setf(f3);
 					else
 						rpn_setf(f2);
+                } else if(rpncmd == "and") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() && f);
+                } else if(rpncmd == "or") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() || f);
+                } else if(rpncmd == "not") {
+                    rpn_setf(!rpn_getf());
+                } else if(rpncmd == "bitand") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() & f);
+                } else if(rpncmd == "bitor") {
+                    f = rpn_popf();
+                    rpn_setf(rpn_getf() | f);
+                } else if(rpncmd == "bitnot") {
+                    rpn_setf(-rpn_getf() - 1);
+                } else if(rpncmd == "vadd") {
+                    v1 = rpn_popv();
+                    v2 = rpn_popv();
+                    rpn_pushv(v1 + v2);
+                } else if(rpncmd == "vsub") {
+                    v1 = rpn_popv();
+                    v2 = rpn_popv();
+                    rpn_pushv(v2 - v1);
+                } else if(rpncmd == "vscale") {
+                    f = rpn_popf();
+                    v1 = rpn_popv();
+                    rpn_pushv(v1 * f);
+                } else if(rpncmd == "vlen") {
+                    rpn_pushf(vlen(rpn_popv()));
 				} else if(rpncmd == ">" || rpncmd == "gt") {
 					f = rpn_popf();
 					rpn_setf(rpn_getf() > f);
@@ -781,17 +1142,324 @@ float GameCommand_Generic(string command)
 					rpn_set(strftime(FALSE, rpn_get()));
 				} else if(rpncmd == "time") {
 					rpn_pushf(time);
+                } else if(rpncmd == "jump") {
+                    float o = rpnpos;
+                    rpnpos = rpn_popjumpidx(rpnpos, argc);
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "jumpif") {
+                    float o = rpnpos;
+                    float jmp = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(cond) {
+                        rpnpos = jmp;
+
+                        if(rpnpos < 1 || rpnpos >= argc) {
+                            print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                            rpn_error = TRUE;
+                        }
+                    }
+                } else if(rpncmd == "jumpifnot") {
+                    float o = rpnpos;
+                    float jmp = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(!cond) {
+                        rpnpos = jmp;
+
+                        if(rpnpos < 1 || rpnpos >= argc) {
+                            print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                            rpn_error = TRUE;
+                        }
+                    }
+                } else if(rpncmd == "jumpifelse") {
+                    float o = rpnpos;
+                    float jmp0 = rpn_popjumpidx(rpnpos, argc);
+                    float jmp1 = rpn_popjumpidx(rpnpos, argc);
+                    float cond = rpn_popf();
+
+                    if(cond)
+                        rpnpos = jmp1;
+                    else
+                        rpnpos = jmp0;
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: jump from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "echo") {
+                    print(rpn_pop(), "\n");
+                } else if(rpncmd == "break") {
+                    break;
+                } else if(rpncmd == "strcat") {
+                    s2 = rpn_pop();
+                    s = rpn_pop();
+                    rpn_push(strcat(s, s2));
+                } else if(rpncmd == "strncat") {
+                    f = rpn_popf();
+                    s = "";
+
+                    for(f2 = 0; f2 < f; ++f2)
+                        s = strcat(rpn_pop(), s);
+
+                    rpn_push(s);
+                } else if(rpncmd == "strjoin") {
+                    s2 = rpn_pop();
+                    f = rpn_popf();
+                    s = "";
+
+                    for(f2 = 0; f2 < f; ++f2) {
+                        if(f2)
+                            s = strcat(s2, s);
+                        s = strcat(rpn_pop(), s);
+                    }
+
+                    rpn_push(s);
+#ifndef MENUQC
+                } else if(rpncmd == "getfield") {
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    rpn_push(getentityfieldstring(f, e));
+                } else if(rpncmd == "getfieldv") {
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    rpn_pushv(stov(getentityfieldstring(f, e)));
+                } else if(rpncmd == "setfield") {
+                    s = rpn_pop();
+                    f = findentityfield(rpn_pop());
+                    entity e = edict_num(rpn_popf());
+                    putentityfieldstring(f, e, s);
+#endif
+                } else if(rpncmd == "stov") {
+                    rpn_pushv(stov(rpn_pop()));
+                } else if(rpncmd == "vtos") {
+                    rpn_push(vtos(rpn_popv()));
+#ifdef SVQC
+                } else if(rpncmd == "maxclients") {
+                    rpn_pushf(maxclients);
+#endif
+                } else if(rpncmd == "strcmp") {
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strcmp(s2, s));
+                } else if(rpncmd == "strncmp") {
+                    f = rpn_popf();
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strncmp(s2, s, f));
+                } else if(rpncmd == "strstrofs") {
+                    f = rpn_popf();
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_pushf(strstrofs(s2, s, f));
+                } else if(rpncmd == "str2chr") {
+                    f = rpn_popf();
+                    rpn_setf(str2chr(rpn_get(), f));
+                } else if(rpncmd == "chr2str") {
+                    rpn_set(chr2str(rpn_getf()));
+                } else if(rpncmd == "strtolower") {
+                    rpn_set(strtolower(rpn_get()));
+                } else if(rpncmd == "strtoupper") {
+                    rpn_set(strtoupper(rpn_get()));
+                } else if(rpncmd == "strlen") {
+                    rpn_setf(strlen(rpn_get()));
+                } else if(rpncmd == "strlennocol") {
+                    rpn_setf(strlennocol(rpn_get()));
+                } else if(rpncmd == "strdecolorize") {
+                    rpn_set(strdecolorize(rpn_get()));
+                } else if(rpncmd == "substr") {
+                    float len = rpn_popf();
+                    float start = rpn_popf();
+                    rpn_set(substring(rpn_get(), start, len));
+                } else if(rpncmd == "exec") {
+                    localcmd(rpn_pop(), "\n");
+                } else if(rpncmd == "nullstr") {
+                    rpn_push(string_null);
+                } else if(rpncmd == "call") {
+                    float o = rpnpos;
+                    rpn_callpush(rpnpos);
+                    rpnpos = rpn_popjumpidx(rpnpos, argc);
+                    rpn_pushlocalscope();
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "return") {
+                    float o = rpnpos;
+                    rpnpos = rpn_callpop();
+                    rpn_poplocalscope();
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: return from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(substring(rpncmd, 0, 1) == "@") {
+                    float o = rpnpos;
+                    rpn_callpush(rpnpos);
+                    rpnpos = rpn_findlabel(substring(rpncmd, 1, strlen(rpncmd) - 1), argc);
+                    rpn_pushlocalscope();
+
+                    if(rpnpos < 1 || rpnpos >= argc) {
+                        print("rpn: call from ", ftos(o), " to ", ftos(rpnpos), " out of bounds\n");
+                        rpn_error = TRUE;
+                    }
+                } else if(rpncmd == "get") {
+                    f = rpn_popf();
+                    rpn_verifystackofs(f);
+
+                    if(!rpn_error) {
+                        f = rpn_sp - 1 - f; 
+                        rpn_pushraw(rpn_stack[f], rpn_fstack[f]);
+                    }
+                } else if(rpncmd == "trace") {
+                    print("rpn: stack trace:\n");
+                    for(f = rpn_sp; f; --f)
+                        print("   ", ftos(f), "  ", rpn_stack[f - 1], " ^8", ftos(rpn_fstack[f - 1]), "\n");
+
+                    for(f3 = 0, scope = rpn_localscope; scope; ++f3, scope = scope.owner) {
+                        if(!f3)
+                            print("rpn: locals (scope level 0 (topmost)):\n");
+                        else
+                            print("rpn: locals (scope level ", ftos(f3), "):\n");
+
+
+                        for(f = 0; f < MAX_RPN_LOCALS; ++f) {
+                            s = scope.(rpn_localnames[f]);
+                            if(s) {
+                                s2 = scope.(rpn_locals[f]);
+                                f2 = scope.(rpn_flocals[f]);
+                                print("   ", s, " = ", s2, " ^8", ftos(f2), "\n");
+                            }
+                        }
+                    }
+                } else if(rpncmd == "syscall") {
+                    if(!syscallsupported) {
+                        print("rpn: attempted to use syscall, but the engine doesn't support the DP_RM_CALLFUNCTIONEX extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        string sig = rpn_pop();
+                        string fname = rpn_pop();
+                        float ac = strlen(sig) - 1;
+                        string rtype = substring(sig, 0, 1);
+
+                        for(f = ac - 1; f >= 0; --f) {
+                            string atype = substring(sig, f + 1, 1);
+
+                            if(atype == "f") {
+                                CallFunctionEx_SetArgFloat(f, rpn_popf());
+                            } else if(atype == "v") {
+                                CallFunctionEx_SetArgVector(f, rpn_popv());
+                            } else if(atype == "s") {
+                                CallFunctionEx_SetArgString(f, rpn_pop());
+                            } else {
+                                if(atype != "i" && atype != "e")
+                                    print("rpn: warning: invalid argument type ", atype, ", assuming int\n");
+                                CallFunctionEx_SetArgInt(f, rpn_popf());
+                            }
+                        }
+
+                        if(rtype == "n") {
+                            CallFunctionEx(fname);
+                        } else if(rtype == "f") {
+                            rpn_pushf(CallFunctionEx_Float(fname));
+                        } else if(rtype == "v") {
+                            rpn_pushv(CallFunctionEx_Vector(fname));
+                        } else if(rtype == "s") {
+                            rpn_push(CallFunctionEx_String(fname));
+                        } else {
+                            if(rtype != "i" && rtype != "e")
+                                print("rpn: warning: invalid return type ", rtype, ", assuming int\n");
+                            rpn_pushf(CallFunctionEx_Int(fname));
+                        }
+                    }
+                } else if(rpncmd == "getglobal") {
+                    if(!globalaccsupported) {
+                        print("rpn: attempted to use getglobal, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        rpn_set(GlobalGet(rpn_get()));
+                    }
+                } else if(rpncmd == "setglobal") {
+                    if(!globalaccsupported) {
+                        print("rpn: attempted to use setglobal, but the engine doesn't support the DP_RM_GLOBALACCESS extension\n");
+                        rpn_error = TRUE;
+                    } else {
+                        s = rpn_pop();
+                        GlobalSet(rpn_pop(), s);
+                    }
+                } else if(rpncmd == "getlocal") {
+                    scope = rpn_findlocal(rpn_pop(), FALSE);
+                    if(!rpn_error) {
+                        s = scope.(rpn_locals[scope.cnt]);
+                        f = scope.(rpn_flocals[scope.cnt]);
+                        rpn_pushraw(s, f);
+                    }
+                } else if(rpncmd == "setlocal") {
+                    s = rpn_get();
+                    f = rpn_getf();
+                    rpn_popraw();
+
+                    s2 = rpn_pop();
+                    rpn_setlocalraw(s2, s, f);
+                } else if(rpncmd == "deflocal") {
+                    rpn_deflocal(rpn_pop());
+                } else if(substring(rpncmd, 0, 1) == "%") {
+                    f2 = strstrofs(rpncmd, "=", 0);
+                    f3 = strlen(rpncmd);
+
+                    if(f2 >= 0) {
+                        string lname = substring(rpncmd, 1, f2 - 1);
+                        string lval = substring(rpncmd, f2 + 1, f3);
+
+                        if(substring(lname, strlen(lname) - 1, 1) == "!") {
+                            lname = substring(lname, 0, strlen(lname) - 1);
+                            rpn_deflocal(lname);
+                        }
+
+                        if(lval == "")
+                            lval = rpn_pop();
+
+                        rpn_setlocal(lname, lval);
+                    } else if(substring(rpncmd, f3 - 1, 1) == "!") {
+                        rpn_deflocal(substring(rpncmd, 1, f3 - 2));
+                    } else {
+                        scope = rpn_findlocal(substring(rpncmd, 1, strlen(rpncmd)), FALSE);
+                        if(!rpn_error) {
+                            s = scope.(rpn_locals[scope.cnt]);
+                            f = scope.(rpn_flocals[scope.cnt]);
+                            rpn_pushraw(s, f);
+                        }
+                    }
 				} else {
+                    if(!(cvar_type(rpncmd) & CVAR_TYPEFLAG_EXISTS))
+                        print("rpn: warning: '", rpncmd, "' is neither a valid command nor a defined cvar\n");
 					rpn_push(cvar_string(rpncmd));
 				}
+
 				if(rpn_error)
 					break;
 			}
-			while(rpn_sp > 0)
-			{
-				s = rpn_pop();
-				print("rpn: still on stack: ", s, "\n");
+
+            rpn_poplocalscope();
+
+			while(rpn_sp > 0) {
+				print("rpn: still on stack: ", rpn_pop(), "\n");
 			}
+
+            while(rpn_callsp > 0) {
+                print("rpn: still on call stack: ", ftos(rpn_callpop()), "\n");
+            }
+
+            while(rpn_localscope) {
+                print("rpn: a localscope still exists, removing\n");
+                rpn_poplocalscope();
+            }
+
 			return TRUE;
 		}
 	} else if(argv(0) == "addtolist") {

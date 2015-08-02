@@ -187,13 +187,13 @@ float cl_teamradar_zoommode;
 
 void teamradar_loadcvars()
 {
-	v_flipped = cvar("v_flipped");
+	v_flipped = CVAR(v_flipped);
 	if(ons_showmap)
 	{
 		cl_teamradar_scale = 42; // dummy, not used (see zoommode)
-		cl_teamradar_background_alpha = 1 * (1 - cvar("_menu_alpha"));
-		cl_teamradar_foreground_alpha = 1 * (1 - cvar("_menu_alpha"));
-		cl_teamradar_rotation = cvar("cl_teamradar_rotation");
+		cl_teamradar_background_alpha = 1 * (1 - CVAR(_menu_alpha));
+		cl_teamradar_foreground_alpha = 1 * (1 - CVAR(_menu_alpha));
+		cl_teamradar_rotation = CVAR(cl_teamradar_rotation);
 		if(!cl_teamradar_rotation)
 			cl_teamradar_rotation = 4;
 		cl_teamradar_size = '256 256 0'; // TODO make somewhat variable?
@@ -203,13 +203,13 @@ void teamradar_loadcvars()
 	}
 	else
 	{
-		cl_teamradar_scale = cvar("cl_teamradar_scale");
-		cl_teamradar_background_alpha = cvar("cl_teamradar_background_alpha") * sbar_alpha_fg;
-		cl_teamradar_foreground_alpha = cvar("cl_teamradar_foreground_alpha") * sbar_alpha_fg;
-		cl_teamradar_rotation = cvar("cl_teamradar_rotation");
-		cl_teamradar_size = stov(cvar_string("cl_teamradar_size"));
-		cl_teamradar_position = stov(cvar_string("cl_teamradar_position"));
-		cl_teamradar_zoommode = cvar("cl_teamradar_zoommode");
+		cl_teamradar_scale = CVAR(cl_teamradar_scale);
+		cl_teamradar_background_alpha = CVAR(cl_teamradar_background_alpha) * sbar_alpha_fg;
+		cl_teamradar_foreground_alpha = CVAR(cl_teamradar_foreground_alpha) * sbar_alpha_fg;
+		cl_teamradar_rotation = CVAR(cl_teamradar_rotation);
+		cl_teamradar_size = stov(CVAR_STR(cl_teamradar_size));
+		cl_teamradar_position = stov(CVAR_STR(cl_teamradar_position));
+		cl_teamradar_zoommode = CVAR(cl_teamradar_zoommode);
 
 		// others default to 0
 		// match this to the default game config!

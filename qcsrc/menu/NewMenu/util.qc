@@ -308,7 +308,7 @@ void postMenuDraw()
 	{
 		if(time >= map_nextcheck)
 		{
-			map_crc = crc16(FALSE, cvar_string("cl_worldbasename"));
+			map_crc = crc16(FALSE, CVAR_STR(cl_worldbasename));
 			
 			if(map_crc != map_crc_old)
 			{

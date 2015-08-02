@@ -6,12 +6,13 @@ string HG_TypeToExpandedName(float t) {
         case HG_REMOTE      :   return "Fire Trap";
         case HG_PLASMA      :   return "Plasma Bomb";
         case HG_TRANSLOC    :   return "Translocator";
-        case HG_SHIELD      :   return "Reflective Shield";
+        case HG_SHIELD      :   return "Powershield";
         case HG_LINKER      :   return "Linking Shell";
         case HG_GG          :   return "GG Button";
         case HG_LASER       :   return "Lasergun";
         case HG_CLOAK       :   return "Concealing Cloak";
         case HG_BAIT        :   return "Hero Bait";
+        case HG_SENTRY      :   return "Zapper Sentry";
         case HG_RANDOM      :   return "Random Nadget";
         default             :   return "Fuckoff Grenade";
     }
@@ -30,6 +31,7 @@ string HG_TypeToName(float t) {
         case HG_LASER       :   return "laser";
         case HG_CLOAK       :   return "cloak";
         case HG_BAIT        :   return "bait";
+        case HG_SENTRY      :   return "sentry";
         case HG_RANDOM      :   return "random";
         default             :   return strcat("fuckoff", ftos(t));
     }
@@ -47,6 +49,7 @@ float HG_NameToType(string t) {
         case "laser"        :   return HG_LASER;
         case "cloak"        :   return HG_CLOAK;
         case "bait"         :   return HG_BAIT;
+        case "sentry"       :   return HG_SENTRY;
         case "random"       :   return HG_RANDOM;
         default             :   return HG_NORMAL;
     }
@@ -68,6 +71,7 @@ vector HG_TypeToColor(float t) {
         case HG_LASER       :   return '1.0 0.5 0.0';   // TODO: unique color for this?
         case HG_CLOAK       :   return '0.7 0.7 0.7';
         case HG_BAIT        :   return '0.2 0.7 1.0';
+        case HG_SENTRY      :   return '0.3 1.0 0.7';
         case HG_GG          :   return '0.5 0.5 0.5' + colormapPaletteColor(15, FALSE);
         case HG_RANDOM      :   return '1.0 1.0 1.0';
         default             :   return '0.5 0.5 0.5';
@@ -85,4 +89,15 @@ string HG_NameToIcon(string n, float large, float alt) {
 
 string HG_TypeToIcon(float t, float large, float alt) {
     return HG_NameToIcon(HG_TypeToName(t), large, alt);
+}
+
+float HG_CompressDualType(float t1, float t2) {
+    return (t1 - HG_START) + (t2 - HG_START) * 16;
+}
+
+vector HG_DecompressDualType(float t) {
+    vector v;
+    v_x = (t & 0x0F)      + HG_START;
+    v_y = (t & 0xF0) / 16 + HG_START;
+    return v;
 }

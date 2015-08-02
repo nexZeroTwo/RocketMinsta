@@ -21,6 +21,7 @@ CLASS(RMNadeList) EXTENDS(NewMenuListBox)
     ATTRIB(RMNadeList, colorC, vector, SKINCOLOR_SCROLLBAR_C)
     ATTRIB(RMNadeList, isUpdating, float, FALSE)
     ATTRIB(RMNadeList, nadelist_buf, float, -1)
+    ATTRIB(RMNadeList, notifyentity, entity, NULL)
 ENDCLASS(RMNadeList)
 entity makeRMNadeList();
 #endif
@@ -48,6 +49,9 @@ void setSelectedRMNadeList(entity me, float i)
     if(!me.disabled)
     {
         setSelectedListBox(me, i);
+
+        if(me.notifyentity)
+            me.notifyentity.selectionUpdated(me.notifyentity);
         
         //if(!me.isUpdating)
         //	localcmd("cmd picknade ", bufstr_get(me.nadelist_buf, me.selectedItem), "\n");
@@ -77,7 +81,7 @@ void updateNadeListRMNadeList(entity me)
     me.isUpdating = TRUE;
     me.nadelist_buf = buf_create();
     
-    argc = tokenizebyseparator(cvar_string("_nade_options"), " ");
+    argc = tokenizebyseparator(CVAR_STR(_nade_options), " ");
     
     for(i = 0; i < argc; ++i) {
         bufstr_set(me.nadelist_buf, i, argv(i));
@@ -110,7 +114,7 @@ void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelec
 {
     local string s;
     local float amod;
-    amod = (me.disabled? 0.2:1);
+    amod = if(me.disabled) 0.2 else 1;
     
     if(isSelected)
         draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);

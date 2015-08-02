@@ -58,7 +58,7 @@ void loadMapInfoNewMenuMapInfoDialog(entity me, float i, entity mlb)
 	me.currentMapTitle = strzone(MapInfo_Map_title);
 	me.currentMapAuthor = strzone(MapInfo_Map_author);
 	me.currentMapDescription = strzone(MapInfo_Map_description);
-	me.currentMapFeaturesText = strzone((MapInfo_Map_supportedFeatures & MAPINFO_FEATURE_WEAPONS) ? "Full item placement" : "MinstaGib only");
+	me.currentMapFeaturesText = strzone(if(MapInfo_Map_supportedFeatures & MAPINFO_FEATURE_WEAPONS) "Full item placement" else "MinstaGib only");
 	me.currentMapPreviewImage = strzone(strcat("/maps/", MapInfo_Map_bspname));
 
 	me.frame.setText(me.frame, me.currentMapBSPName);

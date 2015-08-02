@@ -655,8 +655,8 @@ void GameCommand(string command)
 		MapInfo_Enumerate();
 		return;
 	}
-	
-	if(argv(0) == "warp") if(argc == 2) if(cvar("g_campaign"))
+
+	if(argv(0) == "warp") if(argc == 2) if(CVAR(g_campaign))
 	{
 		CampaignLevelWarp(stof(argv(1)));
 		return;
@@ -764,10 +764,10 @@ void GameCommand(string command)
 			if(plr.classname == "spectator" || plr.classname == "observer")
 			{
 				plr.spectatortime = time;
-				sprint(plr, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
+				sprint(plr, strcat("^7You have to become a player within the next ", ftos(CVAR(g_maxplayers_spectator_blocktime)), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
 			}
 		}
-		bprint(strcat("^7All spectators will be automatically kicked when not joining the game after ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds!\n"));
+		bprint(strcat("^7All spectators will be automatically kicked when not joining the game after ", ftos(CVAR(g_maxplayers_spectator_blocktime)), " seconds!\n"));
 		return;
 	}
 	if (argv(0) == "lockteams")
@@ -1139,7 +1139,7 @@ void GameCommand(string command)
 	
 	if(argv(0) == "killfc")
 	{
-		if(cvar("g_ctf"))
+		if(CVAR(g_ctf))
 		{
 			FOR_EACH_CLIENT(e) if(e.flagcarried)
 			{
@@ -1152,7 +1152,7 @@ void GameCommand(string command)
 				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
 		}
-		else if(cvar("g_keyhunt"))
+		else if(CVAR(g_keyhunt))
 		{
 			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
 			{
@@ -1215,17 +1215,17 @@ void GameCommand(string command)
 			cvar_set("_sv_explosive_topicby", "");
 		keeptopic = FALSE;
 		
-		local string topicby = cvar_string("_sv_explosive_topicby");
+		local string topicby = CVAR_STR(_sv_explosive_topicby);
 		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
 		
-		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		bprint("\x01^2* ^3", if(topicby && topicby != "") topicby else "<server>", "^3 has set the topic: ^7", CVAR_STR(_sv_explosive_topic), "\n");
 		
 		return;
 	}
 
 	if(argv(0) == "addinfo")
 	{
-		float c = cvar("_sv_infomessages_count");
+		float c = CVAR(_sv_infomessages_count);
 		string newvar = strcat("_sv_infomessages_", ftos(c));
 		registercvar(newvar, "");
 		cvar_set(newvar, argv(1));
@@ -1338,7 +1338,7 @@ void GameCommand(string command)
 
     if(argv(0) == "dprmstats") {
         FOR_EACH_REALCLIENT(e)
-            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", ((e.client_dprmversion >= DPRM_MINVERSION)? "^2" : "^1"), ftos(e.client_dprmversion), "\n");
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "\n");
         return;
     }
 

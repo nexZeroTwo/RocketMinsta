@@ -15,7 +15,7 @@ ENDCLASS(NewMenuVcallDialog)
 
 void VoteCall_f(entity btn, entity me)
 {
-    localcmd("cmd vote call ", cvar_string("_menu_vote_string"), "\n");
+    localcmd("cmd vote call ", CVAR_STR(_menu_vote_string), "\n");
     btn.onClickEntity.close(btn.onClickEntity);
 }
 

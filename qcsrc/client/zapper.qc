@@ -36,18 +36,23 @@ void Zapper_Draw(void) {
     InterpolateOrigin_Do();
     self.zapper_end = self.origin;
 
-    float me = ((spectatee_status > 0)? spectatee_status : player_localentnum);
+    float me = ID_ME;
+    float truezapper;
 
     start = self.zapper_start;
-    if(self.sv_entnum == me) if(!cvar("chase_active")) {
+    if(self.sv_entnum == me) if(!CVAR(chase_active)) {
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
     }
 
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
-    vector end1 = self.zapper_end;
-    vector end2 = self.zapper_end + self.zapper_offs * 70;
+    vector end1;
+    if(self.sv_entnum == me && (truezapper = CVAR(cl_truezapper)) > 0) {
+        end1 = (view_origin + view_forward * (vlen(self.zapper_start - self.zapper_end))) * truezapper + (1 - truezapper) * self.zapper_end;
+    } else
+        end1 = self.zapper_end;
+    vector end2 = end1 + self.zapper_offs * 70;
     vector d = end2 - start;
     float maxlen = vlen(end1 - start);
 
@@ -61,7 +66,7 @@ void Zapper_Draw(void) {
     
     Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
 
-    if(self.sv_entnum) {
+    if(self.sv_entnum && !fps_friendly) {
         vectorvectors(normalize(d));
         vector rgb2 = GetTeamRGB(self.team);
         vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
@@ -83,6 +88,36 @@ void Zapper_Draw(void) {
 
     if(self.sv_entnum)
         pointparticles(eff_zap, end2, '0 0 0', pcount);
+}
+
+void Zapper_Draw_Shield(void) {
+    InterpolateOrigin_Do();
+    self.zapper_end = self.origin;
+
+    float me = ID_ME;
+
+    if(self.sv_entnum == me && !CVAR(chase_active)) {
+        self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        self.zapper_end = self.zapper_start + view_forward * 30;
+    }
+    
+    vector start = self.zapper_start;
+    vector end = self.zapper_end;
+
+    string tex = "particles/zapper";
+    vector rgb = Zapper_BeamRGB(self.team) * 0.5;
+
+    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+
+    if(self.alpha < 1)
+        return;
+
+    float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
+    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
+    float pcount = frametime * 300;
+
+    pointparticles(eff_zap, end, '0 0 0', pcount);
+    pointparticles(eff_muz, start, end - start, pcount);
 }
 
 void Zapper_Fader_Think(void) {
@@ -116,11 +151,18 @@ void Zapper_Remove(void) {
     sound(self, CHAN_PROJECTILE, "misc/null.wav", VOL_BASE, ATTN_NORM);
 }
 
-void Zapper_Read(void) {
+void Zapper_Read(float t) {
     float sf = ReadByte();
 
     if(sf & 1) {
-        self.draw = Zapper_Draw;
+        if(t == ENT_CLIENT_ZAPPER_SHIELD) {
+            self.draw = Zapper_Draw_Shield;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_shield_loop.wav", 1, ATTN_NORM);
+        } else {
+            self.draw = Zapper_Draw;
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
+        }
+
         self.entremove = Zapper_Remove;
         self.sv_entnum = ReadByte();
 
@@ -134,8 +176,6 @@ void Zapper_Read(void) {
 
         if(!rm_teamlasers || !self.team)
             self.team = COLOR_TEAM2;
-
-        sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
     }
 
     if(sf & 2) {
@@ -170,7 +210,7 @@ void Zapper_ReadLightning(void) {
 
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
 
-    if(cvar("cl_effects_lightningarc_simple")) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
@@ -180,7 +220,7 @@ void Zapper_ReadLightning(void) {
         drifte           = 0.25;
         branchfactor     = 0;
         branchfactor_add = 0;
-        lcount           = cvar("cl_effects_lightningarc_count");
+        lcount           = CVAR(cl_effects_lightningarc_count);
         
         for(; lcount; --lcount)
             LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);

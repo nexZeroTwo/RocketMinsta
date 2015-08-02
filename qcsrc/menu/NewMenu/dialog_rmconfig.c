@@ -4,7 +4,7 @@ CLASS(NewMenuRMConfigDialog) EXTENDS(NewMenuRootDialog)
 	ATTRIB(NewMenuRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NewMenuRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NewMenuRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NewMenuRMConfigDialog, rows, float, 20)
+	ATTRIB(NewMenuRMConfigDialog, rows, float, 22)
 	ATTRIB(NewMenuRMConfigDialog, columns, float, 16)
 	ATTRIB(NewMenuRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NewMenuRMConfigDialog)
@@ -16,7 +16,7 @@ ENDCLASS(NewMenuRMConfigDialog)
 
 void fillNewMenuRMConfigDialog(entity me)
 {
-	entity e;
+	entity e, sl;
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
             OPTDEP("dodging")
@@ -32,6 +32,10 @@ void fillNewMenuRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "crosshealth", "Color crosshair by health"));
 	me.TR(me);
+		sl = makeNewMenuSlider(0.05, 1, 0.05, "cl_truezapper");
+		me.TD(me, 1, 3, e = makeNewMenuSliderCheckBox(0, 1, sl, "True zapper:"));
+		me.TD(me, 1, 3, sl);
+	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "shownames", "Show player names above their heads"));
 			OPTDEP("shownames")
 	me.setFirstColumn(me, me.firstColumn + 0.1);
@@ -42,6 +46,8 @@ void fillNewMenuRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "teamlasers", "Team-colored particles"));
 			//OPTDEP("teamlasers")
+	me.TR(me);
+		me.TD(me, 1, 4, e = makeNewMenuCheckBox(0, "rm_fps_friendly", "I play on a toaster"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "legacyvote", "Simple voting screen"));
 	me.TR(me);
@@ -79,7 +85,7 @@ void fillNewMenuRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeNewMenuTextLabel(0, "HUD settings:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);
 	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldhud", "Use default NewMenu HUD"));
+		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldhud", "Use default Vecxis HUD"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
             setDependent(e, "rm_oldhud", 0, 0);

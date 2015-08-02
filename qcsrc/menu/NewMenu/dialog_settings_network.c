@@ -22,7 +22,7 @@ void fillNewMenuNetworkSettingsTab(entity me)
 {
 	entity e;
 
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TD(me, 1, 3, e = makeNewMenuCheckBox(0, "cl_movement", "Client-side movement prediction"));
 	}
@@ -39,7 +39,7 @@ void fillNewMenuNetworkSettingsTab(entity me)
 			e.addValue(e, "Broadband (25000)", "25000");
 			e.addValue(e, "Real Internet (40000)", "40000");
 			e.configureNewMenuTextSliderValues(e);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Input packets/s:"));
 			me.TD(me, 1, 2, e = makeNewMenuSlider(20, 100, 1, "cl_netfps"));
@@ -56,7 +56,7 @@ void fillNewMenuNetworkSettingsTab(entity me)
 		me.TD(me, 1, 0.8, e = makeNewMenuTextLabel(0, "Speed (kB/s):"));
 		me.TD(me, 1, 2, e = makeNewMenuSlider(10, 1500, 10, "cl_curl_maxspeed"));
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Client UDP port:"));
 			me.TD(me, 1, 0.64, e = makeNewMenuInputBox(0, "cl_port"));

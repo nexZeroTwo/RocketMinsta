@@ -7,7 +7,7 @@ void LightingArc_Draw(void) {
         case COLOR_TEAM3: tex = "particles/hook_yellow";    break;
         case COLOR_TEAM4: tex = "particles/hook_pink";      break;
         default         : tex = "particles/hook_green";     break;
-    }   else              tex = (self.team? "particles/hook_blue" : "particles/hook_green");
+    }   else              tex = if(self.team) "particles/hook_blue" else "particles/hook_green";
     
     float i; for(i = 0; i < 5; ++i)
         Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
@@ -69,17 +69,17 @@ void LightingArc_Full(vector from, vector to, float seglength, float drifts, flo
 }
 
 void LightingArc_Default(vector from, vector to, float ateam) {
-    if(cvar("cl_effects_lightningarc_simple")) {
+    if(fps_friendly) {
         LightingArc_Segment(from, to, ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
-        seglength        = cvar("cl_effects_lightningarc_segmentlength");
-        drifts           = cvar("cl_effects_lightningarc_drift_start");
-        drifte           = cvar("cl_effects_lightningarc_drift_end");
-        branchfactor     = cvar("cl_effects_lightningarc_branchfactor_start");
-        branchfactor_add = cvar("cl_effects_lightningarc_branchfactor_add");
-        lcount           = cvar("cl_effects_lightningarc_count");
+        seglength        = CVAR(cl_effects_lightningarc_segmentlength);
+        drifts           = CVAR(cl_effects_lightningarc_drift_start);
+        drifte           = CVAR(cl_effects_lightningarc_drift_end);
+        branchfactor     = CVAR(cl_effects_lightningarc_branchfactor_start);
+        branchfactor_add = CVAR(cl_effects_lightningarc_branchfactor_add);
+        lcount           = CVAR(cl_effects_lightningarc_count);
         
         for(; lcount; --lcount)
             LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
@@ -119,5 +119,16 @@ void Net_ReadMEODP(void) {
     entity e = spawn();
     setorigin(e, loc);
     sound(e, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+    remove(e);
+}
+
+void Net_ReadEleBlast(void) {
+    vector loc;
+    float ateam = ReadByte();
+    loc_x = ReadCoord(); loc_y = ReadCoord(); loc_z = ReadCoord();
+    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), loc, '0 0 0', 1);
+    entity e = spawn();
+    setorigin(e, loc);
+    sound(e, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
     remove(e);
 }

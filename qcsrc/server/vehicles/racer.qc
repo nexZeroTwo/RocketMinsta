@@ -34,7 +34,7 @@ vector jetfromtag(string tagname,float jet_length,float air_power,float solid_po
     if(trace_fraction == 1)
         return v_forward;
     else
-        return v_forward * (jetfromtag_power + cvar("g_vehicle_racer_power_min"));
+        return v_forward * (jetfromtag_power + CVAR(g_vehicle_racer_power_min));
 }
 
 void racer_align4point(float spring_length,float spring_up,float blendrate)
@@ -45,16 +45,16 @@ void racer_align4point(float spring_length,float spring_up,float blendrate)
 
     jetfromtag_nosolid = 0;
 
-    fr_force = jetfromtag("tag_engine_fr",spring_length,cvar("g_vehicle_racer_power_air"), cvar("g_vehicle_racer_power_solid"));
+    fr_force = jetfromtag("tag_engine_fr",spring_length,CVAR(g_vehicle_racer_power_air), CVAR(g_vehicle_racer_power_solid));
     fr_org   = jetfromtag_origin; fr_push = jetfromtag_normpower;
 
-    fl_force = jetfromtag("tag_engine_fl",spring_length,cvar("g_vehicle_racer_power_air"), cvar("g_vehicle_racer_power_solid"));
+    fl_force = jetfromtag("tag_engine_fl",spring_length,CVAR(g_vehicle_racer_power_air), CVAR(g_vehicle_racer_power_solid));
     fl_org   = jetfromtag_origin; fl_push = jetfromtag_normpower;
 
-    br_force = jetfromtag("tag_engine_br",spring_length,cvar("g_vehicle_racer_power_air"), cvar("g_vehicle_racer_power_solid"));
+    br_force = jetfromtag("tag_engine_br",spring_length,CVAR(g_vehicle_racer_power_air), CVAR(g_vehicle_racer_power_solid));
     br_org   = jetfromtag_origin; br_push = jetfromtag_normpower;
 
-    bl_force = jetfromtag("tag_engine_bl",spring_length,cvar("g_vehicle_racer_power_air"), cvar("g_vehicle_racer_power_solid"));
+    bl_force = jetfromtag("tag_engine_bl",spring_length,CVAR(g_vehicle_racer_power_air), CVAR(g_vehicle_racer_power_solid));
     bl_org   = jetfromtag_origin; bl_push = jetfromtag_normpower;
 
     push_vector = fr_force + fl_force + br_force + bl_force;
@@ -112,7 +112,7 @@ float racer_pplug()
     racer.angles_x *= -1;
 
     // Turn Body
-    ftmp = cvar("g_vehicle_racer_turnspeed") / server_fps;
+    ftmp = CVAR(g_vehicle_racer_turnspeed) / server_fps;
     ftmp2 = ftmp * -1;
 
     ftmp = bound(ftmp2,shortangle_f(player.v_angle_y - racer.angles_y,racer.angles_y),ftmp);
@@ -130,7 +130,7 @@ float racer_pplug()
             {
                 self = racer;
                 ftmp = self.velocity_z;
-                self.velocity = self.velocity - self.velocity * cvar("g_vehicle_racer_speed_stop");
+                self.velocity = self.velocity - self.velocity * CVAR(g_vehicle_racer_speed_stop);
                 self.velocity_z = ftmp;
             }
             else
@@ -153,8 +153,8 @@ float racer_pplug()
                 }
 
                 self = racer;
-                self.velocity  = self.velocity + ((v_right * player.movement_y) * cvar("g_vehicle_racer_speed_strafe")) * frametime;
-                self.velocity  = self.velocity + ((v_forward * player.movement_x) * cvar("g_vehicle_racer_speed_forward")) * frametime;
+                self.velocity  = self.velocity + ((v_right * player.movement_y) * CVAR(g_vehicle_racer_speed_strafe)) * frametime;
+                self.velocity  = self.velocity + ((v_forward * player.movement_x) * CVAR(g_vehicle_racer_speed_forward)) * frametime;
             }
         }
         self = racer;
@@ -164,13 +164,13 @@ float racer_pplug()
 
     self = racer;
 
-    df = vlen(self.velocity) * cvar("g_vehicle_racer_downforce") * v_up;
+    df = vlen(self.velocity) * CVAR(g_vehicle_racer_downforce) * v_up;
     self.velocity = self.velocity - df;
     player.movement = racer.velocity;
-    racer_align4point(cvar("g_vehicle_racer_springlength"),100,cvar("g_vehicle_racer_inert"));
+    racer_align4point(CVAR(g_vehicle_racer_springlength),100,CVAR(g_vehicle_racer_inert));
 
-    if(cvar("g_vehicle_racer_drag"))
-        self.velocity  = movelib_dragvec(cvar("g_vehicle_racer_drag"),cvar("g_vehicle_racer_dragexp"));
+    if(CVAR(g_vehicle_racer_drag))
+        self.velocity  = movelib_dragvec(CVAR(g_vehicle_racer_drag),CVAR(g_vehicle_racer_dragexp));
 
     self = player;
     player.BUTTON_ATCK = player.BUTTON_ATCK2 = 0;
@@ -182,7 +182,7 @@ float racer_pplug()
 
 void racer_think()
 {
-    movelib_beak_simple(cvar("g_vehicle_racer_speed_stop"));
+    movelib_beak_simple(CVAR(g_vehicle_racer_speed_stop));
 
     self.nextthink = time;
 }
@@ -208,8 +208,8 @@ void racer_enter()
     //self.tur_head.colormap    = self.owner.colormap;
     //self.vehicle_hudmodel.viewmodelforclient = self.owner;
     //self.owner.hud            = HUD_SPIDEBOT;
-    //self.owner.vehicle_health = (self.vehicle_health / cvar("g_vehicle_spiderbot_health"));
-    //self.owner.vehicle_shield = (self.vehicle_shield / cvar("g_vehicle_spiderbot_shield"));
+    //self.owner.vehicle_health = (self.vehicle_health / CVAR(g_vehicle_spiderbot_health));
+    //self.owner.vehicle_shield = (self.vehicle_shield / CVAR(g_vehicle_spiderbot_shield));
 
     //setorigin(self.owner,self.origin);
     //setattachment(self.owner,self,"");

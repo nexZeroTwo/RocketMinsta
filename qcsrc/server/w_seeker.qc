@@ -5,7 +5,7 @@
 void Seeker_Missile_Explode ()
 {
 	self.event_damage = SUB_Null;
-	RadiusDamage (self, self.owner, cvar("g_balance_seeker_missile_damage"), cvar("g_balance_seeker_missile_edgedamage"), cvar("g_balance_seeker_missile_radius"), world, cvar("g_balance_seeker_missile_force"), self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, CVAR(g_balance_seeker_missile_damage), CVAR(g_balance_seeker_missile_edgedamage), CVAR(g_balance_seeker_missile_radius), world, CVAR(g_balance_seeker_missile_force), self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -28,13 +28,13 @@ void Seeker_Missile_Think()
 		Seeker_Missile_Explode();
 
 	if (!self.switchweapon)
-		self.switchweapon = cvar("g_balance_seeker_missile_speed");
+		self.switchweapon = CVAR(g_balance_seeker_missile_speed);
 
-	if ((self.switchweapon < cvar("g_balance_seeker_missile_speed_max")) && cvar("g_balance_seeker_missile_speed_accel"))
-		self.switchweapon = self.switchweapon * cvar("g_balance_seeker_missile_accel");
+	if ((self.switchweapon < CVAR(g_balance_seeker_missile_speed_max)) && CVAR(g_balance_seeker_missile_speed_accel))
+		self.switchweapon = self.switchweapon * CVAR(g_balance_seeker_missile_accel);
 
-	if (self.switchweapon > cvar("g_balance_seeker_missile_speed_max"))
-		self.switchweapon = self.switchweapon * cvar("g_balance_seeker_missile_decel");
+	if (self.switchweapon > CVAR(g_balance_seeker_missile_speed_max))
+		self.switchweapon = self.switchweapon * CVAR(g_balance_seeker_missile_decel);
 
 	if (self.enemy != world)
 		if (self.enemy.takedamage != DAMAGE_AIM || self.enemy.deadflag != DEAD_NO)
@@ -44,13 +44,13 @@ void Seeker_Missile_Think()
 	{
 		e               = self.enemy;
 		eorg            = 0.5 * (e.absmin + e.absmax);
-		turnrate        = cvar("g_balance_seeker_missile_turnrate");		    // how fast to turn
+		turnrate        = CVAR(g_balance_seeker_missile_turnrate);		    // how fast to turn
 		desireddir      = normalize(eorg - self.origin);
 		olddir          = normalize(self.velocity);				            // get my current direction
 		dist            = vlen(eorg - self.origin);
 
 		// Do evasive maneuvers for world objects? ( this should be a cpu hog. :P )
-		if (cvar("g_balance_seeker_missile_smart") && (dist > cvar("g_balance_seeker_missile_smart_mindist")))
+		if (CVAR(g_balance_seeker_missile_smart) && (dist > CVAR(g_balance_seeker_missile_smart_mindist)))
 		{
 			// Is it a better idea (shorter distance) to trace to the target itself?
 			if ( vlen(self.origin + olddir * self.wait) < dist)
@@ -60,8 +60,8 @@ void Seeker_Missile_Think()
 
 			// Setup adaptive tracelength
 			self.wait = vlen(self.origin - trace_endpos);
-			if (self.wait < cvar("g_balance_seeker_missile_smart_trace_min")) self.wait = cvar("g_balance_seeker_missile_smart_trace_min");
-			if (self.wait > cvar("g_balance_seeker_missile_smart_trace_max")) self.wait = cvar("g_balance_seeker_missile_smart_trace_max");
+			if (self.wait < CVAR(g_balance_seeker_missile_smart_trace_min)) self.wait = CVAR(g_balance_seeker_missile_smart_trace_min);
+			if (self.wait > CVAR(g_balance_seeker_missile_smart_trace_max)) self.wait = CVAR(g_balance_seeker_missile_smart_trace_max);
 
 			// Calc how important it is that we turn and add this to the desierd (enemy) dir.
 			desireddir  = normalize(((trace_plane_normal * (1 - trace_fraction)) + (desireddir * trace_fraction)) * 0.5);
@@ -74,13 +74,13 @@ void Seeker_Missile_Think()
 	}
 
 	// Proxy
-	if (cvar("g_balance_seeker_missile_proxy"))
+	if (CVAR(g_balance_seeker_missile_proxy))
 	{
-		if ( dist <= cvar("g_balance_seeker_missile_proxy_maxrange"))
+		if ( dist <= CVAR(g_balance_seeker_missile_proxy_maxrange))
 		{
 			if (self.autoswitch == 0)
 			{
-				self.autoswitch = time + cvar("g_balance_seeker_missile_proxy_delay");
+				self.autoswitch = time + CVAR(g_balance_seeker_missile_proxy_delay);
 			}
 			else
 			{
@@ -143,7 +143,7 @@ void Seeker_Missile_Animate()
 		self.think           = Seeker_Missile_Think;
 		self.nextthink       = time;// + cvar("g_balance_seeker_missile_activate_delay"); // cant dealy with csqc projectiles
 
-		if (cvar("g_balance_seeker_guided_proxy"))
+		if (CVAR(g_balance_seeker_guided_proxy))
 			self.movetype    = MOVETYPE_BOUNCEMISSILE;
 		else
 			self.movetype    = MOVETYPE_FLYMISSILE;
@@ -157,10 +157,10 @@ void Seeker_Fire_Missile(vector f_diff)
 	local entity missile;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - cvar("g_balance_seeker_missile_ammo");
+		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_seeker_missile_ammo);
 
 	makevectors(self.v_angle);
-	W_SetupShot (self, FALSE, 2, "weapons/seeker_fire.wav", cvar("g_balance_seeker_missile_damage"));
+	W_SetupShot (self, FALSE, 2, "weapons/seeker_fire.wav", CVAR(g_balance_seeker_missile_damage));
 	w_shotorg += f_diff;
 	pointparticles(particleeffectnum("seeker_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
@@ -170,18 +170,18 @@ void Seeker_Fire_Missile(vector f_diff)
 	missile.owner           = self;
 	missile.classname       = "seeker_missile";
 	missile.bot_dodge       = TRUE;
-	missile.bot_dodgerating = cvar("g_balance_seeker_missile_damage");
+	missile.bot_dodgerating = CVAR(g_balance_seeker_missile_damage);
 
 	missile.think           = Seeker_Missile_Animate;
 
-	//if (!cvar("g_balance_seeker_missile_proxy"))
+	//if (!CVAR(g_balance_seeker_missile_proxy))
 	missile.touch           = Seeker_Missile_Touch;
 
 	missile.event_damage    = Seeker_Missile_Damage;
 	missile.nextthink       = time;// + 0.2;// + cvar("g_balance_seeker_missile_activate_delay");
-	missile.cnt             = time + cvar("g_balance_seeker_missile_lifetime");
+	missile.cnt             = time + CVAR(g_balance_seeker_missile_lifetime);
 	missile.enemy           = self.enemy;
-	missile.switchweapon           = cvar("g_balance_seeker_missile_speed");
+	missile.switchweapon           = CVAR(g_balance_seeker_missile_speed);
 	missile.solid           = SOLID_BBOX;
 	missile.scale           = 2;
 	missile.takedamage          = DAMAGE_YES;
@@ -212,13 +212,13 @@ void Seeker_Vollycontroler_Think()
 	entity oldself,oldenemy;
 	self.cnt = self.cnt - 1;
 
-	if ((self.owner.ammo_rockets < cvar("g_balance_seeker_missile_ammo")) || (self.cnt <= -1) || (self.owner.deadflag != DEAD_NO))
+	if ((self.owner.ammo_rockets < CVAR(g_balance_seeker_missile_ammo)) || (self.cnt <= -1) || (self.owner.deadflag != DEAD_NO))
 	{
 		remove(self);
 		return;
 	}
 
-	self.nextthink = time + cvar("g_balance_seeker_missile_delay");
+	self.nextthink = time + CVAR(g_balance_seeker_missile_delay);
 
 	oldself = self;
 	self = self.owner;
@@ -287,7 +287,7 @@ void Seeker_Tag_Touch()
 	{
 		entity e;
 		e           = spawn();
-		e.cnt       = cvar("g_balance_seeker_missile_count");
+		e.cnt       = CVAR(g_balance_seeker_missile_count);
 		e.owner     = self.owner;
 		e.enemy     = other;
 		e.think     = Seeker_Vollycontroler_Think;
@@ -310,7 +310,7 @@ void Seeker_Fire_Tag()
 {
 	local entity missile;
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - cvar("g_balance_seeker_tag_ammo");
+		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_seeker_tag_ammo);
 
 	W_SetupShot (self, FALSE, 2, "weapons/tag_fire.wav", 50);
 
@@ -334,7 +334,7 @@ void Seeker_Fire_Tag()
 
 	missile.flags       = FL_PROJECTILE;
 
-	missile.velocity    = w_shotdir  * cvar("g_balance_seeker_tag_speed");
+	missile.velocity    = w_shotdir  * CVAR(g_balance_seeker_tag_speed);
 	missile.movetype    = MOVETYPE_FLY;
 	W_SetupProjectileVelocity(missile);
 	missile.angles = vectoangles (missile.velocity);
@@ -347,7 +347,7 @@ void Seeker_Flac_Explode ()
 {
 	self.event_damage = SUB_Null;
 
-	RadiusDamage (self, self.owner, cvar("g_balance_seeker_flac_damage"), cvar("g_balance_seeker_flac_edgedamage"), cvar("g_balance_seeker_flac_radius"), world, cvar("g_balance_seeker_flac_force"), self.projectiledeathtype, other);
+	RadiusDamage (self, self.owner, CVAR(g_balance_seeker_flac_damage), CVAR(g_balance_seeker_flac_edgedamage), CVAR(g_balance_seeker_flac_radius), world, CVAR(g_balance_seeker_flac_force), self.projectiledeathtype, other);
 
 	remove (self);
 }
@@ -366,7 +366,7 @@ void Seeker_Fire_Flac()
 	float c;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - cvar("g_balance_seeker_flac_ammo");
+		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_seeker_flac_ammo);
 
 	c = mod(self.bulletcounter, 4);
 	switch(c)
@@ -385,7 +385,7 @@ void Seeker_Fire_Flac()
 			f_diff = '+1.25 +3.75 0';
 			break;
 	}
-	W_SetupShot (self, FALSE, 2, "weapons/flac_fire.wav", cvar("g_balance_seeker_flac_damage"));
+	W_SetupShot (self, FALSE, 2, "weapons/flac_fire.wav", CVAR(g_balance_seeker_flac_damage));
 	w_shotorg += f_diff;
 
 	pointparticles(particleeffectnum("hagar_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -394,11 +394,11 @@ void Seeker_Fire_Flac()
 	missile.owner = missile.realowner = self;
 	missile.classname = "missile";
 	missile.bot_dodge = TRUE;
-	missile.bot_dodgerating = cvar("g_balance_seeker_flac_damage");
+	missile.bot_dodgerating = CVAR(g_balance_seeker_flac_damage);
 	missile.touch = Seeker_Flac_Explode;
 	missile.use = Seeker_Flac_Explode;
 	missile.think = Seeker_Flac_Explode;
-	missile.nextthink = time + cvar("g_balance_seeker_flac_lifetime") + cvar("g_balance_seeker_flac_lifetime_rand");
+	missile.nextthink = time + CVAR(g_balance_seeker_flac_lifetime) + CVAR(g_balance_seeker_flac_lifetime_rand);
 	missile.solid = SOLID_BBOX;
 	missile.scale = 0.4; // BUG: the model is too big
 	missile.projectiledeathtype = WEP_SEEKER;
@@ -407,7 +407,7 @@ void Seeker_Fire_Flac()
 
 	missile.movetype = MOVETYPE_FLY;
 	w_shotdir = w_shotdir + '0 0 0.3';
-	missile.velocity    = (w_shotdir  + randomvec() * cvar("g_balance_seeker_flac_spread")) * cvar("g_balance_seeker_flac_speed");
+	missile.velocity    = (w_shotdir  + randomvec() * CVAR(g_balance_seeker_flac_spread)) * CVAR(g_balance_seeker_flac_speed);
 
 	W_SetupProjectileVelocity(missile);
 
@@ -425,22 +425,22 @@ void spawnfunc_weapon_seeker (void)
 float w_seeker(float req)
 {
 	if (req == WR_AIM)
-		self.BUTTON_ATCK = bot_aim(cvar("g_balance_seeker_tag_speed"), 0, 20, FALSE);
+		self.BUTTON_ATCK = bot_aim(CVAR(g_balance_seeker_tag_speed), 0, 20, FALSE);
 
 	else if (req == WR_THINK)
 	{
 		if (self.BUTTON_ATCK)
-			if (weapon_prepareattack(0, cvar("g_balance_seeker_tag_refire")))
+			if (weapon_prepareattack(0, CVAR(g_balance_seeker_tag_refire)))
 			{
 				Seeker_Fire_Tag();
-				weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_seeker_tag_animtime"), w_ready);
+				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_seeker_tag_animtime), w_ready);
 			}
 
 		if (self.BUTTON_ATCK2)
-			if (weapon_prepareattack(1, cvar("g_balance_seeker_flac_refire")))
+			if (weapon_prepareattack(1, CVAR(g_balance_seeker_flac_refire)))
 			{
 				Seeker_Fire_Flac();
-				weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_seeker_flac_animtime"), w_ready);
+				weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_seeker_flac_animtime), w_ready);
 			}
 
 	}
@@ -456,9 +456,9 @@ float w_seeker(float req)
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_SEEKER);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_rockets >= cvar("g_balance_seeker_tag_ammo") + cvar("g_balance_seeker_missile_ammo");
+		return self.ammo_rockets >= CVAR(g_balance_seeker_tag_ammo) + CVAR(g_balance_seeker_missile_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_rockets >= cvar("g_balance_seeker_flac_ammo");
+		return self.ammo_rockets >= CVAR(g_balance_seeker_flac_ammo);
     
 	return TRUE;
 };

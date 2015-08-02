@@ -136,7 +136,7 @@ void fillNewMenuServerCreateTab(entity me)
 		me.TD(me, 1, 0.7, e = makeNewMenuInputBox(1, "bot_suffix"));
 			setDependent(e, "bot_number", 0, -1);
 	me.TR(me);
-	if(cvar("menu_advanced") > 0){
+	if(CVAR(menu_advanced) > 0){
 		me.TR(me);
 			me.TD(me, 1, 1, e = makeNewMenuTextLabel(0, "Map voting:"));
 			me.TD(me, 1, 2, e = makeNewMenuTextSlider("g_maplist_votable"));

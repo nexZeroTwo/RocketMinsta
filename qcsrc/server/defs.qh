@@ -3,16 +3,19 @@
 
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
 
-#define BUTTON_ATCK   button0
-#define BUTTON_JUMP   button2
-#define BUTTON_ATCK2  button3
-#define BUTTON_ZOOM   button4
-#define BUTTON_CROUCH button5
-#define BUTTON_HOOK   button6
-#define BUTTON_INFO   button7
-#define BUTTON_CHAT   buttonchat
-#define BUTTON_USE    buttonuse
-#define BUTTON_DRAG   button8
+#define BUTTON_ATCK    button0
+#define BUTTON_JUMP    button2
+#define BUTTON_ATCK2   button3
+#define BUTTON_ZOOM    button4
+#define BUTTON_CROUCH  button5
+#define BUTTON_HOOK    button6
+#define BUTTON_INFO    button7
+#define BUTTON_CHAT    buttonchat
+#define BUTTON_USE     buttonuse
+#define BUTTON_DRAG    button8
+
+#define BUTTON_NADGET  BUTTON_HOOK
+#define BUTTON_NADGET2 button9
 
 // Globals
 
@@ -301,14 +304,14 @@ float isJoinAllowed();
 
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
-float sys_ticrate; // gets initialised in worlspawn, saves the value from cvar("sys_ticrate")
+float sys_ticrate; // gets initialised in worlspawn, saves the value from CVAR(sys_ticrate)
 float sv_lite; // used to gain a little extra speed, at the expense of some features like gibs.
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
 .float allowedTimeouts; // contains the number of allowed timeouts for each player
 entity timeoutInitiator; // contains the entity of the player who started the last timeout
-float orig_slowmo; // contains the value of cvar("slowmo") so that, after timeout finished, it isn't set to slowmo 1 necessarily
+float orig_slowmo; // contains the value of CVAR(slowmo) so that, after timeout finished, it isn't set to slowmo 1 necessarily
 .vector lastV_angle; //used when pausing the game in order to force the player to keep his old view angle fixed
 entity timeoutHandler; //responsible for centerprinting the timeout countdowns and playing sounds
 void timeoutHandler_Think();
@@ -452,6 +455,7 @@ float sv_maxidle_spectatorsareidle;
 
 float sv_pogostick;
 float sv_doublejump;
+float sv_slicksurfaces;
 float tracebox_hits_trigger_hurt(vector start, vector mi, vector ma, vector end);
 
 float next_pingtime;
@@ -712,8 +716,6 @@ float realclients;
 typedef void() spawnfunc_t;
 .float droppedpowerup;
 
-vector frag_force;
-
 void Boobs_DropAllAndRespawn(vector);
 
 float next_round;
@@ -805,3 +807,16 @@ float sv_shownames;
 .float client_dprmversion;
 
 .float antilag_debug;
+
+float PlayerMayFire(entity plr);
+
+#define GAMEEVENT(evnt,argblock) if(CallGameEventHook_Begin(evnt)) { argblock CallGameEventHook_Commit(); }
+#define GAMEEVENTARG(type,arg) CallGameEventHook_Arg##type(arg);
+
+void CallGameEventHook(string evnt, string args);
+float CallGameEventHook_Begin(string evnt);
+void CallGameEventHook_Commit(void);
+void CallGameEventHook_ArgRaw(string a);
+void CallGameEventHook_ArgFloat(float f);
+void CallGameEventHook_ArgVector(vector v);
+void CallGameEventHook_ArgEntity(entity e);

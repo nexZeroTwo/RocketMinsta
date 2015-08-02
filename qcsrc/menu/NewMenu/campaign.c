@@ -117,7 +117,7 @@ void loadCvarsNewMenuCampaignList(entity me)
 		strunzone(campaign_name);
 	if(me.cvarName)
 		strunzone(me.cvarName);
-	campaign_name = strzone(cvar_string("g_campaign_name"));
+	campaign_name = strzone(CVAR_STR(g_campaign_name));
 	me.cvarName = strzone(strcat("g_campaign", campaign_name, "_index"));
 	registercvar(me.cvarName, "", 0); // saved by server QC anyway
 	CampaignFile_Unload();
@@ -205,7 +205,7 @@ void MultiCampaign_Prev(entity btn, entity me)
 
 void drawNewMenuCampaignList(entity me)
 {
-	if(cvar(me.cvarName) != me.campaignIndex || cvar_string("g_campaign_name") != campaign_name)
+	if(cvar(me.cvarName) != me.campaignIndex || CVAR_STR(g_campaign_name) != campaign_name)
 		me.loadCvars(me);
 	drawListBox(me);
 }

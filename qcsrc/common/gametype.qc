@@ -16,27 +16,27 @@
 
 float gametype_GetMenu ()
 {
-	if(cvar("g_dm"))               return GAME_DEATHMATCH;
-	if(cvar("g_tdm"))              return GAME_TEAM_DEATHMATCH;
-	if(cvar("g_domination"))       return GAME_DOMINATION;
-	if(cvar("g_ctf"))              return GAME_CTF;
-	if(cvar("g_runematch"))        return GAME_RUNEMATCH;
-	if(cvar("g_lms"))              return GAME_LMS;
-	if(cvar("g_arena"))            return GAME_ARENA;
-	if(cvar("g_keyhunt"))          return GAME_KEYHUNT;
-	if(cvar("g_assault"))          return GAME_ASSAULT;
-	if(cvar("g_onslaught"))        return GAME_ONSLAUGHT;
-	if(cvar("g_race"))             return GAME_RACE;
-	if(cvar("g_nexball"))          return GAME_NEXBALL;
-	if(cvar("g_cts"))              return GAME_CTS;
-	if(cvar("g_freezetag"))        return GAME_FREEZETAG;
-	if(cvar("g_total_domination")) return GAME_TOTAL_DOMINATION;
-	if(cvar("g_vip"))              return GAME_VIP;
-	if(cvar("g_prec"))             return GAME_PRECIOUS;
-//	if(cvar("g_inf"))              return GAME_INFECTION;
-	if(cvar("g_jailbreak"))        return GAME_JAILBREAK;
-    if(cvar("g_clanarena"))        return GAME_CLANARENA;
-	if(cvar("g_no"))               return GAME_NOTHING;
+	if(CVAR(g_dm))               return GAME_DEATHMATCH;
+	if(CVAR(g_tdm))              return GAME_TEAM_DEATHMATCH;
+	if(CVAR(g_domination))       return GAME_DOMINATION;
+	if(CVAR(g_ctf))              return GAME_CTF;
+	if(CVAR(g_runematch))        return GAME_RUNEMATCH;
+	if(CVAR(g_lms))              return GAME_LMS;
+	if(CVAR(g_arena))            return GAME_ARENA;
+	if(CVAR(g_keyhunt))          return GAME_KEYHUNT;
+	if(CVAR(g_assault))          return GAME_ASSAULT;
+	if(CVAR(g_onslaught))        return GAME_ONSLAUGHT;
+	if(CVAR(g_race))             return GAME_RACE;
+	if(CVAR(g_nexball))          return GAME_NEXBALL;
+	if(CVAR(g_cts))              return GAME_CTS;
+	if(CVAR(g_freezetag))        return GAME_FREEZETAG;
+	if(CVAR(g_total_domination)) return GAME_TOTAL_DOMINATION;
+	if(CVAR(g_vip))              return GAME_VIP;
+	if(CVAR(g_prec))             return GAME_PRECIOUS;
+//	if(CVAR(g_inf))              return GAME_INFECTION;
+	if(CVAR(g_jailbreak))        return GAME_JAILBREAK;
+    if(CVAR(g_clanarena))        return GAME_CLANARENA;
+	if(CVAR(g_no))               return GAME_NOTHING;
 	return 0;
 }
 
@@ -75,78 +75,78 @@ float gametype_Extrapolate ()
 	local float game_new;
 	game_new = 0;
 
-	if(cvar("g_dm") || g_dm) {
+	if(CVAR(g_dm) || g_dm) {
 		game_new = GAME_DEATHMATCH; }
-	if(cvar("g_tdm") || g_tdm) {
+	if(CVAR(g_tdm) || g_tdm) {
 		if(game_new) return 0;
 		game_new = GAME_TEAM_DEATHMATCH; }
-	if(cvar("g_domination") || g_domination) {
+	if(CVAR(g_domination) || g_domination) {
 		if(game_new) return 0;
 		game_new = GAME_DOMINATION; }
-	if(cvar("g_ctf") || g_ctf) {
+	if(CVAR(g_ctf) || g_ctf) {
 		if(game_new) return 0;
 		game_new = GAME_CTF; }
-	if(cvar("g_runematch") || g_runematch) {
+	if(CVAR(g_runematch) || g_runematch) {
 		if(game_new) return 0;
 		game_new = GAME_RUNEMATCH; }
-	if(cvar("g_lms") || g_lms) {
+	if(CVAR(g_lms) || g_lms) {
 		if(game_new) return 0;
 		game_new = GAME_LMS; }
-	if(cvar("g_arena") || g_arena) {
+	if(CVAR(g_arena) || g_arena) {
 		if(game_new) return 0;
 		game_new = GAME_ARENA; }
-	if(cvar("g_keyhunt") || g_keyhunt || _is_key_hunt) {
+	if(CVAR(g_keyhunt) || g_keyhunt || _is_key_hunt) {
 		if(game_new) return 0;
 		game_new = GAME_KEYHUNT; }
-	if(cvar("g_assault") || g_assault) {
+	if(CVAR(g_assault) || g_assault) {
 		if(game_new) return 0;
 		game_new = GAME_ASSAULT; }
-	if(cvar("g_onslaught") || g_onslaught) {
+	if(CVAR(g_onslaught) || g_onslaught) {
 		if(game_new) return 0;
 		game_new = GAME_ONSLAUGHT; }
-	if(cvar("g_race") || g_race) {
+	if(CVAR(g_race) || g_race) {
 		if(game_new) return 0;
 		game_new = GAME_RACE; }
-	if(cvar("g_nexball") || g_nexball) {
+	if(CVAR(g_nexball) || g_nexball) {
 		if(game_new) return 0;
 		game_new = GAME_NEXBALL; }
-	if(cvar("g_cts") || g_cts) {
+	if(CVAR(g_cts) || g_cts) {
 		if(game_new) return 0;
 		game_new = GAME_CTS; }
-	if(cvar("g_freezetag") || g_freezetag) {
+	if(CVAR(g_freezetag) || g_freezetag) {
 		if(game_new) return 0;
 		game_new = GAME_FREEZETAG; }
-	if(cvar("g_total_domination") || g_total_domination) {
+	if(CVAR(g_total_domination) || g_total_domination) {
 		if(game_new && game_new != GAME_DOMINATION) return 0;
 		game_new = GAME_TOTAL_DOMINATION; }
-	if(cvar("g_vip") || g_vip) {
+	if(CVAR(g_vip) || g_vip) {
 		if(game_new) return 0;
 		game_new = GAME_VIP; }
-	if(cvar("g_prec") || g_prec) {
+	if(CVAR(g_prec) || g_prec) {
 		if(game_new) return 0;
 		game_new = GAME_PRECIOUS; }
 	/*
-	if(cvar("g_inf") || g_inf) {
+	if(CVAR(g_inf) || g_inf) {
 		if(game_new) return 0;
 		game_new = GAME_INFECTION; }
 	*/
-	if(cvar("g_jailbreak") || g_jailbreak) {
+	if(CVAR(g_jailbreak) || g_jailbreak) {
 		if(game_new) return 0;
 		game_new = GAME_JAILBREAK; }
-    if(cvar("g_clanarena") || g_clanarena) {
+    if(CVAR(g_clanarena) || g_clanarena) {
         if(game_new) return 0;
         game_new = GAME_CLANARENA; }
-	if(cvar("g_no") || g_no) {
+	if(CVAR(g_no) || g_no) {
 		if(game_new) return 0;
 		game_new = GAME_NOTHING; }
 
 	return game_new;
 }
 
-void gametype_Set (float gametype)
+void gametype_Set (float type)
 {
 	gametype_Reset ();
-	switch(gametype)
+	switch(type)
 	{
 		case GAME_DEATHMATCH:
 			cvar_set("g_dm", "1"); g_dm = 1;
@@ -218,8 +218,8 @@ void gametype_Set (float gametype)
 		default:
 			return;
 	}
-	game = gametype;
-	cvar_set("gamecfg", ftos(gametype));
+	game = type;
+	cvar_set("gamecfg", ftos(type));
 }
 
 void gametype_Reset ()
@@ -260,25 +260,25 @@ float gametype_ID_to_MapID (float l_gametype)
 	switch(l_gametype)
 	{
 		case GAME_DEATHMATCH:       return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_TEAM_DEATHMATCH:  return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_TEAM_DEATHMATCH:  return MAPINFO_TYPE_TEAM_DEATHMATCH;
 		case GAME_DOMINATION:       return MAPINFO_TYPE_DOMINATION;
 		case GAME_CTF:              return MAPINFO_TYPE_CTF;
-		case GAME_RUNEMATCH:        return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_LMS:              return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_ARENA:            return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_KEYHUNT:          return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_RUNEMATCH:        return MAPINFO_TYPE_RUNEMATCH;
+		case GAME_LMS:              return MAPINFO_TYPE_LMS;
+		case GAME_ARENA:            return MAPINFO_TYPE_ARENA;
+		case GAME_KEYHUNT:          return MAPINFO_TYPE_KEYHUNT;
 		case GAME_ASSAULT:          return MAPINFO_TYPE_ASSAULT;
 		case GAME_ONSLAUGHT:        return MAPINFO_TYPE_ONSLAUGHT;
 		case GAME_RACE:             return MAPINFO_TYPE_RACE;
 		case GAME_NEXBALL:          return MAPINFO_TYPE_NEXBALL;
 		case GAME_CTS:              return MAPINFO_TYPE_CTS;
-		case GAME_FREEZETAG:        return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_FREEZETAG:        return MAPINFO_TYPE_FREEZETAG;
 		case GAME_TOTAL_DOMINATION: return MAPINFO_TYPE_DOMINATION;
-		case GAME_VIP:              return MAPINFO_TYPE_DEATHMATCH;
-		case GAME_PRECIOUS:         return MAPINFO_TYPE_DEATHMATCH;
+		case GAME_VIP:              return MAPINFO_TYPE_VIP;
+		case GAME_PRECIOUS:         return MAPINFO_TYPE_PRECIOUS;
 //		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
-        case GAME_CLANARENA:        return MAPINFO_TYPE_DEATHMATCH;
+        case GAME_CLANARENA:        return MAPINFO_TYPE_CLANARENA;
 		case GAME_NOTHING:          return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_ALL:              return MAPINFO_TYPE_ALL;
 		default:                    return 0;
@@ -304,6 +304,9 @@ float gametype_MapID_to_ID (float l_maptype)
 		case MAPINFO_TYPE_CTS:             return GAME_CTS;
 		case MAPINFO_TYPE_JAILBREAK:       return GAME_JAILBREAK;
         case MAPINFO_TYPE_CLANARENA:       return GAME_CLANARENA;
+        case MAPINFO_TYPE_FREEZETAG:       return GAME_FREEZETAG;
+        case MAPINFO_TYPE_VIP:             return GAME_VIP;
+        case MAPINFO_TYPE_PRECIOUS:        return GAME_PRECIOUS;
 		case MAPINFO_TYPE_ALL:             return GAME_ALL;
 		default:                           return 0;
 	}

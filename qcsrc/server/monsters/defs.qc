@@ -41,7 +41,7 @@ float SKILL4_MINALPHA         = 0.4;
 
 float monsterwander;
 /*
-        monsterwander = cvar("monsterwander");
+        monsterwander = CVAR(monsterwander);
         // monsterwander is always on in skill 5
         if (skill >= 5)
                 monsterwander = TRUE;
