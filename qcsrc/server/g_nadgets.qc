@@ -2323,7 +2323,7 @@ void HG_Sentry_Trigger(void) {
         o = e.origin + e.view_ofs;
         traceline_antilag(self, o, aimloc, MOVE_NORMAL, self);
 
-        if(trace_fraction == 1 || (aimtarg && trace_ent == aimtarg)) {
+        if(almost_equals(trace_fraction, 1) || (aimtarg && trace_ent == aimtarg)) {
             vector dir = normalize(trace_endpos - o);
 
             traceline_antilag(self, o, o + dir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);            
