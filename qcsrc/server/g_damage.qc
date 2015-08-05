@@ -602,7 +602,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
         
-        if(targ.iscreature && medic && (!DEATH_ISSPECIAL(deathtype) || DEATH_ISPROJECTED(deathtype))) {
+        if(targ.iscreature && medic && deathtype != DEATH_ENDURANCE && (!DEATH_ISSPECIAL(deathtype) || DEATH_ISPROJECTED(deathtype))) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal;
                 
