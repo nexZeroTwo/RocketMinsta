@@ -1392,6 +1392,7 @@ void PutClientInServer (void)
         self.buffs = 0;
         self.hg_stealth = 0;
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
+        self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);

@@ -685,7 +685,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-    if(!g_minstagib) {
+    if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
 		v = healtharmor_applydamage(self.armorvalue, CVAR(g_balance_armor_blockpercent), damage);
 		take = v_x;
 		save = v_y;
@@ -693,7 +693,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		save = 0;
 		take = damage;
 	}
-    
+
+    take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
+
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{
 		if (save > 10)
@@ -809,7 +811,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			self.max_armorvalue += (save + take);
 	}
     
-    if(deathtype != DEATH_IGNITE) {
+    if(deathtype != DEATH_IGNITE && deathtype != DEATH_ENDURANCE) {
         self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
         self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
     }
