@@ -621,7 +621,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 
     W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
-    Buffs_FocusDamage(self, attacker, damage, deathtype);
 
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)
@@ -635,7 +634,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         damage = 0;
         force = '0 0 0';
     }
-    
+
+    Buffs_FocusDamage(self, attacker, damage, deathtype);
+
     if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
         if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
@@ -942,6 +943,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(CVAR(g_nadgets_resetonrespawn))
                 self.hg_ammo1 = self.hg_ammo2 = 0;
         }
+
+        self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         
         DropPowerups(force);
 

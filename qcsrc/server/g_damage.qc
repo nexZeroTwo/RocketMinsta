@@ -1174,8 +1174,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(self.event_damage) {
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
-        if(t_oldhealth > self.health) {
-            if(deathtype != DEATH_ENDURANCE && (!teams_matter || self.team != attacker.team)) {
+
+        if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
+            if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
