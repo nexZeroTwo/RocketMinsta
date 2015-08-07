@@ -709,13 +709,24 @@ void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathty
     if(!Buffs_BuffPower(attacker, BUFF_FOCUS))
         return;
 
+    var alt = (deathtype & HITTYPE_SECONDARY);
+
     attacker.campingrifle_bulletcounter = attacker.campingrifle_bulletcounter +
         if(damage >= targ.health + targ.armorvalue)
-            CVAR(g_buffs_focus_bonus_kill)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_kill_alt)
+            else
+                CVAR(g_buffs_focus_bonus_kill)
         else if(deathtype & HITTYPE_HEADSHOT)
-            CVAR(g_buffs_focus_bonus_headshot)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_headshot_alt)
+            else
+                CVAR(g_buffs_focus_bonus_headshot)
         else
-            CVAR(g_buffs_focus_bonus_hit);
+            if(alt)
+                CVAR(g_buffs_focus_bonus_hit_alt)
+            else
+                CVAR(g_buffs_focus_bonus_hit);
 }
 
 float Buffs_EnduranceDamage(entity targ, entity attacker, float damage, float deathtype) {
