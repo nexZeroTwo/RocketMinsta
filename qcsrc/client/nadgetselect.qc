@@ -189,6 +189,9 @@ float NS_InputEvent(float bInputType, float nPrimary, float nSecondary) {
 void Net_ReadNadgetSelect(void) {
     var opts = ReadString();
 
+    if(isdemo())
+        return;
+
     if(!ns_active) {
         mv_mousepos = [vid_conwidth, vid_conheight] * 0.5;
         ns_confirmed1 = ns_confirmed2 = -1;
