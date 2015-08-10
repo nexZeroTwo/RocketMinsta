@@ -875,6 +875,18 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_KEYHUNT;
 	if(CVAR(g_clanarena_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CLANARENA;
+	if(CVAR(g_freezetag_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_FREEZETAG;
+	if(CVAR(g_vip_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_VIP;
+	if(CVAR(g_prec_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_PRECIOUS;
+	if(CVAR(g_lms_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_LMS;
+	if(CVAR(g_runematch_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_RUNEMATCH;
+	if(CVAR(g_arena_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_ARENA;
 #undef MAPINFO_TYPE_FIGHT
 #endif
 

@@ -567,11 +567,13 @@ void PostInit(void)
 	MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
 	
     // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
-    float cfgver = CVAR(rm_initialized);
+//#NO AUTOCVARS START
+    float cfgver = cvar("rm_initialized");
     if(cfgver >= 44 && !(cvar_type("rm_radio") & CVAR_TYPEFLAG_EXISTS))
         cvar_set("rm_initialized", "42");
 
-	switch(CVAR(rm_initialized))
+	switch(cvar("rm_initialized"))
+//#NO AUTOCVARS END
 	{
 		case 0:
 		case 1:
