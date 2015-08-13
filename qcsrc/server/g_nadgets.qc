@@ -441,7 +441,7 @@ void HG_Plasma_Projectile() {
 					*	(random() - 0.5) * 2
 				);
 
-    proj.velocity = kick;
+    proj.velocity = kick + self.velocity;
 	proj.touch = HG_Plasma_Projectile_Touch;
 	setsize(proj, '0 0 -3', '0 0 -3');
 	proj.takedamage = DAMAGE_NO;
@@ -467,7 +467,7 @@ void HG_Plasma_Projectile() {
 void HG_Plasma_Explode() {
     float c;
     
-    if(self.hg_adept)
+    if(self.hg_adept && CVAR(g_nadgets_plasma_adept_stun))
         return;
     
     ++hg_plasma_group;
@@ -648,7 +648,9 @@ void HG_Grenade_Touch() {
             } else goto troll;
         } else if(self.hg_type == HG_REMOTE)
             goto troll;
-            
+        
+        if(self.hg_type == HG_PLASMA)
+            self.velocity = '0 0 0';
         self.use();
     } else {
         vector normal = trace_plane_normal;
@@ -700,8 +702,11 @@ void HG_Grenade_Touch() {
                 HG_Stick();
 
                 return;
-            } else
+            } else {
+                if(self.hg_type == HG_PLASMA)
+                    self.velocity = '0 0 0';
                 self.use();
+            }
 
             return;
         } else if(self.hg_type == HG_LASER)

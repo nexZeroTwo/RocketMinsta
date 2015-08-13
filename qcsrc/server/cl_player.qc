@@ -638,7 +638,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     Buffs_FocusDamage(self, attacker, damage, deathtype);
 
     if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
-        if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
+        if(self.frozen || (inflictor.hg_adept && CVAR(g_nadgets_plasma_adept_stun))) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
