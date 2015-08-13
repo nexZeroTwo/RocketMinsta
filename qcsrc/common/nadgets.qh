@@ -16,7 +16,7 @@
 
 enum {
     #define HGDEF(id,shortname,longname,color) id,
-    _HG_START,
+    _HG_START = 99,
     HGDEFS
     _HG_END
     #undef HGDEF
