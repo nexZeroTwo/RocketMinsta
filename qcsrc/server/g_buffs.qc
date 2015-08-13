@@ -1221,6 +1221,8 @@ BUFFDEFS
 
 #undef BUFFDEF
 
+BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
+
 // older RM compatibility
 BUFF_SPAWNFUNCS(bash,       BUFF_IGNITE)
 
