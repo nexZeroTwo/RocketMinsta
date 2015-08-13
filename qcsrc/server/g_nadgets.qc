@@ -1603,13 +1603,16 @@ void HG_Linker_Think() {
         
     if(sharingframe) {
         self.hg_linker_nexteffect = time + 1;
-        
+        sharefactor = CVAR(g_nadgets_linker_sharefactor);
+
         if(denom >= 1) {
             if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
-            sharefactor = if(g_clanarena) 1 else CVAR(g_nadgets_linker_sharefactor);
+
+            if(g_clanarena && sharefactor)
+                sharefactor = 1;
 
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-                if(denom > 1) {
+                if(denom > 1 && sharefactor) {
                     float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
                     float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
 
