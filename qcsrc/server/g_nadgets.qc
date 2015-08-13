@@ -2213,8 +2213,9 @@ entity HG_Sentry_Emitter_Spawn(entity sentry) {
 } 
 
 void HG_Sentry_Emitter_Remove(entity emitter) {
-    if(self.zapper_beam)
-        remove(self.zapper_beam);
+    if(emitter.zapper_beam)
+        remove(emitter.zapper_beam);
+    remove(emitter);
 }
 
 void HG_Sentry_Remove(void) {
