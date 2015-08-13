@@ -758,7 +758,7 @@ void Buffs_ReaperFrag(entity targ, entity attacker) {
         return;
 
     var newbuffs = attacker.buffs | targ.buffs;
-    newbuffs &~= attacker.buffs | BUFF_REAPER;
+    newbuffs &~= attacker.buffs | BUFF_REAPER | CVAR(g_buffs_reaper_buff_banmask);
 
     if(newbuffs) {
         Buffs_BuffPickup_Notify(attacker, newbuffs, 0);
