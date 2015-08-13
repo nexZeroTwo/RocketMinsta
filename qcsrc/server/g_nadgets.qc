@@ -2041,20 +2041,32 @@ float HG_Bait(void) {
     return TRUE;
 }
 
-float HG_Sentry_TargetIsValid(entity e) {
+float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
+    for(var e; (e = findentity(e, owner, emitter.owner));)
+        if(e != emitter && e.enemy == targ && e.classname == "hg_sentry_emitter")
+            return TRUE;
+    return FALSE;
+}
+
+float HG_Sentry_TargetIsValid(entity emitter, entity e) {
+    var sentry = emitter.owner;
+
     if(!e || e.classname != "player" || e.frozen || e.jb_isprisoned || e.deadflag != DEAD_NO)
         return FALSE;
 
-    if(!IsDifferentTeam(e, self.realowner) && !Buffs_BuffPower(self.realowner, BUFF_MEDIC))
+    if(!IsDifferentTeam(e, sentry.realowner) && !Buffs_BuffPower(sentry.realowner, BUFF_MEDIC))
         return FALSE;
 
-    vector o = self.origin + self.view_ofs;
+    if(HG_Sentry_TargetIsTaken(emitter, e))
+        return FALSE;
+
+    vector o = sentry.origin + sentry.view_ofs;
     vector t = e.origin + e.view_ofs;
 
     if(vlen(o - t) > CVAR(g_nadgets_sentry_beam_range))
         return FALSE;
 
-    traceline(o, t, MOVE_NORMAL, self);
+    traceline(o, t, MOVE_NORMAL, sentry);
 
     if(trace_ent != e)
         return FALSE;
@@ -2062,21 +2074,26 @@ float HG_Sentry_TargetIsValid(entity e) {
     return TRUE;
 }
 
-entity HG_Sentry_FindTarget(void) {
+entity HG_Sentry_FindTarget(entity emitter) {
+    var sentry = emitter.owner;
+
     entity targ, p;
     float range = CVAR(g_nadgets_sentry_beam_range), mindist, dist;
-    float medic = Buffs_BuffPower(self.realowner, BUFF_MEDIC), medicflag, diffteam;
-    vector t, o = self.origin + self.view_ofs;
+    float medic = Buffs_BuffPower(sentry.realowner, BUFF_MEDIC), medicflag, diffteam;
+    vector t, o = sentry.origin + sentry.view_ofs;
 
     mindist = range;
 
     FOR_EACH_PLAYER(p) if(!p.frozen && !p.jb_isprisoned && p.deadflag == DEAD_NO) {
-        diffteam = (p != self.realowner && IsDifferentTeam(self, p));
+        diffteam = (p != sentry.realowner && IsDifferentTeam(sentry, p));
 
         if(diffteam) {
             if(medicflag)
                 continue;
         } else if(!medic)
+            continue;
+
+        if(HG_Sentry_TargetIsTaken(emitter, p))
             continue;
 
         t = p.origin + p.view_ofs;
@@ -2088,7 +2105,7 @@ entity HG_Sentry_FindTarget(void) {
         } else if(dist > range)
             continue;
 
-        traceline(o, t, MOVE_NORMAL, self);
+        traceline(o, t, MOVE_NORMAL, sentry);
 
         if(trace_ent != p)
             continue;
@@ -2104,7 +2121,7 @@ entity HG_Sentry_FindTarget(void) {
 }
 
 void HG_Sentry_Beam_Think(void) {
-    entity targ = self.owner.enemy;
+    entity targ = self.enemy.enemy;
     vector end = targ.origin + targ.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
     vector start = self.owner.origin + self.owner.view_ofs;
 
@@ -2140,12 +2157,13 @@ void HG_Sentry_Beam_Think(void) {
     self.nextthink = time;
 }
 
-entity HG_Sentry_Beam_Spawn(void) {
-    entity e = spawn();
+entity HG_Sentry_Beam_Spawn(entity emitter) {
+    var e = spawn(), sentry = emitter.owner;
     e.classname = "hg_sentry_beam";
-    e.owner = self;
-    e.team = self.team;
-    e.zapper_beam_start = self.origin + self.view_ofs;
+    e.owner = sentry;
+    e.enemy = emitter;
+    e.team = sentry.team;
+    e.zapper_beam_start = sentry.origin + sentry.view_ofs;
     e.zapper_beam_end = e.zapper_beam_start;
     e.think = HG_Sentry_Beam_Think;
     e.nextthink = time;
@@ -2155,19 +2173,64 @@ entity HG_Sentry_Beam_Spawn(void) {
     return e;
 }
 
+entity HG_Sentry_Emitter_Spawn(entity sentry) {
+    return spawn() {
+        classname: "hg_sentry_emitter",
+        owner: sentry,
+        origin: sentry.origin + sentry.view_ofs,
+        think: inline void(void) {
+            var sentry = self.owner;
+
+            if(time < sentry.cnt || sentry.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
+                if(self.zapper_beam)
+                    remove(self.zapper_beam);
+                self.zapper_beam = world;
+                self.enemy = world;
+            } else if(!self.zapper_beam) {
+                if(!HG_Sentry_TargetIsValid(self, self.enemy))
+                    self.enemy = world;
+
+                if(!self.enemy)
+                    self.enemy = HG_Sentry_FindTarget(self);
+
+                if(self.enemy)
+                    self.zapper_beam = HG_Sentry_Beam_Spawn(self);
+            } else {
+                if(self.enemy && !HG_Sentry_TargetIsValid(self, self.enemy))
+                    self.enemy = HG_Sentry_FindTarget(self);
+
+                if(!self.enemy) {
+                    remove(self.zapper_beam);
+                    self.zapper_beam = world;
+                    self.enemy = world;
+                }
+            }
+
+            self.nextthink = time;
+        },
+        nextthink: time
+    };
+} 
+
+void HG_Sentry_Emitter_Remove(entity emitter) {
+    if(self.zapper_beam)
+        remove(self.zapper_beam);
+}
+
 void HG_Sentry_Remove(void) {
     self.realowner.hg_detonables -= 1;
 
     if(self.hg_waypoint)
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
 
-    if(self.zapper_beam)
-        remove(self.zapper_beam);
-
     if(self.aiment) {
         stopsound(self.aiment, CHAN_PROJECTILE);
         remove(self.aiment);
     }
+
+    for(var e; (e = find(e, classname, "hg_sentry_emitter"));)
+        if(e.owner == self)
+            HG_Sentry_Emitter_Remove(e);
 
     remove(self);
 }
@@ -2181,31 +2244,6 @@ void HG_Sentry_Think(void) {
     if(self.team != self.realowner.team || !self.realowner.iscreature) {
         HG_Sentry_Explode();
         return;
-    }
-
-    if(time < self.cnt || self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
-        if(self.zapper_beam)
-            remove(self.zapper_beam);
-        self.zapper_beam = world;
-        self.enemy = world;
-    } else if(!self.zapper_beam) {
-        if(!HG_Sentry_TargetIsValid(self.enemy))
-            self.enemy = world;
-
-        if(!self.enemy)
-            self.enemy = HG_Sentry_FindTarget();
-
-        if(self.enemy)
-            self.zapper_beam = HG_Sentry_Beam_Spawn();
-    } else {
-        if(self.enemy && !HG_Sentry_TargetIsValid(self.enemy))
-            self.enemy = HG_Sentry_FindTarget();
-
-        if(!self.enemy) {
-            remove(self.zapper_beam);
-            self.zapper_beam = world;
-            self.enemy = world;
-        }
     }
 
     self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * CVAR(g_nadgets_sentry_energy_regen));
@@ -2298,6 +2336,9 @@ float HG_Sentry(void) {
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
 
     e.aiment = c;
+
+    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i)
+        HG_Sentry_Emitter_Spawn(e);
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);

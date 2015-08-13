@@ -1475,6 +1475,7 @@ float autocvar_g_nadgets_sentry_beam_force;
 float autocvar_g_nadgets_sentry_beam_range;
 float autocvar_g_nadgets_sentry_beam_energyrequired;
 float autocvar_g_nadgets_sentry_beam_initialdelay;
+float autocvar_g_nadgets_sentry_beam_amount;
 float autocvar_g_nadgets_sentry_damagefactor;
 float autocvar_g_nadgets_sentry_damagefactor_nadgets;
 float autocvar_g_nadgets_sentry_health;
