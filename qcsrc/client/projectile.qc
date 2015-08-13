@@ -54,6 +54,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
+            case PROJECTILE_HG_PLASMA:
             case PROJECTILE_HEAL_PARTICLE_EMITTER:
                 break;
 			default:
