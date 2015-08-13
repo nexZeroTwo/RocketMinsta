@@ -359,6 +359,8 @@ const float STAT_HGREGENMAX2 = 105;
 const float STAT_HGREGENPAUSED2 = 106;
 const float STAT_HGREGENRATE2 = 107;
 
+const float STAT_DMGINCOMING = 108;
+
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
 const float JBMSG_ALLALIVE = 2;

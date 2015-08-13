@@ -5345,6 +5345,18 @@ void Sbar_Draw(void)
 				drawpic(health_pos + '0 -4.5 0', "gfx/hud/sb_health", '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 				Sbar_DrawXNum_Colored(health_pos + '26 0 0', x, 24, sbar_alpha_fg);
 			}
+
+            if((var incdmg = getstati(STAT_DMGINCOMING))) {
+                var sdmg = ftos(-incdmg);
+                var dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
+
+                drawfont = sbar_bigfont;
+                drawstring([
+                    health_pos_x + 0.5 * (24 * 4 - stringwidth_svn(sdmg, FALSE, dmgscale)),
+                    health_pos_y - dmgscale_y
+                ], sdmg, dmgscale, '1 0 0', 1, DRAWFLAG_NORMAL);
+                drawfont = sbar_font;
+            }
 		}
 
 		// weapon icons

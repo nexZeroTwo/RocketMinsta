@@ -97,6 +97,9 @@ void Buffs_Init(void) {
     g_buffs_adept = (g_buffs_enabled & BUFF_ADEPT || g_buffs_baseline & BUFF_ADEPT);
     g_buffs_meodp = (g_buffs_enabled & BUFF_MEODP || g_buffs_baseline & BUFF_MEODP);
     
+    if(g_buffs_enabled & BUFF_ENDURANCE || g_buffs_baseline & BUFF_ENDURANCE)
+        addstat(STAT_DMGINCOMING, AS_INT, buff_endur_dmgpool);
+
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
 
