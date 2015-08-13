@@ -2183,7 +2183,7 @@ void HG_Sentry_Think(void) {
         return;
     }
 
-    if(self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
+    if(time < self.cnt || self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
         if(self.zapper_beam)
             remove(self.zapper_beam);
         self.zapper_beam = world;
@@ -2283,6 +2283,7 @@ float HG_Sentry(void) {
     e.skin = TeamColorSkin(self.team);
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
+    e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
 
     self.hg_detonables += 1;
 
