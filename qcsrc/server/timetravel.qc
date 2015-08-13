@@ -37,6 +37,12 @@
         TIMETRAVEL_HANDLE(jb_isprisoned,                Float)      \
         TIMETRAVEL_HANDLE(jb_prisontime,                Time)       \
         TIMETRAVEL_HANDLE(disableclientprediction,      Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_ticks,              Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_healthpool,         Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_nexttick,           Time)       \
+        TIMETRAVEL_HANDLE(buff_endur_ticks,             Float)      \
+        TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
+        TIMETRAVEL_HANDLE(buff_endur_nexttick,          Time)       \
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
 
 .float tt_weaponentity_state;
