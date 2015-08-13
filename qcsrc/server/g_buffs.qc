@@ -467,7 +467,7 @@ void Buffs_ClientFrame(void) {
         self.buff_model = world;
     }
     
-    if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
+    if(self.buff_vamp_ticks > 0 && time > self.buff_vamp_nexttick) {
         float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
         Heal(self, world, self, heal, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
         self.buff_vamp_healthpool -= heal;
@@ -475,6 +475,14 @@ void Buffs_ClientFrame(void) {
         self.buff_vamp_nexttick = time + 1;
     }
     
+    if(self.buff_endur_ticks > 0 && time > self.buff_endur_nexttick) {
+        float damage = self.buff_endur_dmgpool / self.buff_endur_ticks;
+        Damage(self, self, self, damage, DEATH_ENDURANCE, self.origin, '0 0 0');
+        self.buff_endur_dmgpool -= damage;
+        self.buff_endur_ticks -= 1;
+        self.buff_endur_nexttick = time + 1;
+    }
+
     if(!self.buff_teamwp) {
         if(Buffs_BuffPower(self, BUFF_MEDIC))
             Buffs_SetTeamWaypoint(self, "HEALER", Buffs_TypeToColor(BUFF_MEDIC), BUFF_MEDIC);
@@ -560,6 +568,7 @@ float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float dea
     if(!tenacity)
         return damage;
     
+    // do not use DEATH_ISPROJECTED here, we don't want to mitigate DEATH_ENDURANCE
     if(DEATH_ISSPECIAL(deathtype) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
         return damage;
     
@@ -700,13 +709,48 @@ void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathty
     if(!Buffs_BuffPower(attacker, BUFF_FOCUS))
         return;
 
+    var alt = (deathtype & HITTYPE_SECONDARY);
+
     attacker.campingrifle_bulletcounter = attacker.campingrifle_bulletcounter +
         if(damage >= targ.health + targ.armorvalue)
-            CVAR(g_buffs_focus_bonus_kill)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_kill_alt)
+            else
+                CVAR(g_buffs_focus_bonus_kill)
         else if(deathtype & HITTYPE_HEADSHOT)
-            CVAR(g_buffs_focus_bonus_headshot)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_headshot_alt)
+            else
+                CVAR(g_buffs_focus_bonus_headshot)
         else
-            CVAR(g_buffs_focus_bonus_hit);
+            if(alt)
+                CVAR(g_buffs_focus_bonus_hit_alt)
+            else
+                CVAR(g_buffs_focus_bonus_hit);
+}
+
+float Buffs_EnduranceDamage(entity targ, entity attacker, float damage, float deathtype) {
+    if(deathtype == DEATH_ENDURANCE)
+        return damage;
+
+    if(damage <= 0)
+        return damage;
+    
+    var endur = Buffs_BuffPower(targ, BUFF_ENDURANCE);
+
+    if(!endur)
+        return damage;
+
+    var ticks = CVAR(g_buffs_endurance_damage_dot_duration);
+    var direct = damage * (1 - (1 - CVAR(g_buffs_endurance_damage_direct)) * endur);
+    var dot = damage * CVAR(g_buffs_endurance_damage_dot) * endur;
+    
+    if(dot > 0) {
+        targ.buff_endur_ticks = ticks;
+        targ.buff_endur_dmgpool += dot;
+    }
+
+    return direct;
 }
 
 void Buffs_ReaperFrag(entity targ, entity attacker) {

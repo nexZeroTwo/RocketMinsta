@@ -602,11 +602,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
         float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
         
-        if(targ.iscreature && medic && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_IGNITE || deathtype == DEATH_ARC)) {
+        if(targ.iscreature && medic && deathtype != DEATH_ENDURANCE && (!DEATH_ISSPECIAL(deathtype) || DEATH_ISPROJECTED(deathtype))) {
             if((teams_matter && attacker.team == targ.team) || attacker == targ) {
                 float heal;
                 
-                if(deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
+                if(DEATH_ISPROJECTED(deathtype))
                     // arc and ignite scale off the original heal, so leave it as is
                     heal = damage;
                 else {
@@ -639,10 +639,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 if(attacker != targ)
                     Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
                 
-                if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
+                if(!DEATH_ISPROJECTED(deathtype))
                     Buffs_ArcDamage(targ, attacker, heal, deathtype);
                 return;
-            } else if(!g_clanarena) if(!attacker.hg_shield) if(deathtype != DEATH_ARC) if(deathtype != DEATH_IGNITE)
+            } else if(!g_clanarena) if(!attacker.hg_shield) if(!DEATH_ISPROJECTED(deathtype))
                 damage = damage * (1 - (1 - CVAR(g_buffs_medic_damagefactor)) * medic);
         }
         
@@ -1014,7 +1014,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if (targ.items & IT_INVINCIBLE && !g_minstagib)
             damage = damage * CVAR(g_balance_powerup_invincible_takedamage);
 
-        if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
+        if(!DEATH_ISPROJECTED(deathtype)) {
             if not(DEATH_ISSPECIAL(deathtype))
             {
                 damage *= g_weapondamagefactor;
@@ -1094,7 +1094,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-            if(!DEATH_ISHG(deathtype)) if(deathtype != DEATH_IGNITE) if(deathtype != DEATH_MEODP) {
+            if(!DEATH_ISHG(deathtype)) if(!DEATH_ISPROJECTED(deathtype)) if(deathtype != DEATH_MEODP) {
                 if(targ_is_player) {
                     if(IsHeadshot(damage_origtarget, attacker, hitloc))
                         deathtype |= HITTYPE_HEADSHOT;
@@ -1174,7 +1174,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(self.event_damage) {
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
-        if(t_oldhealth > self.health) {
+
+        if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
