@@ -654,6 +654,8 @@ void SV_ParseClientCommand(string s) {
         self.tt_lastmoment = TimeTravel_SaveMoment(self);
     } else if(cmd == "tt_takeback" && sv_cheats) {
         TimeTravel_TakeBack(self, self.tt_lastmoment);
+    } else if(cmd == "tt_takebacktracked" && sv_cheats) {
+        TimeTravel_TakeBack_ToTracked(self, time - stof(argv(1)));
 	} else if(cmd == "maplist") {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {

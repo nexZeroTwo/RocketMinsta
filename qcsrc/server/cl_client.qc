@@ -3969,4 +3969,9 @@ void PlayerPostThink (void)
 
 	if(self.waypointsprite_attachedforcarrier)
 		WaypointSprite_UpdateHealth(self.waypointsprite_attachedforcarrier, '1 0 0' * healtharmor_maxdamage(self.health, self.armorvalue, CVAR(g_balance_armor_blockpercent)));
+
+    /*
+    if(self.iscreature)
+        TimeTravel_Track(self, 10, 0.1);
+    */
 }
