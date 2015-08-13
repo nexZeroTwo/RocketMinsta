@@ -1214,18 +1214,12 @@ void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
         BUFF_SPAWNFUNC(e##_team3,   b,  COLOR_TEAM3) \
         BUFF_SPAWNFUNC(e##_team4,   b,  COLOR_TEAM4) 
 
-BUFF_SPAWNFUNCS(arc,        BUFF_ARC)
-BUFF_SPAWNFUNCS(guard,      BUFF_GUARD)
-BUFF_SPAWNFUNCS(supply,     BUFF_SUPPLY)
-BUFF_SPAWNFUNCS(haste,      BUFF_HASTE)
-BUFF_SPAWNFUNCS(medic,      BUFF_MEDIC)
-BUFF_SPAWNFUNCS(ignite,     BUFF_IGNITE)
-BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
-BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
-BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
-BUFF_SPAWNFUNCS(adept,      BUFF_ADEPT)
-BUFF_SPAWNFUNCS(meodp,      BUFF_MEODP)
-BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
+#define BUFFDEF(id,shortname,longname,color) \
+        BUFF_SPAWNFUNCS(shortname, id)
+
+BUFFDEFS
+
+#undef BUFFDEF
 
 // older RM compatibility
 BUFF_SPAWNFUNCS(bash,       BUFF_IGNITE)
@@ -1235,5 +1229,3 @@ BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scount")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  "ammoregen")
-
-
