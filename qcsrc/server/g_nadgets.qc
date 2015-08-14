@@ -520,14 +520,11 @@ void HG_Translocator_Explode() {
             HG_SetRegenTime(self.owner, HG_RegenTime(self.owner));
         })
     }
-    
-    entity oldself = self;
-    self = self.owner;
-    if(GRENVAR(oldself.hg_type, "reloadonuse")) {
+
+    if(GRENVAR(self.hg_type, "reloadonuse")) using(self = self.owner) {
         weapon_action(self.weapon, WR_RESETPLAYER);
         ATTACK_FINISHED(self) = TRUE;
     }
-    self = oldself;
 }
 
 float HG_TypeToCSQCProjType(float t) {
@@ -1964,12 +1961,11 @@ void HG_Bait_Body_Think(void) {
 }
 
 void HG_Bait_Body_Boom(entity body) {
-    entity oldself = self;
-    self = body;
-    body.owner = body.realowner;
-    HG_Grenade_RadiusDamage();
-    HG_Bait_Body_Remove(body);
-    self = oldself;
+    using(self = body) {
+        body.owner = body.realowner;
+        HG_Grenade_RadiusDamage();
+        HG_Bait_Body_Remove(body);
+    }
 }
 
 entity HG_Bait_Create(entity ref) {
