@@ -188,8 +188,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		PlayerScore_Add(attacker, SP_KILLS, 1);
 	}
 
-	//if(targ != attacker)
-		PlayerScore_Add(targ, SP_DEATHS, 1);
+	PlayerScore_Add(targ, SP_DEATHS, 1);
 
 	if(g_arena)
 		if(CVAR(g_arena_roundbased))
@@ -256,8 +255,6 @@ string AppendItemcodes(string s, entity player)
 {
 	float w;
 	w = player.weapon;
-	//if(w == 0)
-	//	w = player.switchweapon;
 	if(w == 0)
 		w = player.cnt; // previous weapon!
 	s = strcat(s, ftos(w));
@@ -821,19 +818,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(roundstate != ROUNDSTATE_OVER) if(attacker_is_player) if(targ_is_player)
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
-
-			/*
-			if(deathtype == DEATH_HURTTRIGGER)
-			{
-				oldself = self;
-				self = targ;
-				PutClientInServer();
-				self = oldself;
-
-				if(ISVIP(targ))
-				vip_ResetHealthArmor(targ);
-			}
-			*/
 		}
 
 		if(targ_is_player)
@@ -1314,10 +1298,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
     				power = 1 - ((vlen (diff) - 2) / rad);
                 }
 
-				//bprint(" ");
-				//bprint(ftos(power));
-				//if (targ == attacker)
-				//	print(ftos(power), "\n");
 				if (power > 0)
 				{
 					if (power > 1)
@@ -1388,12 +1368,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						a = bound(0, tfloorforce + (1-tfloorforce) * hitratio, 1);
 						force = force * a;
 
-						//if (targ == attacker)
-						//{
-						//	print("hits ", ftos(hits), " / ", ftos(total));
-						//	print(" finaldmg ", ftos(finaldmg), " force ", vtos(force));
-						//	print(" (", ftos(a), ")\n");
-						//}
 						if(hits || tfloordmg || tfloorforce)
 						{
 							if(targ.iscreature)
@@ -1462,7 +1436,6 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 	{
 		if(!e.fire_burner)
 		{
-			// print("adding a fire burner to ", e.classname, "\n");
 			e.fire_burner = spawn();
 			e.fire_burner.classname = "fireburner";
 			e.fire_burner.reset = SUB_Remove;

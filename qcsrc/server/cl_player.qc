@@ -153,7 +153,6 @@ entity CopyBody(float keepvelocity)
 	self.oldvelocity = self.velocity;
 	self.fade_time = oldself.fade_time;
 	self.fade_rate = oldself.fade_rate;
-	//self.weapon = oldself.weapon;
 	setorigin(self, oldself.origin);
 	setsize(self, oldself.mins, oldself.maxs);
 	self.prevorigin = oldself.origin;
