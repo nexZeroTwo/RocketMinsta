@@ -1233,16 +1233,17 @@ void UpdateSelectedPlayer() {
 }
 
 .float muted; // to be used by prvm_edictset server playernumber muted 1
-void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
+float Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
     float silence = if(source) CVAR(sv_silence) else 0;
+    float success = TRUE;
 
     if(silence == 1)
-        return;
+        return FALSE;
 
     if(source.iscreature) {
         float damg;
@@ -1257,7 +1258,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
     }
 
 	if(Ban_MaybeEnforceBan(source))
-		return;
+		return FALSE;
 
 	if(!teamsay && !privatesay) {
 		if(substring(msgin, 0, 1) == " ")
@@ -1278,7 +1279,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	msgin = formatmessage(msgin);
 
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	if(source.classname != "player" && !source.jb_specteam)
 		colorstr = "^0"; // black for spectators
@@ -1292,7 +1293,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	msgin = trigger_magicear_processmessage_forallears(source, teamsay, privatesay, msgin);
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	/*
 	 * using bprint solves this... me stupid
@@ -1427,9 +1428,10 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			teamsay = -1; // spectators
 	}
 
-    if(flood)
+    if(flood) {
         print("NOTE: ", playername(source), "^7 is flooding.\n");
-    else if(!teamsay && !privatesay)
+        success = FALSE;
+    } else if(!teamsay && !privatesay)
         IRC_Announce_PlayerChat(source, msgin);
 
 	// build sourcemsgstr by cutting off a prefix and replacing it by the other one
@@ -1438,6 +1440,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	if(source.muted || silence)
 	{
+        success = FALSE;
 		// always fake the message
 		
 		if(flood == 1)
@@ -1511,6 +1514,8 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(substring(msgin, 0, strlen("rmhelp"))  == "rmhelp"
 	|| substring(msgin, 0, strlen("/rmhelp")) == "/rmhelp")
 		sprint(source, "\x01^1NOTE: ^2rmhelp^7 has to be typed in the console. To open the console, press ^2Shift+Escape\n");
+
+    return success;
 }
 
 float GetVoiceMessageVoiceType(string type)

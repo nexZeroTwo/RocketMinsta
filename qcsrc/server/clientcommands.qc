@@ -1098,25 +1098,32 @@ void SV_ParseClientCommand(string s) {
         if(!text)
             goto wp_usage;
 
-        if(action == "team") {
-            var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
-            if(strlen(text) > lim)
-                text = substring(text, 0, lim);
-        }
-
         var clr = stov(argv(4));
         if(!clr)
             clr = '1 1 1';
 
-        var wp = switch(action) {
-            default: case "me"   : WaypointSprite_DeployPersonal,
-                     case "team" : WaypointSprite_DeployTeam
-        } (text,
+        var vloc = 
             if(loc == "origin")
                 self.origin
             else
-                self.cursor_trace_endpos,
+                self.cursor_trace_endpos;
 
+        if(action == "team") {
+            var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
+            if(strlen(text) > lim)
+                text = substring(text, 0, lim);
+
+            if(CVAR(g_waypointsprite_custom_team_waypoint_announce)) {
+                var msg = strcat("^7WP: ", rgb_to_hexcolor(clr), text, "^7 at ^3", NearestLocation(vloc));
+                if(!Say(self, TRUE, world, msg, TRUE))
+                    return;
+            }
+        }
+
+        var wp = switch(action) {
+            default: case "me"   : WaypointSprite_DeployPersonal,
+                     case "team" : WaypointSprite_DeployTeam
+        } (text, vloc,
             {
                 var lt = max(0, stof(argv(5)));
 
