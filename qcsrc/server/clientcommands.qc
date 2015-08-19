@@ -1098,6 +1098,12 @@ void SV_ParseClientCommand(string s) {
         if(!text)
             goto wp_usage;
 
+        if(action == "team") {
+            var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
+            if(strlen(text) > lim)
+                text = substring(text, 0, lim);
+        }
+
         var clr = stov(argv(4));
         if(!clr)
             clr = '1 1 1';
