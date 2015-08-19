@@ -70,8 +70,6 @@ void DPS_FinishForTarget(entity targ) {
     }
 }
 
-void inf_infect_player(entity, entity);
-
 float Damage_DamageInfo_SendEntity(entity to, float sf)
 {
 	WriteByte(MSG_ENTITY, ENT_CLIENT_DAMAGEINFO);
@@ -382,8 +380,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				attacker.killcount = 0;
 				LogDeath("tk", deathtype, attacker, targ);
 			} else {
-				inf_infect_player(attacker, targ);
-
 				attacker.killsound = 1;
 
 				if(!checkrules_firstblood) {
@@ -727,10 +723,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	{
 		if(targ_is_player) if(attacker_is_player)
 		{
-			if(g_inf)
-				if(targ.team == COLOR_TEAM1)
-					damage = damage * CVAR(g_inf_damage_multiplier);
-
 			// Chaiomanot Feb 25 2012: The below is _really_ cheap. Shame on you, author.
 			if (!targ.isbot)
 				if (attacker.isbot)

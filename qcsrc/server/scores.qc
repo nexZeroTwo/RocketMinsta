@@ -186,8 +186,6 @@ void ScoreInfo_Init(float teams)
 		scores_initialized.classname = "ent_client_scoreinfo";
 		Net_LinkEntity(scores_initialized, FALSE, 0, ScoreInfo_SendEntity);
 	}
-	if(g_inf)
-		return;
 	if(teams >= 1)
 		TeamScore_Spawn(COLOR_TEAM1, "Red");
 	if(teams >= 2)

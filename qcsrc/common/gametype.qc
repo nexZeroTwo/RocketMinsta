@@ -31,7 +31,6 @@ float gametype_GetMenu ()
 	if(CVAR(g_freezetag))        return GAME_FREEZETAG;
 	if(CVAR(g_total_domination)) return GAME_TOTAL_DOMINATION;
 	if(CVAR(g_vip))              return GAME_VIP;
-//	if(CVAR(g_inf))              return GAME_INFECTION;
 	if(CVAR(g_jailbreak))        return GAME_JAILBREAK;
     if(CVAR(g_clanarena))        return GAME_CLANARENA;
 	if(CVAR(g_no))               return GAME_NOTHING;
@@ -58,7 +57,6 @@ void gametype_SetMenu (float l_id)
 	cvar_set_ifeq(l_id, "g_freezetag",        GAME_FREEZETAG);
 	cvar_set_ifeq(l_id, "g_total_domination", GAME_TOTAL_DOMINATION);
 	cvar_set_ifeq(l_id, "g_vip",              GAME_VIP);
-//	cvar_set_ifeq(l_id, "g_inf",              GAME_INFECTION);
 	cvar_set_ifeq(l_id, "g_jailbreak",        GAME_JAILBREAK);
     cvar_set_ifeq(l_id, "g_clanarena",        GAME_CLANARENA);
 	cvar_set_ifeq(l_id, "g_no",               GAME_NOTHING);
@@ -115,11 +113,6 @@ float gametype_Extrapolate ()
 	if(CVAR(g_vip) || g_vip) {
 		if(game_new) return 0;
 		game_new = GAME_VIP; }
-	/*
-	if(CVAR(g_inf) || g_inf) {
-		if(game_new) return 0;
-		game_new = GAME_INFECTION; }
-	*/
 	if(CVAR(g_jailbreak) || g_jailbreak) {
 		if(game_new) return 0;
 		game_new = GAME_JAILBREAK; }
@@ -185,11 +178,6 @@ void gametype_Set (float type)
 		case GAME_VIP:
 			cvar_set("g_vip", "1"); g_vip = 1;
 			break;
-		/*
-		case GAME_INFECTION:
-			cvar_set("g_inf", "1"); g_inf = 1;
-			break;
-		*/
 		case GAME_JAILBREAK:
 			cvar_set("g_jailbreak", "1"); g_jailbreak = 1;
 			break;
@@ -223,7 +211,6 @@ void gametype_Reset ()
 	cvar_set("g_freezetag",        "0"); g_freezetag        = 0;
 	cvar_set("g_total_domination", "0"); g_total_domination = 0;
 	cvar_set("g_vip",              "0"); g_vip              = 0;
-	cvar_set("g_inf",              "0"); g_inf              = 0;
 	cvar_set("g_jailbreak",        "0"); g_jailbreak        = 0;
     cvar_set("g_clanarena",        "0"); g_clanarena        = 0;
 	cvar_set("g_no",               "0"); g_no               = 0;

@@ -126,7 +126,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
+			else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
 			{
 				if(self.classname == "player") {
 					PutClientInServer();

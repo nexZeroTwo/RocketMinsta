@@ -782,7 +782,7 @@ void SV_PlayerPhysics()
 		if(self.race_penalty)
 			not_allowed_to_move = 1;
 		if(!sv_ready_restart_after_countdown)
-		if(time < game_starttime && !g_inf)
+		if(time < game_starttime)
 			not_allowed_to_move = 1;
 
 		if(not_allowed_to_move)

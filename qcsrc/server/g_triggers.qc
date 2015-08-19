@@ -467,12 +467,7 @@ void trigger_hurt_touch()
 	}
 	else
 	{
-		if (other.owner == world && other.classname == "prec_rune")
-		{
-			EXACTTRIGGER_TOUCH;
-			other.pain_finished = 0;
-		}
-		else if (!other.owner)
+		if (!other.owner)
 		{
 			if (other.items & IT_KEY1 || other.items & IT_KEY2)	// reset flag
 			{

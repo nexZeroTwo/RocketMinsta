@@ -1424,8 +1424,6 @@ void readlevelcvars(void)
 
     if not(inWarmupStage)
         game_starttime                 = CVAR(g_start_delay);
-    if(g_inf)
-        game_starttime = CVAR(g_inf_start_delay);
 
     readplayerstartcvars();
 }

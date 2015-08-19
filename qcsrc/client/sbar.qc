@@ -294,12 +294,8 @@ float Sbar_ComparePlayerScores(entity left, entity right)
 
 	if(!left.gotscores)
 		vl = COLOR_SPECTATOR;
-	else if(CVAR(g_inf))
-		vl = COLOR_TEAM1;
 	if(!right.gotscores)
 		vr = COLOR_SPECTATOR;
-	else if(CVAR(g_inf))
-		vr = COLOR_TEAM1;
 
 	if(vl > vr)
 		return true;
@@ -1379,20 +1375,7 @@ void Sbar_DrawScoreboard()
 	vector bg_size;
 	bg_size = drawgetimagesize("gfx/hud/sb_scoreboard_bg");
 
-	if(CVAR(g_inf))
-	{
-		rgb_x = CVAR(sbar_color_bg_r);
-		rgb_y = CVAR(sbar_color_bg_g);
-		rgb_z = CVAR(sbar_color_bg_b);
-		local entity tm1, tm2;
-		for(tm = teams.sort_next; tm; tm = tm.sort_next)
-			if(tm.team == COLOR_TEAM1)
-				tm1 = tm;
-			else if(tm.team == COLOR_TEAM2)
-				tm2 = tm;
-		pos = Sbar_Scoreboard_MakeTable(pos, tm1, rgb, bg_size, tm2);
-	}
-	else if(teamplay)
+    if(teamplay)
 	{
 		for(tm = teams.sort_next; tm; tm = tm.sort_next)
 		{
@@ -4555,7 +4538,7 @@ void Sbar_Draw(void)
 	}
 #endif
 
-	if(teamplay && !intermission && !spectatee_status && !CVAR(g_inf))
+	if(teamplay && !intermission && !spectatee_status)
 	{
 		entity tm;
 		float ts_min, ts_max;

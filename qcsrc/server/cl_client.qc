@@ -1,4 +1,4 @@
-void inf_warmup();
+
 void Boobs_Clear();
 
 .entity specdelay_ent;
@@ -373,7 +373,7 @@ entity SelectSpawnPoint (float anypoint)
 	{
 		spot = Spawn_WeightedPoint(firstspot, 1, 1, 1);
 	}
-	else if(teams_matter && !g_inf && closetoteam)
+	else if(teams_matter && closetoteam)
 	{
 		local entity md_point, md_player, md_tmp_point, md_tmp_player;
 		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
@@ -743,7 +743,6 @@ PutObserverInServer
 putting a client as observer in the server
 =============
 */
-void inf_player_leave(entity);
 void FixPlayermodel();
 void PutObserverInServer (void)
 {
@@ -772,7 +771,6 @@ void PutObserverInServer (void)
         HG_DetonateAll(self);
         vip_RemovePlayer();
         JB_RemovePlayer();
-        inf_player_leave(self);
         Portal_ClearAll(self);
         Boobs_Clear();
     }
@@ -844,8 +842,6 @@ void PutObserverInServer (void)
 	self.think = SUB_Null;
 	self.nextthink = 0;
 	self.hook_time = 0;
-	self.prec_rune = world;
-    self.prec_grudge = 0;
     self.last_spawn_pt_1 = world;
     self.last_spawn_pt_2 = world;
 	self.deadflag = DEAD_NO;
@@ -1265,8 +1261,6 @@ void PutClientInServer (void)
 
 		self.metertime = 0;
 
-	    self.prec_rune = world;
-	    self.prec_grudge = 0;
 		self.last_spawn_pt_1 = world;
 		self.last_spawn_pt_2 = world;
 
@@ -2587,7 +2581,6 @@ void EnterSpectatorMode() {
     if(self.ballcarried)
         DropBall(self.ballcarried, self.origin, self.velocity);
     kh_Key_DropAll(self, TRUE);
-    inf_player_leave(self);
     WaypointSprite_PlayerDead();
     self.classname = "observer";
     if(blockSpectators)
@@ -2976,7 +2969,7 @@ void LeaveSpectatorMode()
             return;
         }
         
-        if(!teams_matter || CVAR(g_campaign) || CVAR(g_balance_teams) || (self.wasplayer && CVAR(g_changeteam_banned)) || CVAR(g_inf)) {
+        if(!teams_matter || CVAR(g_campaign) || CVAR(g_balance_teams) || (self.wasplayer && CVAR(g_changeteam_banned))) {
             if(HG_ShowMenu(FALSE))
                 return;
             
@@ -3926,7 +3919,6 @@ void PlayerPostThink (void)
 	*/
 
 	Arena_Warmup();
-	inf_warmup();
 
 	//pointparticles(particleeffectnum("machinegun_impact"), self.origin + self.view_ofs + '0 0 7', '0 0 0', 1);
 

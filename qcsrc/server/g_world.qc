@@ -549,7 +549,6 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
 	registercvar("g_vip", "0");
-	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
 	registercvar("g_jailbreak", "0");
     registercvar("g_clanarena", "0");
@@ -1910,7 +1909,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
-	if(teams_matter && !g_inf)
+	if(teams_matter)
 	{
 		team1_score = TeamScore_GetCompareValue(COLOR_TEAM1);
 		team2_score = TeamScore_GetCompareValue(COLOR_TEAM2);

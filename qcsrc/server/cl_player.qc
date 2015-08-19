@@ -1800,7 +1800,7 @@ void VoiceMessage(string type, string msg)
 float PlayerMayFire(entity plr) {
     //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
     //if all players readied up and the countdown is running
-    if((time < game_starttime && !g_inf) || time < plr.race_penalty)
+    if(time < game_starttime || time < plr.race_penalty)
         return FALSE;
 
     if(roundstate == ROUNDSTATE_OVER)
