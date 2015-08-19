@@ -53,7 +53,6 @@ g_terminals.qh
 g_buffs.qh
 g_freeze.qh
 freezetag.qh
-vip.qh
 jailbreak.qh
 clanarena.qh
 domination.qh
@@ -76,7 +75,6 @@ arena.qc
 dodging.qc
 g_freeze.qc
 freezetag.qc
-vip.qc
 g_violence.qc
 g_damage.qc
 teamplay.qc

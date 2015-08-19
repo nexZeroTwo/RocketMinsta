@@ -289,15 +289,6 @@ void InitGameplayMode()
 		nb_init();
 	}
 
-    if(g_vip)
-    {
-        fraglimit_override = CVAR(g_vip_point_limit);
-        leadlimit_override = CVAR(g_vip_lead_limit);
-        timelimit_override = CVAR(g_vip_time_limit);
-        ActivateTeamplay();
-        vip_init();
-    }
-
 	if(g_no)
 	{
 		local float i_si_no;

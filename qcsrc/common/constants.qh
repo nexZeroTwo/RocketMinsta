@@ -44,7 +44,7 @@ const float TE_CSQC_CLEARBIGPRINT = 112;
 const float TE_CSQC_SERVERINFO = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
-const float TE_CSQC_VIPINFO = 116;
+const float TE_CSQC_NADGETSELECT = 116;
 const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
@@ -57,7 +57,6 @@ const float TE_CSQC_UPDATESELECTEDPLAYER = 125;
 const float TE_CSQC_MESSAGE = 126;
 const float TE_CSQC_VOTEINVITE = 127;
 const float TE_CSQC_ELEBLAST = 128;
-const float TE_CSQC_NADGETSELECT = 129;
 
 const float CSQCMSG_OBITUARY = 0;
 const float CSQCMSG_OBITUARY_CUSTOM = 1;

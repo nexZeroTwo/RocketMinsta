@@ -235,7 +235,7 @@ void relocate_spawnpoint()
     if (!self.cnt)
         self.cnt = 1;
 
-    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_vip || g_tdm || g_jailbreak || g_keyhunt || g_clanarena)
+    if (g_ctf || g_assault || g_onslaught || g_domination || g_nexball || g_freezetag || g_tdm || g_jailbreak || g_keyhunt || g_clanarena)
         if (self.team)
             have_team_spawns = 1;
 
@@ -3123,16 +3123,12 @@ void hudflash_teamcolor_default_spec(entity e)
 
 // universal endround for all supported gametypes
 void FreezeTag_EndRound();
-void vip_EndRound();
 void tdom_EndRound();
 
 void EndRound()
 {
     if(g_freezetag)
         FreezeTag_EndRound();
-else
-    if(g_vip)
-        vip_EndRound();
 else
     if(g_totaldomination)
         tdom_EndRound();
@@ -3152,7 +3148,6 @@ else
 float EndRound_Allowed()
 {
     return( g_freezetag
-         || g_vip
          || g_totaldomination
          || g_keyhunt
          || g_jailbreak

@@ -30,7 +30,6 @@ float gametype_GetMenu ()
 	if(CVAR(g_cts))              return GAME_CTS;
 	if(CVAR(g_freezetag))        return GAME_FREEZETAG;
 	if(CVAR(g_total_domination)) return GAME_TOTAL_DOMINATION;
-	if(CVAR(g_vip))              return GAME_VIP;
 	if(CVAR(g_jailbreak))        return GAME_JAILBREAK;
     if(CVAR(g_clanarena))        return GAME_CLANARENA;
 	if(CVAR(g_no))               return GAME_NOTHING;
@@ -56,7 +55,6 @@ void gametype_SetMenu (float l_id)
 	cvar_set_ifeq(l_id, "g_cts",              GAME_CTS);
 	cvar_set_ifeq(l_id, "g_freezetag",        GAME_FREEZETAG);
 	cvar_set_ifeq(l_id, "g_total_domination", GAME_TOTAL_DOMINATION);
-	cvar_set_ifeq(l_id, "g_vip",              GAME_VIP);
 	cvar_set_ifeq(l_id, "g_jailbreak",        GAME_JAILBREAK);
     cvar_set_ifeq(l_id, "g_clanarena",        GAME_CLANARENA);
 	cvar_set_ifeq(l_id, "g_no",               GAME_NOTHING);
@@ -110,9 +108,6 @@ float gametype_Extrapolate ()
 	if(CVAR(g_total_domination) || g_total_domination) {
 		if(game_new && game_new != GAME_DOMINATION) return 0;
 		game_new = GAME_TOTAL_DOMINATION; }
-	if(CVAR(g_vip) || g_vip) {
-		if(game_new) return 0;
-		game_new = GAME_VIP; }
 	if(CVAR(g_jailbreak) || g_jailbreak) {
 		if(game_new) return 0;
 		game_new = GAME_JAILBREAK; }
@@ -175,9 +170,6 @@ void gametype_Set (float type)
 			cvar_set("g_domination", "1"); g_domination = 1;
 			cvar_set("g_total_domination", "1"); g_total_domination = 1;
 			break;
-		case GAME_VIP:
-			cvar_set("g_vip", "1"); g_vip = 1;
-			break;
 		case GAME_JAILBREAK:
 			cvar_set("g_jailbreak", "1"); g_jailbreak = 1;
 			break;
@@ -210,7 +202,6 @@ void gametype_Reset ()
 	cvar_set("g_cts",              "0"); g_cts              = 0;
 	cvar_set("g_freezetag",        "0"); g_freezetag        = 0;
 	cvar_set("g_total_domination", "0"); g_total_domination = 0;
-	cvar_set("g_vip",              "0"); g_vip              = 0;
 	cvar_set("g_jailbreak",        "0"); g_jailbreak        = 0;
     cvar_set("g_clanarena",        "0"); g_clanarena        = 0;
 	cvar_set("g_no",               "0"); g_no               = 0;
@@ -242,8 +233,6 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_CTS:              return MAPINFO_TYPE_CTS;
 		case GAME_FREEZETAG:        return MAPINFO_TYPE_FREEZETAG;
 		case GAME_TOTAL_DOMINATION: return MAPINFO_TYPE_DOMINATION;
-		case GAME_VIP:              return MAPINFO_TYPE_VIP;
-//		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
         case GAME_CLANARENA:        return MAPINFO_TYPE_CLANARENA;
 		case GAME_NOTHING:          return MAPINFO_TYPE_DEATHMATCH;
@@ -271,7 +260,6 @@ float gametype_MapID_to_ID (float l_maptype)
 		case MAPINFO_TYPE_JAILBREAK:       return GAME_JAILBREAK;
         case MAPINFO_TYPE_CLANARENA:       return GAME_CLANARENA;
         case MAPINFO_TYPE_FREEZETAG:       return GAME_FREEZETAG;
-        case MAPINFO_TYPE_VIP:             return GAME_VIP;
 		case MAPINFO_TYPE_ALL:             return GAME_ALL;
 		default:                           return 0;
 	}
@@ -293,9 +281,7 @@ float gametype_Name_to_ID (string l_typename)
 	else if(typename == "nexball" ) return GAME_NEXBALL;
 	else if(typename == "cts"     ) return GAME_CTS;
 	else if(typename == "ft"      ) return GAME_FREEZETAG;
-	else if(typename == "vip"     ) return GAME_VIP;
 	else if(typename == "totaldom") return GAME_TOTAL_DOMINATION;
-//	else if(typename == "inf"     ) return GAME_INFECTION;
 	else if(typename == "jb"      ) return GAME_JAILBREAK;
     else if(typename == "ca"      ) return GAME_CLANARENA;
 	else if(typename == "no"      ) return GAME_NOTHING;
@@ -321,8 +307,6 @@ string gametype_ID_to_Name (float l_gametype)
 		case GAME_CTS:              return "ctf";
 		case GAME_FREEZETAG:        return "ft";
 		case GAME_TOTAL_DOMINATION: return "totaldom";
-		case GAME_VIP:              return "vip";
-//		case GAME_INFECTION:        return "inf";
 		case GAME_JAILBREAK:        return "jb";
         case GAME_CLANARENA:        return "ca";
 		case GAME_NOTHING:          return "no";
@@ -348,8 +332,6 @@ string gametype_ID_to_LongName (float l_gametype)
 		case GAME_CTS:              return "Race CTS";
 		case GAME_FREEZETAG:        return "Freeze Tag";
 		case GAME_TOTAL_DOMINATION: return "Total Domination";
-		case GAME_VIP:              return "VIP";
-//		case GAME_INFECTION:        return "Infection";
 		case GAME_JAILBREAK:        return "Jailbreak";
         case GAME_CLANARENA:        return "Clan Arena";
 		case GAME_NOTHING:          return "Nothing";
@@ -403,13 +385,6 @@ string gametype_Name_to_Name (string typename)
 		case "totaldom": case "Total Domination":
 		case "tdom": case "totaldomination":
 			return "totaldom";
-		case "vip": case "VIP":
-			return "vip";
-		/*
-		case "inf": case "Infection":
-		case "zombies": case "stayalive":
-			return "inf";
-		*/
 		case "jb": case "jailbreak": case "jbreak": case "jail": case "Jailbreak":
 			return "jb";
         case "ca": case "clanarena": case "teamlms": case "tlms":
@@ -437,8 +412,6 @@ string gametype_Name_to_Description(string typename) {
 			return "Several control points are placed around the map.\nWalk over a control point to capture it.\nWhile captured, control points keep adding to your score until the limit is reached.";
 		case "totaldom":
 			return "A round-based Domination spin-off.\nYou must take over ALL of the control points on the map to win the round.";
-		case "vip":
-			return "Each team gets a VIP player (as in Very Important Person).\nYou must kill the enemy VIP to win the round.";
 		case "dm":
 			return "Free-for-all: the player who gets the most frags wins.";
 		case "tdm":

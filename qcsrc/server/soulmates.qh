@@ -8,6 +8,7 @@ float g_soulmates;
 .float sm_nextnotify;
 .float sm_attachblock;
 .float oldsolid;
+.float gem_pickedup;
 
 void sm_Init();
 

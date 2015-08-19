@@ -272,14 +272,6 @@ float hudlock_alt;
 #define hudlocked_old hudlock_old
 #define hudlocked_alt hudlock_alt
 
-float vip_red_health;
-float vip_red_maxhealth;
-string vip_red_name;
-
-float vip_blue_health;
-float vip_blue_maxhealth;
-string vip_blue_name;
-
 float screenfade;
 
 float fovlock;

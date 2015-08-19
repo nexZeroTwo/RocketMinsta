@@ -703,7 +703,6 @@ void PutObserverInServer (void)
         kh_Key_DropAll(self, TRUE);
         Freeze_Hook_PlayerQuits();
         HG_DetonateAll(self);
-        vip_RemovePlayer();
         JB_RemovePlayer();
         Portal_ClearAll(self);
         Boobs_Clear();
@@ -1885,7 +1884,6 @@ void ClientDisconnect (void)
 	kh_Key_DropAll(self, TRUE);
     Freeze_Hook_PlayerQuits();
     HG_DetonateAll(self);
-	vip_RemovePlayer();
 	JB_RemovePlayer();
 	Portal_ClearAll(self);
 	Boobs_Clear();
@@ -2295,10 +2293,7 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
-	
-	if(g_vip) if(ISVIP(self))
-		return;
-	
+
 	maxh = g_balance_health_rotstable;
 	maxa = g_balance_armor_rotstable;
 	maxf = g_balance_fuel_rotstable;
@@ -3174,7 +3169,6 @@ void PlayerPreThink (void)
         Freeze_Hook_PlayerPreThink();
         JB_PlayerPreThink();
         domination_PlayerPreThink();
-        vip_PlayerPreThink();
         CheckRules_Player();
 
 		if(intermission_running) {
@@ -3224,7 +3218,7 @@ void PlayerPreThink (void)
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
 				force_respawn = (g_lms || g_clanarena || g_jailbreak || CVAR(g_forced_respawn));
 				
-				if (jb_roundover || (g_vip && ISVIP(self))) {
+				if (jb_roundover) {
 					// lol no respawn for ya
 				} else if (self.deadflag == DEAD_DYING)
 				{

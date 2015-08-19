@@ -40,7 +40,6 @@ float autocvar_g_race_teams;
 float autocvar_g_rocketarena;
 float autocvar_g_tdm;
 float autocvar_g_total_domination;
-float autocvar_g_vip;
 #ifndef CSQC
 string autocvar_settemp_var;
 string autocvar_settemp_list;

@@ -42,7 +42,6 @@ void CSQC_ctf_hudreset();
 void CSQC_ctf_hud(vector);
 void CSQC_ft_hud(vector);
 void CSQC_dom_hud(vector);
-void CSQC_vip_hud(vector);
 void CSQC_nb_hud();
 void MapVote_Draw();
 void Sbar_FinaleOverlay()
@@ -457,10 +456,10 @@ string Sbar_DefaultColumnLayout()
 	return strcat( // fteqcc sucks
 		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | kdr", strcat(
         if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
-		" +ft,jb,vip/kills +ft,vip,jb/dths "),
-		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,vip,prec,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
+		" +ft,jb/kills +ft,jb/dths "),
+		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
-		"+lms/lives +lms/rank +vip/vks +vip/surv +jb/def +jb/jbs +jb/freed +prec/pckps +prec/rcks ",
+		"+lms/lives +lms/rank +jb/def +jb/jbs +jb/freed ",
 		"+kh/caps +kh/pckps +kh/kcks ",
 		"?+race/laps ?+race/time ?+race/fastest ",
 		"+as/objectives +nexball/faults +nexball/goals ",
@@ -4698,8 +4697,6 @@ void Sbar_Draw(void)
 
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
-				if(gametype == GAME_VIP)
-					teamhud_wide = 1;
 
 				// pre-healtharmor
 				HUDLINE_SLICE({
@@ -4917,9 +4914,6 @@ void Sbar_Draw(void)
 
 				// we_need_to_go_wider.jpg
 				teamhud_wide = 0;
-				if(gametype == GAME_VIP)
-                if(left_sgap + SECWIDTH_WIDE + sector_gap <= ammosector_pos)
-					teamhud_wide = 1;
 
 				// pre-teamhud
 				HUDLINE_SLICE({
@@ -5515,8 +5509,6 @@ void Sbar_Draw(void)
         // fuck this hud, not supported anyway
 		//else if(gametype == GAME_NEXBALL)
 		//	CSQC_nb_hud();
-		else if(gametype == GAME_VIP)
-			CSQC_vip_hud(teamhud_pos);
 	}
     
     if(g_nadgets)
@@ -6234,66 +6226,4 @@ void CSQC_dom_hud(vector hudpos)
 	}
 	else
 		CSQC_hud_RedBlueStatCommon(hudpos, redpoints, bluepoints);
-}
-
-//VIP HUD
-
-void CSQC_vip_hud(vector hudpos)
-{
-	if(rm_oldhud)
-	{
-		if(vid_conwidth < 560)
-		{
-			teamhud_enabled = 0;
-			return;
-		}
-
-		hudpos = '0 0 0';
-		hudpos_y = vid_conheight - 21 - sbar_fontsize_y;
-		teamhud_wide = vid_conwidth >= 820;
-	}
-
-	if(vip_red_health <= 0 || vip_blue_health <= 0)
-	{
-		teamhud_enabled = 0;
-		return;
-	}
-	teamhud_enabled = 1;
-
-	float hudwidth = if(teamhud_wide) SECWIDTH_WIDE else SECWIDTH_NORMAL;
-	float textwidth = if(teamhud_wide) 11.5 else 5;
-	float hudstart, hudend;
-	float healthpercent;
-	hudstart = hudpos_x;
-	hudend = hudstart + hudwidth;
-
-	vector fs, pb, pbsize, pbfill;
-	fs = '9 9 0';
-
-	hudpos_y += 1;
-	pb = hudpos;
-	pb_x += hudwidth / 2;
-	pbsize_y = fs_y - 1;
-	pbsize_x = hudwidth / 2 - 2;
-	pbfill = pbsize - '2 2 0';
-
-	// red vip
-	healthpercent = min(vip_red_health / vip_red_maxhealth, 1);
-	drawstring(hudpos + '1 0 0', textShortenToWidth(vip_red_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM1), 1, DRAWFLAG_NORMAL);
-	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
-	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
-	pbfill_x *= healthpercent;
-	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM1) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
-
-	hudpos_y += fs_x + 1;
-	pb_y = hudpos_y;
-
-	// blue vip
-	healthpercent = min(vip_blue_health / vip_blue_maxhealth, 1);
-	drawstring(hudpos + '1 0 0', textShortenToWidth(vip_blue_name, textwidth, stringwidth_nocolors), fs, GetTeamRGB(COLOR_TEAM2), 1, DRAWFLAG_NORMAL);
-	//drawborderlines(0.7, pb, pbsize, '0 0 0', 1, DRAWFLAG_NORMAL);
-	drawfill(pb, pbsize, '0 0 0', 0.5, DRAWFLAG_NORMAL);
-	pbfill = pbsize - '2 2 0';
-	pbfill_x *= healthpercent;
-	drawfill(pb + '1 1 0', pbfill, (GetTeamRGB(COLOR_TEAM2) + '0.2 0.2 0.2') * 0.7, 0.7, DRAWFLAG_ADDITIVE);
 }

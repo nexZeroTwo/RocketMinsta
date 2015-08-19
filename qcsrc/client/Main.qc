@@ -2174,37 +2174,6 @@ void Net_ReadHudFlash(float teamcolor)
 	hudflash(c, t, i, a);
 }
 
-void Net_ReadVIPInfo(float teem)
-{
-	switch(teem)
-	{
-		case COLOR_TEAM1:
-			vip_red_maxhealth = ReadShort();
-			vip_red_health = ReadShort();
-			
-			if(vip_red_name)
-				strunzone(vip_red_name);
-			vip_red_name = strzone(strdecolorize(ReadString()));
-			return;
-		
-		case COLOR_TEAM2:
-			vip_blue_maxhealth = ReadShort();
-			vip_blue_health = ReadShort();
-			
-			if(vip_blue_name)
-				strunzone(vip_blue_name);
-			vip_blue_name = strzone(strdecolorize(ReadString()));
-			return;
-	}
-	
-	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(teem), "\n");
-	print("Dump: \n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-}
-
 void Net_Camera() {
 	if(!ReadByte()) {
 		camera_expiretime = -1;
@@ -2356,9 +2325,6 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
-			return TRUE;
-		case TE_CSQC_VIPINFO:
-			Net_ReadVIPInfo(ReadByte());
 			return TRUE;
 		case TE_CSQC_CAMERA:
 			Net_Camera();

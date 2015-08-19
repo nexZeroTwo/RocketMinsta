@@ -238,7 +238,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
+	else if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 	{
 		f = 0;
 	}
@@ -397,13 +397,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
                         if(!g_dm && !g_tdm) if(CVAR(g_rocketminsta))
                             PlayerScore_Add(attacker, SP_SCORE, 1);
                     }
-                    else {
-                        if(g_vip)
-                            PlayerScore_Add(attacker, SP_SCORE, 1);
-                    }
-                } else {
-                    if(g_vip) if(!spawnfrag)
-                        PlayerScore_Add(attacker, SP_SCORE, 1);
                 }
 
                 attacker.taunt_soundtime = time + 1;
@@ -654,8 +647,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
     }
 
-	// I just feel like there are WAY too many checks for these in this function
-	// By the way, this function is one of the messiest pieces of code here, it could compete with vip.qc ;)
 	float targ_is_player = (targ.classname == "player");
 	float attacker_is_player = (attacker.classname == "player");
     
@@ -745,7 +736,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
             
             if(deathtype == DEATH_TELEFRAG || (DEATH_HGTYPE(deathtype) == HG_TRANSLOC && !CVAR(g_nadgets_transloc_damage)))
-            if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
+            if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned))) {
                 damage = 0;
                 force = '0 0 0';
             }
@@ -1137,20 +1128,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(took_extra)
 			armordamage = 100;
 
-		if(attacker_is_player)
-		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
-		{
-			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-			
-			if(took_extra)
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage * 0.1));
-			else
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage / CVAR(g_rocketminsta_armor_factor)) * 0.1);
-
-			if(attacker != targ) if(damage || armordamage)
-				hudflash_teamcolor_default_spec(attacker);
-		}
-		
 		damage = olddamage;
 	}
 

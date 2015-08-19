@@ -516,17 +516,10 @@ void spawnfunc_worldspawn (void)
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
-	registercvar("g_vip", "0");
-	registercvar("g_rps", "0");
 	registercvar("g_jailbreak", "0");
     registercvar("g_clanarena", "0");
 	registercvar("g_no", "0");
-    
-/*
- - now unused
-    registercvar("_sv_rm_lastgametype", "");
-    registercvar("_sv_rm_maprow", "0");
-*/
+
     registercvar("_sv_infomessages_count", "0");
 
 	registercvar ("_sv_rm_lastvote", "0");
@@ -546,15 +539,6 @@ void spawnfunc_worldspawn (void)
 	remove = remove_safely; // during spawning, watch what you remove!
 
 	check_unacceptable_compiler_bugs();
-
-	/*if(CVAR_STR(cvar_check_default) != "bypass")
-	{
-		if(CVAR_STR(cvar_check_default) != CVAR_CHECK_DEFAULT)
-			error("Config file mismatch! Please update defaultNexuiz.cfg to match the QuakeC code, and restart the engine!");
-
-		if(CVAR_STR(cvar_check_balance) != CVAR_CHECK_BALANCE)
-			error("Config file mismatch! Please update balance*.cfg to match the QuakeC code, and restart the engine!");
-	}*/
 
 	compressShortVector_init();
 
@@ -576,15 +560,6 @@ void spawnfunc_worldspawn (void)
 		ServerProgsDB = db_load(strcat("server.db", CVAR_STR(sessionid)));
 
 	TemporaryDB = db_create();
-
-	/*
-	TODO sound pack system
-	// initialize sound pack system
-	soundpack = CVAR_STR(g_soundpack);
-	if(soundpack != "")
-		soundpack = strcat(soundpack, "/");
-	soundpack = strzone(soundpack);
-	*/
 
 	// 0 normal
 	lightstyle(0, "m");
@@ -660,9 +635,6 @@ void spawnfunc_worldspawn (void)
 	precache();
 
 	WaypointSprite_Init();
-
-	//if (g_domination)
-	//	dom_init();
 
 	GameLogInit(); // prepare everything
 	if(CVAR(sv_eventlog))
@@ -843,19 +815,8 @@ void spawnfunc_worldspawn (void)
 	if(CVAR(fraglimit) < 0)
 		cvar_set("fraglimit", "10");
 
-/*
-	-- Not needed anymore --
-	if(CVAR_STR(_sv_rm_lastgametype) != gametype_ID_to_Name(game))
-	{
-		cvar_set("_sv_rm_lastgametype", gametype_ID_to_Name(game));
-		cvar_set("_sv_rm_maprow", "0");
-	}
-*/
-
-//	cvar_set("_sv_rm_maprow", ftos(CVAR(_sv_rm_maprow) + 1));
 	InfoMessages_Init();
 	IP2C_Init();
-//	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
 
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, if(strcat(RM_BUILD_SUFFIX, "") != "") strcat("/", RM_BUILD_SUFFIX) else ""));
 
