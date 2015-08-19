@@ -110,8 +110,6 @@ void Damage_DamageInfo(vector org, float coredamage, float edgedamage, float rad
 	Net_LinkEntity(e, FALSE, 0.2, Damage_DamageInfo_SendEntity);
 }
 
-#define DAMAGE_CENTERPRINT_SPACER NEWLINES
-
 float checkrules_firstblood;
 
 float yoda;
@@ -858,7 +856,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				{
 					took_extra = 1;
 					targ.armorvalue -= 1;
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
+					centerprint_spec(targ, strcat("^3Remaining extra lives: ",ftos(targ.armorvalue)));
 					damage = 0;
 					targ.hitsound += 1;
 					attacker.armorhitsound += 1; // TODO change this to a future specific hitsound for armor hit
@@ -1179,7 +1177,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(attacker.armorvalue > 0)
 				{
 					attacker.armorvalue = attacker.armorvalue - 1;
-					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(attacker.armorvalue)));
+					centerprint_spec(attacker, strcat("^3Remaining extra lives: ", ftos(attacker.armorvalue)));
 					attacker.hitsound += 1;
 				}
 				mirrordamage = 0;
