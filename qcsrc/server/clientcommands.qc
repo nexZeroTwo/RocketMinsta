@@ -1069,6 +1069,11 @@ void SV_ParseClientCommand(string s) {
             sprint(self, "^1Usage: cmd dmgstats player_id\n");
         return;
     } else if(cmd == "waypoint") {
+        if(self.classname != "player") {
+            sprint(self, "^1Only players are allowed to use this command.\n");
+            return;
+        }
+
         var action = argv(1);
 
         if(action == "clear") {
