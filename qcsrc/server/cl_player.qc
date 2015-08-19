@@ -956,8 +956,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.buffs = 0;
         self.hg_stealth = 0;
         self.fire_endtime = time;
-        
-		prec_player_die(self, attacker);
+
 		sm_PlayerDies();
 		
 		if(vip_PlayerDies(attacker, self, deathtype))

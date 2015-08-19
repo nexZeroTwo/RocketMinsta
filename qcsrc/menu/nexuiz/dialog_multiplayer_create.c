@@ -67,8 +67,6 @@ void fillNexuizServerCreateTab(entity me)
 			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_freezetag", "Freeze Tag"));
 			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_prec", "Precious"));
-			if(e.checked) e0 = NULL;
 		//me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_inf", "Infection"));
 		//	if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_jailbreak", "Jailbreak"));

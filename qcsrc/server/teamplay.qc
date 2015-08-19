@@ -309,14 +309,6 @@ void InitGameplayMode()
         vip_init();
     }
 
-    if(g_prec)
-    {
-		fraglimit_override = CVAR(g_prec_point_limit);
-		leadlimit_override = CVAR(g_prec_point_leadlimit);
-		timelimit_override = CVAR(g_prec_point_timelimit);
-        prec_init();
-    }
-
     if(g_rps)
     {
 		// not yet implimented

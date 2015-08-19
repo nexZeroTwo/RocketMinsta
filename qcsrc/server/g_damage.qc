@@ -171,8 +171,6 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	// TODO route through PlayerScores instead
 	if(gameover || jb_roundover) return;
 
-	if(!prec_check_aggression(attacker, inflictor, targ)) return;
-
 	if(f < 0)
 	{
 		if(targ == attacker)
@@ -320,9 +318,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	float rage_timeout = 3;
     string customMessage;
 
-	if(g_prec) if(inflictor.classname == "prec_rune") {
-		prec_check_aggression(attacker, inflictor, targ); return; }
-
 	if(g_jailbreak)
 	if(jb_roundover) {
 		attacker = world;
@@ -372,8 +367,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			s = targ.netname;
 		a = attacker.netname;
 
-		prec_check_aggression(attacker, inflictor, targ); // only called here for point keeping
-
 		if(targ == attacker) {
 			if(deathtype == DEATH_AUTOTEAMCHANGE)
 				return;
@@ -393,8 +386,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 
 				attacker.killsound = 1;
 
-				if(!checkrules_firstblood)
-				if(prec_check_aggression(attacker, inflictor, targ)) {
+				if(!checkrules_firstblood) {
 					checkrules_firstblood = TRUE;
 					bprint("^1",a, "^1 drew first blood", "\n");
 					bigprint_spec(attacker, "^7First ^1Blood", "", 1);
@@ -404,27 +396,22 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				if(g_minstagib) {
                     if(spawnfrag) { }
                     else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
+                        PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
                     }
                     else if(deathtype == DEATH_HOOKFRAG) {
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
-
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+                        PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
+                        PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
                     } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
 
                         if(!g_dm && !g_tdm) if(CVAR(g_rocketminsta))
-                            if(prec_check_aggression(attacker, inflictor, targ))
-                                PlayerScore_Add(attacker, SP_SCORE, 1);
+                            PlayerScore_Add(attacker, SP_SCORE, 1);
                     }
                     else {
-                        if(g_vip) if(prec_check_aggression(attacker, inflictor, targ))
+                        if(g_vip)
                             PlayerScore_Add(attacker, SP_SCORE, 1);
                     }
                 } else {
-                    if(g_vip) if(prec_check_aggression(attacker, inflictor, targ)) if(!spawnfrag)
+                    if(g_vip) if(!spawnfrag)
                         PlayerScore_Add(attacker, SP_SCORE, 1);
                 }
 
@@ -740,14 +727,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	{
 		if(targ_is_player) if(attacker_is_player)
 		{
-			if(targ != attacker)
-				if(!prec_check_aggression(attacker, inflictor, targ))
-				{
-					attacker.typehitsound += 1;
-					mirrordamage = damage * CVAR(g_prec_mirrordamage);
-					bigprint_spec(attacker, "", "^1You have to shoot the rune carrier!", 2);
-				}
-			
 			if(g_inf)
 				if(targ.team == COLOR_TEAM1)
 					damage = damage * CVAR(g_inf_damage_multiplier);

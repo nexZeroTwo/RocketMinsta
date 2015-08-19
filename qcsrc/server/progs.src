@@ -56,7 +56,6 @@ freezetag.qh
 vip.qh
 jailbreak.qh
 clanarena.qh
-precious.qh
 domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
@@ -78,7 +77,6 @@ dodging.qc
 g_freeze.qc
 freezetag.qc
 vip.qc
-precious.qc
 g_violence.qc
 g_damage.qc
 teamplay.qc

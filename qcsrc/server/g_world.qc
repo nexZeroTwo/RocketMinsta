@@ -317,7 +317,6 @@ void cvar_changes_init()
 		BADCVAR("g_cts");
 		BADCVAR("g_tdm");
 		BADCVAR("g_nexball");
-		BADCVAR("g_prec");
 		BADCVAR("g_no");
 		BADCVAR("teamplay");
 
@@ -550,7 +549,6 @@ void spawnfunc_worldspawn (void)
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
 	registercvar("g_vip", "0");
-	registercvar("g_prec", "0");
 	registercvar("g_inf", "0");
 	registercvar("g_rps", "0");
 	registercvar("g_jailbreak", "0");
@@ -1938,7 +1936,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	if(WinningConditionHelper_zeroisworst)
 		llimit = 0; // not supported in this mode
 
-	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball || g_prec)
+	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
 		local string winmsg;

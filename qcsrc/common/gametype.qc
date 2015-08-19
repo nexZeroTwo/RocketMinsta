@@ -31,7 +31,6 @@ float gametype_GetMenu ()
 	if(CVAR(g_freezetag))        return GAME_FREEZETAG;
 	if(CVAR(g_total_domination)) return GAME_TOTAL_DOMINATION;
 	if(CVAR(g_vip))              return GAME_VIP;
-	if(CVAR(g_prec))             return GAME_PRECIOUS;
 //	if(CVAR(g_inf))              return GAME_INFECTION;
 	if(CVAR(g_jailbreak))        return GAME_JAILBREAK;
     if(CVAR(g_clanarena))        return GAME_CLANARENA;
@@ -59,7 +58,6 @@ void gametype_SetMenu (float l_id)
 	cvar_set_ifeq(l_id, "g_freezetag",        GAME_FREEZETAG);
 	cvar_set_ifeq(l_id, "g_total_domination", GAME_TOTAL_DOMINATION);
 	cvar_set_ifeq(l_id, "g_vip",              GAME_VIP);
-	cvar_set_ifeq(l_id, "g_prec",             GAME_PRECIOUS);
 //	cvar_set_ifeq(l_id, "g_inf",              GAME_INFECTION);
 	cvar_set_ifeq(l_id, "g_jailbreak",        GAME_JAILBREAK);
     cvar_set_ifeq(l_id, "g_clanarena",        GAME_CLANARENA);
@@ -117,9 +115,6 @@ float gametype_Extrapolate ()
 	if(CVAR(g_vip) || g_vip) {
 		if(game_new) return 0;
 		game_new = GAME_VIP; }
-	if(CVAR(g_prec) || g_prec) {
-		if(game_new) return 0;
-		game_new = GAME_PRECIOUS; }
 	/*
 	if(CVAR(g_inf) || g_inf) {
 		if(game_new) return 0;
@@ -190,9 +185,6 @@ void gametype_Set (float type)
 		case GAME_VIP:
 			cvar_set("g_vip", "1"); g_vip = 1;
 			break;
-		case GAME_PRECIOUS:
-			cvar_set("g_prec", "1"); g_prec = 1;
-			break;
 		/*
 		case GAME_INFECTION:
 			cvar_set("g_inf", "1"); g_inf = 1;
@@ -231,7 +223,6 @@ void gametype_Reset ()
 	cvar_set("g_freezetag",        "0"); g_freezetag        = 0;
 	cvar_set("g_total_domination", "0"); g_total_domination = 0;
 	cvar_set("g_vip",              "0"); g_vip              = 0;
-	cvar_set("g_prec",             "0"); g_prec             = 0;
 	cvar_set("g_inf",              "0"); g_inf              = 0;
 	cvar_set("g_jailbreak",        "0"); g_jailbreak        = 0;
     cvar_set("g_clanarena",        "0"); g_clanarena        = 0;
@@ -265,7 +256,6 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_FREEZETAG:        return MAPINFO_TYPE_FREEZETAG;
 		case GAME_TOTAL_DOMINATION: return MAPINFO_TYPE_DOMINATION;
 		case GAME_VIP:              return MAPINFO_TYPE_VIP;
-		case GAME_PRECIOUS:         return MAPINFO_TYPE_PRECIOUS;
 //		case GAME_INFECTION:        return MAPINFO_TYPE_DEATHMATCH;
 		case GAME_JAILBREAK:        return MAPINFO_TYPE_JAILBREAK;
         case GAME_CLANARENA:        return MAPINFO_TYPE_CLANARENA;
@@ -295,7 +285,6 @@ float gametype_MapID_to_ID (float l_maptype)
         case MAPINFO_TYPE_CLANARENA:       return GAME_CLANARENA;
         case MAPINFO_TYPE_FREEZETAG:       return GAME_FREEZETAG;
         case MAPINFO_TYPE_VIP:             return GAME_VIP;
-        case MAPINFO_TYPE_PRECIOUS:        return GAME_PRECIOUS;
 		case MAPINFO_TYPE_ALL:             return GAME_ALL;
 		default:                           return 0;
 	}
@@ -319,7 +308,6 @@ float gametype_Name_to_ID (string l_typename)
 	else if(typename == "ft"      ) return GAME_FREEZETAG;
 	else if(typename == "vip"     ) return GAME_VIP;
 	else if(typename == "totaldom") return GAME_TOTAL_DOMINATION;
-	else if(typename == "prec"    ) return GAME_PRECIOUS;
 //	else if(typename == "inf"     ) return GAME_INFECTION;
 	else if(typename == "jb"      ) return GAME_JAILBREAK;
     else if(typename == "ca"      ) return GAME_CLANARENA;
@@ -347,7 +335,6 @@ string gametype_ID_to_Name (float l_gametype)
 		case GAME_FREEZETAG:        return "ft";
 		case GAME_TOTAL_DOMINATION: return "totaldom";
 		case GAME_VIP:              return "vip";
-		case GAME_PRECIOUS:         return "prec";
 //		case GAME_INFECTION:        return "inf";
 		case GAME_JAILBREAK:        return "jb";
         case GAME_CLANARENA:        return "ca";
@@ -375,7 +362,6 @@ string gametype_ID_to_LongName (float l_gametype)
 		case GAME_FREEZETAG:        return "Freeze Tag";
 		case GAME_TOTAL_DOMINATION: return "Total Domination";
 		case GAME_VIP:              return "VIP";
-		case GAME_PRECIOUS:         return "Precious";
 //		case GAME_INFECTION:        return "Infection";
 		case GAME_JAILBREAK:        return "Jailbreak";
         case GAME_CLANARENA:        return "Clan Arena";
@@ -432,9 +418,6 @@ string gametype_Name_to_Name (string typename)
 			return "totaldom";
 		case "vip": case "VIP":
 			return "vip";
-		case "prec": case "precious": case "Precious": // Precious is very similar to Xonotic's Keep Away
-		case "runehunt": case "rh": case "keepaway": case "ka":
-			return "prec";
 		/*
 		case "inf": case "Infection":
 		case "zombies": case "stayalive":
@@ -475,8 +458,6 @@ string gametype_Name_to_Description(string typename) {
 			return "Team-based deathmatch: the team that gets the most frags wins.";
 		case "jb":
 			return "Frag the enemy team to send them into a jail!\nCapture their controlpoint to release your imprisoned teammates.\nLock all of your opponents to win the round.";
-		case "prec":
-			return "Deathmatch-like gametype.\nYou have to capture and hold the Precious rune in order to gain frag points.";
 		case "ca":
             return "Team-based survival mode.\nYou Only Live Once (per round)!";
         

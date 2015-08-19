@@ -772,7 +772,6 @@ void PutObserverInServer (void)
         HG_DetonateAll(self);
         vip_RemovePlayer();
         JB_RemovePlayer();
-        prec_player_die(self, self);
         inf_player_leave(self);
         Portal_ClearAll(self);
         Boobs_Clear();
@@ -1999,7 +1998,6 @@ void ClientDisconnect (void)
     HG_DetonateAll(self);
 	vip_RemovePlayer();
 	JB_RemovePlayer();
-	prec_player_die(self, self);
 	Portal_ClearAll(self);
 	Boobs_Clear();
 
@@ -2589,7 +2587,6 @@ void EnterSpectatorMode() {
     if(self.ballcarried)
         DropBall(self.ballcarried, self.origin, self.velocity);
     kh_Key_DropAll(self, TRUE);
-    prec_player_die(self, self);
     inf_player_leave(self);
     WaypointSprite_PlayerDead();
     self.classname = "observer";
