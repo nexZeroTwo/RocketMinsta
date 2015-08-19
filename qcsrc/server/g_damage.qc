@@ -220,11 +220,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	}
 
 	// FIXME fix the mess this is (we have REAL points now!)
-	if(g_runematch)
-	{
-		f = RunematchHandleFrags(attacker, targ, f);
-	}
-	else if(g_keyhunt)
+    if(g_keyhunt)
 	{
 		f = kh_HandleFrags(attacker, targ, f);
 	}
@@ -279,8 +275,6 @@ string AppendItemcodes(string s, entity player)
 		s = strcat(s, "T");
 	if(player.kh_next)
 		s = strcat(s, "K");
-	if(player.runes)
-		s = strcat(s, "|", ftos(player.runes));
 	return s;
 }
 
@@ -1052,40 +1046,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 damage = damage * CVAR(g_ctf_flagcarrier_selfdamage);
                 force = force * CVAR(g_ctf_flagcarrier_selfforce);
             }
-
-            if(g_runematch)
-            {
-                // apply strength rune
-                if (attacker.runes & RUNE_STRENGTH)
-                {
-                    if(attacker.runes & CURSE_WEAK) // have both curse & rune
-                    {
-                        damage = damage * CVAR(g_balance_rune_strength_combo_damage);
-                        force = force * CVAR(g_balance_rune_strength_combo_force);
-                    }
-                    else
-                    {
-                        damage = damage * CVAR(g_balance_rune_strength_damage);
-                        force = force * CVAR(g_balance_rune_strength_force);
-                    }
-                }
-                else if (attacker.runes & CURSE_WEAK)
-                {
-                    damage = damage * CVAR(g_balance_curse_weak_damage);
-                    force = force * CVAR(g_balance_curse_weak_force);
-                }
-
-                // apply defense rune
-                if (targ.runes & RUNE_DEFENSE)
-                {
-                    if (targ.runes & CURSE_VULNER) // have both curse & rune
-                        damage = damage * CVAR(g_balance_rune_defense_combo_takedamage);
-                    else
-                        damage = damage * CVAR(g_balance_rune_defense_takedamage);
-                }
-                else if (targ.runes & CURSE_VULNER)
-                    damage = damage * CVAR(g_balance_curse_vulner_takedamage);
-            }
         }
 
 		// count the damage
@@ -1249,38 +1209,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if (time > self.spawnshieldtime)
 		{
 			attacker.health += damage;
-		}
-		if(g_runematch)
-		{
-			if (attacker.runes & RUNE_VAMPIRE)
-			{
-			// apply vampire rune
-				if (attacker.runes & CURSE_EMPATHY) // have the curse too
-				{
-					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb);
-					attacker.health = bound(
-						CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 40
-						attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb),
-						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
-				}
-				else
-				{
-					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_absorb);
-					attacker.health = bound(
-						attacker.health,	// LA: was 3, but changed so that you can't lose health
-											// empathy won't let you gain health in the same way...
-						attacker.health + damage * CVAR(g_balance_rune_vampire_absorb),
-						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
-					}
-			}
-			// apply empathy curse
-			else if (attacker.runes & CURSE_EMPATHY)
-			{
-				attacker.health = bound(
-					CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 20
-					attacker.health + damage * CVAR(g_balance_curse_empathy_takedamage),
-					attacker.health);
-			}
 		}
 	}
 

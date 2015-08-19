@@ -69,7 +69,6 @@ string TeamNoName(float t)
 
 void dom_init();
 void ctf_init();
-void runematch_init();
 void tdm_init();
 void nb_init();
 void entcs_init();
@@ -202,15 +201,6 @@ void InitGameplayMode()
 			leadlimit_override = CVAR(captureleadlimit_override);
 		}
 		ctf_init();
-	}
-
-	if(g_runematch)
-	{
-		if(CVAR(deathmatch_force_teamplay))
-			ActivateTeamplay();
-		fraglimit_override = CVAR(g_runematch_point_limit);
-		leadlimit_override = CVAR(g_runematch_point_leadlimit);
-		runematch_init();
 	}
 
 	if(g_lms)

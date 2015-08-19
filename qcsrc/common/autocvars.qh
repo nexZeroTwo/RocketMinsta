@@ -38,7 +38,6 @@ float autocvar_g_prec;
 float autocvar_g_pickup_items;
 float autocvar_g_race;
 float autocvar_g_race_teams;
-float autocvar_g_runematch;
 float autocvar_g_rocketarena;
 float autocvar_g_tdm;
 float autocvar_g_total_domination;

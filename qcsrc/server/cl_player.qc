@@ -949,7 +949,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
-		DropAllRunes(self);
 		
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;

@@ -765,9 +765,7 @@ void PutObserverInServer (void)
 		WriteByte(MSG_ONE, SVC_SETVIEW);
 		WriteEntity(MSG_ONE, self);
 	}
-	
-	DropAllRunes(self);
-    
+
     if(!self.justconnected) {
         kh_Key_DropAll(self, TRUE);
         Freeze_Hook_PlayerQuits();
@@ -847,7 +845,6 @@ void PutObserverInServer (void)
 	self.think = SUB_Null;
 	self.nextthink = 0;
 	self.hook_time = 0;
-	self.runes = 0;
 	self.prec_rune = world;
     self.prec_grudge = 0;
     self.last_spawn_pt_1 = world;
@@ -1269,7 +1266,6 @@ void PutClientInServer (void)
 
 		self.metertime = 0;
 
-		self.runes = 0;
 	    self.prec_rune = world;
 	    self.prec_grudge = 0;
 		self.last_spawn_pt_1 = world;
@@ -1998,7 +1994,6 @@ void ClientDisconnect (void)
 
 	SoundEntity_Detach(self);
     
-	DropAllRunes(self);
 	kh_Key_DropAll(self, TRUE);
     Freeze_Hook_PlayerQuits();
     HG_DetonateAll(self);
@@ -2457,35 +2452,6 @@ void player_regen (void)
     
     max_mod = regen_mod = rot_mod = limit_mod = 1;
 
-    if(g_runematch) {
-        if (self.runes & RUNE_REGEN)
-        {
-            if (self.runes & CURSE_VENOM) // do we have both rune/curse?
-            {
-                regen_mod = CVAR(g_balance_rune_regen_combo_regenrate);
-                max_mod = CVAR(g_balance_rune_regen_combo_hpmod);
-                limit_mod = CVAR(g_balance_rune_regen_combo_limitmod);
-            }
-            else
-            {
-                regen_mod = CVAR(g_balance_rune_regen_regenrate);
-                max_mod = CVAR(g_balance_rune_regen_hpmod);
-                limit_mod = CVAR(g_balance_rune_regen_limitmod);
-            }
-        }
-        else if (self.runes & CURSE_VENOM)
-        {
-            max_mod = CVAR(g_balance_curse_venom_hpmod);
-            if (self.runes & RUNE_REGEN) // do we have both rune/curse?
-                rot_mod = CVAR(g_balance_rune_regen_combo_rotrate);
-            else
-                rot_mod = CVAR(g_balance_curse_venom_rotrate);
-            limit_mod = CVAR(g_balance_curse_venom_limitmod);
-            //if (!self.runes & RUNE_REGEN)
-            //	rot_mod = CVAR(g_balance_curse_venom_rotrate);
-        }
-    }
-    
 	maxh = maxh * max_mod;
 	//maxa = maxa * max_mod;
 	//maxf = maxf * max_mod;

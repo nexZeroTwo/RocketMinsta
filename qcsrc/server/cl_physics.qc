@@ -82,21 +82,6 @@ void PlayerJump (void)
 		if(time < self.doublejump_nextjumptime)
 			return;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_combo_jumpheight);
-			else
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_jumpheight);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			mjumpheight = mjumpheight * CVAR(g_balance_curse_slow_jumpheight);
-		}
-	}
-
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{
 		mjumpheight = mjumpheight * CVAR(g_minstagib_speed_jumpheight);
@@ -836,21 +821,6 @@ void SV_PlayerPhysics()
 	}
 
 	maxspd_mod = 1;
-
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_combo_moverate);
-			else
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_moverate);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			maxspd_mod = maxspd_mod * CVAR(g_balance_curse_slow_moverate);
-		}
-	}
 
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{

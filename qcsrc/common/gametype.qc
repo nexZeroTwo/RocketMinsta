@@ -20,7 +20,6 @@ float gametype_GetMenu ()
 	if(CVAR(g_tdm))              return GAME_TEAM_DEATHMATCH;
 	if(CVAR(g_domination))       return GAME_DOMINATION;
 	if(CVAR(g_ctf))              return GAME_CTF;
-	if(CVAR(g_runematch))        return GAME_RUNEMATCH;
 	if(CVAR(g_lms))              return GAME_LMS;
 	if(CVAR(g_arena))            return GAME_ARENA;
 	if(CVAR(g_keyhunt))          return GAME_KEYHUNT;
@@ -49,7 +48,6 @@ void gametype_SetMenu (float l_id)
 	cvar_set_ifeq(l_id, "g_tdm",              GAME_TEAM_DEATHMATCH);
 	cvar_set_ifeq(l_id, "g_domination",       GAME_DOMINATION);
 	cvar_set_ifeq(l_id, "g_ctf",              GAME_CTF);
-	cvar_set_ifeq(l_id, "g_runematch",        GAME_RUNEMATCH);
 	cvar_set_ifeq(l_id, "g_lms",              GAME_LMS);
 	cvar_set_ifeq(l_id, "g_arena",            GAME_ARENA);
 	cvar_set_ifeq(l_id, "g_keyhunt",          GAME_KEYHUNT);
@@ -86,9 +84,6 @@ float gametype_Extrapolate ()
 	if(CVAR(g_ctf) || g_ctf) {
 		if(game_new) return 0;
 		game_new = GAME_CTF; }
-	if(CVAR(g_runematch) || g_runematch) {
-		if(game_new) return 0;
-		game_new = GAME_RUNEMATCH; }
 	if(CVAR(g_lms) || g_lms) {
 		if(game_new) return 0;
 		game_new = GAME_LMS; }
@@ -160,9 +155,6 @@ void gametype_Set (float type)
 		case GAME_CTF:
 			cvar_set("g_ctf", "1"); g_ctf = 1;
 			break;
-		case GAME_RUNEMATCH:
-			cvar_set("g_runematch", "1"); g_runematch = 1;
-			break;
 		case GAME_LMS:
 			cvar_set("g_lms", "1"); g_lms = 1;
 			break;
@@ -228,7 +220,6 @@ void gametype_Reset ()
 	cvar_set("g_tdm",              "0"); g_tdm              = 0;
 	cvar_set("g_domination",       "0"); g_domination       = 0;
 	cvar_set("g_ctf",              "0"); g_ctf              = 0;
-	cvar_set("g_runematch",        "0"); g_runematch        = 0;
 	cvar_set("g_lms",              "0"); g_lms              = 0;
 	cvar_set("g_arena",            "0"); g_arena            = 0;
 	cvar_set("g_keyhunt",          "0"); g_keyhunt          = 0;
@@ -263,7 +254,6 @@ float gametype_ID_to_MapID (float l_gametype)
 		case GAME_TEAM_DEATHMATCH:  return MAPINFO_TYPE_TEAM_DEATHMATCH;
 		case GAME_DOMINATION:       return MAPINFO_TYPE_DOMINATION;
 		case GAME_CTF:              return MAPINFO_TYPE_CTF;
-		case GAME_RUNEMATCH:        return MAPINFO_TYPE_RUNEMATCH;
 		case GAME_LMS:              return MAPINFO_TYPE_LMS;
 		case GAME_ARENA:            return MAPINFO_TYPE_ARENA;
 		case GAME_KEYHUNT:          return MAPINFO_TYPE_KEYHUNT;
@@ -293,7 +283,6 @@ float gametype_MapID_to_ID (float l_maptype)
 		case MAPINFO_TYPE_TEAM_DEATHMATCH: return GAME_TEAM_DEATHMATCH;
 		case MAPINFO_TYPE_DOMINATION:      return GAME_DOMINATION;
 		case MAPINFO_TYPE_CTF:             return GAME_CTF;
-		case MAPINFO_TYPE_RUNEMATCH:       return GAME_RUNEMATCH;
 		case MAPINFO_TYPE_LMS:             return GAME_LMS;
 		case MAPINFO_TYPE_ARENA:           return GAME_ARENA;
 		case MAPINFO_TYPE_KEYHUNT:         return GAME_KEYHUNT;
@@ -319,7 +308,6 @@ float gametype_Name_to_ID (string l_typename)
 	else if(typename == "tdm"     ) return GAME_TEAM_DEATHMATCH;
 	else if(typename == "dom"     ) return GAME_DOMINATION;
 	else if(typename == "ctf"     ) return GAME_CTF;
-	else if(typename == "rune"    ) return GAME_RUNEMATCH;
 	else if(typename == "lms"     ) return GAME_LMS;
 	else if(typename == "arena"   ) return GAME_ARENA;
 	else if(typename == "kh"      ) return GAME_KEYHUNT;
@@ -348,7 +336,6 @@ string gametype_ID_to_Name (float l_gametype)
 		case GAME_TEAM_DEATHMATCH:  return "tdm";
 		case GAME_DOMINATION:       return "dom";
 		case GAME_CTF:              return "ctf";
-		case GAME_RUNEMATCH:        return "rune";
 		case GAME_LMS:              return "lms";
 		case GAME_ARENA:            return "arena";
 		case GAME_KEYHUNT:          return "kh";
@@ -377,7 +364,6 @@ string gametype_ID_to_LongName (float l_gametype)
 		case GAME_TEAM_DEATHMATCH:  return "Team Deathmatch";
 		case GAME_DOMINATION:       return "Domination";
 		case GAME_CTF:              return "Capture the Flag";
-		case GAME_RUNEMATCH:        return "Runematch";
 		case GAME_LMS:              return "Last Man Standing";
 		case GAME_ARENA:            return "Arena";
 		case GAME_KEYHUNT:          return "Key Hunt";
@@ -415,9 +401,6 @@ string gametype_Name_to_Name (string typename)
 		case "ctf": case "Capture the Flag":
 		case "capturetheflag":
 			return "ctf";
-		case "rune": case "Runematch":
-		case "runematch":
-			return "rune";
 		case "lms": case "Last Man Standing":
 		case "lastmanstanding":
 			return "lms";

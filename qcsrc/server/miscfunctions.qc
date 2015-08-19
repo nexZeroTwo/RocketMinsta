@@ -1348,7 +1348,7 @@ void readlevelcvars(void)
     g_warmup_allguns = CVAR(g_warmup_allguns);
     g_warmup_allow_timeout = CVAR(g_warmup_allow_timeout);
 
-    if ((g_race && g_race_qualifying == 2) || g_runematch || g_arena || g_assault || CVAR(g_campaign))
+    if ((g_race && g_race_qualifying == 2) || g_arena || g_assault || CVAR(g_campaign))
         inWarmupStage = 0; // these modes cannot work together, sorry
 
     g_pickup_respawntime_weapon = CVAR(g_pickup_respawntime_weapon);
@@ -1712,11 +1712,6 @@ void precache()
     // gamemode related things
     precache_model ("models/misc/chatbubble.spr");
     precache_model ("models/misc/teambubble.spr");
-    if (g_runematch)
-    {
-        precache_model ("models/runematch/curse.mdl");
-        precache_model ("models/runematch/rune.mdl");
-    }
 
 #ifdef TTURRETS_ENABLED
     if (CVAR(g_turrets))
