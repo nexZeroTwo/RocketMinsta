@@ -268,15 +268,7 @@ void Buffs_Init_Delayed(void) {
     }
 }
 
-.float buffpowercalls;
-
 float Buffs_BuffPower(entity p, float b) {
-    /*
-    p.buffpowercalls += 1;
-    if(clienttype(p) == CLIENTTYPE_REAL)
-        sprint(p, strcat(ftos(b), "\n"));
-    */
-    
     if(!g_buffs)
         return 0;
     
@@ -497,11 +489,6 @@ void Buffs_ClientFrame(void) {
     
     if(g_buffs_meodp)
         self.buffpower_meodp = Buffs_BuffPower(self, BUFF_MEODP);
-    
-    /*
-    sprint(self, strcat("^5", ftos(self.buffpowercalls), "\n"));
-    self.buffpowercalls = 0;
-    */
 }
 
 #undef ON_BUFF_ADDED
@@ -777,7 +764,6 @@ void Buffs_MEODP_Point_Think(void) {
     
     self.angles = self.angles + (self.owner.angles - self.angles) * frametime;
     makevectors(self.angles + '0 30 0' * time * self.health);
-    //setorigin(self, self.owner.origin + v_forward * 50 + v_up * self.owner.maxs_z * 0.5);
     setorigin(self, self.owner.meodp_point_offs + (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
     
     self.nextthink = time;
@@ -1190,8 +1176,6 @@ void Buffs_BuffPickup_Placeholder(void) {
     setorigin(e, self.origin);
     e.owner = self;
     e.classname = "buff_placeholder";
-    
-    //error(strcat(vtos(e.origin), " ", vtos(e.owner.origin), " ", e.owner.classname));
 }
 
 void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
