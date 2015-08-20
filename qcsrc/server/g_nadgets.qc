@@ -230,7 +230,6 @@ void HG_HealEmitter(void) {
             e.aiment = self;
             e.think = HG_HealEmitter_Think;
             e.nextthink = time;
-            //e.velocity = self.velocity;
             e.csqcprojectile_extradata = self.heal_emitter_radius;
             
             CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
@@ -262,20 +261,7 @@ void HG_Napalm_Middlefire_Think() {
 		remove(self);
 		return;
 	}
-	
-    /*
-    if(time >= self.nextparticle) {
-        
-        float i; for(i = 0; i < 5; ++i) {
-            vector v = randomvec();
-            v_z = max(0, v_z * 0.3);
-            pointparticles(particleeffectnum("fire_big"), self.origin + v * CVAR(g_nadgets_napalm_middleburnradius), '0 0 0', 1);
-        }
-        
-		self.nextparticle = time + 0.1 + random () * 0.5;
-	}
-    */
-    
+
 	HG_Napalm_Burn(0.1, CVAR(g_nadgets_napalm_middleburnradius), CVAR(g_nadgets_napalm_burndamage), CVAR(g_nadgets_napalm_edgeburndamage), CVAR(g_nadgets_napalm_burntime), self.projectiledeathtype);
 	self.nextthink = time + 0.1;
 }
@@ -1001,8 +987,6 @@ void HG_Grenade_Waypoint() {
 
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
-    
-    //print(vtos(self.velocity), " ^6", vtos(self.hg_lastvel), "\n");
 
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
@@ -1020,8 +1004,7 @@ void HG_Grenade_Think() {
     }
     
     HG_Grenade_Waypoint();
-    
-    //move_out_of_solid(self);
+
     if(time >= self.hg_deathtime) {
         if(self.hg_type == HG_TRANSLOC && self.health > 0)
             HG_Grenade_Remove();
@@ -1271,7 +1254,6 @@ void HG_Shield_Discharge_Think(void) {
 
     W_SetHitscanVisuals(self.owner, end);
     te_csqc_lightningarc(w_shotorg_visual, end, TRUE, if(teams_matter) self.owner.team else COLOR_TEAM3);
-    //te_blast(end);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_BuffPower(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
