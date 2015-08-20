@@ -70,6 +70,10 @@ const float CSQCMSG_OBITUARY_CUSTOM = 1;
 #define VDMG_TYPE_LETHAL 64
 #define VDMG_TYPE_ALIEN 128
 
+#define VDMG_TYPE_CLIENTMASK 0xFF
+
+#define VDMG_TYPE_FORCECHECKLOS 1024
+
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
 const float RACE_NET_CHECKPOINT_NEXT_QUALIFYING = 2; // byte nextcheckpoint, short recordtime, string recordholder

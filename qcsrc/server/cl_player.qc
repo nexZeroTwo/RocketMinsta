@@ -522,7 +522,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         return;
     
     if(attacker) {
-        if(CVAR(sv_showdamage_checklos))
+        if(CVAR(sv_showdamage_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
             found = VisualDamage_CheckLOS(attacker, targ, hitloc);
         else
             found = TRUE;
@@ -541,13 +541,13 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             check = check.enemy;
         
         if(CVAR(sv_showdamage_global) || check == attacker || check == targ) {
-            float stype = htype;
+            float stype = htype & VDMG_TYPE_CLIENTMASK;
             
             if(check == attacker) {
                 if(!found)
                     continue;
             } else if(check != targ) {
-                if(CVAR(sv_showdamage_global_checklos))
+                if(CVAR(sv_showdamage_global_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
                 if(!VisualDamage_CheckLOS(check, targ, hitloc))
                     continue;
                 
@@ -726,6 +726,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(take >= self.health)
                 htype |= VDMG_TYPE_LETHAL;
             
+            if(deathtype == DEATH_ENDURANCE)
+                htype |= VDMG_TYPE_FORCECHECKLOS;
+
             if(!g_minstagib) {
             	vector vdloc = hitloc;
 

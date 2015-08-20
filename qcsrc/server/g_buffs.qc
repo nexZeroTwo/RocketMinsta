@@ -469,14 +469,6 @@ void Buffs_ClientFrame(void) {
         self.buff_vamp_ticks -= 1;
         self.buff_vamp_nexttick = time + 1;
     }
-    
-    if(self.buff_endur_ticks > 0 && time > self.buff_endur_nexttick) {
-        float damage = self.buff_endur_dmgpool / self.buff_endur_ticks;
-        Damage(self, self, self, damage, DEATH_ENDURANCE, self.origin, '0 0 0');
-        self.buff_endur_dmgpool -= damage;
-        self.buff_endur_ticks -= 1;
-        self.buff_endur_nexttick = time + 1;
-    }
 
     if(!self.buff_teamwp) {
         if(Buffs_BuffPower(self, BUFF_MEDIC))
@@ -774,6 +766,66 @@ void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathty
                 CVAR(g_buffs_focus_bonus_hit);
 }
 
+entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
+    using(self = targ) using(other = attacker) {
+        var dot = findfilter(dot, inline float(entity e) {
+            return e.owner == other && e.enemy == self && e.classname == "buff_endur_dot";
+        });
+
+        if(dot)
+            return dot;
+    }
+
+    return spawn() {
+        classname: "buff_endur_dot",
+        owner: attacker,
+        enemy: targ,
+        reset: SUB_Remove,
+        think: inline void(void) {
+            var ticks = self.buff_endur_ticks;
+            var targ = self.enemy;
+
+            if(!targ.iscreature || targ.frozen || targ.jb_isprisoned || targ.deadflag != DEAD_NO) {
+                remove(self);
+                return;
+            }
+
+            var damage = min(self.buff_endur_dmgpool / self.buff_endur_ticks, targ.buff_endur_dmgpool);
+            if(damage <= 0) {
+                remove(self);
+                return;
+            }
+
+            Damage(targ, self, self.owner, damage, DEATH_ENDURANCE, targ.origin, '0 0 0');
+            self.enemy.buff_endur_dmgpool -= damage;
+            self.buff_endur_dmgpool -= damage;
+            self.buff_endur_ticks -= 1;
+
+            if(!self.buff_endur_ticks) {
+                remove(self);
+                return;
+            }
+
+            self.nextthink = time + 1;
+        },
+        nextthink: time + 1
+    };
+}
+
+entity Buffs_Endurance_ApplyDOT(entity targ, entity attacker, float ticks, float damage) {
+    targ.buff_endur_dmgpool += damage;
+
+    var dot = Buffs_Endurance_GetDOT(targ, attacker);
+    dot.buff_endur_dmgpool += damage;
+
+    using(self = targ)
+    for(var d; (d = findfilter(d, inline float(entity e) {
+        return e.enemy == self && e.classname == "buff_endur_dot";
+    }));) d.buff_endur_ticks = ticks;
+
+    return dot;
+}
+
 float Buffs_EnduranceDamage(entity targ, entity attacker, float damage, float deathtype) {
     if(deathtype == DEATH_ENDURANCE)
         return damage;
@@ -790,10 +842,8 @@ float Buffs_EnduranceDamage(entity targ, entity attacker, float damage, float de
     var direct = damage * (1 - (1 - CVAR(g_buffs_endurance_damage_direct)) * endur);
     var dot = damage * CVAR(g_buffs_endurance_damage_dot) * endur;
     
-    if(dot > 0) {
-        targ.buff_endur_ticks = ticks;
-        targ.buff_endur_dmgpool += dot;
-    }
+    if(dot > 0)
+        Buffs_Endurance_ApplyDOT(targ, attacker, ticks, dot);
 
     return direct;
 }
