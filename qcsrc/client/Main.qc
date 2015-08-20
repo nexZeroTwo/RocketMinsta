@@ -141,11 +141,7 @@ void CSQC_Init(void)
 			break;
 	maxclients = i;
 
-	//ctf_temp_1 = "";
-	// localcmd("alias order \"cmd order $*\""); enable if ctf-command thingy is used
-	//registercmd("ctf_menu");
 	registercmd("ons_map");
-	//registercmd("menu_action");
 
 	registercmd("+button3");
 	registercmd("-button3");
@@ -305,9 +301,6 @@ void CSQC_Shutdown(void)
 	if(camera_active)
 		cvar_set("chase_active",ftos(chase_active_backup));
 
-	//if(CVAR(rm_madoka))
-	//	localcmd("loadfont user2 gfx/vera-sans-big\n");
-	
 	if not(isdemo())
 	{
 		if not(calledhooks & HOOK_START)
@@ -360,7 +353,6 @@ float SetTeam(entity o, float Team)
 	{
 		if(o.has_team)
 		{
-			//print("(DISCONNECT) leave team ", ftos(o.team), "\n");
 			tm = GetTeam(o.team, false);
 			tm.team_size -= 1;
 			o.has_team = 0;
@@ -371,7 +363,6 @@ float SetTeam(entity o, float Team)
 	{
 		if not(o.has_team)
 		{
-			//print("(CONNECT) enter team ", ftos(o.team), "\n");
 			o.team = Team;
 			tm = GetTeam(Team, true);
 			tm.team_size += 1;
@@ -380,11 +371,9 @@ float SetTeam(entity o, float Team)
 		}
 		else if(Team != o.team)
 		{
-			//print("(CHANGE) leave team ", ftos(o.team), "\n");
 			tm = GetTeam(o.team, false);
 			tm.team_size -= 1;
 			o.team = Team;
-			//print("(CHANGE) enter team ", ftos(o.team), "\n");
 			tm = GetTeam(Team, true);
 			tm.team_size += 1;
 			return TRUE;
@@ -404,7 +393,6 @@ void Playerchecker_Think()
 		{
 			if(e.sort_prev)
 			{
-				//print("playerchecker: KILL KILL KILL\n");
 				// player disconnected
 				SetTeam(e, -1);
 				RemovePlayer(e);
@@ -416,7 +404,6 @@ void Playerchecker_Think()
 		{
 			if not(e.sort_prev)
 			{
-				//print("playerchecker: SPAWN SPAWN SPAWN\n");
 				// player connected
 				if not(e)
 					playerslots[i] = e = spawn();
@@ -451,11 +438,9 @@ void SetMadokaFont(float v)
 	{
 		case MDKF_SET:
 			sbar_bigfont = sbar_madokafont;
-			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		case MDKF_UNSET:
 			sbar_bigfont = GetBigfont();
-			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), "\n");
 			break;
 		default: case MDKF_AUTO:
 			if(madoka_locked)
@@ -465,14 +450,9 @@ void SetMadokaFont(float v)
 					sbar_bigfont = if(madokalockstate) sbar_madokafont else GetBigfont();
 					return;
 				}
-				/*else
-				{
-					madoka_locked = 0;
-				}*/
 			}
 			
 			sbar_bigfont = if(rm_madoka) sbar_madokafont else GetBigfont();
-			//print("SetMadokaFont: sbar_bigfont = ", ftos(sbar_bigfont), " (AUTOSET)\n");
 			break;
 	}
 	#else
@@ -808,7 +788,6 @@ float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
 	// Tokenize String
-	//argc = tokenize(strMessage);
 	argc = tokenize_console(strMessage);
 
 	// Acquire Command
@@ -845,13 +824,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		sb_showscores = false;
 		return true;
 	} else if(strCmd == "+showaccuracy") {
-		//sb_showaccuracy = true;
-		
-		//if(CVAR(_g_rocketminsta))
-		//	bigprint("Accuracy statistics are disabled", "", 2);
-		//else
-			sb_showaccuracy = true;
-			
+		sb_showaccuracy = true;
 		return true;
 	} else if(strCmd == "-showaccuracy") {
 		sb_showaccuracy = false;
@@ -994,7 +967,6 @@ float CSQC_ConsoleCommand(string strMessage)
 		}
 		
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		//loadfont("user2", (CVAR(rm_madoka) ? "madoka-rune" : "vera-sans-big"));
 		rm_madoka = CVAR(rm_madoka);
 		SetMadokaFont(MDKF_AUTO);
 		
@@ -1019,9 +991,6 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		
-		//if(!CVAR(rm_specmadoka))
-		//	loadfont("user2", (CVAR(rm_madoka) ? "madoka-rune" : "vera-sans-big"));
 		SetMadokaFont(MDKF_AUTO);
 		
 		RMSETTINGREPORT
@@ -1183,9 +1152,6 @@ void ShotOrg_Spawn()
 .float oldspecmadoka;
 void TmpMadoka_Think()
 {
-	//if(!CVAR(rm_madoka))
-	//	loadfont("user2", "vera-sans-big");
-	
 	cvar_set("rm_specmadoka", ftos(self.oldspecmadoka));
 	is_tmpmadoka = 0;
 	SetMadokaFont(MDKF_AUTO);
@@ -1202,7 +1168,6 @@ void madokaprint(string m, string c, float t)
 	tmpmadoka.nextthink = tmpmadoka_fadetime;
 	tmpmadoka.oldspecmadoka = CVAR(rm_specmadoka);
 	cvar_set("rm_specmadoka", "0");
-	//loadfont("user2", "madoka-rune");
 	SetMadokaFont(MDKF_SET);
 	localcmd("play2 misc/powerup\n");
 	
@@ -1305,45 +1270,15 @@ void GameCommand(string msg)
 		localcmd("sv_cmd debug_shotorg\n");
 	}
 	#ifdef RM_SUPPORT_MADOKA
-	/*else if(cmd == "walpurgis")
-	{
-		madokaprint("^1x ^0WALPURGIS NIGHT ^10", "", 5);
-	}*/
 	else if(cmd == "lockmadoka")
 	{
-		//print("lockmadoka(", argv(1), ")\n");
-		
 		if(CVAR(rm_specmadoka))
 		{
 			madoka_locked = 1;
 			madokalockstate = stof(argv(1));
 			SetMadokaFont(madokalockstate);
-			//loadfont("user2", (stof(argv(1))? "madoka-rune" : "vera-sans-big"));
 		}
 	}
-	/*
-	else if(cmd == "lockhud")
-	{
-		hudlocked = 1;
-		hudlocked_old = stof(argv(1));
-		hudlocked_alt = stof(argv(2));
-		
-		rm_althud = hudlocked_alt;
-		rm_oldhud = hudlocked_old;
-		
-		if(argv(3) != hudskin_name)
-			HUDSkin_Load(argv(3));
-	}
-	else if(cmd == "lockfov")
-	{
-		fovlock = stof(argv(1));
-	}
-	else if(cmd == "speczoom")
-	{
-		speczoom_speed = stof(argv(1));
-		speczoom_factor = stof(argv(2));
-	}
-	*/
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -2156,8 +2091,6 @@ void Net_ReadHudFlash(float teamcolor)
 	local float a, i, t;
 	local vector c;
 	
-	//c = decompressShortVector(ReadShort());
-	
 	if(teamcolor)
 		c = GetTeamRGB(myteam);
 	else
@@ -2172,37 +2105,6 @@ void Net_ReadHudFlash(float teamcolor)
 	a = ReadCoord();
 	
 	hudflash(c, t, i, a);
-}
-
-void Net_ReadVIPInfo(float teem)
-{
-	switch(teem)
-	{
-		case COLOR_TEAM1:
-			vip_red_maxhealth = ReadShort();
-			vip_red_health = ReadShort();
-			
-			if(vip_red_name)
-				strunzone(vip_red_name);
-			vip_red_name = strzone(strdecolorize(ReadString()));
-			return;
-		
-		case COLOR_TEAM2:
-			vip_blue_maxhealth = ReadShort();
-			vip_blue_health = ReadShort();
-			
-			if(vip_blue_name)
-				strunzone(vip_blue_name);
-			vip_blue_name = strzone(strdecolorize(ReadString()));
-			return;
-	}
-	
-	print("^1WARNING: ^7Received VipInfo for an unknown team: ", ftos(teem), "\n");
-	print("Dump: \n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
-	print("^5 -> ", ftos(ReadShort()), "\n");
 }
 
 void Net_Camera() {
@@ -2357,9 +2259,6 @@ float CSQC_Parse_TempEntity()
 		case TE_CSQC_HUDFLASH_TEAMCOLOR:
 			Net_ReadHudFlash(TRUE);
 			return TRUE;
-		case TE_CSQC_VIPINFO:
-			Net_ReadVIPInfo(ReadByte());
-			return TRUE;
 		case TE_CSQC_CAMERA:
 			Net_Camera();
 			return TRUE;
@@ -2462,11 +2361,8 @@ void bigprint_old(string bigstr, string comment, float fadeTime)
 	
 	if(bigprint_oldstring)
 		fstrunzone(bigprint_oldstring);
-	//if(bigprint_oldcomment)
-	//	fstrunzone(bigprint_oldcomment);
 	
 	bigprint_oldstring = strzone(bigstr);
-	//bigprint_oldcomment = strzone(comment);
 	
 	bigprint_oldfadetime = fadeTime - 0.1;
 	bigprint_oldappeartime = time;
@@ -2528,8 +2424,6 @@ void bigprint(string bigstr, string comment, float staytime)
 
 void score_visual(float score)
 {
-	//centerprint(ftos(score));
-	
 	string s;
 	vector c;
 	

@@ -153,7 +153,6 @@ entity CopyBody(float keepvelocity)
 	self.oldvelocity = self.velocity;
 	self.fade_time = oldself.fade_time;
 	self.fade_rate = oldself.fade_rate;
-	//self.weapon = oldself.weapon;
 	setorigin(self, oldself.origin);
 	setsize(self, oldself.mins, oldself.maxs);
 	self.prevorigin = oldself.origin;
@@ -747,11 +746,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
                 
                 Buffs_VampireDamage(self, attacker, cdmg, deathtype);
-                
-                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
-                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
-                    hudflash_teamcolor_default_spec(attacker);
-                }
             }
             
             self.health = self.health - take;
@@ -949,7 +943,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
-		DropAllRunes(self);
 		
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;
@@ -957,13 +950,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.buffs = 0;
         self.hg_stealth = 0;
         self.fire_endtime = time;
-        
-		prec_player_die(self, attacker);
+
 		sm_PlayerDies();
-		
-		if(vip_PlayerDies(attacker, self, deathtype))
-			return;
-		
+
 		if(JB_PlayerDies(attacker))
 			return;
 		
@@ -1802,7 +1791,7 @@ void VoiceMessage(string type, string msg)
 float PlayerMayFire(entity plr) {
     //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
     //if all players readied up and the countdown is running
-    if((time < game_starttime && !g_inf) || time < plr.race_penalty)
+    if(time < game_starttime || time < plr.race_penalty)
         return FALSE;
 
     if(roundstate == ROUNDSTATE_OVER)

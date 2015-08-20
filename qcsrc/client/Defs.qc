@@ -165,14 +165,6 @@ float		sbar_currentammo;
 // float		dmg_save;
 // vector		dmg_origin;
 
-// Darkplaces Render Modifications
-#if 0
-.float alpha;
-.float renderflags;
-.vector colormod;
-.float scale;
-#endif
-
 // Basic variables
 .float enttype; // entity type sent from server
 .float sv_entnum; // entity number sent from server

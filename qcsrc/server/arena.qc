@@ -85,13 +85,7 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
-	
-	if(g_vip)
-	{
-		vip_ClearVIPs_MaybeAssign();
-		//vip_RespawnSoulGems();
-	}
-    
+
     if(teamcount_balancenext)
         TeamCount_BalanceTeams();
     
@@ -126,7 +120,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
+			else if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 			{
 				if(self.classname == "player") {
 					PutClientInServer();
@@ -330,18 +324,16 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
+	if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 	{
 		if((next_round && next_round < time))
 		{
 			if(intermission_running)
 			{
-				//bprint("Freezetag: GAME OVER (2)\n");
 				next_round = 0;
 				return;
 			}
-			
-			//bprint("Freezetag: round reset\n");
+
 			next_round = 0;
 			reset_map(TRUE);
 		}

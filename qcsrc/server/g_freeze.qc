@@ -88,7 +88,6 @@ void Freeze_Frame(void) {
 }
 
 float Freeze_GameInProgress(void) {
-    //return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
     return roundstate == ROUNDSTATE_GAME;
 }
 
@@ -281,10 +280,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
-    
-    if(g_vip && ISVIP(self))
-        return 0;
-    
+
     if(!self.frozen) {
         Boobs_DropAllAndRespawn(frce);
         Freeze_FreezePlayer(self, attacker);

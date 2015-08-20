@@ -1,4 +1,3 @@
-void inf_player_leave(entity);
 
 entity nagger;
 float readycount;
@@ -400,7 +399,7 @@ void SV_ParseClientCommand(string s) {
 			self.classname = "observer";
 			self.version_mismatch = 1;
 			PutClientInServer();
-		} else if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force) || CVAR(g_inf)) {
+		} else if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force)) {
 			//JoinBestTeam(self, FALSE, TRUE);
 		} else if(teams_matter && !CVAR(sv_spectate)) {
 			self.classname = "observer";
@@ -512,8 +511,6 @@ void SV_ParseClientCommand(string s) {
 			sprint(self, "selectteam can only be used in teamgames\n");
         } else if(self.jb_specteam) {
             sprint(self, "selectteam can't be used while spectating in the jail\n");
-		} else if(g_inf) {
-			//don't allow players to switch their team when playing infection
 		} else if(CVAR(g_campaign)) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {

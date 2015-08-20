@@ -132,9 +132,6 @@ void W_Rocket_Think (void)
 {
 	entity e;
 	vector desireddir, olddir, newdir, desiredorigin, goal;
-#if 0
-	float cosminang, cosmaxang, cosang;
-#endif
 	float turnrate, velspeed, f;
 	self.nextthink = time;
 	if (time > self.cnt)
@@ -223,17 +220,6 @@ void W_Rocket_Think (void)
 				desireddir = v_forward;
 				desiredorigin = self.owner.origin + self.owner.view_ofs;
 				olddir = normalize(self.velocity);
-
-#if 0
-				// disabled this code because it doesn't do what I want it to do :P
-				cosminang = cos(CVAR(g_balance_rocketlauncher_guidefadeangle) * DEG2RAD);
-				cosmaxang = cos(CVAR(g_balance_rocketlauncher_guidemaxangle) * DEG2RAD);
-				cosang = desireddir * normalize(self.origin - desiredorigin);
-				if(cosminang == cosmaxang)
-					f *= (cosang >= cosminang);
-				else
-					f *= bound(0, (cosang - cosmaxang) / (cosminang - cosmaxang), 1);
-#endif
 
 				// now it gets tricky... we want to move like some curve to approximate the target direction
 				// but we are limiting the rate at which we can turn!
