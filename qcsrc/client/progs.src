@@ -70,7 +70,6 @@ message.qc
 ../common/damagetracker.qc
 ../common/gametype.qc
 
-//vehicles/spiderbot.qc
 shownames.qh
 shownames.qc
 Main.qc

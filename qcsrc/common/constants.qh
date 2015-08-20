@@ -100,11 +100,10 @@ const float ENT_CLIENT_MAPVOTE = 17;
 const float ENT_CLIENT_CLIENTDATA = 18;
 const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
-const float ENT_CLIENT_SPIDERBOT = 21;
+const float ENT_CLIENT_ZAPPER_SHIELD = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
 const float ENT_CLIENT_ZAPPER = 23;
 const float ENT_CLIENT_BUFFMODEL = 24;
-const float ENT_CLIENT_ZAPPER_SHIELD = 25;
 
 const float ENT_CLIENT_TURRET = 40;
 
@@ -289,10 +288,6 @@ const float CTF_STATE_ATTACK = 1;
 const float CTF_STATE_DEFEND = 2;
 const float CTF_STATE_COMMANDER = 3;
 
-const float STAT_HUD = 50;
-const float HUD_NORMAL = 0;
-const float HUD_SPIDERBOT = 10;
-
 const float STAT_ROUNDSTATE = 51;
 const float ROUNDSTATE_PREGAME = 0;
 const float ROUNDSTATE_GAME = 1;
@@ -301,18 +296,6 @@ const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;
-
-const float STAT_SPIDERBOT_HEALTH  = 60;
-const float STAT_SPIDERBOT_ROCKETS = 61;
-const float STAT_SPIDERBOT_HEAT    = 62;
-const float STAT_SPIDERBOT_RELOAD  = 63;
-const float STAT_SPIDERBOT_ENERGY  = 64;
-const float STAT_SPIDERBOT_SHIELD  = 65;
-
-//const float STAT_SPIDERBOT_AIM     53 // compressShotOrigin
-
-//const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
-
 
 const float STAT_FROZEN = 66;
 const float STAT_REVIVE_PROGRESS = 67;
