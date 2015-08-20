@@ -565,52 +565,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(CVAR(g_nadgets_transloc_counters_shield))
             damage = CVAR(g_nadgets_transloc_damage_shield) * Buffs_NadgetPower(attacker);
         
-        float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
-        
-        if(targ.iscreature && medic && deathtype != DEATH_ENDURANCE && (!DEATH_ISSPECIAL(deathtype) || DEATH_ISPROJECTED(deathtype))) {
-            if((teams_matter && attacker.team == targ.team) || attacker == targ) {
-                float heal;
-                
-                if(DEATH_ISPROJECTED(deathtype))
-                    // arc and ignite scale off the original heal, so leave it as is
-                    heal = damage;
-                else {
-                    heal = damage * CVAR(g_buffs_medic_healfactor) * medic;
-                    
-                    if(attacker == targ)
-                        heal *= CVAR(g_buffs_medic_selfhealfactor);
-                    
-                    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+        damage = Buffs_MedicDamage(targ, attacker, inflictor, damage, deathtype, hitloc, force);
+        if(damage < 0)
+            return;
 
-                    if(damage_headshotbonus)
-                    if(CVAR(g_buffs_medic_headshot))
-                    if(IsHeadshot(targ, attacker, hitloc)) {
-                        heal *= 1 + damage_headshotbonus;
-                        deathtype |= HITTYPE_HEADSHOT;
-                        headshot = TRUE;
-                    }
-                }
-                
-                if(attacker == targ)
-                    force = force * CVAR(g_buffs_medic_forcefactor_self);
-                else
-                    force = force * CVAR(g_buffs_medic_forcefactor_team);
-
-                heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
-                heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
-                
-                targ.hg_plasmalock = 0;
-                
-                if(attacker != targ)
-                    Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
-                
-                if(!DEATH_ISPROJECTED(deathtype))
-                    Buffs_ArcDamage(targ, attacker, heal, deathtype);
-                return;
-            } else if(!g_clanarena) if(!attacker.hg_shield) if(!DEATH_ISPROJECTED(deathtype))
-                damage = damage * (1 - (1 - CVAR(g_buffs_medic_damagefactor)) * medic);
-        }
-        
         damage_origtarget = targ;
         if(targ.hg_linker)
         if((DEATH_HGTYPE(deathtype) != HG_TRANSLOC || CVAR(g_nadgets_transloc_damage)) && DEATH_HGTYPE(deathtype) != HG_GG && !DEATH_ISSPECIAL(deathtype))

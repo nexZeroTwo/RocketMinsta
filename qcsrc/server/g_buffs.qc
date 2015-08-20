@@ -530,6 +530,61 @@ float Buffs_NadgetBonusMultiplier(entity plr) {
     return rint(1 + (CVAR(g_buffs_wrath_hgbonusmultiplier) - 1) * wrath);
 }
 
+float Buffs_MedicDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype, vector hitloc, vector force) {
+    if(!targ.iscreature || deathtype == DEATH_ENDURANCE || (DEATH_ISSPECIAL(deathtype) && !DEATH_ISPROJECTED(deathtype)))
+        return damage;
+
+    float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
+
+    if(!medic)
+        return damage;
+
+    if((teams_matter && attacker.team == targ.team) || attacker == targ) {
+        float heal;
+
+        if(DEATH_ISPROJECTED(deathtype))
+            // arc and ignite scale off the original heal, so leave it as is
+            heal = damage;
+        else {
+            heal = damage * CVAR(g_buffs_medic_healfactor) * medic;
+
+            if(attacker == targ)
+                heal *= CVAR(g_buffs_medic_selfhealfactor);
+
+            W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+
+            if(damage_headshotbonus)
+            if(CVAR(g_buffs_medic_headshot))
+            if(IsHeadshot(targ, attacker, hitloc)) {
+                heal *= 1 + damage_headshotbonus;
+                deathtype |= HITTYPE_HEADSHOT;
+                headshot = TRUE;
+            }
+        }
+
+        if(attacker == targ)
+            force = force * CVAR(g_buffs_medic_forcefactor_self);
+        else
+            force = force * CVAR(g_buffs_medic_forcefactor_team);
+
+        heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
+        heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
+
+        targ.hg_plasmalock = 0;
+
+        if(attacker != targ)
+            Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
+
+        if(!DEATH_ISPROJECTED(deathtype))
+            Buffs_ArcDamage(targ, attacker, heal, deathtype);
+
+        return -1;
+    } else if(!g_clanarena) if(!attacker.hg_shield) if(!DEATH_ISPROJECTED(deathtype))
+        damage = damage * (1 - (1 - CVAR(g_buffs_medic_damagefactor)) * medic);
+
+    return damage;
+}
+
 float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
     float diffteam;
     
