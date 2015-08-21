@@ -2,7 +2,6 @@
 
 float autocvar__cl_afkstate;
 float autocvar__cl_rate;
-float autocvar__g_nadgets_select_available;
 float autocvar__g_rocketminsta;
 float autocvar__menu_alpha;
 float autocvar_bgmvolume;

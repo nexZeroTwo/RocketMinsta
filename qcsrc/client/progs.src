@@ -21,7 +21,6 @@ csqc_builtins.qc
 ../common/dprm.qh
 ../common/nadgets.qh
 ../common/buffs.qh
-dprm.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -42,8 +41,6 @@ hudskin.qh
 sortlist.qc
 miscfunctions.qc
 teamplay.qc
-
-ctf.qc
 
 svnstuff.qc
 sbar.qc
@@ -83,7 +80,6 @@ prandom.qc
 bgmscript.qc
 
 ../common/dprm.qc
-dprm.qc
 ../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc

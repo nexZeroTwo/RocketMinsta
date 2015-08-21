@@ -335,23 +335,13 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else if(argv(0) == "walpurgis")
 	{
-		#ifdef RM_SUPPORT_MADOKA
 		RemapVote_vote = vote;
 		RemapVote_display = strzone("^2something terrible");
-		#else
-		sprint(e, "^0It's not the time yet...\n");
-		return FALSE;
-		#endif
 	}
 	else if(argv(0) == "supermentalrescue")
 	{
-		#ifdef RM_SUPPORT_MORNINGRESCUE
 		RemapVote_vote = vote;
 		RemapVote_display = strzone("^2something awesome");
-		#else
-		sprint(e, "^7The rescue team is not ready yet\n");
-		return FALSE;
-		#endif
 	}
 	else if(argv(0) == "gotoserver") {
 		if(vote_argc < 2) {

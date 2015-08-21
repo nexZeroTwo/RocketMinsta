@@ -1001,19 +1001,12 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
                 tmp_x -= sbar_fontsize_x * 0.25;
             }
 
-			#ifdef RM_SUPPORT_MADOKA
-			local float tmp_font;
-			tmp_font = drawfont;
+            using(drawfont = drawfont) {
+    			if(flg & SPFLAG_MADOKA)
+    				drawfont = sbar_madokafont;
 
-			if(flg & SPFLAG_MADOKA)
-				drawfont = sbar_madokafont;
-			#endif
-
-			drawcolorcodedstring(pos - tmp, str, sbar_fontsize, aa, DRAWFLAG_NORMAL);
-
-			#ifdef RM_SUPPORT_MADOKA
-			drawfont = tmp_font;
-			#endif
+    			drawcolorcodedstring(pos - tmp, str, sbar_fontsize, aa, DRAWFLAG_NORMAL);
+            }
 
             if(flg & SPFLAG_MUTE)
                 drawpic(pos - '1.7 0 0' * sbar_fontsize_x, "gfx/hud/mute", sbar_fontsize, '1 1 1', sbar_scoreboard_alpha_fg * 0.7, DRAWFLAG_NORMAL);
@@ -3913,15 +3906,11 @@ void Sbar_Draw(void)
 	{
 		//release madoka and HUD locks. Perhaps should be done elsewhere?
 
-		#ifdef RM_SUPPORT_MADOKA
 		if(madoka_locked)
 		{
-			//print("releasing madoka\n");
 			madoka_locked = 0;
-			//loadfont("user2", (CVAR(rm_madoka) ? "madoka-rune" : "vera-sans-big"));
 			SetMadokaFont(MDKF_AUTO);
 		}
-		#endif
 
 		if(hudlocked)
 		{
@@ -3985,7 +3974,6 @@ void Sbar_Draw(void)
 		drawfill('0 0 0', bottomright, fcolor, revalpha, DRAWFLAG_ADDITIVE);
 	}
 
-	#ifdef RM_SUPPORT_MORNINGRESCUE
 	if(morningrescue)
 	if(time <= mr_fadetime)
 	{
@@ -3997,8 +3985,7 @@ void Sbar_Draw(void)
 		morningrescue = 0;
 		drawfont = sbar_font;
 	}
-	#endif
-    
+
     float jailspec = FALSE;
     if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
         o = Sbar_DrawNoteLine(o, "^1You are imprisoned");
@@ -4334,19 +4321,15 @@ void Sbar_Draw(void)
 		{
 			float slot = spectatorlist[i];
 
-			#ifdef RM_SUPPORT_MADOKA
-			local entity pl;
+			entity pl;
 			pl = playerslots[slot];
 
-			if(pl.(scores[SP_FLAGS]) & SPFLAG_MADOKA)
-				drawfont = sbar_madokafont;
-			#endif
+            using(drawfont = drawfont) {
+    			if(pl.(scores[SP_FLAGS]) & SPFLAG_MADOKA)
+    				drawfont = sbar_madokafont;
 
-			o = Sbar_DrawNoteLineA(o, GetPlayerName(slot), 0.5);
-
-			#ifdef RM_SUPPORT_MADOKA
-			drawfont = sbar_font;
-			#endif
+    			o = Sbar_DrawNoteLineA(o, GetPlayerName(slot), 0.5);
+            }
 		}
 
 		if(i != num_spectators)
@@ -5515,10 +5498,8 @@ void Sbar_Draw(void)
         Sbar_DrawHGBonus();
     Sbar_DrawBuffs();
 
-	#ifdef RM_SUPPORT_VOTEGFX
 	if(rm_legacyvote || oldengine)
 	{
-	#endif
 		if(vote_waiting)
 		{
 			if(vote_waiting_for_me)
@@ -5559,7 +5540,6 @@ void Sbar_Draw(void)
                 }
 			}
 		}
-	#ifdef RM_SUPPORT_VOTEGFX
 	}
 	else
 	{
@@ -5581,7 +5561,7 @@ void Sbar_Draw(void)
 			float a = vote_alpha * bound(0.75, 1 - vote_highlighted, 1);
 			color = colormapPaletteColor(15, 0);
 
-			vector voteorigin; // = bottomright - '290 135 0';
+			vector voteorigin;
 
 			if(vote_highlighted || !vote_waiting_for_me)
 			{
@@ -5648,7 +5628,6 @@ void Sbar_Draw(void)
 			vote_highlighted = 0;
 		}
 	}
-	#endif
     
     if(getstati(STAT_QUEUE) && !intermission) {
         s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");

@@ -414,8 +414,7 @@ void CSQC_UpdateView(float w, float h)
 	float fov;
 	float f, i, j;
 	vector v;
-    
-    // VisualDamage_Test();
+
     HG_NadeGainSound();
 
 	dprint_load();
@@ -604,13 +603,6 @@ void CSQC_UpdateView(float w, float h)
 	sbar_showbinds = CVAR(sbar_showbinds);
 	sbar_showbinds_limit = CVAR(sbar_showbinds_limit);
 
-	// Update the mouse position
-	/*
-	mousepos_x = vid_conwidth;
-	mousepos_y = vid_conheight;
-	mousepos = mousepos*0.5 + getmousepos();
-	*/
-
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw)
@@ -627,24 +619,8 @@ void CSQC_UpdateView(float w, float h)
 	// next R_RenderScene call
 	drawstring('0 0 0', "", '1 1 0', '1 1 1', 0, 0);
 
-	// Draw the mouse cursor
-	// NOTE: drawpic must happen after R_RenderScene for some reason
-	//drawpic(getmousepos(), "gfx/cursor.tga", '11 14 0', '1 1 1', 1, 0);
-	//drawstring('50 50', ftos(game), '10 10 0', '1 1 1', 1, 0);
-	//self = edict_num(player_localnum);
-	//drawstring('0 0', vtos(pmove_org), '8 8 0', '1 1 1', 1, 0);
-	//drawstring('0 8', strcat("ORG: ", vtos(self.origin), " state: ", ftos(self.ctf_state), " HP: ", ftos(self.health)), '8 8 0', '1 1 1', 1, 0);
-	// as long as the ctf part isn't in, this is useless
-	if(menu_visible)
-		menu_show();
-
-	/*if(gametype == GAME_CTF)
-	{
-		ctf_view();
-	} else */
-
 	// draw 2D entities
-	
+
     VisualDamage_PreDraw();
 	e = self;
 	for(self = world; (self = nextent(self)); )
@@ -700,7 +676,6 @@ void CSQC_UpdateView(float w, float h)
         // TrueAim check
         float shottype;
         float bullets, ring_scale;
-        // wcross_origin = '0.5 0 0' * vid_conwidth + '0 0.5 0' * vid_conheight;
         wcross_origin = project_3d_to_2d(view_origin + MAX_SHOT_DISTANCE * view_forward);
         wcross_origin_z = 0;
         if(CVAR(crosshair_hittest))
@@ -840,8 +815,7 @@ void CSQC_UpdateView(float w, float h)
 		else
 			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
 	}
-	
-	DPRM_Draw2D();
+
     NS_Draw();
 	
 	if(NextFrameCommand)
@@ -856,8 +830,6 @@ void CSQC_UpdateView(float w, float h)
 		string w0, h0;
 		w0 = ftos(CVAR(vid_conwidth));
 		h0 = ftos(CVAR(vid_conheight));
-		//R_SetView(VF_VIEWPORT, '0 0 0', '640 480 0');
-		//R_SetView(VF_FOV, '90 90 0');
 		R_SetView(VF_ORIGIN, '0 0 0');
 		R_SetView(VF_ANGLES, '0 0 0');
 		R_SetView(VF_PERSPECTIVE, 1);

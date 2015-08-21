@@ -25,17 +25,8 @@ void cvar_clientsettemp_restore()
 			cvar_set(e.netname, e.message);
 }
 
-void() menu_show_error =
-{
-	drawstring('0 200 0', "ERROR - MENU IS VISIBLE BUT NO MENU WAS DEFINED!", '8 8 0', '1 0 0', 1, 0);
-};
-
 // CSQC_Init : Called every time the CSQC code is initialized (essentially at map load)
 // Useful for precaching things
-
-void() menu_sub_null =
-{
-};
 
 string TryBind(string cmds, string keys) {
     float ncmds = tokenize(cmds);
@@ -124,7 +115,7 @@ void CSQC_Init(void)
 	check_unacceptable_compiler_bugs();
 
 	float i;
-	CSQC_CheckEngine();
+    SetupFonts();
 	dprint_load();
 
 	binddb = db_create();
@@ -132,9 +123,6 @@ void CSQC_Init(void)
 	compressShortVector_init();
 
 	drawfont = 0;
-	menu_visible = FALSE;
-	menu_show = menu_show_error;
-	menu_action = menu_sub_null;
 
 	for(i = 0; i < 255; ++i)
 		if(getplayerkey(i, "viewentity") == "")
@@ -423,9 +411,7 @@ void TrueAim_Init();
 
 #define RM_OUTDATED { print("^xFB0Detected an outdated RMconfig, initializing required cvars...\n"); rm_helptime = time + 20; }
 
-#ifdef RM_SUPPORT_MADOKA
 entity tmpmadoka;
-#endif
 
 float GetBigfont() {
 	return if(rm_oldbigfont || sv_oldfag) sbar_bigfont_real else sbar_rmbigfont;
@@ -433,7 +419,6 @@ float GetBigfont() {
 
 void SetMadokaFont(float v)
 {
-	#ifdef RM_SUPPORT_MADOKA
 	switch(v)
 	{
 		case MDKF_SET:
@@ -455,9 +440,6 @@ void SetMadokaFont(float v)
 			sbar_bigfont = if(rm_madoka) sbar_madokafont else GetBigfont();
 			break;
 	}
-	#else
-	sbar_bigfont = GetBigfont();
-	#endif
 }
 
 void Menu_ShowNagger(void) {
@@ -726,8 +708,7 @@ void PostInit(void)
 	registercmd("hudskin");
 	
 	bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
-	
-	#ifdef RM_SUPPORT_MADOKA
+
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
@@ -738,7 +719,6 @@ void PostInit(void)
 	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
 	localcmd("loadfont infobar gfx/vera-sans-big\n");
 	SetMadokaFont(MDKF_AUTO);
-	#endif
 	
 	if(sv_showspecs_extra)
 		localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), "\n");
@@ -861,13 +841,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		print("^2oldbigfont^7: If enabled, will use Nexuiz's default 'bigfont' instead of the RM one\n");
 		print("^2freezetag_danger^7: If enabled, you will be able to place 'danger' waypoints using the fire button while frozen (enabled by default)\n");
 		print("^2freezetag_danger_silent^7: If enabled, danger waypoints placed with the fire button shortcut will not post a teamchat message (enabled by default)\n");
-		#ifdef RM_SUPPORT_MADOKA
-		#ifdef RM_SHOW_MADOKA_IN_RMHELP
-		print("^2madoka^7: If enabled, big text will be shown using Madoka runes instead of normal characters. By enabling this option, you automatically accept The Contract (disabled by default)\n");
-		print("^2specmadoka^7: If enabled, you will see if your spectatee uses Madoka runes or not (enabled by default)\n");
         print("^2radio^7: Recieve music broadcasts from the server, if provided (enabled by default)\n");
-		#endif
-		#endif
 		
 		print("\nIn addition, these commands are available:\n");
 		print("^5afk^7: Marks you as being away\n");
@@ -950,7 +924,6 @@ float CSQC_ConsoleCommand(string strMessage)
 	}
 	else if(strCmd == "madoka")
 	{
-		#ifdef RM_SUPPORT_MADOKA
 		if(is_tmpmadoka)
 		{
 			print("^0Your Soul Gem darkened and turned into a Grief Seed\n");
@@ -974,10 +947,6 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 		RMSETTINGREPORT
 		return true;
-		#else
-		print("^1This RocketMinsta build has been compiled without madoka-rune support\n");
-		return false;
-		#endif
 	}
 	else if(strCmd == "anonspec")
 	{
@@ -1148,7 +1117,6 @@ void ShotOrg_Spawn()
 	debug_shotorg.view_ofs = '25 8 -8';
 }
 
-#ifdef RM_SUPPORT_MADOKA
 .float oldspecmadoka;
 void TmpMadoka_Think()
 {
@@ -1176,7 +1144,6 @@ void madokaprint(string m, string c, float t)
 	//We will either print runic text here, or won't print anything at all.
 		bigprint(m, c, t);
 }
-#endif
 
 void GameCommand(string msg)
 {
@@ -1191,9 +1158,7 @@ void GameCommand(string msg)
 		print("  sbar_columns_set ...\n");
 		print("  sbar_columns_help\n");
 		print("  bigprint text command staytime\n");
-		#ifdef RM_SUPPORT_MADOKA
 		print("  madokaprint text command staytime\n");
-		#endif
 		GameCommand_Generic("help");
 		return;
 	}
@@ -1269,16 +1234,6 @@ void GameCommand(string msg)
 		}
 		localcmd("sv_cmd debug_shotorg\n");
 	}
-	#ifdef RM_SUPPORT_MADOKA
-	else if(cmd == "lockmadoka")
-	{
-		if(CVAR(rm_specmadoka))
-		{
-			madoka_locked = 1;
-			madokalockstate = stof(argv(1));
-			SetMadokaFont(madokalockstate);
-		}
-	}
 	else if(cmd == "madokaprint")
 	{
 		if(argc < 3)
@@ -1289,7 +1244,6 @@ void GameCommand(string msg)
 		
 		madokaprint(argv(1), argv(2), stof(argv(3)));
 	}
-	#endif
 	else if(cmd == "bigprint")
 	{
 		if(argc < 3)
@@ -1368,10 +1322,6 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 
     if(NS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
-
-	if(menu_visible)
-		if(menu_action(bInputType, nPrimary, nSecondary))
-			return TRUE;
 
 	return FALSE;
 }
@@ -1746,8 +1696,8 @@ void Ent_Remove()
 
 	self.enttype = 0;
 	self.classname = "";
-	self.draw = menu_sub_null;
-	self.entremove = menu_sub_null;
+	self.draw = func_null;
+	self.entremove = func_null;
 	// TODO possibly set more stuff to defaults
 }
 // CSQC_Ent_Remove : Called when the server requests a SSQC / CSQC entity to be removed.  Essentially call remove(self) as well.
@@ -1962,7 +1912,6 @@ void Net_ReadRace()
 		case RACE_NET_PENALTY_RACE:
 			race_penaltyeventtime = time;
 			race_penaltytime = ReadShort();
-			//race_penaltyaccumulator += race_penaltytime;
 			if(race_penaltyreason)
 				strunzone(race_penaltyreason);
 			race_penaltyreason = strzone(ReadString());
@@ -1992,11 +1941,7 @@ void Net_ReadBigPrint()
 
 void Net_ReadMadokaPrint()
 {
-	#ifdef RM_SUPPORT_MADOKA
 	madokaprint(ReadString(), ReadString(), ReadShort());
-	#else
-	print("Warning: the server attempted a madokaprint, but RM has been built without madoka-rune support! This should never happen, the mod is B0RKED!!\n");
-	#endif
 }
 
 void Net_ReadSpecInfo()
@@ -2067,7 +2012,6 @@ void Net_ReadVoteInvite(void) {
 
 void Net_ReadMorningRescue()
 {
-	#ifdef RM_SUPPORT_MORNINGRESCUE
 	if(morningrescue)
 		return;
 	
@@ -2075,9 +2019,6 @@ void Net_ReadMorningRescue()
 	morningrescue = 1;
 	mr_appeartime = time;
 	mr_fadetime   = time + 9;
-	#else
-	error("Server attempted a MorningRescue, but the mod has been built without RM_SUPPORT_MORNINGRESCUE! EVERYTHING IS FUCKED UP BIG TIME.");
-	#endif
 }
 
 void Net_ReadClearBigPrint()
