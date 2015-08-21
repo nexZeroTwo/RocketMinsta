@@ -1490,6 +1490,13 @@ float _unacceptable_compiler_bug_1_b() { return 1; }
 float _unacceptable_compiler_bug_1_c(float d) { return 2 * d; }
 float _unacceptable_compiler_bug_1_d() { return 1; }
 
+float test_global;
+
+float check_using_bug(void) {
+    using(test_global = 42)
+        return 512;
+}
+
 void check_unacceptable_compiler_bugs()
 {
 	if(CVAR(_allow_unacceptable_compiler_bugs))
@@ -1501,6 +1508,11 @@ void check_unacceptable_compiler_bugs()
     var v = [random(), random(), random()];
     if(v != [v.x, v.y, v.z])
         error("vectors are borked, please update rmqcc");
+
+    test_global = 9001;
+    check_using_bug();
+    if(test_global != 9001)
+        error("using is borked, please update rmqcc");
 }
 
 float compressShotOrigin(vector v)
