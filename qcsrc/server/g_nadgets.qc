@@ -2529,6 +2529,9 @@ float HG_RegenLimit(entity plr) {
 }
 
 void HG_AdvanceRegen(float delta, float limit) {
+    if(limit && self.hg_ctx_ammo >= limit)
+        return;
+
     self.hg_ctx_regentime -= delta;
 
     if(self.hg_ctx_regentime <= 0) {
@@ -2539,7 +2542,7 @@ void HG_AdvanceRegen(float delta, float limit) {
         self.hg_ctx_ammo += 1;
         HG_SetRegenTime(self, HG_RegenTime(self));
 
-        if(remainder && (self.hg_ctx_ammo < limit || !limit))
+        if(remainder)
             HG_AdvanceRegen(remainder, limit);
     }
 }
