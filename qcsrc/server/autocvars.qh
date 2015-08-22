@@ -2007,6 +2007,7 @@ string autocvar_sv_vote_master_autologin_name;
 string autocvar_sv_vote_master_commands;
 string autocvar_sv_vote_master_default_login;
 string autocvar_sv_vote_master_password;
+string autocvar_sv_vote_master_users;
 float autocvar_sv_vote_mindelay;
 float autocvar_sv_vote_nospectators;
 string autocvar_sv_vote_only_commands;
