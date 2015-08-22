@@ -496,8 +496,8 @@ float Buffs_NadgetPower(entity plr) {
 }
 
 float Buffs_NadgetRegen(entity plr) {
-    return (1 + (CVAR(g_buffs_supply_hg_regenscale) - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
-           (1 + (CVAR(g_buffs_wrath_hgregen)        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
+    return (1 + (CVAR(g_buffs_supply_hg_regenscale) - 1) * Buffs_BuffPower(plr, BUFF_SUPPLY)) *
+           (1 + (CVAR(g_buffs_wrath_hgregen)        - 1) * Buffs_BuffPower(plr, BUFF_WRATH));
 }
 
 float Buffs_NadgetCooldown(entity plr) {
