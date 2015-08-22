@@ -58,33 +58,6 @@ float MapVote_Selection(vector topleft, vector cellsize, float rows, float colum
 	return cell;
 }
 
-/*
-float GametypeVote_Selection()
-{
-	float r;
-	float offset = sbar_fontsize_y * 10;
-	float i;
-	r = -1;
-	
-	for(i = 0; i < mv_num_maps; ++i) {
-		float l_size;
-		float lines;
-		if(GameTypeVote_DescriptionByID(i) == "")
-			lines = 0;
-		else
-			lines = tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n");
-		l_size = sbar_fontsize_y * 1.4 + lines * sbar_fontsize_y; // 1.2
-
-		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + l_size)
-			r = i;
-			
-		offset += l_size + (sbar_fontsize_y * 0.5);
-	}
-	
-	return r;
-}
-*/
-
 float GametypeVote_Selection()
 {
 	float r;
@@ -108,9 +81,6 @@ float GametypeVote_Selection()
 string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 {
 	string pre, post;
-// not visually number-based voting in NeX
-//	if(id >= 9) pre = strcat(ftos(id+1), ". ");
-//	else pre = strcat("0", ftos(id+1), ". ");
 	if(mv_detail && count >= 0)
 	{
 		if(count == 1)
@@ -145,10 +115,7 @@ string GameTypeVote_DescriptionByID(float id)
 
 		case GTV_OVERPLAYED:
 			return "This gametype is currently overplayed.";
-/*
-		case GTV_FORBIDDEN:
-			return "This gametype is forbidden on this map.";
-*/
+
 		default:
 			return "wtf?";
 	}
@@ -170,14 +137,14 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 		alpha = 1;
 	
 	if(mv_avail[id] != GTV_AVAILABLE)
-		a = 0.3; //0.5
+		a = 0.3;
 	else
 		a = 1;
 
 	float oldx = o_x;
-	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]); //(1 - pow(mv_hoveralpha[id] - 1, 2));
+	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]);
 	
-	drawGameTypeLine(MapVote_FormatMapItem(id, gametype_Name_to_LongName(gtype), count, 500), MapVote_RGB(id), 1.4, a); // 1.2
+	drawGameTypeLine(MapVote_FormatMapItem(id, gametype_Name_to_LongName(gtype), count, 500), MapVote_RGB(id), 1.4, a);
 	if(s != "") for(i = 0; i < n; ++i) {
 		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
@@ -189,8 +156,6 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 
 void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, string pic, float count, float id)
 {
-	//print("ENTERED MapVote_DrawMapItem(", pic, ")\n");
-	
 	vector img_size;
 	vector rgb;
 	vector txtpos;
@@ -200,7 +165,6 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 
 	float alpha = 1 - pow(bound(0, (time - mv_starttime), 1) - 1, 2);
 	float ha = 	ipol_swingInOut(mv_hoveralpha[id]);
-				//((id == mv_selection)? ipol_swingOut : ipol_swingIn)(mv_hoveralpha[id]);
 	float fromserver = mv_preview[id] == PREVIEW_FROMSERVER;
 	
 	float alpha2;
@@ -249,12 +213,7 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	}
 
 	vector hs = img_size * 0.5;
-	//if(id < 9)
-	//	drawpic_rotated_ex(pos + '1 0 0', strcat("gfx/hud/num_", ftos(id+1)), (img_size_y / 5) * '1 1 0', '1 1 1', angle, hs, 0.6 * alpha, DRAWFLAG_NORMAL);
-	// TODO: make more numbers > 9
 	drawstring(txtpos, label, sbar_fontsize, rgb * alpha * alpha2, alpha * alpha2, DRAWFLAG_NORMAL);
-	
-	//print("EXITED MapVote_DrawMapItem(", pic, ")\n");
 }
 
 void MapVote_DrawAbstain(vector pos, float isize, float tsize, float count, float id)
@@ -309,7 +268,7 @@ void MapVote_Draw()
 	xmin = vid_conwidth*0.05; // 5% border must suffice
 	xmax = vid_conwidth - xmin;
 	ymin = 20;
-	i = CVAR(con_chatpos); //*CVAR(con_chatsize);
+	i = CVAR(con_chatpos);
 	if(i < 0)
 		ymax = vid_conheight + (i - CVAR(con_chat)) * CVAR(con_chatsize);
 	if(i >= 0 || ymax < (vid_conheight*0.5))
@@ -419,8 +378,6 @@ void MapVote_Draw()
 			continue;	// draw selection on top of everything else
 		
 		tmp = mv_votes[i]; // FTEQCC bug: too many array accesses in the function call screw it up
-		//if(tmp < 0)
-		//	continue;
 		map = mv_maps[i];
 		
 		if(gametypevote)
@@ -438,14 +395,12 @@ void MapVote_Draw()
 	
 	if(!gametypevote && mv_selection >= 0 && mv_selection < 16) {
 		tmp = mv_votes[mv_selection]; // FTEQCC bug: too many array accesses in the function call screw it up
-		//if(tmp >= 0) {
-			map = mv_maps[mv_selection];
+		map = mv_maps[mv_selection];
 			
-			if(mv_preview[mv_selection])
-				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, mv_pics[mv_selection], tmp, mv_selection);
-			else
-				MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, "", tmp, mv_selection);
-		//}
+		if(mv_preview[mv_selection])
+			MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, mv_pics[mv_selection], tmp, mv_selection);
+		else
+			MapVote_DrawMapItem(pos + MapVote_GridVec(dist, mv_selection, columns), isize, tsize, map, "", tmp, mv_selection);
 	}
 	
 	if(mv_abstain) {
@@ -480,12 +435,9 @@ void Cmd_MapVote_MapDownload(float argc)
 		return;
 	}
 
-	//print(strcat("^3Adding: ", ftos(id), " - ", pak.message, " - "));
-
 	if(PreviewExists(pak.message))
 	{
 		mv_preview[id] = true;
-		//print("^2Found...\n");
 		return;
 	} else {
 		print("Requesting preview...\n");
@@ -732,7 +684,6 @@ float MapVote_InputEvent(float bInputType, float nPrimary, float nSecondary)
 
 	if ('0' <= nPrimary && nPrimary <= '9')
 	{
-		// number-based voting is not prefered in NeX - but still possible manually using impulse
 		imp = nPrimary - '0';
 		if (imp == 0) imp = 10;
 		localcmd(strcat("\nimpulse ", ftos(imp), "\n"));
