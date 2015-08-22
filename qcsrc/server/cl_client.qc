@@ -1604,7 +1604,6 @@ void DoTeamChange(float destteam)
 void FixClientCvars(entity e)
 {
 	// send prediction settings to the client
-	stuffcmd(e, "\nin_bindmap 0 0\n");
 	if(g_race || g_cts)
 		stuffcmd(e, "cl_cmd settemp cl_movecliptokeyboard 2\n");
 }
@@ -2456,7 +2455,7 @@ void EnterSpectatorMode() {
 }
 
 void SpectateDelay_Think() {
-    if(!self.owner || self.owner.classname != "player") {
+    if(!self.owner || gameover || self.owner.classname != "player") {
         self.owner.specdelay_ent = world;
         remove(self);
         return;

@@ -430,6 +430,8 @@ void SV_ParseClientCommand(string s) {
 		}
 		GetCvars(1);
 	} else if(cmd == "spectate") {
+        if(gameover)
+            return;
 		if(cmd_floodcheck())
 			return;
 		if not(self.flags & FL_CLIENT)
@@ -469,6 +471,9 @@ void SV_ParseClientCommand(string s) {
             }
         }
 	} else if(cmd == "join") {
+        if(gameover)
+            return;
+
 		if not(self.flags & FL_CLIENT)
 			return;
 		
@@ -505,6 +510,8 @@ void SV_ParseClientCommand(string s) {
 		}
 		UnmarkAway(self);
 	} else if( cmd == "selectteam" ) {
+        if(gameover)
+            return;
 		if not(self.flags & FL_CLIENT)
 			return;
 		if( !teams_matter ) {
