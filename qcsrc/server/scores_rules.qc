@@ -236,18 +236,6 @@ void ScoreRules_freezetag()
 	ScoreRules_basics_end();
 }
 
-// VIP stuff
-#define SP_VIP_VIPKILLS 4
-#define SP_VIP_SURVIVALS 5
-void ScoreRules_vip()
-{
-	CheckAllowedTeams(world);
-	ScoreRules_basics(if(c4>=0) 4 else if(c3>=0) 3 else 2, SFL_SORT_PRIO_PRIMARY, SFL_SORT_PRIO_PRIMARY, TRUE); // SFL_SORT_PRIO_PRIMARY
-	ScoreInfo_SetLabel_PlayerScore(SP_VIP_VIPKILLS,		"vks",		SFL_SORT_PRIO_SECONDARY);
-	ScoreInfo_SetLabel_PlayerScore(SP_VIP_SURVIVALS,	"surv",	0);
-	ScoreRules_basics_end();
-}
-
 // Jailbreak stuff
 #define SP_JB_JBREAKS 4
 #define SP_JB_FREED 5

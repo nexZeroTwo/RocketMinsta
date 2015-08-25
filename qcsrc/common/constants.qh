@@ -44,7 +44,7 @@ const float TE_CSQC_CLEARBIGPRINT = 112;
 const float TE_CSQC_SERVERINFO = 113;
 const float TE_CSQC_HUDFLASH = 114;
 const float TE_CSQC_HUDFLASH_TEAMCOLOR = 115;
-const float TE_CSQC_VIPINFO = 116;
+const float TE_CSQC_NADGETSELECT = 116;
 const float TE_CSQC_CAMERA = 117;
 const float TE_CSQC_VISUALDAMAGE = 118;
 const float TE_CSQC_HEAL = 119;
@@ -57,7 +57,6 @@ const float TE_CSQC_UPDATESELECTEDPLAYER = 125;
 const float TE_CSQC_MESSAGE = 126;
 const float TE_CSQC_VOTEINVITE = 127;
 const float TE_CSQC_ELEBLAST = 128;
-const float TE_CSQC_NADGETSELECT = 129;
 
 const float CSQCMSG_OBITUARY = 0;
 const float CSQCMSG_OBITUARY_CUSTOM = 1;
@@ -70,6 +69,10 @@ const float CSQCMSG_OBITUARY_CUSTOM = 1;
 #define VDMG_TYPE_NOTPLAYERTARGET 32
 #define VDMG_TYPE_LETHAL 64
 #define VDMG_TYPE_ALIEN 128
+
+#define VDMG_TYPE_CLIENTMASK 0xFF
+
+#define VDMG_TYPE_FORCECHECKLOS 1024
 
 const float RACE_NET_CHECKPOINT_HIT_QUALIFYING = 0; // byte checkpoint, short time, short recordtime, string recordholder
 const float RACE_NET_CHECKPOINT_CLEAR = 1;
@@ -101,11 +104,10 @@ const float ENT_CLIENT_MAPVOTE = 17;
 const float ENT_CLIENT_CLIENTDATA = 18;
 const float ENT_CLIENT_RANDOMSEED = 19;
 const float ENT_CLIENT_WALL = 20;
-const float ENT_CLIENT_SPIDERBOT = 21;
+const float ENT_CLIENT_ZAPPER_SHIELD = 21;
 const float ENT_CLIENT_MODELEFFECT = 22;
 const float ENT_CLIENT_ZAPPER = 23;
 const float ENT_CLIENT_BUFFMODEL = 24;
-const float ENT_CLIENT_ZAPPER_SHIELD = 25;
 const float ENT_CLIENT_WARPZONE = 26;
 const float ENT_CLIENT_WARPZONE_CAMERA = 27;
 const float ENT_CLIENT_WARPZONE_TELEPORTED = 28;
@@ -273,7 +275,6 @@ float CVAR_READONLY	= 4;
 // csqc communication stuff
 
 const float STAT_KH_KEYS = 32;
-const float STAT_CTF_STATE = 33;
 const float STAT_WEAPONS = 35;
 const float STAT_SWITCHWEAPON = 36;
 const float STAT_GAMESTARTTIME = 37;
@@ -289,13 +290,6 @@ const float STAT_SHOTORG = 46; // compressShotOrigin
 const float STAT_LEADLIMIT = 47;
 const float STAT_BULLETS_LOADED = 48;
 const float STAT_BULLETS_MAX = 49;
-const float CTF_STATE_ATTACK = 1;
-const float CTF_STATE_DEFEND = 2;
-const float CTF_STATE_COMMANDER = 3;
-
-const float STAT_HUD = 50;
-const float HUD_NORMAL = 0;
-const float HUD_SPIDERBOT = 10;
 
 const float STAT_ROUNDSTATE = 51;
 const float ROUNDSTATE_PREGAME = 0;
@@ -305,18 +299,6 @@ const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;
-
-const float STAT_SPIDERBOT_HEALTH  = 60;
-const float STAT_SPIDERBOT_ROCKETS = 61;
-const float STAT_SPIDERBOT_HEAT    = 62;
-const float STAT_SPIDERBOT_RELOAD  = 63;
-const float STAT_SPIDERBOT_ENERGY  = 64;
-const float STAT_SPIDERBOT_SHIELD  = 65;
-
-//const float STAT_SPIDERBOT_AIM     53 // compressShotOrigin
-
-//const float STAT_SPIDERBOT_TARGET  54 // compressShotOrigin
-
 
 const float STAT_FROZEN = 66;
 const float STAT_REVIVE_PROGRESS = 67;
@@ -361,6 +343,8 @@ const float STAT_HGREGEN2 = 104;
 const float STAT_HGREGENMAX2 = 105;
 const float STAT_HGREGENPAUSED2 = 106;
 const float STAT_HGREGENRATE2 = 107;
+
+const float STAT_DMGINCOMING = 108;
 
 const float JBMSG_NONE = 0;
 const float JBMSG_CAPPINGNEUTRAL = 1;
@@ -578,6 +562,7 @@ float DEATH_VAMPIRE = 10105;
 float DEATH_ITEM = 10106;
 float DEATH_MEODP = 10107;
 float DEATH_HOOKFRAG = 10108;
+float DEATH_ENDURANCE = 10109;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
@@ -594,6 +579,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             (if(DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) 0 else DEATH_WEAPONOFWEAPONDEATH(t))
+#define DEATH_ISPROJECTED(t)          ((t) == DEATH_ARC || (t) == DEATH_IGNITE || (t) == DEATH_ENDURANCE)
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
@@ -613,26 +599,11 @@ float WATERLEVEL_SUBMERGED = 3;
 
 float MAX_SHOT_DISTANCE = 32768;
 
-#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_sfx)
-	#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
-	#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
-	#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-	#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
-	#define RM_SOUND_KILL "misc/kill.wav"
-#else
-	#define RM_SOUND_LASER_PRIMARY "weapons/crylink_fire2.wav"
-	#define RM_SOUND_LASER_SECONDARY "weapons/crylink_fire.wav"
-	#define RM_SOUND_MORNINGRESCUE "misc/poweroff.wav"
-	#define RM_SOUND_MINSTA "weapons/minstanexfire.wav"
-	#define RM_SOUND_KILL "misc/hit.wav"
-#endif
-
-#if defined(RM_SUPPORT_CLIENTPKGS) && defined(RM_SUPPORT_PKG_gfx)
-	#define RM_SUPPORT_MADOKA
-	#define RM_SUPPORT_VOTEGFX
-	#define RM_SUPPORT_MORNINGRESCUE
-#endif
-
+#define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
+#define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
+#define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
+#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
+#define RM_SOUND_KILL "misc/kill.wav"
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
 #define RM_SOUND_RECOVERY "misc/poweroff.wav"
@@ -654,7 +625,6 @@ const vector eZ = '0 0 1';
 
 #define GTV_AVAILABLE 0
 #define GTV_OVERPLAYED 1
-// for later use in per-map gametype filtering
 #define GTV_FORBIDDEN 2
 
 float(string url, float id) uri_get = #513;

@@ -2,7 +2,6 @@
 
 float autocvar__cl_afkstate;
 float autocvar__cl_rate;
-float autocvar__g_nadgets_select_available;
 float autocvar__g_rocketminsta;
 float autocvar__menu_alpha;
 float autocvar_bgmvolume;
@@ -80,8 +79,6 @@ float autocvar_cl_teamradar_scale;
 string autocvar_cl_teamradar_size;
 float autocvar_cl_teamradar_zoommode;
 float autocvar_cl_truezapper;
-var float autocvar_cl_vehicle_spiderbot_cross_alpha = 0.6;
-var float autocvar_cl_vehicle_spiderbot_cross_size = 1;
 float autocvar_cl_zoomfactor;
 float autocvar_cl_zoomsensitivity;
 float autocvar_cl_zoomspeed;
@@ -102,7 +99,6 @@ float autocvar_crosshair_per_weapon;
 float autocvar_crosshair_size;
 float autocvar_ekg;
 float autocvar_fov;
-float autocvar_g_inf;
 string autocvar_g_nexuizversion;
 float autocvar_g_waypointsprite_alpha;
 var float autocvar_g_waypointsprite_crosshairfadealpha = 1;

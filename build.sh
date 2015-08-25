@@ -128,8 +128,7 @@ function buildall
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_COMMIT \"$COMMIT\""        >> "$QCSOURCE"/common/rm_auto.qh
-    
-	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
+
 	for i in $BUILT_PKGNAMES; do
 		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
 	done

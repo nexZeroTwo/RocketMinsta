@@ -78,6 +78,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Arc Buff";
     else if(dtype == DEATH_IGNITE)
         return "Ignite Buff";
+    else if(dtype == DEATH_ENDURANCE)
+        return "Endurance Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
     else {

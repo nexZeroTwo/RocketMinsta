@@ -4,47 +4,6 @@
 
         Contact: Wazat1@gmail.com
 
-
-Installation instructions:
---------------------------
-
-1. Place hook.c in your gamec source directory with the other source files.
-
-2. Add this line to the bottom of progs.src:
-
-gamec/hook.c
-
-3. Open defs.h and add these lines to the very bottom:
-
-// Wazat's grappling hook
-.entity		hook;
-void GrapplingHookFrame();
-void RemoveGrapplingHook(entity pl);
-void SetGrappleHookBindings();
-// hook impulses
-float GRAPHOOK_FIRE		= 20;
-float GRAPHOOK_RELEASE		= 21;
-// (note: you can change the hook impulse #'s to whatever you please)
-
-4. Open client.c and add this to the top of PutClientInServer():
-
-	RemoveGrapplingHook(self); // Wazat's Grappling Hook
-
-5. Find ClientConnect() (in client.c) and add these lines to the bottom:
-
-	// Wazat's grappling hook
-	SetGrappleHookBindings();
-
-6. Still in client.c, find PlayerPreThink and add this line just above the call to W_WeaponFrame:
-
- 	GrapplingHookFrame();
-
-7. Build and test the mod.  You'll want to bind a key to "+hook" like this:
-bind ctrl "+hook"
-
-And you should be done!
-
-
 ============================================*/
 
 .string aiment_classname;
@@ -68,11 +27,6 @@ void UnsetMovetypeFollow(entity ent)
 }
 float LostMovetypeFollow(entity ent)
 {
-/*
-	if(ent.movetype != MOVETYPE_FOLLOW)
-		if(ent.aiment)
-			error("???");
-*/
 	if(ent.aiment)
 	{
 		if(ent.aiment.classname != ent.aiment_classname)
@@ -95,8 +49,6 @@ void RemoveGrapplingHook(entity pl)
 	pl.hook = world;
 	if(pl.movetype == MOVETYPE_FLY)
 		pl.movetype = MOVETYPE_WALK;
-
-	//pl.disableclientprediction = FALSE;
 }
 
 void GrapplingHookThink();
@@ -138,31 +90,6 @@ void GrapplingHookThink()
 	makevectors(self.owner.v_angle);
 	org = self.owner.origin + self.owner.view_ofs + v_forward * hook_shotorigin_x + v_right * hook_shotorigin_y + v_up * hook_shotorigin_z;
     myorg = WarpZone_RefSys_TransformOrigin(self.owner, self, org);
-
-#if 0
-	tracebox(org, self.mins, self.maxs, self.origin, MOVE_NOMONSTERS, self.owner);
-	// do not hit players with this, as they tend to get in the way just too often
-	// NOTE: this assumes sky brushes cannot get in the way
-	// if they can, assume the map is broken! :P
-	if(trace_fraction < 1 && (!self.aiment || trace_ent != self.aiment))
-	{
-		// 0. stop it
-		if(self.state != 1)
-			GrapplingHook_Stop();
-
-		// 1. detach the hook
-		if(self.aiment)
-			UnsetMovetypeFollow(self);
-
-		// 2. cut it off
-		setorigin(self, trace_endpos);
-
-		// 3. reattach the hook
-		if(trace_ent)
-			if(trace_ent.movetype != MOVETYPE_NONE)
-				SetMovetypeFollow(self, trace_ent);
-	}
-#endif
 
 	if(self.hook_length < 0)
 		self.hook_length = vlen(myorg - self.origin);
@@ -477,25 +404,6 @@ void FireGrapplingHook (void)
 	missile.damageforcescale = 0;
 }
 
-//  void GrapplingHookFrame()
-//  {
-//         // this function has been modified for Nexuiz
-// -       if (self.BUTTON_HOOK && g_grappling_hook)
-//         {
-// -               if (!self.hook && self.hook_time <= time && !self.button6_pressed_before)
-// -                       if (timeoutStatus != 2) //only allow the player to fire the grappling hook if the game is not paused (timeout)
-// -                               FireGrapplingHook();
-//         }
-// -       else
-//         {
-//                 if (self.hook)
-//                         RemoveGrapplingHook(self);
-//         }
-// -       self.button6_pressed_before = self.BUTTON_HOOK;
-//         /*
-//         // if I have no hook or it's not pulling yet, make sure I'm not flying!
-//         if((self.hook == world || !self.hook.state) && self.movetype == MOVETYPE_FLY)
-
 void GrapplingHookFrame()
 {
 	if(g_grappling_hook && timeoutStatus != 2 && self.weapon != WEP_HOOK)
@@ -553,35 +461,6 @@ void GrapplingHookFrame()
 			RemoveGrapplingHook(self);
 		self.hook_state &~= HOOK_REMOVING;
 	}
-
-	/*
-	// if I have no hook or it's not pulling yet, make sure I'm not flying!
-	if((self.hook == world || !self.hook.state) && self.movetype == MOVETYPE_FLY)
-	{
-		self.movetype = MOVETYPE_WALK;
-	}
-	if(self.impulse == GRAPHOOK_FIRE && self.hook_time <= time && g_grappling_hook)
-	{
-		// fire hook
-		FireGrapplingHook();
-		return;
-	}
-	else if(self.hookimpulse == GRAPHOOK_RELEASE)
-	{
-		// remove hook, reset movement type
-		RemoveGrapplingHook(self);
-		return;
-	}
-	*/
-	/*else // make sure the player's movetype is correct
-	{
-		//if(self.hook == world && self.movetype == MOVETYPE_FLY)
-		if((self.hook == world || !self.hook.state) && self.movetype == MOVETYPE_FLY)
-		{
-			self.movetype = MOVETYPE_WALK;
-		}
-	}*/
-	// note: The hook entity does the actual pulling
 }
 
 void GrappleHookInit()

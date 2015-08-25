@@ -153,7 +153,6 @@ entity CopyBody(float keepvelocity)
 	self.oldvelocity = self.velocity;
 	self.fade_time = oldself.fade_time;
 	self.fade_rate = oldself.fade_rate;
-	//self.weapon = oldself.weapon;
 	setorigin(self, oldself.origin);
 	setsize(self, oldself.mins, oldself.maxs);
 	self.prevorigin = oldself.origin;
@@ -523,7 +522,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         return;
     
     if(attacker) {
-        if(CVAR(sv_showdamage_checklos))
+        if(CVAR(sv_showdamage_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
             found = VisualDamage_CheckLOS(attacker, targ, hitloc);
         else
             found = TRUE;
@@ -542,13 +541,13 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
             check = check.enemy;
         
         if(CVAR(sv_showdamage_global) || check == attacker || check == targ) {
-            float stype = htype;
+            float stype = htype & VDMG_TYPE_CLIENTMASK;
             
             if(check == attacker) {
                 if(!found)
                     continue;
             } else if(check != targ) {
-                if(CVAR(sv_showdamage_global_checklos))
+                if(CVAR(sv_showdamage_global_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
                 if(!VisualDamage_CheckLOS(check, targ, hitloc))
                     continue;
                 
@@ -620,9 +619,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         }
     }
 
-    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
-    Buffs_FocusDamage(self, attacker, damage, deathtype);
-
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)
     if(deathtype != DEATH_TEAMCHANGE)
@@ -635,9 +631,11 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         damage = 0;
         force = '0 0 0';
     }
-    
+
+    Buffs_FocusDamage(self, attacker, damage, deathtype);
+
     if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
-        if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
+        if(self.frozen || (inflictor.hg_adept && CVAR(g_nadgets_plasma_adept_stun))) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
@@ -685,7 +683,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-    if(!g_minstagib) {
+    if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
 		v = healtharmor_applydamage(self.armorvalue, CVAR(g_balance_armor_blockpercent), damage);
 		take = v_x;
 		save = v_y;
@@ -693,7 +691,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		save = 0;
 		take = damage;
 	}
-    
+
+    take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
+
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{
 		if (save > 10)
@@ -726,6 +726,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(take >= self.health)
                 htype |= VDMG_TYPE_LETHAL;
             
+            if(deathtype == DEATH_ENDURANCE)
+                htype |= VDMG_TYPE_FORCECHECKLOS;
+
             if(!g_minstagib) {
             	vector vdloc = hitloc;
 
@@ -746,11 +749,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
                 
                 Buffs_VampireDamage(self, attacker, cdmg, deathtype);
-                
-                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
-                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
-                    hudflash_teamcolor_default_spec(attacker);
-                }
             }
             
             self.health = self.health - take;
@@ -809,7 +807,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			self.max_armorvalue += (save + take);
 	}
     
-    if(deathtype != DEATH_IGNITE) {
+    if(deathtype != DEATH_IGNITE && deathtype != DEATH_ENDURANCE) {
         self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
         self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
     }
@@ -940,13 +938,14 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(CVAR(g_nadgets_resetonrespawn))
                 self.hg_ammo1 = self.hg_ammo2 = 0;
         }
+
+        self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         
         DropPowerups(force);
 
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
-		DropAllRunes(self);
 		
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;
@@ -954,13 +953,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.buffs = 0;
         self.hg_stealth = 0;
         self.fire_endtime = time;
-        
-		prec_player_die(self, attacker);
+
 		sm_PlayerDies();
-		
-		if(vip_PlayerDies(attacker, self, deathtype))
-			return;
-		
+
 		if(JB_PlayerDies(attacker))
 			return;
 		
@@ -1230,16 +1225,17 @@ void UpdateSelectedPlayer() {
 }
 
 .float muted; // to be used by prvm_edictset server playernumber muted 1
-void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
+float Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
     float silence = if(source) CVAR(sv_silence) else 0;
+    float success = TRUE;
 
     if(silence == 1)
-        return;
+        return FALSE;
 
     if(source.iscreature) {
         float damg;
@@ -1254,7 +1250,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
     }
 
 	if(Ban_MaybeEnforceBan(source))
-		return;
+		return FALSE;
 
 	if(!teamsay && !privatesay) {
 		if(substring(msgin, 0, 1) == " ")
@@ -1275,7 +1271,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	msgin = formatmessage(msgin);
 
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	if(source.classname != "player" && !source.jb_specteam)
 		colorstr = "^0"; // black for spectators
@@ -1289,7 +1285,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	msgin = trigger_magicear_processmessage_forallears(source, teamsay, privatesay, msgin);
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	/*
 	 * using bprint solves this... me stupid
@@ -1424,9 +1420,10 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			teamsay = -1; // spectators
 	}
 
-    if(flood)
+    if(flood) {
         print("NOTE: ", playername(source), "^7 is flooding.\n");
-    else if(!teamsay && !privatesay)
+        success = FALSE;
+    } else if(!teamsay && !privatesay)
         IRC_Announce_PlayerChat(source, msgin);
 
 	// build sourcemsgstr by cutting off a prefix and replacing it by the other one
@@ -1435,6 +1432,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	if(source.muted || silence)
 	{
+        success = FALSE;
 		// always fake the message
 		
 		if(flood == 1)
@@ -1508,6 +1506,8 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(substring(msgin, 0, strlen("rmhelp"))  == "rmhelp"
 	|| substring(msgin, 0, strlen("/rmhelp")) == "/rmhelp")
 		sprint(source, "\x01^1NOTE: ^2rmhelp^7 has to be typed in the console. To open the console, press ^2Shift+Escape\n");
+
+    return success;
 }
 
 float GetVoiceMessageVoiceType(string type)
@@ -1794,7 +1794,7 @@ void VoiceMessage(string type, string msg)
 float PlayerMayFire(entity plr) {
     //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
     //if all players readied up and the countdown is running
-    if((time < game_starttime && !g_inf) || time < plr.race_penalty)
+    if(time < game_starttime || time < plr.race_penalty)
         return FALSE;
 
     if(roundstate == ROUNDSTATE_OVER)

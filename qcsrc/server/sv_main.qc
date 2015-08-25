@@ -139,7 +139,6 @@ StartFrame
 Called before each frame by the server
 =============
 */
-void RuneMatchGivePoints();
 float RedirectionThink();
 
 float cvarupdatetime;
@@ -279,7 +278,6 @@ void StartFrame (void)
 
 	AuditTeams();
 
-	RuneMatchGivePoints();
 	bot_serverframe();
 
 	if(CVAR(spawn_debugview))

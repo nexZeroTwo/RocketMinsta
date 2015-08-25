@@ -1443,6 +1443,13 @@ float _unacceptable_compiler_bug_1_b() { return 1; }
 float _unacceptable_compiler_bug_1_c(float d) { return 2 * d; }
 float _unacceptable_compiler_bug_1_d() { return 1; }
 
+float test_global;
+
+float check_using_bug(void) {
+    using(test_global = 42)
+        return 512;
+}
+
 void check_unacceptable_compiler_bugs()
 {
 	if(CVAR(_allow_unacceptable_compiler_bugs))
@@ -1450,6 +1457,15 @@ void check_unacceptable_compiler_bugs()
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
+
+    var v = [random(), random(), random()];
+    if(v != [v.x, v.y, v.z])
+        error("vectors are borked, please update rmqcc");
+
+    test_global = 9001;
+    check_using_bug();
+    if(test_global != 9001)
+        error("using is borked, please update rmqcc");
 }
 
 float compressShotOrigin(vector v)

@@ -211,17 +211,12 @@ entity GetTeam(float Team, float add)
 	return tm;
 }
 
-void CSQC_CheckEngine()
+void SetupFonts()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
 	sbar_rmbigfont = FONT_USER+4;
-	
-	#ifdef RM_SUPPORT_MADOKA
 	sbar_madokafont = FONT_USER+3;
-	#else
-	sbar_madokafont = FONT_USER+2;
-	#endif
 }
 
 vector Sbar_GetFontsize(string cvarname)

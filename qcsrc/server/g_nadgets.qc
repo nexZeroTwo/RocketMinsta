@@ -230,7 +230,6 @@ void HG_HealEmitter(void) {
             e.aiment = self;
             e.think = HG_HealEmitter_Think;
             e.nextthink = time;
-            //e.velocity = self.velocity;
             e.csqcprojectile_extradata = self.heal_emitter_radius;
             
             CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
@@ -262,20 +261,7 @@ void HG_Napalm_Middlefire_Think() {
 		remove(self);
 		return;
 	}
-	
-    /*
-    if(time >= self.nextparticle) {
-        
-        float i; for(i = 0; i < 5; ++i) {
-            vector v = randomvec();
-            v_z = max(0, v_z * 0.3);
-            pointparticles(particleeffectnum("fire_big"), self.origin + v * CVAR(g_nadgets_napalm_middleburnradius), '0 0 0', 1);
-        }
-        
-		self.nextparticle = time + 0.1 + random () * 0.5;
-	}
-    */
-    
+
 	HG_Napalm_Burn(0.1, CVAR(g_nadgets_napalm_middleburnradius), CVAR(g_nadgets_napalm_burndamage), CVAR(g_nadgets_napalm_edgeburndamage), CVAR(g_nadgets_napalm_burntime), self.projectiledeathtype);
 	self.nextthink = time + 0.1;
 }
@@ -443,7 +429,7 @@ void HG_Plasma_Projectile() {
 					*	(random() - 0.5) * 2
 				);
 
-    proj.velocity = kick;
+    proj.velocity = kick + self.velocity;
 	proj.touch = HG_Plasma_Projectile_Touch;
 	setsize(proj, '0 0 -3', '0 0 -3');
 	proj.takedamage = DAMAGE_NO;
@@ -469,7 +455,7 @@ void HG_Plasma_Projectile() {
 void HG_Plasma_Explode() {
     float c;
     
-    if(self.hg_adept)
+    if(self.hg_adept && CVAR(g_nadgets_plasma_adept_stun))
         return;
     
     ++hg_plasma_group;
@@ -522,14 +508,11 @@ void HG_Translocator_Explode() {
             HG_SetRegenTime(self.owner, HG_RegenTime(self.owner));
         })
     }
-    
-    entity oldself = self;
-    self = self.owner;
-    if(GRENVAR(oldself.hg_type, "reloadonuse")) {
+
+    if(GRENVAR(self.hg_type, "reloadonuse")) using(self = self.owner) {
         weapon_action(self.weapon, WR_RESETPLAYER);
         ATTACK_FINISHED(self) = TRUE;
     }
-    self = oldself;
 }
 
 float HG_TypeToCSQCProjType(float t) {
@@ -650,7 +633,9 @@ void HG_Grenade_Touch() {
             } else goto troll;
         } else if(self.hg_type == HG_REMOTE)
             goto troll;
-            
+        
+        if(self.hg_type == HG_PLASMA)
+            self.velocity = '0 0 0';
         self.use();
     } else {
         vector normal = trace_plane_normal;
@@ -702,8 +687,11 @@ void HG_Grenade_Touch() {
                 HG_Stick();
 
                 return;
-            } else
+            } else {
+                if(self.hg_type == HG_PLASMA)
+                    self.velocity = '0 0 0';
                 self.use();
+            }
 
             return;
         } else if(self.hg_type == HG_LASER)
@@ -1001,8 +989,6 @@ void HG_Grenade_Waypoint() {
 
 void HG_Grenade_Think() {
 	#define GV(v) (GRENVAR(self.hg_type, v))
-    
-    //print(vtos(self.velocity), " ^6", vtos(self.hg_lastvel), "\n");
 
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
@@ -1020,8 +1006,7 @@ void HG_Grenade_Think() {
     }
     
     HG_Grenade_Waypoint();
-    
-    //move_out_of_solid(self);
+
     if(time >= self.hg_deathtime) {
         if(self.hg_type == HG_TRANSLOC && self.health > 0)
             HG_Grenade_Remove();
@@ -1271,7 +1256,6 @@ void HG_Shield_Discharge_Think(void) {
 
     W_SetHitscanVisuals(self.owner, end);
     te_csqc_lightningarc(w_shotorg_visual, end, TRUE, if(teams_matter) self.owner.team else COLOR_TEAM3);
-    //te_blast(end);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_BuffPower(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
@@ -1605,13 +1589,16 @@ void HG_Linker_Think() {
         
     if(sharingframe) {
         self.hg_linker_nexteffect = time + 1;
-        
+        sharefactor = CVAR(g_nadgets_linker_sharefactor);
+
         if(denom >= 1) {
             if(denom > 1) sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, 1.5);
-            sharefactor = if(g_clanarena) 1 else CVAR(g_nadgets_linker_sharefactor);
+
+            if(g_clanarena && sharefactor)
+                sharefactor = 1;
 
             FOR_EACH_PLAYER(p) if(p.hg_linker == self) IF_HG_LINKER_APPLICABLE(p) {
-                if(denom > 1) {
+                if(denom > 1 && sharefactor) {
                     float newhealth = (1 - sharefactor) * p.health     + sharefactor * (thealth / denom);
                     float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
 
@@ -1958,12 +1945,11 @@ void HG_Bait_Body_Think(void) {
 }
 
 void HG_Bait_Body_Boom(entity body) {
-    entity oldself = self;
-    self = body;
-    body.owner = body.realowner;
-    HG_Grenade_RadiusDamage();
-    HG_Bait_Body_Remove(body);
-    self = oldself;
+    using(self = body) {
+        body.owner = body.realowner;
+        HG_Grenade_RadiusDamage();
+        HG_Bait_Body_Remove(body);
+    }
 }
 
 entity HG_Bait_Create(entity ref) {
@@ -2035,20 +2021,32 @@ float HG_Bait(void) {
     return TRUE;
 }
 
-float HG_Sentry_TargetIsValid(entity e) {
+float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
+    for(var e; (e = findentity(e, owner, emitter.owner));)
+        if(e != emitter && e.enemy == targ && e.classname == "hg_sentry_emitter")
+            return TRUE;
+    return FALSE;
+}
+
+float HG_Sentry_TargetIsValid(entity emitter, entity e) {
+    var sentry = emitter.owner;
+
     if(!e || e.classname != "player" || e.frozen || e.jb_isprisoned || e.deadflag != DEAD_NO)
         return FALSE;
 
-    if(!IsDifferentTeam(e, self.realowner) && !Buffs_BuffPower(self.realowner, BUFF_MEDIC))
+    if(!IsDifferentTeam(e, sentry.realowner) && !Buffs_BuffPower(sentry.realowner, BUFF_MEDIC))
         return FALSE;
 
-    vector o = self.origin + self.view_ofs;
+    if(HG_Sentry_TargetIsTaken(emitter, e))
+        return FALSE;
+
+    vector o = sentry.origin + sentry.view_ofs;
     vector t = e.origin + e.view_ofs;
 
     if(vlen(o - t) > CVAR(g_nadgets_sentry_beam_range))
         return FALSE;
 
-    traceline(o, t, MOVE_NORMAL, self);
+    traceline(o, t, MOVE_NORMAL, sentry);
 
     if(trace_ent != e)
         return FALSE;
@@ -2056,21 +2054,26 @@ float HG_Sentry_TargetIsValid(entity e) {
     return TRUE;
 }
 
-entity HG_Sentry_FindTarget(void) {
+entity HG_Sentry_FindTarget(entity emitter) {
+    var sentry = emitter.owner;
+
     entity targ, p;
     float range = CVAR(g_nadgets_sentry_beam_range), mindist, dist;
-    float medic = Buffs_BuffPower(self.realowner, BUFF_MEDIC), medicflag, diffteam;
-    vector t, o = self.origin + self.view_ofs;
+    float medic = Buffs_BuffPower(sentry.realowner, BUFF_MEDIC), medicflag, diffteam;
+    vector t, o = sentry.origin + sentry.view_ofs;
 
     mindist = range;
 
     FOR_EACH_PLAYER(p) if(!p.frozen && !p.jb_isprisoned && p.deadflag == DEAD_NO) {
-        diffteam = (p != self.realowner && IsDifferentTeam(self, p));
+        diffteam = (p != sentry.realowner && IsDifferentTeam(sentry, p));
 
         if(diffteam) {
             if(medicflag)
                 continue;
         } else if(!medic)
+            continue;
+
+        if(HG_Sentry_TargetIsTaken(emitter, p))
             continue;
 
         t = p.origin + p.view_ofs;
@@ -2082,7 +2085,7 @@ entity HG_Sentry_FindTarget(void) {
         } else if(dist > range)
             continue;
 
-        traceline(o, t, MOVE_NORMAL, self);
+        traceline(o, t, MOVE_NORMAL, sentry);
 
         if(trace_ent != p)
             continue;
@@ -2098,7 +2101,7 @@ entity HG_Sentry_FindTarget(void) {
 }
 
 void HG_Sentry_Beam_Think(void) {
-    entity targ = self.owner.enemy;
+    entity targ = self.enemy.enemy;
     vector end = targ.origin + targ.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
     vector start = self.owner.origin + self.owner.view_ofs;
 
@@ -2134,12 +2137,13 @@ void HG_Sentry_Beam_Think(void) {
     self.nextthink = time;
 }
 
-entity HG_Sentry_Beam_Spawn(void) {
-    entity e = spawn();
+entity HG_Sentry_Beam_Spawn(entity emitter) {
+    var e = spawn(), sentry = emitter.owner;
     e.classname = "hg_sentry_beam";
-    e.owner = self;
-    e.team = self.team;
-    e.zapper_beam_start = self.origin + self.view_ofs;
+    e.owner = sentry;
+    e.enemy = emitter;
+    e.team = sentry.team;
+    e.zapper_beam_start = sentry.origin + sentry.view_ofs;
     e.zapper_beam_end = e.zapper_beam_start;
     e.think = HG_Sentry_Beam_Think;
     e.nextthink = time;
@@ -2149,19 +2153,65 @@ entity HG_Sentry_Beam_Spawn(void) {
     return e;
 }
 
+entity HG_Sentry_Emitter_Spawn(entity sentry) {
+    return spawn() {
+        classname: "hg_sentry_emitter",
+        owner: sentry,
+        origin: sentry.origin + sentry.view_ofs,
+        think: inline void(void) {
+            var sentry = self.owner;
+
+            if(time < sentry.cnt || sentry.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
+                if(self.zapper_beam)
+                    remove(self.zapper_beam);
+                self.zapper_beam = world;
+                self.enemy = world;
+            } else if(!self.zapper_beam) {
+                if(!HG_Sentry_TargetIsValid(self, self.enemy))
+                    self.enemy = world;
+
+                if(!self.enemy)
+                    self.enemy = HG_Sentry_FindTarget(self);
+
+                if(self.enemy)
+                    self.zapper_beam = HG_Sentry_Beam_Spawn(self);
+            } else {
+                if(self.enemy && !HG_Sentry_TargetIsValid(self, self.enemy))
+                    self.enemy = HG_Sentry_FindTarget(self);
+
+                if(!self.enemy) {
+                    remove(self.zapper_beam);
+                    self.zapper_beam = world;
+                    self.enemy = world;
+                }
+            }
+
+            self.nextthink = time;
+        },
+        nextthink: time
+    };
+} 
+
+void HG_Sentry_Emitter_Remove(entity emitter) {
+    if(emitter.zapper_beam)
+        remove(emitter.zapper_beam);
+    remove(emitter);
+}
+
 void HG_Sentry_Remove(void) {
     self.realowner.hg_detonables -= 1;
 
     if(self.hg_waypoint)
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
 
-    if(self.zapper_beam)
-        remove(self.zapper_beam);
-
     if(self.aiment) {
         stopsound(self.aiment, CHAN_PROJECTILE);
         remove(self.aiment);
     }
+
+    for(var e; (e = find(e, classname, "hg_sentry_emitter"));)
+        if(e.owner == self)
+            HG_Sentry_Emitter_Remove(e);
 
     remove(self);
 }
@@ -2175,31 +2225,6 @@ void HG_Sentry_Think(void) {
     if(self.team != self.realowner.team || !self.realowner.iscreature) {
         HG_Sentry_Explode();
         return;
-    }
-
-    if(self.hg_sentry_energy < CVAR(g_nadgets_sentry_beam_energyrequired)) {
-        if(self.zapper_beam)
-            remove(self.zapper_beam);
-        self.zapper_beam = world;
-        self.enemy = world;
-    } else if(!self.zapper_beam) {
-        if(!HG_Sentry_TargetIsValid(self.enemy))
-            self.enemy = world;
-
-        if(!self.enemy)
-            self.enemy = HG_Sentry_FindTarget();
-
-        if(self.enemy)
-            self.zapper_beam = HG_Sentry_Beam_Spawn();
-    } else {
-        if(self.enemy && !HG_Sentry_TargetIsValid(self.enemy))
-            self.enemy = HG_Sentry_FindTarget();
-
-        if(!self.enemy) {
-            remove(self.zapper_beam);
-            self.zapper_beam = world;
-            self.enemy = world;
-        }
     }
 
     self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * CVAR(g_nadgets_sentry_energy_regen));
@@ -2277,6 +2302,7 @@ float HG_Sentry(void) {
     e.skin = TeamColorSkin(self.team);
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
+    e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
 
     self.hg_detonables += 1;
 
@@ -2291,6 +2317,9 @@ float HG_Sentry(void) {
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
 
     e.aiment = c;
+
+    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i)
+        HG_Sentry_Emitter_Spawn(e);
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
@@ -2501,6 +2530,25 @@ float HG_RegenLimit(entity plr) {
     return mx;
 }
 
+void HG_AdvanceRegen(float delta, float limit) {
+    if(limit && self.hg_ctx_ammo >= limit)
+        return;
+
+    self.hg_ctx_regentime -= delta;
+
+    if(self.hg_ctx_regentime <= 0) {
+        var remainder = -self.hg_ctx_regentime;
+        if(almost_equals(remainder, 0))
+            remainder = 0;
+
+        self.hg_ctx_ammo += 1;
+        HG_SetRegenTime(self, HG_RegenTime(self));
+
+        if(remainder)
+            HG_AdvanceRegen(remainder, limit);
+    }
+}
+
 void HG_Frame()
 {
     if(!g_nadgets)
@@ -2599,11 +2647,7 @@ void HG_Frame()
                     self.hg_ctx_regenrate *= CVAR(g_nadgets_regen_frozenfactor);
                 self.hg_ctx_regenrate *= Buffs_NadgetRegen(self);
                 
-                self.hg_ctx_regentime -= frametime * self.hg_ctx_regenrate;
-                if(self.hg_ctx_regentime <= 0) {
-                    self.hg_ctx_ammo += 1;
-                    HG_SetRegenTime(self, HG_RegenTime(self));
-                }
+                HG_AdvanceRegen(frametime * self.hg_ctx_regenrate, mx);
             }
         } else
             self.hg_ctx_regenrate = 0;

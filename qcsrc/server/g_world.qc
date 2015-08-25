@@ -315,10 +315,8 @@ void cvar_changes_init()
 		BADCVAR("g_onslaught");
 		BADCVAR("g_race");
 		BADCVAR("g_cts");
-		BADCVAR("g_runematch");
 		BADCVAR("g_tdm");
 		BADCVAR("g_nexball");
-		BADCVAR("g_prec");
 		BADCVAR("g_no");
 		BADCVAR("teamplay");
 
@@ -348,38 +346,6 @@ void cvar_changes_init()
 	else
 		cvar_changes = strcat("// this server runs at modified settings:\n", cvar_changes);
 	cvar_changes = strzone(cvar_changes);
-}
-
-void detect_maptype()
-{
-#if 0
-	vector o, v;
-	float i;
-
-	for(;;)
-	{
-		o = world.mins;
-		o_x += random() * (world.maxs_x - world.mins_x);
-		o_y += random() * (world.maxs_y - world.mins_y);
-		o_z += random() * (world.maxs_z - world.mins_z);
-
-		tracebox(o, PL_MIN, PL_MAX, o - '0 0 32768', MOVE_WORLDONLY, world);
-		if(trace_fraction == 1)
-			continue;
-
-		v = trace_endpos;
-
-		for(i = 0; i < 64; i += 4)
-		{
-			tracebox(o, '-1 -1 -1' * i, '1 1 1' * i, o - '0 0 32768', MOVE_WORLDONLY, world);
-	if(trace_fraction == 1)
-		continue;
-			print(ftos(i), " -> ", vtos(trace_endpos), "\n");
-		}
-
-		break;
-	}
-#endif
 }
 
 entity randomseed;
@@ -551,19 +517,10 @@ void spawnfunc_worldspawn (void)
 	// Akari: it is better to define the new gametype cvars here instead of rocketminsta.cfg, because if rocketminsta.cfg is executed at run-time followed by a restart, things might screw up
 	registercvar("g_freezetag", "0");
 	registercvar("g_total_domination", "0");
-	registercvar("g_vip", "0");
-	registercvar("g_prec", "0");
-	registercvar("g_inf", "0");
-	registercvar("g_rps", "0");
 	registercvar("g_jailbreak", "0");
     registercvar("g_clanarena", "0");
 	registercvar("g_no", "0");
-    
-/*
- - now unused
-    registercvar("_sv_rm_lastgametype", "");
-    registercvar("_sv_rm_maprow", "0");
-*/
+
     registercvar("_sv_infomessages_count", "0");
 
 	registercvar ("_sv_rm_lastvote", "0");
@@ -583,15 +540,6 @@ void spawnfunc_worldspawn (void)
 	remove = remove_safely; // during spawning, watch what you remove!
 
 	check_unacceptable_compiler_bugs();
-
-	/*if(CVAR_STR(cvar_check_default) != "bypass")
-	{
-		if(CVAR_STR(cvar_check_default) != CVAR_CHECK_DEFAULT)
-			error("Config file mismatch! Please update defaultNexuiz.cfg to match the QuakeC code, and restart the engine!");
-
-		if(CVAR_STR(cvar_check_balance) != CVAR_CHECK_BALANCE)
-			error("Config file mismatch! Please update balance*.cfg to match the QuakeC code, and restart the engine!");
-	}*/
 
 	compressShortVector_init();
 
@@ -613,15 +561,6 @@ void spawnfunc_worldspawn (void)
 		ServerProgsDB = db_load(strcat("server.db", CVAR_STR(sessionid)));
 
 	TemporaryDB = db_create();
-
-	/*
-	TODO sound pack system
-	// initialize sound pack system
-	soundpack = CVAR_STR(g_soundpack);
-	if(soundpack != "")
-		soundpack = strcat(soundpack, "/");
-	soundpack = strzone(soundpack);
-	*/
 
 	// 0 normal
 	lightstyle(0, "m");
@@ -697,9 +636,6 @@ void spawnfunc_worldspawn (void)
 	precache();
 
 	WaypointSprite_Init();
-
-	//if (g_domination)
-	//	dom_init();
 
 	GameLogInit(); // prepare everything
 	if(CVAR(sv_eventlog))
@@ -825,8 +761,6 @@ void spawnfunc_worldspawn (void)
 	next_pingtime = time + 5;
 	InitializeEntity(self, cvar_changes_init, INITPRIO_CVARS);
 
-	detect_maptype();
-
 	lsmaps_reply = "^7Maps available: ";
 	for(i = 0, j = 0; i < MapInfo_count; ++i)
 	{
@@ -882,19 +816,8 @@ void spawnfunc_worldspawn (void)
 	if(CVAR(fraglimit) < 0)
 		cvar_set("fraglimit", "10");
 
-/*
-	-- Not needed anymore --
-	if(CVAR_STR(_sv_rm_lastgametype) != gametype_ID_to_Name(game))
-	{
-		cvar_set("_sv_rm_lastgametype", gametype_ID_to_Name(game));
-		cvar_set("_sv_rm_maprow", "0");
-	}
-*/
-
-//	cvar_set("_sv_rm_maprow", ftos(CVAR(_sv_rm_maprow) + 1));
 	InfoMessages_Init();
 	IP2C_Init();
-//	UpdateCTFBlacklist(); // Chaiomanot Feb 15 2012: no longer needed
 
 	cvar_set("g_nexuizversion", strcat("2.5.2_rm-", RM_BUILD_VERSION, if(strcat(RM_BUILD_SUFFIX, "") != "") strcat("/", RM_BUILD_SUFFIX) else ""));
 
@@ -1475,8 +1398,6 @@ void FixIntermissionClient(entity e)
 	string s;
 	if(!e.autoscreenshot) // initial call
 	{
-		e.angles = e.v_angle;
-		e.angles_x = -e.angles_x;
 		e.autoscreenshot = time + 0.8;	// used for autoscreenshot
 		e.health = -2342;
 		// first intermission phase; voting phase has positive health (used to decide whether to send SVC_FINALE or not)
@@ -1499,9 +1420,6 @@ void FixIntermissionClient(entity e)
 			WriteByte(MSG_ONE, SVC_INTERMISSION);
 		}
 	}
-
-	//e.velocity = '0 0 0';
-	//e.fixangle = TRUE;
 
 	// TODO halt weapon animation
 }
@@ -1914,7 +1832,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
-	if(teams_matter && !g_inf)
+	if(teams_matter)
 	{
 		team1_score = TeamScore_GetCompareValue(COLOR_TEAM1);
 		team2_score = TeamScore_GetCompareValue(COLOR_TEAM2);
@@ -1940,7 +1858,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	if(WinningConditionHelper_zeroisworst)
 		llimit = 0; // not supported in this mode
 
-	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball || g_prec)
+	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
 		local string winmsg;

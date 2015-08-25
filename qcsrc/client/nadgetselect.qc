@@ -86,7 +86,7 @@ void NS_Draw(void) {
             float confirmedOther = if(table) ns_confirmed1 else ns_confirmed2;
             float isConfirmed = i == confirmed;
             float isSelected = i == ns_selected && ns_selected_in == table;
-            vector clr = if((confirmed < 0 || isConfirmed || isSelected) && i != confirmedOther)
+            vector clr = if((confirmed < 0 || isConfirmed || isSelected) && (i != confirmedOther || ns_options[i] == HG_RANDOM))
                 HG_TypeToColor(t) * (0.5 + 0.5 * a2)
             else
                 '0.1 0.1 0.1';
@@ -127,11 +127,11 @@ void NS_Draw(void) {
 void NS_ConfirmSelection(void) {
     if(ns_selected_in) {
         ns_confirmed2 = ns_selected;
-        if(ns_confirmed2 == ns_confirmed1)
+        if(ns_confirmed2 == ns_confirmed1 && ns_options[ns_confirmed2] != HG_RANDOM)
             ns_confirmed1 = -1;
     } else {
         ns_confirmed1 = ns_selected;
-        if(ns_confirmed1 == ns_confirmed2)
+        if(ns_confirmed1 == ns_confirmed2 && ns_options[ns_confirmed1] != HG_RANDOM)
             ns_confirmed2 = -1;
     }
 
