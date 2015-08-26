@@ -407,7 +407,14 @@ void Buffs_ClientFrame(void) {
     
     if(self.buffs != self.oldbuffs) {
         ON_BUFF_ADDED(BUFF_SUPPLY) {
-            self.campingrifle_bulletcounter = 9001;
+            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+
+            if((var supply = Buffs_BuffPower(self, BUFF_SUPPLY))) {
+                float fteqcc_is_gay = floor(CVAR(g_buffs_supply_campingrifle_extra_magazine) * supply);
+                self.campingrifle_bulletlimit += fteqcc_is_gay;
+            }
+
+            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
             
             if(!g_weaponarena) {
                 float a = CVAR(g_buffs_supply_grant_ammo);
@@ -418,6 +425,14 @@ void Buffs_ClientFrame(void) {
             }
         }
         
+        ON_BUFF_REMOVED(BUFF_SUPPLY) {
+            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+        }
+
+        ON_BUFF_ADDED(BUFF_FOCUS) {
+            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
+        }
+
         ON_BUFF_ADDED(BUFF_GUARD) {
             if(g_clanarena)
                 self.health = max(min(CVAR(g_clanarena_heal_limit), CVAR(g_buffs_guard_pickup_health)), self.health);
