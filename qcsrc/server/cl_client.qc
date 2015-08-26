@@ -1311,6 +1311,9 @@ void PutClientInServer (void)
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 
+        if(CVAR(sv_noplayershadows))
+            self.effects |= EF_NOSHADOW;
+
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)
         })
