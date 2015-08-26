@@ -77,6 +77,7 @@ void HG_SetCooldown(.float cdfield, float gcd, float cd);
 .float hg_optout;
 .float hg_optout_nextround;
 .float hg_alwaysask;
+.float hg_altcharge;
 .float hg_adept;
 .float hg_tl_revived;
 

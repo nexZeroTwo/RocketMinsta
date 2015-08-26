@@ -636,6 +636,7 @@ void PostInit(void)
             TryBindCRAKeys();
         case 51:
         case 52:
+            localcmd("seta rm_altcharge 0; altcharge 0\n");
             
 		//More to come here with each update
 		localcmd("seta rm_initialized 53\n");
@@ -663,8 +664,8 @@ void PostInit(void)
 	rm_simpleeffects = CVAR(rm_simpleeffects);
 	rm_shownames = CVAR(rm_shownames);
 	rm_visualscore = CVAR(rm_visualscore);
-	rm_oldhud_option = stof(CVAR_STR(rm_oldhud));
-	rm_althud_option = stof(CVAR_STR(rm_althud));
+	rm_oldhud_option = CVAR(rm_oldhud);
+	rm_althud_option = CVAR(rm_althud);
 	rm_oldhud = rm_oldhud_option;
 	rm_althud = rm_althud_option;
 	rm_noflags = CVAR(rm_noflags);
@@ -706,6 +707,7 @@ void PostInit(void)
     registercmd("shownadgetregen");
     registercmd("radio");
     registercmd("nododging");
+    registercmd("altcharge");
 	// -- //
 	registercmd("hudskin");
 	
@@ -723,19 +725,20 @@ void PostInit(void)
 	SetMadokaFont(MDKF_AUTO);
 	
 	if(sv_showspecs_extra)
-		localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), "\n");
-	localcmd("cmd anonspec ", CVAR_STR(rm_anonspec), "\n");
+		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
+	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
 	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
-	localcmd("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
-    localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
-    localcmd("cmd nododging ", CVAR_STR(rm_nododging), "\n");
+	localcmd("cmd hidecountry ", ftos(CVAR(rm_hidecountry)), "\n");
+    localcmd("cmd radio ", ftos(CVAR(rm_radio)), "\n");
+    localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
+    localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
 	
     localcmd("alias menu_shownadeselect \"cmd picknade\"\n");
     localcmd("alias menu_shownadeselect2 \"cmd picknade\"\n");
 
 	if(CVAR(_cl_afkstate))
 		localcmd("cmd afk\n");
-	
+
 	HUDSkin_Load(CVAR_STR(rm_hudskin));
 	
 	screenfade = time + 0.1;
@@ -869,12 +872,13 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "notimer"				||
 		strCmd == "nogamemenu"			||
 		strCmd == "nokillsound"			||
-		strCmd == "nododging"		||
+		strCmd == "nododging"		    ||
 		strCmd == "showrankings"		||
         strCmd == "showtimer"           ||
         strCmd == "shownadgetregen"     ||
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
+        strCmd == "altcharge"           ||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -891,8 +895,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_simpleeffects = CVAR(rm_simpleeffects);
 		rm_shownames = CVAR(rm_shownames);
 		rm_visualscore = CVAR(rm_visualscore);
-		rm_oldhud_option = stof(CVAR_STR(rm_oldhud));
-		rm_althud_option = stof(CVAR_STR(rm_althud));
+		rm_oldhud_option = CVAR(rm_oldhud);
+		rm_althud_option = CVAR(rm_althud);
 		rm_noflags = CVAR(rm_noflags);
 		rm_showrankings = CVAR(rm_showrankings);
 		rm_shownames_teamonly = CVAR(rm_shownames_teamonly);
@@ -918,8 +922,10 @@ float CSQC_ConsoleCommand(string strMessage)
 		else if(strCmd == "nokillsound")
 			localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 		else if(strCmd == "nododging")
-			localcmd("cmd nododging ", ftos(stof(CVAR_STR(rm_nododging))), "\n");
-		
+			localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
+        else if(strCmd == "altcharge")
+            localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT
 		return true;
@@ -1020,9 +1026,9 @@ float CSQC_ConsoleCommand(string strMessage)
 	else if(strCmd == "hidecountry")
 	{
 		VALUEREQUIRED
-		cvar_set ("rm_hidecountry", argv (1));
-		rm_hidecountry = stof(CVAR_STR(rm_hidecountry));
-		localcmd ("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
+		cvar_set("rm_hidecountry", argv(1));
+		rm_hidecountry = CVAR(rm_hidecountry);
+		localcmd("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
 		RMSETTINGREPORT
 		return true;
 	}
@@ -1034,7 +1040,7 @@ float CSQC_ConsoleCommand(string strMessage)
             localcmd("cd reset\n");
 
         cvar_set("rm_radio", argv(1));
-        localcmd("cmd radio ", CVAR_STR(rm_radio), "\n");
+        localcmd("cmd radio ", ftos(CVAR(rm_radio)), "\n");
         RMSETTINGREPORT
         return true;
     } 

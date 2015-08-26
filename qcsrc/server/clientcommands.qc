@@ -215,6 +215,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
         OPTAVAIL_RAW("radio", ftos(sv_radio))
         OPTAVAIL    ("dodging", "g_dodging")
+        OPTAVAIL_RAW("altcharge", ftos(g_nadgets))
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -625,6 +626,11 @@ void SV_ParseClientCommand(string s) {
             return;
         
         self.hg_alwaysask = stof(argv(1));
+    } else if(cmd == "hg_altcharge") {
+        if not(self.flags & FL_CLIENT)
+            return;
+
+        self.hg_altcharge = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;

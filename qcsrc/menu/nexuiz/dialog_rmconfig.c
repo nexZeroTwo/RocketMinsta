@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 23)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 24)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -76,6 +76,9 @@ void fillNexuizRMConfigDialog(entity me)
     me.setFirstColumn(me, me.firstColumn - 0.1);
     me.TR(me);
         me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "cl_frozentint", "Tint the screen while frozen"));
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "altcharge", "Alternative nadget throwing mode"));
+            OPTDEP("altcharge")
     me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Note: You can access these options through Multiplayer -> Player Setup"));
 	me.TR(me);

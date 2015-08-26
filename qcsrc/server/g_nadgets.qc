@@ -1854,7 +1854,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         upspd = GV("speed_up");
     }
     
-    if(GV("launchspeed") && !g_nadgets_detonatelaunches) {
+    if(GV("launchspeed")) {
         gren.velocity = w_shotdir * (mspd + (spd-mspd) * self.hg_power) + v_up * upspd * self.hg_power;
     } else
         gren.velocity = w_shotdir * spd + v_up * upspd;
@@ -2561,22 +2561,19 @@ void HG_Frame()
     HG_FixNadeType(self);
     HG_Shield_Frame();
     HG_Cloak_Frame();
-    
+
     if(roundstate == ROUNDSTATE_OVER) {
         self.hg_power = 0;
         return;
     }
-    
+
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomHGHookButton(self))) || self.hg_power;
-	
-    if(time < self.hg_plasmalock)
+
+    if(time < self.hg_plasmalock || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO)
         mayfire = FALSE;
-    
+
 	float held, isalt;
 	held = self.(if(g_nadgets_detonatelaunches) hg_detonatepressed else BUTTON_NADGET);
-
-    if(self.deadflag != DEAD_NO || self.frozen)
-        held = FALSE;
 
     float n_type;
 
@@ -2587,13 +2584,19 @@ void HG_Frame()
         }
     }
 
+    float charging;
+
+    if(self.hg_altcharge || (g_nadgets_detonatelaunches && !self.hg_altstate)) {
+        charging = (held || self.hg_power);
+
+        if(self.hg_power && held && held != self.hg_state)
+            charging = FALSE;
+    } else {
+        charging = held;
+    }
+
     if(self.hg_power)
         isalt = self.hg_altstate;
-
-    if((self.hg_power && !self.hg_state) ||
-       (g_freeze && self.frozen) ||
-       (g_jailbreak && self.jb_isprisoned))
-            held = 0;
 
     HG_SetContext(isalt);
 
@@ -2607,33 +2610,30 @@ void HG_Frame()
 
     if(held && held != self.hg_state && !self.hg_ctx_ammo && self.deadflag == DEAD_NO)
         bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(n_type), "s!"), "", 1);
-    
-    if(held && time >= self.hg_ctx_next && self.hg_ctx_ammo && mayfire) {
-        float ls;
-        
-        if(!g_nadgets_detonatelaunches)
-            ls = GRENVAR(n_type, "launchspeed");
-        
+
+    if(charging && time >= self.hg_ctx_next && self.hg_ctx_ammo && mayfire) {
+        float ls = GRENVAR(n_type, "launchspeed");
+
         self.hg_launchspeed = ls;
         
         if(ls)
-            self.hg_power = bound(0, self.hg_power + frametime * ls, 1);
+            self.hg_power = bound(0.01, self.hg_power + frametime * ls, 1);
         else {
             self.hg_power = 0;
             HG_Attack();
         }
 	} else {
-		if(self.hg_state && mayfire && self.hg_launchspeed)
+		if(self.hg_power && mayfire && self.hg_launchspeed)
 			HG_Attack();
 		self.hg_power = 0;
 	}
 	
 	if(self.hg_power == 1 && mayfire && GRENVAR(n_type, "launch_fullforce_launches_immediately"))
 		HG_Attack();
-	
+
 	self.hg_state = held;
     self.hg_altstate = isalt;
-    
+
     if(CVAR(g_nadgets_regen)) HG_DO_IN_ALL_CONTEXTS({
         float mx = HG_RegenLimit(self);
         float dpause = CVAR(g_nadgets_regen_damagepause) * Buffs_NadgetRegenDmgPause(self);
