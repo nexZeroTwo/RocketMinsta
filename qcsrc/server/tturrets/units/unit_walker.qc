@@ -15,11 +15,12 @@
 #define WVM_IDLE_UP 25
 #define WVM_IDLE    50
 
-#define WVM_PATH  1000
-#define WVM_ENEMY 2000
-#define WVM_STOP  3000
-#define WVM_DODGE 4000
-#define  WVM_PANIC 10000
+#define WVM_PATH   1000
+#define WVM_LEADER 1500
+#define WVM_ENEMY  2000
+#define WVM_STOP   3000
+#define WVM_DODGE  4000
+#define WVM_PANIC 10000
 #define walker_verbs_move verbs_move
 
 #define WVA_MINIGUN 100
@@ -32,6 +33,8 @@
 #define WVI_IDLE 1
 #define WVI_ROAM 10
 #define walker_verbs_idle verbs_idle
+
+.entity leader;
 
 .float animflag;
 .entity wkr_spawn;
@@ -643,6 +646,74 @@ float walker_moveverb_enemy(float eval)
     return VS_CALL_YES_DONE;
 }
 
+float leader_in_range(entity ldr) {
+    if(vlen(ldr.origin - self.origin) > 2000)
+        return FALSE;
+
+    var ofs = ldr.view_ofs;
+
+    traceline(self.origin + ofs, ldr.origin + ofs, MOVE_NORMAL, self);
+    if(trace_ent != ldr)
+        return FALSE;
+
+    return TRUE;
+}
+
+float walker_moveverb_leader(float eval) {
+    switch(eval) {
+        case VCM_EVAL: {
+            if(self.leader) {
+                if(self.leader.team != self.team || self.leader.deadflag != DEAD_NO || self.leader.frozen || !self.leader.iscreature)
+                    self.leader = world;
+                else if(!leader_in_range(self.leader))
+                    self.leader = world;
+            }
+
+            if(!self.leader) {
+                var mindst = 1000;
+                var p = world;
+
+                FOR_EACH_PLAYER(p) if(p.team == self.team) {
+                    var d = vlen(self.origin - p.origin);
+
+                    if(d < mindst && leader_in_range(p)) {
+                        self.leader = p;
+                        mindst = d;
+                    }
+                }
+            }
+
+            if(self.leader)
+                return verb.verb_static_value;
+
+            return VS_CALL_NO;
+        }
+
+        case VCM_DO: {
+            switch (self.waterlevel) {
+                case 0:
+                    self.animflag = ANIM_WALK;
+                case 1:
+                case 2:
+                    if (self.animflag != ANIM_SWIM)
+                        self.animflag = ANIM_WALK;
+                    else
+                        self.animflag = ANIM_SWIM;
+                    break;
+                case 3:
+                    self.animflag = ANIM_SWIM;
+            }
+
+            self.moveto = self.leader.origin;
+            self.steerto = steerlib_attract2(self.moveto,0.5,500,0.95);
+
+            return VS_CALL_YES_DOING;
+        }
+    }
+
+    return VS_CALL_YES_DONE;
+}
+
 float walker_moveverb_idle_pause(float eval)
 {
     switch (eval)
@@ -859,7 +930,7 @@ float walker_boss_attackverb_shield(float eval) {
 
         case VCM_DO:
             self.boss_shield = 15;
-            self.boss_shield_next = time + 60 - 15 * random();
+            self.boss_shield_next = time + 60;
             
             sound(self, CHAN_AUTO, "misc/powerup_shield.wav", 1, ATTN_NORM);
             
@@ -1139,7 +1210,7 @@ void turret_walker_dinit()
 {
 
     entity e;
-    
+
     if(self.netname == "")
         self.netname = "Walker Turret";
     
@@ -1173,6 +1244,8 @@ void turret_walker_dinit()
 
     verbstack_push(self.walker_verbs_move, walker_moveverb_idle,   WVM_IDLE,  0, self);
     verbstack_push(self.walker_verbs_move, walker_moveverb_enemy,  WVM_ENEMY, 0, self);
+    if(self.team && teams_matter)
+        verbstack_push(self.walker_verbs_move, walker_moveverb_leader,  WVM_LEADER, 0, self);
     verbstack_push(self.walker_verbs_move, walker_moveverb_path,   WVM_PATH,  0, self);
 
     verbstack_push(self.walker_verbs_attack, walker_attackverb_meele,   WVA_MEELE,  0, self);
