@@ -512,6 +512,46 @@ void TryBindCRAKeys(void) {
     keyprio = TryBind("'+use'", keyprio);
 }
 
+void AddMasterServer(string addr) {
+    var i = 1;
+
+    while(TRUE) {
+        var cv = strcat("sv_masterextra", ftos(i));
+
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+            break;
+
+        if(cvar_string(cv) == addr)
+            return;
+
+        i += 1;
+    }
+
+    i = 1;
+
+    while(TRUE) {
+        var cv = strcat("sv_master", ftos(i));
+
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+            break;
+
+        if(cvar_string(cv) == "") {
+            cvar_set(cv, addr);
+            return;
+        }
+
+        i += 1;
+    }
+
+    print("^3WARNING: ^7couldn't register master server ^2", addr, "^7!\n");
+}
+
+void RegisterMasterServers(void) {
+    AddMasterServer("107.161.23.68"); // new dpmaster.deathmask.net IP
+    AddMasterServer("91.121.161.160"); // Nude Dudes master server
+    AddMasterServer("dpmaster.vecxis.com"); // Vecxis master server
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -755,7 +795,8 @@ void PostInit(void)
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
 	DPRM_Start();
-	
+	RegisterMasterServers();
+
 	postinit = true;
 }
 
