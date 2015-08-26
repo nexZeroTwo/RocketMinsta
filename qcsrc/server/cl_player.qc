@@ -926,12 +926,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(removenadgets > 1)
             HG_RemoveAll(self);
 
-        if(self.hg_power > 0) {
+        if(g_nadgets && self.hg_power > 0 && CVAR(g_nadgets_drop_on_death)) {
             HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
-        
+
         HG_DetonateAll(self);
         
         if(!g_freezetag && !g_jailbreak) {

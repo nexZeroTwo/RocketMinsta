@@ -2575,6 +2575,9 @@ void HG_Frame()
 	float held, isalt;
 	held = self.(if(g_nadgets_detonatelaunches) hg_detonatepressed else BUTTON_NADGET);
 
+    if(self.deadflag != DEAD_NO || self.frozen)
+        held = FALSE;
+
     float n_type;
 
     if(!held) {
