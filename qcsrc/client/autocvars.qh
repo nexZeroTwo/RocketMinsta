@@ -193,5 +193,6 @@ float autocvar_vid_pixelheight;
 float autocvar_viewsize;
 float autocvar_volume;
 string autocvar_cl_rpn_autoload;
+var float autocvar_cl_frozentint = 1;
 
 #endif

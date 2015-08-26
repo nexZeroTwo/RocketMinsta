@@ -3955,7 +3955,11 @@ void Sbar_Draw(void)
 	{
 		revfadetime = 0;
 		revsaved = rev;
-		revalpha = 0.6;
+
+        if(CVAR(cl_frozentint))
+            revalpha = 0.6;
+        else
+            revalpha = 0;
 	}
 	else
 	{

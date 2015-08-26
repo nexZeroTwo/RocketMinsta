@@ -190,6 +190,7 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
     registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
     registercvar("cl_truezapper", "0", CVAR_SAVE);
+    registercvar("cl_frozentint", "1", CVAR_SAVE);
 
     gametype = 0;
 
@@ -634,9 +635,10 @@ void PostInit(void)
         case 50:
             TryBindCRAKeys();
         case 51:
+        case 52:
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 52\n");
+		localcmd("seta rm_initialized 53\n");
 		RM_OUTDATED
 		break;
 	}
