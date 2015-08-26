@@ -424,7 +424,7 @@ void Buffs_ClientFrame(void) {
                 self.ammo_nails += a;
             }
         }
-        
+
         ON_BUFF_REMOVED(BUFF_SUPPLY) {
             self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
         }
