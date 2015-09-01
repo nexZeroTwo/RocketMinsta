@@ -622,9 +622,7 @@ void GameCommand(string command)
 		print("  find classname\n");
 		print("  redirect clientnum server\n");
 		print("  gotoserver server\n");
-		#ifdef RM_SUPPORT_MADOKA
 		print("  ^0walpurgis^7\n");
-		#endif
 		GameCommand_Vote("help", world);
 		GameCommand_Ban("help");
 		GameCommand_Generic("help");
@@ -1087,8 +1085,7 @@ void GameCommand(string command)
 
 		return;
 	}
-	
-	#ifdef RM_SUPPORT_MADOKA
+
 	if(argv(0) == "walpurgis")
 	{
 		FOR_EACH_CLIENT(e)
@@ -1114,7 +1111,6 @@ void GameCommand(string command)
 		
 		return;
 	}
-	#endif
 
 	if(argv(0) == "kill")
 	{
@@ -1125,12 +1121,8 @@ void GameCommand(string command)
 			bprint("^1kill: ^7Could not find victim!\n");
 			return;
 		}
-		
-		#ifdef RM_SUPPORT_MADOKA
+
 		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-		#else
-		bigprint_spec(e, "^9Votekilled", "", 5);
-		#endif
 		
 		e.armorvalue = 0;
 		Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
@@ -1143,11 +1135,7 @@ void GameCommand(string command)
 		{
 			FOR_EACH_CLIENT(e) if(e.flagcarried)
 			{
-				#ifdef RM_SUPPORT_MADOKA
 				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-				#else
-				bigprint_spec(e, "^9Votekilled", "", 5);
-				#endif
 				e.armorvalue = 0;
 				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
@@ -1156,11 +1144,7 @@ void GameCommand(string command)
 		{
 			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
 			{
-				#ifdef RM_SUPPORT_MADOKA
 				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-				#else
-				bigprint_spec(e, "^9Votekilled", "", 5);
-				#endif
 				e.owner.armorvalue = 0;
 				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}

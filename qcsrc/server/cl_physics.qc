@@ -82,21 +82,6 @@ void PlayerJump (void)
 		if(time < self.doublejump_nextjumptime)
 			return;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_combo_jumpheight);
-			else
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_jumpheight);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			mjumpheight = mjumpheight * CVAR(g_balance_curse_slow_jumpheight);
-		}
-	}
-
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{
 		mjumpheight = mjumpheight * CVAR(g_minstagib_speed_jumpheight);
@@ -701,38 +686,6 @@ void SV_PlayerPhysics()
 	self.race_movetime = self.race_movetime_frac + self.race_movetime_count;
 
 	buttons = self.BUTTON_ATCK + 2 * self.BUTTON_JUMP + 4 * self.BUTTON_ATCK2 + 8 * self.BUTTON_ZOOM + 16 * self.BUTTON_CROUCH + 32 * self.BUTTON_HOOK + 64 * self.BUTTON_USE + 128 * (self.movement_x < 0) + 256 * (self.movement_x > 0) + 512 * (self.movement_y < 0) + 1024 * (self.movement_y > 0);
-	
-#if 0
-	if(!buttons)
-		c = "x";
-	else if(buttons == 1)
-		c = "1";
-	else if(buttons == 2)
-		c = " ";
-	else if(buttons == 128)
-		c = "s";
-	else if(buttons == 256)
-		c = "w";
-	else if(buttons == 512)
-		c = "a";
-	else if(buttons == 1024)
-		c = "d";
-	else
-		c = "?";
-
-	if(c == substring(specialcommand, self.specialcommand_pos, 1))
-	{
-		self.specialcommand_pos += 1;
-		if(self.specialcommand_pos >= strlen(specialcommand))
-		{
-			self.specialcommand_pos = 0;
-			SpecialCommand();
-			return;
-		}
-	}
-	else if(self.specialcommand_pos && (c != substring(specialcommand, self.specialcommand_pos - 1, 1)))
-		self.specialcommand_pos = 0;
-#endif
 
     if(self.PlayerPhysplug)
         if(self.PlayerPhysplug())
@@ -797,7 +750,7 @@ void SV_PlayerPhysics()
 		if(self.race_penalty)
 			not_allowed_to_move = 1;
 		if(!sv_ready_restart_after_countdown)
-		if(time < game_starttime && !g_inf)
+		if(time < game_starttime)
 			not_allowed_to_move = 1;
 
 		if(not_allowed_to_move)
@@ -836,21 +789,6 @@ void SV_PlayerPhysics()
 	}
 
 	maxspd_mod = 1;
-
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_combo_moverate);
-			else
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_moverate);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			maxspd_mod = maxspd_mod * CVAR(g_balance_curse_slow_moverate);
-		}
-	}
 
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{

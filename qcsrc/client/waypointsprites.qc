@@ -268,19 +268,7 @@ void Draw_WaypointSprite()
 		vector d;
 		float f1, f2;
 
-		// get the waypoint angle vector
-		/*
-		d_x = view_right * (self.origin - view_origin) * vid_conwidth / vid_width;
-		d_y = -view_up * (self.origin - view_origin) * vid_conheight / (vid_height * vid_pixelheight);
-		d_z = 0;
-		*/
-		
 		d = o - '0.5 0 0' * maxw - '0 0.5 0' * maxh;
-
-		/*
-		if(CVAR(v_flipped))
-			d_x = -d_x;
-		*/
 
 		f1 = d_x / maxw;
 		f2 = d_y / maxh;
@@ -473,17 +461,8 @@ void Ent_WaypointSprite()
 			else
 				self.build_starthealth = 0;
 			self.build_finished = servertime + t / 32;
-			//print("build: ", ftos(self.build_finished - self.build_started), "\n");
 		}
 	}
-    /*
-	else
-	{
-		self.health = -1;
-		self.build_finished = 0;
-	}
-    */
-
 	if(sendflags & 64)
 	{
 		// unfortunately, this needs to be exact (for the 3D display)

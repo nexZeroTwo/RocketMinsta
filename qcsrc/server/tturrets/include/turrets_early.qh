@@ -3,8 +3,6 @@
 
 #ifdef TTURRETS_ENABLED
 
-#message "with tZork turrets"
-
 vector real_origin(entity ent);
 
 /// Map time control over pain inflicted

@@ -1,6 +1,7 @@
 
 string HG_TypeToExpandedName(float t) {
     switch(t) {
+<<<<<<< HEAD
         case HG_NORMAL      :   return "Hand Grenade";
         case HG_NAPALM      :   return "Napalm Grenade";
         case HG_REMOTE      :   return "Fire Trap";
@@ -16,6 +17,13 @@ string HG_TypeToExpandedName(float t) {
 		case HG_RAZE		:	return "Raze";
         case HG_RANDOM      :   return "Random Nadget";
         default             :   return "Fuckoff Grenade";
+        #define HGDEF(id,shortname,longname,color) \
+            case id: return longname;
+        HGDEFS
+        #undef HGDEF
+
+        case HG_RANDOM: return "Random Nadget";
+        default       : return "Fuckoff Grenade";
     }
 }
 
@@ -36,6 +44,13 @@ string HG_TypeToName(float t) {
 		case HG_RAZE		:	return "raze";
         case HG_RANDOM      :   return "random";
         default             :   return strcat("fuckoff", ftos(t));
+        #define HGDEF(id,shortname,longname,color) \
+            case id: return #shortname;
+        HGDEFS
+        #undef HGDEF
+
+        case HG_RANDOM: return "random";
+        default       : return strcat("fuckoff", ftos(t));
     }
 }
 
@@ -55,11 +70,26 @@ float HG_NameToType(string t) {
 		case "raze"			:	return HG_RAZE;
         case "random"       :   return HG_RANDOM;
         default             :   return HG_NORMAL;
+        #define HGDEF(id,shortname,longname,color) \
+            case #shortname: return id;
+        HGDEFS
+        #undef HGDEF
+
+        case "random": return HG_RANDOM;
+        default      : return HG_NORMAL;
     }
 }
 
 string HG_NameToExpandedName(string t) {
-    return HG_TypeToExpandedName(HG_NameToType(t));
+    switch(t) {
+        #define HGDEF(id,shortname,longname,color) \
+            case #shortname: return longname;
+        HGDEFS
+        #undef HGDEF
+
+        case "random": return "Random Nadget";
+        default      : return "Fuckoff Grenade";
+    }
 }
 
 vector HG_TypeToColor(float t) {
@@ -79,6 +109,13 @@ vector HG_TypeToColor(float t) {
         case HG_GG          :   return '0.5 0.5 0.5' + colormapPaletteColor(15, FALSE);
         case HG_RANDOM      :   return '1.0 1.0 1.0';
         default             :   return '0.5 0.5 0.5';
+        #define HGDEF(id,shortname,longname,color) \
+            case id: return color;
+        HGDEFS
+        #undef HGDEF
+
+        case HG_RANDOM: return '1.0 1.0 1.0';
+        default       : return '0.5 0.5 0.5';
     }
 }
 

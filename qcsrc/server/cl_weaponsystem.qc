@@ -12,21 +12,6 @@ float W_WeaponRateFactor()
 	float t;
 	t = 1.0 / g_weaponratefactor;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				t = t * CVAR(g_balance_rune_speed_combo_atkrate);
-			else
-				t = t * CVAR(g_balance_rune_speed_atkrate);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			t = t * CVAR(g_balance_curse_slow_atkrate);
-		}
-	}
-    
     float haste = Buffs_BuffPower(self, BUFF_HASTE);
     if(haste)
         t = t * (1 - (1 - CVAR(g_buffs_haste_refire_rate)) * haste);
@@ -204,76 +189,6 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	// calculate the shotdir from the chosen shotorg
 	w_shotdir = normalize(trueaimpoint - w_shotorg);
 
-#if 0
-	// explanation of g_antilag:
-	// if client reports it was aiming at a player, and the serverside trace
-	// says it would miss, change the aim point to the player's new origin,
-	// but only if the shot at the player's new origin would hit of course
-	//
-	// FIXME: a much better method for bullet weapons would be to leave a
-	// trail of lagged 'ghosts' behind players, and see if the bullet hits the
-	// ghost corresponding to this player's ping time, and if so it would do
-	// damage to the real player
-	if (antilag)
-	if (ent.cursor_trace_ent)                 // client was aiming at someone
-	if (ent.cursor_trace_ent != ent)         // just to make sure
-	if (ent.cursor_trace_ent.takedamage)      // and that person is killable
-	if (ent.cursor_trace_ent.classname == "player") // and actually a player
-	if (CVAR(g_antilag) == 1)
-	{
-		// verify that the shot would miss without antilag
-		// (avoids an issue where guns would always shoot at their origin)
-		traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-		if (!trace_ent.takedamage)
-		{
-			// verify that the shot would hit if altered
-			traceline(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
-			if (trace_ent == ent.cursor_trace_ent)
-			{
-				// verify that the shot would hit in the past
-				if(ent.antilag_debug)
-					antilag_takeback(ent.cursor_trace_ent, time - ent.antilag_debug);
-				else
-					antilag_takeback(ent.cursor_trace_ent, time - ANTILAG_LATENCY(ent));
-
-				traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + v_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-				antilag_restore(ent.cursor_trace_ent);
-
-				if(trace_ent == ent.cursor_trace_ent)
-				{
-					// HIT!
-					w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
-					dprint("ANTILAG HIT for ", ent.netname, "\n");
-				}
-				else
-				{
-					// prydon cursor aimbot or odd network conditions
-					dprint("WARNING: antilag ghost trace for ", ent.netname, " failed!\n");
-				}
-
-				if(CVAR(developer) >= 2)
-				{
-					vector v, vplus, vel;
-					float X;
-					v     = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent)       ));
-					vplus = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent) + 0.01));
-					vel = (vplus - v) * (1 / 0.01);
-					// solve: v + X * vel = closest to ent.origin + ent.view_ofs, v_forward axis
-					v     -= (ent.origin + ent.view_ofs);
-					// solve: v + X * vel = closest to v_forward axis
-					// project into 2D by subtracting v_forward components:
-					v   -= (v   * v_forward) * v_forward;
-					vel -= (vel * v_forward) * v_forward;
-					// solve: v + X * vel = closest to origin
-					// (v + X * vel)^2 closest to 0
-					// v^2 + 2 * X * (v * vel) + X^2 * vel^2 closest to 0
-					X = -(v * vel) / (vel * vel);
-					dprint("dead center needs adjustment of ", ftos(X), " (that is, ", ftos(ANTILAG_LATENCY(ent) + X), " instead of ", ftos(ANTILAG_LATENCY(ent)), "\n");
-				}
-			}
-		}
-	}
-#else
 	if (antilag)
 	{
 		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
@@ -314,7 +229,6 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			}
 		}
 	}
-#endif
 
 	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
