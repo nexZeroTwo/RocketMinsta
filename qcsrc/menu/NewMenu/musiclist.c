@@ -1,3 +1,4 @@
+
 #ifdef INTERFACE
 CLASS(MusicList) EXTENDS(NewMenuListBox)
     METHOD(MusicList, configureMusicList, void(entity))
@@ -125,7 +126,7 @@ void startMusicMusicList(entity me)
 {
     string s;
     s = me.musicName(me,me.selectedItem);
-    localcmd("cd loop music/", s, ".ogg\n");
+    localcmd("cd loop \"music/", s, "\".ogg\n");
 }
 
 void StartMusic_Click(entity btn, entity me)
@@ -161,4 +162,3 @@ float keyDownMusicList(entity me, float scan, float ascii, float shift)
         return keyDownListBox(me, scan, ascii, shift);
 }
 #endif
-
