@@ -177,9 +177,9 @@ void fillNewMenuEffectsSettingsTab(entity me)
 	}
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNewMenuCheckBox(0, "r_bloom", "Bloom"));
-#ifdef 0
-			setDependent(e, "r_hdr", 0, 0);
-		me.TD(me, 1, 2, e = makeNewMenuCheckBox(0, "r_hdr", "High Dynamic Range (HDR)"));
+#if 0
+			setDependent(e, _("r_hdr"), 0, 0);
+		me.TD(me, 1, 2, e = makeNewMenuCheckBox(0, _("r_hdr"), _("High Dynamic Range (HDR)")));
 #endif
 	me.TR(me);
 	

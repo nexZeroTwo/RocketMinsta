@@ -1928,7 +1928,7 @@ void spawnfunc_item_nadget(void) {
 }
 
 // we no longer have the seeker
-#ifdef 0
+#if 0
 void spawnfunc_weapon_seeker()
 {
 	spawnfunc_weapon_fireball();

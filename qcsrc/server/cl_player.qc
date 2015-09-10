@@ -1349,8 +1349,8 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 	fullcmsgstr = cmsgstr;
 
 	// FLOOD CONTROL
-	flood = 0;
 	var .float flood_field;
+	flood = 0;
 		
 	if(floodcontrol)
 	{
