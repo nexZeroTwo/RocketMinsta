@@ -1512,7 +1512,7 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 
 float GetVoiceMessageVoiceType(string type)
 {
-	if(type == "taunt")
+	if(type == "taunt" || type == "niconiconii" || type == "washiwashi")
 		return VOICETYPE_TAUNT;
 	if(type == "teamshoot")
 		return VOICETYPE_LASTATTACKER;
@@ -1636,6 +1636,7 @@ void UpdatePlayerSounds()
 	self.modelindex_for_playersound = self.modelindex;
 	ClearPlayerSounds();
 	LoadPlayerSounds("sound/player/default.sounds", 1);
+    LoadPlayerSounds("sound/player/default.rm.sounds", 0);
 	LoadPlayerSounds(strcat(self.model, ".sounds"), 0);
 }
 

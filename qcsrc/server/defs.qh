@@ -479,7 +479,9 @@ float next_pingtime;
 		_VOICEMSG(meet) \
 		_VOICEMSG(seenflag) \
 		_VOICEMSG(taunt) \
-		_VOICEMSG(teamshoot)
+		_VOICEMSG(teamshoot) \
+        _VOICEMSG(niconii) \
+        _VOICEMSG(washiwashi)
 
 #define _VOICEMSG(m) .string playersound_##m;
 ALLPLAYERSOUNDS
