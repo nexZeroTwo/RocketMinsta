@@ -496,6 +496,9 @@ void Buffs_ClientFrame(void) {
     
     if(g_buffs_meodp)
         self.buffpower_meodp = Buffs_BuffPower(self, BUFF_MEODP);
+
+    if(self.buff_endur_dmgpool < 0)
+        self.buff_endur_dmgpool = 0;
 }
 
 #undef ON_BUFF_ADDED
@@ -806,13 +809,15 @@ entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
             }
 
             var damage = min(self.buff_endur_dmgpool / self.buff_endur_ticks, targ.buff_endur_dmgpool);
+
             if(damage <= 0) {
                 remove(self);
                 return;
             }
 
             Damage(targ, self, self.owner, damage, DEATH_ENDURANCE, targ.origin, '0 0 0');
-            self.enemy.buff_endur_dmgpool -= damage;
+
+            targ.buff_endur_dmgpool -= damage;
             self.buff_endur_dmgpool -= damage;
             self.buff_endur_ticks -= 1;
 
