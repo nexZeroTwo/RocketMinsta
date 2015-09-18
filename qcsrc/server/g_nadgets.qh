@@ -22,6 +22,8 @@ void HG_Grenade_Think();
 void HG_Stick(void);
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
+float HG_StorageLimit(entity);
+void HG_AdvanceRegen(entity, float, float);
 void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);

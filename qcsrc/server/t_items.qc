@@ -534,20 +534,35 @@ float Item_GiveTo(entity item, entity player)
 		}
 	}
 
-    if(g_nadgets)
-    if(item.hg_ammo1) {
-        float b = CVAR(g_nadgets_pickup_random_bonus);
-        if(b) {
-            pickedup = TRUE;
-            HG_GiveRandomBonus(player, b, "Picked up a random bonus", FALSE);
-        } else {
-            HG_DO_IN_ALL_CONTEXTS({
-                if(player.hg_ctx_ammo <= HG_RegenLimit(player)) {
-                    float oregen = HG_RegenTime(player);
+    if(g_nadgets) {
+        if(item.hg_ammo1) {
+            float b = CVAR(g_nadgets_pickup_random_bonus);
+
+            if(b) {
+                pickedup = TRUE;
+                HG_GiveRandomBonus(player, b, "Picked up a random bonus", FALSE);
+            } else {
+                HG_DO_IN_ALL_CONTEXTS({
+                    if(player.hg_ctx_ammo <= HG_RegenLimit(player)) {
+                        float oregen = HG_RegenTime(player);
+                        pickedup = TRUE;
+                        player.hg_ctx_ammo = min(player.hg_ctx_ammo + self.hg_ammo1, HG_RegenLimit(player) + self.hg_ammo1);
+                        player.hg_ctx_maxregentime = HG_RegenTime(player);
+                        player.hg_ctx_regentime = player.hg_ctx_regentime - oregen + player.hg_ctx_maxregentime;
+                    }
+                })
+            }
+        }
+
+        if(item.hg_ammo2) {
+            float regen = (item.hg_ammo2 * Buffs_NadgetRegen(player));
+
+            if(regen > 0) HG_DO_IN_ALL_CONTEXTS({
+                float lim = HG_StorageLimit(player);
+
+                if(player.hg_ctx_ammo < lim) {
+                    HG_AdvanceRegen(player, regen, lim);
                     pickedup = TRUE;
-                    player.hg_ctx_ammo = min(player.hg_ctx_ammo + self.hg_ammo1, HG_RegenLimit(player) + self.hg_ammo1);
-                    player.hg_ctx_maxregentime = HG_RegenTime(player);
-                    player.hg_ctx_regentime = player.hg_ctx_regentime - oregen + player.hg_ctx_maxregentime;
                 }
             })
         }
@@ -1895,9 +1910,18 @@ void spawnfunc_item_nadget(void) {
     if(!CVAR(g_nadgets_pickup))
         return;
     
-    if(!self.hg_ammo1)
-        self.hg_ammo1 = 1;
-    
+    var regenval = CVAR(g_nadgets_pickup_regenvalue);
+
+    if(regenval > 0) {
+        self.hg_ammo1 = 0;
+        if(!self.hg_ammo2)
+            self.hg_ammo2 = regenval;
+    } else {
+        self.hg_ammo2 = 0;
+        if(!self.hg_ammo1)
+            self.hg_ammo1 = 1;
+    }
+
     if(!self.hg_bonus)
         self.hg_bonus = 1;
     

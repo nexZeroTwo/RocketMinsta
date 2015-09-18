@@ -2528,22 +2528,27 @@ float HG_RegenLimit(entity plr) {
     return mx;
 }
 
-void HG_AdvanceRegen(float delta, float limit) {
-    if(limit && self.hg_ctx_ammo >= limit)
+float HG_StorageLimit(entity plr) {
+    float rlim = HG_RegenLimit(plr);
+    return max(rlim, rint(rlim * CVAR(g_nadgets_storage_limit_factor)));
+}
+
+void HG_AdvanceRegen(entity plr, float delta, float limit) {
+    if(limit && plr.hg_ctx_ammo >= limit)
         return;
 
-    self.hg_ctx_regentime -= delta;
+    plr.hg_ctx_regentime -= delta;
 
-    if(self.hg_ctx_regentime <= 0) {
-        var remainder = -self.hg_ctx_regentime;
+    if(plr.hg_ctx_regentime <= 0) {
+        var remainder = -plr.hg_ctx_regentime;
         if(almost_equals(remainder, 0))
             remainder = 0;
 
-        self.hg_ctx_ammo += 1;
-        HG_SetRegenTime(self, HG_RegenTime(self));
+        plr.hg_ctx_ammo += 1;
+        HG_SetRegenTime(plr, HG_RegenTime(plr));
 
         if(remainder)
-            HG_AdvanceRegen(remainder, limit);
+            HG_AdvanceRegen(plr, remainder, limit);
     }
 }
 
@@ -2648,7 +2653,7 @@ void HG_Frame()
                     self.hg_ctx_regenrate *= CVAR(g_nadgets_regen_frozenfactor);
                 self.hg_ctx_regenrate *= Buffs_NadgetRegen(self);
                 
-                HG_AdvanceRegen(frametime * self.hg_ctx_regenrate, mx);
+                HG_AdvanceRegen(self, frametime * self.hg_ctx_regenrate, mx);
             }
         } else
             self.hg_ctx_regenrate = 0;

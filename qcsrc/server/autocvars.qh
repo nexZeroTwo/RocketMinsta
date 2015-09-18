@@ -1426,6 +1426,8 @@ string autocvar_g_nadgets_normal_stacklimit;
 float autocvar_g_nadgets_oldhitboxes;
 float autocvar_g_nadgets_pickup;
 float autocvar_g_nadgets_pickup_random_bonus;
+float autocvar_g_nadgets_pickup_regenvalue;
+float autocvar_g_nadgets_storage_limit_factor;
 float autocvar_g_nadgets_plasma_projectile_count;
 float autocvar_g_nadgets_plasma_projectile_damage;
 float autocvar_g_nadgets_plasma_projectile_dps;
