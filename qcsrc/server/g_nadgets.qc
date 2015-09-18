@@ -1257,7 +1257,7 @@ void HG_Shield_Discharge_Think(void) {
     }
 
     makevectors(self.owner.v_angle);
-    W_SetupShot(self.owner, TRUE, 2, "weapons/nexfire.wav", -1);
+    W_SetupShot(self.owner, TRUE, 0, "weapons/nexfire.wav", -1);
     traceline_antilag(self.owner, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self.owner);
     targ = trace_ent;
     start = w_shotorg;
