@@ -342,15 +342,15 @@ void HG_Napalm_Explode() {
 
 void HG_Plasma_Projectile_Explode() {
     if(self.meodp_point.enemy) {
-        self.owner = self.meodp_point.enemy;
+        self.realowner = self.meodp_point.enemy;
         self.team = self.meodp_point.enemy.team;
     }
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
     self.damage_noinfo = FALSE;
-    float p = Buffs_NadgetPower(self.owner);
-	RadiusDamage(self, self.owner, CVAR(g_nadgets_plasma_projectile_damage)*p, CVAR(g_nadgets_plasma_projectile_edgedamage)*p, CVAR(g_nadgets_plasma_projectile_radius), world, CVAR(g_nadgets_plasma_projectile_force)*p, HG_PLASMA | HITTYPE_BOUNCE, other);
+    float p = Buffs_NadgetPower(self.realowner);
+	RadiusDamage(self, self.realowner, CVAR(g_nadgets_plasma_projectile_damage)*p, CVAR(g_nadgets_plasma_projectile_edgedamage)*p, CVAR(g_nadgets_plasma_projectile_radius), world, CVAR(g_nadgets_plasma_projectile_force)*p, HG_PLASMA | HITTYPE_BOUNCE, other);
 	remove(self);
 }
 
@@ -365,7 +365,7 @@ void HG_Plasma_Projectile_Think() {
     
     if(self.hg_plasma_projdist) {
         for(e = world; (e = findfloat(e, csqcprojectile_extradata, self.csqcprojectile_extradata));) if(e != self)
-            if(e.owner == self.owner) if(e.projectiledeathtype == self.projectiledeathtype)
+            if(e.realowner == self.realowner) if(e.projectiledeathtype == self.projectiledeathtype)
             if(vlen(self.origin - e.origin) < self.hg_plasma_projdist) {
                 found = TRUE;
                 break;
@@ -379,7 +379,7 @@ void HG_Plasma_Projectile_Think() {
     
     if(time > self.hg_plasma_projdps_next) {
         float pdmg = self.hg_plasma_projdps * (time - self.hg_plasma_projdps_last);
-        RadiusDamage(self, self.owner, pdmg, pdmg, self.hg_plasma_projrange, world, 0, self.projectiledeathtype, world);
+        RadiusDamage(self, self.realowner, pdmg, pdmg, self.hg_plasma_projrange, world, 0, self.projectiledeathtype, world);
         self.hg_plasma_projdps_next = time + self.hg_plasma_projdps_delay;
         self.hg_plasma_projdps_last = time;
     }
@@ -401,7 +401,8 @@ void HG_Plasma_Projectile() {
     
 	proj = spawn();
 	proj.classname = "hg_plasma";
-	proj.owner = self.owner;
+	proj.owner = self;
+    proj.realowner = self.owner;
     proj.team = proj.owner.team;
 	proj.use = HG_Plasma_Projectile_Explode;
 	proj.think = HG_Plasma_Projectile_Think;
@@ -692,8 +693,23 @@ void HG_Grenade_Touch() {
             }
 
             return;
-        } else if(self.hg_type == HG_LASER)
+        } else if(self.hg_type == HG_LASER) {
             HG_Grenade_RadiusDamage();
+        } else if(self.hg_type == HG_PLASMA && self.hg_adept) {
+            var pcount = CVAR(g_nadgets_plasma_adept_projectiles_on_bounce);
+
+            if(pcount > 0) {
+                var oldvel = self.velocity;
+                self.velocity = '0 0 0';
+
+                ++hg_plasma_group;
+                for(var c = 0; c < pcount; ++c) {
+                    HG_Plasma_Projectile();
+                }
+
+                self.velocity = oldvel;
+            }
+        }
 
 :troll
 
