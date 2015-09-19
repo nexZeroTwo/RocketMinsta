@@ -1512,11 +1512,19 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 
 float GetVoiceMessageVoiceType(string type)
 {
-	if(type == "taunt" || type == "niconiconii" || type == "washiwashi")
-		return VOICETYPE_TAUNT;
-	if(type == "teamshoot")
-		return VOICETYPE_LASTATTACKER;
-	return VOICETYPE_TEAMRADIO;
+    switch(type) {
+        case "teamshoot":
+            return VOICETYPE_LASTATTACKER;
+
+#define _VOICEMSG(m) case #m:
+        ALLSILLYVOICEMSGS
+#undef _VOICEMSG
+        case "taunt":
+            return VOICETYPE_TAUNT;
+
+        default:
+            return VOICETYPE_TEAMRADIO;
+    }
 }
 
 string allvoicesamples;

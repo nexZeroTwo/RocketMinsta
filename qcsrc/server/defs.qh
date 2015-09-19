@@ -473,6 +473,18 @@ float next_pingtime;
 		_VOICEMSG(pain50) \
 		_VOICEMSG(pain75) \
 		_VOICEMSG(pain100)
+
+#define ALLSILLYVOICEMSGS \
+        _VOICEMSG(niconii) \
+        _VOICEMSG(washiwashi) \
+        _VOICEMSG(sugoi) \
+        _VOICEMSG(yamete) \
+        _VOICEMSG(susume) \
+        _VOICEMSG(harasho) \
+        _VOICEMSG(kya) \
+        _VOICEMSG(seikou) \
+        _VOICEMSG(ureshii)
+
 #define ALLVOICEMSGS \
 		_VOICEMSG(attack) \
 		_VOICEMSG(attackinfive) \
@@ -480,8 +492,7 @@ float next_pingtime;
 		_VOICEMSG(seenflag) \
 		_VOICEMSG(taunt) \
 		_VOICEMSG(teamshoot) \
-        _VOICEMSG(niconii) \
-        _VOICEMSG(washiwashi)
+        ALLSILLYVOICEMSGS
 
 #define _VOICEMSG(m) .string playersound_##m;
 ALLPLAYERSOUNDS
