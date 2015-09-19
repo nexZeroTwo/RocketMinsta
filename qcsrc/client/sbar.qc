@@ -3682,7 +3682,7 @@ void Sbar_DrawBuffs(void) {
     drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
 }
 
-void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenpaused, float hgcd, float hgcdmax) {
+void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenmax, float regenpaused, float hgcd, float hgcdmax) {
     string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
     vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * regenpaused;
     vector hgsize = '32 32 0';
@@ -3699,17 +3699,35 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
     
     Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
     
-    if(rm_shownadgetregen)
-    if(regenrate) {
+    if(rm_shownadgetregen) {
         drawfont = sbar_bigfont;
-        float rtime = regen / regenrate;
-        string hgtxt = ftos(rtime);
-        
-        float dotpos = strstrofs(hgtxt, ".", 0);
-        if(dotpos >= 0)
-            hgtxt = substring(hgtxt, 0, dotpos + 2);
-        else
-            hgtxt = strcat(hgtxt, ".0");
+        string hgtxt;
+        float rtime;
+
+        if(regenrate) {
+            rtime = regen / regenrate;
+            hgtxt = ftos(rtime);
+
+            float dotpos = strstrofs(hgtxt, ".", 0);
+            if(dotpos >= 0)
+                hgtxt = substring(hgtxt, 0, dotpos + 2);
+            else
+                hgtxt = strcat(hgtxt, ".0");
+        } else {
+            float rpercent = 1 - regen / regenmax;
+
+            if(rpercent <= 0)
+                return;
+
+            rtime = if(rpercent >= 0.7)
+                        0
+                    else if(rpercent >= 0.5)
+                        5
+                    else
+                        10;
+
+            hgtxt = strcat(ftos(rint(rpercent * 100)), "%");
+        }
         
         float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
         drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
@@ -5393,11 +5411,11 @@ void Sbar_Draw(void)
                 pos = bottom - pos;
                 pos_x = nadesector_pos;
                 
-                Sbar_DrawNadgetRegenSector(pos, hgtype, hgammo, getstatf(STAT_HGREGEN), getstatf(STAT_HGREGENRATE), getstati(STAT_HGREGENPAUSED), hgcd, hg_maxcd);
+                Sbar_DrawNadgetRegenSector(pos, hgtype, hgammo, getstatf(STAT_HGREGEN), getstatf(STAT_HGREGENRATE), getstatf(STAT_HGREGENMAX), getstati(STAT_HGREGENPAUSED), hgcd, hg_maxcd);
      
                 if(nadesector2_pos) {
                     pos_x = nadesector2_pos;
-                    Sbar_DrawNadgetRegenSector(pos, getstati(STAT_HGTYPE2), getstati(STAT_HGAMMO2), getstatf(STAT_HGREGEN2), getstatf(STAT_HGREGENRATE2), getstati(STAT_HGREGENPAUSED2), hgcd2, hg_maxcd2);
+                    Sbar_DrawNadgetRegenSector(pos, getstati(STAT_HGTYPE2), getstati(STAT_HGAMMO2), getstatf(STAT_HGREGEN2), getstatf(STAT_HGREGENRATE2), getstatf(STAT_HGREGENMAX2), getstati(STAT_HGREGENPAUSED2), hgcd2, hg_maxcd2);
                 }
      
             } else {
