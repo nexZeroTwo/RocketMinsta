@@ -70,6 +70,7 @@ void Buffs_VampireDamage(entity, entity, float, float);
 float Buffs_TenacityDamage(entity, entity, float, float);
 void Buffs_FocusDamage(entity, entity, float, float);
 float Buffs_EnduranceDamage(entity, entity, float, float);
+void Buffs_WrathDamage(entity, entity, float, float);
 void Buffs_ReaperFrag(entity, entity);
 void Buffs_BuffPickup_Remove(void);
 void Buffs_Randomize(entity, float);

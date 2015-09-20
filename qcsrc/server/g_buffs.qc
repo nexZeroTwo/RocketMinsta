@@ -663,6 +663,17 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
     }
 }
 
+void Buffs_WrathDamage(entity targ, entity attacker, float damage, float deathtype) {
+    var wrath = Buffs_BuffPower(attacker, BUFF_WRATH) * CVAR(g_buffs_wrath_hgregen_fromdamage);
+
+    if(!wrath)
+        return;
+
+    HG_DO_IN_ALL_CONTEXTS({
+        HG_AdvanceRegen(attacker, damage * wrath, HG_StorageLimit(attacker));
+    })
+}
+
 void Buffs_ArcEffect(vector from, vector to, float t) {
     te_csqc_lightningarc(from, to, t, t);
 }
