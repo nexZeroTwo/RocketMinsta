@@ -3700,7 +3700,6 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
     Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
     
     if(rm_shownadgetregen) {
-        drawfont = sbar_bigfont;
         string hgtxt;
         float rtime;
 
@@ -3729,10 +3728,10 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
             hgtxt = strcat(ftos(rint(rpercent * 100)), "%");
         }
         
-        float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
-        drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
-        
-        drawfont = sbar_font;
+        using(drawfont = sbar_bigfont) {
+            float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
+            drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
+        }
     }
 }
 
