@@ -2296,6 +2296,9 @@ void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
 
+    if(roundstate == ROUNDSTATE_OVER)
+        return;
+
 	maxh = g_balance_health_rotstable;
 	maxa = g_balance_armor_rotstable;
 	maxf = g_balance_fuel_rotstable;
