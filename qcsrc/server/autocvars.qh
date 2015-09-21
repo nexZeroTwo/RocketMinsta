@@ -775,6 +775,8 @@ float autocvar_g_buffs_endurance_damage_dot;
 float autocvar_g_buffs_endurance_damage_dot_duration;
 float autocvar_g_buffs_endurance_damage_direct;
 float autocvar_g_buffs_reaper_buff_banmask;
+float autocvar_g_buffs_stealth_alpha;
+float autocvar_g_buffs_stealth_regaintime;
 float autocvar_g_bugrigs;
 float autocvar_g_bugrigs_accel;
 float autocvar_g_bugrigs_air_steering;

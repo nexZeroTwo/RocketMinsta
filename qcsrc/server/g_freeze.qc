@@ -527,6 +527,7 @@ void Freeze_Hook_PlayerPreThink(void) {
                         lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
                     
                     rmod = max(rmod, lmod);
+                    other.buff_stealth_time = time;
                 }
             }
     }

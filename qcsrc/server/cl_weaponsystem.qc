@@ -336,7 +336,9 @@ float CL_Weaponentity_CustomizeEntityForClient()
 	if(other.classname == "spectator")
 		if(other.enemy == self.owner)
 			self.viewmodelforclient = other;
-	return TRUE;
+
+    self.alpha = Client_CalculateAlpha(self.owner, self.viewmodelforclient);
+	return (self.alpha > 0);
 }
 
 float qcweaponanimation;
@@ -975,6 +977,8 @@ float weapon_prepareattack(float secondary, float attacktime)
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
+    self.buff_stealth_time = time;
+
     if(!PlayerMayFire(self))
         return FALSE;
 

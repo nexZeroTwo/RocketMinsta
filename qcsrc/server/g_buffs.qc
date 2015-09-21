@@ -358,6 +358,9 @@ float Buffs_Model_Overhead_Customize(void) {
     if(IsDifferentTeam(self.owner, other))
         return FALSE;
 
+    if(Client_CalculateAlpha(self.owner, other) < 0.15)
+        return FALSE;
+
     return TRUE;
 }
 
@@ -453,7 +456,11 @@ void Buffs_ClientFrame(void) {
         ON_BUFF_REMOVED(BUFF_ADEPT) {
             self.hg_stealth_saved = 0;
         }
-        
+
+        ON_BUFF_ADDED(BUFF_STEALTH) {
+            self.buff_stealth_time = -1000;
+        }
+
         self.oldbuffs = self.buffs;
     }
     

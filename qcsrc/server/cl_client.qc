@@ -528,6 +528,27 @@ string CheckPlayerModel(string plyermodel) {
 	return plyermodel;
 }
 
+float Client_CalculateAlpha(entity plr, entity viewer) {
+    var sa = 1 - plr.hg_stealthalpha;
+
+    var stealth = Buffs_BuffPower(plr, BUFF_STEALTH);
+
+    if(stealth)
+        sa *= ((1 - stealth) + stealth * (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1)));
+
+    if(viewer) {
+        if((teams_matter && viewer.team == plr.team) || 
+           (viewer.hg_stealth && (!plr.buffpower_adept || viewer.buffpower_adept)) ||
+           !viewer.iscreature)
+            sa = 0.3 + 0.7 * sa;
+    }
+    
+    if(sa <= 0)
+        sa = -1;
+
+    return sa;
+}
+
 /*
 =============
 Client_customizeentityforclient
@@ -535,6 +556,7 @@ Client_customizeentityforclient
 LOD reduction
 =============
 */
+
 void Client_uncustomizeentityforclient()
 {
 	if(self.modelindex == 0) // no need to uncustomize then
@@ -547,17 +569,7 @@ float Client_customizeentityforclient()
 {
     entity modelsource;
     
-    float sa = 1 - self.hg_stealthalpha;
-    
-    if((teams_matter && other.team == self.team) || 
-       (other.hg_stealth && (!self.buffpower_adept || other.buffpower_adept)) ||
-       !other.iscreature)
-        sa = 0.3 + 0.7 * sa;
-    
-    self.alpha = sa * default_player_alpha;
-    
-    if(!self.alpha)
-        self.alpha = -1;
+    self.alpha = Client_CalculateAlpha(self, other) * default_player_alpha;
     
     if(self.alpha < 0)
         return FALSE;

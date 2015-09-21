@@ -43,6 +43,8 @@ float g_buffs_count;
 .float buff_endur_dmgpool;
 .float buff_endur_nexttick;
 
+.float buff_stealth_time;
+
 .entity meodp_point;
 .entity buff_waypoint;
 .entity buff_model;

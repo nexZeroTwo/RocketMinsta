@@ -1041,6 +1041,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                self.buff_stealth_time = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
                     self.hg_stealth_saved = 0;

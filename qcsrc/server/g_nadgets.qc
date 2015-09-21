@@ -2509,6 +2509,7 @@ void HG_Attack()
     if(self.hg_bonus)
         self.hg_bonus -= used;
     
+    self.buff_stealth_time = time;
     self.hg_nadesused += used;
 }
 #undef GV
