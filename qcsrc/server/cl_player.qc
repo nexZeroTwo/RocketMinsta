@@ -700,7 +700,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			sound (self, CHAN_PROJECTILE, "misc/armorimpact.wav", VOL_BASE, ATTN_NORM);
 		else if (take > 30)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact2.wav", VOL_BASE, ATTN_NORM);
-		else if (take > 10)
+		else if (take > 10 || deathtype == DEATH_ENDURANCE)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact1.wav", VOL_BASE, ATTN_NORM); // FIXME possibly remove them?
 	}
 
@@ -770,6 +770,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 							setanim(self, self.anim_pain2, FALSE, TRUE, TRUE);
 					}
 
+                    if(deathtype != DEATH_ENDURANCE)
 					if(sound_allowed(MSG_BROADCAST, attacker))
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					if(!DEATH_ISWEAPON(deathtype, WEP_LASER) || attacker != self || self.health < 2 * CVAR(g_balance_laser_primary_damage) * CVAR(g_balance_selfdamagepercent) + 1)
