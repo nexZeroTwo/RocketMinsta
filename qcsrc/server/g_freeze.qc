@@ -144,6 +144,7 @@ entity Freeze_SpawnWaypoint(entity plr) {
     entity w = WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
+    w.waypointsprite_appeartime = time + Freeze_CVar("frozen_waypoint_delay");
     return w;
 }
 
