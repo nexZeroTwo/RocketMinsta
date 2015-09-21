@@ -1462,7 +1462,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 void Fire_ApplyDamage(entity e)
 {
-	float t, d, hi, ty;
+	float t, d, hi, ty, ar;
 
     if(time - e.fire_last < FIRE_DELAY)
         return;
@@ -1488,11 +1488,13 @@ void Fire_ApplyDamage(entity e)
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
+    ar = e.fire_owner.armorhitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
 	if(e.fire_hitsound && e.fire_owner)
 	{
 		e.fire_owner.hitsound = hi;
 		e.fire_owner.typehitsound = ty;
+        e.fire_owner.armorhitsound = ar;
 	}
 	e.fire_hitsound = TRUE;
 
