@@ -627,3 +627,5 @@ const vector eZ = '0 0 1';
 float(string url, float id) uri_get = #513;
 
 #define abs(f) fabs(f)
+
+const float M_PI = 3.14159265358979323846;

@@ -1201,6 +1201,7 @@ string autocvar_g_handgrenades_plasma_spread_xy;
 string autocvar_g_handgrenades_plasma_spread_z;
 string autocvar_g_handgrenades_plasma_spread_z_min;
 string autocvar_g_handgrenades_plasma_spread_z_min_randomfactor;
+
 string autocvar_g_handgrenades_plasma_takedamage;
 string autocvar_g_handgrenades_regen_damagepause;
 string autocvar_g_handgrenades_regen_frozenfactor;
@@ -1456,6 +1457,7 @@ float autocvar_g_nadgets_plasma_spread_xy;
 float autocvar_g_nadgets_plasma_spread_z;
 float autocvar_g_nadgets_plasma_spread_z_min;
 float autocvar_g_nadgets_plasma_spread_z_min_randomfactor;
+float autocvar_g_nadgets_plasma_spread_circle;
 string autocvar_g_nadgets_plasma_stacklimit;
 float autocvar_g_nadgets_regen;
 float autocvar_g_nadgets_regen_compensate;

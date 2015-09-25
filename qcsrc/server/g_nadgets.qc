@@ -395,8 +395,8 @@ void HG_Plasma_Projectile_Touch()
     spamsound(self, CHAN_PROJECTILE, "weapons/electro_bounce.wav", VOL_BASE, ATTN_NORM);
 }
 
-void HG_Plasma_Projectile() {
-	local entity proj;
+void HG_Plasma_Projectile(float kickangle) {
+	entity proj;
     vector kick;
     
 	proj = spawn();
@@ -416,17 +416,18 @@ void HG_Plasma_Projectile() {
 	setorigin(proj, self.origin);
     
 	proj.movetype = MOVETYPE_BOUNCE;
-    
-    kick_x = (random () - 0.5) * 2 * CVAR(g_nadgets_plasma_spread_xy);
-	kick_y = (random () - 0.5) * 2 * CVAR(g_nadgets_plasma_spread_xy);
-	kick_z = max(
-						CVAR(g_nadgets_plasma_spread_z)
-					*	random(),
-					
-						CVAR(g_nadgets_plasma_spread_z_min)
-					+ 	CVAR(g_nadgets_plasma_spread_z_min_randomfactor)
-					*	(random() - 0.5) * 2
-				);
+
+    if(CVAR(g_nadgets_plasma_spread_circle)) {
+        kick = CVAR(g_nadgets_plasma_spread_xy)    * v_forward * cos(kickangle) +
+               CVAR(g_nadgets_plasma_spread_xy)    * v_right   * sin(kickangle) +
+               CVAR(g_nadgets_plasma_spread_z_min) * v_up;
+    } else {
+        kick.x = (random () - 0.5) * 2 * CVAR(g_nadgets_plasma_spread_xy);
+        kick.y = (random () - 0.5) * 2 * CVAR(g_nadgets_plasma_spread_xy);
+        kick.z = max(cvar("g_nadgets_plasma_spread_z") * random(),
+                     CVAR(g_nadgets_plasma_spread_z_min) +
+                     CVAR(g_nadgets_plasma_spread_z_min_randomfactor) * (random() - 0.5) * 2);
+    }
 
     proj.velocity = kick + self.velocity;
 	proj.touch = HG_Plasma_Projectile_Touch;
@@ -456,9 +457,12 @@ void HG_Plasma_Explode() {
     
     if(self.hg_adept && CVAR(g_nadgets_plasma_adept_stun))
         return;
-    
+
+    vectorvectors(normalize([self.hg_lastvel.x, self.hg_lastvel.y, 0]));
+
     ++hg_plasma_group;
-    for (c = 0; c < CVAR(g_nadgets_plasma_projectile_count); c ++) HG_Plasma_Projectile();
+    for (c = 0; c < CVAR(g_nadgets_plasma_projectile_count); c ++)
+        HG_Plasma_Projectile(2 * M_PI * (c / CVAR(g_nadgets_plasma_projectile_count)));
 }
 
 void HG_Remote_Explode() {
@@ -633,8 +637,10 @@ void HG_Grenade_Touch() {
         } else if(self.hg_type == HG_REMOTE)
             goto troll;
         
-        if(self.hg_type == HG_PLASMA)
+        if(self.hg_type == HG_PLASMA) {
             self.velocity = '0 0 0';
+        }
+
         self.use();
     } else {
         vector normal = trace_plane_normal;
@@ -703,9 +709,9 @@ void HG_Grenade_Touch() {
                 self.velocity = '0 0 0';
 
                 ++hg_plasma_group;
-                for(var c = 0; c < pcount; ++c) {
-                    HG_Plasma_Projectile();
-                }
+
+                for(var c = 0; c < pcount; ++c)
+                    HG_Plasma_Projectile(2 * M_PI * (c / pcount));
 
                 self.velocity = oldvel;
             }
