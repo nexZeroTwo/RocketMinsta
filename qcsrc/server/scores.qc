@@ -234,12 +234,12 @@ float PlayerScore_SendEntity(entity to, float sendflags)
     return TRUE;
 }
 
-void PlayerScore_Clear(entity player)
+void PlayerScore_Clear(entity player, float force)
 {
 	entity sk;
 	float i;
 
-	if(teamscores_entities_count)
+	if(teamscores_entities_count && !force)
 		return;
 	if(g_lms) return;
 	if(g_arena) return;

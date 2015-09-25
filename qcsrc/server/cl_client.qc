@@ -741,7 +741,7 @@ void PutObserverInServer (void)
 	}
     
     if(!self.jb_specteam) {
-        PlayerScore_Clear(self); // clear scores when needed
+        PlayerScore_Clear(self, FALSE); // clear scores when needed
     
         if(g_nadgets) {
             if(!self.joinqueue)
@@ -1253,7 +1253,7 @@ void PutClientInServer (void)
 		self.BUTTON_ATCK = self.BUTTON_JUMP = self.BUTTON_ATCK2 = 0;
 
 		if(self.killcount == -666) {
-			PlayerScore_Clear(self);
+			PlayerScore_Clear(self, FALSE);
 			self.killcount = 0;
 		}
 
