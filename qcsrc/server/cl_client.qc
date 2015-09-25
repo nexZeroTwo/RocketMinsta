@@ -529,21 +529,26 @@ string CheckPlayerModel(string plyermodel) {
 }
 
 float Client_CalculateAlpha(entity plr, entity viewer) {
-    var sa = 1 - plr.hg_stealthalpha;
+    if(plr.deadflag != DEAD_NO || plr.frozen || plr.jb_isprisoned)
+        return 1;
 
+    var sa = 1 - plr.hg_stealthalpha;
     var stealth = Buffs_BuffPower(plr, BUFF_STEALTH);
+    var viewerIsPlr = (plr == viewer || (viewer.enemy == plr && viewer.classname == "spectator"));
 
     if(stealth)
         sa *= ((1 - stealth) + stealth * (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1)));
 
-    if(viewer) {
+    if(viewer && !viewerIsPlr) {
         if((teams_matter && viewer.team == plr.team) || 
            (viewer.hg_stealth && (!plr.buffpower_adept || viewer.buffpower_adept)) ||
            !viewer.iscreature)
             sa = 0.3 + 0.7 * sa;
     }
-    
-    if(sa <= 0)
+
+    if(viewerIsPlr && sa < 0.01)
+        sa = 0.01;
+    else if(sa <= 0)
         sa = -1;
 
     return sa;

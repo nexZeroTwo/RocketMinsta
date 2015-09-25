@@ -540,6 +540,9 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         if(check.classname == "spectator")
             check = check.enemy;
         
+        if(IsDifferentTeam(check, targ) && Client_CalculateAlpha(targ, e) < 0.15)
+            continue;
+
         if(CVAR(sv_showdamage_global) || check == attacker || check == targ) {
             float stype = htype & VDMG_TYPE_CLIENTMASK;
             

@@ -337,8 +337,14 @@ float CL_Weaponentity_CustomizeEntityForClient()
 		if(other.enemy == self.owner)
 			self.viewmodelforclient = other;
 
-    self.alpha = Client_CalculateAlpha(self.owner, self.viewmodelforclient);
+    self.alpha = Client_CalculateAlpha(self.owner, other);
 	return (self.alpha > 0);
+}
+
+float CL_ExterioirWeaponentity_CustomizeEntityForClient()
+{
+    self.alpha = Client_CalculateAlpha(self.owner, other);
+    return (self.alpha > 0);
 }
 
 float qcweaponanimation;
@@ -848,6 +854,7 @@ void CL_SpawnWeaponentity()
 	setorigin(self.exteriorweaponentity, '0 0 0');
 	self.exteriorweaponentity.angles = '0 0 0';
 	self.exteriorweaponentity.think = CL_ExteriorWeaponentity_Think;
+    self.exteriorweaponentity.customizeentityforclient = CL_ExterioirWeaponentity_CustomizeEntityForClient;
 	self.exteriorweaponentity.nextthink = time;
 
 };
