@@ -76,7 +76,7 @@ void IRC_Command_msg_call(string cmdline, float argc, float b, float s, string t
         return;
     }
     
-    float err = ((argv(0) == "notice")? IRC_Notice : IRC_Privmsg)
+    float err = (if(argv(0) == "notice") IRC_Notice else IRC_Privmsg)
                 (s, argv(1), substring(cmdline, argv_start_index(2), strlen(cmdline)));
                 
     if(err > 0) IRC_PutInBuffer(b, strcat(IRC_MSGPREFIX_ERROR, "/", argv(0), ": ",
@@ -118,7 +118,7 @@ void IRC_Command_part_call(string cmdline, float argc, float b, float s, string 
     }
     
     // XXX: add reason support to IRC_PartChannel?
-    IRC_PartChannel(s, ((argc > 1)? argv(1) : t));
+    IRC_PartChannel(s, (if(argc > 1) argv(1) else t));
 }
 
 void IRC_Command_connect_call(string cmdline, float argc, float b, float s, string t) {
@@ -184,7 +184,7 @@ void IRC_Command_quit_call(string cmdline, float argc, float b, float s, string 
         return;
     }
 
-    IRC_Quit(s, ((argc > 1)? substring(cmdline, argv_start_index(1), strlen(cmdline)) : string_null));
+    IRC_Quit(s, (if(argc > 1) substring(cmdline, argv_start_index(1), strlen(cmdline)) else string_null));
     if(argv(0) == "quit")
         IRC_TerminateSession(s);
 }
