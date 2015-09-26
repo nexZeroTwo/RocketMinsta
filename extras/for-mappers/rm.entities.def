@@ -281,6 +281,27 @@ The Adept Buff (Pink Team)
 */
 
 
+/*QUAKED item_buff_meodp (0.10 0.10 0.10) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff
+*/
+
+/*QUAKED item_buff_meodp_team1 (0.10 0.10 0.10) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Red Team)
+*/
+
+/*QUAKED item_buff_meodp_team2 (0.10 0.10 0.10) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_meodp_team3 (0.10 0.10 0.10) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_meodp_team4 (0.10 0.10 0.10) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Pink Team)
+*/
+
+
 /*QUAKED item_buff_random (0.5 0.5 0.5) (-16 -16 -16) (16 16 16)
 A random buff
 */

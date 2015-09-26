@@ -448,6 +448,7 @@ void(entity e, entity tagentity, string tagname) setattachment = #443; // attach
 .float button6;
 .float button7;
 .float button8;
+.float button9;
 //description:
 //set to the state of the +button3, +button4, +button5, +button6, +button7, and +button8 buttons from the client, this does not involve protocol changes (the extra 6 button bits were simply not used).
 //the exact mapping of protocol button bits on the server is:
@@ -1675,7 +1676,7 @@ float Q3SURFACEFLAG_FLESH = 64; // projectiles should do a fleshy effect (blood?
 //float Q3SURFACEFLAG_POINTLIGHT = 2048; // compiler hint (not important to qc)
 float Q3SURFACEFLAG_METALSTEPS = 4096; // walking on this surface should make metal step sounds
 float Q3SURFACEFLAG_NOSTEPS = 8192; // walking on this surface should not make footstep sounds
-//float Q3SURFACEFLAG_NONSOLID = 16384; // compiler hint (not important to qc)
+float Q3SURFACEFLAG_NONSOLID = 16384; // surface is non solid
 //float Q3SURFACEFLAG_LIGHTFILTER = 32768; // compiler hint (not important to qc)
 //float Q3SURFACEFLAG_ALPHASHADOW = 65536; // compiler hint (not important to qc)
 //float Q3SURFACEFLAG_NODLIGHT = 131072; // compiler hint (not important to qc)
@@ -1848,6 +1849,7 @@ string(float chars, string s, ...) strpad = #225;
 string(string info, string key, string value, ...) infoadd = #226;
 string(string info, string key) infoget = #227;
 float(string s1, string s2, float len) strncmp = #228;
+float(string s1, string s2) strcmp = #228;
 float(string s1, string s2) strcasecmp = #229;
 float(string s1, string s2, float len) strncasecmp = #230;
 
@@ -1962,3 +1964,33 @@ void(float pause) setpause = #531;
 //  See libircclient documentation for a list of events and their possible arguments, or play around with irc_eventlog
 
 ///// END DarkPlacesRM EXTENSIONS /////
+
+//DP_RM_CALLFUNCTIONEX
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+void(float idx, float val) CallFunctionEx_SetArgFloat = #150;
+void(float idx, float val) CallFunctionEx_SetArgInt = #151;
+void(float idx, vector val) CallFunctionEx_SetArgVector = #152;
+void(float idx, string val) CallFunctionEx_SetArgString = #153;
+void(float idx, entity val) CallFunctionEx_SetArgEntity = #153;
+void(string fname) CallFunctionEx = #154;
+float(string fname) CallFunctionEx_Float = #154;
+float(string fname, float castretval) CallFunctionEx_Float2 = #154;
+entity(string fname) CallFunctionEx_Entity = #154;
+vector(string fname) CallFunctionEx_Vector = #154;
+string(string fname) CallFunctionEx_String = #154;
+#define CallFunctionEx_Int(fname) CallFunctionEx_Float2(fname, TRUE)
+
+//DP_RM_GLOBALACCESS
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string) GlobalOfs = #170;
+float(string) GlobalType = #171;;
+float(float) GlobalInt = #172;
+float(float) GlobalFloat = #173;
+void(float, float) GlobalSetInt = #174;
+void(float, float) GlobalSetFloat = #175;
+string(string) GlobalGet = #176;
+float(string, string) GlobalSet = #177;

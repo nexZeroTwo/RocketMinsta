@@ -1,9 +1,3 @@
-#define spider_rocket_icon "gfx/spiderbot/rocket_ico.tga"
-#define spider_rocket_targ "gfx/spiderbot/target.tga"
-#define SPIDER_CROSS "textures/spiderbot/cross.tga"
-#define rkt_size 32
-#define rld_size_x 256
-#define rld_size_y 16
 
 entity porto;
 vector polyline[16];
@@ -85,21 +79,14 @@ void Porto_Draw()
 
 .float plasma_drawn;
 void Plasma_Draw() {
-    entity e, n, p = findchainfloat(cnt, PROJECTILE_ELECTRO);
-    string tex;
+    entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    string tex = "particles/zapper";
     
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
-        if(rm_teamlasers) switch(e.team) {
-            case COLOR_TEAM1: tex = "particles/hook_red";       break;
-            case COLOR_TEAM2: tex = "particles/hook_blue";      break;
-            case COLOR_TEAM3: tex = "particles/hook_yellow";    break;
-            case COLOR_TEAM4: tex = "particles/hook_pink";      break;
-            default         : tex = "particles/hook_blue";      break;
-        }   else              tex = "particles/hook_blue";
+        vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
         for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
-            float a; for(a = 0; a < 2; ++a) if(random() > (0.5 + 0.1 * a))
-                Draw_CylindricLine(n.origin + randomvec() * 5, e.origin + randomvec() * 5, 20 + a * 5, tex, 0.1, random(), '1 1 1', 1, DRAWFLAG_ADDITIVE);
+            Draw_CylindricLine(n.origin, e.origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE);
             //n.plasma_drawn = time;
         }
         
@@ -160,9 +147,9 @@ vector GetCurrentFov(float fov)
 {
 	float zoomsensitivity, zoomspeed, zoomfactor, zoomdir;
 
-	zoomsensitivity = cvar("cl_zoomsensitivity");
-	zoomfactor = cvar("cl_zoomfactor");
-	zoomspeed = cvar("cl_zoomspeed");
+	zoomsensitivity = CVAR(cl_zoomsensitivity);
+	zoomfactor = CVAR(cl_zoomfactor);
+	zoomspeed = CVAR(cl_zoomspeed);
 	
 	if(zoomspeed 	!= oldzoomspeed || 
 	   zoomfactor	!= oldzoomfactor )
@@ -199,7 +186,7 @@ vector GetCurrentFov(float fov)
 	else
 	{
 		zoomdir = button_zoom;
-		if(getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
+		if(!g_balance_nex_secondary && getstati(STAT_ACTIVEWEAPON) == WEP_NEX) // do NOT use switchweapon here
 			zoomdir += button_attack2;
 	}
 
@@ -357,15 +344,7 @@ float TrueAimCheck()
 	shottype = EnemyHitCheck();
 	if(shottype != SHOTTYPE_HITWORLD)
 		return shottype;
-	
-#if 0
-	// FIXME WHY DOES THIS NOT WORK FOR THE ROCKET LAUNCHER?
-	// or rather, I know why, but see no fix
-	if(vlen(trace_endpos - trueaimpoint) > vlen(ma) + vlen(mi) + 1)
-		// yes, this is an ugly hack... but it seems good enough to find out whether the test hits the same place as the initial trace
-		return SHOTTYPE_HITOBSTRUCTION;
-#endif
-	
+
 	return SHOTTYPE_HITWORLD;
 }
 
@@ -383,7 +362,7 @@ void FPSCounter_Update() {
 	fps_frames++;
 }
 
-void CSQC_common_hud(void);
+void Sbar_Draw(void);
 
 float oldfov;
 
@@ -395,33 +374,63 @@ float Sbar_WouldDrawScoreboard ();
 float view_set;
 float camera_mode;
 string NextFrameCommand;
-void CSQC_spider_HUD();
 
 float hg_nadecount;
+float hg_nadecount2;
 float hg_nadecount_firstframepassed;
 
+float hg_lastgain;
+float hg_totalgaintime;
+float hg_gaincount;
+
 void HG_NadeGainSound() {
-    float c = getstati(STAT_HGAMMO);
+    float c1 = getstati(STAT_HGAMMO);
+    float c2 = getstati(STAT_HGAMMO2);
+    float sndplayed = FALSE;
     
-    if(hg_nadecount_firstframepassed)
-    if(c != hg_nadecount) {
-        hgregen = 1;
-        hg_nadecount_update = time;
-        if(c > hg_nadecount)
-            localcmd("play2 misc/poweroff\n");
+    if(hg_nadecount_firstframepassed) {
+        if(c1 != hg_nadecount) {
+            hgregen = 1;
+            hg_nadecount_update = time;
+            if(c1 > hg_nadecount) {
+                localcmd("play2 misc/poweroff\n");
+                sndplayed = TRUE;
+
+                if(cvar("developer")) {
+                    if(hg_lastgain) {
+                        var diff = time - hg_lastgain;
+                        print("Gain time: ", ftos(diff), "\n");
+                        hg_gaincount++;
+                        hg_totalgaintime += diff;
+                        print("Avg. gain time: ", ftos(hg_totalgaintime / hg_gaincount), "\n");
+                    }
+
+                    hg_lastgain = time;
+                }
+            }
+        }
+
+        if(c2 != hg_nadecount2) {
+            hgregen2 = 1;
+            hg_nadecount2_update = time;
+            if(c2 > hg_nadecount2 && !sndplayed)
+                localcmd("play2 misc/poweroff\n");
+        }
     }
 
     hg_nadecount_firstframepassed = TRUE;
-    hg_nadecount = c;
+    hg_nadecount = c1;
+    hg_nadecount2 = c2;
 }
 
 void CSQC_UpdateView(float w, float h)
 {
+	fps_friendly = CVAR(rm_fps_friendly);
 	entity e;
 	float fov;
 	float f, i, j;
 	vector v;
-    
+
     HG_NadeGainSound();
 
 	dprint_load();
@@ -489,7 +498,7 @@ void CSQC_UpdateView(float w, float h)
 	CheckForGamestartChange();
 	maptimeAnnouncer();
 
-	fov = cvar("fov");
+	fov = CVAR(fov);
 	
 	if(fov != oldfov)
 	{
@@ -518,14 +527,14 @@ void CSQC_UpdateView(float w, float h)
 	}
 
 	float m;
-	m = (1 - cvar("_menu_alpha"));
-	sbar_alpha_fg = cvar("sbar_alpha_fg" ) /* * (1 - cvar("_menu_alpha"))*/;
-	sbar_currentammo = cvar("sbar_showcurrentammo");
-	sbar_hudselector = cvar("sbar_hudselector");
-	sbar_hud_accuracy = cvar("sbar_hud_accuracy");
-	ColorTranslateMode = cvar("cl_stripcolorcodes");
+	m = (1 - CVAR(_menu_alpha));
+	sbar_alpha_fg = CVAR(sbar_alpha_fg) /* * (1 - CVAR(_menu_alpha))*/;
+	sbar_currentammo = CVAR(sbar_showcurrentammo);
+	sbar_hudselector = CVAR(sbar_hudselector);
+	sbar_hud_accuracy = CVAR(sbar_hud_accuracy);
+	ColorTranslateMode = CVAR(cl_stripcolorcodes);
 	activeweapon = getstati(STAT_SWITCHWEAPON);
-	f = cvar("teamplay");
+	f = CVAR(teamplay);
 	if(f != teamplay)
 	{
 		teamplay = f;
@@ -545,9 +554,9 @@ void CSQC_UpdateView(float w, float h)
 	R_SetView(VF_DRAWWORLD, 1);
 
 	// Set the console size vars
-	vid_conwidth = cvar("vid_conwidth");
-	vid_conheight = cvar("vid_conheight");
-	vid_pixelheight = cvar("vid_pixelheight");
+	vid_conwidth = CVAR(vid_conwidth);
+	vid_conheight = CVAR(vid_conheight);
+	vid_pixelheight = CVAR(vid_pixelheight);
 
 	if(fovlock > -1)
 		R_SetView(VF_FOV, GetCurrentFov(fovlock));
@@ -566,7 +575,7 @@ void CSQC_UpdateView(float w, float h)
 	if(tempcamera) {
 		if(!camera_drawviewmodel_locked) {
 			camera_drawviewmodel_locked = TRUE;
-			camera_drawviewmodel_backup = cvar("r_drawviewmodel");
+			camera_drawviewmodel_backup = CVAR(r_drawviewmodel);
 		}
 		
 		R_SetView(VF_ORIGIN, camera_origin);
@@ -575,7 +584,7 @@ void CSQC_UpdateView(float w, float h)
 		camera_drawviewmodel_locked = FALSE;
 		cvar_set("r_drawviewmodel", ftos(camera_drawviewmodel_backup));
 	} else if(camera_active) { // Camera for demo playback
-		if(cvar("camera_enable"))
+		if(CVAR(camera_enable))
 			CSQC_Demo_Camera();
 		else
 		{
@@ -585,13 +594,13 @@ void CSQC_UpdateView(float w, float h)
 		}
 	}
 #ifdef CAMERATEST
-	else if(cvar("camera_enable"))
+	else if(CVAR(camera_enable))
 #else
-	else if(cvar("camera_enable") && isdemo())
+	else if(CVAR(camera_enable) && isdemo())
 #endif
 	{
 		// Enable required Darkplaces cvars
-		chase_active_backup = cvar("chase_active");
+		chase_active_backup = CVAR(chase_active);
 		cvar_set("chase_active", "2");
 		cvar_set("cl_demo_mousegrab", "1");
 		camera_active = TRUE;
@@ -607,22 +616,16 @@ void CSQC_UpdateView(float w, float h)
 	R_SetView(VF_DRAWENGINESBAR, 0);
 
 	// fetch this one only once per frame
-	sbar_showbinds = cvar("sbar_showbinds");
-	sbar_showbinds_limit = cvar("sbar_showbinds_limit");
-
-	// Update the mouse position
-	/*
-	mousepos_x = vid_conwidth;
-	mousepos_y = vid_conheight;
-	mousepos = mousepos*0.5 + getmousepos();
-	*/
+	sbar_showbinds = CVAR(sbar_showbinds);
+	sbar_showbinds_limit = CVAR(sbar_showbinds_limit);
 
 	e = self;
 	for(self = world; (self = nextent(self)); )
 		if(self.draw)
 			self.draw();
 	self = e;
-    Plasma_Draw();
+    if (!fps_friendly)
+        Plasma_Draw();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();
@@ -632,24 +635,8 @@ void CSQC_UpdateView(float w, float h)
 	// next R_RenderScene call
 	drawstring('0 0 0', "", '1 1 0', '1 1 1', 0, 0);
 
-	// Draw the mouse cursor
-	// NOTE: drawpic must happen after R_RenderScene for some reason
-	//drawpic(getmousepos(), "gfx/cursor.tga", '11 14 0', '1 1 1', 1, 0);
-	//drawstring('50 50', ftos(game), '10 10 0', '1 1 1', 1, 0);
-	//self = edict_num(player_localnum);
-	//drawstring('0 0', vtos(pmove_org), '8 8 0', '1 1 1', 1, 0);
-	//drawstring('0 8', strcat("ORG: ", vtos(self.origin), " state: ", ftos(self.ctf_state), " HP: ", ftos(self.health)), '8 8 0', '1 1 1', 1, 0);
-	// as long as the ctf part isn't in, this is useless
-	if(menu_visible)
-		menu_show();
-
-	/*if(gametype == GAME_CTF)
-	{
-		ctf_view();
-	} else */
-
 	// draw 2D entities
-	
+
     VisualDamage_PreDraw();
 	e = self;
 	for(self = world; (self = nextent(self)); )
@@ -657,6 +644,8 @@ void CSQC_UpdateView(float w, float h)
 			self.draw2d();
 	self = e;
 	
+    ShowNames_DrawAll();
+
 	// draw radar
 	if(
 		ons_showmap
@@ -664,10 +653,10 @@ void CSQC_UpdateView(float w, float h)
 		(
 			!scoreboard_active
 			&&
-			cvar_string("cl_teamradar") != "0"
+			CVAR_STR(cl_teamradar) != "0"
 			&&
 			(
-				cvar("cl_teamradar") == 2
+				stof(CVAR_STR(cl_teamradar)) == 2
 				||
 				teamplay
 			)
@@ -676,167 +665,154 @@ void CSQC_UpdateView(float w, float h)
 		if not(tempcamera) teamradar_view();
 
 	// draw sbar
- 	if(cvar("r_letterbox") == 0) {
-		if (cvar("cl_showpressedkeys")) { // draw pressed keys when spectating and playing
-			if(spectatee_status > 0 || cvar("cl_showpressedkeys") >= 2)
+ 	if(CVAR(r_letterbox) == 0) {
+		if (CVAR(cl_showpressedkeys)) { // draw pressed keys when spectating and playing
+			if(spectatee_status > 0 || CVAR(cl_showpressedkeys) >= 2)
 				Sbar_DrawPressedKeys();
 		}
 		
-		if (cvar("cl_showspeed"))
+		if (CVAR(cl_showspeed))
 			Sbar_ShowSpeed();
-		if (cvar("cl_showacceleration"))
+		if (CVAR(cl_showacceleration))
 			Sbar_ShowAcceleration();
+		if (CVAR(cl_lowammowarnings))
+			Sbar_ShowLowammo();
 		
  		Sbar_DrawCenterPrint(); // draw centerprint messages even if viewsize >= 120
 	}
 
-    float hud;
-    hud = getstati(STAT_HUD);
-    if(hud == HUD_SPIDERBOT)
-    {
-        vector sz;
-        CSQC_spider_HUD();
-        sz = drawgetimagesize(SPIDER_CROSS);
-        sz_x *= cvar_or("cl_vehicle_spiderbot_cross_size",1);
-        sz_y *= cvar_or("cl_vehicle_spiderbot_cross_size",1);
-        drawpic('0.5 0 0' * (vid_conwidth - sz_x) + '0 0.5 0' * (vid_conheight - sz_y), SPIDER_CROSS, sz, '1 1 1', cvar_or("cl_vehicle_spiderbot_cross_alpha",0.6), DRAWFLAG_NORMAL);
-    }
-    else
-    {
-        if(cvar("r_letterbox") == 0)
-            if(cvar("viewsize") < 120)
-				CSQC_common_hud();
+    if(!CVAR(r_letterbox))
+        if(CVAR(viewsize) < 120)
+            Sbar_Draw();
 
-        // crosshair goes VERY LAST
-        if not(tempcamera)
-        if(spectatee_status != -1)
-        if(!scoreboard_active && !ons_showmap && !camera_active) {
-			// TrueAim check
-			float shottype;
-			float bullets, ring_scale;
-			// wcross_origin = '0.5 0 0' * vid_conwidth + '0 0.5 0' * vid_conheight;
-			wcross_origin = project_3d_to_2d(view_origin + MAX_SHOT_DISTANCE * view_forward);
-			wcross_origin_z = 0;
-            if(cvar("crosshair_hittest"))
-			{
-				vector wcross_oldorigin;
-				wcross_oldorigin = wcross_origin;
-                shottype = TrueAimCheck();
-				if(shottype == SHOTTYPE_HITWORLD)
-				{
-					v = wcross_origin - wcross_oldorigin;
-					v_x /= vid_conwidth;
-					v_y /= vid_conheight;
-					if(vlen(v) > 0.01)
-						shottype = SHOTTYPE_HITOBSTRUCTION;
-				}
-				if(!cvar("crosshair_hittest_showimpact"))
-					wcross_origin = wcross_oldorigin;
-			}
-            else
-                shottype = SHOTTYPE_HITWORLD;
+    // crosshair goes VERY LAST
+    if not(tempcamera)
+    if(spectatee_status != -1)
+    if(!scoreboard_active && !ons_showmap && !camera_active) {
+        // TrueAim check
+        float shottype;
+        float bullets, ring_scale;
+        wcross_origin = project_3d_to_2d(view_origin + MAX_SHOT_DISTANCE * view_forward);
+        wcross_origin_z = 0;
+        if(CVAR(crosshair_hittest))
+        {
+            vector wcross_oldorigin;
+            wcross_oldorigin = wcross_origin;
+            shottype = TrueAimCheck();
+            if(shottype == SHOTTYPE_HITWORLD)
+            {
+                v = wcross_origin - wcross_oldorigin;
+                v_x /= vid_conwidth;
+                v_y /= vid_conheight;
+                if(vlen(v) > 0.01)
+                    shottype = SHOTTYPE_HITOBSTRUCTION;
+            }
+            if(!CVAR(crosshair_hittest_showimpact))
+                wcross_origin = wcross_oldorigin;
+        }
+        else
+            shottype = SHOTTYPE_HITWORLD;
 
-            string wcross_style;
-            wcross_style = cvar_string("crosshair");
+        string wcross_style;
+        wcross_style = CVAR_STR(crosshair);
 
-            if (wcross_style != "0") {
-                vector wcross_color, wcross_size;
-                string wcross_wep, wcross_name;
-                float wcross_alpha, wcross_sizefloat;
+        if (wcross_style != "0") {
+            vector wcross_color, wcross_size;
+            string wcross_wep, wcross_name;
+            float wcross_alpha, wcross_sizefloat;
 
-                if(rm_crosshealth) {
-                    vector x = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
-                    wcross_color = healthcolor(x_x);
-                } else {
-                    wcross_color_x = cvar("crosshair_color_red");
-                    wcross_color_y = cvar("crosshair_color_green");
-                    wcross_color_z = cvar("crosshair_color_blue");
-                }
-                
-                wcross_alpha = cvar("crosshair_color_alpha") * m * (1 - sbar_scoreboard_fade_alpha);
-                wcross_sizefloat = cvar("crosshair_size") * m * (1 - sbar_scoreboard_fade_alpha);
-                if (cvar("crosshair_per_weapon")) {
-                    e = get_weaponinfo(activeweapon);
-                    if (e && e.netname != "")
+            if(rm_crosshealth) {
+                vector x = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+                wcross_color = healthcolor(x_x);
+            } else {
+                wcross_color_x = CVAR(crosshair_color_red);
+                wcross_color_y = CVAR(crosshair_color_green);
+                wcross_color_z = CVAR(crosshair_color_blue);
+            }
+            
+            wcross_alpha = CVAR(crosshair_color_alpha) * m * (1 - sbar_scoreboard_fade_alpha);
+            wcross_sizefloat = CVAR(crosshair_size) * m * (1 - sbar_scoreboard_fade_alpha);
+            if (CVAR(crosshair_per_weapon)) {
+                e = get_weaponinfo(activeweapon);
+                if (e && e.netname != "")
+                {
+                    wcross_wep = e.netname;
+                    wcross_style = cvar_string(strcat("crosshair_", wcross_wep));
+                    if(wcross_style == "")
+                        wcross_style = e.netname;
+
+                    if(!CVAR(crosshair_color_override))
                     {
-                        wcross_wep = e.netname;
-                        wcross_style = cvar_string(strcat("crosshair_", wcross_wep));
-                        if(wcross_style == "")
-                            wcross_style = e.netname;
+                        wcross_color_x = cvar(strcat("crosshair_", wcross_wep, "_color_red"));
+                        wcross_color_y = cvar(strcat("crosshair_", wcross_wep, "_color_green"));
+                        wcross_color_z = cvar(strcat("crosshair_", wcross_wep, "_color_blue"));
+                    }
 
-                        if(!cvar("crosshair_color_override"))
-                        {
-                            wcross_color_x = cvar(strcat("crosshair_", wcross_wep, "_color_red"));
-                            wcross_color_y = cvar(strcat("crosshair_", wcross_wep, "_color_green"));
-                            wcross_color_z = cvar(strcat("crosshair_", wcross_wep, "_color_blue"));
+                    wcross_alpha *= cvar(strcat("crosshair_", wcross_wep, "_color_alpha"));
+                    wcross_sizefloat *= cvar(strcat("crosshair_", wcross_wep, "_size"));
+                }
+            }
+
+            wcross_name = strcat("gfx/crosshair", wcross_style);
+
+            if(shottype == SHOTTYPE_HITENEMY)
+                wcross_sizefloat *= CVAR(crosshair_hittest); // is not queried if hittest is 0
+            if(shottype == SHOTTYPE_HITTEAM)
+                wcross_sizefloat /= CVAR(crosshair_hittest); // is not queried if hittest is 0
+
+            wcross_size = drawgetimagesize(wcross_name);
+            wcross_size_x *= wcross_sizefloat;
+            wcross_size_y *= wcross_sizefloat;
+            
+            // ring around crosshair representing bullets left in camping rifle clip
+            float bullet, maxbullets, distance = 14;
+            maxbullets = getstati(STAT_BULLETS_MAX);
+            if (activeweapon == WEP_CAMPINGRIFLE)
+            {
+                ring_scale = CVAR(crosshair_campingrifle_ring_size) * (10 / 128);
+                bullets = bound(0, getstati(STAT_BULLETS_LOADED), maxbullets);
+            }
+            else
+                bullets = 0;
+            
+            if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active)))
+            {
+                wcross_alpha *= 0.04 * 0.75;
+                for(i = -2; i <= 2; ++i)
+                    for(j = -2; j <= 2; ++j)
+                    {
+                        if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                            float b_angle = PI*2*(bullet/maxbullets);
+                            drawpic
+                            (
+                                distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                                wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j),
+                                "gfx/hud/rifle_ring",
+                                wcross_size * ring_scale,
+                                wcross_color,
+                                wcross_alpha,
+                                DRAWFLAG_NORMAL
+                            );
                         }
-
-                        wcross_alpha *= cvar(strcat("crosshair_", wcross_wep, "_color_alpha"));
-                        wcross_sizefloat *= cvar(strcat("crosshair_", wcross_wep, "_size"));
+                        drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
                     }
+            }
+            else
+            {
+                if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
+                    float b_angle = PI*2*(bullet/maxbullets);
+                    drawpic
+                    (
+                        distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
+                        wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale),
+                        "gfx/hud/rifle_ring",
+                        wcross_size * ring_scale,
+                        wcross_color,
+                        wcross_alpha,
+                        DRAWFLAG_NORMAL
+                    );
                 }
-
-                wcross_name = strcat("gfx/crosshair", wcross_style);
-
-				if(shottype == SHOTTYPE_HITENEMY)
-					wcross_sizefloat *= cvar("crosshair_hittest"); // is not queried if hittest is 0
-				if(shottype == SHOTTYPE_HITTEAM)
-					wcross_sizefloat /= cvar("crosshair_hittest"); // is not queried if hittest is 0
-
-                wcross_size = drawgetimagesize(wcross_name);
-                wcross_size_x *= wcross_sizefloat;
-                wcross_size_y *= wcross_sizefloat;
-				
-				// ring around crosshair representing bullets left in camping rifle clip
-                float bullet, maxbullets, distance = 14;
-                maxbullets = getstati(STAT_BULLETS_MAX);
-				if (activeweapon == WEP_CAMPINGRIFLE)
-				{
-					ring_scale = cvar("crosshair_campingrifle_ring_size") * (10 / 128);
-					bullets = bound(0, getstati(STAT_BULLETS_LOADED), maxbullets);
-				}
-				else
-					bullets = 0;
-                
-                if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && cvar("crosshair_hittest_blur") && !cvar("chase_active")))
-                {
-                    wcross_alpha *= 0.04 * 0.75;
-                    for(i = -2; i <= 2; ++i)
-                        for(j = -2; j <= 2; ++j)
-						{
-							if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
-                                float b_angle = PI*2*(bullet/maxbullets);
-								drawpic
-                                (
-                                    distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
-                                    wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j),
-                                    "gfx/hud/rifle_ring",
-                                    wcross_size * ring_scale,
-                                    wcross_color,
-                                    wcross_alpha,
-                                    DRAWFLAG_NORMAL
-                                );
-                            }
-                            drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
-						}
-                }
-                else
-                {
-					if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
-                        float b_angle = PI*2*(bullet/maxbullets);
-						drawpic
-                        (
-                            distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
-                            wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale),
-                            "gfx/hud/rifle_ring",
-                            wcross_size * ring_scale,
-                            wcross_color,
-                            wcross_alpha,
-                            DRAWFLAG_NORMAL
-                        );
-                    }
-                    drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
-                }
+                drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
             }
         }
     }
@@ -855,8 +831,8 @@ void CSQC_UpdateView(float w, float h)
 		else
 			drawfill('0 0 0', position, '0 0 0', sf_a, DRAWFLAG_NORMAL);
 	}
-	
-	DPRM_Draw2D();
+
+    NS_Draw();
 	
 	if(NextFrameCommand)
 	{
@@ -868,10 +844,8 @@ void CSQC_UpdateView(float w, float h)
 	if(cs_project_is_b0rked == 0)
 	{
 		string w0, h0;
-		w0 = cvar_string("vid_conwidth");
-		h0 = cvar_string("vid_conheight");
-		//R_SetView(VF_VIEWPORT, '0 0 0', '640 480 0');
-		//R_SetView(VF_FOV, '90 90 0');
+		w0 = ftos(CVAR(vid_conwidth));
+		h0 = ftos(CVAR(vid_conheight));
 		R_SetView(VF_ORIGIN, '0 0 0');
 		R_SetView(VF_ANGLES, '0 0 0');
 		R_SetView(VF_PERSPECTIVE, 1);
@@ -905,89 +879,6 @@ void CSQC_UpdateView(float w, float h)
 	traceline('0 0 0', '0 0 0', MOVE_WORLDONLY, world);
 }
 
-void Sbar_Draw();
-void CSQC_spider_HUD()
-{
-    float rockets,reload,heat,hp,shield,i;
-    vector p,pp;
-
-    rockets = getstati(STAT_SPIDERBOT_ROCKETS);
-    heat    = min(getstatf(STAT_SPIDERBOT_HEAT),1);
-    reload  = min(getstatf(STAT_SPIDERBOT_RELOAD),1);
-    hp      = min(getstatf(STAT_SPIDERBOT_HEALTH),1);
-    shield  = min(getstatf(STAT_SPIDERBOT_SHIELD),1);
-
-    // Draw health bar
-    p = '0.5 0 0' * (vid_conwidth - (rkt_size * 8));
-    p = p + '0 1 0' * vid_conheight - '0 32 0';
-    //pp = ('0 1 0' * hp) + ('1 0 0' * (1-hp));
-    drawfill(p, '256 0 0' * shield + '0 8 0' , '0.5 0.5 1', 0.75, DRAWFLAG_NORMAL);
-    p_y += 8;
-    drawfill(p, '256 0 0' * hp + '0 8 0' , '0 1 0', 0.75, DRAWFLAG_NORMAL);
-    p_x += 256 * hp;
-    drawfill(p, '256 0 0' * (1-hp) + '0 8 0' , '0 0 0', 0.75, DRAWFLAG_NORMAL);
-
-    // Draw minigun heat indicator
-    p = '0.5 0 0' * (vid_conwidth - 256);
-    p = p + '0 1 0' * vid_conheight - '0 34  0';
-    drawfill(p, '256 0 0' * (1-heat) + '0 2 0' ,'0 0 1', 0.5, DRAWFLAG_NORMAL);
-    p_x += 256 * (1-heat);
-    drawfill(p, '256 0 0' * heat  + '0 2 0' , '1 0 0', 0.5, DRAWFLAG_NORMAL);
-
-    // Draw rocket icons for loaded/empty tubes.
-    pp = '0.5 0 0' * (vid_conwidth - (rkt_size * 8));
-    pp += '0 1 0' * vid_conheight - '0 64 0';
-    for(i = 0; i < 8; ++i)
-    {
-        p = pp + '1 0 0' * (rkt_size * i);
-        if(rockets == 8)
-        {
-            if(floor(reload * 8) == i)
-            {
-                drawpic(p, spider_rocket_icon, '1 1 0' * rkt_size, '1 0 0' + '0 1 0' * ((reload*8)-i), 0.75 , DRAWFLAG_NORMAL);
-            }
-            else if(i < reload * 8)
-                drawpic(p, spider_rocket_icon, '1 1 0' * rkt_size, '1 1 0', 0.75 , DRAWFLAG_NORMAL);
-            else
-                drawpic(p, spider_rocket_icon, '1 1 0' * rkt_size, '0.5 0.5 0.5', 0.75, DRAWFLAG_NORMAL);
-        }
-        else
-        {
-            if(i < rockets)
-                drawpic(p, spider_rocket_icon, '1 1 0' * rkt_size, '0 0 0', 0.25, DRAWFLAG_NORMAL);
-            else
-                drawpic(p, spider_rocket_icon, '1 1 0' * rkt_size, '0 1 0' * reload, 0.75, DRAWFLAG_NORMAL);
-        }
-    }
-
-	if (sb_showscores)
-	{
-		Sbar_DrawScoreboard();
-		Sbar_DrawCenterPrint();
-	}
-
-}
-void CSQC_common_hud(void)
-{
-
-	// Sbar_SortFrags(); done in Sbar_Draw
-    float hud;
-    hud = getstati(STAT_HUD);
-
-    //hud = 10;
-    switch(hud)
-    {
-        case HUD_NORMAL:
-            Sbar_Draw();
-            break;
-
-        case HUD_SPIDERBOT:
-            CSQC_spider_HUD();
-            break;
-    }
-}
-
-
 // following vectors must be global to allow seamless switching between camera modes
 vector camera_offset, current_camera_offset, mouse_angles, current_angles, current_origin, current_position;
 void CSQC_Demo_Camera()
@@ -995,7 +886,7 @@ void CSQC_Demo_Camera()
 	float speed, attenuation, dimensions;
 	vector tmp, delta;
 
-	if( cvar("camera_reset") || !camera_mode )
+	if( CVAR(camera_reset) || !camera_mode )
 	{
 		camera_offset = '0 0 0';
 		current_angles = '0 0 0';
@@ -1011,9 +902,9 @@ void CSQC_Demo_Camera()
 
 	// Camera angles
 	if( camera_roll )
-		mouse_angles_z += camera_roll * cvar("camera_speed_roll");
+		mouse_angles_z += camera_roll * CVAR(camera_speed_roll);
 
-	if(cvar("camera_look_player"))
+	if(CVAR(camera_look_player))
 	{
 		local vector dir;
 		local float n;
@@ -1027,7 +918,7 @@ void CSQC_Demo_Camera()
 	else
 	{
 		tmp = getmousepos() * 0.1;
-		if(vlen(tmp)>cvar("camera_mouse_treshold"))
+		if(vlen(tmp)>CVAR(camera_mouse_treshold))
 		{
 			mouse_angles_x += tmp_y * cos(mouse_angles_z * DEG2RAD) + (tmp_x * sin(mouse_angles_z * DEG2RAD));
 			mouse_angles_y -= tmp_x * cos(mouse_angles_z * DEG2RAD) + (tmp_y * -sin(mouse_angles_z * DEG2RAD));
@@ -1046,10 +937,10 @@ void CSQC_Demo_Camera()
 	if(mouse_angles_y > 60 && current_angles_y < -60)
 		delta = '0 -360 0';
 
-	if(cvar("camera_look_player"))
-		attenuation = cvar("camera_look_attenuation");
+	if(CVAR(camera_look_player))
+		attenuation = CVAR(camera_look_attenuation);
 	else
-		attenuation = cvar("camera_speed_attenuation");
+		attenuation = CVAR(camera_speed_attenuation);
 
 	attenuation = 1 / max(1, attenuation);
 	current_angles += (mouse_angles - current_angles + delta) * attenuation;
@@ -1067,7 +958,7 @@ void CSQC_Demo_Camera()
 	{
 		tmp_x = camera_direction_x * cos(current_angles_y * DEG2RAD);
 		tmp_y = camera_direction_x * sin(current_angles_y * DEG2RAD);
-		if( cvar("camera_forward_follows") && !cvar("camera_look_player") )
+		if( CVAR(camera_forward_follows) && !CVAR(camera_look_player) )
 			tmp_z = camera_direction_x * -sin(current_angles_x * DEG2RAD);
 		++dimensions;
 	}
@@ -1086,10 +977,10 @@ void CSQC_Demo_Camera()
 		++dimensions;
 	}
 
-	if(cvar("camera_free"))
-		speed = cvar("camera_speed_free");
+	if(CVAR(camera_free))
+		speed = CVAR(camera_speed_free);
 	else
-		speed = cvar("camera_speed_chase");
+		speed = CVAR(camera_speed_chase);
 
 	if(dimensions)
 	{
@@ -1100,7 +991,7 @@ void CSQC_Demo_Camera()
 	current_camera_offset += (camera_offset - current_camera_offset) * attenuation;
 
 	// Camera modes
-	if( cvar("camera_free") )
+	if( CVAR(camera_free) )
 	{
 		if ( camera_mode == CAMERA_CHASE )
 		{
@@ -1122,7 +1013,7 @@ void CSQC_Demo_Camera()
 
 		camera_mode = CAMERA_CHASE;
 
-		if(cvar("camera_chase_smoothly"))
+		if(CVAR(camera_chase_smoothly))
 			current_origin += (view_origin - current_origin) * attenuation;
 		else
 			current_origin = view_origin;

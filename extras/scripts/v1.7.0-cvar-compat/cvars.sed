@@ -31,7 +31,6 @@ s/g_explosive_allow_fakeflag/sv_fakeflag/g
 s/g_explosive_secretvotes/sv_vote_secretcommands/g
 s/g_explosive_allowmadoka/sv_madoka/g
 s/g_explosive_oldnex/sv_oldnex/g
-s/g_explosive_extendfragmessages/sv_extendfragmessages/g
 s/g_explosive_powerupsonbases/g_balance_powerupsonbases/g
 s/g_explosive_spawnclosetoteam/g_spawnclosetoteam/g
 s/g_explosive_allow_hidecountry/sv_hidecountry/g
@@ -53,3 +52,5 @@ s/g_explosive_hidedamage/sv_hidedamage/g
 s/g_explosive_ctf/g_ctf/g
 s/g_explosive_/g_rocketminsta_/g
 s/g_handgrenades/g_nadgets/g
+s/g_\(nadgets\|handgrenades\)_\([a-zA-Z]*\)_regenscale/g_nadgets_\2_regen_scale/g
+s/g_\(nadgets\|handgrenades\)_\([a-zA-Z]*\)_stacklimit/g_nadgets_\2_regen_limit/g

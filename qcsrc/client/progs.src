@@ -8,6 +8,9 @@ Defs.qc
 ../common/rm_auto.qh
 ../common/util-pre.qh
 
+autocvars.qh
+../common/autocvars.qh
+
 csqc_constants.qc
 ../common/constants.qh
 csqc_builtins.qc
@@ -18,7 +21,6 @@ csqc_builtins.qc
 ../common/dprm.qh
 ../common/nadgets.qh
 ../common/buffs.qh
-dprm.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -29,6 +31,8 @@ prandom.qh
 bgmscript.qh
 visualdamage.qh
 radio.qh
+buffs.qh
+message.qh
 
 ../common/damagetracker.qh
 main.qh
@@ -38,11 +42,10 @@ sortlist.qc
 miscfunctions.qc
 teamplay.qc
 
-ctf.qc
-
 svnstuff.qc
 sbar.qc
 mapvoting.qc
+nadgetselect.qc
 
 rubble.qc
 hook.qc
@@ -57,11 +60,13 @@ wall.qc
 modeleffects.qc
 visualdamage.qc
 radio.qc
+zapper.qc
+buffs.qc
+message.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc
 
-//vehicles/spiderbot.qc
 shownames.qh
 shownames.qc
 Main.qc
@@ -75,7 +80,6 @@ prandom.qc
 bgmscript.qc
 
 ../common/dprm.qc
-dprm.qc
 ../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc

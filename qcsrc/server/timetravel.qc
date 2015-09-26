@@ -37,6 +37,12 @@
         TIMETRAVEL_HANDLE(jb_isprisoned,                Float)      \
         TIMETRAVEL_HANDLE(jb_prisontime,                Time)       \
         TIMETRAVEL_HANDLE(disableclientprediction,      Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_ticks,              Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_healthpool,         Float)      \
+        TIMETRAVEL_HANDLE(buff_vamp_nexttick,           Time)       \
+        TIMETRAVEL_HANDLE(buff_endur_ticks,             Float)      \
+        TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
+        TIMETRAVEL_HANDLE(buff_endur_nexttick,          Time)       \
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
 
 .float tt_weaponentity_state;
@@ -83,7 +89,12 @@ entity TimeTravel_SaveMoment(entity e) {
     if(!e)
         return world;
     
-    moment = spawn();
+    moment = spawn() {
+        classname     : "tt_moment",
+        tt_momenttime : time,
+        reset         : SUB_Remove
+    };
+
     TIMETRAVEL_HANDLE_ALL
     return moment;
 }
@@ -109,3 +120,44 @@ void TimeTravel_EraseMoment(entity moment) {
 #undef TIMETRAVEL_STORE_IDENTITY
 #undef TIMETRAVEL_RESTORE_IDENTITY
 #undef TIMETRAVEL_HANDLER
+
+entity TimeTravel_Track(entity e, float maxtime, float accuracy) {
+    if(e.tt_lastmoment && time - e.tt_lastmoment.tt_momenttime < accuracy)
+        return e.tt_lastmoment;
+
+    if(!(var moment = TimeTravel_SaveMoment(e)))
+        return world;
+
+    moment.tt_lastmoment = e.tt_lastmoment;
+    e.tt_lastmoment = moment;
+
+    var lastmoment_owner = e;
+    for(var lastmoment = var m = moment; (m = m.tt_lastmoment);) {
+        lastmoment_owner = lastmoment;
+        lastmoment = m;
+    }
+
+    if(lastmoment && time - lastmoment.tt_momenttime > maxtime) {
+        TimeTravel_EraseMoment(lastmoment);
+        lastmoment_owner.tt_lastmoment = world;
+    }
+
+    return moment;
+}
+
+void TimeTravel_TakeBack_ToTracked(entity e, float mtime) {
+    var moment = world;
+    var mindiff = mtime;
+
+    for(var m = e.tt_lastmoment; (m = m.tt_lastmoment);) {
+        if((var d = fabs(mtime - m.tt_momenttime)) < mindiff) {
+            mindiff = d;
+            moment = m;
+        }
+    }
+
+    if(!moment)
+        return;
+
+    TimeTravel_TakeBack(e, moment);
+}

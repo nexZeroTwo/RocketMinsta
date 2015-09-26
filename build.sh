@@ -116,10 +116,10 @@ function buildall
     [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
-    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
 	echo " -- Calculating sum of common/..."
-	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 	MENUSUM="$MENUSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
@@ -128,8 +128,7 @@ function buildall
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_COMMIT \"$COMMIT\""        >> "$QCSOURCE"/common/rm_auto.qh
-    
-	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
+
 	for i in $BUILT_PKGNAMES; do
 		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
 	done
@@ -309,15 +308,19 @@ function makedata
 
 function buildqc
 {
-    qcdir="$QCSOURCE/$1"
+    local qcdir="$QCSOURCE/$1"
+    local autocvars=""
 
     # this is ugly, needs fixing
     if [ "$1" = "server/" ]; then
         progname="progs"
+        autocvars="$AUTOCVARS_SVQC"
     elif [ "$1" = "client/" ]; then
         progname="csprogs"
+        autocvars="$AUTOCVARS_CSQC"
     elif [ "$1" = "menu/" ]; then
         progname="menu"
+        autocvars="$AUTOCVARS_MENU"
     else
         error "$1 is unknown"
     fi
@@ -325,7 +328,7 @@ function buildqc
     local sum=""
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
-        sum="$(find "$qcdir" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
         
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
@@ -342,7 +345,13 @@ function buildqc
     echo " -- Building $qcdir"
     local olddir="$PWD"
     pushd "$qcdir" &>/dev/null || error "Build target does not exist? huh"
-    $USEQCC $QCCFLAGS || error "Failed to build $qcdir"
+
+    if [ "$autocvars" != "0" ]; then
+        autocvars="-DRM_AUTOCVARS"
+        echo " -- Building with autocvars (this program will malfunction on the 2.5.2 engine)"
+    fi
+
+    $USEQCC $QCCFLAGS $autocvars || error "Failed to build $qcdir"
     
     local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
     local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
@@ -373,18 +382,18 @@ function is-included
     
     if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
         # Not a prefixed package, checking if ignored
-        for i in $IGNOREPKG; do
+        for i in "${IGNOREPKG[@]}"; do
             [ $i = $1 ] && return 1;
         done
 
         return 0;
     fi
 
-    for i in $BUILDPKG_OPTIONAL; do
+    for i in "${BUILDPKG_OPTIONAL[@]}"; do
         [ $i = ${1##o_} ] && return 0;
     done
 
-    for i in $BUILDPKG_CUSTOM; do
+    for i in "${BUILDPKG_CUSTOM[@]}"; do
         [ $i = ${1##c_} ] && return 0;
     done
 
@@ -509,6 +518,21 @@ fi
 if [ -z "$PACKCSQC" ]; then
     warn-oldconfig "config.sh" "PACKCSQC" "1"
     PACKCSQC=1
+fi
+
+if [ -z "$AUTOCVARS_SVQC" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "0"
+    AUTOCVARS_SVQC=0
+fi
+
+if [ -z "$AUTOCVARS_CSQC" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_CSQC" "0"
+    AUTOCVARS_CSQC=0
+fi
+
+if [ -z "$AUTOCVARS_MENU" ]; then
+    warn-oldconfig "config.sh" "AUTOCVARS_MENU" "0"
+    AUTOCVARS_MENU=0
 fi
 
 CACHEDIR="$(readlink -f "${CACHEDIR}/")"

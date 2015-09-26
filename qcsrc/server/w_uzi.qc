@@ -18,11 +18,11 @@ void W_Uzi_Attack (float deathtype)
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	{
 		if (self.uzi_bulletcounter == 1)
-			self.ammo_nails = self.ammo_nails - cvar("g_balance_uzi_first_ammo");
+			self.ammo_nails = self.ammo_nails - CVAR(g_balance_uzi_first_ammo);
 		else
-			self.ammo_nails = self.ammo_nails - cvar("g_balance_uzi_sustained_ammo");
+			self.ammo_nails = self.ammo_nails - CVAR(g_balance_uzi_sustained_ammo);
 	}
-	W_SetupShot (self, cvar("g_antilag_bullets") && cvar("g_balance_uzi_speed") >= cvar("g_antilag_bullets"), 0, "weapons/uzi_fire.wav", cvar("g_balance_uzi_first_damage"));
+	W_SetupShot (self, CVAR(g_antilag_bullets) && CVAR(g_balance_uzi_speed) >= CVAR(g_antilag_bullets), 0, "weapons/uzi_fire.wav", CVAR(g_balance_uzi_first_damage));
 	if (!g_norecoil)
 	{
 		self.punchangle_x = random () - 0.5;
@@ -30,15 +30,15 @@ void W_Uzi_Attack (float deathtype)
 	}
 
 	// this attack_finished just enforces a cooldown at the end of a burst
-	ATTACK_FINISHED(self) = time + cvar("g_balance_uzi_first_refire") * W_WeaponRateFactor();
+	ATTACK_FINISHED(self) = time + CVAR(g_balance_uzi_first_refire) * W_WeaponRateFactor();
 
 	if (self.uzi_bulletcounter == 1)
-		fireBallisticBullet(w_shotorg, w_shotdir, cvar("g_balance_uzi_first_spread"), cvar("g_balance_uzi_speed"), 5, cvar("g_balance_uzi_first_damage"), 0, cvar("g_balance_uzi_first_force"), deathtype, 0, 1, cvar("g_balance_uzi_bulletconstant"));
+		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_first_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_first_damage), 0, CVAR(g_balance_uzi_first_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
 	else
-		fireBallisticBullet(w_shotorg, w_shotdir, cvar("g_balance_uzi_sustained_spread"), cvar("g_balance_uzi_speed"), 5, cvar("g_balance_uzi_sustained_damage"), 0, cvar("g_balance_uzi_sustained_force"), deathtype, 0, 1, cvar("g_balance_uzi_bulletconstant"));
+		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_sustained_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_sustained_damage), 0, CVAR(g_balance_uzi_sustained_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
 	endFireBallisticBullet();
 
-	pointparticles(particleeffectnum("uzi_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
+	pointparticles(particleeffectnum("uzi_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
 
 	// muzzle flash for 1st person view
 	flash = spawn();
@@ -52,14 +52,14 @@ void W_Uzi_Attack (float deathtype)
 	W_AttachToShotorg(flash, '5 0 0');
 
 	// casing code
-	if (cvar("g_casings") >= 2)
+	if (CVAR(g_casings) >= 2)
 		SpawnCasing (((random () * 50 + 50) * v_right) - (v_forward * (random () * 25 + 25)) - ((random () * 5 - 70) * v_up), 2, vectoangles(v_forward),'0 250 0', 100, 3, self);
 }
 
 // weapon frames
 void uzi_fire1_02()
 {
-	if(self.weapon != self.switchweapon) // abort immediately if switching
+	if(self.weapon != self.switchweapon || !PlayerMayFire(self)) // abort immediately if switching
 	{
 		w_ready();
 		return;
@@ -68,19 +68,17 @@ void uzi_fire1_02()
 	{
 		if (!weapon_action(self.weapon, WR_CHECKAMMO2))
 		{
-			W_SwitchWeapon_Force(self, w_getbestweapon(self));
+			W_SwitchWeapon_OutOfAmmo(self);
 			w_ready();
 			return;
 		}
 		self.uzi_bulletcounter = self.uzi_bulletcounter + 1;
 		W_Uzi_Attack(WEP_UZI);
-		weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_uzi_sustained_refire"), uzi_fire1_02);
+		weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
 	}
 	else
-		weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_uzi_sustained_refire"), w_ready);
+		weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), w_ready);
 };
-
-void spawnfunc_weapon_machinegun(); // defined in t_items.qc
 
 float w_uzi(float req)
 {
@@ -98,38 +96,27 @@ float w_uzi(float req)
 		{
 			self.uzi_bulletcounter = 1;
 			W_Uzi_Attack(WEP_UZI); // sets attack_finished
-			weapon_thinkf(WFRAME_FIRE1, cvar("g_balance_uzi_sustained_refire"), uzi_fire1_02);
+			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
 		}
 		if (self.BUTTON_ATCK2)
+		if (CVAR(g_balance_uzi_first))
 		if (weapon_prepareattack(1, 0))
 		{
 			self.uzi_bulletcounter = 1;
 			W_Uzi_Attack(WEP_UZI | HITTYPE_SECONDARY); // sets attack_finished
-			weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_uzi_first_refire"), w_ready);
+			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_uzi_first_refire), w_ready);
 		}
 	}
 	else if (req == WR_PRECACHE)
 	{
 		precache_model ("models/uziflash.md3");
-		precache_model ("models/weapons/g_uzi.md3");
-		precache_model ("models/weapons/v_uzi.md3");
-		precache_model ("models/weapons/h_uzi.dpm");
 		precache_sound ("weapons/uzi_fire.wav");
 	}
 	else if (req == WR_SETUP)
 		weapon_setup(WEP_UZI);
 	else if (req == WR_CHECKAMMO1)
-		return self.ammo_nails >= cvar("g_balance_uzi_first_ammo");
+		return self.ammo_nails >= CVAR(g_balance_uzi_first_ammo);
 	else if (req == WR_CHECKAMMO2)
-		return self.ammo_nails >= cvar("g_balance_uzi_first_ammo");
-	else if (req == WR_SUICIDEMESSAGE)
-		w_deathtypestring = "did the impossible";
-	else if (req == WR_KILLMESSAGE)
-	{
-		if(w_deathtype & HITTYPE_SECONDARY)
-			w_deathtypestring = "was sniped by";
-		else
-			w_deathtypestring = "was riddled full of holes by";
-	}
+		return self.ammo_nails >= CVAR(g_balance_uzi_first_ammo);
 	return TRUE;
 };

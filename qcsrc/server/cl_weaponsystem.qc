@@ -12,35 +12,42 @@ float W_WeaponRateFactor()
 	float t;
 	t = 1.0 / g_weaponratefactor;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				t = t * cvar("g_balance_rune_speed_combo_atkrate");
-			else
-				t = t * cvar("g_balance_rune_speed_atkrate");
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			t = t * cvar("g_balance_curse_slow_atkrate");
-		}
-	}
-    
     float haste = Buffs_BuffPower(self, BUFF_HASTE);
     if(haste)
-        t = t * (1 - (1 - cvar("g_buffs_haste_refire_rate")) * haste);
+        t = t * (1 - (1 - CVAR(g_buffs_haste_refire_rate)) * haste);
     
 	return t;
 }
 
+float W_WeaponRateFactorFor(entity plr) {
+    entity o = self;
+    self = plr;
+    float r = W_WeaponRateFactor();
+    self = o;
+    return r;
+}
+
 void W_SwitchWeapon_Force(entity e, float w)
 {
+    entity o = self;
+    self = e;
+    weapon_action(self.weapon, WR_LOWER);
+    self = o;
+
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
 }
 
-.float antilag_debug;
+void W_SwitchWeapon_OutOfAmmo(entity plr) {
+    float best = w_getbestweapon(plr);
+
+    if(!best)
+        best = -1;
+
+    if(plr.switchweapon != best)
+    if(client_hasweapon(plr, best, TRUE, TRUE))
+        W_SwitchWeapon_Force(plr, best);
+}
 
 // VorteX: static frame globals
 float WFRAME_DONTCHANGE = -1;
@@ -49,6 +56,8 @@ float WFRAME_FIRE2 = 1;
 float WFRAME_IDLE = 2;
 float WFRAME_RELOAD = 3;
 .float wframe;
+
+.vector shotorg_visual;
 
 void(float fr, float t, void() func) weapon_thinkf;
 
@@ -126,6 +135,10 @@ void W_HitPlotAnalysis(entity player, vector screenforward, vector screenright, 
 
 vector w_shotorg;
 vector w_shotdir;
+vector w_shotorg_visual;
+vector w_shotdir_visual;
+
+.float strengthsound_next;
 
 // this function calculates w_shotorg and w_shotdir based on the weapon model
 // offset, trueaim and antilag, and won't put w_shotorg inside a wall.
@@ -142,21 +155,15 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	else
 		ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	if(antilag)
-		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
+		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
 	else
-		traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+		traceline_skipnonsolid(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
 	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 	trueaimpoint = trace_endpos;
 
-	// Track max damage and set the stat to be sent later in g_world.qc
-    if(maxdamage >= 0)
-	if not(inWarmupStage)
-    if not(g_minstagib) {
-		ent.max_damage[ent.weapon] += maxdamage;
-		ent.maxdamage_fired = ent.weapon + 64 * rint(ent.max_damage[ent.weapon]);
-	}
-
+    if(maxdamage > 0)
+        W_Accuracy_RegisterPotentialDamage(ent, ent.weapon, maxdamage);
 	W_HitPlotAnalysis(ent, v_forward, v_right, v_up);
 
 	if(ent.weaponentity.movedir_x > 0)
@@ -175,93 +182,18 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 
 	// now move the shotorg forward as much as requested if possible
 	if(antilag)
-	{
-		if(ent.antilag_debug)
-			tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, ent.antilag_debug);
-		else
-			tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
-	}
+		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	else
 		tracebox(w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	w_shotorg = trace_endpos - v_forward * nudge;
 	// calculate the shotdir from the chosen shotorg
 	w_shotdir = normalize(trueaimpoint - w_shotorg);
 
-#if 0
-	// explanation of g_antilag:
-	// if client reports it was aiming at a player, and the serverside trace
-	// says it would miss, change the aim point to the player's new origin,
-	// but only if the shot at the player's new origin would hit of course
-	//
-	// FIXME: a much better method for bullet weapons would be to leave a
-	// trail of lagged 'ghosts' behind players, and see if the bullet hits the
-	// ghost corresponding to this player's ping time, and if so it would do
-	// damage to the real player
-	if (antilag)
-	if (ent.cursor_trace_ent)                 // client was aiming at someone
-	if (ent.cursor_trace_ent != ent)         // just to make sure
-	if (ent.cursor_trace_ent.takedamage)      // and that person is killable
-	if (ent.cursor_trace_ent.classname == "player") // and actually a player
-	if (cvar("g_antilag") == 1)
-	{
-		// verify that the shot would miss without antilag
-		// (avoids an issue where guns would always shoot at their origin)
-		traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-		if (!trace_ent.takedamage)
-		{
-			// verify that the shot would hit if altered
-			traceline(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
-			if (trace_ent == ent.cursor_trace_ent)
-			{
-				// verify that the shot would hit in the past
-				if(ent.antilag_debug)
-					antilag_takeback(ent.cursor_trace_ent, time - ent.antilag_debug);
-				else
-					antilag_takeback(ent.cursor_trace_ent, time - ANTILAG_LATENCY(ent));
-
-				traceline(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + v_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-				antilag_restore(ent.cursor_trace_ent);
-
-				if(trace_ent == ent.cursor_trace_ent)
-				{
-					// HIT!
-					w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
-					dprint("ANTILAG HIT for ", ent.netname, "\n");
-				}
-				else
-				{
-					// prydon cursor aimbot or odd network conditions
-					dprint("WARNING: antilag ghost trace for ", ent.netname, " failed!\n");
-				}
-
-				if(cvar("developer") >= 2)
-				{
-					vector v, vplus, vel;
-					float X;
-					v     = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent)       ));
-					vplus = antilag_takebackorigin(ent.cursor_trace_ent, time - (ANTILAG_LATENCY(ent) + 0.01));
-					vel = (vplus - v) * (1 / 0.01);
-					// solve: v + X * vel = closest to ent.origin + ent.view_ofs, v_forward axis
-					v     -= (ent.origin + ent.view_ofs);
-					// solve: v + X * vel = closest to v_forward axis
-					// project into 2D by subtracting v_forward components:
-					v   -= (v   * v_forward) * v_forward;
-					vel -= (vel * v_forward) * v_forward;
-					// solve: v + X * vel = closest to origin
-					// (v + X * vel)^2 closest to 0
-					// v^2 + 2 * X * (v * vel) + X^2 * vel^2 closest to 0
-					X = -(v * vel) / (vel * vel);
-					dprint("dead center needs adjustment of ", ftos(X), " (that is, ", ftos(ANTILAG_LATENCY(ent) + X), " instead of ", ftos(ANTILAG_LATENCY(ent)), "\n");
-				}
-			}
-		}
-	}
-#else
 	if (antilag)
 	{
-		if (cvar("g_antilag") == 1) // switch to "ghost" if not hitting original
+		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
 		{
-			traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+			traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
 			{
 				traceline_antilag_force (ent, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
@@ -269,13 +201,13 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				{
 					entity e;
 					e = trace_ent;
-					traceline(w_shotorg, e.origin, MOVE_NORMAL, ent);
+					traceline_skipnonsolid(w_shotorg, e.origin, MOVE_NORMAL, ent);
 					if(trace_ent == e)
 						w_shotdir = normalize(trace_ent.origin - w_shotorg);
 				}
 			}
 		}
-		else if(cvar("g_antilag") == 3) // client side hitscan
+		else if(CVAR(g_antilag) == 3) // client side hitscan
 		{
 			if (ent.cursor_trace_ent)                 // client was aiming at someone
 			if (ent.cursor_trace_ent != ent)         // just to make sure
@@ -284,11 +216,11 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			{
 				// verify that the shot would miss without antilag
 				// (avoids an issue where guns would always shoot at their origin)
-				traceline(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+				traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 				if (!trace_ent.takedamage)
 				{
 					// verify that the shot would hit if altered
-					traceline(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
+					traceline_skipnonsolid(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
 					if (trace_ent == ent.cursor_trace_ent)
 						w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
 					else
@@ -297,7 +229,6 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			}
 		}
 	}
-#endif
 
 	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
 
@@ -309,10 +240,30 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		sound (ent, CHAN_WEAPON, snd, VOL_BASE, ATTN_NORM);
 	}
 
-	if (ent.items & IT_STRENGTH)
-	if (!g_minstagib)
+	if(ent.items & IT_STRENGTH)
+	if(!g_minstagib)
+    if(time > self.strengthsound_next) {
 		sound (ent, CHAN_AUTO, "weapons/strength_fire.wav", VOL_BASE, ATTN_NORM);
+        self.strengthsound_next = time + 0.09;
+    }
 };
+
+void W_SetHitscanVisuals(entity p, vector end) {
+    vector vecs, dv;
+
+    w_shotorg_visual = w_shotorg;
+    w_shotdir_visual = w_shotdir;
+
+    if(p.weaponentity.shotorg_visual_x > 0)
+    if(CVAR(g_fakeshotorigin)) {
+        vecs = p.weaponentity.shotorg_visual;
+        vecs_y = -vecs_y;
+
+        dv = v_right * vecs_y + v_up * vecs_z;
+        w_shotorg_visual = p.origin + p.view_ofs + dv;
+        w_shotdir_visual = normalize(end - w_shotorg_visual);
+    }
+}
 
 #define W_SetupShot_ProjectileSize(ent,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage)
 #define W_SetupShot_Dir(ent,s_forward,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, s_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
@@ -329,7 +280,7 @@ void LaserTarget_Think()
 	if(self.owner.laser_on && self.owner.weapon == WEP_ROCKET_LAUNCHER && g_laserguided_missile)
 		uselaser = 1;
 	// example
-	//if(self.owner.weapon == WEP_ELECTRO && cvar("g_laserguided_electro"))
+	//if(self.owner.weapon == WEP_ELECTRO && CVAR(g_laserguided_electro))
 	//	uselaser = 1;
 
 
@@ -385,7 +336,15 @@ float CL_Weaponentity_CustomizeEntityForClient()
 	if(other.classname == "spectator")
 		if(other.enemy == self.owner)
 			self.viewmodelforclient = other;
-	return TRUE;
+
+    self.alpha = Client_CalculateAlpha(self.owner, other);
+	return (self.alpha > 0);
+}
+
+float CL_ExterioirWeaponentity_CustomizeEntityForClient()
+{
+    self.alpha = Client_CalculateAlpha(self.owner, other);
+    return (self.alpha > 0);
 }
 
 float qcweaponanimation;
@@ -583,6 +542,7 @@ void CL_Weaponentity_Think()
 				remove(self.weaponentity);
 			self.weaponentity = world;
 			self.movedir = '0 0 0';
+            self.shotorg_visual = '0 0 0';
 			self.spawnorigin = '0 0 0';
 			self.oldorigin = '0 0 0';
 			self.anim_fire1  = '0 1 0.01';
@@ -598,7 +558,8 @@ void CL_Weaponentity_Think()
 			vector v0;
 			v0 = self.movedir;
 			self.movedir = shotorg_adjust(v0, FALSE, FALSE);
-			self.view_ofs = shotorg_adjust(v0, FALSE, TRUE) - v0;
+            self.shotorg_visual = shotorg_adjust(v0, FALSE, TRUE);
+			self.view_ofs = self.shotorg_visual - v0;
 		}
 		self.owner.stat_shotorg = compressShotOrigin(self.movedir);
 		self.movedir = decompressShotOrigin(self.owner.stat_shotorg); // make them match perfectly
@@ -652,8 +613,15 @@ void CL_Weaponentity_Think()
 	f = 0;
 	if (self.state == WS_RAISE && !intermission_running)
 	{
-		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
-		self.angles_x = -90 * f * f;
+		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -662,8 +630,15 @@ void CL_Weaponentity_Think()
 	}
 	else if (self.state == WS_DROP && !intermission_running)
 	{
-		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / cvar("g_balance_weaponswitchdelay");
-		self.angles_x = -90 * f * f;
+		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
+
+        if(self.owner.gunswitchmode == 1)
+            self.angles_y = -90 * f * f;
+        else if(self.owner.gunswitchmode == 2)
+            self.angles_y = 90 * f * f;
+        else
+            self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -673,7 +648,9 @@ void CL_Weaponentity_Think()
 	else if (self.state == WS_CLEAR)
 	{
 		f = 1;
-		self.angles_x = -90 * f * f;
+        self.angles_y = -90 * f * f;
+        self.angles_x = -90 * f * f;
+
 		if (qcweaponanimation)
 		{
 			makevectors(self.angles_x * '-1 0 0' + self.angles_y * '0 1 0' + self.angles_z * '0 0 1');
@@ -877,97 +854,93 @@ void CL_SpawnWeaponentity()
 	setorigin(self.exteriorweaponentity, '0 0 0');
 	self.exteriorweaponentity.angles = '0 0 0';
 	self.exteriorweaponentity.think = CL_ExteriorWeaponentity_Think;
+    self.exteriorweaponentity.customizeentityforclient = CL_ExterioirWeaponentity_CustomizeEntityForClient;
 	self.exteriorweaponentity.nextthink = time;
 
 };
 
 .float hasweapon_complain_spam;
 
-float client_hasweapon(entity cl, float wpn, float andammo, float complain)
-{
-	local float weaponbit, f;
-	local entity oldself;
+float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
+    float weaponbit, f;
+    entity oldself;
 
-	if(time < self.hasweapon_complain_spam)
-		complain = 0;
-	if(complain)
-		self.hasweapon_complain_spam = time + 0.2;
+    if(time < cl.hasweapon_complain_spam)
+        complain = 0;
+    if(complain)
+        cl.hasweapon_complain_spam = time + 0.2;
 
-	if (wpn < WEP_FIRST || wpn > WEP_LAST)
-	{
-		if (complain)
-			sprint(self, "Invalid weapon\n");
-		return FALSE;
-	}
-	weaponbit = W_WeaponBit(wpn);
-	if (cl.weapons & weaponbit)
-	{
-		if (andammo)
-		{
-			if(cl.items & IT_UNLIMITED_WEAPON_AMMO)
-			{
-				f = 1;
-			}
-			else
-			{
-				oldself = self;
-				self = cl;
-				f = weapon_action(wpn, WR_CHECKAMMO1);
-				f = f + weapon_action(wpn, WR_CHECKAMMO2);
-				self = oldself;
-			}
-			if (!f)
-			{
-				if (complain)
-				if(clienttype(cl) == CLIENTTYPE_REAL)
-				{
-					play2(cl, "weapons/unavailable.wav");
-					sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
-				}
-				return FALSE;
-			}
-		}
-		return TRUE;
-	}
-	if (complain)
-	{
-		// DRESK - 3/16/07
-		// Report Proper Weapon Status / Modified Weapon Ownership Message
-		if(weaponsInMap & weaponbit)
-		{
-			sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
+    if(wpn < 0) {
+        if(complain) if (clienttype(cl) == CLIENTTYPE_REAL) {
+            play2(cl, "weapons/unavailable.wav");
+        }
+        return FALSE;
+    }
 
-			if(cvar("g_showweaponspawns"))
-			{
-				entity e;
-				string s;
+    if(wpn < WEP_FIRST || wpn > WEP_LAST) {
+        if (complain)
+            sprint(cl, "Invalid weapon\n");
+        return FALSE;
+    }
 
-				e = get_weaponinfo(wpn);
-				s = e.model2;
+    weaponbit = W_WeaponBit(wpn);
+    if(cl.weapons & weaponbit) {
+        if(andammo) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+                f = 1;
+            } else {
+                oldself = self;
+                self = cl;
+                f = weapon_action(wpn, WR_CHECKAMMO1);
+                f = f + weapon_action(wpn, WR_CHECKAMMO2);
+                self = oldself;
+            } if(!f) {
+                if(complain)
+                if(clienttype(cl) == CLIENTTYPE_REAL) {
+                    play2(cl, "weapons/unavailable.wav");
+                    sprint(cl, strcat("You don't have any ammo for the ^2", W_Name(wpn), "\n"));
+                }
+                return FALSE;
+            }
+        }
+        return TRUE;
+    }
 
-				for(e = world; (e = findfloat(e, weapons, weaponbit)); )
-				{
-					if(e.classname == "droppedweapon")
-						continue;
-					if not(e.flags & FL_ITEM)
-						continue;
-					WaypointSprite_Spawn(
-						s,
-						1, 0,
-						world, e.origin,
-						self, 0,
-						world, enemy,
-						0
-					);
-				}
-			}
-		}
-		else
-			sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+    if(complain) {
+        // DRESK - 3/16/07
+        // Report Proper Weapon Status / Modified Weapon Ownership Message
+        if(weaponsInMap & weaponbit) {
+            sprint(cl, strcat("You do not have the ^2", W_Name(wpn), "\n") );
 
-		play2(cl, "weapons/unavailable.wav");
-	}
-	return FALSE;
+            if(CVAR(g_showweaponspawns)) {
+                entity e;
+                string s;
+
+                e = get_weaponinfo(wpn);
+                s = e.model2;
+
+                for(e = world; (e = findfloat(e, weapons, weaponbit)); ) {
+                    if(e.classname == "droppedweapon")
+                        continue;
+                    if not(e.flags & FL_ITEM)
+                        continue;
+                    WaypointSprite_Spawn(
+                        s,
+                        1, 0,
+                        world, e.origin,
+                        self, 0,
+                        world, enemy,
+                        0
+                    );
+                }
+            }
+        } else
+            sprint(cl, strcat("The ^2", W_Name(wpn), "^7 is ^1NOT AVAILABLE^7 in this map\n") );
+
+        play2(cl, "weapons/unavailable.wav");
+    }
+
+    return FALSE;
 };
 
 // Weapon subs
@@ -993,7 +966,7 @@ void w_ready()
 void weapon_setup(float windex)
 {
 	entity e;
-	qcweaponanimation = cvar("sv_qcweaponanimation");
+	qcweaponanimation = CVAR(sv_qcweaponanimation);
 	e = get_weaponinfo(windex);
 	self.items &~= IT_AMMO;
 	self.items = self.items | e.items;
@@ -1008,44 +981,20 @@ void weapon_setup(float windex)
 .float race_penalty;
 float weapon_prepareattack(float secondary, float attacktime)
 {
-	//if sv_ready_restart_after_countdown is set, don't allow the player to shoot
-	//if all players readied up and the countdown is running
-	if((time < game_starttime && !g_inf) || time < self.race_penalty)
-		return FALSE;
-
-    if(roundstate == ROUNDSTATE_OVER)
-        return FALSE;
-
-	if(roundstate == ROUNDSTATE_WARMUP && self.weapon != WEP_LASER)
-		return FALSE;
-
-	if(g_freeze)
-	if(self.frozen) 
-		return FALSE;
-    
-    if(time < self.hg_plasmalock)
-        return FALSE;
-    
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
-    if(time - self.hg_stealthtime < cvar("g_nadgets_cloak_actiondelay"))
+    self.buff_stealth_time = time;
+
+    if(!PlayerMayFire(self))
         return FALSE;
-    
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	if (!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary))
-	{
-		W_SwitchWeapon_Force(self, w_getbestweapon(self));
-		return FALSE;
-	}
 
-	if (timeoutStatus == 2) //don't allow the player to shoot while game is paused
-		return FALSE;
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+    if(!weapon_action(self.weapon, WR_CHECKAMMO1 + secondary)) {
+        W_SwitchWeapon_OutOfAmmo(self);
+        return FALSE;
+    }
 
-	// do not even think about shooting if switching
-	if(self.switchweapon != self.weapon)
-		return FALSE;
-	
 	if(attacktime >= 0)
 	{
 		// don't fire if previous attack is not finished
@@ -1058,7 +1007,7 @@ float weapon_prepareattack(float secondary, float attacktime)
 	}
 	self.weaponentity.state = WS_INUSE;
 
-    if(!cvar("g_spawnshieldmode"))
+    if(!CVAR(g_spawnshieldmode))
         self.spawnshieldtime = min(self.spawnshieldtime, time); // kill spawn shield when you fire
 
 	// if the weapon hasn't been firing continuously, reset the timer
@@ -1234,7 +1183,7 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 	mdirection = normalize(mvelocity);
 	mspeed = vlen(mvelocity);
 
-	nstyle = cvar("g_projectiles_newton_style");
+	nstyle = CVAR(g_projectiles_newton_style);
 	if(nstyle == 0)
 	{
 		// absolute velocity
@@ -1271,7 +1220,7 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 			//dprint("impossible shot, adjusting\n");
 		}
 
-		outspeed = bound(mspeed * cvar("g_projectiles_newton_style_2_minfactor"), outspeed, mspeed * cvar("g_projectiles_newton_style_2_maxfactor"));
+		outspeed = bound(mspeed * CVAR(g_projectiles_newton_style_2_minfactor), outspeed, mspeed * CVAR(g_projectiles_newton_style_2_maxfactor));
 		outvelocity = mdirection * outspeed;
 	}
 	else if(nstyle == 3)

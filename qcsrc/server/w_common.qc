@@ -24,173 +24,182 @@ void W_GiveWeapon (entity e, float wep, string name)
 	self = oldself;
 }
 
-void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype)
-{
-	local vector hitloc, force, endpoint, dir;
-	local entity ent, endent;
-	local float endq3surfaceflags;
-	//local entity explosion;
-	float did_hit;
-	float length;
-	vector beampos;
-	string snd;
-	entity pseudoprojectile;
-	float f, ffs;
+float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
+    float did_hit;
+
+    if(ent.takedamage == DAMAGE_NO)
+        return FALSE;
+
+    float sameteam = !IsDifferentTeam(ent, attacker);
+
+    if(ent.flags & FL_CLIENT) {
+        if(ent.deadflag == DEAD_NO)
+            did_hit = TRUE;
+    } else if(ent.flags & FL_PROJECTILE) {
+        if(ent.owner == attacker)
+            return TRUE;
+        did_hit = TRUE;
+    } else if(ent.classname == "meodp_point") {
+        return TRUE;
+    }
+
+    if(sameteam && !Buffs_BuffPower(attacker, BUFF_MEDIC))
+        did_hit = FALSE;
+
+    return did_hit;
+}
+
+void W_Accuracy_RegisterShot(entity attacker, float w) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.bullets_fired[w] += 1;
+    attacker.maxdamage_fired = w + 64 * rint(attacker.bullets_fired[w]);
+}
+
+void W_Accuracy_RegisterHit(entity attacker, entity targ, float w) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    if(!W_Accuracy_IsGoodHit(attacker, targ))
+        return;
+
+    attacker.bullets_hit[w] += 1;
+    attacker.damage_hits = w + 64 * rint(attacker.bullets_hit[w]);
+}
+
+void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.max_damage[w] += damage;
+    attacker.maxdamage_fired = w + 64 * rint(attacker.max_damage[w]);
+}
+
+void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
+    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
+        return;
+
+    attacker.actual_damage[w] += damage;
+    attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
+}
+
+void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
+    vector hitloc, force, endpoint, dir;
+    entity ent, endent;
+    float endq3surfaceflags;
+    float length;
+    vector beampos;
+    string snd;
+    entity pseudoprojectile;
+    entity pts, hitents;
+    float f;
+
+    railgun_start = start;
+    railgun_end = end;
+
+    dir = normalize(end - start);
+    length = vlen(end - start);
+    force = dir * bforce;
+
+    // go a little bit into the wall because we need to hit this wall later
+    end = end + dir;
+
+    pts = Buffs_MEODP_Hitscan_Begin(self);
     
-	did_hit = 0;
+    hitents = tracerail_antilag(self, start, end, FALSE, self);
 
-	railgun_start = start;
-	railgun_end = end;
+    endpoint = trace_endpos;
+    endent = trace_ent;
+    endq3surfaceflags = trace_dphitq3surfaceflags;
 
-	dir = normalize(end - start);
-	length = vlen(end - start);
-	force = dir * bforce;
+    // Find all non-hit players the beam passed close by
+    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+        FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
+        if(msg_entity != self)
+        if not(msg_entity.tracerail_hit)
+        if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
+            // nearest point on the beam
+            beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
 
-
-	// go a little bit into the wall because we need to hit this wall later
-	end = end + dir;
-
-	// trace multiple times until we hit a wall, each obstacle will be made
-	// non-solid so we can hit the next, while doing this we spawn effects and
-	// note down which entities were hit so we can damage them later
-    
-    entity pts;
-    float tries;
-    
-    if(deathtype != DEATH_HG_SHIELD)
-        pts = Buffs_MEODP_Hitscan_Begin(self);
-    
-	while (1)
-	{
-        if(deathtype == DEATH_HG_SHIELD)
-            traceline(start, end, FALSE, self);
-		else if(self.antilag_debug)
-			traceline_antilag(self, start, end, FALSE, self, self.antilag_debug);
-		else
-			traceline_antilag(self, start, end, FALSE, self, ANTILAG_LATENCY(self));
-
-		// if it is world we can't hurt it so stop now
-		if(trace_ent == world || trace_fraction == 1) {
-            if(!cvar("sv_gameplayfix_zerohitcontents") || trace_dphitcontents)
-                break;
-            else {
-                if(++tries == 3)
-                    break;
-                start = trace_endpos;
+            f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
+            if(f <= 0)
                 continue;
+
+            snd = strcat("weapons/nexwhoosh", ftos(floor(random() * 3) + 1), ".wav");
+
+            if(!pseudoprojectile)
+                pseudoprojectile = spawn(); // we need this so the sound uses the "entchannel4" volume
+            soundtoat(MSG_ONE, pseudoprojectile, beampos, CHAN_PROJECTILE, snd, VOL_BASE * f, ATTN_NONE);
+        }
+
+        if(pseudoprojectile)
+            remove(pseudoprojectile);
+    }
+
+    W_Accuracy_RegisterShot(self, self.weapon);
+
+    // find all the entities the railgun hit and hurt them
+    for(ent = hitents; ent; ent = ent.tracerail_next) {
+        W_Accuracy_RegisterHit(self, ent, self.weapon);
+
+        hitloc = ent.tracerail_endpos;
+
+        float tdamage = bdamage;
+        vector tforce = force;
+
+        float dst = (hitloc - start) * dir;
+
+        tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
+        tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
+
+        if(DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+            float maxdst;
+
+            if(deathtype & HITTYPE_SECONDARY)
+                maxdst = CVAR(g_balance_nex_secondary_damagefalloff_linear_maxdist);
+            else
+                maxdst = CVAR(g_balance_nex_damagefalloff_linear_maxdist);
+
+            if(maxdst) {
+                float steps, mindmgfactor, minfrcfactor, flr;
+
+                if(deathtype & HITTYPE_SECONDARY) {
+                    steps = CVAR(g_balance_nex_secondary_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_secondary_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_secondary_damagefalloff_linear_floor);
+                } else {
+                    steps = CVAR(g_balance_nex_damagefalloff_linear_steps) - 1;
+                    mindmgfactor = CVAR(g_balance_nex_damagefalloff_linear_mindamagefactor);
+                    minfrcfactor = CVAR(g_balance_nex_damagefalloff_linear_minforcefactor);
+                    flr = CVAR(g_balance_nex_damagefalloff_linear_floor);
+                }
+
+                f = min(dst, maxdst) / maxdst;
+
+                if(steps > 0)
+                    f = floor(steps * f) / steps;
+
+                tdamage = tdamage * mindmgfactor + tdamage * (1 - mindmgfactor) * f;
+                tforce = tforce * minfrcfactor + tforce * (1 - minfrcfactor) * f;
+
+                if(flr)
+                    tdamage = floor(tdamage);
             }
         }
 
-		// make the entity non-solid so we can hit the next one
-		trace_ent.railgunhit = TRUE;
-		trace_ent.railgunhitloc = trace_endpos; // was = end. WHY?
-		trace_ent.railgunhitsolidbackup = trace_ent.solid;
+        // apply the damage
+        if(ent.takedamage)
+            Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
+    }
 
-		// stop if this is a wall
-		if(trace_ent.solid == SOLID_BSP)
-            break;
-        
-		// make the entity non-solid
-		trace_ent.solid = SOLID_NOT;
-	}
-
-	endpoint = trace_endpos;
-	endent = trace_ent;
-	endq3surfaceflags = trace_dphitq3surfaceflags;
-
-	// find all the entities the railgun hit and restore their solid state
-	ent = findfloat(world, railgunhit, TRUE);
-	while (ent)
-	{
-		// restore their solid type
-		ent.solid = ent.railgunhitsolidbackup;
-		ent = findfloat(ent, railgunhit, TRUE);
-	}
-
-	// spawn a temporary explosion entity for RadiusDamage calls
-	//explosion = spawn();
-
-	// Find all non-hit players the beam passed close by
-	if(deathtype == WEP_MINSTANEX || deathtype == WEP_NEX)
-	{
-		FOR_EACH_REALCLIENT(msg_entity) if(msg_entity != self) if(!msg_entity.railgunhit) if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) // we use realclient, so spectators can hear the whoosh too
-		{
-			// nearest point on the beam
-			beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
-
-			f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
-			if(f <= 0)
-				continue;
-
-			snd = strcat("weapons/nexwhoosh", ftos(floor(random() * 3) + 1), ".wav");
-
-			if(!pseudoprojectile)
-				pseudoprojectile = spawn(); // we need this so the sound uses the "entchannel4" volume
-			soundtoat(MSG_ONE, pseudoprojectile, beampos, CHAN_PROJECTILE, snd, VOL_BASE * f, ATTN_NONE);
-		}
-
-		if(pseudoprojectile)
-			remove(pseudoprojectile);
-	}
-
-	// find all the entities the railgun hit and hurt them
-	ent = findfloat(world, railgunhit, TRUE);
-	while (ent)
-	{
-		// get the details we need to call the damage function
-		hitloc = ent.railgunhitloc;
-		ent.railgunhitloc = '0 0 0';
-		ent.railgunhitsolidbackup = SOLID_NOT;
-		ent.railgunhit = FALSE;
-
-		//for stats so that team hit will count as a miss
-		if(ent.flags & FL_CLIENT)
-		if(ent.deadflag == DEAD_NO)
-			did_hit = 1;
-
-		if(teams_matter)
-		if(ent.team == self.team)
-        if(!Buffs_BuffPower(self, BUFF_MEDIC))
-			did_hit = 0;
-
-		f = ExponentialFalloff(mindist, maxdist, halflifedist, (ent.origin - start) * dir);
-		ffs = ExponentialFalloff(mindist, maxdist, forcehalflifedist, (ent.origin - start) * dir);
-
-		// apply the damage
-		if (ent.takedamage)
-			Damage(ent, self, self, bdamage * f, deathtype, hitloc, force * ffs);
-
-		// create a small explosion to throw gibs around (if applicable)
-		//setorigin (explosion, hitloc);
-		//RadiusDamage (explosion, self, 10, 0, 50, world, 300, deathtype);
-
-		// advance to the next entity
-		ent = findfloat(ent, railgunhit, TRUE);
-	}
-
-	//calculate hits and fired shots for hitscan
-	if not(inWarmupStage)
-	if not(self.isbot)
-    if not(deathtype == DEATH_HG_SHIELD)
-	{
-		self.bullets_fired[self.weapon] += 1;
-
-		if(did_hit)
-			self.bullets_hit[self.weapon] += 1;
-
-		// update the client and store in addstat() in g_world
-		self.damage_hits = self.weapon + 64 * rint(self.bullets_hit[self.weapon]);
-		self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-	}
-
-	// we're done with the explosion entity, remove it
-	//remove(explosion);
-    
     Buffs_MEODP_Hitscan_End(pts);
-    
-	trace_endpos = endpoint;
-	trace_ent = endent;
-	trace_dphitq3surfaceflags = endq3surfaceflags;
+    tracerail_finalize(hitents);
+
+    trace_endpos = endpoint;
+    trace_ent = endent;
+    trace_dphitq3surfaceflags = endq3surfaceflags;
 }
 
 .float dmg_edge;
@@ -200,13 +209,9 @@ void FireRailgunBullet (vector start, vector end, float bdamage, float bforce, f
 void W_BallisticBullet_Hit (void)
 {
 	float f, fd;
-
-	float hit;
-	hit = 0;
-
 	f = pow(bound(0, vlen(self.velocity) / vlen(self.oldvelocity), 1), 2); // energy multiplier
     
-    if(cvar("g_ballistics_constantdamage"))
+    if(CVAR(g_ballistics_constantdamage))
         fd = 1;
     else
         fd = f;
@@ -224,15 +229,6 @@ void W_BallisticBullet_Hit (void)
 		railgun_start = self.origin - 2 * frametime * self.velocity;
 		railgun_end = self.origin + 2 * frametime * self.velocity;
 
-		if(other.flags & FL_CLIENT)
-		if(other.deadflag == DEAD_NO)
-			hit = 1;
-
-		if(teamplay)
-		if(other.team == self.owner.team)
-        if(!Buffs_BuffPower(self.owner, BUFF_MEDIC))
-			hit = 0;
-		
 		Damage(other, self, self.owner, self.dmg * fd, self.projectiledeathtype, self.origin, self.dmg_force * normalize(self.velocity) * f);
 		damage_headshotbonus = 0;
 
@@ -250,17 +246,8 @@ void W_BallisticBullet_Hit (void)
 				bigprint_spec(self.owner, "^5Awesome!", "", 1);
 			}
 		}
-		//calculate hits for ballistic weapons
-		if not(inWarmupStage)
-		if not(self.owner.isbot)
-		{
-			if(hit)
-				self.owner.bullets_hit[self.owner.weapon] += 1;
-			// update the client
-			self.owner.damage_hits = self.owner.weapon + 64 * rint(self.owner.bullets_hit[self.owner.weapon]);
-		}
 
-		//sound (self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+        W_Accuracy_RegisterHit(self.owner, other, self.owner.weapon);
 	}
 
 	self.enemy = other; // don't hit the same player twice with the same bullet
@@ -322,12 +309,12 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 	// maxdist = 0.5 * v0 * v0 / constant
 	// dprint("max dist = ", ftos(maxdist), "\n");
 
-	if(maxdist <= cvar("g_ballistics_mindistance"))
+	if(maxdist <= CVAR(g_ballistics_mindistance))
 		return 0;
     
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
     
-	if not(cvar("g_ballistics_gothroughsolid"))
+	if not(CVAR(g_ballistics_gothroughsolid))
 	if not(trace_ent)
 		return 0;
 
@@ -370,7 +357,6 @@ void W_BallisticBullet_Touch (void)
 {
 	if(self.think == W_BallisticBullet_LeaveSolid_think) // skip this!
 		return;
-    
 	PROJECTILE_TOUCH;
 	W_BallisticBullet_Hit ();
 
@@ -417,7 +403,9 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     else
         eff = particleeffectnum("tr_bullet");
     
-    trailparticles(world, eff, w_shotorg, end);
+    W_SetHitscanVisuals(self, end);
+    trailparticles(world, eff, w_shotorg_visual, end);
+
     Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
 }
 
@@ -426,10 +414,13 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	float lag, dt, savetime;
 	entity pl, oldself;
     
-    if(cvar("g_ballistics_simplehitscan")) {
+    if(CVAR(g_ballistics_simplehitscan)) {
         fireHitscanBullet(start, dir, spread, damage, headshotbonus, force, dtype, tracereffects);
         return;
     }
+
+    // used only for muzzleflashes later
+    W_SetHitscanVisuals(self, w_shotorg + dir);
 
 	entity proj;
 	proj = spawn();
@@ -448,7 +439,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.velocity = (dir + randomvec() * spread) * pSpeed;
 	W_SetupProjectileVelocity(proj);
 	proj.angles = vectoangles(proj.velocity);
-	proj.dmg_radius = cvar("g_ballistics_materialconstant") / bulletconstant;
+	proj.dmg_radius = CVAR(g_ballistics_materialconstant) / bulletconstant;
 	// so: bulletconstant = bullet mass / area of bullet circle
 	setorigin(proj, start);
 	proj.flags = FL_PROJECTILE;
@@ -460,18 +451,11 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	proj.projectiledeathtype = dtype;
     
 	proj.oldvelocity = proj.velocity;
-    PROJECTILE_FIX(proj)
     
-	//calculate fired bullets for ballistics
-	if not(inWarmupStage)
-	if not(self.isbot)
-	{
-		self.bullets_fired[self.weapon] += 1;
-		self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-	}
+    W_Accuracy_RegisterShot(self, self.weapon);
 
-	if(cvar("g_antilag_bullets"))
-	if(pSpeed >= cvar("g_antilag_bullets"))
+	if(CVAR(g_antilag_bullets))
+	if(pSpeed >= CVAR(g_antilag_bullets))
 	{
 		float eff;
 
@@ -486,7 +470,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			lag = 0;
 		if(clienttype(self) != CLIENTTYPE_REAL)
 			lag = 0;
-		if(cvar("g_antilag") == 0)
+		if(CVAR(g_antilag) == 0)
 			lag = 0; // only do hitscan, but no antilag
 
 		if(lag)
@@ -503,26 +487,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         
 		for(;;)
 		{
-			// DP tracetoss is stupid and always traces in 0.05s
-			// ticks. This makes it trace in 0.05*0.125s ticks
-			// instead.
-			vector v0;
-			float g0;
-			v0 = self.velocity;
-			g0 = self.gravity;
-			self.velocity = self.velocity * 0.125;
-			self.gravity *= 0.125 * 0.125;
-			trace_fraction = 0;
-			tracetoss(self, oldself);
-			self.velocity = v0;
-			self.gravity = g0;
-
-			if not(inWarmupStage)
-			if not(self.isbot)
-			{
-				self.bullets_fired[self.weapon] += 1;
-				self.maxdamage_fired = self.weapon + 64 * rint(self.bullets_fired[self.weapon]);
-			}
+			tracetoss_skipnonsolid(self, oldself, 0.05 * 0.125, 200);
 
 			if(vlen(trace_endpos - self.origin) > 16)
 				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);
@@ -570,32 +535,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET_GLOWING, TRUE);
 	else
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET, TRUE);
-}
-
-
-void fireBullet (vector start, vector dir, float spread, float damage, float force, float dtype, float tracer)
-{
-	vector  end;
-	//local entity e;
-
-	dir = normalize(dir + randomvec() * spread);
-	end = start + dir * MAX_SHOT_DISTANCE;
-	if(self.antilag_debug)
-		traceline_antilag (self, start, end, FALSE, self, self.antilag_debug);
-	else
-		traceline_antilag (self, start, end, FALSE, self, ANTILAG_LATENCY(self));
-
-    end = trace_endpos;
-
-	if ((trace_fraction != 1.0) && (pointcontents (trace_endpos) != CONTENT_SKY))
-	{
-		pointparticles(particleeffectnum("TE_KNIGHTSPIKE"),end,trace_plane_normal * 2500,1);
-		if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-			Damage_DamageInfo(trace_endpos, damage, 0, 0, dir * max(1, force), dtype, self);
-		Damage (trace_ent, self, self, damage, dtype, trace_endpos, dir * force);
-		//void(float effectnum, vector org, vector vel, float howmany) pointparticles = #337; // same as in CSQC
-	}
-	trace_endpos = end;
 }
 
 

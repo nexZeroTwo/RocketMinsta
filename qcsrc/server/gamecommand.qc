@@ -622,9 +622,7 @@ void GameCommand(string command)
 		print("  find classname\n");
 		print("  redirect clientnum server\n");
 		print("  gotoserver server\n");
-		#ifdef RM_SUPPORT_MADOKA
 		print("  ^0walpurgis^7\n");
-		#endif
 		GameCommand_Vote("help", world);
 		GameCommand_Ban("help");
 		GameCommand_Generic("help");
@@ -656,7 +654,7 @@ void GameCommand(string command)
 		return;
 	}
 
-	if(argv(0) == "warp") if(argc == 2) if(cvar("g_campaign"))
+	if(argv(0) == "warp") if(argc == 2) if(CVAR(g_campaign))
 	{
 		CampaignLevelWarp(stof(argv(1)));
 		return;
@@ -764,10 +762,10 @@ void GameCommand(string command)
 			if(plr.classname == "spectator" || plr.classname == "observer")
 			{
 				plr.spectatortime = time;
-				sprint(plr, strcat("^7You have to become a player within the next ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
+				sprint(plr, strcat("^7You have to become a player within the next ", ftos(CVAR(g_maxplayers_spectator_blocktime)), " seconds, otherwise you will be kicked, because spectators aren't allowed at this time!\n"));
 			}
 		}
-		bprint(strcat("^7All spectators will be automatically kicked when not joining the game after ", ftos(cvar("g_maxplayers_spectator_blocktime")), " seconds!\n"));
+		bprint(strcat("^7All spectators will be automatically kicked when not joining the game after ", ftos(CVAR(g_maxplayers_spectator_blocktime)), " seconds!\n"));
 		return;
 	}
 	if (argv(0) == "lockteams")
@@ -1087,8 +1085,7 @@ void GameCommand(string command)
 
 		return;
 	}
-	
-	#ifdef RM_SUPPORT_MADOKA
+
 	if(argv(0) == "walpurgis")
 	{
 		FOR_EACH_CLIENT(e)
@@ -1114,7 +1111,6 @@ void GameCommand(string command)
 		
 		return;
 	}
-	#endif
 
 	if(argv(0) == "kill")
 	{
@@ -1125,12 +1121,8 @@ void GameCommand(string command)
 			bprint("^1kill: ^7Could not find victim!\n");
 			return;
 		}
-		
-		#ifdef RM_SUPPORT_MADOKA
+
 		madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-		#else
-		bigprint_spec(e, "^9Votekilled", "", 5);
-		#endif
 		
 		e.armorvalue = 0;
 		Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
@@ -1139,28 +1131,20 @@ void GameCommand(string command)
 	
 	if(argv(0) == "killfc")
 	{
-		if(cvar("g_ctf"))
+		if(CVAR(g_ctf))
 		{
 			FOR_EACH_CLIENT(e) if(e.flagcarried)
 			{
-				#ifdef RM_SUPPORT_MADOKA
 				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-				#else
-				bigprint_spec(e, "^9Votekilled", "", 5);
-				#endif
 				e.armorvalue = 0;
 				Damage(e, world, e, e.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
 		}
-		else if(cvar("g_keyhunt"))
+		else if(CVAR(g_keyhunt))
 		{
 			for(e = kh_worldkeylist; e; e = e.kh_worldkeynext) if(e.owner)
 			{
-				#ifdef RM_SUPPORT_MADOKA
 				madokaprint_spec(e, "^1x ^0Votekilled ^10", "", 5);
-				#else
-				bigprint_spec(e, "^9Votekilled", "", 5);
-				#endif
 				e.owner.armorvalue = 0;
 				Damage(e.owner, world, e.owner, e.owner.health, DEATH_KILL, '0 0 0', '0 0 0');
 			}
@@ -1215,17 +1199,17 @@ void GameCommand(string command)
 			cvar_set("_sv_explosive_topicby", "");
 		keeptopic = FALSE;
 		
-		local string topicby = cvar_string("_sv_explosive_topicby");
+		local string topicby = CVAR_STR(_sv_explosive_topicby);
 		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
 		
-		bprint("\x01^2* ^3", ((topicby && topicby != "")? topicby : "<server>"), "^3 has set the topic: ^7", cvar_string("_sv_explosive_topic"), "\n");
+		bprint("\x01^2* ^3", if(topicby && topicby != "") topicby else "<server>", "^3 has set the topic: ^7", CVAR_STR(_sv_explosive_topic), "\n");
 		
 		return;
 	}
 
 	if(argv(0) == "addinfo")
 	{
-		float c = cvar("_sv_infomessages_count");
+		float c = CVAR(_sv_infomessages_count);
 		string newvar = strcat("_sv_infomessages_", ftos(c));
 		registercvar(newvar, "");
 		cvar_set(newvar, argv(1));
@@ -1294,7 +1278,7 @@ void GameCommand(string command)
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
     }
-
+    
     if(argv(0) == "netmusic" || argv(0) == "radio_play") {
     	Radio_Play(argv(1), argv(2), (argv(3) == "loop"));
     	return;
@@ -1325,6 +1309,22 @@ void GameCommand(string command)
     	return;
     }
 
+    if(argv(0) == "radio_evil") {
+        FOR_EACH_REALCLIENT(e)
+            stuffcmd(e, "radio 1\n");
+        return;
+    }
+
+    if(argv(0) == "hg_bonustest") {
+        HG_GiveBonus(edict_num(stof(argv(1))), stof(argv(2)), stof(argv(3)), "hg_bonustest called", FALSE);
+        return;
+    }
+
+    if(argv(0) == "dprmstats") {
+        FOR_EACH_REALCLIENT(e)
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "\n");
+        return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }
-

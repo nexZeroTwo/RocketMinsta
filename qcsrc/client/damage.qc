@@ -60,15 +60,11 @@ void Ent_DamageInfo(float isNew)
 			thisforce = forcemul * force;
 		}
 
-		//print("check ", ftos(num_for_edict(self)), " ", self.classname, "\n");
-		//print(ftos(self.damageforcescale), "\n");
-		//print(vtos(thisforce), "\n");
 		if(self.damageforcescale)
 			if(vlen(thisforce))
 			{
 				self.move_velocity = self.move_velocity + self.damageforcescale * thisforce;
 				self.move_flags &~= FL_ONGROUND;
-				//print("pushed ", ftos(num_for_edict(self)), " loose\n");
 			}
 
 		if(issilent)
@@ -79,8 +75,6 @@ void Ent_DamageInfo(float isNew)
 	}
 
 	self = oldself;
-
-	// TODO spawn particle effects and sounds based on hittype
     
 	if(!DEATH_ISSPECIAL(hittype))
 	{
@@ -104,33 +98,31 @@ void Ent_DamageInfo(float isNew)
 
         if(DEATH_ISHG(hittype))
 		{
-			if (!issilent) {
-				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+			if (!issilent)
 				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
-			}
-			
+
 			hittype &~= DEATH_HITTYPEMASK;
 			switch (hittype)
 			{
-                case DEATH_HG_NORMAL:
-                case DEATH_HG_REMOTE:
-                case DEATH_HG_NAPALM:
-                case DEATH_HG_BAIT:
+                case HG_NORMAL:
+                case HG_REMOTE:
+                case HG_NAPALM:
+                case HG_BAIT:
                     pointparticles(rm_particleeffectnum("RM_EXPLOSION"), self.origin, '0 0 0', 1);
                     break;
                 
-                case DEATH_HG_PLASMA_SHARD: case DEATH_HG_LASER:
-                    org2 = org + backoff * 6;
-                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == DEATH_HG_LASER)), org2, '0 0 0', 1);
-                    if(!issilent)
-                        sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
-                    break;
-                    
-                case DEATH_HG_PLASMA:
-                    org2 = org + backoff * 2;
-                    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
-                    if(!issilent)
-                        sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+                case HG_PLASMA: case HG_LASER:
+                    if((hittype == HG_PLASMA && (secondary || bounce)) || hittype == HG_LASER) {
+                        org2 = org + backoff * 6;
+                        pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2 - (hittype == HG_LASER)), org2, '0 0 0', 1);
+                        if(!issilent)
+                            sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+                    } else { // plasma bomb explosion
+                        org2 = org + backoff * 2;
+                        pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_EXPLODE", self.team, 2), org2, '0 0 0', 1);
+                        if(!issilent)
+                            sound(self, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+                    }
                     break;
 			}
 		}
@@ -176,7 +168,7 @@ void Ent_DamageInfo(float isNew)
 				org2 = org + backoff * 6;
 				if(secondary)
 				{
-					pointparticles(particleeffectnum("electro_ballexplode"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", self.team, 2), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
 				}
@@ -185,13 +177,13 @@ void Ent_DamageInfo(float isNew)
 					if(bounce)
 					{
 						// this is sent as "primary bounce" to distinguish it from secondary bounced balls
-						pointparticles(particleeffectnum("electro_combo"), org2, '0 0 0', 1);
+						pointparticles(rm_particleeffectnum_team("RM_ELECTRO_COMBO", self.team, 2), org2, '0 0 0', 1);
 						if(!issilent)
 							sound(self, CHAN_PROJECTILE, "weapons/electro_impact_combo.wav", VOL_BASE, ATTN_NORM);
 					}
 					else
 					{
-						pointparticles(particleeffectnum("electro_impact"), org2, '0 0 0', 1);
+						pointparticles(rm_particleeffectnum_team("RM_ELECTRO_IMPACT", self.team, 2), org2, '0 0 0', 1);
 						//if(!issilent)
 							//sound(self, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
 						if(!issilent)
@@ -203,13 +195,13 @@ void Ent_DamageInfo(float isNew)
 				org2 = org + backoff * 2;
 				if(secondary)
 				{
-					pointparticles(particleeffectnum("crylink_impact"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_CRYLINK_IMPACT", self.team, 4), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/crylink_impact2.wav", VOL_BASE, ATTN_NORM);
 				}
 				else
 				{
-					pointparticles(particleeffectnum("crylink_impactbig"), org2, '0 0 0', 1);
+					pointparticles(rm_particleeffectnum_team("RM_CRYLINK_IMPACT_BIG", self.team, 4), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/crylink_impact.wav", VOL_BASE, ATTN_NORM);
 				}
@@ -220,6 +212,16 @@ void Ent_DamageInfo(float isNew)
 				if(!issilent)
 					sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
 				break;
+            case WEP_ZAPPER:
+                org2 = org + backoff * 6;
+                if(secondary) {
+                    pointparticles(particleeffectnum("nex_impact"), org2, '0 0 0', 1);
+                    if(!issilent)
+                        sound(self, CHAN_PROJECTILE, "weapons/neximpact.wav", VOL_BASE, ATTN_NORM);
+                } else if(!issilent) {
+                    sound(self, CHAN_PROJECTILE, "weapons/zapper_impact.wav", VOL_BASE, ATTN_NORM);
+                }
+                break;
 			case WEP_HAGAR:
 				org2 = org + backoff * 6;
 				pointparticles(particleeffectnum("hagar_explode"), org2, '0 0 0', 1);
@@ -233,7 +235,7 @@ void Ent_DamageInfo(float isNew)
 						sound(self, CHAN_PROJECTILE, "weapons/hagexp3.wav", VOL_BASE, ATTN_NORM);
 				}
 				break;
-			case WEP_ROCKET_LAUNCHER:
+			case WEP_ROCKET_LAUNCHER: case WEP_FLAK:
 				org2 = org + backoff * 12;
 				pointparticles(particleeffectnum("rocket_explode"), org2, '0 0 0', 1);
 				if(!issilent)
@@ -283,10 +285,6 @@ void Ent_DamageInfo(float isNew)
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/fireball_impact2.wav", VOL_BASE, ATTN_NORM * 0.25); // long range boom
 				}
-				else
-				{
-					// firemine goes out silently
-				}
 				break;
 			default:
 				dprint("Unhandled damage of weapon ", ftos(hitwep), "\n");
@@ -317,7 +315,8 @@ void DamageInfo_Precache()
 	precache_sound("weapons/rocket_impact.wav");
 	precache_sound("weapons/fireball_impact.wav");
 	precache_sound("weapons/fireball_impact2.wav");
-	precache_sound (RM_SOUND_LASER_PRIMARY);
-	precache_sound (RM_SOUND_LASER_SECONDARY);
-	precache_sound (RM_SOUND_MINSTA);
+    precache_sound("weapons/zapper_impact.wav");
+	precache_sound(RM_SOUND_LASER_PRIMARY);
+	precache_sound(RM_SOUND_LASER_SECONDARY);
+	precache_sound(RM_SOUND_MINSTA);
 }

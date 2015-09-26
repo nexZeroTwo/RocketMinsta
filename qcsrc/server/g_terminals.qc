@@ -1,6 +1,6 @@
 
 void Term_Init(void) {
-    g_terminals = cvar("g_terminals");
+    g_terminals = CVAR(g_terminals);
     
     if(!g_terminals)
         return;
@@ -96,14 +96,14 @@ void Term_Hook_PlayerPreThink(void) {
     if(!g_terminals)
         return;
     
-    if((roundstate == ROUNDSTATE_OVER) || !self.iscreature || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO || time - self.lastdamage < cvar("g_terminals_auth_damage_delay") || self.hg_stealth) {
+    if((roundstate == ROUNDSTATE_OVER) || !self.iscreature || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO || time - self.lastdamage < CVAR(g_terminals_auth_damage_delay) || self.hg_stealth) {
         self.term_auth = self.term_authed = 0;
         return;
     }
     
-    FOR_EACH_TERMINAL(e) if(vlen(self.origin - e.origin) < cvar("g_terminals_auth_range")) {
+    FOR_EACH_TERMINAL(e) if(vlen(self.origin - e.origin) < CVAR(g_terminals_auth_range)) {
         makevectors(e.angles);
-        if(normalize(e.origin - self.origin + self.view_ofs) * v_right> 0)
+        if(normalize(e.origin - self.origin + self.view_ofs) * v_right > 0)
             continue;
         
         found = TRUE;
@@ -120,7 +120,7 @@ void Term_Hook_PlayerPreThink(void) {
             return;
         }
         
-        self.term_auth = approach(self.term_auth, 1, frametime / cvar("g_terminals_auth_time"));
+        self.term_auth = approach(self.term_auth, 1, frametime / CVAR(g_terminals_auth_time));
         
         if(self.term_auth == 1) {
             self.term_auth = 0;

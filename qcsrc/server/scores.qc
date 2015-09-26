@@ -186,8 +186,6 @@ void ScoreInfo_Init(float teams)
 		scores_initialized.classname = "ent_client_scoreinfo";
 		Net_LinkEntity(scores_initialized, FALSE, 0, ScoreInfo_SendEntity);
 	}
-	if(g_inf)
-		return;
 	if(teams >= 1)
 		TeamScore_Spawn(COLOR_TEAM1, "Red");
 	if(teams >= 2)
@@ -236,19 +234,19 @@ float PlayerScore_SendEntity(entity to, float sendflags)
     return TRUE;
 }
 
-void PlayerScore_Clear(entity player)
+void PlayerScore_Clear(entity player, float force)
 {
 	entity sk;
 	float i;
 
-	if(teamscores_entities_count)
+	if(teamscores_entities_count && !force)
 		return;
 	if(g_lms) return;
 	if(g_arena) return;
 	if(g_race && !g_race_qualifying) return;
 
 	sk = player.scorekeeper;
-	for(i = 0; i < MAX_SCORE; ++i)
+	for(i = 0; i < MAX_SCORE; ++i) if(!SCORE_DONT_CLEAR(i))
 	{
 		if(sk.(scores[i]) != 0)
 			if(scores_label[i] != "")
@@ -351,8 +349,19 @@ float PlayerScore_Set(entity player, float scorefield, float score) {
 	
 	s.SendFlags |= pow(2, scorefield);
 	s.(scores[scorefield]) = score;
-	
+
 	return score;
+}
+
+float PlayerScore_Get(entity player, float scorefield) {
+    if(!scores_initialized) return 0;
+    
+    entity s = player.scorekeeper;
+
+    if(!s)
+        return 0;
+
+    return s.(scores[scorefield]);
 }
 
 float PlayerScore_SetFlags(entity player, float flg) {
@@ -436,10 +445,10 @@ void WinningConditionHelper()
 	entity sk;
 
 	s = gametype_ID_to_Name(game);
-	s = strcat(s, ":", cvar_string("g_nexuizversion"));
+	s = strcat(s, ":", CVAR_STR(g_nexuizversion));
 	s = strcat(s, "::", GetPlayerScoreString(world, 2)); // make this 1 once we can
 
-	fullstatus = cvar("g_full_getstatus_responses");
+	fullstatus = CVAR(g_full_getstatus_responses);
 
 	if(teamscores_entities_count)
 	{

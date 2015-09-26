@@ -270,9 +270,11 @@ string(float chars, string s, ...) strpad = #225;
 string(string info, string key, string value, ...) infoadd = #226;
 string(string info, string key) infoget = #227;
 float(string s1, string s2, float len) strncmp = #228;
+float(string s1, string s2) strcmp = #228;
 float(string s1, string s2) strcasecmp = #229;
 float(string s1, string s2, float len) strncasecmp = #230;
 
+float(string s) strlennocol = #476;
 string(string s) strdecolorize = #477;
 
 //DP_QC_STRINGBUFFERS
@@ -347,3 +349,42 @@ float(float i) argv_end_index = #516;
 string(float, float) getgamedirinfo = #626;
 #define GETGAMEDIRINFO_NAME 0
 #define GETGAMEDIRINFO_DESCRIPTION 1
+
+string(string s) strtolower = #480;
+string(string s) strtoupper = #481;
+
+float(float s) asin = #471;
+float(float c) acos = #472;
+float(float t) atan = #473;
+float(float c, float s) atan2 = #474;
+float(float a) tan = #475;
+
+//DP_RM_CALLFUNCTIONEX
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+void(float idx, float val) CallFunctionEx_SetArgFloat = #150;
+void(float idx, float val) CallFunctionEx_SetArgInt = #151;
+void(float idx, vector val) CallFunctionEx_SetArgVector = #152;
+void(float idx, string val) CallFunctionEx_SetArgString = #153;
+void(float idx, entity val) CallFunctionEx_SetArgEntity = #153;
+void(string fname) CallFunctionEx = #154;
+float(string fname) CallFunctionEx_Float = #154;
+float(string fname, float castretval) CallFunctionEx_Float2 = #154;
+entity(string fname) CallFunctionEx_Entity = #154;
+vector(string fname) CallFunctionEx_Vector = #154;
+string(string fname) CallFunctionEx_String = #154;
+#define CallFunctionEx_Int(fname) CallFunctionEx_Float2(fname, TRUE)
+
+//DP_RM_GLOBALACCESS
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string) GlobalOfs = #170;
+float(string) GlobalType = #171;;
+float(float) GlobalInt = #172;
+float(float) GlobalFloat = #173;
+void(float, float) GlobalSetInt = #174;
+void(float, float) GlobalSetFloat = #175;
+string(string) GlobalGet = #176;
+float(string, string) GlobalSet = #177;

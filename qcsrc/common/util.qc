@@ -632,7 +632,7 @@ void compressShortVector_init()
 		l *= f;
 	}
 
-	if(cvar("developer"))
+	if(CVAR(developer))
 	{
 		print("Verifying vector compression table...\n");
 		for(i = 0x0F00; i < 0xFFFF; ++i)
@@ -778,7 +778,7 @@ void get_mi_min_max(float mode)
 
 	mi_min = mi;
 	mi_max = ma;
-	MapInfo_Get_ByName(mi_shortname, 0, 0);
+	MapInfo_Get_ByName(mi_shortname, 0, 0, 0);
 	if(MapInfo_Map_mins_x < MapInfo_Map_maxs_x)
 	{
 		mi_min = MapInfo_Map_mins;
@@ -904,14 +904,14 @@ void cvar_settemp(string pKey, string pValue)
 {
 	if(cvar_string(pKey) == pValue)
 		return;
-	cvar_set("settemp_list", strcat("1 ", pKey, " ", cvar_string("settemp_var"), " ", cvar_string("settemp_list")));
+	cvar_set("settemp_list", strcat("1 ", pKey, " ", CVAR_STR(settemp_var), " ", CVAR_STR(settemp_list)));
 #ifdef MENUQC
-	registercvar(cvar_string("settemp_var"), "", 0);
+	registercvar(CVAR_STR(settemp_var), "", 0);
 #else
-	registercvar(cvar_string("settemp_var"), "");
+	registercvar(CVAR_STR(settemp_var), "");
 #endif
-	cvar_set(cvar_string("settemp_var"), cvar_string(pKey));
-	cvar_set("settemp_var", strcat(cvar_string("settemp_var"), "x"));
+	cvar_set(CVAR_STR(settemp_var), cvar_string(pKey));
+	cvar_set("settemp_var", strcat(CVAR_STR(settemp_var), "x"));
 	cvar_set(pKey, pValue);
 }
 
@@ -919,7 +919,7 @@ void cvar_settemp_restore()
 {
 	// undo what cvar_settemp did
 	float n, i;
-	n = tokenize_console(cvar_string("settemp_list"));
+	n = tokenize_console(CVAR_STR(settemp_list));
 	for(i = 0; i < n - 3; i += 3)
 		cvar_set(argv(i + 1), cvar_string(argv(i + 2)));
 	cvar_set("settemp_list", "0");
@@ -1490,13 +1490,29 @@ float _unacceptable_compiler_bug_1_b() { return 1; }
 float _unacceptable_compiler_bug_1_c(float d) { return 2 * d; }
 float _unacceptable_compiler_bug_1_d() { return 1; }
 
+float test_global;
+
+float check_using_bug(void) {
+    using(test_global = 42)
+        return 512;
+}
+
 void check_unacceptable_compiler_bugs()
 {
-	if(cvar("_allow_unacceptable_compiler_bugs"))
+	if(CVAR(_allow_unacceptable_compiler_bugs))
 		return;
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
+
+    var v = [random(), random(), random()];
+    if(v != [v.x, v.y, v.z])
+        error("vectors are borked, please update rmqcc");
+
+    test_global = 9001;
+    check_using_bug();
+    if(test_global != 9001)
+        error("using is borked, please update rmqcc");
 }
 
 float compressShotOrigin(vector v)
@@ -1640,7 +1656,7 @@ string getcurrentmod()
 {
 	float n;
 	string m;
-	m = cvar_string("fs_gamedir");
+	m = CVAR_STR(fs_gamedir);
 	n = tokenize_console(m);
 	if(n == 0)
 		return "data";
@@ -1746,7 +1762,7 @@ string FormatDamage(float f) {
     if(!strstrofs(str, "-", 0))
         str = substring(str, 1, strlen(str));
     
-    return strcat(str, ((f >= 1000000)? "m" : ((f >= 1000)? "k" : "")));
+    return strcat(str, if(f >= 1000000) "m" else if(f >= 1000) "k" else "");
 }
 
 float strcmp(string s1, string s2) {
@@ -1770,7 +1786,7 @@ float strcmp(string s1, string s2) {
 
 #ifndef SVQC
 string FlagIcon(string cn) {
-    string i, s;
+    string i;
     
     if(cn == "")
         return "gfx/flagicons/xx";
@@ -1785,6 +1801,23 @@ string FlagIcon(string cn) {
     
     return i;
 }
+
+string firstkeyfor(string cmds) {
+    float i, k;
+    float ncmds = tokenize(cmds), nkeys;
+
+    for(i = 0; i < ncmds; ++i) {
+        nkeys = tokenize(findkeysforcommand(argv(0)));
+        for(k = 0; k < nkeys; ++k)
+            if(stof(argv(k)) >= 0)
+                return keynumtostring(stof(argv(k)));
+
+        ncmds = tokenize(cmds);
+    }
+
+    return argv(0);
+}
+
 #endif
 
 
@@ -1796,3 +1829,52 @@ float fexists(string f) {
     fclose(fh);
     return TRUE;
 }
+
+#ifndef MENUQC
+
+string Team_ColorCode(float t) {
+    if (t == COLOR_TEAM1)
+        return "^1";
+    else if (t == COLOR_TEAM2)
+        return "^4";
+    else if (t == COLOR_TEAM3)
+        return "^3";
+    else if (t == COLOR_TEAM4)
+        return "^6";
+    else
+        return "^7";
+}
+
+string Team_ColorName(float t) {
+    if (t == COLOR_TEAM1)
+        return "Red";
+    if (t == COLOR_TEAM2)
+        return "Blue";
+    if (t == COLOR_TEAM3)
+        return "Yellow";
+    if (t == COLOR_TEAM4)
+        return "Pink";
+    return "Neutral";
+}
+
+string Team_ColorNameLowerCase(float t) {
+    if (t == COLOR_TEAM1)
+        return "red";
+    if (t == COLOR_TEAM2)
+        return "blue";
+    if (t == COLOR_TEAM3)
+        return "yellow";
+    if (t == COLOR_TEAM4)
+        return "pink";
+    return "neutral";
+}
+
+string ColoredTeamName(float t) {
+    return strcat(Team_ColorCode(t), Team_ColorName(t), " Team^7");
+}
+
+string TeamName(float t) {
+    return strcat(Team_ColorName(t), " Team");
+}
+
+#endif

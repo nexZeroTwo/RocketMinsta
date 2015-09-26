@@ -457,17 +457,17 @@ void trigger_hurt_touch()
 		{
 			EXACTTRIGGER_TOUCH;
 			other.triggerhurttime = time + 1;
-			Damage (other, self, self, self.dmg, DEATH_HURTTRIGGER, other.origin, '0 0 0');
+
+            float d = DEATH_HURTTRIGGER;
+            if(other.pushltime == PUSHLTIME_HOOKFRAG)
+                d = DEATH_HOOKFRAG;
+
+			Damage(other, self, self, self.dmg, d, other.origin, '0 0 0');
 		}
 	}
 	else
 	{
-		if (other.owner == world && other.classname == "prec_rune")
-		{
-			EXACTTRIGGER_TOUCH;
-			other.pain_finished = 0;
-		}
-		else if (!other.owner)
+		if (!other.owner)
 		{
 			if (other.items & IT_KEY1 || other.items & IT_KEY2)	// reset flag
 			{
@@ -541,7 +541,7 @@ void trigger_heal_touch()
             other.triggerhealtime = time + 1;
             
             if(other.health < self.max_health) {
-                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
+                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
                 sound(other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
             }
         }
@@ -1290,7 +1290,7 @@ void spawnfunc_trigger_impulse()
 	EXACTTRIGGER_INIT;
     if(self.radius)
     {
-        if(!self.strength) self.strength = 2000 * cvar("g_triggerimpulse_radial_multiplier");
+        if(!self.strength) self.strength = 2000 * CVAR(g_triggerimpulse_radial_multiplier);
         setorigin(self, self.origin);
         setsize(self, '-1 -1 -1' * self.radius,'1 1 1' * self.radius);
         self.touch = trigger_impulse_touch3;
@@ -1299,13 +1299,13 @@ void spawnfunc_trigger_impulse()
     {
         if(self.target)
         {
-            if(!self.strength) self.strength = 950 * cvar("g_triggerimpulse_directional_multiplier");
+            if(!self.strength) self.strength = 950 * CVAR(g_triggerimpulse_directional_multiplier);
             self.touch = trigger_impulse_touch1;
         }
         else
         {
             if(!self.strength) self.strength = 0.9;
-			self.strength = pow(self.strength, cvar("g_triggerimpulse_accel_power")) * cvar("g_triggerimpulse_accel_multiplier");
+			self.strength = pow(self.strength, CVAR(g_triggerimpulse_accel_power)) * CVAR(g_triggerimpulse_accel_multiplier);
             self.touch = trigger_impulse_touch2;
         }
     }
@@ -1844,3 +1844,109 @@ void spawnfunc_trigger_magicear()
 	// target:
 	//   what to trigger
 }
+
+.entity trigger_gravity_check;
+void trigger_gravity_remove(entity own)
+{
+	if(own.trigger_gravity_check.owner == own)
+	{
+		UpdateCSQCProjectile(own);
+		own.gravity = own.trigger_gravity_check.gravity;
+		remove(own.trigger_gravity_check);
+	}
+	else
+		backtrace("Removing a trigger_gravity_check with no valid owner");
+	own.trigger_gravity_check = world;
+}
+void trigger_gravity_check_think()
+{
+	// This spawns when a player enters the gravity zone and checks if he left.
+	// Each frame, self.count is set to 2 by trigger_gravity_touch() and decreased by 1 here.
+	// It the player has left the gravity trigger, this will be allowed to reach 0 and indicate that.
+	if(self.count <= 0)
+	{
+		if(self.owner.trigger_gravity_check == self)
+			trigger_gravity_remove(self.owner);
+		else
+			remove(self);
+		return;
+	}
+	else
+	{
+		self.count -= 1;
+		self.nextthink = time;
+	}
+}
+
+void trigger_gravity_use()
+{
+	self.state = !self.state;
+}
+
+void trigger_gravity_touch()
+{
+	float g;
+
+	if(self.state != TRUE)
+		return;
+
+	EXACTTRIGGER_TOUCH;
+
+	g = self.gravity;
+
+	if not(self.spawnflags & 1)
+	{
+		if(other.trigger_gravity_check)
+		{
+			if(self == other.trigger_gravity_check.enemy)
+			{
+				// same?
+				other.trigger_gravity_check.count = 2; // gravity one more frame...
+				return;
+			}
+
+			// compare prio
+			if(self.cnt > other.trigger_gravity_check.enemy.cnt)
+				trigger_gravity_remove(other);
+			else
+				return;
+		}
+		other.trigger_gravity_check = spawn();
+		other.trigger_gravity_check.enemy = self;
+		other.trigger_gravity_check.owner = other;
+		other.trigger_gravity_check.gravity = other.gravity;
+		other.trigger_gravity_check.think = trigger_gravity_check_think;
+		other.trigger_gravity_check.nextthink = time;
+		other.trigger_gravity_check.count = 2;
+		if(other.gravity)
+			g *= other.gravity;
+	}
+
+	if (other.gravity != g)
+	{
+		other.gravity = g;
+		if(self.noise != "")
+			sound (other, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_NORM);
+		UpdateCSQCProjectile(other);
+	}
+}
+
+void spawnfunc_trigger_gravity()
+{
+	if(self.gravity == 1)
+		return;
+
+	EXACTTRIGGER_INIT;
+	self.touch = trigger_gravity_touch;
+	if(self.noise != "")
+		precache_sound(self.noise);
+
+	self.state = TRUE;
+	IFTARGETED
+	{
+		self.use = trigger_gravity_use;
+		if(self.spawnflags & 2)
+			self.state = FALSE;
+	}
+}
+

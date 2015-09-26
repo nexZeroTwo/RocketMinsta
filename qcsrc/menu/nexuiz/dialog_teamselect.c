@@ -26,7 +26,7 @@ entity makeTeamButton(string theName, vector theColor, string commandtheName)
 void showNotifyNexuizTeamSelectDialog(entity me)
 {
 	float teams, nTeams;
-	teams = cvar("_teams_available");
+	teams = CVAR(_teams_available);
 	nTeams = 0;
 	me.team1.disabled = !(teams & 1); nTeams += !!(teams & 1);
 	me.team2.disabled = !(teams & 2); nTeams += !!(teams & 2);

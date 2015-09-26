@@ -64,7 +64,7 @@ void configureSliderVisualsSlider(entity me, float sz, float theAlign, float the
 {
 	configureLabelLabel(me, string_null, sz, theAlign);
 	me.textSpace = theTextSpace;
-	me.keepspaceLeft = (theTextSpace == 0) ? 0 : (1 - theTextSpace);
+	me.keepspaceLeft = if(theTextSpace == 0) 0 else 1 - theTextSpace;
 	me.src = gfx;
 }
 void configureSliderValuesSlider(entity me, float theValueMin, float theValue, float theValueMax, float theValueStep, float theValueKeyStep, float theValuePageStep)

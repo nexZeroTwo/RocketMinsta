@@ -4,6 +4,10 @@
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 sys.qh
 pre-builtins.qh
 builtins.qh
@@ -31,6 +35,7 @@ campaign.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
+csqcmessage.qh
 
 teamcount.qh
 portals.qh
@@ -48,10 +53,8 @@ g_terminals.qh
 g_buffs.qh
 g_freeze.qh
 freezetag.qh
-vip.qh
 jailbreak.qh
 clanarena.qh
-precious.qh
 domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
@@ -59,6 +62,8 @@ damagetracker.qh
 irc.qh
 joinqueue.qh
 radio.qh
+g_subs.qh
+g_world.qh
 
 ../common/util.qc
 scores_rules.qc
@@ -67,13 +72,10 @@ waypointsprites.qc
 bot/bot.qc
 g_subs.qc
 g_tetris.qc
-runematch.qc
 arena.qc
 dodging.qc
 g_freeze.qc
 freezetag.qc
-vip.qc
-precious.qc
 g_violence.qc
 g_damage.qc
 teamplay.qc
@@ -86,7 +88,6 @@ verbstack.qc
 movelib.qc
 steerlib.qc
 
-rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
@@ -118,6 +119,8 @@ w_hlac.qc
 w_campingrifle.qc
 w_tuba.qc
 w_fireball.qc
+w_zapper.qc
+w_flak.qc
 
 t_items.qc
 cl_weapons.qc
@@ -170,7 +173,6 @@ ipban.qc
 
 
 
-t_quake3.qc
 t_halflife.qc
 t_quake.qc
 
@@ -185,7 +187,6 @@ damagetracker.qc
 
 //// tZork Turrets ////
 tturrets/include/turrets.qh
-vehicles/vehicles.qh
 
 scores.qc
 
@@ -205,5 +206,6 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+csqcmessage.qc
 radio.qc
 

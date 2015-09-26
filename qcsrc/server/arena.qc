@@ -36,22 +36,22 @@ void reset_map(float dorespawn)
 
 	if(g_arena)
 	{
-		if(cvar("g_arena_warmup"))
-			warmup = time + cvar("g_arena_warmup");
+		if(CVAR(g_arena_warmup))
+			warmup = time + CVAR(g_arena_warmup);
 	}
 	else if(g_freezetag)
-		warmup = time + cvar("g_freezetag_warmup");
+		warmup = time + CVAR(g_freezetag_warmup);
 	else if(g_jailbreak)
-		warmup = time + cvar("g_jailbreak_warmup");
+		warmup = time + CVAR(g_jailbreak_warmup);
     else if(g_clanarena)
-        warmup = time + cvar("g_clanarena_warmup");
+        warmup = time + CVAR(g_clanarena_warmup);
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
 
 	race_ReadyRestart();
     
-    if(cvar("g_swap_teams"))
+    if(CVAR(g_swap_teams))
         SwapTeams();
     
     Buffs_Randomize(world, FALSE);
@@ -85,13 +85,7 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
-	
-	if(g_vip)
-	{
-		vip_ClearVIPs_MaybeAssign();
-		//vip_RespawnSoulGems();
-	}
-    
+
     if(teamcount_balancenext)
         TeamCount_BalanceTeams();
     
@@ -101,18 +95,22 @@ void reset_map(float dorespawn)
 	FOR_EACH_CLIENT(self) {
         self.hg_clearammo = 0;
         self.playtimeupdate = time;
-		if(self.flags & FL_CLIENT)				// reset all players
+		if(self.flags & FL_CLIENT && self.scorekeeper)				// reset all players
 		{
             if(g_freeze)
                 self.frozenrow = 0;
             
             if(g_nadgets) {
-                if(self.hg_type_picked_nextround >= 0)
-                    self.hg_type_picked = self.hg_type_picked_nextround;
+                HG_DO_IN_ALL_CONTEXTS({
+                    if(self.hg_ctx_type_picked_nextround >= 0)
+                        self.hg_ctx_type_picked = self.hg_ctx_type_picked_nextround;
+                    self.hg_ctx_type_picked_nextround = -1;  
+                })
+
                 if(self.hg_optout_nextround >= 0)
                     self.hg_optout = self.hg_optout_nextround;
-                
-                self.hg_type_picked_nextround = self.hg_optout_nextround = -1;
+
+                self.hg_optout_nextround = -1;
             }
             
 			if(g_arena)
@@ -122,7 +120,7 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak || g_clanarena)
+			else if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 			{
 				if(self.classname == "player") {
 					PutClientInServer();
@@ -170,7 +168,7 @@ void reset_map(float dorespawn)
 	}
 
 	if(g_keyhunt)
-		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round")+(game_starttime - time), "", kh_StartRound);
+		kh_Controller_SetThink(CVAR(g_balance_keyhunt_delay_round)+(game_starttime - time), "", kh_StartRound);
 
 	if(g_arena)
 	if(champion)
@@ -326,18 +324,16 @@ void Spawnqueue_Check()
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
+	if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 	{
 		if((next_round && next_round < time))
 		{
 			if(intermission_running)
 			{
-				//bprint("Freezetag: GAME OVER (2)\n");
 				next_round = 0;
 				return;
 			}
-			
-			//bprint("Freezetag: round reset\n");
+
 			next_round = 0;
 			reset_map(TRUE);
 		}

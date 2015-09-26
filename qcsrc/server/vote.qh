@@ -4,11 +4,13 @@ string votecalledvote_display;
 float votecalledmaster;
 entity votecaller;
 float votefinished;
+float vote_invite;
 .float vote_master;
 .float vote_next;
 .float vote_vote;
 
 .string vote_mastername;
+.string vote_masteruser;
 
 float VoteCheckNasty(string cmd);
 entity GetKickVoteVictim(string vote, string cmd, entity caller);

@@ -29,10 +29,10 @@ void Radio_Think(void) {
         return;
     }
 
-    if(cvar("bgmvolume") < 0.1)
+    if(CVAR(bgmvolume) < 0.1)
         cvar_clientsettemp("bgmvolume", "0.1");
 
-    float start = (self.flags? 0 : servertime - self.radio_starttime);
+    float start = if(self.flags) 0 else servertime - self.radio_starttime;
     localcmd("cd reset; cd remap ", self.netname, "; cd loop 1 ", ftos(start), ";");
     strunzone(self.netname);
 

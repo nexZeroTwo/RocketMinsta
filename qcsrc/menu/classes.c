@@ -28,6 +28,7 @@
 #include "nexuiz/dialog_rmconfig.c"
 #include "nexuiz/dialog_gamemenu.c"
 #include "nexuiz/dialog_nademenu.c"
+#include "nexuiz/dialog_nademenudouble.c"
 #include "nexuiz/dialog_vcall.c"
 #include "nexuiz/votelist.c"
 #include "nexuiz/dialog_settings.c"
@@ -93,3 +94,4 @@
 #include "nexuiz/colorpicker.c"
 #include "nexuiz/cvarlist.c"
 #include "nexuiz/dialog_settings_misc_cvars.c"
+#include "nexuiz/dialog_nagger.c"

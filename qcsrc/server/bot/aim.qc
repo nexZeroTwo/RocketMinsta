@@ -6,7 +6,9 @@
 float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, float shotspeed, float shotspeedupward, float maxtime, float shotdelay, entity ignore)
 {
 	local float c, savesolid, shottime;
-	local vector dir, end, v;
+	//local vector dir, end, v;
+	local vector dir, end, v, o;
+	
 	if (shotspeed < 1)
 		return FALSE; // could cause division by zero if calculated
 	if (targ.solid < SOLID_BBOX) // SOLID_NOT and SOLID_TRIGGER
@@ -17,9 +19,14 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	setsize(tracetossent, m1, m2);
 	savesolid = targ.solid;
 	targ.solid = SOLID_NOT;
-	shottime = ((vlen(targ.origin - org) / shotspeed) + shotdelay);
-	v = targ.velocity * shottime + targ.origin;
-	tracebox(targ.origin, targ.mins, targ.maxs, v, FALSE, targ);
+	//shottime = ((vlen(targ.origin - org) / shotspeed) + shotdelay);
+	//v = targ.velocity * shottime + targ.origin;
+	//tracebox(targ.origin, targ.mins, targ.maxs, v, FALSE, targ);
+	o = (targ.absmin + targ.absmax) * 0.5;
+	shottime = ((vlen(o - org) / shotspeed) + shotdelay);
+	v = targ.velocity * shottime + o;
+	tracebox(o, targ.mins, targ.maxs, v, FALSE, targ);
+	
 	v = trace_endpos;
 	end = v + (targ.mins + targ.maxs) * 0.5;
 	if ((vlen(end - org) / shotspeed + 0.2) > maxtime)
@@ -40,6 +47,12 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 	setorigin(tracetossfaketarget, v);
 
 	c = 0;
+	//headshot option
+	if(self.weapon == WEP_CAMPINGRIFLE)
+	if(!self.enemy.crouch)
+	if(random() < 0.7)
+		end_z = end_z + 10;
+	//
 	dir = normalize(end - org);
 	while (c < 10) // 10 traces
 	{
@@ -60,7 +73,15 @@ float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, f
 
 			return TRUE;
 		}
-		dir_z = dir_z + 0.1; // aim up a little more
+		if(self.weapon == WEP_CAMPINGRIFLE)
+		if(!self.enemy.crouch)
+		{
+			dir_z = dir_z;
+		}
+		else
+		{
+			dir_z = dir_z + 0.1; // aim up a little more
+		}
 		c = c + 1;
 	}
 	targ.solid = savesolid;
@@ -100,10 +121,6 @@ float lag_additem(float t, float f1, float f2, entity e1, vector v1, vector v2, 
 
 float bot_shouldattack(entity e)
 {
-	if(g_prec) if(self.prec_rune.classname != "prec_rune")
-		if(e.prec_rune.classname != "prec_rune")
-			if(e.health + e.armorvalue > 20) return 0;
-
 	if (e.team == self.team)
 	{
 		if (e == self)
@@ -113,6 +130,14 @@ float bot_shouldattack(entity e)
 			return FALSE;
 	}
 
+	if (g_freeze)
+		if (e.frozen)
+			return FALSE;
+	
+	//this part will work only with RM
+	if ((e.hg_shield) && (random() < 0.2)) // 0.7 replaced to 0.2
+		return FALSE;
+	
 	if(teams_matter)
 	{
 		if(e.team==0)
@@ -126,9 +151,8 @@ float bot_shouldattack(entity e)
 		return FALSE;
 	if (e.deadflag)
 		return FALSE;
-	if (e.BUTTON_CHAT)
-		if(!g_prec || e.prec_rune.classname == "prec_rune")
-			return FALSE;
+	if ((e.BUTTON_CHAT) && (random() < 0.4)) //lets kill chatters who trying to avoid bots
+		return FALSE;
 	if(g_minstagib)
 	if(e.items & IT_STRENGTH)
 		return FALSE;
@@ -179,7 +203,7 @@ float bot_aimdir(vector v, float maxfiredeviation)
 	if (time >= self.bot_badaimtime)
 	{
 		self.bot_badaimtime = max(self.bot_badaimtime + 0.3, time);
-		self.bot_badaimoffset = randomvec() * bound(0, 5 - 0.5 * (skill+self.bot_offsetskill), 5) * cvar("bot_ai_aimskill_offset");
+		self.bot_badaimoffset = randomvec() * bound(0, 5 - 0.5 * (skill+self.bot_offsetskill), 5) * CVAR(bot_ai_aimskill_offset);
 	}
 	desiredang = vectoangles(v) + self.bot_badaimoffset;
 	//dprint(" desired:", vtos(desiredang));
@@ -209,25 +233,25 @@ float bot_aimdir(vector v, float maxfiredeviation)
 	self.bot_prevaimtime = time;
 	// Here we will try to anticipate the comming aiming direction
 	self.bot_1st_order_aimfilter= self.bot_1st_order_aimfilter
-		+ (diffang * (1 / delta_t)    - self.bot_1st_order_aimfilter) * bound(0, cvar("bot_ai_aimskill_order_filter_1st"),1);
+		+ (diffang * (1 / delta_t)    - self.bot_1st_order_aimfilter) * bound(0, CVAR(bot_ai_aimskill_order_filter_1st),1);
 	self.bot_2nd_order_aimfilter= self.bot_2nd_order_aimfilter
-		+ (self.bot_1st_order_aimfilter - self.bot_2nd_order_aimfilter) * bound(0, cvar("bot_ai_aimskill_order_filter_2nd"),1);
+		+ (self.bot_1st_order_aimfilter - self.bot_2nd_order_aimfilter) * bound(0, CVAR(bot_ai_aimskill_order_filter_2nd),1);
 	self.bot_3th_order_aimfilter= self.bot_3th_order_aimfilter
-		+ (self.bot_2nd_order_aimfilter - self.bot_3th_order_aimfilter) * bound(0, cvar("bot_ai_aimskill_order_filter_3th"),1);
+		+ (self.bot_2nd_order_aimfilter - self.bot_3th_order_aimfilter) * bound(0, CVAR(bot_ai_aimskill_order_filter_3th),1);
 	self.bot_4th_order_aimfilter= self.bot_4th_order_aimfilter
-		+ (self.bot_3th_order_aimfilter - self.bot_4th_order_aimfilter) * bound(0, cvar("bot_ai_aimskill_order_filter_4th"),1);
+		+ (self.bot_3th_order_aimfilter - self.bot_4th_order_aimfilter) * bound(0, CVAR(bot_ai_aimskill_order_filter_4th),1);
 	self.bot_5th_order_aimfilter= self.bot_5th_order_aimfilter
-		+ (self.bot_4th_order_aimfilter - self.bot_5th_order_aimfilter) * bound(0, cvar("bot_ai_aimskill_order_filter_5th"),1);
+		+ (self.bot_4th_order_aimfilter - self.bot_5th_order_aimfilter) * bound(0, CVAR(bot_ai_aimskill_order_filter_5th),1);
 
 	//blend = (bound(0,skill,10)*0.1)*pow(1-bound(0,skill,10)*0.05,2.5)*5.656854249; //Plot formule before changing !
 	blend = bound(0,skill+self.bot_aimskill,10)*0.1;
 	desiredang = desiredang + blend *
 	(
-		  self.bot_1st_order_aimfilter * cvar("bot_ai_aimskill_order_mix_1st")
-		+ self.bot_2nd_order_aimfilter * cvar("bot_ai_aimskill_order_mix_2nd")
-		+ self.bot_3th_order_aimfilter * cvar("bot_ai_aimskill_order_mix_3th")
-		+ self.bot_4th_order_aimfilter * cvar("bot_ai_aimskill_order_mix_4th")
-		+ self.bot_5th_order_aimfilter * cvar("bot_ai_aimskill_order_mix_5th")
+		  self.bot_1st_order_aimfilter * CVAR(bot_ai_aimskill_order_mix_1st)
+		+ self.bot_2nd_order_aimfilter * CVAR(bot_ai_aimskill_order_mix_2nd)
+		+ self.bot_3th_order_aimfilter * CVAR(bot_ai_aimskill_order_mix_3th)
+		+ self.bot_4th_order_aimfilter * CVAR(bot_ai_aimskill_order_mix_4th)
+		+ self.bot_5th_order_aimfilter * CVAR(bot_ai_aimskill_order_mix_5th)
 	);
 
 	// calculate turn angles
@@ -251,7 +275,7 @@ float bot_aimdir(vector v, float maxfiredeviation)
 	diffang_y = diffang_y - floor(diffang_y / 360) * 360;
 	if (diffang_y >= 180)
 		diffang_y = diffang_y - 360;
-	desiredang = desiredang + diffang * bound(0,cvar("bot_ai_aimskill_think"),1);
+	desiredang = desiredang + diffang * bound(0,CVAR(bot_ai_aimskill_think),1);
 
 	// calculate turn angles
 	diffang = desiredang - self.v_angle;
@@ -267,12 +291,12 @@ float bot_aimdir(vector v, float maxfiredeviation)
 
 	// turn
 	local float r, fixedrate, blendrate;
-	fixedrate = cvar("bot_ai_aimskill_fixedrate") / bound(1,dist,1000);
-	blendrate = cvar("bot_ai_aimskill_blendrate");
+	fixedrate = CVAR(bot_ai_aimskill_fixedrate) / bound(1,dist,1000);
+	blendrate = CVAR(bot_ai_aimskill_blendrate);
 	r = max(fixedrate, blendrate);
 	//self.v_angle = self.v_angle + diffang * bound(frametime, r * frametime * (2+skill*skill*0.05-random()*0.05*(10-skill)), 1);
 	self.v_angle = self.v_angle + diffang * bound(delta_t, r * delta_t * (2+pow(skill+self.bot_mouseskill,3)*0.005-random()), 1);
-	self.v_angle = self.v_angle * bound(0,cvar("bot_ai_aimskill_mouse"),1) + desiredang * bound(0,(1-cvar("bot_ai_aimskill_mouse")),1);
+	self.v_angle = self.v_angle * bound(0,CVAR(bot_ai_aimskill_mouse),1) + desiredang * bound(0,(1-CVAR(bot_ai_aimskill_mouse)),1);
 	//self.v_angle = self.v_angle + diffang * bound(0, r * frametime * (skill * 0.5 + 2), 1);
 	//self.v_angle = self.v_angle + diffang * (1/ blendrate);
 	self.v_angle_z = 0;
@@ -342,10 +366,10 @@ float bot_aim(float shotspeed, float shotspeedupward, float maxshottime, float a
 	shotdir = v_forward;
 	v = bot_shotlead(self.bot_aimtargorigin, self.bot_aimtargvelocity, shotspeed, self.bot_aimlatency);
 	local float distanceratio;
-	distanceratio =sqrt(bound(0,skill,10000))*0.3*(vlen(v-shotorg)-100)/cvar("bot_ai_aimskill_firetolerance_distdegrees");
+	distanceratio =sqrt(bound(0,skill,10000))*0.3*(vlen(v-shotorg)-100)/CVAR(bot_ai_aimskill_firetolerance_distdegrees);
 	distanceratio = bound(0,distanceratio,1);
-	r =  (cvar("bot_ai_aimskill_firetolerance_maxdegrees")-cvar("bot_ai_aimskill_firetolerance_mindegrees"))
-		* (1-distanceratio) + cvar("bot_ai_aimskill_firetolerance_mindegrees");
+	r =  (CVAR(bot_ai_aimskill_firetolerance_maxdegrees)-CVAR(bot_ai_aimskill_firetolerance_mindegrees))
+		* (1-distanceratio) + CVAR(bot_ai_aimskill_firetolerance_mindegrees);
 	if (applygravity && self.bot_aimtarg)
 	{
 		if (!findtrajectorywithleading(shotorg, '0 0 0', '0 0 0', self.bot_aimtarg, shotspeed, shotspeedupward, maxshottime, 0, self))

@@ -1,6 +1,6 @@
 
 void Freeze_Init(void) {
-    if(!teams_matter || g_jailbreak || g_clanarena || (!cvar("g_freeze") && !g_freezetag))
+    if(!teams_matter || g_jailbreak || g_clanarena || (!CVAR(g_freeze) && !g_freezetag))
         return;
     
     g_freeze = TRUE;
@@ -62,10 +62,10 @@ void Freeze_Frame(void) {
         wr = Freeze_CVar("global_warming_minratio");
         
         if(!g_freeze_globalwarming_warned && wr < 1) {
-            r = min(r, (teamcount_playerstotal[0]? teamcount_playersalive[0]/teamcount_playerstotal[0] : 1));
-            r = min(r, (teamcount_playerstotal[1]? teamcount_playersalive[1]/teamcount_playerstotal[1] : 1));
-            r = min(r, (teamcount_playerstotal[2]? teamcount_playersalive[2]/teamcount_playerstotal[2] : 1));
-            r = min(r, (teamcount_playerstotal[3]? teamcount_playersalive[3]/teamcount_playerstotal[3] : 1));
+            r = min(r, if(teamcount_playerstotal[0]) teamcount_playersalive[0]/teamcount_playerstotal[0] else 1);
+            r = min(r, if(teamcount_playerstotal[1]) teamcount_playersalive[1]/teamcount_playerstotal[1] else 1);
+            r = min(r, if(teamcount_playerstotal[2]) teamcount_playersalive[2]/teamcount_playerstotal[2] else 1);
+            r = min(r, if(teamcount_playerstotal[3]) teamcount_playersalive[3]/teamcount_playerstotal[3] else 1);
         } else r = 0;
         
         if(r <= wr) {
@@ -88,7 +88,6 @@ void Freeze_Frame(void) {
 }
 
 float Freeze_GameInProgress(void) {
-    //return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
     return roundstate == ROUNDSTATE_GAME;
 }
 
@@ -145,6 +144,7 @@ entity Freeze_SpawnWaypoint(entity plr) {
     entity w = WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
+    w.waypointsprite_appeartime = time + Freeze_CVar("frozen_waypoint_delay");
     return w;
 }
 
@@ -160,6 +160,8 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
     plr.meltprogress = 0;
     RemoveGrapplingHook(plr);
     
+    Buffs_MEODP_Point_Detach(plr);
+
     if(!plr.iceblock)
         Freeze_SpawnIceBlock(plr);
         
@@ -202,7 +204,7 @@ void Freeze_UnfreezePlayer(entity plr)
         WaypointSprite_Disown(plr.freeze_waypoint, 0.5);
     
     if(g_nadgets) {
-        if(cvar("g_nadgets_regen_time")) {
+        if(CVAR(g_nadgets_regen)) {
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
@@ -210,6 +212,11 @@ void Freeze_UnfreezePlayer(entity plr)
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
     Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
+
+    entity e;
+    for(;(e = find(e, classname, "grapplinghook"));)
+        if(e.aiment == plr)
+            RemoveGrapplingHook(e.owner);
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -274,10 +281,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
-    
-    if(g_vip && ISVIP(self))
-        return 0;
-    
+
     if(!self.frozen) {
         Boobs_DropAllAndRespawn(frce);
         Freeze_FreezePlayer(self, attacker);
@@ -356,7 +360,7 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
     
     Freeze_UnfreezePlayer(plr);
     plr.revtime = time;
-    
+
     // EVERY team mate nearby gets a point (even if multiple!)
     
     if(Freeze_CVar("score_revival_shared"))
@@ -367,17 +371,16 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
         PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
         
-        float heal = Freeze_CVar("revive_heal");
+        float heal = max(max(Freeze_CVar("revive_heal") - e.health, 0), Freeze_CVar("revive_heal_min"));
         if(heal)
-            Heal(e, plr, e, heal, 0, heal, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0');
+            Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
         if(Freeze_CVar("revive_bonusgrenade"))
         if(e.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
             HG_GiveBonus(e, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
-                        strcat(ftos(e.revrow), " revivals in a row")
-            );
+                        strcat(ftos(e.revrow), " revivals in a row"), TRUE);
             e.revrow = 0;
         }
         
@@ -390,7 +393,13 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         e.revprogress = plr.revprogress;
         e.revresettime = time + frametime * 2;
     }
-    
+
+    float minh = Freeze_CVar("revived_minhealth");
+    float mina = Freeze_CVar("revived_minarmor");
+        
+    if(minh || mina)
+        Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
+
     plr.hg_plasmalock = 0;
     centerprint_spec(plr, strcat("^5You were revived by ^7", names, "\n"));
     bprint("^7", names, "^5 revived ^7", plr.netname, "\n");
@@ -480,7 +489,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
         
         FOR_EACH_PLAYER(other)
-            if(time - other.hg_stealthtime >= cvar("g_nadgets_cloak_actiondelay"))
+            if(time - other.hg_stealthtime >= CVAR(g_nadgets_cloak_actiondelay))
             if(self != other && !other.frozen && other.team == self.team)
             if(time - other.revtime >= Freeze_CVar("revive_delay_after_revived"))
             if(time - other.lastdamage >= Freeze_CVar("revive_delay_for_reviver"))
@@ -511,13 +520,14 @@ void Freeze_Hook_PlayerPreThink(void) {
                     
                     float lmod = 1;
                     if(other.hg_shield)
-                        lmod *= cvar("g_nadgets_shield_progressrate");
+                        lmod *= CVAR(g_nadgets_shield_progressrate);
                     
                     float med = Buffs_BuffPower(other, BUFF_MEDIC);
                     if(med)
-                        lmod = lmod + (cvar("g_buffs_medic_revivefactor") - lmod) * med;
+                        lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
                     
                     rmod = max(rmod, lmod);
+                    other.buff_stealth_time = time;
                 }
             }
     }
@@ -580,23 +590,20 @@ void Freeze_Hook_PlayerPhysics(void) {
             if(Freeze_CVar("movespeed_dependonmelt"))
                 s *= self.revprogress;
             
-            self.movement_x = (
-                (self.movement_x > 0)?
-                    bound( 0, self.movement_x, s)
-                :	bound(-s, self.movement_x, 0)
-            );
+            self.movement_x = if(self.movement_x > 0)
+                bound( 0, self.movement_x, s)
+            else
+                bound(-s, self.movement_x, 0);
             
-            self.movement_y = (
-                (self.movement_y > 0)?
-                    bound( 0, self.movement_y, s)
-                :	bound(-s, self.movement_y, 0)
-            );
+            self.movement_y = if(self.movement_y > 0)
+                bound( 0, self.movement_y, s)
+            else
+                bound(-s, self.movement_y, 0);
             
-            self.movement_z = (
-                (self.movement_z > 0)?
-                    bound( 0, self.movement_z, s)
-                :	bound(-s, self.movement_z, 0)
-            );
+            self.movement_z = if(self.movement_z > 0)
+                bound( 0, self.movement_z, s)
+            else
+                bound(-s, self.movement_z, 0);
         } else
             self.movement = '0 0 0';
         

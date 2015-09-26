@@ -2,6 +2,8 @@
 
 #pragma flag off fastarrays // make dp behave with new fteqcc versions. remove when dp bug with fteqcc fastarrays is fixed
 #pragma flag on subscope
+#pragma flag on lo
+#pragma flag on iffloat
 
 //NOTE: THIS IS AN INTERFACE FILE. DO NOT EDIT.
 //MODIFYING THIS FILE CAN RESULT IN CRC ERRORS.
@@ -163,14 +165,6 @@ float		sbar_currentammo;
 // float		dmg_save;
 // vector		dmg_origin;
 
-// Darkplaces Render Modifications
-#if 0
-.float alpha;
-.float renderflags;
-.vector colormod;
-.float scale;
-#endif
-
 // Basic variables
 .float enttype; // entity type sent from server
 .float sv_entnum; // entity number sent from server
@@ -224,6 +218,7 @@ float announcer_5min;
 // database for misc stuff
 float tempdb;
 vector hook_shotorigin;
+vector zapper_shotorigin;
 
 #ifdef BLURTEST
 float blurtest_time0, blurtest_time1, blurtest_radius, blurtest_power;

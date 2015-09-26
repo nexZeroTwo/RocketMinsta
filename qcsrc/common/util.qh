@@ -197,10 +197,6 @@ void defer(float fdelay, void() func);
 
 string mmss(float tenths);
 
-#ifdef MENUQC
-float sv_oldfag;		// just to make it compile
-#endif
-
 float TeamColorSkin(float);
 float approach(float v, float t, float d);
 
@@ -213,6 +209,15 @@ float strcmp(string s1, string s2);
 
 #ifndef SVQC
 string FlagIcon(string cn);
+string firstkeyfor(string cmds);
 #endif
 
 float fexists(string f);
+
+#ifndef MENUQC
+string Team_ColorCode(float t);
+string Team_ColorName(float t);
+string Team_ColorNameLowerCase(float t);
+string TeamName(float t);
+string ColoredTeamName(float t);
+#endif

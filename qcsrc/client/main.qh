@@ -10,18 +10,7 @@ const string string_null;
 
 #define DATABUF_NEXT (5*maxclients)
 
-void() menu_show_error;
-void() menu_sub_null;
-
-float menu_visible;
-var void() menu_show;
-var float(float bInputType, float nPrimary, float nSecondary) menu_action;
-
-// --------------------------------------------------------------------------
-// CTF
-
-void() ctf_menu_show;
-string ctf_temp_1;
+var void(void) func_null;
 
 // --------------------------------------------------------------------------
 // Onslaught
@@ -172,7 +161,6 @@ string bigprint_oldstring;
 float bigprint_oldfadetime;
 float bigprint_commentfadetime;
 float bigprint_commentappeartime;
-float bigprint_nofadein;
 float bigprint_oldappeartime;
 
 void bigprint(string, string, float);
@@ -215,6 +203,7 @@ float vote_nocount;
 float vote_needed;
 float vote_active;
 float vote_highlighted;
+float vote_invite;
 
 float is_tmpmadoka;
 float tmpmadoka_fadetime;
@@ -272,14 +261,6 @@ float hudlock_alt;
 #define hudlocked_old hudlock_old
 #define hudlocked_alt hudlock_alt
 
-float vip_red_health;
-float vip_red_maxhealth;
-string vip_red_name;
-
-float vip_blue_health;
-float vip_blue_maxhealth;
-string vip_blue_name;
-
 float screenfade;
 
 float fovlock;
@@ -314,6 +295,7 @@ float sv_showfps;
 float sv_oldfag;
 
 float g_nadgets;
+float g_nadgets_double;
 float sv_scoreboard_heal_column;
 float g_freeze;
 
@@ -337,3 +319,17 @@ float sv_damagestats;
 
 float GetBigfont();
 void cvar_clientsettemp(string cv, string val);
+
+float sbar_selectedplayer;
+float sbar_selectedplayer_alpha;
+float sbar_selectedplayer_fadetime;
+string sbar_selectedplayer_name;
+
+.float healthvalue;
+.float armorvalue;
+
+#define ID_ME (if(spectatee_status > 0) spectatee_status else player_localentnum)
+
+// Needed to know if we should zoom on nex secondary or not
+float g_balance_nex_secondary;
+float fps_friendly;

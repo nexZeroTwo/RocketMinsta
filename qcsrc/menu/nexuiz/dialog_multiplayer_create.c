@@ -39,8 +39,6 @@ void fillNexuizServerCreateTab(entity me)
 			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_arena", "Arena"));
 			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_runematch", "Runematch"));
-			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_race", "Race"));
 			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_cts", "Race CTS"));
@@ -65,14 +63,8 @@ void fillNexuizServerCreateTab(entity me)
 			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_total_domination", "Total Dom"));
 			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_vip", "VIP"));
-			if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_freezetag", "Freeze Tag"));
 			if(e.checked) e0 = NULL;
-		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_prec", "Precious"));
-			if(e.checked) e0 = NULL;
-		//me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_inf", "Infection"));
-		//	if(e.checked) e0 = NULL;
 		me.TD(me, 1, me.columns / n, e = makeNexuizGametypeButton(1, "g_jailbreak", "Jailbreak"));
 			if(e.checked) e0 = NULL;
 		if(e0)
@@ -222,7 +214,6 @@ void gameTypeChangeNotifyNexuizServerCreateTab(entity me)
 		case MAPINFO_TYPE_CTF:        GameType_ConfigureSliders(e, l, l2, "Capture limit:",   1,   20, 1, "capturelimit_override");     break;
 		case MAPINFO_TYPE_DOMINATION: GameType_ConfigureSliders(e, l, l2, "Point limit:",    50,  500, 10, "g_domination_point_limit"); break;
 		case MAPINFO_TYPE_KEYHUNT:    GameType_ConfigureSliders(e, l, l2, "Point limit:",   200, 1500, 50, "g_keyhunt_point_limit");    break;
-		case MAPINFO_TYPE_RUNEMATCH:  GameType_ConfigureSliders(e, l, l2, "Point limit:",    50,  500, 10, "g_runematch_point_limit");  break;
 		case MAPINFO_TYPE_LMS:        GameType_ConfigureSliders(e, l, l2, "Lives:",           3,   50,  1, "g_lms_lives_override");     break;
 		case MAPINFO_TYPE_RACE:       GameType_ConfigureSliders(e, l, l2, "Laps:",            1,   25,  1, "g_race_laps_limit");        break;
 		case MAPINFO_TYPE_NEXBALL:    GameType_ConfigureSliders(e, l, l2, "Goals:",           1,   50,  1, "g_nexball_goallimit");      break;

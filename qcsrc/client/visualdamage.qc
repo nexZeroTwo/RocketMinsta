@@ -15,11 +15,12 @@ entity vd_head;
 entity vd_tail;
 .entity  vd_next;
 float vd_cnt;
+float vd_dirswitch;
 
 float rm_visualdamage_fontsize;
 
 #define VDMG_FONTSIZE rm_visualdamage_fontsize
-#define VDMG_ALPHAOFFSET '0 -50 0'
+#define VDMG_ALPHAOFFSET 50
 #define VDMG_ALPHA 0.8
 
 void VisualDamage_FixPositions(void) {
@@ -57,7 +58,7 @@ void VisualDamage_PreDraw(void) {
     float tmp;
     
     drawfont = sbar_bigfont;
-    rm_visualdamage_fontsize = cvar("rm_visualdamage_fontsize");
+    rm_visualdamage_fontsize = CVAR(rm_visualdamage_fontsize);
     for(e = vd_head; e; e = e.vd_next) {
         if(!(e.vd_type & VDMG_TYPE_TOSELF)) {
             o = e.vd_projected = project_3d_to_2d(e.origin);
@@ -75,19 +76,19 @@ void VisualDamage_PreDraw(void) {
             s2 = "Immune";
         else {
             if(e.vd_damage) {
-                s = ftos((e.vd_damage < 10)? e.vd_damage : rint(e.vd_damage));
+                s = ftos(if(e.vd_damage < 10) e.vd_damage else rint(e.vd_damage));
                 tmp = strstrofs(s, ".", 0);
                 if(tmp >= 0)
                     s = substring(s, 0, tmp + 2);
             }
             
             if(e.vd_armordamage) {
-                s2 = ftos((e.vd_armordamage < 10)? e.vd_armordamage : rint(e.vd_armordamage));
+                s2 = ftos(if(e.vd_armordamage < 10) e.vd_armordamage else rint(e.vd_armordamage));
                 tmp = strstrofs(s2, ".", 0);
                 if(tmp >= 0)
                     s2 = substring(s2, 0, tmp + 2);
                 
-                s2 = strcat((e.vd_damage? "  [" : "["), s2, "]");
+                s2 = strcat(if(e.vd_damage) "  [" else "[", s2, "]");
             }
         }
         
@@ -102,17 +103,18 @@ void VisualDamage_PreDraw(void) {
             e.vd_projected = vdmg_dmgtakenorigin - '0 10 0';
     }
     
-    VisualDamage_FixPositions();
+    if(CVAR(rm_visualdamage_nooverlap))
+        VisualDamage_FixPositions();
+
     drawfont = sbar_font;
 }
 
 void VisualDamage_Draw(void) {
     float a = ipol_swingInOut(self.alpha), sw, sw2, smod, smod2, a2, s2;
     vector o, clr;
-    vector offs = VDMG_ALPHAOFFSET * (1 - self.alpha);
+    vector offs = self.movedir * VDMG_ALPHAOFFSET * (1 - self.alpha);
     
     smod2 = 1;
-    
     if(self.vd_type & VDMG_TYPE_CRIT)
         smod = 2;
     else if(self.vd_type & VDMG_TYPE_TOSELF && self.vd_type & VDMG_TYPE_HIT)
@@ -205,6 +207,20 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     e.vd_flag = TRUE;
     setorigin(e, org);
     
+    if(!vd_dirswitch)
+        vd_dirswitch = 1;
+    else
+        vd_dirswitch *= -1;
+
+    if(CVAR(rm_visualdamage_spreadout)) {
+        e.movedir_x = 5 * random() * vd_dirswitch;
+        e.movedir_y = -2;
+        e.movedir = normalize(e.movedir) * (1.1 - 0.3 * random());
+    } else
+        e.movedir = '0 -1 0';
+
+    e.movedir = e.movedir * CVAR(rm_visualdamage_movespeed);
+
     e.vd_next = vd_head;
     vd_head = e;
     
@@ -213,7 +229,7 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     
     ++vd_cnt;
     
-    if(vd_cnt > cvar("rm_visualdamage_limit")) {
+    if(vd_cnt > CVAR(rm_visualdamage_limit)) {
         entity oldtail = vd_tail;
         for(p = vd_head; p; p = p.vd_next) {
             if(p.vd_next == vd_tail) {

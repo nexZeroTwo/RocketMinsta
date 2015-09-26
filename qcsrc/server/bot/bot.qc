@@ -33,17 +33,17 @@ void bot_think()
 		return;
 
 	self.flags &~= FL_GODMODE;
-	if(cvar("bot_god"))
+	if(CVAR(bot_god))
 		self.flags |= FL_GODMODE;
 
-	self.bot_nextthink = self.bot_nextthink + cvar("bot_ai_thinkinterval") * pow(0.5, self.bot_aiskill);
+	self.bot_nextthink = self.bot_nextthink + CVAR(bot_ai_thinkinterval) * pow(0.5, self.bot_aiskill);
 	//if (self.bot_painintensity > 0)
 	//	self.bot_painintensity = self.bot_painintensity - (skill + 1) * 40 * frametime;
 
 	//self.bot_painintensity = self.bot_painintensity + self.bot_oldhealth - self.health;
 	//self.bot_painintensity = bound(0, self.bot_painintensity, 100);
 
-	if(time < game_starttime || ((cvar("g_campaign") && !campaign_bots_may_start)))
+	if(time < game_starttime || ((CVAR(g_campaign) && !campaign_bots_may_start)))
 	{
 		self.nextthink = time + 0.5;
 		return;
@@ -104,21 +104,21 @@ void bot_setnameandstuff()
 	string bot_name, bot_model, bot_skin, bot_shirt, bot_pants;
 	string name, prefix, suffix;
 
- 	if(cvar("g_campaign"))
+ 	if(CVAR(g_campaign))
 	{
 		prefix = "";
 		suffix = "";
 	}
 	else
 	{
-		prefix = cvar_string("bot_prefix");
-		suffix = cvar_string("bot_suffix");
+		prefix = CVAR_STR(bot_prefix);
+		suffix = CVAR_STR(bot_suffix);
 	}
 
-	file = fopen(cvar_string("bot_config_file"), FILE_READ);
+	file = fopen(CVAR_STR(bot_config_file), FILE_READ);
 
 	if(file < 0)
-		print(strcat("Error: Can not open the bot configuration file '",cvar_string("bot_config_file"),"'\n"));
+		print(strcat("Error: Can not open the bot configuration file '",CVAR_STR(bot_config_file),"'\n"));
 	else
 	{
 		RandomSelection_Init();
@@ -167,7 +167,7 @@ void bot_setnameandstuff()
 	self.bot_forced_team = stof(argv(5));
 
 	prio = 6;
-#define READSKILL(f,w,r) if(argv(prio) != "") self.f = stof(argv(prio)) * (w); else self.f = (!cvar("g_campaign")) * (2 * random() - 1) * (r) * (w); ++prio
+#define READSKILL(f,w,r) if(argv(prio) != "") self.f = stof(argv(prio)) * (w); else self.f = (!CVAR(g_campaign)) * (2 * random() - 1) * (r) * (w); ++prio
 	//print(bot_name, ": ping=", argv(9), "\n");
 
 	READSKILL(havocbot_keyboardskill, 0.5, 0.5); // keyboards kill
@@ -194,7 +194,7 @@ void bot_setnameandstuff()
 	self.bot_preferredcolors = self.clientcolors;
 
 	// pick the name
-	if (cvar("bot_usemodelnames"))
+	if (CVAR(bot_usemodelnames))
 		name = bot_model;
 	else
 		name = bot_name;
@@ -214,15 +214,15 @@ void bot_custom_weapon_priority_setup()
 
 	bot_custom_weapon = FALSE;
 
-	if(	cvar_string("bot_ai_custom_weapon_priority_far") == "" ||
-		cvar_string("bot_ai_custom_weapon_priority_mid") == "" ||
-		cvar_string("bot_ai_custom_weapon_priority_close") == "" ||
- 		cvar_string("bot_ai_custom_weapon_priority_distances") == ""
+	if(	CVAR_STR(bot_ai_custom_weapon_priority_far) == "" ||
+		CVAR_STR(bot_ai_custom_weapon_priority_mid) == "" ||
+		CVAR_STR(bot_ai_custom_weapon_priority_close) == "" ||
+ 		CVAR_STR(bot_ai_custom_weapon_priority_distances) == ""
 	)
 		return;
 
 	// Parse distances
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_distances")," ");
+	tokens = tokenizebyseparator(CVAR_STR(bot_ai_custom_weapon_priority_distances)," ");
 
 	if (tokens!=2)
 		return;
@@ -241,7 +241,7 @@ void bot_custom_weapon_priority_setup()
 	bot_weapons_close[0] = -1;
 
 	// Parse far distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_far")," ");
+	tokens = tokenizebyseparator(CVAR_STR(bot_ai_custom_weapon_priority_far)," ");
 
 	c = 0;
 	for(i=0; i < tokens && c < WEP_COUNT; ++i){
@@ -255,7 +255,7 @@ void bot_custom_weapon_priority_setup()
 		bot_weapons_far[c] = -1;
 
 	// Parse mid distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_mid")," ");
+	tokens = tokenizebyseparator(CVAR_STR(bot_ai_custom_weapon_priority_mid)," ");
 
 	c = 0;
 	for(i=0; i < tokens && c < WEP_COUNT; ++i){
@@ -269,7 +269,7 @@ void bot_custom_weapon_priority_setup()
 		bot_weapons_mid[c] = -1;
 
 	// Parse close distance weapon priorities
-	tokens = tokenizebyseparator(cvar_string("bot_ai_custom_weapon_priority_close")," ");
+	tokens = tokenizebyseparator(CVAR_STR(bot_ai_custom_weapon_priority_close)," ");
 
 	c = 0;
 	for(i=0; i < tokens && i < WEP_COUNT; ++i){
@@ -357,7 +357,13 @@ void bot_clientconnect()
 	self.createdtime = self.nextthink;
 	self.clientfov = 90;
 	self.hudskin = "default";
-
+	//grenades to bots
+// 	if(stof(CVAR_STR(g_handgrenades)))
+// 	{
+// 		self.hg_optout = 1;
+// 		self.hg_type = HG_LASER;
+// 	}
+	//
 	if(!self.bot_config_loaded) // This is needed so team overrider doesn't break between matches
 		bot_setnameandstuff();
 
@@ -470,20 +476,20 @@ void autoskill(float factor)
 	}
 	else if(bestbot <= bestplayer * factor - 2)
 	{
-		if(cvar("skill") < 17)
+		if(CVAR(skill) < 17)
 		{
 			dprint("2 frags difference, increasing skill\n");
-			cvar_set("skill", ftos(cvar("skill") + 1));
-			bprint("^2SKILL UP!^7 Now at level ", ftos(cvar("skill")), "\n");
+			cvar_set("skill", ftos(CVAR(skill) + 1));
+			bprint("^2SKILL UP!^7 Now at level ", ftos(CVAR(skill)), "\n");
 		}
 	}
 	else if(bestbot >= bestplayer * factor + 2)
 	{
-		if(cvar("skill") > 0)
+		if(CVAR(skill) > 0)
 		{
 			dprint("2 frags difference, decreasing skill\n");
-			cvar_set("skill", ftos(cvar("skill") - 1));
-			bprint("^1SKILL DOWN!^7 Now at level ", ftos(cvar("skill")), "\n");
+			cvar_set("skill", ftos(CVAR(skill) - 1));
+			bprint("^1SKILL DOWN!^7 Now at level ", ftos(CVAR(skill)), "\n");
 		}
 	}
 	else
@@ -508,13 +514,13 @@ void bot_serverframe()
 	if (time < 2)
 		return;
 
-	stepheightvec = cvar("sv_stepheight") * '0 0 1';
-	bot_navigation_movemode = ((cvar("bot_navigation_ignoreplayers")) ? MOVE_NOMONSTERS : MOVE_NORMAL);
+	stepheightvec = CVAR(sv_stepheight) * '0 0 1';
+	bot_navigation_movemode = if(CVAR(bot_navigation_ignoreplayers)) MOVE_NOMONSTERS else MOVE_NORMAL;
 
 	if(time > autoskill_nextthink)
 	{
 		float a;
-		a = cvar("skill_auto");
+		a = CVAR(skill_auto);
 		if(a)
 			autoskill(a);
 		autoskill_nextthink = time + 5;
@@ -535,17 +541,17 @@ void bot_serverframe()
 	// But don't remove bots immediately on level change, as the real players
 	// usually haven't rejoined yet
 	bots_would_leave = FALSE;
-	if ((realplayers || cvar("bot_join_empty") || (currentbots > 0 && time < 5)))
+	if ((realplayers || CVAR(bot_join_empty) || (currentbots > 0 && time < 5)))
 	{
 		float realminplayers, minplayers;
-		realminplayers = cvar("minplayers");
+		realminplayers = CVAR(minplayers);
 		minplayers = max(0, floor(realminplayers));
 
 		float realminbots, minbots;
-		if(teamplay && cvar("bot_vs_human"))
-			realminbots = ceil(fabs(cvar("bot_vs_human")) * activerealplayers);
+		if(teamplay && CVAR(bot_vs_human))
+			realminbots = ceil(fabs(CVAR(bot_vs_human)) * activerealplayers);
 		else
-			realminbots = cvar("bot_number");
+			realminbots = CVAR(bot_number);
 		minbots = max(0, floor(realminbots));
 
 		bots = min(max(minbots, minplayers - activerealplayers), maxclients - realplayers);
@@ -558,7 +564,7 @@ void bot_serverframe()
 		bots = 0;
 	}
 
-	bot_ignore_bots = cvar("bot_ignore_bots");
+	bot_ignore_bots = CVAR(bot_ignore_bots);
 
 	// only add one bot per frame to avoid utter chaos
 	if(time > botframe_nextthink)
@@ -579,11 +585,11 @@ void bot_serverframe()
 
 	if(botframe_spawnedwaypoints)
 	{
-		if(cvar("waypoint_benchmark"))
+		if(CVAR(waypoint_benchmark))
 			localcmd("quit\n");
 	}
 
-	if (currentbots > 0 || cvar("g_waypointeditor"))
+	if (currentbots > 0 || CVAR(g_waypointeditor))
 	if (botframe_spawnedwaypoints)
 	{
 		if(botframe_cachedwaypointlinks)
@@ -624,15 +630,15 @@ void bot_serverframe()
 		if (botframe_nextdangertime < time)
 		{
 			local float interval;
-			interval = cvar("bot_ai_dangerdetectioninterval");
+			interval = CVAR(bot_ai_dangerdetectioninterval);
 			if (botframe_nextdangertime < time - interval * 1.5)
 				botframe_nextdangertime = time;
 			botframe_nextdangertime = botframe_nextdangertime + interval;
-			botframe_updatedangerousobjects(cvar("bot_ai_dangerdetectionupdates"));
+			botframe_updatedangerousobjects(CVAR(bot_ai_dangerdetectionupdates));
 		}
 	}
 
-	if (cvar("g_waypointeditor"))
+	if (CVAR(g_waypointeditor))
 		botframe_showwaypointlinks();
 
 	if(time > bot_cvar_nextthink)

@@ -239,7 +239,7 @@ void addTabModalController(entity me, entity other, entity tabButton)
 
 void addItemModalController(entity me, entity other, vector theOrigin, vector theSize, float theAlpha)
 {
-	addItemContainer(me, other, theOrigin, theSize, (other == me.firstChild) ? theAlpha : 0);
+	addItemContainer(me, other, theOrigin, theSize, if(other == me.firstChild) theAlpha else 0);
 	other.ModalController_initialSize = other.Container_size;
 	other.ModalController_initialOrigin = other.Container_origin;
 	other.ModalController_initialAlpha = theAlpha; // hope Container never modifies this
