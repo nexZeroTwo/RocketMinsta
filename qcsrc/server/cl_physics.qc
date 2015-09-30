@@ -792,9 +792,8 @@ void SV_PlayerPhysics()
 		maxspd_mod = CVAR(g_nexball_basketball_carrier_speed);
 	}
     
-    float haste = Buffs_BuffPower(self, BUFF_HASTE);
-    if(haste)
-        maxspd_mod *= 1 + (CVAR(g_buffs_haste_move_rate) - 1) * haste;
+    if(Buffs_Present(self, BUFF_HASTE))
+        maxspd_mod *= CVAR(g_buffs_haste_move_rate);
 
     if(self.hg_shield)
         maxspd_mod *= CVAR(g_nadgets_shield_movespeed);

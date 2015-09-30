@@ -132,7 +132,6 @@ var .float hg_ctx_regenpaused;
 .float hg_linker_range;
 .float hg_linker_factor;
 .float hg_linker_hps;
-.float hg_linker_buffpower;
 
 .float hg_sentry_energy;
 

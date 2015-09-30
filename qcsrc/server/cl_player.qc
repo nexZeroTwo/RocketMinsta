@@ -917,7 +917,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
-        if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
+        if(Buffs_Present(attacker, BUFF_ADEPT)) {
             HG_DO_IN_ALL_CONTEXTS(if(attacker.hg_ctx_type == HG_BAIT) {
                 attacker.hg_ctx_ammo += 1;
                 HG_SetRegenTime(attacker, HG_RegenTime(attacker));

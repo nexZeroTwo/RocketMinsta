@@ -522,9 +522,8 @@ void Freeze_Hook_PlayerPreThink(void) {
                     if(other.hg_shield)
                         lmod *= CVAR(g_nadgets_shield_progressrate);
                     
-                    float med = Buffs_BuffPower(other, BUFF_MEDIC);
-                    if(med)
-                        lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
+                    if(Buffs_Present(other, BUFF_MEDIC))
+                        lmod *= CVAR(g_buffs_medic_revivefactor);
                     
                     rmod = max(rmod, lmod);
                     other.buff_stealth_time = time;
