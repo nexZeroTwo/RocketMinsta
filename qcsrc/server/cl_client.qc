@@ -1327,9 +1327,6 @@ void PutClientInServer (void)
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 
-        if(CVAR(sv_noplayershadows))
-            self.effects |= EF_NOSHADOW;
-
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)
         })
@@ -3170,6 +3167,13 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
+        if(frametime) {
+            if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))
+                self.effects |= EF_NOSHADOW;
+            else
+                self.effects &~= EF_NOSHADOW;
+        }
+
         if(sv_showacc)
         if(time > self.acctime) {
             float hit = self.damage_hits - self.weapon;
