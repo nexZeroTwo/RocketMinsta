@@ -1255,11 +1255,33 @@ void HG_Shield_Discharge_Think(void) {
     float damage;
     float arc = CVAR(g_nadgets_shield_damage_store_arc);
 
-    damage = min(self.owner.hg_shield_stored, CVAR(g_nadgets_shield_damage_store_burstamount));
+    var armorval = if(CVAR(g_nadgets_shield_damage_store_allow_armor_drain)) self.owner.armorvalue else 0;
+
+    if(self.owner.hg_shield_stored < -1)
+        damage = 0;
+    else
+        damage = min(max(0, self.owner.hg_shield_stored) + armorval, CVAR(g_nadgets_shield_damage_store_burstamount));
 
     if(damage <= 0 || !self.owner || !self.owner.iscreature || !PlayerMayFire(self.owner)) {
         remove(self);
         return;
+    }
+
+    var armordamage = 0;
+
+    if(self.owner.hg_shield_stored < 0) {
+        armordamage = damage;
+    } else {
+        self.owner.hg_shield_stored -= damage;
+        armordamage = -max(0, self.owner.hg_shield_stored);
+        if(self.owner.hg_shield_stored <= 0)
+            self.owner.hg_shield_stored = -1;
+    }
+
+    if(armordamage > 0 && armorval) {
+        var oldval = self.owner.armorvalue;
+        self.owner.armorvalue = max(0, self.owner.armorvalue - armordamage);
+        VisualDamage(self.owner, self.owner, 0, oldval - self.owner.armorvalue, VDMG_TYPE_HIT, self.owner.origin + self.owner.view_ofs);
     }
 
     makevectors(self.owner.v_angle);
@@ -1282,10 +1304,6 @@ void HG_Shield_Discharge_Think(void) {
         entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
             e.buffs_arc_hit = FALSE;
     }
-
-    self.owner.hg_shield_stored -= damage;
-    if(self.owner.hg_shield_stored < 0)
-        self.owner.hg_shield_stored = 0;
 
     self.nextthink = time + CVAR(g_nadgets_shield_damage_store_burstdelay);
 }
@@ -2694,6 +2712,8 @@ void HG_Trigger(void) {
         HG_Cloak_Trigger();
     else if(self.hg_shield)
         HG_Shield_Trigger();
+    else if(self.hg_shield_stored && CVAR(g_nadgets_shield_damage_store_allow_cancel_discharge))
+        self.hg_shield_stored = -2;
     else {
         HG_Sentry_Trigger();
 
