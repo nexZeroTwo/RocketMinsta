@@ -540,6 +540,9 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         if(check.classname == "spectator")
             check = check.enemy;
         
+        if(IsDifferentTeam(check, targ) && Client_CalculateAlpha(targ, e) < 0.15)
+            continue;
+
         if(CVAR(sv_showdamage_global) || check == attacker || check == targ) {
             float stype = htype & VDMG_TYPE_CLIENTMASK;
             
@@ -700,7 +703,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			sound (self, CHAN_PROJECTILE, "misc/armorimpact.wav", VOL_BASE, ATTN_NORM);
 		else if (take > 30)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact2.wav", VOL_BASE, ATTN_NORM);
-		else if (take > 10)
+		else if (take > 10 || deathtype == DEATH_ENDURANCE)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact1.wav", VOL_BASE, ATTN_NORM); // FIXME possibly remove them?
 	}
 
@@ -749,6 +752,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
                 
                 Buffs_VampireDamage(self, attacker, cdmg, deathtype);
+                Buffs_WrathDamage(self, attacker, cdmg + take, deathtype);
             }
             
             self.health = self.health - take;
@@ -769,6 +773,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 							setanim(self, self.anim_pain2, FALSE, TRUE, TRUE);
 					}
 
+                    if(deathtype != DEATH_ENDURANCE)
 					if(sound_allowed(MSG_BROADCAST, attacker))
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					if(!DEATH_ISWEAPON(deathtype, WEP_LASER) || attacker != self || self.health < 2 * CVAR(g_balance_laser_primary_damage) * CVAR(g_balance_selfdamagepercent) + 1)
@@ -912,7 +917,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
-        if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
+        if(Buffs_Present(attacker, BUFF_ADEPT)) {
             HG_DO_IN_ALL_CONTEXTS(if(attacker.hg_ctx_type == HG_BAIT) {
                 attacker.hg_ctx_ammo += 1;
                 HG_SetRegenTime(attacker, HG_RegenTime(attacker));
@@ -926,12 +931,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(removenadgets > 1)
             HG_RemoveAll(self);
 
-        if(self.hg_power > 0) {
+        if(g_nadgets && self.hg_power > 0 && CVAR(g_nadgets_drop_on_death)) {
             HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
-        
+
         HG_DetonateAll(self);
         
         if(!g_freezetag && !g_jailbreak) {
@@ -1512,11 +1517,19 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 
 float GetVoiceMessageVoiceType(string type)
 {
-	if(type == "taunt")
-		return VOICETYPE_TAUNT;
-	if(type == "teamshoot")
-		return VOICETYPE_LASTATTACKER;
-	return VOICETYPE_TEAMRADIO;
+    switch(type) {
+        case "teamshoot":
+            return VOICETYPE_LASTATTACKER;
+
+#define _VOICEMSG(m) case #m:
+        ALLSILLYVOICEMSGS
+#undef _VOICEMSG
+        case "taunt":
+            return VOICETYPE_TAUNT;
+
+        default:
+            return VOICETYPE_TEAMRADIO;
+    }
 }
 
 string allvoicesamples;
@@ -1636,6 +1649,7 @@ void UpdatePlayerSounds()
 	self.modelindex_for_playersound = self.modelindex;
 	ClearPlayerSounds();
 	LoadPlayerSounds("sound/player/default.sounds", 1);
+    LoadPlayerSounds("sound/player/default.rm.sounds", 0);
 	LoadPlayerSounds(strcat(self.model, ".sounds"), 0);
 }
 

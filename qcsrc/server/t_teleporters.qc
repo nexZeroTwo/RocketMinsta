@@ -40,7 +40,7 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 	} else if(tdeath_deathtype == DEATH_TELEFRAG)
 		damage = 10000;
     
-    medic = Buffs_BuffPower(telefragger, BUFF_MEDIC);
+    medic = Buffs_Present(telefragger, BUFF_MEDIC);
     
 	deathmin = player.absmin;
 	deathmax = player.absmax;

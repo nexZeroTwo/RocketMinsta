@@ -43,7 +43,7 @@ float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
         return TRUE;
     }
 
-    if(sameteam && !Buffs_BuffPower(attacker, BUFF_MEDIC))
+    if(sameteam && !Buffs_Present(attacker, BUFF_MEDIC))
         did_hit = FALSE;
 
     return did_hit;

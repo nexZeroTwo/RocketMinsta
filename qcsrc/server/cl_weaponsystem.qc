@@ -9,12 +9,10 @@
 
 float W_WeaponRateFactor()
 {
-	float t;
-	t = 1.0 / g_weaponratefactor;
+	float t = 1.0 / g_weaponratefactor;
 
-    float haste = Buffs_BuffPower(self, BUFF_HASTE);
-    if(haste)
-        t = t * (1 - (1 - CVAR(g_buffs_haste_refire_rate)) * haste);
+    if(Buffs_Present(self, BUFF_HASTE))
+        t *= CVAR(g_buffs_haste_refire_rate);
     
 	return t;
 }
@@ -345,7 +343,15 @@ float CL_Weaponentity_CustomizeEntityForClient()
 	if(other.classname == "spectator")
 		if(other.enemy == self.owner)
 			self.viewmodelforclient = other;
-	return TRUE;
+
+    self.alpha = Client_CalculateAlpha(self.owner, other);
+	return (self.alpha > 0);
+}
+
+float CL_ExterioirWeaponentity_CustomizeEntityForClient()
+{
+    self.alpha = Client_CalculateAlpha(self.owner, other);
+    return (self.alpha > 0);
 }
 
 float qcweaponanimation;
@@ -855,6 +861,7 @@ void CL_SpawnWeaponentity()
 	setorigin(self.exteriorweaponentity, '0 0 0');
 	self.exteriorweaponentity.angles = '0 0 0';
 	self.exteriorweaponentity.think = CL_ExteriorWeaponentity_Think;
+    self.exteriorweaponentity.customizeentityforclient = CL_ExterioirWeaponentity_CustomizeEntityForClient;
 	self.exteriorweaponentity.nextthink = time;
 
 };
@@ -984,6 +991,8 @@ float weapon_prepareattack(float secondary, float attacktime)
     if(self.hg_stealth)
         HG_Cloak_Trigger();
     
+    self.buff_stealth_time = time;
+
     if(!PlayerMayFire(self))
         return FALSE;
 

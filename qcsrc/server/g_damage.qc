@@ -1041,6 +1041,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                self.buff_stealth_time = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
                     self.hg_stealth_saved = 0;
@@ -1311,7 +1312,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
+								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;
@@ -1463,7 +1464,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 void Fire_ApplyDamage(entity e)
 {
-	float t, d, hi, ty;
+	float t, d, hi, ty, ar;
 
     if(time - e.fire_last < FIRE_DELAY)
         return;
@@ -1489,11 +1490,13 @@ void Fire_ApplyDamage(entity e)
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
+    ar = e.fire_owner.armorhitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
 	if(e.fire_hitsound && e.fire_owner)
 	{
 		e.fire_owner.hitsound = hi;
 		e.fire_owner.typehitsound = ty;
+        e.fire_owner.armorhitsound = ar;
 	}
 	e.fire_hitsound = TRUE;
 

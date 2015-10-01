@@ -23,7 +23,7 @@ float IsTeamBalanceForced()
 
 void TeamchangeFrags(entity e)
 {
-	PlayerScore_Clear(e);
+	PlayerScore_Clear(e, FALSE);
 }
 
 vector TeamColor(float teem)

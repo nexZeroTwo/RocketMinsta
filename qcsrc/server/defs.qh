@@ -473,13 +473,26 @@ float next_pingtime;
 		_VOICEMSG(pain50) \
 		_VOICEMSG(pain75) \
 		_VOICEMSG(pain100)
+
+#define ALLSILLYVOICEMSGS \
+        _VOICEMSG(niconii) \
+        _VOICEMSG(washiwashi) \
+        _VOICEMSG(sugoi) \
+        _VOICEMSG(yamete) \
+        _VOICEMSG(susume) \
+        _VOICEMSG(harasho) \
+        _VOICEMSG(kya) \
+        _VOICEMSG(seikou) \
+        _VOICEMSG(ureshii)
+
 #define ALLVOICEMSGS \
 		_VOICEMSG(attack) \
 		_VOICEMSG(attackinfive) \
 		_VOICEMSG(meet) \
 		_VOICEMSG(seenflag) \
 		_VOICEMSG(taunt) \
-		_VOICEMSG(teamshoot)
+		_VOICEMSG(teamshoot) \
+        ALLSILLYVOICEMSGS
 
 #define _VOICEMSG(m) .string playersound_##m;
 ALLPLAYERSOUNDS
@@ -814,3 +827,5 @@ void CallGameEventHook_ArgRaw(string a);
 void CallGameEventHook_ArgFloat(float f);
 void CallGameEventHook_ArgVector(vector v);
 void CallGameEventHook_ArgEntity(entity e);
+
+float Client_CalculateAlpha(entity plr, entity viewer);
