@@ -17,6 +17,7 @@ void HG_Init() {
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
     addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
     addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
+    addstat(STAT_HGSHIELDDAMAGEPERSHOT, AS_INT, hg_shield_damage_per_shot);
     addstat(STAT_HGTYPE, AS_INT, hg_type1);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
@@ -1391,7 +1392,9 @@ void HG_Shield(float hgtype) {
     self.hg_shield_stored = GRENVAR(hgtype, "damage_store_base");
     self.hg_shield_stored_limit = GRENVAR(hgtype, "damage_store_limit");
     self.nobuffs = GRENVAR(hgtype, "nobuffs");
-    
+
+    self.hg_shield_damage_per_shot = CVAR(g_nadgets_shield_damage_store_burstamount);
+
     if(GRENVAR(hgtype, "immobile")) {
         self.hg_shield_oldmovetype = self.movetype;
         self.movetype = MOVETYPE_NONE;

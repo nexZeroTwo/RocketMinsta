@@ -2567,6 +2567,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
+    self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;

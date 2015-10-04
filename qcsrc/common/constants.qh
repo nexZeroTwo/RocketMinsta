@@ -296,6 +296,7 @@ const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;
+const float STAT_HGSHIELDDAMAGEPERSHOT = 54;
 
 const float STAT_FROZEN = 66;
 const float STAT_REVIVE_PROGRESS = 67;
