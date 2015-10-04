@@ -1255,7 +1255,8 @@ void HG_Shield_Discharge_Think(void) {
     float damage;
     float arc = CVAR(g_nadgets_shield_damage_store_arc);
 
-    var armorval = if(CVAR(g_nadgets_shield_damage_store_allow_armor_drain)) self.owner.armorvalue else 0;
+    var armordrain = CVAR(g_nadgets_shield_damage_store_allow_armor_drain);
+    var armorval = if(armordrain) self.owner.armorvalue / armordrain else 0;
 
     if(self.owner.hg_shield_stored < -1)
         damage = 0;
@@ -1280,8 +1281,8 @@ void HG_Shield_Discharge_Think(void) {
 
     if(armordamage > 0 && armorval) {
         var oldval = self.owner.armorvalue;
-        self.owner.armorvalue = max(0, self.owner.armorvalue - armordamage);
-        VisualDamage(self.owner, self.owner, 0, oldval - self.owner.armorvalue, VDMG_TYPE_HIT, self.owner.origin + self.owner.view_ofs);
+        armordamage *= armordrain;
+        Damage(self.owner, self.owner, self.owner, armordamage, DEATH_RESOURCE_ARMOR, '0 0 0', '0 0 0');
     }
 
     makevectors(self.owner.v_angle);

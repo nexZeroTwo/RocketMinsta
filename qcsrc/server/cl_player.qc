@@ -630,7 +630,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(deathtype != DEATH_FALL)
     if(deathtype != DEATH_DROWN)
     if(deathtype != DEATH_ROT)
-    if(deathtype != DEATH_HURTTRIGGER) {
+    if(deathtype != DEATH_HURTTRIGGER)
+    if(deathtype != DEATH_RESOURCE_ARMOR) {
         damage = 0;
         force = '0 0 0';
     }
@@ -686,7 +687,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-    if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
+    if(deathtype == DEATH_RESOURCE_ARMOR) {
+        take = 0;
+        save = min(self.armorvalue, damage);
+    } else if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
 		v = healtharmor_applydamage(self.armorvalue, CVAR(g_balance_armor_blockpercent), damage);
 		take = v_x;
 		save = v_y;
