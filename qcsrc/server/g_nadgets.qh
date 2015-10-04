@@ -112,6 +112,7 @@ var .float hg_ctx_regenpaused;
 .float hg_shield_oldmovetype;
 .float hg_shield_stored;
 .float hg_shield_stored_limit;
+.float hg_shield_damage_per_shot;
 .entity hg_shieldmodel;
 
 .float hg_stealth;
@@ -132,7 +133,6 @@ var .float hg_ctx_regenpaused;
 .float hg_linker_range;
 .float hg_linker_factor;
 .float hg_linker_hps;
-.float hg_linker_buffpower;
 
 .float hg_sentry_energy;
 

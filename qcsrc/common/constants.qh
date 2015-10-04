@@ -296,6 +296,7 @@ const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;
+const float STAT_HGSHIELDDAMAGEPERSHOT = 54;
 
 const float STAT_FROZEN = 66;
 const float STAT_REVIVE_PROGRESS = 67;
@@ -560,6 +561,7 @@ float DEATH_ITEM = 10106;
 float DEATH_MEODP = 10107;
 float DEATH_HOOKFRAG = 10108;
 float DEATH_ENDURANCE = 10109;
+float DEATH_RESOURCE_ARMOR = 10110;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths

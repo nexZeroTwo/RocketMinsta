@@ -659,7 +659,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
 	{
 		// no processing
 	}
@@ -1311,7 +1311,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
+								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;

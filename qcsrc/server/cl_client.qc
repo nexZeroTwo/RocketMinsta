@@ -533,15 +533,14 @@ float Client_CalculateAlpha(entity plr, entity viewer) {
         return 1;
 
     var sa = 1 - plr.hg_stealthalpha;
-    var stealth = Buffs_BuffPower(plr, BUFF_STEALTH);
     var viewerIsPlr = (plr == viewer || (viewer.enemy == plr && viewer.classname == "spectator"));
 
-    if(stealth)
-        sa *= ((1 - stealth) + stealth * (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1)));
+    if(Buffs_Present(plr, BUFF_STEALTH))
+        sa *= (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1));
 
     if(viewer && !viewerIsPlr) {
         if((teams_matter && viewer.team == plr.team) || 
-           (viewer.hg_stealth && (!plr.buffpower_adept || viewer.buffpower_adept)) ||
+           (viewer.hg_stealth && (!Buffs_Present(plr, BUFF_ADEPT) || Buffs_Present(viewer, BUFF_ADEPT))) ||
            !viewer.iscreature)
             sa = 0.3 + 0.7 * sa;
     }
@@ -1327,9 +1326,6 @@ void PutClientInServer (void)
         self.lastdamage = 0;
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
-
-        if(CVAR(sv_noplayershadows))
-            self.effects |= EF_NOSHADOW;
 
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)
@@ -2343,14 +2339,13 @@ void player_regen (void)
 	limith = limith * limit_mod;
 	limita = limita * limit_mod;
     
-    float gpower = Buffs_BuffPower(self, BUFF_GUARD);
-    if(gpower) {
+    if(Buffs_Present(self, BUFF_GUARD)) {
         float ghealth, garmor, ghregen, garegen;
         
-        ghealth = minh   + (CVAR(g_buffs_guard_health)       - minh)   * gpower;
-        garmor  = mina   + (CVAR(g_buffs_guard_armor)        - mina)   * gpower;
-        ghregen = hregen + (CVAR(g_buffs_guard_health_regen) - hregen) * gpower;
-        garegen = aregen + (CVAR(g_buffs_guard_armor_regen)  - aregen) * gpower;
+        ghealth = CVAR(g_buffs_guard_health);
+        garmor  = CVAR(g_buffs_guard_armor);
+        ghregen = CVAR(g_buffs_guard_health_regen);
+        garegen = CVAR(g_buffs_guard_armor_regen);
         
         if(g_clanarena)
             garmor = 0;
@@ -2364,13 +2359,10 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
-    if(!g_clanarena) {
-        float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
-        if(mpower) {
-            mina = max(mina, mina + (CVAR(g_buffs_medic_armor) - mina) * mpower);
-            maxa = max(mina, maxa);
-            aregen = max(aregen + (CVAR(g_buffs_medic_armor_regen) - aregen) * mpower, aregen);
-        }
+    if(!g_clanarena && Buffs_Present(self, BUFF_MEDIC)) {
+        mina = max(mina, CVAR(g_buffs_medic_armor));
+        maxa = max(mina, maxa);
+        aregen = max(CVAR(g_buffs_medic_armor_regen), aregen);
     }
 
 	if(g_lms || g_clanarena)
@@ -2575,6 +2567,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
+    self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
@@ -3175,6 +3168,13 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
+        if(frametime) {
+            if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))
+                self.effects |= EF_NOSHADOW;
+            else
+                self.effects &~= EF_NOSHADOW;
+        }
+
         if(sv_showacc)
         if(time > self.acctime) {
             float hit = self.damage_hits - self.weapon;

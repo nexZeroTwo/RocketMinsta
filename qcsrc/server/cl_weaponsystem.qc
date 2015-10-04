@@ -9,12 +9,10 @@
 
 float W_WeaponRateFactor()
 {
-	float t;
-	t = 1.0 / g_weaponratefactor;
+	float t = 1.0 / g_weaponratefactor;
 
-    float haste = Buffs_BuffPower(self, BUFF_HASTE);
-    if(haste)
-        t = t * (1 - (1 - CVAR(g_buffs_haste_refire_rate)) * haste);
+    if(Buffs_Present(self, BUFF_HASTE))
+        t *= CVAR(g_buffs_haste_refire_rate);
     
 	return t;
 }
