@@ -751,6 +751,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
                 DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
                 DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
+                DamageTracker_RecordAndSend(dtrack_global, deathtype, cdmg + save, DTFLAG_GLOBAL);
                 
                 if(g_clanarena)
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));

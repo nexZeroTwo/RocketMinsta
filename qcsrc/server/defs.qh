@@ -829,3 +829,5 @@ void CallGameEventHook_ArgVector(vector v);
 void CallGameEventHook_ArgEntity(entity e);
 
 float Client_CalculateAlpha(entity plr, entity viewer);
+
+entity dtrack_global;

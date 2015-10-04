@@ -1834,8 +1834,10 @@ void ClientConnect (void)
 	    }
     }
     
-    if(clienttype(self) == CLIENTTYPE_REAL)
+    if(clienttype(self) == CLIENTTYPE_REAL) {
         IRC_Announce_ClientConnect(self);
+        DamageTracker_Overwrite(dtrack_global, self, DTFLAG_GLOBAL);
+    }
     
     self.dtrack_total = DamageTracker_CreateKeeper(self);
     self.dtrack_total.netname = "Damage done";

@@ -260,6 +260,7 @@ void CSQC_Init(void)
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
+    dtrack_global = DamageTracker_CreateKeeper(world);
 
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
@@ -2138,7 +2139,9 @@ void Net_Heal() {
 }
 
 entity Net_DamageTracker_KeeperFromFlags(float dtflags) {
-    if(dtflags & DTFLAG_DONE) {
+    if(dtflags & DTFLAG_GLOBAL)
+        return dtrack_global;
+    else if(dtflags & DTFLAG_DONE) {
         if(dtflags & DTFLAG_SPEC)
             return dtrack_total_spec;
         else

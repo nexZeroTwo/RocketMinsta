@@ -859,6 +859,9 @@ void spawnfunc_worldspawn (void)
     IRC_Init();
     DPRM_Start();
     Radio_Init();
+
+    dtrack_global = DamageTracker_CreateKeeper(world);
+    dtrack_global.netname = "Global Damage";
 }
 
 void spawnfunc_light (void)

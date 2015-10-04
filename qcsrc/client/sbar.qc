@@ -2576,7 +2576,8 @@ void Sbar_DrawAccuracyStats()
         vector dsize = '0.25 0 0' * vid_conwidth + '0 0.25 0' * vid_conheight;
         vector dpos = '1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan;
         dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_total_spec else dtrack_total, "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
-        Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize);
+        dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
+        Sbar_DrawDamageStats(dtrack_global, "Global Damage", dpos, dsize);
     }
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
