@@ -140,6 +140,11 @@ void plat_trigger_use()
 
 void plat_crush()
 {
+    if(self.state == 4) {
+        bprint("Plat just tried to crush ", other.netname, " ^7 while in up state\n");
+        return;
+    }
+
     if((self.spawnflags & 4) && (other.takedamage != DAMAGE_NO)) { // KIll Kill Kill!!
         Damage (other, self, self, 10000, DEATH_HURTTRIGGER, other.origin, '0 0 0');
     } else {
