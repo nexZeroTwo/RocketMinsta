@@ -186,7 +186,6 @@ void plat_reset()
 }
 
 void plat_touch(void) {
-    print("Touch ", other.netname, " ^2", ftos(time), "\n");
     if(other.classname == "player") {
         other.plat_touched = self;
         other.plat_lastupdate = time;
