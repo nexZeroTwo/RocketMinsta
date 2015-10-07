@@ -147,6 +147,7 @@ void plat_crush()
     if(self.state == 4) {
         bprint("Plat just tried to crush ", other.netname, " ^7 while in up state\n");
         other.velocity = other.velocity + self.oldvelocity * frametime;
+        other.velocity_z = max(other.velocity_z, cvar("platwtf"));
         return;
     }
 
