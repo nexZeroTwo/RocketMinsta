@@ -29,6 +29,9 @@ void() plat_go_down;
 void() plat_crush;
 float PLAT_LOW_TRIGGER = 1;
 
+.entity plat_touched;
+.float plat_lastupdate;
+
 void plat_spawn_inside_trigger()
 {
 	local entity trigger;
@@ -95,6 +98,17 @@ void plat_center_touch()
 
 	if (other.health <= 0)
 		return;
+
+    if(other.classname == "player") {
+        if(time - other.plat_lastupdate > 0.1) {
+            other.plat_touched = world;
+        } else if(other.plat_touched == self.enemy) {
+            other.plat_lastupdate = time;
+
+            if(vlen(self.enemy.velocity))
+                other.noantilagtime = time + 0.1;
+        }
+    }
 
 	self = self.enemy;
 	if (self.state == 2)
@@ -171,6 +185,14 @@ void plat_reset()
 	}
 }
 
+void plat_touch(void) {
+    print("Touch ", other.netname, " ^2", ftos(time), "\n");
+    if(other.classname == "player") {
+        other.plat_touched = self;
+        other.plat_lastupdate = time;
+    }
+}
+
 void spawnfunc_path_corner() { };
 void spawnfunc_func_plat()
 {
@@ -227,6 +249,7 @@ void spawnfunc_func_plat()
 	setsize (self, self.mins , self.maxs);
 
 	self.blocked = plat_crush;
+    self.touch = plat_touch;
 
 	if (!self.speed)
 		self.speed = 150;

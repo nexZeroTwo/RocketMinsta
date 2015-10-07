@@ -30,6 +30,9 @@ float antilag_find(entity e, float t)
 {
 	float i;
 
+    if(time < e.noantilagtime)
+        return -1;
+
 	for(i = e.antilag_index; i > 0; --i)
 		if(e.(antilag_times[i]) >= t)
 			if(e.(antilag_times[i - 1]) < t)
@@ -57,6 +60,9 @@ vector antilag_takebackorigin(entity e, float t)
 {
 	float i0, i1;
 
+    if(time < e.noantilagtime)
+        return e.origin;
+
 	i0 = antilag_find(e, t);
 	if(i0 < 0)
 	{
@@ -73,6 +79,9 @@ vector antilag_takebackorigin(entity e, float t)
 
 void antilag_takeback(entity e, float t)
 {
+    if(time < e.noantilagtime)
+        return;
+
 	e.antilag_saved_origin = e.origin;
 	setorigin(e, antilag_takebackorigin(e, t));
     W_Zapper_FixShieldBlockerOrigin(e);
@@ -80,6 +89,9 @@ void antilag_takeback(entity e, float t)
 
 void antilag_restore(entity e)
 {
+    if(time < e.noantilagtime)
+        return;
+
 	setorigin(e, e.antilag_saved_origin);
     W_Zapper_FixShieldBlockerOrigin(e);
 }

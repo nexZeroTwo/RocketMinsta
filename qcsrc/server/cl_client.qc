@@ -3083,7 +3083,7 @@ void PlayerPreThink (void)
 	self.stat_leadlimit = leadlimit;
     
     float isplayer, isspec, isobs;
-    
+
     self.roundstate_stat = roundstate;
     
     if(self.classname == "player")
