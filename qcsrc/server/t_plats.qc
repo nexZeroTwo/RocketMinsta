@@ -96,7 +96,7 @@ void plat_center_touch()
 	if not(other.iscreature)
 		return;
 
-	if (other.health <= 0)
+	if (other.health <= 0 || other.frozen)
 		return;
 
     if(other.classname == "player") {
