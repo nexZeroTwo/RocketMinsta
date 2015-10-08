@@ -69,14 +69,12 @@ void plat_hit_top()
 	self.state = 1;
 	self.think = plat_go_down;
 	self.nextthink = self.ltime + 3;
-    self.oldvelocity = self.velocity;
 };
 
 void plat_hit_bottom()
 {
 	sound (self, CHAN_TRIGGER, self.noise1, VOL_BASE, ATTN_NORM);
 	self.state = 2;
-    self.oldvelocity = self.velocity;
 };
 
 void plat_go_down()
@@ -84,7 +82,6 @@ void plat_go_down()
 	sound (self, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_NORM);
 	self.state = 3;
 	SUB_CalcMove (self.pos2, self.speed, plat_hit_bottom);
-    self.oldvelocity = self.velocity;
 };
 
 void plat_go_up()
@@ -92,7 +89,6 @@ void plat_go_up()
 	sound (self, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_NORM);
 	self.state = 4;
 	SUB_CalcMove (self.pos1, self.speed, plat_hit_top);
-    self.oldvelocity = self.velocity;
 };
 
 void plat_center_touch()
@@ -145,9 +141,8 @@ void plat_trigger_use()
 void plat_crush()
 {
     if(self.state == 4) {
-        bprint("Plat just tried to crush ", other.netname, " ^7 while in up state\n");
-        other.velocity = other.velocity + self.oldvelocity * frametime;
-        other.velocity_z = max(other.velocity_z, cvar("platwtf"));
+        dprint("Plat just tried to crush ", other.netname, "^7 while in up state\n");
+        other.velocity_z = max(other.velocity_z, 50);
         return;
     }
 
