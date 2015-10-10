@@ -266,7 +266,8 @@ void spawnfunc_func_plat()
                                    else
                                        self.size_z) + 8;
 
-	plat_spawn_inside_trigger ();	// the "start moving" trigger
+    if(!(self.spawnflags & 8))
+	   plat_spawn_inside_trigger ();	// the "start moving" trigger
 
 	self.reset = plat_reset;
 	plat_reset();
