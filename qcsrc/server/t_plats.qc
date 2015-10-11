@@ -546,6 +546,7 @@ void button_reset()
 {
 	self.health = self.max_health;
 	setorigin(self, self.pos1);
+    self.think = SUB_Null;
 	self.frame = 0;			// use normal textures
 	self.state = STATE_BOTTOM;
 	if (self.health)
@@ -626,6 +627,7 @@ void spawnfunc_func_button()
 
 	self.blocked = button_blocked;
 	self.use = button_use;
+    self.reset = button_reset;
 
 //	if (self.health == 0) // all buttons are now shootable
 //		self.health = 10;
@@ -1880,3 +1882,96 @@ void spawnfunc_func_vectormamamam()
 
 	InitializeEntity(self, func_vectormamamam_findtarget, INITPRIO_FINDTARGET);
 }
+
+/*
+ * magicwall
+ */
+
+.float alpha_solid;
+.float alpha_nonsolid;
+
+#define MAGICWALL_ALPHAFIELD(e) (if((e).solid == SOLID_BSP) alpha_solid else alpha_nonsolid)
+
+#define SPAWNFLAG_MW_START_HIDDEN 4
+#define SPAWNFLAG_MW_TOGGLE 8
+
+void func_magicwall_think_transition(void) {
+    self.alpha = approach(self.alpha, self.MAGICWALL_ALPHAFIELD(self), self.speed * frametime);
+    if(self.alpha && self.alpha < 1)
+        self.nextthink = time;
+    else if(self.think1)
+        self.think1();
+}
+
+void func_magicwall_start_transition(float sol, void(void) done) {
+    self.solid = sol;
+
+    if(self.speed < 0) {
+        self.alpha = self.MAGICWALL_ALPHAFIELD(self);
+        done();
+        return;
+    }
+
+    self.think = func_magicwall_think_transition;
+    self.think1 = done;
+    self.nextthink = time;
+}
+
+void spawnfunc_func_magicwall(void) {
+    G_MODEL_INIT(SOLID_BSP)
+
+    if(self.alpha_solid <= 0)
+        self.alpha_solid = 1;
+
+    if(self.alpha_nonsolid < 0)
+        self.alpha_nonsolid = 0;
+
+    if(!self.delay)
+        self.delay = 3;
+
+    if(!self.speed)
+        self.speed = 1;
+
+    self.oldsolid = if(self.spawnflags & SPAWNFLAG_MW_START_HIDDEN) SOLID_NOT else SOLID_BSP;
+
+    self.customizeentityforclient = inline float(void) {
+        return (self.alpha > 0);
+    };
+
+    self.think = inline void(void) {
+        self.nextthink = time;
+        self.alpha = approach(self.alpha, self.MAGICWALL_ALPHAFIELD(self), self.speed * frametime);
+    };
+
+    self.reset = inline void(void) {
+        self.solid = self.oldsolid;
+        self.alpha = self.MAGICWALL_ALPHAFIELD(self);
+        self.think = SUB_Null;
+    };
+
+    self.use = if(self.spawnflags & SPAWNFLAG_MW_TOGGLE)
+        inline void(void) {
+            func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, func_null);
+        } else inline void(void) {
+            if(self.oldsolid != self.solid)
+                return;
+
+            func_magicwall_start_transition(if(self.oldsolid == SOLID_BSP) SOLID_NOT else SOLID_BSP,
+                if(self.delay >= 0) inline void(void) {
+                    self.nextthink = time + self.delay;
+                    self.think = inline void(void) {
+                        func_magicwall_start_transition(self.oldsolid, func_null);
+                    };
+                } else func_null);
+        };
+
+    self.touch = inline void(void) {
+        if(other.iscreature && !other.frozen)
+            using(activator = other)
+                SUB_UseTargets();
+    };
+
+    self.reset();
+    self.nextthink = time;
+}
+
