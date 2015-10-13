@@ -865,6 +865,8 @@ void spawnfunc_worldspawn (void)
             }
     }
     
+    sv_shownoobstat = CVAR(sv_shownoobstat);
+
     defer(0, fix_team_spawns);
     
     IRC_Init();

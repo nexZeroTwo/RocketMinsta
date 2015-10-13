@@ -1532,7 +1532,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME && i != SP_ACCURACY)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
@@ -1884,6 +1884,7 @@ void Ent_Init()
     sv_showacc = ReadByte();
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
+    sv_shownoobstat = ReadByte();
 
     Buffs_LoadModels();
 

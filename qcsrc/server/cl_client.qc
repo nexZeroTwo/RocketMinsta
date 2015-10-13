@@ -1420,6 +1420,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
+    WriteByte(MSG_ENTITY, sv_shownoobstat);
 	return TRUE;
 }
 
@@ -3105,6 +3106,9 @@ void() nexball_setstatus;
 .float namecheck;
 .float acctime;
 
+.float jumpholdtime;
+.float alivetime;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
@@ -3134,12 +3138,22 @@ void PlayerPreThink (void)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
+        if(sv_shownoobstat) {
+            if(self.deadflag == DEAD_NO && !self.frozen && !self.jb_isprisoned) {
+                self.alivetime += frametime;
+                if(self.BUTTON_JUMP)
+                    self.jumpholdtime += frametime;
+            }
+        }
+
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
+            if(sv_shownoobstat)
+                PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
         }
     }
-    
+
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();

@@ -454,7 +454,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | kdr", strcat(
+		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
         if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
 		" +ft,jb/kills +ft,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
@@ -572,6 +572,8 @@ void Cmd_Sbar_SetFields(float argc)
             sbar_field[sbar_num_fields] = SP_HEALING;
         } else if(str == "acc") {
             sbar_field[sbar_num_fields] = SP_ACCURACY;
+        } else if(str == "noob") {
+            sbar_field[sbar_num_fields] = SP_NOOB;
         } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -840,6 +842,19 @@ string Sbar_GetField(entity pl, float field)
             
             return strcat(ftos(acc), "%");
         
+        case SP_NOOB:
+            float noob = pl.scores[SP_NOOB];
+            float pro = 100 - noob;
+
+            if(pro < 70)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(pro / 70, 2);
+            else if(pro < 90)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((pro - 70) / 20);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((pro - 90) / 10);
+            
+            return strcat(ftos(noob), "%");
+
 		default:
 			tmp = pl.(scores[field]);
 			f = scores_flags[field];
