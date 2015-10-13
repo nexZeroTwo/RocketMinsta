@@ -4,6 +4,34 @@ void Boobs_Clear();
 .entity specdelay_ent;
 .float justconnected;
 
+.entity headent;
+
+void SpawnHeadEnt(void) {
+    if(self.headent || !CVAR(r_showbboxes))
+        return;
+
+    self.headent = spawn() {
+        movetype: MOVETYPE_FOLLOW,
+        aiment: self,
+        think: inline void(void) {
+            vector headmins, headmaxs;
+            var w = CVAR(g_player_hitbox_head_width_factor);
+            var h = CVAR(g_player_hitbox_head_height_factor);
+            var o = self.aiment;
+
+            if(!o.iscreature)
+                return;
+
+            headmins = [o.mins_x * w, o.mins_y * w, (1 + h) * o.view_ofs_z - h * o.maxs_z];
+            headmaxs = [o.maxs_x * w, o.maxs_y * w, o.maxs_z];
+            setsize(self, headmins, headmaxs);
+
+            self.nextthink = time;
+        },
+        nextthink: time
+    };
+}
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -1326,6 +1354,8 @@ void PutClientInServer (void)
         self.lastdamage = 0;
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
+
+        SpawnHeadEnt();
 
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)

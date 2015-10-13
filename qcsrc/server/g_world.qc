@@ -499,6 +499,15 @@ void ForceModeSpawns(void) {
 
 .float zapper_heat;
 
+void SetPlayerHitboxGlobals(void) {
+    PL_VIEW_OFS = [0, 0, CVAR(g_player_view_offset)];
+    PL_MIN = stov(CVAR_STR(g_player_hitbox_min));
+    PL_MAX = stov(CVAR_STR(g_player_hitbox_max));
+    PL_CROUCH_VIEW_OFS = [0, 0, CVAR(g_player_crouch_view_offset)];
+    PL_CROUCH_MIN = stov(CVAR_STR(g_player_hitbox_crouch_min));
+    PL_CROUCH_MAX = stov(CVAR_STR(g_player_hitbox_crouch_max));
+}
+
 void spawnfunc_worldspawn (void)
 {
 	float fd, l, i, j, n;
@@ -509,6 +518,8 @@ void spawnfunc_worldspawn (void)
 	cvar_set = cvar_set_builtin;
 	dprint_load(); // load dprint status from cvar
     
+    SetPlayerHitboxGlobals();
+
     sv_damagestats = CVAR(sv_damagestats);
 
     registercvar("g_gametypename", "");

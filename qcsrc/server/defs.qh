@@ -832,3 +832,10 @@ float Client_CalculateAlpha(entity plr, entity viewer);
 
 entity dtrack_global;
 .float noantilagtime;
+
+vector PL_VIEW_OFS;
+vector PL_MIN;
+vector PL_MAX;
+vector PL_CROUCH_VIEW_OFS;
+vector PL_CROUCH_MIN;
+vector PL_CROUCH_MAX;
