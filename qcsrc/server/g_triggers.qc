@@ -1950,3 +1950,45 @@ void spawnfunc_trigger_gravity()
 	}
 }
 
+/*
+ * cycle
+ */
+
+.string chaintarget;
+
+entity trigger_cycle_find_next_target(entity ref) {
+    entity e;
+
+    if(ref.chaintarget != "")
+        e = find(world, targetname, ref.chaintarget);
+
+    if(!e.use)
+        e = world;
+
+    return e;
+}
+
+void trigger_cycle_reset(void) {
+    self.target = self.chaintarget;
+    self.enemy = trigger_cycle_find_next_target(self);
+}
+
+void trigger_cycle_use(void) {
+    SUB_UseTargets_PreventReuse();
+    self.enemy = trigger_cycle_find_next_target(self.enemy);
+    self.target = self.enemy.targetname;
+    SUB_UseTargets_PreventReuse();
+}
+
+void trigger_cycle_init_delayed(void) {
+    self.enemy = trigger_cycle_find_next_target(self);
+    self.think = func_null;
+}
+
+void spawnfunc_trigger_cycle(void) {
+    self.chaintarget = self.target;
+    self.use = trigger_cycle_use;
+    self.reset = trigger_cycle_reset;
+    self.think = trigger_cycle_init_delayed;
+    self.nextthink = time;
+}

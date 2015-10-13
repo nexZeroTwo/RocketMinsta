@@ -4,6 +4,34 @@ void Boobs_Clear();
 .entity specdelay_ent;
 .float justconnected;
 
+.entity headent;
+
+void SpawnHeadEnt(void) {
+    if(self.headent || !CVAR(r_showbboxes))
+        return;
+
+    self.headent = spawn() {
+        movetype: MOVETYPE_FOLLOW,
+        aiment: self,
+        think: inline void(void) {
+            vector headmins, headmaxs;
+            var w = CVAR(g_player_hitbox_head_width_factor);
+            var h = CVAR(g_player_hitbox_head_height_factor);
+            var o = self.aiment;
+
+            if(!o.iscreature)
+                return;
+
+            headmins = [o.mins_x * w, o.mins_y * w, (1 + h) * o.view_ofs_z - h * o.maxs_z];
+            headmaxs = [o.maxs_x * w, o.maxs_y * w, o.maxs_z];
+            setsize(self, headmins, headmaxs);
+
+            self.nextthink = time;
+        },
+        nextthink: time
+    };
+}
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -528,6 +556,31 @@ string CheckPlayerModel(string plyermodel) {
 	return plyermodel;
 }
 
+float Client_CalculateAlpha(entity plr, entity viewer) {
+    if(plr.deadflag != DEAD_NO || plr.frozen || plr.jb_isprisoned)
+        return 1;
+
+    var sa = 1 - plr.hg_stealthalpha;
+    var viewerIsPlr = (plr == viewer || (viewer.enemy == plr && viewer.classname == "spectator"));
+
+    if(Buffs_Present(plr, BUFF_STEALTH))
+        sa *= (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1));
+
+    if(viewer && !viewerIsPlr) {
+        if((teams_matter && viewer.team == plr.team) || 
+           (viewer.hg_stealth && (!Buffs_Present(plr, BUFF_ADEPT) || Buffs_Present(viewer, BUFF_ADEPT))) ||
+           !viewer.iscreature)
+            sa = 0.3 + 0.7 * sa;
+    }
+
+    if(viewerIsPlr && sa < 0.01)
+        sa = 0.01;
+    else if(sa <= 0)
+        sa = -1;
+
+    return sa;
+}
+
 /*
 =============
 Client_customizeentityforclient
@@ -535,6 +588,7 @@ Client_customizeentityforclient
 LOD reduction
 =============
 */
+
 void Client_uncustomizeentityforclient()
 {
 	if(self.modelindex == 0) // no need to uncustomize then
@@ -547,17 +601,7 @@ float Client_customizeentityforclient()
 {
     entity modelsource;
     
-    float sa = 1 - self.hg_stealthalpha;
-    
-    if((teams_matter && other.team == self.team) || 
-       (other.hg_stealth && (!self.buffpower_adept || other.buffpower_adept)) ||
-       !other.iscreature)
-        sa = 0.3 + 0.7 * sa;
-    
-    self.alpha = sa * default_player_alpha;
-    
-    if(!self.alpha)
-        self.alpha = -1;
+    self.alpha = Client_CalculateAlpha(self, other) * default_player_alpha;
     
     if(self.alpha < 0)
         return FALSE;
@@ -729,7 +773,7 @@ void PutObserverInServer (void)
 	}
     
     if(!self.jb_specteam) {
-        PlayerScore_Clear(self); // clear scores when needed
+        PlayerScore_Clear(self, FALSE); // clear scores when needed
     
         if(g_nadgets) {
             if(!self.joinqueue)
@@ -1241,7 +1285,7 @@ void PutClientInServer (void)
 		self.BUTTON_ATCK = self.BUTTON_JUMP = self.BUTTON_ATCK2 = 0;
 
 		if(self.killcount == -666) {
-			PlayerScore_Clear(self);
+			PlayerScore_Clear(self, FALSE);
 			self.killcount = 0;
 		}
 
@@ -1311,8 +1355,7 @@ void PutClientInServer (void)
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 
-        if(CVAR(sv_noplayershadows))
-            self.effects |= EF_NOSHADOW;
+        SpawnHeadEnt();
 
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)
@@ -1377,6 +1420,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
+    WriteByte(MSG_ENTITY, sv_shownoobstat);
 	return TRUE;
 }
 
@@ -1821,8 +1865,10 @@ void ClientConnect (void)
 	    }
     }
     
-    if(clienttype(self) == CLIENTTYPE_REAL)
+    if(clienttype(self) == CLIENTTYPE_REAL) {
         IRC_Announce_ClientConnect(self);
+        DamageTracker_Overwrite(dtrack_global, self, DTFLAG_GLOBAL);
+    }
     
     self.dtrack_total = DamageTracker_CreateKeeper(self);
     self.dtrack_total.netname = "Damage done";
@@ -2296,6 +2342,9 @@ void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
 
+    if(roundstate == ROUNDSTATE_OVER)
+        return;
+
 	maxh = g_balance_health_rotstable;
 	maxa = g_balance_armor_rotstable;
 	maxf = g_balance_fuel_rotstable;
@@ -2323,14 +2372,13 @@ void player_regen (void)
 	limith = limith * limit_mod;
 	limita = limita * limit_mod;
     
-    float gpower = Buffs_BuffPower(self, BUFF_GUARD);
-    if(gpower) {
+    if(Buffs_Present(self, BUFF_GUARD)) {
         float ghealth, garmor, ghregen, garegen;
         
-        ghealth = minh   + (CVAR(g_buffs_guard_health)       - minh)   * gpower;
-        garmor  = mina   + (CVAR(g_buffs_guard_armor)        - mina)   * gpower;
-        ghregen = hregen + (CVAR(g_buffs_guard_health_regen) - hregen) * gpower;
-        garegen = aregen + (CVAR(g_buffs_guard_armor_regen)  - aregen) * gpower;
+        ghealth = CVAR(g_buffs_guard_health);
+        garmor  = CVAR(g_buffs_guard_armor);
+        ghregen = CVAR(g_buffs_guard_health_regen);
+        garegen = CVAR(g_buffs_guard_armor_regen);
         
         if(g_clanarena)
             garmor = 0;
@@ -2344,13 +2392,10 @@ void player_regen (void)
         aregen = max(garegen, aregen);
     }
     
-    if(!g_clanarena) {
-        float mpower = Buffs_BuffPower(self, BUFF_MEDIC);
-        if(mpower) {
-            mina = max(mina, mina + (CVAR(g_buffs_medic_armor) - mina) * mpower);
-            maxa = max(mina, maxa);
-            aregen = max(aregen + (CVAR(g_buffs_medic_armor_regen) - aregen) * mpower, aregen);
-        }
+    if(!g_clanarena && Buffs_Present(self, BUFF_MEDIC)) {
+        mina = max(mina, CVAR(g_buffs_medic_armor));
+        maxa = max(mina, maxa);
+        aregen = max(CVAR(g_buffs_medic_armor_regen), aregen);
     }
 
 	if(g_lms || g_clanarena)
@@ -2555,6 +2600,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
+    self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
@@ -3060,6 +3106,9 @@ void() nexball_setstatus;
 .float namecheck;
 .float acctime;
 
+.float jumpholdtime;
+.float alivetime;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
@@ -3068,7 +3117,7 @@ void PlayerPreThink (void)
 	self.stat_leadlimit = leadlimit;
     
     float isplayer, isspec, isobs;
-    
+
     self.roundstate_stat = roundstate;
     
     if(self.classname == "player")
@@ -3089,12 +3138,22 @@ void PlayerPreThink (void)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
+        if(sv_shownoobstat) {
+            if(self.deadflag == DEAD_NO && !self.frozen && !self.jb_isprisoned) {
+                self.alivetime += frametime;
+                if(self.BUTTON_JUMP)
+                    self.jumpholdtime += frametime;
+            }
+        }
+
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
+            if(sv_shownoobstat)
+                PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
         }
     }
-    
+
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();
@@ -3155,6 +3214,13 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
+        if(frametime) {
+            if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))
+                self.effects |= EF_NOSHADOW;
+            else
+                self.effects &~= EF_NOSHADOW;
+        }
+
         if(sv_showacc)
         if(time > self.acctime) {
             float hit = self.damage_hits - self.weapon;

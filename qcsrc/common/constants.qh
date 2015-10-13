@@ -296,6 +296,7 @@ const float ROUNDSTATE_WARMUP = 3;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;
+const float STAT_HGSHIELDDAMAGEPERSHOT = 54;
 
 const float STAT_FROZEN = 66;
 const float STAT_REVIVE_PROGRESS = 67;
@@ -393,7 +394,7 @@ const float JBMSG_TOOLATE = 5;
  * Score indices
  */
  
-#define MAX_SCORE 22
+#define MAX_SCORE 23
 #define MAX_TEAMSCORE 2
 
 #define ST_SCORE 0
@@ -414,13 +415,14 @@ const float JBMSG_TOOLATE = 5;
 #define SP_DAMAGE 19
 #define SP_HEALING 20
 #define SP_QUEUE 21
+#define SP_NOOB 22
 
 #define SPFLAG_FROZEN   1
 #define SPFLAG_MADOKA   2
 #define SPFLAG_AWAY     4
 #define SPFLAG_MUTE     8
 
-#define SCORE_DONT_CLEAR(s) ((s) == SP_PLAYTIME || (s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE)
+#define SCORE_DONT_CLEAR(s) ((s) == SP_PLAYTIME || (s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE || (s) == SP_NOOB)
 
 // the following like should be in ctf.qc as per status quo, but ask me if I care
 // --ThexDarksider
@@ -562,6 +564,7 @@ float DEATH_ITEM = 10106;
 float DEATH_MEODP = 10107;
 float DEATH_HOOKFRAG = 10108;
 float DEATH_ENDURANCE = 10109;
+float DEATH_RESOURCE_ARMOR = 10110;
 
 float DEATH_WEAPONMASK = 0xFF;
 float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
@@ -629,3 +632,5 @@ const vector eZ = '0 0 1';
 float(string url, float id) uri_get = #513;
 
 #define abs(f) fabs(f)
+
+const float M_PI = 3.14159265358979323846;

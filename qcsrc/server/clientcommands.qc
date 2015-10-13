@@ -460,15 +460,14 @@ void SV_ParseClientCommand(string s) {
             if(self.classname == "player") {
                 EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
             } else {
-                /*
-                 * Actually no, this is probably a bad idea
-                 * 
                 if(self.jb_specteam) {
+                    if(self.scorekeeper)
+                        PlayerScore_Clear(self, TRUE);
                     self.jb_specteam = 0;
-                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
-                    PutObserverInServer();
+                    self.classname = "observer";
+                    PlayerScore_SetFlagsBoolean(self, SPFLAG_FROZEN, 0);
+                    PutClientInServer();
                 }
-                */
             }
         }
 	} else if(cmd == "join") {
@@ -492,7 +491,7 @@ void SV_ParseClientCommand(string s) {
                     return;
                 
 				self.classname = "player";
-				PlayerScore_Clear(self);
+				PlayerScore_Clear(self, FALSE);
                 
 				bprint ("^4", self.netname, "^4 is playing now\n");
                 PutClientInServer();

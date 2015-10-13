@@ -454,7 +454,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | kdr", strcat(
+		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
         if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
 		" +ft,jb/kills +ft,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
@@ -572,6 +572,8 @@ void Cmd_Sbar_SetFields(float argc)
             sbar_field[sbar_num_fields] = SP_HEALING;
         } else if(str == "acc") {
             sbar_field[sbar_num_fields] = SP_ACCURACY;
+        } else if(str == "noob") {
+            sbar_field[sbar_num_fields] = SP_NOOB;
         } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -840,6 +842,19 @@ string Sbar_GetField(entity pl, float field)
             
             return strcat(ftos(acc), "%");
         
+        case SP_NOOB:
+            float noob = pl.scores[SP_NOOB];
+            float pro = 100 - noob;
+
+            if(pro < 70)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(pro / 70, 2);
+            else if(pro < 90)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((pro - 70) / 20);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((pro - 90) / 10);
+            
+            return strcat(ftos(noob), "%");
+
 		default:
 			tmp = pl.(scores[field]);
 			f = scores_flags[field];
@@ -2576,7 +2591,8 @@ void Sbar_DrawAccuracyStats()
         vector dsize = '0.25 0 0' * vid_conwidth + '0 0.25 0' * vid_conheight;
         vector dpos = '1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan;
         dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_total_spec else dtrack_total, "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
-        Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize);
+        dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
+        Sbar_DrawDamageStats(dtrack_global, "Global Damage", dpos, dsize);
     }
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
@@ -3583,17 +3599,29 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	}
 }
 
-void DrawProgress (vector cpos, vector l_size, float progress, float alpha, vector l_color)
-{
-	vector pos;
-	pos_x = cpos_x - l_size_x / 2;
-	pos_y = cpos_y - l_size_y / 2;
-	
-	vector fill = l_size;
-	fill_x *= progress;
-	
-	drawborderlines(1, pos, l_size, l_color, alpha, DRAWFLAG_NORMAL);
-	drawfill(pos, fill, l_color, alpha * 0.7, DRAWFLAG_NORMAL);
+void DrawProgressFragmented(vector cpos, vector l_size, float progress, float alpha, vector l_color, float fragments) {
+    vector pos;
+    pos_x = cpos_x - l_size_x / 2;
+    pos_y = cpos_y - l_size_y / 2;
+
+    vector fill = l_size;
+    fill_x *= progress;
+
+    drawfill(pos, fill, l_color, alpha * 0.7, DRAWFLAG_NORMAL);
+
+    if(fragments < 2) {
+        drawborderlines(1, pos, l_size, l_color, alpha, DRAWFLAG_NORMAL);
+    } else {
+        var fragsize = [l_size.x / fragments, l_size.y];
+
+        for(var frag = 0; frag < fragments; ++frag) {
+            drawborderlines(1, pos + [fragsize.x * frag, 0], fragsize, l_color, alpha, DRAWFLAG_NORMAL);
+        }
+    }
+}
+
+void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vector l_color) {
+    DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
 float rev_visual;
@@ -3682,7 +3710,7 @@ void Sbar_DrawBuffs(void) {
     drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
 }
 
-void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenpaused, float hgcd, float hgcdmax) {
+void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenmax, float regenpaused, float hgcd, float hgcdmax) {
     string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
     vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * regenpaused;
     vector hgsize = '32 32 0';
@@ -3699,22 +3727,39 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
     
     Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
     
-    if(rm_shownadgetregen)
-    if(regenrate) {
-        drawfont = sbar_bigfont;
-        float rtime = regen / regenrate;
-        string hgtxt = ftos(rtime);
+    if(rm_shownadgetregen) {
+        string hgtxt;
+        float rtime;
+
+        if(regenrate) {
+            rtime = regen / regenrate;
+            hgtxt = ftos(rtime);
+
+            float dotpos = strstrofs(hgtxt, ".", 0);
+            if(dotpos >= 0)
+                hgtxt = substring(hgtxt, 0, dotpos + 2);
+            else
+                hgtxt = strcat(hgtxt, ".0");
+        } else {
+            float rpercent = 1 - regen / regenmax;
+
+            if(rpercent <= 0)
+                return;
+
+            rtime = if(rpercent >= 0.7)
+                        0
+                    else if(rpercent >= 0.5)
+                        5
+                    else
+                        10;
+
+            hgtxt = strcat(ftos(rint(rpercent * 100)), "%");
+        }
         
-        float dotpos = strstrofs(hgtxt, ".", 0);
-        if(dotpos >= 0)
-            hgtxt = substring(hgtxt, 0, dotpos + 2);
-        else
-            hgtxt = strcat(hgtxt, ".0");
-        
-        float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
-        drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
-        
-        drawfont = sbar_font;
+        using(drawfont = sbar_bigfont) {
+            float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
+            drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
+        }
     }
 }
 
@@ -5347,8 +5392,9 @@ void Sbar_Draw(void)
             }
 
             if(getstati(STAT_HGSHIELDSTORE)) {
-                DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
-                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0');
+                DrawProgressFragmented('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '25 0 0' * sbar_fontsize_x + '0 7 0',
+                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0',
+                             getstati(STAT_HGSHIELDSTOREMAX) / getstati(STAT_HGSHIELDDAMAGEPERSHOT));
             }
      
             if(getstati(STAT_STEALTH)) {
@@ -5393,11 +5439,11 @@ void Sbar_Draw(void)
                 pos = bottom - pos;
                 pos_x = nadesector_pos;
                 
-                Sbar_DrawNadgetRegenSector(pos, hgtype, hgammo, getstatf(STAT_HGREGEN), getstatf(STAT_HGREGENRATE), getstati(STAT_HGREGENPAUSED), hgcd, hg_maxcd);
+                Sbar_DrawNadgetRegenSector(pos, hgtype, hgammo, getstatf(STAT_HGREGEN), getstatf(STAT_HGREGENRATE), getstatf(STAT_HGREGENMAX), getstati(STAT_HGREGENPAUSED), hgcd, hg_maxcd);
      
                 if(nadesector2_pos) {
                     pos_x = nadesector2_pos;
-                    Sbar_DrawNadgetRegenSector(pos, getstati(STAT_HGTYPE2), getstati(STAT_HGAMMO2), getstatf(STAT_HGREGEN2), getstatf(STAT_HGREGENRATE2), getstati(STAT_HGREGENPAUSED2), hgcd2, hg_maxcd2);
+                    Sbar_DrawNadgetRegenSector(pos, getstati(STAT_HGTYPE2), getstati(STAT_HGAMMO2), getstatf(STAT_HGREGEN2), getstatf(STAT_HGREGENRATE2), getstatf(STAT_HGREGENMAX2), getstati(STAT_HGREGENPAUSED2), hgcd2, hg_maxcd2);
                 }
      
             } else {

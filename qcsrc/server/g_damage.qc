@@ -535,11 +535,14 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage);
 float IsHeadshot(entity targ, entity attacker, vector hitloc) {
     // find height of hit on player axis
     // if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
-    
+
     vector headmins, headmaxs, org;
+    var w = CVAR(g_player_hitbox_head_width_factor);
+    var h = CVAR(g_player_hitbox_head_height_factor);
+
     org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
-    headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * targ.view_ofs_z - 0.3 * targ.maxs_z);
-    headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * targ.maxs_z;
+    headmins = org + [targ.mins_x * w, targ.mins_y * w, (1 + h) * targ.view_ofs_z - h * targ.maxs_z];
+    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z];
     
     return trace_hits_box(railgun_start, railgun_end, headmins, headmaxs);
 }
@@ -659,7 +662,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
 	{
 		// no processing
 	}
@@ -1041,6 +1044,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                self.buff_stealth_time = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
                     self.hg_stealth_saved = 0;
@@ -1310,7 +1314,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
+								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;
@@ -1462,7 +1466,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 void Fire_ApplyDamage(entity e)
 {
-	float t, d, hi, ty;
+	float t, d, hi, ty, ar;
 
     if(time - e.fire_last < FIRE_DELAY)
         return;
@@ -1488,11 +1492,13 @@ void Fire_ApplyDamage(entity e)
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
+    ar = e.fire_owner.armorhitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
 	if(e.fire_hitsound && e.fire_owner)
 	{
 		e.fire_owner.hitsound = hi;
 		e.fire_owner.typehitsound = ty;
+        e.fire_owner.armorhitsound = ar;
 	}
 	e.fire_hitsound = TRUE;
 

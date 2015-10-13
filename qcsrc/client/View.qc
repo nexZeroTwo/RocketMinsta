@@ -379,6 +379,10 @@ float hg_nadecount;
 float hg_nadecount2;
 float hg_nadecount_firstframepassed;
 
+float hg_lastgain;
+float hg_totalgaintime;
+float hg_gaincount;
+
 void HG_NadeGainSound() {
     float c1 = getstati(STAT_HGAMMO);
     float c2 = getstati(STAT_HGAMMO2);
@@ -391,6 +395,18 @@ void HG_NadeGainSound() {
             if(c1 > hg_nadecount) {
                 localcmd("play2 misc/poweroff\n");
                 sndplayed = TRUE;
+
+                if(cvar("developer")) {
+                    if(hg_lastgain) {
+                        var diff = time - hg_lastgain;
+                        print("Gain time: ", ftos(diff), "\n");
+                        hg_gaincount++;
+                        hg_totalgaintime += diff;
+                        print("Avg. gain time: ", ftos(hg_totalgaintime / hg_gaincount), "\n");
+                    }
+
+                    hg_lastgain = time;
+                }
             }
         }
 

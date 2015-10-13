@@ -10,6 +10,8 @@
 
 .float(entity) waypointsprite_visible_for_player;
 
+.float waypointsprite_appeartime;
+
 void WaypointSprite_UpdateSprites(entity e, string m1, string m2, string m3)
 {
 	if(m1 != e.model1)
@@ -227,6 +229,9 @@ float WaypointSprite_Customize()
 {
 	// this is not in SendEntity because it shall run every frame, not just every update
     
+    if(time < self.waypointsprite_appeartime)
+        return FALSE;
+
 	// make spectators see what the player would see
 	entity e;
 	e = other;

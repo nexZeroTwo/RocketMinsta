@@ -260,6 +260,7 @@ void CSQC_Init(void)
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
     dtrack_taken_spec = DamageTracker_CreateKeeper(world);
+    dtrack_global = DamageTracker_CreateKeeper(world);
 
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
@@ -1531,7 +1532,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME && i != SP_ACCURACY)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
@@ -1883,6 +1884,7 @@ void Ent_Init()
     sv_showacc = ReadByte();
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
+    sv_shownoobstat = ReadByte();
 
     Buffs_LoadModels();
 
@@ -2138,7 +2140,9 @@ void Net_Heal() {
 }
 
 entity Net_DamageTracker_KeeperFromFlags(float dtflags) {
-    if(dtflags & DTFLAG_DONE) {
+    if(dtflags & DTFLAG_GLOBAL)
+        return dtrack_global;
+    else if(dtflags & DTFLAG_DONE) {
         if(dtflags & DTFLAG_SPEC)
             return dtrack_total_spec;
         else
