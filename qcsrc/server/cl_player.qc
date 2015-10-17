@@ -699,23 +699,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		take = damage;
 	}
 
-    take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
-
-	if(sound_allowed(MSG_BROADCAST, attacker))
-	{
-		if (save > 10)
-			sound (self, CHAN_PROJECTILE, "misc/armorimpact.wav", VOL_BASE, ATTN_NORM);
-		else if (take > 30)
-			sound (self, CHAN_PROJECTILE, "misc/bodyimpact2.wav", VOL_BASE, ATTN_NORM);
-		else if (take > 10 || deathtype == DEATH_ENDURANCE)
-			sound (self, CHAN_PROJECTILE, "misc/bodyimpact1.wav", VOL_BASE, ATTN_NORM); // FIXME possibly remove them?
-	}
-
-	if (take > 50)
-		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
-	if (take > 100)
-		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-
     if(attacker == self)
     {
         // don't reset pushltime for self damage as it may be an attempt to
@@ -734,6 +717,23 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
     else
         self.pushltime = 0;
+
+    take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
+
+	if(sound_allowed(MSG_BROADCAST, attacker))
+	{
+		if (save > 10)
+			sound (self, CHAN_PROJECTILE, "misc/armorimpact.wav", VOL_BASE, ATTN_NORM);
+		else if (take > 30)
+			sound (self, CHAN_PROJECTILE, "misc/bodyimpact2.wav", VOL_BASE, ATTN_NORM);
+		else if (take > 10 || deathtype == DEATH_ENDURANCE)
+			sound (self, CHAN_PROJECTILE, "misc/bodyimpact1.wav", VOL_BASE, ATTN_NORM); // FIXME possibly remove them?
+	}
+
+	if (take > 50)
+		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
+	if (take > 100)
+		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
 
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
