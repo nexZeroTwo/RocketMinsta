@@ -2020,7 +2020,7 @@ void spawnfunc_trigger_cycle(void) {
         if(!other.iscreature)
             return;
 
-        other.pushltime = CVAR(g_maxpushtime);
+        other.pushltime = time + CVAR(g_maxpushtime);
         other.pusher = self.enemy;
     };
 
