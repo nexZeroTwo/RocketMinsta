@@ -715,7 +715,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-    
+
+    if(attacker == self)
+    {
+        // don't reset pushltime for self damage as it may be an attempt to
+        // escape a lava pit or similar
+        //self.pushltime = 0;
+    }
+    else if(attacker.classname == "player" || attacker.classname == "gib")
+    {
+        self.pusher = attacker;
+        self.pushltime = time + CVAR(g_maxpushtime);
+    }
+    else if(time < self.pushltime)
+    {
+        attacker = self.pusher;
+        self.pushltime = max(self.pushltime, time + 0.6);
+    }
+    else
+        self.pushltime = 0;
+
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
@@ -823,25 +842,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 	
     self.dmg_inflictor = inflictor;
-
-	if(attacker == self)
-	{
-		// don't reset pushltime for self damage as it may be an attempt to
-		// escape a lava pit or similar
-		//self.pushltime = 0;
-	}
-	else if(attacker.classname == "player" || attacker.classname == "gib")
-	{
-		self.pusher = attacker;
-		self.pushltime = time + CVAR(g_maxpushtime);
-	}
-	else if(time < self.pushltime)
-	{
-		attacker = self.pusher;
-		self.pushltime = max(self.pushltime, time + 0.6);
-	}
-	else
-		self.pushltime = 0;
 
 	valid_damage_for_weaponstats = 0;
 	if(clienttype(self) == CLIENTTYPE_REAL)

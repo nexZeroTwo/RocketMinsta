@@ -82,6 +82,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Endurance Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
+    else if(dtype == DEATH_HURTTRIGGER)
+        return "Map trigger";
     else {
         float hgtype = DEATH_HGTYPE(dtype);
 
