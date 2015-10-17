@@ -1992,3 +1992,37 @@ void spawnfunc_trigger_cycle(void) {
     self.think = trigger_cycle_init_delayed;
     self.nextthink = time;
 }
+
+/*
+ * killcredit
+ */
+
+ void spawnfunc_trigger_killcredit(void) {
+    EXACTTRIGGER_INIT;
+
+    if(self.wait <= 0)
+        self.wait = 3;
+
+    self.use = inline void(void) {
+        self.enemy = activator;
+        self.solid = SOLID_TRIGGER;
+        self.think = self.reset;
+        self.nextthink = time + self.wait;
+    };
+
+    self.reset = inline void(void) {
+        self.enemy = world;
+        self.solid = SOLID_NOT;
+        self.think = SUB_Null;
+    };
+
+    self.touch = inline void(void) {
+        if(!other.iscreature)
+            return;
+
+        other.pushltime = CVAR(g_maxpushtime);
+        other.pusher = self.enemy;
+    };
+
+    self.reset();
+ }
