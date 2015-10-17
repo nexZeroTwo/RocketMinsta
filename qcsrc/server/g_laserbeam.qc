@@ -1,0 +1,95 @@
+
+void func_laserbeam_think(void) {
+    vector o = self.zapper_beam_start = self.origin;
+    vector aimpos;
+
+    if(!self.state)
+        return;
+
+    if(self.enemy) {
+        aimpos = self.enemy.origin;
+    } else {
+        makevectors(self.angles);
+        aimpos = o + v_forward * self.t_length;
+    }
+
+    if(self.t_length)
+        aimpos = o + normalize(aimpos - o) * self.t_length;
+
+    traceline(o, aimpos, MOVE_NORMAL, self);
+    var end = trace_endpos;
+    var targ = trace_ent;
+
+    if(time > self.cnt) {
+        Damage(targ, self, world, self.dmg, DEATH_HURTTRIGGER, end, 10 * normalize(end - self.zapper_beam_start));
+        if(targ.takedamage)
+            self.cnt = time + 0.1;
+    }
+
+    end -= normalize(end - self.zapper_beam_start) * 5;
+
+    if(o != self.zapper_beam_start) {
+        self.zapper_beam_end = o;
+        self.SendFlags |= 2;
+    }
+
+    if(end != self.zapper_beam_end) {
+        self.zapper_beam_end = end;
+        self.SendFlags |= 4;
+    }
+
+    self.nextthink = time;
+}
+
+void func_laserbeam_reset(void) {
+    self.state = !(self.spawnflags & 1);
+    self.think();
+}
+
+float func_laserbeam_customize(void) {
+    return self.state;
+}
+
+void func_laserbeam_use(void) {
+    self.state = !self.state;
+    if(self.state)
+        self.think();
+}
+
+void func_laserbeam_init(void) {
+    self.enemy = world;
+    self.team = COLOR_TEAM1;
+    self.think = func_laserbeam_think;
+    self.reset = func_laserbeam_reset;
+    self.use = func_laserbeam_use;
+    self.customizeentityforclient = func_laserbeam_customize;
+
+    if(!self.sounds)
+        self.sounds = -1;
+
+    if(self.dmg <= 0)
+        self.dmg = 20;
+
+    self.team = Team_FromIndex(self.team);
+
+    if(!self.team)
+        self.team = COLOR_TEAM1;
+
+    if(self.target != "") {
+        self.enemy = find(world, targetname, self.target);
+
+        if(!self.enemy)
+            objerror("func_laser has an invalid target");
+    } else if(!self.t_length)
+        self.t_length = MAX_SHOT_DISTANCE;
+
+    if(self.t_length < 0)
+        self.t_length = MAX_SHOT_DISTANCE;
+
+    self.reset();
+    Net_LinkEntity(self, FALSE, 0, W_Zapper_Beam_Send);
+}
+
+void spawnfunc_func_laserbeam(void) {
+    InitializeEntity(self, func_laserbeam_init, INITPRIO_FINDTARGET);
+}
