@@ -596,7 +596,7 @@ void button_damage(entity inflictor, entity attacker, float damage, float deatht
 	//		dprint(activator.classname);
 	//		dprint(" killed a button\n");
 	//	}
-		self.enemy = damage_attacker;
+		self.enemy = attacker; //damage_attacker;
 		button_fire ();
 	}
 };
