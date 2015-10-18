@@ -1,4 +1,20 @@
 
+void func_laserbeam_trace(vector o, vector aimpos) {
+    var boxsize = 16;
+
+    do {
+        boxsize *= 0.5;
+
+        if(boxsize < 1) {
+            traceline(o, aimpos, MOVE_NORMAL, self);
+            return;
+        }
+
+        tracebox(o, '-1 -1 -1' * boxsize, '1 1 1' * boxsize, aimpos, MOVE_NORMAL, self);
+        o = trace_endpos;
+    } while(trace_fraction < 1 && !trace_ent.takedamage);
+}
+
 void func_laserbeam_think(void) {
     vector o = self.zapper_beam_start = self.origin;
     vector aimpos;
@@ -16,7 +32,7 @@ void func_laserbeam_think(void) {
     if(self.t_length)
         aimpos = o + normalize(aimpos - o) * self.t_length;
 
-    traceline(o, aimpos, MOVE_NORMAL, self);
+    func_laserbeam_trace(o, aimpos);
     var end = trace_endpos;
     var targ = trace_ent;
 
