@@ -16,7 +16,7 @@ void func_laserbeam_trace(vector o, vector aimpos) {
 }
 
 void func_laserbeam_think(void) {
-    vector o = self.zapper_beam_start = self.origin;
+    vector o = self.origin;
     vector aimpos;
 
     if(!self.state)
@@ -45,7 +45,7 @@ void func_laserbeam_think(void) {
     end -= normalize(end - self.zapper_beam_start) * 5;
 
     if(o != self.zapper_beam_start) {
-        self.zapper_beam_end = o;
+        self.zapper_beam_start = o;
         self.SendFlags |= 2;
     }
 
