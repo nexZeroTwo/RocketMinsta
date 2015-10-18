@@ -816,7 +816,12 @@ void HG_Stick(void) {
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     e.hg_state = TRUE;
     e.hg_adept = self.hg_adept;
-    setsize(e, '-5 -5 -5', '5 5 5');
+
+    var sz = if(self.hg_type == HG_TRANSLOC) 8 else 5;
+    var hitmins = '-1 -1 -1' * sz;
+    var hitmaxs = ' 1  1  1' * sz;
+
+    setsize(e, hitmins, hitmaxs);
     setorigin(e, self.origin);
     
     // For the translocator (face against the wall when teleporting)
@@ -830,11 +835,6 @@ void HG_Stick(void) {
     e.meodp_death = self.meodp_death;
     if(e.meodp_point)
         e.meodp_point.owner = e;
-
-    if(self.hg_type == HG_REMOTE) {    
-        if(normal_x)
-            setorigin(e, e.origin - normal * 4.5);
-    }
 
     move_out_of_solid(e);
     
@@ -1788,8 +1788,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {
-        hitmins = '-8 -4 -3';
-        hitmaxs = ' 8  4  3';
+        var sz = if(hgtype == HG_TRANSLOC) 8 else 5;
+        hitmins = '-1 -1 -1' * sz;
+        hitmaxs = ' 1  1  1' * sz;
     }
     
     makevectors(self.v_angle);

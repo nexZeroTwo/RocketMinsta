@@ -511,8 +511,9 @@ void Ent_Projectile()
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';
                 } else {
-                    self.mins = '-8 -4 -3';
-                    self.maxs = ' 8  4  3';
+                    var sz = if(self.cnt == PROJECTILE_HG_TRANSLOC) 8 else 5;
+                    self.mins = '-1 -1 -1' * sz;
+                    self.maxs = ' 1  1  1' * sz;
                 }
                 
                 self.move_movetype = MOVETYPE_BOUNCE;
