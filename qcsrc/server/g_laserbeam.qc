@@ -70,7 +70,7 @@ void func_laserbeam_init(void) {
     if(self.dmg <= 0)
         self.dmg = 20;
 
-    self.team = Team_FromIndex(self.team);
+    self.team = Team_FromIndex(self.color_x);
 
     if(!self.team)
         self.team = COLOR_TEAM1;
