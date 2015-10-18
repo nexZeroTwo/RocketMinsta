@@ -590,6 +590,10 @@ void HG_Grenade_Touch() {
     if(SUB_OwnerCheck())
         return;
     
+    if(!self.hg_sticked)
+    if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
+        UpdateCSQCProjectileNextFrame(self);
+
     if(SUB_NoImpactCheck()) {
         if(self.hg_type == HG_TRANSLOC) {
             if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
@@ -600,12 +604,7 @@ void HG_Grenade_Touch() {
         HG_Grenade_Remove();
         return;
     }
-    
-    if(!self.hg_sticked)
-    if(trace_ent && trace_ent.solid > SOLID_TRIGGER) {
-        UpdateCSQCProjectileNextFrame(self);
-    }
-    
+
     if(other.classname == "hg_grenade" && other.owner == self.owner)
         return;
     
