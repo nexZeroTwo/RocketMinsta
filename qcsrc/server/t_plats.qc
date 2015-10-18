@@ -1953,8 +1953,11 @@ void spawnfunc_func_magicwall(void) {
         inline void(void) {
             func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, func_null);
         } else inline void(void) {
-            if(self.oldsolid != self.solid)
+            if(self.oldsolid != self.solid) {
+                if(self.think && self.think != func_magicwall_think_transition)
+                    self.nextthink = time + self.delay;
                 return;
+            }
 
             func_magicwall_start_transition(if(self.oldsolid == SOLID_BSP) SOLID_NOT else SOLID_BSP,
                 if(self.delay >= 0) inline void(void) {
