@@ -1927,6 +1927,9 @@ void spawnfunc_func_magicwall(void) {
         self.alpha_nonsolid = 0;
 
     if(!self.delay)
+        self.delay = self.wait;
+
+    if(!self.delay)
         self.delay = 3;
 
     if(!self.speed)
