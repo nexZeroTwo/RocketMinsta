@@ -191,7 +191,6 @@ void StartFrame (void)
 	InitializeEntitiesRun();
 
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        sv_friction = CVAR(sv_friction);
         sv_accelerate = CVAR(sv_accelerate);
         sv_airaccelerate = CVAR(sv_airaccelerate);
         sv_airaccel_sideways_friction = CVAR(sv_airaccel_sideways_friction);

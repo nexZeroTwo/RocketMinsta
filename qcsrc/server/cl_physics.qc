@@ -2,7 +2,6 @@
 .float restart_jump;
 
 float sv_accelerate;
-float sv_friction;
 float sv_airaccelerate;
 float sv_stopspeed;
 float sv_airaccel_sideways_friction;
@@ -933,7 +932,7 @@ void SV_PlayerPhysics()
 		// noclipping or flying
 		self.flags &~= FL_ONGROUND;
 
-		self.velocity = self.velocity * (1 - frametime * sv_friction);
+		self.velocity = self.velocity * (1 - frametime * CVAR(sv_friction));
 		makevectors(self.v_angle);
 		//wishvel = v_forward * self.movement_x + v_right * self.movement_y + v_up * self.movement_z;
 		wishvel = v_forward * self.movement_x + v_right * self.movement_y + '0 0 1' * self.movement_z;
@@ -963,7 +962,7 @@ void SV_PlayerPhysics()
 		wishspeed = wishspeed * 0.7;
 
 		// water friction
-		self.velocity = self.velocity * (1 - frametime * sv_friction);
+		self.velocity = self.velocity * (1 - frametime * CVAR(sv_friction));
 
 		// water acceleration
 		PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
@@ -973,7 +972,7 @@ void SV_PlayerPhysics()
 		// on a spawnfunc_func_ladder or swimming in spawnfunc_func_water
 		self.flags &~= FL_ONGROUND;
 
-		self.velocity = self.velocity * (1 - frametime * sv_friction);
+		self.velocity = self.velocity * (1 - frametime * CVAR(sv_friction));
 		makevectors(self.v_angle);
 		//wishvel = v_forward * self.movement_x + v_right * self.movement_y + v_up * self.movement_z;
 		wishvel = v_forward * self.movement_x + v_right * self.movement_y + '0 0 1' * self.movement_z;
@@ -1152,9 +1151,9 @@ void SV_PlayerPhysics()
 		if(f > 0)
 		{
 			if (f < sv_stopspeed)
-				f = 1 - frametime * (sv_stopspeed / f) * sv_friction;
+				f = 1 - frametime * (sv_stopspeed / f) * CVAR(sv_friction);
 			else
-				f = 1 - frametime * sv_friction;
+				f = 1 - frametime * CVAR(sv_friction);
 			if (f > 0)
 				self.velocity = self.velocity * f;
 			else
