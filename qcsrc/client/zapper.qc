@@ -133,6 +133,7 @@ void Zapper_Draw(void) {
     zapper_curve_beam_point_num1 = zapper_curve_beam_point_num2 = 1;
     zapper_curve_beam_offset1 = time * 5;
     zapper_curve_beam_offset2 = time * 5;
+
     WarpZone_TraceTriangle(real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
 }
@@ -241,9 +242,14 @@ void Zapper_Read(float t) {
         self.zapper_start_x = ReadCoord();
         self.zapper_start_y = ReadCoord();
         self.zapper_start_z = ReadCoord();
-        self.zapper_real_start_x = ReadCoord();
-        self.zapper_real_start_y = ReadCoord();
-        self.zapper_real_start_z = ReadCoord();
+
+        if(self.sv_entnum) {
+            self.zapper_real_start_x = ReadCoord();
+            self.zapper_real_start_y = ReadCoord();
+            self.zapper_real_start_z = ReadCoord();
+        } else {
+            self.zapper_real_start = self.zapper_start;
+        }
     }
 
     if(sf & 4) {

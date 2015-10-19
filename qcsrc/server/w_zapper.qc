@@ -48,6 +48,11 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         }
     }
 
+    float o = num_for_edict(self.owner);
+
+    if(o > maxclients)
+        o = 0;
+
     if(self.classname == "zapper_shield_beam")
         WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER_SHIELD);
     else
@@ -56,11 +61,6 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        float o = num_for_edict(self.owner);
-
-        if(o > maxclients)
-            o = 0;
-
         WriteByte(MSG_ENTITY, o);
 
         if(!o)
@@ -71,9 +71,12 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_x);
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_y);
         WriteCoord(MSG_ENTITY, self.zapper_beam_start_z);
-        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_x);
-        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_y);
-        WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_z);
+
+        if(o) {
+            WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_x);
+            WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_y);
+            WriteCoord(MSG_ENTITY, self.zapper_beam_real_start_z);
+        }
     }
 
     if(sf & 4) {
