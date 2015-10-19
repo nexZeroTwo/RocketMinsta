@@ -2587,15 +2587,15 @@ void HG_AdvanceRegen(entity plr, float delta, float limit) {
     plr.hg_ctx_regentime -= delta;
 
     if(plr.hg_ctx_regentime <= 0) {
-        var remainder = -plr.hg_ctx_regentime;
-        if(almost_equals(remainder, 0))
-            remainder = 0;
+        var rem = -plr.hg_ctx_regentime;
+        if(almost_equals(rem, 0))
+            rem = 0;
 
         plr.hg_ctx_ammo += 1;
         HG_SetRegenTime(plr, HG_RegenTime(plr));
 
-        if(remainder)
-            HG_AdvanceRegen(plr, remainder, limit);
+        if(rem)
+            HG_AdvanceRegen(plr, rem, limit);
     }
 }
 
