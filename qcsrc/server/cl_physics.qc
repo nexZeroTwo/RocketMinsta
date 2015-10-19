@@ -1,14 +1,6 @@
 .float race_penalty;
 .float restart_jump;
 
-float sv_airaccelerate;
-float sv_stopspeed;
-float sv_airaccel_sideways_friction;
-float sv_airaccel_qw;
-float sv_airstopaccelerate;
-float sv_airstrafeaccelerate;
-float sv_aircontrol;
-
 .float ladder_time;
 .entity ladder_entity;
 //.float gravity;
@@ -387,7 +379,7 @@ void CPM_PM_Aircontrol(vector wishdir, float wishspeed)
 
 	dot = self.velocity * wishdir;
 	k = 32;
-	k *= sv_aircontrol*dot*dot*frametime;
+	k *= CVAR(sv_aircontrol)*dot*dot*frametime;
 
 	if(dot > 0) // we can't change direction while slowing down
 		self.velocity = normalize(self.velocity * xyspeed + wishdir * k);
@@ -1149,8 +1141,8 @@ void SV_PlayerPhysics()
 		f = vlen(v);
 		if(f > 0)
 		{
-			if (f < sv_stopspeed)
-				f = 1 - frametime * (sv_stopspeed / f) * CVAR(sv_friction);
+			if (f < CVAR(sv_stopspeed))
+				f = 1 - frametime * (CVAR(sv_stopspeed) / f) * CVAR(sv_friction);
 			else
 				f = 1 - frametime * CVAR(sv_friction);
 			if (f > 0)
@@ -1179,12 +1171,12 @@ void SV_PlayerPhysics()
 		if(maxspd_mod < 1)
 		{
 			maxairspd = CVAR(sv_maxairspeed)*maxspd_mod;
-			airaccel = sv_airaccelerate*maxspd_mod;
+			airaccel = CVAR(sv_airaccelerate)*maxspd_mod;
 		}
 		else
 		{
 			maxairspd = CVAR(sv_maxairspeed);
-			airaccel = sv_airaccelerate;
+			airaccel = CVAR(sv_airaccelerate);
 		}
 		// airborn
 		makevectors(self.v_angle_y * '0 1 0');
@@ -1204,14 +1196,14 @@ void SV_PlayerPhysics()
 			float wishspeed2;
 			float airaccelqw;
 
-			airaccelqw = sv_airaccel_qw;
+			airaccelqw = CVAR(sv_airaccel_qw);
 			accelerating = (self.velocity * wishdir > 0);
 			wishspeed2 = wishspeed;
 
 			// CPM
-			if(sv_airstopaccelerate)
+			if(CVAR(sv_airstopaccelerate))
 				if(self.velocity * wishdir < 0)
-					airaccel = sv_airstopaccelerate*maxspd_mod;
+					airaccel = CVAR(sv_airstopaccelerate)*maxspd_mod;
 			if(self.movement_x == 0 && self.movement_y != 0)
 			{
 				if(CVAR(sv_maxairstrafespeed))
@@ -1220,10 +1212,10 @@ void SV_PlayerPhysics()
 					if(CVAR(sv_maxairstrafespeed) < CVAR(sv_maxairspeed))
 						airaccelqw = 1;
 				}
-				if(sv_airstrafeaccelerate)
+				if(CVAR(sv_airstrafeaccelerate))
 				{
-					airaccel = sv_airstrafeaccelerate*maxspd_mod;
-					if(sv_airstrafeaccelerate > sv_airaccelerate)
+					airaccel = CVAR(sv_airstrafeaccelerate)*maxspd_mod;
+					if(CVAR(sv_airstrafeaccelerate) > CVAR(sv_airaccelerate))
 						airaccelqw = 1;
 				}
 			}
@@ -1232,9 +1224,9 @@ void SV_PlayerPhysics()
 			if(CVAR(sv_warsowbunny_turnaccel) && accelerating && self.movement_y == 0 && self.movement_x != 0)
 				PM_AirAccelerate(wishdir, wishspeed);
 			else
-				PM_Accelerate(wishdir, wishspeed, wishspeed0, airaccel, airaccelqw, sv_airaccel_sideways_friction / maxairspd);
+				PM_Accelerate(wishdir, wishspeed, wishspeed0, airaccel, airaccelqw, CVAR(sv_airaccel_sideways_friction) / maxairspd);
 
-			if(sv_aircontrol)
+			if(CVAR(sv_aircontrol))
 				CPM_PM_Aircontrol(wishdir, wishspeed2);
 		}
 	}
