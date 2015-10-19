@@ -588,13 +588,13 @@ void SV_PlayerPhysics()
 	}
     
     // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
-	if (g_walljump)
+	if (CVAR(g_walljump))
     //if (!self.hg_stealth)
 	if (!(g_freeze && self.frozen) && self.health > 0)
     if (isplayer)
     if (!(self.flags & FL_ONGROUND))
     if (self.BUTTON_JUMP)
-    if ((time - self.lastwj) > g_walljump_delay)
+    if ((time - self.lastwj) > CVAR(g_walljump_delay))
 	if (!self.hook.state)
     if (!gameover)
     if (!self.hg_shield || CVAR(g_walljump_shielded))

@@ -194,8 +194,6 @@ void StartFrame (void)
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
         sv_autoaway = CVAR(sv_autoaway);
-        g_walljump = CVAR(g_walljump);
-        g_walljump_delay = CVAR(g_walljump_delay);
         g_dodging = CVAR(g_dodging);
 
         if(g_dodging) {
