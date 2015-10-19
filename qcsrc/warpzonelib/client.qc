@@ -43,6 +43,9 @@ void WarpZone_Read(float isnew)
 	setsize(self, self.mins, self.maxs);
 
 	WarpZone_ChainAdd(self);
+
+    if(!cvar("r_water"))
+        cvar_clientsettemp("r_water", "1");
 }
 
 vector WarpZone_Camera_camera_transform(vector org, vector ang)
