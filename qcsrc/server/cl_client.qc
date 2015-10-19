@@ -2602,6 +2602,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_next2 = spectatee.hg_next2;
     self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
+    self.buff_vamp_healthpool = spectatee.buff_vamp_healthpool;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
