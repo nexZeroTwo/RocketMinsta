@@ -396,7 +396,7 @@ void PM_Accelerate(vector wishdir, float wishspeed, float wishspeed0, float acce
 	float addspeed;
 	float savespeed;
     
-	if(sv_gameplayfix_q2airaccelerate)
+	if(CVAR(sv_gameplayfix_q2airaccelerate))
 		wishspeed0 = wishspeed;
 
 	savespeed = self.velocity * self.velocity;

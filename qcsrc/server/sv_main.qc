@@ -193,7 +193,6 @@ void StartFrame (void)
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
-        sv_gameplayfix_q2airaccelerate = CVAR(sv_gameplayfix_q2airaccelerate);
         sv_autoaway = CVAR(sv_autoaway);
         g_walljump = CVAR(g_walljump);
         g_walljump_delay = CVAR(g_walljump_delay);

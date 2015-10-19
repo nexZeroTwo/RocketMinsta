@@ -744,7 +744,6 @@ float whatsgoingon;
 
 float g_allow_oldnexbeam;
 float leadlimit;
-float sv_gameplayfix_q2airaccelerate;
 float sv_autoaway;
 float g_walljump;
 float g_walljump_delay;
