@@ -179,7 +179,7 @@ float RemapVote(string vote, string cmd, entity e)
 				sprint(e, strcat("^1'", argv(2), "' is not a valid gametype or is forbidden\n"));
 				return FALSE;
 			}
-			else if (! GameTypeFilter_Allowed (argv (1), s))
+			else if (!MapInfo_CheckMap(argv(1), gametype_Name_to_MapID(s)))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName (s), " is not allowed on the selected map\n"));
 				return FALSE;
@@ -204,7 +204,7 @@ float RemapVote(string vote, string cmd, entity e)
 		}
 		else
 		{
-			if (! GameTypeFilter_Allowed (argv (1), gametype_ID_to_Name(game)))
+			if (!MapInfo_CheckMap(argv(1), gametype_ID_to_MapID(game)))
 			{
 				// Moved from ValidateMap
 				sprint (e, strcat ("^1", gametype_ID_to_LongName(game), " is not allowed on the selected map\n"));
@@ -335,23 +335,13 @@ float RemapVote(string vote, string cmd, entity e)
 	}
 	else if(argv(0) == "walpurgis")
 	{
-		#ifdef RM_SUPPORT_MADOKA
 		RemapVote_vote = vote;
 		RemapVote_display = strzone("^2something terrible");
-		#else
-		sprint(e, "^0It's not the time yet...\n");
-		return FALSE;
-		#endif
 	}
 	else if(argv(0) == "supermentalrescue")
 	{
-		#ifdef RM_SUPPORT_MORNINGRESCUE
 		RemapVote_vote = vote;
 		RemapVote_display = strzone("^2something awesome");
-		#else
-		sprint(e, "^7The rescue team is not ready yet\n");
-		return FALSE;
-		#endif
 	}
 	else if(argv(0) == "gotoserver") {
 		if(vote_argc < 2) {
@@ -398,7 +388,7 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			// Let's give this another shot
-			if (! GameTypeFilter_Allowed(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, s))
+			if (!MapInfo_CheckMap(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, gametype_Name_to_MapID(s)))
 			{
 				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
@@ -661,14 +651,34 @@ float GameCommand_Vote(string s, entity e) {
 				print_to(e, "^1You are NOT a master.  You might need to login or vote to become master first. See 'vhelp' for more info.");
 			}
 		} else if(argv(1) == "login") {
-			local string masterpwd;
-			masterpwd = CVAR_STR(sv_vote_master_password);
-			if(masterpwd != "") {
-				local float granted;
-				granted = (masterpwd == argv(2));
-				if (e)
-					e.vote_master = granted;
-				if(granted) {
+            if(!e)
+                return TRUE;
+
+            string masterpwd, masterusers, password;
+            masterpwd = CVAR_STR(sv_vote_master_password);
+            masterusers = CVAR_STR(sv_vote_master_users);
+            password = argv(2);
+
+            if(password == "")
+                return TRUE;
+
+            if(masterpwd != "" || masterusers != "") {
+                if(e.vote_masteruser) {
+                    strunzone(e.vote_masteruser);
+                    e.vote_masteruser = string_null;
+                }
+
+                float granted = (masterpwd == password);
+
+                if(!granted && masterusers != "") {
+                    granted = (strstrofs(strcat(" ", masterusers, " "), strcat(" ", password, " "), 0) >= 0);
+                    if(granted)
+                        e.vote_masteruser = strzone(substring(password, 0, strstrofs(password, ":", 0)));
+                }
+
+                e.vote_master = granted;
+
+                if(granted) {
                     string lname;
                     
                     if(argc > 3 && CVAR(sv_vote_master_arbitrary_login))
@@ -684,18 +694,18 @@ float GameCommand_Vote(string s, entity e) {
                         e.vote_mastername = strzone(lname);
                     }
                     
-					print("Accepted master login from ", VoteNetname(e), "\n");
+                    print("Accepted master login from ", VoteNetname(e), "\n");
                     tmp = strcat("^2* ^3", VoteNetname(e), "^2 logged in as ^3", e.vote_mastername, "^2");
-					bprint("\{1}", tmp, "\n");
+                    bprint("\{1}", tmp, "\n");
                     IRC_Announce_Vote(tmp);
-					if(CVAR(sv_eventlog))
-						GameLogEcho(strcat(":vote:vlogin:", ftos(e.playerid)));
-				}
-				else
-					print("REJECTED master login from ", VoteNetname(e), "\n");
-			}
-			else
-				print_to(e, "^1Login to become master is NOT allowed.");
+                    if(CVAR(sv_eventlog))
+                        GameLogEcho(strcat(":vote:vlogin:", ftos(e.playerid)));
+                }
+                else
+                    print("REJECTED master login from ", VoteNetname(e), "\n");
+            }
+            else
+                print_to(e, "^1Login to become master is NOT allowed.");
 		} else if(argv(1) == "yes") {
 			if(!votecalled) {
 				print_to(e, "^1No vote called.");
@@ -795,7 +805,7 @@ void VoteHelp(entity e) {
 	}
 
 	local string vlogindis;
-	if("" == CVAR_STR(sv_vote_master_password)) {
+	if("" == CVAR_STR(sv_vote_master_password) && "" == CVAR_STR(sv_vote_master_users)) {
 		vlogindis = " ^1(disabled)";
 	}
 
@@ -825,6 +835,8 @@ string VoteNetname(entity e)
 {
 	if(e) {
 		if(CVAR(sv_vote_showids)){
+            if(e.vote_masteruser)
+                return strcat(e.netname, " ^6(#", ftos(num_for_edict(e)), " ^5", e.vote_masteruser, "^6)");
 			return strcat(e.netname, " ^6(#", ftos(num_for_edict(e)), ")");
 		}
 		else{
@@ -853,22 +865,11 @@ string ValidateMap(string m, entity e)
 			print_to(e, "This server does not allow for recent maps to be played again. Please be patient for some rounds.");
 			return string_null;
 		}
-	if(!MapInfo_CheckMap(m))
+	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 	{
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
 		return string_null;
 	}
-
-/*
-//	if (! GameTypeFilter_Allowed (m, MapInfo_GetGameTypeCvar (gametype_ID_to_MapID(game))))
-	if (! GameTypeFilter_Allowed (m, gametype_ID_to_Name(game)))
-	{
-		print_to (e, strcat ("^2Invalid mode ^1", gametype_ID_to_LongName(game), " ^2for map ^1", m));
-		return string_null;
-	}
-	^ this code moved to RemapVote because of the vcall gotomap <mapname> <gametype> format, so this sometimes returns string_null when it shouldn't
-*/
-
 	return m;
 }
 

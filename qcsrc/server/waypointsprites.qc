@@ -10,6 +10,8 @@
 
 .float(entity) waypointsprite_visible_for_player;
 
+.float waypointsprite_appeartime;
+
 void WaypointSprite_UpdateSprites(entity e, string m1, string m2, string m3)
 {
 	if(m1 != e.model1)
@@ -227,6 +229,9 @@ float WaypointSprite_Customize()
 {
 	// this is not in SendEntity because it shall run every frame, not just every update
     
+    if(time < self.waypointsprite_appeartime)
+        return FALSE;
+
 	// make spectators see what the player would see
 	entity e;
 	e = other;
@@ -421,10 +426,22 @@ entity WaypointSprite_DeployFixed(
 .entity waypointsprite_deployed_personal;
 entity WaypointSprite_DeployPersonal(
 	string spr,
-	vector ofs
+	vector ofs,
+    float lifetime
 )
 {
-	return WaypointSprite_Spawn(spr, 0, 0, world, ofs, world, 0, self, waypointsprite_deployed_personal, FALSE);
+	return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, 0, self, waypointsprite_deployed_personal, FALSE);
+}
+
+entity WaypointSprite_DeployTeam(
+    string spr,
+    vector ofs,
+    float lifetime
+)
+{
+    if(!teams_matter)
+        return WaypointSprite_DeployPersonal(spr, ofs, lifetime);
+    return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, self.team, self, waypointsprite_deployed_personal, FALSE);
 }
 
 .entity waypointsprite_attached;

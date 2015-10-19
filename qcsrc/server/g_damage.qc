@@ -70,8 +70,6 @@ void DPS_FinishForTarget(entity targ) {
     }
 }
 
-void inf_infect_player(entity, entity);
-
 float Damage_DamageInfo_SendEntity(entity to, float sf)
 {
 	WriteByte(MSG_ENTITY, ENT_CLIENT_DAMAGEINFO);
@@ -111,8 +109,6 @@ void Damage_DamageInfo(vector org, float coredamage, float edgedamage, float rad
     
 	Net_LinkEntity(e, FALSE, 0.2, Damage_DamageInfo_SendEntity);
 }
-
-#define DAMAGE_CENTERPRINT_SPACER NEWLINES
 
 float checkrules_firstblood;
 
@@ -171,8 +167,6 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	// TODO route through PlayerScores instead
 	if(gameover || jb_roundover) return;
 
-	if(!prec_check_aggression(attacker, inflictor, targ)) return;
-
 	if(f < 0)
 	{
 		if(targ == attacker)
@@ -192,8 +186,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		PlayerScore_Add(attacker, SP_KILLS, 1);
 	}
 
-	//if(targ != attacker)
-		PlayerScore_Add(targ, SP_DEATHS, 1);
+	PlayerScore_Add(targ, SP_DEATHS, 1);
 
 	if(g_arena)
 		if(CVAR(g_arena_roundbased))
@@ -220,11 +213,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 	}
 
 	// FIXME fix the mess this is (we have REAL points now!)
-	if(g_runematch)
-	{
-		f = RunematchHandleFrags(attacker, targ, f);
-	}
-	else if(g_keyhunt)
+    if(g_keyhunt)
 	{
 		f = kh_HandleFrags(attacker, targ, f);
 	}
@@ -249,7 +238,7 @@ void GiveFrags (entity attacker, entity inflictor, entity targ, float f)
 		if(g_ctf_ignore_frags)
 			f = 0;
 	}
-	else if(g_freezetag || g_totaldomination || g_vip || g_jailbreak || g_clanarena)
+	else if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 	{
 		f = 0;
 	}
@@ -264,8 +253,6 @@ string AppendItemcodes(string s, entity player)
 {
 	float w;
 	w = player.weapon;
-	//if(w == 0)
-	//	w = player.switchweapon;
 	if(w == 0)
 		w = player.cnt; // previous weapon!
 	s = strcat(s, ftos(w));
@@ -279,8 +266,6 @@ string AppendItemcodes(string s, entity player)
 		s = strcat(s, "T");
 	if(player.kh_next)
 		s = strcat(s, "K");
-	if(player.runes)
-		s = strcat(s, "|", ftos(player.runes));
 	return s;
 }
 
@@ -325,9 +310,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
     float jaildm;
 	float rage_timeout = 3;
     string customMessage;
-
-	if(g_prec) if(inflictor.classname == "prec_rune") {
-		prec_check_aggression(attacker, inflictor, targ); return; }
 
 	if(g_jailbreak)
 	if(jb_roundover) {
@@ -378,8 +360,6 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 			s = targ.netname;
 		a = attacker.netname;
 
-		prec_check_aggression(attacker, inflictor, targ); // only called here for point keeping
-
 		if(targ == attacker) {
 			if(deathtype == DEATH_AUTOTEAMCHANGE)
 				return;
@@ -395,12 +375,9 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				attacker.killcount = 0;
 				LogDeath("tk", deathtype, attacker, targ);
 			} else {
-				inf_infect_player(attacker, targ);
-
 				attacker.killsound = 1;
 
-				if(!checkrules_firstblood)
-				if(prec_check_aggression(attacker, inflictor, targ)) {
+				if(!checkrules_firstblood) {
 					checkrules_firstblood = TRUE;
 					bprint("^1",a, "^1 drew first blood", "\n");
 					bigprint_spec(attacker, "^7First ^1Blood", "", 1);
@@ -410,28 +387,16 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 				if(g_minstagib) {
                     if(spawnfrag) { }
                     else if(DEATH_ISWEAPON(deathtype, WEP_LASER) || DEATH_ISWEAPON(deathtype, WEP_ELECTRO)) {
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
+                        PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_laserfrag));
                     }
                     else if(deathtype == DEATH_HOOKFRAG) {
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
-
-                        if(prec_check_aggression(attacker, inflictor, targ))
-                            PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
+                        PlayerScore_Add(attacker, SP_SCORE, CVAR(g_rocketminsta_score_hookfrag));
+                        PlayerScore_Add(attacker, SP_HOOKFRAGS, 1);
                     } else if(DEATH_ISWEAPON(deathtype, WEP_MINSTANEX)) {
 
                         if(!g_dm && !g_tdm) if(CVAR(g_rocketminsta))
-                            if(prec_check_aggression(attacker, inflictor, targ))
-                                PlayerScore_Add(attacker, SP_SCORE, 1);
-                    }
-                    else {
-                        if(g_vip) if(prec_check_aggression(attacker, inflictor, targ))
                             PlayerScore_Add(attacker, SP_SCORE, 1);
                     }
-                } else {
-                    if(g_vip) if(prec_check_aggression(attacker, inflictor, targ)) if(!spawnfrag)
-                        PlayerScore_Add(attacker, SP_SCORE, 1);
                 }
 
                 attacker.taunt_soundtime = time + 1;
@@ -547,6 +512,9 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         targ.velocity = targ.velocity + targ.damageforcescale * force;
         targ.flags &~= FL_ONGROUND;
     }
+
+    if(targ.iscreature)
+        Buffs_FocusDamage(targ, healer, heal + aheal, healtype);
     
     return heal + aheal;
 }
@@ -567,11 +535,14 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage);
 float IsHeadshot(entity targ, entity attacker, vector hitloc) {
     // find height of hit on player axis
     // if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
-    
+
     vector headmins, headmaxs, org;
+    var w = CVAR(g_player_hitbox_head_width_factor);
+    var h = CVAR(g_player_hitbox_head_height_factor);
+
     org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
-    headmins = org + '0.6 0 0' * targ.mins_x + '0 0.6 0' * targ.mins_y + '0 0 1' * (1.3 * targ.view_ofs_z - 0.3 * targ.maxs_z);
-    headmaxs = org + '0.6 0 0' * targ.maxs_x + '0 0.6 0' * targ.maxs_y + '0 0 1' * targ.maxs_z;
+    headmins = org + [targ.mins_x * w, targ.mins_y * w, (1 + h) * targ.view_ofs_z - h * targ.maxs_z];
+    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z];
     
     return trace_hits_box(railgun_start, railgun_end, headmins, headmaxs);
 }
@@ -597,52 +568,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if(CVAR(g_nadgets_transloc_counters_shield))
             damage = CVAR(g_nadgets_transloc_damage_shield) * Buffs_NadgetPower(attacker);
         
-        float medic = Buffs_BuffPower(attacker, BUFF_MEDIC);
-        
-        if(targ.iscreature && medic && (!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_IGNITE || deathtype == DEATH_ARC)) {
-            if((teams_matter && attacker.team == targ.team) || attacker == targ) {
-                float heal;
-                
-                if(deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
-                    // arc and ignite scale off the original heal, so leave it as is
-                    heal = damage;
-                else {
-                    heal = damage * CVAR(g_buffs_medic_healfactor) * medic;
-                    
-                    if(attacker == targ)
-                        heal *= CVAR(g_buffs_medic_selfhealfactor);
-                    
-                    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+        damage = Buffs_MedicDamage(targ, attacker, inflictor, damage, deathtype, hitloc, force);
+        if(damage < 0)
+            return;
 
-                    if(damage_headshotbonus)
-                    if(CVAR(g_buffs_medic_headshot))
-                    if(IsHeadshot(targ, attacker, hitloc)) {
-                        heal *= 1 + damage_headshotbonus;
-                        deathtype |= HITTYPE_HEADSHOT;
-                        headshot = TRUE;
-                    }
-                }
-                
-                if(attacker == targ)
-                    force = force * CVAR(g_buffs_medic_forcefactor_self);
-                else
-                    force = force * CVAR(g_buffs_medic_forcefactor_team);
-
-                heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
-                heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
-                
-                targ.hg_plasmalock = 0;
-                
-                if(attacker != targ)
-                    Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
-                
-                if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
-                    Buffs_ArcDamage(targ, attacker, heal, deathtype);
-                return;
-            } else if(!g_clanarena) if(!attacker.hg_shield) if(deathtype != DEATH_ARC) if(deathtype != DEATH_IGNITE)
-                damage = damage * (1 - (1 - CVAR(g_buffs_medic_damagefactor)) * medic);
-        }
-        
         damage_origtarget = targ;
         if(targ.hg_linker)
         if((DEATH_HGTYPE(deathtype) != HG_TRANSLOC || CVAR(g_nadgets_transloc_damage)) && DEATH_HGTYPE(deathtype) != HG_GG && !DEATH_ISSPECIAL(deathtype))
@@ -679,8 +608,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         }
     }
 
-	// I just feel like there are WAY too many checks for these in this function
-	// By the way, this function is one of the messiest pieces of code here, it could compete with vip.qc ;)
 	float targ_is_player = (targ.classname == "player");
 	float attacker_is_player = (attacker.classname == "player");
     
@@ -735,7 +662,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
 	{
 		// no processing
 	}
@@ -743,18 +670,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	{
 		if(targ_is_player) if(attacker_is_player)
 		{
-			if(targ != attacker)
-				if(!prec_check_aggression(attacker, inflictor, targ))
-				{
-					attacker.typehitsound += 1;
-					mirrordamage = damage * CVAR(g_prec_mirrordamage);
-					bigprint_spec(attacker, "", "^1You have to shoot the rune carrier!", 2);
-				}
-			
-			if(g_inf)
-				if(targ.team == COLOR_TEAM1)
-					damage = damage * CVAR(g_inf_damage_multiplier);
-
 			// Chaiomanot Feb 25 2012: The below is _really_ cheap. Shame on you, author.
 			if (!targ.isbot)
 				if (attacker.isbot)
@@ -782,7 +697,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
             
             if(deathtype == DEATH_TELEFRAG || (DEATH_HGTYPE(deathtype) == HG_TRANSLOC && !CVAR(g_nadgets_transloc_damage)))
-            if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned)) || (g_vip && ISVIP(targ))) {
+            if((g_jailbreak && (attacker.jb_isprisoned || targ.jb_isprisoned))) {
                 damage = 0;
                 force = '0 0 0';
             }
@@ -853,19 +768,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(roundstate != ROUNDSTATE_OVER) if(attacker_is_player) if(targ_is_player)
 					bigprint_spec(attacker, "", "^1The round hasn't started yet, you can't inflict any damage!", 2);
 			}
-
-			/*
-			if(deathtype == DEATH_HURTTRIGGER)
-			{
-				oldself = self;
-				self = targ;
-				PutClientInServer();
-				self = oldself;
-
-				if(ISVIP(targ))
-				vip_ResetHealthArmor(targ);
-			}
-			*/
 		}
 
 		if(targ_is_player)
@@ -906,7 +808,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				{
 					took_extra = 1;
 					targ.armorvalue -= 1;
-					centerprint_spec(targ, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(targ.armorvalue)));
+					centerprint_spec(targ, strcat("^3Remaining extra lives: ",ftos(targ.armorvalue)));
 					damage = 0;
 					targ.hitsound += 1;
 					attacker.armorhitsound += 1; // TODO change this to a future specific hitsound for armor hit
@@ -1011,7 +913,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         if (targ.items & IT_INVINCIBLE && !g_minstagib)
             damage = damage * CVAR(g_balance_powerup_invincible_takedamage);
 
-        if(deathtype != DEATH_ARC && deathtype != DEATH_IGNITE) {
+        if(!DEATH_ISPROJECTED(deathtype)) {
             if not(DEATH_ISSPECIAL(deathtype))
             {
                 damage *= g_weapondamagefactor;
@@ -1049,40 +951,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
                 damage = damage * CVAR(g_ctf_flagcarrier_selfdamage);
                 force = force * CVAR(g_ctf_flagcarrier_selfforce);
             }
-
-            if(g_runematch)
-            {
-                // apply strength rune
-                if (attacker.runes & RUNE_STRENGTH)
-                {
-                    if(attacker.runes & CURSE_WEAK) // have both curse & rune
-                    {
-                        damage = damage * CVAR(g_balance_rune_strength_combo_damage);
-                        force = force * CVAR(g_balance_rune_strength_combo_force);
-                    }
-                    else
-                    {
-                        damage = damage * CVAR(g_balance_rune_strength_damage);
-                        force = force * CVAR(g_balance_rune_strength_force);
-                    }
-                }
-                else if (attacker.runes & CURSE_WEAK)
-                {
-                    damage = damage * CVAR(g_balance_curse_weak_damage);
-                    force = force * CVAR(g_balance_curse_weak_force);
-                }
-
-                // apply defense rune
-                if (targ.runes & RUNE_DEFENSE)
-                {
-                    if (targ.runes & CURSE_VULNER) // have both curse & rune
-                        damage = damage * CVAR(g_balance_rune_defense_combo_takedamage);
-                    else
-                        damage = damage * CVAR(g_balance_rune_defense_takedamage);
-                }
-                else if (targ.runes & CURSE_VULNER)
-                    damage = damage * CVAR(g_balance_curse_vulner_takedamage);
-            }
         }
 
 		// count the damage
@@ -1091,7 +959,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(targ.takedamage == DAMAGE_AIM)
 		if(targ != attacker)
 		{
-            if(!DEATH_ISHG(deathtype)) if(deathtype != DEATH_IGNITE) if(deathtype != DEATH_MEODP) {
+            if(!DEATH_ISHG(deathtype)) if(!DEATH_ISPROJECTED(deathtype)) if(deathtype != DEATH_MEODP) {
                 if(targ_is_player) {
                     if(IsHeadshot(damage_origtarget, attacker, hitloc))
                         deathtype |= HITTYPE_HEADSHOT;
@@ -1103,7 +971,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			if(deathtype & HITTYPE_HEADSHOT)
 				damage *= 1 + damage_headshotbonus;
 
-			if(targ.iscreature && targ.deadflag == DEAD_NO && targ.classname != "body")
+			if(deathtype != DEATH_ENDURANCE && targ.iscreature && targ.deadflag == DEAD_NO && targ.classname != "body")
 			{
 				if(IsDifferentTeam(targ, attacker) || jaildm)
 				{
@@ -1171,9 +1039,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(self.event_damage) {
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
-        if(t_oldhealth > self.health) {
+        W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+
+        if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
                 self.lastdamage = time;
+                self.buff_stealth_time = time;
                 if(self.hg_stealth && self.hg_stealthalpha > 0.2) {
                     self.hg_stealth = 0;
                     self.hg_stealth_saved = 0;
@@ -1219,20 +1090,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if(took_extra)
 			armordamage = 100;
 
-		if(attacker_is_player)
-		if(g_vip) if(vip_started) if(!vip_ended) if(ISVIP(targ))
-		{
-			PlayerScore_Add(attacker, SP_SCORE, damage * 0.1);
-			
-			if(took_extra)
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage * 0.1));
-			else
-				PlayerScore_Add(attacker, SP_SCORE, (armordamage / CVAR(g_rocketminsta_armor_factor)) * 0.1);
-
-			if(attacker != targ) if(damage || armordamage)
-				hudflash_teamcolor_default_spec(attacker);
-		}
-		
 		damage = olddamage;
 	}
 
@@ -1244,38 +1101,6 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		if (time > self.spawnshieldtime)
 		{
 			attacker.health += damage;
-		}
-		if(g_runematch)
-		{
-			if (attacker.runes & RUNE_VAMPIRE)
-			{
-			// apply vampire rune
-				if (attacker.runes & CURSE_EMPATHY) // have the curse too
-				{
-					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb);
-					attacker.health = bound(
-						CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 40
-						attacker.health + damage * CVAR(g_balance_rune_vampire_combo_absorb),
-						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
-				}
-				else
-				{
-					//attacker.health = attacker.health + damage * CVAR(g_balance_rune_vampire_absorb);
-					attacker.health = bound(
-						attacker.health,	// LA: was 3, but changed so that you can't lose health
-											// empathy won't let you gain health in the same way...
-						attacker.health + damage * CVAR(g_balance_rune_vampire_absorb),
-						CVAR(g_balance_rune_vampire_maxhealth));	// LA: was 1000, now 500
-					}
-			}
-			// apply empathy curse
-			else if (attacker.runes & CURSE_EMPATHY)
-			{
-				attacker.health = bound(
-					CVAR(g_balance_curse_empathy_minhealth), // LA: was 3, now 20
-					attacker.health + damage * CVAR(g_balance_curse_empathy_takedamage),
-					attacker.health);
-			}
 		}
 	}
 
@@ -1291,7 +1116,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				if(attacker.armorvalue > 0)
 				{
 					attacker.armorvalue = attacker.armorvalue - 1;
-					centerprint_spec(attacker, strcat(DAMAGE_CENTERPRINT_SPACER, "^3Remaining extra lives: ",ftos(attacker.armorvalue)));
+					centerprint_spec(attacker, strcat("^3Remaining extra lives: ", ftos(attacker.armorvalue)));
 					attacker.hitsound += 1;
 				}
 				mirrordamage = 0;
@@ -1410,10 +1235,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
     				power = 1 - ((vlen (diff) - 2) / rad);
                 }
 
-				//bprint(" ");
-				//bprint(ftos(power));
-				//if (targ == attacker)
-				//	print(ftos(power), "\n");
 				if (power > 0)
 				{
 					if (power > 1)
@@ -1484,12 +1305,6 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						a = bound(0, tfloorforce + (1-tfloorforce) * hitratio, 1);
 						force = force * a;
 
-						//if (targ == attacker)
-						//{
-						//	print("hits ", ftos(hits), " / ", ftos(total));
-						//	print(" finaldmg ", ftos(finaldmg), " force ", vtos(force));
-						//	print(" (", ftos(a), ")\n");
-						//}
 						if(hits || tfloordmg || tfloorforce)
 						{
 							if(targ.iscreature)
@@ -1499,7 +1314,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_BuffPower(attacker, BUFF_MEDIC))
+								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;
@@ -1558,7 +1373,6 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 	{
 		if(!e.fire_burner)
 		{
-			// print("adding a fire burner to ", e.classname, "\n");
 			e.fire_burner = spawn();
 			e.fire_burner.classname = "fireburner";
 			e.fire_burner.reset = SUB_Remove;
@@ -1652,7 +1466,7 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 
 void Fire_ApplyDamage(entity e)
 {
-	float t, d, hi, ty;
+	float t, d, hi, ty, ar;
 
     if(time - e.fire_last < FIRE_DELAY)
         return;
@@ -1678,11 +1492,13 @@ void Fire_ApplyDamage(entity e)
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
+    ar = e.fire_owner.armorhitsound;
 	Damage(e, e, e.fire_owner, d, e.fire_deathtype, e.origin, '0 0 0');
 	if(e.fire_hitsound && e.fire_owner)
 	{
 		e.fire_owner.hitsound = hi;
 		e.fire_owner.typehitsound = ty;
+        e.fire_owner.armorhitsound = ar;
 	}
 	e.fire_hitsound = TRUE;
 

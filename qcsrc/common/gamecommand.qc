@@ -541,7 +541,7 @@ float GameCommand_Generic(string command)
 			n = tokenizebyseparator(CVAR_STR(g_maplist), " ");
 			s2 = "";
 			for(i = 0; i < n; ++i)
-				if(MapInfo_CheckMap(argv(i)))
+				if(MapInfo_CheckMap(argv(i), gametype_ID_to_MapID(gametype_GetMenu())))
 					s2 = strcat(s2, " ", argv(i));
 			s2 = substring(s2, 1, strlen(s2) - 1);
 			cvar_set("g_maplist", s2);
@@ -1346,6 +1346,12 @@ float GameCommand_Generic(string command)
                         string fname = rpn_pop();
                         float ac = strlen(sig) - 1;
                         string rtype = substring(sig, 0, 1);
+
+                        if(!isfunction(fname)) {
+                            print("rpn: syscall error: function ", fname, " not found\n");
+                            rpn_error = TRUE;
+                            break;
+                        }
 
                         for(f = ac - 1; f >= 0; --f) {
                             string atype = substring(sig, f + 1, 1);

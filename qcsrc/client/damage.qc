@@ -60,15 +60,11 @@ void Ent_DamageInfo(float isNew)
 			thisforce = forcemul * force;
 		}
 
-		//print("check ", ftos(num_for_edict(self)), " ", self.classname, "\n");
-		//print(ftos(self.damageforcescale), "\n");
-		//print(vtos(thisforce), "\n");
 		if(self.damageforcescale)
 			if(vlen(thisforce))
 			{
 				self.move_velocity = self.move_velocity + self.damageforcescale * thisforce;
 				self.move_flags &~= FL_ONGROUND;
-				//print("pushed ", ftos(num_for_edict(self)), " loose\n");
 			}
 
 		if(issilent)
@@ -79,8 +75,6 @@ void Ent_DamageInfo(float isNew)
 	}
 
 	self = oldself;
-
-	// TODO spawn particle effects and sounds based on hittype
     
 	if(!DEATH_ISSPECIAL(hittype))
 	{
@@ -104,10 +98,8 @@ void Ent_DamageInfo(float isNew)
 
         if(DEATH_ISHG(hittype))
 		{
-			if (!issilent) {
-				//sound (self, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+			if (!issilent)
 				sound(self, CHAN_AUTO, "weapons/grenade_impact.wav", VOL_BASE, ATTN_NORM);
-			}
 
 			hittype &~= DEATH_HITTYPEMASK;
 			switch (hittype)
@@ -292,10 +284,6 @@ void Ent_DamageInfo(float isNew)
 					pointparticles(particleeffectnum("fireball_explode"), org2, '0 0 0', 1);
 					if(!issilent)
 						sound(self, CHAN_PROJECTILE, "weapons/fireball_impact2.wav", VOL_BASE, ATTN_NORM * 0.25); // long range boom
-				}
-				else
-				{
-					// firemine goes out silently
 				}
 				break;
 			default:

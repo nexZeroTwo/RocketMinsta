@@ -73,21 +73,6 @@ void PlayerJump (void)
 		if(time < self.doublejump_nextjumptime)
 			return;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_combo_jumpheight);
-			else
-				mjumpheight = mjumpheight * CVAR(g_balance_rune_speed_jumpheight);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			mjumpheight = mjumpheight * CVAR(g_balance_curse_slow_jumpheight);
-		}
-	}
-
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{
 		mjumpheight = mjumpheight * CVAR(g_minstagib_speed_jumpheight);
@@ -558,23 +543,12 @@ void SV_PlayerPhysics()
     
     isplayer = (self.classname == "player");
     
-    if(isplayer) {
-        // XXX: why is this in Physics? Move to PlayerPreThink/PostThink later
-    	if(self.movement != '0 0 0')
-    	{
-    		self.parm_idlesince = time;
-    		if(self.is_away)
-    			UnmarkAway(self);
-    	}
-    	else if(!self.is_away)
-    	{
-    		local float a = sv_autoaway;
+    if(!self.is_away) {
+    	if(sv_autoaway && time - self.parm_idlesince >= sv_autoaway * 60 && !self.frozen && !self.jb_isprisoned)
+    		MarkAway(self, 0);
+    }
 
-    		if(a)
-    		if(time - self.parm_idlesince >= a * 60)
-    			MarkAway(self, 0);
-    	}
-    } else
+    if(!isplayer)
         isplayer = isbait = (self.classname == "bait_body");
 
 	if(g_race || g_cts)
@@ -692,38 +666,6 @@ void SV_PlayerPhysics()
 	self.race_movetime = self.race_movetime_frac + self.race_movetime_count;
 
 	buttons = self.BUTTON_ATCK + 2 * self.BUTTON_JUMP + 4 * self.BUTTON_ATCK2 + 8 * self.BUTTON_ZOOM + 16 * self.BUTTON_CROUCH + 32 * self.BUTTON_HOOK + 64 * self.BUTTON_USE + 128 * (self.movement_x < 0) + 256 * (self.movement_x > 0) + 512 * (self.movement_y < 0) + 1024 * (self.movement_y > 0);
-	
-#if 0
-	if(!buttons)
-		c = "x";
-	else if(buttons == 1)
-		c = "1";
-	else if(buttons == 2)
-		c = " ";
-	else if(buttons == 128)
-		c = "s";
-	else if(buttons == 256)
-		c = "w";
-	else if(buttons == 512)
-		c = "a";
-	else if(buttons == 1024)
-		c = "d";
-	else
-		c = "?";
-
-	if(c == substring(specialcommand, self.specialcommand_pos, 1))
-	{
-		self.specialcommand_pos += 1;
-		if(self.specialcommand_pos >= strlen(specialcommand))
-		{
-			self.specialcommand_pos = 0;
-			SpecialCommand();
-			return;
-		}
-	}
-	else if(self.specialcommand_pos && (c != substring(specialcommand, self.specialcommand_pos - 1, 1)))
-		self.specialcommand_pos = 0;
-#endif
 
     if(self.PlayerPhysplug)
         if(self.PlayerPhysplug())
@@ -731,8 +673,11 @@ void SV_PlayerPhysics()
 
 	if(!sv_maxidle_spectatorsareidle || self.movetype == MOVETYPE_WALK)
 	{
-		if(buttons != self.buttons_old || self.movement != self.movement_old || self.v_angle != self.v_angle_old)
+		if(buttons != self.buttons_old || self.movement != self.movement_old || self.v_angle != self.v_angle_old) {
 			self.parm_idlesince = time;
+            if(self.is_away)
+                UnmarkAway(self);
+        }
 	}
 	buttons_prev = self.buttons_old;
 	self.buttons_old = buttons;
@@ -788,7 +733,7 @@ void SV_PlayerPhysics()
 		if(self.race_penalty)
 			not_allowed_to_move = 1;
 		if(!sv_ready_restart_after_countdown)
-		if(time < game_starttime && !g_inf)
+		if(time < game_starttime)
 			not_allowed_to_move = 1;
 
 		if(not_allowed_to_move)
@@ -803,6 +748,12 @@ void SV_PlayerPhysics()
 				self.movetype = MOVETYPE_WALK;
 			self.disableclientprediction = 0;
 		}
+
+        if(self.frozen || time < self.noantilagtime)
+            self.disableclientprediction = max(1, self.disableclientprediction);
+        else if(self.disableclientprediction < 2)
+            self.disableclientprediction = 0;
+
 	}
 
 	if (self.movetype == MOVETYPE_NONE)
@@ -828,21 +779,6 @@ void SV_PlayerPhysics()
 
 	maxspd_mod = 1;
 
-	if(g_runematch)
-	{
-		if(self.runes & RUNE_SPEED)
-		{
-			if(self.runes & CURSE_SLOW)
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_combo_moverate);
-			else
-				maxspd_mod = maxspd_mod * CVAR(g_balance_rune_speed_moverate);
-		}
-		else if(self.runes & CURSE_SLOW)
-		{
-			maxspd_mod = maxspd_mod * CVAR(g_balance_curse_slow_moverate);
-		}
-	}
-
 	if(g_minstagib && (self.items & IT_INVINCIBLE))
 	{
 		maxspd_mod = CVAR(g_minstagib_speed_moverate);
@@ -853,9 +789,8 @@ void SV_PlayerPhysics()
 		maxspd_mod = CVAR(g_nexball_basketball_carrier_speed);
 	}
     
-    float haste = Buffs_BuffPower(self, BUFF_HASTE);
-    if(haste)
-        maxspd_mod *= 1 + (CVAR(g_buffs_haste_move_rate) - 1) * haste;
+    if(Buffs_Present(self, BUFF_HASTE))
+        maxspd_mod *= CVAR(g_buffs_haste_move_rate);
 
     if(self.hg_shield)
         maxspd_mod *= CVAR(g_nadgets_shield_movespeed);

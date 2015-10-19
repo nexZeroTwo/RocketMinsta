@@ -12,14 +12,10 @@ void ShowNames_Draw(entity plr) {
     oldfont = drawfont;
     
     if(plr.sameteam || !rm_shownames_teamonly) {
-        //InterpolateOrigin_Do();
-
         if(plr.iorigin == '0 0 0')
             plr.iorigin = plr.origin;
         else
             plr.iorigin = plr.iorigin + (plr.origin - plr.iorigin) * frametime * 15;
-
-        //plr.iorigin = plr.origin;
 
         if(self.sn_culled) { // fade out
             plr.alpha = max(0, plr.alpha - 4 * frametime);

@@ -88,7 +88,6 @@ void Freeze_Frame(void) {
 }
 
 float Freeze_GameInProgress(void) {
-    //return !(!g_freeze || time < game_starttime || time < warmup || (g_vip && (!vip_started || vip_ended)) || (g_total_domination && !tdom_maycap));
     return roundstate == ROUNDSTATE_GAME;
 }
 
@@ -145,6 +144,7 @@ entity Freeze_SpawnWaypoint(entity plr) {
     entity w = WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
+    w.waypointsprite_appeartime = time + Freeze_CVar("frozen_waypoint_delay");
     return w;
 }
 
@@ -281,10 +281,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
-    
-    if(g_vip && ISVIP(self))
-        return 0;
-    
+
     if(!self.frozen) {
         Boobs_DropAllAndRespawn(frce);
         Freeze_FreezePlayer(self, attacker);
@@ -525,11 +522,11 @@ void Freeze_Hook_PlayerPreThink(void) {
                     if(other.hg_shield)
                         lmod *= CVAR(g_nadgets_shield_progressrate);
                     
-                    float med = Buffs_BuffPower(other, BUFF_MEDIC);
-                    if(med)
-                        lmod = lmod + (CVAR(g_buffs_medic_revivefactor) - lmod) * med;
+                    if(Buffs_Present(other, BUFF_MEDIC))
+                        lmod *= CVAR(g_buffs_medic_revivefactor);
                     
                     rmod = max(rmod, lmod);
+                    other.buff_stealth_time = time;
                 }
             }
     }

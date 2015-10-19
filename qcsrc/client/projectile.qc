@@ -54,6 +54,7 @@ void Projectile_DrawTrail(vector to)
             case PROJECTILE_HG_PLASMA_SHARD:
                 trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
                 return;
+            case PROJECTILE_HG_PLASMA:
             case PROJECTILE_HEAL_PARTICLE_EMITTER:
                 break;
 			default:
@@ -510,8 +511,9 @@ void Ent_Projectile()
                     self.mins = '0 0 -3';
                     self.maxs = '0 0 -3';
                 } else {
-                    self.mins = '-8 -4 -3';
-                    self.maxs = ' 8  4  3';
+                    var sz = if(self.cnt == PROJECTILE_HG_TRANSLOC) 8 else 5;
+                    self.mins = '-1 -1 -1' * sz;
+                    self.maxs = ' 1  1  1' * sz;
                 }
                 
                 self.move_movetype = MOVETYPE_BOUNCE;

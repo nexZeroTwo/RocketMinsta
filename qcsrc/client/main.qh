@@ -10,18 +10,7 @@ const string string_null;
 
 #define DATABUF_NEXT (5*maxclients)
 
-void() menu_show_error;
-void() menu_sub_null;
-
-float menu_visible;
-var void() menu_show;
-var float(float bInputType, float nPrimary, float nSecondary) menu_action;
-
-// --------------------------------------------------------------------------
-// CTF
-
-void() ctf_menu_show;
-string ctf_temp_1;
+var void(void) func_null;
 
 // --------------------------------------------------------------------------
 // Onslaught
@@ -272,14 +261,6 @@ float hudlock_alt;
 #define hudlocked_old hudlock_old
 #define hudlocked_alt hudlock_alt
 
-float vip_red_health;
-float vip_red_maxhealth;
-string vip_red_name;
-
-float vip_blue_health;
-float vip_blue_maxhealth;
-string vip_blue_name;
-
 float screenfade;
 
 float fovlock;
@@ -312,6 +293,7 @@ string sv_motd;
 float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
+float sv_shownoobstat;
 
 float g_nadgets;
 float g_nadgets_double;
@@ -333,6 +315,7 @@ entity dtrack_total;
 entity dtrack_taken;
 entity dtrack_total_spec;
 entity dtrack_taken_spec;
+entity dtrack_global;
 
 float sv_damagestats;
 
@@ -351,3 +334,4 @@ string sbar_selectedplayer_name;
 
 // Needed to know if we should zoom on nex secondary or not
 float g_balance_nex_secondary;
+float fps_friendly;

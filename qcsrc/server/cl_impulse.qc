@@ -188,7 +188,7 @@ void ImpulseCommands (void)
 		switch(imp)
 		{
 			case 30:
-				wp = WaypointSprite_DeployPersonal("waypoint", self.origin);
+				wp = WaypointSprite_DeployPersonal("waypoint", self.origin, 0);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');
@@ -224,7 +224,7 @@ void ImpulseCommands (void)
 				sprint(self, "personal waypoint spawned at location\n");
 				break;
 			case 31:
-				wp = WaypointSprite_DeployPersonal("waypoint", self.cursor_trace_endpos);
+				wp = WaypointSprite_DeployPersonal("waypoint", self.cursor_trace_endpos, 0);
 				if(wp)
 				{
 					WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');
@@ -235,7 +235,7 @@ void ImpulseCommands (void)
 			case 32:
 				if(vlen(self.death_origin))
 				{
-					wp = WaypointSprite_DeployPersonal("waypoint", self.death_origin);
+					wp = WaypointSprite_DeployPersonal("waypoint", self.death_origin, 0);
 					if(wp)
 					{
 						WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, '0 1 1');

@@ -186,8 +186,6 @@ void ScoreInfo_Init(float teams)
 		scores_initialized.classname = "ent_client_scoreinfo";
 		Net_LinkEntity(scores_initialized, FALSE, 0, ScoreInfo_SendEntity);
 	}
-	if(g_inf)
-		return;
 	if(teams >= 1)
 		TeamScore_Spawn(COLOR_TEAM1, "Red");
 	if(teams >= 2)
@@ -236,12 +234,12 @@ float PlayerScore_SendEntity(entity to, float sendflags)
     return TRUE;
 }
 
-void PlayerScore_Clear(entity player)
+void PlayerScore_Clear(entity player, float force)
 {
 	entity sk;
 	float i;
 
-	if(teamscores_entities_count)
+	if(teamscores_entities_count && !force)
 		return;
 	if(g_lms) return;
 	if(g_arena) return;

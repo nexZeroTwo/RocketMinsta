@@ -93,6 +93,7 @@ void CreatureFrame (void)
 			if (vlen(self.velocity) > sv_maxspeed * 0.6)
 			if (!self.deadflag)
 			if (time < self.lastground + 0.2)
+            if (!Buffs_Present(self, BUFF_STEALTH))
 			{
 				if((time > self.nextstep) || (time < (self.nextstep - 10.0)))
 				{
@@ -139,7 +140,6 @@ StartFrame
 Called before each frame by the server
 =============
 */
-void RuneMatchGivePoints();
 float RedirectionThink();
 
 float cvarupdatetime;
@@ -233,7 +233,7 @@ void StartFrame (void)
         g_balance_falldamage_maxdamage = CVAR(g_balance_falldamage_maxdamage);
         
         sv_defaultcharacter = CVAR(sv_defaultcharacter);
-        sv_defaultplayercolors = CVAR(sv_defaultplayercolors);
+        sv_defaultplayercolors = stof(CVAR_STR(sv_defaultplayercolors));
         sv_forcespecies = CVAR(sv_forcespecies);
         
         cvarupdatetime = time + 1;
@@ -268,7 +268,6 @@ void StartFrame (void)
 
 	AuditTeams();
 
-	RuneMatchGivePoints();
 	bot_serverframe();
 
 	if(CVAR(spawn_debugview))
