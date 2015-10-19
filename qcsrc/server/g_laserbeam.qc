@@ -36,10 +36,9 @@ void func_laserbeam_think(void) {
     var end = trace_endpos;
     var targ = trace_ent;
 
-    if(time > self.cnt) {
-        Damage(targ, self, world, self.dmg, DEATH_HURTTRIGGER, end, 10 * normalize(end - self.zapper_beam_start));
-        if(targ.takedamage)
-            self.cnt = time + 0.1;
+    if(targ.takedamage && time > self.cnt) {
+        Damage(targ, self, world, self.dmg, DEATH_HURTTRIGGER, end, 10 * normalize(end - o));
+        self.cnt = time + 0.1;
     }
 
     end -= normalize(end - self.zapper_beam_start) * 5;
