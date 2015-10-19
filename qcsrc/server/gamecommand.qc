@@ -1326,5 +1326,21 @@ void GameCommand(string command)
         return;
     }
 
+    if(argv(0) == "activate") {
+        var targ = argv(1);
+
+        if(!targ) {
+            print("activate: no target\n");
+            return;
+        }
+
+        using(self = spawn() { target: targ }) {
+            SUB_UseTargets();
+            remove(self);
+        }
+
+        return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

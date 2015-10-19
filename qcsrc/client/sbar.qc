@@ -454,7 +454,7 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | kdr", strcat(
+		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
         if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
 		" +ft,jb/kills +ft,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
@@ -572,6 +572,8 @@ void Cmd_Sbar_SetFields(float argc)
             sbar_field[sbar_num_fields] = SP_HEALING;
         } else if(str == "acc") {
             sbar_field[sbar_num_fields] = SP_ACCURACY;
+        } else if(str == "noob") {
+            sbar_field[sbar_num_fields] = SP_NOOB;
         } else {
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
@@ -840,6 +842,19 @@ string Sbar_GetField(entity pl, float field)
             
             return strcat(ftos(acc), "%");
         
+        case SP_NOOB:
+            float noob = pl.scores[SP_NOOB];
+            float pro = 100 - noob;
+
+            if(pro < 70)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(pro / 70, 2);
+            else if(pro < 90)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((pro - 70) / 20);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((pro - 90) / 10);
+            
+            return strcat(ftos(noob), "%");
+
 		default:
 			tmp = pl.(scores[field]);
 			f = scores_flags[field];
@@ -2576,7 +2591,8 @@ void Sbar_DrawAccuracyStats()
         vector dsize = '0.25 0 0' * vid_conwidth + '0 0.25 0' * vid_conheight;
         vector dpos = '1 0 0' * (vid_conwidth - dsize_x - 10) + '0 1 0' * top_border_hitscan;
         dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_total_spec else dtrack_total, "Damage done", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
-        Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize);
+        dpos = Sbar_DrawDamageStats(if(spectatee_status > 0) dtrack_taken_spec else dtrack_taken, "Damage taken", dpos, dsize) + '0 1 0' * sbar_fontsize_y;
+        Sbar_DrawDamageStats(dtrack_global, "Global Damage", dpos, dsize);
     }
     
 	for(i = WEP_FIRST; i <= WEP_LAST; ++i)
@@ -3583,17 +3599,29 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 	}
 }
 
-void DrawProgress (vector cpos, vector l_size, float progress, float alpha, vector l_color)
-{
-	vector pos;
-	pos_x = cpos_x - l_size_x / 2;
-	pos_y = cpos_y - l_size_y / 2;
-	
-	vector fill = l_size;
-	fill_x *= progress;
-	
-	drawborderlines(1, pos, l_size, l_color, alpha, DRAWFLAG_NORMAL);
-	drawfill(pos, fill, l_color, alpha * 0.7, DRAWFLAG_NORMAL);
+void DrawProgressFragmented(vector cpos, vector l_size, float progress, float alpha, vector l_color, float fragments) {
+    vector pos;
+    pos_x = cpos_x - l_size_x / 2;
+    pos_y = cpos_y - l_size_y / 2;
+
+    vector fill = l_size;
+    fill_x *= progress;
+
+    drawfill(pos, fill, l_color, alpha * 0.7, DRAWFLAG_NORMAL);
+
+    if(fragments < 2) {
+        drawborderlines(1, pos, l_size, l_color, alpha, DRAWFLAG_NORMAL);
+    } else {
+        var fragsize = [l_size.x / fragments, l_size.y];
+
+        for(var frag = 0; frag < fragments; ++frag) {
+            drawborderlines(1, pos + [fragsize.x * frag, 0], fragsize, l_color, alpha, DRAWFLAG_NORMAL);
+        }
+    }
+}
+
+void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vector l_color) {
+    DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
 float rev_visual;
@@ -5154,16 +5182,42 @@ void Sbar_Draw(void)
 				Sbar_DrawXNum_Colored(health_pos + '26 0 0', x, 24, sbar_alpha_fg);
 			}
 
-            if((var incdmg = getstati(STAT_DMGINCOMING))) {
-                var sdmg = ftos(-incdmg);
-                var dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
+            var incdmg = getstati(STAT_DMGINCOMING);
+            var incheal = getstati(STAT_HEALINCOMING);
 
-                drawfont = sbar_bigfont;
-                drawstring([
-                    health_pos_x + 0.5 * (24 * 4 - stringwidth_svn(sdmg, FALSE, dmgscale)),
+            if(incdmg || incheal) using(drawfont = sbar_bigfont) {
+                string s_dmg, s_heal;
+                float w_dmg, w_heal, w_total, w_sep;
+                vector dmgscale, healscale;
+
+                if(incdmg) {
+                    s_dmg = ftos(-incdmg);
+                    dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
+                    w_dmg = stringwidth_svn(s_dmg, FALSE, dmgscale);
+                    w_total += w_dmg;
+                }
+
+                if(incheal) {
+                    s_heal = strcat("+", ftos(incheal));
+                    healscale = '20 20';
+                    w_heal = stringwidth_svn(s_heal, FALSE, healscale);
+                    w_total += w_heal;
+
+                    if(incdmg)
+                        w_sep = 10;
+                }
+
+                w_total += w_sep;
+
+                if(incdmg) drawstring([
+                    health_pos_x + 0.5 * (24 * 4 - w_total),
                     health_pos_y - dmgscale_y
-                ], sdmg, dmgscale, '1 0 0', 1, DRAWFLAG_NORMAL);
-                drawfont = sbar_font;
+                ], s_dmg, dmgscale, '1 0 0', 1, DRAWFLAG_NORMAL);
+
+                if(incheal) drawstring([
+                    health_pos_x + 0.5 * (24 * 4 - w_total) + w_dmg + w_sep,
+                    health_pos_y - healscale_y
+                ], s_heal, healscale, '0 1 0', 1, DRAWFLAG_NORMAL);
             }
 		}
 
@@ -5364,8 +5418,9 @@ void Sbar_Draw(void)
             }
 
             if(getstati(STAT_HGSHIELDSTORE)) {
-                DrawProgress('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '15 0 0' * sbar_fontsize_x + '0 5 0',
-                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0');
+                DrawProgressFragmented('0.5 0 0' * vid_conwidth + hgapos - sbar_fontsize_y * '0 2.5 0', '25 0 0' * sbar_fontsize_x + '0 7 0',
+                             getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0',
+                             getstati(STAT_HGSHIELDSTOREMAX) / getstati(STAT_HGSHIELDDAMAGEPERSHOT));
             }
      
             if(getstati(STAT_STEALTH)) {

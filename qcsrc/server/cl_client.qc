@@ -4,6 +4,34 @@ void Boobs_Clear();
 .entity specdelay_ent;
 .float justconnected;
 
+.entity headent;
+
+void SpawnHeadEnt(void) {
+    if(self.headent || !CVAR(r_showbboxes))
+        return;
+
+    self.headent = spawn() {
+        movetype: MOVETYPE_FOLLOW,
+        aiment: self,
+        think: inline void(void) {
+            vector headmins, headmaxs;
+            var w = CVAR(g_player_hitbox_head_width_factor);
+            var h = CVAR(g_player_hitbox_head_height_factor);
+            var o = self.aiment;
+
+            if(!o.iscreature)
+                return;
+
+            headmins = [o.mins_x * w, o.mins_y * w, (1 + h) * o.view_ofs_z - h * o.maxs_z];
+            headmaxs = [o.maxs_x * w, o.maxs_y * w, o.maxs_z];
+            setsize(self, headmins, headmaxs);
+
+            self.nextthink = time;
+        },
+        nextthink: time
+    };
+}
+
 float ClientData_Send(entity to, float sf)
 {
 	if(to != self.owner)
@@ -1327,6 +1355,8 @@ void PutClientInServer (void)
     
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 
+        SpawnHeadEnt();
+
         GAMEEVENT("playerspawn", {
             GAMEEVENTARG(Entity, self)
         })
@@ -1390,6 +1420,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_showacc);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
+    WriteByte(MSG_ENTITY, sv_shownoobstat);
 	return TRUE;
 }
 
@@ -1834,8 +1865,10 @@ void ClientConnect (void)
 	    }
     }
     
-    if(clienttype(self) == CLIENTTYPE_REAL)
+    if(clienttype(self) == CLIENTTYPE_REAL) {
         IRC_Announce_ClientConnect(self);
+        DamageTracker_Overwrite(dtrack_global, self, DTFLAG_GLOBAL);
+    }
     
     self.dtrack_total = DamageTracker_CreateKeeper(self);
     self.dtrack_total.netname = "Damage done";
@@ -2567,7 +2600,9 @@ void SpectateCopy(entity spectatee) {
     self.hg_stealth_saved = spectatee.hg_stealth_saved;
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
+    self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
+    self.buff_vamp_healthpool = spectatee.buff_vamp_healthpool;
 	self.sm_canattach = spectatee.sm_canattach;
 	self.jb_roundlost = spectatee.jb_roundlost;
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
@@ -3072,6 +3107,9 @@ void() nexball_setstatus;
 .float namecheck;
 .float acctime;
 
+.float jumpholdtime;
+.float alivetime;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
@@ -3080,7 +3118,7 @@ void PlayerPreThink (void)
 	self.stat_leadlimit = leadlimit;
     
     float isplayer, isspec, isobs;
-    
+
     self.roundstate_stat = roundstate;
     
     if(self.classname == "player")
@@ -3101,12 +3139,22 @@ void PlayerPreThink (void)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
+        if(sv_shownoobstat) {
+            if(self.deadflag == DEAD_NO && !self.frozen && !self.jb_isprisoned) {
+                self.alivetime += frametime;
+                if(self.BUTTON_JUMP)
+                    self.jumpholdtime += frametime;
+            }
+        }
+
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
+            if(sv_shownoobstat)
+                PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
         }
     }
-    
+
 	if(blockSpectators && frametime)
 		// WORKAROUND: only use dropclient in server frames (frametime set). Never use it in cl_movement frames (frametime zero).
 		checkSpectatorBlock();

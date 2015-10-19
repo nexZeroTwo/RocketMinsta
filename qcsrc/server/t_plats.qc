@@ -29,6 +29,9 @@ void() plat_go_down;
 void() plat_crush;
 float PLAT_LOW_TRIGGER = 1;
 
+.entity plat_touched;
+.float plat_lastupdate;
+
 void plat_spawn_inside_trigger()
 {
 	local entity trigger;
@@ -93,8 +96,19 @@ void plat_center_touch()
 	if not(other.iscreature)
 		return;
 
-	if (other.health <= 0)
+	if (other.health <= 0 || other.frozen)
 		return;
+
+    if(other.classname == "player") {
+        if(time - other.plat_lastupdate > 0.1) {
+            other.plat_touched = world;
+        } else if(other.plat_touched == self.enemy) {
+            other.plat_lastupdate = time;
+
+            if(vlen(self.enemy.velocity))
+                other.noantilagtime = time + 0.1;
+        }
+    }
 
 	self = self.enemy;
 	if (self.state == 2)
@@ -126,6 +140,12 @@ void plat_trigger_use()
 
 void plat_crush()
 {
+    if(self.state == 4) {
+        dprint("Plat just tried to crush ", other.netname, "^7 while in up state\n");
+        other.velocity_z = max(other.velocity_z, 50);
+        return;
+    }
+
     if((self.spawnflags & 4) && (other.takedamage != DAMAGE_NO)) { // KIll Kill Kill!!
         Damage (other, self, self, 10000, DEATH_HURTTRIGGER, other.origin, '0 0 0');
     } else {
@@ -169,6 +189,13 @@ void plat_reset()
 		self.state = 2;
 		self.use = plat_trigger_use;
 	}
+}
+
+void plat_touch(void) {
+    if(other.classname == "player") {
+        other.plat_touched = self;
+        other.plat_lastupdate = time;
+    }
 }
 
 void spawnfunc_path_corner() { };
@@ -227,6 +254,7 @@ void spawnfunc_func_plat()
 	setsize (self, self.mins , self.maxs);
 
 	self.blocked = plat_crush;
+    self.touch = plat_touch;
 
 	if (!self.speed)
 		self.speed = 150;
@@ -238,7 +266,8 @@ void spawnfunc_func_plat()
                                    else
                                        self.size_z) + 8;
 
-	plat_spawn_inside_trigger ();	// the "start moving" trigger
+    if(!(self.spawnflags & 8))
+	   plat_spawn_inside_trigger ();	// the "start moving" trigger
 
 	self.reset = plat_reset;
 	plat_reset();
@@ -517,6 +546,7 @@ void button_reset()
 {
 	self.health = self.max_health;
 	setorigin(self, self.pos1);
+    self.think = SUB_Null;
 	self.frame = 0;			// use normal textures
 	self.state = STATE_BOTTOM;
 	if (self.health)
@@ -556,7 +586,7 @@ void button_touch()
 void button_damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
 	if(self.spawnflags & DOOR_NOSPLASH)
-		if(!(DEATH_ISSPECIAL(deathtype)) && (deathtype & HITTYPE_SPLASH))
+		if((!(DEATH_ISSPECIAL(deathtype)) && (deathtype & HITTYPE_SPLASH)) || DEATH_ISHG(deathtype))
 			return;
 	self.health = self.health - damage;
 	if (self.health <= 0)
@@ -566,7 +596,7 @@ void button_damage(entity inflictor, entity attacker, float damage, float deatht
 	//		dprint(activator.classname);
 	//		dprint(" killed a button\n");
 	//	}
-		self.enemy = damage_attacker;
+		self.enemy = attacker; //damage_attacker;
 		button_fire ();
 	}
 };
@@ -597,6 +627,7 @@ void spawnfunc_func_button()
 
 	self.blocked = button_blocked;
 	self.use = button_use;
+    self.reset = button_reset;
 
 //	if (self.health == 0) // all buttons are now shootable
 //		self.health = 10;
@@ -1851,3 +1882,102 @@ void spawnfunc_func_vectormamamam()
 
 	InitializeEntity(self, func_vectormamamam_findtarget, INITPRIO_FINDTARGET);
 }
+
+/*
+ * magicwall
+ */
+
+.float alpha_solid;
+.float alpha_nonsolid;
+
+#define MAGICWALL_ALPHAFIELD(e) (if((e).solid == SOLID_BSP) alpha_solid else alpha_nonsolid)
+
+#define SPAWNFLAG_MW_START_HIDDEN 4
+#define SPAWNFLAG_MW_TOGGLE 8
+
+void func_magicwall_think_transition(void) {
+    self.alpha = approach(self.alpha, self.MAGICWALL_ALPHAFIELD(self), self.speed * frametime);
+    if(self.alpha && self.alpha < 1)
+        self.nextthink = time;
+    else if(self.think1)
+        self.think1();
+}
+
+void func_magicwall_start_transition(float sol, void(void) done) {
+    self.solid = sol;
+
+    if(self.speed < 0) {
+        self.alpha = self.MAGICWALL_ALPHAFIELD(self);
+        done();
+        return;
+    }
+
+    self.think = func_magicwall_think_transition;
+    self.think1 = done;
+    self.nextthink = time;
+}
+
+void spawnfunc_func_magicwall(void) {
+    G_MODEL_INIT(SOLID_BSP)
+
+    if(self.alpha_solid <= 0)
+        self.alpha_solid = 1;
+
+    if(self.alpha_nonsolid < 0)
+        self.alpha_nonsolid = 0;
+
+    if(!self.delay)
+        self.delay = self.wait;
+
+    if(!self.delay)
+        self.delay = 3;
+
+    if(!self.speed)
+        self.speed = 1;
+
+    self.oldsolid = if(self.spawnflags & SPAWNFLAG_MW_START_HIDDEN) SOLID_NOT else SOLID_BSP;
+
+    self.customizeentityforclient = inline float(void) {
+        return (self.alpha > 0);
+    };
+
+    self.think = inline void(void) {
+        self.nextthink = time;
+        self.alpha = approach(self.alpha, self.MAGICWALL_ALPHAFIELD(self), self.speed * frametime);
+    };
+
+    self.reset = inline void(void) {
+        self.solid = self.oldsolid;
+        self.alpha = self.MAGICWALL_ALPHAFIELD(self);
+        self.think = SUB_Null;
+    };
+
+    self.use = if(self.spawnflags & SPAWNFLAG_MW_TOGGLE)
+        inline void(void) {
+            func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, func_null);
+        } else inline void(void) {
+            if(self.oldsolid != self.solid) {
+                if(self.think && self.think != func_magicwall_think_transition)
+                    self.nextthink = time + self.delay;
+                return;
+            }
+
+            func_magicwall_start_transition(if(self.oldsolid == SOLID_BSP) SOLID_NOT else SOLID_BSP,
+                if(self.delay >= 0) inline void(void) {
+                    self.nextthink = time + self.delay;
+                    self.think = inline void(void) {
+                        func_magicwall_start_transition(self.oldsolid, func_null);
+                    };
+                } else func_null);
+        };
+
+    self.touch = inline void(void) {
+        if(other.iscreature && !other.frozen)
+            using(activator = other)
+                SUB_UseTargets();
+    };
+
+    self.reset();
+    self.nextthink = time;
+}
+

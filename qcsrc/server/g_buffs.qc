@@ -95,9 +95,14 @@ void Buffs_Init(void) {
         g_buffs_randomize_dual = 0;
     
     g_buffs_meodp = (g_buffs_enabled & BUFF_MEODP || g_buffs_baseline & BUFF_MEODP);
+
+    var havebuffs = g_buffs_enabled | g_buffs_baseline;
     
-    if(g_buffs_enabled & BUFF_ENDURANCE || g_buffs_baseline & BUFF_ENDURANCE)
+    if(havebuffs & BUFF_ENDURANCE)
         addstat(STAT_DMGINCOMING, AS_INT, buff_endur_dmgpool);
+
+    if(havebuffs & BUFF_VAMPIRE)
+        addstat(STAT_HEALINCOMING, AS_INT, buff_vamp_healthpool);
 
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }

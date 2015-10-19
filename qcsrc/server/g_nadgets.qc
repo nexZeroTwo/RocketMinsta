@@ -17,6 +17,7 @@ void HG_Init() {
     addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
     addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
     addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
+    addstat(STAT_HGSHIELDDAMAGEPERSHOT, AS_INT, hg_shield_damage_per_shot);
     addstat(STAT_HGTYPE, AS_INT, hg_type1);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
@@ -591,6 +592,10 @@ void HG_Grenade_Touch() {
     if(SUB_OwnerCheck())
         return;
     
+    if(!self.hg_sticked)
+    if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
+        UpdateCSQCProjectileNextFrame(self);
+
     if(SUB_NoImpactCheck()) {
         if(self.hg_type == HG_TRANSLOC) {
             if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
@@ -601,12 +606,7 @@ void HG_Grenade_Touch() {
         HG_Grenade_Remove();
         return;
     }
-    
-    if(!self.hg_sticked)
-    if(trace_ent && trace_ent.solid > SOLID_TRIGGER) {
-        UpdateCSQCProjectileNextFrame(self);
-    }
-    
+
     if(other.classname == "hg_grenade" && other.owner == self.owner)
         return;
     
@@ -817,7 +817,12 @@ void HG_Stick(void) {
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     e.hg_state = TRUE;
     e.hg_adept = self.hg_adept;
-    setsize(e, '-5 -5 -5', '5 5 5');
+
+    var sz = if(self.hg_type == HG_TRANSLOC) 8 else 5;
+    var hitmins = '-1 -1 -1' * sz;
+    var hitmaxs = ' 1  1  1' * sz;
+
+    setsize(e, hitmins, hitmaxs);
     setorigin(e, self.origin);
     
     // For the translocator (face against the wall when teleporting)
@@ -831,11 +836,6 @@ void HG_Stick(void) {
     e.meodp_death = self.meodp_death;
     if(e.meodp_point)
         e.meodp_point.owner = e;
-
-    if(self.hg_type == HG_REMOTE) {    
-        if(normal_x)
-            setorigin(e, e.origin - normal * 4.5);
-    }
 
     move_out_of_solid(e);
     
@@ -1257,7 +1257,8 @@ void HG_Shield_Discharge_Think(void) {
     float damage;
     float arc = CVAR(g_nadgets_shield_damage_store_arc);
 
-    var armorval = if(CVAR(g_nadgets_shield_damage_store_allow_armor_drain)) self.owner.armorvalue else 0;
+    var armordrain = CVAR(g_nadgets_shield_damage_store_allow_armor_drain);
+    var armorval = if(armordrain) self.owner.armorvalue / armordrain else 0;
 
     if(self.owner.hg_shield_stored < -1)
         damage = 0;
@@ -1282,8 +1283,8 @@ void HG_Shield_Discharge_Think(void) {
 
     if(armordamage > 0 && armorval) {
         var oldval = self.owner.armorvalue;
-        self.owner.armorvalue = max(0, self.owner.armorvalue - armordamage);
-        VisualDamage(self.owner, self.owner, 0, oldval - self.owner.armorvalue, VDMG_TYPE_HIT, self.owner.origin + self.owner.view_ofs);
+        armordamage *= armordrain;
+        Damage(self.owner, self.owner, self.owner, armordamage, DEATH_RESOURCE_ARMOR, '0 0 0', '0 0 0');
     }
 
     makevectors(self.owner.v_angle);
@@ -1299,7 +1300,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    te_csqc_lightningarc(w_shotorg_visual, end, TRUE, if(teams_matter) self.owner.team else COLOR_TEAM3);
+    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_Present(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
@@ -1392,7 +1393,9 @@ void HG_Shield(float hgtype) {
     self.hg_shield_stored = GRENVAR(hgtype, "damage_store_base");
     self.hg_shield_stored_limit = GRENVAR(hgtype, "damage_store_limit");
     self.nobuffs = GRENVAR(hgtype, "nobuffs");
-    
+
+    self.hg_shield_damage_per_shot = CVAR(g_nadgets_shield_damage_store_burstamount);
+
     if(GRENVAR(hgtype, "immobile")) {
         self.hg_shield_oldmovetype = self.movetype;
         self.movetype = MOVETYPE_NONE;
@@ -1786,8 +1789,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         hitmins = '0 0 -3';
         hitmaxs = '0 0 -3';
     } else {
-        hitmins = '-8 -4 -3';
-        hitmaxs = ' 8  4  3';
+        var sz = if(hgtype == HG_TRANSLOC) 8 else 5;
+        hitmins = '-1 -1 -1' * sz;
+        hitmaxs = ' 1  1  1' * sz;
     }
     
     makevectors(self.v_angle);

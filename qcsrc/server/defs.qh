@@ -802,6 +802,7 @@ float roundstate;
 .float vdmg_ignorenext;
 float sv_nicehealth;
 float sv_showacc;
+float sv_shownoobstat;
 
 #define HEAL_PAUSEROT_DEFAULT -1
 
@@ -829,3 +830,13 @@ void CallGameEventHook_ArgVector(vector v);
 void CallGameEventHook_ArgEntity(entity e);
 
 float Client_CalculateAlpha(entity plr, entity viewer);
+
+entity dtrack_global;
+.float noantilagtime;
+
+vector PL_VIEW_OFS;
+vector PL_MIN;
+vector PL_MAX;
+vector PL_CROUCH_VIEW_OFS;
+vector PL_CROUCH_MIN;
+vector PL_CROUCH_MAX;

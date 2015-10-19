@@ -338,5 +338,7 @@ void trigger_relay_if_use()
 
 void spawnfunc_trigger_relay_if()
 {
+    self.classname = "trigger_relay";
 	self.use = trigger_relay_if_use;
+    self.reset = spawnfunc_trigger_relay_if;
 };

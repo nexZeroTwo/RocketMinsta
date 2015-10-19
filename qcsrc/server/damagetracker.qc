@@ -47,11 +47,19 @@ void DamageTracker_Overwrite(entity keeper, entity client, float dtflags) {
     }
 }
 
+void DamageTracker_Send(float msg, float dtype, float damage, float dtflags) {
+    WriteByte(msg, SVC_TEMPENTITY);
+    WriteByte(msg, TE_CSQC_DTRACK);
+    WriteByte(msg, dtflags);
+    WriteShort(msg, dtype);
+    WriteShort(msg, damage * 10);
+}
+
 void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float dtflags) {
     if(!sv_damagestats)
         return;
     
-    if(!keeper.owner.iscreature)
+    if(!keeper.owner.iscreature && !(dtflags & DTFLAG_GLOBAL))
         return;
     
     if(damage <= 0)
@@ -62,25 +70,22 @@ void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float
     dtflags &~= DTFLAG_OVERWRITE;
     dtflags &~= DTFLAG_SPEC;
     
+    if(dtflags & DTFLAG_GLOBAL) {
+        DamageTracker_Send(MSG_ALL, dtype, damage, dtflags);
+        return;
+    }
+
     if(clienttype(keeper.owner) == CLIENTTYPE_REAL) {
         msg_entity = keeper.owner;
-        WriteByte(MSG_ONE, SVC_TEMPENTITY);
-        WriteByte(MSG_ONE, TE_CSQC_DTRACK);
-        WriteByte(MSG_ONE, dtflags);
-        WriteShort(MSG_ONE, dtype);
-        WriteShort(MSG_ONE, damage * 10);
+        DamageTracker_Send(MSG_ONE, dtype, damage, dtflags);
     }
     
     entity e;
-    FOR_EACH_REALCLIENT(e)
-        if(e.enemy == keeper.owner)
-            if(e.classname == "spectator") {
-                msg_entity = e;
-                WriteByte(MSG_ONE, SVC_TEMPENTITY);
-                WriteByte(MSG_ONE, TE_CSQC_DTRACK);
-                WriteByte(MSG_ONE, dtflags | DTFLAG_SPEC);
-                WriteShort(MSG_ONE, dtype);
-                WriteShort(MSG_ONE, damage * 10);
-            }
+    FOR_EACH_REALCLIENT(e) {
+        if(e.enemy == keeper.owner && e.classname == "spectator") {
+            msg_entity = e;
+            DamageTracker_Send(MSG_ONE, dtype, damage, dtflags | DTFLAG_SPEC);
+        }
+    }
 }
 

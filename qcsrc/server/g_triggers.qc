@@ -365,6 +365,7 @@ This fixed size trigger cannot be touched, it can only be fired by other events.
 */
 void spawnfunc_trigger_relay()
 {
+    self.classname = "trigger_relay";
 	self.use = SUB_UseTargets;
 	self.reset = spawnfunc_trigger_relay; // this spawnfunc resets fully
 };
@@ -1647,10 +1648,12 @@ void trigger_relay_teamcheck_use()
 void trigger_relay_teamcheck_reset()
 {
 	self.team = self.team_saved;
+    self.use = trigger_relay_teamcheck_use;
 }
 
 void spawnfunc_trigger_relay_teamcheck()
 {
+    self.classname = "trigger_relay";
 	self.team_saved = self.team;
 	self.use = trigger_relay_teamcheck_use;
 	self.reset = trigger_relay_teamcheck_reset;
@@ -1665,18 +1668,16 @@ void trigger_disablerelay_use()
 	float a, b;
 	a = b = 0;
 
-	for(e = world; (e = find(e, targetname, self.target)); )
+	for(e = world; (e = find(e, targetname, self.target)); ) if(e.classname == "trigger_relay")
 	{
-		if(e.use == SUB_UseTargets)
-		{
-			e.use = SUB_DontUseTargets;
-			++a;
-		}
-		else if(e.use == SUB_DontUseTargets)
-		{
-			e.use = SUB_UseTargets;
-			++b;
-		}
+        if(e.use == SUB_DontUseTargets) {
+            using(self = e)
+                self.reset();
+            ++b;
+        } else {
+            e.use = SUB_DontUseTargets;
+            ++a;
+        }
 	}
 
 	if((!a) == (!b))
@@ -1950,3 +1951,115 @@ void spawnfunc_trigger_gravity()
 	}
 }
 
+/*
+ * cycle
+ */
+
+.string chaintarget;
+
+entity trigger_cycle_find_next_target(entity ref) {
+    entity e;
+
+    if(ref.chaintarget != "")
+        e = find(world, targetname, ref.chaintarget);
+
+    if(!e.use)
+        e = world;
+
+    return e;
+}
+
+void trigger_cycle_reset(void) {
+    self.target = self.chaintarget;
+    self.enemy = trigger_cycle_find_next_target(self);
+}
+
+void trigger_cycle_use(void) {
+    SUB_UseTargets_PreventReuse();
+    self.enemy = trigger_cycle_find_next_target(self.enemy);
+    self.target = self.enemy.targetname;
+    SUB_UseTargets_PreventReuse();
+}
+
+void trigger_cycle_init_delayed(void) {
+    self.enemy = trigger_cycle_find_next_target(self);
+    self.think = func_null;
+}
+
+void spawnfunc_trigger_cycle(void) {
+    self.chaintarget = self.target;
+    self.use = trigger_cycle_use;
+    self.reset = trigger_cycle_reset;
+    self.think = trigger_cycle_init_delayed;
+    self.nextthink = time;
+}
+
+/*
+ * killcredit
+ */
+
+ void spawnfunc_trigger_killcredit(void) {
+    EXACTTRIGGER_INIT;
+
+    if(self.wait <= 0)
+        self.wait = 3;
+
+    self.use = inline void(void) {
+        self.enemy = activator;
+        self.solid = SOLID_TRIGGER;
+        self.think = self.reset;
+        self.nextthink = time + self.wait;
+    };
+
+    self.reset = inline void(void) {
+        self.enemy = world;
+        self.solid = SOLID_NOT;
+        self.think = SUB_Null;
+    };
+
+    self.touch = inline void(void) {
+        if(!other.iscreature)
+            return;
+
+        other.pushltime = time + CVAR(g_maxpushtime);
+        other.pusher = self.enemy;
+    };
+
+    self.reset();
+ }
+
+/*
+ * random
+ */
+
+void spawnfunc_trigger_relay_chance(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        if(random() < self.cnt)
+            SUB_UseTargets();
+    };
+
+    self.reset = spawnfunc_trigger_relay_chance;
+}
+
+void spawnfunc_trigger_relay_random(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        RandomSelection_Init();
+        SUB_ForEachTarget_Init();
+
+        SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
+            e.sub_target_used = time;
+            RandomSelection_Add(e, 0, string_null, 1, 1);
+        }, FALSE, 0, '0 0 0', string_null, world);
+
+        if(RandomSelection_chosen_ent) {
+            RandomSelection_chosen_ent.sub_target_used = -1;
+            SUB_UseTargets_PreventReuse();
+        }
+    };
+
+    self.reset = spawnfunc_trigger_relay_random;
+}

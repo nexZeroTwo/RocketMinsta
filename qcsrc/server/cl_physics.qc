@@ -757,6 +757,12 @@ void SV_PlayerPhysics()
 				self.movetype = MOVETYPE_WALK;
 			self.disableclientprediction = 0;
 		}
+
+        if(self.frozen || time < self.noantilagtime)
+            self.disableclientprediction = max(1, self.disableclientprediction);
+        else if(self.disableclientprediction < 2)
+            self.disableclientprediction = 0;
+
 	}
 
 	if (self.movetype == MOVETYPE_NONE)

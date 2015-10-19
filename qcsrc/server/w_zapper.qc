@@ -37,7 +37,10 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    sf &~= 8;
+    sf &~= 8 | 16;
+
+    if(self.sounds < 0)
+        sf |= 16;
 
     if(to.zapper_shotorgsentfor != self) {
         if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {

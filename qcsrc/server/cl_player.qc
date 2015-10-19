@@ -630,7 +630,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(deathtype != DEATH_FALL)
     if(deathtype != DEATH_DROWN)
     if(deathtype != DEATH_ROT)
-    if(deathtype != DEATH_HURTTRIGGER) {
+    if(deathtype != DEATH_HURTTRIGGER)
+    if(deathtype != DEATH_RESOURCE_ARMOR) {
         damage = 0;
         force = '0 0 0';
     }
@@ -686,7 +687,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-    if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
+    if(deathtype == DEATH_RESOURCE_ARMOR) {
+        take = 0;
+        save = min(self.armorvalue, damage);
+    } else if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
 		v = healtharmor_applydamage(self.armorvalue, CVAR(g_balance_armor_blockpercent), damage);
 		take = v_x;
 		save = v_y;
@@ -694,6 +698,25 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		save = 0;
 		take = damage;
 	}
+
+    if(attacker == self)
+    {
+        // don't reset pushltime for self damage as it may be an attempt to
+        // escape a lava pit or similar
+        //self.pushltime = 0;
+    }
+    else if(attacker.classname == "player" || attacker.classname == "gib")
+    {
+        self.pusher = attacker;
+        self.pushltime = time + CVAR(g_maxpushtime);
+    }
+    else if(time < self.pushltime)
+    {
+        attacker = self.pusher;
+        self.pushltime = max(self.pushltime, time + 0.6);
+    }
+    else
+        self.pushltime = 0;
 
     take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
 
@@ -711,7 +734,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-    
+
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
@@ -747,6 +770,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
                 DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
                 DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
+                DamageTracker_RecordAndSend(dtrack_global, deathtype, cdmg + save, DTFLAG_GLOBAL);
                 
                 if(g_clanarena)
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
@@ -818,25 +842,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 	
     self.dmg_inflictor = inflictor;
-
-	if(attacker == self)
-	{
-		// don't reset pushltime for self damage as it may be an attempt to
-		// escape a lava pit or similar
-		//self.pushltime = 0;
-	}
-	else if(attacker.classname == "player" || attacker.classname == "gib")
-	{
-		self.pusher = attacker;
-		self.pushltime = time + CVAR(g_maxpushtime);
-	}
-	else if(time < self.pushltime)
-	{
-		attacker = self.pusher;
-		self.pushltime = max(self.pushltime, time + 0.6);
-	}
-	else
-		self.pushltime = 0;
 
 	valid_damage_for_weaponstats = 0;
 	if(clienttype(self) == CLIENTTYPE_REAL)
