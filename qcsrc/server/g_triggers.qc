@@ -365,6 +365,7 @@ This fixed size trigger cannot be touched, it can only be fired by other events.
 */
 void spawnfunc_trigger_relay()
 {
+    self.classname = "trigger_relay";
 	self.use = SUB_UseTargets;
 	self.reset = spawnfunc_trigger_relay; // this spawnfunc resets fully
 };
@@ -1647,10 +1648,12 @@ void trigger_relay_teamcheck_use()
 void trigger_relay_teamcheck_reset()
 {
 	self.team = self.team_saved;
+    self.use = trigger_relay_teamcheck_use;
 }
 
 void spawnfunc_trigger_relay_teamcheck()
 {
+    self.classname = "trigger_relay";
 	self.team_saved = self.team;
 	self.use = trigger_relay_teamcheck_use;
 	self.reset = trigger_relay_teamcheck_reset;
@@ -1665,18 +1668,16 @@ void trigger_disablerelay_use()
 	float a, b;
 	a = b = 0;
 
-	for(e = world; (e = find(e, targetname, self.target)); )
+	for(e = world; (e = find(e, targetname, self.target)); ) if(e.classname == "trigger_relay")
 	{
-		if(e.use == SUB_UseTargets)
-		{
-			e.use = SUB_DontUseTargets;
-			++a;
-		}
-		else if(e.use == SUB_DontUseTargets)
-		{
-			e.use = SUB_UseTargets;
-			++b;
-		}
+        if(e.use == SUB_DontUseTargets) {
+            using(self = e)
+                self.reset();
+            ++b;
+        } else {
+            e.use = SUB_DontUseTargets;
+            ++a;
+        }
 	}
 
 	if((!a) == (!b))
@@ -2032,6 +2033,8 @@ void spawnfunc_trigger_cycle(void) {
  */
 
 void spawnfunc_trigger_relay_chance(void) {
+    self.classname = "trigger_relay";
+
     self.use = inline void(void) {
         if(random() < self.cnt)
             SUB_UseTargets();
@@ -2041,6 +2044,8 @@ void spawnfunc_trigger_relay_chance(void) {
 }
 
 void spawnfunc_trigger_relay_random(void) {
+    self.classname = "trigger_relay";
+
     self.use = inline void(void) {
         RandomSelection_Init();
         SUB_ForEachTarget_Init();
