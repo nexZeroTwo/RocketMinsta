@@ -1,7 +1,6 @@
 .float race_penalty;
 .float restart_jump;
 
-float sv_accelerate;
 float sv_airaccelerate;
 float sv_stopspeed;
 float sv_airaccel_sideways_friction;
@@ -942,7 +941,7 @@ void SV_PlayerPhysics()
 		if (wishspeed > CVAR(sv_maxspeed)*maxspd_mod)
 			wishspeed = CVAR(sv_maxspeed)*maxspd_mod;
 		if (time >= self.teleport_time)
-			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
+			PM_Accelerate(wishdir, wishspeed, wishspeed, CVAR(sv_accelerate)*maxspd_mod, 1, 0);
 	}
 	else if (self.waterlevel >= WATERLEVEL_SWIMMING)
 	{
@@ -965,7 +964,7 @@ void SV_PlayerPhysics()
 		self.velocity = self.velocity * (1 - frametime * CVAR(sv_friction));
 
 		// water acceleration
-		PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
+		PM_Accelerate(wishdir, wishspeed, wishspeed, CVAR(sv_accelerate)*maxspd_mod, 1, 0);
 	}
 	else if (time < self.ladder_time)
 	{
@@ -1008,7 +1007,7 @@ void SV_PlayerPhysics()
 		if (time >= self.teleport_time)
 		{
 			// water acceleration
-			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
+			PM_Accelerate(wishdir, wishspeed, wishspeed, CVAR(sv_accelerate)*maxspd_mod, 1, 0);
 		}
 	}
 	else if((self.items & IT_JETPACK) && self.BUTTON_HOOK && (!CVAR(g_jetpack_fuel) || self.ammo_fuel >= 0.01 || self.items & IT_UNLIMITED_WEAPON_AMMO) && (!g_freeze || !self.frozen))
@@ -1168,7 +1167,7 @@ void SV_PlayerPhysics()
 		if (self.crouch)
 			wishspeed = wishspeed * 0.5;
 		if (time >= self.teleport_time)
-			PM_Accelerate(wishdir, wishspeed, wishspeed, sv_accelerate*maxspd_mod, 1, 0);
+			PM_Accelerate(wishdir, wishspeed, wishspeed, CVAR(sv_accelerate)*maxspd_mod, 1, 0);
 	}
 	else
 	{
