@@ -1812,3 +1812,21 @@ string TeamName(float t) {
 }
 
 #endif
+
+void backtrace(string msg)
+{
+    float dev, war;
+    dev = CVAR(developer);
+    war = CVAR(prvm_backtraceforwarnings);
+    cvar_set("developer", "1");
+    cvar_set("prvm_backtraceforwarnings", "1");
+    dprint("\n");
+    dprint("--- CUT HERE ---\nWARNING: ");
+    dprint(msg);
+    dprint("\n");
+    remove(world); // isn't there any better way to cause a backtrace?
+    dprint("\n--- CUT UNTIL HERE ---\n");
+    cvar_set("developer", ftos(dev));
+    cvar_set("prvm_backtraceforwarnings", ftos(war));
+    GameCommand("time");
+}

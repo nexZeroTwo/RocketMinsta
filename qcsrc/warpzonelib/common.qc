@@ -682,6 +682,13 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 
 void WarpZone_ChainAdd(entity wz)
 {
+    for(var e = warpzone_chain_begin; e; e = e.warpzone_chain) {
+        if(e == wz) {
+            backtrace("warpzone chain loop");
+            return;
+        }
+    }
+
 	wz.warpzone_chain = warpzone_chain_begin;
 	warpzone_chain_begin = wz;
 }
