@@ -1253,7 +1253,7 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
 
 void HG_Shield_Discharge_Think(void) {
     entity targ;
-    vector start, end;
+    vector start, end, end_visual;
     float damage;
     float arc = CVAR(g_nadgets_shield_damage_store_arc);
 
@@ -1293,6 +1293,7 @@ void HG_Shield_Discharge_Think(void) {
     targ = trace_ent;
     start = w_shotorg;
     end = trace_endpos;
+    end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 
     setorigin(self, end);
     RadiusDamage(self, self.owner, damage, damage * CVAR(g_nadgets_shield_damage_store_edgefactor),
@@ -1300,7 +1301,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end);
+    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end_visual);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_Present(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
