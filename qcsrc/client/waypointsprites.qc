@@ -253,7 +253,8 @@ void Draw_WaypointSprite()
 	// draw the sprite image
 	vector o;
 	float rot;
-	o = project_3d_to_2d(self.origin);
+    o = WarpZone_FindNearestOrigin(view_origin, self.origin, 0);
+	o = project_3d_to_2d(o);
 	rot = 0;
     
     float maxw = vid_conwidth;
