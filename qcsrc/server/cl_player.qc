@@ -605,7 +605,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
         Buffs_ArcDamage(self, attacker, damage, deathtype);
 
-    if(damage) {
+    if(damage && deathtype != DEATH_RESOURCE_ARMOR) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
     	damage = HG_Shield_Damage(attacker, damage, deathtype, hitloc);
@@ -644,6 +644,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
+
+    if(
+        damage                               &&
+        DEATH_HGTYPE(deathtype) == HG_SHIELD &&
+        deathtype & HITTYPE_SECONDARY        &&
+        attacker.hg_shield                   &&
+        IsDifferentTeam(self, attacker)      &&
+        Buffs_Present(attacker, BUFF_ADEPT)
+      )
+        HG_Shield_Adept_ExtendRenew(attacker);
 
 	if(!DEATH_ISSPECIAL(deathtype))
 	{

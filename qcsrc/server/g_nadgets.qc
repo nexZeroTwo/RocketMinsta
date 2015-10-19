@@ -1313,41 +1313,42 @@ void HG_Shield_Discharge_Think(void) {
 }
 
 void HG_Shield_Trigger(void) {
-    entity e, o;
-    for(e = world; (e = find(e, classname, "hg_shield_discharge"));)
-        if(e.owner == self)
-            return;
-
     sound(self, CHAN_WEAPON2, "porto/expire.wav", VOL_BASE, ATTN_NORM);
-    
-    // Discharge
-    float extend, renew;
-    if(self.hg_shield_stored) {
-        if(Buffs_Present(self, BUFF_ADEPT)) {
-            extend = CVAR(g_nadgets_shield_adept_discharge_extend);
-            renew = CVAR(g_nadgets_shield_adept_discharge_renew);
+
+    for(var e = world; (e = find(e, classname, "hg_shield_discharge"));) {
+        if(e.owner == self) {
+            self.hg_shield_stored = 0;
+            remove(e);
+            return;
         }
-
-        e = spawn();
-        e.classname = "hg_shield_discharge";
-        e.owner = self;
-        e.think = HG_Shield_Discharge_Think;
-        e.reset = SUB_Remove;
-
-        o = self;
-        self = e;
-        self.think();
-        self = o;
     }
-    
-    if(extend || renew) {
-        self.hg_shield = max(self.hg_shield, renew) + extend;
-        stopsound(self, CHAN_AUTO);
-        sound(self, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
-    } else {
+
+    // Discharge
+    if(self.hg_shield_stored) {
+        using(self = spawn() {
+            classname: "hg_shield_discharge",
+            owner: self,
+            think: HG_Shield_Discharge_Think,
+            reset: SUB_Remove
+        }) self.think();
+    }
+
+    if(!Buffs_Present(self, BUFF_ADEPT) || self.hg_shield_stored <= 0) {
         self.hg_shield = 0;
         stopsound(self, CHAN_AUTO);
     }
+}
+
+void HG_Shield_Adept_ExtendRenew(entity plr) {
+    var extend = CVAR(g_nadgets_shield_adept_discharge_extend);
+    var renew = CVAR(g_nadgets_shield_adept_discharge_renew);
+
+    if(!extend && !renew)
+        return;
+
+    plr.hg_shield = max(plr.hg_shield, renew) + extend;
+    stopsound(plr, CHAN_AUTO);
+    sound(plr, CHAN_AUTO, "misc/powerup_shield.wav", VOL_BASE, ATTN_NORM);
 }
 
 void HG_Shield_Model_Think(void) {
@@ -1435,7 +1436,12 @@ void HG_Shield_Frame(void) {
         self.hg_shieldstat = self.hg_shield / self.hg_shieldmax;
     else
         self.hg_shieldstat = 0;
-    
+
+    if((self.hg_shield_stored < 0 || (self.hg_shield_stored && !self.hg_shield))
+        && !findfilter(world, inline float(entity e) {
+            return e.owner == self && e.classname == "hg_shield_discharge";
+        })) self.hg_shield_stored = 0;
+
     if(!self.hg_shield) {
         self.nobuffs = 0;
 
@@ -1443,10 +1449,6 @@ void HG_Shield_Frame(void) {
             self.movetype = self.hg_shield_oldmovetype;
             self.hg_shield_oldmovetype = 0;
         }
-
-        if(self.hg_shield_stored && !findfilter(world, inline float(entity e) {
-            return e.owner == self && e.classname == "hg_shield_discharge";
-        })) self.hg_shield_stored = 0;
 
         return;
     }
@@ -2717,10 +2719,8 @@ void HG_Trigger(void) {
 
     if(self.hg_stealth || self.hg_stealth_saved)
         HG_Cloak_Trigger();
-    else if(self.hg_shield)
+    else if(self.hg_shield || (self.hg_shield_stored && CVAR(g_nadgets_shield_damage_store_allow_cancel_discharge)))
         HG_Shield_Trigger();
-    else if(self.hg_shield_stored && CVAR(g_nadgets_shield_damage_store_allow_cancel_discharge))
-        self.hg_shield_stored = -2;
     else {
         HG_Sentry_Trigger();
 

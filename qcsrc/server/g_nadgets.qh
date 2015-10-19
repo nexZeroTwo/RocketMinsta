@@ -30,6 +30,7 @@ void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
 void HG_Bait_Body_Boom(entity body);
 float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc);
+void HG_Shield_Adept_ExtendRenew(entity plr);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
 
 .vector org_explosion;
