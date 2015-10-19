@@ -5440,13 +5440,13 @@ void Sbar_Draw(void)
             } else if(getstatf(STAT_HGSHIELD)) {
                 string smsg;
                 
-                if(getstati(STAT_HGSHIELDSTORE)) {
+                if(getstati(STAT_HGSHIELDSTORE) > 0) {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                   " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
                                   " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
                 } else {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                  " ^3to cancel your ", HG_TypeToExpandedName(hgtype));
+                                  " ^3to cancel your ", if(getstati(STAT_HGSHIELDSTORE) < 0) "discharge" else HG_TypeToExpandedName(hgtype));
                 }
                 
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
