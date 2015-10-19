@@ -29,7 +29,7 @@ void PlayerJump (void)
 {
 	float mjumpheight;
 
-	mjumpheight = sv_jumpvelocity;
+	mjumpheight = CVAR(sv_jumpvelocity);
 	if (self.waterlevel >= WATERLEVEL_SWIMMING)
 	{
 		if (self.watertype == CONTENT_WATER)
@@ -641,7 +641,7 @@ void SV_PlayerPhysics()
                 }
             }
             
-			self.velocity_z = sv_jumpvelocity * wj_z_factor;
+			self.velocity_z = CVAR(sv_jumpvelocity) * wj_z_factor;
 			if (self.crouch) self.velocity_z *= -1; // thanks Synap for the idea
 			self.oldvelocity = self.velocity;
 			pointparticles(particleeffectnum("smoke_ring"), trace_endpos, plane_normal, 10);
