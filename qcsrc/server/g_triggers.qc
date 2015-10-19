@@ -2026,3 +2026,35 @@ void spawnfunc_trigger_cycle(void) {
 
     self.reset();
  }
+
+/*
+ * random
+ */
+
+void spawnfunc_trigger_relay_chance(void) {
+    self.use = inline void(void) {
+        if(random() < self.cnt)
+            SUB_UseTargets();
+    };
+
+    self.reset = spawnfunc_trigger_relay_chance;
+}
+
+void spawnfunc_trigger_relay_random(void) {
+    self.use = inline void(void) {
+        RandomSelection_Init();
+        SUB_ForEachTarget_Init();
+
+        SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
+            e.sub_target_used = time;
+            RandomSelection_Add(e, 0, string_null, 1, 1);
+        }, FALSE, 0, '0 0 0', string_null, world);
+
+        if(RandomSelection_chosen_ent) {
+            RandomSelection_chosen_ent.sub_target_used = -1;
+            SUB_UseTargets_PreventReuse();
+        }
+    };
+
+    self.reset = spawnfunc_trigger_relay_random;
+}
