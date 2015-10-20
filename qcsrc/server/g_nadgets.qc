@@ -1055,6 +1055,13 @@ void HG_Grenade_Think() {
                         self.velocity = self.hg_minVelocity + veldiff;
                     }
                 }
+                if(self.hg_adept) {
+                    if(GV("adept_trailblaze")) {
+                        if(time >= GV("adept_trailblaze_delay") + self.spawntime) {
+                            for (c = 0; c < GV("numparticles"); ++c) HG_Napalm();
+                        }
+                    }
+                }
 			}
 		}
         UpdateCSQCProjectile(self);
