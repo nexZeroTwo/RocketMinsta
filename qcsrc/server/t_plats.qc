@@ -143,7 +143,7 @@ void plat_outside_touch()
 
 void plat_trigger_use()
 {
-	if (self.think && (!(self.spawnflags & PLAT_REVERSIBLE) || self.state != 4 && self.state != 1))
+	if (self.think && !(self.spawnflags & PLAT_REVERSIBLE) || self.state != 4 && self.state != 1)
 		return;		// already activated
 
     if(self.spawnflags & PLAT_REVERSIBLE && self.enemy)
