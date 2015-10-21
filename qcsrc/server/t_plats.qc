@@ -285,7 +285,7 @@ void spawnfunc_func_plat()
                                        self.size_z) + 8;
 
     if(!self.delay)
-        self.delay = 3;
+        self.delay = 2;
 
     if(!(self.spawnflags & PLAT_NO_TRIGGER))
 	   plat_spawn_inside_trigger ();	// the "start moving" trigger
