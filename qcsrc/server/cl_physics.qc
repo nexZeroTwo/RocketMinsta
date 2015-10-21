@@ -788,7 +788,7 @@ void SV_PlayerPhysics()
     if(self.hg_stealth)
         maxspd_mod *= CVAR(g_nadgets_cloak_movespeed);
     
-    if(g_dodging)
+    if(CVAR(g_dodging))
         dodging_PlayerPhysics();
     Freeze_Hook_PlayerPhysics();
 

@@ -194,15 +194,6 @@ void StartFrame (void)
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
         sv_autoaway = CVAR(sv_autoaway);
-        g_dodging = CVAR(g_dodging);
-
-        if(g_dodging) {
-            g_dodging_delay = CVAR(g_dodging_delay);
-            g_dodging_ramp_time = CVAR(g_dodging_ramp_time);
-            
-            if(g_freeze)
-                g_freezetag_dodging_frozen = Freeze_CVar("dodging_frozen");
-        }
         
         g_balance_health_rotstable = CVAR(g_balance_health_rotstable);
         g_balance_armor_rotstable = CVAR(g_balance_armor_rotstable);

@@ -1925,7 +1925,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
 }
 
 void HG_Bait_Body_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-    PlayerDamage(inflictor, attacker, damage, deathtype, hitloc, force * Freeze_CVar("frozen_force"));
+    PlayerDamage(inflictor, attacker, damage, deathtype, hitloc, force * Freeze_CVar(frozen_force));
 }
 
 void HG_Bait_Body_Remove(entity body) {
@@ -1969,7 +1969,7 @@ void HG_Bait_Body_Think(void) {
     if(!self.iceblock) {
         Freeze_SpawnIceBlock(self);
         
-        if(Freeze_CVar("iceblocks_teamcolored"))
+        if(Freeze_CVar(iceblocks_teamcolored))
             self.iceblock.skin = TeamColorSkin(self.team);
 
         if(teams_matter)
@@ -2001,8 +2001,8 @@ entity HG_Bait_Create(entity ref) {
     entity body = CopyBody(FALSE);
     body.classname = "bait_body";
     body.team = ref.team;
-    body.health = Freeze_CVar("frozen_health");
-    body.armorvalue = Freeze_CVar("frozen_armor");
+    body.health = Freeze_CVar(frozen_health);
+    body.armorvalue = Freeze_CVar(frozen_armor);
     body.think = HG_Bait_Body_Think;
     body.event_damage = HG_Bait_Body_Damage;
     body.reset = HG_Bait_Body_Remove;

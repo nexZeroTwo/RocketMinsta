@@ -894,13 +894,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar("teleport_out_of_lava") && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
+            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar(teleport_out_of_lava) && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
                 Freeze_RespawnPlayer(targ);
             
 			damage = 0;
-			force = force * Freeze_CVar("frozen_force");
+			force = force * Freeze_CVar(frozen_force);
 
-			if(targ.team != attacker.team || Freeze_CVar("melt_teamdamage"))
+			if(targ.team != attacker.team || Freeze_CVar(melt_teamdamage))
 			{
 				targ.meltprogress = 0;
 				targ.freezetime = time;
