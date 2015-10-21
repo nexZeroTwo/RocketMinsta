@@ -20,7 +20,7 @@ void te_heal(entity e) {
     
     FOR_EACH_REALCLIENT(c) if(c != e) if(!(c.classname == "spectator" && c.enemy == e)) {
         if(c.iscreature)
-        if(e.hg_stealth)
+        if(e.hg_stealth || Client_CalculateAlpha(e, c) < 0.15)
         if(IsDifferentTeam(c, e))
             continue;
 

@@ -6,6 +6,7 @@
 #define DTFLAG_TAKEN 2
 #define DTFLAG_SPEC 4
 #define DTFLAG_OVERWRITE 8
+#define DTFLAG_GLOBAL 16
 
 .float dtrack_type[DTRACK_ENTRIES];
 .float dtrack_damage[DTRACK_ENTRIES];

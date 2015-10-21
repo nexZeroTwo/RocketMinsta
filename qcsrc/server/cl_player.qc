@@ -153,7 +153,6 @@ entity CopyBody(float keepvelocity)
 	self.oldvelocity = self.velocity;
 	self.fade_time = oldself.fade_time;
 	self.fade_rate = oldself.fade_rate;
-	//self.weapon = oldself.weapon;
 	setorigin(self, oldself.origin);
 	setsize(self, oldself.mins, oldself.maxs);
 	self.prevorigin = oldself.origin;
@@ -523,7 +522,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         return;
     
     if(attacker) {
-        if(CVAR(sv_showdamage_checklos))
+        if(CVAR(sv_showdamage_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
             found = VisualDamage_CheckLOS(attacker, targ, hitloc);
         else
             found = TRUE;
@@ -541,14 +540,17 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
         if(check.classname == "spectator")
             check = check.enemy;
         
+        if(IsDifferentTeam(check, targ) && Client_CalculateAlpha(targ, e) < 0.15)
+            continue;
+
         if(CVAR(sv_showdamage_global) || check == attacker || check == targ) {
-            float stype = htype;
+            float stype = htype & VDMG_TYPE_CLIENTMASK;
             
             if(check == attacker) {
                 if(!found)
                     continue;
             } else if(check != targ) {
-                if(CVAR(sv_showdamage_global_checklos))
+                if(CVAR(sv_showdamage_global_checklos) || htype & VDMG_TYPE_FORCECHECKLOS)
                 if(!VisualDamage_CheckLOS(check, targ, hitloc))
                     continue;
                 
@@ -603,7 +605,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
         Buffs_ArcDamage(self, attacker, damage, deathtype);
 
-    if(damage) {
+    if(damage && deathtype != DEATH_RESOURCE_ARMOR) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
     	damage = HG_Shield_Damage(attacker, damage, deathtype, hitloc);
@@ -620,9 +622,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         }
     }
 
-    W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
-    Buffs_FocusDamage(self, attacker, damage, deathtype);
-
     if(time < self.hg_plasmalock)
     if(deathtype != DEATH_NOISE)
     if(deathtype != DEATH_TEAMCHANGE)
@@ -631,17 +630,30 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(deathtype != DEATH_FALL)
     if(deathtype != DEATH_DROWN)
     if(deathtype != DEATH_ROT)
-    if(deathtype != DEATH_HURTTRIGGER) {
+    if(deathtype != DEATH_HURTTRIGGER)
+    if(deathtype != DEATH_RESOURCE_ARMOR) {
         damage = 0;
         force = '0 0 0';
     }
-    
+
+    Buffs_FocusDamage(self, attacker, damage, deathtype);
+
     if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
-        if(self.frozen || inflictor.hg_adept) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
+        if(self.frozen || (inflictor.hg_adept && CVAR(g_nadgets_plasma_adept_stun))) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
+
+    if(
+        damage                               &&
+        DEATH_HGTYPE(deathtype) == HG_SHIELD &&
+        deathtype & HITTYPE_SECONDARY        &&
+        attacker.hg_shield                   &&
+        IsDifferentTeam(self, attacker)      &&
+        Buffs_Present(attacker, BUFF_ADEPT)
+      )
+        HG_Shield_Adept_ExtendRenew(attacker);
 
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
@@ -685,7 +697,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	if(numspawned < 2)
 		return;
 
-    if(!g_minstagib) {
+    if(deathtype == DEATH_RESOURCE_ARMOR) {
+        take = 0;
+        save = min(self.armorvalue, damage);
+    } else if(!g_minstagib && deathtype != DEATH_ENDURANCE) {
 		v = healtharmor_applydamage(self.armorvalue, CVAR(g_balance_armor_blockpercent), damage);
 		take = v_x;
 		save = v_y;
@@ -693,14 +708,35 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		save = 0;
 		take = damage;
 	}
-    
+
+    if(attacker == self)
+    {
+        // don't reset pushltime for self damage as it may be an attempt to
+        // escape a lava pit or similar
+        //self.pushltime = 0;
+    }
+    else if(attacker.classname == "player" || attacker.classname == "gib")
+    {
+        self.pusher = attacker;
+        self.pushltime = time + CVAR(g_maxpushtime);
+    }
+    else if(time < self.pushltime)
+    {
+        attacker = self.pusher;
+        self.pushltime = max(self.pushltime, time + 0.6);
+    }
+    else
+        self.pushltime = 0;
+
+    take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
+
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{
 		if (save > 10)
 			sound (self, CHAN_PROJECTILE, "misc/armorimpact.wav", VOL_BASE, ATTN_NORM);
 		else if (take > 30)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact2.wav", VOL_BASE, ATTN_NORM);
-		else if (take > 10)
+		else if (take > 10 || deathtype == DEATH_ENDURANCE)
 			sound (self, CHAN_PROJECTILE, "misc/bodyimpact1.wav", VOL_BASE, ATTN_NORM); // FIXME possibly remove them?
 	}
 
@@ -708,7 +744,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-    
+
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
@@ -726,6 +762,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(take >= self.health)
                 htype |= VDMG_TYPE_LETHAL;
             
+            if(deathtype == DEATH_ENDURANCE)
+                htype |= VDMG_TYPE_FORCECHECKLOS;
+
             if(!g_minstagib) {
             	vector vdloc = hitloc;
 
@@ -741,16 +780,13 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                 PlayerScore_Add(attacker, SP_DAMAGE, cdmg + save);
                 DamageTracker_RecordAndSend(attacker.dtrack_total, deathtype, cdmg + save, DTFLAG_DONE);
                 DamageTracker_RecordAndSend(self.dtrack_taken, deathtype, cdmg + save, DTFLAG_TAKEN);
+                DamageTracker_RecordAndSend(dtrack_global, deathtype, cdmg + save, DTFLAG_GLOBAL);
                 
                 if(g_clanarena)
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
                 
                 Buffs_VampireDamage(self, attacker, cdmg, deathtype);
-                
-                if(g_vip) if(roundstate == ROUNDSTATE_GAME) if(ISVIP(self)) if(cdmg || save) {
-                    PlayerScore_Add(attacker, SP_SCORE, cdmg + save);
-                    hudflash_teamcolor_default_spec(attacker);
-                }
+                Buffs_WrathDamage(self, attacker, cdmg + take, deathtype);
             }
             
             self.health = self.health - take;
@@ -771,6 +807,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 							setanim(self, self.anim_pain2, FALSE, TRUE, TRUE);
 					}
 
+                    if(deathtype != DEATH_ENDURANCE)
 					if(sound_allowed(MSG_BROADCAST, attacker))
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
 					if(!DEATH_ISWEAPON(deathtype, WEP_LASER) || attacker != self || self.health < 2 * CVAR(g_balance_laser_primary_damage) * CVAR(g_balance_selfdamagepercent) + 1)
@@ -809,31 +846,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 			self.max_armorvalue += (save + take);
 	}
     
-    if(deathtype != DEATH_IGNITE) {
+    if(deathtype != DEATH_IGNITE && deathtype != DEATH_ENDURANCE) {
         self.dmg_save = self.dmg_save + save;//max(save - 10, 0);
         self.dmg_take = self.dmg_take + take;//max(take - 10, 0);
     }
 	
     self.dmg_inflictor = inflictor;
-
-	if(attacker == self)
-	{
-		// don't reset pushltime for self damage as it may be an attempt to
-		// escape a lava pit or similar
-		//self.pushltime = 0;
-	}
-	else if(attacker.classname == "player" || attacker.classname == "gib")
-	{
-		self.pusher = attacker;
-		self.pushltime = time + CVAR(g_maxpushtime);
-	}
-	else if(time < self.pushltime)
-	{
-		attacker = self.pusher;
-		self.pushltime = max(self.pushltime, time + 0.6);
-	}
-	else
-		self.pushltime = 0;
 
 	valid_damage_for_weaponstats = 0;
 	if(clienttype(self) == CLIENTTYPE_REAL)
@@ -914,7 +932,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
-        if(Buffs_BuffPower(attacker, BUFF_ADEPT)) {
+        if(Buffs_Present(attacker, BUFF_ADEPT)) {
             HG_DO_IN_ALL_CONTEXTS(if(attacker.hg_ctx_type == HG_BAIT) {
                 attacker.hg_ctx_ammo += 1;
                 HG_SetRegenTime(attacker, HG_RegenTime(attacker));
@@ -928,25 +946,26 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(removenadgets > 1)
             HG_RemoveAll(self);
 
-        if(self.hg_power > 0) {
+        if(g_nadgets && self.hg_power > 0 && CVAR(g_nadgets_drop_on_death)) {
             HG_SetContext(self.hg_altstate);
             self.hg_power = 0;
             HG_Attack();
         }
-        
+
         HG_DetonateAll(self);
         
         if(!g_freezetag && !g_jailbreak) {
             if(CVAR(g_nadgets_resetonrespawn))
                 self.hg_ammo1 = self.hg_ammo2 = 0;
         }
+
+        self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         
         DropPowerups(force);
 
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);
 		race_PreDie();
-		DropAllRunes(self);
 		
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;
@@ -954,13 +973,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.buffs = 0;
         self.hg_stealth = 0;
         self.fire_endtime = time;
-        
-		prec_player_die(self, attacker);
+
 		sm_PlayerDies();
-		
-		if(vip_PlayerDies(attacker, self, deathtype))
-			return;
-		
+
 		if(JB_PlayerDies(attacker))
 			return;
 		
@@ -1230,16 +1245,17 @@ void UpdateSelectedPlayer() {
 }
 
 .float muted; // to be used by prvm_edictset server playernumber muted 1
-void Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
+float Say(entity source, float teamsay, entity privatesay, string msgin, float floodcontrol)
 {
 	string msgstr, colorstr, cmsgstr, namestr, fullmsgstr, sourcemsgstr, fullcmsgstr, sourcecmsgstr, privatemsgprefix;
 	float flood, privatemsgprefixlen, slashme;
 	entity head;
 
     float silence = if(source) CVAR(sv_silence) else 0;
+    float success = TRUE;
 
     if(silence == 1)
-        return;
+        return FALSE;
 
     if(source.iscreature) {
         float damg;
@@ -1254,7 +1270,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
     }
 
 	if(Ban_MaybeEnforceBan(source))
-		return;
+		return FALSE;
 
 	if(!teamsay && !privatesay) {
 		if(substring(msgin, 0, 1) == " ")
@@ -1275,7 +1291,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	msgin = formatmessage(msgin);
 
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	if(source.classname != "player" && !source.jb_specteam)
 		colorstr = "^0"; // black for spectators
@@ -1289,7 +1305,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	msgin = trigger_magicear_processmessage_forallears(source, teamsay, privatesay, msgin);
 	if(msgin == "")
-		return;
+		return FALSE;
 
 	/*
 	 * using bprint solves this... me stupid
@@ -1424,9 +1440,10 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 			teamsay = -1; // spectators
 	}
 
-    if(flood)
+    if(flood) {
         print("NOTE: ", playername(source), "^7 is flooding.\n");
-    else if(!teamsay && !privatesay)
+        success = FALSE;
+    } else if(!teamsay && !privatesay)
         IRC_Announce_PlayerChat(source, msgin);
 
 	// build sourcemsgstr by cutting off a prefix and replacing it by the other one
@@ -1435,6 +1452,7 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 
 	if(source.muted || silence)
 	{
+        success = FALSE;
 		// always fake the message
 		
 		if(flood == 1)
@@ -1508,15 +1526,25 @@ void Say(entity source, float teamsay, entity privatesay, string msgin, float fl
 	if(substring(msgin, 0, strlen("rmhelp"))  == "rmhelp"
 	|| substring(msgin, 0, strlen("/rmhelp")) == "/rmhelp")
 		sprint(source, "\x01^1NOTE: ^2rmhelp^7 has to be typed in the console. To open the console, press ^2Shift+Escape\n");
+
+    return success;
 }
 
 float GetVoiceMessageVoiceType(string type)
 {
-	if(type == "taunt")
-		return VOICETYPE_TAUNT;
-	if(type == "teamshoot")
-		return VOICETYPE_LASTATTACKER;
-	return VOICETYPE_TEAMRADIO;
+    switch(type) {
+        case "teamshoot":
+            return VOICETYPE_LASTATTACKER;
+
+#define _VOICEMSG(m) case #m:
+        ALLSILLYVOICEMSGS
+#undef _VOICEMSG
+        case "taunt":
+            return VOICETYPE_TAUNT;
+
+        default:
+            return VOICETYPE_TEAMRADIO;
+    }
 }
 
 string allvoicesamples;
@@ -1636,6 +1664,7 @@ void UpdatePlayerSounds()
 	self.modelindex_for_playersound = self.modelindex;
 	ClearPlayerSounds();
 	LoadPlayerSounds("sound/player/default.sounds", 1);
+    LoadPlayerSounds("sound/player/default.rm.sounds", 0);
 	LoadPlayerSounds(strcat(self.model, ".sounds"), 0);
 }
 
@@ -1794,7 +1823,7 @@ void VoiceMessage(string type, string msg)
 float PlayerMayFire(entity plr) {
     //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
     //if all players readied up and the countdown is running
-    if((time < game_starttime && !g_inf) || time < plr.race_penalty)
+    if(time < game_starttime || time < plr.race_penalty)
         return FALSE;
 
     if(roundstate == ROUNDSTATE_OVER)

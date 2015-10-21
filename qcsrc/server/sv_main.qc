@@ -93,6 +93,7 @@ void CreatureFrame (void)
 			if (vlen(self.velocity) > sv_maxspeed * 0.6)
 			if (!self.deadflag)
 			if (time < self.lastground + 0.2)
+            if (!Buffs_Present(self, BUFF_STEALTH))
 			{
 				if((time > self.nextstep) || (time < (self.nextstep - 10.0)))
 				{
@@ -139,7 +140,6 @@ StartFrame
 Called before each frame by the server
 =============
 */
-void RuneMatchGivePoints();
 float RedirectionThink();
 
 float cvarupdatetime;
@@ -277,7 +277,6 @@ void StartFrame (void)
 
 	AuditTeams();
 
-	RuneMatchGivePoints();
 	bot_serverframe();
 
 	if(CVAR(spawn_debugview))

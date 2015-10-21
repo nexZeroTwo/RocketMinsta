@@ -36,13 +36,6 @@ void InterpolateOrigin_Note()
 		self.ivelocity2 = self.velocity;
 	}
 
-    /*
-	if(vlen(self.iorigin2 - self.iorigin1) > 1000)
-	{
-		self.itime1 = self.itime2 = time; // don't lerp
-	}
-    */
-
 	if((self.iflags & IFLAG_VELOCITY) && (vlen(self.ivelocity2 - self.ivelocity1) > 1000))
 	{
 		self.itime1 = self.itime2 = time; // don't lerp

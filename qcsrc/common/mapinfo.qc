@@ -367,8 +367,6 @@ float _MapInfo_Generate(string pFilename) // 0: failure, 1: ok ent, 2: ok bsp
 					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CTF;
 				else if(v == "team_CTF_blueflag")
 					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CTF;
-				else if(v == "runematch_spawn_point")
-					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_RUNEMATCH;
 				else if(v == "target_assault_roundend")
 					MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_ASSAULT;
 				else if(v == "onslaught_generator")
@@ -410,7 +408,6 @@ float _MapInfo_Generate(string pFilename) // 0: failure, 1: ok ent, 2: ok bsp
 	else
 	{
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_DEATHMATCH;      // DM always works
-		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_RUNEMATCH;       // Rune always works
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_LMS;             // LMS always works
 
 		if(spawnpoints >= 8  && diameter > 4096)
@@ -652,7 +649,6 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_TEAM_DEATHMATCH) fputs(fh, "type tdm 50 20 2\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DOMINATION)      fputs(fh, "type dom 200 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTF)             fputs(fh, "type ctf 300 20 10\n");
-		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RUNEMATCH)       fputs(fh, "type rune 200 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_LMS)             fputs(fh, "type lms 9 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ARENA)           fputs(fh, "type arena 10 20\n");
 		if(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_KEYHUNT)         fputs(fh, "type kh 1000 20 3\n");
@@ -864,7 +860,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 #endif
 
 #ifdef SVQC
-#define MAPINFO_TYPE_FIGHT (MAPINFO_TYPE_CTF | MAPINFO_TYPE_JAILBREAK | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_CLANARENA | MAPINFO_TYPE_KEYHUNT | MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_ARENA | MAPINFO_TYPE_LMS | MAPINFO_TYPE_RUNEMATCH)
+#define MAPINFO_TYPE_FIGHT (MAPINFO_TYPE_CTF | MAPINFO_TYPE_JAILBREAK | MAPINFO_TYPE_TEAM_DEATHMATCH | MAPINFO_TYPE_CLANARENA | MAPINFO_TYPE_KEYHUNT | MAPINFO_TYPE_DOMINATION | MAPINFO_TYPE_DEATHMATCH | MAPINFO_TYPE_ARENA | MAPINFO_TYPE_LMS)
 	if(CVAR(g_domination_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_DOMINATION;
 	if(CVAR(g_dm_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
@@ -875,6 +871,12 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_KEYHUNT;
 	if(CVAR(g_clanarena_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
 		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_CLANARENA;
+	if(CVAR(g_freezetag_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_FREEZETAG;
+	if(CVAR(g_lms_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_LMS;
+	if(CVAR(g_arena_always_available) && MapInfo_Map_supportedGametypes & MAPINFO_TYPE_FIGHT)
+		MapInfo_Map_supportedGametypes |= MAPINFO_TYPE_ARENA;
 #undef MAPINFO_TYPE_FIGHT
 #endif
 

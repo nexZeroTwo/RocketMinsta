@@ -51,7 +51,7 @@ float entcs_cull(entity what, entity forwhom) {
         return FALSE;
 
     if(IsDifferentTeam(what.owner, forwhom)) {
-        if(!sv_shownames || what.owner.hg_stealth)
+        if(!sv_shownames || what.owner.hg_stealth || Client_CalculateAlpha(what.owner, forwhom) < 0.15)
             return TRUE;
 
         vector v1, v2;

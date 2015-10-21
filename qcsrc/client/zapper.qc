@@ -154,13 +154,24 @@ void Zapper_Remove(void) {
 void Zapper_Read(float t) {
     float sf = ReadByte();
 
+
     if(sf & 1) {
+        float vol, attn;
+
+        if(sf & 16) {
+            vol = 0.2;
+            attn = 1.5;
+        } else {
+            vol = VOL_BASE;
+            attn = ATTN_NORM;
+        }
+
         if(t == ENT_CLIENT_ZAPPER_SHIELD) {
             self.draw = Zapper_Draw_Shield;
-            sound(self, CHAN_PROJECTILE, "weapons/zapper_shield_loop.wav", 1, ATTN_NORM);
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_shield_loop.wav", 1, attn);
         } else {
             self.draw = Zapper_Draw;
-            sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", VOL_BASE, ATTN_NORM);
+            sound(self, CHAN_PROJECTILE, "weapons/zapper_fly.wav", vol, attn);
         }
 
         self.entremove = Zapper_Remove;

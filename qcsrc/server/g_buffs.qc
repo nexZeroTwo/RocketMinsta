@@ -94,9 +94,16 @@ void Buffs_Init(void) {
     if(enabled < 2)
         g_buffs_randomize_dual = 0;
     
-    g_buffs_adept = (g_buffs_enabled & BUFF_ADEPT || g_buffs_baseline & BUFF_ADEPT);
     g_buffs_meodp = (g_buffs_enabled & BUFF_MEODP || g_buffs_baseline & BUFF_MEODP);
+
+    var havebuffs = g_buffs_enabled | g_buffs_baseline;
     
+    if(havebuffs & BUFF_ENDURANCE)
+        addstat(STAT_DMGINCOMING, AS_INT, buff_endur_dmgpool);
+
+    if(havebuffs & BUFF_VAMPIRE)
+        addstat(STAT_HEALINCOMING, AS_INT, buff_vamp_healthpool);
+
     InitializeEntity(world, Buffs_Init_Delayed, INITPRIO_LAST);
 }
 
@@ -265,36 +272,23 @@ void Buffs_Init_Delayed(void) {
     }
 }
 
-.float buffpowercalls;
-
-float Buffs_BuffPower(entity p, float b) {
-    /*
-    p.buffpowercalls += 1;
-    if(clienttype(p) == CLIENTTYPE_REAL)
-        sprint(p, strcat(ftos(b), "\n"));
-    */
-    
+float Buffs_Present(entity p, float b) {
     if(!g_buffs)
-        return 0;
+        return FALSE;
     
     if(p.nobuffs)
-        return 0;
+        return FALSE;
     
     if(p.buffs & b == b)
-        return 1;
-    
-    float pw;
-    
-    if(g_buffs_baseline & b == b) {
-        if(b & (b - 1)) // multibuff
-            return 1;
-        pw = max(pw, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_baseline")));
-    }
+        return TRUE;
+
+    if(g_buffs_baseline & b == b)
+        return TRUE;
     
     if(p.hg_linker.buffs & b == b)
-        pw = max(pw, p.hg_linker.hg_linker_buffpower);
+        return TRUE;
     
-    return pw;
+    return FALSE;
 }
 
 float Buffs_Model_Send(entity to, float sf) {
@@ -363,6 +357,9 @@ float Buffs_Model_Overhead_Customize(void) {
     if(IsDifferentTeam(self.owner, other))
         return FALSE;
 
+    if(Client_CalculateAlpha(self.owner, other) < 0.15)
+        return FALSE;
+
     return TRUE;
 }
 
@@ -394,9 +391,7 @@ void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
     
-    self.buffstat = self.buffs;
-    if(self.hg_linker.hg_linker_buffpower)
-        self.buffstat = self.buffstat | self.hg_linker.buffs;
+    self.buffstat = self.buffs | self.hg_linker.buffs;
     
     if(self.classname != "player") {
         if(self.buff_model) {
@@ -412,7 +407,14 @@ void Buffs_ClientFrame(void) {
     
     if(self.buffs != self.oldbuffs) {
         ON_BUFF_ADDED(BUFF_SUPPLY) {
-            self.campingrifle_bulletcounter = 9001;
+            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+
+            if(Buffs_Present(self, BUFF_SUPPLY)) {
+                float fteqcc_is_gay = floor(CVAR(g_buffs_supply_campingrifle_extra_magazine));
+                self.campingrifle_bulletlimit += fteqcc_is_gay;
+            }
+
+            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
             
             if(!g_weaponarena) {
                 float a = CVAR(g_buffs_supply_grant_ammo);
@@ -422,7 +424,15 @@ void Buffs_ClientFrame(void) {
                 self.ammo_nails += a;
             }
         }
-        
+
+        ON_BUFF_REMOVED(BUFF_SUPPLY) {
+            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+        }
+
+        ON_BUFF_ADDED(BUFF_FOCUS) {
+            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
+        }
+
         ON_BUFF_ADDED(BUFF_GUARD) {
             if(g_clanarena)
                 self.health = max(min(CVAR(g_clanarena_heal_limit), CVAR(g_buffs_guard_pickup_health)), self.health);
@@ -443,7 +453,11 @@ void Buffs_ClientFrame(void) {
         ON_BUFF_REMOVED(BUFF_ADEPT) {
             self.hg_stealth_saved = 0;
         }
-        
+
+        ON_BUFF_ADDED(BUFF_STEALTH) {
+            self.buff_stealth_time = -1000;
+        }
+
         self.oldbuffs = self.buffs;
     }
     
@@ -467,118 +481,159 @@ void Buffs_ClientFrame(void) {
         self.buff_model = world;
     }
     
-    if(self.buff_vamp_ticks > 0) if(time > self.buff_vamp_nexttick) {
+    if(self.buff_vamp_ticks > 0 && time > self.buff_vamp_nexttick) {
         float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
         Heal(self, world, self, heal, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
         self.buff_vamp_healthpool -= heal;
         self.buff_vamp_ticks -= 1;
         self.buff_vamp_nexttick = time + 1;
     }
-    
+
     if(!self.buff_teamwp) {
-        if(Buffs_BuffPower(self, BUFF_MEDIC))
+        if(Buffs_Present(self, BUFF_MEDIC))
             Buffs_SetTeamWaypoint(self, "HEALER", Buffs_TypeToColor(BUFF_MEDIC), BUFF_MEDIC);
-    } else if(!Buffs_BuffPower(self, self.buff_teamwp.buffs))
+    } else if(!Buffs_Present(self, self.buff_teamwp.buffs))
         Buffs_RemoveTeamWaypoint(self);
     
-    if(g_buffs_adept)
-        self.buffpower_adept = Buffs_BuffPower(self, BUFF_ADEPT);
-    
-    if(g_buffs_meodp)
-        self.buffpower_meodp = Buffs_BuffPower(self, BUFF_MEODP);
-    
-    /*
-    sprint(self, strcat("^5", ftos(self.buffpowercalls), "\n"));
-    self.buffpowercalls = 0;
-    */
+    if(self.buff_endur_dmgpool < 0)
+        self.buff_endur_dmgpool = 0;
 }
 
 #undef ON_BUFF_ADDED
 #undef ON_BUFF_REMOVED
 
 float Buffs_NadgetPower(entity plr) {
-    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
-    
-    if(!bp)
-        return 1;
-    
-    return bp * CVAR(g_buffs_wrath_hgpower);
+    return  if(Buffs_Present(plr, BUFF_WRATH))
+                CVAR(g_buffs_wrath_hgpower)
+            else
+                1;
 }
 
 float Buffs_NadgetRegen(entity plr) {
-    return (1 + (CVAR(g_buffs_supply_hg_regenscale) - 1) * Buffs_BuffPower(self, BUFF_SUPPLY)) *
-           (1 + (CVAR(g_buffs_wrath_hgregen)        - 1) * Buffs_BuffPower(self, BUFF_WRATH));
+    var rscale = 1;
+
+    if(Buffs_Present(plr, BUFF_SUPPLY))
+        rscale *= CVAR(g_buffs_supply_hg_regenscale);
+
+    if(Buffs_Present(plr, BUFF_WRATH))
+        rscale *= CVAR(g_buffs_wrath_hgregen);
+
+    return rscale;
 }
 
 float Buffs_NadgetCooldown(entity plr) {
-    float bp = Buffs_BuffPower(plr, BUFF_WRATH);
-    
-    if(!bp)
-        return 1;
-    
-    return bp * CVAR(g_buffs_wrath_hgcooldown);
+    return  if(Buffs_Present(plr, BUFF_WRATH))
+                CVAR(g_buffs_wrath_hgcooldown)
+            else
+                1;
 }
 
 float Buffs_NadgetRegenDmgPause(entity plr) {
-    return (1 - (1 - CVAR(g_buffs_wrath_hgregen_damagepause)) * Buffs_BuffPower(plr, BUFF_WRATH));
+    return  if(Buffs_Present(plr, BUFF_WRATH))
+                CVAR(g_buffs_wrath_hgregen_damagepause)
+            else
+                1;
 }
 
 float Buffs_NadgetBonusMultiplier(entity plr) {
-    float wrath = Buffs_BuffPower(plr, BUFF_WRATH);
+    return  if(Buffs_Present(plr, BUFF_WRATH))
+                CVAR(g_buffs_wrath_hgbonusmultiplier)
+            else
+                1;
+}
 
-    if(!wrath)
-        return 1;
+float Buffs_MedicDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype, vector hitloc, vector force) {
+    if(!targ.iscreature || deathtype == DEATH_ENDURANCE || (DEATH_ISSPECIAL(deathtype) && !DEATH_ISPROJECTED(deathtype)))
+        return damage;
 
-    return rint(1 + (CVAR(g_buffs_wrath_hgbonusmultiplier) - 1) * wrath);
+    if(!Buffs_Present(attacker, BUFF_MEDIC))
+        return damage;
+
+    if((teams_matter && attacker.team == targ.team) || attacker == targ) {
+        float heal;
+
+        if(DEATH_ISPROJECTED(deathtype))
+            // arc and ignite scale off the original heal, so leave it as is
+            heal = damage;
+        else {
+            heal = damage * CVAR(g_buffs_medic_healfactor);
+
+            if(attacker == targ)
+                heal *= CVAR(g_buffs_medic_selfhealfactor);
+
+            W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+
+            if(damage_headshotbonus)
+            if(CVAR(g_buffs_medic_headshot))
+            if(IsHeadshot(targ, attacker, hitloc)) {
+                heal *= 1 + damage_headshotbonus;
+                deathtype |= HITTYPE_HEADSHOT;
+                headshot = TRUE;
+            }
+        }
+
+        if(attacker == targ)
+            force = force * CVAR(g_buffs_medic_forcefactor_self);
+        else
+            force = force * CVAR(g_buffs_medic_forcefactor_team);
+
+        heal = Buffs_IgniteDamage(targ, attacker, inflictor, heal, deathtype);
+        heal = Heal(targ, inflictor, attacker, heal, 0, CVAR(g_buffs_medic_maxhealth), 0, deathtype, CVAR(g_buffs_medic_pauserot), 0, hitloc, force);
+
+        targ.hg_plasmalock = 0;
+
+        if(attacker != targ)
+            Buffs_VampireDamage(attacker, attacker, heal * CVAR(g_buffs_medic_selfhealfactor), deathtype);
+
+        if(!DEATH_ISPROJECTED(deathtype))
+            Buffs_ArcDamage(targ, attacker, heal, deathtype);
+
+        return -1;
+    } else if(!g_clanarena) if(!attacker.hg_shield) if(!DEATH_ISPROJECTED(deathtype))
+        damage = damage * CVAR(g_buffs_medic_damagefactor);
+
+    return damage;
 }
 
 float Buffs_IgniteDamage(entity targ, entity attacker, entity inflictor, float damage, float deathtype) {
-    float diffteam;
-    
     if(damage)
     if(targ != attacker)
     if(targ != inflictor)
     if(attacker.classname == "player")
     if(DEATH_HGTYPE(deathtype) != HG_TRANSLOC)
-    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC) {
-        float ignite = Buffs_BuffPower(attacker, BUFF_IGNITE);
-        if(ignite)
-        if((diffteam = IsDifferentTeam(attacker, targ)) || Buffs_BuffPower(attacker, BUFF_MEDIC)) {
-            float fdamage = damage * CVAR(g_buffs_ignite_damage_fire) * ignite;
-            if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
-                Fire_AddDamage(targ, attacker, fdamage, CVAR(g_buffs_ignite_burntime), DEATH_IGNITE);
-            damage = damage * (1 - (1 - CVAR(g_buffs_ignite_damage_base)) * ignite);
-        }
+    if(!DEATH_ISSPECIAL(deathtype) || deathtype == DEATH_ARC)
+    if(Buffs_Present(attacker, BUFF_IGNITE))
+    if((var diffteam = IsDifferentTeam(attacker, targ)) || Buffs_Present(attacker, BUFF_MEDIC)) {
+        float fdamage = damage * CVAR(g_buffs_ignite_damage_fire);
+
+        if(!diffteam || Buffs_TenacityDamage(targ, attacker, fdamage, DEATH_IGNITE))
+            Fire_AddDamage(targ, attacker, fdamage, CVAR(g_buffs_ignite_burntime), DEATH_IGNITE);
+
+        damage = damage * CVAR(g_buffs_ignite_damage_base);
     }
     
     return damage;
 }
 
 float Buffs_TenacityDamage(entity targ, entity attacker, float damage, float deathtype) {
-    float tenacity = Buffs_BuffPower(targ, BUFF_TENACITY);
-    
-    if(!tenacity)
+    if(!Buffs_Present(targ, BUFF_TENACITY))
         return damage;
     
+    // do not use DEATH_ISPROJECTED here, we don't want to mitigate DEATH_ENDURANCE
     if(DEATH_ISSPECIAL(deathtype) && deathtype != DEATH_ARC && deathtype != DEATH_IGNITE)
         return damage;
     
     if(targ == attacker)
-        return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage_self)) * tenacity);
+        return damage * CVAR(g_buffs_tenacity_takedamage_self);
     
     if(DEATH_ISHG(deathtype) || (deathtype & HITTYPE_SPLASH) || deathtype == DEATH_ARC || deathtype == DEATH_IGNITE)
-        return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage_aoe)) * tenacity);
+        return damage * CVAR(g_buffs_tenacity_takedamage_aoe);
     
-    return damage * (1 - (1 - CVAR(g_buffs_tenacity_takedamage)) * tenacity);
+    return damage * CVAR(g_buffs_tenacity_takedamage);
 }
 
 void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
-    if(damage <= 0)
-        return;
-    
-    float vamp = Buffs_BuffPower(a, BUFF_VAMPIRE);
-    
-    if(!vamp)
+    if(damage <= 0 || !Buffs_Present(a, BUFF_VAMPIRE))
         return;
     
     // paranoid sanity check, should not happen
@@ -587,7 +642,7 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
         a.buff_vamp_ticks  =   a.buff_vamp_healthpool = 0;
     
     float ticks = CVAR(g_buffs_vampire_time);
-    float factor = CVAR(g_buffs_vampire_factor) * vamp;
+    float factor = CVAR(g_buffs_vampire_factor);
     
     if(ticks > 0) {
         // refresh duration, extend the pool
@@ -599,12 +654,23 @@ void Buffs_VampireDamage(entity targ, entity a, float damage, float deathtype) {
     }
 }
 
+void Buffs_WrathDamage(entity targ, entity attacker, float damage, float deathtype) {
+    var wrath = Buffs_Present(attacker, BUFF_WRATH) * CVAR(g_buffs_wrath_hgregen_fromdamage);
+
+    if(!wrath)
+        return;
+
+    HG_DO_IN_ALL_CONTEXTS({
+        HG_AdvanceRegen(attacker, damage * wrath, HG_StorageLimit(attacker));
+    })
+}
+
 void Buffs_ArcEffect(vector from, vector to, float t) {
     te_csqc_lightningarc(from, to, t, t);
 }
 
 void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
-                          float buffpow, vector arcoffset, float range, float mul, float mul_hg, float force,
+                          vector arcoffset, float range, float mul, float mul_hg, float force,
                           float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield) {
     entity oldself = self;
     entity plr, newtarget;
@@ -615,7 +681,7 @@ void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deat
     else {
         if(DEATH_ISHG(deathtype))
             damage = damage * mul_hg;
-        damage = damage * mul * buffpow;
+        damage = damage * mul;
     }
     
     if(damage < 1)
@@ -650,7 +716,7 @@ void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deat
         Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, if(targetTeamMates) 0 else if(teams_matter) attacker.team else COLOR_TEAM2);
         Damage(newtarget, attacker, attacker, damage, arcdeathtype, '0 0 0', normalize(newtarget.origin - targ.origin) * force);
         Buffs_ArcDamage_Proc(newtarget, attacker, damage, arcdeathtype, arcdeathtype,
-                             buffpow, arcoffset, range, mul, mul_hg, force,
+                             arcoffset, range, mul, mul_hg, force,
                              targetTeamMates, targetFrozen, targetAlive, hitfield);
         if(targetTeamMates)
             sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
@@ -665,12 +731,10 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(DEATH_ISWEAPON(deathtype, WEP_ZAPPER) && (deathtype & HITTYPE_BOUNCE))
         return;
 
-    float bp = Buffs_BuffPower(attacker, BUFF_ARC);
-    
-    if(!bp)
+    if(!Buffs_Present(attacker, BUFF_ARC))
         return;
     
-    float targetTeamMates = (teams_matter && Buffs_BuffPower(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
     
     if(targ.team == attacker.team && !targetTeamMates)
         return;
@@ -678,7 +742,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     float targetFrozen = targ.frozen && !targetTeamMates;
     float targetAlive = !targetFrozen && !targetTeamMates;
     
-    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, DEATH_ARC, bp,
+    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, DEATH_ARC,
                          attacker.maxs_z * '0 0 0.5',
                          CVAR(g_buffs_arc_range),
                          CVAR(g_buffs_arc_multiplier),
@@ -697,24 +761,111 @@ void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathty
     if(!DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE))
         return;
 
-    if(!Buffs_BuffPower(attacker, BUFF_FOCUS))
+    if(!Buffs_Present(attacker, BUFF_FOCUS))
         return;
+
+    var alt = (deathtype & HITTYPE_SECONDARY);
 
     attacker.campingrifle_bulletcounter = attacker.campingrifle_bulletcounter +
         if(damage >= targ.health + targ.armorvalue)
-            CVAR(g_buffs_focus_bonus_kill)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_kill_alt)
+            else
+                CVAR(g_buffs_focus_bonus_kill)
         else if(deathtype & HITTYPE_HEADSHOT)
-            CVAR(g_buffs_focus_bonus_headshot)
+            if(alt)
+                CVAR(g_buffs_focus_bonus_headshot_alt)
+            else
+                CVAR(g_buffs_focus_bonus_headshot)
         else
-            CVAR(g_buffs_focus_bonus_hit);
+            if(alt)
+                CVAR(g_buffs_focus_bonus_hit_alt)
+            else
+                CVAR(g_buffs_focus_bonus_hit);
+}
+
+entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
+    using(self = targ) using(other = attacker) {
+        var dot = findfilter(dot, inline float(entity e) {
+            return e.owner == other && e.enemy == self && e.classname == "buff_endur_dot";
+        });
+
+        if(dot)
+            return dot;
+    }
+
+    return spawn() {
+        classname: "buff_endur_dot",
+        owner: attacker,
+        enemy: targ,
+        reset: SUB_Remove,
+        think: inline void(void) {
+            var ticks = self.buff_endur_ticks;
+            var targ = self.enemy;
+
+            if(!targ.iscreature || targ.frozen || targ.jb_isprisoned || targ.deadflag != DEAD_NO) {
+                remove(self);
+                return;
+            }
+
+            var damage = min(self.buff_endur_dmgpool / self.buff_endur_ticks, targ.buff_endur_dmgpool);
+
+            if(damage <= 0) {
+                remove(self);
+                return;
+            }
+
+            Damage(targ, self, self.owner, damage, DEATH_ENDURANCE, targ.origin, '0 0 0');
+
+            targ.buff_endur_dmgpool -= damage;
+            self.buff_endur_dmgpool -= damage;
+            self.buff_endur_ticks -= 1;
+
+            if(!self.buff_endur_ticks) {
+                remove(self);
+                return;
+            }
+
+            self.nextthink = time + 1;
+        },
+        nextthink: time + 1
+    };
+}
+
+entity Buffs_Endurance_ApplyDOT(entity targ, entity attacker, float ticks, float damage) {
+    targ.buff_endur_dmgpool += damage;
+
+    var dot = Buffs_Endurance_GetDOT(targ, attacker);
+    dot.buff_endur_dmgpool += damage;
+
+    using(self = targ)
+    for(var d; (d = findfilter(d, inline float(entity e) {
+        return e.enemy == self && e.classname == "buff_endur_dot";
+    }));) d.buff_endur_ticks = ticks;
+
+    return dot;
+}
+
+float Buffs_EnduranceDamage(entity targ, entity attacker, float damage, float deathtype) {
+    if(deathtype == DEATH_ENDURANCE || damage <= 0 || !Buffs_Present(targ, BUFF_ENDURANCE))
+        return damage;
+
+    var ticks = CVAR(g_buffs_endurance_damage_dot_duration);
+    var direct = damage * CVAR(g_buffs_endurance_damage_direct);
+    var dot = damage * CVAR(g_buffs_endurance_damage_dot);
+    
+    if(dot > 0)
+        Buffs_Endurance_ApplyDOT(targ, attacker, ticks, dot);
+
+    return direct;
 }
 
 void Buffs_ReaperFrag(entity targ, entity attacker) {
-    if(!Buffs_BuffPower(attacker, BUFF_REAPER) && !Buffs_BuffPower(targ, BUFF_REAPER))
+    if(!Buffs_Present(attacker, BUFF_REAPER) && !Buffs_Present(targ, BUFF_REAPER))
         return;
 
     var newbuffs = attacker.buffs | targ.buffs;
-    newbuffs &~= attacker.buffs | BUFF_REAPER;
+    newbuffs &~= attacker.buffs | BUFF_REAPER | CVAR(g_buffs_reaper_buff_banmask);
 
     if(newbuffs) {
         Buffs_BuffPickup_Notify(attacker, newbuffs, 0);
@@ -730,14 +881,13 @@ void Buffs_MEODP_Point_Think(void) {
     
     self.angles = self.angles + (self.owner.angles - self.angles) * frametime;
     makevectors(self.angles + '0 30 0' * time * self.health);
-    //setorigin(self, self.owner.origin + v_forward * 50 + v_up * self.owner.maxs_z * 0.5);
     setorigin(self, self.owner.meodp_point_offs + (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
     
     self.nextthink = time;
 }
 
 float Buffs_MEODP_Point_VisibleForPlayer(entity p, entity plr) {
-    if(!plr.buffpower_meodp)
+    if(!Buffs_Present(plr, BUFF_MEODP))
         return FALSE;
     
     if(p.owner.iscreature)
@@ -851,7 +1001,7 @@ void Buffs_MEODP_Point_Detach(entity e) {
 .entity meodp_chain;
 
 entity Buffs_MEODP_Hitscan_Begin(entity plr) {
-    if(!plr.buffpower_meodp)
+    if(!Buffs_Present(plr, BUFF_MEODP))
         return world;
     
     entity p, pts = findchain_tofield(classname, "meodp_point", meodp_chain);
@@ -868,7 +1018,7 @@ void Buffs_MEODP_Hitscan_End(entity pts) {
 }
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
-    float d = attacker.buffpower_meodp * (self.health * CVAR(g_buffs_meodp_healthfactor) + self.armorvalue * CVAR(g_buffs_meodp_armorfactor));
+    float d = self.health * CVAR(g_buffs_meodp_healthfactor) + self.armorvalue * CVAR(g_buffs_meodp_armorfactor);
     float s = d * CVAR(g_buffs_meodp_selfdamage);
     
     Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
@@ -1143,8 +1293,6 @@ void Buffs_BuffPickup_Placeholder(void) {
     setorigin(e, self.origin);
     e.owner = self;
     e.classname = "buff_placeholder";
-    
-    //error(strcat(vtos(e.origin), " ", vtos(e.owner.origin), " ", e.owner.classname));
 }
 
 void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
@@ -1170,17 +1318,13 @@ void Buffs_BuffPickup_SetupQ3TACompat(string rune) {
         BUFF_SPAWNFUNC(e##_team3,   b,  COLOR_TEAM3) \
         BUFF_SPAWNFUNC(e##_team4,   b,  COLOR_TEAM4) 
 
-BUFF_SPAWNFUNCS(arc,        BUFF_ARC)
-BUFF_SPAWNFUNCS(guard,      BUFF_GUARD)
-BUFF_SPAWNFUNCS(supply,     BUFF_SUPPLY)
-BUFF_SPAWNFUNCS(haste,      BUFF_HASTE)
-BUFF_SPAWNFUNCS(medic,      BUFF_MEDIC)
-BUFF_SPAWNFUNCS(ignite,     BUFF_IGNITE)
-BUFF_SPAWNFUNCS(vampire,    BUFF_VAMPIRE)
-BUFF_SPAWNFUNCS(tenacity,   BUFF_TENACITY)
-BUFF_SPAWNFUNCS(wrath,      BUFF_WRATH)
-BUFF_SPAWNFUNCS(adept,      BUFF_ADEPT)
-BUFF_SPAWNFUNCS(meodp,      BUFF_MEODP)
+#define BUFFDEF(id,shortname,longname,color) \
+        BUFF_SPAWNFUNCS(shortname, id)
+
+BUFFDEFS
+
+#undef BUFFDEF
+
 BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 // older RM compatibility
@@ -1191,5 +1335,3 @@ BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scount")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  "ammoregen")
-
-

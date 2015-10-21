@@ -284,8 +284,6 @@ void() teamradar_view =
 	{
 		if(cl_teamradar_nohudhack < 2)
 			teamradar_origin2d_y -= 50;
-		//if(cl_teamradar_nohudhack < 1)
-			//teamradar_extraclip_size_y += 50; // don't, the HUD looks nice
 	}
 
 	// pixels per world qu to match the teamradar_size2d_x range in the longest dimension
