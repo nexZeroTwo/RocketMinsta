@@ -1056,9 +1056,12 @@ void HG_Grenade_Think() {
                 }
                 if(self.hg_adept) {
                     if(GV("adept_trailblaze")) {
-                        if(time >= GV("adept_trailblaze_delay") + self.spawntime) {
-                            for (var c = 0; c < GV("numparticles"); ++c) HG_Napalm();
-                        }
+                        if(time > GV("adept_trailblaze_delay") + self.spawntime) {
+                            if(time >= self.hg_lastFireSpawn + GV("fire_spawninterval")) {
+                                for (var c = 0; c < GV("numparticles"); ++c) HG_Napalm();
+                                self.hg_lastFireSpawn = time;
+                            }
+                       }
                     }
                 }
 			}
