@@ -207,6 +207,11 @@ void plat_reset()
 
     if(self.enemy)
         self.enemy.wait = 0;
+
+    self.velocity = '0 0 0';
+    self.think = SUB_Null;
+    self.nextthink = 0;
+    stopsound(self, CHAN_TRIGGER);
 }
 
 void plat_touch(void) {
