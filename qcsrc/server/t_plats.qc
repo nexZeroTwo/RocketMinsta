@@ -596,7 +596,7 @@ void button_damage(entity inflictor, entity attacker, float damage, float deatht
 	//		dprint(activator.classname);
 	//		dprint(" killed a button\n");
 	//	}
-		self.enemy = damage_attacker;
+		self.enemy = attacker; //damage_attacker;
 		button_fire ();
 	}
 };
@@ -1927,6 +1927,9 @@ void spawnfunc_func_magicwall(void) {
         self.alpha_nonsolid = 0;
 
     if(!self.delay)
+        self.delay = self.wait;
+
+    if(!self.delay)
         self.delay = 3;
 
     if(!self.speed)
@@ -1953,8 +1956,11 @@ void spawnfunc_func_magicwall(void) {
         inline void(void) {
             func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, func_null);
         } else inline void(void) {
-            if(self.oldsolid != self.solid)
+            if(self.oldsolid != self.solid) {
+                if(self.think && self.think != func_magicwall_think_transition)
+                    self.nextthink = time + self.delay;
                 return;
+            }
 
             func_magicwall_start_transition(if(self.oldsolid == SOLID_BSP) SOLID_NOT else SOLID_BSP,
                 if(self.delay >= 0) inline void(void) {

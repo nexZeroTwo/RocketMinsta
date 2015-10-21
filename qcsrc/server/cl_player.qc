@@ -605,7 +605,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
         Buffs_ArcDamage(self, attacker, damage, deathtype);
 
-    if(damage) {
+    if(damage && deathtype != DEATH_RESOURCE_ARMOR) {
         damage = Buffs_IgniteDamage(self, attacker, inflictor, damage, deathtype);
         damage = Buffs_TenacityDamage(self, attacker, damage, deathtype);
     	damage = HG_Shield_Damage(attacker, damage, deathtype, hitloc);
@@ -644,6 +644,16 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             self.hg_plasmalock_owner = attacker;
             te_csqc_lightningarc(inflictor.origin, hitloc, TRUE, attacker.team);
         }
+
+    if(
+        damage                               &&
+        DEATH_HGTYPE(deathtype) == HG_SHIELD &&
+        deathtype & HITTYPE_SECONDARY        &&
+        attacker.hg_shield                   &&
+        IsDifferentTeam(self, attacker)      &&
+        Buffs_Present(attacker, BUFF_ADEPT)
+      )
+        HG_Shield_Adept_ExtendRenew(attacker);
 
 	if(!DEATH_ISSPECIAL(deathtype))
 	{
@@ -699,6 +709,25 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		take = damage;
 	}
 
+    if(attacker == self)
+    {
+        // don't reset pushltime for self damage as it may be an attempt to
+        // escape a lava pit or similar
+        //self.pushltime = 0;
+    }
+    else if(attacker.classname == "player" || attacker.classname == "gib")
+    {
+        self.pusher = attacker;
+        self.pushltime = time + CVAR(g_maxpushtime);
+    }
+    else if(time < self.pushltime)
+    {
+        attacker = self.pusher;
+        self.pushltime = max(self.pushltime, time + 0.6);
+    }
+    else
+        self.pushltime = 0;
+
     take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
 
 	if(sound_allowed(MSG_BROADCAST, attacker))
@@ -715,7 +744,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
-    
+
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
@@ -823,25 +852,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     }
 	
     self.dmg_inflictor = inflictor;
-
-	if(attacker == self)
-	{
-		// don't reset pushltime for self damage as it may be an attempt to
-		// escape a lava pit or similar
-		//self.pushltime = 0;
-	}
-	else if(attacker.classname == "player" || attacker.classname == "gib")
-	{
-		self.pusher = attacker;
-		self.pushltime = time + CVAR(g_maxpushtime);
-	}
-	else if(time < self.pushltime)
-	{
-		attacker = self.pusher;
-		self.pushltime = max(self.pushltime, time + 0.6);
-	}
-	else
-		self.pushltime = 0;
 
 	valid_damage_for_weaponstats = 0;
 	if(clienttype(self) == CLIENTTYPE_REAL)

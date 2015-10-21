@@ -175,6 +175,8 @@ ipban.qc
 t_halflife.qc
 t_quake.qc
 
+g_laserbeam.qc
+
 race.qc
 
 teamcount.qc

@@ -5182,16 +5182,42 @@ void Sbar_Draw(void)
 				Sbar_DrawXNum_Colored(health_pos + '26 0 0', x, 24, sbar_alpha_fg);
 			}
 
-            if((var incdmg = getstati(STAT_DMGINCOMING))) {
-                var sdmg = ftos(-incdmg);
-                var dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
+            var incdmg = getstati(STAT_DMGINCOMING);
+            var incheal = getstati(STAT_HEALINCOMING);
 
-                drawfont = sbar_bigfont;
-                drawstring([
-                    health_pos_x + 0.5 * (24 * 4 - stringwidth_svn(sdmg, FALSE, dmgscale)),
+            if(incdmg || incheal) using(drawfont = sbar_bigfont) {
+                string s_dmg, s_heal;
+                float w_dmg, w_heal, w_total, w_sep;
+                vector dmgscale, healscale;
+
+                if(incdmg) {
+                    s_dmg = ftos(-incdmg);
+                    dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
+                    w_dmg = stringwidth_svn(s_dmg, FALSE, dmgscale);
+                    w_total += w_dmg;
+                }
+
+                if(incheal) {
+                    s_heal = strcat("+", ftos(incheal));
+                    healscale = '20 20';
+                    w_heal = stringwidth_svn(s_heal, FALSE, healscale);
+                    w_total += w_heal;
+
+                    if(incdmg)
+                        w_sep = 10;
+                }
+
+                w_total += w_sep;
+
+                if(incdmg) drawstring([
+                    health_pos_x + 0.5 * (24 * 4 - w_total),
                     health_pos_y - dmgscale_y
-                ], sdmg, dmgscale, '1 0 0', 1, DRAWFLAG_NORMAL);
-                drawfont = sbar_font;
+                ], s_dmg, dmgscale, '1 0 0', 1, DRAWFLAG_NORMAL);
+
+                if(incheal) drawstring([
+                    health_pos_x + 0.5 * (24 * 4 - w_total) + w_dmg + w_sep,
+                    health_pos_y - healscale_y
+                ], s_heal, healscale, '0 1 0', 1, DRAWFLAG_NORMAL);
             }
 		}
 
@@ -5414,13 +5440,13 @@ void Sbar_Draw(void)
             } else if(getstatf(STAT_HGSHIELD)) {
                 string smsg;
                 
-                if(getstati(STAT_HGSHIELDSTORE)) {
+                if(getstati(STAT_HGSHIELDSTORE) > 0) {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                   " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
                                   " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
                 } else {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                  " ^3to cancel your ", HG_TypeToExpandedName(hgtype));
+                                  " ^3to cancel your ", if(getstati(STAT_HGSHIELDSTORE) < 0) "discharge" else HG_TypeToExpandedName(hgtype));
                 }
                 
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
