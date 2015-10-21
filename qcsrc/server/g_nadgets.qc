@@ -1054,15 +1054,10 @@ void HG_Grenade_Think() {
                         self.velocity = self.hg_minVelocity + veldiff;
                     }
                 }
-                if(self.hg_adept) {
-                    if(GV("adept_trailblaze")) {
-                        if(time > GV("adept_trailblaze_delay") + self.spawntime) {
-                            if(time >= self.hg_lastFireSpawn + GV("fire_spawninterval")) {
-                                for (var c = 0; c < GV("numparticles"); ++c) HG_Napalm();
-                                self.hg_lastFireSpawn = time;
-                            }
-                       }
-                    }
+                
+                if(self.hg_adept && GV("adept_trailblaze") && time > self.hg_fireSpawnTime){
+                       for (var c = 0; c < GV("numparticles"); ++c) HG_Napalm();
+                       self.hg_fireSpawnTime = time + GV("fire_spawninterval");
                 }
 			}
 		}
@@ -1936,6 +1931,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.reset = HG_Grenade_Remove;
     gren.team = self.team;
     gren.hg_isbonus = self.hg_bonus;
+    
+    if(gren.hg_type == HG_RAZE)
+        gren.hg_fireSpawnTime = gren.spawntime + GV("adept_trailblaze_delay");
     
     if(gren.hg_type == HG_TRANSLOC)
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;

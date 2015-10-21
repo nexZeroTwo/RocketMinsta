@@ -157,7 +157,7 @@ float hg_context_isaltintended;
 .float hg_raze_randelayed;
 .vector hg_maxVelocity;
 .vector hg_minVelocity;
-.float hg_lastFireSpawn;
+.float hg_fireSpawnTime;
 
 #define hg_type hg_type1
 
