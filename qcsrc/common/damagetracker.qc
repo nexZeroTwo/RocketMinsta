@@ -118,7 +118,7 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
             if(dtype & HITTYPE_SECONDARY) {
                 if(hgtype == HG_PLASMA)
                     ADDMOD("shard");
-                else if(hgtype == HG_NAPALM || hgtype == HG_REMOTE)
+                else if(hgtype == HG_NAPALM || hgtype == HG_REMOTE || hgtype == HG_RAZE)
                     ADDMOD("fire");
                 else if(hgtype == HG_SHIELD)
                     ADDMOD("discharge");
