@@ -596,7 +596,7 @@ void HG_Grenade_Touch() {
         UpdateCSQCProjectileNextFrame(self);
 
     if(SUB_NoImpactCheck()) {
-        if(self.hg_type == HG_TRANSLOC) {
+        if(self.hg_type == HG_TRANSLOC || self.hg_type == HG_RAZE) {
             if(trace_dphitcontents & DPCONTENTS_PLAYERCLIP)
                 goto troll;
             self.use();
