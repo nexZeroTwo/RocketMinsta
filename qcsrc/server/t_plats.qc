@@ -27,7 +27,10 @@ void() plat_trigger_use;
 void() plat_go_up;
 void() plat_go_down;
 void() plat_crush;
+
 float PLAT_LOW_TRIGGER = 1;
+float PLAT_NO_TRIGGER = 8;
+float PLAT_REVERSIBLE = 16;
 
 .entity plat_touched;
 .float plat_lastupdate;
@@ -59,6 +62,8 @@ void plat_spawn_inside_trigger()
 		tmin_y = (self.mins_y + self.maxs_y) / 2;
 		tmax_y = tmin_y + 1;
 	}
+
+    self.enemy = trigger;
 
 	setsize (trigger, tmin, tmax);
 };
@@ -110,9 +115,15 @@ void plat_center_touch()
         }
     }
 
+    var trig = self;
 	self = self.enemy;
-	if (self.state == 2)
-		plat_go_up ();
+
+	if (self.state == 2) {
+        if(trig.wait < 0)
+            trig.wait = time + self.delay;
+        else if(time > trig.wait)
+		  plat_go_up();
+    }
 	else if (self.state == 1)
 		self.nextthink = self.ltime + 1;	// delay going down
 };
@@ -132,8 +143,12 @@ void plat_outside_touch()
 
 void plat_trigger_use()
 {
-	if (self.think)
+	if (self.think && !(self.spawnflags & PLAT_REVERSIBLE) || self.state != 4 && self.state != 1)
 		return;		// already activated
+
+    if(self.spawnflags & PLAT_REVERSIBLE && self.enemy)
+        self.enemy.wait = -1;
+
 	plat_go_down();
 };
 
@@ -177,7 +192,7 @@ void plat_use()
 
 void plat_reset()
 {
-	if(!CVAR(sv_gameplayfix_forceplatdown) && !self.nottargeted && self.targetname != "")
+	if(!CVAR(sv_gameplayfix_forceplatdown) && !self.nottargeted && self.targetname != "" && !(self.spawnflags & PLAT_REVERSIBLE))
 	{
 		setorigin (self, self.pos1);
 		self.state = 4;
@@ -189,6 +204,14 @@ void plat_reset()
 		self.state = 2;
 		self.use = plat_trigger_use;
 	}
+
+    if(self.enemy)
+        self.enemy.wait = 0;
+
+    self.velocity = '0 0 0';
+    self.think = SUB_Null;
+    self.nextthink = 0;
+    stopsound(self, CHAN_TRIGGER);
 }
 
 void plat_touch(void) {
@@ -266,7 +289,10 @@ void spawnfunc_func_plat()
                                    else
                                        self.size_z) + 8;
 
-    if(!(self.spawnflags & 8))
+    if(!self.delay)
+        self.delay = 2;
+
+    if(!(self.spawnflags & PLAT_NO_TRIGGER))
 	   plat_spawn_inside_trigger ();	// the "start moving" trigger
 
 	self.reset = plat_reset;
