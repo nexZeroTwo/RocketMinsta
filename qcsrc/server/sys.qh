@@ -17,7 +17,6 @@ float		force_retouch;
 string		mapname;
 float		deathmatch;
 float		coop;
-float		teamplay;
 float		serverflags;
 float		total_secrets;
 float		total_monsters;

@@ -715,13 +715,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
 			else if(attacker.team == targ.team)
 			{
-				if(teamplay == 1)
+				if(CVAR(teamplay) == 1)
 					damage = 0;
 				else if(attacker != targ)
 				{
-					if(teamplay == 3)
+					if(CVAR(teamplay) == 3)
 						damage = 0;
-					else if(teamplay == 4)
+					else if(CVAR(teamplay) == 4)
 					{
 						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
@@ -1314,7 +1314,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
+								if(!CVAR(teamplay) || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;

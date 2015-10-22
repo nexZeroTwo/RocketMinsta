@@ -191,7 +191,6 @@ void StartFrame (void)
 	InitializeEntitiesRun();
 
     if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
         sv_autoaway = CVAR(sv_autoaway);
         
@@ -205,10 +204,10 @@ void StartFrame (void)
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
-	if(teams_matter && !teamplay)
-		teamplay = 3;
-	if(!teams_matter && teamplay)
-		teamplay = 0;
+	if(teams_matter && !CVAR(teamplay))
+		cvar_set("teamplay", "3");
+	if(!teams_matter && CVAR(teamplay))
+		cvar_set("teamplay", "0");
 
 	skill = CVAR(skill);
 
