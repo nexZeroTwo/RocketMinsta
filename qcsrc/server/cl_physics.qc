@@ -534,7 +534,7 @@ void SV_PlayerPhysics()
     isplayer = (self.classname == "player");
     
     if(!self.is_away) {
-    	if(sv_autoaway && time - self.parm_idlesince >= sv_autoaway * 60 && !self.frozen && !self.jb_isprisoned)
+    	if(CVAR(sv_autoaway) && time - self.parm_idlesince >= CVAR(sv_autoaway) * 60 && !self.frozen && !self.jb_isprisoned)
     		MarkAway(self, 0);
     }
 

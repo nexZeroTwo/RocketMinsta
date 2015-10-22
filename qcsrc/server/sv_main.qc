@@ -142,7 +142,6 @@ Called before each frame by the server
 */
 float RedirectionThink();
 
-float cvarupdatetime;
 string oldfog;
 
 entity SelectSpawnPoint (float anypoint);
@@ -190,12 +189,7 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
-    if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        sys_ticrate = CVAR(sys_ticrate);
-        sv_autoaway = CVAR(sv_autoaway);
-        
-        cvarupdatetime = time + 1;
-    }
+    sys_ticrate = CVAR(sys_ticrate);
 
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
