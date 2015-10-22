@@ -189,8 +189,6 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
-    sys_ticrate = CVAR(sys_ticrate);
-
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 

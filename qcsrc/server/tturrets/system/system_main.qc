@@ -1008,7 +1008,7 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
     else
         if (!self.ticrate) self.ticrate = 0.1;     // 10 fps for normal turrets
 
-    self.ticrate = bound(sys_ticrate,self.ticrate,60);  // keep it sane
+    self.ticrate = bound(CVAR(sys_ticrate),self.ticrate,60);  // keep it sane
 
 // General stuff
     if (self.netname == "")
@@ -1298,7 +1298,7 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
         self.think     = turret_think;
 
     ++turret_count;
-    self.nextthink = time + self.ticrate + (turret_count * sys_ticrate);
+    self.nextthink = time + self.ticrate + (turret_count * CVAR(sys_ticrate));
 
     self.tur_head.team = self.team;
     self.view_ofs = '0 0 0';

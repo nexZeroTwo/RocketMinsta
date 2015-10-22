@@ -32,7 +32,7 @@ vector turret_stdproc_aim_generic()
     //    mintime = max(self.attack_finished_single - time,0) + sys_ticrate;
     //else
 
-    mintime = max(self.attack_finished_single - time,0) + sys_ticrate;
+    mintime = max(self.attack_finished_single - time,0) + CVAR(sys_ticrate);
 
     // Baseline
     pre_pos = real_origin(self.enemy);
@@ -77,10 +77,10 @@ vector turret_stdproc_aim_generic()
             float vz;
             prep_z = pre_pos_z;
             vz = self.enemy.velocity_z;
-            for(i = 0; i < impact_time; i += sys_ticrate)
+            for(i = 0; i < impact_time; i += CVAR(sys_ticrate))
             {
-                vz = vz - (CVAR(sv_gravity) * sys_ticrate);
-                prep_z = prep_z + vz * sys_ticrate;
+                vz = vz - (CVAR(sv_gravity) * CVAR(sys_ticrate));
+                prep_z = prep_z + vz * CVAR(sys_ticrate);
             }
         }
         pre_pos = prep;
