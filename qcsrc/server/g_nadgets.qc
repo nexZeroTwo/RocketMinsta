@@ -1932,11 +1932,12 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.team = self.team;
     gren.hg_isbonus = self.hg_bonus;
     
-    if(gren.hg_type == HG_RAZE)
+    if(gren.hg_type == HG_RAZE) {
         gren.hg_fireSpawnTime = gren.spawntime + GV("adept_trailblaze_delay");
-    
-    if(gren.hg_type == HG_TRANSLOC)
+        gren.dphitcontentsmask |= DPCONTENTS_PLAYERCLIP;
+    } else if(gren.hg_type == HG_TRANSLOC) {
         gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
+    }
     
     if(gren.hg_adept)
         gren.health = GV("adept_health");
