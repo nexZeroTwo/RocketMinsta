@@ -55,6 +55,7 @@ void HG_Precache() {
     precache_sound("weapons/nexfire.wav");
     precache_sound("weapons/electro_fire2.wav");
     precache_sound("porto/expire.wav");
+    precache_sound("porto/bounce.wav");
     precache_sound("misc/powerup_shield.wav");
     precache_sound("misc/gg.wav");
     precache_sound("misc/stealth.wav");
@@ -1037,6 +1038,8 @@ void HG_Grenade_Think() {
                     self.velocity = self.hg_minVelocity;
                 } else {
                     self.velocity = self.hg_deferredVel;
+                    sound(self, CHAN_WEAPON2, "porto/bounce.wav", VOL_BASE, ATTN_NORM);
+                    pointparticles(particleeffectnum("smoke_ring"), self.origin, -self.velocity, 10);
                 }
                 self.hg_raze_randelayed = 1;
 			}
