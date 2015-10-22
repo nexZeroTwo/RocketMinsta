@@ -72,9 +72,9 @@ void CreatureFrame (void)
 			{
 				dm = vlen(self.oldvelocity) - vlen(self.velocity); // dm is now the velocity DECREASE. Velocity INCREASE should never cause a sound or any damage.
 				if (self.deadflag)
-					dm = (dm - g_balance_falldamage_deadminspeed) * g_balance_falldamage_factor;
+					dm = (dm - CVAR(g_balance_falldamage_deadminspeed)) * CVAR(g_balance_falldamage_factor);
 				else
-					dm = min((dm - g_balance_falldamage_minspeed) * g_balance_falldamage_factor, g_balance_falldamage_maxdamage);
+					dm = min((dm - CVAR(g_balance_falldamage_minspeed)) * CVAR(g_balance_falldamage_factor), CVAR(g_balance_falldamage_maxdamage));
 				if (dm > 0)
 				{
 					Damage (self, world, world, dm, DEATH_FALL, self.origin, '0 0 0');
@@ -194,21 +194,6 @@ void StartFrame (void)
         teamplay = CVAR(teamplay);
         sys_ticrate = CVAR(sys_ticrate);
         sv_autoaway = CVAR(sv_autoaway);
-        
-        g_balance_health_rotstable = CVAR(g_balance_health_rotstable);
-        g_balance_armor_rotstable = CVAR(g_balance_armor_rotstable);
-        g_balance_fuel_rotstable = CVAR(g_balance_fuel_rotstable);
-        g_balance_health_regenstable = CVAR(g_balance_health_regenstable);
-        g_balance_armor_regenstable = CVAR(g_balance_armor_regenstable);
-        g_balance_fuel_regenstable = CVAR(g_balance_fuel_regenstable);
-        g_balance_health_limit = CVAR(g_balance_health_limit);
-        g_balance_armor_limit = CVAR(g_balance_armor_limit);
-        g_balance_fuel_limit = CVAR(g_balance_fuel_limit);
-        
-        g_balance_falldamage_deadminspeed = CVAR(g_balance_falldamage_deadminspeed);
-        g_balance_falldamage_factor = CVAR(g_balance_falldamage_factor);
-        g_balance_falldamage_minspeed = CVAR(g_balance_falldamage_minspeed);
-        g_balance_falldamage_maxdamage = CVAR(g_balance_falldamage_maxdamage);
         
         sv_defaultcharacter = CVAR(sv_defaultcharacter);
         sv_defaultplayercolors = stof(CVAR_STR(sv_defaultplayercolors));

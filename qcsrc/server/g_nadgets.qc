@@ -1645,7 +1645,7 @@ void HG_Linker_Think() {
                     float newarmor  = (1 - sharefactor) * p.armorvalue + sharefactor * (tarmor  / denom);
 
                     if(self.hg_linker_hps) {
-                        float lim = g_balance_health_limit;
+                        float lim = CVAR(g_balance_health_limit);
                         if(g_clanarena)
                             lim = min(lim, CVAR(g_clanarena_heal_limit));
                         newhealth = newhealth + min(self.hg_linker_hps, max(0, lim - newhealth));

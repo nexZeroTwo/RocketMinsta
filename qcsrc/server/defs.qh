@@ -750,21 +750,6 @@ float sv_defaultcharacter;
 float sv_defaultplayercolors;
 float sv_forcespecies;
 
-float g_balance_health_rotstable;
-float g_balance_armor_rotstable;
-float g_balance_fuel_rotstable;
-float g_balance_health_regenstable;
-float g_balance_armor_regenstable;
-float g_balance_fuel_regenstable;
-float g_balance_health_limit;
-float g_balance_armor_limit;
-float g_balance_fuel_limit;
-
-float g_balance_falldamage_deadminspeed;
-float g_balance_falldamage_factor;
-float g_balance_falldamage_minspeed;
-float g_balance_falldamage_maxdamage;
-
 .float dom_captureprogress;
 
 entity SelectSpawnPoint(float anypoint);

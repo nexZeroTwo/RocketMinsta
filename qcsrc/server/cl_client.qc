@@ -2345,15 +2345,15 @@ void player_regen (void)
     if(roundstate == ROUNDSTATE_OVER)
         return;
 
-	maxh = g_balance_health_rotstable;
-	maxa = g_balance_armor_rotstable;
-	maxf = g_balance_fuel_rotstable;
-	minh = g_balance_health_regenstable;
-	mina = g_balance_armor_regenstable;
-	minf = g_balance_fuel_regenstable;
-	limith = g_balance_health_limit;
-	limita = g_balance_armor_limit;
-	limitf = g_balance_fuel_limit;
+	maxh = CVAR(g_balance_health_rotstable);
+	maxa = CVAR(g_balance_armor_rotstable);
+	maxf = CVAR(g_balance_fuel_rotstable);
+	minh = CVAR(g_balance_health_regenstable);
+	mina = CVAR(g_balance_armor_regenstable);
+	minf = CVAR(g_balance_fuel_regenstable);
+	limith = CVAR(g_balance_health_limit);
+	limita = CVAR(g_balance_armor_limit);
+	limitf = CVAR(g_balance_fuel_limit);
     aregen = CVAR(g_balance_armor_regen);
     hregen = CVAR(g_balance_health_regen);
     

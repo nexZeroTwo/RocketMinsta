@@ -454,10 +454,10 @@ void HealScore(entity targ, entity healer, float heal) {
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
 
     if(targ.classname == "player") {
-        if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
-        else        hlimit = g_balance_health_limit;
-        if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
-        else        alimit = g_balance_armor_limit;
+        if(hlimit)  hlimit = min(CVAR(g_balance_health_limit), hlimit);
+        else        hlimit = CVAR(g_balance_health_limit);
+        if(alimit)  alimit = min(CVAR(g_balance_armor_limit),  alimit);
+        else        alimit = CVAR(g_balance_armor_limit);
 
         if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
             float lim = CVAR(g_clanarena_heal_limit);
