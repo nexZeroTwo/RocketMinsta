@@ -194,10 +194,6 @@ void StartFrame (void)
         sys_ticrate = CVAR(sys_ticrate);
         sv_autoaway = CVAR(sv_autoaway);
         
-        sv_defaultcharacter = CVAR(sv_defaultcharacter);
-        sv_defaultplayercolors = stof(CVAR_STR(sv_defaultplayercolors));
-        sv_forcespecies = CVAR(sv_forcespecies);
-        
         cvarupdatetime = time + 1;
     }
 

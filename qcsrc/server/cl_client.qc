@@ -910,7 +910,7 @@ void FixPlayermodel()
     if(self.forcedmodel) {
         defaultmodel = self.forcedmodel;
         defaultskin = self.forcedskin;
-    } else if(sv_defaultcharacter == 1) {
+    } else if(CVAR(sv_defaultcharacter) == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
@@ -966,8 +966,8 @@ void FixPlayermodel()
 
 	if(!teams_matter)
 		if(CVAR_STR(sv_defaultplayercolors) != "")
-			if(self.clientcolors != sv_defaultplayercolors)
-				setcolor(self, sv_defaultplayercolors);
+			if(self.clientcolors != stof(CVAR_STR(sv_defaultplayercolors)))
+				setcolor(self, stof(CVAR_STR(sv_defaultplayercolors)));
 }
 
 void PlayerTouchExplode(entity p1, entity p2)
