@@ -144,12 +144,27 @@ function buildall
         CSQCSUM="$(md5sum csprogs.dat | sed -e 's/ .*//')"
         cp -v csprogs.dat "csqc.pk3dir/$CSPROGNAME"
         cp -v csprogs.lno "csqc.pk3dir/${CSPROGNAME%%dat}lno"
+    fi
+
+    mv -v csprogs.dat "$CSPROGS"
+    mv -v csprogs.lno "${CSPROGS%%dat}lno"
+
+    if [ "$AUTOCVARS_CSQC" = "2" ]; then
+        buildqc client/ alt
+
+        if [ "$PACKCSQC" = 1 ]; then
+            cp -v csprogs.dat "csqc.pk3dir/$CSALTPROGNAME"
+            cp -v csprogs.lno "csqc.pk3dir/${CSALTPROGNAME%%dat}lno"
+        fi
+        
+        mv -v csprogs.dat "$CSALTPROGS"
+        mv -v csprogs.lno "${CSALTPROGS%%dat}lno"
+    fi
+
+    if [ "$PACKCSQC" = 1 ]; then
         makedata csqc "$1" "$2"
         rm -v "csqc.pk3dir"/*.{dat,lno}
     fi
-    
-    mv -v csprogs.dat "$CSPROGS"
-    mv -v csprogs.lno "${CSPROGS%%dat}lno"
     
     buildqc menu/
     rm "menu.pk3dir"/*.{dat,lno}
@@ -310,6 +325,11 @@ function buildqc
 {
     local qcdir="$QCSOURCE/$1"
     local autocvars=""
+    local suffix="$2"
+
+    if [ -n "$suffix" ]; then
+        suffix=".$suffix"
+    fi
 
     # this is ugly, needs fixing
     if [ "$1" = "server/" ]; then
@@ -318,6 +338,14 @@ function buildqc
     elif [ "$1" = "client/" ]; then
         progname="csprogs"
         autocvars="$AUTOCVARS_CSQC"
+
+        if [ "$autocvars" = "2" ]; then
+            if [ -n "$suffix" ]; then
+                autocvars=1
+            else
+                autocvars=0
+            fi
+        fi
     elif [ "$1" = "menu/" ]; then
         progname="menu"
         autocvars="$AUTOCVARS_MENU"
@@ -334,10 +362,10 @@ function buildqc
             sum="$sum.$MENUSUM"
         fi
         
-        if [ -e "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" ]; then
+        if [ -e "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" ]; then
             echo " -- Found a cached build of $1, using it"
             
-            cp -v "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
+            cp -v "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
             return
         fi
     fi
@@ -348,7 +376,7 @@ function buildqc
 
     if [ "$autocvars" != "0" ]; then
         autocvars="-DRM_AUTOCVARS"
-        echo " -- Building with autocvars (this program will malfunction on the 2.5.2 engine)"
+        echo " -- Building with autocvars (this program will not run on the 2.5.2 engine)"
     fi
 
     $USEQCC $QCCFLAGS $autocvars || error "Failed to build $qcdir"
@@ -359,12 +387,12 @@ function buildqc
         cp -v "$compiled" "$olddir" || error "Failed to copy progs??"
     fi
     popd &>/dev/null
-    
+
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
         
         [ ! -e "${CACHEDIR}/qccache" ] && mkdir -p "${CACHEDIR}/qccache"
-        cp -v "$progname.dat" "${CACHEDIR}/qccache/$progname.dat.$sum.$COMMONSUM" || error "WTF"
+        cp -v "$progname.dat" "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" || error "WTF"
     fi
 }
 
@@ -440,6 +468,12 @@ EOF
 set sv_progs $(echo "$SVPROGS" | sed -e 's@.*/@@g')
 set csqc_progname $(echo "$CSPROGS" | sed -e 's@.*/@@g')
 EOF
+
+    if [ "$AUTOCVARS_CSQC" = "2" ]; then
+        cat <<EOF >>"${BUILDDIR}/rocketminsta.cfg"
+set csqc_progname_alt $(echo "$CSALTPROGS" | sed -e 's@.*/@@g')
+EOF
+    fi
 }
 
 function configtest
@@ -550,8 +584,10 @@ removeoldfiles
 
 SVPROGNAME="$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
 CSPROGNAME="$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+CSALTPROGNAME="${CSPROGNAME%%.dat}_autocvars.dat"
 SVPROGS="$BUILDDIR/$SVPROGNAME"
 CSPROGS="$BUILDDIR/$CSPROGNAME"
+CSALTPROGS="$BUILDDIR/$CSALTPROGNAME"
 
 if [ "$1" = "release" ]; then
     RELEASE=1
