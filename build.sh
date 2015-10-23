@@ -628,6 +628,7 @@ if [ "$1" = "release" ]; then
     BUILDDIR="$(readlink -f "$RELEASE_PKGPATH/$RELEASE_PKGNAME")"
     SVPROGS="${BUILDDIR}/$(echo "$SVPROGS" | sed -e 's@.*/@@g')"
     CSPROGS="${BUILDDIR}/$(echo "$CSPROGS" | sed -e 's@.*/@@g')"
+    CSALTPROGS="${BUILDDIR}/$(echo "$CSALTPROGS" | sed -e 's@.*/@@g')"
 
     checkdir "${BUILDDIR}/"
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
