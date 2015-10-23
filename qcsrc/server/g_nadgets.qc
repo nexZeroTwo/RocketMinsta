@@ -507,18 +507,19 @@ void HG_Translocator_Explode() {
                   + GRENVAR(self.hg_type, "push_projfactor")   * vlen(self.velocity)), '0 0 0', '0 0 0');
     tdeath_deathtype = 0;
     
-    if(tdeath_hit && !self.hg_isbonus) {
+    if(tdeath_fragged && !self.hg_isbonus) {
         float b = CVAR(g_nadgets_transloc_telefragbonus);
         
         if(b) HG_DO_IN_ALL_CONTEXTS({
-            self.owner.hg_ctx_ammo += b * tdeath_hit;
+            self.owner.hg_ctx_ammo += b * tdeath_fragged;
             HG_SetRegenTime(self.owner, HG_RegenTime(self.owner));
         })
     }
 
-    if(GRENVAR(self.hg_type, "reloadonuse")) using(self = self.owner) {
+    if(GRENVAR(self.hg_type, "reloadonuse") && (self.owner.weaponentity.wframe != WFRAME_RELOAD || tdeath_hit)) using(self = self.owner) {
         weapon_action(self.weapon, WR_RESETPLAYER);
-        ATTACK_FINISHED(self) = TRUE;
+        if(tdeath_hit)
+            ATTACK_FINISHED(self) = TRUE;
     }
 }
 
