@@ -45,6 +45,7 @@ string autocvar_settemp_var;
 string autocvar_settemp_list;
 #endif
 float autocvar_timelimit;
+float autocvar_prvm_backtraceforwarnings;
 
 #else
 
