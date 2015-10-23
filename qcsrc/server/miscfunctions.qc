@@ -1815,8 +1815,6 @@ void precache()
 
     string announcer_base_path = strcat("sound/announcer/", CVAR_STR(cl_announcer), "/");
     // announcer sounds - male
-    precache_sound (strcat(announcer_base_path, "electrobitch.ogg"));
-    precache_sound (strcat(announcer_base_path, "airshot.wav"));
     precache_sound (strcat(announcer_base_path, "03kills.wav"));
     precache_sound (strcat(announcer_base_path, "05kills.wav"));
     precache_sound (strcat(announcer_base_path, "10kills.wav"));
@@ -1825,11 +1823,6 @@ void precache()
     precache_sound (strcat(announcer_base_path, "25kills.wav"));
     precache_sound (strcat(announcer_base_path, "30kills.wav"));
     precache_sound (strcat(announcer_base_path, "botlike.wav"));
-    precache_sound (strcat(announcer_base_path, "yoda.wav"));
-    precache_sound (strcat(announcer_base_path, "amazing.wav"));
-    precache_sound (strcat(announcer_base_path, "awesome.wav"));
-    precache_sound (strcat(announcer_base_path, "headshot.wav"));
-    precache_sound (strcat(announcer_base_path, "impressive.wav"));
 
     // announcer sounds - robotic
     precache_sound (strcat(announcer_base_path, "prepareforbattle.wav"));

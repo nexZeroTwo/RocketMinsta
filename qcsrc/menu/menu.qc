@@ -26,6 +26,10 @@ void() m_init =
 	registercvar("_menu_vote_string", "", 0);
     registercvar("menu_rpn_autoload", "", CVAR_SAVE);
 
+    if(!(cvar_type("sys_first_run") & CVAR_SAVE))
+        registercvar("sys_first_run", "0", CVAR_SAVE);
+    cvar_set("sys_first_run", "0");
+
 	dprint_load();
 	check_unacceptable_compiler_bugs();
 

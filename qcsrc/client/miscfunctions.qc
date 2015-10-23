@@ -10,6 +10,11 @@ entity teams;
  */
 void Announcer_Precache() {
 	//"cl_announcer" does NOT end in a '/' so one must be added for the file paths to work correctly.
+    precache_sound (strcat(CVAR_STR(cl_announcer), "/headshot.wav"));
+    precache_sound (strcat(CVAR_STR(cl_announcer), "/awesome.wav"));
+    precache_sound (strcat(CVAR_STR(cl_announcer), "/impressive.wav"));
+    precache_sound (strcat(CVAR_STR(cl_announcer), "/amazing.wav"));
+    precache_sound (strcat(CVAR_STR(cl_announcer), "/airshot.wav"));
 	precache_sound (strcat(CVAR_STR(cl_announcer), "/1minuteremains.wav"));
 	precache_sound (strcat(CVAR_STR(cl_announcer), "/5minutesremain.wav"));
     precache_sound ("porto/fire.wav");
