@@ -98,10 +98,6 @@ void CampaignPreInit()
 	cvar_set("bot_number", ftos(campaign_bots[0]));
 	gametype_Set(gametype_Name_to_ID(campaign_gametype[0]));
 
-	// copy sv_gravity cvar, as the engine needs it too (sorry, this will mess
-	// with the menu a little still...)
-	cvar_set_builtin("sv_gravity", ftos(CVAR(sv_gravity)));
-
 	if(Campaign_Invalid())
 		return;
 

@@ -521,8 +521,8 @@ if [ -z "$PACKCSQC" ]; then
 fi
 
 if [ -z "$AUTOCVARS_SVQC" ]; then
-    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "0"
-    AUTOCVARS_SVQC=0
+    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "1"
+    AUTOCVARS_SVQC=1
 fi
 
 if [ -z "$AUTOCVARS_CSQC" ]; then

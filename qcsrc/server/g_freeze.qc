@@ -29,12 +29,6 @@ void Freeze_Precache(void) {
     precache_model("models/ice/ice.md3");
 }
 
-string Freeze_CVarName(string s) {
-    if(g_freezetag)
-        return strcat("g_freezetag_", s);
-    return strcat("g_freeze_", s);
-}
-
 void Freeze_GlobalWarming_Warn(float s) {
     entity e; FOR_EACH_PLAYER(e)
         bigprint_spec(e, strcat(ftos(floor(s)), " seconds until ^xFB0Global Warming"), "", 2);
@@ -50,7 +44,7 @@ void Freeze_Frame(void) {
         return;
     }
     
-    gw = Freeze_CVar("global_warming");
+    gw = Freeze_CVar(global_warming);
     
     if(gw) {
         if(g_freeze_globalwarming_reset && !g_freeze_globalwarming_warned) {
@@ -59,7 +53,7 @@ void Freeze_Frame(void) {
         }
         
         r = 1;
-        wr = Freeze_CVar("global_warming_minratio");
+        wr = Freeze_CVar(global_warming_minratio);
         
         if(!g_freeze_globalwarming_warned && wr < 1) {
             r = min(r, if(teamcount_playerstotal[0]) teamcount_playersalive[0]/teamcount_playerstotal[0] else 1);
@@ -134,7 +128,7 @@ entity Freeze_SpawnIceBlock(entity plr) {
     setmodel(ice, "models/ice/ice.md3");
     setorigin(ice, plr.origin - '0 0 16');
     plr.iceblock = ice;
-    if(Freeze_CVar("freezesound"))
+    if(Freeze_CVar(freezesound))
         sound(self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
     Buffs_MEODP_Point_Attach(ice, Freeze_IceBlock_MEODP_Death);
     return ice;
@@ -144,7 +138,7 @@ entity Freeze_SpawnWaypoint(entity plr) {
     entity w = WaypointSprite_Spawn("Frozen!", 0, 0, plr, '0 0 64', world, plr.team, plr, freeze_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(plr.freeze_waypoint, '0.2 1 1', '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(plr.freeze_waypoint, RADARICON_WAYPOINT, '0.25 0.90 1');
-    w.waypointsprite_appeartime = time + Freeze_CVar("frozen_waypoint_delay");
+    w.waypointsprite_appeartime = time + Freeze_CVar(frozen_waypoint_delay);
     return w;
 }
 
@@ -166,20 +160,20 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
         Freeze_SpawnIceBlock(plr);
         
     plr.iceblock.team = plr.team;
-    if(Freeze_CVar("iceblocks_teamcolored"))
+    if(Freeze_CVar(iceblocks_teamcolored))
         plr.iceblock.skin = TeamColorSkin(plr.team);
         
     if(!plr.freeze_waypoint)
         Freeze_SpawnWaypoint(plr);
     
     if(attacker == plr) {
-        PlayerScore_Add(plr, SP_SCORE, -Freeze_CVar("penalty_death"));
+        PlayerScore_Add(plr, SP_SCORE, -Freeze_CVar(penalty_death));
     } else if(attacker.classname == "player") {
         if(attacker.team != plr.team) {
-            PlayerScore_Add(plr, SP_SCORE, -Freeze_CVar("penalty_death"));
-            PlayerScore_Add(attacker, SP_SCORE, Freeze_CVar("score_freeze"));
+            PlayerScore_Add(plr, SP_SCORE, -Freeze_CVar(penalty_death));
+            PlayerScore_Add(attacker, SP_SCORE, Freeze_CVar(score_freeze));
         } else // teamkill
-            PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar("penalty_teamkill"));
+            PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar(penalty_teamkill));
     }
     
     PlayerScore_SetFlags(plr, SPFLAG_FROZEN);
@@ -287,8 +281,8 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
         Freeze_FreezePlayer(self, attacker);
     }
     
-    self.health = Freeze_CVar("frozen_health");
-    self.armorvalue = Freeze_CVar("frozen_armor");
+    self.health = Freeze_CVar(frozen_health);
+    self.armorvalue = Freeze_CVar(frozen_armor);
     
     if(g_minstagib)
         W_ThrowNewWeapon(self, WEP_MINSTANEX, 0, self.origin, self.velocity);
@@ -297,7 +291,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
         attacker.frozenrow = 0;
     
     self.frozenrow += 1;
-    float r = Freeze_CVar("frozen_row_respawn");
+    float r = Freeze_CVar(frozen_row_respawn);
     
     if(deathtype == DEATH_HURTTRIGGER)
         Freeze_RespawnPlayer(self);
@@ -363,23 +357,23 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
 
     // EVERY team mate nearby gets a point (even if multiple!)
     
-    if(Freeze_CVar("score_revival_shared"))
+    if(Freeze_CVar(score_revival_shared))
         for(e = revlist.chain; e; e = e.chain)
             ++pcnt;
     
     for(e = revlist; e; e = e.chain) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
-        PlayerScore_Add(e, SP_SCORE, Freeze_CVar("score_revival") / pcnt);
+        PlayerScore_Add(e, SP_SCORE, Freeze_CVar(score_revival) / pcnt);
         
-        float heal = max(max(Freeze_CVar("revive_heal") - e.health, 0), Freeze_CVar("revive_heal_min"));
+        float heal = max(max(Freeze_CVar(revive_heal) - e.health, 0), Freeze_CVar(revive_heal_min));
         if(heal)
             Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
-        if(Freeze_CVar("revive_bonusgrenade"))
-        if(e.revrow >= Freeze_CVar("revive_bonusgrenade_requirement")) {
-            HG_GiveBonus(e, HG_NameToType(Freeze_CVarString("revive_bonusgrenade_type")), 1,
+        if(Freeze_CVar(revive_bonusgrenade))
+        if(e.revrow >= Freeze_CVar(revive_bonusgrenade_requirement)) {
+            HG_GiveBonus(e, HG_NameToType(Freeze_CVarString(revive_bonusgrenade_type)), 1,
                         strcat(ftos(e.revrow), " revivals in a row"), TRUE);
             e.revrow = 0;
         }
@@ -394,8 +388,8 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         e.revresettime = time + frametime * 2;
     }
 
-    float minh = Freeze_CVar("revived_minhealth");
-    float mina = Freeze_CVar("revived_minarmor");
+    float minh = Freeze_CVar(revived_minhealth);
+    float mina = Freeze_CVar(revived_minarmor);
         
     if(minh || mina)
         Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
@@ -445,7 +439,7 @@ void Freeze_Hook_PlayerPreThink(void) {
     // frozen
 
     if(!bait) {
-        float ftime = Freeze_CVar("respawn");
+        float ftime = Freeze_CVar(respawn);
         if(ftime)
         if(time - self.freezetime_real > ftime) {
             Freeze_UnfreezePlayer(self);
@@ -459,7 +453,7 @@ void Freeze_Hook_PlayerPreThink(void) {
             Freeze_SpawnIceBlock(self);
         
         if(self.iceblock.team != self.team) {
-            if(Freeze_CVar("iceblocks_teamcolored"))
+            if(Freeze_CVar(iceblocks_teamcolored))
                 self.iceblock.skin = TeamColorSkin(self.team);
             self.iceblock.team = self.team;
             WaypointSprite_Disown(self.freeze_waypoint, 0.5);
@@ -485,17 +479,17 @@ void Freeze_Hook_PlayerPreThink(void) {
         return;
     
     // Find all players withing revival radius and build a linked list
-    if(self.freezetime + Freeze_CVar("revive_delay") < time) {
-        revive_extra_size = '1 1 1' * Freeze_CVar("revive_extra_size");
+    if(self.freezetime + Freeze_CVar(revive_delay) < time) {
+        revive_extra_size = '1 1 1' * Freeze_CVar(revive_extra_size);
         
         FOR_EACH_PLAYER(other)
             if(time - other.hg_stealthtime >= CVAR(g_nadgets_cloak_actiondelay))
             if(self != other && !other.frozen && other.team == self.team)
-            if(time - other.revtime >= Freeze_CVar("revive_delay_after_revived"))
-            if(time - other.lastdamage >= Freeze_CVar("revive_delay_for_reviver"))
+            if(time - other.revtime >= Freeze_CVar(revive_delay_after_revived))
+            if(time - other.lastdamage >= Freeze_CVar(revive_delay_for_reviver))
             if(boxesoverlap(self.absmin - revive_extra_size, self.absmax + revive_extra_size, other.absmin, other.absmax))
             {
-                allow = Freeze_CVar("revive_through_walls");
+                allow = Freeze_CVar(revive_through_walls);
                 
                 if(!allow) {
                     vector o = self.origin + self.view_ofs;
@@ -505,7 +499,7 @@ void Freeze_Hook_PlayerPreThink(void) {
                     allow = (trace_endpos == e);
                     
                     if(!allow)
-                        allow = (vlen(trace_endpos - e) < Freeze_CVar("revive_wall_trace_tolerance"));
+                        allow = (vlen(trace_endpos - e) < Freeze_CVar(revive_wall_trace_tolerance));
                 }
                 
                 if(allow) {
@@ -533,7 +527,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         
     if(rfirst) // OK, there is at least one teammate reviving us
     {
-        float rate = Freeze_CVar("revive_speed") * rmod;
+        float rate = Freeze_CVar(revive_speed) * rmod;
         
         self.revfinished = 0;
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
@@ -546,14 +540,14 @@ void Freeze_Hook_PlayerPreThink(void) {
             other.revresettime = time + frametime * 2;
         }
     } else if(self.revfinished) {
-        if(!bait) if(Freeze_CVar("melt"))
+        if(!bait) if(Freeze_CVar(melt))
         {
             for(h = world; (h = find(h, classname, "grapplinghook")); )
                 if(h.aiment == self)
                     return;
             
-            if(self.freezetime + Freeze_CVar("melt_delay") <= time) {
-                self.meltprogress = bound(0, self.meltprogress + frametime * Freeze_CVar("melt_speed"), 1);
+            if(self.freezetime + Freeze_CVar(melt_delay) <= time) {
+                self.meltprogress = bound(0, self.meltprogress + frametime * Freeze_CVar(melt_speed), 1);
                 
                 if(self.meltprogress >= 1) {
                     self.meltprogress = 0;
@@ -570,7 +564,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         else
             self.meltprogress = 0;
     } else { // only if no teammate is nearby will we reset
-        self.revprogress = bound(0, self.revprogress - frametime * Freeze_CVar("revive_clearspeed"), 1);
+        self.revprogress = bound(0, self.revprogress - frametime * Freeze_CVar(revive_clearspeed), 1);
         self.meltprogress = self.revprogress;
         
         if(!self.revprogress)
@@ -583,10 +577,10 @@ void Freeze_Hook_PlayerPhysics(void) {
         return;
     
     if(self.frozen) {
-        float s = Freeze_CVar("frozen_movespeed");
+        float s = Freeze_CVar(frozen_movespeed);
         
         if(s > 0) {
-            if(Freeze_CVar("movespeed_dependonmelt"))
+            if(Freeze_CVar(movespeed_dependonmelt))
                 s *= self.revprogress;
             
             self.movement_x = if(self.movement_x > 0)

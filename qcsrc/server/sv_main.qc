@@ -72,9 +72,9 @@ void CreatureFrame (void)
 			{
 				dm = vlen(self.oldvelocity) - vlen(self.velocity); // dm is now the velocity DECREASE. Velocity INCREASE should never cause a sound or any damage.
 				if (self.deadflag)
-					dm = (dm - g_balance_falldamage_deadminspeed) * g_balance_falldamage_factor;
+					dm = (dm - CVAR(g_balance_falldamage_deadminspeed)) * CVAR(g_balance_falldamage_factor);
 				else
-					dm = min((dm - g_balance_falldamage_minspeed) * g_balance_falldamage_factor, g_balance_falldamage_maxdamage);
+					dm = min((dm - CVAR(g_balance_falldamage_minspeed)) * CVAR(g_balance_falldamage_factor), CVAR(g_balance_falldamage_maxdamage));
 				if (dm > 0)
 				{
 					Damage (self, world, world, dm, DEATH_FALL, self.origin, '0 0 0');
@@ -142,7 +142,6 @@ Called before each frame by the server
 */
 float RedirectionThink();
 
-float cvarupdatetime;
 string oldfog;
 
 entity SelectSpawnPoint (float anypoint);
@@ -192,71 +191,13 @@ void StartFrame (void)
 
 	WarpZone_StartFrame();
 
-    if(time > cvarupdatetime) {   // do we REALLY need to update those every frame? Most of these aren't even going to be changed midgame
-        sv_gravity = CVAR(sv_gravity);
-        sv_maxairspeed = CVAR(sv_maxairspeed);
-        sv_maxspeed = CVAR(sv_maxspeed);
-        sv_friction = CVAR(sv_friction);
-        sv_accelerate = CVAR(sv_accelerate);
-        sv_airaccelerate = CVAR(sv_airaccelerate);
-        sv_airaccel_sideways_friction = CVAR(sv_airaccel_sideways_friction);
-        sv_airaccel_qw = CVAR(sv_airaccel_qw);
-        sv_stopspeed = CVAR(sv_stopspeed);
-        sv_airstopaccelerate = CVAR(sv_airstopaccelerate);
-        sv_airstrafeaccelerate = CVAR(sv_airstrafeaccelerate);
-        sv_maxairstrafespeed = CVAR(sv_maxairstrafespeed);
-        sv_aircontrol = CVAR(sv_aircontrol);
-        sv_warsowbunny_airforwardaccel = CVAR(sv_warsowbunny_airforwardaccel);
-        sv_warsowbunny_accel = CVAR(sv_warsowbunny_accel);
-        sv_warsowbunny_topspeed = CVAR(sv_warsowbunny_topspeed);
-        sv_warsowbunny_turnaccel = CVAR(sv_warsowbunny_turnaccel);
-        sv_warsowbunny_backtosideratio = CVAR(sv_warsowbunny_backtosideratio);
-        teamplay = CVAR(teamplay);
-        sys_ticrate = CVAR(sys_ticrate);
-        sv_jumpvelocity = CVAR(sv_jumpvelocity);
-        sv_gameplayfix_q2airaccelerate = CVAR(sv_gameplayfix_q2airaccelerate);
-        sv_autoaway = CVAR(sv_autoaway);
-        g_walljump = CVAR(g_walljump);
-        g_walljump_delay = CVAR(g_walljump_delay);
-        g_dodging = CVAR(g_dodging);
-
-        if(g_dodging) {
-            g_dodging_delay = CVAR(g_dodging_delay);
-            g_dodging_ramp_time = CVAR(g_dodging_ramp_time);
-            
-            if(g_freeze)
-                g_freezetag_dodging_frozen = Freeze_CVar("dodging_frozen");
-        }
-        
-        g_balance_health_rotstable = CVAR(g_balance_health_rotstable);
-        g_balance_armor_rotstable = CVAR(g_balance_armor_rotstable);
-        g_balance_fuel_rotstable = CVAR(g_balance_fuel_rotstable);
-        g_balance_health_regenstable = CVAR(g_balance_health_regenstable);
-        g_balance_armor_regenstable = CVAR(g_balance_armor_regenstable);
-        g_balance_fuel_regenstable = CVAR(g_balance_fuel_regenstable);
-        g_balance_health_limit = CVAR(g_balance_health_limit);
-        g_balance_armor_limit = CVAR(g_balance_armor_limit);
-        g_balance_fuel_limit = CVAR(g_balance_fuel_limit);
-        
-        g_balance_falldamage_deadminspeed = CVAR(g_balance_falldamage_deadminspeed);
-        g_balance_falldamage_factor = CVAR(g_balance_falldamage_factor);
-        g_balance_falldamage_minspeed = CVAR(g_balance_falldamage_minspeed);
-        g_balance_falldamage_maxdamage = CVAR(g_balance_falldamage_maxdamage);
-        
-        sv_defaultcharacter = CVAR(sv_defaultcharacter);
-        sv_defaultplayercolors = stof(CVAR_STR(sv_defaultplayercolors));
-        sv_forcespecies = CVAR(sv_forcespecies);
-        
-        cvarupdatetime = time + 1;
-    }
-
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
-	if(teams_matter && !teamplay)
-		teamplay = 3;
-	if(!teams_matter && teamplay)
-		teamplay = 0;
+	if(teams_matter && !CVAR(teamplay))
+		cvar_set("teamplay", "3");
+	if(!teams_matter && CVAR(teamplay))
+		cvar_set("teamplay", "0");
 
 	skill = CVAR(skill);
 

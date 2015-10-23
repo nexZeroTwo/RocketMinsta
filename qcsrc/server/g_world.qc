@@ -1879,7 +1879,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	{
 		local string winmsg;
 		
-		if(teamplay)
+		if(CVAR(teamplay))
 			winmsg = strcat(ColoredTeamName(WinningConditionHelper_winnerteam), " ^7is about to win");
 		else
 			winmsg = strcat(WinningConditionHelper_winner.netname, " ^7is about to win");

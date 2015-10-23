@@ -57,7 +57,7 @@ CACHEQC=0
 # This increases performance, however, it's not supported by the default Nexuiz engine.
 
 # Use autocvars in the server program. Enable this if your server runs DPRM.
-AUTOCVARS_SVQC=0
+AUTOCVARS_SVQC=1
 
 # Use autocvars in the client program. Not recommended, as it will make vanilla clients incompatible with your server.
 AUTOCVARS_CSQC=0

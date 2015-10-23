@@ -93,11 +93,11 @@ float dodging_GetPressedKeys()
 	tap_direction_y = 0;
 
 	float dodge_detected;
-	if not(g_dodging)
+	if not(CVAR(g_dodging))
 		return 0;
 
 	if(g_freeze && self.frozen) {
-        if not(g_freezetag_dodging_frozen)
+        if not(Freeze_CVar(dodging_frozen))
             return 0;
     }
 
@@ -119,7 +119,7 @@ float dodging_GetPressedKeys()
     self.cvar_cl_dodging_timeout = 0.2;
 
 	// first check if the last dodge is far enough back in time so we can dodge again
-	if ((time - self.last_dodging_time) < g_dodging_delay)
+	if ((time - self.last_dodging_time) < CVAR(g_dodging_delay))
 		return 0;
     
     //if(check_close_to_wall(CVAR(g_dodging_wall_distance_threshold)))
@@ -226,8 +226,8 @@ float dodging_PlayerPhysics()
         goto cleanup;
 	
 	if(g_freeze) if(self.frozen) {
-		if(g_freezetag_dodging_frozen)
-			forcemod = Freeze_CVar("dodging_frozen_forcefactor");
+		if(Freeze_CVar(dodging_frozen))
+			forcemod = Freeze_CVar(dodging_frozen_forcefactor);
 		else
             goto cleanup;
 	}
@@ -238,7 +238,7 @@ float dodging_PlayerPhysics()
 	// if we have e.g. 0.5 sec ramptime and a frametime of 0.25, then the ramp code 
 	// will be called ramp_time/frametime times = 2 times. so, we need to 
 	// add 0.5 * the total speed each frame until the dodge action is done..
-	common_factor = frametime / g_dodging_ramp_time;
+	common_factor = frametime / CVAR(g_dodging_ramp_time);
 
 	// if ramp time is smaller than frametime we get problems ;D
 	if (common_factor > 1) 
@@ -280,7 +280,7 @@ float dodging_PlayerPhysics()
 	}
 
 	// are we done with the dodging ramp yet?
-	if((self.dodging_action == 1) && ((time - self.last_dodging_time) > g_dodging_ramp_time))
+	if((self.dodging_action == 1) && ((time - self.last_dodging_time) > CVAR(g_dodging_ramp_time)))
 	{
 :cleanup
 		// reset state so next dodge can be done correctly
