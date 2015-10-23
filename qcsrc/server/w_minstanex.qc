@@ -173,7 +173,7 @@ void W_MinstaNex_Attack (void)
 	pointparticles(particleeffectnum("nex_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
 
 	// teamcolor / hit beam effect
-	if(teamplay)
+	if(CVAR(teamplay))
 	{
 	    switch(self.team)
 	    {

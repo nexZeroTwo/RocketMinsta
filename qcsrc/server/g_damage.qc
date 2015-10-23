@@ -454,10 +454,10 @@ void HealScore(entity targ, entity healer, float heal) {
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
 
     if(targ.classname == "player") {
-        if(hlimit)  hlimit = min(g_balance_health_limit, hlimit);
-        else        hlimit = g_balance_health_limit;
-        if(alimit)  alimit = min(g_balance_armor_limit,  alimit);
-        else        alimit = g_balance_armor_limit;
+        if(hlimit)  hlimit = min(CVAR(g_balance_health_limit), hlimit);
+        else        hlimit = CVAR(g_balance_health_limit);
+        if(alimit)  alimit = min(CVAR(g_balance_armor_limit),  alimit);
+        else        alimit = CVAR(g_balance_armor_limit);
 
         if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
             float lim = CVAR(g_clanarena_heal_limit);
@@ -715,13 +715,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
 			else if(attacker.team == targ.team)
 			{
-				if(teamplay == 1)
+				if(CVAR(teamplay) == 1)
 					damage = 0;
 				else if(attacker != targ)
 				{
-					if(teamplay == 3)
+					if(CVAR(teamplay) == 3)
 						damage = 0;
-					else if(teamplay == 4)
+					else if(CVAR(teamplay) == 4)
 					{
 						if(targ_is_player && targ.deadflag == DEAD_NO)
 						{
@@ -894,13 +894,13 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar("teleport_out_of_lava") && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
+            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar(teleport_out_of_lava) && (deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)))
                 Freeze_RespawnPlayer(targ);
             
 			damage = 0;
-			force = force * Freeze_CVar("frozen_force");
+			force = force * Freeze_CVar(frozen_force);
 
-			if(targ.team != attacker.team || Freeze_CVar("melt_teamdamage"))
+			if(targ.team != attacker.team || Freeze_CVar(melt_teamdamage))
 			{
 				targ.meltprogress = 0;
 				targ.freezetime = time;
@@ -1314,7 +1314,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 								if(targ.flags & FL_CLIENT)
 								if(targ.deadflag == DEAD_NO)
 								if(targ != attacker)
-								if(!teamplay || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
+								if(!CVAR(teamplay) || targ.team != attacker.team || Buffs_Present(attacker, BUFF_MEDIC))
 								{
 									stat_damagedone += finaldmg;
 									stat_maxdamage += coredamage;

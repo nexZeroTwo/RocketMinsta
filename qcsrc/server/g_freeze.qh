@@ -29,7 +29,6 @@ float g_freeze_globalwarming_reset;
 void Freeze_Init(void);
 void Freeze_Frame(void);
 void Freeze_Precache(void);
-string Freeze_CVarName(string);
 void Freeze_FreezePlayer(entity, entity);
 float Freeze_GetPlayersAlive(float);
 float Freeze_GetPlayersTotal(float);
@@ -47,5 +46,5 @@ void Freeze_Hook_PlayerPreThink(void);
 float Freeze_Hook_PlayerDies(entity, vector, float);
 void Freeze_Hook_PlayerQuits(void);
 
-#define Freeze_CVar(s) (cvar(Freeze_CVarName(s)))
-#define Freeze_CVarString(s) (cvar_string(Freeze_CVarName(s)))
+#define Freeze_CVarString(s) (if(g_freezetag) CVAR_STR(g_freezetag_##s) else CVAR_STR(g_freeze_##s))
+#define Freeze_CVar(s) (if(g_freezetag) CVAR(g_freezetag_##s) else CVAR(g_freeze_##s))
