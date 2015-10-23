@@ -13,7 +13,7 @@ void W_RM_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/airshot.wav");
+                        CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -139,32 +139,20 @@ void W_MinstaNex_Attack (void)
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, if(CVAR(g_balance_minstanex_damage) >= 0) CVAR(g_balance_minstanex_damage) else 10000000000, CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
     //</akari>
 
-	if(g_minstagib)
-	{
-		if(yoda)
-			announce(self, "announcer/male/yoda.wav");
-		
-		if(headshot)
-		{
-			announce(self, "announcer/male/headshot.wav");
-			bigprint_spec(self, "^1Head ^7shot!", "", 1);
-		}
-	}
-	else
-	{
-		if(yoda && flying)
-			announce(self, "announcer/male/yoda.wav");
-		if(headshot)
-		{
-			announce(self, "announcer/male/headshot.wav");
-			print("h\n");
-		}
-		if(damage_goodhits && self.minstanex_lasthit)
-		{
-			if(announce(self, "announcer/male/impressive.wav"))
-				damage_goodhits = 0; // only every second time
-		}
-	}
+    float prflags;
+
+    if(yoda)
+        prflags |= CSQCMSG_PRAISEFLAG_AMAZING;
+
+    if(headshot)
+        prflags |= CSQCMSG_PRAISEFLAG_HEADSHOT;
+
+    if(!g_minstagib && damage_goodhits && self.minstanex_lasthit) {
+        prflags |= CSQCMSG_PRAISEFLAG_IMPRESSIVE;
+        damage_goodhits = 0;
+    }
+
+    CSQCMessage_Praise(self, prflags);
 
 	self.minstanex_lasthit = damage_goodhits;
 
@@ -223,16 +211,14 @@ void W_MinstaNex_Attack (void)
 		self.goodhits++;
 	else
 		self.goodhits = 0;
-	
+
 	switch(self.goodhits)
 	{
 		case 3:
-			bigprint_spec(self, "^5Impressive!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
-			announce(self, "announcer/male/impressive.wav");
+            CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_IMPRESSIVE);
 			break;
 		case 7:
-			bigprint_spec(self, "^5Amazing!", strcat(ftos(self.goodhits), " insta hits in a row"), 1);
-			announce(self, "announcer/male/amazing.wav");
+            CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_AMAZING);
 			break;
 	}
 }
@@ -341,7 +327,7 @@ void W_RM_Alt_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/electrobitch.wav");
+                        CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AWESOME);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;

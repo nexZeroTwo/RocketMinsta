@@ -243,8 +243,17 @@ string WeaponDeathString(float deathtype) {
             else
                 return "was blasted by #'s plasma bomb";
 
+        case HG_NAPALM:
+            return "engaged in #'s hot napalm action";
+
+        case HG_TRANSLOC:
+            return "let # invade their personal space";
+
         case HG_SHIELD:
-            return "suffered from death feedback induced by #'s reflective shield";
+            if(deathtype & HITTYPE_SECONDARY)
+                return "swallowed #'s discharge";
+            else
+                return "suffered from death feedback induced by #'s powershield";
 
         case HG_GG:
             return "has been outskilled by #'s gg button, gg!";
@@ -267,6 +276,10 @@ string WeaponDeathString(float deathtype) {
 }
 
 void Message_Obituary(float targ, float attacker, float deathtype, string customMessage, float attackerSpree, float targetSpree, float attackerSpreeShort) {
+
+    if(!CVAR(cl_message_obituary))
+        return;
+
     string tname = GetPlayerName(targ - 1);
     string aname = GetPlayerName(attacker - 1);
     float teamkill, suicide;
@@ -283,7 +296,15 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
 
     float spawnfrag = FALSE;
 
-    float extendfragmessages = CVAR(cl_extendfragmessages);
+    float showfragmessages, extendfragmessages, doLog, doLogDeaths, doLogStreaks;
+
+    if((showfragmessages = CVAR(cl_message_obituary_frags)))
+        extendfragmessages = CVAR(cl_message_obituary_frags_extended);
+
+    if((doLog = CVAR(cl_message_obituary_log))) {
+        doLogDeaths = CVAR(cl_message_obituary_log_deaths);
+        doLogStreaks = CVAR(cl_message_obituary_log_streaks);
+    }
 
     if(targ == attacker)
         suicide = TRUE;
@@ -311,6 +332,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             }
         }
 
+        if(!doLogDeaths)
+            return;
+
         float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
         
         if(WEP_VALID(w) || DEATH_ISHG(w)) {
@@ -331,6 +355,8 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 burned to death\n");
         else if(deathtype == DEATH_NOISE)
             print("^1", s, "^1 was too noisy to live\n");
+        else if(deathtype == DEATH_ENDURANCE)
+            print("^1", s, "^1 couldn't endure the hardships of life\n");
         else if(deathtype != DEATH_TEAMCHANGE)
             print("^1", s, "^1 couldn't resist the urge to self-destruct\n");
 
@@ -343,15 +369,18 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             else if(iDied)
                 centerprint(strcat("^1You were fragged by ^7", a, "^1, the teamkilling moron"));
 
-            print("^1", a, "^1 mows down a team mate\n");
+            if(doLogDeaths)
+                print("^1", a, "^1 mows down a team mate\n");
 
-            if(targetSpree > 2)
-                print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by a team mate!\n");
+            if(doLogStreaks) {
+                if(targetSpree > 2)
+                    print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by a team mate!\n");
 
-            if(attackerSpree > 2)
-                print("^1", a, "^1 ended a ", ftos(attackerSpree), " kill spree by killing a team mate\n");
+                if(attackerSpree > 2)
+                    print("^1", a, "^1 ended a ", ftos(attackerSpree), " kill spree by killing a team mate\n");                
+            }
         } else {
-            if(iKilled || iDied) {
+            if(showfragmessages && (iKilled || iDied)) {
                 string fragmod, fragmod_tail;
 
                 if(spawnfrag) {
@@ -387,6 +416,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     centerprint(strcat("^1You were ", fragmod, "^1fragged by ^7", a, "^1", fragmod_tail));
             }
 
+            if(doLogDeaths) {          
                 float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
 
                 if(WEP_VALID(w) || DEATH_ISHG(w)) {
@@ -397,7 +427,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     else
                         print("^1", s, "^1 ", substring(w_deathtypestring, 0, p), a, "^1", substring(w_deathtypestring, p+1, strlen(w_deathtypestring) - (p+1)), "\n");
                 }
-                else if(deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
+                else if(deathtype == DEATH_TELEFRAG)
                     print("^1", s, "^1 was telefragged by ", a, "\n");
                 else if(deathtype == DEATH_DROWN)
                     print("^1", s, "^1 was drowned by ", a, "\n");
@@ -429,20 +459,23 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                 else if(deathtype == DEATH_FIRE)
                     print("^1", s, "^1 was burnt to death by ^1", a, "\n");
                 else if(deathtype == DEATH_MEODP)
-                        print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                    print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                else if(deathtype == DEATH_ENDURANCE)
+                    print("^1", s, "^1 couldn't endure ", a, "^1's rough handling\n");
                 else
                     print("^1", s, "^1 was fragged by ", a, "\n");
+            }
 
-                if(targetSpree > 2)
-                    print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by ", a, "\n");
+            if(targetSpree > 2 && doLogStreaks)
+                print("^1", s, "'s ^1", ftos(targetSpree), " kill spree was ended by ", a, "\n");
 
-                // server sends this message before registering the spree
-                ++attackerSpree;
+            // server sends this message before registering the spree
+            ++attackerSpree;
 
-                if(attackerSpree > 2)
-                    print("^1", a, "^1 has ", ftos(attackerSpree), " frags in a row\n");
+            if(attackerSpree > 2 && doLogStreaks)
+                print("^1", a, "^1 has ", ftos(attackerSpree), " frags in a row\n");
 
-                Message_KillingSpree(attacker, attackerSpree, attackerSpreeShort);
+            Message_KillingSpree(attacker, attackerSpree, attackerSpreeShort);
         }
     } else {
         if(iDied)
@@ -470,6 +503,8 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 was unfairly eliminated\n");
         else if(deathtype == DEATH_FIRE)
             print("^1", s, "^1 burnt to death\n");
+        else if(deathtype == DEATH_ENDURANCE)
+            print("^1", s, "^1 couldn't endure the hardships of life\n");
         else if(getstati(STAT_ROUNDSTATE) != ROUNDSTATE_OVER)
             print("^1", s, "^1 died\n");
 
@@ -484,45 +519,48 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
 
     string a = GetPlayerName(attacker - 1);
 
-    if(longspree == 5) {
-        print(a, "^7 unleashes ^1RAGE\n");
+    float doLogLong = CVAR(cl_message_obituary_log_streaks);
+    float showLong = (iKilled && CVAR(cl_message_obituary_streaks));
 
-        if(iKilled) {
+    if(longspree == 5) {
+        if(doLogLong) print(a, "^7 unleashes ^1RAGE\n");
+
+        if(showLong) {
             announce("announcer/male/05kills.wav");
             bigprint("^xFA0Rage!", strcat(ftos(longspree), " frags in a row"), 1);
         }
     } else if(longspree == 10) {
-        print(a, "^7 starts the ^1MASSACRE!\n");
+        if(doLogLong) print(a, "^7 starts the ^1MASSACRE!\n");
 
-        if(iKilled) {
+        if(showLong) {
             announce("announcer/male/10kills.wav");
             bigprint("^xF80Massacre!", strcat(ftos(longspree), " frags in a row"), 1);
         }
     } else if(longspree == 15) {
-        print(a, "^7 executes ^1MAYHEM!\n");
+        if(doLogLong) print(a, "^7 executes ^1MAYHEM!\n");
 
-        if(iKilled) {
+        if(showLong) {
             announce("announcer/male/15kills.wav");
             bigprint("^xF60Mayhem!", strcat(ftos(longspree), " frags in a row"), 1);
         }
     } else if(longspree == 20) {
-        print(a, "^7 is a ^1BERSERKER!\n");
+        if(doLogLong) print(a, "^7 is a ^1BERSERKER!\n");
 
-        if(iKilled) {
+        if(showLong) {
             announce("announcer/male/20kills.wav");
             bigprint("^xF40Berserker!", strcat(ftos(longspree), " frags in a row"), 1);
         }
     } else if(longspree == 25) {
-        print(a, "^7 inflicts ^1CARNAGE!\n");
+        if(doLogLong) print(a, "^7 inflicts ^1CARNAGE!\n");
 
-        if(iKilled) {
+        if(showLong) {
             announce("announcer/male/25kills.wav");
             bigprint("^xF20Carnage!", strcat(ftos(longspree), " frags in a row"), 1);
         }
     } else if(longspree == 30) {
-        print(a, "^7 unleashes ^1ARMAGEDDON!\n");
+        if(doLogLong) print(a, "^7 unleashes ^1ARMAGEDDON!\n");
 
-        if(iKilled) {
+        if(showLong) {
             announce("announcer/male/30kills.wav");
             bigprint("^1Armageddon!", strcat(ftos(longspree), " frags in a row"), 1);
         }
@@ -530,6 +568,9 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
 
     if(shortspree < 2)
         return;
+
+    float doLogShort = CVAR(cl_message_obituary_log_multikills);
+    float showShort = (iKilled && CVAR(cl_message_obituary_multikills));
 
     string spreebar = "^1\x1d\x1e";
     float i = 2;
@@ -550,24 +591,24 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
 
     switch(shortspree) {
         case 2:
-            if(iKilled) bigprint("^2Double ^7Kill!", spreebar, 1);
-            print(a, " ^7scored a ^2DOUBLE ^7KILL!\n");
+            if(showShort) bigprint("^2Double ^7Kill!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^2DOUBLE ^7KILL!\n");
             break;
         case 3:
-            if(iKilled) bigprint("^3Triple ^7Kill!", spreebar, 1);
-            print(a, " ^7scored a ^3TRIPLE ^7KILL!\n");
+            if(showShort) bigprint("^3Triple ^7Kill!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^3TRIPLE ^7KILL!\n");
             break;
         case 4:
-            if(iKilled) bigprint("^6Quad ^7Kill!", spreebar, 1);
-            print(a, " ^7scored a ^6QUAD ^7KILL!\n");
+            if(showShort) bigprint("^6Quad ^7Kill!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^6QUAD ^7KILL!\n");
             break;
         case 5:
-            if(iKilled) bigprint("^5Ultra ^7Kill!", spreebar, 1);
-            print(a, " ^7scored an ^5ULTRA ^7KILL!\n");
+            if(showShort) bigprint("^5Ultra ^7Kill!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored an ^5ULTRA ^7KILL!\n");
             break;
         default: case 6:
-            if(iKilled) bigprint("^1Monster ^7Kill!", spreebar, 1);
-            print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if(showShort) bigprint("^1Monster ^7Kill!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
             break;
     }
 
@@ -575,7 +616,41 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
         sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
 }
 
+void Message_Praise(float prflags) {
+    if(!CVAR(cl_message_praise))
+        return;
+
+    float show = CVAR(cl_message_praise_show);
+    float annc = CVAR(cl_message_praise_announce);
+
+    if(prflags & CSQCMSG_PRAISEFLAG_HEADSHOT) {
+        if(show) bigprint("^1Head ^7Shot!", "", 1);
+        if(annc) announce("announcer/male/headshot.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AWESOME) {
+        if(show) bigprint("^5Awesome!", "", 1);
+        if(annc) announce("announcer/male/awesome.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_IMPRESSIVE) {
+        if(show) bigprint("^3Impressive!", "", 1);
+        if(annc) announce("announcer/male/impressive.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AMAZING) {
+        if(show) bigprint("^5Amazing!", "", 1);
+        if(annc) announce("announcer/male/amazing.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AIRSHOT) {
+        if(show) bigprint("^7Airshot!", "", 1);
+        if(annc) announce("announcer/male/airshot.wav");
+    }
+}
+
 void Message_Read(void) {
+    float enabled = CVAR(cl_message);
     float type = ReadByte();
 
     switch(type) {
@@ -593,7 +668,16 @@ void Message_Read(void) {
             float targetSpree = ReadByte();
             float attackerSpreeShort = ReadByte();
 
-            Message_Obituary(targ, attacker, deathtype, customMessage, attackerSpree, targetSpree, attackerSpreeShort);
+            if(enabled)
+                Message_Obituary(targ, attacker, deathtype, customMessage, attackerSpree, targetSpree, attackerSpreeShort);
+            break;
+        }
+
+        case CSQCMSG_PRAISE: {
+            float prflags = ReadByte();
+
+            if(enabled)
+                Message_Praise(prflags);
             break;
         }
 

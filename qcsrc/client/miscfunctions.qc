@@ -87,9 +87,15 @@ void maptimeAnnouncer() {
  * TODO: make all announcer sound() calls client-side in the end, to allow queues etc.
  */
 void Announcer_Precache () {
-    precache_sound ("announcer/robotic/1minuteremains.wav");
-	precache_sound ("announcer/robotic/5minutesremain.wav");
-    precache_sound ("porto/fire.wav");
+    precache_sound("announcer/male/headshot.wav");
+    precache_sound("announcer/male/awesome.wav");
+    precache_sound("announcer/male/impressive.wav");
+    precache_sound("announcer/male/amazing.wav");
+    precache_sound("announcer/male/airshot.wav");
+    precache_sound("announcer/robotic/1minuteremains.wav");
+    precache_sound("announcer/robotic/1minuteremains.wav");
+	precache_sound("announcer/robotic/5minutesremain.wav");
+    precache_sound("porto/fire.wav");
 }
 
 void AuditLists()

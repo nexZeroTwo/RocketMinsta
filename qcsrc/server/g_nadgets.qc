@@ -569,7 +569,7 @@ void HG_Grenade_Explode()
 		if(other.classname == "player")
 			if(IsDifferentTeam(self.owner, other))
 				if(IsFlying(other))
-					announce(self.owner, "announcer/male/airshot.wav");
+                    CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
