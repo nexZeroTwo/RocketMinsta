@@ -223,7 +223,10 @@ void HG_HealEmitter_Think(void) {
 }
 
 void HG_HealEmitter(void) {
-    if(Buffs_Present(self.owner, BUFF_MEDIC)) {
+    var o = self.owner;
+    if(!o.iscreature) o = self.realowner;
+
+    if(Buffs_Present(o, BUFF_MEDIC)) {
         if(!self.heal_emitter) {
             entity e = spawn();
             e.owner = self;
