@@ -545,9 +545,7 @@ void kh_Key_Touch()  // runs many, many times when a key has been dropped and ca
 		return;
 	if(other.classname != "player")
 		return;
-	if(other.deadflag != DEAD_NO)
-		return;
-    if(g_freeze && other.frozen)
+    if(PlayerIsDead(other))
         return;
 	if(other == self.enemy)
 		if(time < self.kh_droptime + CVAR(g_balance_keyhunt_delay_collect))
@@ -830,14 +828,12 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		
 		players = 0;
 		entity my_player;
-		FOR_EACH_PLAYER(player)
-			if(player.deadflag == DEAD_NO) if not(g_freeze && player.frozen)
-				if(player.team == lostkey.team)
-				{
-					++players;
-					if(random() * players <= 1)
-						my_player = player;
-				}
+		FOR_EACH_PLAYER(player) if(!PlayerIsDead(player) && player.team == lostkey.team) {
+            ++players;
+            if(random() * players <= 1)
+                my_player = player;
+        }
+
 		if(players)
 			kh_Key_Collect(lostkey, my_player);
 		else //shit happens

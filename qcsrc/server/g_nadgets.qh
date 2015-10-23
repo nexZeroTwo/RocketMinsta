@@ -7,7 +7,7 @@ void HG_Attack();
 void HG_PlayerSpawn();
 void HG_PlayerSpawnEx(entity);
 void HG_PlayerJoin();
-void HG_ResetState(entity);
+void HG_ResetState(entity, float);
 void HG_GiveBonus(entity, float, float, string, float);
 void HG_GiveRandomBonus(entity, float, string, float);
 void HG_Napalm();
@@ -70,7 +70,6 @@ void HG_SetCooldown(.float cdfield, float gcd, float cd);
 .float hg_detonable_updated;
 .float hg_nextsnd;
 .float hg_sndcount;
-.float hg_clearammo;
 .float hg_detonatepressed;
 .float hg_ranthink;
 .float hg_wp_nextthink;
@@ -158,7 +157,7 @@ float hg_context_isaltintended;
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
 
-#define IF_HG_LINKER_APPLICABLE(p) if(p.takedamage) if(!p.jb_isprisoned) if(p.deadflag == DEAD_NO) if(!p.frozen)
+#define IF_HG_LINKER_APPLICABLE(p) if((p).takedamage && !PlayerIsDead(p))
 
 #define HG_DO_IN_ALL_CONTEXTS(block) { HG_SetContext(FALSE); block if(g_nadgets_double) { HG_SetContext(TRUE); block } }
 #define HG_LOOP_FOR_ALL_CONTEXTS(i,block) for(i = 0; i <= g_nadgets_double; ++i) { HG_SetContext(i); block }
