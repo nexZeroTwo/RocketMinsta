@@ -720,6 +720,24 @@ void HG_Grenade_Touch() {
         }
 
 :troll
+        if(self.hg_type == HG_RAZE) {
+            if(trace_ent && trace_ent.solid == SOLID_BSP)
+                self.movedir = trace_plane_normal;
+
+            var o = self.origin + [0, 0, CVAR(sv_stepheight)];
+            var norm = trace_plane_normal;
+            tracebox(o, self.mins, self.maxs, o + self.velocity * frametime, MOVE_WORLDONLY, self);
+
+            if(trace_fraction < 1 && trace_dphitcontents & DPCONTENTS_SOLID) {
+                trace_plane_normal = norm;
+                var spd = vlen(self.velocity) * 0.5;
+                var dir = normalize(self.velocity);
+                dir = dir - 2 * (dir * trace_plane_normal) * trace_plane_normal;
+                self.velocity = dir * spd;
+                setorigin(self, self.origin + self.velocity * frametime);
+                move_out_of_solid(self);
+            }
+        }
 
         if(self.hg_type == HG_LASER)
             spamsound(self, CHAN_PROJECTILE, RM_SOUND_LASER_SECONDARY, VOL_BASE, ATTN_NORM);
@@ -1037,6 +1055,8 @@ void HG_Grenade_Think() {
                 if(GV("speedscale")){                  
                     self.velocity = self.hg_minVelocity;
                 } else {
+                    setorigin(self, self.origin + self.movedir * 5);
+                    move_out_of_solid(self);
                     self.velocity = self.hg_deferredVel;
                     sound(self, CHAN_WEAPON2, "porto/bounce.wav", VOL_BASE, ATTN_NORM);
                     pointparticles(particleeffectnum("smoke_ring"), self.origin, -self.velocity, 10);
