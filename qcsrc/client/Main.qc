@@ -188,9 +188,21 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
     registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
     registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
-    registercvar("cl_extendfragmessages", "1", CVAR_SAVE);
     registercvar("cl_truezapper", "0", CVAR_SAVE);
     registercvar("cl_frozentint", "1", CVAR_SAVE);
+    registercvar("cl_message", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_log", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_log_deaths", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_log_streaks", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_log_multikills", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_frags", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_frags_extended", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_streaks", "1", CVAR_SAVE);
+    registercvar("cl_message_obituary_multikills", "1", CVAR_SAVE);
+    registercvar("cl_message_praise", "1", CVAR_SAVE);
+    registercvar("cl_message_praise_show", "1", CVAR_SAVE);
+    registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
 
     gametype = 0;
 
@@ -678,9 +690,12 @@ void PostInit(void)
         case 51:
         case 52:
             localcmd("seta rm_altcharge 0; altcharge 0\n");
+        case 53:
+            if(cvar_type("cl_extendfragmessages") & CVAR_TYPEFLAG_EXISTS)
+                cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
             
 		//More to come here with each update
-		localcmd("seta rm_initialized 53\n");
+		localcmd("seta rm_initialized 54\n");
 		RM_OUTDATED
 		break;
 	}
