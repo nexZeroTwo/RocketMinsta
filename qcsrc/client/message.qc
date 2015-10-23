@@ -243,8 +243,17 @@ string WeaponDeathString(float deathtype) {
             else
                 return "was blasted by #'s plasma bomb";
 
+        case HG_NAPALM:
+            return "engaged in #'s hot napalm action";
+
+        case HG_TRANSLOC:
+            return "let # invade their personal space";
+
         case HG_SHIELD:
-            return "suffered from death feedback induced by #'s reflective shield";
+            if(deathtype & HITTYPE_SECONDARY)
+                return "swallowed #'s discharge";
+            else
+                return "suffered from death feedback induced by #'s powershield";
 
         case HG_GG:
             return "has been outskilled by #'s gg button, gg!";
@@ -325,6 +334,8 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 burned to death\n");
         else if(deathtype == DEATH_NOISE)
             print("^1", s, "^1 was too noisy to live\n");
+        else if(deathtype == DEATH_ENDURANCE)
+            print("^1", s, "^1 couldn't endure the hardships of life\n");
         else if(deathtype != DEATH_TEAMCHANGE)
             print("^1", s, "^1 couldn't resist the urge to self-destruct\n");
 
@@ -391,7 +402,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     else
                         print("^1", s, "^1 ", substring(w_deathtypestring, 0, p), a, "^1", substring(w_deathtypestring, p+1, strlen(w_deathtypestring) - (p+1)), "\n");
                 }
-                else if(deathtype == DEATH_TELEFRAG || deathtype == HG_TRANSLOC)
+                else if(deathtype == DEATH_TELEFRAG)
                     print("^1", s, "^1 was telefragged by ", a, "\n");
                 else if(deathtype == DEATH_DROWN)
                     print("^1", s, "^1 was drowned by ", a, "\n");
@@ -423,7 +434,9 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                 else if(deathtype == DEATH_FIRE)
                     print("^1", s, "^1 was burnt to death by ^1", a, "\n");
                 else if(deathtype == DEATH_MEODP)
-                        print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                    print("^1", s, "^1 exposed his sensitive spot to ", a, "^1's Mystic Eyes of Death Perception\n");
+                else if(deathtype == DEATH_ENDURANCE)
+                    print("^1", s, "^1 couldn't endure ", a, "^1's rough handling\n");
                 else
                     print("^1", s, "^1 was fragged by ", a, "\n");
 
@@ -464,6 +477,8 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
             print("^1", s, "^1 was unfairly eliminated\n");
         else if(deathtype == DEATH_FIRE)
             print("^1", s, "^1 burnt to death\n");
+        else if(deathtype == DEATH_ENDURANCE)
+            print("^1", s, "^1 couldn't endure the hardships of life\n");
         else if(getstati(STAT_ROUNDSTATE) != ROUNDSTATE_OVER)
             print("^1", s, "^1 died\n");
 
