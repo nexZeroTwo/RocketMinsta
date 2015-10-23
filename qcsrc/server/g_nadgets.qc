@@ -1112,6 +1112,8 @@ void HG_Grenade_Think() {
         }
     }
     
+    HG_HealEmitter();
+
     self.nextthink = time;
     self.hg_ranthink += 1;
     #undef GV
@@ -2000,7 +2002,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     
     if(hgtype == HG_TRANSLOC)
         self.hg_transloc_last = gren;
-    
+
     self.hg_power = 0;
     return gren;
 }
