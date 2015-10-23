@@ -34,7 +34,7 @@ void W_Plasma_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/electrobitch.wav");
+                        CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AWESOME);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;

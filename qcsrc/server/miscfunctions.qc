@@ -1803,8 +1803,6 @@ void precache()
         precache_sound ("misc/jetpack_fly.wav");
 
     // announcer sounds - male
-    precache_sound ("announcer/male/electrobitch.wav");
-    precache_sound ("announcer/male/airshot.wav");
     precache_sound ("announcer/male/03kills.wav");
     precache_sound ("announcer/male/05kills.wav");
     precache_sound ("announcer/male/10kills.wav");
@@ -1813,11 +1811,6 @@ void precache()
     precache_sound ("announcer/male/25kills.wav");
     precache_sound ("announcer/male/30kills.wav");
     precache_sound ("announcer/male/botlike.wav");
-    precache_sound ("announcer/male/yoda.wav");
-    precache_sound ("announcer/male/amazing.wav");
-    precache_sound ("announcer/male/awesome.wav");
-    precache_sound ("announcer/male/headshot.wav");
-    precache_sound ("announcer/male/impressive.wav");
 
     // announcer sounds - robotic
     precache_sound ("announcer/robotic/prepareforbattle.wav");

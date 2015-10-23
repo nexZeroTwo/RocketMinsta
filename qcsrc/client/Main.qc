@@ -200,6 +200,9 @@ void CSQC_Init(void)
     registercvar("cl_message_obituary_frags_extended", "1", CVAR_SAVE);
     registercvar("cl_message_obituary_streaks", "1", CVAR_SAVE);
     registercvar("cl_message_obituary_multikills", "1", CVAR_SAVE);
+    registercvar("cl_message_praise", "1", CVAR_SAVE);
+    registercvar("cl_message_praise_show", "1", CVAR_SAVE);
+    registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
 
     gametype = 0;
 

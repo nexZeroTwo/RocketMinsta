@@ -610,6 +610,39 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
         sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
 }
 
+void Message_Praise(float prflags) {
+    if(!CVAR(cl_message_praise))
+        return;
+
+    float show = CVAR(cl_message_praise_show);
+    float annc = CVAR(cl_message_praise_announce);
+
+    if(prflags & CSQCMSG_PRAISEFLAG_HEADSHOT) {
+        if(show) bigprint("^1Head ^7Shot!", "", 1);
+        if(annc) announce("announcer/male/headshot.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AWESOME) {
+        if(show) bigprint("^5Awesome!", "", 1);
+        if(annc) announce("announcer/male/awesome.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_IMPRESSIVE) {
+        if(show) bigprint("^3Impressive!", "", 1);
+        if(annc) announce("announcer/male/impressive.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AMAZING) {
+        if(show) bigprint("^5Amazing!", "", 1);
+        if(annc) announce("announcer/male/amazing.wav");
+    }
+
+    if(prflags & CSQCMSG_PRAISEFLAG_AIRSHOT) {
+        if(show) bigprint("^7Airshot!", "", 1);
+        if(annc) announce("announcer/male/airshot.wav");
+    }
+}
+
 void Message_Read(void) {
     float enabled = CVAR(cl_message);
     float type = ReadByte();
@@ -631,6 +664,14 @@ void Message_Read(void) {
 
             if(enabled)
                 Message_Obituary(targ, attacker, deathtype, customMessage, attackerSpree, targetSpree, attackerSpreeShort);
+            break;
+        }
+
+        case CSQCMSG_PRAISE: {
+            float prflags = ReadByte();
+
+            if(enabled)
+                Message_Praise(prflags);
             break;
         }
 
