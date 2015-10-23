@@ -2,7 +2,7 @@
 .vector HookEnd;
 .float HookKillTime;
 
-void Draw_CylindricLine(vector from, vector to, float thickness, string texture, float aspect, float shift, vector rgb, float alpha, float drawflag)
+void Draw_CylindricLine(vector from, vector to, float thickness, string texture, float aspect, float shift, vector rgb, float alpha, float drawflag, vector vieworg)
 {
 	// I want to draw a quad...
 	// from and to are MIDPOINTS.
@@ -14,7 +14,7 @@ void Draw_CylindricLine(vector from, vector to, float thickness, string texture,
 	length_tex = aspect * vlen(to - from) / thickness;
 
 	// direction is perpendicular to the view normal, and perpendicular to the axis
-	thickdir = normalize(cross(axis, view_origin - from));
+	thickdir = normalize(cross(axis, vieworg - from));
 
 	A = from - thickdir * (thickness / 2);
 	B = from + thickdir * (thickness / 2);
@@ -29,20 +29,34 @@ void Draw_CylindricLine(vector from, vector to, float thickness, string texture,
 	R_EndPolygon();
 }
 
+string Draw_GrapplingHook_trace_callback_tex;
+float Draw_GrapplingHook_trace_callback_offs;
+vector Draw_GrapplingHook_trace_callback_rgb;
+
+void Draw_GrapplingHook_trace_callback(vector start, vector hit, vector end) {
+    vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
+    Draw_CylindricLine(hit, start, 5, Draw_GrapplingHook_trace_callback_tex, 0.1, Draw_GrapplingHook_trace_callback_offs, Draw_GrapplingHook_trace_callback_rgb, 1, DRAWFLAG_ADDITIVE, v);
+    Draw_GrapplingHook_trace_callback_offs += 0.1 * vlen(hit - start) / 5;
+}
+
 void Draw_GrapplingHook()
 {
-	vector a, b;
+	vector a, a_visual, b;
 	string tex;
 	vector rgb;
 	float t;
 
 	if(time >= self.HookKillTime)
 		return;
-	if(self.sv_entnum == player_localentnum - 1)
-		a = view_origin + view_forward * hook_shotorigin_x + view_right * hook_shotorigin_y + view_up * hook_shotorigin_z;
+	if(self.sv_entnum == player_localentnum - 1) {
+		a_visual = view_origin + view_forward * hook_shotorigin_x + view_right * hook_shotorigin_y + view_up * hook_shotorigin_z;
+		a = view_origin;
+	} else
+		a = a_visual = self.HookStart;
+	if (WarpZone_FixView_lastwarp)
+		b = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.HookEnd);
 	else
-		a = self.HookStart;
-	b = self.HookEnd;
+		b = self.HookEnd;
 
 	t = GetPlayerColorForce(self.sv_entnum);
 
@@ -71,8 +85,12 @@ void Draw_GrapplingHook()
 		tex = "particles/hook_green";
 		rgb = '.4 1 .4';
 	}
-	//Draw_CylindricLine(b, a, 5, tex, 0.25, random(), rgb, 1, DRAWFLAG_NORMAL);
-	Draw_CylindricLine(b, a, 5, tex, 0.1, -2 * time, rgb, 1, DRAWFLAG_ADDITIVE);
+
+    Draw_GrapplingHook_trace_callback_tex = tex;
+    Draw_GrapplingHook_trace_callback_offs = -2 * time;
+    Draw_GrapplingHook_trace_callback_rgb = rgb;
+    WarpZone_TraceTriangle(a, a_visual, b, MOVE_NOMONSTERS, world, Draw_GrapplingHook_trace_callback);
+    Draw_GrapplingHook_trace_callback_tex = string_null;
 }
 
 void Net_GrapplingHook()

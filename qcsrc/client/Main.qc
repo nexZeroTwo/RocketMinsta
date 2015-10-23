@@ -266,6 +266,7 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
+    WarpZone_Init();
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -277,6 +278,7 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+    WarpZone_Shutdown();
 
 	HUDSkin_Unload();
 	IP2C_Shutdown();
@@ -1729,6 +1731,9 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
         case ENT_CLIENT_ZAPPER: case ENT_CLIENT_ZAPPER_SHIELD: Zapper_Read(t); break;
         case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
+        case ENT_CLIENT_WARPZONE: WarpZone_Read(bIsNewEntity); break;
+        case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
+        case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;

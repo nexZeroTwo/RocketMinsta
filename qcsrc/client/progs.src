@@ -22,6 +22,11 @@ csqc_builtins.qc
 ../common/nadgets.qh
 ../common/buffs.qh
 
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/client.qh
+
 ../common/mapinfo.qh
 interpolate.qh
 teamradar.qh
@@ -89,3 +94,8 @@ bgmscript.qc
 ../common/interpolation.qc
 ../common/nadgets.qc
 ../common/buffs.qc
+
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/client.qc

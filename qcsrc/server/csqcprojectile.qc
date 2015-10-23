@@ -3,7 +3,7 @@
 float CSQCProjectile_SendEntity(entity to, float sf)
 {
 	// note: flag 0x20 = no trail please
-	sf = sf & 31;
+	sf = sf & 63;
 
 	if(self.csqcprojectile_clientanimate)
 		sf |= 128; // client animated, not interpolated

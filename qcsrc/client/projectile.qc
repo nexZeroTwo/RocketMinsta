@@ -247,7 +247,7 @@ void Projectile_Draw()
 		self.angles = AnglesTransform_Multiply(self.angles, rot * (t - self.spawntime));
 	}
 
-	fixedmakevectors(self.angles);
+	fixedmakevectors2(self.angles);
 
 	trailorigin = self.origin;
 	switch(self.cnt)
@@ -572,8 +572,11 @@ void Ent_Projectile()
 			self.move_movetype = MOVETYPE_BOUNCEMISSILE;
 	}
 
-	if(!(self.count & 0x80))
+	if(!(self.count & 0x80)) {
 		InterpolateOrigin_Note();
+		if(f & 0x20)
+			InterpolateOrigin_Note(); //Call this second time to avoid bug with rocket trail and warp. How do it better?
+	}
 	
 	self.draw = Projectile_Draw;
 	self.entremove = Ent_RemoveProjectile;

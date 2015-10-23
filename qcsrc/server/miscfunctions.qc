@@ -788,23 +788,6 @@ void GetCvars(float f)
 }
 
 void GameCommand(string);
-void backtrace(string msg)
-{
-    float dev, war;
-    dev = CVAR(developer);
-    war = CVAR(prvm_backtraceforwarnings);
-    cvar_set("developer", "1");
-    cvar_set("prvm_backtraceforwarnings", "1");
-    dprint("\n");
-    dprint("--- CUT HERE ---\nWARNING: ");
-    dprint(msg);
-    dprint("\n");
-    remove(world); // isn't there any better way to cause a backtrace?
-    dprint("\n--- CUT UNTIL HERE ---\n");
-    cvar_set("developer", ftos(dev));
-    cvar_set("prvm_backtraceforwarnings", ftos(war));
-    GameCommand("time");
-}
 
 float Team_Index(float t) {
     switch(t) {
@@ -2242,7 +2225,8 @@ float projectile_skipnonsolid()
 	}
 	return FALSE;
 }
-#define PROJECTILE_SKIPNONSOLID if (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid()) { return; }
+
+#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid())) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
@@ -2649,7 +2633,7 @@ void attach_sameorigin(entity e, entity to, string tag)
     // current forward and up directions
     if (substring(e.model, 0, 1) == "*") // bmodels have their own rules
         e.angles_x = -e.angles_x;
-    fixedmakevectors(e.angles);
+    fixedmakevectors2(e.angles);
 
     // untransform forward, up!
     e_forward_x = v_forward * t_forward;

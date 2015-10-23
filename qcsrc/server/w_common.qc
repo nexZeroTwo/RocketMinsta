@@ -84,43 +84,24 @@ void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
     attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
 }
 
-void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
-    vector hitloc, force, endpoint, dir;
-    entity ent, endent;
-    float endq3surfaceflags;
+float FireRailgunBullet_trace_deathtype;
+void FireRailgunBullet_trace_callback(vector from, vector end, vector to) {
+    vector dir;
     float length;
     vector beampos;
-    string snd;
-    entity pseudoprojectile;
-    entity pts, hitents;
     float f;
-
-    railgun_start = start;
-    railgun_end = end;
-
-    dir = normalize(end - start);
-    length = vlen(end - start);
-    force = dir * bforce;
-
-    // go a little bit into the wall because we need to hit this wall later
-    end = end + dir;
-
-    pts = Buffs_MEODP_Hitscan_Begin(self);
-    
-    hitents = tracerail_antilag(self, start, end, FALSE, self);
-
-    endpoint = trace_endpos;
-    endent = trace_ent;
-    endq3surfaceflags = trace_dphitq3surfaceflags;
-
+    string snd;
+    length = vlen(to - from);
+    dir = normalize(to - from);
+    entity pseudoprojectile;
     // Find all non-hit players the beam passed close by
-    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+    if(FireRailgunBullet_trace_deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(FireRailgunBullet_trace_deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
         if(msg_entity != self)
         if not(msg_entity.tracerail_hit)
         if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
             // nearest point on the beam
-            beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
+            beampos = from + dir * bound(0, (msg_entity.origin - from) * dir, length);
 
             f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
             if(f <= 0)
@@ -137,6 +118,30 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             remove(pseudoprojectile);
     }
 
+}
+
+void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
+    vector hitloc, endpoint;
+    entity ent, endent;
+    float endq3surfaceflags;
+    entity pts, hitents;
+    float f;
+
+    railgun_start = start;
+    railgun_end = end;
+
+    // go a little bit into the wall because we need to hit this wall later
+    //end = end + dir;
+
+    pts = Buffs_MEODP_Hitscan_Begin(self);
+    
+    FireRailgunBullet_trace_deathtype = deathtype;
+    hitents = tracerail_antilag(self, start, end, FALSE, self, FireRailgunBullet_trace_callback);
+
+    endpoint = trace_endpos;
+    endent = trace_ent;
+    endq3surfaceflags = trace_dphitq3surfaceflags;
+
     W_Accuracy_RegisterShot(self, self.weapon);
 
     // find all the entities the railgun hit and hurt them
@@ -146,9 +151,9 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
         hitloc = ent.tracerail_endpos;
 
         float tdamage = bdamage;
-        vector tforce = force;
+        vector tforce = bforce * ent.tracerail_dir;
 
-        float dst = (hitloc - start) * dir;
+        float dst = vlen(end - start) * ent.tracerail_fraction;
 
         tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
         tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
@@ -279,16 +284,6 @@ void W_BallisticBullet_LeaveSolid_think()
 	UpdateCSQCProjectile(self);
 }
 
-// a fake logarithm function
-float log(float x)
-{
-	if(x < 0.0001)
-		return 0;
-	if(x > 0.9 && x < 1.1)
-		return x - 1;
-	return 2 * log(sqrt(x));
-}
-
 float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
 {
 	// move the entity along its velocity until it's out of solid, then let it resume
@@ -406,7 +401,15 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     W_SetHitscanVisuals(self, end);
     trailparticles(world, eff, w_shotorg_visual, end);
 
-    Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
+    Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
+}
+
+entity fireBallisticBullet_trace_callback_ent;
+float fireBallisticBullet_trace_callback_eff;
+void fireBallisticBullet_trace_callback(vector start, vector hit, vector end)
+{
+	if(vlen(trace_endpos - fireBallisticBullet_trace_callback_ent.origin) > 16)
+		zcurveparticles_from_tracetoss(fireBallisticBullet_trace_callback_eff, fireBallisticBullet_trace_callback_ent.origin, trace_endpos, fireBallisticBullet_trace_callback_ent.velocity);
 }
 
 void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, float lifetime, float damage, float headshotbonus, float force, float dtype, float tracereffects, float gravityfactor, float bulletconstant)
@@ -487,10 +490,10 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         
 		for(;;)
 		{
-			tracetoss_skipnonsolid(self, oldself, 0.05 * 0.125, 200);
+			fireBallisticBullet_trace_callback_ent = self;
+			fireBallisticBullet_trace_callback_eff = eff;
+			WarpZone_TraceToss_ThroughZone(self, oldself, 0.125 * 0.05, 200, world, fireBallisticBullet_trace_callback);
 
-			if(vlen(trace_endpos - self.origin) > 16)
-				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);
 			if(trace_fraction == 1)
 				break;
 				// won't hit anything anytime soon (DP's
@@ -500,7 +503,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			other = trace_ent;
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
-			self.velocity_z -= CVAR(sv_gravity) * dt;
+			self.velocity = WarpZone_tracetoss_velocity;
             
 			if(!SUB_OwnerCheck())
 			{

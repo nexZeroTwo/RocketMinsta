@@ -316,3 +316,22 @@ void spawnfunc_trigger_teleport (void)
 		return;
 	}
 }
+
+void WarpZone_PostTeleportPlayer_Callback(entity pl, entity wz)
+{
+	UpdateCSQCProjectileAfterTeleport(pl);
+	if(pl.zapper_beam) {
+		pl.zapper_beam.origin = WarpZone_TransformOrigin(wz, pl.zapper_beam.origin);
+		pl.zapper_beam.SendFlags |= 16;
+		entity oldself = self;
+		self = pl.zapper_beam;
+		W_Zapper_Beam_Think();
+		self = oldself;
+	}
+	if(pl.classname == "player")
+	{
+		// reset tracking of oldvelocity for impact damage (sudden velocity changes)
+		pl.oldvelocity = pl.velocity;
+	}
+}
+		

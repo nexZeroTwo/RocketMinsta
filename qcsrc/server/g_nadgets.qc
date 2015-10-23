@@ -366,10 +366,12 @@ void HG_Plasma_Projectile_Think() {
     
     if(self.hg_plasma_projdist) {
         for(e = world; (e = findfloat(e, csqcprojectile_extradata, self.csqcprojectile_extradata));) if(e != self)
-            if(e.realowner == self.realowner) if(e.projectiledeathtype == self.projectiledeathtype)
-            if(vlen(self.origin - e.origin) < self.hg_plasma_projdist) {
-                found = TRUE;
-                break;
+            if(e.realowner == self.realowner) if(e.projectiledeathtype == self.projectiledeathtype) {
+                WarpZone_FindNearestOrigin(self.origin, e.origin, 0);
+                if(WarpZone_FindNearestOrigin_length < self.hg_plasma_projdist) {
+                    found = TRUE;
+                    break;
+                }
             }
         
         if(!found) {
@@ -1251,7 +1253,7 @@ void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
 
 void HG_Shield_Discharge_Think(void) {
     entity targ;
-    vector start, end;
+    vector start, end, end_visual;
     float damage;
     float arc = CVAR(g_nadgets_shield_damage_store_arc);
 
@@ -1291,6 +1293,7 @@ void HG_Shield_Discharge_Think(void) {
     targ = trace_ent;
     start = w_shotorg;
     end = trace_endpos;
+    end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 
     setorigin(self, end);
     RadiusDamage(self, self.owner, damage, damage * CVAR(g_nadgets_shield_damage_store_edgefactor),
@@ -1298,7 +1301,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end);
+    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end_visual);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_Present(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
@@ -2587,15 +2590,15 @@ void HG_AdvanceRegen(entity plr, float delta, float limit) {
     plr.hg_ctx_regentime -= delta;
 
     if(plr.hg_ctx_regentime <= 0) {
-        var remainder = -plr.hg_ctx_regentime;
-        if(almost_equals(remainder, 0))
-            remainder = 0;
+        var rem = -plr.hg_ctx_regentime;
+        if(almost_equals(rem, 0))
+            rem = 0;
 
         plr.hg_ctx_ammo += 1;
         HG_SetRegenTime(plr, HG_RegenTime(plr));
 
-        if(remainder)
-            HG_AdvanceRegen(plr, remainder, limit);
+        if(rem)
+            HG_AdvanceRegen(plr, rem, limit);
     }
 }
 

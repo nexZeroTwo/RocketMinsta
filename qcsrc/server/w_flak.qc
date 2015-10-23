@@ -113,8 +113,8 @@ void W_Flak_Attack1(void) {
     for(i = 0; i < pcount; ++i) {
         vector a = vectoangles(w_shotdir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_primary_spread_up)
-                           + '0 1 0' * crandom() * CVAR(g_balance_flak_primary_spread_side));
+        fixedmakevectors2(a + '1 0 0' *  random() * CVAR(g_balance_flak_primary_spread_up)
+                            + '0 1 0' * crandom() * CVAR(g_balance_flak_primary_spread_side));
 
         W_Flak_Projectile(self,
                           CVAR(g_balance_flak_primary_damage),
@@ -146,8 +146,8 @@ void W_Flak_Attack2(void) {
     for(i = 0; i < pcount; ++i) {
         vector a = vectoangles(w_shotdir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_secondary_spread_up)
-                           + '0 1 0' * crandom() * CVAR(g_balance_flak_secondary_spread_side));
+        fixedmakevectors2(a + '1 0 0' *  random() * CVAR(g_balance_flak_secondary_spread_up)
+                            + '0 1 0' * crandom() * CVAR(g_balance_flak_secondary_spread_side));
 
         W_Flak_Projectile(self,
                           CVAR(g_balance_flak_secondary_damage),
@@ -197,8 +197,8 @@ void W_Flak_Bomb_Explode(void) {
     for(i = 0; i < c; ++i) {
         vector a = vectoangles(dir);
 
-        fixedmakevectors(a + '1 0 0' * crandom() * spread_up
-                           + '0 1 0' * crandom() * spread_side);
+        fixedmakevectors2(a + '1 0 0' * crandom() * spread_up
+                            + '0 1 0' * crandom() * spread_side);
 
         entity p = W_Flak_Projectile(self.owner,
                           CVAR(g_balance_flak_secondary_damage),

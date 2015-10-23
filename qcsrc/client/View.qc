@@ -67,11 +67,11 @@ void Porto_Draw()
 			p = p - view_up * 16;
 		if(idx-1 >= portal1_idx)
 		{
-			Draw_CylindricLine(p, q, 4, "", 1, 0, '0 0 1', 0.5, DRAWFLAG_NORMAL);
+			Draw_CylindricLine(p, q, 4, "", 1, 0, '0 0 1', 0.5, DRAWFLAG_NORMAL, view_origin);
 		}
 		else
 		{
-			Draw_CylindricLine(p, q, 4, "", 1, 0, '1 0 0', 0.5, DRAWFLAG_NORMAL);
+			Draw_CylindricLine(p, q, 4, "", 1, 0, '1 0 0', 0.5, DRAWFLAG_NORMAL, view_origin);
 		}
 		--idx;
 	}
@@ -82,12 +82,16 @@ void Plasma_Draw() {
     entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
     string tex = "particles/zapper";
     
+    vector nearest_origin;
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
         vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
-        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
-            Draw_CylindricLine(n.origin, e.origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE);
-            //n.plasma_drawn = time;
+        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) {
+            nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, 1);
+            if(e != n) if(n.extradata == e.extradata) if(WarpZone_FindNearestOrigin_length < 200) {
+                Draw_CylindricLine(n.origin, nearest_origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE, view_origin);
+                //n.plasma_drawn = time;
+            }
         }
         
         e.plasma_drawn = time;
@@ -443,11 +447,18 @@ void CSQC_UpdateView(float w, float h)
 
 	ticrate = getstatf(STAT_MOVEVARS_TICRATE) * getstatf(STAT_MOVEVARS_TIMESCALE);
 
+	WarpZone_FixView();
+
 	// Render the Scene
 	if(!intermission || !view_set)
 	{
-		view_origin = pmove_org + '0 0 1' * getstati(STAT_VIEWHEIGHT);
-		view_angles = input_angles;
+		if(warpzone_newstyle) {
+			view_origin = getpropertyvec(VF_ORIGIN);
+			view_angles = getpropertyvec(VF_ANGLES);
+		} else {
+			view_origin = pmove_org + '0 0 1' * getstati(STAT_VIEWHEIGHT);
+			view_angles = input_angles;
+		}
 		makevectors(view_angles);
 		view_forward = v_forward;
 		view_right = v_right;
@@ -548,6 +559,8 @@ void CSQC_UpdateView(float w, float h)
 
 	// ALWAYS Clear Current Scene First
 	R_ClearScene();
+	setproperty(VF_ORIGIN, view_origin);
+	setproperty(VF_ANGLES, view_angles);
 
 	// Assign Standard Viewflags
 	// Draw the World (and sky)
