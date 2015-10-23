@@ -1735,10 +1735,8 @@ float HG_GG_Button(float hgtype) {
     
     FOR_EACH_PLAYER(p)
     if(p != self)
+    if(!PlayerIsDead(p))
     if(!teams_matter || p.team != self.team || Buffs_Present(self, BUFF_MEDIC) || Buffs_Present(self, BUFF_ADEPT))
-    if(p.deadflag == DEAD_NO)
-    if(!p.frozen)
-    if(!p.jb_isprisoned)
     if(vlen(self.origin - p.origin) < range) {
         vector o = self.origin + self.view_ofs;
         vector e = p.origin + p.view_ofs;
@@ -2081,7 +2079,7 @@ float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
 float HG_Sentry_TargetIsValid(entity emitter, entity e) {
     var sentry = emitter.owner;
 
-    if(!e || e.classname != "player" || e.frozen || e.jb_isprisoned || e.deadflag != DEAD_NO)
+    if(PlayerIsDead(e))
         return FALSE;
 
     if(!IsDifferentTeam(e, sentry.realowner) && !Buffs_Present(sentry.realowner, BUFF_MEDIC))
@@ -2114,7 +2112,7 @@ entity HG_Sentry_FindTarget(entity emitter) {
 
     mindist = range;
 
-    FOR_EACH_PLAYER(p) if(!p.frozen && !p.jb_isprisoned && p.deadflag == DEAD_NO) {
+    FOR_EACH_PLAYER(p) if(!PlayerIsDead(p)) {
         diffteam = (p != sentry.realowner && IsDifferentTeam(sentry, p));
 
         if(diffteam) {
@@ -2627,7 +2625,7 @@ void HG_Frame()
 
 	float mayfire = (!g_grappling_hook || (!self.hook && !CustomHGHookButton(self))) || self.hg_power;
 
-    if(time < self.hg_plasmalock || self.frozen || self.jb_isprisoned || self.deadflag != DEAD_NO)
+    if(time < self.hg_plasmalock || PlayerIsDead(self))
         mayfire = FALSE;
 
 	float held, isalt;
@@ -2717,7 +2715,7 @@ void HG_Frame()
 }
 
 void HG_Trigger(void) {
-    if(self.frozen || self.jb_isprisoned)
+    if(PlayerIsDead(self))
         return;
 
     if(self.hg_stealth || self.hg_stealth_saved)
@@ -2742,12 +2740,11 @@ void HG_Trigger(void) {
     }
 }
 
-void HG_ResetState(entity p) {
+void HG_ResetState(entity p, float clearammo) {
     p.hg_power = 0;
-    p.hg_ammo1 = p.hg_ammo2 = if(p.hg_clearammo) 0 else CVAR(g_nadgets_ammo);
+    p.hg_ammo1 = p.hg_ammo2 = if(clearammo) 0 else CVAR(g_nadgets_ammo);
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
-    p.hg_clearammo = 0;
     p.hg_shield = 0;
 
     HG_DO_IN_ALL_CONTEXTS({
@@ -2762,7 +2759,7 @@ void HG_PlayerSpawn()
         return;
     
     if(CVAR(g_nadgets_resetonrespawn))
-        HG_ResetState(self);
+        HG_ResetState(self, PlayerIsDead(self));
 
     self.hg_shield = 0;
     HG_UpdateDetonables();
@@ -2779,11 +2776,8 @@ void HG_PlayerSpawnEx(entity p) {
 void HG_PlayerJoin() {
     if(self.classname != "player")
         return;
-        
-    if((g_freeze && self.frozen) || (g_jailbreak && self.jb_isprisoned))
-        self.hg_clearammo = TRUE;
-    
-    HG_ResetState(self);
+
+    HG_ResetState(self, PlayerIsDead(self));
     HG_UpdateDetonables();
 }
 

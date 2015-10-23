@@ -803,7 +803,7 @@ entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
             var ticks = self.buff_endur_ticks;
             var targ = self.enemy;
 
-            if(!targ.iscreature || targ.frozen || targ.jb_isprisoned || targ.deadflag != DEAD_NO) {
+            if(PlayerIsDead(targ)) {
                 remove(self);
                 return;
             }
@@ -1121,7 +1121,7 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(!self.buff_active && !self.buff_activetime)
-    if(!self.owner || self.owner.frozen || self.owner.jb_isprisoned || self.owner.deadflag != DEAD_NO || !self.owner.iscreature || !(self.owner.buffs & self.buffs)) {
+    if(PlayerIsDead(self.owner) || !(self.owner.buffs & self.buffs == self.buffs)) {
         if(self.owner.buff_cdoverride) {
             Buffs_BuffPickup_SetCooldown(self, max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
@@ -1193,18 +1193,12 @@ void Buffs_BuffPickup_Touch(void) {
     if(self.team && other.team != self.team)
         return;
     
-    if(other.deadflag != DEAD_NO)
-        return;
-    
-    if(other.frozen)
-        return;
-    
-    if(other.jb_isprisoned)
-        return;
-    
     if(other.classname != "player")
         return;
     
+    if(PlayerIsDead(other))
+        return;
+
     if(!self.buff_active) {
         if(g_buffs_lockon && (!self.buff_lockon || self.buff_lockon == other)) {
             self.buff_lockon = other;
