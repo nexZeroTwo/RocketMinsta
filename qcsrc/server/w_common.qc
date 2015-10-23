@@ -238,19 +238,7 @@ void W_BallisticBullet_Hit (void)
 		damage_headshotbonus = 0;
 
 		if(self.dmg_edge != 0)
-		{
-			if(headshot)
-			{
-				announce(self.owner, "announcer/male/headshot.wav");
-				bigprint_spec(self.owner, "^1Head ^7Shot!", "", 1);
-			}
-			
-			if(yoda)
-			{
-				announce(self.owner, "announcer/male/awesome.wav");
-				bigprint_spec(self.owner, "^5Awesome!", "", 1);
-			}
-		}
+            CSQCMessage_Praise2(self.owner, headshot, yoda, 0, 0, 0);
 
         W_Accuracy_RegisterHit(self.owner, other, self.owner.weapon);
 	}
@@ -382,17 +370,9 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     FireRailgunBullet(start, end, damage, force, 0, 0, 0, 0, dtype);
     damage_headshotbonus = 0;
     end =  trace_endpos;
-    
-    if(headshot) {
-        announce(self, "announcer/male/headshot.wav");
-        bigprint_spec(self, "^1Head ^7Shot!", "", 1);
-    }
-    
-    if(yoda) {
-        announce(self, "announcer/male/awesome.wav");
-        bigprint_spec(self, "^5Awesome!", "", 1);
-    }
-    
+
+    CSQCMessage_Praise2(self, headshot, yoda, 0, 0, 0);
+
     if(tracereffects & EF_RED)
         eff = particleeffectnum("tr_rifle");
     else

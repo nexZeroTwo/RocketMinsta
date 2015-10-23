@@ -29,7 +29,7 @@ void W_Nex_Attack (void)
 	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_damage), CVAR(g_balance_nex_force), CVAR(g_balance_nex_damagefalloff_mindist), CVAR(g_balance_nex_damagefalloff_maxdist), CVAR(g_balance_nex_damagefalloff_halflife), CVAR(g_balance_nex_damagefalloff_forcehalflife), WEP_NEX);
 
 	if(yoda && flying)
-		announce(self, "announcer/male/yoda.wav");
+        CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_AMAZING);
 
     W_SetHitscanVisuals(self, trace_endpos);
 
@@ -54,7 +54,7 @@ void W_Nex_Attack2(void) {
     FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_secondary_damage), CVAR(g_balance_nex_secondary_force), CVAR(g_balance_nex_secondary_damagefalloff_mindist), CVAR(g_balance_nex_secondary_damagefalloff_maxdist), CVAR(g_balance_nex_secondary_damagefalloff_halflife), CVAR(g_balance_nex_secondary_damagefalloff_forcehalflife), WEP_NEX | HITTYPE_SECONDARY);
 
     if(yoda && flying)
-        announce(self, "announcer/male/yoda.wav");
+        CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_AMAZING);
 
     W_SetHitscanVisuals(self, trace_endpos);
 

@@ -5,7 +5,7 @@ void W_Grenade_Explode (void)
 			if(IsDifferentTeam(self.owner, other))
 				if(other.deadflag == DEAD_NO)
 					if(IsFlying(other))
-						announce(self.owner, "announcer/male/airshot.wav");
+                        CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
@@ -20,7 +20,7 @@ void W_Grenade_Explode2 (void)
 		if(other.classname == "player")
 			if(IsDifferentTeam(self.owner, other))
 				if(IsFlying(other))
-					announce(self.owner, "announcer/male/airshot.wav");
+                    CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
 
 	self.event_damage = SUB_Null;
 	self.takedamage = DAMAGE_NO;
