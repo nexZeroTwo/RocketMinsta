@@ -25,6 +25,9 @@ entity JoinQ_Pop(void) {
 }
 
 void JoinQ_Push(entity plr) {
+    if(plr.jb_specteam)
+        return;
+
     if(plr.joinqueue)
         error("Attempted to queue an already queued player");
     

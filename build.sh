@@ -116,10 +116,10 @@ function buildall
     [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
-    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "fteqcc.log" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
 	echo " -- Calculating sum of common/..."
-	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "fteqcc.log" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+	COMMONSUM="$(find "$QCSOURCE/common" -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 	MENUSUM="$MENUSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
@@ -128,8 +128,7 @@ function buildall
     echo "#define RM_BUILD_MENUSUM \"$MENUSUM\""      >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_COMMIT \"$COMMIT\""        >> "$QCSOURCE"/common/rm_auto.qh
-    
-	echo "#define RM_SUPPORT_CLIENTPKGS"              >> "$QCSOURCE"/common/rm_auto.qh
+
 	for i in $BUILT_PKGNAMES; do
 		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
 	done
@@ -522,8 +521,8 @@ if [ -z "$PACKCSQC" ]; then
 fi
 
 if [ -z "$AUTOCVARS_SVQC" ]; then
-    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "0"
-    AUTOCVARS_SVQC=0
+    warn-oldconfig "config.sh" "AUTOCVARS_SVQC" "1"
+    AUTOCVARS_SVQC=1
 fi
 
 if [ -z "$AUTOCVARS_CSQC" ]; then

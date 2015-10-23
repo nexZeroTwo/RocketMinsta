@@ -8,8 +8,6 @@ float cb1, cb2, cb3, cb4;
 
 float audit_teams_time;
 
-float inf_warmup_frame;
-
 float IsTeamBalanceForced()
 {
 	if(intermission_running)
@@ -25,7 +23,7 @@ float IsTeamBalanceForced()
 
 void TeamchangeFrags(entity e)
 {
-	PlayerScore_Clear(e);
+	PlayerScore_Clear(e, FALSE);
 }
 
 vector TeamColor(float teem)
@@ -48,14 +46,6 @@ vector TeamColor(float teem)
 string TeamNoName(float t)
 {
 	// fixme: Search for team entities and get their .netname's!
-	if(g_inf)
-	{
-		if(t == 1)
-			return "Infected Team";
-		if(t == 2)
-			return "Clean Team";
-		return "Neutral Team";
-	}
 	if(t == 1)
 		return "Red Team";
 	if(t == 2)
@@ -69,11 +59,9 @@ string TeamNoName(float t)
 
 void dom_init();
 void ctf_init();
-void runematch_init();
 void tdm_init();
 void nb_init();
 void entcs_init();
-void inf_init();
 
 void LogTeamchange(entity pl)
 {
@@ -98,11 +86,7 @@ void ActivateTeamplay()
 	float teamplay_default;
 	teamplay_default = CVAR(teamplay_default);
 
-	if(teamplay_default)
-		teamplay = teamplay_default;
-	else
-		teamplay = 3;
-	cvar_set("teamplay", ftos(teamplay));
+	cvar_set("teamplay", ftos(if (teamplay_default) teamplay_default else 3));
 
 	teams_matter = 1;
 }
@@ -204,15 +188,6 @@ void InitGameplayMode()
 		ctf_init();
 	}
 
-	if(g_runematch)
-	{
-		if(CVAR(deathmatch_force_teamplay))
-			ActivateTeamplay();
-		fraglimit_override = CVAR(g_runematch_point_limit);
-		leadlimit_override = CVAR(g_runematch_point_leadlimit);
-		runematch_init();
-	}
-
 	if(g_lms)
 	{
 		fraglimit_override = CVAR(g_lms_lives_override);
@@ -308,37 +283,6 @@ void InitGameplayMode()
 		leadlimit_override = CVAR(g_nexball_goalleadlimit);
 		ActivateTeamplay();
 		nb_init();
-	}
-
-    if(g_vip)
-    {
-        fraglimit_override = CVAR(g_vip_point_limit);
-        leadlimit_override = CVAR(g_vip_lead_limit);
-        timelimit_override = CVAR(g_vip_time_limit);
-        ActivateTeamplay();
-        vip_init();
-    }
-
-    if(g_prec)
-    {
-		fraglimit_override = CVAR(g_prec_point_limit);
-		leadlimit_override = CVAR(g_prec_point_leadlimit);
-		timelimit_override = CVAR(g_prec_point_timelimit);
-        prec_init();
-    }
-
-    if(g_rps)
-    {
-		// not yet implimented
-    }
-
-	if(g_inf)
-	{
-		ActivateTeamplay();
-		fraglimit_override = CVAR(g_inf_point_limit);
-		leadlimit_override = CVAR(g_inf_point_leadlimit);
-		timelimit_override = CVAR(g_inf_point_timelimit);
-        inf_init();
 	}
 
 	if(g_no)
@@ -476,13 +420,6 @@ string GetClientVersionMessage() {
 
 void SetPlayerColors(entity pl, float _color)
 {
-	/*string s;
-	s = ftos(cl);
-	stuffcmd(pl, strcat("color ", s, " ", s, "\n")  );
-	pl.team = cl + 1;
-	//pl.clientcolors = pl.clientcolors - (pl.clientcolors & 15) + cl;
-	pl.clientcolors = 16*cl + cl;*/
-
 	float pants, shirt;
 	pants = _color & 0x0F;
 	shirt = _color & 0xF0;
@@ -512,7 +449,6 @@ void SetPlayerTeam(entity pl, float t, float s, float noprint)
 
 	if(!noprint && t != s)
 	{
-		//bprint(pl.netname, " has changed to ", TeamNoName(t), "\n");
 		bprint(pl.netname, "^7 has changed from ", TeamNoName(s), " to ", TeamNoName(t), "\n");
 	}
 
@@ -805,153 +741,6 @@ float FindSmallestTeam(entity pl, float ignore_pl)
 	return smallestteam;
 }
 
-void inf_init()
-{
-    //game_starttime = warmup = time + CVAR(g_inf_start_delay);
-    warmup = time + CVAR(g_inf_start_delay);
-	inf_warmup_frame = 1;
-}
-
-void inf_warmup()
-{
-	if(!inf_warmup_frame)
-		return;
-	if(time < warmup)
-		return;
-
-	inf_warmup_frame = 0;
-	warmup += 100; // make sure everyone...
-	reset_map(TRUE);
-	warmup -= 100; // ...joins the clean team
-
-	local float lpc, lpc_big;
-	lpc_big = 0;
-	local entity pli;
-	FOR_EACH_PLAYER(pli)
-		lpc_big++;
-	lpc = lpc_big;
-	if(lpc)
-	{
-		lpc -= mod(rint(random()), lpc);
-		local string pli_netname;
-		FOR_EACH_PLAYER(pli)
-		{
-			lpc -= 1;
-			if(lpc == 0)
-			{
-				pli_netname = pli.netname;
-				// the random number generator has spoken, this player shall start
-				SetPlayerColors(pli, COLOR_TEAM1 - 1);
-				LogTeamchange(pli);
-				// because this starting player is at a disadvantage, we help him out
-				PlayerScore_Add(pli, SP_SCORE,
-				                rint(lpc_big * CVAR(g_inf_begin_reward)));
-				break;
-			}
-		}
-		FOR_EACH_PLAYER(pli)
-			if(pli.team == COLOR_TEAM1)
-				bigprint_spec(pli, "^1You  ", "^1will start  ", 2);
-			else
-				bigprint_spec(pli, strcat("^7", pli_netname, "  "), "^1will start  ", 2);
-		bprint(strcat("^7", pli_netname, "^1will start as the first infected    \n"));
-	}
-}
-
-float inf_join(entity pl)
-{
-	if(time < warmup)
-	{
-		// since we're in the warm-up stage, everybody joins the clean
-		SetPlayerColors(pl, COLOR_TEAM2 - 1);
-		LogTeamchange(pl);
-		return 2;
-	}
-	// since the game is already underway, join the infected
-	SetPlayerColors(pl, COLOR_TEAM1 - 1);
-	LogTeamchange(pl);
-	return 1;
-}
-
-void inf_infect_player(entity attacker, entity l_target)
-{
-	if(!g_inf)
-		return;
-	if(attacker.classname != "player" || l_target.classname != "player")
-		return;
-	if(attacker.team != COLOR_TEAM1 || l_target.team != COLOR_TEAM2)
-		return;
-	SetPlayerColors(l_target, COLOR_TEAM1 - 1);
-	LogTeamchange(l_target);
-	PlayerScore_Add(attacker, SP_SCORE, CVAR(g_inf_infection_reward));
-
-	// let the people know what just happened
-	// (and count the clean players while were at it)
-	local float clean_players;
-	clean_players = 0;
-    local entity pi, last_clean_player;
-    FOR_EACH_PLAYER(pi)
-    {
-		if(pi == attacker)
-			centerprint_spec(pi, strcat(NEWLINES,
-			                 "^1You infected ^7", l_target.netname, "^1!"));
-		else if(pi == l_target)
-			centerprint_spec(pi, strcat(NEWLINES,
-			       "^1You have been infected by ^7", attacker.netname, "^1!"));
-		else
-		{
-			centerprint_spec(pi, strcat(NEWLINES,
-	      "^7", attacker.netname, "^1 has infected ^7", l_target.netname, "^1!"));
-	        // while we're at it, we'll also reward the players who didn't get infected
-	        if(pi.team == COLOR_TEAM2)
-	            PlayerScore_Add(pi, SP_SCORE, CVAR(g_inf_survival_reward));
-	    }
-
-		if(pi.team == COLOR_TEAM2)
-		{
-			clean_players += 1;
-			last_clean_player = pi;
-		}
-    }
-	bprint(strcat("^7", attacker.netname, "^1 has infected ^7",
-	              l_target.netname, "\n"));
-
-    if(!clean_players)
-		end_match(1);
-    else if(clean_players == 1)
-    {
-		play2all("announcer/robotic/1fragleft.wav");
-		FOR_EACH_PLAYER(pi)
-			if(pi == last_clean_player)
-				bigprint_spec(pi, "^1You", "^1are the last one remaining!", 2);
-			else
-				bigprint_spec(pi, strcat("^7", last_clean_player.netname),
-		                          "^1is the last one remaining!", 2);
-		bprint(strcat("^7", last_clean_player.netname,
-					  "^1is the last one remaining!\n"));
-    }
-    else 
-		bprint(strcat("^1", ftos(clean_players), " uninfected players remain\n"));
-}
-
-void inf_player_leave(entity p)
-{
-	if(!g_inf) return;
-	if(time < warmup) return;
-
-	// make sure a everyone isn't stuck as the infected
-
-	local float clean_players;
-    local entity pi;
-	clean_players = 0;
-    FOR_EACH_PLAYER(pi)
-		if(pi != p)
-			if(pi.team == COLOR_TEAM2)
-				clean_players += 1;
-    if(!clean_players)
-		end_match(1);
-}
-
 float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
 {
 	float smallest, selectedteam;
@@ -963,9 +752,6 @@ float JoinBestTeam(entity pl, float only_return_best, float forcebestteam)
 	// find out what teams are available
 	CheckAllowedTeams(pl);
 	
-	if(g_inf)
-		return inf_join(pl);
-
 	// if we don't care what team he ends up on, put him on whatever team he entered as.
 	// if he's not on a valid team, then let other code put him on the smallest team
 	if(!forcebestteam)

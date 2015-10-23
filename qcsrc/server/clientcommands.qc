@@ -1,4 +1,3 @@
-void inf_player_leave(entity);
 
 entity nagger;
 float readycount;
@@ -216,6 +215,7 @@ void SV_ParseClientCommand(string s) {
 		OPTAVAIL_RAW("freezetag_danger", "1")		// TODO: maybe a serverside setting for this too?
         OPTAVAIL_RAW("radio", ftos(sv_radio))
         OPTAVAIL    ("dodging", "g_dodging")
+        OPTAVAIL_RAW("altcharge", ftos(g_nadgets))
 		
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
@@ -398,7 +398,7 @@ void SV_ParseClientCommand(string s) {
 			self.classname = "observer";
 			self.version_mismatch = 1;
 			PutClientInServer();
-		} else if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force) || CVAR(g_inf)) {
+		} else if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force)) {
 			//JoinBestTeam(self, FALSE, TRUE);
 		} else if(teams_matter && !CVAR(sv_spectate)) {
 			self.classname = "observer";
@@ -429,6 +429,8 @@ void SV_ParseClientCommand(string s) {
 		}
 		GetCvars(1);
 	} else if(cmd == "spectate") {
+        if(gameover)
+            return;
 		if(cmd_floodcheck())
 			return;
 		if not(self.flags & FL_CLIENT)
@@ -456,18 +458,20 @@ void SV_ParseClientCommand(string s) {
             if(self.classname == "player") {
                 EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
             } else {
-                /*
-                 * Actually no, this is probably a bad idea
-                 * 
                 if(self.jb_specteam) {
+                    if(self.scorekeeper)
+                        PlayerScore_Clear(self, TRUE);
                     self.jb_specteam = 0;
-                    PlayerScore_Set(self, SP_FROZENSTATUS, 0);
-                    PutObserverInServer();
+                    self.classname = "observer";
+                    PlayerScore_SetFlagsBoolean(self, SPFLAG_FROZEN, 0);
+                    PutClientInServer();
                 }
-                */
             }
         }
 	} else if(cmd == "join") {
+        if(gameover)
+            return;
+
 		if not(self.flags & FL_CLIENT)
 			return;
 		
@@ -485,7 +489,7 @@ void SV_ParseClientCommand(string s) {
                     return;
                 
 				self.classname = "player";
-				PlayerScore_Clear(self);
+				PlayerScore_Clear(self, FALSE);
                 
 				bprint ("^4", self.netname, "^4 is playing now\n");
                 PutClientInServer();
@@ -504,14 +508,14 @@ void SV_ParseClientCommand(string s) {
 		}
 		UnmarkAway(self);
 	} else if( cmd == "selectteam" ) {
+        if(gameover)
+            return;
 		if not(self.flags & FL_CLIENT)
 			return;
 		if( !teams_matter ) {
 			sprint(self, "selectteam can only be used in teamgames\n");
         } else if(self.jb_specteam) {
             sprint(self, "selectteam can't be used while spectating in the jail\n");
-		} else if(g_inf) {
-			//don't allow players to switch their team when playing infection
 		} else if(CVAR(g_campaign)) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
@@ -619,6 +623,11 @@ void SV_ParseClientCommand(string s) {
             return;
         
         self.hg_alwaysask = stof(argv(1));
+    } else if(cmd == "hg_altcharge") {
+        if not(self.flags & FL_CLIENT)
+            return;
+
+        self.hg_altcharge = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -652,6 +661,8 @@ void SV_ParseClientCommand(string s) {
         self.tt_lastmoment = TimeTravel_SaveMoment(self);
     } else if(cmd == "tt_takeback" && sv_cheats) {
         TimeTravel_TakeBack(self, self.tt_lastmoment);
+    } else if(cmd == "tt_takebacktracked" && sv_cheats) {
+        TimeTravel_TakeBack_ToTracked(self, time - stof(argv(1)));
 	} else if(cmd == "maplist") {
 		sprint(self, maplist_reply);
 	} else if(cmd == "lsmaps") {
@@ -1065,6 +1076,11 @@ void SV_ParseClientCommand(string s) {
             sprint(self, "^1Usage: cmd dmgstats player_id\n");
         return;
     } else if(cmd == "waypoint") {
+        if(self.classname != "player") {
+            sprint(self, "^1Only players are allowed to use this command.\n");
+            return;
+        }
+
         var action = argv(1);
 
         if(action == "clear") {
@@ -1093,15 +1109,28 @@ void SV_ParseClientCommand(string s) {
         if(!clr)
             clr = '1 1 1';
 
-        var wp = switch(action) {
-            default: case "me"   : WaypointSprite_DeployPersonal,
-                     case "team" : WaypointSprite_DeployTeam
-        } (text,
+        var vloc = 
             if(loc == "origin")
                 self.origin
             else
-                self.cursor_trace_endpos,
+                self.cursor_trace_endpos;
 
+        if(action == "team") {
+            var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
+            if(strlen(text) > lim)
+                text = substring(text, 0, lim);
+
+            if(CVAR(g_waypointsprite_custom_team_waypoint_announce)) {
+                var msg = strcat("^7WP: ", rgb_to_hexcolor(clr), text, "^7 at ^3", NearestLocation(vloc));
+                if(!Say(self, TRUE, world, msg, TRUE))
+                    return;
+            }
+        }
+
+        var wp = switch(action) {
+            default: case "me"   : WaypointSprite_DeployPersonal,
+                     case "team" : WaypointSprite_DeployTeam
+        } (text, vloc,
             {
                 var lt = max(0, stof(argv(5)));
 

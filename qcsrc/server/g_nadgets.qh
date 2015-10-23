@@ -22,12 +22,15 @@ void HG_Grenade_Think();
 void HG_Stick(void);
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
+float HG_StorageLimit(entity);
+void HG_AdvanceRegen(entity, float, float);
 void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
 void HG_Cloak_Trigger(void);
 void HG_Shield_Trigger(void);
 void HG_Bait_Body_Boom(entity body);
 float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc);
+void HG_Shield_Adept_ExtendRenew(entity plr);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
 
 .vector org_explosion;
@@ -77,6 +80,7 @@ void HG_SetCooldown(.float cdfield, float gcd, float cd);
 .float hg_optout;
 .float hg_optout_nextround;
 .float hg_alwaysask;
+.float hg_altcharge;
 .float hg_adept;
 .float hg_tl_revived;
 
@@ -109,6 +113,7 @@ var .float hg_ctx_regenpaused;
 .float hg_shield_oldmovetype;
 .float hg_shield_stored;
 .float hg_shield_stored_limit;
+.float hg_shield_damage_per_shot;
 .entity hg_shieldmodel;
 
 .float hg_stealth;
@@ -129,7 +134,6 @@ var .float hg_ctx_regenpaused;
 .float hg_linker_range;
 .float hg_linker_factor;
 .float hg_linker_hps;
-.float hg_linker_buffpower;
 
 .float hg_sentry_energy;
 

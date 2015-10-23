@@ -217,7 +217,7 @@ entity GetTeam(float Team, float add)
 	return tm;
 }
 
-void CSQC_CheckEngine()
+void SetupFonts()
 {
 	sbar_font = FONT_USER;
 	sbar_bigfont = FONT_USER;

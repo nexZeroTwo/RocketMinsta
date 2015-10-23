@@ -817,12 +817,7 @@ void spawnfunc_item_flag_team1()
 {
 	if (!g_ctf && !g_domination)
 	{
-		if(g_vip)
-		{
-			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
-			remove(self);
-		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
+		if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -938,12 +933,7 @@ void spawnfunc_item_flag_team2()
 {
 	if (!g_ctf && !g_domination)
 	{
-		if(g_vip)
-		{
-			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
-			remove(self);
-		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
+		if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);

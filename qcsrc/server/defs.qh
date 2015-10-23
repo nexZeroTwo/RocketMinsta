@@ -24,7 +24,7 @@ float ctf_score_value(string parameter);
 // derp
 #define g_total_domination g_totaldomination
 
-float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_runematch, g_race, g_nexball, g_cts, g_total_domination, g_vip, g_prec, g_rps, g_inf, g_jailbreak, g_clanarena, g_no;
+float g_dm, g_domination, g_ctf, g_tdm, g_keyhunt, g_onslaught, g_assault, g_arena, g_lms, g_race, g_nexball, g_cts, g_total_domination, g_jailbreak, g_clanarena, g_no;
 float g_cloaked, g_footsteps, g_jump_grunt, g_grappling_hook, g_laserguided_missile, g_midair, g_minstagib, g_nixnex, g_nixnex_with_laser, g_pinata, g_norecoil, g_vampire, g_minstagib_invis_alpha, g_bloodloss, g_nadgets;
 
 float g_warmup_limit;
@@ -270,7 +270,7 @@ float intermission_exittime;
 float alreadychangedlevel;
 
 
-.float runes;
+//.float runes;
 
 .float version;
 
@@ -304,8 +304,7 @@ float isJoinAllowed();
 
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
-float sys_ticrate; // gets initialised in worlspawn, saves the value from CVAR(sys_ticrate)
-float sv_lite; // used to gain a little extra speed, at the expense of some features like gibs.
+float sv_lite;
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
@@ -379,7 +378,6 @@ float startitem_failed;
 
 void DropFlag(entity flag, entity penalty_receiver, entity attacker);
 void DropBall(entity ball, vector org, vector vel);
-void DropAllRunes(entity pl);
 
 
 typedef .float floatfield;
@@ -475,13 +473,26 @@ float next_pingtime;
 		_VOICEMSG(pain50) \
 		_VOICEMSG(pain75) \
 		_VOICEMSG(pain100)
+
+#define ALLSILLYVOICEMSGS \
+        _VOICEMSG(niconii) \
+        _VOICEMSG(washiwashi) \
+        _VOICEMSG(sugoi) \
+        _VOICEMSG(yamete) \
+        _VOICEMSG(susume) \
+        _VOICEMSG(harasho) \
+        _VOICEMSG(kya) \
+        _VOICEMSG(seikou) \
+        _VOICEMSG(ureshii)
+
 #define ALLVOICEMSGS \
 		_VOICEMSG(attack) \
 		_VOICEMSG(attackinfive) \
 		_VOICEMSG(meet) \
 		_VOICEMSG(seenflag) \
 		_VOICEMSG(taunt) \
-		_VOICEMSG(teamshoot)
+		_VOICEMSG(teamshoot) \
+        ALLSILLYVOICEMSGS
 
 #define _VOICEMSG(m) .string playersound_##m;
 ALLPLAYERSOUNDS
@@ -691,12 +702,8 @@ float forbidrestart;
 
 .float rm_nododging;
 
-// precious
 .string netname2; // 2nd person netname
 .string netname3; // 3rd person netname
-.entity prec_rune;
-.float prec_grudge;
-.float prec_time;
 
 // Chaiomanot Feb 16 2012: Rather than fixing the spawn system,
 //                         I just _try_ make sure someone can't spawn in the same
@@ -737,34 +744,7 @@ float whatsgoingon;
 
 float g_allow_oldnexbeam;
 float leadlimit;
-float sv_jumpvelocity;
-float sv_gameplayfix_q2airaccelerate;
-float sv_autoaway;
-float g_walljump;
-float g_walljump_delay;
 float sv_ready_restart_after_countdown;
-float g_dodging;
-float g_freezetag_dodging_frozen;
-float g_dodging_delay;
-float g_dodging_ramp_time;
-float sv_defaultcharacter;
-float sv_defaultplayercolors;
-float sv_forcespecies;
-
-float g_balance_health_rotstable;
-float g_balance_armor_rotstable;
-float g_balance_fuel_rotstable;
-float g_balance_health_regenstable;
-float g_balance_armor_regenstable;
-float g_balance_fuel_regenstable;
-float g_balance_health_limit;
-float g_balance_armor_limit;
-float g_balance_fuel_limit;
-
-float g_balance_falldamage_deadminspeed;
-float g_balance_falldamage_factor;
-float g_balance_falldamage_minspeed;
-float g_balance_falldamage_maxdamage;
 
 .float dom_captureprogress;
 
@@ -795,6 +775,7 @@ float roundstate;
 .float vdmg_ignorenext;
 float sv_nicehealth;
 float sv_showacc;
+float sv_shownoobstat;
 
 #define HEAL_PAUSEROT_DEFAULT -1
 
@@ -820,3 +801,15 @@ void CallGameEventHook_ArgRaw(string a);
 void CallGameEventHook_ArgFloat(float f);
 void CallGameEventHook_ArgVector(vector v);
 void CallGameEventHook_ArgEntity(entity e);
+
+float Client_CalculateAlpha(entity plr, entity viewer);
+
+entity dtrack_global;
+.float noantilagtime;
+
+vector PL_VIEW_OFS;
+vector PL_MIN;
+vector PL_MAX;
+vector PL_CROUCH_VIEW_OFS;
+vector PL_CROUCH_MIN;
+vector PL_CROUCH_MAX;

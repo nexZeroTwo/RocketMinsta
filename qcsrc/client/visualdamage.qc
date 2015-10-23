@@ -242,34 +242,6 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     }
 }
 
-float vd_test_next;
-
-void VisualDamage_Test_SpawnOne(void) {
-    float f = VDMG_TYPE_HIT | VDMG_TYPE_TOSELF;
-
-    if(random() < 0.4) {
-        f |= VDMG_TYPE_HEAL;
-        f &~= VDMG_TYPE_HIT;
-    }
-
-    if(random() < 0.3)
-        f |= VDMG_TYPE_CRIT;
-
-    VisualDamage_Spawn(150 * random(), 150 * random(), f, '0 0 0');
-}
-
-void VisualDamage_Test(void) {
-    if(time < vd_test_next)
-        return;
-
-    vd_test_next = time + 0.2 * random();
-
-    float i, l = ceil(10 * random());
-
-    for(i = 0; i < l; ++i)
-        VisualDamage_Test_SpawnOne();
-}
-
 void Net_VisualDamage(void) {
     vector org;
     float dmg = ReadShort() / 10;

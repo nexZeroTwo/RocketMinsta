@@ -28,7 +28,6 @@
 #include "NewMenu/dialog_rmconfig.c"
 #include "NewMenu/dialog_gamemenu.c"
 #include "NewMenu/dialog_nademenu.c"
-#include "NewMenu/dialog_nademenudouble.c"
 #include "NewMenu/dialog_vcall.c"
 #include "NewMenu/votelist.c"
 #include "NewMenu/dialog_settings.c"

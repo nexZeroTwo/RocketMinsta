@@ -57,10 +57,6 @@ void configureMainWindowMainWindow(entity me)
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
 
-    me.nadeMenu2Dialog = i = spawnNewMenuNadeMenuDoubleDialog();
-    i.configureDialog(i);
-    me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-
 	me.vcallDialog = i = spawnNewMenuVcallDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);

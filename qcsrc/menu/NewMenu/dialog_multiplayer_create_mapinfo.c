@@ -18,7 +18,7 @@ CLASS(NewMenuMapInfoDialog) EXTENDS(NewMenuDialog)
 	ATTRIB(NewMenuMapInfoDialog, typeTDMLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeLMSLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeArenaLabel, entity, NULL)
-	ATTRIB(NewMenuMapInfoDialog, typeRuneLabel, entity, NULL)
+	//ATTRIB(NewMenuMapInfoDialog, typeRuneLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeDominationLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeKeyHuntLabel, entity, NULL)
 	ATTRIB(NewMenuMapInfoDialog, typeCTFLabel, entity, NULL)
@@ -73,7 +73,7 @@ void loadMapInfoNewMenuMapInfoDialog(entity me, float i, entity mlb)
 	me.typeLMSLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_LMS);
 	me.typeArenaLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ARENA);
 	me.typeDominationLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_DOMINATION);
-	me.typeRuneLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RUNEMATCH);
+	//me.typeRuneLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_RUNEMATCH);
 	me.typeKeyHuntLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_KEYHUNT);
 	me.typeCTFLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_CTF);
 	me.typeAssaultLabel.disabled = !(MapInfo_Map_supportedGametypes & MAPINFO_TYPE_ASSAULT);
@@ -122,8 +122,8 @@ void fillNewMenuMapInfoDialog(entity me)
 			me.typeLMSLabel = e;
 		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Arena"));
 			me.typeArenaLabel = e;
-		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Rune"));
-			me.typeRuneLabel = e;
+		//me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Rune"));
+			//me.typeRuneLabel = e;
 	me.TR(me);
 		me.TDempty(me, 0.2);
 		me.TD(me, 1, wgt, e = makeNewMenuTextLabel(0, "Domination"));

@@ -78,8 +78,24 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Arc Buff";
     else if(dtype == DEATH_IGNITE)
         return "Ignite Buff";
+    else if(dtype == DEATH_ENDURANCE)
+        return "Endurance Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
+    else if(dtype == DEATH_HURTTRIGGER)
+        return "Map entity";
+    else if(dtype == DEATH_FALL)
+        return "Fall damage";
+    else if(dtype == DEATH_TELEFRAG)
+        return "Telefrag";
+    else if(dtype == DEATH_LAVA)
+        return "Lava";
+    else if(dtype == DEATH_SLIME)
+        return "Slime";
+    else if(dtype == DEATH_SWAMP)
+        return "Swamp";
+    else if(dtype == DEATH_HOOKFRAG)
+        return "Hookfrag";
     else {
         float hgtype = DEATH_HGTYPE(dtype);
 

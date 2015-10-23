@@ -4,7 +4,7 @@ CLASS(NewMenuRMConfigDialog) EXTENDS(NewMenuRootDialog)
 	ATTRIB(NewMenuRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NewMenuRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NewMenuRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NewMenuRMConfigDialog, rows, float, 22)
+	ATTRIB(NewMenuRMConfigDialog, rows, float, 24)
 	ATTRIB(NewMenuRMConfigDialog, columns, float, 16)
 	ATTRIB(NewMenuRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NewMenuRMConfigDialog)
@@ -74,6 +74,11 @@ void fillNewMenuRMConfigDialog(entity me)
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger_silent", "Without teamchat notification"));
             OPTDEP("freezetag_danger")
     me.setFirstColumn(me, me.firstColumn - 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNewMenuCheckBox(0, "cl_frozentint", "Tint the screen while frozen"));
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "altcharge", "Alternative nadget throwing mode"));
+            OPTDEP("altcharge")
     me.TR(me);
 		me.TD(me, 1, 4, e = makeNewMenuTextLabel(0, "Note: You can access these options through Multiplayer -> Player Setup"));
 	me.TR(me);

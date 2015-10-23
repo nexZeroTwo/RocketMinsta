@@ -54,10 +54,8 @@ g_terminals.qh
 g_buffs.qh
 g_freeze.qh
 freezetag.qh
-vip.qh
 jailbreak.qh
 clanarena.qh
-precious.qh
 domination.qh
 ../common/damagetracker.qh
 damagetracker.qh
@@ -74,13 +72,10 @@ waypointsprites.qc
 bot/bot.qc
 g_subs.qc
 g_tetris.qc
-runematch.qc
 arena.qc
 dodging.qc
 g_freeze.qc
 freezetag.qc
-vip.qc
-precious.qc
 g_violence.qc
 g_damage.qc
 teamplay.qc
@@ -182,6 +177,8 @@ ipban.qc
 t_halflife.qc
 t_quake.qc
 
+g_laserbeam.qc
+
 race.qc
 
 teamcount.qc
@@ -192,7 +189,6 @@ damagetracker.qc
 
 //// tZork Turrets ////
 tturrets/include/turrets.qh
-vehicles/vehicles.qh
 
 scores.qc
 

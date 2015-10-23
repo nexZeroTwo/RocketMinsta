@@ -1347,6 +1347,12 @@ float GameCommand_Generic(string command)
                         float ac = strlen(sig) - 1;
                         string rtype = substring(sig, 0, 1);
 
+                        if(!isfunction(fname)) {
+                            print("rpn: syscall error: function ", fname, " not found\n");
+                            rpn_error = TRUE;
+                            break;
+                        }
+
                         for(f = ac - 1; f >= 0; --f) {
                             string atype = substring(sig, f + 1, 1);
 

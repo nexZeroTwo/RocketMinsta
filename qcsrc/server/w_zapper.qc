@@ -37,7 +37,10 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    sf &~= 8;
+    sf &~= 8 | 16;
+
+    if(self.sounds < 0)
+        sf |= 16;
 
     if(to.zapper_shotorgsentfor != self) {
         if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
@@ -269,7 +272,7 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
     if(arc <= 0)
         return;
 
-    float targetTeamMates = (teams_matter && Buffs_BuffPower(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
     
     if(targ.team == attacker.team && !targetTeamMates)
         return;
@@ -278,7 +281,7 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
     float targetAlive = !targetFrozen && !targetTeamMates;
     float deathtype = WEP_ZAPPER | HITTYPE_SECONDARY;
 
-    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, deathtype | HITTYPE_BOUNCE, 1,
+    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, deathtype | HITTYPE_BOUNCE,
                          attacker.maxs_z * '0 0 0.5',
                          CVAR(g_balance_zapper_secondary_arc_range), arc, 1,
                          CVAR(g_balance_zapper_secondary_arc_force),
