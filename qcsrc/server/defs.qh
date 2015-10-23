@@ -304,7 +304,6 @@ float isJoinAllowed();
 
 //sv_timeout: pauses the game by setting the gamespeed to a really low value (see TIMEOUT_SLOWMO_VALUE)
 #define TIMEOUT_SLOWMO_VALUE 0.0001
-float sys_ticrate; // gets initialised in worlspawn, saves the value from CVAR(sys_ticrate)
 float remainingTimeoutTime; // contains the time in seconds that the active timeout has left
 float remainingLeadTime; // contains the number of seconds left of the leadtime (before the timeout starts)
 float timeoutStatus; // (values: 0, 1, 2) contains whether a timeout is not active (0), was called but still at leadtime (1) or is active (2)
@@ -744,34 +743,7 @@ float whatsgoingon;
 
 float g_allow_oldnexbeam;
 float leadlimit;
-float sv_jumpvelocity;
-float sv_gameplayfix_q2airaccelerate;
-float sv_autoaway;
-float g_walljump;
-float g_walljump_delay;
 float sv_ready_restart_after_countdown;
-float g_dodging;
-float g_freezetag_dodging_frozen;
-float g_dodging_delay;
-float g_dodging_ramp_time;
-float sv_defaultcharacter;
-float sv_defaultplayercolors;
-float sv_forcespecies;
-
-float g_balance_health_rotstable;
-float g_balance_armor_rotstable;
-float g_balance_fuel_rotstable;
-float g_balance_health_regenstable;
-float g_balance_armor_regenstable;
-float g_balance_fuel_regenstable;
-float g_balance_health_limit;
-float g_balance_armor_limit;
-float g_balance_fuel_limit;
-
-float g_balance_falldamage_deadminspeed;
-float g_balance_falldamage_factor;
-float g_balance_falldamage_minspeed;
-float g_balance_falldamage_maxdamage;
 
 .float dom_captureprogress;
 

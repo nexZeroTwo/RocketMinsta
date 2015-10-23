@@ -86,11 +86,7 @@ void ActivateTeamplay()
 	float teamplay_default;
 	teamplay_default = CVAR(teamplay_default);
 
-	if(teamplay_default)
-		teamplay = teamplay_default;
-	else
-		teamplay = 3;
-	cvar_set("teamplay", ftos(teamplay));
+	cvar_set("teamplay", ftos(if (teamplay_default) teamplay_default else 3));
 
 	teams_matter = 1;
 }

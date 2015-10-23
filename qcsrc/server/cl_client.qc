@@ -910,7 +910,7 @@ void FixPlayermodel()
     if(self.forcedmodel) {
         defaultmodel = self.forcedmodel;
         defaultskin = self.forcedskin;
-    } else if(sv_defaultcharacter == 1) {
+    } else if(CVAR(sv_defaultcharacter) == 1) {
 		defaultskin = 0;
 
 		if(teams_matter)
@@ -966,8 +966,8 @@ void FixPlayermodel()
 
 	if(!teams_matter)
 		if(CVAR_STR(sv_defaultplayercolors) != "")
-			if(self.clientcolors != sv_defaultplayercolors)
-				setcolor(self, sv_defaultplayercolors);
+			if(self.clientcolors != stof(CVAR_STR(sv_defaultplayercolors)))
+				setcolor(self, stof(CVAR_STR(sv_defaultplayercolors)));
 }
 
 void PlayerTouchExplode(entity p1, entity p2)
@@ -1781,7 +1781,7 @@ void ClientConnect (void)
 	GetCvars(0);
 
 	// set cvar for team scoreboard
-	stuffcmd(self, strcat("set teamplay ", ftos(teamplay), "\n"));
+	stuffcmd(self, strcat("set teamplay ", ftos(CVAR(teamplay)), "\n"));
 
 	// notify about available teams
 	if(teams_matter)
@@ -2345,15 +2345,15 @@ void player_regen (void)
     if(roundstate == ROUNDSTATE_OVER)
         return;
 
-	maxh = g_balance_health_rotstable;
-	maxa = g_balance_armor_rotstable;
-	maxf = g_balance_fuel_rotstable;
-	minh = g_balance_health_regenstable;
-	mina = g_balance_armor_regenstable;
-	minf = g_balance_fuel_regenstable;
-	limith = g_balance_health_limit;
-	limita = g_balance_armor_limit;
-	limitf = g_balance_fuel_limit;
+	maxh = CVAR(g_balance_health_rotstable);
+	maxa = CVAR(g_balance_armor_rotstable);
+	maxf = CVAR(g_balance_fuel_rotstable);
+	minh = CVAR(g_balance_health_regenstable);
+	mina = CVAR(g_balance_armor_regenstable);
+	minf = CVAR(g_balance_fuel_regenstable);
+	limith = CVAR(g_balance_health_limit);
+	limita = CVAR(g_balance_armor_limit);
+	limitf = CVAR(g_balance_fuel_limit);
     aregen = CVAR(g_balance_armor_regen);
     hregen = CVAR(g_balance_health_regen);
     
