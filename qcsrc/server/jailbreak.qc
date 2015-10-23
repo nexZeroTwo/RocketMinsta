@@ -733,7 +733,6 @@ void JB_PlayerSpawn() {
     TeamCount_RecountPlayers(JB_AliveCheck);
     if(JB_TotalPlayersOnTeam(self.team) - 1 > 0 || self.jb_specteam) {	// allow to spawn non-prisoned if there are no players on that team
         JB_Imprison(world);
-        self.hg_clearammo = 1;
     }
     
     self.jb_roundlost = FALSE;
