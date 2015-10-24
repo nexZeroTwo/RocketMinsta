@@ -302,8 +302,7 @@ float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
     
 	traceline_inverted (self.origin, self.origin + normalize(vel) * maxdist, MOVE_NORMAL, self);
     
-	if not(CVAR(g_ballistics_gothroughsolid))
-	if not(trace_ent)
+	if(!CVAR(g_ballistics_gothroughsolid) && (!trace_ent || trace_ent.solid == SOLID_BSP && (trace_dphitcontents & DPCONTENTS_OPAQUE || trace_dphittexturename == "textures/common/weapclip")))
 		return 0;
 
 	if(trace_fraction == 1) // 1: we never got out of solid
