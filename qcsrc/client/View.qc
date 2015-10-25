@@ -77,20 +77,38 @@ void Porto_Draw()
 	}
 }
 
+vector Plasma_Draw_Trace_Callback_rgb;
+float Plasma_Draw_Trace_Callback_ofs;
+
+void Plasma_Draw_Trace_Callback(vector from, vector endpos, vector to) {
+    vector ofs = normalize(endpos - from) * 3;
+
+    Draw_CylindricLine(from - ofs, endpos + ofs, 15, "particles/zapper", 0.1, Plasma_Draw_Trace_Callback_ofs, Plasma_Draw_Trace_Callback_rgb, 1, DRAWFLAG_ADDITIVE, WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin));
+
+    Plasma_Draw_Trace_Callback_ofs += 0.1 * vlen(from - endpos - ofs * 2) / 15;
+}
+
 .float plasma_drawn;
+
 void Plasma_Draw() {
     entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
     string tex = "particles/zapper";
-    
-    vector nearest_origin;
+
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
         vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
         for(n = p; n; n = n.chain) if(n.plasma_drawn != time) {
-            nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, 1);
-            if(e != n) if(n.extradata == e.extradata) if(WarpZone_FindNearestOrigin_length < 200) {
-                Draw_CylindricLine(n.origin, nearest_origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE, view_origin);
-                //n.plasma_drawn = time;
+            if(e != n && n.extradata == e.extradata) {
+                if(warpzone_chain_begin) {
+                    var nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, FALSE);
+                    if(WarpZone_FindNearestOrigin_length < 200) {
+                        Plasma_Draw_Trace_Callback_rgb = rgb;
+                        Plasma_Draw_Trace_Callback_ofs = time * 5;
+                        WarpZone_TraceBox_ThroughZone(n.origin, '0 0 0', '0 0 0', nearest_origin, MOVE_NORMAL, n, world, Plasma_Draw_Trace_Callback);
+                    }
+                } else if(vlen(n.origin - e.origin) < 200) {
+                    Draw_CylindricLine(n.origin, e.origin, 15, "particles/zapper", 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE, view_origin);
+                }
             }
         }
         
