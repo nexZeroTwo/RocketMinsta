@@ -595,7 +595,7 @@ void HG_Grenade_Touch() {
     PROJECTILE_SKIPNONSOLID
     if(SUB_OwnerCheck())
         return;
-    
+
     if(!self.hg_sticked)
     if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
         UpdateCSQCProjectileNextFrame(self);
