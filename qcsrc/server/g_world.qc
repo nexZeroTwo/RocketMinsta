@@ -876,6 +876,12 @@ void spawnfunc_worldspawn (void)
 
     dtrack_global = DamageTracker_CreateKeeper(world);
     dtrack_global.netname = "Global Damage";
+
+    if((CVAR(sv_cullentities_pvs) || CVAR(sv_cullentities_trace)) && !CVAR(sv_cullentities_nevercullbmodels))
+    InitializeEntity(self, inline void(void) {
+        if(warpzone_chain_begin)
+            cvar_settemp("sv_cullentities_nevercullbmodels", "1");
+    }, INITPRIO_FINDTARGET);
 }
 
 void spawnfunc_light (void)
