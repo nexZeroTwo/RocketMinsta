@@ -2381,8 +2381,8 @@ void HG_Sentry_Trigger(void) {
     entity e, aimtarg;
     vector o = self.origin + self.view_ofs, aimloc;
 
-    traceline_antilag(self, o, self.cursor_trace_endpos, MOVE_NORMAL, self);
-    aimloc = trace_endpos;
+    tracebox_antilag(self, o, '0 0 0', '0 0 0', o + normalize(self.cursor_trace_endpos - o) * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+    aimloc = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
     aimtarg = trace_ent;
 
     float c_dmg = CVAR(g_nadgets_sentry_shock_damage);
@@ -2403,12 +2403,13 @@ void HG_Sentry_Trigger(void) {
             continue;
 
         o = e.origin + e.view_ofs;
-        traceline_antilag(self, o, aimloc, MOVE_NORMAL, self);
+        tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc, MOVE_NORMAL, self, TRUE);
 
         if(almost_equals(trace_fraction, 1) || (aimtarg && trace_ent == aimtarg)) {
-            vector dir = normalize(trace_endpos - o);
+            vector end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
+            vector dir = normalize(end_visual - o);
 
-            traceline_antilag(self, o, o + dir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);            
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', o + dir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
 
             entity targ = trace_ent;
             vector endpos = trace_endpos;
@@ -2418,7 +2419,9 @@ void HG_Sentry_Trigger(void) {
             Damage(targ, self, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY, endpos, force);
             
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
-            W_Zapper_Attack2_Effect(self.team, o, endpos);
+
+            using(w_shotorg = o)
+                W_Zapper_Attack2_Effect(self.team, o, end_visual);
 
             if(targ.solid == SOLID_BSP && !noimpact)
                 Damage_DamageInfo(endpos, c_dmg, 0, 0, force, WEP_ZAPPER | HITTYPE_SECONDARY, self);
