@@ -95,7 +95,7 @@ Note: using team-bound random buffs is not recommended to preserve fairness
 */
 
 /*QUAKED misc_terminal (0.5 0.5 0.5) (-32 -32 -32) (32 32 32)
-A terminal (for g_handgrenades and g_buffs mutators)
+A terminal (for g_nadgets and g_buffs mutators)
 Used to release buffs and switch nadget classes midgame
 -------- MODEL FOR RADIANT ONLY - DO NOT SET THIS AS A KEY --------
 model="models/it/pc.md3"
