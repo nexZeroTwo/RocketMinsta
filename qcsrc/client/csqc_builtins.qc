@@ -297,12 +297,9 @@ void callfunction(...) = #605;
 float isfunction(string function_name) = #607;
 
 float(string name) cvar_type = #495;
-float CVAR_TYPEFLAG_EXISTS = 1;
-float CVAR_TYPEFLAG_SAVED = 2;
-float CVAR_TYPEFLAG_PRIVATE = 4;
-float CVAR_TYPEFLAG_ENGINE = 8;
-float CVAR_TYPEFLAG_HASDESCRIPTION = 16;
-float CVAR_TYPEFLAG_READONLY = 32;
+
+//DP_RM_CVAR_ALTERTYPE
+float(string varname, float setflags, float unsetflags) cvar_altertype_builtin = #505;
 
 void(vector dir) vectorvectors = #432;
 

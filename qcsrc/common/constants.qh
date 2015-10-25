@@ -645,3 +645,12 @@ float(string url, float id) uri_get = #513;
 #define abs(f) fabs(f)
 
 const float M_PI = 3.14159265358979323846;
+
+float CVAR_TYPEFLAG_EXISTS = 1;
+float CVAR_TYPEFLAG_SAVED = 2;
+float CVAR_TYPEFLAG_PRIVATE = 4;
+float CVAR_TYPEFLAG_ENGINE = 8;
+float CVAR_TYPEFLAG_HASDESCRIPTION = 16;
+float CVAR_TYPEFLAG_READONLY = 32;
+float CVAR_TYPEFLAG_MODIFIED = 64;
+float CVAR_TYPEFLAG_WATCHED = 128;

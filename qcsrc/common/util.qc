@@ -1830,3 +1830,13 @@ void backtrace(string msg)
     cvar_set("prvm_backtraceforwarnings", ftos(war));
     GameCommand("time");
 }
+
+float cvar_altertype(string varname, float setflags, float unsetflags) {
+    if(!checkextension("DP_RM_CVAR_ALTERTYPE"))
+        return 0;
+
+    return cvar_altertype_builtin(varname, setflags, unsetflags);
+}
+
+#define CVAR_WATCH(varname) cvar_altertype(varname, CVAR_TYPEFLAG_WATCHED, 0)
+#define CVAR_UNWATCH(varname) cvar_altertype(varname, 0, CVAR_TYPEFLAG_WATCHED)
