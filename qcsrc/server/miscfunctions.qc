@@ -1434,6 +1434,8 @@ float precache_sound_index (string s) = #19;
 #define SND_LARGEENTITY 8
 #define SND_LARGESOUND  16
 
+.entity WarpZone_refsys;
+
 float sound_allowed(float dest, entity e)
 {
     // sounds from world may always pass
@@ -1441,7 +1443,7 @@ float sound_allowed(float dest, entity e)
     {
         if (e.classname == "body")
             e = e.enemy;
-        if (e.owner && e.owner != e)
+        if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
             e = e.owner;
         else
             break;

@@ -442,7 +442,7 @@ void HG_Plasma_Projectile(float kickangle) {
 	proj.takedamage = DAMAGE_NO;
 	proj.flags = FL_PROJECTILE;
     proj.hg_plasma_projrange = CVAR(g_nadgets_plasma_projectile_dps_range);
-    proj.hg_plasma_projdps = CVAR(g_nadgets_plasma_projectile_dps) * Buffs_NadgetPower(self.owner);
+    proj.hg_plasma_projdps = CVAR(g_nadgets_plasma_projectile_dps) * Buffs_NadgetPower(self.realowner);
     proj.hg_plasma_projdps_delay = CVAR(g_nadgets_plasma_projectile_dps_delay);
     proj.hg_plasma_projdist = CVAR(g_nadgets_plasma_projectile_maxdistance);
     proj.hg_plasma_projdps_next = time + CVAR(g_nadgets_plasma_projectile_dps_pause) + random() * CVAR(g_nadgets_plasma_projectile_dps_pause_randomfactor);
@@ -2471,11 +2471,21 @@ float HG_Sentry(void) {
 }
 
 void HG_Sentry_Trigger(void) {
-    entity e, aimtarg;
-    vector o = self.origin + self.view_ofs, aimloc;
+    entity e, aimtarg, aimtransform;
+    vector o, aimloc, aimloc_untransformed;
 
-    traceline_antilag(self, o, self.cursor_trace_endpos, MOVE_NORMAL, self);
+    makevectors(self.v_angle);
+    W_SetupShot(self, FALSE, 0, "", -1);
+    o = w_shotorg;
+
+    tracebox_antilag(self, o, '0 0 0', '0 0 0', o + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+
+    while(trace_ent && trace_ent.classname == "hg_sentry" && !IsDifferentTeam(trace_ent, self))
+        tracebox_antilag(self, trace_endpos + w_shotdir, '0 0 0', '0 0 0', trace_endpos + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+
+    aimtransform = WarpZone_trace_transform;
     aimloc = trace_endpos;
+    aimloc_untransformed = WarpZone_UnTransformOrigin(aimtransform, aimloc);
     aimtarg = trace_ent;
 
     float c_dmg = CVAR(g_nadgets_sentry_shock_damage);
@@ -2496,12 +2506,30 @@ void HG_Sentry_Trigger(void) {
             continue;
 
         o = e.origin + e.view_ofs;
-        traceline_antilag(self, o, aimloc, MOVE_NORMAL, self);
 
-        if(almost_equals(trace_fraction, 1) || (aimtarg && trace_ent == aimtarg)) {
-            vector dir = normalize(trace_endpos - o);
+        #define IS_GOOD_HIT (vlen(trace_endpos - aimloc) < 1 || (aimtarg && aimtarg.takedamage && trace_ent == aimtarg))
 
-            traceline_antilag(self, o, o + dir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self);            
+        // Aiming directly, sentry can hit directly -OR- aiming through a warpzone, sentry can hit through the same warpzone
+        tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc_untransformed, MOVE_NORMAL, self, TRUE);
+
+        if(!IS_GOOD_HIT) {
+            // Aiming through a warpzone, sentry can hit directly
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc, MOVE_NORMAL, self, TRUE);
+        }
+
+        entity wz = warpzone_chain_begin;
+        while(!IS_GOOD_HIT && wz) {
+            // Sentry can hit neither directly nor through the warpzone we aimed through (if any).
+            // Let's see if we can hit through another warpzone.
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', WarpZone_UnTransformOrigin(wz, aimloc), MOVE_NORMAL, self, TRUE);
+            wz = wz.warpzone_chain;
+        }
+
+        if(IS_GOOD_HIT) {
+            vector end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
+            vector dir = normalize(end_visual - o);
+
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', o + dir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
 
             entity targ = trace_ent;
             vector endpos = trace_endpos;
@@ -2511,7 +2539,9 @@ void HG_Sentry_Trigger(void) {
             Damage(targ, self, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY, endpos, force);
             
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
-            W_Zapper_Attack2_Effect(self.team, o, endpos);
+
+            using(w_shotorg = o)
+                W_Zapper_Attack2_Effect(self.team, o, end_visual);
 
             if(targ.solid == SOLID_BSP && !noimpact)
                 Damage_DamageInfo(endpos, c_dmg, 0, 0, force, WEP_ZAPPER | HITTYPE_SECONDARY, self);
@@ -2519,6 +2549,8 @@ void HG_Sentry_Trigger(void) {
             e.hg_sentry_energy = bound(0, e.hg_sentry_energy - c_cost, 1);
             ++triggered;
         }
+
+        #undef IS_GOOD_HIT
     }
 
     if(triggered)
