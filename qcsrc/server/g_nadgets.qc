@@ -2386,6 +2386,10 @@ void HG_Sentry_Trigger(void) {
     o = w_shotorg;
 
     tracebox_antilag(self, o, '0 0 0', '0 0 0', o + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+
+    while(trace_ent && trace_ent.classname == "hg_sentry" && !IsDifferentTeam(trace_ent, self))
+        tracebox_antilag(self, trace_endpos + w_shotdir, '0 0 0', '0 0 0', trace_endpos + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+
     aimtransform = WarpZone_trace_transform;
     aimloc = trace_endpos;
     aimloc_untransformed = WarpZone_UnTransformOrigin(aimtransform, aimloc);
