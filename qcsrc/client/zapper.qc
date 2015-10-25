@@ -92,11 +92,6 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
         zapper_curve_beam_prev_point1 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
         zapper_curve_beam_prev_point2 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
     }
-
-    if(vlen(endpos - to) < 1) {
-        float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
-        pointparticles(eff_zap, to, '0 0 0', frametime * 300);
-    }
 }
 
 void Zapper_Draw(void) {
@@ -136,6 +131,7 @@ void Zapper_Draw(void) {
 
     WarpZone_TraceTriangle(real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
     pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
+    pointparticles(rm_particleeffectnum_team("RM_ZAPPER", self.team, 2), trace_endpos, '0 0 0', frametime * 300);
 }
 
 void Zapper_Draw_Shield(void) {
