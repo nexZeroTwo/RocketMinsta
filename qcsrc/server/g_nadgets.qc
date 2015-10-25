@@ -441,7 +441,7 @@ void HG_Plasma_Projectile(float kickangle) {
 	proj.takedamage = DAMAGE_NO;
 	proj.flags = FL_PROJECTILE;
     proj.hg_plasma_projrange = CVAR(g_nadgets_plasma_projectile_dps_range);
-    proj.hg_plasma_projdps = CVAR(g_nadgets_plasma_projectile_dps) * Buffs_NadgetPower(self.owner);
+    proj.hg_plasma_projdps = CVAR(g_nadgets_plasma_projectile_dps) * Buffs_NadgetPower(self.realowner);
     proj.hg_plasma_projdps_delay = CVAR(g_nadgets_plasma_projectile_dps_delay);
     proj.hg_plasma_projdist = CVAR(g_nadgets_plasma_projectile_maxdistance);
     proj.hg_plasma_projdps_next = time + CVAR(g_nadgets_plasma_projectile_dps_pause) + random() * CVAR(g_nadgets_plasma_projectile_dps_pause_randomfactor);
