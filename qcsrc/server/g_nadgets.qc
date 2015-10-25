@@ -2412,13 +2412,18 @@ void HG_Sentry_Trigger(void) {
 
         #define IS_GOOD_HIT (vlen(trace_endpos - aimloc) < 1 || (aimtarg && aimtarg.takedamage && trace_ent == aimtarg))
 
+        // Aiming directly, sentry can hit directly -OR- aiming through a warpzone, sentry can hit through the same warpzone
         tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc_untransformed, MOVE_NORMAL, self, TRUE);
 
-        if(!IS_GOOD_HIT)
+        if(!IS_GOOD_HIT) {
+            // Aiming through a warpzone, sentry can hit directly
             tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc, MOVE_NORMAL, self, TRUE);
+        }
 
         entity wz = warpzone_chain_begin;
         while(!IS_GOOD_HIT && wz) {
+            // Sentry can hit neither directly nor through the warpzone we aimed through (if any).
+            // Let's see if we can hit through another warpzone.
             tracebox_antilag(self, o, '0 0 0', '0 0 0', WarpZone_UnTransformOrigin(wz, aimloc), MOVE_NORMAL, self, TRUE);
             wz = wz.warpzone_chain;
         }
