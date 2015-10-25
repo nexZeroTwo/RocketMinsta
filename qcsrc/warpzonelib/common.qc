@@ -1,5 +1,4 @@
-.entity warpzone_chain;
-entity warpzone_chain_begin;
+
 void WarpZone_Accumulator_Clear(entity acc)
 {
 	acc.warpzone_transform = '0 0 0';

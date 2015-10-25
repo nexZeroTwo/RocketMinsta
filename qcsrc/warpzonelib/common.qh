@@ -72,3 +72,6 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check);
 void WarpZone_Init();
 void WarpZone_Shutdown();
 void WarpZone_ChainAdd(entity wz);
+
+.entity warpzone_chain;
+entity warpzone_chain_begin;

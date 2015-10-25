@@ -2378,11 +2378,17 @@ float HG_Sentry(void) {
 }
 
 void HG_Sentry_Trigger(void) {
-    entity e, aimtarg;
-    vector o = self.origin + self.view_ofs, aimloc;
+    entity e, aimtarg, aimtransform;
+    vector o, aimloc, aimloc_untransformed;
 
-    tracebox_antilag(self, o, '0 0 0', '0 0 0', o + normalize(self.cursor_trace_endpos - o) * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
-    aimloc = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
+    makevectors(self.v_angle);
+    W_SetupShot(self, FALSE, 0, "", -1);
+    o = w_shotorg;
+
+    tracebox_antilag(self, o, '0 0 0', '0 0 0', o + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, self, TRUE);
+    aimtransform = WarpZone_trace_transform;
+    aimloc = trace_endpos;
+    aimloc_untransformed = WarpZone_UnTransformOrigin(aimtransform, aimloc);
     aimtarg = trace_ent;
 
     float c_dmg = CVAR(g_nadgets_sentry_shock_damage);
@@ -2403,9 +2409,21 @@ void HG_Sentry_Trigger(void) {
             continue;
 
         o = e.origin + e.view_ofs;
-        tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc, MOVE_NORMAL, self, TRUE);
 
-        if(almost_equals(trace_fraction, 1) || (aimtarg && trace_ent == aimtarg)) {
+        #define IS_GOOD_HIT (vlen(trace_endpos - aimloc) < 1 || (aimtarg && aimtarg.takedamage && trace_ent == aimtarg))
+
+        tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc_untransformed, MOVE_NORMAL, self, TRUE);
+
+        if(!IS_GOOD_HIT)
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', aimloc, MOVE_NORMAL, self, TRUE);
+
+        entity wz = warpzone_chain_begin;
+        while(!IS_GOOD_HIT && wz) {
+            tracebox_antilag(self, o, '0 0 0', '0 0 0', WarpZone_UnTransformOrigin(wz, aimloc), MOVE_NORMAL, self, TRUE);
+            wz = wz.warpzone_chain;
+        }
+
+        if(IS_GOOD_HIT) {
             vector end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
             vector dir = normalize(end_visual - o);
 
@@ -2429,6 +2447,8 @@ void HG_Sentry_Trigger(void) {
             e.hg_sentry_energy = bound(0, e.hg_sentry_energy - c_cost, 1);
             ++triggered;
         }
+
+        #undef IS_GOOD_HIT
     }
 
     if(triggered)
