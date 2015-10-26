@@ -93,7 +93,6 @@ void reset_map(float dorespawn)
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
-        self.hg_clearammo = 0;
         self.playtimeupdate = time;
 		if(self.flags & FL_CLIENT && self.scorekeeper)				// reset all players
 		{
@@ -158,7 +157,7 @@ void reset_map(float dorespawn)
 			}
             
             if(g_nadgets) if(self.classname == "player") {
-                HG_ResetState(self);
+                HG_ResetState(self, FALSE);
                 self.hg_nadesused = 0;
                 
                 if(self.hg_alwaysask)

@@ -1,0 +1,315 @@
+
+/*QUAKED item_buff_arc (0.2 0.7 1.0) (-16 -16 -16) (16 16 16)
+The Arc Buff
+*/
+
+/*QUAKED item_buff_arc_team1 (0.2 0.7 1.0) (-16 -16 -16) (16 16 16)
+The Arc Buff (Red Team)
+*/
+
+/*QUAKED item_buff_arc_team2 (0.2 0.7 1.0) (-16 -16 -16) (16 16 16)
+The Arc Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_arc_team3 (0.2 0.7 1.0) (-16 -16 -16) (16 16 16)
+The Arc Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_arc_team4 (0.2 0.7 1.0) (-16 -16 -16) (16 16 16)
+The Arc Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_supply (0.2 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Supply Buff
+*/
+
+/*QUAKED item_buff_supply_team1 (0.2 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Supply Buff (Red Team)
+*/
+
+/*QUAKED item_buff_supply_team2 (0.2 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Supply Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_supply_team3 (0.2 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Supply Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_supply_team4 (0.2 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Supply Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_guard (0.3 0.2 1.0) (-16 -16 -16) (16 16 16)
+The Guard Buff
+*/
+
+/*QUAKED item_buff_guard_team1 (0.3 0.2 1.0) (-16 -16 -16) (16 16 16)
+The Guard Buff (Red Team)
+*/
+
+/*QUAKED item_buff_guard_team2 (0.3 0.2 1.0) (-16 -16 -16) (16 16 16)
+The Guard Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_guard_team3 (0.3 0.2 1.0) (-16 -16 -16) (16 16 16)
+The Guard Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_guard_team4 (0.3 0.2 1.0) (-16 -16 -16) (16 16 16)
+The Guard Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_haste (1.0 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Haste Buff
+*/
+
+/*QUAKED item_buff_haste_team1 (1.0 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Haste Buff (Red Team)
+*/
+
+/*QUAKED item_buff_haste_team2 (1.0 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Haste Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_haste_team3 (1.0 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Haste Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_haste_team4 (1.0 1.0 0.2) (-16 -16 -16) (16 16 16)
+The Haste Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_medic (1.0 0.3 1.0) (-16 -16 -16) (16 16 16)
+The Medic Buff
+*/
+
+/*QUAKED item_buff_medic_team1 (1.0 0.3 1.0) (-16 -16 -16) (16 16 16)
+The Medic Buff (Red Team)
+*/
+
+/*QUAKED item_buff_medic_team2 (1.0 0.3 1.0) (-16 -16 -16) (16 16 16)
+The Medic Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_medic_team3 (1.0 0.3 1.0) (-16 -16 -16) (16 16 16)
+The Medic Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_medic_team4 (1.0 0.3 1.0) (-16 -16 -16) (16 16 16)
+The Medic Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_ignite (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff
+*/
+
+/*QUAKED item_buff_ignite_team1 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Red Team)
+*/
+
+/*QUAKED item_buff_ignite_team2 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_ignite_team3 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_ignite_team4 (1.0 0.4 0.0) (-16 -16 -16) (16 16 16)
+The Ignite Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_vampire (1.0 0.15 0.0) (-16 -16 -16) (16 16 16)
+The Vampire Buff
+*/
+
+/*QUAKED item_buff_vampire_team1 (1.0 0.15 0.0) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Red Team)
+*/
+
+/*QUAKED item_buff_vampire_team2 (1.0 0.15 0.0) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_vampire_team3 (1.0 0.15 0.0) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_vampire_team4 (1.0 0.15 0.0) (-16 -16 -16) (16 16 16)
+The Vampire Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_tenacity (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff
+*/
+
+/*QUAKED item_buff_tenacity_team1 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Red Team)
+*/
+
+/*QUAKED item_buff_tenacity_team2 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_tenacity_team3 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_tenacity_team4 (0.66 0.66 0.73) (-16 -16 -16) (16 16 16)
+The Tenacity Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_wrath (0.55 0.5 1.0) (-16 -16 -16) (16 16 16)
+The Wrath Buff
+*/
+
+/*QUAKED item_buff_wrath_team1 (0.55 0.5 1.0) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Red Team)
+*/
+
+/*QUAKED item_buff_wrath_team2 (0.55 0.5 1.0) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_wrath_team3 (0.55 0.5 1.0) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_wrath_team4 (0.55 0.5 1.0) (-16 -16 -16) (16 16 16)
+The Wrath Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_adept (0.57 0.0 1.0) (-16 -16 -16) (16 16 16)
+The Adept Buff
+*/
+
+/*QUAKED item_buff_adept_team1 (0.57 0.0 1.0) (-16 -16 -16) (16 16 16)
+The Adept Buff (Red Team)
+*/
+
+/*QUAKED item_buff_adept_team2 (0.57 0.0 1.0) (-16 -16 -16) (16 16 16)
+The Adept Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_adept_team3 (0.57 0.0 1.0) (-16 -16 -16) (16 16 16)
+The Adept Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_adept_team4 (0.57 0.0 1.0) (-16 -16 -16) (16 16 16)
+The Adept Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_meodp (0.1 0.1 0.1) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff
+*/
+
+/*QUAKED item_buff_meodp_team1 (0.1 0.1 0.1) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Red Team)
+*/
+
+/*QUAKED item_buff_meodp_team2 (0.1 0.1 0.1) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_meodp_team3 (0.1 0.1 0.1) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_meodp_team4 (0.1 0.1 0.1) (-16 -16 -16) (16 16 16)
+The Mystic Eyes of Death Perception Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_focus (0.5 1.0 0.8) (-16 -16 -16) (16 16 16)
+The Focus Buff
+*/
+
+/*QUAKED item_buff_focus_team1 (0.5 1.0 0.8) (-16 -16 -16) (16 16 16)
+The Focus Buff (Red Team)
+*/
+
+/*QUAKED item_buff_focus_team2 (0.5 1.0 0.8) (-16 -16 -16) (16 16 16)
+The Focus Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_focus_team3 (0.5 1.0 0.8) (-16 -16 -16) (16 16 16)
+The Focus Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_focus_team4 (0.5 1.0 0.8) (-16 -16 -16) (16 16 16)
+The Focus Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_reaper (0.65 0.2 0.0) (-16 -16 -16) (16 16 16)
+The Reaper Buff
+*/
+
+/*QUAKED item_buff_reaper_team1 (0.65 0.2 0.0) (-16 -16 -16) (16 16 16)
+The Reaper Buff (Red Team)
+*/
+
+/*QUAKED item_buff_reaper_team2 (0.65 0.2 0.0) (-16 -16 -16) (16 16 16)
+The Reaper Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_reaper_team3 (0.65 0.2 0.0) (-16 -16 -16) (16 16 16)
+The Reaper Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_reaper_team4 (0.65 0.2 0.0) (-16 -16 -16) (16 16 16)
+The Reaper Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_endurance (0.83 1.0 0.36) (-16 -16 -16) (16 16 16)
+The Endurance Buff
+*/
+
+/*QUAKED item_buff_endurance_team1 (0.83 1.0 0.36) (-16 -16 -16) (16 16 16)
+The Endurance Buff (Red Team)
+*/
+
+/*QUAKED item_buff_endurance_team2 (0.83 1.0 0.36) (-16 -16 -16) (16 16 16)
+The Endurance Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_endurance_team3 (0.83 1.0 0.36) (-16 -16 -16) (16 16 16)
+The Endurance Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_endurance_team4 (0.83 1.0 0.36) (-16 -16 -16) (16 16 16)
+The Endurance Buff (Pink Team)
+*/
+
+
+/*QUAKED item_buff_stealth (0.25 0.25 0.25) (-16 -16 -16) (16 16 16)
+The Stealth Buff
+*/
+
+/*QUAKED item_buff_stealth_team1 (0.25 0.25 0.25) (-16 -16 -16) (16 16 16)
+The Stealth Buff (Red Team)
+*/
+
+/*QUAKED item_buff_stealth_team2 (0.25 0.25 0.25) (-16 -16 -16) (16 16 16)
+The Stealth Buff (Blue Team)
+*/
+
+/*QUAKED item_buff_stealth_team3 (0.25 0.25 0.25) (-16 -16 -16) (16 16 16)
+The Stealth Buff (Yellow Team)
+*/
+
+/*QUAKED item_buff_stealth_team4 (0.25 0.25 0.25) (-16 -16 -16) (16 16 16)
+The Stealth Buff (Pink Team)
+*/
+

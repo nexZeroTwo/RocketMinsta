@@ -557,7 +557,7 @@ string CheckPlayerModel(string plyermodel) {
 }
 
 float Client_CalculateAlpha(entity plr, entity viewer) {
-    if(plr.deadflag != DEAD_NO || plr.frozen || plr.jb_isprisoned)
+    if(PlayerIsDead(plr))
         return 1;
 
     var sa = 1 - plr.hg_stealthalpha;
@@ -3140,7 +3140,7 @@ void PlayerPreThink (void)
         self.playtime += frametime;
         
         if(sv_shownoobstat) {
-            if(self.deadflag == DEAD_NO && !self.frozen && !self.jb_isprisoned) {
+            if(!PlayerIsDead(self)) {
                 self.alivetime += frametime;
                 if(self.BUTTON_JUMP)
                     self.jumpholdtime += frametime;

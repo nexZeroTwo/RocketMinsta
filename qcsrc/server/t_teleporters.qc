@@ -5,6 +5,7 @@ void trigger_teleport_use()
 }
 
 float tdeath_hit;
+float tdeath_fragged;
 float tdeath_deathtype;
 void tdeath(entity player, entity teleporter, entity telefragger, vector telefragmin, vector telefragmax)
 {
@@ -65,10 +66,11 @@ void tdeath(entity player, entity teleporter, entity telefragger, vector telefra
 					if(player.iscreature && (player.health >= 1)) {
 						Damage(head, teleporter, telefragger, damage, deathtype, head.origin, '0 0 0');
                         
-                        if(head.iscreature)
-                        if(head.deadflag != DEAD_NO || (g_freeze && head.frozen) || (g_jailbreak && head.jb_isprisoned))
-                        if(!teams_matter || head.team != player.team)
+                        if(head.iscreature && IsDifferentTeam(head, player)) {
                             ++tdeath_hit;
+                            if(PlayerIsDead(head))
+                                ++tdeath_fragged;
+                        }
 					}
 					else if(telefragger.health < 1) // corpses gib
 						Damage(head, teleporter, telefragger, 10000, deathtype, head.origin, '0 0 0');

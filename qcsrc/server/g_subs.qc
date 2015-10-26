@@ -559,7 +559,7 @@ entity tracerail(vector start, vector end, float t, entity forent) {
         last.tracerail_dphitq3surfaceflags = trace_dphitq3surfaceflags;
         last.tracerail_dphittexturename = trace_dphittexturename;
 
-        if(trace_ent.solid == SOLID_BSP && trace_dphitcontents & DPCONTENTS_OPAQUE)
+        if(trace_ent.solid == SOLID_BSP && (trace_dphitcontents & DPCONTENTS_OPAQUE || trace_dphittexturename == "textures/common/weapclip"))
             break;
 
         // make it non-solid so we can hit the next one

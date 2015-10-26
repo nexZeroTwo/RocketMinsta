@@ -1820,6 +1820,30 @@ void VoiceMessage(string type, string msg)
 		PlayerSound(sample, CHAN_VOICE, voicetype);
 }
 
+float PlayerIsDead(entity plr) {
+    if(!plr)
+        return TRUE;
+
+    if(plr.deadflag != DEAD_NO)
+        return TRUE;
+
+    if(g_freeze && plr.frozen)
+        return TRUE;
+
+    if(g_jailbreak && plr.jb_isprisoned)
+        return TRUE;
+
+    // these shouldn't happen
+
+    if(!plr.iscreature)
+        return TRUE;
+
+    if(plr.health < 0)
+        return TRUE;
+
+    return FALSE;
+}
+
 float PlayerMayFire(entity plr) {
     //if sv_ready_restart_after_countdown is set, don't allow the player to shoot
     //if all players readied up and the countdown is running

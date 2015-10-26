@@ -60,6 +60,8 @@ CACHEQC=0
 AUTOCVARS_SVQC=1
 
 # Use autocvars in the client program. Not recommended, as it will make vanilla clients incompatible with your server.
+# Setting this variable to 2 will compile two versions of the client program: one that supports autocvars and a fallback for old clients.
+# This requires the DP_RM_ALTCSPROGS extension on the server and on the clients wishing to use autocvars (otherwise they'll just get the fallback program)
 AUTOCVARS_CSQC=0
 
 # Use autocvars in the menu program. Not recommended, as it will make vanilla clients incompatible with your server.
