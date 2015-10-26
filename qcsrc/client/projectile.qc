@@ -113,7 +113,7 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
         case PROJECTILE_HG_PLASMA: case PROJECTILE_HG_RAZE:
-            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
             break;
         case PROJECTILE_HG_LASER:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
