@@ -38,9 +38,9 @@ void dom_recountpoints()
     }
 }
 
-void tdom_EndRound()
+void tdom_EndRound(float tout)
 {
-	G_EndRound(5, CVAR(g_totaldomination_warmup), dom_recountpoints, func_null, func_null);
+	G_EndRound(tout, CVAR(g_totaldomination_warmup), dom_recountpoints, func_null, func_null);
 }
 
 void() dom_controlpoint_setup;
@@ -76,7 +76,7 @@ void tdom_checkwinner()
 		bprint("^1Red team ^5wins the round since they have captured all of the control points\n");
 		play2all("ctf/red_capture.wav");
 		TeamScore_AddToTeam(COLOR_TEAM1, ST_SCORE, 1);
-		tdom_EndRound();
+		tdom_EndRound(ENDROUND_TIMEOUT_NORMAL);
 	}
 	
 	if(!redpoints && bluepoints && bluepoints == totalpoints)
@@ -92,7 +92,7 @@ void tdom_checkwinner()
 		bprint("^4Blue team ^5wins the round since they have captured all of the control points\n");
 		play2all("ctf/blue_capture.wav");
 		TeamScore_AddToTeam(COLOR_TEAM2, ST_SCORE, 1);
-		tdom_EndRound();
+		tdom_EndRound(ENDROUND_TIMEOUT_NORMAL);
 	}
 }
 

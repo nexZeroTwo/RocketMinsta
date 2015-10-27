@@ -1237,8 +1237,16 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + CVAR(g_start_delay);
-    roundstate = ROUNDSTATE_PREGAME;
+
+    if(EndRound_Allowed()) {
+        game_starttime = time;
+        roundstate = ROUNDSTATE_WARMUP;
+        EndRound(ENDROUND_TIMEOUT_IMMEDIATE);
+    } else {
+        game_starttime = time + CVAR(g_start_delay);
+        roundstate = ROUNDSTATE_PREGAME;
+    }
+
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage
@@ -1255,7 +1263,7 @@ void ReadyRestartForce()
 	}
 
 	//initiate the restart-countdown-announcer entity
-	if(CVAR(sv_ready_restart_after_countdown))
+	if(CVAR(sv_ready_restart_after_countdown) && roundstate == ROUNDSTATE_PREGAME)
 	{
 		restartTimer = spawn();
 		restartTimer.think = restartTimer_Think;

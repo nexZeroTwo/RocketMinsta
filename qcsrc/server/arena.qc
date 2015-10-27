@@ -318,7 +318,7 @@ void Spawnqueue_Check()
 {
     if(!g_freeze)
         count_spawned_players();
-	if(time < warmup + 1)
+	if(time < warmup + 1 || roundstate == ROUNDSTATE_GAME)
 		return;
 
 	//extend next_round if it isn't set yet and only 1 player is spawned

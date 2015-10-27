@@ -15,7 +15,7 @@ void kh_Key_Touch();
 void kh_Key_Think();
 void kh_WinnerTeam(float teem);
 void kh_LoserTeam(float teem, entity lostkey);
-void kh_FinishRound();
+void kh_FinishRound(float);
 void kh_StartRound();
 void kh_EnableTrackingDevice();
 void kh_init();

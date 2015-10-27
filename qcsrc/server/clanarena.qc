@@ -40,8 +40,8 @@ float CA_AliveCheck(entity plr) {
     return !plr.jb_specteam && plr.health > 0;
 }
 
-void CA_EndRound(void) {
-    G_EndRound(5, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, func_null);
+void CA_EndRound(float tout) {
+    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, func_null);
     CA_RecountPlayers();
 }
 
@@ -95,7 +95,7 @@ void CA_CheckWinner(void) {
     } else {
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Draw!", "", 5);
-        CA_EndRound();
+        CA_EndRound(ENDROUND_TIMEOUT_NORMAL);
         return;
     }
     
@@ -112,7 +112,7 @@ void CA_CheckWinner(void) {
     bprint(teamname_full, "^5 wins the round since all their opponents got wrecked\n");
     TeamScore_AddToTeam(winnerteam, ST_SCORE, +1);
     
-    CA_EndRound();
+    CA_EndRound(ENDROUND_TIMEOUT_NORMAL);
 }
 
 void CA_PlayerDies(entity attacker) {

@@ -735,7 +735,7 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 	te_customflash(midpoint, 1000, 1, TeamColor(teem) * 0.5 + '0.5 0.5 0.5');  // make the color >=0.5 in each component
 
 	play2all(kh_sound_capture);
-	kh_FinishRound();
+	kh_FinishRound(ENDROUND_TIMEOUT_NORMAL);
 }
 
 void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a flag carrier off the map
@@ -839,16 +839,16 @@ void kh_LoserTeam(float teem, entity lostkey)  // runs when a player pushes a fl
 		else //shit happens
 		{
 			bprint("^2No players capable of carrying the ", lostkey.netname, "^2 left on the ", ColoredTeamName(lostkey.team), "^2! Restarting the round.\n");
-			kh_FinishRound();
+			kh_FinishRound(ENDROUND_TIMEOUT_NORMAL);
 		}
 	}
 	play2all(kh_sound_destroy);
 	te_tarexplosion(lostkey.origin);
 
-	//kh_FinishRound();
+	//kh_FinishRound(ENDROUND_TIMEOUT_NORMAL);
 }
 
-void kh_FinishRound()  // runs when a team captures the keys
+void kh_FinishRound(float tout)  // runs when a team captures the keys
 {
 	// prepare next round
 	kh_interferemsg_time = 0;
@@ -859,7 +859,7 @@ void kh_FinishRound()  // runs when a team captures the keys
 		kh_Key_Remove(key);
 	kh_no_radar_circles = FALSE;
 
-	kh_controller.nextthink = time + 5;
+	kh_controller.nextthink = time + tout;
 	kh_Controller_SetThink(CVAR(g_balance_keyhunt_delay_round), "Spawning keys in ", kh_StartRound);
 }
 
@@ -1073,7 +1073,7 @@ void kh_init()  // sets up th KH environment
 void kh_finalize()
 {
 	// to be called before intermission
-	kh_FinishRound();
+	kh_FinishRound(ENDROUND_TIMEOUT_NORMAL);
 	remove(kh_controller);
 	kh_controller = world;
 }
