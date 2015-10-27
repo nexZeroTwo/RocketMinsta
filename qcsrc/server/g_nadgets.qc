@@ -809,10 +809,11 @@ void HG_Stick(void) {
         e.hg_lastvel = normal;
 
     e.meodp_point = self.meodp_point;
-    e.meodp_point_offs = self.meodp_point_offs;
+    e.meodp_point_offs = self.meodp_point_offs + normal * sz * 2;
     e.meodp_death = self.meodp_death;
     if(e.meodp_point)
         e.meodp_point.owner = e;
+    e.meodp_point_angleoffs = '90 180 0';
 
     move_out_of_solid(e);
     
