@@ -1,9 +1,6 @@
 #define CLIENT_SIDE
 
-#ifndef RM_AUTOCVARS
 #pragma flag off fastarrays // make dp behave with new fteqcc versions. remove when dp bug with fteqcc fastarrays is fixed
-#endif
-
 #pragma flag on subscope
 #pragma flag on lo
 #pragma flag on iffloat
