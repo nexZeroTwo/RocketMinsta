@@ -1365,5 +1365,5 @@ BUFF_SPAWNFUNCS(bash,       BUFF_IGNITE)
 // q3ta compatibility
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
-BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scount")
+BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scout")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  "ammoregen")
