@@ -1404,6 +1404,32 @@ void readlevelcvars(void)
     readplayerstartcvars();
 }
 
+string entityfieldtypestr(float fld) {
+    return switch(entityfieldtype(fld)) {
+        case FIELD_STRING   : "string",
+        case FIELD_FLOAT    : "float",
+        case FIELD_VECTOR   : "vector",
+        case FIELD_ENTITY   : "entity",
+        case FIELD_FUNCTION : "function",
+        default             : "unknown"
+    };
+}
+
+void dumpent(entity e) {
+    print("----------------------------------\n");
+    print("ENTITY DUMP: ", etos(e), "\n");
+    print("----------------------------------\n");
+
+    var n = numentityfields();
+    for(var i = 0; i < n; ++i) {
+        var val = getentityfieldstring(i, e);
+        if(val != "")
+            print("(", entityfieldtypestr(i), ") ", entityfieldname(i), ": ", val, "^7\n");
+    }
+
+    print("----------------------------------\n");
+}
+
 /*
 // TODO sound pack system
 string soundpack;
@@ -1434,19 +1460,33 @@ float precache_sound_index (string s) = #19;
 #define SND_LARGEENTITY 8
 #define SND_LARGESOUND  16
 
+.entity realowner;
 .entity WarpZone_refsys;
 
 float sound_allowed(float dest, entity e)
 {
     // sounds from world may always pass
+    float iter;
+
     for (;;)
     {
         if (e.classname == "body")
             e = e.enemy;
-        if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
+        if(e.realowner && e.realowner != e)
+            e = e.realowner;
+        else if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
             e = e.owner;
         else
             break;
+
+        if(++iter == 100) {
+            bprint("[FIXME] sound_allowed() got stuck in an ownership loop!\n");
+            backtrace("sound_allowed() ownership loop");
+            dumpent(e);
+            dumpent(e.owner);
+            dumpent(e.realowner);
+            break;
+        }
     }
     // sounds to self may always pass
     if (dest == MSG_ONE)
