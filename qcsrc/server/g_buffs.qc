@@ -873,15 +873,37 @@ void Buffs_ReaperFrag(entity targ, entity attacker) {
     }
 }
 
+#define meodp_rand1 health
+#define meodp_rand2 armorvalue
+#define meodp_rand3 cnt
+#define meodp_rand4 armortype
+
 void Buffs_MEODP_Point_Think(void) {
     if(!self.owner || wasfreed(self.owner)) {
         remove(self);
         return;
     }
-    
-    self.angles = self.angles + (self.owner.angles - self.angles) * frametime;
-    makevectors(self.angles + '0 30 0' * time * self.health);
-    setorigin(self, self.owner.meodp_point_offs + (self.owner.absmax + self.owner.absmin) * 0.5 + v_forward * (45 + 10 * sin(time * self.armorvalue)));
+
+    var ref = self.owner;
+    while(ref.meodp_point_ref)
+        ref = ref.meodp_point_ref;
+
+    if(ref.iscreature)
+        makevectors('0 0 0');
+    else
+        makevectors(ref.angles + ref.meodp_point_angleoffs);
+
+    var dst = 2.3 * max4(abs(ref.mins_x), abs(ref.mins_y), abs(ref.maxs_x), abs(ref.maxs_y));
+    dst = max(20, dst);
+
+    var t1 = self.meodp_rand3 * time + self.meodp_rand1;
+    var t2 = self.meodp_rand4 * time * 1.521 + self.meodp_rand2;
+
+    var o = ref.meodp_point_offs + (ref.absmax + ref.absmin) * 0.5;
+    var t = o + (v_forward * sin(t1) + v_right * cos(t1)) * dst * (1 + 0.05 * sin(t2));
+
+    tracebox(o, self.mins, self.maxs, t, MOVE_WORLDONLY, self);
+    setorigin(self, trace_endpos);
     
     self.nextthink = time;
 }
@@ -978,8 +1000,10 @@ void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death) {
     p.glow_size = 256;
     p.glow_trail = 1;
     p.glow_color = 251;
-    p.health = random();
-    p.armorvalue = random();
+    p.meodp_rand1 = random() * M_PI * 2;
+    p.meodp_rand2 = random() * M_PI * 2;
+    p.meodp_rand3 = if(random() < 0.5) 1 else -1;
+    p.meodp_rand4 = if(random() < 0.5) 1 else -1;
     p.takedamage = DAMAGE_AIM;
     p.event_damage = Buffs_MEODP_Point_Damage;
     setmodel(p, "models/runematch/rune.mdl");
@@ -1053,6 +1077,17 @@ void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor) {
 
     Buffs_MEODP_TriggerDeath_Multiple(attacker, inflictor,
                                       Buffs_MEODP_Filter_NearbyRelated, self);
+}
+
+void Buffs_MEODP_Antilag(entity plr, float t) {
+    if(!plr.meodp_point)
+        return;
+
+    using(time = t) using(self = plr.meodp_point) {
+        save_nasty_globals();
+        self.think();
+        restore_nasty_globals();
+    }
 }
 
 float Buffs_BuffPickup_PickupAllowed(entity buff, entity plr) {

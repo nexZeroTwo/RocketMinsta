@@ -261,16 +261,6 @@ void HG_Napalm_Think(void) {
     self.nextthink = time + GRENVAR(self.hg_type, "burndelay");
 }
 
-void HG_Napalm_Middlefire_Think() {
-	if(time > self.pushltime) {
-		remove(self);
-		return;
-	}
-
-	HG_Napalm_Burn(0.1, CVAR(g_nadgets_napalm_middleburnradius), CVAR(g_nadgets_napalm_burndamage), CVAR(g_nadgets_napalm_edgeburndamage), CVAR(g_nadgets_napalm_burntime), self.projectiledeathtype);
-	self.nextthink = time + 0.1;
-}
-
 void HG_Napalm_Projectile_Touch()
 {
     PROJECTILE_TOUCH;
@@ -326,23 +316,8 @@ void HG_Napalm()
 }
 
 void HG_Napalm_Explode() {
-	local float c;
-	for (c = 0; c < CVAR(g_nadgets_napalm_numparticles); c ++) HG_Napalm();
-	
-	entity mid = spawn();
-	mid.owner = self.owner;
-	mid.origin = self.origin;
-	setorigin(mid, mid.origin);
-	mid.think = HG_Napalm_Middlefire_Think;
-    mid.reset = SUB_Remove;
-	mid.nextthink = time;
-	mid.pushltime = time + CVAR(g_nadgets_napalm_fire_lifetime);
-    mid.team = self.team;
-    mid.projectiledeathtype = HG_NAPALM;
-    mid.csqcprojectile_extradata = CVAR(g_nadgets_napalm_middleburnradius);
-	setsize(mid, '0 0 0', '0 0 0');
-    
-    CSQCProjectile(mid, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
+	for(var c = 0; c < CVAR(g_nadgets_napalm_numparticles); c++)
+        HG_Napalm();
 }
 
 void HG_Plasma_Projectile_Explode() {
@@ -854,10 +829,11 @@ void HG_Stick(void) {
         e.hg_lastvel = normal;
 
     e.meodp_point = self.meodp_point;
-    e.meodp_point_offs = self.meodp_point_offs;
+    e.meodp_point_offs = self.meodp_point_offs + normal * sz * 2;
     e.meodp_death = self.meodp_death;
     if(e.meodp_point)
         e.meodp_point.owner = e;
+    e.meodp_point_angleoffs = '90 180 0';
 
     move_out_of_solid(e);
     

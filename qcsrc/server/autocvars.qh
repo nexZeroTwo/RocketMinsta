@@ -2018,6 +2018,7 @@ float autocvar_g_player_hitbox_head_height_factor;
 float autocvar_g_player_hitbox_head_width_factor;
 float autocvar_g_player_view_offset;
 float autocvar_g_player_crouch_view_offset;
+float autocvar_g_player_dont_block_teammates;
 float autocvar_sv_shownoobstat;
 
 #endif
