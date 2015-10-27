@@ -285,7 +285,7 @@ float Buffs_Present(entity p, float b) {
     if(g_buffs_baseline & b == b)
         return TRUE;
     
-    if(p.hg_linker.buffs & b == b)
+    if(p.hg_linker && (p.hg_linker.buffs & b == b))
         return TRUE;
     
     return FALSE;
@@ -391,8 +391,10 @@ void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
     
-    self.buffstat = self.buffs | self.hg_linker.buffs;
-    
+    self.buffstat = self.buffs;
+    if(self.hg_linker)
+        self.buffstat |= self.hg_linker.buffs;
+
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
