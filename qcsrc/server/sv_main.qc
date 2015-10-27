@@ -276,6 +276,9 @@ void StartFrame (void)
 
     Radio_Frame();
 
+    if(!realclients && time > 18000)
+        localcmd("restart\n");
+
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;
 }
