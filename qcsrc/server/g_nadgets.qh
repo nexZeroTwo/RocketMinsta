@@ -152,6 +152,12 @@ float hg_plasma_group;
 float hg_context_isalt;
 float hg_context_isaltintended;
 
+.vector hg_deferredVel;
+.float hg_raze_randelayed;
+.vector hg_maxVelocity;
+.vector hg_minVelocity;
+.float hg_fireSpawnTime;
+
 #define hg_type hg_type1
 
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))

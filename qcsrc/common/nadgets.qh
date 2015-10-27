@@ -1,7 +1,7 @@
 
 #define HGDEFS \
     HGDEF(HG_NORMAL,    normal,     "Hand Grenade",     '0.2 1.0 0.2') \
-    HGDEF(HG_REMOTE,    remote,     "Fire Trap",        '1.0 0.3 0.3') \
+    HGDEF(HG_REMOTE,    remote,     "Fire Trap",        '1.0 0.2 0.2') \
     HGDEF(HG_PLASMA,    plasma,     "Plasma Bomb",      '0.1 1.0 1.0') \
     HGDEF(HG_NAPALM,    napalm,     "Napalm Grenade",   '1.0 0.5 0.0') \
     HGDEF(HG_TRANSLOC,  transloc,   "Translocator",     '1.0 0.3 0.9') \
@@ -12,6 +12,7 @@
     HGDEF(HG_GG,        gg,         "GG Button",        '0.5 0.5 0.5' + colormapPaletteColor(15, FALSE)) \
     HGDEF(HG_BAIT,      bait,       "Hero Bait",        '0.2 0.7 1.0') \
     HGDEF(HG_SENTRY,    sentry,     "Zapper Sentry",    '0.3 1.0 0.7') \
+    HGDEF(HG_RAZE,      raze,       "Raze",             '1.0 0.4 0.5') \
 
 
 enum {

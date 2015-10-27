@@ -108,6 +108,7 @@ void Ent_DamageInfo(float isNew)
                 case HG_REMOTE:
                 case HG_NAPALM:
                 case HG_BAIT:
+                case HG_RAZE:
                     pointparticles(rm_particleeffectnum("RM_EXPLOSION"), self.origin, '0 0 0', 1);
                     break;
                 

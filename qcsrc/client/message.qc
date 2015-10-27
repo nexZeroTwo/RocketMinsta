@@ -263,6 +263,12 @@ string WeaponDeathString(float deathtype) {
 
         case HG_BAIT:
             return "took #'s bait";
+            
+        case HG_RAZE:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "was set ablaze by #'s raze";
+            else
+                return "didn't see #'s raze coming";
 
         default:
             return "was blasted by";
