@@ -4,7 +4,7 @@ float g_clanarena_pickups;
 
 void CA_Initialize(void);
 void CA_CheckWinner(void);
-void CA_EndRound(void);
+void CA_EndRound(float);
 void CA_PlayerDies(entity);
 void CA_RecountPlayers(void);
 float CA_AliveCheck(entity);

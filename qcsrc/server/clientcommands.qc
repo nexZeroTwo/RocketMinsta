@@ -134,8 +134,6 @@ void DragBox_Think()
 	self.nextthink = time;
 }
 
-//float ctf_clientcommand();
-float readyrestart_happened;
 .float lms_spectate_warning;
 void spawnfunc_func_breakable();
 
@@ -634,10 +632,8 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 
-		if((inWarmupStage && 0 >= g_warmup_limit) // with unlimited warmup players have to be able to restart
-		   || CVAR(sv_ready_restart) || g_race_qualifying == 2)
-		{
-			if(!readyrestart_happened || CVAR(sv_ready_restart_repeatable))
+		if(inWarmupStage || CVAR(sv_ready_restart) || g_race_qualifying == 2) {
+			if(!readyrestart_happened || CVAR(sv_ready_restart_repeatable) || inWarmupStage)
 			{
 				if (self.ready) // toggle
 				{
@@ -1241,8 +1237,16 @@ void ReadyRestartForce()
 
 
 	readyrestart_happened = 1;
-	game_starttime = time + CVAR(g_start_delay);
-    roundstate = ROUNDSTATE_PREGAME;
+
+    if(EndRound_Allowed()) {
+        game_starttime = time;
+        roundstate = ROUNDSTATE_WARMUP;
+        EndRound(ENDROUND_TIMEOUT_IMMEDIATE);
+    } else {
+        game_starttime = time + CVAR(g_start_delay);
+        roundstate = ROUNDSTATE_PREGAME;
+    }
+
 	restart_mapalreadyrestarted = 0; //reset this var, needed when cvar sv_ready_restart_repeatable is in use
 
 	inWarmupStage = 0; //once the game is restarted the game is in match stage
@@ -1259,7 +1263,7 @@ void ReadyRestartForce()
 	}
 
 	//initiate the restart-countdown-announcer entity
-	if(CVAR(sv_ready_restart_after_countdown))
+	if(CVAR(sv_ready_restart_after_countdown) && roundstate == ROUNDSTATE_PREGAME)
 	{
 		restartTimer = spawn();
 		restartTimer.think = restartTimer_Think;

@@ -1189,7 +1189,7 @@ void GameCommand(string command)
             return;
         }
 
-        EndRound();
+        EndRound(ENDROUND_TIMEOUT_NORMAL);
         return;
     }
 

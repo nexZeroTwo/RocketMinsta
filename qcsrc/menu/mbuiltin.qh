@@ -314,6 +314,8 @@ float(string varname, float setflags, float unsetflags) cvar_altertype_builtin =
 string(string in) uri_escape = #510;
 string(string in) uri_unescape = #511;
 
+float(string url, float id) uri_get = #513;
+
 string(string, float) netaddress_resolve = #625;
 string(string search, string replace, string subject) strreplace = #484;
 

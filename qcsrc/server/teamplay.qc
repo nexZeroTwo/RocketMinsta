@@ -98,7 +98,7 @@ void no_controller_think ()
 	bprint(strcat("\x01^2 * ", no_msg, "\n"));
 	entity pi;
 	FOR_EACH_PLAYER(pi)
-		centerprint_spec(pi, strcat(NEWLINES, no_msg));
+		centerprint_spec(pi, no_msg);
 	forbidrestart = 1;
 	end_match(1);
 	remove(self);

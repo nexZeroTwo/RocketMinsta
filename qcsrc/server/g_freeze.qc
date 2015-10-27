@@ -277,6 +277,9 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
 
+    if(DEATH_ISENVIRONMENTAL(deathtype))
+        return 0;
+
     if(!self.frozen) {
         Boobs_DropAllAndRespawn(frce);
         Freeze_FreezePlayer(self, attacker);
@@ -293,10 +296,8 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     
     self.frozenrow += 1;
     float r = Freeze_CVar(frozen_row_respawn);
-    
-    if(deathtype == DEATH_HURTTRIGGER)
-        Freeze_RespawnPlayer(self);
-    else if(r) if(self.frozenrow >= r) {
+
+    if(r) if(self.frozenrow >= r) {
         Freeze_RespawnPlayer(self);
         if(self.frozenrow > 1)
             bigprint_spec(self, "", strcat("^5You were moved to a random spawn point after dying ", ftos(self.frozenrow), " times in a row"), 5);
