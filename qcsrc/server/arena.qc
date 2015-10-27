@@ -243,7 +243,6 @@ void Arena_Warmup()
 
 	f = rint(warmup - time);
 
-	msg = NEWLINES;
 	if(time < warmup && self.spawned)
 	{
 		if(champion)

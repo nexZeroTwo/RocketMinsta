@@ -270,6 +270,8 @@ string(string info, string key) infoget = #227;
 string(string info, string key, string value, ...) infoadd = #226;
 string(string in) uri_escape = #510;
 
+float(string url, float id) uri_get = #513;
+
 string	keynumtostring(float keynum) = #520;
 float   stringtokeynum(string str) = #341;
 string	findkeysforcommand(string command) = #521;
