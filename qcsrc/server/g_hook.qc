@@ -199,7 +199,7 @@ void GrapplingHookThink()
 		}
 	}
 
-    if(roundstate == ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP)
 	if(self.aiment.classname == "player") if(self.last_dmg < time)
 	if not(g_freeze && self.aiment.frozen)
 	if(!teams_matter || self.owner.team != self.aiment.team)

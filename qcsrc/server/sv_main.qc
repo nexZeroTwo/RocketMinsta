@@ -266,13 +266,16 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
-    
-    if(time >= game_starttime)
-    if(roundstate == ROUNDSTATE_PREGAME) {
+
+    if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;
         TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
     }
-    
+
+    if(inWarmupStage && roundstate == ROUNDSTATE_GAME) {
+        roundstate = ROUNDSTATE_INITIAL_WARMUP;
+    }
+
     Radio_Frame();
 
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)

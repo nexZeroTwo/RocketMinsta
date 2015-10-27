@@ -550,7 +550,7 @@ void SV_ParseClientCommand(string s) {
         float isplayer = self.classname != "spectator" && self.classname != "observer";
         float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
         float term = (self.term_authed && !self.term_used);
-        float nr = isplayer && (gamestarted || self.hg_nadesused) && !term;
+        float nr = isplayer && (gamestarted || (self.hg_nadesused && !inWarmupStage)) && !term;
         
         float t1 = HG_NameToType(argv(1));
         float t2 = HG_NameToType(argv(2));
