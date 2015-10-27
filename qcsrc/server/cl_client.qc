@@ -3297,7 +3297,7 @@ void PlayerPreThink (void)
 				if(frametime)
 					player_anim();
 				button_pressed = (self.BUTTON_ATCK || self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK || self.BUTTON_USE);
-				force_respawn = (g_lms || g_clanarena || g_jailbreak || CVAR(g_forced_respawn));
+				force_respawn = (g_freeze || g_lms || g_clanarena || g_jailbreak || CVAR(g_forced_respawn));
 				
 				if (jb_roundover) {
 					// lol no respawn for ya

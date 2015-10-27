@@ -542,44 +542,52 @@ float SPECIES_RESERVED     = 15;
 
 // Deathtypes (weapon deathtypes are the IT_* constants below)
 // NOTE: when adding death types, please add an explanation to Docs/spamlog.txt too.
-float DEATH_SPECIAL_START = 10000;
-float DEATH_FALL = 10000;
-float DEATH_TELEFRAG = 10001;
-float DEATH_DROWN = 10002;
-float DEATH_HURTTRIGGER = 10003;
-float DEATH_LAVA = 10004;
-float DEATH_SLIME = 10005;
-float DEATH_KILL = 10006;
-float DEATH_NOAMMO = 10007;
-float DEATH_SWAMP = 10008;
-float DEATH_TEAMCHANGE = 10009;
-float DEATH_AUTOTEAMCHANGE = 10010;
-float DEATH_CAMP = 10011;
-float DEATH_SHOOTING_STAR = 10012;
-float DEATH_ROT = 10013;
-float DEATH_MIRRORDAMAGE = 10014;
-float DEATH_TOUCHEXPLODE = 10015;
-float DEATH_CHEAT = 10016;
-float DEATH_FIRE = 10017;
-float DEATH_TURRET = 10100;
-float DEATH_NOISE = 10101;
-float DEATH_ARC = 10102;
-float DEATH_IGNITE = 10103;
-float DEATH_LINKER_SHARE = 10104;
-float DEATH_VAMPIRE = 10105;
-float DEATH_ITEM = 10106;
-float DEATH_MEODP = 10107;
-float DEATH_HOOKFRAG = 10108;
-float DEATH_ENDURANCE = 10109;
-float DEATH_RESOURCE_ARMOR = 10110;
 
-float DEATH_WEAPONMASK = 0xFF;
-float DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
-float HITTYPE_SECONDARY = 0x100;
-float HITTYPE_SPLASH = 0x200;
-float HITTYPE_BOUNCE = 0x400;
-float HITTYPE_HEADSHOT = 0x800;
-float HITTYPE_RESERVED = 0x1000; // unused yet
+enum {
+    // start environmental
+    DEATH_FALL = 10000,
+    DEATH_DROWN,
+    DEATH_HURTTRIGGER,
+    DEATH_LAVA,
+    DEATH_SLIME,
+    DEATH_SWAMP,
+    // end environmental
+    DEATH_TELEFRAG,
+    DEATH_KILL,
+    DEATH_NOAMMO,
+    DEATH_TEAMCHANGE,
+    DEATH_AUTOTEAMCHANGE,
+    DEATH_CAMP,
+    DEATH_SHOOTING_STAR,
+    DEATH_ROT,
+    DEATH_MIRRORDAMAGE,
+    DEATH_TOUCHEXPLODE,
+    DEATH_CHEAT,
+    DEATH_FIRE,
+    DEATH_TURRET,
+    DEATH_NOISE,
+    DEATH_ARC,
+    DEATH_IGNITE,
+    DEATH_LINKER_SHARE,
+    DEATH_VAMPIRE,
+    DEATH_ITEM,
+    DEATH_MEODP,
+    DEATH_HOOKFRAG,
+    DEATH_ENDURANCE,
+    DEATH_RESOURCE_ARMOR,
+};
+
+const DEATH_SPECIAL_START = DEATH_FALL;
+const DEATH_ENV_START = DEATH_FALL;
+const DEATH_ENV_END = DEATH_SWAMP;
+
+const DEATH_WEAPONMASK = 0xFF;
+const DEATH_HITTYPEMASK = 0x1F00; // which is WAY below 10000 used for normal deaths
+const HITTYPE_SECONDARY = 0x100;
+const HITTYPE_SPLASH = 0x200;
+const HITTYPE_BOUNCE = 0x400;
+const HITTYPE_HEADSHOT = 0x800;
+const HITTYPE_RESERVED = 0x1000; // unused yet
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
@@ -589,6 +597,7 @@ float HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             (if(DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) 0 else DEATH_WEAPONOFWEAPONDEATH(t))
 #define DEATH_ISPROJECTED(t)          ((t) == DEATH_ARC || (t) == DEATH_IGNITE || (t) == DEATH_ENDURANCE)
+#define DEATH_ISENVIRONMENTAL(t)      ((t) >= DEATH_ENV_START && (t) <= DEATH_ENV_END)
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
 #define FRAGS_PLAYER 0
