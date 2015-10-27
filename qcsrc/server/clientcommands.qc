@@ -134,8 +134,6 @@ void DragBox_Think()
 	self.nextthink = time;
 }
 
-//float ctf_clientcommand();
-float readyrestart_happened;
 .float lms_spectate_warning;
 void spawnfunc_func_breakable();
 
@@ -634,10 +632,8 @@ void SV_ParseClientCommand(string s) {
 		if not(self.flags & FL_CLIENT)
 			return;
 
-		if((inWarmupStage && 0 >= g_warmup_limit) // with unlimited warmup players have to be able to restart
-		   || CVAR(sv_ready_restart) || g_race_qualifying == 2)
-		{
-			if(!readyrestart_happened || CVAR(sv_ready_restart_repeatable))
+		if(inWarmupStage || CVAR(sv_ready_restart) || g_race_qualifying == 2) {
+			if(!readyrestart_happened || CVAR(sv_ready_restart_repeatable) || inWarmupStage)
 			{
 				if (self.ready) // toggle
 				{

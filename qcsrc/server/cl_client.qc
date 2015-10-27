@@ -1866,10 +1866,13 @@ void ClientConnect (void)
             inWarmupStage = CVAR(g_warmup);
             if(inWarmupStage) {
                 game_starttime = time;
-                g_warmup_limit = time + CVAR(g_warmup_limit);
+                g_warmup_limit = CVAR(g_warmup_limit);
+                if(g_warmup_limit > 0)
+                    g_warmup_limit += time;
             } else {
                 ReadyRestart();
             }
+            readyrestart_happened = FALSE;
             lockteams = FALSE;
 	    }
     }
