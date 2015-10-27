@@ -300,6 +300,7 @@ const float ROUNDSTATE_PREGAME = 0;
 const float ROUNDSTATE_GAME = 1;
 const float ROUNDSTATE_OVER = 2;
 const float ROUNDSTATE_WARMUP = 3;
+const float ROUNDSTATE_INITIAL_WARMUP = 4;
 
 const float STAT_QUEUE = 52;
 const float STAT_ZAPPER_HEAT = 53;

@@ -3378,7 +3378,8 @@ void G_EndRound_Think()
 		
         if(timeleft <= 0)
         {
-            roundstate = ROUNDSTATE_GAME;
+            roundstate = if(inWarmupStage) ROUNDSTATE_INITIAL_WARMUP else ROUNDSTATE_GAME;
+
             FOR_EACH_PLAYER(e)
                 bigprint_spec(e, "^xFB0Begin!", "It's time to kick some ass!", -1);
             

@@ -756,7 +756,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			attacker.lms_traveled_distance = CVAR(g_lms_campcheck_distance);
 		}
 
-		if(roundstate != ROUNDSTATE_GAME && !(g_jailbreak && roundstate == ROUNDSTATE_OVER && targ.jb_isprisoned))
+		if(roundstate != ROUNDSTATE_GAME && roundstate != ROUNDSTATE_INITIAL_WARMUP && !(g_jailbreak && roundstate == ROUNDSTATE_OVER && targ.jb_isprisoned))
 		if(deathtype != DEATH_HURTTRIGGER)
 		{
 			damage = 0;
