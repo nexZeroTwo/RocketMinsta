@@ -199,6 +199,7 @@ void Buffs_Randomizer_Think(void) {
 
 void Buffs_Randomizer_Reset(void) {
     self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+    Buffs_Randomize_Reset();
 }
 
 float buff_teamfound[4];
@@ -266,7 +267,7 @@ void Buffs_Init_Delayed(void) {
     if(CVAR(g_buffs_randomize_interval_force) || !EndRound_Allowed()) {
         entity e = spawn();
         e.classname = "buff_randomizer";
-        e.reset = Buffs_Randomize_Reset;
+        e.reset = Buffs_Randomizer_Reset;
         e.think = Buffs_Randomizer_Think;
         e.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
     }
