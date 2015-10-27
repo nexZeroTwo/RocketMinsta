@@ -328,7 +328,7 @@ void Ent_Projectile()
 	//   effects
 	//
 	// projectiles don't send angles, because they always follow the velocity
-	
+
 	f = ReadByte();
 	self.count = (f & 0x80);
 	self.iflags = (self.iflags & IFLAG_INTERNALMASK) | IFLAG_AUTOANGLES | IFLAG_ANGLES;
