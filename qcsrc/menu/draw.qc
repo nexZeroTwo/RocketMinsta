@@ -87,14 +87,14 @@ void draw_Picture(vector theOrigin, string pic, vector theSize, vector theColor,
 
 void draw_Picture_Unskinned(vector theOrigin, string pic, vector theSize, vector theColor, float theAlpha)
 {
-	local vector d;
+	vector d;
 	d = draw_scale;
     
     if(theSize == '1 1 0') {
         // TBH I don't even remember what the fuck this hack is, but apparently the flags in the server list don't work properly without it.
         // If anyone actually gives a shit, please head over to qcsrc/menu/nexuiz/serverlist.c, fix it, and remove this from here.
         
-        local float s;
+        float s;
         s = d_y / 11;
         d_x = 16 * s;
     }

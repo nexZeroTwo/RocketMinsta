@@ -127,7 +127,7 @@ o_y += sbar_fontsize_y * sc *  (1 - pow(alpha - 1, 2))
 
 vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float id)
 {
-	local string s;
+	string s;
 	s = GameTypeVote_DescriptionByID(id);
 
 	float a, i, n = tokenizebyseparator(s, "\n");

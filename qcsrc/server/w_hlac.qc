@@ -23,7 +23,7 @@ void W_HLAC_Touch2 (void)
 
 void W_HLAC_Attack (void)
 {
-	local entity missile;
+	entity missile;
     float spread;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
@@ -76,7 +76,7 @@ void W_HLAC_Attack (void)
 
 void W_HLAC_Attack2f (void)
 {
-	local entity missile;
+	entity missile;
     float spread;
 
     spread = CVAR(g_balance_hlac_secondary_spread);

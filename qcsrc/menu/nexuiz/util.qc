@@ -262,8 +262,8 @@ void(float argc) Item_Nex_ExtResponseSystem_Parse =
 
 void() Item_Nex_ExtResponseSystem_CheckForResponse =
 {
-	local string s;
-	local float argc;
+	string s;
+	float argc;
 	while(strlen((s = getextresponse())))
 	{
 		argc = tokenize_console(s);

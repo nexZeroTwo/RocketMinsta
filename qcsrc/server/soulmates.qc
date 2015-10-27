@@ -358,7 +358,7 @@ void sm_SoulGem_Reset() {
 }
 
 entity sm_CreateSoulGem(float theteam) {
-	local entity e;
+	entity e;
 	e = spawn();
 	e.classname = "sm_soulgem";
 	e.target = "###item###";
@@ -394,7 +394,7 @@ entity sm_CreateSoulGem(float theteam) {
 }
 
 void sm_PlaceSoulGem(entity gem) {
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = gem;
 	

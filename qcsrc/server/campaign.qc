@@ -165,7 +165,7 @@ void CampaignPreIntermission()
 	entity head;
 	float won;
 	float lost;
-	local string savevar;
+	string savevar;
 
 	won = 0;
 

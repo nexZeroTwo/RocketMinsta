@@ -78,7 +78,7 @@ void GameCommand(string theCommand)
 
 	if(argv(0) == "update_rmvars")
 	{
-		local entity v;
+		entity v;
 		for(v = world; (v = findfloat(v, RMUpdatable, TRUE)); )
 			if(v.RMUpdate)
 				v.RMUpdate(v);

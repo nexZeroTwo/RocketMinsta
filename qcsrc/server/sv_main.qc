@@ -1,8 +1,8 @@
 
 void CreatureFrame (void)
 {
-	local entity oldself;
-	local float dm;
+	entity oldself;
+	float dm;
 	oldself = self;
 	//self = findfloat(world, iscreature, TRUE);
 	//while(self)

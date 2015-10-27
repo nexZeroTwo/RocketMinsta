@@ -117,7 +117,7 @@ void W_Fireball_Damage (entity inflictor, entity attacker, float damage, float d
 
 void W_Fireball_Attack2()
 {
-	local entity proj;
+	entity proj;
 
 	W_SetupShot_ProjectileSize (self, '-16 -16 -16', '16 16 16', FALSE, 2, "weapons/fireball_fire2.wav", CVAR(g_balance_fireball_secondary_damage) + CVAR(g_balance_fireball_secondary_bfgdamage));
 
@@ -238,7 +238,7 @@ void W_Firemine_Touch (void)
 
 void W_Fireball_Attack1()
 {
-	local entity proj;
+	entity proj;
 	vector f_diff;
 	float c;
 

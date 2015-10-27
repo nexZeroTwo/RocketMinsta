@@ -78,8 +78,8 @@ void updateSkinListRMHudSkinList(entity me)
 	*/
 	
 	// Copy-pasted from client/Main.qc... universal way of iteration through skins needed?
-	local float i, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
-	local string tmpname, current;
+	float i, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+	string tmpname, current;
 	globsize = search_getsize(hsglob);
 	current = CVAR_STR(rm_hudskin);
 	
@@ -116,8 +116,8 @@ void resizeNotifyRMHudSkinList(entity me, vector relOrigin, vector relSize, vect
 void setDependent_Check(entity);
 void drawListBoxItemRMHudSkinList(entity me, float i, vector absSize, float isSelected)
 {
-	local string s;
-	local float amod;
+	string s;
+	float amod;
 	amod = if(me.disabled) 0.2 else 1;
 	
 	if(isSelected)

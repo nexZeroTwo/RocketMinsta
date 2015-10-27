@@ -702,9 +702,9 @@ string Sbar_GetField(entity pl, float field)
 	switch(field)
 	{
 		case SP_CARRYING:
-			local string strToDraw;
+			string strToDraw;
 			strToDraw = "";
-			local float stuff = pl.(scores [SP_CARRYING]);
+			float stuff = pl.(scores [SP_CARRYING]);
 			if (stuff & 1) strToDraw = strcat (strToDraw, "^1", chr2str (139)); // red
 			if (stuff & 2) strToDraw = strcat (strToDraw, "^4", chr2str (139)); // blue
 // CTF doesn't use these, but leave them here if someone decides to make this work with KH
@@ -969,7 +969,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 	tmp_y = sbar_fontsize_y * 1.25;
 	tmp_z = 0;
 
-	local float a;
+	float a;
 	a = if(is_self) sbar_scoreboard_alpha_name_self else sbar_scoreboard_alpha_name;
 
 	if(is_self)
@@ -1132,7 +1132,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 	}
 	else // specifically for Infection mode (hacky, ik)
 	{
-		local vector lpos, ltmp, l_src_pos;
+		vector lpos, ltmp, l_src_pos;
 		lpos = pos;
 		ltmp_x = tmp_x;
 		ltmp_y = 1.25 * sbar_fontsize_y;
@@ -2918,16 +2918,16 @@ void Sbar_MorningRescue(void)
 	bottomleft_y = vid_conheight;
 	bottomleft_z = 0;
 
-	local vector mrpos;
-	local float mralpha;
+	vector mrpos;
+	float mralpha;
 	mrpos = bottomleft;
-	local vector offset;
+	vector offset;
 
 	mralpha = 1 - bound(0, 1 - 2 * (time - mr_appeartime), 1);
 	if(mralpha >= 1)
 		mralpha = bound(0, 1 - 2 * (time - (mr_fadetime - 1)), 1);
 
-	local vector mrcolor;
+	vector mrcolor;
 	mrcolor_x = 1;
 	mrcolor_y = random();
 	drawfill('0 0 0', bottomright, mrcolor, mralpha * random(), DRAWFLAG_ADDITIVE);
@@ -2942,12 +2942,12 @@ void Sbar_MorningRescue(void)
 	offset_x = 3 * cos(mrpos_x + 5 * time) + 5;
 	drawpic (mrpos + offset, "gfx/morningrescue2", '513 500 0' * 0.5, '1 1 1', mralpha, DRAWFLAG_NORMAL);
 
-	local string mycolor;
-	local string mychar;
-	local float j;
-	local string mrstring = "^xFB0MMorning ^7Rescue";
+	string mycolor;
+	string mychar;
+	float j;
+	string mrstring = "^xFB0MMorning ^7Rescue";
 
-	local float k;
+	float k;
 
 	for(k = 0; k < 2; ++k)
 	{
@@ -2975,7 +2975,7 @@ void Sbar_MorningRescue(void)
 
 			offset_y = 10 * ((k*10)+1) * cos(mrpos_x + 3 * time) * (if(mod(j, 2)) 1 else -1) * (if(k) 1 else -1);
 			offset_x = offset_y * (if(mod(j, 2)) -1 else 1);
-			local string resultstr = strcat(mycolor, mychar);
+			string resultstr = strcat(mycolor, mychar);
 
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 			mrpos_x += stringwidth(resultstr, TRUE) * 24;
@@ -3055,8 +3055,8 @@ float teamhud_enabled;
 
 void HudFlash_Apply(vector basecolor, float basealpha, float additive, float imod, float amod)
 {
-	local float a, i;
-	local vector c;
+	float a, i;
+	vector c;
 
 	imod *= hudskin_flash_intmod;
 	amod *= hudskin_flash_alphamod;
@@ -3293,8 +3293,8 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 	fillsize_y -= hudskin_sector_padding_top;
 	fillsize_y -= hudskin_sector_padding_bottom;
 	
-	local vector size_left, size_center, size_right;
-	local float factor;
+	vector size_left, size_center, size_right;
+	float factor;
 	switch(hudskin_sector_fill)
 	{
 		case FILL_COLOR:
@@ -3321,13 +3321,13 @@ void DrawHUDLineSector(vector sectorpos, vector sectorsize, float basealpha, vec
 				size_right = size_right * factor;
 			}
 			
-			local vector part_left, part_center, part_right;
+			vector part_left, part_center, part_right;
 			part_left = size_left;
 			part_right = size_right;
 			part_center = size_center;
 			part_center_x = fillsize_x;
 			
-			local vector origin_left, origin_center, origin_right;
+			vector origin_left, origin_center, origin_right;
 			origin_left = origin_center = origin_right = fillpos;
 			
 			origin_center_x = origin_left_x + part_left_x;
@@ -4014,7 +4014,7 @@ void Sbar_Draw(void)
 
 	if(revalpha > 0)
 	{
-		local vector fcolor;
+		vector fcolor;
 		fcolor_x = revsaved;
 		fcolor_y = 1 - revsaved * 0.9;
 		fcolor_z = 1 - revsaved;
@@ -4185,7 +4185,7 @@ void Sbar_Draw(void)
 		DrawProgress(hgpos, '120 5 0', hgstat, 0.7 * hg_alpha, '1 0 0' + '0 1 0' * (1 - hgstat));
 	}
     
-	local vector sv_pos;
+	vector sv_pos;
 	sv_pos = bottomright;
 	sv_pos_y -= 200;
     sv_pos_x -= 15;
@@ -4198,7 +4198,7 @@ void Sbar_Draw(void)
 	if(rm_visualscore)
 	for(i = score_strings_num - 1; i >= 0; --i)
 	{
-		local float a;
+		float a;
 		a = bound(0, 1 - 4 * (time - score_strings_fadeout[i]), 1);
 		if(!a)
 			continue;
@@ -4208,17 +4208,17 @@ void Sbar_Draw(void)
 		s = score_strings[i];
 		c = score_strings_color[i];
 
-		local vector mypos;
+		vector mypos;
 		mypos = sv_pos;
 		mypos_y -= 24 * (score_strings_num - i - sv_offset);
 
-		local float j;
+		float j;
 		for(j = 0; j < 2; ++j)
 		{
 			if(rm_simpleeffects) if(j)
 				break;
 
-			local float a2 = if(j) bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) else a;
+			float a2 = if(j) bound(0, 1 - 4 * (time - score_strings_appear[i]), 1) else a;
 
 			drawfont = sbar_bigfont_real; // bypass madoka, as many numeric characters are missing
 			drawstringright(mypos, s, '30 30 0' * (if(j) 2 - a2 else 1), c, a2, DRAWFLAG_NORMAL);
@@ -4275,10 +4275,10 @@ void Sbar_Draw(void)
 				{
 					if(tmpmadoka_fadetime >= time)
 					{
-						local string mycolor;
-						local string mychar;
-						local vector offset;
-						local float j;
+						string mycolor;
+						string mychar;
+						vector offset;
+						float j;
 
 						bp_pos_x = 0.5 * (vid_conwidth - 0.6025 * strlennocol(bigprint_string) * 24);
 						for(j = 0; j < strlen(bigprint_string); ++j)
@@ -4302,7 +4302,7 @@ void Sbar_Draw(void)
 
 							offset_y = 3 * cos(bp_pos_x + 5 * time) * (if(mod(j, 2)) 1 else -1);
 							offset_x = offset_y * (if(mod(j, 2)) -1 else 1);
-							local string resultstr = strcat(mycolor, mychar);
+							string resultstr = strcat(mycolor, mychar);
 
 							dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 
@@ -4354,7 +4354,7 @@ void Sbar_Draw(void)
 	if(spectatee_status != -1)
 	if(num_spectators)
 	{
-		local float limit;
+		float limit;
 		if(spectatee_status)
 		{
 			o = Sbar_DrawNoteLine(o, "");
@@ -4444,7 +4444,7 @@ void Sbar_Draw(void)
 				{
 					if (tm.team_size == ts_max)
 					{
-						local vector centeroffs;
+						vector centeroffs;
 						centeroffs_y = 3 * cos(o2_y + 3 * time);
 
 						s = strcat(blinkcolor, "Teamnumbers are unbalanced!");
@@ -5950,8 +5950,8 @@ void CSQC_kh_hud(vector hudpos)
 	p_y = vid_conheight - 34 - 3;
 	p_z = 0;
 
-	local entity tm;
-	local float numteams;
+	entity tm;
+	float numteams;
 
 	kh_keys = getstati(STAT_KH_KEYS);
 
@@ -6146,8 +6146,8 @@ void CSQC_hud_TeamStatCommon(vector hudpos, float redstat, float bluestat, float
 		return;
 	}
 	
-	local float i, colour, stat;
-	local vector offs;
+	float i, colour, stat;
+	vector offs;
 	for(i = 0; i < 4; ++i)
 	{
 		position = hudpos;

@@ -883,7 +883,7 @@ string playername(entity p)
 
 vector randompos(vector m1, vector m2)
 {
-    local vector v;
+    vector v;
     m2 = m2 - m1;
     v_x = m2_x * random() + m1_x;
     v_y = m2_y * random() + m1_y;
@@ -1644,7 +1644,7 @@ float spamsound(entity e, float chan, string samp, float vol, float atten)
 
 void play2team(float t, string filename)
 {
-    local entity head;
+    entity head;
 
     if (CVAR(bot_sound_monopoly))
         return;
@@ -1865,7 +1865,7 @@ void precache()
     if (CVAR(sv_precacheweapons) || g_nixnex)
     {
         //precache weapon models/sounds
-        local float wep;
+        float wep;
         wep = WEP_FIRST;
         while (wep <= WEP_LAST)
         {
@@ -2964,7 +2964,7 @@ void bigprint(entity e, string bigstring, string comment, float staytime)
 
 void centerprint_spec(entity pl, string msg)
 {
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             centerprint(e, msg);
@@ -2973,7 +2973,7 @@ void centerprint_spec(entity pl, string msg)
 
 void bigprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             bigprint(e, msg, comment, staytime);
@@ -2989,7 +2989,7 @@ void bigprint_clear(entity pl)
 
 void bigprint_clear_spec(entity pl)
 {
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             bigprint_clear(e);
@@ -3014,7 +3014,7 @@ void madokaprint(entity e, string bigstring, string comment, float staytime)
 
 void madokaprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             madokaprint(e, msg, comment, staytime);
@@ -3075,7 +3075,7 @@ void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivi
 	if not(CVAR(sv_hudflash))
 		return;
 	
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             hudflash(e, flashcolor, staytime, intensivity, alph);
@@ -3087,7 +3087,7 @@ void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float
 	if not(CVAR(sv_hudflash))
 		return;
 	
-    local entity e; FOR_EACH_REALCLIENT(e)
+    entity e; FOR_EACH_REALCLIENT(e)
     {
         if(e == pl || (e.enemy == pl && e.classname == "spectator"))
             hudflash_teamcolor(e, staytime, intensivity, alph);
@@ -3157,7 +3157,7 @@ void MarkAway(entity pl, float force)
     if(pl.is_away)
         return;
     
-    local float idlefor = floor((time - self.parm_idlesince) / 60);
+    float idlefor = floor((time - self.parm_idlesince) / 60);
     
     if(pl.classname == "player")
         stuffcmd(pl, "cmd spectate\n");
@@ -3208,8 +3208,8 @@ void UnmarkAway(entity pl)
 
 float CountAFKClients()
 {
-    local entity e;
-    local float r;
+    entity e;
+    float r;
     r = 0;
     FOR_EACH_REALCLIENT(e)
     {
@@ -3260,8 +3260,8 @@ string GetVoteList_All(float ismaster, float isvdo)
 	if(!CVAR(sv_vote_gametype_call))
 		return GetVoteList_VoteCommands(ismaster, isvdo);
 	
-	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_VoteCommands(ismaster, isvdo), " ");
+	string votes;
+	float i, n = tokenizebyseparator(GetVoteList_VoteCommands(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
@@ -3274,8 +3274,8 @@ string GetVoteList_All(float ismaster, float isvdo)
 
 string GetVoteList_Filtered(float ismaster, float isvdo)
 {
-	local string votes;
-	local float i, n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
+	string votes;
+	float i, n = tokenizebyseparator(GetVoteList_All(ismaster, isvdo), " ");
 	
 	for(i = 0; i < n; ++i)
 	{
@@ -3356,8 +3356,8 @@ string GetForcedFog() {
 
 void G_EndRound_Think()
 {
-    local float timeleft = rint(self.cnt - time);
-    local entity e;
+    float timeleft = rint(self.cnt - time);
+    entity e;
     
     if(intermission_running) {
         remove(self);
@@ -3406,7 +3406,7 @@ void G_EndRound_Think()
 
 void G_EndRound(float thedelay, float warmuptime, void() callback, void() callback2, void() callbackfin)
 {
-    local entity e = spawn();
+    entity e = spawn();
     e.think = G_EndRound_Think;
     e.nextthink = time + 1;
     e.endround_think = callback;

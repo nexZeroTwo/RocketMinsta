@@ -56,7 +56,7 @@ void W_Hook_Touch2 (void)
 
 void W_Hook_Attack2()
 {
-	local entity gren;
+	entity gren;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_cells = self.ammo_cells - CVAR(g_balance_hook_secondary_ammo);

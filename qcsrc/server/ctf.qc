@@ -246,7 +246,7 @@ void ReturnFlag(entity e)
 
 void DropFlag(entity e, entity penalty_receiver, entity attacker)
 {
-	local entity p;
+	entity p;
 
 	if(e.classname != "item_flag_team")
 	{
@@ -342,7 +342,7 @@ void AnimateFlag()
 
 void FlagThink()
 {
-	local entity e;
+	entity e;
 
 	self.nextthink = time + 0.1;
 
@@ -428,9 +428,9 @@ void FlagTouch()
 {
 	if(gameover) return;
 
-	local float t;
-	local entity player;
-	local string s, s0, h0, h1;
+	float t;
+	entity player;
+	string s, s0, h0, h1;
 	if (other.classname != "player")
 		return;
 	if (other.health < 1) // ignore dead players
@@ -454,7 +454,7 @@ void FlagTouch()
 			return;
 		}
 		
-		local entity _pl;
+		entity _pl;
 		if (other.team == COLOR_TEAM1) { // red team scores
 			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1Red ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
@@ -1049,7 +1049,7 @@ void spawnfunc_ctf_team()
 // code from here on is just to support maps that don't have control point and team entities
 void ctf_spawnteam (string teamname, float teamcolor)
 {
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = spawn();
 	self.classname = "ctf_team";
@@ -1115,7 +1115,7 @@ void ctf_setstatus()
 	self.items &~= IT_CTF_SHIELDED;
 
 	if (g_ctf) {
-		local entity flag;
+		entity flag;
 		float redflags, blueflags;
 
 		if(self.ctf_captureshielded)

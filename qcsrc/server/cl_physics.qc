@@ -112,7 +112,7 @@ void PlayerJump (void)
 
 void CheckWaterJump()
 {
-	local vector start, end;
+	vector start, end;
 
 // check for a jump-out-of-water
 	makevectors (self.angles);
@@ -523,8 +523,8 @@ vector PlayerTouchWall(float dist)
 
 void SV_PlayerPhysics()
 {
-	local vector wishvel, wishdir, v;
-	local float wishspeed, f, maxspd_mod, spd, maxairspd, airaccel, swampspd_mod, shtest_score, buttons;
+	vector wishvel, wishdir, v;
+	float wishspeed, f, maxspd_mod, spd, maxairspd, airaccel, swampspd_mod, shtest_score, buttons;
 	string temps;
 	float buttons_prev;
 	float not_allowed_to_move;

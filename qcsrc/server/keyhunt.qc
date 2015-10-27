@@ -665,7 +665,7 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 
 	first = TRUE;
 	
-	local string names;
+	string names;
 	
 	FOR_EACH_KH_KEY(key)
 		if(key.owner.kh_next == key)
@@ -683,8 +683,8 @@ void kh_WinnerTeam(float teem)  // runs when a team wins
 		}
 	bprint("^7 captured the keys for the ", ColoredTeamName(teem), "\n");
 
-	local entity e;
-	local string bigstring;
+	entity e;
+	string bigstring;
 	switch(teem)
 	{
 		case COLOR_TEAM1:
@@ -931,7 +931,7 @@ void kh_StartRound()  // runs at the start of each round
 		if(clienttype(player) == CLIENTTYPE_REAL)
 			centerprint_expire(player, CENTERPRIO_SPAM);
 			
-		/*local entity oldself;
+		/*entity oldself;
 		oldself = self;
 		self = player;
 		PutClientInServer();

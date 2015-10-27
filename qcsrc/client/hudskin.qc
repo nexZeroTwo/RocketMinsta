@@ -126,7 +126,7 @@ float HUDSkin_ReadTC()
 
 vector HUDSkin_ReadColor()
 {
-    local vector v;
+    vector v;
     v_x = stof(argv(1));
     v_y = stof(argv(2));
     v_z = stof(argv(3));
@@ -182,7 +182,7 @@ float HUDSkin_ReadFillMode()
 
 float HUDSkin_Eval(string cmd)
 {
-    local float n = tokenize_console(cmd);
+    float n = tokenize_console(cmd);
     
     switch(argv(0))
     {
@@ -688,8 +688,8 @@ float HUDSkin_Load(string skin_name)
         return TRUE;
     }
     
-    local float fh, err;
-    local string s;
+    float fh, err;
+    string s;
     
     fh = fopen(strcat("gfx/hud/skins/", skin_name, "/skininfo"), FILE_READ);
     if(fh < 0)

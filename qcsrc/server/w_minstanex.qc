@@ -33,10 +33,10 @@ void W_Explosive_Attack (float attacktype)
 	float SPEED;
 	SPEED = 90000000;
 	
-	local entity gren;
+	entity gren;
 
-	local float expl_damage = CVAR(g_rocketminsta_splash_damage) / 2; //I'm not even sure why is this here?
-	local float expl_recoil;
+	float expl_damage = CVAR(g_rocketminsta_splash_damage) / 2; //I'm not even sure why is this here?
+	float expl_recoil;
 	expl_recoil = 4;
 	
 	if(CVAR(g_rocketminsta_norecoil))
@@ -346,7 +346,7 @@ void W_RM_Alt_Touch(void)
 
 void W_RM_Alt_Attack()
 {
-	local entity proj;
+	entity proj;
 	float counter;
 	float total = CVAR(g_rocketminsta_laser_count);
 	float spread = CVAR(g_rocketminsta_laser_spread);
@@ -394,7 +394,7 @@ void W_RM_Alt_Attack()
 
 void W_RM_Alt_Attack_Single()
 {
-	local entity proj;
+	entity proj;
 	float total = CVAR(g_rocketminsta_laser_count);
 	float spread = CVAR(g_rocketminsta_laser_spread);
 

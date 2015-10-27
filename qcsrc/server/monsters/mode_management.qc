@@ -34,7 +34,7 @@ float mode_teamscore[17];
 
 void() mode_initallowedteams =
 {
-	local float c;
+	float c;
 	c = 0;
 	while(c < 17)
 	{
@@ -73,10 +73,10 @@ float(float t) validteam =
 
 float() weakestteam =
 {
-	local float bestteam;
-	local float bestteamcount;
-	local float headcount;
-	local float c;
+	float bestteam;
+	float bestteamcount;
+	float headcount;
+	float c;
 	bestteam = -1;
 	bestteamcount = 0;
 	c = 1;
@@ -98,8 +98,8 @@ float() weakestteam =
 
 void() updateteams =
 {
-	local entity head;
-	local float c;
+	entity head;
+	float c;
 	c = 1;
 	while (c < 17)
 	{
@@ -127,7 +127,7 @@ float(float p) checkteamcolor =
 
 void(float c) SV_ChangeTeam =
 {
-	local float pants, shirt, old;
+	float pants, shirt, old;
 	old = self.clientcolors & 15;
 	if (c >= 0)
 	{
@@ -177,7 +177,7 @@ void(string m) setteamplay =
 
 void() mode_updatecvars =
 {
-	local float dm, tp;
+	float dm, tp;
 	dm = CVAR(deathmatch);
 	tp = CVAR(teamplay);
 	// now set deathmatch cvar
@@ -253,8 +253,8 @@ void() modesetup =
 float monsterspawn;
 void() spawnmonster_think =
 {
-	//local float c;
-	local void() sfunc;
+	//float c;
+	var void() sfunc;
 	self.nextthink = time;
 	if (time > self.cnt)
 	{
@@ -336,7 +336,7 @@ void() spawnmonster_think =
 
 void(vector org, float c1, float c2, string cname, void() spawnfunc, vector m1, vector m2) spawnmonster =
 {
-	local float c;
+	float c;
 	c = (c2 - c1) * random() + c1;
 	c = rint(c);
 	while (c > 0)
@@ -381,9 +381,9 @@ void() monster_hellfish;
 
 void() spawnmonsters =
 {
-	local float r;
-	local vector org;
-	local entity head, e;
+	float r;
+	vector org;
+	entity head, e;
 	head = findchain(classname, "info_player_deathmatch");
 	if (head == world)
 	{
@@ -482,8 +482,8 @@ void() precachemonsters =
 float spawnedexitmonsters;
 void() deathmatch7update =
 {
-	local entity e;
-	local float f, monster_count, monsters;
+	entity e;
+	float f, monster_count, monsters;
 	if (skill >= 5)
 	if (!deathmatch)
 	{
