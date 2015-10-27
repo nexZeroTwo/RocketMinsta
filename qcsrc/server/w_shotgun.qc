@@ -9,7 +9,7 @@ void W_Shotgun_Attack (void)
 	float	spread;
 	float	bulletspeed;
 	float	bulletconstant;
-	local entity flash;
+	entity flash;
 
 	ammoamount = CVAR(g_balance_shotgun_primary_ammo);
 	bullets = CVAR(g_balance_shotgun_primary_bullets);
@@ -53,7 +53,7 @@ void W_Shotgun_Attack2 (void)
 	float	spread;
 	float	bulletspeed;
 	float	bulletconstant;
-	local entity flash;
+	entity flash;
 
 	ammoamount = CVAR(g_balance_shotgun_secondary_ammo);
 	bullets = CVAR(g_balance_shotgun_secondary_bullets);

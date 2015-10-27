@@ -850,11 +850,11 @@ void CSQC_UpdateView(float w, float h)
 
 	if(screenfade)
 	{
-		local vector position;
+		vector position;
 		position_x = vid_conwidth;
 		position_y = vid_conheight;
 		
-		local float sf_a;
+		float sf_a;
 		sf_a =  bound(0, 1 - 4 * (time - screenfade), 1);
 		
 		if(!sf_a)
@@ -937,8 +937,8 @@ void CSQC_Demo_Camera()
 
 	if(CVAR(camera_look_player))
 	{
-		local vector dir;
-		local float n;
+		vector dir;
+		float n;
 
 		dir = normalize(view_origin - current_position);
 		n = mouse_angles_z;

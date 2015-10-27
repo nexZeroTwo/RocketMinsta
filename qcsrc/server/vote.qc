@@ -117,7 +117,7 @@ float RemapVote(string vote, string cmd, entity e)
 	float vote_argc;
 	entity victim;
 	vote_argc = tokenize_console(vote);
-	local string s;
+	string s;
 
 	if(!e.vote_master)
 	if (time - CVAR(_sv_rm_lastvote) < CVAR(sv_vote_mindelay))
@@ -132,7 +132,7 @@ float RemapVote(string vote, string cmd, entity e)
 	// VoteAllowed tokenizes!
 	vote_argc = tokenize_console(vote);
 
-	local float min_argc = cvar (strcat ("sv_vote_", argv (0), "_min_arguments"));
+	float min_argc = cvar (strcat ("sv_vote_", argv (0), "_min_arguments"));
 	if (vote_argc <= min_argc && min_argc > 0)
 	{
 		sprint (e, strcat ("^2", argv (0), " ^1requires at least ^2", ftos (min_argc), " ^1argument(s).\n"));
@@ -267,8 +267,8 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		
-		local string cfgname = argv(1), strcfgs, tmpname;
-		local float i, globsize, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
+		string cfgname = argv(1), strcfgs, tmpname;
+		float i, globsize, rmglob = search_begin("rm-custom/*.cfg", FALSE, TRUE);
 		globsize = search_getsize(rmglob);
 		
 		if(globsize <= 0)
@@ -278,9 +278,9 @@ float RemapVote(string vote, string cmd, entity e)
 			return FALSE;
 		}
 		
-		local float v;
+		float v;
 		v = CVAR(sv_rmcustom_votable_restrict);
-		local string r;
+		string r;
 		r = CVAR_STR(sv_rmcustom_votable_restrictions);
 		
 		for(i = 0; i < globsize; ++i)
@@ -290,7 +290,7 @@ float RemapVote(string vote, string cmd, entity e)
 			tmpname = substring(tmpname, 0, strlen(tmpname) - 4);
 			
 			// Apply restriction rules
-			local float restricted;
+			float restricted;
 			switch(v)
 			{
 				case 0:
@@ -309,11 +309,11 @@ float RemapVote(string vote, string cmd, entity e)
 			{
 				RemapVote_vote = strcat("rmcustom ", tmpname); //vote;
 				
-				local float fhandle = fopen(strcat("rm-custom/", cfgname, ".cfg"), FILE_READ);
+				float fhandle = fopen(strcat("rm-custom/", cfgname, ".cfg"), FILE_READ);
 				
 				if(fhandle != -1)
 				{
-					local string fullname;
+					string fullname;
 					fullname = fgets(fhandle);
 					fullname = substring(fullname, strlen("//cfgname:"), strlen(fullname));
 					
@@ -447,7 +447,7 @@ void VoteDialog_Update(float msg, float vyes, float vno, float needed) {
 }
 
 void VoteDialog_Reset() {
-	local entity e;
+	entity e;
 	FOR_EACH_REALCLIENT(e)
 	{
 		if(e.classname == "")
@@ -502,7 +502,7 @@ float GameCommand_Vote(string s, entity e) {
 				else if(votecalled) {
 					print_to(e, "^1There is already a vote or an invitation called.");
 				} else {
-					local string vote;
+					string vote;
 					vote = VoteParse(s, argc);
 					if(vote == "") {
 						print_to(e, "^1Your vote is empty. See 'vhelp' for more info.");
@@ -631,7 +631,7 @@ float GameCommand_Vote(string s, entity e) {
 			}
 		} else if(argv(1) == "do") {
 			if(!e || e.vote_master) {
-				local string dovote;
+				string dovote;
 				dovote = VoteParse(s, argc);
 				if(dovote == "") {
 					print_to(e, "^1Your command was empty. See 'vhelp' for more info.");
@@ -799,17 +799,17 @@ float GameCommand_Vote(string s, entity e) {
 }
 
 void VoteHelp(entity e) {
-	local string vmasterdis;
+	string vmasterdis;
 	if(!CVAR(sv_vote_master)) {
 		vmasterdis = " ^1(disabled)";
 	}
 
-	local string vlogindis;
+	string vlogindis;
 	if("" == CVAR_STR(sv_vote_master_password) && "" == CVAR_STR(sv_vote_master_users)) {
 		vlogindis = " ^1(disabled)";
 	}
 
-	local string vcalldis;
+	string vcalldis;
 	if(!CVAR(sv_vote_call)) {
 		vcalldis = " ^1(disabled)";
 	}
@@ -908,7 +908,7 @@ float VoteCommandInList(string votecommand, string list)
 }
 
 float VoteAllowed(entity caller, string votecommand, string cmd) {
-	local string s;
+	string s;
 	
 	if(VoteCommandInList(votecommand, GetVoteList(caller.vote_master, (cmd == "vdo"))))
 		return TRUE;
@@ -922,7 +922,7 @@ float VoteAllowed(entity caller, string votecommand, string cmd) {
 }
 
 void VoteReset() {
-	local entity player;
+	entity player;
 
 	FOR_EACH_CLIENT(player)
 	{
@@ -1031,20 +1031,20 @@ void VoteSpam(float yescount, float nocount, float abstaincount, float notvoters
 }
 
 void VoteCount() {
-	local float playercount;
+	float playercount;
 	playercount = 0;
-	local float yescount;
+	float yescount;
 	yescount = 0;
-	local float nocount;
+	float nocount;
 	nocount = 0;
-	local float abstaincount;
+	float abstaincount;
 	abstaincount = 0;
-	local entity player;
+	entity player;
 	//same for real players
-	local float realplayercount;
-	local float realplayeryescount;
-	local float realplayernocount;
-	local float realplayerabstaincount;
+	float realplayercount;
+	float realplayeryescount;
+	float realplayernocount;
+	float realplayerabstaincount;
 	realplayercount = realplayernocount = realplayerabstaincount = realplayeryescount = 0;
 
     if(vote_invite) {
@@ -1103,7 +1103,7 @@ void VoteCount() {
 	needed = floor((playercount - abstaincount) * max(votefactor, simplevotefactor)) + 1;
 	//VoteDialog_Update(MSG_ALL, yescount, nocount, needed);
 	
-	local entity _e;
+	entity _e;
 	FOR_EACH_REALCLIENT(_e) if(_e.classname != "")
 	{
 		msg_entity = _e;

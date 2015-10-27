@@ -169,7 +169,7 @@ float Spawn_Score(entity spot, entity playerlist, float teamcheck)
 
 	// filter out spots for assault
 	if(spot.target != "") {
-		local entity ent;
+		entity ent;
 		float good, found;
 		ent = find(world, targetname, spot.target);
 		while(ent) {
@@ -230,7 +230,7 @@ float spawn_allbad;
 float spawn_allgood;
 entity Spawn_FilterOutBadSpots(entity firstspot, entity playerlist, float mindist, float teamcheck)
 {
-	local entity spot, spotlist, spotlistend;
+	entity spot, spotlist, spotlistend;
 	spawn_allgood = TRUE;
 	spawn_allbad = TRUE;
 
@@ -286,8 +286,8 @@ entity Spawn_WeightedPoint_Team(entity firstspot, float lower, float upper, floa
 {
 	// weight of a point: bound(lower, mindisttoplayer, upper)^exponent
 	// multiplied by spot.cnt (useful if you distribute many spawnpoints in a small area)
-	local entity spot;
-	local float considerations;
+	entity spot;
+	float considerations;
 	considerations = 0;
 
 	RandomSelection_Init();
@@ -325,11 +325,11 @@ float noclosetoteam;
 
 entity SelectSpawnPoint (float anypoint)
 {
-	local float teamcheck, closetoteam;
-	local entity firstspot_new, e;
-	local entity spot, firstspot, playerlist;
+	float teamcheck, closetoteam;
+	entity firstspot_new, e;
+	entity spot, firstspot, playerlist;
 
-	local float randspawns, closetoteam_cvar;
+	float randspawns, closetoteam_cvar;
 	randspawns = CVAR(sv_randomspawns);
 	closetoteam_cvar = CVAR(g_spawnclosetoteam);
 	
@@ -376,13 +376,13 @@ entity SelectSpawnPoint (float anypoint)
 	}
 	else if(teams_matter && closetoteam)
 	{
-		local entity md_point, md_player, md_tmp_point, md_tmp_player;
-		local float mdst, tmplen, minlen, minenemylen, spawnfailed;
+		entity md_point, md_player, md_tmp_point, md_tmp_player;
+		float mdst, tmplen, minlen, minenemylen, spawnfailed;
 		mdst = -1;
-		local float i;
+		float i;
 		
-		local float cvar_mindist_team = CVAR(g_spawnclosetoteam_mindist_team);
-		local float cvar_mindist_enemies = CVAR(g_spawnclosetoteam_mindist_enemies);
+		float cvar_mindist_team = CVAR(g_spawnclosetoteam_mindist_team);
+		float cvar_mindist_enemies = CVAR(g_spawnclosetoteam_mindist_enemies);
 
 		for(i = 0; i < 2; ++i)
 		{
@@ -901,9 +901,9 @@ float RestrictSkin(float s)
 
 void FixPlayermodel()
 {
-	local string defaultmodel;
-	local float defaultskin, chmdl, oldskin;
-	local vector m1, m2;
+	string defaultmodel;
+	float defaultskin, chmdl, oldskin;
+	vector m1, m2;
 
 	defaultmodel = "";
     
@@ -1662,8 +1662,8 @@ void FixClientCvars(entity e)
 
 void ServerTopic()
 {
-	local string topicby = CVAR_STR(_sv_explosive_topicby);
-	local string servertopic = CVAR_STR(_sv_explosive_topic);
+	string topicby = CVAR_STR(_sv_explosive_topicby);
+	string servertopic = CVAR_STR(_sv_explosive_topic);
 	
 	if(servertopic) if(servertopic != "")
 		sprint(self, strcat("\x01^2* ^3Current topic^7: ", servertopic, "\n"
@@ -1682,7 +1682,7 @@ string ColoredTeamName(float t);
 void DecodeLevelParms (void);
 void ClientConnect (void)
 {
-	local string s;
+	string s;
 	float t;
 
 	if(self.flags & FL_CLIENT)
@@ -1863,10 +1863,14 @@ void ClientConnect (void)
         
         if(realclients == 1) {
         	defer(5, Radio_Queue_PlayFirst);
-        	if(time > game_starttime && !CVAR(g_warmup)) {
-	            ReadyRestart();
-	            lockteams = FALSE;
-	        }
+            inWarmupStage = CVAR(g_warmup);
+            if(inWarmupStage) {
+                game_starttime = time;
+                g_warmup_limit = time + CVAR(g_warmup_limit);
+            } else {
+                ReadyRestart();
+            }
+            lockteams = FALSE;
 	    }
     }
     
@@ -2141,7 +2145,7 @@ string getTimeoutText(float addOneSecond) {
 	if (!CVAR(sv_timeout) || !timeoutStatus)
 		return "";
 
-	local string retStr;
+	string retStr;
 	if (timeoutStatus == 1) {
 		if (addOneSecond == 1) {
 			retStr = strcat("Timeout begins in ", ftos(remainingLeadTime + 1), " seconds!\n");
@@ -2642,9 +2646,9 @@ void WriteSpectatorInfoOf(entity player, entity of, float lock)
 	if(player.classname == "spectator") // What the fuck?
 		return;
 	
-	local entity spec;
-	local float specs;
-	local float a = CVAR(sv_anonspecs);
+	entity spec;
+	float specs;
+	float a = CVAR(sv_anonspecs);
 	
 	FOR_EACH_SPECOF(of, spec, a) specs++;
 
@@ -2925,8 +2929,8 @@ float isJoinAllowed() {
 	if (!CVAR(g_maxplayers))
 		return TRUE;
 
-	local entity e;
-	local float currentlyPlaying;
+	entity e;
+	float currentlyPlaying;
 	FOR_EACH_REALCLIENT(e) {
 		if(e.classname == "player" || e.jb_specteam)
 			currentlyPlaying += 1;

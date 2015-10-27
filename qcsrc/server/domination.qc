@@ -19,7 +19,7 @@ void dom_recountpoints()
 {
     totalpoints = redpoints = bluepoints = 0;
 
-    local entity e;
+    entity e;
     FOR_EACH_DOM_CONTROLPOINT(e)
 	{
 		++totalpoints;
@@ -60,7 +60,7 @@ void() dom_spawnteams;
 
 void tdom_checkwinner()
 {
-    local entity e;
+    entity e;
     dom_recountpoints(); 
 	
 	if(!bluepoints && redpoints && redpoints == totalpoints)
@@ -98,8 +98,8 @@ void tdom_checkwinner()
 
 void dompoint_captured ()
 {
-	local entity head;
-	local float old_delay, old_team, real_team;
+	entity head;
+	float old_delay, old_team, real_team;
 
 	// now that the delay has expired, switch to the latest team to lay claim to this point
 	head = self.owner;
@@ -198,8 +198,8 @@ void AnimateDomPoint()
 
 void dompointthink()
 {
-	local float waittime;
-	local float fragamt;
+	float waittime;
+	float fragamt;
 
 	self.nextthink = time + 0.1;
     
@@ -257,7 +257,7 @@ void dompointthink()
 
 void dompointtouch()
 {
-	local entity head;
+	entity head;
     
     if(time < game_starttime)
         return;
@@ -404,7 +404,7 @@ void spawnfunc_dom_team()
 
 void dom_controlpoint_setup()
 {
-	local entity head;
+	entity head;
 	// find the spawnfunc_dom_team representing unclaimed points
 	head = find(world, classname, "dom_team");
 	while(head && head.netname != "")
@@ -667,7 +667,7 @@ void spawnfunc_dom_controlpoint()
 // code from here on is just to support maps that don't have control point and team entities
 void dom_spawnteam (string teamname, float teamcolor, string pointmodel, float pointskin, string capsound, string capnarration, string capmessage)
 {
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = spawn();
 	self.classname = "dom_team";
@@ -779,7 +779,7 @@ float dom_spawnextrapoints(float numpts, float minpts) {
 
 void dom_removeall(string clname)
 {
-	local entity head;
+	entity head;
 	head = find(world, classname, "");
 	
 	for(head = world; (head = find(head, classname, clname));)
@@ -791,7 +791,7 @@ void dom_removeall(string clname)
 
 void dom_cp_placeholder()
 {
-	local entity oldself = self;
+	entity oldself = self;
 	
 	self = spawn();
 	self.classname = "dom_cp_placeholder";
@@ -809,7 +809,7 @@ void dom_delayedinit()
 	dom_removeall("dom_team");
 	dom_spawnteams();
 
-	local float i, j, n;
+	float i, j, n;
 	i = 0;
 	
 	if(find(world, classname, "dom_controlpoint") == world)

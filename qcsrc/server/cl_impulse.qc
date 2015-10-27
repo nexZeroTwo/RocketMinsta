@@ -20,9 +20,9 @@ void DummyThink(void)
 // from dpmod
 void printsurfaceinfo(entity e, vector v)
 {
-	local float surfnum, numpoints, vnum;
-	local string s;
-	local vector n;
+	float surfnum, numpoints, vnum;
+	string s;
+	vector n;
 	surfnum = getsurfacenearpoint(e, v);
 	if (surfnum >= 0)
 	{
@@ -92,7 +92,7 @@ void printsurfaceinfo(entity e, vector v)
 
 void ImpulseCommands (void)
 {
-	local float imp;
+	float imp;
 	vector org;
 	float i;
 	float m;

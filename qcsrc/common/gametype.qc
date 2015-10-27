@@ -64,7 +64,7 @@ void gametype_SetMenu (float l_id)
 
 float gametype_Extrapolate ()
 {
-	local float game_new;
+	float game_new;
 	game_new = 0;
 
 	if(CVAR(g_dm) || g_dm) {

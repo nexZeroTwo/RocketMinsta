@@ -41,7 +41,7 @@ void func_breakable_damage(entity inflictor, entity attacker, float damage, floa
 //
 void LaunchDebris (string debrisname, vector force) =
 {
-	local	entity dbr;
+	entity dbr;
 
 	dbr = spawn();
 	setorigin(dbr, self.absmin
@@ -89,7 +89,7 @@ void func_breakable_meodp_death(entity attacker, entity inflictor) {
 
 void func_breakable_look_destroyed()
 {
-	local float floor_z;
+	float floor_z;
 
 	if(self.mdl_dead == "")
 		self.model = "";

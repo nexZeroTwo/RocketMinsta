@@ -11,8 +11,8 @@ void turret_trowgib(
     string smodel,
     float f_lifetime, float f_fadetime, float b_burn)
 {
-    local entity gib;
-    local entity burn;
+    entity gib;
+    entity burn;
 
     gib = spawn();
 

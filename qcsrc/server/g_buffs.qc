@@ -184,7 +184,7 @@ void Buffs_Randomize(entity blist, float force) {
             if(j) b.buffs = j;
         }
         
-        if(roundstate != ROUNDSTATE_GAME)
+        if(roundstate != ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP)
             Buffs_BuffPickup_SetInitialCooldown(b);
     }
 }
@@ -192,13 +192,14 @@ void Buffs_Randomize(entity blist, float force) {
 #define BUFFS_RANDOMIZER_NEXTTHINK (time + max3(game_starttime - time, next_round_starttime - time, 0) + g_buffs_randomize_interval)
 
 void Buffs_Randomizer_Think(void) {
-    if(roundstate == ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP)
         Buffs_Randomize(world, TRUE);
     self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
 }
 
 void Buffs_Randomizer_Reset(void) {
     self.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
+    Buffs_Randomize_Reset();
 }
 
 float buff_teamfound[4];
@@ -266,7 +267,7 @@ void Buffs_Init_Delayed(void) {
     if(CVAR(g_buffs_randomize_interval_force) || !EndRound_Allowed()) {
         entity e = spawn();
         e.classname = "buff_randomizer";
-        e.reset = Buffs_Randomize_Reset;
+        e.reset = Buffs_Randomizer_Reset;
         e.think = Buffs_Randomizer_Think;
         e.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
     }
@@ -285,7 +286,7 @@ float Buffs_Present(entity p, float b) {
     if(g_buffs_baseline & b == b)
         return TRUE;
     
-    if(p.hg_linker.buffs & b == b)
+    if(p.hg_linker && (p.hg_linker.buffs & b == b))
         return TRUE;
     
     return FALSE;
@@ -391,8 +392,10 @@ void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
     
-    self.buffstat = self.buffs | self.hg_linker.buffs;
-    
+    self.buffstat = self.buffs;
+    if(self.hg_linker)
+        self.buffstat |= self.hg_linker.buffs;
+
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
@@ -1112,7 +1115,7 @@ void Buffs_BuffPickup_SpawnWaypoint(entity e) {
     WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, c);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;
     
-    if(e.buff_activetime && roundstate == ROUNDSTATE_GAME)
+    if(e.buff_activetime && (roundstate == ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP))
         WaypointSprite_UpdateBuildFinished(e.buff_waypoint, time + e.buff_activetime);
 }
 
@@ -1139,7 +1142,7 @@ void Buffs_BuffPickup_Think(void) {
     if(time > self.buff_lockon_updatetime)
         self.buff_lockon = world;
     
-    if(roundstate == ROUNDSTATE_GAME)
+    if(roundstate == ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP)
     if(!self.buff_activetime_updated) {
         Buffs_BuffPickup_SetCooldown(self, self.buff_activetime);
         self.buff_activetime_updated = TRUE;
@@ -1166,7 +1169,7 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(self.buff_activetime) {
-        if(roundstate == ROUNDSTATE_GAME) {
+        if(roundstate == ROUNDSTATE_GAME || roundstate == ROUNDSTATE_INITIAL_WARMUP) {
             self.buff_activetime = max(0, self.buff_activetime - frametime);
             
             if(!self.buff_activetime) {

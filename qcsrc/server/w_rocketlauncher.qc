@@ -274,8 +274,8 @@ void W_Rocket_Damage (entity inflictor, entity attacker, float damage, float dea
 
 void W_Rocket_Attack (void)
 {
-	local entity missile;
-	local entity flash;
+	entity missile;
+	entity flash;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_rocketlauncher_ammo);
@@ -344,9 +344,9 @@ float w_rlauncher(float req)
 		if(skill >= 2) // skill 0 and 1 bots won't detonate rockets!
 		{
 			// decide whether to detonate rockets
-			local entity missile, targetlist, targ;
-			local float edgedamage, coredamage, edgeradius, recipricoledgeradius, d;
-			local float selfdamage, teamdamage, enemydamage;
+			entity missile, targetlist, targ;
+			float edgedamage, coredamage, edgeradius, recipricoledgeradius, d;
+			float selfdamage, teamdamage, enemydamage;
 			edgedamage = CVAR(g_balance_rocketlauncher_edgedamage);
 			coredamage = CVAR(g_balance_rocketlauncher_damage);
 			edgeradius = CVAR(g_balance_rocketlauncher_radius);
@@ -379,7 +379,7 @@ float w_rlauncher(float req)
 				}
 				missile = find(missile, classname, "rocket");
 			}
-			local float desirabledamage;
+			float desirabledamage;
 			desirabledamage = enemydamage;
 			if (CVAR(teamplay) != 1 && time > self.invincible_finished && time > self.spawnshieldtime)
 				desirabledamage = desirabledamage - selfdamage * CVAR(g_balance_selfdamagepercent);
@@ -408,7 +408,7 @@ float w_rlauncher(float req)
 						targ = targ.chain;
 					}
 				}else{
-					local float distance; distance= bound(300,vlen(self.origin-self.enemy.origin),30000);
+					float distance; distance= bound(300,vlen(self.origin-self.enemy.origin),30000);
 					//As the distance gets larger, a correct detonation gets near imposible
 					//Bots are assumed to use the rocket spawnfunc_light to see if the rocket gets near a player
 					if(v_forward * normalize(missile.origin - self.enemy.origin)< 0.1)

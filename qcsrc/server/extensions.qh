@@ -1109,7 +1109,7 @@ float(entity clent) clienttype = #455; // returns one of the CLIENTTYPE_* consta
 //How to use:
 /*
 	// to spawn a bot
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = spawnclient();
 	if (!self)
@@ -1125,7 +1125,7 @@ float(entity clent) clienttype = #455; // returns one of the CLIENTTYPE_* consta
 	self = oldself;
 
 	// to remove all bots
-	local entity head;
+	entity head;
 	head = find(world, classname, "player");
 	while (head)
 	{

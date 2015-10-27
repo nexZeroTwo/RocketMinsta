@@ -13,7 +13,7 @@ void W_Uzi_Flash_Go() {
 .float uzi_bulletcounter;
 void W_Uzi_Attack (float deathtype)
 {
-	local entity flash;
+	entity flash;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 	{

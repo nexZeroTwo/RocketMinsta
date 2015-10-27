@@ -57,9 +57,9 @@ void updateanim(entity e)
 float animparseerror;
 vector animparseline(float animfile)
 {
-	local string line;
-	local float c;
-	local vector anim;
+	string line;
+	float c;
+	vector anim;
 	if (animfile < 0)
 		return '0 1 2';
 	line = fgets(animfile);
@@ -412,8 +412,8 @@ Additionally it moves players back into the past before the trace and restores t
 */
 void tracebox_antilag_force (entity source, vector v1, vector mi, vector ma, vector v2, float nomonst, entity forent, float lag, float wz)
 {
-	local entity player;
-	local float _oldsolid;
+	entity player;
+	float _oldsolid;
 
 	// check whether antilagged traces are enabled
 	if (lag < 0.001)

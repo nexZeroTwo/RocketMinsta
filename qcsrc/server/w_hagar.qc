@@ -38,7 +38,7 @@ void W_Hagar_Touch2 (void)
 
 void W_Hagar_Attack (void)
 {
-	local entity missile;
+	entity missile;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_hagar_primary_ammo);
@@ -72,7 +72,7 @@ void W_Hagar_Attack (void)
 
 void W_Hagar_Attack2 (void)
 {
-	local entity missile;
+	entity missile;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_hagar_secondary_ammo);

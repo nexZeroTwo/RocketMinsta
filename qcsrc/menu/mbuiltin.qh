@@ -322,7 +322,7 @@ string(float uselocaltime, string format, ...) strftime = #478;
 #ifdef FIXEDFOPEN
 float 	fopen( string filename, float mode ) =
 {
-	local float handle;
+	float handle;
 	if( mode == FILE_READ ) {
 		return _fopen( filename, mode );
 	}

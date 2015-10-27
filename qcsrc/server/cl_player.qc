@@ -166,8 +166,8 @@ entity CopyBody(float keepvelocity)
 
 float player_getspecies()
 {
-	local float glob, i, j, fh, len, s, sk;
-	local string fn, l;
+	float glob, i, j, fh, len, s, sk;
+	string fn, l;
     
     if(CVAR(sv_forcespecies) >= 0)
         return CVAR(sv_forcespecies);
@@ -223,8 +223,8 @@ float player_getspecies()
 
 void player_setupanimsformodel()
 {
-	local string animfilename;
-	local float animfile;
+	string animfilename;
+	float animfile;
 	// defaults for legacy .zym models without animinfo files
 	self.anim_die1 = '0 1 0.5'; // 2 seconds
 	self.anim_die2 = '1 1 0.5'; // 2 seconds
@@ -379,7 +379,7 @@ void SpawnThrownWeapon (vector org, float w)
 
 void PlayerCorpseDamage (entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float take, save;
+	float take, save;
 	vector v;
 	Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
 
@@ -579,7 +579,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
 
 void PlayerDamage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float take, save, waves, sdelay, j;
+	float take, save, waves, sdelay, j;
 	vector v;
 	float valid_damage_for_weaponstats;
     
@@ -825,7 +825,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 				}
 
 				// throw off bot aim temporarily
-				local float shake;
+				float shake;
 				shake = damage * 5 / (bound(0,skill,100) + 1);
 				self.v_angle_x = self.v_angle_x + (random() * 2 - 1) * shake;
 				self.v_angle_y = self.v_angle_y + (random() * 2 - 1) * shake;

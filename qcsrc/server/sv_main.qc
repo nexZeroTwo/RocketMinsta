@@ -1,8 +1,8 @@
 
 void CreatureFrame (void)
 {
-	local entity oldself;
-	local float dm;
+	entity oldself;
+	float dm;
 	oldself = self;
 	//self = findfloat(world, iscreature, TRUE);
 	//while(self)
@@ -266,14 +266,30 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
-    
-    if(time >= game_starttime)
-    if(roundstate == ROUNDSTATE_PREGAME) {
+
+    if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;
         TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
     }
-    
+
+    if(inWarmupStage && roundstate == ROUNDSTATE_GAME) {
+        roundstate = ROUNDSTATE_INITIAL_WARMUP;
+    }
+
     Radio_Frame();
+
+    if(!realclients && time > 18000)
+        localcmd("restart\n");
+
+    if(inWarmupStage) {
+        FOR_EACH_REALPLAYER(e)
+            goto nevermind;
+
+        game_starttime = time;
+        g_warmup_limit = time + CVAR(g_warmup_limit);
+    }
+
+:nevermind
 
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;

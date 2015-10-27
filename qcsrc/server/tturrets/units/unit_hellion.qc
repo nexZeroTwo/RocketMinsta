@@ -25,7 +25,7 @@ void turret_hellion_postthink()
 
 void turret_hellion_attack()
 {
-    local entity missile;
+    entity missile;
 
     sound (self, CHAN_WEAPON, "weapons/hagar_fire.wav", VOL_BASE, ATTN_NORM);
 

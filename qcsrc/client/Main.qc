@@ -835,7 +835,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	argc = tokenize_console(strMessage);
 
 	// Acquire Command
-	local string strCmd;
+	string strCmd;
 	strCmd = argv(0);
 
 	if(strCmd == "+button4") { // zoom
@@ -1038,8 +1038,8 @@ float CSQC_ConsoleCommand(string strMessage)
 		{
 			print("\n^xFB0The following HUD skins are available:\n");
 			
-			local float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
-			local string tmpname, displayname;
+			float i, seed, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+			string tmpname, displayname;
 			globsize = search_getsize(hsglob);
 			
 			seed = floor(random() * globsize);
@@ -2017,7 +2017,7 @@ void Net_ReadMadokaPrint()
 
 void Net_ReadSpecInfo()
 {
-	local float i;
+	float i;
 	
 	if(ReadByte()) {
 		float md = ReadByte();
@@ -2044,7 +2044,7 @@ void Net_ReadSpecInfo()
 	num_spectators = ReadByte();
 	for(i = 0; i < num_spectators; ++i)
 	{
-		local float slot = ReadByte();
+		float slot = ReadByte();
 		if(i < MAX_SPECTATORS)
 			spectatorlist[i] = slot - 1;
 	}
@@ -2100,8 +2100,8 @@ void Net_ReadClearBigPrint()
 
 void Net_ReadHudFlash(float teamcolor)
 {
-	local float a, i, t;
-	local vector c;
+	float a, i, t;
+	vector c;
 	
 	if(teamcolor)
 		c = GetTeamRGB(myteam);
@@ -2220,7 +2220,7 @@ void Net_ReadUpdateSelectedPlayer() {
 float CSQC_Parse_TempEntity()
 {
 	// Acquire TE ID
-	local float nTEID;
+	float nTEID;
 	nTEID = ReadByte();
 
 	switch(nTEID)
@@ -2392,7 +2392,7 @@ void bigprint(string bigstr, string comment, float staytime)
     
 	if(rm_nobigtext)
 	{
-		local string s;
+		string s;
 		s = bigstr;
 		
 		if(comment != "") {
@@ -2455,7 +2455,7 @@ void score_visual(float score)
 	
 	if(score_strings_num >= MAX_SCORESTRINGS)
 	{
-		local float k2;
+		float k2;
 		for(k2 = 0; k2 < MAX_SCORESTRINGS-1; ++k2)
 		{
 			if(score_strings[k2]) strunzone(score_strings[k2]);
