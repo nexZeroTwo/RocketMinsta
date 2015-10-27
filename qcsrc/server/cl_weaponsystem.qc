@@ -144,8 +144,8 @@ vector w_shotdir_visual;
 void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage)
 {
 	float nudge = 1; // added to traceline target and subtracted from result
-	local vector trueaimpoint;
-	local float _oldsolid;
+	vector trueaimpoint;
+	float _oldsolid;
 	vector vecs, dv;
 	_oldsolid = ent.dphitcontentsmask;
 	if(ent.weapon == WEP_CAMPINGRIFLE)
@@ -616,7 +616,7 @@ void CL_Weaponentity_Think()
 	}
 
 	self.angles = '0 0 0';
-	local float f;
+	float f;
 	f = 0;
 	if (self.state == WS_RAISE && !intermission_running)
 	{
@@ -1165,7 +1165,7 @@ void weapon_thinkf(float fr, float t, void() func)
 	if (t)
 	if (!self.crouch) // shoot anim stands up, this looks bad
 	{
-		local vector anim;
+		vector anim;
 		anim = self.anim_shoot;
 		anim_z = anim_y / t;
 		setanim(self, anim, FALSE, TRUE, TRUE);

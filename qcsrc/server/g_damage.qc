@@ -619,10 +619,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
             attacker.jb_jaildm_aggressive = TRUE;
     }
     
-	local float t_oldhealth = targ.health;
-	local float t_oldarmor = targ.armorvalue;
+	float t_oldhealth = targ.health;
+	float t_oldarmor = targ.armorvalue;
 
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = targ;
         damage_targ = targ;
@@ -630,7 +630,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         damage_attacker = attacker;
 		attacker_save = attacker;
 
-	local float took_extra;
+	float took_extra;
     
 	if(targ_is_player)
 		if(targ.hook)
@@ -782,8 +782,8 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 				return;
 			}
 
-			local float ex = CVAR(g_rocketminsta);
-			local float ex_armor = CVAR(g_rocketminsta_armor);
+			float ex = CVAR(g_rocketminsta);
+			float ex_armor = CVAR(g_rocketminsta_armor);
 			float armor_passthrough = CVAR(g_rocketminsta_armor_passthrough);
 
 			if(ex)

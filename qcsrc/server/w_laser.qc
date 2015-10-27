@@ -15,7 +15,7 @@ void W_Laser_Touch (void)
 
 void W_Laser_Attack (float issecondary)
 {
-	local entity missile;
+	entity missile;
 	vector s_forward;
 	float a;
 
@@ -25,7 +25,7 @@ void W_Laser_Attack (float issecondary)
 		a = CVAR(g_balance_laser_primary_shotangle);
 	s_forward = v_forward * cos(a * DEG2RAD) + v_up * sin(a * DEG2RAD);
 
-	local float lasr_recoil;
+	float lasr_recoil;
 	lasr_recoil = 3;
 	
 	if(CVAR(g_rocketminsta_norecoil))
@@ -84,8 +84,8 @@ void spawnfunc_weapon_laser (void)
 
 float w_laser(float req)
 {
-	local float r1;
-	local float r2;
+	float r1;
+	float r2;
 	if (req == WR_AIM)
 	{
 		if(CVAR(g_balance_laser_secondary))

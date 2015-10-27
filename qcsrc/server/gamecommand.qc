@@ -756,7 +756,7 @@ void GameCommand(string command)
 	if (argv(0) == "nospectators")
 	{
 		blockSpectators = 1;
-		local entity plr;
+		entity plr;
 		FOR_EACH_CLIENT(plr) //give every spectator <g_maxplayers_spectator_blocktime> seconds time to become a player
 		{
 			if(plr.classname == "spectator" || plr.classname == "observer")
@@ -1003,7 +1003,7 @@ void GameCommand(string command)
 
 	if(argv(0) == "bot_cmd")
 	{
-		local entity bot;
+		entity bot;
 
 		if(argv(1) == "help")
 		{
@@ -1199,7 +1199,7 @@ void GameCommand(string command)
 			cvar_set("_sv_explosive_topicby", "");
 		keeptopic = FALSE;
 		
-		local string topicby = CVAR_STR(_sv_explosive_topicby);
+		string topicby = CVAR_STR(_sv_explosive_topicby);
 		cvar_set("_sv_explosive_topic", substring(command, strlen("topic "), strlen(command) - strlen("topic ")));
 		
 		bprint("\x01^2* ^3", if(topicby && topicby != "") topicby else "<server>", "^3 has set the topic: ^7", CVAR_STR(_sv_explosive_topic), "\n");

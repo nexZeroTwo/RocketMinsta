@@ -229,7 +229,7 @@ void SV_ParseClientCommand(string s) {
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "anonspec") {
-		local string val = argv(1);
+		string val = argv(1);
 		
 		if(!CVAR(sv_anonspecs))
 		{
@@ -378,7 +378,7 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "autoswitch") {
 		// be backwards compatible with older clients (enabled)
 		self.autoswitch = ("0" != argv(1));
-		local string autoswitchmsg;
+		string autoswitchmsg;
 		if (self.autoswitch) {
 			autoswitchmsg = "on";
 		} else {
@@ -1222,7 +1222,7 @@ void SV_ParseClientCommand(string s) {
 void VoteDialog_Reset();
 void ReadyRestartForce()
 {
-	local entity e;
+	entity e;
 
 	bprint("^1Server is restarting...\n");
 
@@ -1319,8 +1319,8 @@ void ReadyRestart()
  */
 void ReadyCount()
 {
-	local entity e;
-	local float r, p;
+	entity e;
+	float r, p;
 
 	r = p = 0;
 
@@ -1371,10 +1371,10 @@ void evaluateTimeout() {
 		//if the map uses a timelimit make sure that timeout cannot be called right before the map ends
 		if (CVAR(timelimit)) {
 			//a timelimit was used
-			local float myTl;
+			float myTl;
 			myTl = CVAR(timelimit);
 
-			local float lastPossibleTimeout;
+			float lastPossibleTimeout;
 			lastPossibleTimeout = (myTl*60) - CVAR(sv_timeout_leadtime) - 1;
 
 			if (lastPossibleTimeout < time - game_starttime)

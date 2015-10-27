@@ -338,8 +338,8 @@ float CustomHGHookButton(entity e) {
 
 void FireGrapplingHook (void)
 {
-	local entity missile;
-	local vector org;
+	entity missile;
+	vector org;
 
 	if((arena_roundbased && time < warmup) || (time < game_starttime))
 		return;

@@ -946,7 +946,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 		}
 		else if (g_nixnex)
 		{
-			local float rm;
+			float rm;
 
 			rm = 1;
 			switch (itemid)
@@ -1080,7 +1080,7 @@ void minstagib_items (float itemid)
 		return;
 	}
 
-	local float rnd;
+	float rnd;
 	self.classname = "minstagib";
 
 	// replace rocket launchers and nex guns with ammo cells

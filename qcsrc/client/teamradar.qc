@@ -227,9 +227,9 @@ void teamradar_loadcvars()
 
 void() teamradar_view =
 {
-	local float color1, color2; // color already declared as a global in sbar.qc
-	local vector rgb;
-	local entity tm;
+	float color1, color2; // color already declared as a global in sbar.qc
+	vector rgb;
+	entity tm;
 	float scale2d, normalsize, bigsize;
 	float f;
 

@@ -597,10 +597,10 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		theAlpha = theAlpha * (1 - SKINALPHA_SERVERLIST_FAVORITE) + SKINALPHA_SERVERLIST_FAVORITE;
 	}
 
-	local string cn;
+	string cn;
     if(CVAR(sv_ip2country))
 	{
-		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
+		string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
 		ip = substring(ip, 0, strstrofs(ip, ":", 0));
 		cn = db_get(me.ip2c_localdb, ip);
 		if(cn == "")
@@ -621,8 +621,8 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	o_x -= me.realFontSize_x / 1.5;
 	v = o;
 	o_x += me.realFontSize_x / 1.5;
-	local float scale = me.realFontSize_x / 11;
-	local vector picsize;
+	float scale = me.realFontSize_x / 11;
+	vector picsize;
 	picsize = '16 11 0' * scale;
 
 	if(cn != "--")

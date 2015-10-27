@@ -118,8 +118,8 @@ void fteqcc_testbugs()
  * players. Also plays reminder sounds.
  */
 void timeoutHandler_Think() {
-	local string timeStr;
-	local entity plr;
+	string timeStr;
+	entity plr;
 	if (timeoutStatus == 1) {
 		if (remainingLeadTime > 0) {
 			//centerprint the information to every player
@@ -411,8 +411,8 @@ void WeaponStats_Shutdown();
 
 string InfoMessages_Pick()
 {
-	local float c = CVAR(_sv_infomessages_count);
-	local float r = floor(random() * c);
+	float c = CVAR(_sv_infomessages_count);
+	float r = floor(random() * c);
 	
 	if(!c) return "";
 	return cvar_string(strcat("_sv_infomessages_", ftos(r)));
@@ -426,8 +426,8 @@ void InfoMessages_Think()
 		return;
 	}
 
-	local string msg = InfoMessages_Pick();
-	local entity e;
+	string msg = InfoMessages_Pick();
+	entity e;
 	FOR_EACH_REALCLIENT(e)
 		sprint(e, strcat("\x01^5 * ^7", msg, "\n"));
 	
@@ -441,7 +441,7 @@ void InfoMessages_Init()
 	
 	print("Initializing the built-in infomessage system\n");
 	
-	local entity e;
+	entity e;
 	e = spawn();
 	e.classname = "rm_info";
 	e.think = InfoMessages_Think;
@@ -554,7 +554,7 @@ void spawnfunc_worldspawn (void)
 
 	compressShortVector_init();
 
-	local entity head;
+	entity head;
 	head = nextent(world);
 	maxclients = 0;
 	while(head)
@@ -892,7 +892,7 @@ void spawnfunc_light (void)
 
 float TryFile( string pFilename )
 {
-	local float lHandle;
+	float lHandle;
 	dprint("TryFile(\"", pFilename, "\")\n");
 	lHandle = fopen( pFilename, FILE_READ );
 	if( lHandle != -1 ) {
@@ -1197,9 +1197,9 @@ string GetNextMap()
 
 void GotoNextMap()
 {
-	//local string nextmap;
-	//local float n, nummaps;
-	//local string s;
+	//string nextmap;
+	//float n, nummaps;
+	//string s;
 	if (alreadychangedlevel)
 		return;
 	alreadychangedlevel = TRUE;
@@ -1313,12 +1313,12 @@ RULES
 
 void DumpStats(float final)
 {
-	local float file;
-	local string s;
-	local float to_console;
-	local float to_eventlog;
-	local float to_file;
-	local float i;
+	float file;
+	string s;
+	float to_console;
+	float to_eventlog;
+	float to_file;
+	float i;
 
 	to_console = CVAR(sv_logscores_console);
 	to_eventlog = CVAR(sv_eventlog);
@@ -1596,7 +1596,7 @@ void InitiateOvertime()
 			)
 		);*/
 		
-		local entity _pl; FOR_EACH_REALCLIENT(_pl)
+		entity _pl; FOR_EACH_REALCLIENT(_pl)
 			bigprint(_pl, "^3Now playing ^1OVERTIME^3!", strcat(
 				"^3Added ^1",
 				ftos(CVAR(timelimit_overtime)),
@@ -1659,7 +1659,7 @@ void ClearWinners(void)
 float WinningCondition_Onslaught()
 {
 	entity head;
-	local float t1, t2, t3, t4;
+	float t1, t2, t3, t4;
 
 	WinningConditionHelper(); // set worldstatus
 
@@ -1719,7 +1719,7 @@ float LMS_NewPlayerLives()
 void assault_new_round();
 float WinningCondition_Assault()
 {
-	local float status;
+	float status;
 
 	WinningConditionHelper(); // set worldstatus
 
@@ -1734,7 +1734,7 @@ float WinningCondition_Assault()
 		SetWinners(team, COLOR_TEAM1);
 	}
 
-	local entity ent;
+	entity ent;
 	ent = find(world, classname, "target_assault_roundend");
 	if(ent)
 	{
@@ -1751,7 +1751,7 @@ float WinningCondition_Assault()
 			}
 			else
 			{
-				local entity oldself;
+				entity oldself;
 				oldself = self;
 				self = ent;
 				assault_new_round();
@@ -1850,7 +1850,7 @@ void ShuffleMaplist()
 float leaderfrags;
 float WinningCondition_Scores(float limit, float llimit)
 {
-	local entity e;
+	entity e;
 	// TODO make everything use THIS winning condition (except LMS)
 	WinningConditionHelper();
 
@@ -1883,7 +1883,7 @@ float WinningCondition_Scores(float limit, float llimit)
 	if(g_dm || g_tdm || g_arena || (g_race && !g_race_qualifying) || g_nexball)
 	// these modes always score in increments of 1, thus this makes sense
 	{
-		local string winmsg;
+		string winmsg;
 		
 		if(CVAR(teamplay))
 			winmsg = strcat(ColoredTeamName(WinningConditionHelper_winnerteam), " ^7is about to win");
@@ -2113,7 +2113,7 @@ void CheckRules_World()
 			else
 			{
 				//bcenterprint("^3Now playing ^1OVERTIME^3!\n\n^3Keep fragging until we have a ^1winner^3!");
-				local entity _pl; FOR_EACH_REALCLIENT(_pl)
+				entity _pl; FOR_EACH_REALCLIENT(_pl)
 					bigprint(_pl, "^3Now playing ^1OVERTIME^3!",
 						"^3Keep fragging until we have a ^1winner^3!", 2);
 			}
@@ -2392,7 +2392,7 @@ void MapVote_Init()
 
 	for(i = 0; i < 100 && mapvote_count < nmax; ++i)
 	{
-		local string m = GetNextMap();
+		string m = GetNextMap();
 		
 		if(MapIsPlayable(m))
 			MapVote_AddVotable(m, FALSE);
@@ -2407,7 +2407,7 @@ void MapVote_Init()
 		localcmd("\nmenu_cmd sync\n");
 		for(i = 0; i < 100 && mapvote_count < nmax; ++i)
 		{
-			local string m = GetNextMap();
+			string m = GetNextMap();
 			if(!MapIsPlayable(m))
 				continue;
 			
@@ -2852,9 +2852,9 @@ string GameTypeVote_GetOptions()
 	if not(CVAR(_sv_rm_maprow) >= CVAR(sv_vote_gametype_maxmaps))
 		return CVAR_STR(sv_vote_gametype_options);
 
-	local string result;
-	local float i, n = tokenizebyseparator(CVAR_STR(sv_vote_gametype_options), " ");
-	local float first;
+	string result;
+	float i, n = tokenizebyseparator(CVAR_STR(sv_vote_gametype_options), " ");
+	float first;
 	first = 1;
 	
 	for(i = 0; i < n; i++)
@@ -2909,7 +2909,7 @@ float GameTypeVote_Finished(float pos)
 
 void GameTypeVote_Start()
 {
-	local float j;
+	float j;
 	MapVote_ClearAllVotes();
 
 	for(j = 0; j < mapvote_count; ++j)
@@ -2922,7 +2922,7 @@ void GameTypeVote_Start()
     mapvote_keeptwotime = time + CVAR(sv_vote_gametype_keeptwotime);
 	mapvote_abstain = 0;
 	
-	local float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
+	float n = tokenizebyseparator(GameTypeVote_GetOptions(), " ");
 	
 	for(j = 0; j < n; ++j)
 	{
@@ -2943,7 +2943,7 @@ void GameTypeVote_Start()
 	{
 		for(j = 0; j < mapvote_count * 3; ++j)
 		{
-			local float idx1, idx2;
+			float idx1, idx2;
 			idx1 = min(mapvote_count-1, floor(random() * mapvote_count));
 			idx2 = min(mapvote_count-1, floor(random() * mapvote_count));
 			

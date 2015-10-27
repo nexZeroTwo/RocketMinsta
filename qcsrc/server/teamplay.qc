@@ -93,10 +93,10 @@ void ActivateTeamplay()
 
 void no_controller_think ()
 {
-	local string no_msg = "^1endmatch - Nothing to do";
+	string no_msg = "^1endmatch - Nothing to do";
 	bprint(strcat(no_msg, "\n"));
 	bprint(strcat("\x01^2 * ", no_msg, "\n"));
-	local entity pi;
+	entity pi;
 	FOR_EACH_PLAYER(pi)
 		centerprint_spec(pi, strcat(NEWLINES, no_msg));
 	forbidrestart = 1;
@@ -287,7 +287,7 @@ void InitGameplayMode()
 
 	if(g_no)
 	{
-		local float i_si_no;
+		float i_si_no;
 		for(i_si_no = 0; i_si_no < MAX_SCORE; ++i_si_no)
 			ScoreInfo_SetLabel_PlayerScore(i_si_no, "", 0);
 		ScoreInfo_SetLabel_PlayerScore(0, "Score", SFL_SORT_PRIO_PRIMARY);
@@ -295,7 +295,7 @@ void InitGameplayMode()
 
 		if(CVAR(g_no_endmatch_delay))
 		{
-			local entity no_controller;
+			entity no_controller;
 			no_controller = spawn();
 			no_controller.nextthink = time + CVAR(g_no_endmatch_delay);
 			no_controller.think     = no_controller_think;
@@ -357,8 +357,8 @@ void InitGameplayMode()
 
 	
 	// More robust freezefag detector
-	local float __i, __j = tokenizebyseparator (CVAR_STR(sv_vote_gametype_options) /* GameTypeVote_GetOptions () */ , " ");
-	local string gtype, gtype_cvar, gtype_cvar_other;
+	float __i, __j = tokenizebyseparator (CVAR_STR(sv_vote_gametype_options) /* GameTypeVote_GetOptions () */ , " ");
+	string gtype, gtype_cvar, gtype_cvar_other;
 	for (__i = 0; __i < __j; __i ++)
 	{
 		gtype = argv (__i);
@@ -405,7 +405,7 @@ void InitGameplayMode()
 }
 
 string GetClientVersionMessage() {
-	local string versionmsg;
+	string versionmsg;
 	if (self.version_mismatch) {
 		if(self.version < CVAR(gameversion)) {
 			versionmsg = "^3Your client version is outdated.\n\n\n### YOU WON'T BE ABLE TO PLAY ON THIS SERVER ###\n\n\nPlease update!!!^8";
@@ -1172,7 +1172,7 @@ void AuditTeams()
 // code from here on is just to support maps that don't have team entities
 void tdm_spawnteam (string teamname, float teamcolor)
 {
-	local entity e;
+	entity e;
 	e = spawn();
 	e.classname = "tdm_team";
 	e.netname = teamname;

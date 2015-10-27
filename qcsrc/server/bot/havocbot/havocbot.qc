@@ -34,8 +34,8 @@ void havocbot_ai()
 		if(self.waterlevel==WATERLEVEL_SWIMMING || self.aistatus & AI_STATUS_OUT_WATER)
 		{
 			// Look for the closest waypoint out of water
-			local entity newgoal, head;
-			local float bestdistance, distance;
+			entity newgoal, head;
+			float bestdistance, distance;
 
 			newgoal = world;
 			bestdistance = 10000;
@@ -118,8 +118,8 @@ void havocbot_ai()
 		self.aistatus |= AI_STATUS_ROAMING;
 		self.aistatus &~= AI_STATUS_ATTACKING;
 
-		local vector now,v,next;//,heading;
-		local float aimdistance,skillblend,distanceblend,blend;
+		vector now,v,next;//,heading;
+		float aimdistance,skillblend,distanceblend,blend;
 		//next = now = self.goalcurrent.origin - (self.origin + self.view_ofs);
 		next = now = ( (self.goalcurrent.absmin + self.goalcurrent.absmax) * 0.5) - (self.origin + self.view_ofs);
 		
@@ -174,8 +174,8 @@ void havocbot_ai()
 
 void havocbot_keyboard_movement(vector destorg)
 {
-	local vector keyboard;
-	local float blend, maxspeed;
+	vector keyboard;
+	float blend, maxspeed;
 	float sk;
 
 	sk = skill + self.bot_moveskill;
@@ -193,7 +193,7 @@ void havocbot_keyboard_movement(vector destorg)
 		, time);
 	keyboard = self.movement * (1.0 / maxspeed);
 
-	local float trigger, trigger1;
+	float trigger, trigger1;
 	blend = bound(0,sk*0.1,1);
 	trigger = CVAR(bot_ai_keyboard_treshold);
 	trigger1 = 0 - trigger;
@@ -249,9 +249,9 @@ void havocbot_keyboard_movement(vector destorg)
 
 void havocbot_bunnyhop(vector dir)
 {
-	local float bunnyhopdistance;
-	local vector deviation;
-	local float maxspeed;
+	float bunnyhopdistance;
+	vector deviation;
+	float maxspeed;
 	vector gco, gno;
 
 	if(CVAR(g_midair))
@@ -306,7 +306,7 @@ void havocbot_bunnyhop(vector dir)
 				// for a period of time
 				if(time - self.bot_timelastseengoal > CVAR(bot_ai_bunnyhop_firstjumpdelay))
 				{
-					local float checkdistance;
+					float checkdistance;
 					checkdistance = TRUE;
 
 					// don't run if it is too close
@@ -402,19 +402,19 @@ void havocbot_bunnyhop(vector dir)
 
 void havocbot_movetogoal()
 {
-	local vector destorg;
-	local vector diff;
-	local vector dir;
-	local vector flatdir;
-	local vector m1;
-	local vector m2;
-	local vector evadeobstacle;
-	local vector evadelava;
-	local float s;
-	local float maxspeed;
-	local vector gco;
-	//local float dist;
-	local vector dodge;
+	vector destorg;
+	vector diff;
+	vector dir;
+	vector flatdir;
+	vector m1;
+	vector m2;
+	vector evadeobstacle;
+	vector evadelava;
+	float s;
+	float maxspeed;
+	vector gco;
+	//float dist;
+	vector dodge;
 	//if (self.goalentity)
 	//	te_lightning2(self, self.origin, (self.goalentity.absmin + self.goalentity.absmax) * 0.5);
 	self.movement = '0 0 0';
@@ -504,8 +504,8 @@ void havocbot_movetogoal()
 		{
 			if(fabs(self.velocity_z)<50)
 			{
-				local entity head, newgoal;
-				local float distance, bestdistance;
+				entity head, newgoal;
+				float distance, bestdistance;
 
 				for (head = findchainfloat(bot_pickup, TRUE); head; head = head.chain)
 				{
@@ -545,7 +545,7 @@ void havocbot_movetogoal()
 		{
 			if(self.velocity_z>0)
 			{
-				local float threshold;
+				float threshold;
 				threshold = maxspeed * 0.2;
 				if(fabs(self.velocity_x) < threshold  &&  fabs(self.velocity_y) < threshold)
 					self.aistatus |= AI_STATUS_OUT_JUMPPAD;
@@ -581,8 +581,8 @@ void havocbot_movetogoal()
 				//dir = normalize(self.goalcurrent.origin - self.origin);
 				dir = normalize(( ( self.goalcurrent.absmin + self.goalcurrent.absmax ) * 0.5 ) - self.origin);
 
-			local vector xyvelocity = self.velocity; xyvelocity_z = 0;
-			local float xyspeed = xyvelocity * dir;
+			vector xyvelocity = self.velocity; xyvelocity_z = 0;
+			float xyspeed = xyvelocity * dir;
 
 			if(xyspeed < (maxspeed / 2))
 			{
@@ -731,7 +731,7 @@ void havocbot_movetogoal()
 			}
 
 			// avoiding dangers and obstacles
-			local vector dst_ahead, dst_down;
+			vector dst_ahead, dst_down;
 			makevectors(self.v_angle_y * '0 1 0');
 			dst_ahead = self.origin + self.view_ofs + (self.velocity * 0.4) + (v_forward * 32 * 3);
 			dst_down = dst_ahead + '0 0 -1500';
@@ -873,10 +873,10 @@ void havocbot_movetogoal()
 
 void havocbot_chooseenemy()
 {
-	local entity head, best, head2;
-	//local float rating, bestrating, i, f;
-	local float rating, bestrating, i, hf;
-	local vector eye, v;
+	entity head, best, head2;
+	//float rating, bestrating, i, f;
+	float rating, bestrating, i, hf;
+	vector eye, v;
 	if (CVAR(bot_nofire) || IS_INDEPENDENT_PLAYER(self))
 	{
 		self.enemy = world;
@@ -987,7 +987,7 @@ void havocbot_chooseenemy()
 
 void havocbot_chooseweapon()
 {
-	local float i;
+	float i;
 
 	// ;)
 	if(g_weaponarena == WEPBIT_TUBA)
@@ -1022,26 +1022,26 @@ void havocbot_chooseweapon()
 	if(i < CVAR(g_balance_campingrifle_reloadtime) + 1)
 		return;
 
-	local float w;
-	local float rocket  ; rocket   =-1000;
-	local float nex     ; nex      =-1000;
-	local float hagar   ; hagar    =-1000;
-	local float grenade ; grenade  =-1000;
-	local float electro ; electro  =-1000;
-	local float crylink ; crylink  =-1000;
-	local float uzi     ; uzi      =-1000;
-	local float shotgun ; shotgun  =-1000;
-	local float campingrifle ; campingrifle  =-1000;
-	local float laser   ; laser    =-1000;
-	local float minstanex ; minstanex =-1000;
-	local float bestscore; bestscore = 0;
-	local float bestweapon; bestweapon=self.switchweapon;
-	local float distance; distance=bound(10,vlen(self.origin-self.enemy.origin)-200,10000);
-	local float maxdelaytime=0.5;
-	local float spreadpenalty=10;
+	float w;
+	float rocket  ; rocket   =-1000;
+	float nex     ; nex      =-1000;
+	float hagar   ; hagar    =-1000;
+	float grenade ; grenade  =-1000;
+	float electro ; electro  =-1000;
+	float crylink ; crylink  =-1000;
+	float uzi     ; uzi      =-1000;
+	float shotgun ; shotgun  =-1000;
+	float campingrifle ; campingrifle  =-1000;
+	float laser   ; laser    =-1000;
+	float minstanex ; minstanex =-1000;
+	float bestscore; bestscore = 0;
+	float bestweapon; bestweapon=self.switchweapon;
+	float distance; distance=bound(10,vlen(self.origin-self.enemy.origin)-200,10000);
+	float maxdelaytime=0.5;
+	float spreadpenalty=10;
 
 	// Should it do a weapon combo?
-	local float af, ct, combo_time, combo;
+	float af, ct, combo_time, combo;
 
 	af = ATTACK_FINISHED(self);
 	ct = CVAR(bot_ai_weapon_combo_threshold);
@@ -1231,7 +1231,7 @@ void havocbot_chooseweapon()
 
 void havocbot_aim()
 {
-	local vector selfvel, enemyvel;
+	vector selfvel, enemyvel;
 //	if(self.flags & FL_INWATER)
 //		return;
 	if (time < self.nextaim)
@@ -1265,7 +1265,7 @@ float havocbot_moveto_refresh_route()
 
 float havocbot_moveto(vector pos)
 {
-	local entity wp;
+	entity wp;
 
 	if(self.aistatus & AI_STATUS_WAYPOINT_PERSONAL_GOING)
 	{
@@ -1308,8 +1308,8 @@ float havocbot_moveto(vector pos)
 		#endif
 
 		// Heading
-		//local vector dir = self.goalcurrent.origin - (self.origin + self.view_ofs);
-		local vector dir = ( ( self.goalcurrent.absmin + self.goalcurrent.absmax ) * 0.5 ) - (self.origin + self.view_ofs);
+		//vector dir = self.goalcurrent.origin - (self.origin + self.view_ofs);
+		vector dir = ( ( self.goalcurrent.absmin + self.goalcurrent.absmax ) * 0.5 ) - (self.origin + self.view_ofs);
 		dir_z = 0;
 		bot_aimdir(dir, -1);
 
@@ -1383,9 +1383,9 @@ vector havocbot_dodge()
 	// LordHavoc: disabled because this is too expensive
 	// return '0 0 0';
 	// coment with star and uncomment upper line
-	local entity head;
-	local vector dodge, v, n;
-	local float danger, bestdanger, vl, d;
+	entity head;
+	vector dodge, v, n;
+	float danger, bestdanger, vl, d;
 	dodge = '0 0 0';
 	bestdanger = -20;
 	// check for dangerous objects near bot or approaching bot

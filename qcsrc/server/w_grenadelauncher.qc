@@ -76,7 +76,7 @@ void W_Grenade_Damage (entity inflictor, entity attacker, float damage, float de
 
 void W_Grenade_Attack (void)
 {
-	local entity gren;
+	entity gren;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_primary_ammo);
@@ -112,7 +112,7 @@ void W_Grenade_Attack (void)
 
 void W_Grenade_Attack2 (void)
 {
-	local entity gren;
+	entity gren;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_secondary_ammo);

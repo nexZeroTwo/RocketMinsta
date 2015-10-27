@@ -112,8 +112,8 @@ void resizeNotifyRMNadeList(entity me, vector relOrigin, vector relSize, vector 
 void setDependent_Check(entity);
 void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelected)
 {
-    local string s;
-    local float amod;
+    string s;
+    float amod;
     amod = if(me.disabled) 0.2 else 1;
     
     if(isSelected)

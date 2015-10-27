@@ -5,9 +5,9 @@
 
 float findtrajectorywithleading(vector org, vector m1, vector m2, entity targ, float shotspeed, float shotspeedupward, float maxtime, float shotdelay, entity ignore)
 {
-	local float c, savesolid, shottime;
-	//local vector dir, end, v;
-	local vector dir, end, v, o;
+	float c, savesolid, shottime;
+	//vector dir, end, v;
+	vector dir, end, v, o;
 	
 	if (shotspeed < 1)
 		return FALSE; // could cause division by zero if calculated
@@ -188,8 +188,8 @@ void bot_lagfunc(float t, float f1, float f2, entity e1, vector v1, vector v2, v
 
 float bot_aimdir(vector v, float maxfiredeviation)
 {
-	local float dist, delta_t, blend;
-	local vector desiredang, diffang;
+	float dist, delta_t, blend;
+	vector desiredang, diffang;
 
 	//dprint("aim ", self.netname, ": old:", vtos(self.v_angle));
 	// make sure v_angle is sane first
@@ -290,7 +290,7 @@ float bot_aimdir(vector v, float maxfiredeviation)
 	//diffang = diffang + randomvec() * (dist * 0.05 * (3.5 - bound(0, skill, 3)));
 
 	// turn
-	local float r, fixedrate, blendrate;
+	float r, fixedrate, blendrate;
 	fixedrate = CVAR(bot_ai_aimskill_fixedrate) / bound(1,dist,1000);
 	blendrate = CVAR(bot_ai_aimskill_blendrate);
 	r = max(fixedrate, blendrate);
@@ -339,8 +339,8 @@ vector bot_shotlead(vector targorigin, vector targvelocity, float shotspeed, flo
 
 float bot_aim(float shotspeed, float shotspeedupward, float maxshottime, float applygravity)
 {
-	local float f, r;
-	local vector v;
+	float f, r;
+	vector v;
 	/*
 	eprint(self);
 	dprint("bot_aim(", ftos(shotspeed));
@@ -365,7 +365,7 @@ float bot_aim(float shotspeed, float shotspeedupward, float maxshottime, float a
 	shotorg = self.origin + self.view_ofs;
 	shotdir = v_forward;
 	v = bot_shotlead(self.bot_aimtargorigin, self.bot_aimtargvelocity, shotspeed, self.bot_aimlatency);
-	local float distanceratio;
+	float distanceratio;
 	distanceratio =sqrt(bound(0,skill,10000))*0.3*(vlen(v-shotorg)-100)/CVAR(bot_ai_aimskill_firetolerance_distdegrees);
 	distanceratio = bound(0,distanceratio,1);
 	r =  (CVAR(bot_ai_aimskill_firetolerance_maxdegrees)-CVAR(bot_ai_aimskill_firetolerance_mindegrees))
