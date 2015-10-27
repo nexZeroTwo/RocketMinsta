@@ -1863,14 +1863,14 @@ void ClientConnect (void)
         
         if(realclients == 1) {
         	defer(5, Radio_Queue_PlayFirst);
-        	if(time > game_starttime) {
-                inWarmupStage = CVAR(g_warmup);
-                if(inWarmupStage)
-                    game_starttime = time;
-                else
-	               ReadyRestart();
-	            lockteams = FALSE;
-	        }
+            inWarmupStage = CVAR(g_warmup);
+            if(inWarmupStage) {
+                game_starttime = time;
+                g_warmup_limit = time + CVAR(g_warmup_limit);
+            } else {
+                ReadyRestart();
+            }
+            lockteams = FALSE;
 	    }
     }
     
