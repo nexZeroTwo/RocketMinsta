@@ -4,8 +4,8 @@ float world_initialized;
 
 string GetMapname();
 void GotoNextMap();
-void ShuffleMaplist()
-float() DoNextMapOverride;
+void ShuffleMaplist();
+float DoNextMapOverride();
 
 string geh_event;
 string geh_args;
