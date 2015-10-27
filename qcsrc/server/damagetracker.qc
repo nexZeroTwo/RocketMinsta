@@ -56,7 +56,7 @@ void DamageTracker_Send(float msg, float dtype, float damage, float dtflags) {
 }
 
 void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float dtflags) {
-    if(!sv_damagestats)
+    if(!sv_damagestats || inWarmupStage)
         return;
     
     if(!keeper.owner.iscreature && !(dtflags & DTFLAG_GLOBAL))
