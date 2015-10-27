@@ -279,6 +279,16 @@ void StartFrame (void)
     if(!realclients && time > 18000)
         localcmd("restart\n");
 
+    if(inWarmupStage) {
+        FOR_EACH_REALPLAYER(e)
+            goto nevermind;
+
+        game_starttime = time;
+        g_warmup_limit = time + CVAR(g_warmup_limit);
+    }
+
+:nevermind
+
     //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
     //    e.sub_target_used = FALSE;
 }
