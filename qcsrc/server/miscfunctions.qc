@@ -3141,27 +3141,26 @@ void hudflash_teamcolor_default_spec(entity e)
 }
 
 // universal endround for all supported gametypes
-void FreezeTag_EndRound();
-void tdom_EndRound();
+void FreezeTag_EndRound(float);
+void tdom_EndRound(float);
 
-void EndRound()
+#define ENDROUND_TIMEOUT_NORMAL 5
+#define ENDROUND_TIMEOUT_IMMEDIATE 0
+
+void EndRound(float tout)
 {
     if(g_freezetag)
-        FreezeTag_EndRound();
-else
-    if(g_totaldomination)
-        tdom_EndRound();
-else
-    if(g_keyhunt)
-        kh_FinishRound();
-else
-	if(g_jailbreak)
-		JB_EndRound(5);
-else
-    if(g_clanarena)
-        CA_EndRound();
-else
-    bprint("EndRound() for an unsupported gametype!?\n");
+        FreezeTag_EndRound(tout);
+    else if(g_totaldomination)
+        tdom_EndRound(tout);
+    else if(g_keyhunt)
+        kh_FinishRound(tout);
+    else if(g_jailbreak)
+		JB_EndRound(tout);
+    else if(g_clanarena)
+        CA_EndRound(tout);
+    else
+        bprint("EndRound() for an unsupported gametype!?\n");
 }
 
 float EndRound_Allowed()
@@ -3427,6 +3426,7 @@ void G_EndRound_Think()
         if(timeleft <= 3)
 			sound(world, CHAN_VOICE, strcat("announcer/robotic/", ftos(timeleft), ".wav"), VOL_BASEVOICE, ATTN_NONE);
     }
+
     self.nextthink = time + 1;
 }
 
@@ -3434,7 +3434,7 @@ void G_EndRound(float thedelay, float warmuptime, void() callback, void() callba
 {
     entity e = spawn();
     e.think = G_EndRound_Think;
-    e.nextthink = time + 1;
+    e.nextthink = time + (if(thedelay > 0) 1 else 0); // FIXME?
     e.endround_think = callback;
     e.endround_think2 = callback2;
     e.endround_finalize = callbackfin;
@@ -3442,7 +3442,11 @@ void G_EndRound(float thedelay, float warmuptime, void() callback, void() callba
     next_round = time + thedelay;
     next_round_starttime = next_round + warmuptime;
     e.cnt = next_round_starttime;
-    roundstate = ROUNDSTATE_OVER;
+
+    if(thedelay > 0)
+        roundstate = ROUNDSTATE_OVER;
+    else
+        roundstate = ROUNDSTATE_WARMUP;
 }
 
 // ========================================== //

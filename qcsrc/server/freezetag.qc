@@ -3,11 +3,11 @@
 //  NOTE: most of the Freeze Tag logic is now handled by the g_freeze mutator, see g_freeze.qc.
 //
 
-void FreezeTag_EndRound()
+void FreezeTag_EndRound(float tout)
 {
-    G_EndRound(5, CVAR(g_freezetag_warmup), Freeze_RecountPlayers, func_null, func_null);
+    G_EndRound(tout, CVAR(g_freezetag_warmup), Freeze_RecountPlayers, func_null, func_null);
     Freeze_RecountPlayers();
-    defer(5, sm_Clear);
+    defer(max(0, tout), sm_Clear);
 }
 
 void FreezeTag_Frame()
@@ -92,7 +92,7 @@ void FreezeTag_CheckWinner()
     } else {
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Draw!", "", 5);
-        FreezeTag_EndRound();
+        FreezeTag_EndRound(ENDROUND_TIMEOUT_NORMAL);
         return;
     }
     
@@ -110,5 +110,5 @@ void FreezeTag_CheckWinner()
     TeamScore_AddToTeam(winnerteam, ST_SCORE, +1);
 
     //next_round = time + 5;
-    FreezeTag_EndRound();
+    FreezeTag_EndRound(ENDROUND_TIMEOUT_NORMAL);
 }
