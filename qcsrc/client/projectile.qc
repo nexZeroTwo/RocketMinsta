@@ -263,7 +263,7 @@ void Projectile_Draw()
 		case PROJECTILE_GRENADE_BOUNCING:
 		case PROJECTILE_HG_GENERIC:
         case PROJECTILE_HG_NAPALM:
-            trailorigin += v_right * 1 + v_forward * -10;
+            trailorigin += v_right * 1 + v_forward * -2;
 
         case PROJECTILE_HG_PLASMA:
         case PROJECTILE_HG_TRANSLOC:
@@ -335,7 +335,7 @@ void Ent_Projectile()
 	//   effects
 	//
 	// projectiles don't send angles, because they always follow the velocity
-	
+
 	f = ReadByte();
 	self.count = (f & 0x80);
 	self.iflags = (self.iflags & IFLAG_INTERNALMASK) | IFLAG_AUTOANGLES | IFLAG_ANGLES;

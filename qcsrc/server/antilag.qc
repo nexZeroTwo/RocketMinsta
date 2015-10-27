@@ -85,6 +85,7 @@ void antilag_takeback(entity e, float t)
 	e.antilag_saved_origin = e.origin;
 	setorigin(e, antilag_takebackorigin(e, t));
     W_Zapper_FixShieldBlockerOrigin(e);
+    Buffs_MEODP_Antilag(e, t);
 }
 
 void antilag_restore(entity e)
@@ -94,4 +95,5 @@ void antilag_restore(entity e)
 
 	setorigin(e, e.antilag_saved_origin);
     W_Zapper_FixShieldBlockerOrigin(e);
+    Buffs_MEODP_Antilag(e, time);
 }
