@@ -1116,6 +1116,8 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
+    self.touch = func_null;
+
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
     self.hg_stealth_saved = 0;
@@ -1352,7 +1354,10 @@ void PutClientInServer (void)
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
-    
+
+        if(teams_matter && CVAR(g_player_dont_block_teammates))
+            self.touch = PlayerTouch_NoTeamBlock;
+
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 
         SpawnHeadEnt();
@@ -3680,6 +3685,8 @@ Called every frame for each client after the physics are run
 .float idlekick_lasttimeleft;
 void PlayerPostThink (void)
 {
+    self.owner = world;
+
 	// Savage: Check for nameless players
 	if (strlen(self.netname) < 1) {
 		self.netname = "Player";
