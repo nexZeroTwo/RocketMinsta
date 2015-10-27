@@ -89,6 +89,8 @@ void Buffs_BuffPickup_SetCooldown(entity, float);
 void Buffs_Random_Spawn(void);
 
 .vector meodp_point_offs;
+.entity meodp_point_ref;
+.vector meodp_point_angleoffs;
 
 void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death);
 void Buffs_MEODP_Point_Detach(entity e);
@@ -100,6 +102,7 @@ void Buffs_MEODP_Death_Remove(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Use(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Remove_Multiple(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor);
+void Buffs_MEODP_Antilag(entity plr, float t);
 
 void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
                           vector arcoffset, float range, float mul, float mul_hg, float force,

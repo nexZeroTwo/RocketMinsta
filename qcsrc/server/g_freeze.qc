@@ -131,6 +131,7 @@ entity Freeze_SpawnIceBlock(entity plr) {
     if(Freeze_CVar(freezesound))
         sound(self, CHAN_TRIGGER, "freezetag/freezing.wav", VOL_BASE, ATTN_NORM);
     Buffs_MEODP_Point_Attach(ice, Freeze_IceBlock_MEODP_Death);
+    ice.meodp_point_ref = ice.owner;
     return ice;
 }
 

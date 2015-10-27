@@ -432,7 +432,8 @@ void Movetype_Physics_MatchServer() // SV_Physics_Entity
 	else
 	{
 		self.velocity = self.move_velocity;
-		self.angles = self.move_angles;
+		//self.angles = self.move_angles;
+        self.angles_x = 0;
 		setorigin(self, self.move_origin);
 	}
 }
