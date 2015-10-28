@@ -1043,6 +1043,9 @@ void havocbot_chooseweapon()
 	// Should it do a weapon combo?
 	float af, ct, combo_time, combo;
 
+    if(!self.weapon)
+        return;
+
 	af = ATTACK_FINISHED(self);
 	ct = CVAR(bot_ai_weapon_combo_threshold);
 

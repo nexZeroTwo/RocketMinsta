@@ -832,7 +832,13 @@ void Score_NicePrint_Team(entity to, float t, float w)
 	float fl, sc;
 	s = "";
 
+    if(t < 0) {
+        print("negative team?!\n");
+        return;
+    }
+
 	sk = teamscorekeepers[t - 1];
+
 	if(sk)
 	{
 		s = strcat(s, ColoredTeamName(t));
@@ -840,7 +846,9 @@ void Score_NicePrint_Team(entity to, float t, float w)
 			if(teamscores_label[i] != "")
 			{
 				fl = teamscores_flags[i];
+                print("^2WTF ", etos(sk), "\n");
 				sc = sk.(teamscores[i]);
+                print("^1WTF\n");
 				s = strcat(s, " ", Score_NicePrint_ItemColor(fl), ScoreString(fl, sc));
 			}
 	}

@@ -136,7 +136,11 @@ void NS_ConfirmSelection(void) {
     }
 
     if(!g_nadgets_double || (ns_confirmed1 >= 0 && ns_confirmed2 >= 0)) {
-        localcmd("cmd picknade ", HG_TypeToName(ns_options[ns_confirmed1]), " ", HG_TypeToName(ns_options[ns_confirmed2]), "; cmd join\n");
+        var cmd = strcat("cmd picknade ", HG_TypeToName(ns_options[ns_confirmed1]));
+        if(ns_confirmed2 >= 0)
+            cmd = strcat(cmd, " ", HG_TypeToName(ns_options[ns_confirmed2]));
+        cmd = strcat(cmd, "; cmd join\n");
+        localcmd(cmd);
         ns_active = FALSE;
     }
 }
