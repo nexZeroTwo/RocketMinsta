@@ -1878,7 +1878,7 @@ float PlayerMayFire(entity plr) {
 }
 
 void PlayerTouch_NoTeamBlock(void) {
-    if(other.iscreature && self.owner != other && !other.frozen && !IsDifferentTeam(self, other)) {
+    if(other.iscreature && self.owner != other && !other.frozen && !self.frozen && !IsDifferentTeam(self, other)) {
         // dp makes entities pass through other entities that they "own".
         // we'll clear this in PlayerPostThink
         other.owner = self;

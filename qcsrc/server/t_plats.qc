@@ -1952,11 +1952,11 @@ void spawnfunc_func_magicwall(void) {
     if(self.alpha_nonsolid < 0)
         self.alpha_nonsolid = 0;
 
-    if(!self.delay)
-        self.delay = self.wait;
+    if(!self.wait && self.target == "")
+        self.wait = self.delay;
 
-    if(!self.delay)
-        self.delay = 3;
+    if(!self.wait)
+        self.wait = 3;
 
     if(!self.speed)
         self.speed = 1;
@@ -1984,13 +1984,13 @@ void spawnfunc_func_magicwall(void) {
         } else inline void(void) {
             if(self.oldsolid != self.solid) {
                 if(self.think && self.think != func_magicwall_think_transition)
-                    self.nextthink = time + self.delay;
+                    self.nextthink = time + self.wait;
                 return;
             }
 
             func_magicwall_start_transition(if(self.oldsolid == SOLID_BSP) SOLID_NOT else SOLID_BSP,
-                if(self.delay >= 0) inline void(void) {
-                    self.nextthink = time + self.delay;
+                if(self.wait >= 0) inline void(void) {
+                    self.nextthink = time + self.wait;
                     self.think = inline void(void) {
                         func_magicwall_start_transition(self.oldsolid, func_null);
                     };

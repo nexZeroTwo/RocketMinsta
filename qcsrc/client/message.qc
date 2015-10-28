@@ -416,7 +416,7 @@ void Message_Obituary(float targ, float attacker, float deathtype, string custom
                     centerprint(strcat("^1You were ", fragmod, "^1fragged by ^7", a, "^1", fragmod_tail));
             }
 
-            if(doLogDeaths) {          
+            if(doLogDeaths) {
                 float w = DEATH_WEAPONOFWEAPONDEATH(deathtype);
 
                 if(WEP_VALID(w) || DEATH_ISHG(w)) {
