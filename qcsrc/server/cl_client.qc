@@ -522,6 +522,16 @@ entity SelectSpawnPoint (float anypoint)
 	return spot;
 }
 
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+void MakeObserverGhost(void) {
+    setmodel(self, "models/player/ayumi.md3");
+    self.frame = 48;
+    self.skinindex = 11;
+    self.skin = 8;
+    self.colormap = 10;
+}
+#endif
+
 /*
 =============
 CheckPlayerModel
@@ -557,6 +567,24 @@ string CheckPlayerModel(string plyermodel) {
 }
 
 float Client_CalculateAlpha(entity plr, entity viewer) {
+    if(!plr.iscreature) {
+        if(plr.classname == "observer") {
+            if(plr == viewer)
+                return 1;
+
+            if(!viewer.client_dprmversion)
+                return -1;
+
+            if(viewer.classname == "observer" || viewer.classname == "spectator" || Buffs_Present(viewer, BUFF_MEODP))
+                return 1;
+
+            return -1;
+        }
+
+        if(plr.classname == "spectator")
+            return -1;
+    }
+
     if(PlayerIsDead(plr))
         return 1;
 
@@ -884,6 +912,11 @@ void PutObserverInServer (void)
     Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
+
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+    if(CVAR(sv_ghost_observers))
+        MakeObserverGhost();
+#endif
 }
 
 float RestrictSkin(float s)
@@ -906,8 +939,11 @@ void FixPlayermodel()
 	vector m1, m2;
 
 	defaultmodel = "";
-    
-    if(self.forcedmodel) {
+
+    if(!self.iscreature) {
+        defaultmodel = "models/player/ayumi.md3";
+        defaultskin = 11;
+    } else if(self.forcedmodel) {
         defaultmodel = self.forcedmodel;
         defaultskin = self.forcedskin;
     } else if(CVAR(sv_defaultcharacter) == 1) {
@@ -1128,6 +1164,8 @@ void PutClientInServer (void)
     self.hg_shield_stored = 0;
     self.hg_stealth = 0;
     self.hg_shieldstat = 0;
+
+    self.colormap = num_for_edict(self);
 
 	if(g_arena)
 	if(!self.spawned)
@@ -2035,7 +2073,7 @@ void ClientDisconnect (void)
 void ChatBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.chatbubbleentity != self)
+	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.chatbubbleentity = world;
@@ -3007,6 +3045,11 @@ void WriteSpectatorInfoDelayed(void) {
 
 void ObserverThink()
 {
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+    if(CVAR(sv_ghost_observers))
+        setorigin(self, self.origin + [0, 0, frametime * 5 * sin(time + num_for_edict(self))]);
+#endif
+
     if(self.jb_specteam) {
         if(SpectateNext()) {
             self.classname = "spectator";
