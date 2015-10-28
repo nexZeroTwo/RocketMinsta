@@ -562,6 +562,9 @@ entity tracerail(vector start, vector end, float t, entity forent) {
         if(trace_ent.solid == SOLID_BSP && (trace_dphitcontents & DPCONTENTS_OPAQUE || trace_dphittexturename == "textures/common/weapclip"))
             break;
 
+        if(trace_ent.classname == "meodp_point")
+            break;
+
         // make it non-solid so we can hit the next one
         trace_ent.solid = SOLID_NOT;
     }
