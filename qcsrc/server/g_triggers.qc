@@ -130,6 +130,7 @@ void SUB_UseTargets_Ex(float preventReuse)
 		if (s != "")
 		{
 			for(t = world; (t = find(t, targetname, s)); ) {
+                print("TARG: ", t.classname, " ", t.targetname, "\n");
                 if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
                     //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
@@ -1998,7 +1999,7 @@ void spawnfunc_trigger_cycle(void) {
  * killcredit
  */
 
- void spawnfunc_trigger_killcredit(void) {
+void spawnfunc_trigger_killcredit(void) {
     EXACTTRIGGER_INIT;
 
     if(self.wait <= 0)
@@ -2026,7 +2027,13 @@ void spawnfunc_trigger_cycle(void) {
     };
 
     self.reset();
- }
+}
+
+void spawnfunc_func_killcredit(void) {
+    print("^1FIXME: ^7map has a misnamed killcredit entity 'func_killcredit', the correct name is 'trigger_killcredit'! Please fix this.\n");
+    self.classname = "trigger_killcredit";
+    spawnfunc_trigger_killcredit();
+}
 
 /*
  * random
