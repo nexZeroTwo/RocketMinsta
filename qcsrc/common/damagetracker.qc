@@ -73,7 +73,10 @@ void DamageTracker_Wipe(entity keeper) {
 
 string DamageTracker_DamageSourceName(float dtype, float extended) {
     string r;
-    
+
+    if(dtype == DEATH_ENV_START)
+        return if(extended) "Environment" else "";
+
     if(dtype == DEATH_ARC)
         return "Arc Buff";
     else if(dtype == DEATH_IGNITE)
@@ -82,18 +85,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Endurance Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
-    else if(dtype == DEATH_HURTTRIGGER)
-        return "Map entity";
-    else if(dtype == DEATH_FALL)
-        return "Fall damage";
     else if(dtype == DEATH_TELEFRAG)
         return "Telefrag";
-    else if(dtype == DEATH_LAVA)
-        return "Lava";
-    else if(dtype == DEATH_SLIME)
-        return "Slime";
-    else if(dtype == DEATH_SWAMP)
-        return "Swamp";
     else if(dtype == DEATH_HOOKFRAG)
         return "Hookfrag";
     else {
@@ -157,6 +150,9 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
 }
 
 float DamageTracker_TransformDamageSource(float dtype) {
+    if(DEATH_ISENVIRONMENTAL(dtype))
+        dtype = DEATH_ENV_START;
+
     if(!DEATH_ISSPECIAL(dtype)) {
         float hgtype = DEATH_HGTYPE(dtype);
         dtype &~= HITTYPE_SPLASH;

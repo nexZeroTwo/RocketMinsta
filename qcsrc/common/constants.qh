@@ -576,8 +576,8 @@ const HITTYPE_RESERVED = 0x1000; // unused yet
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
 #define DEATH_HGTYPE(t)               ((t) & DEATH_WEAPONMASK)
-#define DEATH_ISHG(t)   (DEATH_HGTYPE(t) >= HG_START && DEATH_HGTYPE(t) <= HG_END)
-#define DEATH_WEAPONOFWEAPONDEATH(t)  ((t) & DEATH_WEAPONMASK)
+#define DEATH_ISHG(t)                 (DEATH_HGTYPE(t) >= HG_START && DEATH_HGTYPE(t) <= HG_END)
+#define DEATH_WEAPONOFWEAPONDEATH(t)  (if(DEATH_ISSPECIAL(t)) -1 else ((t) & DEATH_WEAPONMASK))
 #define DEATH_ISWEAPON(t,w)           (!DEATH_ISSPECIAL(t) && DEATH_WEAPONOFWEAPONDEATH(t) == (w))
 #define DEATH_WEAPONOF(t)             (if(DEATH_ISHG(t) || DEATH_ISSPECIAL(t)) 0 else DEATH_WEAPONOFWEAPONDEATH(t))
 #define DEATH_ISPROJECTED(t)          ((t) == DEATH_ARC || (t) == DEATH_IGNITE || (t) == DEATH_ENDURANCE)
