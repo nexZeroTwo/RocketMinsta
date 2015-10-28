@@ -68,7 +68,7 @@ float func_laserbeam_customize(void) {
 void func_laserbeam_use(void) {
     self.state = !self.state;
     if(self.state)
-        self.think();
+        self.nextthink = time;
 }
 
 void func_laserbeam_init(void) {
