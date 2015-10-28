@@ -672,7 +672,7 @@ string GetTeamScoreString(float tm, float shortString)
 	if(tm == 0)
 	{
 		// label
-		for(i = 0; i < MAX_SCORE; ++i)
+		for(i = 0; i < MAX_TEAMSCORE; ++i)
 			if(teamscores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_PRIMARY)
 			{
 				f = teamscores_flags[i];
@@ -680,7 +680,7 @@ string GetTeamScoreString(float tm, float shortString)
 				out = strcat(out, GetScoreLogLabel(l, f), ",");
 			}
 		if(shortString < 2)
-		for(i = 0; i < MAX_SCORE; ++i)
+		for(i = 0; i < MAX_TEAMSCORE; ++i)
 			if(teamscores_flags[i] & SFL_SORT_PRIO_MASK == SFL_SORT_PRIO_SECONDARY)
 			{
 				f = teamscores_flags[i];
@@ -688,7 +688,7 @@ string GetTeamScoreString(float tm, float shortString)
 				out = strcat(out, GetScoreLogLabel(l, f), ",");
 			}
 		if(shortString < 1)
-		for(i = 0; i < MAX_SCORE; ++i)
+		for(i = 0; i < MAX_TEAMSCORE; ++i)
 			if(teamscores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_PRIMARY)
 			if(teamscores_flags[i] & SFL_SORT_PRIO_MASK != SFL_SORT_PRIO_SECONDARY)
 			{
