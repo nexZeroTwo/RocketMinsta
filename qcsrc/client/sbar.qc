@@ -1068,7 +1068,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			} else {
 				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
-                if(pl.(hasbestscore[field]) && field != SP_KDRATIO)
+                if(field >= 0 && pl.(hasbestscore[field]))
                     sbar_field_rgb = '0.3 1 0.3';
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
 			}

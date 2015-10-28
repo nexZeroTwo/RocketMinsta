@@ -30,10 +30,16 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
         teamcount_playerstotal[i] = 0;
     }
     
+    if(!teams_matter)
+        return;
+
     FOR_EACH_CLIENT(e) if(e.iscreature || ((g_jailbreak || g_clanarena) && e.jb_specteam)) {
         float idx = Team_Index(e.team);
         float fteqcc_sucks;
         
+        if(idx < 0)
+            continue;
+
         fteqcc_sucks = teamcount_playerstotal[idx];
         teamcount_playerstotal[idx] = fteqcc_sucks + 1;
         

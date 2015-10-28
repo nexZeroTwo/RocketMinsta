@@ -1460,6 +1460,9 @@ void UpdateBestScore(float teem, float sfield) {
     float best, scr, better;
     entity bestscore_head, bestscore_tail, c;
     
+    if(sfield < 0)
+        return;
+
     for(c = players.sort_next; c; c = c.sort_next) {
         if(GetPlayerColor(c.sv_entnum) != teem)
             continue;

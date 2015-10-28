@@ -1998,7 +1998,7 @@ void spawnfunc_trigger_cycle(void) {
  * killcredit
  */
 
- void spawnfunc_trigger_killcredit(void) {
+void spawnfunc_trigger_killcredit(void) {
     EXACTTRIGGER_INIT;
 
     if(self.wait <= 0)
@@ -2026,7 +2026,13 @@ void spawnfunc_trigger_cycle(void) {
     };
 
     self.reset();
- }
+}
+
+void spawnfunc_func_killcredit(void) {
+    print("^1FIXME: ^7map has a misnamed killcredit entity 'func_killcredit', the correct name is 'trigger_killcredit'! Please fix this.\n");
+    self.classname = "trigger_killcredit";
+    spawnfunc_trigger_killcredit();
+}
 
 /*
  * random

@@ -832,7 +832,11 @@ void Score_NicePrint_Team(entity to, float t, float w)
 	float fl, sc;
 	s = "";
 
+    if(t < 0)
+        return;
+
 	sk = teamscorekeepers[t - 1];
+
 	if(sk)
 	{
 		s = strcat(s, ColoredTeamName(t));
