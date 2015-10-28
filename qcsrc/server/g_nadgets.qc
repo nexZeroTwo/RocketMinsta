@@ -703,18 +703,21 @@ void HG_Grenade_Touch() {
             if(trace_ent && trace_ent.solid == SOLID_BSP)
                 self.movedir = trace_plane_normal;
 
-            var o = self.origin + [0, 0, CVAR(sv_stepheight)];
-            var norm = trace_plane_normal;
-            tracebox(o, self.mins, self.maxs, o + self.velocity * frametime, MOVE_WORLDONLY, self);
+            if((var bounce = CVAR(g_nadgets_raze_bouncefactor)) > 0) {
+                var o = self.origin + [0, 0, CVAR(sv_stepheight)];
+                var norm = trace_plane_normal;
 
-            if(trace_fraction < 1 && trace_dphitcontents & DPCONTENTS_SOLID) {
-                trace_plane_normal = norm;
-                var spd = vlen(self.velocity) * 0.5;
-                var dir = normalize(self.velocity);
-                dir = dir - 2 * (dir * trace_plane_normal) * trace_plane_normal;
-                self.velocity = dir * spd;
-                setorigin(self, self.origin + self.velocity * frametime);
-                move_out_of_solid(self);
+                tracebox(o, self.mins, self.maxs, o + self.velocity * frametime, MOVE_WORLDONLY, self);
+
+                if(trace_fraction < 1 && trace_dphitcontents & DPCONTENTS_SOLID) {
+                    trace_plane_normal = norm;
+                    var spd = vlen(self.velocity) * bounce;
+                    var dir = normalize(self.velocity);
+                    dir = dir - 2 * (dir * trace_plane_normal) * trace_plane_normal;
+                    self.velocity = dir * spd;
+                    setorigin(self, self.origin + self.velocity * frametime);
+                    move_out_of_solid(self);
+                }
             }
         }
 
