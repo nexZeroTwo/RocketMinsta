@@ -527,8 +527,8 @@ void MakeObserverGhost(void) {
     setmodel(self, "models/player/ayumi.md3");
     self.frame = 48;
     self.skinindex = 11;
-    self.skin = 8;
-    self.colormap = 10;
+    self.skin = 11;
+    self.colormap = 0;
 }
 #endif
 
