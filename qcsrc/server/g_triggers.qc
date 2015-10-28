@@ -130,7 +130,6 @@ void SUB_UseTargets_Ex(float preventReuse)
 		if (s != "")
 		{
 			for(t = world; (t = find(t, targetname, s)); ) {
-                print("TARG: ", t.classname, " ", t.targetname, "\n");
                 if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
                     //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
