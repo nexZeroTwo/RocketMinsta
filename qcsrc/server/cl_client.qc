@@ -1595,7 +1595,7 @@ void ClientKill_TeamChange (float targetteam) // 0 = don't change, -1 = auto
 
 	if(!self.killindicator)
 	{
-		if(killtime <= 0 || !self.modelindex || self.deadflag != DEAD_NO)
+		if(killtime <= 0 || !self.modelindex || self.deadflag != DEAD_NO || !self.iscreature)
 		{
 			ClientKill_Now();
 		}
