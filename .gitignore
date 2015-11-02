@@ -16,3 +16,4 @@ pkgcache/*
 !pkgcache/.*
 build/*
 *~
+*.sublime-workspace

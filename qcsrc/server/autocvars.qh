@@ -1,3 +1,8 @@
+
+#ifdef RM_SUPPORT_PKG_o_ayumi
+#define RM_SUPPORT_GHOST_OBSERVERS
+#endif
+
 #ifdef RM_AUTOCVARS
 
 string autocvar__angles;
@@ -2021,5 +2026,9 @@ float autocvar_g_player_view_offset;
 float autocvar_g_player_crouch_view_offset;
 float autocvar_g_player_dont_block_teammates;
 float autocvar_sv_shownoobstat;
+
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+float autocvar_sv_ghost_observers;
+#endif
 
 #endif

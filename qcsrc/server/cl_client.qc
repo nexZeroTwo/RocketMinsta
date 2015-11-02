@@ -522,6 +522,16 @@ entity SelectSpawnPoint (float anypoint)
 	return spot;
 }
 
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+void MakeObserverGhost(void) {
+    setmodel(self, "models/player/ayumi.md3");
+    self.frame = 48;
+    self.skinindex = 11;
+    self.skin = 11;
+    self.colormap = 0;
+}
+#endif
+
 /*
 =============
 CheckPlayerModel
@@ -557,6 +567,24 @@ string CheckPlayerModel(string plyermodel) {
 }
 
 float Client_CalculateAlpha(entity plr, entity viewer) {
+    if(!plr.iscreature) {
+        if(plr.classname == "observer") {
+            if(plr == viewer)
+                return 1;
+
+            if(!viewer.client_dprmversion)
+                return -1;
+
+            if(viewer.classname == "observer" || viewer.classname == "spectator" || Buffs_Present(viewer, BUFF_MEODP))
+                return 1;
+
+            return -1;
+        }
+
+        if(plr.classname == "spectator")
+            return -1;
+    }
+
     if(PlayerIsDead(plr))
         return 1;
 
@@ -884,6 +912,11 @@ void PutObserverInServer (void)
     Buffs_MEODP_Point_Detach(self);
     CA_PlayerLeaves();
     HG_RemoveAll(self);
+
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+    if(CVAR(sv_ghost_observers))
+        MakeObserverGhost();
+#endif
 }
 
 float RestrictSkin(float s)
@@ -906,8 +939,11 @@ void FixPlayermodel()
 	vector m1, m2;
 
 	defaultmodel = "";
-    
-    if(self.forcedmodel) {
+
+    if(!self.iscreature) {
+        defaultmodel = "models/player/ayumi.md3";
+        defaultskin = 11;
+    } else if(self.forcedmodel) {
         defaultmodel = self.forcedmodel;
         defaultskin = self.forcedskin;
     } else if(CVAR(sv_defaultcharacter) == 1) {
@@ -1128,6 +1164,8 @@ void PutClientInServer (void)
     self.hg_shield_stored = 0;
     self.hg_stealth = 0;
     self.hg_shieldstat = 0;
+
+    self.colormap = num_for_edict(self);
 
 	if(g_arena)
 	if(!self.spawned)
@@ -1557,7 +1595,7 @@ void ClientKill_TeamChange (float targetteam) // 0 = don't change, -1 = auto
 
 	if(!self.killindicator)
 	{
-		if(killtime <= 0 || !self.modelindex || self.deadflag != DEAD_NO)
+		if(killtime <= 0 || !self.modelindex || self.deadflag != DEAD_NO || !self.iscreature)
 		{
 			ClientKill_Now();
 		}
@@ -2035,7 +2073,7 @@ void ClientDisconnect (void)
 void ChatBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.chatbubbleentity != self)
+	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.chatbubbleentity = world;
@@ -2728,46 +2766,44 @@ float SpectateUpdate() {
 }
 
 float MaySpectate(entity plr) {
+	if(clienttype(plr) == CLIENTTYPE_NOTACLIENT)
+		return FALSE;
+
+	if(plr.classname != "player")
+		return FALSE;
+
     if(!self.jb_specteam)
         return TRUE;
 
     return (plr.team == self.jb_specteam && !plr.jb_isprisoned);
 }
 
-entity SpectateNext_Yield_NoLoop(entity p) {
-    do {
-        p = find(p, classname, "player");
-    } while(p && !MaySpectate(p));
+#define SPECTATE_YIELD_NEXT 1
+#define SPECTATE_YIELD_PREV -1
 
-    return p;
-}
+entity Spectate_Yield(entity p, float dir) {
+	var wrappedAround = FALSE;
 
-entity SpectateNext_Yield(entity p) {
-    entity r = SpectateNext_Yield_NoLoop(p);
+	for(var n = num_for_edict(p) + dir ;; n += dir) {
+		if(n <= 0 || n > maxclients) {
+			if(wrappedAround)
+				break;
 
-    if(p && !r)
-        return SpectateNext_Yield_NoLoop(world);
+			wrappedAround = TRUE;
 
-    return r;
-}
+			if(n <= 0)
+				n = maxclients + n;
+			else if(n > maxclients)
+				n = n - maxclients;
+		}
 
-entity SpectatePrev_Yield(entity p) {
-    entity o, r;
+		var e = edict_num(n);
 
-    if(MaySpectate(p)) {
-        do {
-            r = o;
-        } while((o = SpectateNext_Yield_NoLoop(o)) != p);
+		if(MaySpectate(e))
+			return e;
+	}
 
-        if(r)
-            return r;
-    }
-
-    do {
-        r = o;
-    } while((o = SpectateNext_Yield_NoLoop(o)));
-
-    return r;
+	return world;
 }
 
 float SpectatePlayer(entity plr) {
@@ -2809,11 +2845,11 @@ float SpectatePlayer(entity plr) {
 }
 
 float SpectateNext(void) {
-    return SpectatePlayer(SpectateNext_Yield(self.enemy));
+    return SpectatePlayer(Spectate_Yield(self.enemy, SPECTATE_YIELD_NEXT));
 }
 
 float SpectatePrev(void) {
-    return SpectatePlayer(SpectatePrev_Yield(self.enemy));
+    return SpectatePlayer(Spectate_Yield(self.enemy, SPECTATE_YIELD_PREV));
 }
 
 .float specbest_ignore;
@@ -3007,6 +3043,11 @@ void WriteSpectatorInfoDelayed(void) {
 
 void ObserverThink()
 {
+#ifdef RM_SUPPORT_GHOST_OBSERVERS
+    if(CVAR(sv_ghost_observers))
+        setorigin(self, self.origin + [0, 0, frametime * 5 * sin(time + num_for_edict(self))]);
+#endif
+
     if(self.jb_specteam) {
         if(SpectateNext()) {
             self.classname = "spectator";
