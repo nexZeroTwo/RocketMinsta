@@ -1,4 +1,3 @@
-
 void WarpZone_Accumulator_Clear(entity acc)
 {
 	acc.warpzone_transform = '0 0 0';
@@ -692,10 +691,15 @@ void WarpZone_ChainAdd(entity wz)
 	warpzone_chain_begin = wz;
 }
 
+float warpzone_sound_transition;
+
 void WarpZone_Init()
 {
 #ifdef CSQC
+	warpzone_sound_transition = CVAR(cl_warpzone_sound_transition);
 	warpzone_newstyle = checkextension("DP_CSQC_ROTATEMOVES");
+#else
+	warpzone_sound_transition = 0;
 #endif
 	warpzone_chain_begin = world;
 }
@@ -705,4 +709,19 @@ void WarpZone_Shutdown()
 #ifdef CSQC
 	WarpZone_Outside();
 #endif
+}
+
+void WarpZone_Sound(entity e, float chan, string sound_path, float vol, float attn) {
+	sound(e, chan, sound_path, vol, attn);
+	if (warpzone_sound_transition) {
+		vector find_area = '1 1 1';
+		find_area *= warpzone_sound_transition;
+		entity wz = WarpZone_Find(e.origin - find_area, e.origin + find_area);
+		if (wz) {
+			entity e_transited = spawn();
+			setorigin(e_transited, WarpZone_TransformOrigin(wz, e.origin));
+			sound(e_transited, chan, sound_path, vol, attn);
+			remove(e_transited);
+		}
+	}
 }

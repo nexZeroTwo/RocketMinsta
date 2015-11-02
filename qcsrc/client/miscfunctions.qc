@@ -655,3 +655,7 @@ float spiralparticles(entity ent, float effectnum, vector start, vector end, flo
 
     return x;
 }
+
+void ImpactSound(entity e, string sound_path) {
+    WarpZone_Sound(e, CHAN_PROJECTILE, sound_path, VOL_BASE, ATTN_NORM);
+}

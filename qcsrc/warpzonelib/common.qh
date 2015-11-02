@@ -75,3 +75,4 @@ void WarpZone_ChainAdd(entity wz);
 
 .entity warpzone_chain;
 entity warpzone_chain_begin;
+void WarpZone_Sound(entity e, float chan, string sound_path, float vol, float attn);

@@ -203,6 +203,7 @@ void CSQC_Init(void)
     registercvar("cl_message_praise", "1", CVAR_SAVE);
     registercvar("cl_message_praise_show", "1", CVAR_SAVE);
     registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
+    registercvar("cl_warpzone_sound_transition", "500", CVAR_SAVE);
 
     gametype = 0;
 
