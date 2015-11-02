@@ -2766,46 +2766,44 @@ float SpectateUpdate() {
 }
 
 float MaySpectate(entity plr) {
+	if(clienttype(plr) == CLIENTTYPE_NOTACLIENT)
+		return FALSE;
+
+	if(plr.classname != "player")
+		return FALSE;
+
     if(!self.jb_specteam)
         return TRUE;
 
     return (plr.team == self.jb_specteam && !plr.jb_isprisoned);
 }
 
-entity SpectateNext_Yield_NoLoop(entity p) {
-    do {
-        p = find(p, classname, "player");
-    } while(p && !MaySpectate(p));
+#define SPECTATE_YIELD_NEXT 1
+#define SPECTATE_YIELD_PREV -1
 
-    return p;
-}
+entity Spectate_Yield(entity p, float dir) {
+	var wrappedAround = FALSE;
 
-entity SpectateNext_Yield(entity p) {
-    entity r = SpectateNext_Yield_NoLoop(p);
+	for(var n = num_for_edict(p) + dir ;; n += dir) {
+		if(n <= 0 || n > maxclients) {
+			if(wrappedAround)
+				break;
 
-    if(p && !r)
-        return SpectateNext_Yield_NoLoop(world);
+			wrappedAround = TRUE;
 
-    return r;
-}
+			if(n <= 0)
+				n = maxclients + n;
+			else if(n > maxclients)
+				n = n - maxclients;
+		}
 
-entity SpectatePrev_Yield(entity p) {
-    entity o, r;
+		var e = edict_num(n);
 
-    if(MaySpectate(p)) {
-        do {
-            r = o;
-        } while((o = SpectateNext_Yield_NoLoop(o)) != p);
+		if(MaySpectate(e))
+			return e;
+	}
 
-        if(r)
-            return r;
-    }
-
-    do {
-        r = o;
-    } while((o = SpectateNext_Yield_NoLoop(o)));
-
-    return r;
+	return world;
 }
 
 float SpectatePlayer(entity plr) {
@@ -2847,11 +2845,11 @@ float SpectatePlayer(entity plr) {
 }
 
 float SpectateNext(void) {
-    return SpectatePlayer(SpectateNext_Yield(self.enemy));
+    return SpectatePlayer(Spectate_Yield(self.enemy, SPECTATE_YIELD_NEXT));
 }
 
 float SpectatePrev(void) {
-    return SpectatePlayer(SpectatePrev_Yield(self.enemy));
+    return SpectatePlayer(Spectate_Yield(self.enemy, SPECTATE_YIELD_PREV));
 }
 
 .float specbest_ignore;
