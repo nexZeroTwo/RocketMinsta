@@ -1923,7 +1923,7 @@ void spawnfunc_func_vectormamamam()
 
 void func_magicwall_think_transition(void) {
     self.alpha = approach(self.alpha, self.MAGICWALL_ALPHAFIELD(self), self.speed * frametime);
-    if(self.alpha && self.alpha < 1)
+    if(self.alpha && self.alpha < self.alpha_solid)
         self.nextthink = time;
     else if(self.think1)
         self.think1();
