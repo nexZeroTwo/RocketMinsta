@@ -278,6 +278,8 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
+
+    cvar_clientsettemp("r_transparent_sortmaxdist", "0");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
