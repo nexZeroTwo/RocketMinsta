@@ -203,6 +203,7 @@ void CSQC_Init(void)
     registercvar("cl_message_praise", "1", CVAR_SAVE);
     registercvar("cl_message_praise_show", "1", CVAR_SAVE);
     registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
+    registercvar("cl_warpzone_sound_transition", "500", CVAR_SAVE);
 
     gametype = 0;
 
@@ -278,6 +279,9 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
+
+    cvar_clientsettemp("r_transparent_sortmaxdist", "0");
+
     WarpZone_Init();
 }
 
