@@ -369,6 +369,12 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     FireRailgunBullet(start, end, damage, force, 0, 0, 0, 0, dtype);
     damage_headshotbonus = 0;
     end =  trace_endpos;
+    vector end_visual = end;
+    if (WarpZone_trace_transform) {
+        vector of = v_forward, or = v_right, ou = v_up;
+        end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, end_visual);
+        v_forward = of; v_right = or; v_up = ou;
+    }
 
     CSQCMessage_Praise2(self, headshot, yoda, 0, 0, 0);
 
@@ -377,9 +383,8 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     else
         eff = particleeffectnum("tr_bullet");
     
-    W_SetHitscanVisuals(self, end);
-    trailparticles(world, eff, w_shotorg_visual, end);
-
+    W_SetHitscanVisuals(self, end_visual);
+    WarpZone_TrailParticles(world, eff, w_shotorg, w_shotorg_visual, end_visual);
     Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
 }
 
