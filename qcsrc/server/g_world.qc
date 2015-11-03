@@ -2757,6 +2757,7 @@ void MapVote_Tick()
 		}
 
 		// clear possibly invalid votes
+		if(other.mapvote)
 		if(mapvote_maps[other.mapvote - 1] == "")
 			other.mapvote = 0;
 		// use impulses as new vote
