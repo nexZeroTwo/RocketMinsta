@@ -857,13 +857,19 @@ string Sbar_GetField(entity pl, float field)
 
 		default:
 			tmp = pl.(scores[field]);
-			f = scores_flags[field];
+
+			if(field < 0)
+				f = 0;
+			else
+				f = scores_flags[field];
+
 			if(field == ps_primary)
 				sbar_field_rgb = '1 1 0';
 			else if(field == ps_secondary)
 				sbar_field_rgb = '0 1 1';
 			else
 				sbar_field_rgb = '1 1 1';
+
 			return ScoreString(f, tmp);
 	}
 }
