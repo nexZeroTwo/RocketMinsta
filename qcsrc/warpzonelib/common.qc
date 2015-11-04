@@ -217,7 +217,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 		end = WarpZone_TransformOrigin(wz, end);
 	}
 	if (i == 0) {
-		print("WarpZone_TraceBox_ThroughZone: escape from loop\n");
+		dprint("WarpZone_TraceBox_ThroughZone: escape from loop\n");
 		trace_ent = world;
 	}
 	WarpZone_MakeAllOther();
