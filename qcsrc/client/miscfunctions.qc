@@ -659,3 +659,54 @@ float spiralparticles(entity ent, float effectnum, vector start, vector end, flo
 void ImpactSound(entity e, string sound_path) {
     WarpZone_Sound(e, CHAN_PROJECTILE, sound_path, VOL_BASE, ATTN_NORM);
 }
+
+typedef .vector vectorfield;
+.void(void) draw2d_real;
+.float(void) draw2d_pre;
+.vectorfield draw2d_origin_fld;
+
+float draw2d_warpstage;
+
+void Draw2d_ThroughWarpZones(void) {
+    var fwd = '0 0 0';
+    var drawn = FALSE;
+    var org_fld = self.draw2d_origin_fld;
+    var o = self.org_fld;
+
+    if(self.draw2d_pre && !self.draw2d_pre())
+        return;
+
+    for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
+        if(fwd == '0 0 0') {
+            makevectors(view_angles);
+            fwd = v_forward;
+        }
+
+        var wo = WarpZone_UnTransformOrigin(wz, o);
+
+        if(fwd * normalize(wo - view_origin) < 0.3) {
+            continue;
+        }
+
+        WarpZone_TraceTriangle(view_origin, view_origin, wo, MOVE_NOMONSTERS, world, WarpZone_trace_callback_t_null);
+
+        if(vlen(trace_endpos - o) < 1) {
+            self.org_fld = wo;
+            draw2d_warpstage = TRUE;
+            self.draw2d_real();
+            drawn = TRUE;
+        }
+    }
+
+    if(drawn) {
+        self.org_fld = o;
+
+        traceline(view_origin, o, MOVE_NOMONSTERS, world);
+
+        if(trace_fraction < 1)
+            return;
+    }
+
+    draw2d_warpstage = FALSE;
+    self.draw2d_real();
+}

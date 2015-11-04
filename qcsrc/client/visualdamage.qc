@@ -55,12 +55,11 @@ void VisualDamage_PreDraw(void) {
     entity e;
     string s, s2;
     vector o;
-    float tmp;
-    
-    drawfont = sbar_bigfont;
-    rm_visualdamage_fontsize = CVAR(rm_visualdamage_fontsize);
+
     for(e = vd_head; e; e = e.vd_next) {
-        if(!(e.vd_type & VDMG_TYPE_TOSELF)) {
+        if(e.vd_type & VDMG_TYPE_TOSELF) {
+            e.vd_projected = vdmg_dmgtakenorigin - '0 10 0';
+        } else {
             o = e.vd_projected = project_3d_to_2d(e.origin);
             
             if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > vid_conwidth || o_y > vid_conheight) {
@@ -68,48 +67,60 @@ void VisualDamage_PreDraw(void) {
                 continue;
             }
         }
-        
-        s = "";
-        s2 = "";
-        
-        if(!e.vd_damage && !e.vd_armordamage)
-            s2 = "Immune";
-        else {
-            if(e.vd_damage) {
-                s = ftos(if(e.vd_damage < 10) e.vd_damage else rint(e.vd_damage));
-                tmp = strstrofs(s, ".", 0);
-                if(tmp >= 0)
-                    s = substring(s, 0, tmp + 2);
-            }
-            
-            if(e.vd_armordamage) {
-                s2 = ftos(if(e.vd_armordamage < 10) e.vd_armordamage else rint(e.vd_armordamage));
-                tmp = strstrofs(s2, ".", 0);
-                if(tmp >= 0)
-                    s2 = substring(s2, 0, tmp + 2);
-                
-                s2 = strcat(if(e.vd_damage) "  [" else "[", s2, "]");
-            }
-        }
-        
-        e.vd_str = s;
-        if(e.vd_str) e.vd_width = stringwidth(s, FALSE);
-        e.vd_str2 = s2;
-        if(e.vd_str2) e.vd_width2 = stringwidth(s2, FALSE);
-        e.vd_fullwidth = (e.vd_width + e.vd_width2) * VDMG_FONTSIZE;
+
         e.vd_culled = FALSE;
-        
-        if(e.vd_type & VDMG_TYPE_TOSELF)
-            e.vd_projected = vdmg_dmgtakenorigin - '0 10 0';
     }
     
     if(CVAR(rm_visualdamage_nooverlap))
         VisualDamage_FixPositions();
+}
 
-    drawfont = sbar_font;
+void VisualDamage_Remove(entity e) {
+    if(e.vd_str)
+        strunzone(e.vd_str);
+
+    if(e.vd_str2)
+        strunzone(e.vd_str2);
+
+    remove(e);
+}
+
+void VisualDamage_Think(void) {
+    self.alpha = approach(self.alpha, 0, frametime);
+
+    if(self.alpha <= 0 && !wasfreed(self)) {
+        if(self == vd_head) {
+            vd_head = vd_tail = vd_head.vd_next;
+        } else {
+            entity e; for(e = vd_head; e; e = e.vd_next)
+                if(e.vd_next == self) {
+                    e.vd_next = self.vd_next;
+                    if(self == vd_tail)
+                        vd_tail = e;
+                    break;
+                }
+        }
+        --vd_cnt;
+        VisualDamage_Remove(self);
+        return;
+    }
+
+    self.nextthink = time;
 }
 
 void VisualDamage_Draw(void) {
+    vector proj;
+
+    if(draw2d_warpstage) {
+        proj = project_3d_to_2d(self.origin);
+        if(proj_z < 0 || proj_x < 0 || proj_y < 0 || proj_x > vid_conwidth || proj_y > vid_conheight)
+            return;
+    } else {
+        if(self.vd_culled)
+            return;
+        proj = self.vd_projected;
+    }
+
     float a = ipol_swingInOut(self.alpha), sw, sw2, smod, smod2, a2, s2;
     vector o, clr;
     vector offs = self.movedir * VDMG_ALPHAOFFSET * (1 - self.alpha);
@@ -133,12 +144,10 @@ void VisualDamage_Draw(void) {
     }
     
     float fs = VDMG_FONTSIZE * max(1, a * smod) * smod2;
-    o = self.vd_projected + offs - '0 0.5 0' * fs;
-    
-    if not(self.vd_culled) {
-        o_z = 0;
-        drawfont = GetBigfont();
-        
+    o = proj + offs - '0 0.5 0' * fs;
+    o_z = 0;
+
+    using(drawfont = GetBigfont()) {
         if(self.vd_type & VDMG_TYPE_HEAL)
             clr = '0.0 1.0 0.0';
         else if(self.vd_type & VDMG_TYPE_TEAMHIT || self.vd_type & VDMG_TYPE_TOSELF)
@@ -171,42 +180,77 @@ void VisualDamage_Draw(void) {
             if(a2)
                 drawstring(o - (sw2-sw) * '0.5 0 0' * s2 + '0 0.5 0' * (fs-fs*s2), self.vd_str2, fs * '1 1 0' * s2, '1 1 1' * 0.5 + clr * 0.2, VDMG_ALPHA * a * a2, DRAWFLAG_NORMAL);
         }
-        
-        drawfont = sbar_font;
     }
+}
+
+void VisualDamage_Draw_NoWarp(void) {
+    draw2d_warpstage = FALSE;
+    VisualDamage_Draw();
+}
+
+void VisualDamage_SetText(entity e) {
+    var s, s2;
+    var tmp;
     
-    self.alpha = approach(self.alpha, 0, frametime);
-    
-    if(self.alpha <= 0 && !wasfreed(self)) {
-        if(self == vd_head) {
-            vd_head = vd_tail = vd_head.vd_next;
-        } else {
-            entity e; for(e = vd_head; e; e = e.vd_next)
-                if(e.vd_next == self) {
-                    e.vd_next = self.vd_next;
-                    if(self == vd_tail)
-                        vd_tail = e;
-                    break;
-                }
+    rm_visualdamage_fontsize = CVAR(rm_visualdamage_fontsize);
+    drawfont = sbar_bigfont;
+
+    if(!e.vd_damage && !e.vd_armordamage)
+        s2 = "Immune";
+    else {
+        if(e.vd_damage) {
+            s = ftos(if(e.vd_damage < 10) e.vd_damage else rint(e.vd_damage));
+            tmp = strstrofs(s, ".", 0);
+            if(tmp >= 0)
+                s = substring(s, 0, tmp + 2);
         }
-        --vd_cnt;
-        remove(self);
+
+        if(e.vd_armordamage) {
+            s2 = ftos(if(e.vd_armordamage < 10) e.vd_armordamage else rint(e.vd_armordamage));
+            tmp = strstrofs(s2, ".", 0);
+            if(tmp >= 0)
+                s2 = substring(s2, 0, tmp + 2);
+
+            s2 = strcat(if(e.vd_damage) "  [" else "[", s2, "]");
+        }
     }
+
+    e.vd_str = s;
+    if(e.vd_str) {
+        e.vd_width = stringwidth(s, FALSE);
+        e.vd_str = strzone(s);
+    }
+
+    e.vd_str2 = s2;
+    if(e.vd_str2) {
+        e.vd_width2 = stringwidth(s2, FALSE);
+        e.vd_str2 = strzone(s2);
+    }
+
+    e.vd_fullwidth = (e.vd_width + e.vd_width2) * VDMG_FONTSIZE;
+    drawfont = sbar_font;
 }
 
 void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
     if(!rm_showdamage)
         return;
-    
+
     entity p, e = spawn();
     e.vd_damage = dmg;
     e.vd_armordamage = admg;
     e.vd_type = type;
     e.alpha = 1;
-    e.draw2d = VisualDamage_Draw;
+    e.draw2d_real = VisualDamage_Draw;
+    e.draw2d = Draw2d_ThroughWarpZones;
+    e.draw2d_origin_fld = origin;
+    e.think = VisualDamage_Think;
+    e.nextthink = time;
     e.vd_flag = TRUE;
     setorigin(e, org);
     
+    if(type & VDMG_TYPE_TOSELF)
+        e.draw2d = VisualDamage_Draw_NoWarp;
+
     if(!vd_dirswitch)
         vd_dirswitch = 1;
     else
@@ -237,9 +281,11 @@ void VisualDamage_Spawn(float dmg, float admg, float type, vector org) {
                 vd_tail = p;
             }
         }
-        remove(oldtail);
+        VisualDamage_Remove(oldtail);
         --vd_cnt;
     }
+
+    VisualDamage_SetText(e);
 }
 
 void Net_VisualDamage(void) {
