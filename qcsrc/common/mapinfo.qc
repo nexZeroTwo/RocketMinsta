@@ -593,7 +593,7 @@ float MapInfo_Get_ByName(string pFilename, float pAllowGenerate, float pGametype
 		return 0;
 	}
 
-	if(pGametypeToSet == 0)
+	if(!pGametypeToSet && !setup_cvars)
 		if(MapInfo_Cache_Retrieve(pFilename))
 			return 1;
 
