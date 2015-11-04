@@ -152,7 +152,7 @@ void Item_RespawnCountdown (void)
 	if(self.count >= ITEM_RESPAWN_TICKS)
 	{
 		if(self.waypointsprite_attached)
-			WaypointSprite_Kill(self.waypointsprite_attached);
+			WaypointSprite_Disown(self.waypointsprite_attached, 1);
 		Item_Respawn();
 	}
 	else
@@ -168,23 +168,26 @@ void Item_RespawnCountdown (void)
 			{
 				switch(self.items)
 				{
-					case IT_STRENGTH:   name = "item-invis"; rgb = '0 0 1'; break;
-					case IT_NAILS:      name = "item-extralife"; rgb = '1 0 0'; break;
-					case IT_INVINCIBLE: name = "item-speed"; rgb = '1 0 1'; break;
+					case IT_STRENGTH:   name = "INVISIBILITY"; rgb = '0 0 1'; break;
+					case IT_NAILS:      name = "EXTRA LIFE"; rgb = '1 0 0'; break;
+					case IT_INVINCIBLE: name = "SPEED"; rgb = '1 0 1'; break;
 				}
 			}
 			else
 			{
 				switch(self.items)
 				{
-					case IT_STRENGTH:   name = "item-strength"; rgb = '0 0 1'; break;
-					case IT_INVINCIBLE: name = "item-shield"; rgb = '1 0 1'; break;
+					case IT_STRENGTH:   name = "STRENGTH"; rgb = '0 0 1'; break;
+					case IT_INVINCIBLE: name = "INVINCIBILITY"; rgb = '1 0 1'; break;
 				}
 			}
 			switch(self.items)
 			{
-				case IT_FUEL_REGEN:     name = "item-fuelregen"; rgb = '1 0.5 0'; break;
-				case IT_JETPACK:        name = "item-jetpack"; rgb = '0.5 0.5 0.5'; break;
+				case IT_FUEL_REGEN:     name = "FUEL REGEN"; rgb = '1 0.5 0'; break;
+				case IT_JETPACK:        name = "JETPACK"; rgb = '0.5 0.5 0.5'; break;
+				case IT_HEALTH:			name = "MEGA HEALTH"; rgb = '1 0.2 0.2'; break;
+				case IT_ARMOR:			name = "MEGA ARMOR"; rgb = '0.2 1 0.2'; break;
+				case IT_NADGET:			name = "NADGET REGEN"; rgb = '1 0.5 0.2'; break;
 			}
 			if(name)
 			{
@@ -192,17 +195,14 @@ void Item_RespawnCountdown (void)
 				if(self.waypointsprite_attached)
 				{
 					WaypointSprite_UpdateTeamRadar(self.waypointsprite_attached, RADARICON_POWERUP, rgb);
-					//WaypointSprite_UpdateMaxHealth(self.waypointsprite_attached, ITEM_RESPAWN_TICKS + 1);
+					WaypointSprite_UpdateTextColors(self.waypointsprite_attached, rgb, '0 0 0', '0 0 0');
 					WaypointSprite_UpdateBuildFinished(self.waypointsprite_attached, time + ITEM_RESPAWN_TICKS);
 				}
 			}
 		}
-		sound (self, CHAN_TRIGGER, "misc/itemrespawncountdown.wav", VOL_BASE, ATTN_NORM);	// play respawn sound
+		sound(self, CHAN_TRIGGER, "misc/itemrespawncountdown.wav", VOL_BASE, ATTN_NORM);	// play respawn sound
 		if(self.waypointsprite_attached)
-		{
 			WaypointSprite_Ping(self.waypointsprite_attached);
-			//WaypointSprite_UpdateHealth(self.waypointsprite_attached, self.count);
-		}
 	}
 }
 
@@ -229,6 +229,9 @@ void Item_ScheduleRespawn(entity e)
 
 void Item_ScheduleInitialRespawn(entity e)
 {
+	if(e.items & (IT_HEALTH | IT_ARMOR))
+		return;
+
 	Item_Show(e, 0);
 	if(self.droppedpowerup)
 		Item_ScheduleRespawnIn(e, CVAR(g_droppowerups_activatedelay));
@@ -1460,7 +1463,7 @@ void spawnfunc_item_armor_large (void) {
 		self.armorvalue = g_pickup_armorlarge;
 	if(!self.max_armorvalue)
 		self.max_armorvalue = g_pickup_armorlarge_max;
-	StartItem ("models/items/g_a25.md3", "misc/armor25.wav", g_pickup_respawntime_armor_large, g_pickup_respawntimejitter_armor_large, "100 Armor", IT_ARMOR, 0, 0, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
+	StartItem ("models/items/g_a25.md3", "misc/armor25.wav", g_pickup_respawntime_armor_large, g_pickup_respawntimejitter_armor_large, "100 Armor", IT_ARMOR, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
 }
 
 void spawnfunc_item_health_small (void) {
@@ -1501,7 +1504,7 @@ void spawnfunc_item_health_mega (void) {
 			self.max_health = g_pickup_healthmega_max;
 		if(!self.health)
 			self.health = g_pickup_healthmega;
-		StartItem ("models/items/g_h100.md3", "misc/megahealth.wav", g_pickup_respawntime_health_mega, g_pickup_respawntimejitter_health_mega, "100 Health", IT_HEALTH, 0, 0, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
+		StartItem ("models/items/g_h100.md3", "misc/megahealth.wav", g_pickup_respawntime_health_mega, g_pickup_respawntimejitter_health_mega, "100 Health", IT_HEALTH, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
 	}
 }
 
