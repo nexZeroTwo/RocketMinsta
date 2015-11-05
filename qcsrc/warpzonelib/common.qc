@@ -159,6 +159,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	vu = v_up;
 	o0 = org;
 	e0 = end;
+	WarpZone_trace_warpcount = 0;
 	WarpZone_Trace_InitTransform();
 	// if starting in warpzone, first transform
 	wz = WarpZone_Find(org + mi, org + ma);
@@ -180,7 +181,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 	sol = -1;
 	frac = 0;
 	float i;
-	for(i = 10; i > 0; i--)
+	for(i = 10; i; i--)
 	{
 		WarpZone_trace_dir = normalize(end - org);
 #ifdef SVQC
@@ -215,6 +216,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 		// we hit a warpzone... so, let's perform the trace after the warp again
 		org = WarpZone_TransformOrigin(wz, trace_endpos);
 		end = WarpZone_TransformOrigin(wz, end);
+		++WarpZone_trace_warpcount;
 	}
 	if (i == 0) {
 		dprint("WarpZone_TraceBox_ThroughZone: escape from loop\n");
@@ -250,6 +252,7 @@ void WarpZone_TraceToss_ThroughZone(entity e, entity forent, float toss_frametim
 	vu = v_up;
 	o0 = e.origin;
 	v0 = e.velocity;
+	WarpZone_trace_warpcount = 0;
 	WarpZone_Trace_InitTransform();
 	// if starting in warpzone, first transform
 	wz = WarpZone_Find(e.origin + e.mins, e.origin + e.maxs);
@@ -295,6 +298,7 @@ void WarpZone_TraceToss_ThroughZone(entity e, entity forent, float toss_frametim
 		// we hit a warpzone... so, let's perform the trace after the warp again
 		e.origin = WarpZone_TransformOrigin(wz, e.origin);
 		e.velocity = WarpZone_TransformVelocity(wz, e.velocity);
+		++WarpZone_trace_warpcount;
 	}
 	WarpZone_MakeAllOther();
 :fail

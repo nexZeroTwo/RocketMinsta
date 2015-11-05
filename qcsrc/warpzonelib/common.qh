@@ -26,6 +26,7 @@ typedef void(vector start, vector hit, vector end) WarpZone_trace_callback_t; //
 const var WarpZone_trace_callback_t WarpZone_trace_callback_t_null;
 entity WarpZone_trace_transform; // transform accumulator during a trace
 vector WarpZone_trace_dir;
+float WarpZone_trace_warpcount;
 void WarpZone_TraceBox(vector org, vector min, vector max, vector end, float nomonsters, entity forent);
 void WarpZone_TraceBox_ThroughZone(vector org, vector min, vector max, vector end, float nomonsters, entity forent, entity zone, WarpZone_trace_callback_t cb);
 void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent);

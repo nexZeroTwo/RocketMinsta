@@ -676,6 +676,9 @@ void Draw2d_ThroughWarpZones(void) {
     if(self.draw2d_pre && !self.draw2d_pre())
         return;
 
+    if(!warpzone_chain_begin)
+        goto skip;
+
     for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
         if(fwd == '0 0 0') {
             makevectors(view_angles);
@@ -698,19 +701,16 @@ void Draw2d_ThroughWarpZones(void) {
         }
     }
 
+    self.org_fld = o;
     WarpZone_TraceLine(view_origin, o, MOVE_NOMONSTERS, world);
 
-    var t = WarpZone_trace_transform;
-    if(t.warpzone_shift != '0 0 0' || t.warpzone_transform != '0 0 0')
+    if(WarpZone_trace_warpcount)
         return;
 
-    if(drawn) {
-        self.org_fld = o;
+    if(drawn && vlen(trace_endpos - o) > 1)
+        return;
 
-        if(vlen(trace_endpos - o) > 1)
-            return;
-    }
-
+:skip
     draw2d_warpstage = FALSE;
     self.draw2d_real();
 }
