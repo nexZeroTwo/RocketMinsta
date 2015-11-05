@@ -43,8 +43,8 @@ void Shownames_DrawPlayer(entity plr) {
     if(plr.alpha)
         a *= plr.alpha;
 
-    //if(dist >= SHOWNAMES_MAXDISTANCE)
-        //return;
+    if(dist >= SHOWNAMES_MAXDISTANCE)
+        return;
 
     a *= ((SHOWNAMES_MAXDISTANCE - SHOWNAMES_MINDISTANCE) - max(0, dist - SHOWNAMES_MINDISTANCE)) / (SHOWNAMES_MAXDISTANCE - SHOWNAMES_MINDISTANCE);
 
