@@ -688,7 +688,7 @@ void Draw2d_ThroughWarpZones(void) {
             continue;
         }
 
-        WarpZone_TraceTriangle(view_origin, view_origin, wo, MOVE_NOMONSTERS, world, WarpZone_trace_callback_t_null);
+        WarpZone_TraceLine(view_origin, wo, MOVE_NOMONSTERS, world);
 
         if(vlen(trace_endpos - o) < 1) {
             self.org_fld = wo;
@@ -698,12 +698,16 @@ void Draw2d_ThroughWarpZones(void) {
         }
     }
 
+    WarpZone_TraceLine(view_origin, o, MOVE_NOMONSTERS, world);
+
+    var t = WarpZone_trace_transform;
+    if(t.warpzone_shift != '0 0 0' || t.warpzone_transform != '0 0 0')
+        return;
+
     if(drawn) {
         self.org_fld = o;
 
-        traceline(view_origin, o, MOVE_NOMONSTERS, world);
-
-        if(trace_fraction < 1)
+        if(vlen(trace_endpos - o) > 1)
             return;
     }
 
