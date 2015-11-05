@@ -126,7 +126,7 @@ void Plasma_Draw() {
 void CheckForGamestartChange() {
 	float startTime;
 	startTime = getstatf(STAT_GAMESTARTTIME);
-	if (previous_game_starttime != startTime) {
+	if (previous_game_starttime != startTime && !warmup_stage) {
 		if ((time + 5.0) < startTime) {
 			//if connecting to server while restart was active don't always play prepareforbattle
 			sound(self, CHAN_VOICE, "announcer/robotic/prepareforbattle.wav", VOL_BASEVOICE, ATTN_NONE);
