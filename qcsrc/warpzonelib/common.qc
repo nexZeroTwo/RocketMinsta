@@ -729,3 +729,29 @@ void WarpZone_Sound(entity e, float chan, string sound_path, float vol, float at
 		}
 	}
 }
+
+vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float traceflag, entity traceent) {
+    var wz = world;
+
+    do {
+        var viewee_warped = if(wz) WarpZone_UnTransformOrigin(wz, viewee) else viewee;
+        var dir = normalize(viewee_warped - viewer);
+
+        if(fwd != '0 0 0' && dir * fwd < 0)
+            goto skip; // no eyes on our back
+
+        WarpZone_TraceLine(viewer, viewee_warped, traceflag, traceent);
+
+        if(vlen(trace_endpos - viewee) < 1) {
+            // a line of sight exists
+            return dir;
+        }
+
+    :skip
+        if(wz) wz = wz.warpzone_chain;
+        else   wz = warpzone_chain_begin;
+    } while(wz);
+
+    // can't see it at all
+    return '0 0 0';
+}

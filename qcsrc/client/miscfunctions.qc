@@ -671,10 +671,11 @@ void Draw2d_ThroughWarpZones(void) {
     var fwd = '0 0 0';
     var drawn = FALSE;
     var org_fld = self.draw2d_origin_fld;
-    var o = self.org_fld;
 
     if(self.draw2d_pre && !self.draw2d_pre())
         return;
+
+    var o = self.org_fld;
 
     if(!warpzone_chain_begin)
         goto skip;

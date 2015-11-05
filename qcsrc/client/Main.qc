@@ -1412,6 +1412,7 @@ void Ent_ReadEntCS()
     if(sf & 1) {
         self.sv_entnum = ReadByte() - 1;
         self.sn_forcefrozen = ReadByte();
+        Shownames_Init(self);
     }
 
     entity plr = playerslots[self.sv_entnum];
