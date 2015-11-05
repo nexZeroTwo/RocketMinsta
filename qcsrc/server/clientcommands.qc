@@ -1238,7 +1238,10 @@ void ReadyRestartForce()
 
 	readyrestart_happened = 1;
 
-    if(EndRound_Allowed()) {
+    // keyhunt is "special"
+    // it supports endround, but has no real rounds, so we can't use endround to reset the game here.
+
+    if(EndRound_Allowed() && !g_keyhunt) {
         game_starttime = time;
         roundstate = ROUNDSTATE_WARMUP;
         EndRound(ENDROUND_TIMEOUT_IMMEDIATE);
