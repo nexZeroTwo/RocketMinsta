@@ -1421,7 +1421,7 @@ void PutClientInServer (void)
     }
     
     self.justconnected = FALSE;
-    
+
     CA_PlayerJoins();
     JoinQ_Pop();
 }

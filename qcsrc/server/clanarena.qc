@@ -41,7 +41,7 @@ float CA_AliveCheck(entity plr) {
 }
 
 void CA_EndRound(float tout) {
-    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, func_null);
+    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, CA_BeginRound);
     CA_RecountPlayers();
 }
 
@@ -147,11 +147,12 @@ void CA_PlayerJoins(void) {
     if(g_clanarena) {
         // TODO: do this more efficiently
         if(roundstate == ROUNDSTATE_GAME)
-        if(self.classname == "player") 
+        if(self.classname == "player")
         if(teamcount_playerstotal[Team_Index(self.team)]) {
             PlayerScore_SetFlags(self, SPFLAG_FROZEN);
             JB_JailSpectate();
         }
+
         CA_RecountPlayers();
     }
 }
@@ -169,4 +170,35 @@ float CA_AttemptRespawn(void) {
         return TRUE;
         
     return FALSE;
+}
+
+void CA_BeginRound(void) {
+    if(!g_clanarena)
+        return;
+
+    if(CVAR(g_clanarena_imbalance_compensation)) {
+        TeamCount_RecountPlayers(CA_AliveCheck);
+
+        var maxplrs = teamcount_playersalive[0], e;
+        for(var t = 1; t < 4; ++t) {
+            if(teamcount_playersalive[t] > maxplrs)
+                maxplrs = teamcount_playersalive[t];
+        }
+
+        FOR_EACH_PLAYER(e) {
+            var tidx = Team_Index(e.team);
+
+            if(tidx < 0)
+                continue;
+
+            var present = teamcount_playersalive[tidx];
+            var missing = maxplrs - present;
+
+            if(missing) {
+                var fract = missing / present;
+                e.health = e.health + start_health * fract;
+                e.armorvalue = e.armorvalue + start_armorvalue * fract;
+            }
+        }
+    }
 }
