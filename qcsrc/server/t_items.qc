@@ -135,6 +135,7 @@ void Item_Show (entity e, float mode)
 void Item_Respawn (void)
 {
 	Item_Show(self, 1);
+
 	if(!g_minstagib && self.items == IT_STRENGTH)
 		sound (self, CHAN_TRIGGER, "misc/strength_respawn.wav", VOL_BASE, ATTN_NORM);	// play respawn sound
 	else if(!g_minstagib && self.items == IT_INVINCIBLE)
@@ -142,6 +143,9 @@ void Item_Respawn (void)
 	else
 		sound (self, CHAN_TRIGGER, "misc/itemrespawn.wav", VOL_BASE, ATTN_NORM);	// play respawn sound
 	setorigin (self, self.origin);
+
+    if(self.fade_time)
+        SUB_SetFade(self, self.fade_time, 1);
 
 	//pointparticles(particleeffectnum("item_respawn"), self.origin + self.mins_z * '0 0 1' + '0 0 48', '0 0 0', 1);
 	pointparticles(particleeffectnum("item_respawn"), self.origin + 0.5 * (self.mins + self.maxs), '0 0 0', 1);
@@ -208,7 +212,7 @@ void Item_RespawnCountdown (void)
 
 void Item_ScheduleRespawnIn(entity e, float t)
 {
-	if(e.flags & FL_POWERUP && !self.droppedpowerup)
+	if(e.flags & FL_POWERUP && self.classname != "droppedpowerup")
 	{
 		e.think = Item_RespawnCountdown;
 		e.nextthink = time + max(0, t - ITEM_RESPAWN_TICKS);
@@ -233,7 +237,7 @@ void Item_ScheduleInitialRespawn(entity e)
 		return;
 
 	Item_Show(e, 0);
-	if(self.droppedpowerup)
+	if(self.classname == "droppedpowerup")
 		Item_ScheduleRespawnIn(e, CVAR(g_droppowerups_activatedelay));
 	else {
         float t;
@@ -610,7 +614,7 @@ void Item_Touch (void)
 
 	pointparticles(particleeffectnum("item_pickup"), self.origin, '0 0 0', 1);
 
-	if (self.classname == "droppedweapon" || self.droppedpowerup)
+	if (self.classname == "droppedweapon" || self.classname == "droppedpowerup")
 		remove (self);
 	else if not(self.spawnshieldtime)
 		return;
@@ -1518,6 +1522,25 @@ void spawnfunc_item_health1() { spawnfunc_item_health_small(); }
 void spawnfunc_item_health25() { spawnfunc_item_health_medium(); }
 void spawnfunc_item_health100() { spawnfunc_item_health_mega(); }
 
+float setup_powerup(float id) {
+    switch(id) {
+        case IT_STRENGTH: {
+            precache_sound("weapons/strength_fire.wav");
+            self.strength_finished = CVAR(g_balance_powerup_strength_time);
+            StartItem("models/items/g_strength.md3", "misc/powerup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Strength Powerup", IT_STRENGTH, 0, FL_POWERUP, generic_pickupevalfunc, 100000);
+            return TRUE;
+        }
+
+        case IT_INVINCIBLE: {
+            self.invincible_finished = CVAR(g_balance_powerup_invincible_time);
+            StartItem("models/items/g_invincible.md3", "misc/powerup_shield.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Shield", IT_INVINCIBLE, 0, FL_POWERUP, generic_pickupevalfunc, 100000);
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 void spawnfunc_item_strength (void) {
     Buffs_BuffPickup_Placeholder();
     
@@ -1543,9 +1566,7 @@ void spawnfunc_item_strength (void) {
 	if(g_minstagib) {
 		minstagib_items(IT_STRENGTH);
 	} else {
-		precache_sound("weapons/strength_fire.wav");
-		self.strength_finished = CVAR(g_balance_powerup_strength_time);
-		StartItem ("models/items/g_strength.md3", "misc/powerup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Strength Powerup", IT_STRENGTH, 0, FL_POWERUP, generic_pickupevalfunc, 100000);
+        setup_powerup(IT_STRENGTH);
 	}
 }
 
@@ -1574,8 +1595,7 @@ void spawnfunc_item_invincible (void) {
 	if(g_minstagib) {
 		minstagib_items(IT_INVINCIBLE);
 	} else {
-		self.invincible_finished = CVAR(g_balance_powerup_invincible_time);
-		StartItem ("models/items/g_invincible.md3", "misc/powerup_shield.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Shield", IT_INVINCIBLE, 0, FL_POWERUP, generic_pickupevalfunc, 100000);
+        setup_powerup(IT_INVINCIBLE);
 	}
 }
 

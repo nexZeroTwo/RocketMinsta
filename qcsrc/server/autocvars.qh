@@ -896,6 +896,7 @@ float autocvar_g_domination_teams_override;
 float autocvar_g_domination_time_limit;
 float autocvar_g_droppowerups;
 float autocvar_g_droppowerups_activatedelay;
+float autocvar_g_droppowerups_fadedelay;
 float autocvar_g_endmatch;
 float autocvar_g_fakeshotorigin;
 float autocvar_g_fire_damage_frequency;
