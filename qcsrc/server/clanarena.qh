@@ -11,3 +11,4 @@ float CA_AliveCheck(entity);
 float CA_AttemptRespawn(void);
 void CA_PlayerJoins(void);
 void CA_PlayerLeaves(void);
+void CA_BeginRound(void);

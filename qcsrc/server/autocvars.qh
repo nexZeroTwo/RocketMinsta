@@ -836,6 +836,7 @@ float autocvar_g_clanarena_teamdamage;
 float autocvar_g_clanarena_teams;
 float autocvar_g_clanarena_timelimit;
 float autocvar_g_clanarena_warmup;
+float autocvar_g_clanarena_imbalance_compensation;
 float autocvar_g_cloaked;
 float autocvar_g_ctf;
 float autocvar_g_ctf_allow_drop;
