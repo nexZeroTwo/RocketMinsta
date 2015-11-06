@@ -66,22 +66,19 @@ void Buffs_Random_Spawn(void) {
         setsize(self, omins + BUFFS_MARGIN_MINS, omaxs + BUFFS_MARGIN_MAXS);
         move_out_of_solid(self);
 
+        if(check_uneven_ground(self, 1))
+            goto fail;
+
         tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_NORMAL, self);
 
-        if(trace_startsolid) {
-            --i;
-            continue;
-        }
+        if(trace_startsolid)
+            goto fail;
 
-        if(trace_ent && Buffs_Random_Spawn_EntFilter(trace_ent)) {
-            --i;
-            continue;
-        }
+        if(trace_ent && Buffs_Random_Spawn_EntFilter(trace_ent))
+            goto fail;
 
-        if(Buffs_Random_Spawn_Test_Overlap(self)) {
-            --i;
-            continue;
-        }
+        if(Buffs_Random_Spawn_Test_Overlap(self))
+            goto fail;
 
         float d = 1000000;
 
@@ -93,6 +90,10 @@ void Buffs_Random_Spawn(void) {
             org = self.origin;
             mx = d;
         }
+
+        continue;
+    :fail
+        --i;
     }
 
     setorigin(self, org);
