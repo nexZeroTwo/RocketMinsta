@@ -1202,8 +1202,35 @@ void Buffs_BuffPickup_SetCooldown(entity buff, float cd) {
     buff.buff_active = !cd;
 }
 
+float Buffs_BuffPickup_GetShortestCooldown(void) {
+    return min4(
+        CVAR(g_buffs_activate_delay),
+        CVAR(g_buffs_activate_delay_dual),
+        CVAR(g_buffs_reactivate_delay),
+        CVAR(g_buffs_reactivate_delay_dual)
+    );
+}
+
 void Buffs_BuffPickup_SetInitialCooldown(entity buff) {
-    Buffs_BuffPickup_SetCooldown(buff, cvar(if(buff.buffs & (buff.buffs - 1)) "g_buffs_activate_delay_dual" else "g_buffs_activate_delay"));
+    Buffs_BuffPickup_SetCooldown(buff,
+        if(roundstate == ROUNDSTATE_INITIAL_WARMUP)
+            Buffs_BuffPickup_GetShortestCooldown()
+        else if(buff.buffs & (buff.buffs - 1))
+            CVAR(g_buffs_activate_delay_dual)
+        else
+            CVAR(g_buffs_activate_delay)
+    );
+}
+
+void Buffs_BuffPickup_SetReactivateCooldown(entity buff) {
+    Buffs_BuffPickup_SetCooldown(buff, (
+        if(roundstate == ROUNDSTATE_INITIAL_WARMUP)
+            Buffs_BuffPickup_GetShortestCooldown()
+        else if(buff.buffs & (buff.buffs - 1))
+            CVAR(g_buffs_reactivate_delay_dual)
+        else
+            CVAR(g_buffs_reactivate_delay)
+    ) + frametime);
 }
 
 void Buffs_BuffPickup_Think(void) {
@@ -1231,12 +1258,12 @@ void Buffs_BuffPickup_Think(void) {
     }
     
     if(!self.buff_active && !self.buff_activetime)
-    if(PlayerIsDead(self.owner) || !(self.owner.buffs & self.buffs == self.buffs)) {
+    if(roundstate == ROUNDSTATE_INITIAL_WARMUP || !(self.owner.buffs & self.buffs == self.buffs) || PlayerIsDead(self.owner)) {
         if(self.owner.buff_cdoverride) {
             Buffs_BuffPickup_SetCooldown(self, max(0, self.owner.buff_cdoverride) + frametime);
             self.owner.buff_cdoverride = 0;
         } else
-            Buffs_BuffPickup_SetCooldown(self, cvar(if(self.buffs & (self.buffs - 1)) "g_buffs_reactivate_delay_dual" else "g_buffs_reactivate_delay") + frametime);
+            Buffs_BuffPickup_SetReactivateCooldown(self);
         self.owner = world;
     }
     
