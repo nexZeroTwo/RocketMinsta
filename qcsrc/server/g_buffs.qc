@@ -42,6 +42,11 @@ void Buffs_Random_Spawn(void) {
     self.classname = "item_buff_randomspawn";
     Buffs_BuffPickup_Setup();
 
+    if(Buffs_Random_Spawn_EntFilter(self)) {
+        self.buff_oldsolid = self.solid;
+        self.solid = SOLID_BBOX;
+    }
+
     var a = max(1, CVAR(g_buffs_random_spawns_distant)), mx = -1;
     var org = '0 0 0';
     var blist = findchain_tofield(classname, "item_buff", buff_chain);
