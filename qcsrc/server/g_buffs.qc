@@ -2,6 +2,39 @@
 #define ON_BUFF_ADDED(b) if(self.buffs & (b)) if not(self.oldbuffs & (b))
 #define ON_BUFF_REMOVED(b) if(self.oldbuffs & (b)) if not(self.buffs & (b))
 
+.entity buff_chain;
+.float buff_oldsolid;
+
+const vector BUFFS_MARGIN_MINS = '-4 -4 0';
+const vector BUFFS_MARGIN_MAXS = ' 4  4 0';
+
+float Buffs_Random_Spawn_EntFilter(entity e) {
+    return ((e.flags & FL_ITEM) && e.classname != "item_buff_randomspawn") || e.classname == "info_player_deathmatch";
+}
+
+void Buffs_Random_Spawn_Init(void) {
+    for(var e = world; (e = findfilter(e, Buffs_Random_Spawn_EntFilter));) {
+        e.buff_oldsolid = e.solid;
+        e.solid = SOLID_BBOX;
+    }
+}
+
+void Buffs_Random_Spawn_Cleanup(void) {
+    for(var e = world; (e = findfilter(e, Buffs_Random_Spawn_EntFilter));) {
+        e.solid = e.buff_oldsolid;
+        e.buff_oldsolid = 0;
+    }
+}
+
+entity Buffs_Random_Spawn_Test_Overlap(entity buff) {
+    for(var e = world; (e = findfilter(e, Buffs_Random_Spawn_EntFilter));) if(e != buff) {
+        if(boxesoverlap(buff.absmin, buff.absmax, e.absmin, e.absmax))
+            return e;
+    }
+
+    return world;
+}
+
 void Buffs_Random_Spawn(void) {
     var o = self;
     self = spawn();
@@ -10,25 +43,56 @@ void Buffs_Random_Spawn(void) {
     Buffs_BuffPickup_Setup();
 
     var a = max(1, CVAR(g_buffs_random_spawns_distant)), mx = -1;
-    var org;
-    var blist = findchain(classname, "item_buff");
+    var org = '0 0 0';
+    var blist = findchain_tofield(classname, "item_buff", buff_chain);
+
+    var omins = self.mins;
+    var omaxs = self.maxs;
+    setsize(self, omins + BUFFS_MARGIN_MINS, omaxs + BUFFS_MARGIN_MAXS);
 
     for(var i = 0; i < a; ++i) {
         MoveToRandomMapLocation(self, DPCONTENTS_SOLID | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, DPCONTENTS_SLIME | DPCONTENTS_WATER | DPCONTENTS_LAVA | DPCONTENTS_SKY | DPCONTENTS_BODY | DPCONTENTS_DONOTENTER, Q3SURFACEFLAG_SKY, 128, 1024, 256);
 
+        snap_to_grid(self, 32);
+        snap_to_entity(self, 1024, Buffs_Random_Spawn_EntFilter);
+
+        setsize(self, [-1, -1, self.mins_z], [1, 1, self.maxs_z]);
+        droptofloor();
+        setsize(self, omins + BUFFS_MARGIN_MINS, omaxs + BUFFS_MARGIN_MAXS);
+        move_out_of_solid(self);
+
+        tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_NORMAL, self);
+
+        if(trace_startsolid) {
+            --i;
+            continue;
+        }
+
+        if(trace_ent && Buffs_Random_Spawn_EntFilter(trace_ent)) {
+            --i;
+            continue;
+        }
+
+        if(Buffs_Random_Spawn_Test_Overlap(self)) {
+            --i;
+            continue;
+        }
+
         float d = 1000000;
 
-        for(var b = blist; b; b = b.chain) if(b != self) {
+        for(var b = blist; b; b = b.buff_chain) if(b != self) {
             d = min(d, vlen(self.origin - b.origin));
         }
 
-        if(d > mx) {
+        if(d * (1 + 0.1 * random()) > mx) {
             org = self.origin;
             mx = d;
         }
     }
 
     setorigin(self, org);
+    setsize(self, omins, omaxs);
+    move_out_of_solid(self);
 
     self = o;
 }
@@ -213,8 +277,10 @@ void Buffs_Init_Delayed(void) {
         float ma = CVAR(g_buffs_random_spawns_max);
         float bcount = rint(random() * (ma - mi) + mi);
 
+        Buffs_Random_Spawn_Init();
 		for(j = 0; j < bcount; ++j)
 			Buffs_Random_Spawn();
+        Buffs_Random_Spawn_Cleanup();
 	} 
 
     if(g_buffs_spawn_on_powerups && !g_buffs_team_only) {
