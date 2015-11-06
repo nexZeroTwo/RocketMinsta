@@ -173,6 +173,31 @@ void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
         move_out_of_solid(ent);
 }
 
+float check_uneven_ground(entity ent, float tolerance) {
+    var p1 = ent.origin + [ent.mins_x, ent.mins_y, ent.maxs_z];
+    var p2 = ent.origin + [ent.mins_x, ent.maxs_y, ent.maxs_z];
+    var p3 = ent.origin + [ent.maxs_x, ent.mins_y, ent.maxs_z];
+    var p4 = ent.origin + [ent.maxs_x, ent.maxs_y, ent.maxs_z];
+    var wantDist, dir = [0, 0, -MAX_SHOT_DISTANCE];
+
+    traceline(p1, p1 + dir, MOVE_WORLDONLY, ent);
+    wantDist = vlen(p1 - trace_endpos);
+
+    traceline(p2, p2 + dir, MOVE_WORLDONLY, ent);
+    if(abs(vlen(p2 - trace_endpos) - wantDist) > tolerance)
+        return TRUE;
+
+    traceline(p3, p3 + dir, MOVE_WORLDONLY, ent);
+    if(abs(vlen(p3 - trace_endpos) - wantDist) > tolerance)
+        return TRUE;
+
+    traceline(p4, p4 + dir, MOVE_WORLDONLY, ent);
+    if(abs(vlen(p4 - trace_endpos) - wantDist) > tolerance)
+        return TRUE;
+
+    return FALSE;
+}
+
 string STR_PLAYER = "player";
 string STR_SPECTATOR = "spectator";
 string STR_OBSERVER = "observer";
