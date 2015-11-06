@@ -816,3 +816,5 @@ vector PL_CROUCH_MIN;
 vector PL_CROUCH_MAX;
 
 float readyrestart_happened;
+
+var .float origin_array[3];

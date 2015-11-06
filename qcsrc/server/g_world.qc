@@ -514,6 +514,10 @@ void spawnfunc_worldspawn (void)
 	float fd, l, i, j, n;
 	string s, col;
 
+    origin_array[0] = origin_x;
+    origin_array[1] = origin_y;
+    origin_array[2] = origin_z;
+
 	cvar = cvar_builtin;
 	cvar_string = cvar_string_builtin;
 	cvar_set = cvar_set_builtin;

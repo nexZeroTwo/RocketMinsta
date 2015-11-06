@@ -91,6 +91,88 @@ float move_out_of_solid(entity e)
     return 1;
 }
 
+void snap_to_grid(entity e, float gridsize) {
+    move_out_of_solid(e);
+    var o;
+
+    do {
+        o = e.origin;
+        o_x = rint(o_x / gridsize) * gridsize;
+        o_y = rint(o_y / gridsize) * gridsize;
+        o_z = rint(o_z / gridsize) * gridsize;
+
+        gridsize *= 0.5;
+
+        if(gridsize < 1)
+            break;
+
+        tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, world);
+    } while(trace_startsolid);
+
+    setorigin(e, o);
+
+    if(trace_startsolid)
+        move_out_of_solid(e);
+}
+
+void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
+    var e = findradius(ent.origin, maxdist), n, picked, mindist = maxdist, dst;
+
+    while(e) {
+        n = e.chain;
+
+        if((dst = vlen(e.origin - ent.origin)) >= mindist)
+            goto skip;
+
+        if(e == ent)
+            goto skip;
+
+        if(filter && !filter(e))
+            goto skip;
+
+        mindist = dst;
+        picked = e;
+
+    :skip
+        e = n;
+    }
+
+    if(!picked)
+        return;
+
+    var checkpassed = FALSE;
+    var bestorigin;
+    mindist = maxdist * 2;
+
+    for(var i = 0; i < 2; ++i) {
+        var fld = origin_array[i];
+        var d = abs(picked.fld - ent.fld);
+
+        if(d < mindist) {
+            var saveorg = ent.origin;
+            ent.fld = picked.fld;
+            var neworg = ent.origin;
+            ent.origin = saveorg;
+
+            tracebox(neworg, ent.mins, ent.maxs, neworg, MOVE_WORLDONLY, world);
+
+            if(trace_startsolid) {
+                if(checkpassed)
+                    continue;
+            } else
+                checkpassed = TRUE;
+
+            mindist = d;
+            bestorigin = neworg;
+        }
+    }
+
+    setorigin(ent, bestorigin);
+
+    if(!checkpassed)
+        move_out_of_solid(ent);
+}
+
 string STR_PLAYER = "player";
 string STR_SPECTATOR = "spectator";
 string STR_OBSERVER = "observer";
