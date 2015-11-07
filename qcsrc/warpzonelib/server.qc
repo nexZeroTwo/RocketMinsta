@@ -123,7 +123,6 @@ float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
 		setmodel(ts, "null");
 		ts.SendEntity = WarpZone_Teleported_Send;
 		ts.SendFlags = 0xFFFFFF;
-		ts.drawonlytoclient = player;
 		ts.think = SUB_Remove;
 		ts.nextthink = time + 1;
 		ts.owner = player;
@@ -131,6 +130,15 @@ float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
 		ts.effects = EF_NODEPTHTEST;
 		ts.classname = "warpzone_teleported";
 		ts.angles = wz.warpzone_transform;
+        ts.customizeentityforclient = inline float(void) {
+            if(other == self.owner)
+                return TRUE;
+
+            if(other.enemy == self.owner && other.classname == "spectator")
+                return TRUE;
+
+            return FALSE;
+        };
 	}
 #endif
 
