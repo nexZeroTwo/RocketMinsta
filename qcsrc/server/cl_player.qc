@@ -432,51 +432,39 @@ void PlayerCorpseDamage (entity inflictor, entity attacker, float damage, float 
 
 void ClientKill_Now_TeamChange();
 
-spawnfunc_t GetPowerupSpawnfunc(float id) {
-	switch(id) {
-		case IT_STRENGTH: 	return spawnfunc_item_strength;
-		case IT_INVINCIBLE:	return spawnfunc_item_invincible;
-	}
-	
-	bprint("WARNING: Tried to drop an unknown powerup, please debug this!\n");
-	return func_null;
+void DropPowerup(float id, .float timefield, float timeleft) {
+    var plr = self;
+
+    using(self = spawn()) {
+        self.classname = "droppedpowerup";
+
+        if(!setup_powerup(id)) {
+            remove(self);
+            return;
+        }
+
+        if(!self || wasfreed(self))
+            return;
+
+        self.movetype = MOVETYPE_BOUNCE;
+        makevectors(plr.angles);
+        setorigin(self, plr.origin);
+        self.velocity = v_forward * 200 + v_up * 175 + plr.velocity;
+        self.reset = SUB_Remove;
+        self.timefield = timeleft;
+        self.fade_time = time + CVAR(g_droppowerups_fadedelay);
+    }
+
+    self.timefield = 0;
 }
 
-void ClearPowerup(float id) {
-	switch(id) {
-		case IT_STRENGTH: 	self.strength_finished 		= 0; break;
-		case IT_INVINCIBLE:	self.invincible_finished 	= 0; break;
-	}
-}
-
-void DropPowerup(float id, vector force, .float timefield, float timeleft) {
-	var spawnfunc_t spawnfunc;
-	spawnfunc = GetPowerupSpawnfunc(id);
-	if(!spawnfunc) return;
-	
-	entity oldself = self;
-	entity p = self = spawn();
-	p.droppedpowerup = TRUE;
-	spawnfunc();
-	self = oldself;
-	if(!p) return;
-	p.movetype = MOVETYPE_BOUNCE;
-	makevectors(self.angles);
-	setorigin(p, self.origin + v_up * 10 + v_forward * 10);
-	p.velocity = force + randomvec() * 10 + v_up * random() * 50 + force * 2 + v_forward * 10;
-	p.reset = SUB_Remove;
-    p.timefield = timeleft;
-    print("time = ", ftos(timeleft), "\n");
-	ClearPowerup(id);
-}
-
-void DropPowerups(vector force) {
+void DropPowerups(void) {
 	DEPENDON(CVAR(g_droppowerups))
 	
 	if(self.items & IT_STRENGTH)
-		DropPowerup(IT_STRENGTH, force, strength_finished, self.strength_finished - time);
+		DropPowerup(IT_STRENGTH, strength_finished, self.strength_finished - time);
 	if(self.items & IT_INVINCIBLE)
-		DropPowerup(IT_INVINCIBLE, force, invincible_finished, self.invincible_finished - time);
+		DropPowerup(IT_INVINCIBLE, invincible_finished, self.invincible_finished - time);
 }
 
 void Boobs_Clear();
@@ -964,7 +952,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         
-        DropPowerups(force);
+        DropPowerups();
 
 		// print an obituary message
 		Obituary (attacker, inflictor, self, deathtype);

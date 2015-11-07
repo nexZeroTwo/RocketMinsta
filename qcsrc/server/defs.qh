@@ -721,7 +721,6 @@ float realclients;
 .float spawninarena;
 
 typedef void() spawnfunc_t;
-.float droppedpowerup;
 
 void Boobs_DropAllAndRespawn(vector);
 
