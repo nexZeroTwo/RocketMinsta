@@ -521,6 +521,28 @@ vector PlayerTouchWall(float dist)
     return normal;
 }
 
+void SV_ObserverPhysics(void) {
+    tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * frametime, MOVE_NOMONSTERS, self);
+
+    if(trace_ent) {
+        var dst = trace_endpos - self.origin;
+
+        if(vlen(dst)) {
+            var skipent = trace_ent;
+            print(ftos(frametime), " -- hit ent ", vtos(dst), " ", trace_ent.classname, "\n");
+
+            //var o = skipent.solid;
+            //skipent.solid = SOLID_NOT;
+            var bs = 1;
+
+            tracebox(self.origin, bs * self.mins, bs * self.maxs, self.origin + normalize(dst) * MAX_SHOT_DISTANCE, MOVE_WORLDONLY, self);
+            //skipent.solid = o;
+            tracebox(trace_endpos, bs * self.mins, bs * self.maxs, self.origin, MOVE_NOMONSTERS, self);
+            setorigin(self, trace_endpos);
+        }
+    }
+}
+
 void SV_PlayerPhysics()
 {
 	vector wishvel, wishdir, v;
@@ -530,7 +552,7 @@ void SV_PlayerPhysics()
 	float not_allowed_to_move;
     float isplayer, isbait;
 	//string c;
-    
+
     isplayer = (self.classname == "player");
     
     if(!self.is_away) {
@@ -862,6 +884,7 @@ void SV_PlayerPhysics()
 
 	if(self.flags & FL_ONGROUND)
 	if(self.wasFlying)
+    if(self.iscreature)
 	{
 		self.wasFlying = 0;
 
@@ -1237,4 +1260,7 @@ void SV_PlayerPhysics()
 
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
+
+    if(self.classname == "observer")
+        SV_ObserverPhysics();
 };

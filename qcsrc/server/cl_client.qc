@@ -742,6 +742,11 @@ void setmodel_lod(entity e, string modelname)
 	UpdatePlayerSounds();
 }
 
+void ObserverTouch(void) {
+    if(trace_ent)
+        print("touch ", etos(trace_ent), " ", trace_ent.classname, "\n");
+}
+
 /*
 =============
 PutObserverInServer
@@ -825,7 +830,7 @@ void PutObserverInServer (void)
 	self.health = -666;
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
-	self.movetype = MOVETYPE_NOCLIP;
+	self.movetype = MOVETYPE_FLY;
 	self.flags = FL_CLIENT | FL_NOTARGET;
 	self.armorvalue = 666;
 	self.effects = 0;
@@ -857,7 +862,6 @@ void PutObserverInServer (void)
 
 	self.view_ofs = PL_VIEW_OFS;
 	setorigin (self, spot.origin);
-	setsize (self, '0 0 0', '0 0 0');
 	self.prevorigin = self.origin;
 	self.items = 0;
 	self.weapons = 0;
@@ -876,6 +880,7 @@ void PutObserverInServer (void)
 	self.punchvector = '0 0 0';
 	self.oldvelocity = self.velocity;
 	self.fire_endtime = -1;
+    self.touch = ObserverTouch;
 
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
@@ -917,6 +922,9 @@ void PutObserverInServer (void)
     if(CVAR(sv_ghost_observers))
         MakeObserverGhost();
 #endif
+
+    setsize(self, PL_MIN, PL_MAX);
+    //setsize(self, '0 0 0', '0 0 0');
 }
 
 float RestrictSkin(float s)
@@ -3487,7 +3495,7 @@ void PlayerPreThink (void)
 
         W_Zapper_Cooloff();
 	} else {
-        if(self.solid) {
+        if(self.solid && self.solid != SOLID_TRIGGER) {
             bprint("BUG: spectator/observer was solid\n");
             localcmd("prvm_edict server ", ftos(num_for_edict(self)), "\n");
             self.solid = SOLID_NOT;
