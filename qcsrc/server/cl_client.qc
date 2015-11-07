@@ -3178,8 +3178,10 @@ void PlayerPreThink (void)
         isplayer = TRUE;
     else if(self.classname == "spectator")
         isspec = TRUE;
-    else if(self.classname == "observer")
+    else if(self.classname == "observer") {
         isobs = TRUE;
+        WarpZone_HandleObserver();
+    }
     
     if(self.jb_specteam && isplayer) {
         JB_JailSpec_CreateProxy();

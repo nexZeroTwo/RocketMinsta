@@ -83,22 +83,24 @@ float WarpZone_Teleport(entity wz, entity player, float f0, float f1)
 	}
 
 	// put him out of solid
-	tracebox(o1 - player.view_ofs, player.mins, player.maxs, o1 - player.view_ofs, MOVE_NOMONSTERS, player);
-	if(trace_startsolid)
-	{
-		setorigin(player, o1 - player.view_ofs);
-		if(WarpZoneLib_MoveOutOfSolid(player))
-		{
-			o1 = player.origin + player.view_ofs;
-			setorigin(player, o0 - player.view_ofs);
-		}
-		else
-		{
-			print("would have to put player in solid, won't do that\n");
-			setorigin(player, o0 - player.view_ofs);
-			return 0;
-		}
-	}
+    if(player.movetype != MOVETYPE_NOCLIP) {
+        tracebox(o1 - player.view_ofs, player.mins, player.maxs, o1 - player.view_ofs, MOVE_NOMONSTERS, player);
+        if(trace_startsolid)
+        {
+            setorigin(player, o1 - player.view_ofs);
+            if(WarpZoneLib_MoveOutOfSolid(player))
+            {
+                o1 = player.origin + player.view_ofs;
+                setorigin(player, o0 - player.view_ofs);
+            }
+            else
+            {
+                print("would have to put player in solid, won't do that\n");
+                setorigin(player, o0 - player.view_ofs);
+                return 0;
+            }
+        }
+    }
 
 	// do the teleport
 	WarpZone_RefSys_Add(player, wz);
@@ -182,6 +184,12 @@ void WarpZone_Touch (void)
 		f = -d / bound(frametime * d * 1, frametime * vlen(other.velocity), d);
 	else
 		f = -1;
+
+    if(other.classname == "observer") {
+        WarpZone_Teleport(self, other, f, 0);
+        return;
+    }
+
 	if(WarpZone_Teleport(self, other, f, 0))
 	{
 		string save1, save2;
@@ -571,6 +579,7 @@ void spawnfunc_func_camera(void)
 	self.warpzone_next = warpzone_camera_first;
 	warpzone_camera_first = self;
 }
+
 void WarpZone_StartFrame()
 {
 	entity e;
@@ -590,6 +599,25 @@ void WarpZone_StartFrame()
 			WarpZone_InitStep_FinalizeTransform();
 		self = e;
 	}
+
 	for(e = world; (e = nextent(e)); )
 		WarpZone_StoreProjectileData(e);
+}
+
+void WarpZone_HandleObserver() {
+    if(!warpzone_chain_begin)
+        return;
+
+    var vf = v_forward, vr = v_right, vu = v_up;
+    var wz = WarpZone_Find(self.absmin, self.absmax);
+
+    if(!wz)
+        return;
+
+    using(other = self) using(self = wz)
+        WarpZone_Touch();
+
+    v_forward = vf;
+    v_right = vr;
+    v_right = vu;
 }
