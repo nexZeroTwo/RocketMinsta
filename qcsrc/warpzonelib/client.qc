@@ -46,6 +46,9 @@ void WarpZone_Read(float isnew)
 
     if(!cvar("r_water"))
         cvar_clientsettemp("r_water", "1");
+
+    if(cvar("r_water_resolutionmultiplier") < 1)
+        cvar_clientsettemp("r_water_resolutionmultiplier", "1");
 }
 
 vector WarpZone_Camera_camera_transform(vector org, vector ang)
