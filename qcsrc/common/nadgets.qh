@@ -25,7 +25,7 @@ enum {
 
 const float HG_START  = _HG_START + 1;
 const float HG_END    = _HG_END   - 1;
-const float HG_RANDOM = -1337;
+const float HG_RANDOM = 25252;
 
 string HG_TypeToName(float);
 float HG_NameToType(string);

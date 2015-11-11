@@ -3,7 +3,7 @@
 #define NS_SCALE 24
 #define NS_MARGIN 10
 
-float ns_options[NS_MAX_OPTIONS];
+float ns_options[NS_MAX_OPTIONS*2];
 float ns_selalpha[NS_MAX_OPTIONS*2];
 float ns_numoptions;
 float ns_active;
@@ -77,16 +77,22 @@ void NS_Draw(void) {
         txtw = stringwidth_svn(txt, TRUE, sz);
         drawcolorcodedstring([o_x + (s_x - txtw) * 0.5, o_y + s_y + NS_MARGIN * 0.5], txt, sz, a, DRAWFLAG_NORMAL);
 
+        float confirmed = if(table) ns_confirmed2 else ns_confirmed1;
+        float confirmedOther = if(table) ns_confirmed1 else ns_confirmed2;
+
         for(var i = 0; i < ns_numoptions; ++i) {
-            var t = ns_options[i];
+            var sidx = i + NS_MAX_OPTIONS * table;
+            var t = ns_options[sidx];
+
+            if(t < 0)
+                break;
+
             vector p;
-            float sidx = i + ns_numoptions * table;
             float a2 = ns_selalpha[sidx];
-            float confirmed = if(table) ns_confirmed2 else ns_confirmed1;
-            float confirmedOther = if(table) ns_confirmed1 else ns_confirmed2;
-            float isConfirmed = i == confirmed;
+            float isConfirmed = t == confirmed;
             float isSelected = i == ns_selected && ns_selected_in == table;
-            vector clr = if((confirmed < 0 || isConfirmed || isSelected) && (i != confirmedOther || ns_options[i] == HG_RANDOM))
+
+            vector clr = if((confirmed < 0 || isConfirmed || isSelected) && (t != confirmedOther || t == HG_RANDOM))
                 HG_TypeToColor(t) * (0.5 + 0.5 * a2)
             else
                 '0.1 0.1 0.1';
@@ -126,19 +132,19 @@ void NS_Draw(void) {
 
 void NS_ConfirmSelection(void) {
     if(ns_selected_in) {
-        ns_confirmed2 = ns_selected;
-        if(ns_confirmed2 == ns_confirmed1 && ns_options[ns_confirmed2] != HG_RANDOM)
+        ns_confirmed2 = ns_options[NS_MAX_OPTIONS + ns_selected];
+        if(ns_confirmed2 == ns_confirmed1 && ns_confirmed2 != HG_RANDOM)
             ns_confirmed1 = -1;
     } else {
-        ns_confirmed1 = ns_selected;
-        if(ns_confirmed1 == ns_confirmed2 && ns_options[ns_confirmed1] != HG_RANDOM)
+        ns_confirmed1 = ns_options[ns_selected];
+        if(ns_confirmed1 == ns_confirmed2 && ns_confirmed1 != HG_RANDOM)
             ns_confirmed2 = -1;
     }
 
     if(!g_nadgets_double || (ns_confirmed1 >= 0 && ns_confirmed2 >= 0)) {
-        var cmd = strcat("cmd picknade ", HG_TypeToName(ns_options[ns_confirmed1]));
+        var cmd = strcat("cmd picknade ", HG_TypeToName(ns_confirmed1));
         if(ns_confirmed2 >= 0)
-            cmd = strcat(cmd, " ", HG_TypeToName(ns_options[ns_confirmed2]));
+            cmd = strcat(cmd, " ", HG_TypeToName(ns_confirmed2));
         cmd = strcat(cmd, "; cmd join\n");
         localcmd(cmd);
         ns_active = FALSE;
@@ -191,7 +197,11 @@ float NS_InputEvent(float bInputType, float nPrimary, float nSecondary) {
 }
 
 void Net_ReadNadgetSelect(void) {
-    var opts = ReadString();
+    string opts_pri, opts_sec;
+
+    opts_pri = ReadString();
+    if(g_nadgets_double)
+        opts_sec = ReadString();
 
     if(isdemo())
         return;
@@ -202,18 +212,30 @@ void Net_ReadNadgetSelect(void) {
     }
 
     ns_width = 0;
-    ns_numoptions = tokenizebyseparator(opts, " ");
+    ns_numoptions = 0;
 
-    drawfont = sbar_bigfont;
-    for(var i = 0; i < ns_numoptions; ++i) {
-        ns_options[i] = HG_NameToType(argv(i));
-        if(!ns_active) {
-            ns_selalpha[i] = 0;
-            ns_selalpha[i + ns_numoptions] = 0;
+    using(drawfont = sbar_bigfont) for(var table = 0; table < 2; ++table) {
+        ns_numoptions = max(ns_numoptions, tokenizebyseparator(if(table) opts_sec else opts_pri, " "));
+
+        for(var i = 0; i < NS_MAX_OPTIONS; ++i) {
+            var typename = argv(i);
+            var idx = i + table * NS_MAX_OPTIONS;
+            var valid = (typename != "");
+
+            if(valid)
+                ns_options[idx] = HG_NameToType(typename);
+            else
+                ns_options[idx] = -1;
+
+            if(!ns_active)
+                ns_selalpha[idx] = 0;
+
+            if(!valid)
+                continue;
+
+            ns_width = max(ns_width, NS_SCALE + stringwidth_svn(HG_TypeToExpandedName(ns_options[idx]), FALSE, [NS_SCALE, NS_SCALE]));
         }
-        ns_width = max(ns_width, NS_SCALE + stringwidth_svn(HG_TypeToExpandedName(ns_options[i]), FALSE, [NS_SCALE, NS_SCALE]));
     }
-    drawfont = sbar_font;
 
     ns_height = NS_SCALE * ns_numoptions + NS_MARGIN;
     ns_width += NS_MARGIN;

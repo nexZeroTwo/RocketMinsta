@@ -32,6 +32,7 @@ void HG_Bait_Body_Boom(entity body);
 float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc);
 void HG_Shield_Adept_ExtendRenew(entity plr);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
+string HG_SelectableTypes(float issecondary);
 
 .vector org_explosion;
 .float nextparticle;

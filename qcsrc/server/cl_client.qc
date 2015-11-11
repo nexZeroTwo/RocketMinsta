@@ -1453,7 +1453,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	WriteByte(MSG_ENTITY, sv_oldfag);
     WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
     if(g_nadgets) {
-        WriteByte(MSG_ENTITY, (CVAR_STR(g_nadgets_type_selectable) != ""));
+        WriteByte(MSG_ENTITY, (HG_SelectableTypes(FALSE) != ""));
         WriteByte(MSG_ENTITY, g_nadgets_double);
     }
     WriteByte(MSG_ENTITY, g_freeze);

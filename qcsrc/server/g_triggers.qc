@@ -2041,6 +2041,9 @@ void spawnfunc_func_killcredit(void) {
 void spawnfunc_trigger_relay_chance(void) {
     self.classname = "trigger_relay";
 
+    if(!self.cnt)
+        self.cnt = 0.5;
+
     self.use = inline void(void) {
         if(random() < self.cnt)
             SUB_UseTargets();
