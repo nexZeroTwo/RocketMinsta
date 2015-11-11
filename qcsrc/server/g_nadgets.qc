@@ -1148,7 +1148,7 @@ void HG_Grenade_Damage(entity inflictor, entity attacker, float damage, float de
 
 float HG_PlayerGrenadeType(entity e) {
     float picked = HG_NameToType(CVAR_STR(g_nadgets_type));
-    float argc = tokenize_console(CVAR_STR(g_nadgets_type_selectable));
+    float argc = tokenize_console(HG_SelectableTypes(hg_context_isalt));
     float i;
     
     if(argc)
@@ -2853,18 +2853,31 @@ void HG_PlayerJoin() {
     HG_UpdateDetonables();
 }
 
+string HG_SelectableTypes(float issecondary) {
+    if(!g_nadgets_double)
+        return CVAR(g_nadgets_type_selectable);
+
+    if(issecondary)
+        return CVAR(g_nadgets_type_selectable_secondary);
+
+    return CVAR(g_nadgets_type_selectable_primary);
+}
+
 void HG_WriteNadgetSelect(void) {
     msg_entity = self;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_NADGETSELECT);
-    WriteString(MSG_ONE, CVAR_STR(g_nadgets_type_selectable));
+    WriteString(MSG_ONE, HG_SelectableTypes(FALSE));
+
+    if(g_nadgets_double)
+        WriteString(MSG_ONE, HG_SelectableTypes(TRUE));
 }
 
 float HG_ShowMenu(float always) {
     if((self.hg_type1_picked && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
-    if(g_nadgets && CVAR_STR(g_nadgets_type_selectable) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked)) && clienttype(self) == CLIENTTYPE_REAL) {
+    if(g_nadgets && HG_SelectableTypes(FALSE) != "" && (always || !self.hg_type1_picked || (g_nadgets_double && !self.hg_type2_picked)) && clienttype(self) == CLIENTTYPE_REAL) {
         HG_WriteNadgetSelect();
         return TRUE;
     }

@@ -560,7 +560,7 @@ void SV_ParseClientCommand(string s) {
         }
 
         HG_DO_IN_ALL_CONTEXTS({
-            argc = tokenize_console(CVAR_STR(g_nadgets_type_selectable));
+            argc = tokenize_console(HG_SelectableTypes(hg_context_isalt));
             success = FALSE;
             t = if(hg_context_isalt) t2 else t1;
 
