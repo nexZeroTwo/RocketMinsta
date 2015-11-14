@@ -326,7 +326,7 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
         case "announce": {
             var msg = IRC_IRC2DP(substring(cmdline, argv_start_index(1), strlen(cmdline)));
             bprint("\x01^7", msg, "\n");
-            IRC_Announce(irc.cnt, irc.target, msg);
+            // IRC_Announce(irc.cnt, irc.target, msg);
             break;
         }
         
@@ -347,6 +347,14 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
 
 float IRC_IsAdmin(string mask) {
     float i, argc = tokenizebyseparator(CVAR_STR(sv_ircbot_admin_list), " ");
+    for(i = 0; i < argc; ++i)
+        if(IRC_MaskMatches(mask, argv(i)))
+            return TRUE;
+    return FALSE;
+}
+
+float IRC_IsIgnored(string mask) {
+    float i, argc = tokenizebyseparator(CVAR_STR(sv_ircbot_ignore_list), " ");
     for(i = 0; i < argc; ++i)
         if(IRC_MaskMatches(mask, argv(i)))
             return TRUE;
@@ -377,8 +385,13 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "CHANNEL") {
         if(CVAR(sv_ircbot_chat_irc2game))
         if(strtolower(argv(0)) == irc.target) {
-            string msg = IRC_IRC2DP(argv(1));
-            
+            string msg = argv(1);
+
+            if(IRC_IsIgnored(src))
+                return;
+
+            msg = IRC_IRC2DP(msg);
+
             if(CVAR(sv_ircbot_chat_irc2game_require_highlight)) {
                 string mynick = IRC_CurrentNick(handle);
                 float nl = strlen(mynick);
@@ -408,14 +421,20 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         // /me for borked libircclient
         if(CVAR(sv_ircbot_chat_irc2game))
         if(!CVAR(sv_ircbot_chat_irc2game_require_highlight))
-        if(substring(argv(0), 0, 7) == "ACTION ")
-            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(argv(0), 7, strlen(argv(0)))), "\n");
+        if(substring(argv(0), 0, 7) == "ACTION ") {
+            string msg = argv(0);
+            if(!IRC_IsIgnored(src))
+                bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(msg, 7, strlen(msg))), "\n");
+        }
     } else if(event == "ACTION") {
         // /me for unborked libircclient
         if(CVAR(sv_ircbot_chat_irc2game))
         if(!CVAR(sv_ircbot_chat_irc2game_require_highlight))
-        if(strtolower(argv(0)) == irc.target)
-            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(argv(1)), "\n");
+        if(strtolower(argv(0)) == irc.target) {
+            string msg = argv(1);
+            if(!IRC_IsIgnored(src))
+                bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(msg), "\n");
+        }
     } else if(event == "KICK") {
         if(CVAR(sv_ircbot_channel_auto_rejoin))
         if(argv(1) == IRC_CurrentNick(handle)) {
