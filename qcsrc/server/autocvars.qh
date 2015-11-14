@@ -1630,6 +1630,7 @@ string autocvar_sv_ip2country_server;
 float autocvar_sv_ircbot;
 float autocvar_sv_ircbot_admin_allow_cmd;
 string autocvar_sv_ircbot_admin_list;
+string autocvar_sv_ircbot_ignore_list;
 float autocvar_sv_ircbot_announce_bans;
 float autocvar_sv_ircbot_announce_game_events;
 float autocvar_sv_ircbot_announce_gameover;
