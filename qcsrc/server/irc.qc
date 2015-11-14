@@ -322,10 +322,17 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                 break;
             } else goto help;
         }
+
+        case "announce": {
+            var msg = IRC_IRC2DP(substring(cmdline, argv_start_index(1), strlen(cmdline)));
+            bprint("\x01^7", msg, "\n");
+            IRC_Announce(irc.cnt, irc.target, msg);
+            break;
+        }
         
         default: {
 :help
-            s = "Available commands: status kickban ban bans unban";
+            s = "Available commands: status kickban ban bans unban announce";
             if(CVAR(sv_ircbot_admin_allow_cmd))
                 s = strcat(s, " cmd");
             IRC_Notice(handle, nick, s);
