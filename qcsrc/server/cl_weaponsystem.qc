@@ -344,7 +344,7 @@ float CL_Weaponentity_CustomizeEntityForClient()
 		if(other.enemy == self.owner)
 			self.viewmodelforclient = other;
 
-    self.alpha = Client_CalculateAlpha(self.owner, other);
+    self.alpha = Client_CalculateAlpha(self.owner, world);
 	return (self.alpha > 0);
 }
 
