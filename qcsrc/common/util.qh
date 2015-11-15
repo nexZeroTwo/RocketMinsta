@@ -219,3 +219,5 @@ string Team_ColorNameLowerCase(float t);
 string TeamName(float t);
 string ColoredTeamName(float t);
 #endif
+
+float chr_in_str(float c, string str);

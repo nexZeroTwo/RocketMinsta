@@ -32,6 +32,7 @@ campaign.qh
 ../common/ip2c.qh
 ../common/nadgets.qh
 ../common/buffs.qh
+../common/lazyjson.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
@@ -200,6 +201,7 @@ func_breakable.qc
 ../common/ip2c.qc
 ../common/nadgets.qc
 ../common/buffs.qc
+../common/lazyjson.qc
 ip2c.qc
 monsters/defs.qc
 monsters/fight.qc

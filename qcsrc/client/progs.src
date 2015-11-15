@@ -21,6 +21,7 @@ csqc_builtins.qc
 ../common/dprm.qh
 ../common/nadgets.qh
 ../common/buffs.qh
+../common/lazyjson.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -89,3 +90,4 @@ bgmscript.qc
 ../common/interpolation.qc
 ../common/nadgets.qc
 ../common/buffs.qc
+../common/lazyjson.qc

@@ -1367,7 +1367,7 @@ void GameCommand(string msg)
 			localcmd("_userbind_call userbind7_press\n");
 		else
 			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
-	}
+    }
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
