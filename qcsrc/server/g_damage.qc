@@ -1477,8 +1477,9 @@ void Fire_ApplyDamage(entity e)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
 
-    if(!e.fire_owner.iscreature && e.fire_owner.classname != "jailbreak_torture")
-        e.fire_endtime = 0;
+    // someone please remind me why I did this?
+    // if(!e.fire_owner.iscreature && e.fire_owner.classname != "jailbreak_torture")
+        // e.fire_endtime = 0;
 
 	if not(Fire_IsBurning(e))
 		return;

@@ -3324,6 +3324,9 @@ void UnmarkAway(entity pl)
     if(!pl.is_away)
         return;
     
+    if(time - pl.afkmarktime < 0.5)
+        return;
+
     stuffcmd(pl, "set _cl_afkstate 0\n");
     
     bprint(pl.netname, " ^4is back\n");

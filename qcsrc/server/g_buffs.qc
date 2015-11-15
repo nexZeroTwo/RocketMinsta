@@ -364,6 +364,27 @@ float Buffs_Present(entity p, float b) {
     return FALSE;
 }
 
+void Buffs_Notify(entity plr, float bfs, float tm) {
+    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
+    string tn = if(tm) strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") else "";
+
+    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
+    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
+    sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
+}
+
+float Buffs_Give(entity plr, float bfs, float tm) {
+    bfs &~= plr.buffs;
+
+    if(!bfs)
+        return 0;
+
+    plr.buffs |= bfs;
+    Buffs_Notify(plr, bfs, tm);
+
+    return bfs;
+}
+
 float Buffs_Model_Send(entity to, float sf) {
     entity o = self.owner;
 
@@ -939,13 +960,9 @@ void Buffs_ReaperFrag(entity targ, entity attacker) {
     if(!Buffs_Present(attacker, BUFF_REAPER) && !Buffs_Present(targ, BUFF_REAPER))
         return;
 
-    var newbuffs = attacker.buffs | targ.buffs;
-    newbuffs &~= attacker.buffs | BUFF_REAPER | CVAR(g_buffs_reaper_buff_banmask);
-
-    if(newbuffs) {
-        Buffs_BuffPickup_Notify(attacker, newbuffs, 0);
-        BUFFS_GIVE(attacker, newbuffs);
-    }
+    var newbuffs = targ.buffs;
+    newbuffs &~= BUFF_REAPER | CVAR(g_buffs_reaper_buff_banmask);
+    Buffs_Give(attacker, newbuffs, 0);
 }
 
 #define meodp_rand1 health
@@ -1303,15 +1320,6 @@ void Buffs_BuffPickup_Reset(void) {
     Buffs_Model_Update(self);
 }
 
-void Buffs_BuffPickup_Notify(entity plr, float bfs, float tm) {
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
-    string tn = if(tm) strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") else "";
-
-    bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
-    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
-    sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
-}
-
 void Buffs_BuffPickup_GiveTo(entity plr) {
     if(self.owner || !Buffs_BuffPickup_PickupAllowed(self, plr))
         return;
@@ -1322,8 +1330,7 @@ void Buffs_BuffPickup_GiveTo(entity plr) {
     if(g_buffs_replace)
         plr.buffs = 0;
 
-    Buffs_BuffPickup_Notify(plr, self.buffs, self.team);
-    BUFFS_GIVE(plr, self.buffs);
+    Buffs_Give(plr, self.buffs, self.team);
 }
 
 void Buffs_BuffPickup_Touch(void) {
