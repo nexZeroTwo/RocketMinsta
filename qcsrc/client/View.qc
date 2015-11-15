@@ -635,6 +635,8 @@ void CSQC_UpdateView(float w, float h)
 	// next R_RenderScene call
 	drawstring('0 0 0', "", '1 1 0', '1 1 1', 0, 0);
 
+    Sbar_DrawTintEffects();
+
 	// draw 2D entities
 
     VisualDamage_PreDraw();
