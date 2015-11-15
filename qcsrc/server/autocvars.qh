@@ -1802,6 +1802,10 @@ float autocvar_g_player_view_offset;
 float autocvar_g_player_crouch_view_offset;
 float autocvar_g_player_dont_block_teammates;
 float autocvar_sv_shownoobstat;
+float autocvar_g_lava_damage;
+float autocvar_g_lava_burn_damage;
+float autocvar_g_lava_burn_time;
+float autocvar_g_slime_damage;
 
 #ifdef RM_SUPPORT_GHOST_OBSERVERS
 float autocvar_sv_ghost_observers;

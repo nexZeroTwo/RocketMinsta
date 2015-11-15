@@ -43,7 +43,11 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/lava.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 6 * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_lava_damage) * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+
+                        if(CVAR(g_lava_burn_damage)) {
+                            Fire_AddDamage(self, world, CVAR(g_lava_burn_damage) * self.waterlevel, CVAR(g_lava_burn_time), DEATH_LAVA);
+                        }
 					}
 					else if (self.watertype == CONTENT_SLIME)
 					{
@@ -52,7 +56,7 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/slime.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 2 * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_slime_damage) * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
 					}
 				}
 			}
