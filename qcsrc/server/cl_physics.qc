@@ -669,6 +669,7 @@ void SV_PlayerPhysics()
                 UnmarkAway(self);
         }
 	}
+
 	buttons_prev = self.buttons_old;
 	self.buttons_old = buttons;
 	self.movement_old = self.movement;
