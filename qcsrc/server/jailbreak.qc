@@ -579,7 +579,7 @@ void JB_Torture_Zap() {
 	sound(self, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
 	
 	FireRailgunBullet(self.origin, self.origin + a * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
-    W_Zapper_Attack2_Effect(self.team, self.origin, trace_endpos);
+    W_Zapper_Attack2_Effect(self.team, self.origin, self.origin, WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos));
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))

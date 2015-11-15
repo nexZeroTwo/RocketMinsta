@@ -261,7 +261,7 @@ void W_Zapper_Attack1(void) {
     self.zapper_beam = e;
 }
 
-void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
+void W_Zapper_Attack2_Effect(float ateam, vector from, vector from_real, vector to) {
     WriteByte(MSG_BROADCAST, SVC_TEMPENTITY);
     WriteByte(MSG_BROADCAST, TE_CSQC_ZAPPERLIGHTNING);
     
@@ -269,9 +269,9 @@ void W_Zapper_Attack2_Effect(float ateam, vector from, vector to) {
     WriteCoord(MSG_BROADCAST, from_x);
     WriteCoord(MSG_BROADCAST, from_y);
     WriteCoord(MSG_BROADCAST, from_z);
-    WriteCoord(MSG_BROADCAST, w_shotorg_x);
-    WriteCoord(MSG_BROADCAST, w_shotorg_y);
-    WriteCoord(MSG_BROADCAST, w_shotorg_z);
+    WriteCoord(MSG_BROADCAST, from_real_x);
+    WriteCoord(MSG_BROADCAST, from_real_y);
+    WriteCoord(MSG_BROADCAST, from_real_z);
     WriteCoord(MSG_BROADCAST, to_x);
     WriteCoord(MSG_BROADCAST, to_y);
     WriteCoord(MSG_BROADCAST, to_z);
@@ -354,7 +354,7 @@ void W_Zapper_Attack2(void) {
     W_Accuracy_RegisterShot(self, self.weapon);
     W_Accuracy_RegisterHit(self, targ, self.weapon);
 
-    W_Zapper_Attack2_Effect(self.team, w_shotorg_visual, end_visual);
+    W_Zapper_Attack2_Effect(self.team, w_shotorg_visual, w_shotorg, end_visual);
 
     if(targ.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
         Damage_DamageInfo(end, damage, 0, 0, force * WarpZone_trace_dir, WEP_ZAPPER | HITTYPE_SECONDARY, self);

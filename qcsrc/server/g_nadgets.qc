@@ -1348,7 +1348,7 @@ void HG_Shield_Discharge_Think(void) {
                  damage * CVAR(g_nadgets_shield_damage_store_forcefactor), HG_SHIELD | HITTYPE_SECONDARY, targ);
 
     W_SetHitscanVisuals(self.owner, end);
-    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, end_visual);
+    W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, w_shotorg, end_visual);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_Present(self.owner, BUFF_MEDIC))) {
         HG_Shield_Discharge_Arc(self.owner, targ, damage);
@@ -2516,11 +2516,8 @@ void HG_Sentry_Trigger(void) {
             vector force = c_frc * dir;
 
             Damage(targ, self, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY, endpos, force);
-            
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
-
-            using(w_shotorg = o)
-                W_Zapper_Attack2_Effect(self.team, o, end_visual);
+            W_Zapper_Attack2_Effect(self.team, o, o, end_visual);
 
             if(targ.solid == SOLID_BSP && !noimpact)
                 Damage_DamageInfo(endpos, c_dmg, 0, 0, force, WEP_ZAPPER | HITTYPE_SECONDARY, self);
