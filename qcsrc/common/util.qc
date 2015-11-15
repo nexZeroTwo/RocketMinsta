@@ -1840,3 +1840,17 @@ float cvar_altertype(string varname, float setflags, float unsetflags) {
 
 #define CVAR_WATCH(varname) cvar_altertype(varname, CVAR_TYPEFLAG_WATCHED, 0)
 #define CVAR_UNWATCH(varname) cvar_altertype(varname, 0, CVAR_TYPEFLAG_WATCHED)
+
+float chr_in_str(float c, string str) {
+    for(var i = 0 ;; ++i) {
+        var schr = str2chr(str, i);
+
+        if(!schr)
+            return FALSE;
+
+        if(c == schr)
+            return TRUE;
+    }
+
+    return FALSE;
+}

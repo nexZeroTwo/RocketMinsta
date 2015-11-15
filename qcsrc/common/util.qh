@@ -212,3 +212,5 @@ string ColoredTeamName(float t);
 
 void GameCommand(string);
 void backtrace(string msg);
+
+float chr_in_str(float c, string str);

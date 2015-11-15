@@ -21,6 +21,7 @@ csqc_builtins.qc
 ../common/dprm.qh
 ../common/nadgets.qh
 ../common/buffs.qh
+../common/lazyjson.qh
 
 ../warpzonelib/anglestransform.qh
 ../warpzonelib/mathlib.qh
@@ -94,6 +95,7 @@ bgmscript.qc
 ../common/interpolation.qc
 ../common/nadgets.qc
 ../common/buffs.qc
+../common/lazyjson.qc
 
 ../warpzonelib/anglestransform.qc
 ../warpzonelib/mathlib.qc

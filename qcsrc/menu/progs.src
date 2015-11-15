@@ -20,6 +20,7 @@ oo/base.h
 ../common/gametype.qh
 ../common/nadgets.qh
 ../common/dprm.qh
+../common/lazyjson.qh
 
 gamecommand.qh
 menu.qh
@@ -51,4 +52,5 @@ nexuiz/util.qc
 ../common/ip2c.qc
 ../common/gametype.qc            
 ../common/nadgets.qc
+../common/lazyjson.qc
 

@@ -1,0 +1,26 @@
+
+enum {
+    JSON_TYPE_NULL,
+    JSON_TYPE_STRING,
+    JSON_TYPE_NUMBER,
+    JSON_TYPE_BOOL,
+    JSON_TYPE_OBJECT,
+    JSON_TYPE_ARRAY,
+};
+
+typedef float(string key, float idx) json_iter_t;
+
+var json_iter_t json_iter_null;
+
+string json_parser_data;
+float json_parser_offset;
+float json_parser_numtokens;
+
+string json_value_string;
+float json_value_float;
+float json_value_type;
+
+void json_parse_object(json_iter_t iter);
+void json_parse_array(json_iter_t iter);
+void json_parser_init(string data);
+string json_type_name(float type);
