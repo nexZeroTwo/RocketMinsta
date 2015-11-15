@@ -54,9 +54,6 @@ float g_buffs_count;
 
 .float nobuffs;
 
-#define BUFFS_GIVE(p,b) ((p).buffs |= (b))
-#define BUFFS_REMOVE(p,b) ((p).buffs &~= (b))
-
 #define BUFF_RANDOM -1337
 
 typedef void(entity, entity) meodp_death_f;
@@ -87,6 +84,8 @@ float Buffs_NadgetBonusMultiplier(entity);
 void Buffs_BuffPickup_SetInitialCooldown(entity);
 void Buffs_BuffPickup_SetCooldown(entity, float);
 void Buffs_Random_Spawn(void);
+float Buffs_Give(entity, float, float);
+void Buffs_Notify(entity, float, float);
 
 .vector meodp_point_offs;
 .entity meodp_point_ref;
@@ -107,8 +106,6 @@ void Buffs_MEODP_Antilag(entity plr, float t);
 void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
                           vector arcoffset, float range, float mul, float mul_hg, float force,
                           float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield);
-
-void Buffs_BuffPickup_Notify(entity plr, float bfs, float tm);
 
 float g_buffs_meodp;
 
