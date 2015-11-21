@@ -345,3 +345,16 @@ string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
 
 float(float v) fix_int_return_value = #512;
+
+//DP_RM_REGEX
+float(string regex, string input, float offset, float size, float flags) regex_match = #642;
+const RE_IGNORE_CASE            =  1;
+const RE_NO_MATCH               = -1;
+const RE_UNEXPECTED_QUANTIFIER  = -2;
+const RE_UNBALANCED_BRACKETS    = -3;
+const RE_INTERNAL_ERROR         = -4;
+const RE_INVALID_CHARACTER_SET  = -5;
+const RE_INVALID_METACHARACTER  = -6;
+const RE_CAPS_ARRAY_TOO_SMALL   = -7;
+const RE_TOO_MANY_BRANCHES      = -8;
+const RE_TOO_MANY_BRACKETS      = -9;

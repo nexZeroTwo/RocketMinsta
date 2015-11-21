@@ -1883,3 +1883,72 @@ float chr_in_str(float c, string str) {
 
     return FALSE;
 }
+
+string regex_sub_default(string match, string sub) {
+    return sub;
+}
+
+string regex_sub_expand_matches(string match, string sub) {
+    var escaped = FALSE;
+    var newsub = "";
+
+    for(var i = 0, var c = str2chr(sub, 0); c; c = str2chr(sub, ++i)) {
+        if(c == 92) { // '\\'
+            if(escaped) {
+                escaped = FALSE;
+                newsub = strcat(newsub, chr2str(c));
+            } else
+                escaped = TRUE;
+        } else if(escaped) {
+            escaped = FALSE;
+            if(c >= '0' && c <= '9') {
+                newsub = strcat(newsub, argv(c - '0'));
+            } else
+                newsub = strcat(newsub, chr2str(c));
+        } else
+            newsub = strcat(newsub, chr2str(c));
+    }
+
+    return newsub;
+}
+
+float regex_sub_once(string regex, string input, float offset, float reflags, string sub, regex_sub_callback subfunc) {
+    float handled = regex_match(regex, input, offset, 0, reflags);
+    regex_sub_string = input;
+
+    if(handled <= 0)
+        return handled;
+
+    if(argv(0) == "")
+        return 0;
+
+    string match = argv(0);
+    string head = substring(input, 0, argv_start_index(0));
+    string tail = substring(input, argv_end_index(0), strlen(input));
+
+    offset = argv_end_index(0) - 1;
+    sub = subfunc(match, sub);
+    offset += strlen(sub) - strlen(match);
+    regex_sub_string = strcat(head, sub, tail);
+
+    return offset;
+}
+
+float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc) {
+    float offset;
+    regex_sub_string = input;
+
+    for(;;) {
+        var h = regex_sub_once(regex, regex_sub_string, offset, reflags, sub, subfunc);
+
+        if(h <= 0) {
+            if(offset)
+                break;
+            return h;
+        }
+
+        offset = h;
+    }
+
+    return offset;
+}
