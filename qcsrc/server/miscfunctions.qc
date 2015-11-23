@@ -588,7 +588,15 @@ void reptable_make(string replacements) {
 	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
 }
 
-#define IS_WORD_CHAR(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+#define IS_LOWER(c) (c >= 'a' && c <= 'z')
+#define IS_UPPER(c) (c >= 'A' && c <= 'Z')
+#define IS_ALPHA(c) (IS_LOWER(c) || IS_UPPER(c))
+#define IS_NUMERIC(c) (c >= '0' && c <= '9')
+#define IS_ALNUM(c) (IS_ALPHA(c) || IS_NUMERIC(c))
+#define IS_WORD_CHAR(c) IS_ALNUM(c)
+
+#define CHR_UPR(c) (if(c > 'Z') c + 'A' - 'a' else c)
+#define CHR_LWR(c) (if(c < 'a') c - 'A' + 'a' else c)
 
 float is_escaped_caret(string msg, float idx) {
     var yep = TRUE;
@@ -596,6 +604,45 @@ float is_escaped_caret(string msg, float idx) {
     if(!i)
         return FALSE;
     return yep;
+}
+
+string mimic_case(string match, string sub) {
+    float lower, total, i, slen, c;
+    slen = strlen(sub);
+
+    for(i = 0, c = str2chr(match, i); c; c = str2chr(match, ++i)) {
+        if(IS_LOWER(c)) {
+            ++lower;
+            ++total;
+        } else if(IS_UPPER(c)) {
+            ++total;
+        }
+    }
+
+    for(i = 0, c = str2chr(sub, i); c; c = str2chr(sub, ++i)) {
+        var n = c;
+
+        if(IS_ALPHA(c)) {
+            if(random() * total < lower)
+                n = CHR_LWR(c);
+            else
+                n = CHR_UPR(c);
+        }
+
+        if(n != c) {
+            sub = strcat(
+                substring(sub, 0, i),
+                chr2str(n),
+                substring(sub, i+1, slen)
+            );
+        }
+    }
+
+    return sub;
+}
+
+string regex_sub_autoreplace(string match, string sub) {
+    return mimic_case(match, regex_sub_expand_matches(match, sub));
 }
 
 string apply_autoreplace(string msg) {
@@ -628,7 +675,7 @@ string apply_autoreplace(string msg) {
                     continue;
 
                 string p = substring(msg, i, len);
-                var ofs = regex_sub_once(reptable_src[id], p, 0, RE_IGNORE_CASE, reptable_rep[id], regex_sub_expand_matches);
+                var ofs = regex_sub_once(reptable_src[id], p, 0, RE_IGNORE_CASE, reptable_rep[id], regex_sub_autoreplace);
 
                 if(ofs >= 0) {
                     var head = substring(msg, 0, i);
