@@ -502,11 +502,15 @@ string reptable_src[MAXREPS];
 string reptable_rep[MAXREPS];
 float reptable_srclen[MAXREPS];
 float reptable_replen[MAXREPS];
-float reptable_wordmode[MAXREPS];
+float reptable_matchmode[MAXREPS];
 float reptable_count;
 float reptable_init;
 float reptable_maxsrclen;
 float reptable_minsrclen;
+
+#define MATCHMODE_NORMAL 0
+#define MATCHMODE_WORD   1
+#define MATCHMODE_REGEX  2
 
 #define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
 
@@ -535,7 +539,7 @@ void reptable_free() {
 		strunzone(reptable_rep[i]);
 		reptable_srclen[i] = 0;
 		reptable_replen[i] = 0;
-		reptable_wordmode[i] = FALSE;
+		reptable_matchmode[i] = FALSE;
 	}
 	reptable_count = 0;
 	reptable_maxsrclen = 0;
@@ -553,20 +557,26 @@ void reptable_make(string replacements) {
 	for(i = 0; i < reptable_count; ++i) {
 		string id = argv(i);
         
-        if(substring(id, 0, 1) == "%") {
+        var mm = switch(str2chr(id, 0)) {
+            case '%': MATCHMODE_WORD,
+            case '@': MATCHMODE_REGEX,
+            default : MATCHMODE_NORMAL
+        };
+
+        reptable_matchmode[i] = mm;
+
+        if(mm != MATCHMODE_NORMAL)
             id = substring(id, 1, strlen(id) - 1);
-            reptable_wordmode[i] = TRUE;
-        }
         
 		string src = strzone(getsrc(id));
 		string rep = strzone(getrep(id));
-		float srclen = strlen(src);
+		float srclen = if(mm == MATCHMODE_REGEX) 9001 else strlen(src);
 		float replen = strlen(rep);
 		
 		reptable_src[i] = src;
 		reptable_rep[i] = rep;
-		reptable_srclen[i] = strlen(src);
-		reptable_replen[i] = strlen(rep);
+		reptable_srclen[i] = srclen;
+		reptable_replen[i] = replen;
 		
 		if(srclen > reptable_maxsrclen)
 			reptable_maxsrclen = srclen;
@@ -576,6 +586,63 @@ void reptable_make(string replacements) {
 	}
 	
 	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
+}
+
+#define IS_LOWER(c) (c >= 'a' && c <= 'z')
+#define IS_UPPER(c) (c >= 'A' && c <= 'Z')
+#define IS_ALPHA(c) (IS_LOWER(c) || IS_UPPER(c))
+#define IS_NUMERIC(c) (c >= '0' && c <= '9')
+#define IS_ALNUM(c) (IS_ALPHA(c) || IS_NUMERIC(c))
+#define IS_WORD_CHAR(c) IS_ALNUM(c)
+
+#define CHR_UPR(c) (if(c > 'Z') c + 'A' - 'a' else c)
+#define CHR_LWR(c) (if(c < 'a') c - 'A' + 'a' else c)
+
+float is_escaped_caret(string msg, float idx) {
+    var yep = TRUE;
+    for(var i = 0, var c = str2chr(msg, idx); c == '^'; c = str2chr(msg, idx + (--i)), yep = !yep);
+    if(!i)
+        return FALSE;
+    return yep;
+}
+
+string mimic_case(string match, string sub) {
+    float lower, total, i, slen, c;
+    slen = strlen(sub);
+
+    for(i = 0, c = str2chr(match, i); c; c = str2chr(match, ++i)) {
+        if(IS_LOWER(c)) {
+            ++lower;
+            ++total;
+        } else if(IS_UPPER(c)) {
+            ++total;
+        }
+    }
+
+    for(i = 0, c = str2chr(sub, i); c; c = str2chr(sub, ++i)) {
+        var n = c;
+
+        if(IS_ALPHA(c)) {
+            if(random() * total < lower)
+                n = CHR_LWR(c);
+            else
+                n = CHR_UPR(c);
+        }
+
+        if(n != c) {
+            sub = strcat(
+                substring(sub, 0, i),
+                chr2str(n),
+                substring(sub, i+1, slen)
+            );
+        }
+    }
+
+    return sub;
+}
+
+string regex_sub_autoreplace(string match, string sub) {
+    return mimic_case(match, regex_sub_expand_matches(match, sub));
 }
 
 string apply_autoreplace(string msg) {
@@ -588,10 +655,7 @@ string apply_autoreplace(string msg) {
 			return msg;
 		reptable_make(reps);
 	}
-	
-    float a = 97,  A = 65;
-    float z = 122, Z = 90;
-    
+
 	float i, len;
 	len = strlen(msg);
 	
@@ -599,46 +663,62 @@ string apply_autoreplace(string msg) {
 		return msg;		// no point
 		
 	for(i = 0; i < len; ++i) {
-		//print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
-		
 		FOR_EACH_REPID(id) {
 			float slen = reptable_srclen[id];
-			
-			if(len - i < slen)
-				continue;
-			
-			string p = strtolower(substring(msg, i, slen));
-			//print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
-			
-			if(p == reptable_src[id]) {
-				//print("apply_autoreplace: success\n");
-				
-                if(reptable_wordmode[id]) {
+            float mm = reptable_matchmode[id];
+
+            if(reptable_matchmode[id] == MATCHMODE_REGEX) {
+                if(!checkextension("DP_RM_REGEX"))
+                    continue;
+
+                if(is_escaped_caret(msg, i))
+                    continue;
+
+                string p = substring(msg, i, len);
+                var ofs = regex_sub_once(reptable_src[id], p, 0, RE_IGNORE_CASE, reptable_rep[id], regex_sub_autoreplace);
+
+                if(ofs >= 0) {
+                    var head = substring(msg, 0, i);
+                    msg = strcat(head, regex_sub_string);
+                    len = strlen(msg);
+                    i += ofs - 1;
+                }
+
+                continue;
+            } else {
+                string p = strtolower(substring(msg, i, slen));
+                if(len - i < slen)
+                    continue;
+
+                if(p != reptable_src[id])
+                    continue;
+
+                if(reptable_matchmode[id] == MATCHMODE_WORD) {
                     float c;
                     
                     if(i > 0) {
                         c = str2chr(msg, i - 1);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                     
                     if(i + slen < len) {
                         c = str2chr(msg, i + slen);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                 }
-                
-				string head = substring(msg, 0, i);
-				string tail = substring(msg, i + slen, len);
-				msg = strcat(head, reptable_rep[id], tail);
-				
-				float rlen = reptable_replen[id];
-				i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
-				len += rlen - slen;
-				
-				break;
-			}
+            }
+
+			string head = substring(msg, 0, i);
+			string tail = substring(msg, i + slen, len);
+			msg = strcat(head, reptable_rep[id], tail);
+
+			float rlen = reptable_replen[id];
+			i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
+			len += rlen - slen;
+
+			break;
 		}
 	}
 	

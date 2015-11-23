@@ -532,7 +532,7 @@ void SV_PlayerPhysics()
 	//string c;
     
     isplayer = (self.classname == "player");
-    
+
     if(!self.is_away) {
     	if(CVAR(sv_autoaway) && time - self.parm_idlesince >= CVAR(sv_autoaway) * 60 && !PlayerIsDead(self))
     		MarkAway(self, 0);
