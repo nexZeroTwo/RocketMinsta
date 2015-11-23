@@ -588,6 +588,16 @@ void reptable_make(string replacements) {
 	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
 }
 
+#define IS_WORD_CHAR(c) ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+
+float is_escaped_caret(string msg, float idx) {
+    var yep = TRUE;
+    for(var i = 0, var c = str2chr(msg, idx); c == '^'; c = str2chr(msg, idx + (--i)), yep = !yep);
+    if(!i)
+        return FALSE;
+    return yep;
+}
+
 string apply_autoreplace(string msg) {
 	if not(CVAR(sv_chat_autoreplace))
 		return msg;
@@ -614,30 +624,17 @@ string apply_autoreplace(string msg) {
                 if(!checkextension("DP_RM_REGEX"))
                     continue;
 
-                if(i > 0) {
-                    var c = str2chr(msg, i - 1);
-                    if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
-                        continue;
-                }
-
-                var c = str2chr(msg, i);
-                for(slen = 0; (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'); c = str2chr(msg, ++slen + i));
-                if(!slen)
+                if(is_escaped_caret(msg, i))
                     continue;
 
-                string p = substring(msg, i, slen);
+                string p = substring(msg, i, len);
                 var ofs = regex_sub_once(reptable_src[id], p, 0, RE_IGNORE_CASE, reptable_rep[id], regex_sub_expand_matches);
 
-                if(ofs > 0) {
+                if(ofs >= 0) {
                     var head = substring(msg, 0, i);
-                    var tail = substring(msg, i + slen, len);
-                    msg = strcat(head, regex_sub_string, tail);
-
-                    float rlen = strlen(regex_sub_string);
-                    i += rlen - 1;
-                    len += rlen - slen;
-
-                    continue;
+                    msg = strcat(head, regex_sub_string);
+                    len = strlen(msg);
+                    i += ofs - 1;
                 }
 
                 continue;
@@ -654,13 +651,13 @@ string apply_autoreplace(string msg) {
                     
                     if(i > 0) {
                         c = str2chr(msg, i - 1);
-                        if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                     
                     if(i + slen < len) {
                         c = str2chr(msg, i + slen);
-                        if((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z'))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                 }

@@ -1926,28 +1926,30 @@ float regex_sub_once(string regex, string input, float offset, float reflags, st
     string head = substring(input, 0, argv_start_index(0));
     string tail = substring(input, argv_end_index(0), strlen(input));
 
-    offset = argv_end_index(0) - 1;
+    offset = argv_start_index(0);
     sub = subfunc(match, sub);
-    offset += strlen(sub) - strlen(match);
+    offset += strlen(sub);
     regex_sub_string = strcat(head, sub, tail);
 
     return offset;
 }
 
 float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc) {
-    float offset;
+    float offset, found = FALSE;
     regex_sub_string = input;
 
     for(;;) {
+        var old = regex_sub_string;
         var h = regex_sub_once(regex, regex_sub_string, offset, reflags, sub, subfunc);
 
-        if(h <= 0) {
-            if(offset)
+        if(h < 0) {
+            if(found)
                 break;
             return h;
         }
 
         offset = h;
+        found = TRUE;
     }
 
     return offset;
