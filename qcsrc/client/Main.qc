@@ -1905,6 +1905,7 @@ void Ent_Init()
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
     sv_shownoobstat = ReadByte();
+    sv_showalivestat = ReadByte();
 
     Buffs_LoadModels();
 

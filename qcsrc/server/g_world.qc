@@ -870,6 +870,7 @@ void spawnfunc_worldspawn (void)
     }
     
     sv_shownoobstat = CVAR(sv_shownoobstat);
+    sv_showalivestat = CVAR(sv_showalivestat);
 
     defer(0, fix_team_spawns);
     

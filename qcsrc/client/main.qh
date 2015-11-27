@@ -294,6 +294,7 @@ float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
 float sv_shownoobstat;
+float sv_showalivestat;
 
 float g_nadgets;
 float g_nadgets_double;
