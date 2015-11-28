@@ -1464,6 +1464,7 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
     WriteByte(MSG_ENTITY, sv_shownoobstat);
+    WriteByte(MSG_ENTITY, sv_showalivestat);
 	return TRUE;
 }
 
@@ -3162,6 +3163,7 @@ void() nexball_setstatus;
 
 .float jumpholdtime;
 .float alivetime;
+.float frozentime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3192,7 +3194,7 @@ void PlayerPreThink (void)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
-        if(sv_shownoobstat) {
+        if(sv_shownoobstat || sv_showalivestat) {
             if(!PlayerIsDead(self)) {
                 self.alivetime += frametime;
                 if(self.BUTTON_JUMP)
@@ -3205,6 +3207,8 @@ void PlayerPreThink (void)
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
             if(sv_shownoobstat)
                 PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
+            if(sv_showalivestat)
+                PlayerScore_Set(self, SP_ALIVE, rint(100 * self.alivetime / self.playtime));
         }
     }
 
