@@ -1368,6 +1368,10 @@ void GameCommand(string msg)
 		else
 			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
     }
+    else if(cmd == "vatest") {
+        va_test("sfv", "lel derp", 42, '3 2 1');
+        va_test("fvss", 44, '5 2 6', "lalala", "omgomg");
+    }
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
