@@ -1280,6 +1280,12 @@ void ReadyRestartForce()
 			e.allowedTimeouts = CVAR(sv_timeout_number);
 	}
 
+    FOR_EACH_CLIENT(e) {
+        e.playtime = 0;
+        e.alivetime = 0;
+        e.jumpholdtime = 0;
+    }
+
 	//reset map immediately if this cvar is not set
 	if (!CVAR(sv_ready_restart_after_countdown))
 		reset_map(TRUE);
