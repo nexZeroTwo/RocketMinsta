@@ -1449,7 +1449,7 @@ float ClientInit_SendEntity(entity to, float sf)
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, CVAR(g_balance_armor_blockpercent) * 255.0);
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
-	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_scoreboard_fps_column);
 	WriteByte(MSG_ENTITY, sv_oldfag);
     WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
     if(g_nadgets) {

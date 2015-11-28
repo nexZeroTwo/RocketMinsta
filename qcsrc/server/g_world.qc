@@ -542,7 +542,7 @@ void spawnfunc_worldspawn (void)
 	cvar_set ("_sv_rm_lastvote", ftos (CVAR(_sv_rm_lastvote) - CVAR(_sv_rm_lastservertime)));
     
 	sv_showspecs_extra = CVAR(sv_showspecs_extra);
-	sv_showfps = CVAR(sv_showfps);
+	sv_scoreboard_fps_column = CVAR(sv_scoreboard_fps_column);
 	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
 	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc

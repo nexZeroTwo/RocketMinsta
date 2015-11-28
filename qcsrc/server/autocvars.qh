@@ -1711,7 +1711,7 @@ float autocvar_sv_showdamage;
 float autocvar_sv_showdamage_checklos;
 float autocvar_sv_showdamage_global;
 float autocvar_sv_showdamage_global_checklos;
-float autocvar_sv_showfps;
+float autocvar_sv_scoreboard_fps_column;
 float autocvar_sv_shownames;
 float autocvar_sv_shownames_update;
 float autocvar_sv_showspecs;

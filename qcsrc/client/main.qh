@@ -291,7 +291,7 @@ string sv_rm_commit;
 string sv_motd;
 
 float sv_showspecs_extra;
-float sv_showfps;
+float sv_scoreboard_fps_column;
 float sv_oldfag;
 float sv_scoreboard_noob_column;
 float sv_scoreboard_alive_column;

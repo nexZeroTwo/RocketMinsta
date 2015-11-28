@@ -366,7 +366,7 @@ void SV_ParseClientCommand(string s) {
 		self.speczoom_factor = stof(argv(2));
 		WriteSpectatorInfo(self); 
 	} else if(cmd == "fpsreport") {
-		if not(sv_showfps)
+		if not(sv_scoreboard_fps_column)
 			return;
 		
 		if(!self) return;

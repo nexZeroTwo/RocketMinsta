@@ -493,11 +493,11 @@ void ReloadMenu()
 
 void FPSReporter_Think() {
 	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
-	self.nextthink = time + sv_showfps;
+	self.nextthink = time + sv_scoreboard_fps_column;
 }
 
 void FPSReporter_Init() {
-	if not(sv_showfps)
+	if not(sv_scoreboard_fps_column)
 		return;
 	
 	entity e = spawn();
@@ -1892,7 +1892,7 @@ void Ent_Init()
 
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
-	sv_showfps = ReadByte();
+	sv_scoreboard_fps_column = ReadByte();
 	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
