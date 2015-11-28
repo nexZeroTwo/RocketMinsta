@@ -1901,11 +1901,11 @@ void Ent_Init()
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
-    sv_showacc = ReadByte();
+    sv_scoreboard_acc_column = ReadByte();
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
-    sv_shownoobstat = ReadByte();
-    sv_showalivestat = ReadByte();
+    sv_scoreboard_noob_column = ReadByte();
+    sv_scoreboard_alive_column = ReadByte();
 
     Buffs_LoadModels();
 

@@ -454,8 +454,8 @@ void Cmd_Sbar_Help(float argc)
 string Sbar_DefaultColumnLayout()
 {
 	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_showalivestat) "alive " else "",  if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
-        if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
+		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_scoreboard_alive_column) "alive " else "",  if(sv_scoreboard_noob_column) "noob kdr" else "kdr", strcat(
+        if(sv_scoreboard_acc_column) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
 		" +ft,jb/kills +ft,jb/dths "),
 		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
 		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",

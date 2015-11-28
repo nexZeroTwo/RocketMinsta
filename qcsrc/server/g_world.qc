@@ -859,18 +859,18 @@ void spawnfunc_worldspawn (void)
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
     
-    if(CVAR(sv_showaccuracy)) {
+    if(CVAR(sv_scoreboard_acc_column)) {
         if(g_minstagib)
-            sv_showacc = TRUE;
+            sv_scoreboard_acc_column = TRUE;
         else for(i = WEP_FIRST; i < WEP_COUNT; ++i)
             if(g_weaponarena == pow(2, i-1)) {
-                sv_showacc = TRUE;
+                sv_scoreboard_acc_column = TRUE;
                 break;
             }
     }
     
-    sv_shownoobstat = CVAR(sv_shownoobstat);
-    sv_showalivestat = CVAR(sv_showalivestat);
+    sv_scoreboard_noob_column = CVAR(sv_scoreboard_noob_column);
+    sv_scoreboard_alive_column = CVAR(sv_scoreboard_alive_column);
 
     defer(0, fix_team_spawns);
     

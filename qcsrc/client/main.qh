@@ -293,8 +293,8 @@ string sv_motd;
 float sv_showspecs_extra;
 float sv_showfps;
 float sv_oldfag;
-float sv_shownoobstat;
-float sv_showalivestat;
+float sv_scoreboard_noob_column;
+float sv_scoreboard_alive_column;
 
 float g_nadgets;
 float g_nadgets_double;

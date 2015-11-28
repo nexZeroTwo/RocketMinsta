@@ -773,9 +773,9 @@ float roundstate;
 
 .float vdmg_ignorenext;
 float sv_nicehealth;
-float sv_showacc;
-float sv_shownoobstat;
-float sv_showalivestat;
+float sv_scoreboard_acc_column;
+float sv_scoreboard_noob_column;
+float sv_scoreboard_alive_column;
 
 #define HEAL_PAUSEROT_DEFAULT -1
 
