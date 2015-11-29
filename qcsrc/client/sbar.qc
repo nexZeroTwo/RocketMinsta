@@ -453,17 +453,16 @@ void Cmd_Sbar_Help(float argc)
 
 string Sbar_DefaultColumnLayout()
 {
-	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
-        if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
-		" +ft,jb/kills +ft,jb/dths "),
-		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
-		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
-		"+lms/lives +lms/rank +jb/def +jb/jbs +jb/freed ",
-		"+kh/caps +kh/pckps +kh/kcks ",
-		"?+race/laps ?+race/time ?+race/fastest ",
-		"+as/objectives +nexball/faults +nexball/goals ",
-		strcat("+tdm/dths +tdm/scds ", if(g_freeze) "revs " else "", "+dom,totaldom/takes -lms,race,nexball/score"));
+	return "ping pl fps time cn +ctf/fc name | alive noob kdr acc hfs dmg heal nfs"
+		   " +ft,jb/kills +ft,jb/dths "
+		   "-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds "
+           "-race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds "
+		   "+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns "
+		   "+lms/lives +lms/rank +jb/def +jb/jbs +jb/freed "
+		   "+kh/caps +kh/pckps +kh/kcks "
+		   "?+race/laps ?+race/time ?+race/fastest "
+	       "+as/objectives +nexball/faults +nexball/goals "
+		   "+tdm/dths +tdm/scds revs +dom,totaldom/takes -lms,race,nexball/score";
 }
 
 void Cmd_Sbar_SetFields(float argc)
@@ -543,8 +542,12 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
         } else if(str == "nade") {
+            if(!g_nadgets)
+                continue;
             sbar_field[sbar_num_fields] = SP_NADEMODE;
 		} else if(str == "fps") {
+            if(!sv_scoreboard_fps_column)
+                continue;
 			sbar_field[sbar_num_fields] = SP_FPS;
 		} else if(str == "kd" || str == "kdr" || str == "kdratio" || str == "k/d") {
 			sbar_field[sbar_num_fields] = SP_KDRATIO;
@@ -557,24 +560,45 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_COUNTRY;
 		} else if(str == "time") {
+            if(CVAR(rm_notimer))
+                continue;
 			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
             sbar_field[sbar_num_fields] = SP_DEATHS;
         } else if(str == "scds") {
             sbar_field[sbar_num_fields] = SP_SUICIDES;
         } else if(str == "hfs") {
+            if(!(g_minstagib && CVAR(_g_rocketminsta)))
+                continue;
             sbar_field[sbar_num_fields] = SP_HOOKFRAGS;
         } else if(str == "nfs") {
+            if(!g_nadgets)
+                continue;
             sbar_field[sbar_num_fields] = SP_NADEFRAGS;
         } else if(str == "dmg") {
+            if(g_minstagib)
+                continue;
             sbar_field[sbar_num_fields] = SP_DAMAGE;
         } else if(str == "heal") {
+            if(!sv_scoreboard_heal_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_HEALING;
         } else if(str == "acc") {
+            if(!sv_scoreboard_acc_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_ACCURACY;
         } else if(str == "noob") {
+            if(!sv_scoreboard_noob_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_NOOB;
+        } else if(str == "alive") {
+            if(!sv_scoreboard_alive_column)
+                continue;
+            sbar_field[sbar_num_fields] = SP_ALIVE;
         } else {
+            if(str == "revs" && !g_freeze)
+                continue;
+
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
 					goto found; // sorry, but otherwise fteqcc -O3 miscompiles this and warns about "unreachable code"
@@ -854,6 +878,20 @@ string Sbar_GetField(entity pl, float field)
                 sbar_field_rgb = '0 1 0' + '0 0 1' * ((pro - 90) / 10);
             
             return strcat(ftos(noob), "%");
+            
+        case SP_ALIVE:
+            float alive = pl.scores[SP_ALIVE];
+            
+            if(alive < 70)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(alive / 70, 2);
+            else if(pro < 90)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((alive - 70) / 20);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((alive - 90) / 10);
+
+            return strcat(ftos(alive), "%");
+        
+        
 
 		default:
 			tmp = pl.(scores[field]);

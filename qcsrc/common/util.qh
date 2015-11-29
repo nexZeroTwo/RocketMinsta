@@ -222,3 +222,30 @@ regex_sub_callback regex_sub_default;
 
 float regex_sub_once(string regex, string input, float offset, float reflags, string sub, regex_sub_callback subfunc);
 float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc);
+
+#define VA_INIT \
+    var __va_parm0 = @0; \
+    var __va_parm1 = @1; \
+    var __va_parm2 = @2; \
+    var __va_parm3 = @3; \
+    var __va_parm4 = @4; \
+    var __va_parm5 = @5; \
+    var __va_parm6 = @6; \
+    var __va_parm7 = @7; \
+    var __va_temp = 0;
+
+#define VA_GET_CASTABLE(i) ((__va_temp = (i)), \
+    if(__va_temp == 0) __va_parm0 else \
+    if(__va_temp == 1) __va_parm1 else \
+    if(__va_temp == 2) __va_parm2 else \
+    if(__va_temp == 3) __va_parm3 else \
+    if(__va_temp == 4) __va_parm4 else \
+    if(__va_temp == 5) __va_parm5 else \
+    if(__va_temp == 6) __va_parm6 else \
+    if(__va_temp == 7) __va_parm7 else \
+    (error(strcat("Bad parm index: ", ftos(__va_temp))), __va_parm0) \
+)
+
+#define VA_GET(t,i) ((t)VA_GET_CASTABLE(i))
+
+void va_test(string fmt, ...);

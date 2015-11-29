@@ -497,11 +497,11 @@ void ReloadMenu()
 
 void FPSReporter_Think() {
 	localcmd("cmd fpsreport ", ftos(floor(cl_fps)), "\n");
-	self.nextthink = time + sv_showfps;
+	self.nextthink = time + sv_scoreboard_fps_column;
 }
 
 void FPSReporter_Init() {
-	if not(sv_showfps)
+	if not(sv_scoreboard_fps_column)
 		return;
 	
 	entity e = spawn();
@@ -1372,6 +1372,10 @@ void GameCommand(string msg)
 		else
 			localcmd("say_team enemy seen (^4%p^7 at ^2%y^7); g_waypointsprite_team_danger_p\n");
     }
+    else if(cmd == "vatest") {
+        va_test("sfv", "lel derp", 42, '3 2 1');
+        va_test("fvss", 44, '5 2 6', "lalala", "omgomg");
+    }
 	else
 	{
 		print("Invalid command. For a list of supported commands, try cl_cmd help.\n");
@@ -1900,7 +1904,7 @@ void Ent_Init()
 
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
-	sv_showfps = ReadByte();
+	sv_scoreboard_fps_column = ReadByte();
 	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
@@ -1909,10 +1913,11 @@ void Ent_Init()
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
     sv_nicehealth = ReadShort();
-    sv_showacc = ReadByte();
+    sv_scoreboard_acc_column = ReadByte();
     g_buffs_enabled = ReadShort();
     g_balance_nex_secondary = ReadByte();
-    sv_shownoobstat = ReadByte();
+    sv_scoreboard_noob_column = ReadByte();
+    sv_scoreboard_alive_column = ReadByte();
 
     Buffs_LoadModels();
 

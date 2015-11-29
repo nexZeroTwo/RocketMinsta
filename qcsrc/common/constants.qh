@@ -427,7 +427,7 @@ enumflags {
 const SFL_SORT_PRIO_MASK = SFL_SORT_PRIO_PRIMARY | SFL_SORT_PRIO_SECONDARY;
 
 // this needs to be a precompiler constant
-#define MAX_SCORE 23
+#define MAX_SCORE 24
 
 const MAX_TEAMSCORE = 2;
 const ST_SCORE = 0;
@@ -452,6 +452,7 @@ enum {
     SP_HEALING,
     SP_QUEUE,
     SP_NOOB,
+    SP_ALIVE,
 
     // game mode specific indices are not in common/, but in server/scores_rules.qc!
 };

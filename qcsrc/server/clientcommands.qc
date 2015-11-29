@@ -366,7 +366,7 @@ void SV_ParseClientCommand(string s) {
 		self.speczoom_factor = stof(argv(2));
 		WriteSpectatorInfo(self); 
 	} else if(cmd == "fpsreport") {
-		if not(sv_showfps)
+		if not(sv_scoreboard_fps_column)
 			return;
 		
 		if(!self) return;
@@ -1279,6 +1279,12 @@ void ReadyRestartForce()
 		FOR_EACH_REALPLAYER(e)
 			e.allowedTimeouts = CVAR(sv_timeout_number);
 	}
+
+    FOR_EACH_CLIENT(e) {
+        e.playtime = 0;
+        e.alivetime = 0;
+        e.jumpholdtime = 0;
+    }
 
 	//reset map immediately if this cvar is not set
 	if (!CVAR(sv_ready_restart_after_countdown))

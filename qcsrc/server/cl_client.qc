@@ -1449,7 +1449,7 @@ float ClientInit_SendEntity(entity to, float sf)
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, CVAR(g_balance_armor_blockpercent) * 255.0);
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
-	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_scoreboard_fps_column);
 	WriteByte(MSG_ENTITY, sv_oldfag);
     WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
     if(g_nadgets) {
@@ -1460,10 +1460,11 @@ float ClientInit_SendEntity(entity to, float sf)
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
     WriteShort(MSG_ENTITY, sv_nicehealth);
-    WriteByte(MSG_ENTITY, sv_showacc);
+    WriteByte(MSG_ENTITY, sv_scoreboard_acc_column);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
-    WriteByte(MSG_ENTITY, sv_shownoobstat);
+    WriteByte(MSG_ENTITY, sv_scoreboard_noob_column);
+    WriteByte(MSG_ENTITY, sv_scoreboard_alive_column);
 	return TRUE;
 }
 
@@ -3162,6 +3163,7 @@ void() nexball_setstatus;
 
 .float jumpholdtime;
 .float alivetime;
+.float frozentime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3194,7 +3196,7 @@ void PlayerPreThink (void)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
-        if(sv_shownoobstat) {
+        if(sv_scoreboard_noob_column || sv_scoreboard_alive_column) {
             if(!PlayerIsDead(self)) {
                 self.alivetime += frametime;
                 if(self.BUTTON_JUMP)
@@ -3205,8 +3207,10 @@ void PlayerPreThink (void)
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
-            if(sv_shownoobstat)
+            if(sv_scoreboard_noob_column)
                 PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
+            if(sv_scoreboard_alive_column)
+                PlayerScore_Set(self, SP_ALIVE, rint(100 * self.alivetime / self.playtime));
         }
     }
 
@@ -3277,7 +3281,7 @@ void PlayerPreThink (void)
                 self.effects &~= EF_NOSHADOW;
         }
 
-        if(sv_showacc)
+        if(sv_scoreboard_acc_column)
         if(time > self.acctime) {
             float hit = self.damage_hits - self.weapon;
             float total = self.maxdamage_fired - self.weapon;
