@@ -1955,11 +1955,27 @@ float regex_sub(string regex, string input, float reflags, string sub, regex_sub
     return offset;
 }
 
+va_parm va_get(float pidx) {
+    switch(pidx) {
+        case 0: return __va_parm0;
+        case 1: return __va_parm1;
+        case 2: return __va_parm2;
+        case 3: return __va_parm3;
+        case 4: return __va_parm4;
+        case 5: return __va_parm5;
+        case 6: return __va_parm6;
+        case 7: return __va_parm7;
+    }
+
+    error(strcat("Bad parm index: ", ftos(pidx)));
+    return __va_parm0;
+}
+
 void va_test(string fmt, ...) { VA_INIT
     fmt = (string)@0; // FIXME: I'm not sure why this is not passed correctly?
 
     for(var i = 0, var c = str2chr(fmt, i); c; c = str2chr(fmt, ++i)) {
-        var v = VA_GET_CASTABLE(i+1);
+        var v = va_get(i+1);
         print(ftos(i), " ");
         switch(c) {
             case 's': print("string ",      (string)v,  "\n"); break;
