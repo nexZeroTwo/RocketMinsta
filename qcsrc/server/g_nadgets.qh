@@ -34,6 +34,8 @@ void HG_Shield_Adept_ExtendRenew(entity plr);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
 string HG_SelectableTypes(float issecondary);
 
+void HG_Sentry_SetOwner(entity sentry, entity newowner);
+
 .vector org_explosion;
 .float nextparticle;
 
@@ -136,6 +138,8 @@ var .float hg_ctx_regenpaused;
 .float hg_linker_hps;
 
 .float hg_sentry_energy;
+.float hg_sentry_capture_progress;
+.entity hg_sentry_capture_player;
 
 // for hud only
 .float hg_launchspeed;

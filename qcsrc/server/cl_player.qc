@@ -930,7 +930,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         float removenadgets;
         if(g_nadgets)
             removenadgets = CVAR(g_nadgets_remove_on_death);
-        
+
         if(removenadgets > 1)
             HG_RemoveAll(self);
 
