@@ -1393,6 +1393,8 @@ void PutClientInServer (void)
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
 
+        self.hg_sentry_capture_progress = 0;
+
         if(teams_matter && CVAR(g_player_dont_block_teammates))
             self.touch = PlayerTouch_NoTeamBlock;
 
@@ -2652,6 +2654,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
     self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
+    self.hg_sentry_capture_progress = spectatee.hg_sentry_capture_progress;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
     self.buff_vamp_healthpool = spectatee.buff_vamp_healthpool;
 	self.sm_canattach = spectatee.sm_canattach;

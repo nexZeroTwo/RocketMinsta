@@ -24,6 +24,7 @@ void HG_Init() {
     addstat(STAT_STEALTH, AS_INT, hg_stealth);
     addstat(STAT_STEALTH_SAVED, AS_INT, hg_stealth_saved);
     addstat(STAT_HGREFIRE, AS_FLOAT, hg_next1);
+    addstat(STAT_HGSENTRYCAPTURE, AS_FLOAT, hg_sentry_capture_progress);
 
     if(g_nadgets_double) {
         addstat(STAT_HGTYPE2, AS_INT, hg_type2);
@@ -927,7 +928,7 @@ void HG_RemoveAll(entity plr) {
                (c == "hg_plasma")   ||
                (c == "hg_napalm")   ||
                (c == "hg_linker")   ||
-               (c == "hg_sentry");
+               ((c == "hg_sentry") && !(CVAR(g_nadgets_sentry_disown_on_death) && roundstate == ROUNDSTATE_GAME));
     }));) {
         if((n.realowner && n.realowner == plr) || n.owner == plr)
             HG_Grenade_FadeOut(n);
@@ -941,7 +942,7 @@ void HG_Grenade_Remote_Waypoint_Update(string wpname) {
         WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
 
         if(self.hg_type == HG_SENTRY) {
-            WaypointSprite_UpdateMaxHealth(self.hg_waypoint, 1);
+            WaypointSprite_UpdateMaxHealth(self.hg_waypoint, self.hg_wp_state);
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '1 0.5 0');
         } else if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
@@ -2154,6 +2155,9 @@ float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
 float HG_Sentry_TargetIsValid(entity emitter, entity e) {
     var sentry = emitter.owner;
 
+    if(!sentry.realowner)
+        return FALSE;
+
     if(PlayerIsDead(e))
         return FALSE;
 
@@ -2186,6 +2190,9 @@ entity HG_Sentry_FindTarget(entity emitter) {
     vector t, o = sentry.origin + sentry.view_ofs;
 
     mindist = range;
+
+    if(!sentry.realowner)
+        return world;
 
     FOR_EACH_PLAYER(p) if(!PlayerIsDead(p)) {
         diffteam = (p != sentry.realowner && IsDifferentTeam(sentry, p));
@@ -2321,8 +2328,18 @@ void HG_Sentry_Emitter_Remove(entity emitter) {
     remove(emitter);
 }
 
+void HG_Sentry_Interrupt_Capture(void) {
+    if(self.hg_sentry_capture_player)
+        self.hg_sentry_capture_player.hg_sentry_capture_progress = 0;
+    self.hg_sentry_capture_player = world;
+    self.hg_sentry_capture_progress = 0;
+}
+
 void HG_Sentry_Remove(void) {
-    self.realowner.hg_detonables -= 1;
+    HG_Sentry_Interrupt_Capture();
+
+    if(self.realowner.classname == "player")
+        self.realowner.hg_detonables -= 1;
 
     if(self.hg_waypoint)
         WaypointSprite_Disown(self.hg_waypoint, 0.5);
@@ -2344,20 +2361,79 @@ void HG_Sentry_Explode(void) {
     HG_Sentry_Remove();
 }
 
+void HG_Sentry_Orphaned_Think(void) {
+    var range = CVAR(g_nadgets_sentry_capture_range);
+    var dmgdelay = CVAR(g_nadgets_sentry_capture_damage_delay);
+    var caprate = CVAR(g_nadgets_sentry_capture_speed);
+    var e;
+
+    if(self.hg_sentry_capture_player) {
+        e = self.hg_sentry_capture_player;
+
+        if(PlayerIsDead(e) || time - e.lastdamage < dmgdelay || vlen(e.origin - self.origin) > range)
+            HG_Sentry_Interrupt_Capture();
+        else {
+            traceline(self.origin, e.origin, MOVE_NOMONSTERS, self);
+            if(trace_fraction < 1)
+                HG_Sentry_Interrupt_Capture();
+        }
+    }
+
+    if(!self.hg_sentry_capture_player) FOR_EACH_PLAYER(e) {
+        if(PlayerIsDead(e))
+            continue;
+
+        if(time - e.lastdamage < dmgdelay || vlen(e.origin - self.origin) > range)
+            continue;
+
+        traceline(self.origin, e.origin, MOVE_NOMONSTERS, self);
+        if(trace_fraction < 1)
+            continue;
+
+        self.hg_sentry_capture_player = e;
+        break;
+    }
+
+    if(self.hg_sentry_capture_player) {
+        e = self.hg_sentry_capture_player;
+
+        self.hg_sentry_capture_progress = approach(self.hg_sentry_capture_progress, 1.0, caprate * frametime);
+        e.hg_sentry_capture_progress = self.hg_sentry_capture_progress;
+
+        if(self.hg_sentry_capture_progress == 1) {
+            HG_Sentry_SetOwner(self, e);
+            defer(0, HG_Sentry_Interrupt_Capture);
+        }
+    }
+}
+
 void HG_Sentry_Think(void) {
-    if(self.team != self.realowner.team || !self.realowner.iscreature) {
-        HG_Sentry_Explode();
-        return;
+    var o = self.realowner;
+
+    if(o && (self.team != o.team || !o.iscreature))
+        o = world;
+
+    if(!o) {
+        if(CVAR(g_nadgets_sentry_disown_on_death) && roundstate == ROUNDSTATE_GAME) {
+            HG_Sentry_SetOwner(self, world);
+        } else {
+            HG_Sentry_Explode();
+            return;
+        }
     }
 
     self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * CVAR(g_nadgets_sentry_energy_regen));
-    HG_Grenade_Waypoint();
+
+    if(self.realowner)
+        HG_Grenade_Waypoint();
+    else
+        HG_Sentry_Orphaned_Think();
 
     setorigin(self.aiment, self.origin + self.view_ofs);
     self.aiment.scale = bound(0.01, self.hg_sentry_energy, 1);
     self.aiment.light_lev = 100 + self.aiment.scale * 200;
 
-    entity o = self;
+    o = self;
     self = self.aiment;
     HG_HealEmitter();
     self = o;
@@ -2366,7 +2442,7 @@ void HG_Sentry_Think(void) {
 }
 
 void HG_Sentry_Damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
-    if(IsDifferentTeam(attacker, self.realowner)) {
+    if(!self.realowner || IsDifferentTeam(attacker, self.realowner)) {
         if(DEATH_ISHG(deathtype))
             damage *= CVAR(g_nadgets_sentry_damagefactor_nadgets);
         else
@@ -2396,6 +2472,36 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
 
 #define HG_SENTRY_MINS '-24.4 -24.4   0.0'
 #define HG_SENTRT_MAXS ' 24.4  24.4 110.0'
+
+void HG_Sentry_SetOwner(entity sentry, entity newowner) {
+    var newskin = if(newowner)
+        TeamColorSkin(if(teams_matter) newowner.team else COLOR_TEAM2)
+    else 5;
+
+    if(sentry.hg_waypoint)
+        WaypointSprite_Disown(sentry.hg_waypoint, 0.5);
+
+    sentry.team = if(teams_matter) newowner.team else 0;
+    sentry.skin = newskin;
+
+    if(newowner) {
+        sentry.aiment.effects &~= EF_NODRAW;
+        sentry.aiment.skin = newskin;
+        sentry.aiment.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(sentry.team > 0) sentry.team else COLOR_TEAM2);
+    } else {
+        sentry.aiment.effects |= EF_NODRAW;
+    }
+
+    if(sentry.realowner.classname == "player")
+        sentry.realowner.hg_detonables -= 1;
+
+    sentry.realowner = newowner;
+
+    if(newowner) {
+        newowner.hg_detonables += 1;
+        centerprint_spec(newowner, strcat("^3You have claimed a ^1", HG_TypeToExpandedName(HG_SENTRY), "^3!"));
+    }
+}
 
 float HG_Sentry(void) {
     vector o = self.origin;

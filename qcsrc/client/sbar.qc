@@ -4031,11 +4031,14 @@ void Sbar_Draw(void)
     if(!rev) {
         rev = getstatf(STAT_REVIVE_PROGRESS);
         if(!rev) {
-            rev = getstatf(STAT_TERM_AUTH);
-            if(rev) revmode = RMODE_AUTH;
+            rev = getstatf(STAT_HGSENTRYCAPTURE);
+            if(!rev) {
+                rev = getstatf(STAT_TERM_AUTH);
+                if(rev) revmode = RMODE_AUTH;
+            } else revmode = RMODE_CAP;
         } else revmode = RMODE_REV;
     } else revmode = RMODE_CAP;
-	
+
 	if(rev) {
         rev_visual += (rev - rev_visual) * drawframetime * 10;
 		rev_alpha = approach(rev_alpha, 1, drawframetime * 5);
@@ -4046,7 +4049,7 @@ void Sbar_Draw(void)
 		if(rev_old > 0.9)
 			rev_visual = 1;	// This is _most likely_ a completed revival, so let's display it as such
 	}
-	
+
 	rev_old = rev;
 	rev = rev_visual;
 	
