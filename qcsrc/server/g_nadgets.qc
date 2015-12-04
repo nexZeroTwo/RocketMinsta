@@ -2413,10 +2413,10 @@ void HG_Sentry_Think(void) {
     if(o && (self.team != o.team || !o.iscreature))
         o = world;
 
-    if(!o) {
+    if(!o || PlayerIsDead(o)) {
         if(CVAR(g_nadgets_sentry_disown_on_death) && roundstate == ROUNDSTATE_GAME) {
             HG_Sentry_SetOwner(self, world);
-        } else {
+        } else if(!o) {
             HG_Sentry_Explode();
             return;
         }
