@@ -2407,7 +2407,7 @@ void HG_Sentry_Orphaned_Think(void) {
 void HG_Sentry_Think(void) {
     var o = self.realowner;
 
-    if(o && (self.team != o.team || !o.iscreature))
+    if(o && ((teams_matter && self.team != o.team) || !o.iscreature))
         o = world;
 
     if(!o || PlayerIsDead(o)) {
