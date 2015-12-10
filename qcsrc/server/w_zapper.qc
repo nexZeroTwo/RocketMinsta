@@ -397,16 +397,15 @@ void W_Zapper_Shield_Beam_Think(void) {
 
 void W_Zapper_Shield_Think(void) {
     float expired;
-    entity o = self;
-    self = self.enemy;
-    expired = W_Zapper_Beam_Expired(TRUE);
-    self = o;
+
+    // self == self.enemy --> This is the 'original' viewmodel entity
+    // self != self.enemy --> This is the exterior entity attached to the weapon model, self.enemy points to original
+
+    using(self = self.enemy)
+        expired = W_Zapper_Beam_Expired(TRUE);
 
     if(expired) {
         self.alpha = approach(self.alpha, 0, frametime * 20);
-
-        if(self.owner.zapper_shield == self)
-            self.owner.zapper_shield = world;
     } else {
         self.alpha = approach(self.alpha, 1, frametime * 10);
 
@@ -554,15 +553,23 @@ void W_Zapper_Attack3(void) {
     e.think = W_Zapper_Shield_Think;
     e.nextthink = time;
     e.alpha = 0.01;
+
     if(teams_matter)
         e.skin = TeamColorSkin(self.team);
     if(!e.skin)
         e.skin = TeamColorSkin(COLOR_TEAM2);
 
+    // This copies the entity! e becomes a viewmodel, the copy is attached to shotorg.
     W_AttachToShotorg(e, '-120 0 0');
 
     // needs to be done AFTER W_AttachToShotorg
-    e.customizeentityforclient = CL_Weaponentity_CustomizeEntityForClient;
+    e.customizeentityforclient = inline float(void) {
+        self.viewmodelforclient = self.owner;
+        if(other.classname == "spectator")
+            if(other.enemy == self.owner)
+                self.viewmodelforclient = other;
+        return self.alpha > 0;
+    };
 
     self.zapper_shield = e;
 

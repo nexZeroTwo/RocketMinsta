@@ -2410,7 +2410,7 @@ void HG_Sentry_Orphaned_Think(void) {
 void HG_Sentry_Think(void) {
     var o = self.realowner;
 
-    if(o && (self.team != o.team || !o.iscreature))
+    if(o && ((teams_matter && self.team != o.team) || !o.iscreature))
         o = world;
 
     if(!o || PlayerIsDead(o)) {
@@ -2475,7 +2475,7 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
 
 void HG_Sentry_SetOwner(entity sentry, entity newowner) {
     var newskin = if(newowner)
-        TeamColorSkin(if(teams_matter) newowner.team else COLOR_TEAM2)
+        TeamColorSkin(if(teams_matter) newowner.team else COLOR_TEAM3)
     else 5;
 
     if(sentry.hg_waypoint)
@@ -2487,7 +2487,7 @@ void HG_Sentry_SetOwner(entity sentry, entity newowner) {
     if(newowner) {
         sentry.aiment.effects &~= EF_NODRAW;
         sentry.aiment.skin = newskin;
-        sentry.aiment.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(sentry.team > 0) sentry.team else COLOR_TEAM2);
+        sentry.aiment.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(teams_matter) sentry.team else COLOR_TEAM3);
     } else {
         sentry.aiment.effects |= EF_NODRAW;
     }
@@ -2528,10 +2528,11 @@ float HG_Sentry(void) {
     e.hg_type = HG_SENTRY;
     e.view_ofs = '0 0 100';
     e.takedamage = DAMAGE_AIM;
-    e.skin = TeamColorSkin(self.team);
+    e.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
     e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
+    e.effects |= EF_DOUBLESIDED;
 
     self.hg_detonables += 1;
 
@@ -2539,10 +2540,11 @@ float HG_Sentry(void) {
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
-    c.skin = TeamColorSkin(self.team);
+    c.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
     c.pflags = PFLAGS_FULLDYNAMIC;
-    c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
+    c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM3);
     c.owner = self;
+    c.effects |= EF_DOUBLESIDED;
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
 
     e.aiment = c;
@@ -2623,7 +2625,7 @@ void HG_Sentry_Trigger(void) {
 
             Damage(targ, self, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY, endpos, force);
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
-            W_Zapper_Attack2_Effect(self.team, o, o, end_visual);
+            W_Zapper_Attack2_Effect(if(teams_matter) self.team else COLOR_TEAM3, o, o, end_visual);
 
             if(targ.solid == SOLID_BSP && !noimpact)
                 Damage_DamageInfo(endpos, c_dmg, 0, 0, force, WEP_ZAPPER | HITTYPE_SECONDARY, self);
