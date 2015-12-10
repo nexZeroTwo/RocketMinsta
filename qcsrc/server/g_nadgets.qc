@@ -2529,6 +2529,7 @@ float HG_Sentry(void) {
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
     e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
+    e.effects |= EF_DOUBLESIDED;
 
     self.hg_detonables += 1;
 
@@ -2540,6 +2541,7 @@ float HG_Sentry(void) {
     c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     c.owner = self;
+    c.effects |= EF_DOUBLESIDED;
     sound(c, CHAN_PROJECTILE, "weapons/electro_fly.wav", 0.5, 2);
 
     e.aiment = c;
