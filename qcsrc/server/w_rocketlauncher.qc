@@ -274,11 +274,15 @@ void W_Rocket_Damage (entity inflictor, entity attacker, float damage, float dea
 
 void W_Rocket_Attack (void)
 {
+    float cost = CVAR(g_balance_rocketlauncher_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
 	entity missile;
 	entity flash;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_rocketlauncher_ammo);
+		self.ammo_rockets = self.ammo_rockets - cost;
 
 	W_SetupShot_ProjectileSize (self, '-3 -3 -3', '3 3 3', FALSE, 5, "weapons/rocket_fire.wav", CVAR(g_balance_rocketlauncher_damage));
 	pointparticles(particleeffectnum("rocketlauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -331,10 +335,21 @@ void W_Rocket_Attack (void)
 	// common properties
 }
 
+void W_Rocket_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_ROCKET_LAUNCHER,
+        CVAR(g_balance_rocketlauncher_magazinecapacity),
+        CVAR(g_balance_rocketlauncher_reloadtime),
+        ammo_rockets,
+        1
+    );
+}
+
 void spawnfunc_weapon_rocketlauncher (void); // defined in t_items.qc
 
 float w_rlauncher(float req)
 {
+    W_Rocket_SetClipContext();
 	entity rock;
 	float rockfound;
 	if (req == WR_AIM)
@@ -436,29 +451,32 @@ float w_rlauncher(float req)
 	{
 		if(g_laserguided_missile)
 		{
-			if (self.BUTTON_ATCK && self.rl_release)
-			{
-				rockfound = 0;
-				for(rock = world; (rock = find(rock, classname, "rocket")); ) if(rock.owner == self)
-				{
-					if(!rock.rl_detonate_later)
-					{
-						rock.rl_detonate_later = TRUE;
-						rockfound = 1;
-					}
-				}
-				if(rockfound)
-					sound (self, CHAN_WEAPON2, "weapons/rocket_det.wav", VOL_BASE, ATTN_NORM);
-				else
-				{
-					if (weapon_prepareattack(0, CVAR(g_balance_rocketlauncher_refire)))
-					{
-						W_Rocket_Attack();
-						weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_rocketlauncher_animtime), w_ready);
-					}
-				}
-				self.rl_release = 0;
-			}
+            if(W_Clip_TryWeaponAction()) {
+                if (self.BUTTON_ATCK && self.rl_release)
+                if (W_Clip_TryAttackOrReload()) {
+                    rockfound = 0;
+                    for(rock = world; (rock = find(rock, classname, "rocket")); ) if(rock.owner == self)
+                    {
+                        if(!rock.rl_detonate_later)
+                        {
+                            rock.rl_detonate_later = TRUE;
+                            rockfound = 1;
+                        }
+                    }
+                    if(rockfound)
+                        sound (self, CHAN_WEAPON2, "weapons/rocket_det.wav", VOL_BASE, ATTN_NORM);
+                    else
+                    {
+                        if (weapon_prepareattack(0, CVAR(g_balance_rocketlauncher_refire)))
+                        {
+                            W_Rocket_Attack();
+                            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_rocketlauncher_animtime), w_ready);
+                        }
+                    }
+                    self.rl_release = 0;
+                }
+                W_Clip_FinishWeaponAction();
+            }
 			if (!self.BUTTON_ATCK)
 				self.rl_release = 1;
 			if (self.BUTTON_ATCK2)
@@ -472,17 +490,21 @@ float w_rlauncher(float req)
 		}
 		else
 		{
-			if (self.BUTTON_ATCK)
-			{
-				if(self.rl_release || CVAR(g_balance_rocketlauncher_guidestop))
-				if(weapon_prepareattack(0, CVAR(g_balance_rocketlauncher_refire)))
-				{
-					W_Rocket_Attack();
-					weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_rocketlauncher_animtime), w_ready);
-					self.rl_release = 0;
-				}
-			}
-			else
+            if(W_Clip_TryWeaponAction()) {
+                if (self.BUTTON_ATCK) {
+                    if (W_Clip_TryAttackOrReload()) {
+                        if(self.rl_release || CVAR(g_balance_rocketlauncher_guidestop))
+                        if(weapon_prepareattack(0, CVAR(g_balance_rocketlauncher_refire)))
+                        {
+                            W_Rocket_Attack();
+                            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_rocketlauncher_animtime), w_ready);
+                            self.rl_release = 0;
+                        }
+                    }
+                }
+                W_Clip_FinishWeaponAction();
+            }
+			if (!self.BUTTON_ATCK)
 				self.rl_release = 1;
 
 			if (self.BUTTON_ATCK2)
@@ -530,5 +552,6 @@ float w_rlauncher(float req)
 	{
 		self.rl_release = 0;
 	}
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
