@@ -117,8 +117,7 @@ void W_Clip_Reload(void) {
     self.w_clip_loaded = -1;
 }
 
-void W_Clip_CheckReloadAndReady(void)
-{
+void W_Clip_CheckReloadAndReady(void) {
     w_ready();
     if(self.w_clip_loaded <= 0)
         W_Clip_Reload();
