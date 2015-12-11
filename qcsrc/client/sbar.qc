@@ -2859,73 +2859,65 @@ float GetLowAmmoCvar(float currweapon){
 	}
 }
 
-float GetSpecialCaseWarn(float currweapon){
-	//return any unique ammo system warning such as camping rifle clip or zapper heat
+string GetSpecialCaseWarnString(float currweapon, float currbullets) {
 	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return CVAR(cl_lowammowarnings_campingrifle_bulletsremaining);
-		case WEP_ZAPPER: return CVAR(cl_lowammowarnings_zapper_heat);
-		default: return 0;
-	}
-}
-
-string GetSpecialCaseWarnString(float currweapon, float currbullets){
-	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return if(currbullets > 0) "magazine low" else "reloading";
 		case WEP_ZAPPER: return "heat high";
-		default: return "";
+		default: {
+            if(currbullets < 0)
+                return "reloading";
+            return "magazine low";
+        }
 	}
 }
 
-void Sbar_ShowLowammo(){
-	vector pos, scale;
-	float currweapon = getstati(STAT_SWITCHWEAPON);
-	float showwarning = 0;
-	float showspecialwarning = 0;
-	float currammo, currammotype, ammocode, currbullets;
-	float clipheatwarn = GetSpecialCaseWarn(currweapon);
-	float warn = GetLowAmmoCvar(currweapon);
-	scale_x = CVAR(cl_lowammowarnings_size);
-	scale_y = CVAR(cl_lowammowarnings_size);
-	pos_y = CVAR(cl_lowammowarnings_position);
-	
-	//carrying either camping rifle or zapper
-	if(clipheatwarn){
-		if(currweapon == WEP_CAMPINGRIFLE){
-			currbullets = getstati(STAT_CLIP_LOADED);
-			if(currbullets <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-		else if(currweapon == WEP_ZAPPER){
-			float currheat = getstatf(STAT_ZAPPER_HEAT);
-			currheat = floor((1 - currheat) * 100);
-			if(currheat <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-	}
-	if(warn){
-		currammotype = get_weaponinfo(currweapon).items;
-		ammocode = GetAmmoStatFromCode(currammotype);
-		if(ammocode > 0) //prevent sending <0 to getstati
-			currammo = getstati(GetAmmoStatFromCode(currammotype));
-		
-		if(currammo <= warn){
-			showwarning = 1;
-		}
-	}
-	drawfont = sbar_bigfont;
-	if(showwarning){
-		string ammoname = GetFriendlyAmmoName(currammotype);
-		drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	if(showspecialwarning){
-		string weaponname = get_weaponinfo(currweapon).message;
-		string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
-		pos_y = pos_y - scale_y;
-		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	drawfont = sbar_font;
+void Sbar_ShowLowammo(void) {
+    vector pos, scale;
+    float currweapon = getstati(STAT_SWITCHWEAPON);
+    float showwarning = 0;
+    float showspecialwarning = 0;
+    float currammo, currammotype, ammocode, currbullets, maxbullets;
+    float warn = GetLowAmmoCvar(currweapon);
+    scale_x = CVAR(cl_lowammowarnings_size);
+    scale_y = CVAR(cl_lowammowarnings_size);
+    pos_y = CVAR(cl_lowammowarnings_position);
+
+    if(currweapon == WEP_ZAPPER) {
+        float currheat = getstatf(STAT_ZAPPER_HEAT);
+        currheat = floor((1 - currheat) * 100);
+        if(currheat <= CVAR(cl_lowammowarnings_zapper_heat))
+            showspecialwarning = 1;
+    } else if((maxbullets = getstati(STAT_CLIP_LIMIT)) > 0) {
+        currbullets = getstati(STAT_CLIP_LOADED);
+        if(currbullets <= maxbullets * 0.4) // TODO: a cvar
+            showspecialwarning = 1;
+    }
+
+    if(warn) {
+        currammotype = get_weaponinfo(currweapon).items;
+        ammocode = GetAmmoStatFromCode(currammotype);
+        if(ammocode > 0) //prevent sending <0 to getstati
+            currammo = getstati(GetAmmoStatFromCode(currammotype));
+
+        if(currammo <= warn){
+            showwarning = 1;
+        }
+    }
+
+    drawfont = sbar_bigfont;
+
+    if(showwarning) {
+        string ammoname = GetFriendlyAmmoName(currammotype);
+        drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    if(showspecialwarning) {
+        string weaponname = get_weaponinfo(currweapon).message;
+        string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
+        pos_y = pos_y - scale_y;
+        drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    drawfont = sbar_font;
 }
 
 void Sbar_Reset (void)
