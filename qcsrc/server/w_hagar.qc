@@ -146,12 +146,14 @@ float w_hagar(float req)
         if(W_Clip_TryWeaponAction()) {
             if (self.BUTTON_ATCK)
             if (weapon_prepareattack(0, CVAR(g_balance_hagar_primary_refire)))
+            if(W_Clip_TryAttackOrReload())
             {
                 W_Hagar_Attack();
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_hagar_primary_refire), w_ready);
             }
             if (self.BUTTON_ATCK2)
             if (weapon_prepareattack(1, CVAR(g_balance_hagar_secondary_refire)))
+            if(W_Clip_TryAttackOrReload())
             {
                 W_Hagar_Attack2();
                 weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_hagar_secondary_refire), w_ready);
