@@ -5323,29 +5323,31 @@ void Sbar_Draw(void)
 		}
 		
 		a_unused = 4 - a_unused;
-        
+
+        float currweapon = getstati(STAT_SWITCHWEAPON);
+        float currweapon_ammo = get_weaponinfo(currweapon).items;
+
         if(getstati(STAT_CLIP_LIMIT) > 0)		
             ammo_progress = bound(0, (1 - getstati(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
         else
-            ammo_progress = 0;
+            ammo_progress = -1;
 
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
-            float isrifle;
-            
+            float isclip;
             float itemcode = GetAmmoItemCode(i);
 
-            if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
-                if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
-                    a = getstati(STAT_CLIP_LOADED);
-                    isrifle = TRUE;
-                }
-            } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
-                float h = getstatf(STAT_ZAPPER_HEAT);
-                if(h >= 0) {
-                    if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
+            if(itemcode & stat_items & currweapon_ammo) {
+                if(currweapon == WEP_ZAPPER) {
+                    var h = getstatf(STAT_ZAPPER_HEAT);
+                    if(stat_items & IT_UNLIMITED_AMMO)
                         a = floor((1 - h) * 100);
                     ammo_progress = h;
+                } else if(ammo_progress >= 0) {
+                    if(stat_items & IT_UNLIMITED_AMMO) {
+                        a = getstati(STAT_CLIP_LOADED);
+                        isclip = TRUE;
+                    }
                 }
             }
 
@@ -5374,7 +5376,7 @@ void Sbar_Draw(void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < (1 + 9 * !isrifle))
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5388,7 +5390,7 @@ void Sbar_Draw(void)
 						drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 						if(!a)
 							drawpic_expanding(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
-						if(a < 10 && !isrifle)
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5434,7 +5436,7 @@ void Sbar_Draw(void)
                         
                         drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-                        if(a < (1 + 9 * !isrifle))
+                        if(a < 10 && !isclip)
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5452,6 +5454,11 @@ void Sbar_Draw(void)
 			}
 		}
 		
+
+        if(ammo_progress < 0)
+            ammo_progress = 0;
+
+
         // nades
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;
