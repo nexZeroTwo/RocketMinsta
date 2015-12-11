@@ -2,10 +2,10 @@
 var .float __dummy_field;
 
 void W_Clip_SetWeaponContext(float wep, float cliplimit, float reloadtime, .float ammofield, float ammo_per_unit) {
+    wep -= 1;
+
     if(wep == w_clip_context)
         return;
-
-    wep -= 1;
 
     w_clip_context = wep;
 
