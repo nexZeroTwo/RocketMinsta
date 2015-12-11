@@ -14,6 +14,10 @@ void SendCSQCNexBeamParticle(float theteam, float secondary) {
 
 void W_Nex_Attack (void)
 {
+    float cost = CVAR(g_balance_nex_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
 	float flying;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
@@ -35,10 +39,14 @@ void W_Nex_Attack (void)
 		Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_damage), 0, 0, CVAR(g_balance_nex_force) * w_shotdir, WEP_NEX, self);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - CVAR(g_balance_nex_ammo);
+		self.ammo_cells = self.ammo_cells - cost;
 }
 
 void W_Nex_Attack2(void) {
+    float cost = CVAR(g_balance_nex_secondary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
     float flying;
     flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
@@ -60,7 +68,7 @@ void W_Nex_Attack2(void) {
         Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_secondary_damage), 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_cells = self.ammo_cells - CVAR(g_balance_nex_secondary_ammo);
+        self.ammo_cells = self.ammo_cells - cost;
 }
 
 .entity nex_charge_effect;
@@ -138,33 +146,46 @@ void W_Nex_Attack2_Wait(void) {
     weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
 }
 
+void W_Nex_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_NEX,
+        CVAR(g_balance_nex_magazinecapacity),
+        CVAR(g_balance_nex_reloadtime),
+        ammo_cells,
+        1
+    );
+}
+
 void spawnfunc_weapon_nex (void); // defined in t_items.qc
 
 float w_nex(float req)
 {
+    W_Nex_SetClipContext();
 	if (req == WR_AIM)
 		self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		{
-			if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
-			{
-				W_Nex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_animtime), w_ready);
-			}
-		}
-
-        if(self.BUTTON_ATCK2 && CVAR(g_balance_nex_secondary)) {
-            if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
-                float ct = CVAR(g_balance_nex_secondary_chargetime);
-                weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
-                ct *= W_WeaponRateFactor();
-
-                self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
-                sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
-                W_Nex_ChargeEffect_Spawn(ct);
+        if(W_Clip_TryWeaponAction()) {
+            if (self.BUTTON_ATCK)
+            if(W_Clip_TryAttackOrReload()) {
+                if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
+                {
+                    W_Nex_Attack();
+                    weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_animtime), w_ready);
+                }
             }
+            if(self.BUTTON_ATCK2 && CVAR(g_balance_nex_secondary))
+            if(W_Clip_TryAttackOrReload()) {
+                if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
+                    float ct = CVAR(g_balance_nex_secondary_chargetime);
+                    weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
+                    ct *= W_WeaponRateFactor();
+                    self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
+                    sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
+                    W_Nex_ChargeEffect_Spawn(ct);
+                }
+            }
+            W_Clip_FinishWeaponAction();
         }
 	}
 	else if (req == WR_PRECACHE)
@@ -184,5 +205,6 @@ float w_nex(float req)
 		return self.ammo_cells >= CVAR(g_balance_nex_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_cells >= CVAR(g_balance_nex_secondary_ammo);
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
