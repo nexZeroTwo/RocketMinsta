@@ -765,14 +765,12 @@ void CSQC_UpdateView(float w, float h)
             wcross_size = drawgetimagesize(wcross_name);
             wcross_size_x *= wcross_sizefloat;
             wcross_size_y *= wcross_sizefloat;
-            
-            // ring around crosshair representing bullets left in camping rifle clip
+
             float bullet, maxbullets, distance = 14;
-            maxbullets = getstati(STAT_BULLETS_MAX);
-            if (activeweapon == WEP_CAMPINGRIFLE)
-            {
+            maxbullets = getstati(STAT_CLIP_LIMIT);
+            if(maxbullets > 0) {
                 ring_scale = CVAR(crosshair_campingrifle_ring_size) * (10 / 128);
-                bullets = bound(0, getstati(STAT_BULLETS_LOADED), maxbullets);
+                bullets = bound(0, getstati(STAT_CLIP_LOADED), maxbullets);
             }
             else
                 bullets = 0;

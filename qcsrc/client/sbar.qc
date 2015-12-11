@@ -2891,7 +2891,7 @@ void Sbar_ShowLowammo(){
 	//carrying either camping rifle or zapper
 	if(clipheatwarn){
 		if(currweapon == WEP_CAMPINGRIFLE){
-			currbullets = getstati(STAT_BULLETS_LOADED);
+			currbullets = getstati(STAT_CLIP_LOADED);
 			if(currbullets <= clipheatwarn){
 				showspecialwarning = 1;
 			}
@@ -5323,7 +5323,12 @@ void Sbar_Draw(void)
 		}
 		
 		a_unused = 4 - a_unused;
-		
+        
+        if(getstati(STAT_CLIP_LIMIT) > 0)		
+            ammo_progress = bound(0, (1 - getstati(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
+        else
+            ammo_progress = 0;
+
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
             float isrifle;
@@ -5331,9 +5336,8 @@ void Sbar_Draw(void)
             float itemcode = GetAmmoItemCode(i);
 
             if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
-                ammo_progress = bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
                 if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
-                    a = getstati(STAT_BULLETS_LOADED);
+                    a = getstati(STAT_CLIP_LOADED);
                     isrifle = TRUE;
                 }
             } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
@@ -5343,9 +5347,8 @@ void Sbar_Draw(void)
                         a = floor((1 - h) * 100);
                     ammo_progress = h;
                 }
-            } else
-                ammo_progress = 0;
-            
+            }
+
             if(a < 0 || (!a && !(stat_items & itemcode)))
                 continue;
             
