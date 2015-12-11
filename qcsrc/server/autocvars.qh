@@ -1715,7 +1715,6 @@ float autocvar_sv_precacheplayermodels;
 float autocvar_sv_precacheweapons;
 float autocvar_sv_printclientcommands;
 float autocvar_sv_q3acompat_machineshotgunswap;
-float autocvar_sv_qcweaponanimation;
 float autocvar_sv_radio;
 float autocvar_sv_radio_announce;
 float autocvar_sv_radio_log_skips;
