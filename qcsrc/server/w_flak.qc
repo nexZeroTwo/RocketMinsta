@@ -102,10 +102,14 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
 }
 
 void W_Flak_Attack1(void) {
+    float cost = CVAR(g_balance_flak_primary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
     float pcount = CVAR(g_balance_flak_primary_projectiles), i;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_shells -= CVAR(g_balance_flak_primary_ammo);
+        self.ammo_shells -= cost;
 
     W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire.wav", CVAR(g_balance_flak_primary_damage) * pcount);
     w_shotdir = v_forward;
@@ -135,10 +139,14 @@ void W_Flak_Attack1(void) {
 }
 
 void W_Flak_Attack2(void) {
+    float cost = CVAR(g_balance_flak_secondary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
     float pcount = CVAR(g_balance_flak_secondary_projectiles), i;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_shells -= CVAR(g_balance_flak_secondary_ammo);
+        self.ammo_shells -= cost;
 
     W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", CVAR(g_balance_flak_secondary_damage) * pcount);
     w_shotdir = v_forward;
@@ -226,8 +234,12 @@ void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float d
 }
 
 void W_Flak_Attack3(void) {
+    float cost = CVAR(g_balance_flak_secondary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO) {
-        self.ammo_shells = self.ammo_shells - CVAR(g_balance_flak_secondary_ammo);
+        self.ammo_shells = self.ammo_shells - cost;
         self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_flak_secondary_ammo_rockets);
     }
 
@@ -262,30 +274,45 @@ void W_Flak_Attack3(void) {
     CSQCProjectile(e, TRUE, PROJECTILE_FLAK_BOMB, TRUE);
 }
 
+void W_Flak_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_FLAK,
+        CVAR(g_balance_flak_magazinecapacity),
+        CVAR(g_balance_flak_reloadtime),
+        ammo_shells,
+        1
+    );
+}
+
 void spawnfunc_weapon_flak(void) {
     weapon_defaultspawnfunc(WEP_FLAK);
 }
 
 float w_flak(float req) {
+    W_Flak_SetClipContext();
     if(req == WR_AIM) {
         if(random() < 0.35 && CVAR(g_balance_flak_secondary_bomb) && self.ammo_rockets >= CVAR(g_balance_flak_secondary_ammo_rockets))
             self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_flak_secondary_bomb_speed), CVAR(g_balance_flak_secondary_bomb_speed_up), CVAR(g_balance_flak_secondary_bomb_lifetime), TRUE);
         else
             self.BUTTON_ATCK = bot_aim(CVAR(g_balance_flak_primary_speed), CVAR(g_balance_flak_primary_speed_up), CVAR(g_balance_flak_primary_lifetime), TRUE);
     } else if(req == WR_THINK) {
-        if(self.BUTTON_ATCK)
-        if(weapon_prepareattack(0, CVAR(g_balance_flak_primary_refire))) {
-            W_Flak_Attack1();
-            weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_flak_primary_animtime), w_ready);
-        }
+        if(W_Clip_TryWeaponAction()) {
+            if(self.BUTTON_ATCK)
+            if(weapon_prepareattack(0, CVAR(g_balance_flak_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Flak_Attack1();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_flak_primary_animtime), w_ready);
+            }
 
-        if(self.BUTTON_ATCK2)
-        if(weapon_prepareattack(1, CVAR(g_balance_flak_secondary_refire))) {
-            if(CVAR(g_balance_flak_secondary_bomb))
-                W_Flak_Attack3();
-            else
-                W_Flak_Attack2();
-            weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_flak_secondary_animtime), w_ready);
+            if(self.BUTTON_ATCK2)
+            if(weapon_prepareattack(1, CVAR(g_balance_flak_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                if(CVAR(g_balance_flak_secondary_bomb))
+                    W_Flak_Attack3();
+                else
+                    W_Flak_Attack2();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_flak_secondary_animtime), w_ready);
+            }
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/flak_fire.wav");
