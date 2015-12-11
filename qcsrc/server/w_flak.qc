@@ -313,6 +313,7 @@ float w_flak(float req) {
                     W_Flak_Attack2();
                 weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_flak_secondary_animtime), w_ready);
             }
+            W_Clip_FinishWeaponAction();
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/flak_fire.wav");
@@ -328,5 +329,6 @@ float w_flak(float req) {
     else if(req == WR_CHECKAMMO2)
         return self.ammo_shells >= CVAR(g_balance_flak_secondary_ammo) && self.ammo_rockets >= CVAR(g_balance_flak_secondary_ammo_rockets);
 
+    W_Clip_WeaponRequestHook(req);
     return TRUE;
 }
