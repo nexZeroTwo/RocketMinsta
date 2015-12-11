@@ -186,12 +186,19 @@ void W_Clip_ResetAll(float dorefill) {
     W_CLIP_LOOP_FOR_ALL_CONTEXTS(wep, W_Clip_Reset(dorefill);)
 }
 
-void W_Clip_Consume(float cost) {
+float W_Clip_Consume(float cost) {
     if(w_clip_context_limit <= 0)
-        return;
+        return TRUE;
 
-    self.w_clip_loaded = max(0, self.w_clip_loaded - cost);
+    if(cost > self.w_clip_loaded) {
+        W_Clip_Reload();
+        return FALSE;
+    }
+
+    self.w_clip_loaded -= cost;
     W_Clip_CheckFull();
+
+    return TRUE;
 }
 
 void W_Clip_WeaponRequestHook(float req) {

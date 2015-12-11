@@ -82,7 +82,11 @@ void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype) {
 }
 
 void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAddedDamage, float pForce, float pSpeed, float pLifetime, float pAmmo, float deathtype, float pBulletConstant, float cost)
-{	
+{
+
+    if(!W_Clip_Consume(cost))
+        return;
+
 	float dmgbonus;
 	if(CVAR(g_balance_campingrifle_hitstreaks)){
 		W_CampingRifle_ResetHitstreaksIfNeeded(deathtype);
@@ -110,8 +114,6 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 
 	if (CVAR(g_casings) >= 2)
 		SpawnCasing (((random () * 50 + 50) * v_right) - (v_forward * (random () * 25 + 25)) - ((random () * 5 - 70) * v_up), 2, vectoangles(v_forward),'0 250 0', 100, 3, self);
-
-    W_Clip_Consume(cost);
 }
 
 void W_CampingRifle_Attack()
