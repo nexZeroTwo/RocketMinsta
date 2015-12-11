@@ -190,8 +190,13 @@ void W_Fireball_Attack2_Frame1()
 
 void W_Fireball_Attack2_Frame0()
 {
+    float cost = CVAR(g_balance_fireball_secondary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
+
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_fireball_secondary_ammo);
+		self.ammo_rockets -= cost;
 
 	W_Fireball_AttackEffect(0, '-1.25 -3.75 0');
 	sound (self, CHAN_WEAPON, "weapons/fireball_prefire2.wav", VOL_BASE, ATTN_NORM);
@@ -241,9 +246,13 @@ void W_Fireball_Attack1()
 	entity proj;
 	vector f_diff;
 	float c;
+    float cost = CVAR(g_balance_fireball_primary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_fireball_primary_ammo);
+		self.ammo_rockets -= cost;
 
 	c = mod(self.bulletcounter, 4);
 	switch(c)
@@ -297,8 +306,20 @@ void spawnfunc_weapon_fireball (void)
 	weapon_defaultspawnfunc(WEP_FIREBALL);
 }
 
+void W_Fireball_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_FIREBALL,
+        CVAR(g_balance_fireball_magazinecapacity),
+        CVAR(g_balance_fireball_reloadtime),
+        ammo_rockets,
+        1
+    );
+}
+
 float w_fireball(float req)
 {
+    W_Fireball_SetClipContext();
+
 	if (req == WR_AIM)
 	{
 		self.BUTTON_ATCK = FALSE;
@@ -322,19 +343,24 @@ float w_fireball(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_fireball_primary_refire)))
-		{
-			W_Fireball_Attack1();
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_fireball_primary_animtime), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		if (time >= self.fireball_secondarytime)
-		if (weapon_prepareattack(1, CVAR(g_balance_fireball_secondary_refire)))
-		{
-			W_Fireball_Attack2_Frame0();
-			self.fireball_secondarytime = time + CVAR(g_balance_fireball_secondary_refire2);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.BUTTON_ATCK)
+            if(weapon_prepareattack(0, CVAR(g_balance_fireball_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Fireball_Attack1();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_fireball_primary_animtime), w_ready);
+            }
+
+            if(self.BUTTON_ATCK2)
+            if(time >= self.fireball_secondarytime)
+            if(weapon_prepareattack(1, CVAR(g_balance_fireball_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Fireball_Attack2_Frame0();
+                self.fireball_secondarytime = time + CVAR(g_balance_fireball_secondary_refire2);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -361,5 +387,7 @@ float w_fireball(float req)
     {
         TimeTravel_RestoreTime(self,    tt_moment, fireball_secondarytime);
     }
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
