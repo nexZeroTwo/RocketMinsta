@@ -2859,73 +2859,65 @@ float GetLowAmmoCvar(float currweapon){
 	}
 }
 
-float GetSpecialCaseWarn(float currweapon){
-	//return any unique ammo system warning such as camping rifle clip or zapper heat
+string GetSpecialCaseWarnString(float currweapon, float currbullets) {
 	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return CVAR(cl_lowammowarnings_campingrifle_bulletsremaining);
-		case WEP_ZAPPER: return CVAR(cl_lowammowarnings_zapper_heat);
-		default: return 0;
-	}
-}
-
-string GetSpecialCaseWarnString(float currweapon, float currbullets){
-	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return if(currbullets > 0) "magazine low" else "reloading";
 		case WEP_ZAPPER: return "heat high";
-		default: return "";
+		default: {
+            if(currbullets < 0)
+                return "reloading";
+            return "magazine low";
+        }
 	}
 }
 
-void Sbar_ShowLowammo(){
-	vector pos, scale;
-	float currweapon = getstati(STAT_SWITCHWEAPON);
-	float showwarning = 0;
-	float showspecialwarning = 0;
-	float currammo, currammotype, ammocode, currbullets;
-	float clipheatwarn = GetSpecialCaseWarn(currweapon);
-	float warn = GetLowAmmoCvar(currweapon);
-	scale_x = CVAR(cl_lowammowarnings_size);
-	scale_y = CVAR(cl_lowammowarnings_size);
-	pos_y = CVAR(cl_lowammowarnings_position);
-	
-	//carrying either camping rifle or zapper
-	if(clipheatwarn){
-		if(currweapon == WEP_CAMPINGRIFLE){
-			currbullets = getstati(STAT_BULLETS_LOADED);
-			if(currbullets <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-		else if(currweapon == WEP_ZAPPER){
-			float currheat = getstatf(STAT_ZAPPER_HEAT);
-			currheat = floor((1 - currheat) * 100);
-			if(currheat <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-	}
-	if(warn){
-		currammotype = get_weaponinfo(currweapon).items;
-		ammocode = GetAmmoStatFromCode(currammotype);
-		if(ammocode > 0) //prevent sending <0 to getstati
-			currammo = getstati(GetAmmoStatFromCode(currammotype));
-		
-		if(currammo <= warn){
-			showwarning = 1;
-		}
-	}
-	drawfont = sbar_bigfont;
-	if(showwarning){
-		string ammoname = GetFriendlyAmmoName(currammotype);
-		drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	if(showspecialwarning){
-		string weaponname = get_weaponinfo(currweapon).message;
-		string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
-		pos_y = pos_y - scale_y;
-		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	drawfont = sbar_font;
+void Sbar_ShowLowammo(void) {
+    vector pos, scale;
+    float currweapon = getstati(STAT_SWITCHWEAPON);
+    float showwarning = 0;
+    float showspecialwarning = 0;
+    float currammo, currammotype, ammocode, currbullets, maxbullets;
+    float warn = GetLowAmmoCvar(currweapon);
+    scale_x = CVAR(cl_lowammowarnings_size);
+    scale_y = CVAR(cl_lowammowarnings_size);
+    pos_y = CVAR(cl_lowammowarnings_position);
+
+    if(currweapon == WEP_ZAPPER) {
+        float currheat = getstatf(STAT_ZAPPER_HEAT);
+        currheat = floor((1 - currheat) * 100);
+        if(currheat <= CVAR(cl_lowammowarnings_zapper_heat))
+            showspecialwarning = 1;
+    } else if((maxbullets = getstati(STAT_CLIP_LIMIT)) > 0) {
+        currbullets = getstati(STAT_CLIP_LOADED);
+        if(currbullets <= maxbullets * 0.4) // TODO: a cvar
+            showspecialwarning = 1;
+    }
+
+    if(warn) {
+        currammotype = get_weaponinfo(currweapon).items;
+        ammocode = GetAmmoStatFromCode(currammotype);
+        if(ammocode > 0) //prevent sending <0 to getstati
+            currammo = getstati(GetAmmoStatFromCode(currammotype));
+
+        if(currammo <= warn){
+            showwarning = 1;
+        }
+    }
+
+    drawfont = sbar_bigfont;
+
+    if(showwarning) {
+        string ammoname = GetFriendlyAmmoName(currammotype);
+        drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    if(showspecialwarning) {
+        string weaponname = get_weaponinfo(currweapon).message;
+        string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
+        pos_y = pos_y - scale_y;
+        drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    drawfont = sbar_font;
 }
 
 void Sbar_Reset (void)
@@ -5323,29 +5315,34 @@ void Sbar_Draw(void)
 		}
 		
 		a_unused = 4 - a_unused;
-		
+
+        float currweapon = getstati(STAT_SWITCHWEAPON);
+        float currweapon_ammo = get_weaponinfo(currweapon).items;
+
+        if(getstati(STAT_CLIP_LIMIT) > 0)		
+            ammo_progress = bound(0, (1 - getstati(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
+        else
+            ammo_progress = -1;
+
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
-            float isrifle;
-            
+            float isclip;
             float itemcode = GetAmmoItemCode(i);
 
-            if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
-                ammo_progress = bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
-                if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
-                    a = getstati(STAT_BULLETS_LOADED);
-                    isrifle = TRUE;
-                }
-            } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
-                float h = getstatf(STAT_ZAPPER_HEAT);
-                if(h >= 0) {
-                    if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
+            if(itemcode & stat_items & currweapon_ammo) {
+                if(currweapon == WEP_ZAPPER) {
+                    var h = getstatf(STAT_ZAPPER_HEAT);
+                    if(stat_items & IT_UNLIMITED_AMMO)
                         a = floor((1 - h) * 100);
                     ammo_progress = h;
+                } else if(ammo_progress >= 0) {
+                    if(stat_items & IT_UNLIMITED_AMMO) {
+                        a = getstati(STAT_CLIP_LOADED);
+                        isclip = TRUE;
+                    }
                 }
-            } else
-                ammo_progress = 0;
-            
+            }
+
             if(a < 0 || (!a && !(stat_items & itemcode)))
                 continue;
             
@@ -5371,7 +5368,7 @@ void Sbar_Draw(void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < (1 + 9 * !isrifle))
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5385,7 +5382,7 @@ void Sbar_Draw(void)
 						drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 						if(!a)
 							drawpic_expanding(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
-						if(a < 10 && !isrifle)
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5431,7 +5428,7 @@ void Sbar_Draw(void)
                         
                         drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-                        if(a < (1 + 9 * !isrifle))
+                        if(a < 10 && !isclip)
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5449,6 +5446,11 @@ void Sbar_Draw(void)
 			}
 		}
 		
+
+        if(ammo_progress < 0)
+            ammo_progress = 0;
+
+
         // nades
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;

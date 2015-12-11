@@ -755,10 +755,10 @@ void spawnfunc_worldspawn (void)
  	addstat(STAT_DAMAGE_FIRED, AS_INT, maxdamage_fired);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
-	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
-	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
-    
+
+    W_Clip_Stats_Init();
+
     if(g_domination)
     {
         addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);

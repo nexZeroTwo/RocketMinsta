@@ -503,15 +503,8 @@ void Buffs_ClientFrame(void) {
     
     if(self.buffs != self.oldbuffs) {
         ON_BUFF_ADDED(BUFF_SUPPLY) {
-            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+            W_Clip_ResetAll(TRUE);
 
-            if(Buffs_Present(self, BUFF_SUPPLY)) {
-                float fteqcc_is_gay = floor(CVAR(g_buffs_supply_campingrifle_extra_magazine));
-                self.campingrifle_bulletlimit += fteqcc_is_gay;
-            }
-
-            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
-            
             if(!g_weaponarena) {
                 float a = CVAR(g_buffs_supply_grant_ammo);
                 self.ammo_cells += a;
@@ -522,11 +515,11 @@ void Buffs_ClientFrame(void) {
         }
 
         ON_BUFF_REMOVED(BUFF_SUPPLY) {
-            self.campingrifle_bulletlimit = CVAR(g_balance_campingrifle_magazinecapacity);
+            W_Clip_ResetAll(FALSE);
         }
 
         ON_BUFF_ADDED(BUFF_FOCUS) {
-            self.campingrifle_bulletcounter = self.campingrifle_bulletlimit;
+            W_Clip_ResetAll(TRUE);
         }
 
         ON_BUFF_ADDED(BUFF_GUARD) {
@@ -634,6 +627,13 @@ float Buffs_NadgetRegenDmgPause(entity plr) {
 float Buffs_NadgetBonusMultiplier(entity plr) {
     return  if(Buffs_Present(plr, BUFF_WRATH))
                 CVAR(g_buffs_wrath_hgbonusmultiplier)
+            else
+                1;
+}
+
+float Buffs_ClipLimitMultiplier(entity plr) {
+    return  if(Buffs_Present(plr, BUFF_SUPPLY))
+                CVAR(g_buffs_supply_clip_limit_multiplier)
             else
                 1;
 }
@@ -862,7 +862,11 @@ void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathty
 
     var alt = (deathtype & HITTYPE_SECONDARY);
 
-    attacker.campingrifle_bulletcounter = attacker.campingrifle_bulletcounter +
+    // TODO: make this work for all weapons (maybe)
+
+    W_CampingRifle_SetClipContext();
+
+    attacker.w_clip_loaded = attacker.w_clip_loaded +
         if(damage >= targ.health + targ.armorvalue)
             if(alt)
                 CVAR(g_buffs_focus_bonus_kill_alt)

@@ -1385,7 +1385,9 @@ void PutClientInServer (void)
                 HG_PlayerJoin();
         }
         
+        W_Clip_ResetPlayer();
         Boobs_Attach();
+
         self.wasingame = TRUE;
         self.buffs = 0;
         self.hg_stealth = 0;
@@ -2662,8 +2664,8 @@ void SpectateCopy(entity spectatee) {
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
     self.jb_message = spectatee.jb_message;
     self.dom_captureprogress = spectatee.dom_captureprogress;
-    self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
-    self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
+    self.w_clip_limit_stat = spectatee.w_clip_limit_stat;
+    self.w_clip_loaded_stat = spectatee.w_clip_loaded_stat;
     self.zapper_heat = spectatee.zapper_heat;
     self.buffstat = spectatee.buffstat;
 	setorigin(self, spectatee.origin);
@@ -3838,6 +3840,7 @@ void PlayerPostThink (void)
 	}
 
 	if(self.classname == "player") {
+        W_Clip_Stats_Update();
 		CheckRules_Player();
 		UpdateChatBubble();
 		UpdateTeamBubble();

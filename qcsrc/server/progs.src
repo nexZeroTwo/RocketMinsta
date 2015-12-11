@@ -72,6 +72,8 @@ g_subs.qh
 w_zapper.qh
 g_world.qh
 
+cl_weapons_reload.qh
+
 ../common/util.qc
 scores_rules.qc
 miscfunctions.qc
@@ -108,6 +110,7 @@ g_triggers.qc
 g_models.qc
 
 cl_weaponsystem.qc
+cl_weapons_reload.qc
 w_common.qc
 
 w_laser.qc

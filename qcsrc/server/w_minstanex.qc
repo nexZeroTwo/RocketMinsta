@@ -32,7 +32,7 @@ void W_Explosive_Attack (float attacktype)
 {
 	float SPEED;
 	SPEED = 90000000;
-	
+
 	entity gren;
 
 	float expl_damage = CVAR(g_rocketminsta_splash_damage) / 2; //I'm not even sure why is this here?
@@ -118,10 +118,16 @@ float RM_TeamLaserEffect(entity pl)
 
 void W_MinstaNex_Attack (void)
 {
-	float flying;
+	float flying, cost;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	
+    if(g_minstagib)
+        cost = 1;
+    else
+        cost = CVAR(g_balance_minstanex_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
 	yoda = 0;
 	damage_goodhits = 0;
@@ -200,12 +206,7 @@ void W_MinstaNex_Attack (void)
         WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg, w_shotorg_visual, v);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	{
-		if (g_minstagib)
-			self.ammo_cells = self.ammo_cells - 1;
-		else
-			self.ammo_cells = self.ammo_cells - CVAR(g_balance_minstanex_ammo);
-	}
+        self.ammo_cells -= cost;
 	
 	if(damage_goodhits)
 		self.goodhits++;
@@ -438,8 +439,19 @@ void W_RM_Alt_Attack_Single()
 
 .float nextfiretime;
 
+void W_MinstaNex_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_MINSTANEX,
+        CVAR(g_balance_minstanex_magazinecapacity),
+        CVAR(g_balance_minstanex_reloadtime),
+        ammo_cells,
+        1
+    );
+}
+
 float w_minstanex(float req)
 {
+    W_MinstaNex_SetClipContext();
 	float rapid = CVAR(g_rocketminsta_laser_rapid);
 	
 	if (req == WR_AIM)
@@ -460,49 +472,52 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && CVAR(g_rocketminsta)))
-		{
-			if(g_freeze)
-			if(self.frozen)
-				return TRUE;
-			
-			if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_laser_new))
-			{
-				if (self.jump_interval <= time && !self.held_down)
-				{
-					if(rapid)
-						self.held_down = TRUE;
-					self.jump_interval = time + CVAR(g_rocketminsta_laser_refire);
-					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_delay);
-					//self.goodhits = 0;
-					W_RM_Alt_Attack();
-				}
-				else if(rapid && self.jump_interval2 <= time && self.held_down)
-				{
-					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_refire);
-					//self.goodhits = 0;
-					W_RM_Alt_Attack_Single();
-				}
-			}
-			else if (self.jump_interval <= time)
-			{
-				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
-				//self.goodhits = 0;
-				W_Laser_Attack(FALSE);
-			}
-		}
-		else
-			self.held_down = FALSE;
-		
-		if (self.BUTTON_ATCK)
-		{
-			if (weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
-			{
-				W_MinstaNex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_minstanex_animtime), w_ready);
-				self.nextfiretime = time + CVAR(g_balance_minstanex_refire);
-			}
-		}
+        if(W_Clip_TryWeaponAction()) {
+            // the shit I wrote 5 years ago...
+
+            if(self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && CVAR(g_rocketminsta))) {
+                if(g_freeze)
+                if(self.frozen)
+                    return TRUE;
+                
+                if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_laser_new))
+                {
+                    if (self.jump_interval <= time && !self.held_down)
+                    {
+                        if(rapid)
+                            self.held_down = TRUE;
+                        self.jump_interval = time + CVAR(g_rocketminsta_laser_refire);
+                        self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_delay);
+                        //self.goodhits = 0;
+                        W_RM_Alt_Attack();
+                    }
+                    else if(rapid && self.jump_interval2 <= time && self.held_down)
+                    {
+                        self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_refire);
+                        //self.goodhits = 0;
+                        W_RM_Alt_Attack_Single();
+                    }
+                }
+                else if (self.jump_interval <= time)
+                {
+                    self.jump_interval = time + 0.9 * W_WeaponRateFactor();
+                    //self.goodhits = 0;
+                    W_Laser_Attack(FALSE);
+                }
+            }
+            else
+                self.held_down = FALSE;
+            
+            if(self.BUTTON_ATCK)
+            if(weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_MinstaNex_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_minstanex_animtime), w_ready);
+                self.nextfiretime = time + CVAR(g_balance_minstanex_refire);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -535,6 +550,8 @@ float w_minstanex(float req)
 	{
 		self.minstanex_lasthit = 0;
 	}
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
 
