@@ -195,6 +195,9 @@ void W_Clip_Consume(float cost) {
 }
 
 void W_Clip_WeaponRequestHook(float req) {
+    if(w_clip_context_limit <= 0)
+        return;
+
     if(req == WR_RELOAD) {
         W_Clip_Reload();
     } else if(req == WR_RESETPLAYER) {
