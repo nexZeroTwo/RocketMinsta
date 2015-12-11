@@ -50,8 +50,14 @@ void W_Clip_Stats_Init(void) {
 
 void W_Clip_Stats_Update(void) {
     var wep = self.switchweapon - 1;
-    self.w_clip_loaded_stat = self.w_clip_loaded_array[wep];
-    self.w_clip_limit_stat = self.w_clip_limit_array[wep];
+
+    if(wep < 0 || wep >= WEP_LAST) {
+        self.w_clip_loaded_stat = 0;
+        self.w_clip_limit_stat = 0;
+    } else {
+        self.w_clip_loaded_stat = self.w_clip_loaded_array[wep];
+        self.w_clip_limit_stat = self.w_clip_limit_array[wep];
+    }
 }
 
 void W_Clip_ResetPlayer(void) {
