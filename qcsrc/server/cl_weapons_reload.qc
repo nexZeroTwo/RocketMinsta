@@ -222,5 +222,7 @@ void W_Clip_WeaponRequestHook(float req) {
             } else
                 self.w_clip_saved = self.w_clip_loaded;
         }
+    } else if(req == WR_PRECACHE) {
+        precache_sound("weapons/campingrifle_reload.wav");
     }
 }

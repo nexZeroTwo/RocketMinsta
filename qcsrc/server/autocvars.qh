@@ -626,6 +626,8 @@ float autocvar_g_balance_shotgun_secondary_force;
 float autocvar_g_balance_shotgun_secondary_refire;
 float autocvar_g_balance_shotgun_secondary_speed;
 float autocvar_g_balance_shotgun_secondary_spread;
+float autocvar_g_balance_shotgun_magazinecapacity;
+float autocvar_g_balance_shotgun_reloadtime;
 float autocvar_g_balance_teams;
 float autocvar_g_balance_teams_force;
 float autocvar_g_balance_teams_method;

@@ -203,8 +203,7 @@ float w_campingrifle(float req)
 		}
 	}
 	else if (req == WR_PRECACHE)
-	{		
-		precache_sound ("weapons/campingrifle_reload.wav");
+	{
 		precache_sound ("weapons/campingrifle_fire.wav");
 		precache_sound ("weapons/campingrifle_fire2.wav");
 	}
