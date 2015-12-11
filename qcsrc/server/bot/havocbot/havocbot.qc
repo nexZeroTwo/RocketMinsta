@@ -160,15 +160,16 @@ void havocbot_ai()
 		
 		// we are currently holding a weapon that's not fully loaded, reload it
 		if(skill >= 2) // bots can only reload the held weapon on purpose past this skill
-		if(self.weapon == WEP_CAMPINGRIFLE) //no more weapon with clip
-		if(self.campingrifle_bulletcounter < self.campingrifle_bulletlimit/2) //ammo in clip less than half of max ammo
+		if(self.w_clip_limit_stat > 0)
+		if(self.w_clip_loaded_stat < self.w_clip_limit_stat/2) //ammo in clip less than half of max ammo
 		//if(!havocbot_chooseenemy) //no reload in case of short enemy hiding //cant find solution
 			self.impulse = 20; // "press" the reload button, not sure if this is done right
 	} //not applied anoter part of xonotic code, coz in nexuiz only rifle has clip
 	if (self.frozen)
 	{
-		if(self.campingrifle_bulletcounter < self.campingrifle_bulletlimit)
-			self.impulse = 20;
+        if(self.w_clip_limit_stat > 0)
+        if(self.w_clip_loaded_stat < self.w_clip_limit_stat)
+            self.impulse = 20;
 	}
 };
 

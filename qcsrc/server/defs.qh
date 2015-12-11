@@ -258,6 +258,7 @@ float WR_RESETPLAYER    = 10; // does not need to do anything
 float WR_TT_STORE       = 11; // save weapon-specific fields into tt_moment for time travel
 float WR_TT_RESTORE     = 12; // restore weapon-specific fields from tt_moment for time travel
 float WR_LOWER          = 13; // weapon is being switched from
+float WR_SETCLIPCONTEXT = 14;
 
 void weapon_defaultspawnfunc(float wpn);
 
@@ -644,8 +645,6 @@ float client_cefc_accumulator;
 float client_cefc_accumulatortime;
 #endif
 
-.float campingrifle_bulletcounter;
-.float campingrifle_bulletlimit;
 .float campingrifle_hitstreak1;
 .float campingrifle_hitstreak2;
 .float campingrifle_hitstreak1_expiretime;

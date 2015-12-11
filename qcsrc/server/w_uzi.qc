@@ -11,17 +11,22 @@ void W_Uzi_Flash_Go() {
 };
 
 .float uzi_bulletcounter;
-void W_Uzi_Attack (float deathtype)
+float W_Uzi_Attack (float deathtype)
 {
 	entity flash;
+    float cost;
 
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	{
-		if (self.uzi_bulletcounter == 1)
-			self.ammo_nails = self.ammo_nails - CVAR(g_balance_uzi_first_ammo);
-		else
-			self.ammo_nails = self.ammo_nails - CVAR(g_balance_uzi_sustained_ammo);
-	}
+	if(self.uzi_bulletcounter == 1)
+		cost = CVAR(g_balance_uzi_first_ammo);
+	else
+		cost = CVAR(g_balance_uzi_sustained_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return FALSE;
+
+    if(!(self.items & IT_UNLIMITED_WEAPON_AMMO))
+        self.ammo_nails -= cost;
+
 	W_SetupShot (self, CVAR(g_antilag_bullets) && CVAR(g_balance_uzi_speed) >= CVAR(g_antilag_bullets), 0, "weapons/uzi_fire.wav", CVAR(g_balance_uzi_first_damage));
 	if (!g_norecoil)
 	{
@@ -54,6 +59,18 @@ void W_Uzi_Attack (float deathtype)
 	// casing code
 	if (CVAR(g_casings) >= 2)
 		SpawnCasing (((random () * 50 + 50) * v_right) - (v_forward * (random () * 25 + 25)) - ((random () * 5 - 70) * v_up), 2, vectoangles(v_forward),'0 250 0', 100, 3, self);
+
+    return TRUE;
+}
+
+void W_Uzi_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_UZI,
+        CVAR(g_balance_uzi_magazinecapacity),
+        CVAR(g_balance_uzi_reloadtime),
+        ammo_nails,
+        1
+    );
 }
 
 // weapon frames
@@ -73,7 +90,10 @@ void uzi_fire1_02()
 			return;
 		}
 		self.uzi_bulletcounter = self.uzi_bulletcounter + 1;
-		W_Uzi_Attack(WEP_UZI);
+
+		if(!W_Uzi_Attack(WEP_UZI))
+            return;
+
 		weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
 	}
 	else
@@ -82,6 +102,8 @@ void uzi_fire1_02()
 
 float w_uzi(float req)
 {
+    W_Uzi_SetClipContext();
+
 	if (req == WR_AIM)
 		if(vlen(self.origin-self.enemy.origin) < 3000 - bound(0, skill, 10) * 200)
 			self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
@@ -91,21 +113,26 @@ float w_uzi(float req)
 		}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, 0))
-		{
-			self.uzi_bulletcounter = 1;
-			W_Uzi_Attack(WEP_UZI); // sets attack_finished
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
-		}
-		if (self.BUTTON_ATCK2)
-		if (CVAR(g_balance_uzi_first))
-		if (weapon_prepareattack(1, 0))
-		{
-			self.uzi_bulletcounter = 1;
-			W_Uzi_Attack(WEP_UZI | HITTYPE_SECONDARY); // sets attack_finished
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_uzi_first_refire), w_ready);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.BUTTON_ATCK)
+            if(weapon_prepareattack(0, 0))
+            if(W_Clip_TryAttackOrReload()) {
+                self.uzi_bulletcounter = 1;
+                W_Uzi_Attack(WEP_UZI); // sets attack_finished
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
+            }
+
+            if(self.BUTTON_ATCK2)
+            if(CVAR(g_balance_uzi_first))
+            if(weapon_prepareattack(1, 0))
+            if(W_Clip_TryAttackOrReload()) {
+                self.uzi_bulletcounter = 1;
+                W_Uzi_Attack(WEP_UZI | HITTYPE_SECONDARY); // sets attack_finished
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_uzi_first_refire), w_ready);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -118,5 +145,7 @@ float w_uzi(float req)
 		return self.ammo_nails >= CVAR(g_balance_uzi_first_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_nails >= CVAR(g_balance_uzi_first_ammo);
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
