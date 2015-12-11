@@ -21,3 +21,5 @@ var .float w_clip_reloadfinished;
 
 void W_Clip_Stats_Init(void);
 void W_Clip_CurrentWeaponContext(void);
+
+#define W_CLIP_LOOP_FOR_ALL_CONTEXTS(i,block) for(i = WEP_FIRST; i <= WEP_LAST; ++i) { W_Clip_RequestWeaponContext(i); if(w_clip_context_limit > 0) block }

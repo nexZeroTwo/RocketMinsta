@@ -755,7 +755,7 @@ float autocvar_g_buffs_randomize_interval_force;
 float autocvar_g_buffs_replace;
 float autocvar_g_buffs_spawn_on_powerups;
 float autocvar_g_buffs_stack;
-float autocvar_g_buffs_supply_campingrifle_extra_magazine;
+float autocvar_g_buffs_supply_clip_limit_multiplier;
 float autocvar_g_buffs_supply_grant_ammo;
 float autocvar_g_buffs_supply_hg_extra_regen_limit;
 float autocvar_g_buffs_supply_hg_regenscale;

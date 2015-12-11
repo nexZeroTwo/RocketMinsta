@@ -503,18 +503,8 @@ void Buffs_ClientFrame(void) {
     
     if(self.buffs != self.oldbuffs) {
         ON_BUFF_ADDED(BUFF_SUPPLY) {
-            // TODO: make this work for all weapons
-            W_CampingRifle_SetClipContext();
+            W_Clip_ResetAll(TRUE);
 
-            self.w_clip_limit = CVAR(g_balance_campingrifle_magazinecapacity);
-
-            if(Buffs_Present(self, BUFF_SUPPLY)) {
-                float fteqcc_is_gay = floor(CVAR(g_buffs_supply_campingrifle_extra_magazine));
-                self.w_clip_limit += fteqcc_is_gay;
-            }
-
-            self.w_clip_loaded = self.w_clip_limit;
-            
             if(!g_weaponarena) {
                 float a = CVAR(g_buffs_supply_grant_ammo);
                 self.ammo_cells += a;
@@ -525,15 +515,11 @@ void Buffs_ClientFrame(void) {
         }
 
         ON_BUFF_REMOVED(BUFF_SUPPLY) {
-            // TODO: make this work for all weapons
-            W_CampingRifle_SetClipContext();
-            self.w_clip_limit = CVAR(g_balance_campingrifle_magazinecapacity);
+            W_Clip_ResetAll(FALSE);
         }
 
         ON_BUFF_ADDED(BUFF_FOCUS) {
-            // TODO: make this work for all weapons
-            W_CampingRifle_SetClipContext();
-            self.w_clip_loaded = self.w_clip_limit;
+            W_Clip_ResetAll(TRUE);
         }
 
         ON_BUFF_ADDED(BUFF_GUARD) {
@@ -641,6 +627,13 @@ float Buffs_NadgetRegenDmgPause(entity plr) {
 float Buffs_NadgetBonusMultiplier(entity plr) {
     return  if(Buffs_Present(plr, BUFF_WRATH))
                 CVAR(g_buffs_wrath_hgbonusmultiplier)
+            else
+                1;
+}
+
+float Buffs_ClipLimitMultiplier(entity plr) {
+    return  if(Buffs_Present(plr, BUFF_SUPPLY))
+                CVAR(g_buffs_supply_clip_limit_multiplier)
             else
                 1;
 }

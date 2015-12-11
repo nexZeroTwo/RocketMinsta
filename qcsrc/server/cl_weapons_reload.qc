@@ -34,9 +34,13 @@ void W_Clip_UnsetWeaponContext(void) {
     w_clip_context_ammo_per_unit = 0;
 }
 
-void W_Clip_CurrentWeaponContext(void) {
+void W_Clip_RequestWeaponContext(float wep) {
     W_Clip_UnsetWeaponContext();
-    weapon_action(self.weapon, WR_SETCLIPCONTEXT);
+    weapon_action(wep, WR_SETCLIPCONTEXT);
+}
+
+void W_Clip_CurrentWeaponContext(void) {
+    W_Clip_RequestWeaponContext(self.weapon);
 }
 
 void W_Clip_Stats_Init(void) {
@@ -163,9 +167,23 @@ void W_Clip_FinishWeaponAction(void) {
     self.w_clip_saved = self.w_clip_loaded;
 }
 
-void W_Clip_Reset(void) {
-    self.w_clip_loaded = self.w_clip_limit;
-    self.w_clip_reloadfinished = time;
+void W_Clip_Reset(float dorefill) {
+    if(w_clip_context_limit <= 0)
+        return;
+
+    self.w_clip_limit = w_clip_context_limit * Buffs_ClipLimitMultiplier(self);
+
+    if(dorefill) {
+        self.w_clip_loaded = self.w_clip_limit;
+        self.w_clip_reloadfinished = time;   
+    } else {
+        self.w_clip_loaded = bound(0, self.w_clip_loaded, self.w_clip_limit);
+    }
+}
+
+void W_Clip_ResetAll(float dorefill) {
+    var wep;
+    W_CLIP_LOOP_FOR_ALL_CONTEXTS(wep, W_Clip_Reset(dorefill);)
 }
 
 void W_Clip_Consume(float cost) {
@@ -180,7 +198,7 @@ void W_Clip_WeaponRequestHook(float req) {
     if(req == WR_RELOAD) {
         W_Clip_Reload();
     } else if(req == WR_RESETPLAYER) {
-        W_Clip_Reset();
+        W_Clip_Reset(TRUE);
     } else if(req == WR_SETUP) {
         var full = W_Clip_CheckFull();
         if(CVAR(g_balance_reload_after_changing_weapons))
