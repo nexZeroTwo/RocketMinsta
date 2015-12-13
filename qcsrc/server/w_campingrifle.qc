@@ -42,7 +42,7 @@ void W_CampingRifle_ResetHitstreaksIfNeeded(float deathtype) {
         self.campingrifle_varfield_hitstreak = 0;
 }
 
-float W_CampingRifle_ReturnHitstreakBonus(float deathtype) {
+float W_CampingRifle_GetHitstreakBonus(float deathtype) {
 	//return the bonus for whatever mode was fired, regardless of which mode built up the streak
 	//if both modes can build up a streak, use secondary's value as a shared pool
 
@@ -90,7 +90,7 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 	float dmgbonus;
 	if(CVAR(g_balance_campingrifle_hitstreaks)){
 		W_CampingRifle_ResetHitstreaksIfNeeded(deathtype);
-		dmgbonus = W_CampingRifle_ReturnHitstreakBonus(deathtype);
+		dmgbonus = W_CampingRifle_GetHitstreakBonus(deathtype);
 	}
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)

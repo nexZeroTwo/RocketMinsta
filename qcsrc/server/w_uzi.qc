@@ -10,6 +10,33 @@ void W_Uzi_Flash_Go() {
 	self.nextthink = time + 0.02;
 };
 
+.float uzi_hitstreak;
+.float uzi_hitstreak_expiretime;
+
+float W_Uzi_GetHitstreakBonus(void) {
+    if(!CVAR(g_balance_uzi_hitstreak_bonus))
+        return 0;
+
+    if(time > self.uzi_hitstreak_expiretime) {
+        self.uzi_hitstreak = 0;
+        return 0;
+    }
+
+    float streak = bound(0, self.uzi_hitstreak, self.w_clip_limit_stat);
+    return streak * CVAR(g_balance_uzi_hitstreak_bonus);
+}
+
+void W_Uzi_RegisterHitForHitstreak(entity attacker, float deathtype) {
+    if(!DEATH_ISWEAPON(deathtype, WEP_UZI))
+        return;
+
+    attacker.uzi_hitstreak += 1;
+    attacker.uzi_hitstreak_expiretime = max(
+        attacker.uzi_hitstreak_expiretime, 
+        time + CVAR(g_balance_uzi_hitstreak_resettime)
+    );
+}
+
 .float uzi_bulletcounter;
 float W_Uzi_Attack (float deathtype)
 {
@@ -23,6 +50,8 @@ float W_Uzi_Attack (float deathtype)
 
     if(!W_Clip_Consume(cost))
         return FALSE;
+
+    float dmgbonus = W_Uzi_GetHitstreakBonus();
 
     if(!(self.items & IT_UNLIMITED_WEAPON_AMMO))
         self.ammo_nails -= cost;
@@ -38,9 +67,9 @@ float W_Uzi_Attack (float deathtype)
 	ATTACK_FINISHED(self) = time + CVAR(g_balance_uzi_first_refire) * W_WeaponRateFactor();
 
 	if (self.uzi_bulletcounter == 1)
-		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_first_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_first_damage), 0, CVAR(g_balance_uzi_first_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
+		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_first_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_first_damage) + dmgbonus, 0, CVAR(g_balance_uzi_first_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
 	else
-		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_sustained_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_sustained_damage), 0, CVAR(g_balance_uzi_sustained_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
+		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_sustained_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_sustained_damage) + dmgbonus, 0, CVAR(g_balance_uzi_sustained_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
 	endFireBallisticBullet();
 
 	pointparticles(particleeffectnum("uzi_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);

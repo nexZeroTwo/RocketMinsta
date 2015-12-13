@@ -557,3 +557,18 @@ void W_FixWeaponSet(void) {
             self.weapons = g_weaponarena_secondary;
     }
 }
+
+void W_RegisterHitForHitstreak(entity attacker, float deathtype) {
+    if(DEATH_ISSPECIAL(deathtype))
+        return;
+
+    switch(DEATH_WEAPONOFWEAPONDEATH(deathtype)) {
+        case WEP_CAMPINGRIFLE:
+            W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+            break;
+
+        case WEP_UZI:
+            W_Uzi_RegisterHitForHitstreak(attacker, deathtype);
+            break;
+    }
+}

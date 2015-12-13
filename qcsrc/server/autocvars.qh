@@ -673,6 +673,8 @@ float autocvar_g_balance_uzi_sustained_refire;
 float autocvar_g_balance_uzi_sustained_spread;
 float autocvar_g_balance_uzi_magazinecapacity;
 float autocvar_g_balance_uzi_reloadtime;
+float autocvar_g_balance_uzi_hitstreak_bonus;
+float autocvar_g_balance_uzi_hitstreak_resettime;
 float autocvar_g_balance_weaponswitchdelay;
 float autocvar_g_balance_zapper_animtime;
 float autocvar_g_balance_zapper_primary_ammo;
