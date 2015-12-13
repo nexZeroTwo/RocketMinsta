@@ -548,3 +548,12 @@ void Nixnex_GiveCurrentWeapon()
 					W_SwitchWeapon(nixnex_weapon);
 	}
 }
+
+void W_FixWeaponSet(void) {
+    if(g_weaponarena && g_weaponarena_secondary) {
+        if(self.BUTTON_ATCK)
+            self.weapons = g_weaponarena;
+        else if(self.BUTTON_ATCK2)
+            self.weapons = g_weaponarena_secondary;
+    }
+}

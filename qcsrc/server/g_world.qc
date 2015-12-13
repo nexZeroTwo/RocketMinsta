@@ -859,16 +859,9 @@ void spawnfunc_worldspawn (void)
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
     
-    if(CVAR(sv_scoreboard_acc_column)) {
-        if(g_minstagib)
-            sv_scoreboard_acc_column = TRUE;
-        else for(i = WEP_FIRST; i < WEP_COUNT; ++i)
-            if(g_weaponarena == pow(2, i-1)) {
-                sv_scoreboard_acc_column = TRUE;
-                break;
-            }
-    }
-    
+
+    var wa = g_weaponarena | g_weaponarena_secondary;
+    sv_scoreboard_acc_column = CVAR(sv_scoreboard_acc_column) && (g_minstagib || !(wa & (wa - 1)));
     sv_scoreboard_noob_column = CVAR(sv_scoreboard_noob_column);
     sv_scoreboard_alive_column = CVAR(sv_scoreboard_alive_column);
 

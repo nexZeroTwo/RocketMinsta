@@ -1107,6 +1107,7 @@ float g_pickup_healthmega;
 float g_pickup_healthmega_max;
 float g_weaponarena;
 float g_weaponarena_random;
+float g_weaponarena_secondary;
 string g_weaponarena_list;
 float g_weaponspeedfactor;
 float g_weaponratefactor;
@@ -1139,36 +1140,9 @@ float NixNex_CanChooseWeapon(float wpn);
 
 float g_weaponarena_limitammo;
 
-void readplayerstartcvars()
-{
-    entity e;
-    float i, j, t;
-    string s;
+void set_weaponarena(string s) {
+    var i, j, e, t;
 
-    // initialize starting values for players
-    start_weapons = 0;
-    start_items = 0;
-    start_ammo_shells = 0;
-    start_ammo_nails = 0;
-    start_ammo_rockets = 0;
-    start_ammo_cells = 0;
-    start_health = CVAR(g_balance_health_start);
-    start_armorvalue = CVAR(g_balance_armor_start);
-
-	g_weaponarena_limitammo = CVAR(g_weaponarena_limitammo);
-
-    g_weaponarena = 0;
-    
-    if(g_clanarena) {
-        s = CVAR_STR(g_clanarena_start_weapons);
-        if(s == "0")
-            s = CVAR_STR(g_weaponarena);
-        if(s == "0")
-            s = "most";
-    } else {
-        s = CVAR_STR(g_weaponarena);
-    }
-    
     if(s == "0")
     {
     }
@@ -1223,8 +1197,43 @@ void readplayerstartcvars()
                 print("The weapon mutator list contains an unknown weapon ", s, ". Skipped.\n");
             }
         }
-		g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
-	}
+        g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
+    }
+
+}
+
+void readplayerstartcvars()
+{
+    entity e;
+    float i, j, t;
+    string s;
+
+    // initialize starting values for players
+    start_weapons = 0;
+    start_items = 0;
+    start_ammo_shells = 0;
+    start_ammo_nails = 0;
+    start_ammo_rockets = 0;
+    start_ammo_cells = 0;
+    start_health = CVAR(g_balance_health_start);
+    start_armorvalue = CVAR(g_balance_armor_start);
+
+	g_weaponarena_limitammo = CVAR(g_weaponarena_limitammo);
+
+    g_weaponarena = 0;
+    g_weaponarena_secondary = 0;
+
+    if(g_clanarena) {
+        s = CVAR_STR(g_clanarena_start_weapons);
+        if(s == "0")
+            s = CVAR_STR(g_weaponarena);
+        if(s == "0")
+            s = "most";
+    } else {
+        s = CVAR_STR(g_weaponarena);
+    }
+    
+    set_weaponarena(s);
 
 	if(g_weaponarena) {
 		g_weaponarena_random = CVAR(g_weaponarena_random);
@@ -1232,12 +1241,24 @@ void readplayerstartcvars()
 		g_weaponarena_random = 0;
         g_weaponarena_limitammo = 0;
     }
-    
+
     if (g_clanarena) {
         start_health = CVAR(g_clanarena_start_health);
         start_armorvalue = CVAR(g_clanarena_start_armor);
+    } else if(g_weaponarena) {
+        s = CVAR_STR(g_weaponarena_secondary);
+
+        if(s != "" && s != "0") {
+            var saved_list = g_weaponarena_list;
+            var saved_warea = g_weaponarena;
+            g_weaponarena = 0;
+            set_weaponarena(s);
+            g_weaponarena_secondary = g_weaponarena;
+            g_weaponarena_list = saved_list;
+            g_weaponarena = saved_warea;
+        }
     }
-    
+
     if (g_nixnex)
     {
         start_weapons = 0;
@@ -1254,15 +1275,16 @@ void readplayerstartcvars()
         
         if(!g_weaponarena_limitammo)
         {
-			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
+            var weps = g_weaponarena | g_weaponarena_secondary;
+			if (weps & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
 				start_ammo_rockets = 999;
-			if (g_weaponarena & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
+			if (weps & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
+			if (weps & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
-			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
+			if (weps & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
-			if (g_weaponarena & WEPBIT_HOOK)
+			if (weps & WEPBIT_HOOK)
 				start_ammo_fuel = 999;
 			start_items |= IT_UNLIMITED_AMMO;
 		}

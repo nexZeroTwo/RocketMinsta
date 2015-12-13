@@ -1561,6 +1561,7 @@ float autocvar_g_waypointsprite_deployed_lifetime;
 float autocvar_g_waypointsprite_limitedrange;
 float autocvar_g_weapon_stay;
 string autocvar_g_weaponarena;
+string autocvar_g_weaponarena_secondary;
 float autocvar_g_weaponarena_limitammo;
 float autocvar_g_weaponarena_random;
 float autocvar_g_weapondamagefactor;
