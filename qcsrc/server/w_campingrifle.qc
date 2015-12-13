@@ -42,7 +42,7 @@ void W_CampingRifle_ResetHitstreaksIfNeeded(float deathtype) {
         self.campingrifle_varfield_hitstreak = 0;
 }
 
-float W_CampingRifle_ReturnHitstreakBonus(float deathtype) {
+float W_CampingRifle_GetHitstreakBonus(float deathtype) {
 	//return the bonus for whatever mode was fired, regardless of which mode built up the streak
 	//if both modes can build up a streak, use secondary's value as a shared pool
 
@@ -90,7 +90,7 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 	float dmgbonus;
 	if(CVAR(g_balance_campingrifle_hitstreaks)){
 		W_CampingRifle_ResetHitstreaksIfNeeded(deathtype);
-		dmgbonus = W_CampingRifle_ReturnHitstreakBonus(deathtype);
+		dmgbonus = W_CampingRifle_GetHitstreakBonus(deathtype);
 	}
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
@@ -149,19 +149,20 @@ void spawnfunc_weapon_campingrifle (void)
 
 float w_campingrifle(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_campingrifle_swapshotmodes));
     W_CampingRifle_SetClipContext();
 
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK=FALSE;
-		self.BUTTON_ATCK2=FALSE;
+		self.w_button_primary=FALSE;
+		self.w_button_secondary=FALSE;
 		if(vlen(self.origin-self.enemy.origin) > 1000)
 			self.bot_secondary_campingriflemooth = 0;
 		if(self.bot_secondary_campingriflemooth == 0)
 		{
 			if(bot_aim(CVAR(g_balance_campingrifle_primary_speed), 0, CVAR(g_balance_campingrifle_primary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK = TRUE;
+				self.w_button_primary = TRUE;
 				if(random() < 0.01) self.bot_secondary_campingriflemooth = 1;
 			}
 		}
@@ -169,7 +170,7 @@ float w_campingrifle(float req)
 		{
 			if(bot_aim(CVAR(g_balance_campingrifle_secondary_speed), 0, CVAR(g_balance_campingrifle_secondary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 				if(random() < 0.03) self.bot_secondary_campingriflemooth = 0;
 			}
 		}
@@ -179,7 +180,7 @@ float w_campingrifle(float req)
 		if(W_Clip_TryWeaponAction()) {
 			self.campingrifle_accumulator = bound(time - CVAR(g_balance_campingrifle_bursttime), self.campingrifle_accumulator, time);
 
-			if(self.BUTTON_ATCK)
+			if(self.w_button_primary)
 			if(time >= self.campingrifle_accumulator + CVAR(g_balance_campingrifle_primary_burstcost))
 			if(weapon_prepareattack(0, CVAR(g_balance_campingrifle_primary_refire))) {
                 if(W_Clip_TryAttackOrReload()) {
@@ -189,7 +190,7 @@ float w_campingrifle(float req)
                 }
 			}
 
-			if(self.BUTTON_ATCK2)
+			if(self.w_button_secondary)
 			if(time >= self.campingrifle_accumulator + CVAR(g_balance_campingrifle_secondary_burstcost))
 			if(weapon_prepareattack(1, CVAR(g_balance_campingrifle_secondary_refire))) {
                 if(W_Clip_TryAttackOrReload()) {

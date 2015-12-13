@@ -84,6 +84,8 @@ void spawnfunc_weapon_laser (void)
 
 float w_laser(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_laser_swapshotmodes));
+
 	float r1;
 	float r2;
 	if (req == WR_AIM)
@@ -93,22 +95,22 @@ float w_laser(float req)
 			r1 = CVAR(g_balance_laser_primary_damage);
 			r2 = CVAR(g_balance_laser_secondary_damage);
 			if (random() * (r2 + r1) > r1)
-				self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_laser_secondary_speed), 0, CVAR(g_balance_laser_secondary_lifetime), FALSE);
+				self.w_button_secondary = bot_aim(CVAR(g_balance_laser_secondary_speed), 0, CVAR(g_balance_laser_secondary_lifetime), FALSE);
 			else
-				self.BUTTON_ATCK = bot_aim(CVAR(g_balance_laser_primary_speed), 0, CVAR(g_balance_laser_primary_lifetime), FALSE);
+				self.w_button_primary = bot_aim(CVAR(g_balance_laser_primary_speed), 0, CVAR(g_balance_laser_primary_lifetime), FALSE);
 		}
 		else
-			self.BUTTON_ATCK = bot_aim(CVAR(g_balance_laser_primary_speed), 0, CVAR(g_balance_laser_primary_lifetime), FALSE);
+			self.w_button_primary = bot_aim(CVAR(g_balance_laser_primary_speed), 0, CVAR(g_balance_laser_primary_lifetime), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
+		if (self.w_button_primary)
 		if (weapon_prepareattack(0, CVAR(g_balance_laser_primary_refire)))
 		{
 			W_Laser_Attack(FALSE);
 			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_laser_primary_animtime), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.w_button_secondary)
 		{
 			if(CVAR(g_balance_laser_secondary))
 			{

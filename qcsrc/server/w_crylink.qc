@@ -579,26 +579,27 @@ void W_Crylink_SetClipContext(void) {
 
 float w_crylink(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_crylink_swapshotmodes));
     W_Crylink_SetClipContext();
 
 	if (req == WR_AIM)
 	{
 		if (random() > 0.15)
-			self.BUTTON_ATCK = bot_aim(CVAR(g_balance_crylink_primary_speed), 0, CVAR(g_balance_crylink_primary_middle_lifetime), FALSE);
+			self.w_button_primary = bot_aim(CVAR(g_balance_crylink_primary_speed), 0, CVAR(g_balance_crylink_primary_middle_lifetime), FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_crylink_secondary_speed), 0, CVAR(g_balance_crylink_secondary_middle_lifetime), FALSE);
+			self.w_button_secondary = bot_aim(CVAR(g_balance_crylink_secondary_speed), 0, CVAR(g_balance_crylink_secondary_middle_lifetime), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_crylink_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Crylink_Attack();
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_crylink_primary_animtime), w_ready);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(weapon_prepareattack(1, CVAR(g_balance_crylink_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Crylink_Attack2();
@@ -608,7 +609,7 @@ float w_crylink(float req)
             W_Clip_FinishWeaponAction();
         }
 
-        if((self.crylink_waitrelease == 1 && !self.BUTTON_ATCK) || (self.crylink_waitrelease == 2 && !self.BUTTON_ATCK2))
+        if((self.crylink_waitrelease == 1 && !self.w_button_primary) || (self.crylink_waitrelease == 2 && !self.w_button_secondary))
         {
             if(!self.crylink_lastgroup || time > self.crylink_lastgroup.teleport_time)
             {

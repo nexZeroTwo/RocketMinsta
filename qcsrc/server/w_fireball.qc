@@ -318,17 +318,18 @@ void W_Fireball_SetClipContext(void) {
 
 float w_fireball(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_fireball_swapshotmodes));
     W_Fireball_SetClipContext();
 
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK = FALSE;
-		self.BUTTON_ATCK2 = FALSE;
+		self.w_button_primary = FALSE;
+		self.w_button_secondary = FALSE;
 		if (self.bot_secondary_fireballmooth == 0)
 		{
 			if(bot_aim(CVAR(g_balance_fireball_primary_speed), CVAR(g_balance_fireball_primary_speed_up), CVAR(g_balance_fireball_primary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK = TRUE;
+				self.w_button_primary = TRUE;
 				if(random() < 0.01) self.bot_secondary_fireballmooth = 1;
 			}
 		}
@@ -336,7 +337,7 @@ float w_fireball(float req)
 		{
 			if(bot_aim(CVAR(g_balance_fireball_secondary_speed), 0, CVAR(g_balance_fireball_secondary_lifetime), FALSE))
 			{
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 				if(random() < 0.02) self.bot_secondary_fireballmooth = 0;
 			}
 		}
@@ -344,14 +345,14 @@ float w_fireball(float req)
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_fireball_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Fireball_Attack1();
                 weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_fireball_primary_animtime), w_ready);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(time >= self.fireball_secondarytime)
             if(weapon_prepareattack(1, CVAR(g_balance_fireball_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {

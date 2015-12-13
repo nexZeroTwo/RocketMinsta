@@ -657,7 +657,7 @@ float Buffs_MedicDamage(entity targ, entity attacker, entity inflictor, float da
             if(attacker == targ)
                 heal *= CVAR(g_buffs_medic_selfhealfactor);
 
-            W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+            W_RegisterHitForHitstreak(attacker, deathtype);
 
             if(damage_headshotbonus)
             if(CVAR(g_buffs_medic_headshot))

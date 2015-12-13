@@ -152,7 +152,9 @@ void HLAC_fire1_02()
 		return;
 	}
 
-	if (self.BUTTON_ATCK)
+    W_SetButtonFields(CVAR(g_balance_hlac_swapshotmodes));
+
+	if (self.w_button_primary)
 	{
 		if (!weapon_action(self.weapon, WR_CHECKAMMO1))
 		{
@@ -192,14 +194,15 @@ void W_HLAC_SetClipContext(void) {
 
 float w_hlac(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_hlac_swapshotmodes));
     W_HLAC_SetClipContext();
 
 	if (req == WR_AIM)
-        self.BUTTON_ATCK = bot_aim(CVAR(g_balance_hlac_primary_speed), 0, CVAR(g_balance_hlac_primary_lifetime), FALSE);
+        self.w_button_primary = bot_aim(CVAR(g_balance_hlac_primary_speed), 0, CVAR(g_balance_hlac_primary_lifetime), FALSE);
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_hlac_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 self.HLAC_bulletcounter = 0;
@@ -207,7 +210,7 @@ float w_hlac(float req)
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_hlac_primary_refire), HLAC_fire1_02);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(CVAR(g_balance_hlac_secondary))
             if(weapon_prepareattack(1, CVAR(g_balance_hlac_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {

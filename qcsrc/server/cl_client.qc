@@ -3279,6 +3279,8 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
+        W_FixWeaponSet();
+
         if(frametime) {
             if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))
                 self.effects |= EF_NOSHADOW;
