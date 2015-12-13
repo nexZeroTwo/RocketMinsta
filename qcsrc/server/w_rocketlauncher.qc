@@ -349,13 +349,15 @@ void spawnfunc_weapon_rocketlauncher (void); // defined in t_items.qc
 
 float w_rlauncher(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_rocketlauncher_swapshotmodes));
     W_Rocket_SetClipContext();
+
 	entity rock;
 	float rockfound;
 	if (req == WR_AIM)
 	{
 		// aim and decide to fire if appropriate
-		self.BUTTON_ATCK = bot_aim(CVAR(g_balance_rocketlauncher_speed), 0, CVAR(g_balance_rocketlauncher_lifetime), FALSE);
+		self.w_button_primary = bot_aim(CVAR(g_balance_rocketlauncher_speed), 0, CVAR(g_balance_rocketlauncher_lifetime), FALSE);
 		if(skill >= 2) // skill 0 and 1 bots won't detonate rockets!
 		{
 			// decide whether to detonate rockets
@@ -419,7 +421,7 @@ float w_rlauncher(float req)
 						if (
 							(v_forward * normalize(missile.origin - targ.origin)< 0.1)
 							&& desirabledamage > 0.1*coredamage
-						)self.BUTTON_ATCK2 = TRUE;
+						)self.w_button_secondary = TRUE;
 						targ = targ.chain;
 					}
 				}else{
@@ -430,7 +432,7 @@ float w_rlauncher(float req)
 						if(self.enemy.classname == "player")
 							if(desirabledamage >= 0.1*coredamage)
 								if(random()/distance*300 > frametime*bound(0,(10-skill)*0.2,1))
-									self.BUTTON_ATCK2 = TRUE;
+									self.w_button_secondary = TRUE;
 				//	dprint(ftos(random()/distance*300),">");dprint(ftos(frametime*bound(0,(10-skill)*0.2,1)),"\n");
 				}
 
@@ -439,12 +441,12 @@ float w_rlauncher(float req)
 			// if we would be doing at X percent of the core damage, detonate it
 			// but don't fire a new shot at the same time!
 			if (desirabledamage >= 0.75 * coredamage) //this should do group damage in rare fortunate events
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 			if ((skill > 6.5) && (selfdamage > self.health))
-				self.BUTTON_ATCK2 = FALSE;
-			//if(self.BUTTON_ATCK2 == TRUE)
+				self.w_button_secondary = FALSE;
+			//if(self.w_button_secondary == TRUE)
 			//	dprint(ftos(desirabledamage),"\n");
-			if (self.BUTTON_ATCK2 == TRUE) self.BUTTON_ATCK = FALSE;
+			if (self.w_button_secondary == TRUE) self.w_button_primary = FALSE;
 		}
 	}
 	else if (req == WR_THINK)
@@ -452,7 +454,7 @@ float w_rlauncher(float req)
 		if(g_laserguided_missile)
 		{
             if(W_Clip_TryWeaponAction()) {
-                if (self.BUTTON_ATCK && self.rl_release)
+                if (self.w_button_primary && self.rl_release)
                 if (W_Clip_TryAttackOrReload()) {
                     rockfound = 0;
                     for(rock = world; (rock = find(rock, classname, "rocket")); ) if(rock.owner == self)
@@ -477,9 +479,9 @@ float w_rlauncher(float req)
                 }
                 W_Clip_FinishWeaponAction();
             }
-			if (!self.BUTTON_ATCK)
+			if (!self.w_button_primary)
 				self.rl_release = 1;
-			if (self.BUTTON_ATCK2)
+			if (self.w_button_secondary)
 			if(self.exteriorweaponentity.attack_finished_single < time)
 			{
 				self.exteriorweaponentity.attack_finished_single = time + 0.4;
@@ -491,7 +493,7 @@ float w_rlauncher(float req)
 		else
 		{
             if(W_Clip_TryWeaponAction()) {
-                if (self.BUTTON_ATCK) {
+                if (self.w_button_primary) {
                     if (W_Clip_TryAttackOrReload()) {
                         if(self.rl_release || CVAR(g_balance_rocketlauncher_guidestop))
                         if(weapon_prepareattack(0, CVAR(g_balance_rocketlauncher_refire)))
@@ -504,10 +506,10 @@ float w_rlauncher(float req)
                 }
                 W_Clip_FinishWeaponAction();
             }
-			if (!self.BUTTON_ATCK)
+			if (!self.w_button_primary)
 				self.rl_release = 1;
 
-			if (self.BUTTON_ATCK2)
+			if (self.w_button_secondary)
 			{
 				rockfound = 0;
 				for(rock = world; (rock = find(rock, classname, "rocket")); ) if(rock.owner == self)

@@ -131,7 +131,9 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
 }
 
 void W_Nex_Attack2_Wait(void) {
-    if(self.BUTTON_ATCK2 && time < self.nex_charge_expiretime) {
+    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
+
+    if(self.w_button_secondary && time < self.nex_charge_expiretime) {
         return;
     }
 
@@ -160,13 +162,15 @@ void spawnfunc_weapon_nex (void); // defined in t_items.qc
 
 float w_nex(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
     W_Nex_SetClipContext();
+
 	if (req == WR_AIM)
-		self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
+		self.w_button_primary = bot_aim(1000000, 0, 1, FALSE);
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if (self.BUTTON_ATCK)
+            if (self.w_button_primary)
             if(W_Clip_TryAttackOrReload()) {
                 if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
                 {
@@ -174,7 +178,7 @@ float w_nex(float req)
                     weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_animtime), w_ready);
                 }
             }
-            if(self.BUTTON_ATCK2 && CVAR(g_balance_nex_secondary))
+            if(self.w_button_secondary && CVAR(g_balance_nex_secondary))
             if(W_Clip_TryAttackOrReload()) {
                 if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
                     float ct = CVAR(g_balance_nex_secondary_chargetime);

@@ -289,22 +289,24 @@ void spawnfunc_weapon_flak(void) {
 }
 
 float w_flak(float req) {
+    W_SetButtonFields(CVAR(g_balance_flak_swapshotmodes));
     W_Flak_SetClipContext();
+
     if(req == WR_AIM) {
         if(random() < 0.35 && CVAR(g_balance_flak_secondary_bomb) && self.ammo_rockets >= CVAR(g_balance_flak_secondary_ammo_rockets))
-            self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_flak_secondary_bomb_speed), CVAR(g_balance_flak_secondary_bomb_speed_up), CVAR(g_balance_flak_secondary_bomb_lifetime), TRUE);
+            self.w_button_secondary = bot_aim(CVAR(g_balance_flak_secondary_bomb_speed), CVAR(g_balance_flak_secondary_bomb_speed_up), CVAR(g_balance_flak_secondary_bomb_lifetime), TRUE);
         else
-            self.BUTTON_ATCK = bot_aim(CVAR(g_balance_flak_primary_speed), CVAR(g_balance_flak_primary_speed_up), CVAR(g_balance_flak_primary_lifetime), TRUE);
+            self.w_button_primary = bot_aim(CVAR(g_balance_flak_primary_speed), CVAR(g_balance_flak_primary_speed_up), CVAR(g_balance_flak_primary_lifetime), TRUE);
     } else if(req == WR_THINK) {
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_flak_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Flak_Attack1();
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_flak_primary_animtime), w_ready);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(weapon_prepareattack(1, CVAR(g_balance_flak_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 if(CVAR(g_balance_flak_secondary_bomb))

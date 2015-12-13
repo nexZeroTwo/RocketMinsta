@@ -88,7 +88,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 }
 
 float W_Zapper_Beam_Expired(float secondary) {
-    if(time > self.zapper_expire && ((secondary && !self.owner.BUTTON_ATCK2) || (!secondary && !self.owner.BUTTON_ATCK)))
+    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+
+    if(time > self.zapper_expire && ((secondary && !self.owner.w_button_secondary) || (!secondary && !self.owner.w_button_primary)))
         return TRUE;
 
     if(self.owner.zapper_heat >= 1)
@@ -548,14 +550,16 @@ float W_Zapper_PrepareFirstAttack(float sec) {
 }
 
 void W_Zapper_Accumulate(void) {
+    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+
     setorigin(self, self.owner.origin);
     self.nextthink = time;
     self = self.owner;
     float accumulate_end = 1;
     if (PlayerMayFire(self) && self.weapon == WEP_ZAPPER) {
         if (self.zapper_accumulator.zapper_expire < time &&
-               (!self.BUTTON_ATCK2
-               || self.BUTTON_ATCK
+               (!self.w_button_secondary
+               || self.w_button_primary
                || time > self.zapper_accumulator.zapper_accumulate)) {
             W_Zapper_Attack2();
             weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_zapper_animtime"), w_ready);
@@ -570,16 +574,17 @@ void W_Zapper_Accumulate(void) {
 }
 
 float w_zapper(float req) {
+    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
     float dofire;
 
     if (req == WR_AIM) {
         if(vlen(self.origin-self.enemy.origin) < CVAR(g_balance_zapper_primary_range))
-            self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+            self.w_button_primary = bot_aim(1000000, 0, 0.001, FALSE);
         else
-            self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+            self.w_button_secondary = bot_aim(1000000, 0, 0.001, FALSE);
     } else if(req == WR_THINK) {
-        if(self.BUTTON_ATCK) {
-            if (self.BUTTON_ATCK2 && CVAR(g_balance_zapper_secondary_shield == 2)) {
+        if(self.w_button_primary) {
+            if (self.w_button_secondary && CVAR(g_balance_zapper_secondary_shield == 2)) {
                 if(weapon_prepareattack(1, -1)) {
                     if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {
                         W_SwitchWeapon_OutOfAmmo(self);
@@ -612,7 +617,7 @@ float w_zapper(float req) {
                         weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_zapper_animtime), w_ready);
                 }
             }
-        } else if(self.BUTTON_ATCK2 && CVAR(g_balance_zapper_secondary)) {
+        } else if(self.w_button_secondary && CVAR(g_balance_zapper_secondary)) {
             if(CVAR(g_balance_zapper_secondary_shield == 1)) {
                 if(weapon_prepareattack(1, -1)) {
                     if(self.zapper_heat >= 1 && CVAR(g_balance_zapper_secondary_shield_heatup)) {

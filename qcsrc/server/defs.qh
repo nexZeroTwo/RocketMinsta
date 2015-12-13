@@ -817,3 +817,6 @@ vector PL_CROUCH_MAX;
 float readyrestart_happened;
 
 var .float origin_array[3];
+
+var .float w_button_primary;
+var .float w_button_secondary;

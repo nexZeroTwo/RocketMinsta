@@ -81,7 +81,10 @@ void uzi_fire1_02()
 		w_ready();
 		return;
 	}
-	if (self.BUTTON_ATCK)
+
+    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
+
+	if (self.w_button_primary)
 	{
 		if (!weapon_action(self.weapon, WR_CHECKAMMO2))
 		{
@@ -102,19 +105,20 @@ void uzi_fire1_02()
 
 float w_uzi(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
     W_Uzi_SetClipContext();
 
 	if (req == WR_AIM)
 		if(vlen(self.origin-self.enemy.origin) < 3000 - bound(0, skill, 10) * 200)
-			self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_primary = bot_aim(1000000, 0, 0.001, FALSE);
 		else
 		{
-			self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_secondary = bot_aim(1000000, 0, 0.001, FALSE);
 		}
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, 0))
             if(W_Clip_TryAttackOrReload()) {
                 self.uzi_bulletcounter = 1;
@@ -122,7 +126,7 @@ float w_uzi(float req)
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_uzi_sustained_refire), uzi_fire1_02);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(CVAR(g_balance_uzi_first))
             if(weapon_prepareattack(1, 0))
             if(W_Clip_TryAttackOrReload()) {

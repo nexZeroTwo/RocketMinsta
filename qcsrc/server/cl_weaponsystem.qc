@@ -1020,3 +1020,13 @@ void W_AttachToShotorg(entity flash, vector offset)
 		setattachment(xflash, self.exteriorweaponentity, "shot");
 	}
 }
+
+void W_SetButtonFields(float swap) {
+    if(swap) {
+        w_button_primary = BUTTON_ATCK2;
+        w_button_secondary = BUTTON_ATCK;
+    } else {
+        w_button_primary = BUTTON_ATCK;
+        w_button_secondary = BUTTON_ATCK2;
+    }
+}

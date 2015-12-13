@@ -450,15 +450,16 @@ void W_MinstaNex_SetClipContext(void) {
 
 float w_minstanex(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_minstanex_swapshotmodes));
     W_MinstaNex_SetClipContext();
 	float rapid = CVAR(g_rocketminsta_laser_rapid);
 	
 	if (req == WR_AIM)
 	{
 		if(self.ammo_cells>0 && time >= self.nextfiretime)
-			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
+			self.w_button_primary = bot_aim(1000000, 0, 1, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(
+			self.w_button_secondary = bot_aim(
 				if(CVAR(g_rocketminsta_laser_new))
 					CVAR(g_rocketminsta_laser_speed)
                 else
@@ -474,7 +475,7 @@ float w_minstanex(float req)
         if(W_Clip_TryWeaponAction()) {
             // the shit I wrote 5 years ago...
 
-            if(self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && CVAR(g_rocketminsta))) {
+            if(self.w_button_secondary || (self.w_button_primary && !self.ammo_cells && CVAR(g_rocketminsta))) {
                 if(g_freeze)
                 if(self.frozen)
                     return TRUE;
@@ -507,7 +508,7 @@ float w_minstanex(float req)
             else
                 self.held_down = FALSE;
             
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_MinstaNex_Attack();

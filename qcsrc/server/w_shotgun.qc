@@ -136,24 +136,25 @@ void W_Shotgun_SetClipContext(void) {
 
 float w_shotgun(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_shotgun_swapshotmodes));
     W_Shotgun_SetClipContext();
 
 	if (req == WR_AIM)
 		if(vlen(self.origin-self.enemy.origin)>200)
-			self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_primary = bot_aim(1000000, 0, 0.001, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_secondary = bot_aim(1000000, 0, 0.001, FALSE);
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_shotgun_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Shotgun_Attack();
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_shotgun_primary_animtime), w_ready);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(CVAR(g_balance_shotgun_secondary))
             if(weapon_prepareattack(1, CVAR(g_balance_shotgun_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {

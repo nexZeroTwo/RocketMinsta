@@ -195,8 +195,10 @@ void spawnfunc_weapon_electro (void)
 
 void w_electro_checkattack()
 {
+    W_SetButtonFields(CVAR(g_balance_electro_swapshotmodes));
+
 	if(self.electro_count > 1)
-	if(self.BUTTON_ATCK2)
+	if(self.w_button_secondary)
 	if(weapon_prepareattack(1, -1))
 	{
 		W_Electro_Attack2();
@@ -221,19 +223,20 @@ void W_Electro_SetClipContext(void) {
 .float bot_secondary_electromooth;
 float w_electro(float req)
 {
+    W_SetButtonFields(CVAR(g_balance_electro_swapshotmodes));
     W_Electro_SetClipContext();
 
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK=FALSE;
-		self.BUTTON_ATCK2=FALSE;
+		self.w_button_primary=FALSE;
+		self.w_button_secondary=FALSE;
 		if(vlen(self.origin-self.enemy.origin) > 1000)
 			self.bot_secondary_electromooth = 0;
 		if(self.bot_secondary_electromooth == 0)
 		{
 			if(bot_aim(CVAR(g_balance_electro_primary_speed), 0, CVAR(g_balance_electro_primary_lifetime), FALSE))
 			{
-				self.BUTTON_ATCK = TRUE;
+				self.w_button_primary = TRUE;
 				if(random() < 0.01) self.bot_secondary_electromooth = 1;
 			}
 		}
@@ -241,7 +244,7 @@ float w_electro(float req)
 		{
 			if(bot_aim(CVAR(g_balance_electro_secondary_speed), CVAR(g_balance_grenadelauncher_secondary_speed_up), CVAR(g_balance_electro_secondary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 				if(random() < 0.03) self.bot_secondary_electromooth = 0;
 			}
 		}
@@ -249,14 +252,14 @@ float w_electro(float req)
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if(self.BUTTON_ATCK)
+            if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_electro_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
                 W_Electro_Attack();
                 weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_electro_primary_animtime), w_ready);
             }
 
-            if(self.BUTTON_ATCK2)
+            if(self.w_button_secondary)
             if(time >= self.electro_secondarytime)
             if(weapon_prepareattack(1, CVAR(g_balance_electro_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {
