@@ -1245,7 +1245,9 @@ void readplayerstartcvars()
     if (g_clanarena) {
         start_health = CVAR(g_clanarena_start_health);
         start_armorvalue = CVAR(g_clanarena_start_armor);
-    } else if(g_weaponarena) {
+    }
+
+    if(g_weaponarena) {
         s = CVAR_STR(g_weaponarena_secondary);
 
         if(s != "" && s != "0") {
