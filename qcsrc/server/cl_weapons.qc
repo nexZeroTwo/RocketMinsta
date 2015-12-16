@@ -551,10 +551,15 @@ void Nixnex_GiveCurrentWeapon()
 
 void W_FixWeaponSet(void) {
     if(g_weaponarena && g_weaponarena_secondary) {
-        if(self.BUTTON_ATCK)
-            self.weapons = g_weaponarena;
-        else if(self.BUTTON_ATCK2)
-            self.weapons = g_weaponarena_secondary;
+        var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
+
+        if(self.BUTTON_ATCK && w & g_weaponarena_secondary) {
+            self.weapons &~= g_weaponarena_secondary;
+            self.weapons |= g_weaponarena;
+        } else if(self.BUTTON_ATCK2 && w & g_weaponarena) {
+            self.weapons &~= g_weaponarena;
+            self.weapons |= g_weaponarena_secondary;
+        }
     }
 }
 
