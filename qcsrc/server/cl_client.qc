@@ -1384,8 +1384,8 @@ void PutClientInServer (void)
             else
                 HG_PlayerJoin();
         }
-        
-        W_Clip_ResetPlayer();
+
+        W_Clip_ResetAll(TRUE);
         Boobs_Attach();
 
         self.wasingame = TRUE;

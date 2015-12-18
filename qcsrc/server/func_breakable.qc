@@ -128,6 +128,7 @@ void func_breakable_behave_restore()
 	self.takedamage = DAMAGE_AIM;
 	self.event_damage = func_breakable_damage;
 	self.state = 0;
+    self.owner = world;
 	setsize(self, self.mins_save, self.maxs_save);
 	func_breakable_colormod();
     Buffs_MEODP_Point_Attach(self, func_breakable_meodp_death);

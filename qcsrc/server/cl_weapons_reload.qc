@@ -60,13 +60,6 @@ void W_Clip_Stats_Update(void) {
     }
 }
 
-void W_Clip_ResetPlayer(void) {
-    for(var w = 0; w < WEP_LAST; ++w) {
-        self.(w_clip_limit_array[w]) = 0;
-        self.(w_clip_loaded_array[w]) = 0;
-    }
-}
-
 float W_Clip_CheckFull(void) {
     var lim = self.w_clip_limit;
 
@@ -185,6 +178,8 @@ void W_Clip_Reset(float dorefill) {
     } else {
         self.w_clip_loaded = bound(0, self.w_clip_loaded, self.w_clip_limit);
     }
+
+    W_Clip_CheckFull();
 }
 
 void W_Clip_ResetAll(float dorefill) {
@@ -223,10 +218,17 @@ void W_Clip_WeaponRequestHook(float req) {
     } else if(req == WR_LOWER) {
         if(CVAR(g_balance_reload_cancel_by_switch)) {
             if(self.w_clip_loaded <= 0) {
-                self.w_clip_loaded = self.w_clip_saved;
+                var remainig = self.w_clip_reloadfinished - time;
+
+                if(remainig > 0 && remainig <= CVAR(g_balance_reload_cancel_by_switch_leniency))
+                    W_Clip_Reset(TRUE);
+                else
+                    self.w_clip_loaded = self.w_clip_saved;
+
                 self.w_clip_reloadfinished = time;
-            } else
+            } else {
                 self.w_clip_saved = self.w_clip_loaded;
+            }
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/campingrifle_reload.wav");
