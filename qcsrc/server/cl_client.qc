@@ -3211,9 +3211,9 @@ void PlayerPreThink (void)
             self.playtimeupdate = time + 30;
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
             if(sv_scoreboard_noob_column)
-                PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
+                PlayerScore_Set(self, SP_NOOB, rint(255 * self.jumpholdtime / self.alivetime));
             if(sv_scoreboard_alive_column)
-                PlayerScore_Set(self, SP_ALIVE, rint(100 * self.alivetime / self.playtime));
+                PlayerScore_Set(self, SP_ALIVE, rint(255 * self.alivetime / self.playtime));
         }
     }
 
@@ -3288,13 +3288,13 @@ void PlayerPreThink (void)
 
         if(sv_scoreboard_acc_column)
         if(time > self.acctime) {
-            float hit = self.damage_hits - self.weapon;
-            float total = self.maxdamage_fired - self.weapon;
+            float hit = self.accstat_hits;
+            float total = self.accstat_shots;
             
             if(hit < 0 || total <= 0)
                 PlayerScore_Set(self, SP_ACCURACY, -1);
             else
-                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 100);
+                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 255);
             
             self.acctime = time + 5;
         }

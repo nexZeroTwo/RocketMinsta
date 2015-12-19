@@ -860,13 +860,13 @@ void spawnfunc_worldspawn (void)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
     
 
-    var wa = g_weaponarena | g_weaponarena_secondary;
+    var wa = g_weaponarena;
     sv_scoreboard_acc_column = (CVAR(sv_scoreboard_acc_column) && (g_minstagib || !(wa & (wa - 1))));
     sv_scoreboard_noob_column = CVAR(sv_scoreboard_noob_column);
     sv_scoreboard_alive_column = CVAR(sv_scoreboard_alive_column);
 
     defer(0, fix_team_spawns);
-    
+
     IRC_Init();
     DPRM_Start();
     Radio_Init();

@@ -820,3 +820,6 @@ var .float origin_array[3];
 
 var .float w_button_primary;
 var .float w_button_secondary;
+
+.float accstat_shots;
+.float accstat_hits;

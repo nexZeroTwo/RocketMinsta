@@ -868,6 +868,10 @@ string Sbar_GetField(entity pl, float field)
                 sbar_field_rgb = '0.5 0.5 0.5';
                 return "n/a";
             }
+
+            acc = rint(acc * (100 / 255));
+            if(acc < 1)
+                acc = 0; // avoid the "-0%" representation
             
             if(acc < 40)
                 sbar_field_rgb = '1 0 0' + '0 1 0' * pow(acc / 40, 2);
@@ -879,7 +883,7 @@ string Sbar_GetField(entity pl, float field)
             return strcat(ftos(acc), "%");
         
         case SP_NOOB:
-            float noob = pl.scores[SP_NOOB];
+            float noob = rint(pl.scores[SP_NOOB] * (100 / 255));
             float pro = 100 - noob;
 
             if(pro < 70)
@@ -892,7 +896,7 @@ string Sbar_GetField(entity pl, float field)
             return strcat(ftos(noob), "%");
             
         case SP_ALIVE:
-            float alive = pl.scores[SP_ALIVE];
+            float alive = rint(pl.scores[SP_ALIVE] * (100 / 255));
             
             if(alive < 70)
                 sbar_field_rgb = '1 0 0' + '0 1 0' * pow(alive / 70, 2);
