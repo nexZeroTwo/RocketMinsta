@@ -1172,7 +1172,6 @@ float autocvar_g_nadgets_napalm_burndamage;
 float autocvar_g_nadgets_napalm_burntime;
 float autocvar_g_nadgets_napalm_edgeburndamage;
 float autocvar_g_nadgets_napalm_fire_lifetime;
-float autocvar_g_nadgets_napalm_middleburnradius;
 float autocvar_g_nadgets_napalm_numparticles;
 string autocvar_g_nadgets_napalm_regenscale;
 string autocvar_g_nadgets_napalm_stacklimit;
