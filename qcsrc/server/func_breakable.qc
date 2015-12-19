@@ -41,7 +41,7 @@ void func_breakable_damage(entity inflictor, entity attacker, float damage, floa
 //
 void LaunchDebris (string debrisname, vector force) =
 {
-	local	entity dbr;
+	entity dbr;
 
 	dbr = spawn();
 	setorigin(dbr, self.absmin
@@ -83,9 +83,13 @@ void func_breakable_colormod()
 		self.colormod = '1 1 1';
 }
 
+void func_breakable_meodp_death(entity attacker, entity inflictor) {
+    Damage(self, inflictor, attacker, self.health, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
+}
+
 void func_breakable_look_destroyed()
 {
-	local float floor_z;
+	float floor_z;
 
 	if(self.mdl_dead == "")
 		self.model = "";
@@ -115,6 +119,7 @@ void func_breakable_behave_destroyed()
 	self.state = 1;
 	setsize(self, '0 0 0', '0 0 0');
 	func_breakable_colormod();
+    Buffs_MEODP_Point_Detach(self);
 }
 
 void func_breakable_behave_restore()
@@ -123,8 +128,10 @@ void func_breakable_behave_restore()
 	self.takedamage = DAMAGE_AIM;
 	self.event_damage = func_breakable_damage;
 	self.state = 0;
+    self.owner = world;
 	setsize(self, self.mins_save, self.maxs_save);
 	func_breakable_colormod();
+    Buffs_MEODP_Point_Attach(self, func_breakable_meodp_death);
 }
 
 void func_breakable_destroyed()
@@ -135,6 +142,7 @@ void func_breakable_destroyed()
 
 void func_breakable_restore()
 {
+	self.nextthink = 0;
 	func_breakable_look_restore();
 	func_breakable_behave_restore();
 }
@@ -161,6 +169,12 @@ void func_breakable_destroy() {
 
 	if(self.cnt)
 		pointparticles(self.cnt, self.absmin * 0.5 + self.absmax * 0.5, '0 0 0', self.count);
+
+	if(self.respawntime)
+	{
+		self.think = func_breakable_restore;
+		self.nextthink = time + self.respawntime + crandom() * self.respawntimejitter;
+	}
 
 	oldmsg = self.message;
 	self.message = "";

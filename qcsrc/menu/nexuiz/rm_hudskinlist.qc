@@ -44,7 +44,7 @@ void setSelectedRMHudSkinList(entity me, float i)
 	{
 		setSelectedListBox(me, i);
 		
-		if(!me.isUpdating) if(cvar_string("rm_hudskin") != bufstr_get(me.skinlist_buf, me.selectedItem))
+		if(!me.isUpdating) if(CVAR_STR(rm_hudskin) != bufstr_get(me.skinlist_buf, me.selectedItem))
 			localcmd("hudskin ", bufstr_get(me.skinlist_buf, me.selectedItem), "\n");
 	}
 }
@@ -78,10 +78,10 @@ void updateSkinListRMHudSkinList(entity me)
 	*/
 	
 	// Copy-pasted from client/Main.qc... universal way of iteration through skins needed?
-	local float i, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
-	local string tmpname, current;
+	float i, globsize, hsglob = search_begin("gfx/hud/skins/*/skininfo", FALSE, TRUE);
+	string tmpname, current;
 	globsize = search_getsize(hsglob);
-	current = cvar_string("rm_hudskin");
+	current = CVAR_STR(rm_hudskin);
 	
 	for(i = 0; i < globsize; ++i)
 	{
@@ -116,9 +116,9 @@ void resizeNotifyRMHudSkinList(entity me, vector relOrigin, vector relSize, vect
 void setDependent_Check(entity);
 void drawListBoxItemRMHudSkinList(entity me, float i, vector absSize, float isSelected)
 {
-	local string s;
-	local float amod;
-	amod = (me.disabled? 0.2:1);
+	string s;
+	float amod;
+	amod = if(me.disabled) 0.2 else 1;
 	
 	if(isSelected)
 		draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);

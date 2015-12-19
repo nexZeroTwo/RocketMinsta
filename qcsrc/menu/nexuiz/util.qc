@@ -223,7 +223,7 @@ float _Nex_ExtResponseSystem_RetryTime_LastDelay;
 void() Item_Nex_ExtResponseSystem_SendQuery =
 {
 	dprint("Sending extended response requests...\n");
-	localcmd(strcat("packet 64.22.107.122:27950 \"getExtResponse checkUpdates nexuiz ", cvar_string("g_nexuizversion"), "\"\n"));
+	localcmd(strcat("packet 64.22.107.122:27950 \"getExtResponse checkUpdates nexuiz ", CVAR_STR(g_nexuizversion), "\"\n"));
 	_Nex_ExtResponseSystem_RequestsSent = TRUE;
 	_Nex_ExtResponseSystem_RetryTime_LastDelay = _Nex_ExtResponseSystem_RetryTime_LastDelay * 2 + 1;
 	_Nex_ExtResponseSystem_RetryTime = time + _Nex_ExtResponseSystem_RetryTime_LastDelay;
@@ -262,8 +262,8 @@ void(float argc) Item_Nex_ExtResponseSystem_Parse =
 
 void() Item_Nex_ExtResponseSystem_CheckForResponse =
 {
-	local string s;
-	local float argc;
+	string s;
+	float argc;
 	while(strlen((s = getextresponse())))
 	{
 		argc = tokenize_console(s);
@@ -367,7 +367,7 @@ void postMenuDraw()
 	{
 		if(time >= map_nextcheck)
 		{
-			map_crc = crc16(FALSE, cvar_string("cl_worldbasename"));
+			map_crc = crc16(FALSE, CVAR_STR(cl_worldbasename));
 			
 			if(map_crc != map_crc_old)
 			{
@@ -383,7 +383,7 @@ void preMenuDraw()
 {
 	vector fs, sz, line, mid;
 
-	if(cvar("menu_updatecheck"))
+	if(CVAR(menu_updatecheck))
 	{
 		Item_Nex_ExtResponseSystem_CheckForResponse();
 		if(!_Nex_ExtResponseSystem_VersionHandled)

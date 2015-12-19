@@ -3,13 +3,16 @@
 float CSQCProjectile_SendEntity(entity to, float sf)
 {
 	// note: flag 0x20 = no trail please
-	sf = sf & 0x3F;
+	sf = sf & 31;
 
 	if(self.csqcprojectile_clientanimate)
-		sf |= 0x80; // client animated, not interpolated
+		sf |= 128; // client animated, not interpolated
 
 	if(self.flags & FL_ONGROUND)
-		sf |= 0x40;
+		sf |= 64;
+
+    if(self.bouncefactor && self.bouncefactor != 0.5)
+        sf |= 32;
 
 	WriteByte(MSG_ENTITY, ENT_CLIENT_PROJECTILE);
 	WriteByte(MSG_ENTITY, sf);
@@ -20,7 +23,7 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 		WriteCoord(MSG_ENTITY, self.origin_y);
 		WriteCoord(MSG_ENTITY, self.origin_z);
 
-		if(sf & 0x80)
+		if(sf & 128)
 		{
 			WriteCoord(MSG_ENTITY, self.velocity_x);
 			WriteCoord(MSG_ENTITY, self.velocity_y);
@@ -29,8 +32,18 @@ float CSQCProjectile_SendEntity(entity to, float sf)
 		}
 	}
 
-	if(sf & 2)
+	if(sf & 2) {
 		WriteByte(MSG_ENTITY, self.csqcprojectile_type); // TODO maybe put this into sf?
+        WriteByte(MSG_ENTITY, bound(0, ProjectileTeam(self) - 1, 255));
+
+        if(sf & 32)
+            WriteCoord(MSG_ENTITY, self.bouncefactor);
+        
+        if(self.csqcprojectile_type == PROJECTILE_HG_NAPALMSHARD        || // Burn radius
+           self.csqcprojectile_type == PROJECTILE_HG_PLASMA_SHARD       || // Plasma group ID
+           self.csqcprojectile_type == PROJECTILE_HEAL_PARTICLE_EMITTER)   // Healing radius
+            WriteByte(MSG_ENTITY, min(255, self.csqcprojectile_extradata)); 
+    }
 
 	return 1;
 }

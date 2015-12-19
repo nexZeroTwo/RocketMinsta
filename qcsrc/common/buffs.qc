@@ -1,0 +1,111 @@
+
+string Buffs_TypeToName(float buff) {
+    switch(buff) {
+        #define BUFFDEF(id,shortname,longname,color) \
+            case id: return #shortname;
+        BUFFDEFS
+        #undef BUFFDEF
+
+        default: return "unknown";
+    }
+}
+
+float Buffs_NameToType(string name) {
+    switch(name) {
+        #define BUFFDEF(id,shortname,longname,color) \
+            case #shortname: return id;
+        BUFFDEFS
+        #undef BUFFDEF
+
+        // compatibility
+        case "bash": return BUFF_IGNITE;
+        
+        default: return 0;
+    }
+}
+
+string Buffs_TypeToFullName(float buff) {
+    switch(buff) {
+        #define BUFFDEF(id,shortname,longname,color) \
+            case id: return longname;
+        BUFFDEFS
+        #undef BUFFDEF
+
+        default: return string_null;
+    }
+}
+
+string Buffs_TypeToExpandedName(float buff, string sep, float colorfactor) {
+    var n = Buffs_TypeToFullName(buff);
+
+    if(n) {
+        if(colorfactor) {
+            var i = 1 - colorfactor;
+            n = strcat(rgb_to_hexcolor(Buffs_TypeToColor(buff) * colorfactor + [i, i, i]), n);
+        }
+
+        return n;
+    }
+
+    string r;
+    float o, first = TRUE;
+
+    for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+        if(buff & o) {
+            if(first) {
+                r = Buffs_TypeToExpandedName(o, sep, colorfactor);
+                first = FALSE;
+            } else {
+                r = strcat(r, sep, Buffs_TypeToExpandedName(o, sep, colorfactor));
+            }
+        }
+    }
+
+    if(!r)
+        return "Unknown";
+
+    return r;
+}
+
+string Buffs_NameToFullName(string t) {
+    switch(t) {
+        #define BUFFDEF(id,shortname,longname,color) \
+            case #shortname: return longname;
+        BUFFDEFS
+        #undef BUFFDEF
+
+        default: return "Unknown Buff";
+    }
+}
+
+vector Buffs_TypeToColor(float buff) {
+    switch(buff) {
+        #define BUFFDEF(id,shortname,longname,color) \
+            case id: return color;
+        BUFFDEFS
+        #undef BUFFDEF
+
+        default: {
+            vector c;
+            float o, n;
+
+            for(o = BUFF_FIRST; o <= BUFF_LAST; o *= 2) {
+                if(buff & o) {
+                    c += Buffs_TypeToColor(o);
+                    ++n;
+                }
+            }
+
+            return c * (1/n);
+        }
+    }
+}
+
+float Buffs_TypeToIndex(float buff) {
+    #define BUFFDEF(id,shortname,longname,color) \
+        if(buff == id) return id##_ID;
+    BUFFDEFS
+    #undef BUFFDEF
+
+    return -1;
+}

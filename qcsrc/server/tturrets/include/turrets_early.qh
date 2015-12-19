@@ -3,8 +3,6 @@
 
 #ifdef TTURRETS_ENABLED
 
-#message "with tZork turrets"
-
 vector real_origin(entity ent);
 
 /// Map time control over pain inflicted
@@ -407,6 +405,8 @@ void turret_fire();
 .void() turret_diehook;
 .void() turret_respawnhook;
 
+.float(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector vforce) turret_damagehook;
+
 /*
 #define TEH_THINK 2
 #define TEH_DAMAGE 4
@@ -490,7 +490,7 @@ float   turret_stdproc_targetscore_support(entity e_turret,entity e_target);
 * Aim functions
 */
 /// Generic aimer guided by self.aim_flags
-vector turret_stdproc_aim_generic()
+vector turret_stdproc_aim_generic();
 // Straight line, current location
 //vector  turret_stdproc_aim_simple()
 

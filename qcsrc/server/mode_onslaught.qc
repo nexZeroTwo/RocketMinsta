@@ -47,7 +47,7 @@ void ons_throwgib_think()
 
 void ons_throwgib(vector v_from, vector v_to, string smodel, float f_lifetime, float b_burn)
 {
-	local entity gib;
+	entity gib;
 
 	gib = spawn();
 
@@ -74,8 +74,8 @@ void ons_throwgib(vector v_from, vector v_to, string smodel, float f_lifetime, f
 
 void onslaught_updatelinks()
 {
-	local entity l, links;
-	local float stop, t1, t2, t3, t4;
+	entity l, links;
+	float stop, t1, t2, t3, t4;
 	// first check if the game has ended
 	dprint("--- updatelinks ---\n");
 	links = findchain(classname, "onslaught_link");
@@ -374,13 +374,13 @@ float onslaught_controlpoint_attackable(entity cp, float t)
 
 void onslaught_generator_think()
 {
-	local float d;
-	local entity e;
+	float d;
+	entity e;
 	self.nextthink = ceil(time + 1);
 	if (!gameover)
 	{
-		if (cvar("timelimit"))
-		if (time > game_starttime + cvar("timelimit") * 60)
+		if (CVAR(timelimit))
+		if (time > game_starttime + CVAR(timelimit) * 60)
 		{
 			// self.max_health / 300 gives 5 minutes of overtime.
 			// control points reduce the overtime duration.
@@ -474,8 +474,8 @@ void onslaught_generator_damage_spawn(entity gd_owner)
 
 void onslaught_generator_deaththink()
 {
-	local vector org;
-	local float i;
+	vector org;
+	float i;
 
 	if not (self.count)
 		self.count = 40;
@@ -540,7 +540,7 @@ void onslaught_generator_deaththink()
 
 void onslaught_generator_damage(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force)
 {
-	local float i;
+	float i;
 	if (damage <= 0)
 		return;
 	if(inWarmupStage)
@@ -809,7 +809,7 @@ void onslaught_controlpoint_updatesprite(entity e)
 void onslaught_generator_reset()
 {
 	self.team = self.team_saved;
-	self.lasthealth = self.max_health = self.health = cvar("g_onslaught_gen_health");
+	self.lasthealth = self.max_health = self.health = CVAR(g_onslaught_gen_health);
 	self.takedamage = DAMAGE_AIM;
 	self.bot_attack = TRUE;
 	self.iscaptured = TRUE;
@@ -841,7 +841,7 @@ void spawnfunc_onslaught_generator()
 		return;
 	}
 
-	local entity e;
+	entity e;
 	precache_model("models/onslaught/generator.md3");
 	precache_model("models/onslaught/generator_shield.md3");
 	precache_model("models/onslaught/generator_dmg1.md3");
@@ -874,7 +874,7 @@ void spawnfunc_onslaught_generator()
 	self.colormap = 1024 + (self.team - 1) * 17;
 	self.solid = SOLID_BBOX;
 	self.movetype = MOVETYPE_NONE;
-	self.lasthealth = self.max_health = self.health = cvar("g_onslaught_gen_health");
+	self.lasthealth = self.max_health = self.health = CVAR(g_onslaught_gen_health);
 	setmodel(self, "models/onslaught/generator.md3");
 	setsize(self, '-52 -52 -14', '52 52 75');
 	setorigin(self, self.origin);
@@ -967,7 +967,7 @@ void onslaught_controlpoint_icon_damage(entity inflictor, entity attacker, float
 	if(self.owner.iscaptured)
 		WaypointSprite_UpdateHealth(self.owner.sprite, self.health);
 	else
-		WaypointSprite_UpdateBuildFinished(self.owner.sprite, time + (self.max_health - self.health) / (self.count / sys_ticrate));
+		WaypointSprite_UpdateBuildFinished(self.owner.sprite, time + (self.max_health - self.health) / (self.count / CVAR(sys_ticrate)));
 	self.pain_finished = time + 1;
 	self.punchangle = (2 * randomvec() - '1 1 1') * 45;
 	self.cp_bob_dmg_z = (2 * random() - 1) * 15;
@@ -1027,7 +1027,7 @@ void onslaught_controlpoint_icon_damage(entity inflictor, entity attacker, float
 void onslaught_controlpoint_icon_think()
 {
 	entity oself;
-	self.nextthink = time + sys_ticrate;
+	self.nextthink = time + CVAR(sys_ticrate);
 	if (time > self.pain_finished + 5)
 	{
 		if(self.health < self.max_health)
@@ -1112,10 +1112,10 @@ void onslaught_controlpoint_icon_think()
 
 void onslaught_controlpoint_icon_buildthink()
 {
-	local entity oself;
+	entity oself;
 	float a;
 
-	self.nextthink = time + sys_ticrate;
+	self.nextthink = time + CVAR(sys_ticrate);
 
 	// only do this if there is power
 	a = onslaught_controlpoint_can_be_linked(self.owner, self.owner.team);
@@ -1127,7 +1127,7 @@ void onslaught_controlpoint_icon_buildthink()
 	if (self.health >= self.max_health)
 	{
 		self.health = self.max_health;
-		self.count = cvar("g_onslaught_cp_regen") * sys_ticrate; // slow repair rate from now on
+		self.count = CVAR(g_onslaught_cp_regen) * CVAR(sys_ticrate); // slow repair rate from now on
 		self.think = onslaught_controlpoint_icon_think;
 		sound(self, CHAN_TRIGGER, "onslaught/controlpoint_built.wav", VOL_BASE, ATTN_NORM);
 		bprint(ColoredTeamName(self.team), " captured ", self.owner.message, " control point\n");
@@ -1164,7 +1164,7 @@ void onslaught_controlpoint_icon_buildthink()
 
 void onslaught_controlpoint_touch()
 {
-	local entity e;
+	entity e;
 	float a;
 	if (other.classname != "player")
 		return;
@@ -1177,8 +1177,8 @@ void onslaught_controlpoint_touch()
 	self.goalentity = e = spawn();
 	e.classname = "onslaught_controlpoint_icon";
 	e.owner = self;
-	e.max_health = cvar("g_onslaught_cp_health");
-	e.health = cvar("g_onslaught_cp_buildhealth");
+	e.max_health = CVAR(g_onslaught_cp_health);
+	e.health = CVAR(g_onslaught_cp_buildhealth);
 	e.solid = SOLID_BBOX;
 	e.movetype = MOVETYPE_NONE;
 	setmodel(e, "models/onslaught/controlpoint_icon.md3");
@@ -1190,12 +1190,12 @@ void onslaught_controlpoint_touch()
 	e.team = other.team;
 	e.colormap = 1024 + (e.team - 1) * 17;
 	e.think = onslaught_controlpoint_icon_buildthink;
-	e.nextthink = time + sys_ticrate;
-	e.count = (e.max_health - e.health) * sys_ticrate / cvar("g_onslaught_cp_buildtime"); // how long it takes to build
+	e.nextthink = time + CVAR(sys_ticrate);
+	e.count = (e.max_health - e.health) * CVAR(sys_ticrate) / CVAR(g_onslaught_cp_buildtime); // how long it takes to build
 	sound(e, CHAN_TRIGGER, "onslaught/controlpoint_build.wav", VOL_BASE, ATTN_NORM);
 	self.team = e.team;
 	self.colormap = e.colormap;
-	WaypointSprite_UpdateBuildFinished(self.sprite, time + (e.max_health - e.health) / (e.count / sys_ticrate));
+	WaypointSprite_UpdateBuildFinished(self.sprite, time + (e.max_health - e.health) / (e.count / CVAR(sys_ticrate)));
 	onslaught_updatelinks();
 };
 
@@ -1236,7 +1236,7 @@ keys:
  */
 void spawnfunc_onslaught_controlpoint()
 {
-	local entity e;
+	entity e;
 	if (!g_onslaught)
 	{
 		remove(self);

@@ -102,7 +102,7 @@ float IsFavorite(string srv)
 {
 	float i, n;
 	srv = netaddress_resolve(srv, 26000);
-	n = tokenize_console(cvar_string("net_slist_favorites"));
+	n = tokenize_console(CVAR_STR(net_slist_favorites));
 	for(i = 0; i < n; ++i)
 		if(srv == netaddress_resolve(argv(i), 26000))
 			return TRUE;
@@ -114,7 +114,7 @@ void ToggleFavorite(string srv)
 	string s, s0, s1, s2, srv_resolved;
 	float i, n;
 	srv_resolved = netaddress_resolve(srv, 26000);
-	s = cvar_string("net_slist_favorites");
+	s = CVAR_STR(net_slist_favorites);
 	n = tokenize_console(s);
 	for(i = 0; i < n; ++i)
 		if(srv_resolved == netaddress_resolve(argv(i), 26000))
@@ -209,7 +209,7 @@ void refreshServerListNexuizServerList(entity me, float mode)
 		else
 			typestr = "";
 
-		modstr = cvar_string("menu_slist_modfilter");
+		modstr = CVAR_STR(menu_slist_modfilter);
 
 		m = SLIST_MASK_AND - 1;
 		resethostcachemasks();
@@ -549,7 +549,8 @@ void clickListBoxItemNexuizServerList(entity me, float i, vector where)
 
 void ServerList_StoreCN(string ip, string cn, entity me)
 {
-	db_put(me.ip2c_localdb, ip, cn);
+    if(cn != "")
+        db_put(me.ip2c_localdb, ip, cn);
 }
 
 string(string s) strtolower = #480;
@@ -596,16 +597,16 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		theAlpha = theAlpha * (1 - SKINALPHA_SERVERLIST_FAVORITE) + SKINALPHA_SERVERLIST_FAVORITE;
 	}
 
-	local string cn;
-    if(cvar("sv_ip2country"))
+	string cn;
+    if(CVAR(sv_ip2country))
 	{
-		local string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
+		string ip = gethostcachestring(SLIST_FIELD_CNAME, i);
 		ip = substring(ip, 0, strstrofs(ip, ":", 0));
 		cn = db_get(me.ip2c_localdb, ip);
 		if(cn == "")
 		{
 			db_put(me.ip2c_localdb, ip, "--");
-			IP2C_Lookup(ip, ServerList_StoreCN, me);
+			IP2C_Lookup(ip, ServerList_StoreCN, 0, me);
 		}
 	}
 	else
@@ -620,12 +621,12 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	o_x -= me.realFontSize_x / 1.5;
 	v = o;
 	o_x += me.realFontSize_x / 1.5;
-	local float scale = me.realFontSize_x / 11;
-	local vector picsize;
+	float scale = me.realFontSize_x / 11;
+	vector picsize;
 	picsize = '16 11 0' * scale;
 
 	if(cn != "--")
-		draw_Picture_Unskinned(o, strcat("gfx/flags/", strtolower(cn)), '1 1 0', '1 1 1', 1);
+		draw_Picture_Unskinned(o, FlagIcon(strtolower(cn)), '1 1 0', '1 1 1', 1);
 	
 	o_x += picsize_x + me.realFontSize_x/2;
 	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);

@@ -30,11 +30,16 @@ float PlayerScore_Add(entity player, float scorefield, float score);
 float PlayerScore_Set(entity player, float scorefield, float score);
 
 /**
+ * Returns a score of a player.
+ */
+float PlayerScore_Get(entity player, float scorefield);
+
+/**
  * Initialize the score of this player if needed.
  * Does nothing in teamplay.
  * Use that when a spectator becomes a player.
  */
-void PlayerScore_Clear(entity player);
+void PlayerScore_Clear(entity player, float force);
 
 /**
  * Adds a score to the player's team's scores.
@@ -49,6 +54,11 @@ float TeamScore_Add(entity player, float scorefield, float score);
  * Returns the new score.
  */
 float TeamScore_AddToTeam(float t, float scorefield, float score);
+
+/**
+ * Returns the current score of a team
+ */
+float TeamScore_Get(float t, float scorefield);
 
 /**
  * Returns a value indicating the team score (and higher is better).
@@ -139,3 +149,7 @@ var .float scores_primary;
 var .float teamscores_primary;
 float scores_flags_primary;
 float teamscores_flags_primary;
+
+float PlayerScore_SetFlags(entity player, float flg);
+float PlayerScore_UnsetFlags(entity player, float flg);
+float PlayerScore_SetFlagsBoolean(entity player, float flg, float b);

@@ -20,11 +20,10 @@ void func_breakable_reset();
 void assault_objective_reset();
 void target_assault_roundend_reset();
 
-float redalive, bluealive, yellowalive, pinkalive;
-float totalalive;
 .float redalive_stat, bluealive_stat, yellowalive_stat, pinkalive_stat;
 float redspawned, bluespawned, yellowspawned, pinkspawned;
 float totalspawned;
+void SetPlayerTeam(entity pl, float t, float s, float noprint);
 
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
@@ -37,19 +36,26 @@ void reset_map(float dorespawn)
 
 	if(g_arena)
 	{
-		if(cvar("g_arena_warmup"))
-			warmup = time + cvar("g_arena_warmup");
+		if(CVAR(g_arena_warmup))
+			warmup = time + CVAR(g_arena_warmup);
 	}
 	else if(g_freezetag)
-		warmup = time + cvar("g_freezetag_warmup");
+		warmup = time + CVAR(g_freezetag_warmup);
 	else if(g_jailbreak)
-		warmup = time + cvar("g_jailbreak_warmup");
+		warmup = time + CVAR(g_jailbreak_warmup);
+    else if(g_clanarena)
+        warmup = time + CVAR(g_clanarena_warmup);
 
 	lms_lowest_lives = 999;
 	lms_next_place = player_count;
 
 	race_ReadyRestart();
-	
+    
+    if(CVAR(g_swap_teams))
+        SwapTeams();
+    
+    Buffs_Randomize(world, FALSE);
+    
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
 	{
@@ -68,7 +74,7 @@ void reset_map(float dorespawn)
 			remove(self);
 		}
 	}
-
+    
 	// Waypoints and assault start come LAST
 	for(self = world; (self = nextent(self)); )
 	if(clienttype(self) == CLIENTTYPE_NOTACLIENT)
@@ -79,19 +85,33 @@ void reset_map(float dorespawn)
 			continue;
 		}
 	}
-	
-	if(g_vip)
-	{
-		vip_ClearVIPs_MaybeAssign();
-		//vip_RespawnSoulGems();
-	}
 
+    if(teamcount_balancenext)
+        TeamCount_BalanceTeams();
+    
 	// Moving the player reset code here since the player-reset depends
 	// on spawnpoint entities which have to be reset first --blub
 	if(dorespawn)
 	FOR_EACH_CLIENT(self) {
-		if(self.flags & FL_CLIENT)				// reset all players
+        self.playtimeupdate = time;
+		if(self.flags & FL_CLIENT && self.scorekeeper)				// reset all players
 		{
+            if(g_freeze)
+                self.frozenrow = 0;
+            
+            if(g_nadgets) {
+                HG_DO_IN_ALL_CONTEXTS({
+                    if(self.hg_ctx_type_picked_nextround >= 0)
+                        self.hg_ctx_type_picked = self.hg_ctx_type_picked_nextround;
+                    self.hg_ctx_type_picked_nextround = -1;  
+                })
+
+                if(self.hg_optout_nextround >= 0)
+                    self.hg_optout = self.hg_optout_nextround;
+
+                self.hg_optout_nextround = -1;
+            }
+            
 			if(g_arena)
 			{
 				if(self.spawned)
@@ -99,10 +119,17 @@ void reset_map(float dorespawn)
 				else
 					PutObserverInServer();
 			}
-			else if(g_freezetag || g_totaldomination || g_vip || g_inf || g_jailbreak)
+			else if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 			{
-				if(self.classname == "player")
+				if(self.classname == "player") {
 					PutClientInServer();
+                    if(g_clanarena)
+                        PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
+                } else if(g_clanarena && self.jb_specteam) {
+                    self.classname = "player";
+                    PutClientInServer();
+                    PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
+                }
 			}
 			else
 			{
@@ -128,11 +155,19 @@ void reset_map(float dorespawn)
 					}
 				}
 			}
+            
+            if(g_nadgets) if(self.classname == "player") {
+                HG_ResetState(self, FALSE);
+                self.hg_nadesused = 0;
+                
+                if(self.hg_alwaysask)
+                    HG_ShowMenu(TRUE);
+            }
 		}
 	}
 
 	if(g_keyhunt)
-		kh_Controller_SetThink(cvar("g_balance_keyhunt_delay_round")+(game_starttime - time), "", kh_StartRound);
+		kh_Controller_SetThink(CVAR(g_balance_keyhunt_delay_round)+(game_starttime - time), "", kh_StartRound);
 
 	if(g_arena)
 	if(champion)
@@ -208,7 +243,6 @@ void Arena_Warmup()
 
 	f = rint(warmup - time);
 
-	msg = NEWLINES;
 	if(time < warmup && self.spawned)
 	{
 		if(champion)
@@ -272,59 +306,6 @@ void count_spawned_players()
 	}
 }
 
-void count_alive_players()
-{
-	//bprint("count_alive_players() called\n");
-	
-	totalalive = redalive = bluealive = yellowalive = pinkalive = 0;
-	if(g_freezetag)
-	{
-		// count amount of alive players in each team
-		FOR_EACH_PLAYER(self)
-		{
-			if (self.team == COLOR_TEAM1 && !self.freezetag_frozen && self.health > 0)
-			{
-				redalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM2 && !self.freezetag_frozen && self.health > 0)
-			{
-				bluealive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM3 && !self.freezetag_frozen && self.health > 0)
-			{
-				yellowalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			else if (self.team == COLOR_TEAM4 && !self.freezetag_frozen && self.health > 0)
-			{
-				pinkalive += 1;
-				totalalive += 1;
-				//bprint(self.netname, " ^6is alive\n");
-			}
-			
-			//bprint(self.netname, " ^6is ^1DEAD^7: team = ", ftos(self.team), "; freezetag_frozen = ", ftos(self.freezetag_frozen), "\n");
-		}
-		FOR_EACH_CLIENT(self) {
-			self.redalive_stat = redalive;
-			self.bluealive_stat = bluealive;
-			self.yellowalive_stat = ((ft_teams > 2)? yellowalive : -1);
-			self.pinkalive_stat = ((ft_teams > 3)? pinkalive : -1);
-		}
-	}
-	
-	/*
-	bprint("count_alive_players():\n");
-	bprint("totalalive = ", ftos(totalalive), "\n");
-	bprint("redalive = ", ftos(redalive), "\n");
-	bprint("bluealive = ", ftos(bluealive), "\n");
-	*/
-}
-
 /**
  * This function finds out whether an arena round is over 1 player is left.
  * It determines the last player who's still alive and saves it's entity reference
@@ -334,28 +315,23 @@ void count_alive_players()
  */
 void Spawnqueue_Check()
 {
-	count_spawned_players();
-	if(g_freezetag) // we want to perform this before the return block below (CA)...
-	{
-		//count_alive_players();
-	}
-	if(time < warmup + 1)
+    if(!g_freeze)
+        count_spawned_players();
+	if(time < warmup + 1 || roundstate == ROUNDSTATE_GAME)
 		return;
 
 	//extend next_round if it isn't set yet and only 1 player is spawned
 	
-	if(g_freezetag || g_totaldomination || g_vip || g_jailbreak)
+	if(g_freezetag || g_totaldomination || g_jailbreak || g_clanarena)
 	{
 		if((next_round && next_round < time))
 		{
 			if(intermission_running)
 			{
-				//bprint("Freezetag: GAME OVER (2)\n");
 				next_round = 0;
 				return;
 			}
-			
-			//bprint("Freezetag: round reset\n");
+
 			next_round = 0;
 			reset_map(TRUE);
 		}

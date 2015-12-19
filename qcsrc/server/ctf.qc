@@ -135,7 +135,7 @@ void FakeTimeLimit(entity e, float t)
 	WriteByte(MSG_ONE, 3); // svc_updatestat
 	WriteByte(MSG_ONE, 236); // STAT_TIMELIMIT
 	if(t < 0)
-		WriteCoord(MSG_ONE, cvar("timelimit"));
+		WriteCoord(MSG_ONE, CVAR(timelimit));
 	else
 		WriteCoord(MSG_ONE, (t + 1) / 60);
 }
@@ -190,7 +190,7 @@ void place_flag()
 void LogCTF(string mode, float flagteam, entity actor)
 {
 	string s;
-	if(!cvar("sv_eventlog"))
+	if(!CVAR(sv_eventlog))
 		return;
 	s = strcat(":ctf:", mode);
 	s = strcat(s, ":", ftos(flagteam));
@@ -246,7 +246,7 @@ void ReturnFlag(entity e)
 
 void DropFlag(entity e, entity penalty_receiver, entity attacker)
 {
-	local entity p;
+	entity p;
 
 	if(e.classname != "item_flag_team")
 	{
@@ -299,7 +299,7 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	sound (self, CHAN_TRIGGER, self.noise4, VOL_BASE, ATTN_NONE);
 
 	setattachment(e, world, "");
-	e.damageforcescale = cvar("g_balance_ctf_damageforcescale");
+	e.damageforcescale = CVAR(g_balance_ctf_damageforcescale);
 	e.takedamage = DAMAGE_YES;
 
 	if (p.flagcarried == e)
@@ -313,8 +313,14 @@ void DropFlag(entity e, entity penalty_receiver, entity attacker)
 	setorigin(e, p.origin - '0 0 24' + '0 0 37');
 	e.cnt = FLAG_DROPPED;
 	e.velocity = '0 0 300';
-	e.pain_finished = time + cvar("g_ctf_flag_returntime");//30;
-
+	e.pain_finished = time + CVAR(g_ctf_flag_returntime);//30;
+    
+    // hack
+    if(g_freeze) {
+        makevectors(self.angles);
+        e.velocity += v_forward * 100;
+    }
+    
 	trace_startsolid = FALSE;
 	tracebox(e.origin, e.mins, e.maxs, e.origin, TRUE, e);
 	if(trace_startsolid)
@@ -336,7 +342,7 @@ void AnimateFlag()
 
 void FlagThink()
 {
-	local entity e;
+	entity e;
 
 	self.nextthink = time + 0.1;
 
@@ -408,7 +414,7 @@ void FlagThink()
 		return;
 	}
 
-	if(cvar("g_ctf_allow_drop"))
+	if(CVAR(g_ctf_allow_drop))
 	if(e.BUTTON_USE)
 		DropFlag(self, e, world);
 };
@@ -422,17 +428,22 @@ void FlagTouch()
 {
 	if(gameover) return;
 
-	local float t;
-	local entity player;
-	local string s, s0, h0, h1;
+	float t;
+	entity player;
+	string s, s0, h0, h1;
 	if (other.classname != "player")
 		return;
 	if (other.health < 1) // ignore dead players
 		return;
+    if (g_freeze && other.frozen)
+        return;
 
 	if (self.cnt == FLAG_CARRY)
 		return;
-
+    
+    if(time - other.hg_stealthtime < CVAR(g_nadgets_cloak_actiondelay))
+        return;
+    
 	if (self.cnt == FLAG_BASE)
 	if (other.team == self.team)
 	if (other.flagcarried) // he's got a flag
@@ -443,7 +454,7 @@ void FlagTouch()
 			return;
 		}
 		
-		local entity _pl;
+		entity _pl;
 		if (other.team == COLOR_TEAM1) { // red team scores
 			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^1Red ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
@@ -451,7 +462,7 @@ void FlagTouch()
 			FOR_EACH_REALCLIENT(_pl) bigprint(_pl, "^4Blue ^7Scores!", strcat("^7Captured by ^3", other.netname, " ^7in ", ftos_decimals(time - other.flagcarried.flagpickuptime, 2), "s"), 2);
 		}
 		
-		if((!cvar("g_rocketminsta") || !cvar("g_rocketminsta_ctf_nocapturerecord")) && (cvar("g_ctf_captimerecord_always") || player_count - currentbots <= 1)) // at most one human
+		if((!CVAR(g_rocketminsta) || !CVAR(g_rocketminsta_ctf_nocapturerecord)) && (CVAR(g_ctf_captimerecord_always) || player_count - currentbots <= 1)) // at most one human
 		{
 			t = time - other.flagcarried.flagpickuptime;
 			s = ftos_decimals(t, 2);
@@ -464,7 +475,7 @@ void FlagTouch()
 				h0 = strcat(h0, "^7's"); // h0: display text for previous netname
 			if (flagcaptimerecord == 0)
 			{
-				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds\n");
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds"), "");
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/netname"), h1);
@@ -473,7 +484,7 @@ void FlagTouch()
 			else if (t < flagcaptimerecord)
 			{
 				bigprint_spec(other, "^2Record ^7Set!", strcat("captured in ^2", s, "s^7, breaking the previous record of ", s0, "s"), 2);
-				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds\n"));
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", breaking ", strcat(h0, " previous record of ", s0, " seconds")), "");
 				flagcaptimerecord = t;
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time"), ftos(t));
 				db_put(ServerProgsDB, strcat(GetMapname(), "/captimerecord/netname"), h1);
@@ -481,11 +492,11 @@ void FlagTouch()
 			}
 			else
 			{
-				bprint(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, ", failing to break ", strcat(h0, " record of ", s0, " seconds\n"));
+				announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname, " in ", s, " seconds"), strcat(", failing to break ", h0, " record of ", s0, " seconds"));
 			}
 		}
 		else
-			bprint(other.netname, "^7 captured the ", other.flagcarried.netname, "\n");
+			announce_game_event(1, "sv_ircbot_announce_game_events_ctf", strcat(other.netname, "^7 captured the ", other.flagcarried.netname), "");
 
 		PlayerTeamScore_Add(other, SP_CTF_CAPS, ST_CTF_CAPS, 1);
 		LogCTF("capture", other.flagcarried.team, other);
@@ -498,14 +509,14 @@ void FlagTouch()
 		//<akari>
 		//Specially for Spook: restore health on flag capture
 		
-		if(cvar("g_rocketminsta"))
-		if(cvar("g_ctf_capheals"))
+		if(CVAR(g_rocketminsta))
+		if(CVAR(g_ctf_capheals))
 		if(other.health < 100)
 			other.health = 100;
 		
 		//</akari>
 
-		if (cvar("g_ctf_flag_capture_effects")) {
+		if (CVAR(g_ctf_flag_capture_effects)) {
 			if (other.team == COLOR_TEAM1) { // red team scores effect
 				pointparticles(particleeffectnum("red_ground_quake"), self.origin, '0 0 0', 1);
 				flag_cap_ring_spawn(self.origin);
@@ -524,6 +535,9 @@ void FlagTouch()
 		other.flagcarried = world;
 		other.next_take_time = time + 1;
 		
+        if(g_freeze)
+            Freeze_UnfreezeAll();
+        
 		hudflash_teamcolor_default_spec(other);
 	}
 	if (self.cnt == FLAG_BASE)
@@ -535,7 +549,7 @@ void FlagTouch()
 		if (other.next_take_time > time)
 			return;
 			
-		if (cvar("g_ctf_flag_pickup_effects")) // pickup effect
+		if (CVAR(g_ctf_flag_pickup_effects)) // pickup effect
 			pointparticles(particleeffectnum("smoke_ring"), 0.5 * (self.absmin + self.absmax), '0 0 0', 1);
 			
 		other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
@@ -567,8 +581,9 @@ void FlagTouch()
 		self.movetype = MOVETYPE_NONE;
 		setorigin(self, FLAG_CARRY_POS);
 		setattachment(self, other, "");
-		WaypointSprite_AttachCarrier("flagcarrier", other);
+		WaypointSprite_AttachCarrier("FLAG CARRIER", other);
 		WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+        WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
 		WaypointSprite_Ping(self.sprite);
 
 		//hudflash_default(other, '1 1 -1');
@@ -621,9 +636,9 @@ void FlagTouch()
 			
 			hudflash_teamcolor_default_spec(other);
 		}
-		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + cvar("g_balance_ctf_delay_collect")))
+		else if (!other.flagcarried && (other.playerid != self.dropperid || time > self.ctf_droptime + CVAR(g_balance_ctf_delay_collect)))
 		{
-			if (cvar("g_ctf_flag_pickup_effects")) // field pickup effect
+			if (CVAR(g_ctf_flag_pickup_effects)) // field pickup effect
 				pointparticles(particleeffectnum("smoke_ring"), 0.5 * (self.absmin + self.absmax), '0 0 0', 1);
 			
 			// pick up
@@ -635,7 +650,7 @@ void FlagTouch()
 			bprint(other.netname, "^7 picked up the ", self.netname, "\n");
 
 			float f;
-			f = bound(0, (self.pain_finished - time) / cvar("g_ctf_flag_returntime"), 1);
+			f = bound(0, (self.pain_finished - time) / CVAR(g_ctf_flag_returntime), 1);
 			//print("factor is ", ftos(f), "\n");
 			f = ctf_score_value("score_pickup_dropped_late") * (1-f)
 			  + ctf_score_value("score_pickup_dropped_early") * f;
@@ -657,8 +672,9 @@ void FlagTouch()
 			setattachment(self, other, "");
 			self.damageforcescale = 0;
 			self.takedamage = DAMAGE_NO;
-			WaypointSprite_AttachCarrier("flagcarrier", other);
-			WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+			WaypointSprite_AttachCarrier("FLAG CARRIER", other);
+            WaypointSprite_UpdateTeamRadar(other.waypointsprite_attachedforcarrier, RADARICON_FLAGCARRIER, '1 1 0');
+            WaypointSprite_UpdateTextColors(other.waypointsprite_attachedforcarrier, '1 1 0', '0 0 0', '0 0 0');
 			
 			other.scorekeeper.SendFlags |= pow (2, SP_CARRYING);
 			other.scorekeeper.(scores [SP_CARRYING]) = TeamMask (self.team);
@@ -757,7 +773,7 @@ void item_flag_postspawn()
 { // Check CTF Item Flag Post Spawn
 
 	// Flag Glow Trail Support
-	if(cvar("g_ctf_flag_glowtrails"))
+	if(CVAR(g_ctf_flag_glowtrails))
 	{ // Provide Flag Glow Trail
 		if(self.team == COLOR_TEAM1)
 			// Red
@@ -801,12 +817,7 @@ void spawnfunc_item_flag_team1()
 {
 	if (!g_ctf && !g_domination)
 	{
-		if(g_vip)
-		{
-			vip_SpawnSoulGem(self.origin, COLOR_TEAM1);
-			remove(self);
-		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
+		if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
@@ -814,7 +825,7 @@ void spawnfunc_item_flag_team1()
 		return;
 	}
 
-	//if(!cvar("teamplay"))
+	//if(!CVAR(teamplay))
 	//	cvar_set("teamplay", "3");
 
 	// link flag into ctf_worldflaglist
@@ -834,11 +845,11 @@ void spawnfunc_item_flag_team1()
 	}
 	self.netname = "^1RED^7 flag";
 	self.target = "###item###";
-	self.skin = cvar("g_ctf_flag_red_skin");
+	self.skin = CVAR(g_ctf_flag_red_skin);
 	if(self.spawnflags & 1)
 		self.noalign = 1;
 	if (!self.model)
-		self.model = cvar_string("g_ctf_flag_red_model");
+		self.model = CVAR_STR(g_ctf_flag_red_model);
 	if (!self.noise)
 		self.noise = "ctf/red_taken.wav";
 	if (!self.noise1)
@@ -868,9 +879,9 @@ void spawnfunc_item_flag_team1()
 	//	self.glow_size = 50;
 
 	self.effects = self.effects | EF_LOWPRECISION;
-	if(cvar("g_ctf_fullbrightflags"))
+	if(CVAR(g_ctf_fullbrightflags))
 		self.effects |= EF_FULLBRIGHT;
-	if(cvar("g_ctf_dynamiclights"))
+	if(CVAR(g_ctf_dynamiclights))
 		self.effects |= EF_RED;
 
 	// From Spidflisk
@@ -882,8 +893,9 @@ void spawnfunc_item_flag_team1()
 		self.nearestwaypointtimeout = 0; // activate waypointing again
 		self.basewaypoint = self.nearestwaypoint;
 
-		WaypointSprite_SpawnFixed("redbase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_SpawnFixed("Red Base", self.origin + '0 0 37', self, sprite);
 		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM1 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
 	}
 
 	precache_model("models/ctf/shield.md3");
@@ -921,19 +933,15 @@ void spawnfunc_item_flag_team2()
 {
 	if (!g_ctf && !g_domination)
 	{
-		if(g_vip)
-		{
-			vip_SpawnSoulGem(self.origin, COLOR_TEAM2);
-			remove(self);
-		}
-		else if((g_keyhunt || g_freezetag) && g_minstagib && cvar("g_balance_powerupsonbases"))
+		if((g_keyhunt || g_freezetag) && g_minstagib && CVAR(g_balance_powerupsonbases))
 			minstagib_items(IT_STRENGTH);
 		else
 			remove(self);
 			
 		return;
 	}
-	//if(!cvar("teamplay"))
+    
+	//if(!CVAR(teamplay))
 	//	cvar_set("teamplay", "3");
 
 	// link flag into ctf_worldflaglist
@@ -953,11 +961,11 @@ void spawnfunc_item_flag_team2()
 	}
 	self.netname = "^4BLUE^7 flag";
 	self.target = "###item###";
-	self.skin = cvar("g_ctf_flag_blue_skin");
+	self.skin = CVAR(g_ctf_flag_blue_skin);
 	if(self.spawnflags & 1)
 		self.noalign = 1;
 	if (!self.model)
-		self.model = cvar_string("g_ctf_flag_blue_model");
+		self.model = CVAR_STR(g_ctf_flag_blue_model);
 	if (!self.noise)
 		self.noise = "ctf/blue_taken.wav";
 	if (!self.noise1)
@@ -987,9 +995,9 @@ void spawnfunc_item_flag_team2()
 	//	self.glow_size = 50;
 
 	self.effects = self.effects | EF_LOWPRECISION;
-	if(cvar("g_ctf_fullbrightflags"))
+	if(CVAR(g_ctf_fullbrightflags))
 		self.effects |= EF_FULLBRIGHT;
-	if(cvar("g_ctf_dynamiclights"))
+	if(CVAR(g_ctf_dynamiclights))
 		self.effects |= EF_BLUE;
 
 	// From Spidflisk
@@ -1001,8 +1009,9 @@ void spawnfunc_item_flag_team2()
 		self.nearestwaypointtimeout = 0; // activate waypointing again
 		self.basewaypoint = self.nearestwaypoint;
 
-		WaypointSprite_SpawnFixed("bluebase", self.origin + '0 0 37', self, sprite);
+		WaypointSprite_SpawnFixed("Blue Base", self.origin + '0 0 37', self, sprite);
 		WaypointSprite_UpdateTeamRadar(self.sprite, RADARICON_FLAG, colormapPaletteColor(COLOR_TEAM2 - 1, FALSE));
+        WaypointSprite_UpdateTextColors(self.sprite, self.sprite.colormod, '0 0 0', '0 0 0');
 	}
 	
 	precache_model("models/ctf/shield.md3");
@@ -1040,7 +1049,7 @@ void spawnfunc_ctf_team()
 // code from here on is just to support maps that don't have control point and team entities
 void ctf_spawnteam (string teamname, float teamcolor)
 {
-	local entity oldself;
+	entity oldself;
 	oldself = self;
 	self = spawn();
 	self.classname = "ctf_team";
@@ -1057,7 +1066,7 @@ void ctf_spawnteams()
 {
 	float numteams;
 
-	numteams = 2;//cvar("g_ctf_default_teams");
+	numteams = 2;//CVAR(g_ctf_default_teams);
 
 	ctf_spawnteam("Red", COLOR_TEAM1 - 1);
 	ctf_spawnteam("Blue", COLOR_TEAM2 - 1);
@@ -1077,9 +1086,9 @@ void ctf_init()
 	InitializeEntity(world, ctf_delayedinit, INITPRIO_GAMETYPE);
 	flagcaptimerecord = stof(db_get(ServerProgsDB, strcat(GetMapname(), "/captimerecord/time")));
 
-	captureshield_min_negscore = cvar("g_ctf_shield_min_negscore");
-	captureshield_max_ratio = cvar("g_ctf_shield_max_ratio");
-	captureshield_force = cvar("g_ctf_shield_force");
+	captureshield_min_negscore = CVAR(g_ctf_shield_min_negscore);
+	captureshield_max_ratio = CVAR(g_ctf_shield_max_ratio);
+	captureshield_force = CVAR(g_ctf_shield_force);
 };
 
 void ctf_setstatus2(entity flag, float shift)
@@ -1106,7 +1115,7 @@ void ctf_setstatus()
 	self.items &~= IT_CTF_SHIELDED;
 
 	if (g_ctf) {
-		local entity flag;
+		entity flag;
 		float redflags, blueflags;
 
 		if(self.ctf_captureshielded)

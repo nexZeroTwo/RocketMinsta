@@ -3,7 +3,7 @@
 // (suitable for spawnfunc_waypoint editor)
 entity waypoint_spawn(vector m1, vector m2, float f)
 {
-	local entity w;
+	entity w;
 	w = find(world, classname, "waypoint");
 
 	if not(f & WAYPOINTFLAG_PERSONAL)
@@ -37,7 +37,7 @@ entity waypoint_spawn(vector m1, vector m2, float f)
 			}
 			else
 			{
-				if(cvar("developer"))
+				if(CVAR(developer))
 				{
 					print("A generated waypoint is stuck in solid at ", vtos(w.origin), "\n");
 					backtrace("Waypoint stuck");
@@ -50,7 +50,7 @@ entity waypoint_spawn(vector m1, vector m2, float f)
 	waypoint_clearlinks(w);
 	//waypoint_schedulerelink(w);
 
-	if (cvar("g_waypointeditor"))
+	if (CVAR(g_waypointeditor))
 	{
 		m1 = w.mins;
 		m2 = w.maxs;
@@ -72,7 +72,7 @@ entity waypoint_spawn(vector m1, vector m2, float f)
 // add a new link to the spawnfunc_waypoint, replacing the furthest link it already has
 void waypoint_addlink(entity from, entity to)
 {
-	local float c;
+	float c;
 
 	if (from == to)
 		return;
@@ -92,7 +92,7 @@ void waypoint_addlink(entity from, entity to)
 	{
 		// if either is a box we have to find the nearest points on them to
 		// calculate the distance properly
-		local vector v1, v2, m1, m2;
+		vector v1, v2, m1, m2;
 		v1 = from.origin;
 		m1 = to.absmin;
 		m2 = to.absmax;
@@ -151,11 +151,11 @@ void waypoint_addlink(entity from, entity to)
 // (SLOW!)
 void waypoint_think()
 {
-	local entity e;
-	local vector sv, sm1, sm2, ev, em1, em2, dv;
+	entity e;
+	vector sv, sm1, sm2, ev, em1, em2, dv;
 
-	stepheightvec = cvar("sv_stepheight") * '0 0 1';
-	bot_navigation_movemode = ((cvar("bot_navigation_ignoreplayers")) ? MOVE_NOMONSTERS : MOVE_NORMAL);
+	stepheightvec = CVAR(sv_stepheight) * '0 0 1';
+	bot_navigation_movemode = if(CVAR(bot_navigation_ignoreplayers)) MOVE_NOMONSTERS else MOVE_NORMAL;
 
 	//dprint("waypoint_think wpisbox = ", ftos(self.wpisbox), "\n");
 	sm1 = self.origin + self.mins;
@@ -230,7 +230,7 @@ void waypoint_think()
 void waypoint_clearlinks(entity wp)
 {
 	// clear links to other waypoints
-	local float f;
+	float f;
 	f = 10000000;
 	wp.wp00 = wp.wp01 = wp.wp02 = wp.wp03 = wp.wp04 = wp.wp05 = wp.wp06 = wp.wp07 = world;
 	wp.wp08 = wp.wp09 = wp.wp10 = wp.wp11 = wp.wp12 = wp.wp13 = wp.wp14 = wp.wp15 = world;
@@ -251,9 +251,9 @@ void waypoint_schedulerelink(entity wp)
 	if (wp == world)
 		return;
 	// TODO: add some sort of visible box in edit mode for box waypoints
-	if (cvar("g_waypointeditor"))
+	if (CVAR(g_waypointeditor))
 	{
-		local vector m1, m2;
+		vector m1, m2;
 		m1 = wp.mins;
 		m2 = wp.maxs;
 		setmodel(wp, "models/runematch/rune.mdl"); wp.effects = EF_LOWPRECISION;
@@ -331,7 +331,7 @@ void waypoint_remove(entity e)
 // empties the map of waypoints
 void waypoint_removeall()
 {
-	local entity head, next;
+	entity head, next;
 	head = findchain(classname, "waypoint");
 	while (head)
 	{
@@ -345,7 +345,7 @@ void waypoint_removeall()
 // (is this useful at all?)
 void waypoint_schedulerelinkall()
 {
-	local entity head;
+	entity head;
 	relink_total = relink_walkculled = relink_pvsculled = relink_lengthculled = 0;
 	head = findchain(classname, "waypoint");
 	while (head)
@@ -358,10 +358,10 @@ void waypoint_schedulerelinkall()
 // Load waypoint links from file
 float waypoint_load_links()
 {
-	local string filename, s;
-	local float file, tokens, c, found;
-	local entity wp_from, wp_to;
-	local vector wp_to_pos, wp_from_pos;
+	string filename, s;
+	float file, tokens, c, found;
+	entity wp_from, wp_to;
+	vector wp_to_pos, wp_from_pos;
 	filename = strcat("maps/", mapname);
 	filename = strcat(filename, ".waypoints.cache");
 	file = fopen(filename, FILE_READ);
@@ -455,10 +455,10 @@ float waypoint_load_links()
 
 void waypoint_load_links_hardwired()
 {
-	local string filename, s;
-	local float file, tokens, c, found;
-	local entity wp_from, wp_to;
-	local vector wp_to_pos, wp_from_pos;
+	string filename, s;
+	float file, tokens, c, found;
+	entity wp_from, wp_to;
+	vector wp_to_pos, wp_from_pos;
 	filename = strcat("maps/", mapname);
 	filename = strcat(filename, ".waypoints.hardwired");
 	file = fopen(filename, FILE_READ);
@@ -552,9 +552,9 @@ void waypoint_load_links_hardwired()
 // Save all waypoint links to a file
 void waypoint_save_links()
 {
-	local string filename, s;
-	local float file, c, i;
-	local entity w, link;
+	string filename, s;
+	float file, c, i;
+	entity w, link;
 	filename = strcat("maps/", mapname);
 	filename = strcat(filename, ".waypoints.cache");
 	file = fopen(filename, FILE_WRITE);
@@ -630,9 +630,9 @@ void waypoint_save_links()
 // save waypoints to gamedir/data/maps/mapname.waypoints
 void waypoint_saveall()
 {
-	local string filename, s;
-	local float file, c;
-	local entity w;
+	string filename, s;
+	float file, c;
+	entity w;
 	filename = strcat("maps/", mapname);
 	filename = strcat(filename, ".waypoints");
 	file = fopen(filename, FILE_WRITE);
@@ -674,9 +674,9 @@ void waypoint_saveall()
 // load waypoints from file
 float waypoint_loadall()
 {
-	local string filename, s;
-	local float file, cwp, cwb, fl;
-	local vector m1, m2;
+	string filename, s;
+	float file, cwp, cwb, fl;
+	vector m1, m2;
 	cwp = 0;
 	cwb = 0;
 	filename = strcat("maps/", mapname);
@@ -734,7 +734,7 @@ vector waypoint_fixorigin(vector position)
 
 void waypoint_spawnforitem_force(entity e, vector org)
 {
-	local entity w;
+	entity w;
 
 	// Fix the waypoint altitude if necessary
 	org = waypoint_fixorigin(org);
@@ -774,8 +774,8 @@ void waypoint_spawnforitem(entity e)
 
 void waypoint_spawnforteleporter(entity e, vector destination, float timetaken)
 {
-	local entity w;
-	local entity dw;
+	entity w;
+	entity dw;
 	w = waypoint_spawn(e.absmin, e.absmax, WAYPOINTFLAG_GENERATED | WAYPOINTFLAG_TELEPORT | WAYPOINTFLAG_NORELINK);
 	dw = waypoint_spawn(destination, destination, WAYPOINTFLAG_GENERATED);
 	// one way link to the destination
@@ -808,7 +808,7 @@ entity waypoint_spawnpersonal(vector position)
 
 void botframe_showwaypointlinks()
 {
-	local entity player, head, w;
+	entity player, head, w;
 	if (time < botframe_waypointeditorlightningtime)
 		return;
 	botframe_waypointeditorlightningtime = time + 0.5;

@@ -1,11 +1,12 @@
 
 void CreatureFrame (void)
 {
-	local entity oldself;
-	local float dm;
+	entity oldself;
+	float dm;
 	oldself = self;
-	self = findfloat(world, iscreature, TRUE);
-	while (self)
+	//self = findfloat(world, iscreature, TRUE);
+	//while(self)
+    FOR_EACH_CLIENTSLOT(self) if(self.iscreature)
 	{
 		if (self.movetype != MOVETYPE_NOCLIP)
 		{
@@ -42,7 +43,11 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/lava.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 6 * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_lava_damage) * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+
+                        if(CVAR(g_lava_burn_damage)) {
+                            Fire_AddDamage(self, world, CVAR(g_lava_burn_damage) * self.waterlevel, CVAR(g_lava_burn_time), DEATH_LAVA);
+                        }
 					}
 					else if (self.watertype == CONTENT_SLIME)
 					{
@@ -51,7 +56,7 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/slime.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 2 * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_slime_damage) * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
 					}
 				}
 			}
@@ -71,14 +76,14 @@ void CreatureFrame (void)
 			{
 				dm = vlen(self.oldvelocity) - vlen(self.velocity); // dm is now the velocity DECREASE. Velocity INCREASE should never cause a sound or any damage.
 				if (self.deadflag)
-					dm = (dm - cvar("g_balance_falldamage_deadminspeed")) * cvar("g_balance_falldamage_factor");
+					dm = (dm - CVAR(g_balance_falldamage_deadminspeed)) * CVAR(g_balance_falldamage_factor);
 				else
-					dm = min((dm - cvar("g_balance_falldamage_minspeed")) * cvar("g_balance_falldamage_factor"), cvar("g_balance_falldamage_maxdamage"));
+					dm = min((dm - CVAR(g_balance_falldamage_minspeed)) * CVAR(g_balance_falldamage_factor), CVAR(g_balance_falldamage_maxdamage));
 				if (dm > 0)
 				{
 					Damage (self, world, world, dm, DEATH_FALL, self.origin, '0 0 0');
 				}
-				else if(vlen(self.velocity) > 100000 && cvar("developer"))
+				else if(vlen(self.velocity) > 100000 && CVAR(developer))
 				{
 					dprint(strcat(self.netname, " became too fast, please investigate: ", vtos(self.spawnorigin), "\n"));
 					Damage (self, world, world, 50000, DEATH_SHOOTING_STAR, self.origin, '0 0 0');
@@ -92,6 +97,7 @@ void CreatureFrame (void)
 			if (vlen(self.velocity) > sv_maxspeed * 0.6)
 			if (!self.deadflag)
 			if (time < self.lastground + 0.2)
+            if (!Buffs_Present(self, BUFF_STEALTH))
 			{
 				if((time > self.nextstep) || (time < (self.nextstep - 10.0)))
 				{
@@ -115,7 +121,7 @@ void CreatureFrame (void)
 			}
 			self.oldvelocity = self.velocity;
 		}
-		self = findfloat(self, iscreature, TRUE);
+		//self = findfloat(self, iscreature, TRUE);
 	}
 	self = oldself;
 }
@@ -123,8 +129,8 @@ void CreatureFrame (void)
 // This returns the player who's been afk for the longest amount of time
 entity GetAFKKickVictim() {
 	entity v, e;
-	
-	FOR_EACH_REALCLIENT(e) if(e.is_away)
+    
+	FOR_EACH_REALCLIENT(e) if(e.is_away) if(time - e.jointime > 30) if(time - e.afkmarktime > 10)
 		if(!v || v.parm_idlesince > e.parm_idlesince)
 			v = e;
 	
@@ -138,7 +144,6 @@ StartFrame
 Called before each frame by the server
 =============
 */
-void RuneMatchGivePoints();
 float RedirectionThink();
 
 string oldfog;
@@ -146,6 +151,8 @@ string oldfog;
 entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
+    entity e;
+    
 	remove = remove_unsafely; // not during spawning!
 	serverprevtime = servertime;
 	servertime = time;
@@ -176,8 +183,7 @@ void StartFrame (void)
 #endif
 
 	dprint_load(); // load dprint status from cvar
-
-	entity e;
+    
 	for(e = world; (e = findfloat(e, csqcprojectile_clientanimate, 1)); )
 		CSQCProjectile_Check(e);
 
@@ -187,36 +193,15 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
-	sv_gravity = cvar("sv_gravity");
-	sv_maxairspeed = cvar("sv_maxairspeed");
-	sv_maxspeed = cvar ("sv_maxspeed");
-	sv_friction = cvar ("sv_friction");
-	sv_accelerate = cvar ("sv_accelerate");
-	sv_airaccelerate = cvar("sv_airaccelerate");
-	sv_airaccel_sideways_friction = cvar("sv_airaccel_sideways_friction");
-	sv_airaccel_qw = cvar("sv_airaccel_qw");
-	sv_stopspeed = cvar ("sv_stopspeed");
-	sv_airstopaccelerate = cvar("sv_airstopaccelerate");
-	sv_airstrafeaccelerate = cvar("sv_airstrafeaccelerate");
-	sv_maxairstrafespeed = cvar("sv_maxairstrafespeed");
-	sv_aircontrol = cvar("sv_aircontrol");
-	sv_warsowbunny_airforwardaccel = cvar("sv_warsowbunny_airforwardaccel");
-	sv_warsowbunny_accel = cvar("sv_warsowbunny_accel");
-	sv_warsowbunny_topspeed = cvar("sv_warsowbunny_topspeed");
-	sv_warsowbunny_turnaccel = cvar("sv_warsowbunny_turnaccel");
-	sv_warsowbunny_backtosideratio = cvar("sv_warsowbunny_backtosideratio");
-	teamplay = cvar ("teamplay");
-	sys_ticrate = cvar("sys_ticrate");
+	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
+		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
-	if (timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
-		orig_slowmo = cvar("slowmo"); // slowmo will be restored after the timeout
+	if(teams_matter && !CVAR(teamplay))
+		cvar_set("teamplay", "3");
+	if(!teams_matter && CVAR(teamplay))
+		cvar_set("teamplay", "0");
 
-	if(teams_matter && !teamplay)
-		teamplay = 3;
-	if(!teams_matter && teamplay)
-		teamplay = 0;
-
-	skill = cvar("skill");
+	skill = CVAR(skill);
 
 	Spawnqueue_Check();
 
@@ -226,7 +211,7 @@ void StartFrame (void)
 	// But not during the god damn intermission you dump piece of shit
 	if (!intermission_running)
 	if ((g_warmup_limit > 0 && time >= g_warmup_limit)
-	 || (g_warmup_limit == 0 && cvar("timelimit") != 0 && time >= cvar("timelimit") * 60))
+	 || (g_warmup_limit == 0 && CVAR(timelimit) != 0 && time >= CVAR(timelimit) * 60))
 	{
 		ReadyRestart();
 		return;
@@ -237,10 +222,9 @@ void StartFrame (void)
 
 	AuditTeams();
 
-	RuneMatchGivePoints();
 	bot_serverframe();
 
-	if(cvar("spawn_debugview"))
+	if(CVAR(spawn_debugview))
 	{
 		RandomSelection_Init();
 		for(self = world; (self = find(self, classname, "player")); )
@@ -276,7 +260,7 @@ void StartFrame (void)
 		}
 	}
 	
-	if(totalclients >= maxclients) if(cvar("sv_autoaway_kick")) {
+	if(totalclients >= maxclients) if(CVAR(sv_autoaway_kick)) {
 		entity v = GetAFKKickVictim();
 		
 		if(v) {
@@ -284,14 +268,90 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+
+    if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
+        roundstate = ROUNDSTATE_GAME;
+        TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);
+    }
+
+    if(inWarmupStage && roundstate == ROUNDSTATE_GAME) {
+        roundstate = ROUNDSTATE_INITIAL_WARMUP;
+    }
+
+    Radio_Frame();
+
+    if(!realclients && time > 18000)
+        localcmd("restart\n");
+
+    if(inWarmupStage) {
+        FOR_EACH_REALPLAYER(e)
+            goto nevermind;
+
+        game_starttime = time;
+        g_warmup_limit = CVAR(g_warmup_limit);
+        if(g_warmup_limit > 0)
+            g_warmup_limit += time;
+    }
+
+:nevermind
+
+    //for(e = world; (e = findfloat(e, sub_target_used, TRUE));)
+    //    e.sub_target_used = FALSE;
 }
 
 .vector originjitter;
 .vector anglesjitter;
 .float anglejitter;
+.string gametypefilter;
+.string gametype;
 .string cvarfilter;
 void SV_OnEntityPreSpawnFunction()
 {
+	if(self.gametypefilter != "")
+	if not(isGametypeInFilter(game, teams_matter, self.gametypefilter))
+	{
+		remove(self);
+		return;
+	}
+	if (self.gametype != "") {
+		string s = cvar_string("sv_gameplayfix_q3gametype_patterns");
+		if (s == "") //Trying to guess
+		{
+			if (teams_matter)
+			{
+				s = "team|ctf";
+			}
+			else if(CVAR(g_maxplayers) == 2)
+			{
+				s = "tournament";
+			}
+			else
+			{
+				s = "ffa";
+			}
+		}
+		float i, n, matched;
+		matched = 0;
+		n = tokenizebyseparator(s, "|"); 
+		for (i = 0; i < n; i++)
+		{
+			s = argv(i);
+			if(s == "")
+				continue;
+			if(strstrofs(self.gametype, s, 0) >= 0)
+			{
+				print(strcat("Found pattern '", s, "' for entity '", self.classname, "' with gametype '", self.gametype, "'\n"));
+				matched = 1;
+				break;
+			}
+		}
+		if not(matched)
+		{
+			print(strcat("Removed entity '", self.classname, "' with gametype '", self.gametype, "' because no patterns found\n"));
+			remove(self);
+			return;
+		}
+	}
 	if(self.cvarfilter != "")
 	{
 		float n, i, o, inv;
@@ -422,4 +482,11 @@ void SV_OnEntityPreSpawnFunction()
 		self.angles_z = self.angles_z + (random() * 2 - 1) * self.anglesjitter_z;
 	if(self.anglejitter != 0)
 		self.angles_y = self.angles_y + (random() * 2 - 1) * self.anglejitter;
+    
+    string repl = cvar_string_builtin(strcat("sv_spawnreplace_", self.classname));
+
+    if(repl != "") {
+        // XXX: this is never strunzoned because darkplaces is stupid and doesn't support a SV_OnEntityPreRemove()
+        self.classname = strzone(repl);
+    }
 }

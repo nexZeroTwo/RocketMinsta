@@ -500,7 +500,10 @@ float turret_validate_target(entity e_turret,entity e_target,float validate_flag
         if not (validate_flags & TFL_TARGETSELECT_PLAYERS)
             return -7;
 
-        if (e_target.deadflag != DEAD_NO)
+        if (e_target.deadflag != DEAD_NO || (e_target.frozen && !e_target.revprogress) || e_target.jb_isprisoned)
+            return -8;
+        
+        if (e_target.hg_stealthalpha > 0.5)
             return -8;
     }
 
@@ -660,7 +663,7 @@ void turret_think()
     self.nextthink = time + self.ticrate;
 
     // ONS uses somewhat backwards linking.
-    if (teamplay)
+    if (CVAR(teamplay))
     {
         if not (g_onslaught)
             if (self.target)
@@ -779,7 +782,7 @@ void turret_think()
 
         // g_turrets_targetscan_maxdelay forces a target re-scan this often
         float do_target_scan;
-        if((self.target_select_time + cvar("g_turrets_targetscan_maxdelay")) < time)
+        if((self.target_select_time + CVAR(g_turrets_targetscan_maxdelay)) < time)
             do_target_scan = 1;
 
         // Old target (if any) invalid?
@@ -787,7 +790,7 @@ void turret_think()
             do_target_scan = 1;
 
         // But never more often then g_turrets_targetscan_mindelay!
-        if (self.target_select_time + cvar("g_turrets_targetscan_mindelay") > time)
+        if (self.target_select_time + CVAR(g_turrets_targetscan_mindelay) > time)
             do_target_scan = 0;
 
         if(do_target_scan)
@@ -811,7 +814,7 @@ void turret_think()
             return;
         }
         else
-            self.lip = time + cvar("g_turrets_aimidle_delay"); // Keep track of the last time we had a target.
+            self.lip = time + CVAR(g_turrets_aimidle_delay); // Keep track of the last time we had a target.
 
         // Predict?
         if not(self.aim_flags & TFL_AIM_NO)
@@ -835,7 +838,7 @@ void turret_think()
 
 void turret_fire()
 {
-    if (cvar("g_turrets_nofire") != 0)
+    if (CVAR(g_turrets_nofire) != 0)
         return;
 
     /*
@@ -903,7 +906,7 @@ void turrets_manager_think()
     self.nextthink = time + 1;
 
     entity e;
-    if (cvar("g_turrets_reloadcvars") == 1)
+    if (CVAR(g_turrets_reloadcvars) == 1)
     {
         e = nextent(world);
         while (e)
@@ -949,7 +952,7 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
     }
 
     // Are turrets allowed atm?
-    if (cvar("g_turrets") == 0)
+    if (CVAR(g_turrets) == 0)
         return 0;
 
     // Better more then once then never.
@@ -972,12 +975,12 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
     load_unit_settings(self,self.cvar_basename,0);
 
     // Handle turret teams.
-    if (cvar("g_assult") != 0)
+    if (CVAR(g_assult) != 0)
     {
         if (!self.team)
             self.team = 14; // Assume turrets are on the defending side if not explicitly set otehrwize
     }
-    else if not (teamplay)
+    else if not (CVAR(teamplay))
 		self.team = MAX_SHOT_DISTANCE; // Group all turrets into the same team iso they dont kill eachother.
 	else if(g_onslaught && self.targetname)
 	{
@@ -1005,7 +1008,7 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
     else
         if (!self.ticrate) self.ticrate = 0.1;     // 10 fps for normal turrets
 
-    self.ticrate = bound(sys_ticrate,self.ticrate,60);  // keep it sane
+    self.ticrate = bound(CVAR(sys_ticrate),self.ticrate,60);  // keep it sane
 
 // General stuff
     if (self.netname == "")
@@ -1295,7 +1298,7 @@ float turret_stdproc_init (string cvar_base_name, float csqc_shared, string base
         self.think     = turret_think;
 
     ++turret_count;
-    self.nextthink = time + self.ticrate + (turret_count * sys_ticrate);
+    self.nextthink = time + self.ticrate + (turret_count * CVAR(sys_ticrate));
 
     self.tur_head.team = self.team;
     self.view_ofs = '0 0 0';

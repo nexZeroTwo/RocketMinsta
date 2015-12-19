@@ -77,7 +77,7 @@ float havocbot_ctf_teamcount(entity bot, vector org, float radius)
 
 void havocbot_goalrating_ctf_ourflag(float ratingscale)
 {
-	local entity head;
+	entity head;
 	head = ctf_worldflaglist;
 	while (head)
 	{
@@ -91,7 +91,7 @@ void havocbot_goalrating_ctf_ourflag(float ratingscale)
 
 void havocbot_goalrating_ctf_ourbase(float ratingscale)
 {
-	local entity head;
+	entity head;
 	head = ctf_worldflaglist;
 	while (head)
 	{
@@ -107,7 +107,7 @@ void havocbot_goalrating_ctf_ourbase(float ratingscale)
 
 void havocbot_goalrating_ctf_enemyflag(float ratingscale)
 {
-	local entity head;
+	entity head;
 	head = ctf_worldflaglist;
 	while (head)
 	{
@@ -127,7 +127,7 @@ void havocbot_goalrating_ctf_enemybase(float ratingscale)
 		return;
 	}
 
-	local entity head;
+	entity head;
 
 	head = havocbot_ctf_find_enemy_flag(self);
 
@@ -139,7 +139,7 @@ void havocbot_goalrating_ctf_enemybase(float ratingscale)
 
 void havocbot_goalrating_ctf_ourstolenflag(float ratingscale)
 {
-	local entity mf;
+	entity mf;
 
 	mf = havocbot_ctf_find_flag(self);
 
@@ -151,7 +151,7 @@ void havocbot_goalrating_ctf_ourstolenflag(float ratingscale)
 
 void havocbot_goalrating_ctf_droppedflags(float ratingscale, vector org, float radius)
 {
-	local entity head;
+	entity head;
 	head = ctf_worldflaglist;
 	while (head)
 	{
@@ -174,8 +174,8 @@ void havocbot_goalrating_ctf_droppedflags(float ratingscale, vector org, float r
 
 void havocbot_goalrating_ctf_carrieritems(float ratingscale, vector org, float sradius)
 {
-	local entity head;
-	local float t;
+	entity head;
+	float t;
 	head = findchainfloat(bot_pickup, TRUE);
 	while (head)
 	{
@@ -251,7 +251,7 @@ void havocbot_role_ctf_carrier()
 
 	if (self.bot_strategytime < time)
 	{
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 
 		navigation_goalrating_start();
 		havocbot_goalrating_ctf_ourbase(50000);
@@ -275,7 +275,7 @@ void havocbot_role_ctf_carrier()
 
 void havocbot_role_ctf_escort()
 {
-	local entity mf, ef;
+	entity mf, ef;
 
 	if(self.deadflag != DEAD_NO)
 	{
@@ -324,7 +324,7 @@ void havocbot_role_ctf_escort()
 	// Chase the flag carrier
 	if (self.bot_strategytime < time)
 	{
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 		havocbot_goalrating_ctf_enemyflag(30000);
 		havocbot_goalrating_ctf_ourstolenflag(40000);
@@ -335,8 +335,8 @@ void havocbot_role_ctf_escort()
 
 void havocbot_role_ctf_offense()
 {
-	local entity mf, ef;
-	local vector pos;
+	entity mf, ef;
+	vector pos;
 
 	if(self.deadflag != DEAD_NO)
 	{
@@ -404,7 +404,7 @@ void havocbot_role_ctf_offense()
 
 	if (self.bot_strategytime < time)
 	{
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 		havocbot_goalrating_ctf_ourstolenflag(50000);
 		havocbot_goalrating_ctf_enemybase(20000);
@@ -417,7 +417,7 @@ void havocbot_role_ctf_offense()
 // Retriever (temporary role):
 void havocbot_role_ctf_retriever()
 {
-	local entity mf;
+	entity mf;
 
 	if(self.deadflag != DEAD_NO)
 	{
@@ -450,10 +450,10 @@ void havocbot_role_ctf_retriever()
 
 	if (self.bot_strategytime < time)
 	{
-		local float radius;
+		float radius;
 		radius = 10000;
 
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 		havocbot_goalrating_ctf_ourstolenflag(50000);
 		havocbot_goalrating_ctf_droppedflags(40000, self.origin, radius);
@@ -465,7 +465,7 @@ void havocbot_role_ctf_retriever()
 
 void havocbot_role_ctf_middle()
 {
-	local entity mf;
+	entity mf;
 
 	if(self.deadflag != DEAD_NO)
 	{
@@ -497,12 +497,12 @@ void havocbot_role_ctf_middle()
 
 	if (self.bot_strategytime < time)
 	{
-		local vector org;
+		vector org;
 
 		org = havocbot_ctf_middlepoint;
 		org_z = self.origin_z;
 
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 		havocbot_goalrating_ctf_ourstolenflag(50000);
 		havocbot_goalrating_ctf_droppedflags(30000, self.origin, 10000);
@@ -516,7 +516,7 @@ void havocbot_role_ctf_middle()
 
 void havocbot_role_ctf_defense()
 {
-	local entity mf;
+	entity mf;
 
 	if(self.deadflag != DEAD_NO)
 	{
@@ -548,18 +548,18 @@ void havocbot_role_ctf_defense()
 	}
 	if (self.bot_strategytime < time)
 	{
-		local float radius;
-		local vector org;
+		float radius;
+		vector org;
 
 		org = mf.dropped_origin;
 		radius = havocbot_ctf_middlepoint_radius;
 
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 
 		// if enemies are closer to our base, go there
-		local entity head, closestplayer;
-		local float distance, bestdistance;
+		entity head, closestplayer;
+		float distance, bestdistance;
 		distance = 10000;
 		FOR_EACH_PLAYER(head)
 		{
@@ -610,9 +610,9 @@ void havocbot_calculate_middlepoint()
 
 void havocbot_ctf_reset_role(entity bot)
 {
-	local float cdefense, cmiddle, coffense;
-	local entity mf, ef, head;
-	local float c;
+	float cdefense, cmiddle, coffense;
+	entity mf, ef, head;
+	float c;
 
 	if(bot.deadflag != DEAD_NO)
 		return;

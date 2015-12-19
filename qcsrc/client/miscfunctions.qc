@@ -34,7 +34,7 @@ void restartAnnouncer_Think() {
 		//gamestart_fadetime = time + 0.5;
 		//bigprint(strcat("Game starts in ", ftos(countdown_rounded)), "", 0.5);
 		bigprint(" ", "", 1);
-		bigprint(strcat("Game starts in: ", ftos(countdown_rounded)), "", 1);
+		bigprint(strcat(strcat(gametype_ID_to_LongName(gametype)), " starts in: ", ftos(countdown_rounded)), "", 1);
 
 		if(countdown_rounded <= 3 && countdown_rounded >= 1) {
 			sound(self, CHAN_VOICE, strcat("announcer/robotic/", ftos(countdown_rounded), ".wav"), VOL_BASEVOICE, ATTN_NONE);
@@ -54,7 +54,7 @@ void maptimeAnnouncer() {
     timeleft = max(0, timelimit * 60 + getstatf(STAT_GAMESTARTTIME) - time);
 
     //5 minute check
-    if (cvar("cl_sound_maptime_warning") >= 2) {
+    if (CVAR(cl_sound_maptime_warning) >= 2) {
         //make sure that after connect (and e.g. 4 minutes left) we will not get a wrong sound
         if(announcer_5min)
         {
@@ -69,7 +69,7 @@ void maptimeAnnouncer() {
     }
 
     //1 minute check
-    if (cvar("cl_sound_maptime_warning") == 1 || cvar("cl_sound_maptime_warning") == 3) {
+    if (CVAR(cl_sound_maptime_warning) == 1 || CVAR(cl_sound_maptime_warning) == 3) {
     	if (announcer_1min)
     	{
 			if(timeleft > 60)
@@ -87,8 +87,15 @@ void maptimeAnnouncer() {
  * TODO: make all announcer sound() calls client-side in the end, to allow queues etc.
  */
 void Announcer_Precache () {
-    precache_sound ("announcer/robotic/1minuteremains.wav");
-	precache_sound ("announcer/robotic/5minutesremain.wav");
+    precache_sound("announcer/male/headshot.wav");
+    precache_sound("announcer/male/awesome.wav");
+    precache_sound("announcer/male/impressive.wav");
+    precache_sound("announcer/male/amazing.wav");
+    precache_sound("announcer/male/airshot.wav");
+    precache_sound("announcer/robotic/1minuteremains.wav");
+    precache_sound("announcer/robotic/1minuteremains.wav");
+	precache_sound("announcer/robotic/5minutesremain.wav");
+    precache_sound("porto/fire.wav");
 }
 
 void AuditLists()
@@ -198,7 +205,7 @@ entity GetTeam(float Team, float add)
 {
 	float num;
 	entity tm;
-	num = (Team == COLOR_SPECTATOR) ? 16 : Team;
+	num = if(Team == COLOR_SPECTATOR) 16 else Team;
 	if(teamslots[num])
 		return teamslots[num];
 	if not(add)
@@ -210,17 +217,12 @@ entity GetTeam(float Team, float add)
 	return tm;
 }
 
-void CSQC_CheckEngine()
+void SetupFonts()
 {
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
 	sbar_rmbigfont = FONT_USER+4;
-	
-	#ifdef RM_SUPPORT_MADOKA
 	sbar_madokafont = FONT_USER+3;
-	#else
-	sbar_madokafont = FONT_USER+2;
-	#endif
 }
 
 vector Sbar_GetFontsize(string cvarname)
@@ -239,7 +241,7 @@ float Sbar_GetWidth(float teamcolumnwidth)
 {
 	#ifdef WE_DONT_NEED_TO_GO_WIDER
 	float f;
-	f = cvar("sbar_width");
+	f = CVAR(sbar_width);
 	if(f == 0)
 		f = 640;
 	if(f < 320)
@@ -257,7 +259,7 @@ float PreviewExists(string name)
 	float f;
 	string file;
 
-	if(cvar("cl_readpicture_force"))
+	if(CVAR(cl_readpicture_force))
 		return false;
 
 	file = strcat(name, ".tga");
@@ -434,7 +436,7 @@ void drawpic_rotated_ex(vector position, string pic, vector sz, vector rgb, floa
 
 void loadfont(string slot, string font)
 {
-	/*if(cvar("rm_dontmesswithfonts"))
+	/*if(CVAR(rm_dontmesswithfonts))
 	{
 		print("Warning: attempted a font change [", slot, " -> ", font, "], denied\n");
 		return;
@@ -467,15 +469,187 @@ void drawcolorcodedstring_aspect(vector pos, string text, vector sz, float alpha
 	drawcolorcodedstring(pos, text, '1 1 0' * sz_y, alpha, drawflag);
 }
 
-float approach(float v, float t, float d) {
-	if(v < t) {
-		v += d;
-		if(v > t)
-			return t;
-	} else if(v > t) {
-		v -= d;
-		if(v < t)
-			return t;
-	}
-	return v;
+vector healthcolor(float x) {
+    vector c;
+    c_z = 0;
+    
+    x = 200 * (x / sv_nicehealth);
+    
+    if(x > 600) {
+        c_x = 0;
+        c_y = 1;
+        c_z = 1;
+    } else if(x > 200) {
+        c_x = 0;
+        c_y = 1;
+        c_z = (x-200)*0.0025;
+    } else if(x > 150) {
+        c_x = 0.4 - (x-150)*0.02 * 0.4;
+        c_y = 0.9 + (x-150)*0.02 * 0.1;
+    } else if(x > 100) {
+        c_x = 1 - (x-100)*0.02 * 0.6;
+        c_y = 1 - (x-100)*0.02 * 0.1;
+        c_z = 1 - (x-100)*0.02;
+    } else if(x > 50) {
+        c_x = 1;
+        c_y = 1;
+        c_z = 0.2 + (x-50)*0.02 * 0.8;  
+    } else if(x > 20) {
+        c_x = 1;
+        c_y = (x-20)*90/27/100;
+        c_z = (x-20)*90/27/100 * 0.2;
+    } else {
+        c_x = 1;
+        c_y = 0;
+    }
+    
+    return c;
+}
+
+float TeamNumber(float t, float d) {
+    if(!rm_teamlasers)
+        return d;
+    
+    switch(t) {
+        case COLOR_TEAM1:
+            return 1;
+        case COLOR_TEAM2:
+            return 2;
+        case COLOR_TEAM3:
+            return 3;
+        case COLOR_TEAM4:
+            return 4;
+        default:
+            return d;
+    }
+} 
+
+float rm_particleeffectnum(string p) {
+    float n = particleeffectnum(p);
+    
+    if(n < 0) {
+        print("ERROR: RM particle effect ", p, " missing! Will try to use a fallback. Try restarting the game to fix this problem.\n");
+        
+        switch(p) {
+            case "RM_HG_PLASMA_TEAM1":
+            case "RM_HG_PLASMA_TEAM2":
+            case "RM_HG_PLASMA_TEAM3":
+            case "RM_HG_PLASMA_TEAM4":
+                return particleeffectnum("TR_NEXUIZPLASMA");
+                
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM1":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM2":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM3":
+            case "RM_HG_PLASMA_SHARD_EXPLODE_TEAM4":
+                return particleeffectnum("electro_ballexplode");
+            
+            case "RM_HG_PLASMA_EXPLODE_TEAM1":
+            case "RM_HG_PLASMA_EXPLODE_TEAM2":
+            case "RM_HG_PLASMA_EXPLODE_TEAM3":
+            case "RM_HG_PLASMA_EXPLODE_TEAM4":
+                return particleeffectnum("hookbomb_explode");
+            
+            case "RM_HG_NAPALM_FIRE_TEAM1":
+            case "RM_HG_NAPALM_FIRE_TEAM2":
+            case "RM_HG_NAPALM_FIRE_TEAM3":
+            case "RM_HG_NAPALM_FIRE_TEAM4":
+                return particleeffectnum("fire_big");
+            
+            case "RM_HG_NAPALM_TRAIL_TEAM1":
+            case "RM_HG_NAPALM_TRAIL_TEAM2":
+            case "RM_HG_NAPALM_TRAIL_TEAM3":
+            case "RM_HG_NAPALM_TRAIL_TEAM4":
+                return particleeffectnum("firemine");
+            
+            case "RM_HEAL":
+                return particleeffectnum("electro_impact");
+            
+            case "RM_EXPLOSION":
+            case "RM_MEODP":
+                return particleeffectnum("rocket_explode");
+
+            case "RM_ZAPPER_TEAM1":
+            case "RM_ZAPPER_TEAM2":
+            case "RM_ZAPPER_TEAM3":
+            case "RM_ZAPPER_TEAM4":
+                return particleeffectnum("TR_NEXUIZPLASMA");
+
+            case "RM_LIGHTNING_TEAM1":
+            case "RM_LIGHTNING_TEAM2":
+            case "RM_LIGHTNING_TEAM3":
+            case "RM_LIGHTNING_TEAM4":
+                return -1;
+
+            case "RM_ZAPPER_MUZZLEFLASH_TEAM1":
+            case "RM_ZAPPER_MUZZLEFLASH_TEAM2":
+            case "RM_ZAPPER_MUZZLEFLASH_TEAM3":
+            case "RM_ZAPPER_MUZZLEFLASH_TEAM4":
+                return particleeffectnum("electro_muzzleflash");
+
+            case "RM_CRYLINK_TEAM1":
+            case "RM_CRYLINK_TEAM2":
+            case "RM_CRYLINK_TEAM3":
+            case "RM_CRYLINK_TEAM4":
+                return particleeffectnum("TR_CRYLINKPLASMA");
+
+            case "RM_CRYLINK_IMPACT_TEAM1":
+            case "RM_CRYLINK_IMPACT_TEAM2":
+            case "RM_CRYLINK_IMPACT_TEAM3":
+            case "RM_CRYLINK_IMPACT_TEAM4":
+                return particleeffectnum("crylink_impact");
+
+            case "RM_CRYLINK_IMPACT_BIG_TEAM1":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM2":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM3":
+            case "RM_CRYLINK_IMPACT_BIG_TEAM4":
+                return particleeffectnum("crylink_impactbig");
+
+            case "RM_ELECTRO_TEAM1":
+            case "RM_ELECTRO_TEAM2":
+            case "RM_ELECTRO_TEAM3":
+            case "RM_ELECTRO_TEAM4":
+                return particleeffectnum("TR_NEXUIZPLASMA");
+
+            case "RM_ELECTRO_IMPACT_TEAM1":
+            case "RM_ELECTRO_IMPACT_TEAM2":
+            case "RM_ELECTRO_IMPACT_TEAM3":
+            case "RM_ELECTRO_IMPACT_TEAM4":
+                return particleeffectnum("electro_impact");
+
+            case "RM_ELECTRO_COMBO_TEAM1":
+            case "RM_ELECTRO_COMBO_TEAM2":
+            case "RM_ELECTRO_COMBO_TEAM3":
+            case "RM_ELECTRO_COMBO_TEAM4":
+                return particleeffectnum("electro_combo");
+        }
+    }
+    
+    return n;
+}
+
+#define rm_particleeffectnum_team(p,t,d) rm_particleeffectnum(strcat(p "_TEAM", ftos(TeamNumber(t, d))))
+
+void announce(string v) {
+    sound(self, CHAN_VOICE, v, VOL_BASEVOICE, ATTN_NONE);
+}
+
+void spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
+    vector diff = end - start;
+    vector dir = normalize(diff);
+    vector o = start;
+
+    vector step = dir * steplen;
+    float maxlen = vlen(diff);
+    float i;
+
+    vectorvectors(dir);
+
+    vector prev = o + dist * (v_up * sin(phase) + v_right * cos(phase));
+
+    for(i = 0; i < maxlen; i += steplen, o += step) {
+        float x = freq * (i + steplen) + phase;
+        vector n = o + dist * (v_up * sin(x) + v_right * cos(x));
+        trailparticles(ent, effectnum, prev, n);
+        prev = n;
+    }
 }

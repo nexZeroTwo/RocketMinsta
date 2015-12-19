@@ -8,7 +8,7 @@ entity kh_worldkeylist;
 
 void havocbot_goalrating_kh(float ratingscale_team, float ratingscale_dropped, float ratingscale_enemy)
 {
-	local entity head;
+	entity head;
 	for (head = kh_worldkeylist; head; head = head.kh_worldkeynext)
 	{
 		if(head.owner == self)
@@ -50,7 +50,7 @@ void havocbot_role_kh_carrier()
 
 	if (self.bot_strategytime < time)
 	{
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 
 		if(kh_Key_AllOwnedByWhichTeam() == self.team)
@@ -88,7 +88,7 @@ void havocbot_role_kh_defense()
 	if (self.bot_strategytime < time)
 	{
 		float key_owner_team;
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 
 		key_owner_team = kh_Key_AllOwnedByWhichTeam();
@@ -130,7 +130,7 @@ void havocbot_role_kh_offense()
 	{
 		float key_owner_team;
 
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 
 		key_owner_team = kh_Key_AllOwnedByWhichTeam();
@@ -180,7 +180,7 @@ void havocbot_role_kh_freelancer()
 	{
 		float key_owner_team;
 
-		self.bot_strategytime = time + cvar("bot_ai_strategyinterval");
+		self.bot_strategytime = time + CVAR(bot_ai_strategyinterval);
 		navigation_goalrating_start();
 
 		key_owner_team = kh_Key_AllOwnedByWhichTeam();
@@ -197,7 +197,7 @@ void havocbot_role_kh_freelancer()
 
 void havocbot_chooserole_kh()
 {
-	local float r;
+	float r;
 
 	if(self.deadflag != DEAD_NO)
 		return;

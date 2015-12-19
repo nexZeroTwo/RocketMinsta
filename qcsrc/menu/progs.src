@@ -1,7 +1,12 @@
 ../../menu.dat
 
 config.qh
+../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 msys.qh
 mbuiltin.qh
 ../common/util.qh
@@ -13,7 +18,9 @@ oo/base.h
 ../common/items.qh
 ../common/ip2c.qh
 ../common/gametype.qh
+../common/nadgets.qh
 ../common/dprm.qh
+../common/lazyjson.qh
 
 gamecommand.qh
 menu.qh
@@ -29,6 +36,7 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
+../common/flag_anim.qc
 ../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
@@ -42,5 +50,7 @@ nexuiz/util.qc
 ../common/mapinfo.qc
 ../common/items.qc
 ../common/ip2c.qc
-../common/gametype.qc
+../common/gametype.qc            
+../common/nadgets.qc
+../common/lazyjson.qc
 

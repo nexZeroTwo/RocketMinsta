@@ -12,6 +12,38 @@ void DelayThink()
 	remove(self);
 };
 
+float foreachtarget_callid;
+.float targethandled;
+void SUB_ForEachTarget(entity s, void(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
+    float i;
+    string targname;
+    entity targ;
+    
+    for(i = 0; i < 4; ++i) {
+        switch(i) {
+            case 0: targname = s.target ; break;
+            case 1: targname = s.target2; break;
+            case 2: targname = s.target3; break;
+            case 3: targname = s.target4; break;
+        }
+        
+        if(targname != "") {
+            for(targ = world; (targ = find(targ, targetname, targname));)
+            if(targ && targ.use && targ.targethandled != foreachtarget_callid) {
+                cback(targ, fdata, vdata, sdata, edata);
+                targ.targethandled = foreachtarget_callid;
+                
+                if(recursive)
+                    SUB_ForEachTarget(targ, cback, recursive, fdata, vdata, sdata, edata);
+            }
+        }
+    }
+}
+
+void SUB_ForEachTarget_Init() {
+    ++foreachtarget_callid;
+}
+
 /*
 ==============================
 SUB_UseTargets
@@ -31,9 +63,9 @@ match (string)self.target and call their .use function
 
 ==============================
 */
-void SUB_UseTargets()
+void SUB_UseTargets_Ex(float preventReuse)
 {
-	local entity t, stemp, otemp, act;
+	entity t, stemp, otemp, act;
 	string s;
 	float i;
 
@@ -97,15 +129,18 @@ void SUB_UseTargets()
 		}
 		if (s != "")
 		{
-			for(t = world; (t = find(t, targetname, s)); )
-			if(t.use)
-			{
-				//print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
-				self = t;
-				other = stemp;
-				activator = act;
-				self.use();
-			}
+			for(t = world; (t = find(t, targetname, s)); ) {
+                if(t.use && (t.sub_target_used != time || !preventReuse))
+                {
+                    //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
+                    self = t;
+                    other = stemp;
+                    activator = act;
+                    self.use();
+                    if(preventReuse)
+                        self.sub_target_used = time;
+                }
+            }
 		}
 	}
 
@@ -114,6 +149,13 @@ void SUB_UseTargets()
 	other = otemp;
 };
 
+void SUB_UseTargets() {
+    SUB_UseTargets_Ex(FALSE);
+}
+
+void SUB_UseTargets_PreventReuse() {
+    SUB_UseTargets_Ex(TRUE);
+}
 
 //=============================================================================
 
@@ -323,6 +365,7 @@ This fixed size trigger cannot be touched, it can only be fired by other events.
 */
 void spawnfunc_trigger_relay()
 {
+    self.classname = "trigger_relay";
 	self.use = SUB_UseTargets;
 	self.reset = spawnfunc_trigger_relay; // this spawnfunc resets fully
 };
@@ -415,17 +458,17 @@ void trigger_hurt_touch()
 		{
 			EXACTTRIGGER_TOUCH;
 			other.triggerhurttime = time + 1;
-			Damage (other, self, self, self.dmg, DEATH_HURTTRIGGER, other.origin, '0 0 0');
+
+            float d = DEATH_HURTTRIGGER;
+            if(other.pushltime == PUSHLTIME_HOOKFRAG)
+                d = DEATH_HOOKFRAG;
+
+			Damage(other, self, self, self.dmg, d, other.origin, '0 0 0');
 		}
 	}
 	else
 	{
-		if (other.owner == world && other.classname == "prec_rune")
-		{
-			EXACTTRIGGER_TOUCH;
-			other.pain_finished = 0;
-		}
-		else if (!other.owner)
+		if (!other.owner)
 		{
 			if (other.items & IT_KEY1 || other.items & IT_KEY2)	// reset flag
 			{
@@ -491,24 +534,20 @@ float tracebox_hits_trigger_hurt(vector start, vector mi, vector ma, vector end)
 .float triggerhealtime;
 void trigger_heal_touch()
 {
-	// only do the EXACTTRIGGER_TOUCH checks when really needed (saves some cpu)
-	if (other.iscreature)
-	{
-		if (other.takedamage)
-		if (other.triggerhealtime < time)
-		{
-			EXACTTRIGGER_TOUCH;
-			other.triggerhealtime = time + 1;
-			
-			if (other.health < self.max_health)
-			{
-				other.health = min(other.health + self.health, self.max_health);
-				other.pauserothealth_finished = max(other.pauserothealth_finished, time + cvar("g_balance_pause_health_rot"));
-				sound (other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
-			}
-		}
-	}
-};
+    // only do the EXACTTRIGGER_TOUCH checks when really needed (saves some cpu)
+    if(other.iscreature) {
+        if(other.takedamage)
+        if(other.triggerhealtime < time) {
+            EXACTTRIGGER_TOUCH;
+            other.triggerhealtime = time + 1;
+            
+            if(other.health < self.max_health) {
+                Heal(other, self, other, self.health, 0, self.max_health, 0, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+                sound(other, CHAN_AUTO, self.noise, VOL_BASE, ATTN_NORM);
+            }
+        }
+    }
+}
 
 void spawnfunc_trigger_heal()
 {
@@ -1252,7 +1291,7 @@ void spawnfunc_trigger_impulse()
 	EXACTTRIGGER_INIT;
     if(self.radius)
     {
-        if(!self.strength) self.strength = 2000 * cvar("g_triggerimpulse_radial_multiplier");
+        if(!self.strength) self.strength = 2000 * CVAR(g_triggerimpulse_radial_multiplier);
         setorigin(self, self.origin);
         setsize(self, '-1 -1 -1' * self.radius,'1 1 1' * self.radius);
         self.touch = trigger_impulse_touch3;
@@ -1261,13 +1300,13 @@ void spawnfunc_trigger_impulse()
     {
         if(self.target)
         {
-            if(!self.strength) self.strength = 950 * cvar("g_triggerimpulse_directional_multiplier");
+            if(!self.strength) self.strength = 950 * CVAR(g_triggerimpulse_directional_multiplier);
             self.touch = trigger_impulse_touch1;
         }
         else
         {
             if(!self.strength) self.strength = 0.9;
-			self.strength = pow(self.strength, cvar("g_triggerimpulse_accel_power")) * cvar("g_triggerimpulse_accel_multiplier");
+			self.strength = pow(self.strength, CVAR(g_triggerimpulse_accel_power)) * CVAR(g_triggerimpulse_accel_multiplier);
             self.touch = trigger_impulse_touch2;
         }
     }
@@ -1514,8 +1553,6 @@ void target_voicescript_next(entity pl)
 		return;
 	if(vs.message == "")
 		return;
-	if(pl.classname != "player")
-		return;
 	if(gameover)
 		return;
 
@@ -1611,10 +1648,12 @@ void trigger_relay_teamcheck_use()
 void trigger_relay_teamcheck_reset()
 {
 	self.team = self.team_saved;
+    self.use = trigger_relay_teamcheck_use;
 }
 
 void spawnfunc_trigger_relay_teamcheck()
 {
+    self.classname = "trigger_relay";
 	self.team_saved = self.team;
 	self.use = trigger_relay_teamcheck_use;
 	self.reset = trigger_relay_teamcheck_reset;
@@ -1629,18 +1668,16 @@ void trigger_disablerelay_use()
 	float a, b;
 	a = b = 0;
 
-	for(e = world; (e = find(e, targetname, self.target)); )
+	for(e = world; (e = find(e, targetname, self.target)); ) if(e.classname == "trigger_relay")
 	{
-		if(e.use == SUB_UseTargets)
-		{
-			e.use = SUB_DontUseTargets;
-			++a;
-		}
-		else if(e.use == SUB_DontUseTargets)
-		{
-			e.use = SUB_UseTargets;
-			++b;
-		}
+        if(e.use == SUB_DontUseTargets) {
+            using(self = e)
+                self.reset();
+            ++b;
+        } else {
+            e.use = SUB_DontUseTargets;
+            ++a;
+        }
 	}
 
 	if((!a) == (!b))
@@ -1807,4 +1844,231 @@ void spawnfunc_trigger_magicear()
 	//   "hearing distance"
 	// target:
 	//   what to trigger
+}
+
+.entity trigger_gravity_check;
+void trigger_gravity_remove(entity own)
+{
+	if(own.trigger_gravity_check.owner == own)
+	{
+		UpdateCSQCProjectile(own);
+		own.gravity = own.trigger_gravity_check.gravity;
+		remove(own.trigger_gravity_check);
+	}
+	else
+		backtrace("Removing a trigger_gravity_check with no valid owner");
+	own.trigger_gravity_check = world;
+}
+void trigger_gravity_check_think()
+{
+	// This spawns when a player enters the gravity zone and checks if he left.
+	// Each frame, self.count is set to 2 by trigger_gravity_touch() and decreased by 1 here.
+	// It the player has left the gravity trigger, this will be allowed to reach 0 and indicate that.
+	if(self.count <= 0)
+	{
+		if(self.owner.trigger_gravity_check == self)
+			trigger_gravity_remove(self.owner);
+		else
+			remove(self);
+		return;
+	}
+	else
+	{
+		self.count -= 1;
+		self.nextthink = time;
+	}
+}
+
+void trigger_gravity_use()
+{
+	self.state = !self.state;
+}
+
+void trigger_gravity_touch()
+{
+	float g;
+
+	if(self.state != TRUE)
+		return;
+
+	EXACTTRIGGER_TOUCH;
+
+	g = self.gravity;
+
+	if not(self.spawnflags & 1)
+	{
+		if(other.trigger_gravity_check)
+		{
+			if(self == other.trigger_gravity_check.enemy)
+			{
+				// same?
+				other.trigger_gravity_check.count = 2; // gravity one more frame...
+				return;
+			}
+
+			// compare prio
+			if(self.cnt > other.trigger_gravity_check.enemy.cnt)
+				trigger_gravity_remove(other);
+			else
+				return;
+		}
+		other.trigger_gravity_check = spawn();
+		other.trigger_gravity_check.enemy = self;
+		other.trigger_gravity_check.owner = other;
+		other.trigger_gravity_check.gravity = other.gravity;
+		other.trigger_gravity_check.think = trigger_gravity_check_think;
+		other.trigger_gravity_check.nextthink = time;
+		other.trigger_gravity_check.count = 2;
+		if(other.gravity)
+			g *= other.gravity;
+	}
+
+	if (other.gravity != g)
+	{
+		other.gravity = g;
+		if(self.noise != "")
+			sound (other, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_NORM);
+		UpdateCSQCProjectile(other);
+	}
+}
+
+void spawnfunc_trigger_gravity()
+{
+	if(self.gravity == 1)
+		return;
+
+	EXACTTRIGGER_INIT;
+	self.touch = trigger_gravity_touch;
+	if(self.noise != "")
+		precache_sound(self.noise);
+
+	self.state = TRUE;
+	IFTARGETED
+	{
+		self.use = trigger_gravity_use;
+		if(self.spawnflags & 2)
+			self.state = FALSE;
+	}
+}
+
+/*
+ * cycle
+ */
+
+.string chaintarget;
+
+entity trigger_cycle_find_next_target(entity ref) {
+    entity e;
+
+    if(ref.chaintarget != "")
+        e = find(world, targetname, ref.chaintarget);
+
+    if(!e.use)
+        e = world;
+
+    return e;
+}
+
+void trigger_cycle_reset(void) {
+    self.target = self.chaintarget;
+    self.enemy = trigger_cycle_find_next_target(self);
+}
+
+void trigger_cycle_use(void) {
+    SUB_UseTargets_PreventReuse();
+    self.enemy = trigger_cycle_find_next_target(self.enemy);
+    self.target = self.enemy.targetname;
+    SUB_UseTargets_PreventReuse();
+}
+
+void trigger_cycle_init_delayed(void) {
+    self.enemy = trigger_cycle_find_next_target(self);
+    self.think = func_null;
+}
+
+void spawnfunc_trigger_cycle(void) {
+    self.chaintarget = self.target;
+    self.use = trigger_cycle_use;
+    self.reset = trigger_cycle_reset;
+    self.think = trigger_cycle_init_delayed;
+    self.nextthink = time;
+}
+
+/*
+ * killcredit
+ */
+
+void spawnfunc_trigger_killcredit(void) {
+    EXACTTRIGGER_INIT;
+
+    if(self.wait <= 0)
+        self.wait = 3;
+
+    self.use = inline void(void) {
+        self.enemy = activator;
+        self.solid = SOLID_TRIGGER;
+        self.think = self.reset;
+        self.nextthink = time + self.wait;
+    };
+
+    self.reset = inline void(void) {
+        self.enemy = world;
+        self.solid = SOLID_NOT;
+        self.think = SUB_Null;
+    };
+
+    self.touch = inline void(void) {
+        if(!other.iscreature)
+            return;
+
+        other.pushltime = time + CVAR(g_maxpushtime);
+        other.pusher = self.enemy;
+    };
+
+    self.reset();
+}
+
+void spawnfunc_func_killcredit(void) {
+    print("^1FIXME: ^7map has a misnamed killcredit entity 'func_killcredit', the correct name is 'trigger_killcredit'! Please fix this.\n");
+    self.classname = "trigger_killcredit";
+    spawnfunc_trigger_killcredit();
+}
+
+/*
+ * random
+ */
+
+void spawnfunc_trigger_relay_chance(void) {
+    self.classname = "trigger_relay";
+
+    if(!self.cnt)
+        self.cnt = 0.5;
+
+    self.use = inline void(void) {
+        if(random() < self.cnt)
+            SUB_UseTargets();
+    };
+
+    self.reset = spawnfunc_trigger_relay_chance;
+}
+
+void spawnfunc_trigger_relay_random(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        RandomSelection_Init();
+        SUB_ForEachTarget_Init();
+
+        SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
+            e.sub_target_used = time;
+            RandomSelection_Add(e, 0, string_null, 1, 1);
+        }, FALSE, 0, '0 0 0', string_null, world);
+
+        if(RandomSelection_chosen_ent) {
+            RandomSelection_chosen_ent.sub_target_used = -1;
+            SUB_UseTargets_PreventReuse();
+        }
+    };
+
+    self.reset = spawnfunc_trigger_relay_random;
 }

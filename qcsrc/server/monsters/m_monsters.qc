@@ -152,8 +152,8 @@ void() monster_death_use =
 
 void() monsterinwall =
 {
-	local entity e;
-	if (!cvar("developer"))
+	entity e;
+	if (!CVAR(developer))
 		return;
 	// this is handy for level designers,
 	// puts a spikey ball where the error is...
@@ -459,7 +459,7 @@ void() swimmonster_start =
 
 void(vector org, float bodydamage, float armordamage, vector force, float damgtype) genericbleedfunc =
 {
-        local vector v;
+        vector v;
         v = '0 0 0' - force * 0.05;
         if (armordamage > 0)
                 te_spark(org, v, armordamage * 3);

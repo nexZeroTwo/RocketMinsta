@@ -1,6 +1,7 @@
 .float spawntime;
 .vector trail_oldorigin;
 .float trail_oldtime;
+.float extradata;
 
 void SUB_Null()
 {
@@ -18,6 +19,7 @@ void SUB_Stop()
 .float snd_looping;
 .float silent;
 
+.float nextparticle;
 void Projectile_DrawTrail(vector to)
 {
 	vector from;
@@ -29,16 +31,33 @@ void Projectile_DrawTrail(vector to)
 
 	g_minstagib = getstati(STAT_MINSTA);
 
+    if(self.cnt == PROJECTILE_HG_TRANSLOC)
+        R_AddDynamicLight(self.origin, 50, GetTeamRGB(if(self.team > 0) self.team else COLOR_TEAM4));
+    
 	if(from == to)
 	{
 		switch(self.cnt)
 		{
+            case PROJECTILE_HG_NAPALMSHARD:
+                goto flame;
+            case PROJECTILE_HG_NAPALM:
 			case PROJECTILE_FIREMINE:
-				to_z += 1;
+                to_z += 1;
+                break;
+            case PROJECTILE_HG_TRANSLOC:
+                to = from = self.origin;
+                to_z += 1;
 				break;
 			case PROJECTILE_ELECTRO:
-                        	trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
-                        	return;
+                trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
+                break;
+            case PROJECTILE_HG_PLASMA_SHARD:
+                trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
+                return;
+            case PROJECTILE_HG_RAZE:
+            case PROJECTILE_HG_PLASMA:
+            case PROJECTILE_HEAL_PARTICLE_EMITTER:
+                break;
 			default:
 				return;
 		}
@@ -50,34 +69,38 @@ void Projectile_DrawTrail(vector to)
 			trailparticles(self, particleeffectnum("TR_ROCKET"), from, to);
 			break;
 		case PROJECTILE_CRYLINK:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 		case PROJECTILE_CRYLINK_BOUNCING:
-			trailparticles(self, particleeffectnum("TR_CRYLINKPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_CRYLINK", self.team, 4), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
+            break;
+
+        case PROJECTILE_HG_PLASMA_SHARD:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
 			break;
 			
 		case PROJECTILE_ELECTRO_BEAM:
-			trailparticles(self, particleeffectnum("TR_NEXUIZPLASMA"), from, to);
+			trailparticles(self, rm_particleeffectnum_team("RM_ELECTRO", self.team, 2), from, to);
 			break;
 
 		case PROJECTILE_RM_LASER_RED:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3RED_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3RED_HIT"    else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_BLUE:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3BLUE_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3BLUE_HIT"   else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_YELLOW:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3YELLOW_HIT" 	: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3YELLOW_HIT" else "TR_NEXUIZPLASMA"), from, to);
 			break;
 				
 		case PROJECTILE_RM_LASER_PINK:
-			trailparticles(self, particleeffectnum((rm_teamlasers? "TE_TEI_G3PINK_HIT" 		: "TR_NEXUIZPLASMA")), from, to);
+			trailparticles(self, particleeffectnum(if(rm_teamlasers) "TE_TEI_G3PINK_HIT"   else "TR_NEXUIZPLASMA"), from, to);
 			break;
 			
 		case PROJECTILE_GRENADE:
@@ -86,9 +109,25 @@ void Projectile_DrawTrail(vector to)
 			else
 				trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC:
+		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC: case PROJECTILE_FLAK_BOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
+        case PROJECTILE_HG_PLASMA:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
+            break;
+        case PROJECTILE_HG_LASER: case PROJECTILE_HG_RAZE:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
+            break;
+        case PROJECTILE_HG_TRANSLOC:
+            if(!rm_teamlasers)
+                return trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"), from, to);
+        
+            switch(self.team) {
+                case COLOR_TEAM1:           trailparticles(self, particleeffectnum("TE_TEI_G3RED_HIT"),     from, to); break;
+                case COLOR_TEAM2:           trailparticles(self, particleeffectnum("TE_TEI_G3BLUE_HIT"),    from, to); break;
+                case COLOR_TEAM3:           trailparticles(self, particleeffectnum("TE_TEI_G3YELLOW_HIT"),  from, to); break;
+                case COLOR_TEAM4: default:  trailparticles(self, particleeffectnum("TE_TEI_G3PINK_HIT"),    from, to); break;
+            } break;
 		case PROJECTILE_PORTO_RED:
 			trailparticles(self, particleeffectnum("TR_WIZSPIKE"), from, to);
 			break;
@@ -98,7 +137,7 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_HOOKBOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-		case PROJECTILE_HAGAR:
+		case PROJECTILE_HAGAR:  case PROJECTILE_HG_REMOTE:
 			trailparticles(self, particleeffectnum("TR_GRENADE"), from, to);
 			break;
 		case PROJECTILE_HAGAR_BOUNCING:
@@ -110,12 +149,37 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_BULLET_GLOWING:
 			trailparticles(self, particleeffectnum("tr_rifle"), from, to);
 			break;
-		case PROJECTILE_FIREMINE: case PROJECTILE_HG_NAPALM:
+		case PROJECTILE_FIREMINE:
 			trailparticles(self, particleeffectnum("firemine"), from, to);
 			break;
+        case PROJECTILE_HG_NAPALM:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
+            break;
 		case PROJECTILE_FIREBALL:
 			trailparticles(self, particleeffectnum("fireball"), from, to);
 			break;
+        case PROJECTILE_FLAK:
+            trailparticles(self, particleeffectnum("tr_rifle"), from, to);
+            break;
+        case PROJECTILE_HG_NAPALMSHARD:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_NAPALM_TRAIL", self.team, 1), from, to);
+:flame
+            vector v = randomvec();
+            v_z = (v_z + 1) * 0.25;
+
+            if(DPRM_VersionIsSuitable())
+                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 4 * drawframetime);
+            else if(time >= self.nextparticle) {
+                pointparticles(rm_particleeffectnum_team("RM_HG_NAPALM_FIRE", self.team, 1), self.origin + v * self.extradata * 0.7, '0 0 0', 1);
+                self.nextparticle = time + 0.15 + random() * 0.10;
+            }
+            break;
+        case PROJECTILE_HEAL_PARTICLE_EMITTER:
+            if(time >= self.nextparticle) {
+                pointparticles(rm_particleeffectnum("RM_HEAL"), self.origin + randomvec() * self.extradata * 0.5, '0 0 0', 1);
+                self.nextparticle = time + 0.15 + random() * 0.15;
+            }
+            break;
 		default:
 			break;
 	}
@@ -141,6 +205,9 @@ void Projectile_Draw()
 	else
 	{
 		InterpolateOrigin_Do();
+
+        if(self.cnt == PROJECTILE_HG_RAZE)
+            self.angles_x = -90;
 	}
 
 	if(self.count & 0x80)
@@ -154,7 +221,7 @@ void Projectile_Draw()
 		t = time;
 	}
 
-	if(!(f & FL_ONGROUND))
+	if(!(f & FL_ONGROUND) || self.cnt == PROJECTILE_HG_RAZE)
 	{
 		rot = '0 0 0';
 		switch(self.cnt)
@@ -167,12 +234,20 @@ void Projectile_Draw()
 			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
+            //case PROJECTILE_HG_REMOTE:
+			//case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
 				break;
 			case PROJECTILE_HOOKBOMB:
 				rot = '1000 0 0'; // forward
 				break;
+            case PROJECTILE_HG_TRANSLOC:
+                rot = '700 643 721';
+                break;
+            case PROJECTILE_HG_RAZE:
+                rot = '0 0 1500';
+                break;
 			default:
 				break;
 		}
@@ -187,9 +262,16 @@ void Projectile_Draw()
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
 		case PROJECTILE_HG_GENERIC:
-		case PROJECTILE_HG_NAPALM:
-			trailorigin += v_right * 1 + v_forward * -10;
+        case PROJECTILE_HG_NAPALM:
+            trailorigin += v_right * 1 + v_forward * -2;
+
+        case PROJECTILE_HG_PLASMA:
+        case PROJECTILE_HG_TRANSLOC:
+        case PROJECTILE_HG_REMOTE:
+        case PROJECTILE_HG_LASER:
+			trailorigin += v_forward * -10;
 			break;
+
 		default:
 			break;
 	}
@@ -203,17 +285,6 @@ void Projectile_Draw()
 
 	if(!drawn)
 		return;
-
-	switch(self.cnt)
-	{
-		/*
-		case PROJECTILE_BULLET_GLOWING:
-			R_AddDynamicLight(self.origin, 50, '1 1 0');
-			break;
-		*/
-		default:
-			break;
-	}
 
 	self.renderflags = 0;
 
@@ -241,6 +312,12 @@ void Ent_RemoveProjectile()
 	}
 }
 
+void Flak_Touch(void) {
+    pointparticles(particleeffectnum("hagar_bounce"), self.move_origin, self.move_velocity, 1);
+}
+
+vector Zapper_BeamRGB(float t);
+
 void Ent_Projectile()
 {
 	float f;
@@ -258,7 +335,7 @@ void Ent_Projectile()
 	//   effects
 	//
 	// projectiles don't send angles, because they always follow the velocity
-	
+
 	f = ReadByte();
 	self.count = (f & 0x80);
 	self.iflags = (self.iflags & IFLAG_INTERNALMASK) | IFLAG_AUTOANGLES | IFLAG_ANGLES;
@@ -309,27 +386,77 @@ void Ent_Projectile()
 	if(f & 2)
 	{
 		self.cnt = ReadByte();
+        self.team = ReadByte();
+        
+        if(f & 32)
+            self.move_bounce_factor = ReadCoord();
+
+        if(!rm_teamlasers)
+            self.team = 0;
+
+        if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
+           self.cnt == PROJECTILE_HG_PLASMA_SHARD ||
+           self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER)
+            self.extradata = ReadByte();
 
 		self.silent = (self.cnt & 0x80);
 		self.cnt = (self.cnt & 0x7F);
 
 		self.scale = 1;
+        self.colormod = '0 0 0';
+        
 		switch(self.cnt)
 		{
-			case PROJECTILE_ELECTRO: setmodel(self, "models/ebomb.mdl"); break;
+			case PROJECTILE_ELECTRO:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                if(self.skin)
+                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
 			case PROJECTILE_BULLET_GLOWING: setmodel(self, "models/tracer.mdl"); break;
-			case PROJECTILE_CRYLINK: setmodel(self, "models/plasmatrail.mdl"); break;
-			case PROJECTILE_CRYLINK_BOUNCING: setmodel(self, "models/plasmatrail.mdl"); break;
+			case PROJECTILE_CRYLINK: case PROJECTILE_CRYLINK_BOUNCING: 
+                setmodel(self, "models/plasmatrail.mdl");
+                if(!self.team)
+                    self.team = COLOR_TEAM4;
+                self.colormod = Zapper_BeamRGB(self.team);
+                break;
 			case PROJECTILE_RM_LASER_RED:
 			case PROJECTILE_RM_LASER_BLUE:
 			case PROJECTILE_RM_LASER_YELLOW:
 			case PROJECTILE_RM_LASER_PINK:
 			case PROJECTILE_ELECTRO_BEAM: setmodel(self, "models/elaser.mdl"); break;
-			case PROJECTILE_GRENADE: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_GRENADE_BOUNCING: if(!g_minstagib) setmodel(self, "models/grenademodel.md3"); break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: setmodel(self, "models/grenademodel.md3"); break;
+			case PROJECTILE_GRENADE: case PROJECTILE_GRENADE_BOUNCING:
+                if(!g_minstagib) {
+                    // TODO: fucking fix g_rocketminsta god damn it
+                    setmodel(self, "models/grenademodel.md3");
+                    self.skin = TeamColorSkin(self.team);
+                }
+                break;
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
+                setmodel(self, "models/grenademodel.md3");
+                self.skin = TeamColorSkin(self.team);
+                break;
+            case PROJECTILE_HG_REMOTE:
+                self.alpha = 1;
+                setmodel(self, "models/mine.md3");
+                self.skin = TeamColorSkin(self.team);
+                break;
+            case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
+            case PROJECTILE_HG_TRANSLOC:
+                setmodel(self, "models/hg_transloc.md3");
+                self.skin = TeamColorSkin(self.team);
+                self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
+                break;
+            case PROJECTILE_HG_PLASMA_SHARD:
+                setmodel(self, "models/ebomb.mdl");
+                self.skin = TeamColorSkin(self.team);
+                break;
+            case PROJECTILE_HG_RAZE:
+                setmodel(self, "models/raze.md3");
+                self.skin = TeamColorSkin(self.team);
+                break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
 			case PROJECTILE_PORTO_RED: setmodel(self, "models/grenademodel.md3"); self.scale = 4; break;
@@ -339,6 +466,9 @@ void Ent_Projectile()
 			case PROJECTILE_HAGAR_BOUNCING: setmodel(self, "models/hagarmissile.mdl"); self.scale = 0.4; break;
 			case PROJECTILE_FIREBALL: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
 			case PROJECTILE_FIREMINE: self.model = ""; self.modelindex = 0; break; // particle effect is good enough
+            case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
+            case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
+            case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -346,12 +476,12 @@ void Ent_Projectile()
 
 		self.mins = '0 0 0';
 		self.maxs = '0 0 0';
-		self.colormod = '0 0 0';
 		self.move_touch = SUB_Stop;
 		self.move_movetype = MOVETYPE_TOSS;
-
+        
 		switch(self.cnt)
 		{
+            case PROJECTILE_HG_PLASMA_SHARD:
 			case PROJECTILE_ELECTRO:
 				// only new engines support sound moving with object
 				loopsound(self, CHAN_PROJECTILE, "weapons/electro_fly.wav", VOL_BASE, ATTN_NORM);
@@ -365,17 +495,41 @@ void Ent_Projectile()
 				self.mins = '-3 -3 -3';
 				self.maxs = '3 3 3';
 				break;
+            case PROJECTILE_FLAK_BOMB:
 			case PROJECTILE_GRENADE:
 				self.mins = '0 0 -3';
 				self.maxs = '0 0 -3';
 				break;
+            case PROJECTILE_FLAK:
+                self.mins = '0 0 -3';
+                self.maxs = '0 0 -3';
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = Flak_Touch;
+                break;
 			case PROJECTILE_GRENADE_BOUNCING:
+                self.mins = '0 0 -3';
+                self.maxs = '0 0 -3';
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
+                break;
 			case PROJECTILE_HG_GENERIC:
+            case PROJECTILE_HG_PLASMA:
 			case PROJECTILE_HG_NAPALM:
-				self.mins = '0 0 -3';
-				self.maxs = '0 0 -3';
-				self.move_movetype = MOVETYPE_BOUNCE;
-				self.move_touch = SUB_Null;
+            case PROJECTILE_HG_TRANSLOC:
+            case PROJECTILE_HG_REMOTE:
+			case PROJECTILE_HG_RAZE:
+            case PROJECTILE_HG_LASER:
+                if(g_nadgets == 2) {   // g_nadgets_oldhitboxes
+                    self.mins = '0 0 -3';
+                    self.maxs = '0 0 -3';
+                } else {
+                    var sz = if(self.cnt == PROJECTILE_HG_TRANSLOC) 8 else 5;
+                    self.mins = '-1 -1 -1' * sz;
+                    self.maxs = ' 1  1  1' * sz;
+                }
+                
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
 				break;
 			case PROJECTILE_PORTO_RED:
 				self.colormod = '2 1 1';
@@ -402,8 +556,9 @@ void Ent_Projectile()
 				self.mins = '-16 -16 -16';
 				self.maxs = '16 16 16';
 				break;
+            case PROJECTILE_HG_NAPALMSHARD:
 			case PROJECTILE_FIREMINE:
-				loopsound(self, CHAN_PROJECTILE, "weapons/fireball_fly.wav", VOL_BASE, ATTN_NORM);
+				loopsound(self, CHAN_PROJECTILE, "weapons/fire_burn.wav", VOL_BASE, ATTN_NORM);
 				self.move_movetype = MOVETYPE_BOUNCE;
 				self.move_touch = SUB_Null;
 				self.mins = '-4 -4 -4';
@@ -438,17 +593,25 @@ void Ent_Projectile()
 
 void Projectile_Precache()
 {
+    precache_model("models/vhshield.md3");
 	precache_model("models/ebomb.mdl");
 	precache_model("models/elaser.mdl");
 	precache_model("models/grenademodel.md3");
+	precache_model("models/mine.md3");
 	precache_model("models/hagarmissile.mdl");
 	precache_model("models/hlac_bullet.md3");
 	precache_model("models/laser.mdl");
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
+    precache_model("models/hg_transloc.md3");
+    precache_model("models/raze.md3");
+    precache_model("models/sphere/sphere.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
-	precache_sound("weapons/fireball_fly.wav");
+	precache_sound("weapons/fire_burn.wav");
 	precache_sound("weapons/fireball_fly2.wav");
+    precache_sound("weapons/zapper_fly.wav");
+    precache_sound("weapons/zapper_fire.wav");
+    precache_sound("weapons/zapper_shield_loop.wav");
 }

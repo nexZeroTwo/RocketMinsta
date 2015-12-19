@@ -4,15 +4,15 @@
 
 float tracewalk(entity e, vector start, vector m1, vector m2, vector end, float movemode)
 {
-	local vector org;
-	local vector move;
-	local vector dir;
-	local float dist;
-	local float totaldist;
-	local float stepdist;
-	local float yaw;
-	local float ignorehazards;
-	local float swimming;
+	vector org;
+	vector move;
+	vector dir;
+	float dist;
+	float totaldist;
+	float stepdist;
+	float yaw;
+	float ignorehazards;
+	float swimming;
 
 	#ifdef DEBUG_TRACEWALK
 		debugresetnodes();
@@ -147,7 +147,7 @@ float tracewalk(entity e, vector start, vector m1, vector m2, vector end, float 
 					traceline( org, move, movemode, e);
 					if ( trace_ent.classname == "door_rotating" || trace_ent.classname == "door")
 					{
-						local vector nextmove;
+						vector nextmove;
 						move = trace_endpos;
 						while(trace_ent.classname == "door_rotating" || trace_ent.classname == "door")
 						{
@@ -182,7 +182,7 @@ float tracewalk(entity e, vector start, vector m1, vector m2, vector end, float 
 			// moved successfully
 			if(swimming)
 			{
-				local float c;
+				float c;
 				c = pointcontents(org + '0 0 1');
 				if not(c == CONTENT_WATER || c == CONTENT_LAVA || c == CONTENT_SLIME)
 					swimming = FALSE;
@@ -333,9 +333,9 @@ void navigation_poproute()
 // find the spawnfunc_waypoint near a dynamic goal such as a dropped weapon
 entity navigation_findnearestwaypoint(entity ent, float walkfromwp)
 {
-	local entity waylist, w, best;
-	local float dist, bestdist;
-	local vector v, org, pm1, pm2;
+	entity waylist, w, best;
+	float dist, bestdist;
+	vector v, org, pm1, pm2;
 	pm1 = ent.origin + ent.mins;
 	pm2 = ent.origin + ent.maxs;
 	waylist = findchain(classname, "waypoint");
@@ -371,7 +371,7 @@ entity navigation_findnearestwaypoint(entity ent, float walkfromwp)
 		{
 			if (w.wpisbox)
 			{
-				local vector wm1, wm2;
+				vector wm1, wm2;
 				wm1 = w.origin + w.mins;
 				wm2 = w.origin + w.maxs;
 				v_x = bound(wm1_x, org_x, wm2_x);
@@ -414,9 +414,9 @@ entity navigation_findnearestwaypoint(entity ent, float walkfromwp)
 // finds the waypoints near the bot initiating a navigation query
 float navigation_markroutes_nearestwaypoints(entity waylist, float maxdist)
 {
-	local entity head;
-	local vector v, m1, m2, diff;
-	local float c;
+	entity head;
+	vector v, m1, m2, diff;
+	float c;
 //	navigation_testtracewalk = TRUE;
 	c = 0;
 	head = waylist;
@@ -459,9 +459,9 @@ float navigation_markroutes_nearestwaypoints(entity waylist, float maxdist)
 // updates a path link if a spawnfunc_waypoint link is better than the current one
 void navigation_markroutes_checkwaypoint(entity w, entity wp, float cost2, vector p)
 {
-	local vector m1;
-	local vector m2;
-	local vector v;
+	vector m1;
+	vector m2;
+	vector v;
 	if (wp.wpisbox)
 	{
 		m1 = wp.absmin;
@@ -485,9 +485,9 @@ void navigation_markroutes_checkwaypoint(entity w, entity wp, float cost2, vecto
 // queries the entire spawnfunc_waypoint network for pathes leading away from the bot
 void navigation_markroutes(entity fixed_source_waypoint)
 {
-	local entity w, wp, waylist;
-	local float searching, cost, cost2;
-	local vector p;
+	entity w, wp, waylist;
+	float searching, cost, cost2;
+	vector p;
 	w = waylist = findchain(classname, "waypoint");
 	while (w)
 	{
@@ -511,7 +511,7 @@ void navigation_markroutes(entity fixed_source_waypoint)
 	{
 		// try a short range search for the nearest waypoints, and expand the search repeatedly if none are found
 		// as this search is expensive we will use lower values if the bot is on the air
-		local float i, increment, maxdistance;
+		float i, increment, maxdistance;
 		if(self.flags & FL_ONGROUND)
 		{
 			increment = 750;
@@ -581,9 +581,9 @@ void navigation_markroutes(entity fixed_source_waypoint)
 // queries the entire spawnfunc_waypoint network for pathes leading to the bot
 void navigation_markroutes_inverted(entity fixed_source_waypoint)
 {
-	local entity w, wp, waylist;
-	local float searching, cost, cost2;
-	local vector p;
+	entity w, wp, waylist;
+	float searching, cost, cost2;
+	vector p;
 	w = waylist = findchain(classname, "waypoint");
 	while (w)
 	{
@@ -645,16 +645,19 @@ void navigation_markroutes_inverted(entity fixed_source_waypoint)
 void navigation_routerating(entity e, float f, float rangebias)
 {
 	entity nwp;
+	vector o;
 	if (!e)
 		return;
 
+	o = (e.absmin + e.absmax) * 0.5;
 	//print("routerating ", etos(e), " = ", ftos(f), " - ", ftos(rangebias), "\n");
 
 	// Evaluate path using jetpack
 	if(g_jetpack)
 	if(self.items & IT_JETPACK)
-	if(cvar("bot_ai_navigation_jetpack"))
-	if(vlen(self.origin - e.origin) > cvar("bot_ai_navigation_jetpack_mindistance"))
+	if(CVAR(bot_ai_navigation_jetpack))
+	//if(vlen(self.origin - e.origin) > CVAR(bot_ai_navigation_jetpack_mindistance))
+	if(vlen(self.origin - o) > CVAR(bot_ai_navigation_jetpack_mindistance))
 	{
 		vector pointa, pointb;
 
@@ -665,7 +668,8 @@ void navigation_routerating(entity e, float f, float rangebias)
 		pointa = trace_endpos - '0 0 1';
 
 		// Point B
-		traceline(e.origin, e.origin + '0 0 65535', MOVE_NORMAL, e);
+		//traceline(e.origin, e.origin + '0 0 65535', MOVE_NORMAL, e);
+		traceline(o, o + '0 0 65535', MOVE_NORMAL, e);
 		pointb = trace_endpos - '0 0 1';
 
 		// Can I see these two points from the sky?
@@ -676,8 +680,8 @@ void navigation_routerating(entity e, float f, float rangebias)
 		//	dprint("jetpack ai: can bridge these two points\n");
 
 			// Lower the altitude of these points as much as possible
-			local float zdistance, xydistance, cost, t, fuel;
-			local vector down, npa, npb;
+			float zdistance, xydistance, cost, t, fuel;
+			vector down, npa, npb;
 
 			down = '0 0 -1' * (PL_MAX_z - PL_MIN_z) * 10;
 
@@ -706,9 +710,9 @@ void navigation_routerating(entity e, float f, float rangebias)
 			xydistance = vlen(pointa - pointb);
 			zdistance = fabs(pointa_z - self.origin_z);
 
-			t = zdistance / cvar("g_jetpack_maxspeed_up");
-			t += xydistance / cvar("g_jetpack_maxspeed_side");
-			fuel = t * cvar("g_jetpack_fuel") * 0.8;
+			t = zdistance / CVAR(g_jetpack_maxspeed_up);
+			t += xydistance / CVAR(g_jetpack_maxspeed_side);
+			fuel = t * CVAR(g_jetpack_fuel) * 0.8;
 
 		//	dprint("jetpack ai: required fuel ", ftos(fuel), " self.ammo_fuel ", ftos(self.ammo_fuel),"\n");
 
@@ -719,8 +723,8 @@ void navigation_routerating(entity e, float f, float rangebias)
 				// (as onground costs calculation is mostly based on distances, here we do the same establishing some relationship
 				//  - between air and ground speeds)
 
-				cost = xydistance / (cvar("g_jetpack_maxspeed_side")/cvar("sv_maxspeed"));
-				cost += zdistance / (cvar("g_jetpack_maxspeed_up")/cvar("sv_maxspeed"));
+				cost = xydistance / (CVAR(g_jetpack_maxspeed_side)/CVAR(sv_maxspeed));
+				cost += zdistance / (CVAR(g_jetpack_maxspeed_up)/CVAR(sv_maxspeed));
 				cost *= 1.5;
 
 				// Compare against other goals
@@ -772,7 +776,8 @@ void navigation_routerating(entity e, float f, float rangebias)
 	{
 		//te_wizspike(nwp.wpnearestpoint);
 	//	dprint(e.classname, " ", ftos(f), "/(1+", ftos((nwp.wpcost + vlen(e.origin - nwp.wpnearestpoint))), "/", ftos(rangebias), ") = ");
-		f = f * rangebias / (rangebias + (nwp.wpcost + vlen(e.origin - nwp.wpnearestpoint)));
+		//f = f * rangebias / (rangebias + (nwp.wpcost + vlen(e.origin - nwp.wpnearestpoint)));
+		f = f * rangebias / (rangebias + (nwp.wpcost + vlen(o - nwp.wpnearestpoint)));
 		//dprint("considering ", e.classname, " (with rating ", ftos(f), ")\n");
 		//dprint(ftos(f));
 		if (navigation_bestrating < f)
@@ -805,7 +810,8 @@ float navigation_routetogoal(entity e, vector startposition)
 		return TRUE;
 
 	// if it can reach the goal there is nothing more to do
-	if (tracewalk(self, startposition, PL_MIN, PL_MAX, e.origin, bot_navigation_movemode))
+	//if (tracewalk(self, startposition, PL_MIN, PL_MAX, e.origin, bot_navigation_movemode))
+	if (tracewalk(self, startposition, PL_MIN, PL_MAX, (e.absmin + e.absmax) * 0.5, bot_navigation_movemode))
 		return TRUE;
 
 	// see if there are waypoints describing a path to the item
@@ -834,7 +840,7 @@ float navigation_routetogoal(entity e, vector startposition)
 // (this is how bots detect if they reached a goal)
 void navigation_poptouchedgoals()
 {
-	local vector org, m1, m2;
+	vector org, m1, m2;
 	org = self.origin;
 	m1 = org + self.mins;
 	m2 = org + self.maxs;
@@ -928,9 +934,10 @@ void navigation_goalrating_end()
 
 void botframe_updatedangerousobjects(float maxupdate)
 {
-	local entity head, bot_dodgelist;
-	local vector m1, m2, v;
-	local float c, d, danger;
+	entity head, bot_dodgelist;
+	//vector m1, m2, v;
+	vector m1, m2, v, o;
+	float c, d, danger;
 	c = 0;
 	bot_dodgelist = findchainfloat(bot_dodge, TRUE);
 	botframe_dangerwaypoint = find(botframe_dangerwaypoint, classname, "waypoint");
@@ -946,10 +953,13 @@ void botframe_updatedangerousobjects(float maxupdate)
 			v_x = bound(m1_x, v_x, m2_x);
 			v_y = bound(m1_y, v_y, m2_y);
 			v_z = bound(m1_z, v_z, m2_z);
-			d = head.bot_dodgerating - vlen(head.origin - v);
+			//d = head.bot_dodgerating - vlen(head.origin - v);
+			o = (head.absmin + head.absmax) * 0.5;
+			d = head.bot_dodgerating - vlen(o - v);
 			if (d > 0)
 			{
-				traceline(head.origin, v, TRUE, world);
+				//traceline(head.origin, v, TRUE, world);
+				traceline(o, v, TRUE, world);
 				if (trace_fraction == 1)
 					danger = danger + d;
 			}
@@ -1017,8 +1027,9 @@ void debugnodestatus(vector position, float status)
 // Debug the goal stack visually
 void debuggoalstack()
 {
-	local entity target;
-	local vector org;
+	entity target;
+	//vector org;
+	vector org, go;
 
 	if(self.goalcounter==0)target=self.goalcurrent;
 	else if(self.goalcounter==1)target=self.goalstack01;
@@ -1066,8 +1077,11 @@ void debuggoalstack()
 		org = self.lastposition;
 
 
-	te_lightning2(world, org, target.origin);
-	self.lastposition = target.origin;
+	//te_lightning2(world, org, target.origin);
+	//self.lastposition = target.origin;
+	go = ( goal.absmin + goal.absmax ) * 0.5;
+	te_lightning2(world, org, go);
+	self.lastposition = go;
 
 	self.goalcounter++;
 }

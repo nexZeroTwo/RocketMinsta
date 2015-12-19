@@ -34,7 +34,7 @@ float mode_teamscore[17];
 
 void() mode_initallowedteams =
 {
-	local float c;
+	float c;
 	c = 0;
 	while(c < 17)
 	{
@@ -73,10 +73,10 @@ float(float t) validteam =
 
 float() weakestteam =
 {
-	local float bestteam;
-	local float bestteamcount;
-	local float headcount;
-	local float c;
+	float bestteam;
+	float bestteamcount;
+	float headcount;
+	float c;
 	bestteam = -1;
 	bestteamcount = 0;
 	c = 1;
@@ -98,8 +98,8 @@ float() weakestteam =
 
 void() updateteams =
 {
-	local entity head;
-	local float c;
+	entity head;
+	float c;
 	c = 1;
 	while (c < 17)
 	{
@@ -127,7 +127,7 @@ float(float p) checkteamcolor =
 
 void(float c) SV_ChangeTeam =
 {
-	local float pants, shirt, old;
+	float pants, shirt, old;
 	old = self.clientcolors & 15;
 	if (c >= 0)
 	{
@@ -164,22 +164,22 @@ string dmmessage;
 void(string m) setdm =
 {
 	dmmessage = m;
-	if (cvar_string("deathmatch") != m)
+	if (ftos(CVAR(deathmatch)) != m)
 		cvar_set("deathmatch", m);
 }
 
 void(string m) setteamplay =
 {
 	dmmessage = m;
-	if (cvar_string("teamplay") != m)
+	if (ftos(CVAR(teamplay)) != m)
 		cvar_set("teamplay", m);
 }
 
 void() mode_updatecvars =
 {
-	local float dm, tp;
-	dm = cvar("deathmatch");
-	tp = cvar("teamplay");
+	float dm, tp;
+	dm = CVAR(deathmatch);
+	tp = CVAR(teamplay);
 	// now set deathmatch cvar
 	if (dm ==  0) setdm("0?Dark Places - Coop");
 	else if (dm ==  1) setdm("1?Dark Places - Deathmatch");
@@ -240,11 +240,11 @@ void() modesetup =
 	mode_shirtmustmatchpants = deathmatch >= DM_TEAM_MODS_START && deathmatch < DM_TEAM_MODS_END;
 	mode_initallowedteams();
 
-	itemrespawn = cvar("deathmatch") + cvar("coop");
+	itemrespawn = CVAR(deathmatch) + CVAR(coop);
 
 	// don't spawn any monsters until 15 seconds
 	spawnchecktime = 15;
-	if (deathmatch == 7 || cvar("spawnmonsters") >= 1)
+	if (deathmatch == 7 || CVAR(spawnmonsters) >= 1)
 		precachemonsters();
 
 	superdomination_precache();
@@ -253,8 +253,8 @@ void() modesetup =
 float monsterspawn;
 void() spawnmonster_think =
 {
-	//local float c;
-	local void() sfunc;
+	//float c;
+	var void() sfunc;
 	self.nextthink = time;
 	if (time > self.cnt)
 	{
@@ -336,7 +336,7 @@ void() spawnmonster_think =
 
 void(vector org, float c1, float c2, string cname, void() spawnfunc, vector m1, vector m2) spawnmonster =
 {
-	local float c;
+	float c;
 	c = (c2 - c1) * random() + c1;
 	c = rint(c);
 	while (c > 0)
@@ -381,9 +381,9 @@ void() monster_hellfish;
 
 void() spawnmonsters =
 {
-	local float r;
-	local vector org;
-	local entity head, e;
+	float r;
+	vector org;
+	entity head, e;
 	head = findchain(classname, "info_player_deathmatch");
 	if (head == world)
 	{
@@ -416,7 +416,7 @@ void() spawnmonsters =
 	}
 
 	// pick a type of monster
-	if (cvar("registered"))
+	if (CVAR(registered))
 	{
 		r = floor(random() * 13);
 		if (r > 12)
@@ -468,7 +468,7 @@ void() precachemonsters =
 	precachemonster_shambler();
 	precachemonster_wizard();
 	precachemonster_zombie();
-	if (cvar("registered"))
+	if (CVAR(registered))
 	{
 		precachemonster_enforcer();
 		precachemonster_hell_knight();
@@ -482,8 +482,8 @@ void() precachemonsters =
 float spawnedexitmonsters;
 void() deathmatch7update =
 {
-	local entity e;
-	local float f, monster_count, monsters;
+	entity e;
+	float f, monster_count, monsters;
 	if (skill >= 5)
 	if (!deathmatch)
 	{
@@ -508,7 +508,7 @@ void() deathmatch7update =
 	monsters = 0;
 	if (deathmatch == 7)
 		monsters = 50;
-	f = cvar("spawnmonsters");
+	f = CVAR(spawnmonsters);
 	if (f >= 1)
 		monsters = f;
 	if (monsters < 1)

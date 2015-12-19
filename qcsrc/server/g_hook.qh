@@ -13,5 +13,7 @@ float HOOK_RELEASING = 8;
 float HOOK_WAITING_FOR_RELEASE = 16;
 .float hook_state;
 
+#define PUSHLTIME_HOOKFRAG -1337
+
 void GrappleHookInit();
 vector hook_shotorigin;

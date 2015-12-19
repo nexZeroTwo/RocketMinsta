@@ -15,15 +15,18 @@
 #define WVM_IDLE_UP 25
 #define WVM_IDLE    50
 
-#define WVM_PATH  1000
-#define WVM_ENEMY 2000
-#define WVM_STOP  3000
-#define WVM_DODGE 4000
-#define  WVM_PANIC 10000
+#define WVM_PATH   1000
+#define WVM_LEADER 1500
+#define WVM_ENEMY  2000
+#define WVM_STOP   3000
+#define WVM_DODGE  4000
+#define WVM_PANIC 10000
 #define walker_verbs_move verbs_move
 
 #define WVA_MINIGUN 100
+#define WVA_LASER   400
 #define WVA_ROCKET  500
+#define WVA_SHIELD  900
 #define WVA_MEELE   1000
 #define walker_verbs_attack verbs_attack
 
@@ -31,13 +34,22 @@
 #define WVI_ROAM 10
 #define walker_verbs_idle verbs_idle
 
+.entity leader;
+
 .float animflag;
 .entity wkr_spawn;
+.float isboss;
+
+.float boss_shield;
+.float boss_shield_next;
+.float boss_laser_next;
 
 #define WALKER_MIN '-70 -70 5'
 #define WALKER_MAX '70 70 90'
 
 #define WALKER_PATH(s,e) pathlib_astar(s,e)
+
+.entity bosswaypoint;
 
 float walker_firecheck()
 {
@@ -60,7 +72,7 @@ void walker_meele_do_dmg()
     {
         if (turret_validate_target(self,e,self.target_validate_flags))
             if (e != self && e.owner != self)
-                Damage(e,self,self,cvar("g_turrets_unit_walker_std_meele_dmg"),DEATH_TURRET,'0 0 0', v_forward * cvar("g_turrets_unit_walker_std_meele_force") );
+                Damage(e,self,self,CVAR(g_turrets_unit_walker_std_meele_dmg),DEATH_TURRET,'0 0 0', v_forward * CVAR(g_turrets_unit_walker_std_meele_force) );
 
         e = e.chain;
     }
@@ -79,7 +91,10 @@ void walker_animate()
 
     if (self.tur_head.frame > 12)
         self.tur_head.frame = 0;
-
+    
+    if(self.bosswaypoint)
+        WaypointSprite_UpdateHealth(self.bosswaypoint, self.health);
+    
     switch (self.animflag)
     {
 
@@ -87,7 +102,7 @@ void walker_animate()
         if (self.frame != 0)
             self.frame = 0;
 
-        movelib_beak_simple(cvar("g_turrets_unit_walker_speed_stop"));
+        movelib_beak_simple(CVAR(g_turrets_unit_walker_speed_stop));
 
         break;
 
@@ -96,7 +111,7 @@ void walker_animate()
             self.frame = 25;
 
         self.frame = self.frame -1;
-        movelib_move_simple(v_forward * -1 ,cvar("g_turrets_unit_walker_speed_walk"),0.6);
+        movelib_move_simple(v_forward * -1 ,CVAR(g_turrets_unit_walker_speed_walk),0.6);
 
         if (self.frame < 5)
             self.frame = 25;
@@ -112,7 +127,7 @@ void walker_animate()
 
         self.angles_y += bound(-15,shortangle_f(real_angle_y,self.angles_y),15);
 
-        movelib_beak_simple(cvar("g_turrets_unit_walker_speed_stop"));
+        movelib_beak_simple(CVAR(g_turrets_unit_walker_speed_stop));
 
         if (self.frame > 55)
             self.frame = 35;
@@ -125,7 +140,7 @@ void walker_animate()
 
         self.frame = self.frame +1;
         self.angles_y += bound(-10,shortangle_f(real_angle_y,self.angles_y),10);
-        movelib_move_simple(v_forward ,cvar("g_turrets_unit_walker_speed_walk"),0.6);
+        movelib_move_simple(v_forward ,CVAR(g_turrets_unit_walker_speed_walk),0.6);
 
         if (self.frame > 25)
             self.frame = 5;
@@ -140,7 +155,7 @@ void walker_animate()
 
         self.angles_y += bound(-5,shortangle_f(real_angle_y,self.angles_y),5);
 
-        movelib_move_simple(v_forward ,cvar("g_turrets_unit_walker_speed_roam"),0.5);
+        movelib_move_simple(v_forward ,CVAR(g_turrets_unit_walker_speed_roam),0.5);
 
         if (self.frame > 25)
             self.frame = 5;
@@ -156,7 +171,7 @@ void walker_animate()
         self.angles_y += bound(-10,shortangle_f(real_angle_y,self.angles_y),10);
         self.angles_x += bound(-10,shortangle_f(real_angle_x,self.angles_x),10);
 
-        movelib_move_simple(v_forward, cvar("g_turrets_unit_walker_speed_swim"),0.3);
+        movelib_move_simple(v_forward, CVAR(g_turrets_unit_walker_speed_swim),0.3);
         vz = self.velocity_z + sin(time * 4) * 8;
 
         if (self.frame > 151)
@@ -170,7 +185,7 @@ void walker_animate()
             self.frame = 5;
 
         self.angles_y += bound(-5,shortangle_f(real_angle_y,self.angles_y),5);
-        movelib_move_simple(v_forward, cvar("g_turrets_unit_walker_speed_run"),0.6);
+        movelib_move_simple(v_forward, CVAR(g_turrets_unit_walker_speed_run),0.6);
 
         if (self.frame > 25)
             self.frame = 5;
@@ -183,7 +198,7 @@ void walker_animate()
 
         self.frame = self.frame + 1;
         self.angles_y += bound(-2.5,shortangle_f(real_angle_y,self.angles_y),2.5);
-        movelib_move_simple(v_right * -1, cvar("g_turrets_unit_walker_speed_walk"),0.8);
+        movelib_move_simple(v_right * -1, CVAR(g_turrets_unit_walker_speed_walk),0.8);
 
         if (self.frame > 55)
             self.frame = 35;
@@ -195,7 +210,7 @@ void walker_animate()
 
         self.frame = self.frame + 1;
         self.angles_y += bound(-2.5,shortangle_f(real_angle_y,self.angles_y),2.5);
-        movelib_move_simple(v_right, cvar("g_turrets_unit_walker_speed_walk"),0.8);
+        movelib_move_simple(v_right, CVAR(g_turrets_unit_walker_speed_walk),0.8);
 
         if (self.frame > 85)
             self.frame = 65;
@@ -206,7 +221,7 @@ void walker_animate()
         if ((self.frame < 95) || (self.frame > 100))
             self.frame = 95;
 
-        self.velocity += '0 0 1' * cvar("g_turrets_unit_walker_speed_jump");
+        self.velocity += '0 0 1' * CVAR(g_turrets_unit_walker_speed_jump);
 
         if (self.frame > 100)
             self.frame = self.frame + 1;
@@ -239,7 +254,7 @@ void walker_animate()
         if ((self.frame < 123) || (self.frame > 140))
             self.frame = 123;
 
-        movelib_beak_simple(cvar("g_turrets_unit_walker_speed_stop"));
+        movelib_beak_simple(CVAR(g_turrets_unit_walker_speed_stop));
 
         self.frame = self.frame + 2;
 
@@ -278,7 +293,7 @@ void walker_rocket_explode()
 
     pointparticles(particleeffectnum("rocket_explode"), org2, '0 0 0', 1);
     //w_deathtypestring = "got blasted to oblivion";
-    RadiusDamage (self, self.owner, cvar("g_turrets_unit_walker_std_rocket_dmg"), 0, cvar("g_turrets_unit_walker_std_rocket_radius"), world, cvar("g_turrets_unit_walker_std_rocket_force"), DEATH_TURRET, world);
+    RadiusDamage (self, self.owner, CVAR(g_turrets_unit_walker_std_rocket_dmg), 0, CVAR(g_turrets_unit_walker_std_rocket_radius), world, CVAR(g_turrets_unit_walker_std_rocket_force), DEATH_TURRET, world);
 
     remove (self);
 }
@@ -291,7 +306,7 @@ void walker_rocket_damage (entity inflictor, entity attacker, float damage, floa
         walker_rocket_explode();
 }
 
-#define WALKER_ROCKET_MOVE movelib_move_simple(newdir,cvar("g_turrets_unit_walker_std_rocket_speed"),cvar("g_turrets_unit_walker_std_rocket_tunrate")); UpdateCSQCProjectile(self)
+#define WALKER_ROCKET_MOVE movelib_move_simple(newdir,CVAR(g_turrets_unit_walker_std_rocket_speed),CVAR(g_turrets_unit_walker_std_rocket_tunrate)); UpdateCSQCProjectile(self)
 void walker_rocket_loop();
 void walker_rocket_think()
 {
@@ -333,7 +348,7 @@ void walker_rocket_think()
             return;
         }
 
-    m_speed = vlen(self.velocity) + cvar("g_turrets_unit_walker_std_rocket_speed_add");
+    m_speed = vlen(self.velocity) + CVAR(g_turrets_unit_walker_std_rocket_speed_add);
 
     // Enemy dead? just keep on the current heading then.
     if ((self.enemy == world) || (self.enemy.deadflag != DEAD_NO))
@@ -450,7 +465,7 @@ void walker_fire_rocket(vector org)
 
     rocket.nextthink          = time;// + 0.25;
     rocket.movetype           = MOVETYPE_FLY;
-    rocket.velocity           = normalize((v_forward + v_up * 0.5) + (randomvec() * 0.2)) * cvar("g_turrets_unit_walker_std_rocket_speed");
+    rocket.velocity           = normalize((v_forward + v_up * 0.5) + (randomvec() * 0.2)) * CVAR(g_turrets_unit_walker_std_rocket_speed);
     rocket.angles             = vectoangles(rocket.velocity);
     rocket.touch              = walker_rocket_explode;
     rocket.flags              = FL_PROJECTILE;
@@ -631,6 +646,74 @@ float walker_moveverb_enemy(float eval)
     return VS_CALL_YES_DONE;
 }
 
+float leader_in_range(entity ldr) {
+    if(vlen(ldr.origin - self.origin) > 2000)
+        return FALSE;
+
+    var ofs = ldr.view_ofs;
+
+    traceline(self.origin + ofs, ldr.origin + ofs, MOVE_NORMAL, self);
+    if(trace_ent != ldr)
+        return FALSE;
+
+    return TRUE;
+}
+
+float walker_moveverb_leader(float eval) {
+    switch(eval) {
+        case VCM_EVAL: {
+            if(self.leader) {
+                if(self.leader.team != self.team || self.leader.deadflag != DEAD_NO || self.leader.frozen || !self.leader.iscreature)
+                    self.leader = world;
+                else if(!leader_in_range(self.leader))
+                    self.leader = world;
+            }
+
+            if(!self.leader) {
+                var mindst = 1000;
+                var p = world;
+
+                FOR_EACH_PLAYER(p) if(p.team == self.team) {
+                    var d = vlen(self.origin - p.origin);
+
+                    if(d < mindst && leader_in_range(p)) {
+                        self.leader = p;
+                        mindst = d;
+                    }
+                }
+            }
+
+            if(self.leader)
+                return verb.verb_static_value;
+
+            return VS_CALL_NO;
+        }
+
+        case VCM_DO: {
+            switch (self.waterlevel) {
+                case 0:
+                    self.animflag = ANIM_WALK;
+                case 1:
+                case 2:
+                    if (self.animflag != ANIM_SWIM)
+                        self.animflag = ANIM_WALK;
+                    else
+                        self.animflag = ANIM_SWIM;
+                    break;
+                case 3:
+                    self.animflag = ANIM_SWIM;
+            }
+
+            self.moveto = self.leader.origin;
+            self.steerto = steerlib_attract2(self.moveto,0.5,500,0.95);
+
+            return VS_CALL_YES_DOING;
+        }
+    }
+
+    return VS_CALL_YES_DONE;
+}
+
 float walker_moveverb_idle_pause(float eval)
 {
     switch (eval)
@@ -747,7 +830,7 @@ float walker_attackverb_meele(float eval)
 
         vector wish_angle;
 
-        if (cvar("g_turrets_nofire"))
+        if (CVAR(g_turrets_nofire))
             return VS_CALL_NO;
 
         if (self.animflag == ANIM_SWIM || self.animflag == ANIM_MEELE)
@@ -758,7 +841,7 @@ float walker_attackverb_meele(float eval)
 
         wish_angle = angleofs(self,self.enemy);
 
-        if (self.tur_dist_enemy < cvar("g_turrets_unit_walker_std_meele_range"))
+        if (self.tur_dist_enemy < CVAR(g_turrets_unit_walker_std_meele_range))
             if (fabs(wish_angle_y) < 15)
                 return verb.verb_static_value;
 
@@ -787,13 +870,13 @@ float walker_attackverb_rockets(float eval)
         if not(self.enemy)
             return VS_CALL_NO;
 
-        if (cvar("g_turrets_nofire"))
+        if (CVAR(g_turrets_nofire))
             return VS_CALL_NO;
 
-        if (self.tur_dist_enemy < cvar("g_turrets_unit_walker_std_rockets_range_min"))
+        if (self.tur_dist_enemy < CVAR(g_turrets_unit_walker_std_rockets_range_min))
             return VS_CALL_NO;
 
-        if (self.tur_dist_enemy > cvar("g_turrets_unit_walker_std_rockets_range"))
+        if (self.tur_dist_enemy > CVAR(g_turrets_unit_walker_std_rockets_range))
             return VS_CALL_NO;
 
         return verb.verb_static_value;
@@ -808,7 +891,7 @@ float walker_attackverb_rockets(float eval)
         rv.cnt       = 4;
         rv.owner     = self;
 
-        self.tur_head.attack_finished_single = time + cvar("g_turrets_unit_walker_std_rocket_refire");
+        self.tur_head.attack_finished_single = time + CVAR(g_turrets_unit_walker_std_rocket_refire);
 
         return VS_CALL_YES_DONE;
     }
@@ -816,9 +899,206 @@ float walker_attackverb_rockets(float eval)
     return VS_CALL_YES_DONE;
 }
 
+void walker_boss_shield_think(void) {
+    self.owner.boss_shield = approach(self.owner.boss_shield, -0.5, frametime);
+    self.alpha = bound(0, self.owner.boss_shield + 0.5, 1);
+    
+    if not(self.alpha) {
+        remove(self);
+        return;
+    }
+    
+    self.nextthink = time;
+}
+
+float walker_boss_attackverb_shield(float eval) {
+    switch(eval) {
+        case VCM_EVAL:
+            if not(self.enemy)
+                return VS_CALL_NO;
+
+            if(CVAR(g_turrets_nofire))
+                return VS_CALL_NO;
+            
+            if(self.boss_shield)
+                return VS_CALL_NO;
+            
+            if(self.boss_shield_next > time)
+                return VS_CALL_NO;
+            
+            return verb.verb_static_value;
+
+        case VCM_DO:
+            self.boss_shield = 15;
+            self.boss_shield_next = time + 60;
+            
+            sound(self, CHAN_AUTO, "misc/powerup_shield.wav", 1, ATTN_NORM);
+            
+            entity e = spawn();
+            e.owner = self;
+            e.think = walker_boss_shield_think;
+            e.nextthink = time;
+            e.effects = EF_ADDITIVE | EF_FULLBRIGHT;
+            e.glow_size = 256;
+            e.glow_color = 230;
+            e.glow_trail = 1;
+            e.alpha = 1;
+            e.avelocity = '14 0 22';
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = e.owner;
+            e.colormod = '1 1 0';
+            setorigin(e, self.origin);
+            setmodel(e, "models/ctf/shield.md3");
+            e.scale = 1.3;
+            setsize(e, e.scale * e.mins, e.scale * e.maxs);
+            
+            return VS_CALL_YES_DONE;
+    }
+
+    return VS_CALL_YES_DONE;
+}
+
+void walker_boss_laser_explode(void) {
+    RadiusDamage(self, self.owner, 125, 70, 130, world, 300, self.projectiledeathtype, other);
+}
+
+void walker_boss_laser_use(void) {
+    walker_boss_laser_explode();
+    remove(self);
+}
+
+void walker_boss_laser_hit(void) {
+    PROJECTILE_TOUCH;
+    self.cnt += 1;
+    
+    if(self.cnt == 3)
+        self.use();
+    else
+        walker_boss_laser_explode();
+}
+
+void walker_boss_laser_think(void) {
+    float lc = 15, i;
+    float offs = random();
+    
+    if(!self.owner || self.owner.health < 1) {
+        remove(self);
+        return;
+    }
+    
+    // self.owner.solid = SOLID_CORPSE;
+    
+    sound(self, CHAN_AUTO, "RM_SOUND_LASER_PRIMARY", 1, ATTN_NORM);
+    for(i = 0; i < lc; ++i) {
+        vector sorg = self.owner.origin + self.owner.maxs_z * '0 0 0.5';
+        makevectors('0 360 0' * (offs + i/lc) + '15 0 0' * (random() - 0.5));
+        
+        entity p = spawn();
+        p.owner = self.owner;
+        p.movetype = MOVETYPE_BOUNCEMISSILE;
+        p.projectiledeathtype = HG_LASER;
+        setsize(p, '0 0 0', '0 0 1');
+        setorigin(p, sorg);
+        PROJECTILE_MAKETRIGGER(p);
+        p.dphitcontentsmask &~= DPCONTENTS_CORPSE;
+        p.velocity = 700 * v_forward;
+        p.angles = vectoangles(p.velocity);
+        p.flags = FL_PROJECTILE;
+        p.team = COLOR_TEAM4;
+        p.reset = SUB_Remove;
+        p.touch = walker_boss_laser_hit;
+        p.use = walker_boss_laser_use;
+        p.think = adaptor_think2use;
+        p.nextthink = time + 5;
+        
+        CSQCProjectile(p, TRUE, HG_TypeToCSQCProjType(HG_LASER), TRUE);
+    }
+    
+    if(self.cnt < 2 || random() > 0.5) {
+        self.nextthink = time + 0.5;
+        self.cnt += 1;
+    } else {
+        remove(self);
+    }
+}
+
+float walker_boss_attackverb_laser(float eval) {
+    switch(eval) {
+        case VCM_EVAL:
+            if not(self.enemy)
+                return VS_CALL_NO;
+
+            if(CVAR(g_turrets_nofire))
+                return VS_CALL_NO;
+            
+            if(self.boss_laser_next > time)
+                return VS_CALL_NO;
+            
+            return verb.verb_static_value;
+
+        case VCM_DO:
+            self.boss_laser_next = time + 15 - 5 * random();
+        
+            entity e = spawn();
+            e.owner = self;
+            e.think = walker_boss_laser_think;
+            e.nextthink = time + 0.3;
+            
+            return VS_CALL_YES_DONE;
+    }
+
+    return VS_CALL_YES_DONE;
+}
+
+float walker_boss_damagehook(entity inflictor, entity attacker, float damage, float deathtype, vector hitloc, vector force) {
+    if(attacker == self)
+        return -1;
+    
+    if(self.boss_shield > 0) {
+        float take = damage * 0.2;
+        float reflect = damage - take;
+        
+        if(attacker.iscreature)
+        if(DEATH_HGTYPE(deathtype) != HG_SHIELD)
+        if(DEATH_HGTYPE(deathtype) != HG_TRANSLOC) {
+            vector start = hitloc;
+            vector end   = attacker.origin + '0 0 0.5' * attacker.maxs_z;
+
+            traceline(start, end, FALSE, self);
+            end = trace_endpos;
+
+            if(trace_ent.takedamage)
+                Damage(trace_ent, self, self, reflect, HG_SHIELD, end, '0 0 0');
+
+            trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), start, end);
+            te_csqc_lightningarc(start, end, TRUE, COLOR_TEAM3);
+        }
+        
+        damage = take;
+    }
+    
+    if(self.health - damage <= 0) {
+        float i;
+        for(i = 0; i < 3; ++i) {
+            entity e = spawn();
+            e.hg_type = HG_NAPALM;
+            e.think = HG_Grenade_Explode;
+            e.nextthink = time + random() * 0.3;
+            e.owner = attacker;
+            e.team = e.owner.team;
+            setorigin(e, hitloc);
+            CSQCProjectile(e, TRUE, HG_TypeToCSQCProjType(e.hg_type), TRUE);
+        }
+        
+        if(g_nadgets)
+            HG_GiveBonus(attacker, HG_GG, 1, strcat("Defeated ", self.netname, "!"), FALSE);
+    }
+    
+    return damage;
+}
+
 void walker_postthink()
 {
-
     self.angles_x *= -1;
     makevectors(self.angles);
     self.angles_x *= -1;
@@ -832,10 +1112,10 @@ void walker_postthink()
 void walker_attack()
 {
     entity flash;
-
+    
     //w_deathtypestring = "was miniguned";
     sound (self, CHAN_WEAPON, "weapons/uzi_fire.wav", VOL_BASE, ATTN_NORM);
-    fireBallisticBullet (self.tur_shotorg, self.tur_shotdir_updated,self.shot_spread, self.shot_speed, 5, self.shot_dmg, 0, self.shot_force, DEATH_TURRET, 0, 1, cvar("g_balance_uzi_bulletconstant"));
+    fireBallisticBullet (self.tur_shotorg, self.tur_shotdir_updated,self.shot_spread, self.shot_speed, 5, self.shot_dmg, 0, self.shot_force, DEATH_TURRET, 0, 1, CVAR(g_balance_uzi_bulletconstant));
     endFireBallisticBullet();
     if (self.uzi_bulletcounter == 2)
     {
@@ -865,7 +1145,12 @@ void walker_respawnhook()
 {
     vector vtmp;
     entity e;
-
+    
+    if(self.isboss) {
+        remove(self);
+        return;
+    }
+    
     self.origin = self.wkr_spawn.origin;
 
     self.angles = self.wkr_spawn.angles;
@@ -891,6 +1176,7 @@ void walker_respawnhook()
         }
     }
 }
+
 void walker_diehook()
 {
     turret_trowgib2(self.origin,self.velocity + v_up * 200,'-0.6 -0.2 -02',self,time + random() * 1);
@@ -903,7 +1189,8 @@ void walker_diehook()
 
     if (self.damage_flags & TFL_DMG_DEATH_NORESPAWN)
     {
-        remove(self.wkr_spawn);
+        if(self.wkr_spawn)
+            remove(self.wkr_spawn);
 
         verbstack_flush(self.walker_verbs_move);
         verbstack_flush(self.walker_verbs_attack);
@@ -912,8 +1199,11 @@ void walker_diehook()
         remove(self.walker_verbs_move);
         remove(self.walker_verbs_attack);
         remove(self.walker_verbs_idle);
+        
     }
-
+    
+    if(self.bosswaypoint)
+        WaypointSprite_Disown(self.bosswaypoint, 1);
 }
 
 void turret_walker_dinit()
@@ -921,14 +1211,17 @@ void turret_walker_dinit()
 
     entity e;
 
-    if (self.netname == "")      self.netname     = "Walker Turret";
-    self.wkr_spawn = spawn();
+    if(self.netname == "")
+        self.netname = "Walker Turret";
+    
+    if(!self.isboss)
+        self.wkr_spawn = spawn();
 
     self.ammo_flags = TFL_AMMO_BULLETS | TFL_AMMO_RECHARGE | TFL_AMMO_RECIVE;
     self.turrcaps_flags = TFL_TURRCAPS_PLAYERKILL | TFL_TURRCAPS_MOVE | TFL_TURRCAPS_HEADATTACHED;
     self.aim_flags = TFL_AIM_LEAD;
 
-    if (cvar("g_antilag_bullets"))
+    if (CVAR(g_antilag_bullets))
         self.turrcaps_flags |= TFL_TURRCAPS_HITSCAN;
     else
         self.aim_flags      |= TFL_AIM_SHOTTIMECOMPENSATE;
@@ -951,10 +1244,20 @@ void turret_walker_dinit()
 
     verbstack_push(self.walker_verbs_move, walker_moveverb_idle,   WVM_IDLE,  0, self);
     verbstack_push(self.walker_verbs_move, walker_moveverb_enemy,  WVM_ENEMY, 0, self);
+    if(self.team && teams_matter)
+        verbstack_push(self.walker_verbs_move, walker_moveverb_leader,  WVM_LEADER, 0, self);
     verbstack_push(self.walker_verbs_move, walker_moveverb_path,   WVM_PATH,  0, self);
 
     verbstack_push(self.walker_verbs_attack, walker_attackverb_meele,   WVA_MEELE,  0, self);
     verbstack_push(self.walker_verbs_attack, walker_attackverb_rockets, WVA_ROCKET, 0, self);
+    
+    if(self.isboss) {
+        verbstack_push(self.walker_verbs_attack, walker_boss_attackverb_shield, WVA_SHIELD, 0, self);
+        verbstack_push(self.walker_verbs_attack, walker_boss_attackverb_laser, WVA_LASER, 0, self);
+        
+        self.boss_shield_next = time + 50 + 20 * random();
+        self.boss_laser_next = time + 20 + 5 * random();
+    }
 
     self.damage_flags |= TFL_DMG_DEATH_NOGIBS;
 
@@ -966,16 +1269,20 @@ void turret_walker_dinit()
     self.solid      = SOLID_SLIDEBOX;
     self.takedamage = DAMAGE_AIM;
 
-    setmodel(self.wkr_spawn,"models/turrets/walker_spawn.md3");
-
     setattachment(self.tur_head,self,"tag_head");
 
-    self.wkr_spawn.angles   = self.angles;
-    self.wkr_spawn.solid    = SOLID_NOT;
+    if(self.wkr_spawn) {
+        setmodel(self.wkr_spawn,"models/turrets/walker_spawn.md3");
+        self.wkr_spawn.angles   = self.angles;
+        self.wkr_spawn.solid    = SOLID_NOT;
+    }
 
     traceline(self.origin + '0 0 16', self.origin - '0 0 10000', MOVE_WORLDONLY, self);
-    setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
-    setorigin(self,self.wkr_spawn.origin);
+    
+    if(!self.isboss) {
+        setorigin(self.wkr_spawn,trace_endpos + '0 0 4');
+        setorigin(self,self.wkr_spawn.origin);
+    }
 
     setsize(self,WALKER_MIN,WALKER_MAX);
 
@@ -1001,6 +1308,16 @@ void turret_walker_dinit()
             self.pathgoal = e;
         }
     }
+    
+    if(self.isboss) {
+        WaypointSprite_Spawn(self.netname, 0, 0, self, '0 0 1.3' * self.maxs_z, world, 0, self, bosswaypoint, TRUE);
+        WaypointSprite_UpdateTextColors(self.bosswaypoint, '1 0.7 0', '0 0 0', '0 0 0');
+        WaypointSprite_UpdateTeamRadar(self.bosswaypoint, RADARICON_WAYPOINT, '1 0.7 0');
+        WaypointSprite_UpdateMaxHealth(self.bosswaypoint, self.health);
+        
+        self.turret_damagehook = walker_boss_damagehook;
+        self.damage_flags |= TFL_DMG_DEATH_NORESPAWN;
+    }
 }
 
 
@@ -1017,4 +1334,40 @@ void spawnfunc_turret_walker()
 
     self.think = turret_walker_dinit;
     self.nextthink = time + 0.5;
+}
+
+void boss_spawner_spawn(void) {
+    entity oself = self;
+    self = spawn();
+    self.isboss = TRUE;
+    self.netname = oself.netname;
+    setorigin(self, oself.origin);
+    spawnfunc_turret_walker();
+    self = oself;
+    
+    entity e; FOR_EACH_PLAYER(e)
+        bigprint_spec(e, strcat("^3", self.netname, "^3 has come!"), "", 5);
+    bprint("^3", self.netname, "^3 has come!\n");
+    play2all("kh/alarm.wav");
+}
+
+void boss_spawner_think(void) {
+    if(roundstate == ROUNDSTATE_GAME && !self.isboss) {
+        self.isboss = TRUE;
+        if(random() <= self.cnt)
+            defer(5, boss_spawner_spawn);
+    }
+    
+    self.nextthink = time;
+    return;
+}
+
+void boss_spawner_reset(void) {
+    self.isboss = FALSE;
+}
+
+void spawnfunc_boss_spawner(void) {
+    self.reset = boss_spawner_reset;
+    self.think = boss_spawner_think;
+    self.nextthink = time;
 }

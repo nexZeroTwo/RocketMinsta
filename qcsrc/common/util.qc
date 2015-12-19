@@ -41,8 +41,8 @@ void wordwrap_sprint(string s, float l)
 
 string unescape(string in)
 {
-	local float i, len;
-	local string str, s;
+	float i, len;
+	string str, s;
 
 	// but it doesn't seem to be necessary in my tests at least
 	in = strzone(in);
@@ -72,8 +72,8 @@ string unescape(string in)
 
 void wordwrap_cb(string s, float l, void(string) callback)
 {
-	local string c;
-	local float lleft, i, j, wlen;
+	string c;
+	float lleft, i, j, wlen;
 
 	s = strzone(s);
 	lleft = l;
@@ -422,8 +422,8 @@ string NormalizeGametypeName(string gtname)
 
 float ListContains(string source, string key, string sep)
 {
-	local float i;
-	local float n = tokenizebyseparator(source, sep);
+	float i;
+	float n = tokenizebyseparator(source, sep);
 
 	for(i = 0; i < n; ++i)
 		if(argv(i) == key) return 1;
@@ -432,8 +432,8 @@ float ListContains(string source, string key, string sep)
 
 float ListContainsEx(string source, string key, string sep, string(string) transform)
 {
-	local float i;
-	local float n = tokenizebyseparator(source, sep);
+	float i;
+	float n = tokenizebyseparator(source, sep);
 
 	for(i = 0; i < n; ++i)
 		if(transform(argv(i)) == key) return 1;
@@ -632,7 +632,7 @@ void compressShortVector_init()
 		l *= f;
 	}
 
-	if(cvar("developer"))
+	if(CVAR(developer))
 	{
 		print("Verifying vector compression table...\n");
 		for(i = 0x0F00; i < 0xFFFF; ++i)
@@ -778,7 +778,7 @@ void get_mi_min_max(float mode)
 
 	mi_min = mi;
 	mi_max = ma;
-	MapInfo_Get_ByName(mi_shortname, 0, 0);
+	MapInfo_Get_ByName(mi_shortname, 0, 0, 0);
 	if(MapInfo_Map_mins_x < MapInfo_Map_maxs_x)
 	{
 		mi_min = MapInfo_Map_mins;
@@ -904,14 +904,14 @@ void cvar_settemp(string pKey, string pValue)
 {
 	if(cvar_string(pKey) == pValue)
 		return;
-	cvar_set("settemp_list", strcat("1 ", pKey, " ", cvar_string("settemp_var"), " ", cvar_string("settemp_list")));
+	cvar_set("settemp_list", strcat("1 ", pKey, " ", CVAR_STR(settemp_var), " ", CVAR_STR(settemp_list)));
 #ifdef MENUQC
-	registercvar(cvar_string("settemp_var"), "", 0);
+	registercvar(CVAR_STR(settemp_var), "", 0);
 #else
-	registercvar(cvar_string("settemp_var"), "");
+	registercvar(CVAR_STR(settemp_var), "");
 #endif
-	cvar_set(cvar_string("settemp_var"), cvar_string(pKey));
-	cvar_set("settemp_var", strcat(cvar_string("settemp_var"), "x"));
+	cvar_set(CVAR_STR(settemp_var), cvar_string(pKey));
+	cvar_set("settemp_var", strcat(CVAR_STR(settemp_var), "x"));
 	cvar_set(pKey, pValue);
 }
 
@@ -919,7 +919,7 @@ void cvar_settemp_restore()
 {
 	// undo what cvar_settemp did
 	float n, i;
-	n = tokenize_console(cvar_string("settemp_list"));
+	n = tokenize_console(CVAR_STR(settemp_list));
 	for(i = 0; i < n - 3; i += 3)
 		cvar_set(argv(i + 1), cvar_string(argv(i + 2)));
 	cvar_set("settemp_list", "0");
@@ -1490,13 +1490,29 @@ float _unacceptable_compiler_bug_1_b() { return 1; }
 float _unacceptable_compiler_bug_1_c(float d) { return 2 * d; }
 float _unacceptable_compiler_bug_1_d() { return 1; }
 
+float test_global;
+
+float check_using_bug(void) {
+    using(test_global = 42)
+        return 512;
+}
+
 void check_unacceptable_compiler_bugs()
 {
-	if(cvar("_allow_unacceptable_compiler_bugs"))
+	if(CVAR(_allow_unacceptable_compiler_bugs))
 		return;
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
+
+    var v = [random(), random(), random()];
+    if(v != [v.x, v.y, v.z])
+        error("vectors are borked, please update rmqcc");
+
+    test_global = 9001;
+    check_using_bug();
+    if(test_global != 9001)
+        error("using is borked, please update rmqcc");
 }
 
 float compressShotOrigin(vector v)
@@ -1640,7 +1656,7 @@ string getcurrentmod()
 {
 	float n;
 	string m;
-	m = cvar_string("fs_gamedir");
+	m = CVAR_STR(fs_gamedir);
 	n = tokenize_console(m);
 	if(n == 0)
 		return "data";
@@ -1700,3 +1716,271 @@ void defer(float fdelay, void() func)
     e.nextthink = time + fdelay;
 }
 #endif
+
+float TeamColorSkin(float t) {
+#ifndef MENUQC
+    switch(t) {
+        case COLOR_TEAM1:   return 1; break;
+        case COLOR_TEAM2:   return 2; break;
+        case COLOR_TEAM3:   return 3; break;
+        case COLOR_TEAM4:   return 4; break;
+    }
+#endif
+    return 0;
+}
+
+float approach(float v, float t, float d) {
+	if(v < t) {
+		v += d;
+		if(v > t)
+			return t;
+	} else if(v > t) {
+		v -= d;
+		if(v < t)
+			return t;
+	}
+	return v;
+}
+
+string FormatDamage(float f) {
+    string str;
+    float tmp;
+    
+    if(f >= 1000000)
+        str = ftos(rint(f * 0.00001) * 0.1);
+    else if(f >= 1000)
+        str = ftos(rint(f * 0.01) * 0.1);
+    else
+        str = ftos(rint(f));
+    
+    tmp = strstrofs(str, ".", 0);
+    if(tmp >= 0)
+        str = substring(str, 0, tmp + 2);
+    else if(f >= 1000)
+        str = strcat(str, ".0");
+    
+    if(!strstrofs(str, "-", 0))
+        str = substring(str, 1, strlen(str));
+    
+    return strcat(str, if(f >= 1000000) "m" else if(f >= 1000) "k" else "");
+}
+
+#ifndef SVQC
+string FlagIcon(string cn) {
+    string i;
+    
+    if(cn == "")
+        return "gfx/flagicons/xx";
+    
+    i = strcat("gfx/flagicons/", cn);
+    float aframe = FlagIcon_Animate(cn);
+    if(aframe >= 0)
+        i = strcat(i, "-", ftos(fabs(rint(aframe))));
+    
+    if(drawgetimagesize(i) == '0 0 0')
+        return "gfx/flagicons/xx";
+    
+    return i;
+}
+
+string firstkeyfor(string cmds) {
+    float i, k;
+    float ncmds = tokenize(cmds), nkeys;
+
+    for(i = 0; i < ncmds; ++i) {
+        nkeys = tokenize(findkeysforcommand(argv(0)));
+        for(k = 0; k < nkeys; ++k)
+            if(stof(argv(k)) >= 0)
+                return keynumtostring(stof(argv(k)));
+
+        ncmds = tokenize(cmds);
+    }
+
+    return argv(0);
+}
+
+#endif
+
+
+float fexists(string f) {
+    float fh;
+    fh = fopen(f, FILE_READ);
+    if (fh < 0)
+        return FALSE;
+    fclose(fh);
+    return TRUE;
+}
+
+#ifndef MENUQC
+
+string Team_ColorCode(float t) {
+    if (t == COLOR_TEAM1)
+        return "^1";
+    else if (t == COLOR_TEAM2)
+        return "^4";
+    else if (t == COLOR_TEAM3)
+        return "^3";
+    else if (t == COLOR_TEAM4)
+        return "^6";
+    else
+        return "^7";
+}
+
+string Team_ColorName(float t) {
+    if (t == COLOR_TEAM1)
+        return "Red";
+    if (t == COLOR_TEAM2)
+        return "Blue";
+    if (t == COLOR_TEAM3)
+        return "Yellow";
+    if (t == COLOR_TEAM4)
+        return "Pink";
+    return "Neutral";
+}
+
+string Team_ColorNameLowerCase(float t) {
+    if (t == COLOR_TEAM1)
+        return "red";
+    if (t == COLOR_TEAM2)
+        return "blue";
+    if (t == COLOR_TEAM3)
+        return "yellow";
+    if (t == COLOR_TEAM4)
+        return "pink";
+    return "neutral";
+}
+
+string ColoredTeamName(float t) {
+    return strcat(Team_ColorCode(t), Team_ColorName(t), " Team^7");
+}
+
+string TeamName(float t) {
+    return strcat(Team_ColorName(t), " Team");
+}
+
+#endif
+
+float cvar_altertype(string varname, float setflags, float unsetflags) {
+    if(!checkextension("DP_RM_CVAR_ALTERTYPE"))
+        return 0;
+
+    return cvar_altertype_builtin(varname, setflags, unsetflags);
+}
+
+#define CVAR_WATCH(varname) cvar_altertype(varname, CVAR_TYPEFLAG_WATCHED, 0)
+#define CVAR_UNWATCH(varname) cvar_altertype(varname, 0, CVAR_TYPEFLAG_WATCHED)
+
+float chr_in_str(float c, string str) {
+    for(var i = 0 ;; ++i) {
+        var schr = str2chr(str, i);
+
+        if(!schr)
+            return FALSE;
+
+        if(c == schr)
+            return TRUE;
+    }
+
+    return FALSE;
+}
+
+string regex_sub_default(string match, string sub) {
+    return sub;
+}
+
+string regex_sub_expand_matches(string match, string sub) {
+    var escaped = FALSE;
+    var newsub = "";
+
+    for(var i = 0, var c = str2chr(sub, 0); c; c = str2chr(sub, ++i)) {
+        if(c == 92) { // '\\'
+            if(escaped) {
+                escaped = FALSE;
+                newsub = strcat(newsub, chr2str(c));
+            } else
+                escaped = TRUE;
+        } else if(escaped) {
+            escaped = FALSE;
+            if(c >= '0' && c <= '9') {
+                newsub = strcat(newsub, argv(c - '0'));
+            } else
+                newsub = strcat(newsub, chr2str(c));
+        } else
+            newsub = strcat(newsub, chr2str(c));
+    }
+
+    return newsub;
+}
+
+float regex_sub_once(string regex, string input, float offset, float reflags, string sub, regex_sub_callback subfunc) {
+    float handled = regex_match(regex, input, offset, 0, reflags);
+    regex_sub_string = input;
+
+    if(handled <= 0)
+        return handled;
+
+    if(argv(0) == "")
+        return 0;
+
+    string match = argv(0);
+    string head = substring(input, 0, argv_start_index(0));
+    string tail = substring(input, argv_end_index(0), strlen(input));
+
+    offset = argv_start_index(0);
+    sub = subfunc(match, sub);
+    offset += strlen(sub);
+    regex_sub_string = strcat(head, sub, tail);
+
+    return offset;
+}
+
+float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc) {
+    float offset, found = FALSE;
+    regex_sub_string = input;
+
+    for(;;) {
+        var old = regex_sub_string;
+        var h = regex_sub_once(regex, regex_sub_string, offset, reflags, sub, subfunc);
+
+        if(h < 0) {
+            if(found)
+                break;
+            return h;
+        }
+
+        offset = h;
+        found = TRUE;
+    }
+
+    return offset;
+}
+
+va_parm va_get(float pidx) {
+    switch(pidx) {
+        case 0: return __va_parm0;
+        case 1: return __va_parm1;
+        case 2: return __va_parm2;
+        case 3: return __va_parm3;
+        case 4: return __va_parm4;
+        case 5: return __va_parm5;
+        case 6: return __va_parm6;
+        case 7: return __va_parm7;
+    }
+
+    error(strcat("Bad parm index: ", ftos(pidx)));
+    return __va_parm0;
+}
+
+void va_test(string fmt, ...) { VA_INIT
+    fmt = (string)@0; // FIXME: I'm not sure why this is not passed correctly?
+
+    for(var i = 0, var c = str2chr(fmt, i); c; c = str2chr(fmt, ++i)) {
+        var v = va_get(i+1);
+        print(ftos(i), " ");
+        switch(c) {
+            case 's': print("string ",      (string)v,  "\n"); break;
+            case 'f': print("float ",  ftos((float)v),  "\n"); break;
+            case 'v': print("vector ", vtos((vector)v), "\n"); break;
+        }
+    }
+}

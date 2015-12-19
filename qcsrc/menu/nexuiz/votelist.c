@@ -47,8 +47,8 @@ void setSelectedNexuizVoteList(entity me, float i)
 
 void loadCvarsNexuizVoteList(entity me)
 {
-    local float i, limit;
-    numvotes = tokenizebyseparator(cvar_string("_vote_commands"), " ");
+    float i, limit;
+    numvotes = tokenizebyseparator(CVAR_STR(_vote_commands), " ");
     limit = min(MAX_VOTES, numvotes);
     
     for(i = 0; i < limit; i++)

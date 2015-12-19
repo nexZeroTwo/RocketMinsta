@@ -24,12 +24,17 @@ void() m_init =
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
+    registercvar("menu_rpn_autoload", "", CVAR_SAVE);
+
+    if(!(cvar_type("sys_first_run") & CVAR_SAVE))
+        registercvar("sys_first_run", "0", CVAR_SAVE);
+    cvar_set("sys_first_run", "0");
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
 
 	// list all game dirs (TEST)
-	if(cvar("developer"))
+	if(CVAR(developer))
 	{
 		float i;
 		string s;
@@ -48,29 +53,42 @@ void() m_init =
 
 void UpdateConWidthHeight()
 {
-	float conwidth_s, conheight_s;
-	conwidth_s = conwidth;
-	conheight_s = conheight;
-	conwidth = cvar("vid_conwidth");
-	conheight = cvar("vid_conheight");
-	if(conwidth < 800)
-	{
-		conheight *= 800 / conwidth;
-		conwidth = 800;
-	}
-	if(conheight < 600)
-	{
-		conwidth *= 600 / conheight;
-		conheight = 600;
-	}
-	if(main)
-	{
-		if(conwidth_s != conwidth || conheight_s != conheight)
-		{
-			draw_reset();
-			main.resizeNotify(main, '0 0 0', eX * conwidth + eY * conheight, '0 0 0', eX * conwidth + eY * conheight);
-		}
-	}
+    conwidth_s = conwidth;
+    conheight_s = conheight;
+    realconwidth = CVAR(vid_conwidth);
+    realconheight = CVAR(vid_conheight);
+    if(realconwidth / realconheight > MENU_ASPECT)
+    {
+        // widescreen
+        conwidth = realconheight * MENU_ASPECT;
+        conheight = realconheight;
+    }
+    else
+    {
+        // squarescreen
+        conwidth = realconwidth;
+        conheight = realconwidth / MENU_ASPECT;
+    }
+    screenconwidth = conwidth;
+    screenconheight = conheight;
+    if(conwidth < MENU_MINHEIGHT * MENU_ASPECT)
+    {
+        conheight *= MENU_MINHEIGHT * MENU_ASPECT / conwidth;
+        conwidth = MENU_MINHEIGHT * MENU_ASPECT;
+    }
+    if(conheight < MENU_MINHEIGHT)
+    {
+        conwidth *= MENU_MINHEIGHT / conheight;
+        conheight = MENU_MINHEIGHT;
+    }
+    if(main)
+    {   
+        if(conwidth_s != conwidth || conheight_s != conheight)
+        {
+            draw_reset();
+            main.resizeNotify(main, '0 0 0', eX * conwidth + eY * conheight, '0 0 0', eX * conwidth + eY * conheight);
+        }
+    }
 }
 
 void() m_init_delayed =
@@ -89,23 +107,26 @@ void() m_init_delayed =
 	RegisterWeapons();
 
 	fh = -1;
-	if(cvar_string("menu_skin") != "")
+	if(CVAR_STR(menu_rmskin) != "")
 	{
-		draw_currentSkin = strcat("gfx/menu/", cvar_string("menu_skin"));
+		draw_currentSkin = strcat("gfx/menu/", CVAR_STR(menu_rmskin));
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
 	}
 	if(fh < 0)
-	if(cvar_defstring("menu_skin") != "")
 	{
-		draw_currentSkin = strcat("gfx/menu/", cvar_defstring("menu_skin"));
+		draw_currentSkin = "gfx/menu/rmdefault";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
+        registercvar("menu_rmskin", "rmdefault", CVAR_SAVE);
 	}
-	if(fh < 0)
+    if(fh < 0)
 	{
 		draw_currentSkin = "gfx/menu/default";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
 	}
-	draw_currentSkin = strzone(draw_currentSkin);
+    
+    draw_originalSkin = draw_currentSkin;
+    draw_overrides = buf_create();
+    
 	while((s = fgets(fh)))
 	{
 		// these two are handled by skinlist.qc
@@ -113,10 +134,30 @@ void() m_init_delayed =
 			continue;
 		if(substring(s, 0, 7) == "author ")
 			continue;
+        
 		n = tokenize_console(s);
-		if(n >= 2)
-			Skin_ApplySetting(argv(0), substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)));
+		if(n >= 2) {
+            string comd = argv(0);
+            
+            switch(comd) {
+                case "baseskin":
+                    draw_currentSkin = strcat("gfx/menu/", argv(1));
+                    break;
+                
+                case "override":
+                    bufstr_set(draw_overrides, draw_overrideCount++, argv(1));
+                    break;
+                
+                default:
+                    Skin_ApplySetting(argv(0), substring(s, argv_start_index(1), argv_end_index(-1) - argv_start_index(1)));
+                    break;
+            }
+        }
 	}
+    
+	draw_currentSkin = strzone(draw_currentSkin);
+	draw_originalSkin = strzone(draw_originalSkin);
+    
 	fclose(fh);
 
 	glob = search_begin(strcat(draw_currentSkin, "/*.tga"), TRUE, TRUE);
@@ -142,7 +183,9 @@ void() m_init_delayed =
 	main.focused = 1;
 	menuShiftState = 0;
 	menuMousePos = '0.5 0.5 0';
-
+    
+    rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
+    
 	if(Menu_Active)
 		m_display(); // delayed menu display
 };
@@ -217,6 +260,8 @@ void(string img, float a, float algn, float force1) drawBackground =
 	vector v;
 	string s;
 	float i, f;
+    
+    draw_reset_full();
 	sz = draw_PictureSize(img);
 	// keep aspect of image
 	if(sz_x * draw_scale_y >= sz_y * draw_scale_x)
@@ -266,6 +311,7 @@ void(string img, float a, float algn, float force1) drawBackground =
 		else
 			draw_Picture(v, strcat(img, "_l", ftos(i+1)), isz, '1 1 1', a);
 	}
+    draw_reset();
 }
 
 vector menuTooltipAveragedMousePos;
@@ -292,8 +338,8 @@ float m_testtooltipbox(vector tooltippos)
 	if(tooltippos_y + menuTooltipSize_y > 1)
 		return FALSE;
 	/*
-	menuTooltipOrigin_x = rint(tooltippos_x * cvar("vid_width")) / cvar("vid_width");
-	menuTooltipOrigin_y = rint(tooltippos_y * cvar("vid_height")) / cvar("vid_height");
+	menuTooltipOrigin_x = rint(tooltippos_x * CVAR(vid_width)) / CVAR(vid_width);
+	menuTooltipOrigin_y = rint(tooltippos_y * CVAR(vid_height)) / CVAR(vid_height);
 	menuTooltipOrigin_z = 0;
 	*/
 	menuTooltipOrigin = tooltippos;
@@ -495,7 +541,7 @@ void() m_draw =
 	float t;
 	float realFrametime;
 
-	menuMouseMode = cvar("menu_mouse_absolute");
+	menuMouseMode = CVAR(menu_mouse_absolute);
 
 	if(main)
 		UpdateConWidthHeight();
@@ -510,7 +556,7 @@ void() m_draw =
 	{
 		menuNotTheFirstFrame = 1;
 		if(Menu_Active)
-		if(!cvar("menu_video_played"))
+		if(!CVAR(menu_video_played))
 		{
 			localcmd("set menu_video_played 1; cd loop $menu_cdtrack; play sound/announcer/male/welcome.ogg\n");
 			menuLogoAlpha = -0.8; // no idea why, but when I start this at zero, it jumps instead of fading
@@ -522,7 +568,7 @@ void() m_draw =
 	menuPrevTime = t;
 	time += frametime;
 
-	t = cvar("menu_slowmo");
+	t = CVAR(menu_slowmo);
 	if(t)
 	{
 		frametime *= t;
@@ -533,14 +579,14 @@ void() m_draw =
 
 	if(Menu_Active)
 	{
-		if(getmousetarget() == (menuMouseMode ? MT_CLIENT : MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
-			setkeydest(keyGrabber ? KEY_MENU_GRABBED : KEY_MENU);
+		if(getmousetarget() == (if(menuMouseMode) MT_CLIENT else MT_MENU) && (getkeydest() == KEY_MENU || getkeydest() == KEY_MENU_GRABBED))
+			setkeydest(if(keyGrabber) KEY_MENU_GRABBED else KEY_MENU);
 		else
 			m_hide();
 	}
 
-	if(cvar("cl_capturevideo"))
-		frametime = t / cvar("cl_capturevideo_fps"); // make capturevideo work smoothly
+	if(CVAR(cl_capturevideo))
+		frametime = t / CVAR(cl_capturevideo_fps); // make capturevideo work smoothly
 
 	dprint_load();
 	gamestatus = 0;
@@ -548,7 +594,7 @@ void() m_draw =
 		gamestatus = gamestatus | GAME_ISSERVER;
 	if(clientstate() == CS_CONNECTED)
 		gamestatus = gamestatus | GAME_CONNECTED;
-	if(cvar("developer"))
+	if(CVAR(developer))
 		gamestatus = gamestatus | GAME_DEVELOPER;
 
 	prevMenuAlpha = menuAlpha;
@@ -632,7 +678,7 @@ void() m_draw =
 			if(dMouse != '0 0 0')
 			{
 				dMouse = globalToBoxSize(dMouse, draw_scale);
-				menuMousePos += dMouse * cvar("menu_mouse_speed");
+				menuMousePos += dMouse * CVAR(menu_mouse_speed);
 				menuMousePos_x = bound(0, menuMousePos_x, 1);
 				menuMousePos_y = bound(0, menuMousePos_y, 1);
 				if(mouseButtonsPressed)
@@ -648,8 +694,16 @@ void() m_draw =
 
 	draw_alpha = max(draw_alpha, SKINALPHA_CURSOR_INTRO * bound(0, menuLogoAlpha, 1));
 
-	draw_drawMousePointer(menuMousePos);
+    if(!(gamestatus & (GAME_CONNECTED | GAME_ISSERVER)))
+	{
+		vector position;
+		position = '0 0 0';
+		position_y = conheight - 8;
+		drawstring(position, rm_watermark, '8 8 0', '1 1 1', 0.2, DRAWFLAG_NORMAL);
+	}
 
+	draw_drawMousePointer(menuMousePos);
+    
 	draw_reset();
 	postMenuDraw();
 
@@ -662,7 +716,7 @@ void() m_display =
 {
 	Menu_Active = true;
 	setkeydest(KEY_MENU);
-	setmousetarget((menuMouseMode ? MT_CLIENT : MT_MENU));
+	setmousetarget(if(menuMouseMode) MT_CLIENT else MT_MENU);
 
 	if(!menuInitialized)
 		return;
@@ -695,7 +749,7 @@ void() m_toggle =
 	else
 	{
 		if(gamestatus & (GAME_ISSERVER | GAME_CONNECTED))
-		if(!cvar("rm_nogamemenu") && cvar("_rm_server"))
+		if(!CVAR(rm_nogamemenu) && CVAR(_rm_server))
 			m_activate_window(main.gameMenuDialog);
 		m_display();
 	}
@@ -791,6 +845,9 @@ void(string itemname) m_goto =
 	}
 	else
 	{
+        if(itemname == "NadeMenu" && cvar("_g_nadgets_select_double"))
+            itemname = "NadeMenuDouble";
+
 		e = findstring(NULL, name, itemname);
 		if(e)
 		{

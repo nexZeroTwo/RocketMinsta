@@ -11,8 +11,8 @@ void turret_trowgib(
     string smodel,
     float f_lifetime, float f_fadetime, float b_burn)
 {
-    local entity gib;
-    local entity burn;
+    entity gib;
+    entity burn;
 
     gib = spawn();
 
@@ -297,7 +297,13 @@ void turret_stdproc_damage (entity inflictor, entity attacker, float damage, flo
     if not (baseent.tur_active)
         return;
 
-    if (teamplay != 0)
+    if(self.turret_damagehook)
+        damage = self.turret_damagehook(inflictor, attacker, damage, deathtype, hitloc, vforce);
+
+    if(damage < 0)
+        return;
+
+    if (CVAR(teamplay) != 0)
     if (self.team == attacker.team)
     {
         // This does not happen anymore. Re-enable if you fix that.
@@ -305,8 +311,8 @@ void turret_stdproc_damage (entity inflictor, entity attacker, float damage, flo
         if(clienttype(attacker) == CLIENTTYPE_REAL)
             sprint(attacker, "\{1}Turret tells you: I'm on your team!\n");
 
-        if(cvar("g_friendlyfire"))
-            damage = damage * cvar("g_friendlyfire");
+        if(CVAR(g_friendlyfire))
+            damage = damage * CVAR(g_friendlyfire);
         else
             return;
     }

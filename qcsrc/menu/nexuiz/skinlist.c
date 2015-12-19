@@ -61,7 +61,7 @@ void loadCvarsNexuizSkinList(entity me)
 {
 	string s;
 	float i, n;
-	s = cvar_string("menu_skin");
+	s = CVAR_STR(menu_rmskin);
 	n = me.nItems;
 	for(i = 0; i < n; ++i)
 	{
@@ -75,7 +75,7 @@ void loadCvarsNexuizSkinList(entity me)
 
 void saveCvarsNexuizSkinList(entity me)
 {
-	cvar_set("menu_skin", me.skinParameter(me, me.selectedItem, SKINPARM_NAME));
+	cvar_set("menu_rmskin", me.skinParameter(me, me.selectedItem, SKINPARM_NAME));
 }
 
 string skinParameterNexuizSkinList(entity me, float i, float key)

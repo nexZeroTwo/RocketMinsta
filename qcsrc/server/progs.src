@@ -4,6 +4,10 @@
 
 ../common/rm_auto.qh
 ../common/util-pre.qh
+
+autocvars.qh
+../common/autocvars.qh
+
 sys.qh
 pre-builtins.qh
 builtins.qh
@@ -25,75 +29,67 @@ tturrets/include/turrets_early.qh
 campaign.qh
 ../common/campaign_common.qh
 ../common/mapinfo.qh
-../common/util.qc
 ../common/ip2c.qh
+../common/nadgets.qh
+../common/buffs.qh
+../common/lazyjson.qh
 ip2c.qh
 csqcprojectile.qh
-csqceffects.qc
+csqceffects.qh
+csqcmessage.qh
 
+teamcount.qh
 portals.qh
-
 g_hook.qh
-
 scores.qh
-
 ipban.qh
-
 race.qh
-
 keyhunt.qh
-
 antilag.qh
-
 vote.qh
-
 soulmates.qh
-
-g_handgrenades.qh
-
+timetravel.qh
+g_nadgets.qh
+g_terminals.qh
+g_buffs.qh
+g_freeze.qh
 freezetag.qh
-
-vip.qh
-
 jailbreak.qh
+clanarena.qh
+domination.qh
+../common/damagetracker.qh
+damagetracker.qh
+irc.qh
+joinqueue.qh
+radio.qh
+g_subs.qh
+g_world.qh
 
-precious.qh
+cl_weapons_reload.qh
 
+../common/util.qc
 scores_rules.qc
-
 miscfunctions.qc
-
 waypointsprites.qc
-
 bot/bot.qc
-
 g_subs.qc
-
 g_tetris.qc
-
-runematch.qc
 arena.qc
-
 dodging.qc
-
+g_freeze.qc
 freezetag.qc
-vip.qc
-precious.qc
-
 g_violence.qc
 g_damage.qc
-
 teamplay.qc
-
 cl_physics.qc
+csqceffects.qc
 
 // tZork's libs
+pathlib/pathlib.qh
 verbstack.qc
 movelib.qc
 steerlib.qc
-pathlib/pathlib.qh
 
-rm_cvarcompat.qc
 g_world.qc
 g_casings.qc
 
@@ -107,6 +103,7 @@ g_triggers.qc
 g_models.qc
 
 cl_weaponsystem.qc
+cl_weapons_reload.qc
 w_common.qc
 
 w_laser.qc
@@ -125,6 +122,8 @@ w_hlac.qc
 w_campingrifle.qc
 w_tuba.qc
 w_fireball.qc
+w_zapper.qc
+w_flak.qc
 
 t_items.qc
 cl_weapons.qc
@@ -136,16 +135,22 @@ cl_player.qc
 cl_client.qc
 t_plats.qc
 antilag.qc
+irc.qc
+joinqueue.qc
 
 ctf.qc
 domination.qc
 mode_onslaught.qc
 nexball.qc
 g_hook.qc
-g_handgrenades.qc
+timetravel.qc
+g_nadgets.qc
+g_terminals.qc
+g_buffs.qc
 soulmates.qc
 
 jailbreak.qc
+clanarena.qc
 
 t_swamp.qc
 
@@ -171,20 +176,22 @@ ipban.qc
 
 
 
-t_quake3.qc
 t_halflife.qc
 t_quake.qc
 
+g_laserbeam.qc
+
 race.qc
 
-
+teamcount.qc
+../common/damagetracker.qc
+damagetracker.qc
 ../common/dprm.qc
 ../common/gametype.qc
 
 
 //// tZork Turrets ////
 tturrets/include/turrets.qh
-vehicles/vehicles.qh
 
 scores.qc
 
@@ -195,6 +202,9 @@ func_breakable.qc
 
 ../common/items.qc
 ../common/ip2c.qc
+../common/nadgets.qc
+../common/buffs.qc
+../common/lazyjson.qc
 ip2c.qc
 monsters/defs.qc
 monsters/fight.qc
@@ -202,4 +212,6 @@ monsters/ai.qc
 monsters/m_monsters.qc
 
 csqcprojectile.qc
+csqcmessage.qc
+radio.qc
 

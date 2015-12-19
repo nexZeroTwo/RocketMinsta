@@ -45,7 +45,7 @@ void resizeNotifyButton(entity me, vector relOrigin, vector relSize, vector absO
 }
 void configureButtonButton(entity me, string txt, float sz, string gfx)
 {
-	configureLabelLabel(me, txt, sz, me.srcMulti ? 0.5 : 0);
+	configureLabelLabel(me, txt, sz, if(me.srcMulti) 0.5 else 0);
 	me.src = gfx;
 }
 float keyDownButton(entity me, float key, float ascii, float shift)

@@ -17,7 +17,7 @@ string wordwrap(string s, float l);
 void wordwrap_sprint(string s, float l);
 #endif
 #endif
-void wordwrap_cb(string s, float l, void(string) callback)
+void wordwrap_cb(string s, float l, void(string) callback);
 
 float GameCommand_Generic(string cmd);
 // returns TRUE if handled, FALSE otherwise
@@ -197,6 +197,59 @@ void defer(float fdelay, void() func);
 
 string mmss(float tenths);
 
-#ifdef MENUQC
-float sv_oldfag;		// just to make it compile
+float TeamColorSkin(float);
+float approach(float v, float t, float d);
+
+// TODO: serverside setting with a list of those maybe? :p
+#define ISFAGGOTMAP(m) (substring(m, 0, 7) == "fagcity" || substring(m, 0, 7) == "ikzbdsm")
+
+string FormatDamage(float f);
+
+#ifndef SVQC
+string FlagIcon(string cn);
+string firstkeyfor(string cmds);
 #endif
+
+float fexists(string f);
+
+#ifndef MENUQC
+string Team_ColorCode(float t);
+string Team_ColorName(float t);
+string Team_ColorNameLowerCase(float t);
+string TeamName(float t);
+string ColoredTeamName(float t);
+#endif
+
+float chr_in_str(float c, string str);
+
+typedef string(string, string) regex_sub_callback;
+string regex_sub_string;
+
+regex_sub_callback regex_sub_default;
+
+float regex_sub_once(string regex, string input, float offset, float reflags, string sub, regex_sub_callback subfunc);
+float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc);
+
+typedef __undefined va_parm;
+
+var va_parm __va_parm0;
+var va_parm __va_parm1;
+var va_parm __va_parm2;
+var va_parm __va_parm3;
+var va_parm __va_parm4;
+var va_parm __va_parm5;
+var va_parm __va_parm6;
+var va_parm __va_parm7;
+
+#define VA_INIT \
+    __va_parm0 = @0; \
+    __va_parm1 = @1; \
+    __va_parm2 = @2; \
+    __va_parm3 = @3; \
+    __va_parm4 = @4; \
+    __va_parm5 = @5; \
+    __va_parm6 = @6; \
+    __va_parm7 = @7;
+
+va_parm va_get(float pidx);
+void va_test(string fmt, ...);

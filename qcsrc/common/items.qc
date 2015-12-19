@@ -13,8 +13,13 @@ void register_weapon_real(float id, float(float) func, float ammotype, float i, 
 	e.message = wname;
 	e.items = ammotype;
 	e.weapon_func = func;
-	e.mdl = modelname;
+#ifdef SVQC
+	e.model = strzone(strcat("models/weapons/g_", weapon_modelname(modelname), ".md3"));
+	e.mdl = strzone(weapon_modelname(modelname));
+#else
 	e.model = strzone(strcat("models/weapons/g_", modelname, ".md3"));
+	e.mdl = modelname;
+#endif
 	e.spawnflags = 0;
 	e.model2 = strzone(strcat("wpn-", e.mdl));
 	if(normalweapon > 0)
@@ -112,12 +117,14 @@ void RegisterWeapons()
 	register_weapon(WEP_HAGAR,            w_hagar,        IT_ROCKETS,       8,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "hagar",        "hagar",           "Hagar");
 	register_weapon(WEP_ROCKET_LAUNCHER,  w_rlauncher,    IT_ROCKETS,       9,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_HIGH, "rl",           "rocketlauncher",  "Rocket Launcher");
 	register_weapon(WEP_PORTO,            w_porto,        0,                0,  0, 0, WEP_TYPE_OTHER,   0,                      "porto" ,       "porto",           "Port-O-Launch");
-	register_weapon(WEP_MINSTANEX,        w_minstanex,    IT_CELLS,         7, -1, 1, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, ((cvar("sv_oldnexmodel") || sv_oldfag)? "minstanex" : "nex"),          "minstanex",       "MinstaNex");
+	register_weapon(WEP_MINSTANEX,        w_minstanex,    IT_CELLS,         7, -1, 1, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "minstanex",          "minstanex",       "MinstaNex");
 	register_weapon(WEP_HOOK,             w_hook,         IT_CELLS|IT_FUEL, 0,  0, 1, WEP_TYPE_SPLASH,  0,                      "hookgun",      "hook",            "Grappling Hook");
 	register_weapon(WEP_HLAC,             w_hlac,         IT_CELLS,         6,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "hlac",         "hlac",            "Heavy Laser Assault Cannon");
 	register_weapon(WEP_TUBA,             w_tuba,         0,                1, -1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "tuba",         "tuba",            "@!#%'n Tuba");
 	register_weapon(WEP_CAMPINGRIFLE,     w_campingrifle, IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "campingrifle", "campingrifle",    "Rifle");
-	register_weapon(WEP_FIREBALL,         w_fireball,     IT_ROCKETS,       9,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "fireball",     "fireball",        "Fireball");
+	register_weapon(WEP_FIREBALL,         w_fireball,     IT_ROCKETS,       9,  0, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "fireball",     "fireball",        "Fireball");
+    register_weapon(WEP_ZAPPER,           w_zapper,       IT_CELLS,         5,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "zapper",       "zapper",          "Zapper");
+    register_weapon(WEP_FLAK,             w_flak,         IT_SHELLS,        8,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "flak",         "flak",            "Flak Cannon");
 
 	register_weapons_done();
 }

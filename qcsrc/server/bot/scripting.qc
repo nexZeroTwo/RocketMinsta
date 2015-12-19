@@ -247,7 +247,7 @@ void bot_commands_init()
 // Returns first bot with matching name
 entity find_bot_by_name(string name)
 {
-	local entity bot;
+	entity bot;
 
 	bot = findchainflags(flags, FL_CLIENT);
 	while (bot)
@@ -265,8 +265,8 @@ entity find_bot_by_name(string name)
 // Returns a bot by number on list
 entity find_bot_by_number(float number)
 {
-	local entity bot;
-	local float c;
+	entity bot;
+	float c;
 
 	if(!number)
 		return world;
@@ -287,7 +287,7 @@ entity find_bot_by_number(float number)
 
 float bot_decodecommand(string cmdstring)
 {
-	local float cmd_parm_type, i;
+	float cmd_parm_type, i;
 	float sp;
 	string parm;
 
@@ -346,8 +346,8 @@ float bot_decodecommand(string cmdstring)
 
 void bot_cmdhelp(string scmd)
 {
-	local float i, ntype;
-	local string stype;
+	float i, ntype;
+	string stype;
 
 	if(!bot_cmds_initialized)
 		bot_commands_init();
@@ -458,8 +458,8 @@ void bot_cmdhelp(string scmd)
 
 void bot_list_commands()
 {
-	local float i;
-	local string ptype;
+	float i;
+	string ptype;
 
 	if(!bot_cmds_initialized)
 		bot_commands_init();
@@ -596,7 +596,7 @@ float bot_cmd_turn()
 
 float bot_cmd_select_weapon()
 {
-	local float id;
+	float id;
 
 	id = bot_cmd.bot_cmd_parm_float;
 
@@ -650,8 +650,8 @@ float bot_cmd_eval(string expr)
 
 float bot_cmd_if()
 {
-	local string expr, val_a, val_b;
-	local float cmpofs;
+	string expr, val_a, val_b;
+	float cmpofs;
 
 	if(self.bot_cmd_condition_status != CMD_CONDITION_NONE)
 	{
@@ -748,7 +748,7 @@ float bot_cmd_aim()
 	// Current direction
 	if(self.bot_cmd_aim_endtime)
 	{
-		local float progress;
+		float progress;
 
 		progress = min(1 - (self.bot_cmd_aim_endtime - time) / (self.bot_cmd_aim_endtime - self.bot_cmd_aim_begintime),1);
 		self.v_angle = self.bot_cmd_aim_begin + ((self.bot_cmd_aim_end - self.bot_cmd_aim_begin) * progress);
@@ -763,8 +763,8 @@ float bot_cmd_aim()
 	}
 
 	// New aiming direction
-	local string parms;
-	local float tokens, step;
+	string parms;
+	float tokens, step;
 
 	parms = bot_cmd.bot_cmd_parm_string;
 
@@ -801,10 +801,10 @@ float bot_cmd_aimtarget()
 		return bot_cmd_aim();
 	}
 
-	local entity e;
-	local string parms;
-	local vector v;
-	local float tokens, step;
+	entity e;
+	string parms;
+	vector v;
+	float tokens, step;
 
 	parms = bot_cmd.bot_cmd_parm_string;
 
@@ -861,14 +861,14 @@ float bot_presskeys()
 		return FALSE;
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_FORWARD)
-		self.movement_x = cvar("sv_maxspeed");
+		self.movement_x = CVAR(sv_maxspeed);
 	else if(self.bot_cmd_keys & BOT_CMD_KEY_BACKWARD)
-		self.movement_x = -cvar("sv_maxspeed");
+		self.movement_x = -CVAR(sv_maxspeed);
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_RIGHT)
-		self.movement_y = cvar("sv_maxspeed");
+		self.movement_y = CVAR(sv_maxspeed);
 	else if(self.bot_cmd_keys & BOT_CMD_KEY_LEFT)
-		self.movement_y = -cvar("sv_maxspeed");
+		self.movement_y = -CVAR(sv_maxspeed);
 
 	if(self.bot_cmd_keys & BOT_CMD_KEY_JUMP)
 		self.BUTTON_JUMP = TRUE;
@@ -991,7 +991,7 @@ float bot_cmd_keypress_handler(string key, float enabled)
 
 float bot_cmd_presskey()
 {
-	local string key;
+	string key;
 
 	key = bot_cmd.bot_cmd_parm_string;
 
@@ -1002,7 +1002,7 @@ float bot_cmd_presskey()
 
 float bot_cmd_releasekey()
 {
-	local string key;
+	string key;
 
 	key = bot_cmd.bot_cmd_parm_string;
 
@@ -1135,7 +1135,7 @@ void bot_resetqueues()
 // NOTE: Of course you need to include your commands here too :)
 float bot_execute_commands_once()
 {
-	local float status, ispressingkey;
+	float status, ispressingkey;
 
 	if(self.deadflag!=DEAD_NO)
 		return 0;
@@ -1262,9 +1262,9 @@ float bot_execute_commands_once()
 	}
 	else
 	{
-		if(cvar("g_debug_bot_commands"))
+		if(CVAR(g_debug_bot_commands))
 		{
-			local string parms;
+			string parms;
 
 			switch(bot_cmd_parm_type[bot_cmd.bot_cmd_type])
 			{
