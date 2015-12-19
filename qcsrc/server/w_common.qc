@@ -56,7 +56,7 @@ void W_Accuracy_RegisterShot(entity attacker, float w) {
     attacker.bullets_fired[w] += 1;
     attacker.maxdamage_fired = w + 64 * rint(attacker.bullets_fired[w]);
 
-    if(!(pow(2, w) & g_weaponarena_secondary))
+    if(!(pow(2, w-1) & g_weaponarena_secondary))
         attacker.accstat_shots = attacker.bullets_fired[w];
 }
 
@@ -70,7 +70,7 @@ void W_Accuracy_RegisterHit(entity attacker, entity targ, float w) {
     attacker.bullets_hit[w] += 1;
     attacker.damage_hits = w + 64 * rint(attacker.bullets_hit[w]);
 
-    if(!(pow(2, w) & g_weaponarena_secondary))
+    if(!(pow(2, w-1) & g_weaponarena_secondary))
         attacker.accstat_hits = attacker.bullets_hit[w];
 }
 
@@ -81,7 +81,7 @@ void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage) 
     attacker.max_damage[w] += damage;
     attacker.maxdamage_fired = w + 64 * rint(attacker.max_damage[w]);
 
-    if(!(pow(2, w) & g_weaponarena_secondary))
+    if(!(pow(2, w-1) & g_weaponarena_secondary))
         attacker.accstat_shots = attacker.max_damage[w];
 }
 
@@ -92,7 +92,7 @@ void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
     attacker.actual_damage[w] += damage;
     attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
 
-    if(!(pow(2, w) & g_weaponarena_secondary))
+    if(!(pow(2, w-1) & g_weaponarena_secondary))
         attacker.accstat_hits = attacker.actual_damage[w];
 }
 
