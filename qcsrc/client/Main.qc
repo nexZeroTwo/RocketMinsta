@@ -694,9 +694,11 @@ void PostInit(void)
         case 53:
             if(cvar_type("cl_extendfragmessages") & CVAR_TYPEFLAG_EXISTS)
                 cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
-            
+        case 54:
+            localcmd("seta r_equalize_entities_fullbright 1\n");
+
 		//More to come here with each update
-		localcmd("seta rm_initialized 54\n");
+		localcmd("seta rm_initialized 55\n");
 		RM_OUTDATED
 		break;
 	}
