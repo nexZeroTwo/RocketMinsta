@@ -1555,7 +1555,7 @@ void Ent_ReadPlayerScore()
             else
                 o.(scores[i]) = ReadChar();
             
-            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB)
+            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
                 UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
 		}
 	}
