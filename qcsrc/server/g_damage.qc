@@ -1350,7 +1350,7 @@ void fireburner_think();
 
 float Fire_IsBurning(entity e)
 {
-	return (time < e.fire_endtime);
+	return (time < e.fire_endtime && !e.frozen);
 }
 
 .float fire_last;
@@ -1366,6 +1366,11 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 		if(e.deadflag)
 			return -1;
         
+        if(e.frozen) {
+            e.lastdamage = time;
+            return -1;
+        }
+
         if(self.jb_proj_ownerstate != JB_PROJ_OWNERSTATE_UNDEFINED)
             e.jb_proj_ownerstate = self.jb_proj_ownerstate;
 	}

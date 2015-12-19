@@ -194,12 +194,7 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
             traceline(p, self.origin, MOVE_NORMAL, e);
             if(/* trace_startsolid || */ trace_fraction != 1)
                 continue;
-            
-            if(e.frozen && !(ismedic && sameteam)) {
-                e.revprogress = 0;
-                continue;
-            }
-            
+
             e.fireball_impactvec = p;
             d = vlen(self.origin - e.fireball_impactvec);
             d = damage + (edgedamage - damage) * (d / dist);
