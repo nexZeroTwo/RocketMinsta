@@ -3736,26 +3736,39 @@ void Sbar_DrawHGBonus(void) {
     
 }
 
+float drawbuffs_buffval;
+float drawbuffs_updatetime;
+string drawbuffs_str;
+vector drawbuffs_pos;
+
 void Sbar_DrawBuffs(void) {
     vector pos;
-    float buffs = getstati(STAT_BUFFS), sw, b;
+    float buffs = getstati(STAT_BUFFS), sw, a;
     string s;
-    
+
+    if(drawbuffs_buffval != buffs) {
+        drawbuffs_updatetime = time;
+        drawbuffs_buffval=  buffs;
+
+        if(drawbuffs_str) {
+            strunzone(drawbuffs_str);
+            drawbuffs_str = string_null;
+        }
+
+        if(buffs) {
+            drawbuffs_str = strzone(Buffs_TypeToExpandedName(buffs, " ", 1));
+            sw = stringwidth(s, TRUE);
+            drawbuffs_pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
+            drawbuffs_pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
+        }
+    }
+
     if(!buffs)
         return;
-    
-    for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) if(buffs & b) {
-        string o = strcat(rgb_to_hexcolor(Buffs_TypeToColor(b)), Buffs_TypeToExpandedName(b));
-        if(s == "")
-            s = o;
-        else
-            s = strcat(s, " ", o);
-    }
-    
-    sw = stringwidth(s, TRUE);
-    pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
-    pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
-    drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
+
+    a = 1 - bound(0, time - drawbuffs_updatetime, 1);
+
+    drawcolorcodedstring(drawbuffs_pos, drawbuffs_str, sbar_fontsize, 0.3 + 0.7 * a, DRAWFLAG_NORMAL);
 }
 
 void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenmax, float regenpaused, float hgcd, float hgcdmax) {

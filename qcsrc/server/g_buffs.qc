@@ -364,12 +364,33 @@ float Buffs_Present(entity p, float b) {
     return FALSE;
 }
 
+string Buffs_Description(float bfs) {
+    if(bfs & (bfs - 1)) {
+        string result;
+
+        for(var b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) {
+            if(bfs & b) {
+                var s = Buffs_Description(b);
+                if(result)
+                    result = strcat(result, " ", s);
+                else
+                    result = s;
+            }
+        }
+
+        return result;
+    } else {
+        var d = cvar_string(strcat("g_buffs_", Buffs_TypeToName(bfs), "_description"));
+        return strcat(rgb_to_hexcolor(0.5 * Buffs_TypeToColor(bfs) + '0.5 0.5 0.5'), d);
+    }
+}
+
 void Buffs_Notify(entity plr, float bfs, float tm) {
-    string bname = strcat(rgb_to_hexcolor(Buffs_TypeToColor(bfs)), Buffs_TypeToExpandedName(bfs), "^7 Buff!");
+    string bname = strcat(Buffs_TypeToExpandedName(bfs, "^7 + ", 1), "^7 Buff!");
     string tn = if(tm) strcat(Team_ColorCode(tm), strtoupper(Team_ColorName(tm)), " ") else "";
 
     bprint("^3", plr.netname, " ^7got the ", tn, bname, "\n");
-    bigprint_spec(plr, strcat("You got the ", bname), "", 3);
+    bigprint_spec(plr, strcat("You got the ", bname), Buffs_Description(bfs), 4);
     sound(plr, CHAN_TRIGGER, "misc/shield_respawn.wav", VOL_BASE, ATTN_NORM);
 }
 
@@ -1203,7 +1224,7 @@ float Buffs_BuffPickup_Waypoint_VisibleForPlayer(entity plr) {
 
 void Buffs_BuffPickup_SpawnWaypoint(entity e) {
     vector c = Buffs_TypeToColor(e.buffs);
-    WaypointSprite_Spawn(Buffs_TypeToExpandedName(e.buffs), 0, 0, e, '0 0 40', world, e.team, e, buff_waypoint, TRUE);
+    WaypointSprite_Spawn(Buffs_TypeToExpandedName(e.buffs, " + ", 0), 0, 0, e, '0 0 40', world, e.team, e, buff_waypoint, TRUE);
     WaypointSprite_UpdateTextColors(e.buff_waypoint,c, '0 0 0', '0 0 0');
     WaypointSprite_UpdateTeamRadar(e.buff_waypoint, RADARICON_FLAG, c);
     e.buff_waypoint.waypointsprite_visible_for_player = Buffs_BuffPickup_Waypoint_VisibleForPlayer;

@@ -36,7 +36,8 @@ const float BUFF_LAST  = BUFF_INVALID / 2;
 
 string Buffs_TypeToName(float);
 float Buffs_NameToType(string);
-string Buffs_TypeToExpandedName(float);
-string Buffs_NameToExpandedName(string);
+string Buffs_TypeToFullName(float);
+string Buffs_NameToFullName(string);
+string Buffs_TypeToExpandedName(float, string, float);
 vector Buffs_TypeToColor(float);
 float Buffs_TypeToIndex(float);
