@@ -263,6 +263,12 @@ string WeaponDeathString(float deathtype) {
 
         case HG_BAIT:
             return "took #'s bait";
+
+        case HG_SENTRY:
+            if(deathtype & HITTYPE_SECONDARY)
+                return "was lightning-struck by #'s zapper sentry";
+            else
+                return "couldn't run from #'s zapper sentry"
             
         case HG_RAZE:
             if(deathtype & HITTYPE_SECONDARY)
