@@ -81,7 +81,7 @@ string teamscores_label[MAX_SCORE];
 float teamscores_flags[MAX_SCORE];
 .float scores[MAX_SCORE];
 .float teamscores[MAX_TEAMSCORE];
-.float hasbestscore[MAX_SCORE];
+.float hasbestscore;
 
 #define IS_INCREASING(x) ( (x)&SFL_LOWER_IS_BETTER )
 #define IS_DECREASING(x) ( !((x)&SFL_LOWER_IS_BETTER) )

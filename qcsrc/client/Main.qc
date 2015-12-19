@@ -1460,26 +1460,29 @@ void Ent_RemovePlayerScore()
 
 .entity bestscore_next;
 void UpdateBestScore(float teem, float sfield) {
-    float best, scr, better;
+    float best, scr, better, sflag;
     entity bestscore_head, bestscore_tail, c;
-    
-    if(sfield < 0)
+
+    if(sfield < 0 || sfield >= MAX_SCORE)
         return;
+
+    sflag = pow(2, sfield);
 
     for(c = players.sort_next; c; c = c.sort_next) {
         if(GetPlayerColor(c.sv_entnum) != teem)
             continue;
         
-        c.(hasbestscore[sfield]) = FALSE;
+        c.hasbestscore &~= sflag;
         scr = c.(scores[sfield]);
-        
+
         if(!bestscore_head)
             better = TRUE;
+
         if(scores_flags[sfield] & SFL_LOWER_IS_BETTER)
             better = scr < best;
         else
             better = scr > best;
-        
+
         if(better) {
             c.bestscore_next = world;
             best = scr;
@@ -1493,9 +1496,9 @@ void UpdateBestScore(float teem, float sfield) {
             bestscore_tail = c;
         }
     }
-    
+
     for(c = bestscore_head; c; c = c.bestscore_next)
-        c.(hasbestscore[sfield]) = TRUE;
+        c.hasbestscore |= sflag;
 }
 
 void Ent_ReadPlayerScore()
