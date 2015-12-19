@@ -2493,6 +2493,7 @@ void HG_Sentry_SetOwner(entity sentry, entity newowner) {
         sentry.realowner.hg_detonables -= 1;
 
     sentry.realowner = newowner;
+    sentry.aiment.realowner = newowner;
 
     if(newowner) {
         newowner.hg_detonables += 1;
