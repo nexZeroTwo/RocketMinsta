@@ -1020,7 +1020,7 @@ float CSQC_ConsoleCommand(string strMessage)
 	{
 		VALUEREQUIRED
 		cvar_set(strcat("rm_", strCmd), argv(1));
-		localcmd("cmd anonspec ", CVAR_STR(rm_anonspec), "\n");
+		localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
 		RMSETTINGREPORT
 		return true;
 	}
@@ -1073,7 +1073,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			cvar_set("rm_hudskin", hudskin_name);
 			localcmd("menu_cmd update_rmvars\n");
 			if(sv_showspecs_extra)
-				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
+				localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", CVAR_STR(rm_hudskin), "\n");
 		}
 		else
 		{
@@ -1088,7 +1088,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		VALUEREQUIRED
 		cvar_set("rm_hidecountry", argv(1));
 		rm_hidecountry = CVAR(rm_hidecountry);
-		localcmd("cmd hidecountry ", CVAR_STR(rm_hidecountry), "\n");
+		localcmd("cmd hidecountry ", ftos(CVAR(rm_hidecountry)), "\n");
 		RMSETTINGREPORT
 		return true;
 	}

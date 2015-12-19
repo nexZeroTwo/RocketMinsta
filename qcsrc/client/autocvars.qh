@@ -69,7 +69,7 @@ float autocvar_cl_showspeed_unit;
 float autocvar_cl_showspeed_z;
 float autocvar_cl_sound_maptime_warning;
 float autocvar_cl_stripcolorcodes;
-string autocvar_cl_teamradar;
+float autocvar_cl_teamradar;
 float autocvar_cl_teamradar_background_alpha;
 float autocvar_cl_teamradar_foreground_alpha;
 string autocvar_cl_teamradar_position;

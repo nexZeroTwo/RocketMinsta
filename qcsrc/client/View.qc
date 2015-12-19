@@ -649,22 +649,8 @@ void CSQC_UpdateView(float w, float h)
     ShowNames_DrawAll();
 
 	// draw radar
-	if(
-		ons_showmap
-		||
-		(
-			!scoreboard_active
-			&&
-			CVAR_STR(cl_teamradar) != "0"
-			&&
-			(
-				stof(CVAR_STR(cl_teamradar)) == 2
-				||
-				teamplay
-			)
-		)
-	)
-		if not(tempcamera) teamradar_view();
+    if(!tempcamera && (ons_showmap || (!scoreboard_active && CVAR(cl_teamradar) && (teamplay || CVAR(cl_teamradar) == 2))))
+        teamradar_view();
 
 	// draw sbar
  	if(CVAR(r_letterbox) == 0) {
