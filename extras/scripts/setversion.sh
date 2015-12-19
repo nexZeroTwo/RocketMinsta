@@ -3,6 +3,7 @@
 
 INCLUDE=1
 . "$(dirname "$0")"/rmlib.sh || exit 1
+require
 
 if [ -z "$1" ]; then
     echo "Usage: $0 newversion" >&2
