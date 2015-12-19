@@ -237,6 +237,12 @@ void Sbar_InitScores()
 		if(f == SFL_SORT_PRIO_SECONDARY)
 			ps_secondary = i;
 	}
+
+    if(ps_primary == -1) {
+        print("^xFB0ps_primary == -1, debug this!\n");
+        ps_primary = 0;
+    }
+
 	if(ps_secondary == -1)
 		ps_secondary = ps_primary;
 
@@ -248,6 +254,12 @@ void Sbar_InitScores()
 		if(f == SFL_SORT_PRIO_SECONDARY)
 			ts_secondary = i;
 	}
+
+    if(ts_primary == -1) {
+        print("^xFB0ts_primary == -1, debug this!\n");
+        ts_primary = 0;
+    }
+
 	if(ts_secondary == -1)
 		ts_secondary = ts_primary;
 
