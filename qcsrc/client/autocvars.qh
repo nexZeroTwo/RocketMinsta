@@ -207,5 +207,6 @@ var float autocvar_cl_message_obituary_multikills = 1;
 var float autocvar_cl_message_praise = 1;
 var float autocvar_cl_message_praise_show = 1;
 var float autocvar_cl_message_praise_announce = 1;
+var float autocvar_cl_warpzone_sound_transition = 500;
 
 #endif

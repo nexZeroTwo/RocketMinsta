@@ -482,8 +482,11 @@ float VisualDamage_CheckLOS(entity viewer, entity targ, vector hitloc) {
     else
         p2 = targ.origin + targ.view_ofs;
 
-    traceline(p1, p2, MOVE_NOMONSTERS, viewer);
-    return almost_equals(trace_fraction, 1);
+    save_nasty_globals();
+    makevectors(viewer.v_angle);
+    var los = WarpZone_FindLineOfSight(v_forward, p1, p2, MOVE_NOMONSTERS, viewer);
+    restore_nasty_globals();
+    return los != '0 0 0';
 }
 
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc) {

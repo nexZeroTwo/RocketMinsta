@@ -118,6 +118,26 @@ void drawhealthbar(vector org, float rot, float h, vector sz, vector hotspot, fl
 	drawquad(o + ri * (border + align * ((1 - h) * width)), ri * width * h, up * height, "", hrgb, ha, f);
 }
 
+float PreDraw_WaypointSprite(void) {
+    if(self.hideflags & 2)
+        return FALSE; // radar only
+
+    if(CVAR(cl_hidewaypoints) >= 2)
+        return FALSE;
+
+    if(self.hideflags & 1)
+        if(CVAR(cl_hidewaypoints))
+            return FALSE; // fixed waypoint
+
+    if(self.lifetime)
+        self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
+    else
+        self.alpha = 1;
+
+    InterpolateOrigin_Do();
+    return TRUE;
+}
+
 void Draw_WaypointSprite()
 {
 	string spriteimage;
@@ -135,22 +155,6 @@ void Draw_WaypointSprite()
     if(ws_scale <= 0)
         return;
 
-	if(self.lifetime)
-		self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
-	else
-		self.alpha = 1;
-
-	if(self.hideflags & 2)
-		return; // radar only
-
-	if(CVAR(cl_hidewaypoints) >= 2)
-		return;
-
-	if(self.hideflags & 1)
-		if(CVAR(cl_hidewaypoints))
-			return; // fixed waypoint
-
-	InterpolateOrigin_Do();
     me = ID_ME - 1;
     t = GetPlayerColor(me) + 1;
 
@@ -440,8 +444,11 @@ void Ent_WaypointSprite()
         self.health = -1;
     }
 
-	self.draw2d = Draw_WaypointSprite;
-    
+    self.draw2d_real = Draw_WaypointSprite;
+    self.draw2d_pre = PreDraw_WaypointSprite;
+	self.draw2d = Draw2d_ThroughWarpZones;
+    self.draw2d_origin_fld = origin;
+
 	InterpolateOrigin_Undo();
     
 	if(sendflags & 0x80)

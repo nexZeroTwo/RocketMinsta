@@ -156,9 +156,18 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
 	else
-		traceline_skipnonsolid(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+		WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
 	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	trueaimpoint = trace_endpos;
+
+	vector vf, vr, vu;
+	vf = v_forward;
+	vr = v_right;
+	vu = v_up;
+	trueaimpoint = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos); // warpzone support
+	v_forward = vf;
+	v_right = vr;
+	v_up = vu;
+
 
     if(maxdamage > 0)
         W_Accuracy_RegisterPotentialDamage(ent, ent.weapon, maxdamage);
@@ -180,7 +189,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 
 	// now move the shotorg forward as much as requested if possible
 	if(antilag)
-		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
+		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, 0);
 	else
 		tracebox(w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	w_shotorg = trace_endpos - v_forward * nudge;
@@ -191,7 +200,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	{
 		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
 		{
-			traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+			WarpZone_TraceLine(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
 			{
 				traceline_antilag_force (ent, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
@@ -199,7 +208,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				{
 					entity e;
 					e = trace_ent;
-					traceline_skipnonsolid(w_shotorg, e.origin, MOVE_NORMAL, ent);
+					WarpZone_TraceLine(w_shotorg, e.origin, MOVE_NORMAL, ent);
 					if(trace_ent == e)
 						w_shotdir = normalize(trace_ent.origin - w_shotorg);
 				}
@@ -214,11 +223,11 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			{
 				// verify that the shot would miss without antilag
 				// (avoids an issue where guns would always shoot at their origin)
-				traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+				WarpZone_TraceLine(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 				if (!trace_ent.takedamage)
 				{
 					// verify that the shot would hit if altered
-					traceline_skipnonsolid(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
+					WarpZone_TraceLine(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
 					if (trace_ent == ent.cursor_trace_ent)
 						w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
 					else

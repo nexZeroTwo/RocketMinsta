@@ -975,23 +975,6 @@ void GetCvars(float f)
 }
 
 void GameCommand(string);
-void backtrace(string msg)
-{
-    float dev, war;
-    dev = CVAR(developer);
-    war = CVAR(prvm_backtraceforwarnings);
-    cvar_set("developer", "1");
-    cvar_set("prvm_backtraceforwarnings", "1");
-    dprint("\n");
-    dprint("--- CUT HERE ---\nWARNING: ");
-    dprint(msg);
-    dprint("\n");
-    remove(world); // isn't there any better way to cause a backtrace?
-    dprint("\n--- CUT UNTIL HERE ---\n");
-    cvar_set("developer", ftos(dev));
-    cvar_set("prvm_backtraceforwarnings", ftos(war));
-    GameCommand("time");
-}
 
 float Team_Index(float t) {
     switch(t) {
@@ -1632,6 +1615,32 @@ void readlevelcvars(void)
     readplayerstartcvars();
 }
 
+string entityfieldtypestr(float fld) {
+    return switch(entityfieldtype(fld)) {
+        case FIELD_STRING   : "string",
+        case FIELD_FLOAT    : "float",
+        case FIELD_VECTOR   : "vector",
+        case FIELD_ENTITY   : "entity",
+        case FIELD_FUNCTION : "function",
+        default             : "unknown"
+    };
+}
+
+void dumpent(entity e) {
+    print("----------------------------------\n");
+    print("ENTITY DUMP: ", etos(e), "\n");
+    print("----------------------------------\n");
+
+    var n = numentityfields();
+    for(var i = 0; i < n; ++i) {
+        var val = getentityfieldstring(i, e);
+        if(val != "")
+            print("(", entityfieldtypestr(i), ") ", entityfieldname(i), ": ", val, "^7\n");
+    }
+
+    print("----------------------------------\n");
+}
+
 /*
 // TODO sound pack system
 string soundpack;
@@ -1662,17 +1671,33 @@ float precache_sound_index (string s) = #19;
 #define SND_LARGEENTITY 8
 #define SND_LARGESOUND  16
 
+.entity realowner;
+.entity WarpZone_refsys;
+
 float sound_allowed(float dest, entity e)
 {
     // sounds from world may always pass
+    float iter;
+
     for (;;)
     {
         if (e.classname == "body")
             e = e.enemy;
-        if (e.owner && e.owner != e)
+        if(e.realowner && e.realowner != e)
+            e = e.realowner;
+        else if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
             e = e.owner;
         else
             break;
+
+        if(++iter == 100) {
+            bprint("[FIXME] sound_allowed() got stuck in an ownership loop!\n");
+            backtrace("sound_allowed() ownership loop");
+            dumpent(e);
+            dumpent(e.owner);
+            dumpent(e.realowner);
+            break;
+        }
     }
     // sounds to self may always pass
     if (dest == MSG_ONE)
@@ -2446,7 +2471,8 @@ float projectile_skipnonsolid()
 	}
 	return FALSE;
 }
-#define PROJECTILE_SKIPNONSOLID if (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid()) { return; }
+
+#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid())) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
@@ -2853,7 +2879,7 @@ void attach_sameorigin(entity e, entity to, string tag)
     // current forward and up directions
     if (substring(e.model, 0, 1) == "*") // bmodels have their own rules
         e.angles_x = -e.angles_x;
-    fixedmakevectors(e.angles);
+    fixedmakevectors2(e.angles);
 
     // untransform forward, up!
     e_forward_x = v_forward * t_forward;

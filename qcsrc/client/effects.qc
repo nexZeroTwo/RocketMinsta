@@ -1,4 +1,3 @@
-
 void LightingArc_Draw(void) {
     string tex;
     if(rm_teamlasers) switch(self.team) {
@@ -10,7 +9,7 @@ void LightingArc_Draw(void) {
     }   else              tex = if(self.team) "particles/hook_blue" else "particles/hook_green";
     
     float i; for(i = 0; i < 5; ++i)
-        Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE);
+        Draw_CylindricLine(self.origin, self.velocity, 25 * self.alpha, tex, 0.02, random(), '1 1 1', self.alpha, DRAWFLAG_ADDITIVE, view_origin);
     
     self.alpha = self.alpha - frametime * 3;
     if(self.alpha < 0)
@@ -108,7 +107,7 @@ void Net_ReadBlast(void) {
     pointparticles(particleeffectnum("TE_TEI_BIGEXPLOSION"), loc, '0 0 0', 1);
     entity e = spawn();
     setorigin(e, loc);
-    sound(e, CHAN_PROJECTILE, "weapons/rocket_impact.wav", VOL_BASE, ATTN_NORM);
+    ImpactSound(e, "weapons/rocket_impact.wav");
     remove(e);
 }
 
@@ -118,7 +117,7 @@ void Net_ReadMEODP(void) {
     pointparticles(rm_particleeffectnum("RM_MEODP"), loc, '0 0 0', 1);
     entity e = spawn();
     setorigin(e, loc);
-    sound(e, CHAN_PROJECTILE, "weapons/hookbomb_impact.wav", VOL_BASE, ATTN_NORM);
+    ImpactSound(e, "weapons/hookbomb_impact.wav");
     remove(e);
 }
 
@@ -129,6 +128,6 @@ void Net_ReadEleBlast(void) {
     pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), loc, '0 0 0', 1);
     entity e = spawn();
     setorigin(e, loc);
-    sound(e, CHAN_PROJECTILE, "weapons/electro_impact.wav", VOL_BASE, ATTN_NORM);
+    ImpactSound(e, "weapons/electro_impact.wav");
     remove(e);
 }

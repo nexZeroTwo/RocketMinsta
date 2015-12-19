@@ -633,23 +633,85 @@ void announce(string v) {
     sound(self, CHAN_VOICE, v, VOL_BASEVOICE, ATTN_NONE);
 }
 
-void spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
+float spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
     vector diff = end - start;
     vector dir = normalize(diff);
     vector o = start;
 
     vector step = dir * steplen;
     float maxlen = vlen(diff);
-    float i;
+    float i, x;
 
     vectorvectors(dir);
 
     vector prev = o + dist * (v_up * sin(phase) + v_right * cos(phase));
 
     for(i = 0; i < maxlen; i += steplen, o += step) {
-        float x = freq * (i + steplen) + phase;
+        x = freq * (i + steplen) + phase;
         vector n = o + dist * (v_up * sin(x) + v_right * cos(x));
         trailparticles(ent, effectnum, prev, n);
         prev = n;
     }
+
+    return x;
+}
+
+void ImpactSound(entity e, string sound_path) {
+    WarpZone_Sound(e, CHAN_PROJECTILE, sound_path, VOL_BASE, ATTN_NORM);
+}
+
+typedef .vector vectorfield;
+.void(void) draw2d_real;
+.float(void) draw2d_pre;
+.vectorfield draw2d_origin_fld;
+
+float draw2d_warpstage;
+
+void Draw2d_ThroughWarpZones(void) {
+    var fwd = '0 0 0';
+    var drawn = FALSE;
+    var org_fld = self.draw2d_origin_fld;
+
+    if(self.draw2d_pre && !self.draw2d_pre())
+        return;
+
+    var o = self.org_fld;
+
+    if(!warpzone_chain_begin)
+        goto skip;
+
+    for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
+        if(fwd == '0 0 0') {
+            makevectors(view_angles);
+            fwd = v_forward;
+        }
+
+        var wo = WarpZone_UnTransformOrigin(wz, o);
+
+        if(fwd * normalize(wo - view_origin) < 0.3) {
+            continue;
+        }
+
+        WarpZone_TraceLine(view_origin, wo, MOVE_NOMONSTERS, world);
+
+        if(vlen(trace_endpos - o) < 1) {
+            self.org_fld = wo;
+            draw2d_warpstage = TRUE;
+            self.draw2d_real();
+            drawn = TRUE;
+        }
+    }
+
+    self.org_fld = o;
+    WarpZone_TraceLine(view_origin, o, MOVE_NOMONSTERS, world);
+
+    if(WarpZone_trace_warpcount)
+        return;
+
+    if(drawn && vlen(trace_endpos - o) > 1)
+        return;
+
+:skip
+    draw2d_warpstage = FALSE;
+    self.draw2d_real();
 }
