@@ -293,6 +293,8 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+
+    utf8_disable();
     WarpZone_Shutdown();
 
 	HUDSkin_Unload();
@@ -570,6 +572,11 @@ void RegisterMasterServers(void) {
     AddMasterServer("dpmaster.vecxis.com"); // Vecxis master server
 }
 
+void InitFonts(void) {
+    utf8_enable();
+    SetMadokaFont(MDKF_AUTO);
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -779,14 +786,7 @@ void PostInit(void)
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
-	
-	//loadfont("user3", "gfx/madoka-rune");
-	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
-	localcmd("loadfont user3 gfx/madoka-rune\n");
-	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
-	localcmd("loadfont infobar gfx/vera-sans-big\n");
-	SetMadokaFont(MDKF_AUTO);
-	
+
 	if(sv_showspecs_extra)
 		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
 	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
@@ -819,6 +819,7 @@ void PostInit(void)
 	FPSReporter_Init();
 	DPRM_Start();
 	RegisterMasterServers();
+    InitFonts();
 
 	postinit = true;
 }

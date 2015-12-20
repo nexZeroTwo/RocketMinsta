@@ -15,8 +15,19 @@ float prevMenuAlpha;
 float menuInitialized;
 float menuNotTheFirstFrame;
 float menuMouseMode;
+float map_crc_old;
 
 void SUB_Null() { };
+
+void update_game_status(void) {
+    gamestatus = 0;
+    if(isserver())
+        gamestatus = gamestatus | GAME_ISSERVER;
+    if(clientstate() == CS_CONNECTED)
+        gamestatus = gamestatus | GAME_CONNECTED;
+    if(CVAR(developer))
+        gamestatus = gamestatus | GAME_DEVELOPER;
+}
 
 void() m_init =
 {
@@ -49,6 +60,12 @@ void() m_init =
 	
 	IP2C_Init();
 	DPRM_Start();
+
+    map_crc_old = crc16(FALSE, CVAR_STR(cl_worldbasename));
+    update_game_status();
+
+    if(!(gamestatus & (GAME_ISSERVER | GAME_CONNECTED)))
+        utf8_enable();
 }
 
 void UpdateConWidthHeight()
@@ -589,13 +606,7 @@ void() m_draw =
 		frametime = t / CVAR(cl_capturevideo_fps); // make capturevideo work smoothly
 
 	dprint_load();
-	gamestatus = 0;
-	if(isserver())
-		gamestatus = gamestatus | GAME_ISSERVER;
-	if(clientstate() == CS_CONNECTED)
-		gamestatus = gamestatus | GAME_CONNECTED;
-	if(CVAR(developer))
-		gamestatus = gamestatus | GAME_DEVELOPER;
+    update_game_status();
 
 	prevMenuAlpha = menuAlpha;
 	if(Menu_Active)

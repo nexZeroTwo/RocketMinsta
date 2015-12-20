@@ -1626,6 +1626,9 @@ float GameCommand_Generic(string command)
         print("Result: ", ftos(ff), " ", ss, " ", vtos(vv), "\n");
         return TRUE;
 #endif
+    } else if(argv(0) == "loadfonts") {
+        load_fonts();
+        return TRUE;
 	} else return IP2C_GameCommand(command);
 
 	return FALSE;

@@ -1955,3 +1955,79 @@ void va_test(string fmt, ...) { VA_INIT
         }
     }
 }
+
+void load_fonts(void) {
+#ifndef SVQC
+    if(utf8_available) {
+        var sizes = strcat(
+            " 4 6 8 10 12 14 16 20 24 28 32 ",
+            ftos(cvar("sbar_fontsize")), " ",
+            ftos(cvar("scr_centersize")), " ",
+            ftos(cvar("con_textsize"))
+        );
+
+        var font_small  = "gfx/vera-sans,fonts/unifont-8.0.01.ttf";
+        var font_big    = "gfx/vera-sans-big,fonts/unifont-8.0.01.ttf";
+        var font_mono   = "gfx/conchars,fonts/unifont-8.0.01.ttf";
+        var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/unifont-8.0.01.ttf";
+        var font_rmbig  = "gfx/iceland,fonts/unifont-8.0.01.ttf";
+
+        cvar_set("r_font_disable_freetype", "0");
+        cvar_set("r_font_size_snapping", "0");
+
+        localcmd("loadfont default  ", font_small, sizes, "\n");
+        localcmd("loadfont console  ", font_mono, sizes, "\n");
+        localcmd("loadfont chat     ", font_small, sizes, "\n");
+        localcmd("loadfont notify   ", font_small, sizes, "\n");
+        localcmd("loadfont infobar  ", font_small, sizes, "\n");
+        localcmd("loadfont user0    ", font_small, sizes, "\n");
+        localcmd("loadfont user1    ", font_small, sizes, "\n");
+        localcmd("loadfont user2    ", font_big, sizes, "\n");
+        localcmd("loadfont user3    ", font_madoka, sizes, "\n");
+        localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
+    } else {
+        cvar_set("r_font_disable_freetype", "1");
+        cvar_set("r_font_size_snapping", "1");
+
+        localcmd("loadfont default  gfx/vera-sans\n");
+        localcmd("loadfont console  gfx/conchars\n");
+        localcmd("loadfont chat     gfx/vera-sans\n");
+        localcmd("loadfont notify   gfx/vera-sans\n");
+        localcmd("loadfont infobar  gfx/vera-sans-big\n");
+        localcmd("loadfont user0    gfx/vera-sans\n");
+        localcmd("loadfont user1    gfx/vera-sans\n");
+        localcmd("loadfont user2    gfx/vera-sans-big\n");
+        localcmd("loadfont user3    gfx/madoka-rune\n");
+        localcmd("loadfont user4    gfx/iceland\n");
+    }
+    localcmd("sbar_columns_set default\n");
+#endif
+}
+
+void utf8_logstatus(void) {
+    dprint(strcat("^6UTF8 STATUS: ", ftos(utf8_available), " ", ftos(cvar("utf8_enable")), "\n"));
+}
+
+void utf8_enable(void) {
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
+        return;
+
+    cvar_set("utf8_enable", "1");
+    cvar_set("utf8_oldfont_for_oldchars", "1");
+
+    utf8_available = TRUE;
+    utf8_logstatus();
+    load_fonts();
+}
+
+void utf8_disable(void) {
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
+        return;
+
+    cvar_set("utf8_enable", "0");
+    cvar_set("utf8_oldfont_for_oldchars", "0");
+
+    utf8_available = FALSE;
+    utf8_logstatus();
+    load_fonts();
+}

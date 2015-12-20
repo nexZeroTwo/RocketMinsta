@@ -332,6 +332,9 @@ void Menu_ClearVars()
 
 void Event_Connect()
 {
+    if(!cvar("_rm_server"))
+        utf8_disable();
+
 	Menu_ClearVars();
 	print("^5Connected to server\n");
 	localcmd("cmd menu_request\n");
@@ -341,6 +344,7 @@ void Event_Disconnect()
 {
 	Menu_ClearVars();
 	print("^1Disconnected from server\n");
+    utf8_enable();
 }
 
 string campaign_name_previous;
@@ -352,7 +356,7 @@ float map_crc_old;
 
 void postMenuDraw()
 {
-	gamestat = (gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
+	gamestat = !!(gamestatus & (GAME_ISSERVER | GAME_CONNECTED));
 	
 	if(gamestat != gamestat_previous)
 	{
