@@ -2014,8 +2014,10 @@ void utf8_report(void) {
 }
 
 void utf8_enable(void) {
-    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE)) {
+        load_fonts();
         return;
+    }
 
     cvar_set("utf8_enable", "1");
     cvar_set("utf8_oldfont_for_oldchars", "1");

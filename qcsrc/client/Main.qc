@@ -669,7 +669,6 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
-			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 38:
             // fight evil with evil
             if(CVAR(cl_gunalign) == 3)
@@ -707,9 +706,11 @@ void PostInit(void)
                 cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
         case 54:
             localcmd("seta r_equalize_entities_fullbright 1\n");
+        case 55:
+            localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 55\n");
+		localcmd("seta rm_initialized 56\n");
 		RM_OUTDATED
 		break;
 	}
