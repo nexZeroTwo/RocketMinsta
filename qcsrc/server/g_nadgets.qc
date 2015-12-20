@@ -2514,6 +2514,8 @@ float HG_Sentry(void) {
     return TRUE;
 }
 
+.float sentry_arc_hit;
+
 void HG_Sentry_Trigger(void) {
     entity e, aimtarg, aimtransform;
     vector o, aimloc, aimloc_untransformed;
@@ -2583,6 +2585,17 @@ void HG_Sentry_Trigger(void) {
             Damage(targ, self, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY, endpos, force);
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
             W_Zapper_Attack2_Effect(if(teams_matter) self.team else COLOR_TEAM3, o, o, end_visual);
+
+            if(Buffs_Present(self, BUFF_ADEPT)) {
+                var arc = CVAR(g_nadgets_sentry_adept_shock_arc);
+
+                if(arc) {
+                    ArcDamage(targ, self, c_dmg, HG_SENTRY | HITTYPE_SECONDARY | HITTYPE_BOUNCE,
+                        CVAR(g_nadgets_sentry_adept_shock_arc_range), arc,
+                        CVAR(g_nadgets_sentry_adept_shock_arc_force), COLOR_TEAM3, sentry_arc_hit
+                    );
+                }
+            }
 
             if(targ.solid == SOLID_BSP && !noimpact)
                 Damage_DamageInfo(endpos, c_dmg, 0, 0, force, WEP_ZAPPER | HITTYPE_SECONDARY, self);
