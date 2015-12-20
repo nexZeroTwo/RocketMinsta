@@ -952,6 +952,7 @@ void GetCvars(float f)
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
     GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
+    GetCvars_handleFloat(s, f, client_utf8, "utf8_enable");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)

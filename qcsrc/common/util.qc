@@ -2005,8 +2005,12 @@ void load_fonts(void) {
 #endif
 }
 
-void utf8_logstatus(void) {
+void utf8_report(void) {
     dprint(strcat("^6UTF8 STATUS: ", ftos(utf8_available), " ", ftos(cvar("utf8_enable")), "\n"));
+
+#ifdef CSQC
+    localcmd("sendcvar utf8_enable\n");
+#endif
 }
 
 void utf8_enable(void) {
@@ -2017,7 +2021,7 @@ void utf8_enable(void) {
     cvar_set("utf8_oldfont_for_oldchars", "1");
 
     utf8_available = TRUE;
-    utf8_logstatus();
+    utf8_report();
     load_fonts();
 }
 
@@ -2029,6 +2033,6 @@ void utf8_disable(void) {
     cvar_set("utf8_oldfont_for_oldchars", "0");
 
     utf8_available = FALSE;
-    utf8_logstatus();
+    utf8_report();
     load_fonts();
 }

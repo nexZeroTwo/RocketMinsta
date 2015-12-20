@@ -411,7 +411,12 @@ void SV_ParseClientCommand(string s) {
                 self.client_dprmversion = 0;
                 return;
             }
-            
+
+            if(argv(1) == "utf8_enable") {
+                self.client_utf8 = 0;
+                return;
+            }
+
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}
@@ -421,6 +426,11 @@ void SV_ParseClientCommand(string s) {
 		{
             if(argv(1) == "dprm_version") {
                 self.client_dprmversion = 0;
+                return;
+            }
+
+            if(argv(1) == "utf8_enable") {
+                self.client_utf8 = 0;
                 return;
             }
 
