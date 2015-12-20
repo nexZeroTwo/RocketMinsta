@@ -104,10 +104,6 @@ void Buffs_MEODP_Death_Remove_Multiple(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor);
 void Buffs_MEODP_Antilag(entity plr, float t);
 
-void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
-                          vector arcoffset, float range, float mul, float mul_hg, float force,
-                          float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield);
-
 float g_buffs_meodp;
 
 .float buff_active_old;

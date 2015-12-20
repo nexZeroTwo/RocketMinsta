@@ -1555,3 +1555,84 @@ void fireburner_think()
 	self.nextthink = time;
 }
 
+void ArcEffect(vector from, vector to, float t) {
+    te_csqc_lightningarc(from, to, t, t);
+}
+
+void ArcDamage_Recurse(entity targ, entity attacker, float damage, float deathtype,
+                       vector arcoffset, float range, float mul, float force, float default_color,
+                       float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield) {
+    entity oldself = self;
+    entity plr, newtarget;
+    float dist, shortest;
+
+    if(targetFrozen)
+        damage = 1;
+    else
+        damage = damage * mul;
+
+    if(damage < 1)
+        return;
+
+    newtarget = world;
+    shortest = range;
+    targ.hitfield = TRUE;
+
+    FOR_EACH_PLAYER(plr)
+    if(plr != attacker)
+    if(plr != targ)
+    if(plr.deadflag == DEAD_NO)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
+    if(!plr.jb_isprisoned)
+    if(!plr.hitfield) {
+        float sameteam = (teams_matter && plr.team == attacker.team);
+        if((!sameteam && ((!plr.frozen && targetAlive) || (plr.frozen && targetFrozen))) || (sameteam && targetTeamMates)) {
+            dist = vlen(plr.origin - targ.origin);
+            if(dist < shortest) {
+                traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+                
+                if(trace_fraction < 1 && trace_ent == plr) {
+                    shortest = dist;
+                    newtarget = plr;
+                }
+            }
+        }
+    }
+
+    if(newtarget) {
+        ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset,
+                  if(targetTeamMates) 0 else if(teams_matter) attacker.team else default_color);
+
+        Damage(newtarget, attacker, attacker, damage, deathtype, '0 0 0',
+               normalize(newtarget.origin - targ.origin) * force);
+
+        ArcDamage_Recurse(newtarget, attacker, damage, deathtype, arcoffset, range, mul, force,
+                          default_color, targetTeamMates, targetFrozen, targetAlive, hitfield);
+
+        if(targetTeamMates)
+            sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
+        else
+            sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"),
+                  VOL_BASE, ATTN_NORM * 0.3);
+    }
+
+    self = oldself;
+}
+
+void ArcDamage(entity targ, entity attacker, float damage, float deathtype,
+               float range, float mul, float force, float default_color, .float hitfield) {
+    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+
+    if(teams_matter && targ.team == attacker.team && !targetTeamMates)
+        return;
+
+    float targetFrozen = targ.frozen && !targetTeamMates;
+    float targetAlive = !targetFrozen && !targetTeamMates;
+
+    ArcDamage_Recurse(targ, attacker, damage, deathtype,
+                      attacker.maxs_z * '0 0 0.5', range, mul, force, default_color,
+                      targetTeamMates, targetFrozen, targetAlive, hitfield);
+
+    entity e; for(e = world; (e = findfloat(e, hitfield, TRUE));)
+        e.hitfield = FALSE;
+}
