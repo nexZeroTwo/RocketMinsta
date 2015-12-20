@@ -1966,20 +1966,21 @@ void load_fonts(void) {
             ftos(cvar("con_textsize"))
         );
 
-        var font_small  = "gfx/vera-sans,fonts/unifont-8.0.01.ttf";
-        var font_big    = "gfx/vera-sans-big,fonts/unifont-8.0.01.ttf";
-        var font_mono   = "gfx/conchars,fonts/unifont-8.0.01.ttf";
-        var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/unifont-8.0.01.ttf";
-        var font_rmbig  = "gfx/iceland,fonts/unifont-8.0.01.ttf";
+        var font_small  = "gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_big    = "gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_mono   = "gfx/conchars,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
 
         cvar_set("r_font_disable_freetype", "0");
         cvar_set("r_font_size_snapping", "0");
+        cvar_set("r_font_diskcache", "1");
 
-        localcmd("loadfont default  ", font_small, sizes, "\n");
-        localcmd("loadfont console  ", font_mono, sizes, "\n");
-        localcmd("loadfont chat     ", font_small, sizes, "\n");
-        localcmd("loadfont notify   ", font_small, sizes, "\n");
-        localcmd("loadfont infobar  ", font_small, sizes, "\n");
+        localcmd("loadfont default  ", font_small, "\n");
+        localcmd("loadfont console  ", font_mono, "\n");
+        localcmd("loadfont chat     ", font_small, "\n");
+        localcmd("loadfont notify   ", font_small, "\n");
+        localcmd("loadfont infobar  ", font_small, "\n");
         localcmd("loadfont user0    ", font_small, sizes, "\n");
         localcmd("loadfont user1    ", font_small, sizes, "\n");
         localcmd("loadfont user2    ", font_big, sizes, "\n");
