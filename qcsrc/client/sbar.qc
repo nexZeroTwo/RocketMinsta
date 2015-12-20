@@ -3766,7 +3766,6 @@ vector drawbuffs_pos;
 void Sbar_DrawBuffs(void) {
     vector pos;
     float buffs = getstati(STAT_BUFFS), sw, a;
-    string s;
 
     if(drawbuffs_buffval != buffs) {
         drawbuffs_updatetime = time;
@@ -3779,7 +3778,7 @@ void Sbar_DrawBuffs(void) {
 
         if(buffs) {
             drawbuffs_str = strzone(Buffs_TypeToExpandedName(buffs, " ", 1));
-            sw = stringwidth(s, TRUE);
+            sw = stringwidth(drawbuffs_str, TRUE);
             drawbuffs_pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
             drawbuffs_pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
         }
