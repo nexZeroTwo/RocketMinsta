@@ -796,7 +796,6 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     if(mul <= 0)
         return;
 
-
     ArcDamage(targ, attacker, damage, DEATH_ARC,
         CVAR(g_buffs_arc_range), mul,
         CVAR(g_buffs_arc_pushback), COLOR_TEAM2, buffs_arc_hit
