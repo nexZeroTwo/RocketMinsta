@@ -782,93 +782,25 @@ void Buffs_WrathDamage(entity targ, entity attacker, float damage, float deathty
     })
 }
 
-void Buffs_ArcEffect(vector from, vector to, float t) {
-    te_csqc_lightningarc(from, to, t, t);
-}
-
-void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
-                          vector arcoffset, float range, float mul, float mul_hg, float force,
-                          float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield) {
-    entity oldself = self;
-    entity plr, newtarget;
-    float dist, shortest;
-    
-    if(targetFrozen)
-        damage = 1;
-    else {
-        if(DEATH_ISHG(deathtype))
-            damage = damage * mul_hg;
-        damage = damage * mul;
-    }
-    
-    if(damage < 1)
-        return;
-    
-    newtarget = world;
-    shortest = range;
-    targ.hitfield = TRUE;
-    
-    FOR_EACH_PLAYER(plr)
-    if(plr != attacker)
-    if(plr != targ)
-    if(plr.deadflag == DEAD_NO)
-    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
-    if(!plr.jb_isprisoned)
-    if(!plr.hitfield) {
-        float sameteam = (teams_matter && plr.team == attacker.team);
-        if((!sameteam && ((!plr.frozen && targetAlive) || (plr.frozen && targetFrozen))) || (sameteam && targetTeamMates)) {
-            dist = vlen(plr.origin - targ.origin);
-            if(dist < shortest) {
-                traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
-                
-                if(trace_fraction < 1 && trace_ent == plr) {
-                    shortest = dist;
-                    newtarget = plr;
-                }
-            }
-        }
-    }
-    
-    if(newtarget) {
-        Buffs_ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset, if(targetTeamMates) 0 else if(teams_matter) attacker.team else COLOR_TEAM2);
-        Damage(newtarget, attacker, attacker, damage, arcdeathtype, '0 0 0', normalize(newtarget.origin - targ.origin) * force);
-        Buffs_ArcDamage_Proc(newtarget, attacker, damage, arcdeathtype, arcdeathtype,
-                             arcoffset, range, mul, mul_hg, force,
-                             targetTeamMates, targetFrozen, targetAlive, hitfield);
-        if(targetTeamMates)
-            sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
-        else
-            sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM * 0.3);
-    }
-    
-    self = oldself;
-}
-
 void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype) {
-    if(DEATH_ISWEAPON(deathtype, WEP_ZAPPER) && (deathtype & HITTYPE_BOUNCE))
-        return;
-
     if(!Buffs_Present(attacker, BUFF_ARC))
         return;
-    
-    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
-    
-    if(targ.team == attacker.team && !targetTeamMates)
+
+    var mul;
+
+    if(DEATH_ISHG(deathtype))
+        mul = CVAR(g_buffs_arc_multiplier_hg);
+    else
+        mul = CVAR(g_buffs_arc_multiplier);
+
+    if(mul <= 0)
         return;
-    
-    float targetFrozen = targ.frozen && !targetTeamMates;
-    float targetAlive = !targetFrozen && !targetTeamMates;
-    
-    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, DEATH_ARC,
-                         attacker.maxs_z * '0 0 0.5',
-                         CVAR(g_buffs_arc_range),
-                         CVAR(g_buffs_arc_multiplier),
-                         CVAR(g_buffs_arc_multiplier_hg),
-                         CVAR(g_buffs_arc_pushback),
-                         targetTeamMates, targetFrozen, targetAlive, buffs_arc_hit);
-    
-    entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
-        e.buffs_arc_hit = FALSE;
+
+
+    ArcDamage(targ, attacker, damage, DEATH_ARC,
+        CVAR(g_buffs_arc_range), mul,
+        CVAR(g_buffs_arc_pushback), COLOR_TEAM2, buffs_arc_hit
+    );
 }
 
 void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathtype) {

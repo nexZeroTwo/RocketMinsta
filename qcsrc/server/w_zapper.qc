@@ -285,23 +285,10 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
     if(arc <= 0)
         return;
 
-    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
-    
-    if(targ.team == attacker.team && !targetTeamMates)
-        return;
-    
-    float targetFrozen = targ.frozen && !targetTeamMates;
-    float targetAlive = !targetFrozen && !targetTeamMates;
-    float deathtype = WEP_ZAPPER | HITTYPE_SECONDARY;
-
-    Buffs_ArcDamage_Proc(targ, attacker, damage, deathtype, deathtype | HITTYPE_BOUNCE,
-                         attacker.maxs_z * '0 0 0.5',
-                         CVAR(g_balance_zapper_secondary_arc_range), arc, 1,
-                         CVAR(g_balance_zapper_secondary_arc_force),
-                         targetTeamMates, targetFrozen, targetAlive, zapper_arc_hit);
-    
-    entity e; for(e = world; (e = findfloat(e, zapper_arc_hit, TRUE));)
-        e.zapper_arc_hit = FALSE;
+    ArcDamage(targ, attacker, damage, WEP_ZAPPER | HITTYPE_SECONDARY | HITTYPE_BOUNCE,
+        CVAR(g_balance_zapper_secondary_arc_range), arc,
+        CVAR(g_balance_zapper_secondary_arc_force), COLOR_TEAM2, zapper_arc_hit
+    );
 }
 
 void W_Zapper_Attack2(void) {

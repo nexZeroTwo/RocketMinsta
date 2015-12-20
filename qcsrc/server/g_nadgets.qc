@@ -1248,50 +1248,13 @@ void HG_Grenade_FadeOut(entity n) {
     n.nextthink = time;
 }
 
-void HG_Shield_Discharge_Arc(entity attacker, entity targ, float damage) {
-    entity oldself = self;
-    float wantteam = targ.team;
-    float targetTeamMates = wantteam == attacker.team && Buffs_Present(attacker, BUFF_MEDIC);
-    float dist, shortest;
-    vector arcoffset = attacker.maxs_z * '0 0 0.5';
-    entity plr, newtarget;
-    
-    damage *= CVAR(g_nadgets_shield_damage_store_arc);
+.float shield_arc_hit;
 
-    if(damage < 1)
-        return;
-
-    shortest = CVAR(g_nadgets_shield_damage_store_arc_range);
-    newtarget = world;
-    targ.buffs_arc_hit = TRUE;
-    
-    FOR_EACH_PLAYER(plr)
-    if(plr != attacker)
-    if(plr != targ)
-    if(plr.deadflag == DEAD_NO)
-    if(plr.team == wantteam)
-    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
-    if(!plr.jb_isprisoned)
-    if(!plr.buffs_arc_hit) {
-        dist = vlen(plr.origin - targ.origin);
-        if(dist < shortest) {
-            traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
-            
-            if(trace_fraction != 1 && trace_ent == plr) {
-                shortest = dist;
-                newtarget = plr;
-            }
-        }
-    }
-    
-    if(newtarget) {
-        te_csqc_lightningarc(targ.origin + arcoffset, newtarget.origin + arcoffset, TRUE, attacker.team);
-        Damage(newtarget, attacker, attacker, damage, HG_SHIELD | HITTYPE_SECONDARY | HITTYPE_BOUNCE, '0 0 0', normalize(newtarget.origin - targ.origin) * CVAR(g_nadgets_shield_damage_store_arc_pushback));
-        HG_Shield_Discharge_Arc(attacker, newtarget, damage);
-        sound(newtarget, CHAN_PROJECTILE, "weapons/nexfire.wav", VOL_BASE, ATTN_NORM * 0.3);
-    }
-    
-    self = oldself;
+void HG_Shield_Discharge_Arc(entity targ, entity attacker, float damage) {
+    ArcDamage(targ, attacker, damage, HG_SHIELD | HITTYPE_SECONDARY | HITTYPE_BOUNCE,
+        CVAR(g_nadgets_shield_damage_store_arc_range), CVAR(g_nadgets_shield_damage_store_arc),
+        CVAR(g_nadgets_shield_damage_store_arc_pushback), COLOR_TEAM3, shield_arc_hit
+    );
 }
 
 void HG_Shield_Discharge_Think(void) {
@@ -1347,9 +1310,7 @@ void HG_Shield_Discharge_Think(void) {
     W_Zapper_Attack2_Effect(if(teams_matter) self.owner.team else COLOR_TEAM3, w_shotorg_visual, w_shotorg, end_visual);
 
     if(arc && targ && targ.iscreature && (IsDifferentTeam(self.owner, targ) || Buffs_Present(self.owner, BUFF_MEDIC))) {
-        HG_Shield_Discharge_Arc(self.owner, targ, damage);
-        entity e; for(e = world; (e = findfloat(e, buffs_arc_hit, TRUE));)
-            e.buffs_arc_hit = FALSE;
+        HG_Shield_Discharge_Arc(targ, self.owner, damage);
     }
 
     self.nextthink = time + CVAR(g_nadgets_shield_damage_store_burstdelay);
