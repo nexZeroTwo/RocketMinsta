@@ -1959,12 +1959,11 @@ void va_test(string fmt, ...) { VA_INIT
 void load_fonts(void) {
 #ifndef SVQC
     if(cvar("utf8_enable")) {
-        var sizes = strcat(
-            " 4 6 8 10 12 14 16 20 24 28 32 ",
-            ftos(cvar("sbar_fontsize")), " ",
-            ftos(cvar("scr_centersize")), " ",
-            ftos(cvar("con_textsize"))
-        );
+        var sizes = " ";
+
+        for(var i = 7; i <= 22; ++i)
+            sizes = strcat(sizes, ftos(i), " ");
+
 
         var font_small  = "gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
         var font_big    = "gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";

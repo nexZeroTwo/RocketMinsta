@@ -709,7 +709,7 @@ void PostInit(void)
         case 55:
             localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 56:
-            localcmd("seta r_font_size_snapping 0\n");
+            localcmd("seta r_font_size_snapping 1\n");
 
 		//More to come here with each update
 		localcmd("seta rm_initialized 57\n");
