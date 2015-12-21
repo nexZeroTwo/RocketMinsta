@@ -2020,7 +2020,7 @@ void utf8_enable(void) {
     }
 
     cvar_set("utf8_enable", "1");
-    cvar_set("utf8_oldfont_for_oldchars", "1");
+    cvar_set("utf8_oldfont_for_oldchars", "0");
 
     utf8_available = TRUE;
     utf8_report();
@@ -2032,7 +2032,6 @@ void utf8_disable(void) {
         return;
 
     cvar_set("utf8_enable", "0");
-    cvar_set("utf8_oldfont_for_oldchars", "0");
 
     utf8_available = FALSE;
     utf8_report();
