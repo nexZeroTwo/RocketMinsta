@@ -143,15 +143,13 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 
 	float oldx = o_x;
 	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]);
-	
-    var gtname = gametype_Name_to_LongName(gtype);
-    var sw = stringwidth(gtname, FALSE, sbar_fontsize);
-	drawGameTypeLine(MapVote_FormatMapItem(id, gtname, count, 500), MapVote_RGB(id), sw, a);
+
+	drawGameTypeLine(MapVote_FormatMapItem(id, gametype_Name_to_LongName(gtype), count, 500), MapVote_RGB(id), 1.4, a);
 	if(s != "") for(i = 0; i < n; ++i) {
 		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
 
-	drawGameTypeLine("", '1 1 1', 01, 1);
+	drawGameTypeLine("", '1 1 1', 1, 1);
 	o_x = oldx;
 	return o;
 }
