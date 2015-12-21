@@ -1958,7 +1958,7 @@ void va_test(string fmt, ...) { VA_INIT
 
 void load_fonts(void) {
 #ifndef SVQC
-    if(utf8_available) {
+    if(cvar("utf8_enable")) {
         var sizes = strcat(
             " 4 6 8 10 12 14 16 20 24 28 32 ",
             ftos(cvar("sbar_fontsize")), " ",
@@ -1972,8 +1972,12 @@ void load_fonts(void) {
         var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
         var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
 
+        if(cvar("rm_fonts_prefer_ttf")) {
+            font_small  = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
+            font_big    = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
+        }
+
         cvar_set("r_font_disable_freetype", "0");
-        cvar_set("r_font_size_snapping", "0");
         cvar_set("r_font_diskcache", "1");
 
         localcmd("loadfont default  ", font_small, "\n");
@@ -1988,7 +1992,6 @@ void load_fonts(void) {
         localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
     } else {
         cvar_set("r_font_disable_freetype", "1");
-        cvar_set("r_font_size_snapping", "1");
 
         localcmd("loadfont default  gfx/vera-sans\n");
         localcmd("loadfont console  gfx/conchars\n");
@@ -2006,8 +2009,6 @@ void load_fonts(void) {
 }
 
 void utf8_report(void) {
-    dprint(strcat("^6UTF8 STATUS: ", ftos(utf8_available), " ", ftos(cvar("utf8_enable")), "\n"));
-
 #ifdef CSQC
     localcmd("sendcvar utf8_enable\n");
 #endif
@@ -2022,7 +2023,6 @@ void utf8_enable(void) {
     cvar_set("utf8_enable", "1");
     cvar_set("utf8_oldfont_for_oldchars", "0");
 
-    utf8_available = TRUE;
     utf8_report();
     load_fonts();
 }
@@ -2033,7 +2033,6 @@ void utf8_disable(void) {
 
     cvar_set("utf8_enable", "0");
 
-    utf8_available = FALSE;
     utf8_report();
     load_fonts();
 }

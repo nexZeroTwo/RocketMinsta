@@ -708,9 +708,11 @@ void PostInit(void)
             localcmd("seta r_equalize_entities_fullbright 1\n");
         case 55:
             localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+        case 56:
+            localcmd("seta r_font_size_snapping 1\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 56\n");
+		localcmd("seta rm_initialized 57\n");
 		RM_OUTDATED
 		break;
 	}

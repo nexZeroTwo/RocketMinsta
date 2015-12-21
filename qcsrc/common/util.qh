@@ -247,7 +247,5 @@ var va_parm __va_parm7;
 va_parm va_get(float pidx);
 void va_test(string fmt, ...);
 
-float utf8_available;
-
 void utf8_enable(void);
 void utf8_disable(void);

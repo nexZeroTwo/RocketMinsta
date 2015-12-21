@@ -766,7 +766,7 @@ string Sbar_GetField(entity pl, float field)
 		case SP_PING:
 			if not(pl.gotscores) {
                  // >>> sign
-                if(utf8_available)
+                if(CVAR(utf8_enable))
                     return "\xEE\x82\x8D\xEE\x82\x8D\xEE\x82\x8D";
                 else
 				    return "\x8D\x8D\x8D";
