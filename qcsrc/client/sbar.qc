@@ -948,7 +948,7 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	if(sbar_field_icon0 != "")
 	{
 		sz = drawgetimagesize(sbar_field_icon0);
-		f = sz_x; // / sz_y;
+		f = sz_x / sz_y;
 		if(sbar_fixscoreboardcolumnwidth_iconlen < f)
 			sbar_fixscoreboardcolumnwidth_iconlen = f;
 	}
@@ -956,7 +956,7 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	if(sbar_field_icon1 != "")
 	{
 		sz = drawgetimagesize(sbar_field_icon1);
-		f = sz_x; // / sz_y;
+		f = sz_x / sz_y;
 		if(sbar_fixscoreboardcolumnwidth_iconlen < f)
 			sbar_fixscoreboardcolumnwidth_iconlen = f;
 	}
@@ -964,12 +964,12 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	if(sbar_field_icon2 != "")
 	{
 		sz = drawgetimagesize(sbar_field_icon2);
-		f = sz_x; // / sz_y;
+		f = sz_x / sz_y;
 		if(sbar_fixscoreboardcolumnwidth_iconlen < f)
 			sbar_fixscoreboardcolumnwidth_iconlen = f;
 	}
 
-	// sbar_fixscoreboardcolumnwidth_iconlen *= sbar_fontsize_y / sbar_fontsize_x; // fix icon aspect
+	sbar_fixscoreboardcolumnwidth_iconlen *= sbar_fontsize_y; // fix icon aspect
 
 	if(sbar_fixscoreboardcolumnwidth_iconlen != 0)
 		sbar_fixscoreboardcolumnwidth_marginlen = stringwidth(" ", FALSE, sbar_fontsize);
@@ -980,10 +980,12 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	{
 		float namesize, j;
 		namesize = sbwidth;
-		for(j = 0; j < sbar_num_fields; ++j)
-			if(j != i)
-				if (sbar_field[i] != SP_SEPARATOR)
-					namesize -= sbar_size[j] + 1;
+		for(j = 0; j < sbar_num_fields; ++j) {
+			if(j != i) {
+				if (sbar_field[j] != SP_SEPARATOR)
+					namesize -= sbar_size[j] + sbar_fontsize_x;
+            }
+        }
 		namesize += 1;
 		sbar_size[i] = namesize;
 
