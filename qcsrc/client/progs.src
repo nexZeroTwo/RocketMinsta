@@ -48,7 +48,6 @@ sortlist.qc
 miscfunctions.qc
 teamplay.qc
 
-svnstuff.qc
 sbar.qc
 mapvoting.qc
 nadgetselect.qc

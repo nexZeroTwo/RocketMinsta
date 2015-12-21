@@ -350,7 +350,7 @@ void Draw_WaypointSprite()
     else {
         drawfont = sbar_bigfont;
         vector fs = '30 30 0' * t;
-        float sw = stringwidth_svn(spriteimage, FALSE, fs);
+        float sw = stringwidth(spriteimage, FALSE, fs);
         vector oc = o - '0.5 0 0' * sw + '0 -20 0';
         oc_x = bound(m, oc_x, vid_conwidth - sw - m);
         oc_y = bound(m, oc_y, vid_conheight - fs_y - m);
@@ -358,7 +358,7 @@ void Draw_WaypointSprite()
         drawstring(oc, spriteimage, fs, txtclr, a, DRAWFLAG_NORMAL);
         if(self.toptext) {
             fs += '1 1 0' * 2 * sin(time*3);
-            sw = stringwidth_svn(self.toptext, FALSE, fs);
+            sw = stringwidth(self.toptext, FALSE, fs);
             oc_y = bound(m + fs_y*1.5, oc_y - fs_y*1.5, vid_conheight - fs_y*3 - m);
             oc_x = bound(m, o_x - sw * 0.5, vid_conwidth - sw - m);
             drawstring(oc, self.toptext, fs, if(self.toptextmode == 1) self.clr2 else self.clr3, a * self.topalpha, DRAWFLAG_NORMAL);

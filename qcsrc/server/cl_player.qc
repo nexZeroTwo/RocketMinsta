@@ -1374,12 +1374,14 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 		// to match explanation in default.cfg, a value of 3 must allow three-line bursts and not four!
 
 		// do flood control for the default line size
+
+        // TODO: move the line wrapping to CSQC somehow so that it respects the user's actual font settings.
 		getWrappedLine_remaining = msgstr;
 		msgstr = "";
 		lines = 0;
 		while(getWrappedLine_remaining && (!flood_lmax || lines <= flood_lmax))
 		{
-			msgstr = strcat(msgstr, " ", getWrappedLine(82.4289758859709, strlennocol)); // perl averagewidth.pl < gfx/vera-sans.width
+			msgstr = strcat(msgstr, " ", getWrappedLine(82.4289758859709, '1 1', stringwidth_colors)); // perl averagewidth.pl < gfx/vera-sans.width
 			++lines;
 		}
 		msgstr = substring(msgstr, 1, strlen(msgstr) - 1);

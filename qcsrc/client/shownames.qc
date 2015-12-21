@@ -72,10 +72,10 @@ void Shownames_DrawPlayer(entity plr) {
 
     if(teamplay) {
         s = strdecolorize(s);
-        s = textShortenToWidth_svn(s, namesize, textsz, stringwidth_nocolors_svn);
-    } else s = textShortenToWidth_svn(s, namesize, textsz, stringwidth_colors_svn);
+        s = textShortenToWidth(s, namesize, textsz, stringwidth_nocolors);
+    } else s = textShortenToWidth(s, namesize, textsz, stringwidth_colors);
 
-    float width = stringwidth_svn(s, TRUE, textsz);
+    float width = stringwidth(s, TRUE, textsz);
 
     if(width != namesize)
         namepos_x += (namesize - width) / 2;
@@ -111,15 +111,15 @@ void Shownames_DrawPlayer(entity plr) {
 
         if(frozen) {
             s2 = "Frozen!";
-            drawstring(posCenter - '0.5 0 0' * stringwidth_svn(s2, TRUE, hScale), s2, hScale, '0.2 1 1', a * fade, DRAWFLAG_NORMAL);
+            drawstring(posCenter - '0.5 0 0' * stringwidth(s2, TRUE, hScale), s2, hScale, '0.2 1 1', a * fade, DRAWFLAG_NORMAL);
             playerslots[plr.sv_entnum].sn_lastdraw = time;
         } else if(plr.healthvalue) {
             txtHealth = ftos(plr.healthvalue);
-            szHealth = stringwidth_svn(txtHealth, TRUE, hScale);
+            szHealth = stringwidth(txtHealth, TRUE, hScale);
 
             if(plr.armorvalue) {
                 txtArmor  = ftos(plr.armorvalue);
-                szArmor   = stringwidth_svn(txtArmor, TRUE, hScale);
+                szArmor   = stringwidth(txtArmor, TRUE, hScale);
                 posArmor  = posCenter + '2 0 0';
                 posHealth = posCenter - '1 0 0' * (szHealth + 2 + hScale_x);
             } else {

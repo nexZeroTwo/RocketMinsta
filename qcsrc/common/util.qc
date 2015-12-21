@@ -1174,76 +1174,76 @@ float boxesoverlap(vector m1, vector m2, vector m3, vector m4) {return m2_x >= m
 // requires the same, but is a stronger condition
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs) {return smins_x >= bmins_x && smaxs_x <= bmaxs_x && smins_y >= bmins_y && smaxs_y <= bmaxs_y && smins_z >= bmins_z && smaxs_z <= bmaxs_z;};
 
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t w)
+float textLengthUpToWidth(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w)
 {
-	float ICanHasKallerz;
+    float ICanHasKallerz;
 
-	// detect color codes support in the width function
-	ICanHasKallerz = (w("^7") == 0);
+    // detect color codes support in the width function
+    ICanHasKallerz = (w("^7", theSize) == 0);
 
-	// STOP.
-	// The following function is SLOW.
-	// For your safety and for the protection of those around you...
-	// DO NOT CALL THIS AT HOME.
-	// No really, don't.
-	if(w(theText) <= maxWidth)
-		return strlen(theText); // yeah!
+    // STOP.
+    // The following function is SLOW.
+    // For your safety and for the protection of those around you...
+    // DO NOT CALL THIS AT HOME.
+    // No really, don't.
+    if(w(theText, theSize) <= maxWidth)
+        return strlen(theText); // yeah!
 
-	// binary search for right place to cut string
-	float ch;
-	float left, right, middle; // this always works
-	left = 0;
-	right = strlen(theText); // this always fails
-	do
-	{
-		middle = floor((left + right) / 2);
-		if(w(substring(theText, 0, middle)) <= maxWidth)
-			left = middle;
-		else
-			right = middle;
-	}
-	while(left < right - 1);
+    // binary search for right place to cut string
+    float ch;
+    float left, right, middle; // this always works
+    left = 0;
+    right = strlen(theText); // this always fails
+    do
+    {
+        middle = floor((left + right) / 2);
+        if(w(substring(theText, 0, middle), theSize) <= maxWidth)
+            left = middle;
+        else
+            right = middle;
+    }
+    while(left < right - 1);
 
-	if(ICanHasKallerz)
-	{
-		// NOTE: when color codes are involved, this binary search is,
-		// mathematically, BROKEN. However, it is obviously guaranteed to
-		// terminate, as the range still halves each time - but nevertheless, it is
-		// guaranteed that it finds ONE valid cutoff place (where "left" is in
-		// range, and "right" is outside).
+    if(ICanHasKallerz)
+    {
+        // NOTE: when color codes are involved, this binary search is,
+        // mathematically, BROKEN. However, it is obviously guaranteed to
+        // terminate, as the range still halves each time - but nevertheless, it is
+        // guaranteed that it finds ONE valid cutoff place (where "left" is in
+        // range, and "right" is outside).
+        
+        // terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
+        // and decrease left on the basis of the chars detected of the truncated tag
+        // Even if the ^xrgb tag is not complete/correct, left is decreased
+        // (sometimes too much but with a correct result)
+        // it fixes also ^[0-9]
+        while(left >= 1 && substring(theText, left-1, 1) == "^")
+            left-=1;
 
-		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
-		// and decrease left on the basis of the chars detected of the truncated tag
-		// Even if the ^xrgb tag is not complete/correct, left is decreased
-		// (sometimes too much but with a correct result)
-		// it fixes also ^[0-9]
-		while(left >= 1 && substring(theText, left-1, 1) == "^")
-			left-=1;
-
-		if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
-			left-=2;
-		else if (left >= 3 && substring(theText, left-3, 2) == "^x")
-			{
-				ch = str2chr(theText, left-1);
-				if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
-					left-=3;
-			}
-		else if (left >= 4 && substring(theText, left-4, 2) == "^x")
-			{
-				ch = str2chr(theText, left-2);
-				if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
-				{
-					ch = str2chr(theText, left-1);
-					if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
-						left-=4;
-				}
-			}
-	}
-
-	return left;
+        if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
+            left-=2;
+        else if (left >= 3 && substring(theText, left-3, 2) == "^x")
+            {
+                ch = str2chr(theText, left-1);
+                if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
+                    left-=3;
+            }
+        else if (left >= 4 && substring(theText, left-4, 2) == "^x")
+            {
+                ch = str2chr(theText, left-2);
+                if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
+                {
+                    ch = str2chr(theText, left-1);
+                    if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
+                        left-=4;
+                }
+            }
+    }
+    
+    return left;
 }
 
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
+string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
 	float cantake;
 	float take;
@@ -1251,7 +1251,7 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 
 	s = getWrappedLine_remaining;
 
-	cantake = textLengthUpToWidth(s, w, tw);
+	cantake = textLengthUpToWidth(s, w, fontSize, tw);
 	if(cantake > 0 && cantake < strlen(s))
 	{
 		take = cantake - 1;
@@ -1279,12 +1279,12 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 	}
 }
 
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw)
+string textShortenToWidth(string theText, float maxWidth, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
-	if(tw(theText) <= maxWidth)
+	if(tw(theText, fontSize) <= maxWidth)
 		return theText;
 	else
-		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("..."), tw)), "...");
+		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("...", fontSize), fontSize, tw)), "...");
 }
 
 float isGametypeInFilter(float gt, float tp, string pattern)
@@ -2035,3 +2035,18 @@ void utf8_disable(void) {
     utf8_report();
     load_fonts();
 }
+
+#ifdef SVQC
+float stringwidth(string s, float handle_colors, vector text_size) {
+    return (if(handle_colors) strlennocol else strlen)(s) * text_size_x;
+}
+#endif
+
+float stringwidth_colors(string s, vector theSize) {
+    return stringwidth(s, TRUE, theSize);
+}
+
+float stringwidth_nocolors(string s, vector theSize) {
+    return stringwidth(s, FALSE, theSize);
+}
+

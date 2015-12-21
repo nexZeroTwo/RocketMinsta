@@ -63,7 +63,7 @@ void NS_Draw(void) {
 
         if(g_nadgets_double) {
             txt = if(table) "Secondary" else "Primary";
-            txtw = stringwidth_svn(txt, FALSE, sz);
+            txtw = stringwidth(txt, FALSE, sz);
             drawstring([o_x + (s_x - txtw) * 0.5, o_y - sz_y * 1.25], txt, sz, '1 1 1', a, DRAWFLAG_NORMAL);
         }
 
@@ -74,7 +74,7 @@ void NS_Draw(void) {
                 "'+nadget' '+hook' '+button6'"
         )));
 
-        txtw = stringwidth_svn(txt, TRUE, sz);
+        txtw = stringwidth(txt, TRUE, sz);
         drawcolorcodedstring([o_x + (s_x - txtw) * 0.5, o_y + s_y + NS_MARGIN * 0.5], txt, sz, a, DRAWFLAG_NORMAL);
 
         float confirmed = if(table) ns_confirmed2 else ns_confirmed1;
@@ -107,7 +107,7 @@ void NS_Draw(void) {
             p = [o_x + NS_MARGIN * 0.5, o_y + i * sz_y + NS_MARGIN * 0.5];
 
             if(t == HG_RANDOM) {
-                p_x = p_x + (sz_x - stringwidth_svn("?", FALSE, sz)) * 0.5;
+                p_x = p_x + (sz_x - stringwidth("?", FALSE, sz)) * 0.5;
                 drawstring(p, "?", sz, clr, a, DRAWFLAG_NORMAL);
             } else {
                 drawpic(p, HG_TypeToIcon(t, TRUE, FALSE), sz, '1 1 1' * (0.5 + 0.5 * a2), a, DRAWFLAG_NORMAL);
@@ -118,7 +118,7 @@ void NS_Draw(void) {
 
             if(i < 10) {
                 txt = if(i == 9) "0" else ftos(i + 1);
-                txtw = stringwidth_svn(txt, FALSE, sz * 0.5);
+                txtw = stringwidth(txt, FALSE, sz * 0.5);
                 drawstring([o_x + s_x - txtw, p_y], txt, sz * 0.5, '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);     
             }
         }
@@ -233,7 +233,7 @@ void Net_ReadNadgetSelect(void) {
             if(!valid)
                 continue;
 
-            ns_width = max(ns_width, NS_SCALE + stringwidth_svn(HG_TypeToExpandedName(ns_options[idx]), FALSE, [NS_SCALE, NS_SCALE]));
+            ns_width = max(ns_width, NS_SCALE + stringwidth(HG_TypeToExpandedName(ns_options[idx]), FALSE, [NS_SCALE, NS_SCALE]));
         }
     }
 

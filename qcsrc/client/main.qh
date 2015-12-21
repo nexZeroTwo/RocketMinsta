@@ -151,7 +151,6 @@ float calledhooks;
 #define HOOK_END      2
 
 string rm_watermark;
-float rm_wm_width;
 
 string bigprint_string;
 string bigprint_comment;

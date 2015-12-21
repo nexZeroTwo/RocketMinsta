@@ -131,12 +131,12 @@ string rgb_to_hexcolor(vector rgb);
 float boxesoverlap(vector m1, vector m2, vector m3, vector m4);
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs);
 
-typedef float(string s) textLengthUpToWidth_widthFunction_t;
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw);
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw);
+typedef float(string s, vector fontSize) textLengthUpToWidth_widthFunction_t;
+float textLengthUpToWidth(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w);
+string textShortenToWidth(string theText, float maxWidth, vector fontSize, textLengthUpToWidth_widthFunction_t tw);
 
 string getWrappedLine_remaining;
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw);
+string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunction_t tw);
 
 float isGametypeInFilter(float gt, float tp, string pattern);
 
@@ -249,3 +249,10 @@ void va_test(string fmt, ...);
 
 void utf8_enable(void);
 void utf8_disable(void);
+
+#ifdef SVQC
+float stringwidth(string s, float handle_colors, vector text_size);
+#endif
+
+float stringwidth_colors(string s, vector theSize);
+float stringwidth_nocolors(string s, vector theSize);

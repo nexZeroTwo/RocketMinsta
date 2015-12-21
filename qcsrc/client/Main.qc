@@ -252,7 +252,6 @@ void CSQC_Init(void)
 	
 	vote_statstring = strzone("");
 	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
-	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
@@ -1167,7 +1166,7 @@ void ShotOrg_Draw2D()
 	coord2d_topleft = project_3d_to_2d(self.origin + view_up * 4 - view_right * 4);
 	coord2d_topright = project_3d_to_2d(self.origin + view_up * 4 + view_right * 4);
 
-	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE));
+	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE, '1 1'));
 
 	coord2d = coord2d_topleft;
 	if(fs_x < 8)
