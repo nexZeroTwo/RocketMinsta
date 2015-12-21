@@ -2778,31 +2778,31 @@ void Sbar_DrawAccuracyStats()
 
 void drawstringright(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x -= 2 / 3 * strlen(text) * scale_x;
+	position_x -= 2 / 3 * stringwidth_svn(text, FALSE, scale);
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawstringcenter(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x);
+	position_x = 0.5 * (vid_conwidth - stringwidth_svn(text, FALSE, scale));
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x);
+	position_x = 0.5 * (vid_conwidth - stringwidth_svn(text, TRUE, scale));
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
 void drawstringcenter_offset(vector position, string text, vector scale, vector rgb, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x) - offs;
+	position_x = 0.5 * (vid_conwidth - stringwidth_svn(text, FALSE, scale)) - offs;
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter_offset(vector position, string text, vector scale, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x) - offs;
+	position_x = 0.5 * (vid_conwidth - stringwidth_svn(text, TRUE, scale)) - offs;
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
