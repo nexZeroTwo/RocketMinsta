@@ -2704,7 +2704,9 @@ void HG_Attack()
 
     HG_SetCooldown(cdfield, GV("global_cooldown"), GV("cooldown"));
 
-    if(!n_bonus) {
+    if(n_bonus) {
+        self.hg_bonus -= used;
+    } else {
         if(CVAR(g_nadgets_regen_compensate)) {
             float oregen = HG_RegenTime(self);
             self.hg_ctx_ammo -= used;
@@ -2715,10 +2717,7 @@ void HG_Attack()
             HG_SetRegenTime(self, HG_RegenTime(self));
         }
     }
-    
-    if(self.hg_bonus)
-        self.hg_bonus -= used;
-    
+
     self.buff_stealth_time = time;
     self.hg_nadesused += used;
 }
