@@ -3786,3 +3786,15 @@ entity findfilter(entity e, float(entity) filter) {
 
     return world;
 }
+
+string fix_legacy_encoding(string s) {
+    var c, i, newstr;
+
+    for(i = 0, c = str2chr(s, i); c; c = str2chr(s, ++i)) {
+        if(c < 32)
+            c += 0xE000;
+        newstr = strcat(newstr, chr2str(c));
+    }
+
+    return newstr;
+}

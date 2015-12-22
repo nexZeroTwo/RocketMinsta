@@ -1200,26 +1200,30 @@ void SV_ParseClientCommand(string s) {
 			return;
 		}
 
-		if(self.jointime > 0 && time > self.jointime + 10 && time > self.nickspamtime) // allow any changes in the first 10 seconds since joining
 		if(cmd == "name" || cmd == "playermodel") // TODO also playerskin and color?
 		{
-			if(self.nickspamtime == 0 || time > self.nickspamtime + CVAR(g_nick_flood_timeout))
-				// good, no serious flood
-				self.nickspamcount = 1;
-			else
-				self.nickspamcount += 1;
-			self.nickspamtime = time + CVAR(g_nick_flood_penalty);
+            // allow any changes in the first 10 seconds since joining
+            if(self.jointime > 0 && time > self.jointime + 10 && time > self.nickspamtime) {
+                if(self.nickspamtime == 0 || time > self.nickspamtime + CVAR(g_nick_flood_timeout))
+                    // good, no serious flood
+                    self.nickspamcount = 1;
+                else
+                    self.nickspamcount += 1;
+                self.nickspamtime = time + CVAR(g_nick_flood_penalty);
 
-			if (timeoutStatus == 2) //when game is paused, no flood protection
-				self.nickspamcount = self.nickspamtime = 0;
-			
-			UnmarkAway(self);
+                if (timeoutStatus == 2) //when game is paused, no flood protection
+                    self.nickspamcount = self.nickspamtime = 0;
+
+                UnmarkAway(self);
+            }
+
+            if(cmd == "name") {
+                SetClientName(self, argv(1), TRUE, TRUE);
+                return;
+            }
+
 		}
 
-        if(cmd == "name" && self.netname != "unconnected") {
-            IRC_Announce_Name(self, substring(s, argv_start_index(1) + 1, strlen(s) - argv_start_index(1) - 2));
-        }
-        
         clientcommand(self, s);
 
 	}

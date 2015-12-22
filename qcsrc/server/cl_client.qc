@@ -6,6 +6,27 @@ void Boobs_Clear();
 
 .entity headent;
 
+void SetClientName(entity cl, string newname, float fixencoding, float iannounce) {
+    if(fixencoding)
+        newname = fix_legacy_encoding(newname);
+
+    if(cl.netname == newname)
+        iannounce = FALSE;
+
+    // FIXME: better way to detect this needed
+    if(iannounce && cl.netname != "unconnected")
+        IRC_Announce_Name(cl, newname);
+
+    if(cl.netname_strzoned) {
+        strunzone(cl.netname_strzoned);
+        cl.netname_strzoned = string_null;
+    }
+
+    newname = strzone(newname);
+    cl.netname_strzoned = newname;
+    cl.netname = newname;
+}
+
 void SpawnHeadEnt(void) {
     if(self.headent || !CVAR(r_showbboxes))
         return;
@@ -1940,6 +1961,15 @@ void ClientConnect (void)
     }
 
     Radio_ClientConnect();
+
+    // FIXME: this is a horrible hack
+    spawn() {
+        owner: self,
+        nextthink: time + 1,
+        think: inline void(void) {
+            stuffcmd(self.owner, "setinfo \"name\" \"$_cl_name\"\n");
+        }
+    };
 }
 
 /*
@@ -1955,7 +1985,12 @@ void ReadyCount();
 void ClientDisconnect (void)
 {
 	WriteSpectatorInfo(self.enemy);
-	
+
+    if(self.netname_strzoned) {
+        strunzone(self.netname_strzoned);
+        self.netname_strzoned = string_null;
+    }
+
 	if not(self.flags & FL_CLIENT)
 	{
 		print("Warning: ClientDisconnect without ClientConnect\n");
