@@ -2113,7 +2113,7 @@ void ClientDisconnect (void)
 void ChatBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.iscreature)
+	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.owner.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.chatbubbleentity = world;
@@ -2155,7 +2155,7 @@ void UpdateChatBubble()
 void TeamBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.teambubbleentity != self)
+	if (!self.owner.modelindex || self.owner.teambubbleentity != self || !self.owner.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.teambubbleentity = world;
