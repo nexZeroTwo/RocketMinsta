@@ -269,22 +269,33 @@ void Freeze_RespawnPlayer(entity p) {
         TeleportPlayer(p, p, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
 }
 
+.float triggerhurttime;
 string W_ThrowNewWeapon(entity, float, float, vector, vector);
+
 float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     if(!g_freeze)
         return 0;
-    
+
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
 
-    if(DEATH_ISENVIRONMENTAL(deathtype))
+    if(self.frozen) {
+        if(self.iceblock) {
+            remove(self.iceblock);
+            self.iceblock = world;
+        }
+        return 0;
+    }
+
+    if(deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)
         return 0;
 
-    if(!self.frozen) {
-        Boobs_DropAllAndRespawn(frce);
-        Freeze_FreezePlayer(self, attacker);
-    }
-    
+    if(deathtype == DEATH_HURTTRIGGER || deathtype == DEATH_HOOKFRAG)
+        self.triggerhurttime = -1;
+
+    Boobs_DropAllAndRespawn(frce);
+    Freeze_FreezePlayer(self, attacker);
+
     self.health = Freeze_CVar(frozen_health);
     self.armorvalue = Freeze_CVar(frozen_armor);
     
@@ -303,9 +314,9 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
             bigprint_spec(self, "", strcat("^5You were moved to a random spawn point after dying ", ftos(self.frozenrow), " times in a row"), 5);
         self.frozenrow = 0;
     }
-    
+
     AloneWarning(self.team, Freeze_AliveCheck);
-    
+
     return 1;
 }
 
@@ -451,24 +462,26 @@ void Freeze_Hook_PlayerPreThink(void) {
             return;
         }
     
-        if(!self.iceblock)
-            Freeze_SpawnIceBlock(self);
-        
-        if(self.iceblock.team != self.team) {
-            if(Freeze_CVar(iceblocks_teamcolored))
-                self.iceblock.skin = TeamColorSkin(self.team);
-            self.iceblock.team = self.team;
-            WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        if(!self.deadflag) {
+            if(!self.iceblock)
+                Freeze_SpawnIceBlock(self);
+
+            if(self.iceblock.team != self.team) {
+                if(Freeze_CVar(iceblocks_teamcolored))
+                    self.iceblock.skin = TeamColorSkin(self.team);
+                self.iceblock.team = self.team;
+                WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+            }
         }
     }
-    
+
     if(!self.freeze_waypoint) {
         if(!bait)
             PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         Freeze_SpawnWaypoint(self);
         Freeze_RecountPlayers();
     }
-    
+
     if(!bait) {
         Freeze_DangerShortcut();
         self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
