@@ -559,10 +559,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
 	float armordamage;
 	armordamage = 0;
-    
+
 	if(gameover || targ.killcount == -666)
 		return;
-    
+
+    var original_damage = damage;
+
     if not(damage_linkmode) {
         if(targ.hg_shield && DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         if(CVAR(g_nadgets_transloc_counters_shield))
@@ -894,10 +896,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar(teleport_out_of_lava) && DEATH_ISENVIRONMENTAL(deathtype)))
-                Freeze_RespawnPlayer(targ);
-            
-			damage = 0;
+            if(!DEATH_ISENVIRONMENTAL(deathtype))
+                damage = 0;
+
 			force = force * Freeze_CVar(frozen_force);
 
 			if(targ.team != attacker.team || Freeze_CVar(melt_teamdamage))
@@ -1124,6 +1125,10 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		force = normalize(attacker.origin + attacker.view_ofs - hitloc) * mirrorforce;
 		Damage(attacker, inflictor, attacker, mirrordamage, DEATH_MIRRORDAMAGE, attacker.origin, force);
 	}
+
+    if(deathtype == DEATH_HURTTRIGGER && targ.triggerhurttime < 0) {
+        Damage(attacker, inflictor, attacker, original_damage, DEATH_HURTTRIGGER, hitloc, '0 0 0');
+    }
 }
 
 vector NearestPointOnBox(entity box, vector org)

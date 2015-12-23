@@ -576,7 +576,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
     float oh = self.health;
     float oa = self.armorvalue;
-    
+
+    if(self.frozen)
+        attacker = world;
+
     GAMEEVENT("playerdamage", {
         GAMEEVENTARG(Entity, self)
         GAMEEVENTARG(Entity, inflictor)
@@ -700,7 +703,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		take = damage;
 	}
 
-    if(attacker == self)
+    if(self.frozen)
+        self.pushltime = 0;
+    else if(attacker == self)
     {
         // don't reset pushltime for self damage as it may be an attempt to
         // escape a lava pit or similar
@@ -798,6 +803,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 							setanim(self, self.anim_pain2, FALSE, TRUE, TRUE);
 					}
 
+                    if(!self.frozen)
                     if(deathtype != DEATH_ENDURANCE)
 					if(sound_allowed(MSG_BROADCAST, attacker))
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
@@ -883,6 +889,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		if(valid_damage_for_weaponstats)
 			WeaponStats_LogKill(DEATH_WEAPONOF(deathtype), self.weapon);
 
+        if(!self.frozen)
 		if(sv_gentle < 1) // TODO make a "gentle" version?
 		if(sound_allowed(MSG_BROADCAST, attacker))
 		{
@@ -910,7 +917,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
         // become fully visible
         self.alpha = 1;
-            
+
 		if(!g_freeze)
 		{
 			// clear selected player display
@@ -920,7 +927,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(!g_jailbreak)
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
-		
+
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_Present(attacker, BUFF_ADEPT)) {
@@ -955,9 +962,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         DropPowerups();
 
 		// print an obituary message
-		Obituary (attacker, inflictor, self, deathtype);
+
+        if(!self.frozen)
+            Obituary(attacker, inflictor, self, deathtype);
+
 		race_PreDie();
-		
+
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;
         self.hg_linker = world;
@@ -991,17 +1001,17 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// clear waypoints
 		WaypointSprite_PlayerDead();
 		// make the corpse upright (not tilted)
-		
+
 		if(!jb_roundover) {
 			self.angles_x = 0;
 			self.angles_z = 0;
 		}
-		
+
         Buffs_MEODP_Point_Detach(self);
-        
+
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
-        
+
         if(removenadgets == 1) // was < 2
             HG_RemoveAll(self);
         
