@@ -465,7 +465,7 @@ void Cmd_Sbar_Help(float argc)
 
 string Sbar_DefaultColumnLayout()
 {
-	return "ping pl fps time cn +ctf/fc name | alive noob kdr acc hfs dmg heal nfs"
+	return "ping pl fps time cn +ctf/fc name | alive noob kdr acc hfs dmg dpm heal nfs"
 		   " +ft,jb/kills +ft,jb/dths "
 		   "-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds "
            "-race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds "
@@ -563,6 +563,8 @@ void Cmd_Sbar_SetFields(float argc)
 			sbar_field[sbar_num_fields] = SP_FPS;
 		} else if(str == "kd" || str == "kdr" || str == "kdratio" || str == "k/d") {
 			sbar_field[sbar_num_fields] = SP_KDRATIO;
+        } else if(str == "dpm") {
+            sbar_field[sbar_num_fields] = SP_DPM;
 		} else if(str == "name" || str == "nick") {
 			sbar_field[sbar_num_fields] = SP_NAME;
 			have_name = 1;
@@ -830,7 +832,10 @@ string Sbar_GetField(entity pl, float field)
         
         case SP_DAMAGE: case SP_HEALING:
             return FormatDamage(pl.(scores[field]));
-            
+
+        case SP_DPM:
+            return FormatDamage(60 * pl.(scores[SP_DAMAGE]) / pl.(scores[SP_PLAYTIME]));
+
 		case SP_KDRATIO:
 			num = pl.(scores[SP_KILLS]);
 			denom = pl.(scores[SP_DEATHS]);
