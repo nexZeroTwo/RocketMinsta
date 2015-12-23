@@ -490,7 +490,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
 }
 
 void IRC_Announce_PlayerChat(entity plr, string msg) { if(!irc) return;
-    IRC_Privmsg(irc.cnt, irc.target, strcat("<", plr.netname, "> ", msg));
+    IRC_Privmsg(irc.cnt, irc.target, strcat("<", plr.netname, "^7> ", msg));
 }
 
 void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {
