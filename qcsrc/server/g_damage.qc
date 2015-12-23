@@ -1127,6 +1127,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	}
 
     if(deathtype == DEATH_HURTTRIGGER && targ.triggerhurttime < 0) {
+        targ.triggerhurttime = 0;
         Damage(attacker, inflictor, attacker, original_damage, DEATH_HURTTRIGGER, hitloc, '0 0 0');
     }
 }
