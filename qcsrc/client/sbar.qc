@@ -1068,17 +1068,9 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			tmp_x = sbar_fontsize_x * (sbar_size[i] - sbar_fixscoreboardcolumnwidth_iconlen - sbar_fixscoreboardcolumnwidth_marginlen) + sbar_fontsize_x;
 
             if(g_nadgets && !is_spec) {
-                vector hgt = HG_DecompressDualType(pl.(scores[SP_NADEMODE]));
-
-                drawpic(pos - tmp, HG_TypeToIcon(hgt_x, FALSE, FALSE), sbar_fontsize, HG_TypeToColor(hgt_x), aa, DRAWFLAG_NORMAL);
-                tmp_x -= sbar_fontsize_x;
-
-                if(g_nadgets_double) {
-                    drawpic(pos - tmp, HG_TypeToIcon(hgt_y, FALSE, FALSE), sbar_fontsize, HG_TypeToColor(hgt_y), aa, DRAWFLAG_NORMAL);
-                    tmp_x -= sbar_fontsize_x;
-                }
-
-                tmp_x -= sbar_fontsize_x * 0.25;
+                var p2 = pos - tmp;
+                p2 -= DrawPlayerStatusIcons(p2, sbar_fontsize_y, aa, 1, pl.(scores[SP_NADEMODE]));
+                tmp_x -= sbar_fontsize_x * 0.25 - p2_x;
             }
 
             using(drawfont = drawfont) {
@@ -3890,19 +3882,11 @@ void Sbar_DrawSelectedPlayer(void) {
     sw = stringwidth(sbar_selectedplayer_name, TRUE) * fs_x;
     namepos = pos - '0.5 0 0' * sw;
 
-    if(g_nadgets) {
-        vector n = HG_DecompressDualType(plr.(scores[SP_NADEMODE]));
-        if(n) {
-            float icons = fs_x * (1 + g_nadgets_double);
-            vector offs = '1 0 0' * (fs_x / 9);
-
-            drawpic(namepos - '0.5 0 0' * icons - offs, HG_TypeToIcon(n_x, FALSE, FALSE), fs, HG_TypeToColor(n_x) * b, a, DRAWFLAG_NORMAL);
-
-            if(g_nadgets_double)
-                drawpic(namepos - offs, HG_TypeToIcon(n_y, FALSE, FALSE), fs, HG_TypeToColor(n_y) * b, a, DRAWFLAG_NORMAL);
-
-            namepos = '0.5 0 0' * icons + offs + namepos;
-        }
+    var icons = GetPlayerStatusIconsWidth(fs_x);
+    if(icons) {
+        vector ofs = [fs_x / 9, 0];
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_y, a, b, plr.(scores[SP_NADEMODE]));
+        namepos = '0.5 0 0' * icons + ofs + namepos;
     }
 
     if(teamplay) {

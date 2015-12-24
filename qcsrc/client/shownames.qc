@@ -79,11 +79,7 @@ void Shownames_DrawPlayer(entity plr) {
 
     if(width != namesize)
         namepos_x += (namesize - width) / 2;
-    
-    vector nds;
-    if(g_nadgets)
-        nds = HG_DecompressDualType(playerslots[plr.sv_entnum].(scores[SP_NADEMODE]));
-    
+
     if(plr.sameteam) {
         drawfont = GetBigfont();
 
@@ -137,19 +133,12 @@ void Shownames_DrawPlayer(entity plr) {
 
         drawfont = sbar_font;
     }
-    
-    if(nds) {
-        float icons = textsz_x * (1 + g_nadgets_double);
 
-        drawpic(namepos - '0.5 0 0' * icons - '2 0 0', HG_TypeToIcon(nds_x, FALSE, FALSE), textsz, HG_TypeToColor(nds_x), a * 0.7, DRAWFLAG_NORMAL);
-
-        if(g_nadgets_double) {
-            drawpic(namepos - '2 0 0', HG_TypeToIcon(nds_y, FALSE, FALSE), textsz, HG_TypeToColor(nds_y), a * 0.7, DRAWFLAG_NORMAL);
-        }
-
+    if((var icons = GetPlayerStatusIconsWidth(textsz_x))) {
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - '2 0 0', textsz_x, a * 0.7, 1, playerslots[plr.sv_entnum].(scores[SP_NADEMODE]));
         namepos = '0.5 0 0' * icons + '2 0 0' + namepos;
     }
-    
+
     if(teamplay)
         drawstring(namepos, s, textsz, GetTeamRGB(GetPlayerColorForce(plr.sv_entnum)) + '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);
     else
