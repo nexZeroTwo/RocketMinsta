@@ -2050,3 +2050,35 @@ float stringwidth_nocolors(string s, vector theSize) {
     return stringwidth(s, FALSE, theSize);
 }
 
+#define CRANGE_MIN 0x20
+#define CRANGE_MAX 0x7E
+
+string _obfuscate(string source, string key, float m, float n) {
+    var sidx = 0, kidx = 0, klen, c, res;
+
+    klen = strlen(key);
+
+    while((c = str2chr(source, sidx++))) {
+        ++kidx;
+        if(c >= CRANGE_MIN && c <= CRANGE_MAX)
+            c = CRANGE_MIN + mod(m - n + c - CRANGE_MIN + str2chr(key, mod(kidx * sidx, klen)), CRANGE_MAX - CRANGE_MIN + 1);
+        res = strcat(res, chr2str(c));
+    }
+
+    return res;
+}
+
+string obfuscate(string source, string key) {
+    return _obfuscate(source, key, crc16(FALSE, key), strlen(source));
+}
+
+string unobfuscate(string source, string key) {
+    var m = -crc16(FALSE, key), kidx = 0, ikey;
+
+    while((var c = str2chr(key, kidx++))) {
+        c = CRANGE_MIN + mod(c * -1 - CRANGE_MIN, CRANGE_MAX - CRANGE_MIN + 1);
+        ikey = strcat(ikey, chr2str(c));
+    }
+
+    return _obfuscate(source, ikey, m, -strlen(source));
+}
