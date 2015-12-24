@@ -783,12 +783,17 @@ void CSQC_UpdateView(float w, float h)
 
             float bullet, maxbullets, distance = 14;
             maxbullets = getstati(STAT_CLIP_LIMIT);
+
             if(maxbullets > 0) {
-                ring_scale = CVAR(crosshair_campingrifle_ring_size) * (10 / 128);
                 bullets = bound(0, getstati(STAT_CLIP_LOADED), maxbullets);
-            }
-            else
+            } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER) {
+                maxbullets = 20;
+                bullets = bound(0, (1 - getstatf(STAT_ZAPPER_HEAT)) * maxbullets, maxbullets);
+            } else
                 bullets = 0;
+
+            if(bullets)
+                ring_scale = CVAR(crosshair_campingrifle_ring_size) * (10 / 128);
             
             if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active)))
             {
