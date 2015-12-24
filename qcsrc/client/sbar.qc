@@ -3882,7 +3882,7 @@ void Sbar_DrawSelectedPlayer(void) {
     var icons = GetPlayerStatusIconsWidth(fs_x);
     if(icons) {
         vector ofs = [fs_x / 9, 0];
-        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_y, a, b, plr.(scores[SP_NADEMODE]));
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_x, a, b, plr.(scores[SP_NADEMODE]));
         namepos = '0.5 0 0' * icons + ofs + namepos;
     }
 
