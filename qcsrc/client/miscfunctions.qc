@@ -715,3 +715,35 @@ void Draw2d_ThroughWarpZones(void) {
     draw2d_warpstage = FALSE;
     self.draw2d_real();
 }
+
+vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float pstat) {
+    // 1st byte: nadgets
+    if(g_nadgets) {
+        var nadgets = HG_DecompressDualType(pstat & 0xFF);
+        var scale = [height, height];
+
+        drawpic(pos, HG_TypeToIcon(nadgets_x, FALSE, FALSE), scale, HG_TypeToColor(nadgets_x) * b, a, DRAWFLAG_NORMAL);
+        pos_x += scale_x;
+
+        if(g_nadgets_double) {
+            drawpic(pos, HG_TypeToIcon(nadgets_y, FALSE, FALSE), scale, HG_TypeToColor(nadgets_y) * b, a, DRAWFLAG_NORMAL);
+            pos_x += scale_x;
+        }
+    }
+
+    return pos;
+}
+
+float GetPlayerStatusIconsWidth(float height) {
+    var width = 0;
+
+    // 1st byte: nadgets
+    if(g_nadgets) {
+        width += height;
+
+        if(g_nadgets_double)
+            width += height;
+    }
+
+    return width;
+}
