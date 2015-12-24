@@ -483,6 +483,7 @@ void MapVote_Init()
 
 	mv_active = 1;
 	mv_selection = -1;
+    mouse_enabled = TRUE;
 
 	ssdir = ReadString();
     q3ssdir = "levelshots";
