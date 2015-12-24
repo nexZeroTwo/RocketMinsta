@@ -276,6 +276,7 @@ void CSQC_Init(void)
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
+    registercvar("_secondary_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
@@ -1922,6 +1923,7 @@ void Ent_Init()
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
     g_weaponarena_secondary = ReadInt24_t();
+    cvar_set("_secondary_select_available", ftos(!!(g_weaponarena_secondary & (g_weaponarena_secondary - 1))));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
