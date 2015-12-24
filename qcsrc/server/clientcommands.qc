@@ -632,7 +632,7 @@ void SV_ParseClientCommand(string s) {
             return;
         
         if(tokens < 2) {
-            W_ShowMenu(TRUE);
+            W_ShowMenu(2);
             return;
         }
 
