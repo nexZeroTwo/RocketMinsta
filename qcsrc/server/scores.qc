@@ -266,7 +266,7 @@ void Score_ClearAll()
 			continue;
 		for(i = 0; i < MAX_SCORE; ++i)
 		{
-            if(i == SP_COUNTRY || i == SP_NADEMODE)
+            if(i == SP_COUNTRY || i == SP_STATUSICONS)
                 continue;
             
 			if(sk.(scores[i]) != 0)

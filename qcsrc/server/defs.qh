@@ -823,3 +823,6 @@ var .float w_button_secondary;
 
 .float accstat_shots;
 .float accstat_hits;
+
+.float w_secondary;
+.float w_secondary_nextround;

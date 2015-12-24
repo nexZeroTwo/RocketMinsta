@@ -717,10 +717,11 @@ void Draw2d_ThroughWarpZones(void) {
 }
 
 vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float pstat) {
+    var scale = [height, height];
+
     // 1st byte: nadgets
     if(g_nadgets) {
         var nadgets = HG_DecompressDualType(pstat & 0xFF);
-        var scale = [height, height];
 
         drawpic(pos, HG_TypeToIcon(nadgets_x, FALSE, FALSE), scale, HG_TypeToColor(nadgets_x) * b, a, DRAWFLAG_NORMAL);
         pos_x += scale_x;
@@ -729,6 +730,41 @@ vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float p
             drawpic(pos, HG_TypeToIcon(nadgets_y, FALSE, FALSE), scale, HG_TypeToColor(nadgets_y) * b, a, DRAWFLAG_NORMAL);
             pos_x += scale_x;
         }
+    }
+
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary & (g_weaponarena_secondary - 1)) {
+        var winfo = get_weaponinfo((pstat & 0xFF00) / 0x100);
+        var clr = winfo.w_color * b;
+
+        using(drawfont = sbar_rmbigfont)
+            drawstring_aspect(pos, winfo.message2, scale, clr, a, DRAWFLAG_NORMAL);
+
+        var f = 0.5;
+        var l = height * f;
+        var s = height * (1 - f) * 0.5;
+        var k = l + s;
+        var j = k + s;
+
+        var p1 = [s, 0] + pos;
+        var p2 = [k, 0] + pos;
+        var p3 = [j, s] + pos;
+        var p4 = [j, k] + pos;
+        var p5 = [k, j] + pos;
+        var p6 = [s, j] + pos;
+        var p7 = [0, k] + pos;
+        var p8 = [0, s] + pos;
+
+        drawline(2, p1, p2, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p2, p3, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p3, p4, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p4, p5, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p5, p6, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p6, p7, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p7, p8, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p8, p1, clr, a, DRAWFLAG_NORMAL);
+
+        pos_x += scale_x;
     }
 
     return pos;
@@ -744,6 +780,10 @@ float GetPlayerStatusIconsWidth(float height) {
         if(g_nadgets_double)
             width += height;
     }
+
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary)
+        width += height;
 
     return width;
 }

@@ -1097,6 +1097,8 @@ float g_weaponratefactor;
 float g_weapondamagefactor;
 float g_weaponforcefactor;
 
+#define g_weaponarena_secondary_selectable (g_weaponarena_secondary & (g_weaponarena_secondary - 1))
+
 float start_weapons;
 float start_items;
 float start_ammo_shells;

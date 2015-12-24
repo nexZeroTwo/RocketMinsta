@@ -1148,7 +1148,7 @@ float HG_PlayerGrenadeType(entity e) {
     float picked = HG_NameToType(CVAR_STR(g_nadgets_type));
     float argc = tokenize_console(HG_SelectableTypes(hg_context_isalt));
     float i;
-    
+
     if(argc)
         for(i = 0; i < argc; ++i)
             if(e.hg_ctx_type_picked == HG_NameToType(argv(i))) {
@@ -1175,8 +1175,9 @@ void HG_SetGrenadeType(entity p, float t) {
     p.hg_ctx_type = t;
     
     if(p.scorekeeper) {
-        p.scorekeeper.SendFlags |= pow(2, SP_NADEMODE);
-        p.scorekeeper.(scores[SP_NADEMODE]) = HG_CompressDualType(p.hg_type1, p.hg_type2);
+        var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFFFF00;
+        p.scorekeeper.(scores[SP_STATUSICONS]) = s + HG_CompressDualType(p.hg_type1, p.hg_type2) & 0x000000FF;
+        p.scorekeeper.SendFlags |= pow(2, SP_STATUSICONS);
     }
 }
 

@@ -1,3 +1,4 @@
+
 void W_Reload()
 {
 	if(self.switchweapon == self.weapon)
@@ -553,12 +554,32 @@ void W_FixWeaponSet(void) {
     if(g_weaponarena && g_weaponarena_secondary) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
 
-        if(self.BUTTON_ATCK && w & g_weaponarena_secondary) {
-            self.weapons &~= g_weaponarena_secondary;
+        var secondary = if(self.w_secondary)
+            pow(2, self.w_secondary - 1)
+        else
+            g_weaponarena_secondary;
+
+        if(self.BUTTON_ATCK && w & secondary) {
+            self.weapons &~= secondary;
             self.weapons |= g_weaponarena;
         } else if(self.BUTTON_ATCK2 && w & g_weaponarena) {
             self.weapons &~= g_weaponarena;
-            self.weapons |= g_weaponarena_secondary;
+            self.weapons |= secondary;
+        }
+    }
+}
+
+void W_SetSecondary(entity p, float w) {
+    p.w_secondary = w;
+
+    if(p.scorekeeper) {
+        var o = p.scorekeeper.(scores[SP_STATUSICONS]);
+        var s = o & 0xFFFF00FF;
+        var n = s + (w * 0x100) & 0x0000FF00;
+
+        if(n != o) {
+            p.scorekeeper.(scores[SP_STATUSICONS]) = n;
+            p.scorekeeper.SendFlags |= pow(2, SP_STATUSICONS);   
         }
     }
 }
@@ -576,4 +597,28 @@ void W_RegisterHitForHitstreak(entity attacker, float deathtype) {
             W_Uzi_RegisterHitForHitstreak(attacker, deathtype);
             break;
     }
+}
+
+void W_WriteSecondarySelect(void) {
+    msg_entity = self;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_SECONDARYSELECT);
+}
+
+float W_ShowMenu(float always) {
+    if(!g_weaponarena_secondary_selectable)
+        return FALSE;
+
+    if(clienttype(self) != CLIENTTYPE_REAL)
+        return FALSE;
+
+    if((self.w_secondary && self.BUTTON_CHAT) && always < 2)
+        return FALSE;
+    
+    if(always || !self.w_secondary) {
+        W_WriteSecondarySelect();
+        return TRUE;
+    }
+    
+    return FALSE;
 }

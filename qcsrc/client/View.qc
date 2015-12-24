@@ -853,12 +853,25 @@ void CSQC_UpdateView(float w, float h)
 	}
 
     NS_Draw();
+    WS_Draw();
 	
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
 		NextFrameCommand = string_null;
 	}
+
+    if(mouse_enabled) {
+        if(mouse_pos == '-1 -1')
+            mouse_pos = [vid_conwidth, vid_conheight] * 0.5;
+        else {
+            mouse_pos = mouse_pos + getmousepos();
+            mouse_pos = [bound(0, mouse_pos_x, vid_conwidth),
+                         bound(0, mouse_pos_y, vid_conheight)];
+        }
+
+        drawpic(mouse_pos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    }
 
 	// we must do this check AFTER a frame was rendered, or it won't work
 	if(cs_project_is_b0rked == 0)

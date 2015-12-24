@@ -820,6 +820,8 @@ void PostInit(void)
 	DPRM_Start();
 	RegisterMasterServers();
 
+    mouse_pos = '-1 -1';
+
 	postinit = true;
 }
 
@@ -1399,6 +1401,9 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
     if(NS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
 
+    if(WS_InputEvent(bInputType, nPrimary, nSecondary))
+        return TRUE;
+
 	return FALSE;
 }
 
@@ -1913,6 +1918,7 @@ void Ent_Init()
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
+    g_weaponarena_secondary = ReadInt24_t();
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
@@ -2331,6 +2337,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_NADGETSELECT:
             Net_ReadNadgetSelect();
+            return TRUE;
+        case TE_CSQC_SECONDARYSELECT:
+            Net_ReadWeaponSelect();
             return TRUE;
     }
 
