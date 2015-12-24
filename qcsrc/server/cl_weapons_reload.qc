@@ -198,6 +198,7 @@ float W_Clip_Consume(float cost) {
 
     self.w_clip_loaded -= cost;
     W_Clip_CheckFull();
+    self.w_clip_saved = self.w_clip_loaded;
 
     return TRUE;
 }
