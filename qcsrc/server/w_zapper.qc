@@ -591,7 +591,7 @@ void W_Zapper_Cooloff(void) {
     if(self.zapper_heat < 0)
         return;
 
-    float a = bound(0, (time - self.zapper_coolofftime) * CVAR(g_balance_zapper_primary_cooloff_accel), 1);
+    float a = bound(0, (time - self.zapper_coolofftime) * CVAR(g_balance_zapper_primary_cooloff_accel), Buffs_ClipLimitMultiplier(self));
 
     if(!a)
         return;
