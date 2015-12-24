@@ -880,6 +880,8 @@ void spawnfunc_worldspawn (void)
         if(warpzone_chain_begin)
             cvar_settemp("sv_cullentities_nevercullbmodels", "1");
     }, INITPRIO_FINDTARGET);
+
+    utf8_enable();
 }
 
 void spawnfunc_light (void)

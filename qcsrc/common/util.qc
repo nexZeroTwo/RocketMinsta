@@ -1174,76 +1174,76 @@ float boxesoverlap(vector m1, vector m2, vector m3, vector m4) {return m2_x >= m
 // requires the same, but is a stronger condition
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs) {return smins_x >= bmins_x && smaxs_x <= bmaxs_x && smins_y >= bmins_y && smaxs_y <= bmaxs_y && smins_z >= bmins_z && smaxs_z <= bmaxs_z;};
 
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t w)
+float textLengthUpToWidth(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w)
 {
-	float ICanHasKallerz;
+    float ICanHasKallerz;
 
-	// detect color codes support in the width function
-	ICanHasKallerz = (w("^7") == 0);
+    // detect color codes support in the width function
+    ICanHasKallerz = (w("^7", theSize) == 0);
 
-	// STOP.
-	// The following function is SLOW.
-	// For your safety and for the protection of those around you...
-	// DO NOT CALL THIS AT HOME.
-	// No really, don't.
-	if(w(theText) <= maxWidth)
-		return strlen(theText); // yeah!
+    // STOP.
+    // The following function is SLOW.
+    // For your safety and for the protection of those around you...
+    // DO NOT CALL THIS AT HOME.
+    // No really, don't.
+    if(w(theText, theSize) <= maxWidth)
+        return strlen(theText); // yeah!
 
-	// binary search for right place to cut string
-	float ch;
-	float left, right, middle; // this always works
-	left = 0;
-	right = strlen(theText); // this always fails
-	do
-	{
-		middle = floor((left + right) / 2);
-		if(w(substring(theText, 0, middle)) <= maxWidth)
-			left = middle;
-		else
-			right = middle;
-	}
-	while(left < right - 1);
+    // binary search for right place to cut string
+    float ch;
+    float left, right, middle; // this always works
+    left = 0;
+    right = strlen(theText); // this always fails
+    do
+    {
+        middle = floor((left + right) / 2);
+        if(w(substring(theText, 0, middle), theSize) <= maxWidth)
+            left = middle;
+        else
+            right = middle;
+    }
+    while(left < right - 1);
 
-	if(ICanHasKallerz)
-	{
-		// NOTE: when color codes are involved, this binary search is,
-		// mathematically, BROKEN. However, it is obviously guaranteed to
-		// terminate, as the range still halves each time - but nevertheless, it is
-		// guaranteed that it finds ONE valid cutoff place (where "left" is in
-		// range, and "right" is outside).
+    if(ICanHasKallerz)
+    {
+        // NOTE: when color codes are involved, this binary search is,
+        // mathematically, BROKEN. However, it is obviously guaranteed to
+        // terminate, as the range still halves each time - but nevertheless, it is
+        // guaranteed that it finds ONE valid cutoff place (where "left" is in
+        // range, and "right" is outside).
+        
+        // terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
+        // and decrease left on the basis of the chars detected of the truncated tag
+        // Even if the ^xrgb tag is not complete/correct, left is decreased
+        // (sometimes too much but with a correct result)
+        // it fixes also ^[0-9]
+        while(left >= 1 && substring(theText, left-1, 1) == "^")
+            left-=1;
 
-		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
-		// and decrease left on the basis of the chars detected of the truncated tag
-		// Even if the ^xrgb tag is not complete/correct, left is decreased
-		// (sometimes too much but with a correct result)
-		// it fixes also ^[0-9]
-		while(left >= 1 && substring(theText, left-1, 1) == "^")
-			left-=1;
-
-		if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
-			left-=2;
-		else if (left >= 3 && substring(theText, left-3, 2) == "^x")
-			{
-				ch = str2chr(theText, left-1);
-				if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
-					left-=3;
-			}
-		else if (left >= 4 && substring(theText, left-4, 2) == "^x")
-			{
-				ch = str2chr(theText, left-2);
-				if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
-				{
-					ch = str2chr(theText, left-1);
-					if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
-						left-=4;
-				}
-			}
-	}
-
-	return left;
+        if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
+            left-=2;
+        else if (left >= 3 && substring(theText, left-3, 2) == "^x")
+            {
+                ch = str2chr(theText, left-1);
+                if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
+                    left-=3;
+            }
+        else if (left >= 4 && substring(theText, left-4, 2) == "^x")
+            {
+                ch = str2chr(theText, left-2);
+                if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
+                {
+                    ch = str2chr(theText, left-1);
+                    if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
+                        left-=4;
+                }
+            }
+    }
+    
+    return left;
 }
 
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
+string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
 	float cantake;
 	float take;
@@ -1251,7 +1251,7 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 
 	s = getWrappedLine_remaining;
 
-	cantake = textLengthUpToWidth(s, w, tw);
+	cantake = textLengthUpToWidth(s, w, fontSize, tw);
 	if(cantake > 0 && cantake < strlen(s))
 	{
 		take = cantake - 1;
@@ -1279,12 +1279,12 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 	}
 }
 
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw)
+string textShortenToWidth(string theText, float maxWidth, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
-	if(tw(theText) <= maxWidth)
+	if(tw(theText, fontSize) <= maxWidth)
 		return theText;
 	else
-		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("..."), tw)), "...");
+		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("...", fontSize), fontSize, tw)), "...");
 }
 
 float isGametypeInFilter(float gt, float tp, string pattern)
@@ -1954,6 +1954,100 @@ void va_test(string fmt, ...) { VA_INIT
             case 'v': print("vector ", vtos((vector)v), "\n"); break;
         }
     }
+}
+
+void load_fonts(void) {
+#ifndef SVQC
+    if(cvar("utf8_enable")) {
+        var sizes = " ";
+
+        for(var i = 7; i <= 22; ++i)
+            sizes = strcat(sizes, ftos(i), " ");
+
+
+        var font_small  = "gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_big    = "gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_mono   = "gfx/conchars,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+
+        if(cvar("rm_fonts_prefer_ttf")) {
+            font_small  = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
+            font_big    = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
+        }
+
+        cvar_set("r_font_disable_freetype", "0");
+        cvar_set("r_font_diskcache", "1");
+
+        localcmd("loadfont default  ", font_small, "\n");
+        localcmd("loadfont console  ", font_mono, "\n");
+        localcmd("loadfont chat     ", font_small, "\n");
+        localcmd("loadfont notify   ", font_small, "\n");
+        localcmd("loadfont infobar  ", font_small, "\n");
+        localcmd("loadfont user0    ", font_small, sizes, "\n");
+        localcmd("loadfont user1    ", font_small, sizes, "\n");
+        localcmd("loadfont user2    ", font_big, sizes, "\n");
+        localcmd("loadfont user3    ", font_madoka, sizes, "\n");
+        localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
+    } else {
+        cvar_set("r_font_disable_freetype", "1");
+
+        localcmd("loadfont default  gfx/vera-sans\n");
+        localcmd("loadfont console  gfx/conchars\n");
+        localcmd("loadfont chat     gfx/vera-sans\n");
+        localcmd("loadfont notify   gfx/vera-sans\n");
+        localcmd("loadfont infobar  gfx/vera-sans-big\n");
+        localcmd("loadfont user0    gfx/vera-sans\n");
+        localcmd("loadfont user1    gfx/vera-sans\n");
+        localcmd("loadfont user2    gfx/vera-sans-big\n");
+        localcmd("loadfont user3    gfx/madoka-rune\n");
+        localcmd("loadfont user4    gfx/iceland\n");
+    }
+    localcmd("sbar_columns_set default\n");
+#endif
+}
+
+void utf8_report(void) {
+#ifdef CSQC
+    localcmd("sendcvar utf8_enable\n");
+#endif
+}
+
+void utf8_enable(void) {
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE)) {
+        load_fonts();
+        return;
+    }
+
+    cvar_set("utf8_enable", "1");
+    cvar_set("utf8_oldfont_for_oldchars", "0");
+
+    utf8_report();
+    load_fonts();
+}
+
+void utf8_disable(void) {
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
+        return;
+
+    cvar_set("utf8_enable", "0");
+
+    utf8_report();
+    load_fonts();
+}
+
+#ifdef SVQC
+float stringwidth(string s, float handle_colors, vector text_size) {
+    return (if(handle_colors) strlennocol else strlen)(s) * text_size_x;
+}
+#endif
+
+float stringwidth_colors(string s, vector theSize) {
+    return stringwidth(s, TRUE, theSize);
+}
+
+float stringwidth_nocolors(string s, vector theSize) {
+    return stringwidth(s, FALSE, theSize);
 }
 
 #define CRANGE_MIN 0x20

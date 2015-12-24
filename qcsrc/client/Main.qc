@@ -252,7 +252,6 @@ void CSQC_Init(void)
 	
 	vote_statstring = strzone("");
 	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
-	rm_wm_width = stringwidth(rm_watermark, TRUE);
 	
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
@@ -293,6 +292,8 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+
+    utf8_disable();
     WarpZone_Shutdown();
 
 	HUDSkin_Unload();
@@ -570,6 +571,11 @@ void RegisterMasterServers(void) {
     AddMasterServer("dpmaster.vecxis.com"); // Vecxis master server
 }
 
+void InitFonts(void) {
+    utf8_enable();
+    SetMadokaFont(MDKF_AUTO);
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -662,7 +668,6 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
-			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 38:
             // fight evil with evil
             if(CVAR(cl_gunalign) == 3)
@@ -700,9 +705,13 @@ void PostInit(void)
                 cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
         case 54:
             localcmd("seta r_equalize_entities_fullbright 1\n");
+        case 55:
+            localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+        case 56:
+            localcmd("seta r_font_size_snapping 1\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 55\n");
+		localcmd("seta rm_initialized 57\n");
 		RM_OUTDATED
 		break;
 	}
@@ -779,14 +788,7 @@ void PostInit(void)
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
-	
-	//loadfont("user3", "gfx/madoka-rune");
-	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
-	localcmd("loadfont user3 gfx/madoka-rune\n");
-	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
-	localcmd("loadfont infobar gfx/vera-sans-big\n");
-	SetMadokaFont(MDKF_AUTO);
-	
+
 	if(sv_showspecs_extra)
 		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
 	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
@@ -819,6 +821,7 @@ void PostInit(void)
 	FPSReporter_Init();
 	DPRM_Start();
 	RegisterMasterServers();
+    InitFonts();
 
     mouse_pos = '-1 -1';
 
@@ -1165,7 +1168,7 @@ void ShotOrg_Draw2D()
 	coord2d_topleft = project_3d_to_2d(self.origin + view_up * 4 - view_right * 4);
 	coord2d_topright = project_3d_to_2d(self.origin + view_up * 4 + view_right * 4);
 
-	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE));
+	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE, '1 1'));
 
 	coord2d = coord2d_topleft;
 	if(fs_x < 8)

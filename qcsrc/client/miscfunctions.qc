@@ -1,4 +1,3 @@
-var float(string text, float handleColors) stringwidth;
 
 entity players;
 entity teams;
@@ -410,18 +409,20 @@ void drawstring_expanding(vector position, string text, vector scale, vector rgb
 {
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
+    scale = scale * sz;
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, FALSE)), text, scale * sz, rgb, alpha * (1 - fadelerp), flag);
+	drawstring(position + expandingbox_resize_centered_box_offset(sz, [stringwidth(text, FALSE, scale), scale_y], 1), text, scale, rgb, alpha * (1 - fadelerp), flag);
 }
 
 void drawcolorcodedstring_expanding(vector position, string text, vector scale, float alpha, float flag, float fadelerp)
 {
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
+    scale = scale * sz;
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
+	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, [stringwidth(text, TRUE, scale), scale_y], 1), text, scale, alpha * (1 - fadelerp), flag);
 }
 
 void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
@@ -454,8 +455,7 @@ void URI_Get_Callback(float id, float status, string data)
 	}
 }
 
-float stringwidth_svn(string text, float handleColors, vector fontSize);
-#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth_svn(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
+#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
 
 // drawstring wrapper to draw a string as large as possible with preserved aspect ratio into a box
 void drawstring_aspect(vector pos, string text, vector sz, vector color, float alpha, float drawflag) {

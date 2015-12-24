@@ -1634,6 +1634,8 @@ float GameCommand_Generic(string command)
         print("Result: ", ftos(ff), " ", ss, " ", vtos(vv), "\n");
         return TRUE;
 #endif
+    } else if(argv(0) == "loadfonts") {
+        load_fonts();
     } else if(argv(0) == "obfs") {
         var _s = argv(1);
         var _k = argv(2);

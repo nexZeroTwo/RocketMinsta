@@ -785,6 +785,7 @@ float IsDifferentTeam(entity a, entity b);
 float sv_shownames;
 
 .float client_dprmversion;
+.float client_utf8;
 
 .float antilag_debug;
 
@@ -826,3 +827,5 @@ var .float w_button_secondary;
 
 .float w_secondary;
 .float w_secondary_nextround;
+
+.string netname_strzoned;

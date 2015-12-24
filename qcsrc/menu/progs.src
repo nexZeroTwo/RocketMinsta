@@ -28,6 +28,10 @@ draw.qh
 skin.qh
 nexuiz/util.qh
 
+../common/flag_anim.qc
+../common/util.qc
+stringwidth_hack.qh
+
 oo/classdefs.h
 	classes.c
 
@@ -36,8 +40,6 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
-../common/flag_anim.qc
-../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
 menu.qc

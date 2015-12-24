@@ -84,8 +84,8 @@ string MapVote_FormatMapItem(float id, string map, float count, float maxwidth)
 	}
 	else
 		post = "";
-	maxwidth -= stringwidth(pre, FALSE) + stringwidth(post, FALSE);
-	map = textShortenToWidth(map, maxwidth, stringwidth_nocolors);
+	maxwidth -= stringwidth(pre, FALSE, sbar_fontsize) + stringwidth(post, FALSE, sbar_fontsize);
+	map = textShortenToWidth(map, maxwidth, sbar_fontsize, stringwidth_nocolors);
 	return strcat(pre, map, post);
 }
 
@@ -137,13 +137,13 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 
 	float oldx = o_x;
 	o_x -= 10 * ipol_swingInOut(mv_hoveralpha[id]);
-	
+
 	drawGameTypeLine(MapVote_FormatMapItem(id, gametype_Name_to_LongName(gtype), count, 500), MapVote_RGB(id), 1.4, a);
 	if(s != "") for(i = 0; i < n; ++i) {
 		drawGameTypeLine(argv(i), '1 1 1', 1, a);
 	}
 
-	drawGameTypeLine("", '1 1 1', 01, 1);
+	drawGameTypeLine("", '1 1 1', 1, 1);
 	o_x = oldx;
 	return o;
 }
@@ -186,9 +186,9 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	drawfont = sbar_font;
 	pos_y = pos_y + img_size_y;
 
-	label = MapVote_FormatMapItem(id, map, count, tsize / sbar_fontsize_x);
+	label = MapVote_FormatMapItem(id, map, count, tsize);
 
-	text_size = stringwidth(label, false) * sbar_fontsize_x;
+	text_size = stringwidth(label, false, sbar_fontsize);
 
 	pos_x -= text_size*0.5;
 	txtpos = pos;
@@ -221,9 +221,9 @@ void MapVote_DrawAbstain(vector pos, float isize, float tsize, float count, floa
 	drawfont = sbar_font;
 	pos_y = pos_y + sbar_fontsize_y;
 
-	label = MapVote_FormatMapItem(id, "Don't care", count, tsize / sbar_fontsize_x);
+	label = MapVote_FormatMapItem(id, "Don't care", count, tsize);
 
-	text_size = stringwidth(label, false) * sbar_fontsize_x;
+	text_size = stringwidth(label, false, sbar_fontsize);
 
 	pos_x -= text_size*0.5;
 	drawstring(pos, label, sbar_fontsize, rgb, 1, DRAWFLAG_NORMAL);
@@ -268,13 +268,13 @@ void MapVote_Draw()
 
 	pos_y = ymin;
 	pos_z = 0;
-	pos_x = center - stringwidth(if(gametypevote) "Decide the gametype" else "Vote for a map", false) * 0.5 * 24;
+	pos_x = center - stringwidth(if(gametypevote) "Decide the gametype" else "Vote for a map", false, '24 24') * 0.5;
 	drawstring(pos, if(gametypevote) "Decide the gametype" else "Vote for a map", '24 24 0', '1 1 1', 1, DRAWFLAG_NORMAL);
 	pos_y += 26;
 
 	i = ceil(max(0, mv_timeout - time));
 	map = strcat(ftos(i), " seconds left");
-	pos_x = center - stringwidth(map, false) * 0.5 * 16;
+	pos_x = center - stringwidth(map, false, '16 16') * 0.5;
 	drawstring(pos, map, '16 16 0', '0 1 0', 1, DRAWFLAG_NORMAL);
 	pos_y += 22;
 	pos_x = xmin;
@@ -340,7 +340,7 @@ void MapVote_Draw()
 		img_size = img_fullsize;
 		
 		o_y += img_size_y + 10;
-		o_x += img_size_x / 2 - ((stringwidth_nocolors(mapvote_choosenmap) / 2) * sz_x);
+		o_x += img_size_x / 2 - (stringwidth_nocolors(mapvote_choosenmap, sz) / 2);
 		
 		drawstring(o, mapvote_choosenmap, sz, '1 1 1' * alpha * alpha, alpha * alpha, DRAWFLAG_NORMAL);
 	}

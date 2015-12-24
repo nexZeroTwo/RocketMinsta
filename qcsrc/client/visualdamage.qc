@@ -6,8 +6,6 @@
 .vector vd_projected;
 .string vd_str;
 .string vd_str2;
-.float vd_width;
-.float vd_width2;
 .float vd_fullwidth;
 .float vd_culled;
 
@@ -162,8 +160,9 @@ void VisualDamage_Draw(void) {
         if(self.vd_type & VDMG_TYPE_NOTPLAYERTARGET)
             clr = clr * 0.9;
         
-        sw = self.vd_width * fs;
-        sw2 = self.vd_width2 * fs;
+        var fs_v = [fs, fs];
+        sw = stringwidth(self.vd_str, FALSE, fs_v);
+        sw2 = stringwidth(self.vd_str2, FALSE, fs_v);
         
         if(self.vd_type & VDMG_TYPE_LETHAL) {
             a2 = bound(0, self.alpha * 3 - 2, 1);
@@ -216,18 +215,21 @@ void VisualDamage_SetText(entity e) {
     }
 
     e.vd_str = s;
+    var w1, w2;
+    var fs = VDMG_FONTSIZE * '1 1';
+
     if(e.vd_str) {
-        e.vd_width = stringwidth(s, FALSE);
+        w1 = stringwidth(s, FALSE, fs);
         e.vd_str = strzone(s);
     }
 
     e.vd_str2 = s2;
     if(e.vd_str2) {
-        e.vd_width2 = stringwidth(s2, FALSE);
+        w2 = stringwidth(s2, FALSE, fs);
         e.vd_str2 = strzone(s2);
     }
 
-    e.vd_fullwidth = (e.vd_width + e.vd_width2) * VDMG_FONTSIZE;
+    e.vd_fullwidth = w1 + w2;
     drawfont = sbar_font;
 }
 

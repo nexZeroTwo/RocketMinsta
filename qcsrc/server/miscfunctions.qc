@@ -952,6 +952,7 @@ void GetCvars(float f)
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
     GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
+    GetCvars_handleFloat(s, f, client_utf8, "utf8_enable");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -3786,4 +3787,16 @@ entity findfilter(entity e, float(entity) filter) {
             return e;
 
     return world;
+}
+
+string fix_legacy_encoding(string s) {
+    var c, i, newstr;
+
+    for(i = 0, c = str2chr(s, i); c; c = str2chr(s, ++i)) {
+        if(c < 32)
+            c += 0xE000;
+        newstr = strcat(newstr, chr2str(c));
+    }
+
+    return newstr;
 }

@@ -94,14 +94,12 @@ void fillNexuizRMConfigDialog(entity me)
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "althud", "Use an alternative HUD layout"));
             setDependent(e, "rm_oldhud", 0, 0);
-	me.TR(me);
-		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use default Nexuiz fonts"));
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(1, "nobigtext", "Enable big notifications"));
     me.setFirstColumn(me, me.firstColumn + 0.1);
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidebigcomments", "with comments"));
-        setDependent(e, "rm_nobigtext", 0, 0);
+            setDependent(e, "rm_nobigtext", 0, 0);
     me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "visualscore", "Scoring notifications in the HUD"));
@@ -116,12 +114,31 @@ void fillNexuizRMConfigDialog(entity me)
         me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "cl_lowammowarnings", "Low ammo warnings"));
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
+
 	me.setFirstColumn(me, me.firstColumn - 0.1);
-		me.TR(me);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Font settings:"));
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "rm_fonts_prefer_ttf",
+            if(checkextension("DP_RM_CVAR_ALTERTYPE"))
+                "Prefer TTF over legacy bitmap fonts"
+            else
+                "Prefer TTF over legacy bitmap fonts (restart required)"
+        ));
+            setDependent(e, "utf8_enable", 1, 1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "r_font_size_snapping", "Try to stick to good-looking font sizes"));
+            setDependent(e, "utf8_enable", 1, 1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use old-style fonts for large text"));
+
+    me.setFirstColumn(me, me.firstColumn - 0.1);
+	me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 14, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 17, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }

@@ -1322,7 +1322,10 @@ void GameCommand(string command)
 
     if(argv(0) == "dprmstats") {
         FOR_EACH_REALCLIENT(e)
-            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "\n");
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", strcat(
+                    if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "^7, ",
+                    if(e.client_utf8) "^2UTF8 on" else "^1UTF8 off", "\n"));
+
         return;
     }
 
