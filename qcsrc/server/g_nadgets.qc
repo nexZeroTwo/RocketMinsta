@@ -416,7 +416,7 @@ void HG_Plasma_Projectile(float kickangle) {
     proj.hg_plasma_projdist = CVAR(g_nadgets_plasma_projectile_maxdistance);
     proj.hg_plasma_projdps_next = time + CVAR(g_nadgets_plasma_projectile_dps_pause) + random() * CVAR(g_nadgets_plasma_projectile_dps_pause_randomfactor);
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
-    proj.csqcprojectile_extradata = hg_plasma_group;
+    proj.csqcprojectile_extradata = hg_plasma_group & 0xFF;
     proj.heal_emitter_radius = proj.hg_plasma_projrange;
     proj.damage_noinfo = TRUE;
     
