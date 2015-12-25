@@ -1,3 +1,4 @@
+
 void LightingArc_Draw(void) {
     string tex;
     if(rm_teamlasers) switch(self.team) {

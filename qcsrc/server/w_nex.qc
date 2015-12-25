@@ -1,3 +1,9 @@
+
+.entity nex_charge_effect;
+.float nex_charge_readytime;
+.float nex_charge_expiretime;
+.float nex_burst_counter;
+
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	vector v;
 	v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
@@ -77,9 +83,6 @@ void W_Nex_Attack2(void) {
         self.ammo_cells = self.ammo_cells - cost;
 }
 
-.entity nex_charge_effect;
-.float nex_charge_expiretime;
-
 void W_Nex_ChargeEffect_Think(void) {
     if(!self.owner.iscreature || !PlayerMayFire(self.owner)) {
         if(self == self.owner.nex_charge_effect)
@@ -146,6 +149,18 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     self.nex_charge_effect = e;
 }
 
+void W_Nex_Attack2_Burst(void) {
+    W_Nex_Attack2();
+    ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
+
+    self.nex_burst_counter -= 1;
+
+    if(self.nex_burst_counter && PlayerMayFire(self))
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_burst_refire), W_Nex_Attack2_Burst);
+    else
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
+}
+
 void W_Nex_Attack2_Wait(void) {
     W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
 
@@ -156,21 +171,20 @@ void W_Nex_Attack2_Wait(void) {
     var ccnt = -1;
     var rate = W_WeaponRateFactor();
 
-    if(PlayerMayFire(self) && max(0, self.nex_charge_expiretime - time) <= CVAR(g_balance_nex_secondary_chargeholdtime_required) * rate) {
-        W_Nex_Attack2();
-        ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * rate;
+    if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
+        self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
+        W_Nex_Attack2_Burst();
     } else {
         ccnt = -2;
         stopsound(self, CHAN_WEAPON);
         ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
     }
 
     if(self.nex_charge_effect) {
         self.nex_charge_effect.cnt = ccnt;
         self.nex_charge_effect = world;
     }
-
-    weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
 }
 
 void W_Nex_SetClipContext(void) {
@@ -206,13 +220,18 @@ float w_nex(float req)
             if(self.w_button_secondary && CVAR(g_balance_nex_secondary))
             if(W_Clip_TryAttackOrReload()) {
                 if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
-                    float ct = CVAR(g_balance_nex_secondary_chargetime);
-                    var r = max(ct, CVAR(g_balance_nex_secondary_chargeholdtime_required));
+                    var rate = W_WeaponRateFactor();
+                    var ct = CVAR(g_balance_nex_secondary_chargetime);
+                    var cr = CVAR(g_balance_nex_secondary_chargeholdtime_required) * rate;
+
                     weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
-                    r *= W_WeaponRateFactor();
-                    self.nex_charge_expiretime = time + r + CVAR(g_balance_nex_secondary_chargeholdtime);
+                    ct *= rate;
+
+                    self.nex_charge_readytime  = time + ct + cr;
+                    self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
+
                     sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
-                    W_Nex_ChargeEffect_Spawn(r);
+                    W_Nex_ChargeEffect_Spawn(cr);
                 }
             }
             W_Clip_FinishWeaponAction();
