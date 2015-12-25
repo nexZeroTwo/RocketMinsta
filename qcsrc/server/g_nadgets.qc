@@ -2586,7 +2586,7 @@ void HG_Sentry_Trigger(void) {
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
             W_Zapper_Attack2_Effect(if(teams_matter) self.team else COLOR_TEAM3, o, o, end_visual);
 
-            if(Buffs_Present(self, BUFF_ADEPT)) {
+            if(targ.takedamage && Buffs_Present(self, BUFF_ADEPT)) {
                 var arc = CVAR(g_nadgets_sentry_adept_shock_arc);
 
                 if(arc) {
