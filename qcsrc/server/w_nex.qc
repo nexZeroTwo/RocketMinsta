@@ -93,14 +93,24 @@ void W_Nex_ChargeEffect_Think(void) {
     if(self.enemy.cnt < 0) {
         stopsound(self, CHAN_PROJECTILE);
 
-        self.scale = approach(self.scale, 10, frametime * 50);
-        self.alpha = 1 - self.scale / 10;
-        self.alpha *= self.alpha;
+        if(self.enemy.cnt < -1) {
+            self.scale = approach(self.scale, 0, frametime * 5);
+            self.alpha = approach(self.alpha, 0, frametime * 5);
 
-        if(self.scale >= 10)
-            remove(self);
-        else
-            self.nextthink = time;
+            if(self.scale <= 0)
+                remove(self);
+            else
+                self.nextthink = time;
+        } else {
+            self.scale = approach(self.scale, 10, frametime * 50);
+            self.alpha = 1 - self.scale / 10;
+            self.alpha *= self.alpha;
+
+            if(self.scale >= 10)
+                remove(self);
+            else
+                self.nextthink = time;
+        }
 
         return;
     }
@@ -143,13 +153,22 @@ void W_Nex_Attack2_Wait(void) {
         return;
     }
 
-    if(self.nex_charge_effect) {
-        self.nex_charge_effect.cnt = -1;
-        self.nex_charge_effect = world;
+    var ccnt = -1;
+    var rate = W_WeaponRateFactor();
+
+    if(PlayerMayFire(self) && max(0, self.nex_charge_expiretime - time) <= CVAR(g_balance_nex_secondary_chargeholdtime_required) * rate) {
+        W_Nex_Attack2();
+        ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * rate;
+    } else {
+        ccnt = -2;
+        stopsound(self, CHAN_WEAPON);
+        ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
     }
 
-    W_Nex_Attack2();
-    ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
+    if(self.nex_charge_effect) {
+        self.nex_charge_effect.cnt = ccnt;
+        self.nex_charge_effect = world;
+    }
 
     weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
 }
@@ -188,11 +207,12 @@ float w_nex(float req)
             if(W_Clip_TryAttackOrReload()) {
                 if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
                     float ct = CVAR(g_balance_nex_secondary_chargetime);
+                    var r = max(ct, CVAR(g_balance_nex_secondary_chargeholdtime_required));
                     weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
-                    ct *= W_WeaponRateFactor();
-                    self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
+                    r *= W_WeaponRateFactor();
+                    self.nex_charge_expiretime = time + r + CVAR(g_balance_nex_secondary_chargeholdtime);
                     sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
-                    W_Nex_ChargeEffect_Spawn(ct);
+                    W_Nex_ChargeEffect_Spawn(r);
                 }
             }
             W_Clip_FinishWeaponAction();
