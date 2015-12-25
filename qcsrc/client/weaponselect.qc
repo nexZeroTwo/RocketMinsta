@@ -145,6 +145,8 @@ float WS_InputEvent(float bInputType, float nPrimary, float nSecondary) {
 }
 
 void Net_ReadWeaponSelect(void) {
+    g_weaponarena_secondary = ReadInt24_t();
+
     if(isdemo())
         return;
 

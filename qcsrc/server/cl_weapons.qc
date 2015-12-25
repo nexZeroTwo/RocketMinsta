@@ -597,6 +597,7 @@ void W_WriteSecondarySelect(void) {
     msg_entity = self;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_SECONDARYSELECT);
+    WriteInt24_t(MSG_ONE, g_weaponarena_secondary);
 }
 
 float W_ShowMenu(float always) {
