@@ -195,7 +195,7 @@ void spawnfunc_weapon_electro (void)
 
 void w_electro_checkattack()
 {
-    W_SetButtonFields(CVAR(g_balance_electro_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_electro_swapshotmodes));
 
 	if(self.electro_count > 1)
 	if(self.w_button_secondary)
@@ -223,7 +223,7 @@ void W_Electro_SetClipContext(void) {
 .float bot_secondary_electromooth;
 float w_electro(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_electro_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_electro_swapshotmodes));
     W_Electro_SetClipContext();
 
 	if (req == WR_AIM)

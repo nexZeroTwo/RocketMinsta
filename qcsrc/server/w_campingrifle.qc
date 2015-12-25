@@ -149,7 +149,7 @@ void spawnfunc_weapon_campingrifle (void)
 
 float w_campingrifle(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_campingrifle_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_campingrifle_swapshotmodes));
     W_CampingRifle_SetClipContext();
 
 	if (req == WR_AIM)

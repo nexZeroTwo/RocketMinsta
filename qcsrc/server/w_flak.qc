@@ -289,7 +289,7 @@ void spawnfunc_weapon_flak(void) {
 }
 
 float w_flak(float req) {
-    W_SetButtonFields(CVAR(g_balance_flak_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_flak_swapshotmodes));
     W_Flak_SetClipContext();
 
     if(req == WR_AIM) {

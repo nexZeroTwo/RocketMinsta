@@ -207,7 +207,7 @@ void spawnfunc_weapon_porto (void)
 float w_nexball_weapon(float req);
 float w_porto(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_porto_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_porto_swapshotmodes));
 	vector v_angle_save;
 
 	if (g_nexball) { return w_nexball_weapon(req); }

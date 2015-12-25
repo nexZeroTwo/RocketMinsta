@@ -111,7 +111,7 @@ void uzi_fire1_02()
 		return;
 	}
 
-    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_uzi_swapshotmodes));
 
 	if (self.w_button_primary)
 	{
@@ -134,7 +134,7 @@ void uzi_fire1_02()
 
 float w_uzi(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_uzi_swapshotmodes));
     W_Uzi_SetClipContext();
 
 	if (req == WR_AIM)

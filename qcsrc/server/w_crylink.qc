@@ -579,7 +579,7 @@ void W_Crylink_SetClipContext(void) {
 
 float w_crylink(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_crylink_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_crylink_swapshotmodes));
     W_Crylink_SetClipContext();
 
 	if (req == WR_AIM)

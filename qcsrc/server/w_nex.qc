@@ -137,7 +137,7 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
 }
 
 void W_Nex_Attack2_Wait(void) {
-    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
 
     if(self.w_button_secondary && time < self.nex_charge_expiretime) {
         return;
@@ -168,7 +168,7 @@ void spawnfunc_weapon_nex (void); // defined in t_items.qc
 
 float w_nex(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
     W_Nex_SetClipContext();
 
 	if (req == WR_AIM)

@@ -214,16 +214,17 @@ void SV_ParseClientCommand(string s) {
         OPTAVAIL_RAW("radio", ftos(sv_radio))
         OPTAVAIL    ("dodging", "g_dodging")
         OPTAVAIL_RAW("altcharge", ftos(g_nadgets))
-		
+        OPTAVAIL_RAW("convswitch", if(g_weaponarena_secondary) "1" else "0")
+
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
-		
+
 		stuffcmd(self, strcat("set _g_rocketminsta ", ftos(CVAR(g_rocketminsta)), "\n"));
-		
+
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
-		
+
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "anonspec") {
@@ -679,6 +680,11 @@ void SV_ParseClientCommand(string s) {
             return;
 
         self.hg_altcharge = stof(argv(1));
+    } else if(cmd == "convswitch") {
+        if not(self.flags & FL_CLIENT)
+            return;
+
+        self.w_conv_switch = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;

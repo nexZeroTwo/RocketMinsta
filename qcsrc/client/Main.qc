@@ -710,9 +710,11 @@ void PostInit(void)
             localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 56:
             localcmd("seta r_font_size_snapping 1\n");
+        case 57:
+            localcmd("seta rm_convswitch 0; convswitch 0\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 57\n");
+		localcmd("seta rm_initialized 58\n");
 		RM_OUTDATED
 		break;
 	}
@@ -781,6 +783,7 @@ void PostInit(void)
     registercmd("radio");
     registercmd("nododging");
     registercmd("altcharge");
+    registercmd("convswitch");
 	// -- //
 	registercmd("hudskin");
 	
@@ -798,6 +801,7 @@ void PostInit(void)
     localcmd("cmd radio ", ftos(CVAR(rm_radio)), "\n");
     localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
     localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+    localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 	
     localcmd("alias menu_shownadeselect \"cmd picknade\"\n");
     localcmd("alias menu_shownadeselect2 \"cmd picknade\"\n");
@@ -949,6 +953,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
         strCmd == "altcharge"           ||
+        strCmd == "convswitch"          ||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -995,6 +1000,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
         else if(strCmd == "altcharge")
             localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+        else if(strCmd == "convswitch")
+            localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT

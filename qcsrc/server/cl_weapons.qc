@@ -6,9 +6,35 @@ void W_Reload()
 		weapon_action(self.weapon, WR_RELOAD);
 }
 
+float W_ToggleSecondary(void) {
+    if(g_weaponarena_secondary && self.w_conv_switch) {
+        var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
+
+        var secondary = if(self.w_secondary)
+            pow(2, self.w_secondary - 1)
+        else
+            g_weaponarena_secondary;
+
+        if(w & secondary) {
+            self.weapons &~= secondary;
+            self.weapons |= g_weaponarena;
+            return TRUE;
+        } else if(w & g_weaponarena) {
+            self.weapons &~= g_weaponarena;
+            self.weapons |= secondary;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 // switch between weapons
 void W_SwitchWeapon(float imp)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	if (self.switchweapon != imp)
 	{
 		if (client_hasweapon(self, imp, TRUE, TRUE))
@@ -92,6 +118,9 @@ float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, floa
 
 void W_CycleWeapon(string weaponorder, float dir)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	float w;
 	w = W_GetCycleWeapon(self, weaponorder, dir, -1, 1);
 	if(w > 0)
@@ -100,6 +129,9 @@ void W_CycleWeapon(string weaponorder, float dir)
 
 void W_NextWeaponOnImpulse(float imp)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	float w;
 	w = W_GetCycleWeapon(self, self.cvar_cl_weaponpriority, +1, imp, 1);
 	if(w > 0)
@@ -551,7 +583,7 @@ void Nixnex_GiveCurrentWeapon()
 }
 
 void W_FixWeaponSet(void) {
-    if(g_weaponarena && g_weaponarena_secondary) {
+    if(g_weaponarena && g_weaponarena_secondary && !self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
 
         var secondary = if(self.w_secondary)

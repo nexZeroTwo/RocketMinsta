@@ -94,7 +94,7 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 }
 
 float W_Zapper_Beam_Expired(float secondary) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self.owner, CVAR(g_balance_zapper_swapshotmodes));
 
     if(time > self.zapper_expire && ((secondary && !self.owner.w_button_secondary) || (!secondary && !self.owner.w_button_primary)))
         return TRUE;
@@ -607,7 +607,7 @@ float W_Zapper_PrepareFirstAttack(float sec) {
 }
 
 void W_Zapper_Accumulate(void) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self.owner, CVAR(g_balance_zapper_swapshotmodes));
 
     setorigin(self, self.owner.origin);
     self.nextthink = time;
@@ -631,7 +631,7 @@ void W_Zapper_Accumulate(void) {
 }
 
 float w_zapper(float req) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_zapper_swapshotmodes));
     float dofire;
 
     if (req == WR_AIM) {

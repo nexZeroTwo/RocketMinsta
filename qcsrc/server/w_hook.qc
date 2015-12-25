@@ -104,7 +104,7 @@ void spawnfunc_weapon_hook (void)
 
 float w_hook(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_grapplehook_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_grapplehook_swapshotmodes));
 	float hooked_time_max, hooked_fuel;
 		
 	if (req == WR_AIM)

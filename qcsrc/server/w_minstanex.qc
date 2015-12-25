@@ -451,7 +451,7 @@ void W_MinstaNex_SetClipContext(void) {
 
 float w_minstanex(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_minstanex_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_minstanex_swapshotmodes));
     W_MinstaNex_SetClipContext();
 	float rapid = CVAR(g_rocketminsta_laser_rapid);
 	

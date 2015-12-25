@@ -318,7 +318,7 @@ void W_Fireball_SetClipContext(void) {
 
 float w_fireball(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_fireball_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_fireball_swapshotmodes));
     W_Fireball_SetClipContext();
 
 	if (req == WR_AIM)
