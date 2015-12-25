@@ -207,12 +207,12 @@ void Radio_Queue(string url, string fname, float len, string desc) {
     else
         cvar_set("_radio_queue", strcat(q, " ", id));
 
-    cvar_set("_radio_queue_left", ftos(CVAR(_radio_queue_left) + 1));
-
     if(radio_playing_queue < 0)
         Radio_Queue_PlayFirst();
-    else if(strstrofs(q, " ", 0) < 0)
+    else if(!CVAR(_radio_queue_left))
         Radio_Preload(url);
+
+    cvar_set("_radio_queue_left", ftos(CVAR(_radio_queue_left) + 1));
 }
 
 void Radio_Queue_Advance(void) {

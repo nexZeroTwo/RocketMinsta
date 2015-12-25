@@ -1730,6 +1730,7 @@ float autocvar_sv_radio_preload;
 float autocvar_sv_radio_queue_advanceat;
 float autocvar_sv_radio_queue_autofill;
 float autocvar_sv_radio_queue_autofill_retry;
+float autocvar_sv_radio_queue_left;
 string autocvar_sv_radio_queue_autofill_server;
 float autocvar_sv_randomspawns;
 float autocvar_sv_ready_restart;

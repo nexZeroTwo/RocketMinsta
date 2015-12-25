@@ -824,7 +824,6 @@ void CSQC_UpdateView(float w, float h)
             } else {
                 drawpic(wcross_origin - 0.5 * wcross_size, wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
             }
-
         }
     }
 
