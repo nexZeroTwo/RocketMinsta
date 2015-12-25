@@ -211,7 +211,7 @@ void HG_HealEmitter_Think(void) {
         remove(self);
         return;
     }
-    
+
     if(self.origin != self.oldorigin)
         UpdateCSQCProjectile(self);
 
@@ -219,12 +219,9 @@ void HG_HealEmitter_Think(void) {
     self.nextthink = time;
 }
 
-void HG_HealEmitter(void) {
-    var o = self.owner;
-    if(!o.iscreature) o = self.realowner;
-
+void HG_HealEmitter(entity o) {
     if(Buffs_Present(o, BUFF_MEDIC)) {
-        if(!self.heal_emitter) {
+        if(!self.heal_emitter || wasfreed(self.heal_emitter)) {
             entity e = spawn();
             e.owner = self;
             e.movetype = MOVETYPE_FOLLOW;
@@ -233,7 +230,7 @@ void HG_HealEmitter(void) {
             e.nextthink = time;
             e.csqcprojectile_extradata = self.heal_emitter_radius;
             
-            CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            CSQCProjectile(e, FALSE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
             self.heal_emitter = e;
         }
     } else {
@@ -250,7 +247,7 @@ void HG_Napalm_Think(void) {
         return;
     }
 
-    HG_HealEmitter();
+    HG_HealEmitter(self.owner);
 
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
 
@@ -362,7 +359,7 @@ void HG_Plasma_Projectile_Think() {
         self.hg_plasma_projdps_last = time;
     }
     
-    HG_HealEmitter();
+    HG_HealEmitter(self.realowner);
 
     self.nextthink = time;
 }
@@ -1108,7 +1105,7 @@ void HG_Grenade_Think() {
         }
     }
     
-    HG_HealEmitter();
+    HG_HealEmitter(self.owner);
 
     self.nextthink = time;
     self.hg_ranthink += 1;
@@ -2391,7 +2388,7 @@ void HG_Sentry_Think(void) {
 
     o = self;
     self = self.aiment;
-    HG_HealEmitter();
+    HG_HealEmitter(o.realowner);
     self = o;
 
     self.nextthink = time;
