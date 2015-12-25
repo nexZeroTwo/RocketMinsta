@@ -1569,13 +1569,17 @@ void Ent_ReadPlayerScore()
 	{
 		if(sf & p)
 		{
-            if(lf & p)
-                o.(scores[i]) = ReadInt24_t();
-            else
-                o.(scores[i]) = ReadChar();
-            
-            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
-                UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            if(i == SP_STATUSICONS) {
+                o.(scores[i]) = ReadShort();
+            } else {
+                if(lf & p)
+                    o.(scores[i]) = ReadInt24_t();
+                else
+                    o.(scores[i]) = ReadChar();
+
+                if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
+                    UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            }
 		}
 	}
 
