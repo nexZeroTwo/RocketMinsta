@@ -1176,8 +1176,7 @@ void HG_SetGrenadeType(entity p, float t) {
     
     if(p.scorekeeper) {
         var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFFFF00;
-        p.scorekeeper.(scores[SP_STATUSICONS]) = s + HG_CompressDualType(p.hg_type1, p.hg_type2) & 0x000000FF;
-        p.scorekeeper.SendFlags |= pow(2, SP_STATUSICONS);
+        PlayerScore_Set(p, SP_STATUSICONS, s + HG_CompressDualType(p.hg_type1, p.hg_type2) & 0x000000FF);
     }
 }
 

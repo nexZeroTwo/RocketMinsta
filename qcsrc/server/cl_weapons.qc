@@ -573,14 +573,8 @@ void W_SetSecondary(entity p, float w) {
     p.w_secondary = w;
 
     if(p.scorekeeper) {
-        var o = p.scorekeeper.(scores[SP_STATUSICONS]);
-        var s = o & 0xFFFF00FF;
-        var n = s + (w * 0x100) & 0x0000FF00;
-
-        if(n != o) {
-            p.scorekeeper.(scores[SP_STATUSICONS]) = n;
-            p.scorekeeper.SendFlags |= pow(2, SP_STATUSICONS);   
-        }
+        var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFF00FF;
+        PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
     }
 }
 
