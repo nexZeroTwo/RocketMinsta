@@ -199,6 +199,8 @@ void Zapper_Remove(void) {
 void Zapper_Read(float t) {
     float sf = ReadByte();
 
+    if(cvar("_ent_debug"))
+        print("Zapper_Read(): t = ", ftos(t), ", sf = ", ftos(sf), "\n");
 
     if(sf & 1) {
         float vol, attn;
@@ -222,10 +224,18 @@ void Zapper_Read(float t) {
         self.entremove = Zapper_Remove;
         self.sv_entnum = ReadByte();
 
-        if(!self.sv_entnum)
+        if(cvar("_ent_debug"))
+            print("Zapper_Read(): sv_entnum = ", ftos(self.sv_entnum), "\n");
+
+        if(!self.sv_entnum) {
             self.team = ReadByte() - 1;
-        else
+            if(cvar("_ent_debug"))
+                print("Zapper_Read(): team = ", ftos(self.team), " (ReadByte)\n");
+        } else {
             self.team = GetPlayerColor(self.sv_entnum - 1);
+            if(cvar("_ent_debug"))
+                print("Zapper_Read(): team = ", ftos(self.team), " (sv_entnum)\n");
+        }
 
         self.alpha = 1;
         self.cnt = random() * 1000;
@@ -243,8 +253,12 @@ void Zapper_Read(float t) {
             self.zapper_real_start_x = ReadCoord();
             self.zapper_real_start_y = ReadCoord();
             self.zapper_real_start_z = ReadCoord();
+            if(cvar("_ent_debug"))
+                print("Zapper_Read(): sv_entnum = ", ftos(self.sv_entnum), ", read real_start\n");
         } else {
             self.zapper_real_start = self.zapper_start;
+            if(cvar("_ent_debug"))
+                print("Zapper_Read(): sv_entnum = ", ftos(self.sv_entnum), ", didn't read real_start\n");
         }
     }
 
