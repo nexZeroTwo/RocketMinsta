@@ -46,7 +46,7 @@ void drawGecko(entity me)
 		vector fontsize;
 		fontsize_x = fontsize_y = 1.0 / 30.0;
 		fontsize_z = 0.0;
-		draw_Text( '0 0 0', "Browser not initialized!", fontsize, '1 1 1', 1.0, 0 );
+		draw_Text( '0 0 0', "Browser not initialized!", fontsize, '1 1 1', 1.0, 0);
 	}
 }
 

@@ -17,10 +17,10 @@ void draw_Picture_Unskinned(vector origin, string pic, vector size, vector color
 vector draw_PictureSize(string pic);
 void draw_Fill(vector theOrigin, vector theSize, vector theColor, float theAlpha);
 void draw_Text(vector origin, string text, vector size, vector color, float alpha, float allowColorCodes);
-void draw_CenterText(vector origin, string text, vector size, vector color, float alpha, float allowColorCodes);
-float draw_TextWidth(string text, float allowColorCodes);
-string draw_TextShortenToWidth(string text, float maxWidth, float allowColorCodes);
-float draw_TextLengthUpToWidth(string text, float maxWidth, float allowColorCodes);
+void draw_CenterText(vector origin, string text, vector size, vector color, float alpha, float allowColorCodes, vector fontXYSize);
+float draw_TextWidth(string text, float allowColorCodes, vector fontXYSize);
+string draw_TextShortenToWidth(string text, float maxWidth, float allowColorCodes, vector fontXYSize);
+float draw_TextLengthUpToWidth(string text, float maxWidth, float allowColorCodes, vector fontXYSize);
 
 void draw_SetClip();
 void draw_SetClipRect(vector theOrigin, vector theScale);
@@ -39,8 +39,8 @@ float draw_overrides;
 float draw_overrideCount;
 string rm_watermark;
 
-float draw_TextWidth_WithColors(string s);
-float draw_TextWidth_WithoutColors(string s);
+float draw_TextWidth_WithColors(string s, vector fontXYSize);
+float draw_TextWidth_WithoutColors(string s, vector fontXYSize);
 
 float conwidth_s, conheight_s, realconwidth, realconheight, screenconwidth, screenconheight;
 
