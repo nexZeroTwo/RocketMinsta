@@ -1756,6 +1756,12 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 			bIsNewEntity = 1;
 		}
 #endif
+
+    if(cvar("_ent_debug")) {
+        if(t >= _ENT_START && t <= _ENT_END)
+            print("ent: ", ftos(t), " (", ftos(bIsNewEntity), ")\n");
+    }
+
 	self.enttype = t;
 	switch(t)
 	{
@@ -2261,6 +2267,11 @@ float CSQC_Parse_TempEntity()
 	// Acquire TE ID
 	float nTEID;
 	nTEID = ReadByte();
+
+    if(cvar("_ent_debug")) {
+        if(nTEID >= _TE_CSQC_START && nTEID <= _TE_CSQC_END)
+            print("temp ent: ", ftos(nTEID), "\n");
+    }
 
 	switch(nTEID)
 	{
