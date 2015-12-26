@@ -807,8 +807,11 @@ void CSQC_UpdateView(float w, float h)
             if(crosshair_ringfill) {
                 DrawCircleClippedPic(
                     wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.24,
-                    "gfx/ring1.tga",
+                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
+                    if(maxbullets > 1 && maxbullets < 25)
+                        strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+                    else
+                        "gfx/hud/ring1.tga",
                     crosshair_ringfill,
                     0.5 * wcross_color + '0.5 0.5 0.5',
                     wcross_alpha * 0.25,
