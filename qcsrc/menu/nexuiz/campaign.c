@@ -125,7 +125,7 @@ void loadCvarsNexuizCampaignList(entity me)
 	me.campaignIndex = bound(0, cvar(me.cvarName), campaign_entries);
 	cvar_set(me.cvarName, ftos(me.campaignIndex));
 	if(me.columnNameSize)
-		rewrapCampaign(me.columnNameSize / me.realFontSize_x, me.rowsPerItem - 3, me.emptyLineHeight, me.fontXYSize);
+		rewrapCampaign(me.columnNameSize / me.realFontSize_x, me.rowsPerItem - 3, me.emptyLineHeight, me.realFontSize);
 	me.nItems = min(me.campaignIndex + 2, campaign_entries);
 	me.selectedItem = min(me.campaignIndex, me.nItems - 1);
 	me.scrollPos = me.nItems * me.itemHeight - 1;
@@ -231,7 +231,7 @@ void resizeNotifyNexuizCampaignList(entity me, vector relOrigin, vector relSize,
 
 	me.checkMarkOrigin = eY + eX * (me.columnCheckMarkOrigin + me.columnCheckMarkSize) - me.checkMarkSize;
 
-	rewrapCampaign(me.columnNameSize / me.realFontSize_x, me.rowsPerItem - 3, me.emptyLineHeight, me.fontXYSize);
+	rewrapCampaign(me.columnNameSize / me.realFontSize_x, me.rowsPerItem - 3, me.emptyLineHeight, me.realFontSize);
 }
 void clickListBoxItemNexuizCampaignList(entity me, float i, vector where)
 {
@@ -282,8 +282,8 @@ void drawListBoxItemNexuizCampaignList(entity me, float i, vector absSize, float
 		s = campaign_shortdesc[i]; // fteqcc sucks
 	else
 		s = "???";
-	s = draw_TextShortenToWidth(strcat("Level ", ftos(i + 1), ": ", s), me.columnNameSize / me.realFontSize_x, 0, me.fontXYSize);
-	draw_Text(me.realUpperMargin1 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0, me.fontXYSize) * me.realFontSize_x)) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(strcat("Level ", ftos(i + 1), ": ", s), me.columnNameSize / me.realFontSize_x, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin1 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0, me.realFontSize) * me.realFontSize_x)) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 
 	if(i <= me.campaignIndex)
 	{

@@ -613,8 +613,8 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		cn = "--";
 
 	s = ftos(p);
-	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0, me.fontXYSize) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0, me.fontXYSize);
+	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0, me.realFontSize) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0, me.realFontSize);
 	
 	vector o, v;
 	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
@@ -630,8 +630,8 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	
 	o_x += picsize_x + me.realFontSize_x/2;
 	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0, me.fontXYSize);
-	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0, me.fontXYSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0, me.realFontSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
 	
 	if(strstrofs(s, "_rm-", 0) >= 0)
@@ -642,10 +642,10 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		s = substring(s, 0, p);
 	else
 		s = "";
-	s = draw_TextShortenToWidth(s, me.columnMapSize / me.realFontSize_x, 0, me.fontXYSize);
-	draw_Text(me.realUpperMargin * eY + (me.columnTypeOrigin + (me.columnTypeSize - draw_TextWidth(s, 0, me.fontXYSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(s, me.columnMapSize / me.realFontSize_x, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin * eY + (me.columnTypeOrigin + (me.columnTypeSize - draw_TextWidth(s, 0, me.realFontSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = strcat(ftos(gethostcachenumber(SLIST_FIELD_NUMHUMANS, i)), "/", ftos(gethostcachenumber(SLIST_FIELD_MAXPLAYERS, i)));
-	draw_Text(me.realUpperMargin * eY + (me.columnPlayersOrigin + (me.columnPlayersSize - draw_TextWidth(s, 0, me.fontXYSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	draw_Text(me.realUpperMargin * eY + (me.columnPlayersOrigin + (me.columnPlayersSize - draw_TextWidth(s, 0, me.realFontSize) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 }
 
 float keyDownNexuizServerList(entity me, float scan, float ascii, float shift)

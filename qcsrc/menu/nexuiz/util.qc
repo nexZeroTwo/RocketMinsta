@@ -290,7 +290,7 @@ float preMenuInit()
 		draw_reset();
 
 		sz = eX * 0.025 + eY * 0.025 * (draw_scale_x / draw_scale_y);
-		draw_CenterText('0.5 0.5 0' - 1.25 * sz_y * eY, "Autogenerating mapinfo for newly added maps...", sz, '1 1 1', 1, 0, '1 1');
+		draw_CenterText('0.5 0.5 0' - 1.25 * sz_y * eY, "Autogenerating mapinfo for newly added maps...", sz, '1 1 1', 1, 0);
 
 		boxA = '0.05 0.5 0' + 0.25 * sz_y * eY;
 		boxB = '0.95 0.5 0' + 1.25 * sz_y * eY;
@@ -407,8 +407,8 @@ void preMenuDraw()
 		    + eY * (0.5 + 0.5 * (1 - sz_y) * sin(time * 0.071));
 
 		draw_Fill(mid - 0.5 * sz, sz, '1 1 0', 1);
-		draw_CenterText(mid - 1 * line, strcat("Update to ", _Nex_ExtResponseSystem_UpdateTo, " now!"), fs, '1 0 0', 1, 0, '1 1');
-		draw_CenterText(mid - 0 * line, "http://www.nexuiz.com/", fs, '0 0 1', 1, 0, '1 1');
+		draw_CenterText(mid - 1 * line, strcat("Update to ", _Nex_ExtResponseSystem_UpdateTo, " now!"), fs, '1 0 0', 1, 0);
+		draw_CenterText(mid - 0 * line, "http://www.nexuiz.com/", fs, '0 0 1', 1, 0);
 	}
 	if not(campaign_name_previous)
 		campaign_name_previous = strzone(strcat(campaign_name, "x")); // force unequal

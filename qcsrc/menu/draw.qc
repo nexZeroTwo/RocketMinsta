@@ -302,16 +302,16 @@ void draw_Text(vector theOrigin, string theText, vector theSize, vector theColor
 	else
 		drawstring(boxToGlobal(theOrigin, draw_shift, draw_scale), theText, boxToGlobalSize(theSize, draw_scale), theColor, theAlpha * draw_alpha, 0);
 }
-void draw_CenterText(vector theOrigin, string theText, vector theSize, vector theColor, float theAlpha, float ICanHasKallerz, vector theFontXYSize)
+void draw_CenterText(vector theOrigin, string theText, vector theSize, vector theColor, float theAlpha, float ICanHasKallerz)
 {
-	draw_Text(theOrigin - eX * theSize_x * 0.5 * draw_TextWidth(theText, ICanHasKallerz, theFontXYSize), theText, theSize, theColor, theAlpha, ICanHasKallerz);
+	draw_Text(theOrigin - eX * 0.5 * theSize_x * draw_TextWidth(theText, ICanHasKallerz, theSize), theText, theSize, theColor, theAlpha, ICanHasKallerz);
 }
 
-float draw_TextWidth(string theText, float ICanHasKallerz, vector theFontXYSize)
+float draw_TextWidth(string theText, float ICanHasKallerz, vector theSize)
 {
 	//return strlen(theText);
 	//print("draw_TextWidth \"", theText, "\"\n");
-	return stringwidth(theText, ICanHasKallerz, theFontXYSize);
+	return stringwidth(theText, ICanHasKallerz, theSize) / theSize_x;
 }
 
 float draw_clipSet;
@@ -342,28 +342,28 @@ void draw_ClearClip()
 	draw_clipSet = 0;
 }
 
-string draw_TextShortenToWidth(string theText, float maxWidth, float ICanHasKallerz, vector theFontXYSize)
+string draw_TextShortenToWidth(string theText, float maxWidth, float ICanHasKallerz, vector theSize)
 {
-	if(draw_TextWidth(theText, ICanHasKallerz, theFontXYSize) <= maxWidth)
+	if(draw_TextWidth(theText, ICanHasKallerz, theSize) <= maxWidth)
 		return theText;
 	else
-		return strcat(substring(theText, 0, draw_TextLengthUpToWidth(theText, maxWidth - draw_TextWidth("...", ICanHasKallerz, theFontXYSize), ICanHasKallerz, theFontXYSize)), "...");
+		return strcat(substring(theText, 0, draw_TextLengthUpToWidth(theText, maxWidth - draw_TextWidth("...", ICanHasKallerz, theSize), ICanHasKallerz, theSize)), "...");
 }
 
-float draw_TextWidth_WithColors(string s, vector theFontXYSize)
+float draw_TextWidth_WithColors(string s, vector theSize)
 {
-	return draw_TextWidth(s, TRUE, theFontXYSize);
+	return draw_TextWidth(s, TRUE, theSize);
 }
 
-float draw_TextWidth_WithoutColors(string s, vector theFontXYSize)
+float draw_TextWidth_WithoutColors(string s, vector theSize)
 {
-	return draw_TextWidth(s, FALSE, theFontXYSize);
+	return draw_TextWidth(s, FALSE, theSize);
 }
 
-float draw_TextLengthUpToWidth(string theText, float maxWidth, float allowColorCodes, vector theFontXYSize)
+float draw_TextLengthUpToWidth(string theText, float maxWidth, float allowColorCodes, vector theSize)
 {
 	if(allowColorCodes)
-		return textLengthUpToWidth(theText, maxWidth, theFontXYSize, draw_TextWidth_WithColors);
+		return textLengthUpToWidth(theText, maxWidth, theSize, draw_TextWidth_WithColors);
 	else
-		return textLengthUpToWidth(theText, maxWidth, theFontXYSize, draw_TextWidth_WithoutColors);
+		return textLengthUpToWidth(theText, maxWidth, theSize, draw_TextWidth_WithoutColors);
 }
