@@ -37,7 +37,7 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    sf &~= 8 | 16;
+    sf &~= 8 | 16 | 32;
 
     if(self.sounds < 0)
         sf |= 16;
@@ -53,6 +53,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     if(o > maxclients)
         o = 0;
 
+    if(!o)
+        sf |= 32;
+
     if(self.classname == "zapper_shield_beam")
         WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER_SHIELD);
     else
@@ -61,9 +64,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        WriteByte(MSG_ENTITY, o);
-
-        if(!o)
+        if(o)
+            WriteByte(MSG_ENTITY, o);
+        else
             WriteByte(MSG_ENTITY, self.team);
     }
 
