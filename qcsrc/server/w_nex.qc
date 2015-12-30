@@ -52,6 +52,9 @@ void W_Nex_Attack (void)
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_cells = self.ammo_cells - cost;
+
+    self.w_inring_fulltime = ATTACK_FINISHED(self);
+    self.w_inring_cycle = self.w_inring_fulltime - time;
 }
 
 void W_Nex_Attack2(void) {
@@ -174,11 +177,14 @@ void W_Nex_Attack2_Wait(void) {
     if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
         self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
         W_Nex_Attack2_Burst();
+        self.w_inring_fulltime = ATTACK_FINISHED(self);
+        self.w_inring_cycle = self.w_inring_fulltime - time;
     } else {
         ccnt = -2;
         stopsound(self, CHAN_WEAPON);
         ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
         weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
+        self.w_inring_cycle = -1;
     }
 
     if(self.nex_charge_effect) {
@@ -209,7 +215,7 @@ float w_nex(float req)
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if (self.w_button_primary)
+            if(self.w_button_primary)
             if(W_Clip_TryAttackOrReload()) {
                 if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
                 {
@@ -232,9 +238,21 @@ float w_nex(float req)
 
                     sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
                     W_Nex_ChargeEffect_Spawn(cr);
+
+                    self.w_inring_fulltime = self.nex_charge_readytime;
+                    self.w_inring_cycle = self.w_inring_fulltime - time;
                 }
             }
             W_Clip_FinishWeaponAction();
+
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_cycle) {
+                var af = ATTACK_FINISHED(self);
+
+                if(af > time) {
+                    self.w_inring_fulltime = af;
+                    self.w_inring_cycle = self.w_inring_fulltime - time;   
+                }
+            }
         }
 	}
 	else if (req == WR_PRECACHE)

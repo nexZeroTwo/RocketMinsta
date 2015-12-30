@@ -831,3 +831,6 @@ var .float w_button_secondary;
 .float w_secondary_nextround;
 
 .string netname_strzoned;
+
+.float w_inring_cycle;
+.float w_inring_fulltime;

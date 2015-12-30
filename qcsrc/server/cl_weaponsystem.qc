@@ -34,6 +34,7 @@ void W_SwitchWeapon_Force(entity e, float w)
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
+    e.w_inring_cycle = 0;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {

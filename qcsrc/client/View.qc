@@ -407,6 +407,9 @@ float hg_gaincount;
 
 float crosshair_ringfill;
 
+float crosshair_inring_fill;
+float crosshair_inring_alpha;
+
 void HG_NadeGainSound() {
     float c1 = getstati(STAT_HGAMMO);
     float c2 = getstati(STAT_HGAMMO2);
@@ -815,6 +818,31 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill,
                     0.5 * wcross_color + '0.5 0.5 0.5',
                     wcross_alpha * 0.25,
+                    DRAWFLAG_ADDITIVE
+                );
+            }
+
+            var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+
+            if(in_cycle > 0) {
+                var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
+                crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+
+                if(crosshair_inring_fill && crosshair_inring_fill < 1)
+                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
+                else
+                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+            } else
+                crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+
+            if(crosshair_inring_alpha) {
+                DrawCircleClippedPic(
+                    wcross_origin,
+                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
+                    "gfx/hud/ring_inner.tga",
+                    crosshair_inring_fill,
+                    0.5 * wcross_color + '0.5 0.5 0.5',
+                    wcross_alpha * 0.15 * crosshair_inring_alpha,
                     DRAWFLAG_ADDITIVE
                 );
             }

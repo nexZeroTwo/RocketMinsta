@@ -2706,6 +2706,8 @@ void SpectateCopy(entity spectatee) {
     self.w_clip_loaded_stat = spectatee.w_clip_loaded_stat;
     self.zapper_heat = spectatee.zapper_heat;
     self.buffstat = spectatee.buffstat;
+    self.w_inring_cycle = spectatee.w_inring_cycle;
+    self.w_inring_fulltime = spectatee.w_inring_fulltime;
 	setorigin(self, spectatee.origin);
     // TODO: find out if this is actually needed
     // setsize(self, spectatee.mins, spectatee.maxs);
