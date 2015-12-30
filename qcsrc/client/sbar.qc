@@ -4182,9 +4182,8 @@ void Sbar_Draw(void)
 
     if(rev)
     {
-        var revrad = CVAR(rm_hud_crosshair_ring_size) * 42 * CVAR(crosshair_size);
         vector revpos;
-        revpos_y = (vid_conheight + revrad) / 2;
+        revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
 
         drawfont = sbar_font;
 
@@ -4210,7 +4209,10 @@ void Sbar_Draw(void)
         drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth("100%", FALSE, sbar_fontsize) * 0.5);
         drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
 
-        DrawProgressRing(revrad, rev, 0.7 * rev_alpha, c);
+        revpos_y += sbar_fontsize_y + 5;
+        revpos_x = vid_conwidth/2;
+
+        DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
 
     float havemsg = TRUE;
