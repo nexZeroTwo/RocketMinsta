@@ -164,6 +164,8 @@ void CSQC_Init(void)
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("rm_fps_friendly", "0", CVAR_SAVE);
     registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_size", "2", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_alpha", "0.25", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);

@@ -3670,9 +3670,10 @@ void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vecto
     DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
-void DrawProgressRing(vector pos, float rad, float progress, float alpha, vector rgb) {
+void DrawProgressRing(float rad, float progress, float alpha, vector rgb) {
+    var pos = [vid_conwidth, vid_conheight] * 0.5;
     DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_border.tga", 1,        rgb, alpha * 0.25, DRAWFLAG_NORMAL);
-    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_fill.tga",   progress, rgb, alpha * 0.70, DRAWFLAG_NORMAL);
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_fill.tga",   progress, rgb, alpha,        DRAWFLAG_NORMAL);
 }
 
 float rev_visual;
@@ -4178,41 +4179,40 @@ void Sbar_Draw(void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-    
+
     if(rev)
     {
-        float revrad = 64 * CVAR(crosshair_size);
+        var revrad = CVAR(rm_hud_crosshair_ring_size) * 42 * CVAR(crosshair_size);
         vector revpos;
         revpos_y = (vid_conheight + revrad) / 2;
 
         drawfont = sbar_font;
 
-		string s2;
+        string s2;
         if(revmode == RMODE_REV)
-			s = "Revival progress: ";
+            s = "Revival progress: ";
         else if(revmode == RMODE_AUTH)
             s = "Authenticating: ";
-		else if(revmode == RMODE_CAP_SENTRY)
-			s = "Capture progress: ";
-		else if(gametype == GAME_JAILBREAK)
-			s = "Unlocking the jail: ";
-		else
-			s = "Capture progress: ";
-        
-		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
-		s2 = strcat(ftos(floor(rev * 100)), "%");
-		
-		if(rev <= 0.5)
-			c = '0 1 1' + '2 0 0' * rev;
-		else
-			c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
-			
-		drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth(s2, FALSE, sbar_fontsize) * 0.5);
-		drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
+        else if(revmode == RMODE_CAP_SENTRY)
+            s = "Capture progress: ";
+        else if(gametype == GAME_JAILBREAK)
+            s = "Unlocking the jail: ";
+        else
+            s = "Capture progress: ";
 
-        DrawProgressRing([vid_conwidth, vid_conheight] * 0.5, revrad, rev, 0.7 * rev_alpha, c);
+        s2 = strcat(ftos(floor(rev * 100)), "%");
+        
+        if(rev <= 0.5)
+            c = '0 1 1' + '2 0 0' * rev;
+        else
+            c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
+
+        drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth("100%", FALSE, sbar_fontsize) * 0.5);
+        drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
+
+        DrawProgressRing(revrad, rev, 0.7 * rev_alpha, c);
     }
-    
+
     float havemsg = TRUE;
     switch(getstati(STAT_JBMSG)) {
         case JBMSG_CAPPINGNEUTRAL   :   jb_str  =  "Your team is capturing a Neutral Control Point";    break;

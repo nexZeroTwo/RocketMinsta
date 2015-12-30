@@ -807,44 +807,49 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill = 0;
             }
 
-            if(crosshair_ringfill) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    if(maxbullets > 1 && maxbullets < 25)
-                        strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+            var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
+            var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
+
+            if(ringsize > 0 && ringalpha > 0) {
+                if(crosshair_ringfill) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        if(maxbullets > 1 && maxbullets < 25)
+                            strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+                        else
+                            "gfx/hud/ring1.tga",
+                        crosshair_ringfill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
+
+                var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+
+                if(in_cycle > 0) {
+                    var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
+                    crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+
+                    if(crosshair_inring_fill && crosshair_inring_fill < 1)
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
                     else
-                        "gfx/hud/ring1.tga",
-                    crosshair_ringfill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.25,
-                    DRAWFLAG_NORMAL
-                );
-            }
-
-            var in_cycle = getstatf(STAT_INNERRING_CYCLE);
-
-            if(in_cycle > 0) {
-                var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
-                crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
-
-                if(crosshair_inring_fill && crosshair_inring_fill < 1)
-                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
-                else
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+                } else
                     crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
-            } else
-                crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
 
-            if(crosshair_inring_alpha) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    "gfx/hud/ring_inner.tga",
-                    crosshair_inring_fill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.15 * crosshair_inring_alpha,
-                    DRAWFLAG_NORMAL
-                );
+                if(crosshair_inring_alpha) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        "gfx/hud/ring_inner.tga",
+                        crosshair_inring_fill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha * crosshair_inring_alpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
             }
 
             if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active))) {
