@@ -3670,6 +3670,11 @@ void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vecto
     DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
+void DrawProgressRing(vector pos, float rad, float progress, float alpha, vector rgb) {
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_border.tga", 1,        rgb, alpha * 0.25, DRAWFLAG_NORMAL);
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_fill.tga",   progress, rgb, alpha * 0.70, DRAWFLAG_NORMAL);
+}
+
 float rev_visual;
 float rev_alpha;
 float rev_old;
@@ -4175,8 +4180,9 @@ void Sbar_Draw(void)
     
     if(rev)
     {
+        float revrad = 64 * CVAR(crosshair_size);
         vector revpos;
-        revpos_y = vid_conheight / 2 + sbar_fontsize_y * 2;
+        revpos_y = (vid_conheight + revrad) / 2;
 
         drawfont = sbar_font;
 
@@ -4200,11 +4206,8 @@ void Sbar_Draw(void)
 			
 		drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth(s2, FALSE, sbar_fontsize) * 0.5);
 		drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
-		
-		revpos_y += sbar_fontsize_y + 5;
-		revpos_x = vid_conwidth/2;
-		
-		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
+
+        DrawProgressRing([vid_conwidth, vid_conheight] * 0.5, revrad, rev, 0.7 * rev_alpha, c);
     }
     
     float havemsg = TRUE;

@@ -818,7 +818,7 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill,
                     0.5 * wcross_color + '0.5 0.5 0.5',
                     wcross_alpha * 0.25,
-                    DRAWFLAG_ADDITIVE
+                    DRAWFLAG_NORMAL
                 );
             }
 
@@ -843,7 +843,7 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_inring_fill,
                     0.5 * wcross_color + '0.5 0.5 0.5',
                     wcross_alpha * 0.15 * crosshair_inring_alpha,
-                    DRAWFLAG_ADDITIVE
+                    DRAWFLAG_NORMAL
                 );
             }
 
