@@ -3841,6 +3841,7 @@ float hg_maxcd2;
 #define RMODE_CAP 0
 #define RMODE_REV 1
 #define RMODE_AUTH 2
+#define RMODE_CAP_SENTRY 3
 
 void Sbar_DrawPlayerName(string s) {
     vector pos;
@@ -4041,7 +4042,7 @@ void Sbar_Draw(void)
             if(!rev) {
                 rev = getstatf(STAT_TERM_AUTH);
                 if(rev) revmode = RMODE_AUTH;
-            } else revmode = RMODE_CAP;
+            } else revmode = RMODE_CAP_SENTRY;
         } else revmode = RMODE_REV;
     } else revmode = RMODE_CAP;
 
@@ -4185,6 +4186,8 @@ void Sbar_Draw(void)
 			s = "Revival progress: ";
         else if(revmode == RMODE_AUTH)
             s = "Authenticating: ";
+		else if(revmode == RMODE_CAP_SENTRY)
+			s = "Capture progress: ";
 		else if(gametype == GAME_JAILBREAK)
 			s = "Unlocking the jail: ";
 		else
