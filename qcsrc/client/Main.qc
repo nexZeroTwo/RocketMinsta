@@ -718,9 +718,10 @@ void PostInit(void)
             localcmd("seta rm_convswitch 0; convswitch 0\n");
         case 59:
             localcmd("seta rm_hud_healthcolor 0\n");
+        case 60:
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 60\n");
+		localcmd("seta rm_initialized 61\n");
 		RM_OUTDATED
 		break;
 	}

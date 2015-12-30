@@ -130,9 +130,20 @@ void fillNexuizRMConfigDialog(entity me)
     me.TR(me);
         me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "rm_hud_healthcolor", "Health-colored HUD"));
     me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
+
+    me.setFirstColumn(me, me.firstColumn - 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Crosshair:"));
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+    me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "crosshealth", "Health-colored crosshair"));
     me.TR(me);
-        me.TD(me, 1, 4, e = makeRMCheckBox(1, "hidewatermark", "Show version information"));
+        me.TD(me, 1, 3, e = makeNexuizTextLabel(0, "Ring size:"));
+        me.TD(me, 1, 3, e = makeNexuizSlider(0, 4, 0.05, "rm_hud_crosshair_ring_size"));
+    me.TR(me);
+        me.TD(me, 1, 3, e = makeNexuizTextLabel(0, "Ring alpha:"));
+        me.TD(me, 1, 3, e = makeNexuizSlider(0, 1, 0.05, "rm_hud_crosshair_ring_alpha"));
 
 	me.setFirstColumn(me, me.firstColumn - 0.1);
     me.TR(me);
@@ -157,7 +168,7 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD skin:"));
 		setDependent(e, "rm_oldhud", 0, 0);
 	me.TR(me);
-		me.TD(me, me.rows - 19, 8, e = makeRMHudSkinList());
+		me.TD(me, me.rows - 22, 8, e = makeRMHudSkinList());
 		setDependent(e, "rm_oldhud", 0, 0);
 	//me.gotoRC(me, me.rows - 5, 8); me.setFirstColumn(me, me.currentColumn);
 }
