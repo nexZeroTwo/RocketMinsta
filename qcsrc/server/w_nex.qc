@@ -232,8 +232,9 @@ float w_nex(float req)
 
                     weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
                     ct *= rate;
+                    cr = max(cr, ct);
 
-                    self.nex_charge_readytime  = time + ct + cr;
+                    self.nex_charge_readytime  = time + cr;
                     self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
 
                     sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
