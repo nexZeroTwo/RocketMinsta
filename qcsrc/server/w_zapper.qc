@@ -37,7 +37,7 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    sf &~= 8 | 16;
+    sf &~= 8 | 16 | 32;
 
     if(self.sounds < 0)
         sf |= 16;
@@ -53,6 +53,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     if(o > maxclients)
         o = 0;
 
+    if(!o)
+        sf |= 32;
+
     if(self.classname == "zapper_shield_beam")
         WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER_SHIELD);
     else
@@ -61,9 +64,9 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     WriteByte(MSG_ENTITY, sf);
 
     if(sf & 1) {
-        WriteByte(MSG_ENTITY, o);
-
-        if(!o)
+        if(o)
+            WriteByte(MSG_ENTITY, o);
+        else
             WriteByte(MSG_ENTITY, self.team);
     }
 
@@ -94,7 +97,7 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 }
 
 float W_Zapper_Beam_Expired(float secondary) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self.owner, CVAR(g_balance_zapper_swapshotmodes));
 
     if(time > self.zapper_expire && ((secondary && !self.owner.w_button_secondary) || (!secondary && !self.owner.w_button_primary)))
         return TRUE;
@@ -591,7 +594,7 @@ void W_Zapper_Cooloff(void) {
     if(self.zapper_heat < 0)
         return;
 
-    float a = bound(0, (time - self.zapper_coolofftime) * CVAR(g_balance_zapper_primary_cooloff_accel), 1);
+    float a = bound(0, (time - self.zapper_coolofftime) * CVAR(g_balance_zapper_primary_cooloff_accel), Buffs_ClipLimitMultiplier(self));
 
     if(!a)
         return;
@@ -607,7 +610,7 @@ float W_Zapper_PrepareFirstAttack(float sec) {
 }
 
 void W_Zapper_Accumulate(void) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self.owner, CVAR(g_balance_zapper_swapshotmodes));
 
     setorigin(self, self.owner.origin);
     self.nextthink = time;
@@ -631,7 +634,7 @@ void W_Zapper_Accumulate(void) {
 }
 
 float w_zapper(float req) {
-    W_SetButtonFields(CVAR(g_balance_zapper_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_zapper_swapshotmodes));
     float dofire;
 
     if (req == WR_AIM) {

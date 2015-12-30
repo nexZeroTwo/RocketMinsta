@@ -211,7 +211,7 @@ void HG_HealEmitter_Think(void) {
         remove(self);
         return;
     }
-    
+
     if(self.origin != self.oldorigin)
         UpdateCSQCProjectile(self);
 
@@ -219,12 +219,9 @@ void HG_HealEmitter_Think(void) {
     self.nextthink = time;
 }
 
-void HG_HealEmitter(void) {
-    var o = self.owner;
-    if(!o.iscreature) o = self.realowner;
-
+void HG_HealEmitter(entity o) {
     if(Buffs_Present(o, BUFF_MEDIC)) {
-        if(!self.heal_emitter) {
+        if(!self.heal_emitter || wasfreed(self.heal_emitter)) {
             entity e = spawn();
             e.owner = self;
             e.movetype = MOVETYPE_FOLLOW;
@@ -233,7 +230,7 @@ void HG_HealEmitter(void) {
             e.nextthink = time;
             e.csqcprojectile_extradata = self.heal_emitter_radius;
             
-            CSQCProjectile(e, TRUE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            CSQCProjectile(e, FALSE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
             self.heal_emitter = e;
         }
     } else {
@@ -250,7 +247,7 @@ void HG_Napalm_Think(void) {
         return;
     }
 
-    HG_HealEmitter();
+    HG_HealEmitter(self.owner);
 
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
 
@@ -362,7 +359,7 @@ void HG_Plasma_Projectile_Think() {
         self.hg_plasma_projdps_last = time;
     }
     
-    HG_HealEmitter();
+    HG_HealEmitter(self.realowner);
 
     self.nextthink = time;
 }
@@ -418,7 +415,7 @@ void HG_Plasma_Projectile(float kickangle) {
     proj.hg_plasma_projdist = CVAR(g_nadgets_plasma_projectile_maxdistance);
     proj.hg_plasma_projdps_next = time + CVAR(g_nadgets_plasma_projectile_dps_pause) + random() * CVAR(g_nadgets_plasma_projectile_dps_pause_randomfactor);
     proj.hg_plasma_projdps_last = proj.hg_plasma_projdps_next - proj.hg_plasma_projdps_delay;
-    proj.csqcprojectile_extradata = hg_plasma_group;
+    proj.csqcprojectile_extradata = hg_plasma_group & 0xFF;
     proj.heal_emitter_radius = proj.hg_plasma_projrange;
     proj.damage_noinfo = TRUE;
     
@@ -1108,7 +1105,7 @@ void HG_Grenade_Think() {
         }
     }
     
-    HG_HealEmitter();
+    HG_HealEmitter(self.owner);
 
     self.nextthink = time;
     self.hg_ranthink += 1;
@@ -1148,7 +1145,7 @@ float HG_PlayerGrenadeType(entity e) {
     float picked = HG_NameToType(CVAR_STR(g_nadgets_type));
     float argc = tokenize_console(HG_SelectableTypes(hg_context_isalt));
     float i;
-    
+
     if(argc)
         for(i = 0; i < argc; ++i)
             if(e.hg_ctx_type_picked == HG_NameToType(argv(i))) {
@@ -1175,8 +1172,8 @@ void HG_SetGrenadeType(entity p, float t) {
     p.hg_ctx_type = t;
     
     if(p.scorekeeper) {
-        p.scorekeeper.SendFlags |= pow(2, SP_NADEMODE);
-        p.scorekeeper.(scores[SP_NADEMODE]) = HG_CompressDualType(p.hg_type1, p.hg_type2);
+        var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFFFF00;
+        PlayerScore_Set(p, SP_STATUSICONS, s + HG_CompressDualType(p.hg_type1, p.hg_type2) & 0x000000FF);
     }
 }
 
@@ -2391,7 +2388,7 @@ void HG_Sentry_Think(void) {
 
     o = self;
     self = self.aiment;
-    HG_HealEmitter();
+    HG_HealEmitter(o.realowner);
     self = o;
 
     self.nextthink = time;
@@ -2586,7 +2583,7 @@ void HG_Sentry_Trigger(void) {
             sound(e, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
             W_Zapper_Attack2_Effect(if(teams_matter) self.team else COLOR_TEAM3, o, o, end_visual);
 
-            if(Buffs_Present(self, BUFF_ADEPT)) {
+            if(targ.takedamage && Buffs_Present(self, BUFF_ADEPT)) {
                 var arc = CVAR(g_nadgets_sentry_adept_shock_arc);
 
                 if(arc) {

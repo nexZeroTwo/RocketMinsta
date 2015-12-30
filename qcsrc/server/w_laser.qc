@@ -84,7 +84,7 @@ void spawnfunc_weapon_laser (void)
 
 float w_laser(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_laser_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_laser_swapshotmodes));
 
 	float r1;
 	float r2;

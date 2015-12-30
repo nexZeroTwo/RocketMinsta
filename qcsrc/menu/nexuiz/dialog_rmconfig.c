@@ -4,7 +4,7 @@ CLASS(NexuizRMConfigDialog) EXTENDS(NexuizRootDialog)
 	ATTRIB(NexuizRMConfigDialog, title, string, "RocketMinsta Configuration")
 	ATTRIB(NexuizRMConfigDialog, color, vector, SKINCOLOR_DIALOG_TEAMSELECT)
 	ATTRIB(NexuizRMConfigDialog, intendedWidth, float, 1.0)
-	ATTRIB(NexuizRMConfigDialog, rows, float, 24)
+	ATTRIB(NexuizRMConfigDialog, rows, float, 27)
 	ATTRIB(NexuizRMConfigDialog, columns, float, 16)
 	ATTRIB(NexuizRMConfigDialog, name, string, "RMConfig")
 ENDCLASS(NexuizRMConfigDialog)
@@ -17,9 +17,12 @@ ENDCLASS(NexuizRMConfigDialog)
 void fillNexuizRMConfigDialog(entity me)
 {
 	entity e, sl;
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+
+    me.setFirstColumn(me, me.firstColumn - 0.1);
     me.TR(me);
-        me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
-            OPTDEP("dodging")
+        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "General:"));
+    me.setFirstColumn(me, me.firstColumn + 0.1);
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "radio", "Enable the Radio (music broadcast from server)"));
             OPTDEP("radio")
@@ -66,6 +69,14 @@ void fillNexuizRMConfigDialog(entity me)
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nokillsound", "Separate kill and hit sounds"));
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(1, "nogamemenu", "Enable the Game Menu"));
+
+    me.setFirstColumn(me, me.firstColumn - 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Game-specific:"));
+    me.setFirstColumn(me, me.firstColumn + 0.1);
+    me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "nododging", "Disable dodging"));
+            OPTDEP("dodging")
 	me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "freezetag_danger", "Danger shortcut for freezetag"));
             OPTDEP("freezetag_danger")
@@ -80,14 +91,20 @@ void fillNexuizRMConfigDialog(entity me)
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "altcharge", "Alternative nadget throwing mode"));
             OPTDEP("altcharge")
     me.TR(me);
+        me.TD(me, 1, 4, e = makeRMCheckBox(0, "convswitch", "Conventional weapon controls"));
+            OPTDEP("convswitch")
+
+    me.setFirstColumn(me, me.firstColumn - 0.1);
+    me.TR(me);
 		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Note: You can access these options through Multiplayer -> Player Setup"));
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizButton("Ok", '0 0 0'));
 			e.onClick = Dialog_Close;
 			e.onClickEntity = me;
+    me.setFirstColumn(me, me.firstColumn + 0.1);
 	
 	me.gotoRC(me, 0, 8); me.setFirstColumn(me, me.currentColumn);
-		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD settings:"));
+		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "HUD:"));
 	me.setFirstColumn(me, me.firstColumn + 0.1);
 	me.TR(me);
 		me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldhud", "Use default Nexuiz HUD"));
@@ -117,7 +134,7 @@ void fillNexuizRMConfigDialog(entity me)
 
 	me.setFirstColumn(me, me.firstColumn - 0.1);
     me.TR(me);
-        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Font settings:"));
+        me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Font:"));
     me.setFirstColumn(me, me.firstColumn + 0.1);
     me.TR(me);
         me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "rm_fonts_prefer_ttf",

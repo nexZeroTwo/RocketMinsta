@@ -830,6 +830,7 @@ void PutObserverInServer (void)
             self.hg_type1 = self.hg_type2 = 0;
             self.hg_nadesused = 0;
             self.hg_shield = 0;
+            self.w_secondary = 0;
         }
     }
     
@@ -1407,6 +1408,7 @@ void PutClientInServer (void)
         }
 
         W_Clip_ResetAll(TRUE);
+        W_SetSecondary(self, self.w_secondary);
         Boobs_Attach();
 
         self.wasingame = TRUE;
@@ -1481,6 +1483,7 @@ float ClientInit_SendEntity(entity to, float sf)
         WriteByte(MSG_ENTITY, (HG_SelectableTypes(FALSE) != ""));
         WriteByte(MSG_ENTITY, g_nadgets_double);
     }
+    WriteInt24_t(MSG_ENTITY, g_weaponarena_secondary);
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
@@ -2703,6 +2706,8 @@ void SpectateCopy(entity spectatee) {
     self.w_clip_loaded_stat = spectatee.w_clip_loaded_stat;
     self.zapper_heat = spectatee.zapper_heat;
     self.buffstat = spectatee.buffstat;
+    self.w_inring_cycle = spectatee.w_inring_cycle;
+    self.w_inring_fulltime = spectatee.w_inring_fulltime;
 	setorigin(self, spectatee.origin);
     // TODO: find out if this is actually needed
     // setsize(self, spectatee.mins, spectatee.maxs);
@@ -2973,6 +2978,9 @@ void LeaveSpectatorMode()
             if(HG_ShowMenu(FALSE))
                 return;
             
+            if(W_ShowMenu(FALSE))
+                return;
+
 			self.classname = "player";
 			if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -2995,6 +3003,7 @@ void LeaveSpectatorMode()
         
         if(!self.joinqueue)
         if(!HG_ShowMenu(FALSE))
+        if(!W_ShowMenu(FALSE))
             JoinQ_Push(self);
 	}
 }

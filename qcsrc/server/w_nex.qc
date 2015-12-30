@@ -1,3 +1,9 @@
+
+.entity nex_charge_effect;
+.float nex_charge_readytime;
+.float nex_charge_expiretime;
+.float nex_burst_counter;
+
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	vector v;
 	v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
@@ -46,6 +52,9 @@ void W_Nex_Attack (void)
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
 		self.ammo_cells = self.ammo_cells - cost;
+
+    self.w_inring_fulltime = ATTACK_FINISHED(self);
+    self.w_inring_cycle = self.w_inring_fulltime - time;
 }
 
 void W_Nex_Attack2(void) {
@@ -77,9 +86,6 @@ void W_Nex_Attack2(void) {
         self.ammo_cells = self.ammo_cells - cost;
 }
 
-.entity nex_charge_effect;
-.float nex_charge_expiretime;
-
 void W_Nex_ChargeEffect_Think(void) {
     if(!self.owner.iscreature || !PlayerMayFire(self.owner)) {
         if(self == self.owner.nex_charge_effect)
@@ -93,14 +99,24 @@ void W_Nex_ChargeEffect_Think(void) {
     if(self.enemy.cnt < 0) {
         stopsound(self, CHAN_PROJECTILE);
 
-        self.scale = approach(self.scale, 10, frametime * 50);
-        self.alpha = 1 - self.scale / 10;
-        self.alpha *= self.alpha;
+        if(self.enemy.cnt < -1) {
+            self.scale = approach(self.scale, 0, frametime * 5);
+            self.alpha = approach(self.alpha, 0, frametime * 5);
 
-        if(self.scale >= 10)
-            remove(self);
-        else
-            self.nextthink = time;
+            if(self.scale <= 0)
+                remove(self);
+            else
+                self.nextthink = time;
+        } else {
+            self.scale = approach(self.scale, 10, frametime * 50);
+            self.alpha = 1 - self.scale / 10;
+            self.alpha *= self.alpha;
+
+            if(self.scale >= 10)
+                remove(self);
+            else
+                self.nextthink = time;
+        }
 
         return;
     }
@@ -136,22 +152,45 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     self.nex_charge_effect = e;
 }
 
+void W_Nex_Attack2_Burst(void) {
+    W_Nex_Attack2();
+    ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
+
+    self.nex_burst_counter -= 1;
+
+    if(self.nex_burst_counter && PlayerMayFire(self))
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_burst_refire), W_Nex_Attack2_Burst);
+    else
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
+}
+
 void W_Nex_Attack2_Wait(void) {
-    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
 
     if(self.w_button_secondary && time < self.nex_charge_expiretime) {
         return;
     }
 
-    if(self.nex_charge_effect) {
-        self.nex_charge_effect.cnt = -1;
-        self.nex_charge_effect = world;
+    var ccnt = -1;
+    var rate = W_WeaponRateFactor();
+
+    if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
+        self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
+        W_Nex_Attack2_Burst();
+        self.w_inring_fulltime = ATTACK_FINISHED(self);
+        self.w_inring_cycle = self.w_inring_fulltime - time;
+    } else {
+        ccnt = -2;
+        stopsound(self, CHAN_WEAPON);
+        ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
+        weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
+        self.w_inring_cycle = -1;
     }
 
-    W_Nex_Attack2();
-    ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
-
-    weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
+    if(self.nex_charge_effect) {
+        self.nex_charge_effect.cnt = ccnt;
+        self.nex_charge_effect = world;
+    }
 }
 
 void W_Nex_SetClipContext(void) {
@@ -168,7 +207,7 @@ void spawnfunc_weapon_nex (void); // defined in t_items.qc
 
 float w_nex(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_nex_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
     W_Nex_SetClipContext();
 
 	if (req == WR_AIM)
@@ -176,7 +215,7 @@ float w_nex(float req)
 	else if (req == WR_THINK)
 	{
         if(W_Clip_TryWeaponAction()) {
-            if (self.w_button_primary)
+            if(self.w_button_primary)
             if(W_Clip_TryAttackOrReload()) {
                 if (weapon_prepareattack(0, CVAR(g_balance_nex_refire)))
                 {
@@ -187,15 +226,34 @@ float w_nex(float req)
             if(self.w_button_secondary && CVAR(g_balance_nex_secondary))
             if(W_Clip_TryAttackOrReload()) {
                 if(weapon_prepareattack(1, CVAR(g_balance_nex_secondary_refire))) {
-                    float ct = CVAR(g_balance_nex_secondary_chargetime);
+                    var rate = W_WeaponRateFactor();
+                    var ct = CVAR(g_balance_nex_secondary_chargetime);
+                    var cr = CVAR(g_balance_nex_secondary_chargeholdtime_required) * rate;
+
                     weapon_thinkf(WFRAME_FIRE2, ct, W_Nex_Attack2_Wait);
-                    ct *= W_WeaponRateFactor();
+                    ct *= rate;
+                    cr = max(cr, ct);
+
+                    self.nex_charge_readytime  = time + cr;
                     self.nex_charge_expiretime = time + ct + CVAR(g_balance_nex_secondary_chargeholdtime);
+
                     sound(self, CHAN_WEAPON, "weapons/nex_charge.wav", VOL_BASE, ATTN_NORM);
-                    W_Nex_ChargeEffect_Spawn(ct);
+                    W_Nex_ChargeEffect_Spawn(cr);
+
+                    self.w_inring_fulltime = self.nex_charge_readytime;
+                    self.w_inring_cycle = self.w_inring_fulltime - time;
                 }
             }
             W_Clip_FinishWeaponAction();
+
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_cycle) {
+                var af = ATTACK_FINISHED(self);
+
+                if(af > time) {
+                    self.w_inring_fulltime = af;
+                    self.w_inring_cycle = self.w_inring_fulltime - time;   
+                }
+            }
         }
 	}
 	else if (req == WR_PRECACHE)

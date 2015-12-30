@@ -19,12 +19,6 @@ float mv_starttime;
 
 #define PREVIEW_FROMSERVER 2
 
-vector mv_mousepos;
-float mv_selection;
-
-string GameTypeVote_DescriptionByID(float id);
-
-vector mv_mousepos;
 float mv_selection;
 
 string GameTypeVote_DescriptionByID(float id);
@@ -39,10 +33,10 @@ float MapVote_Selection(vector topleft, vector cellsize, float rows, float colum
 	for (r = 0; r < rows; ++r)
 		for (c = 0; c < columns; ++c)
 		{
-			if (mv_mousepos_x >= topleft_x + cellsize_x *  c &&
-				mv_mousepos_x <= topleft_x + cellsize_x * (c + 1) &&
-				mv_mousepos_y >= topleft_y + cellsize_y *  r &&
-				mv_mousepos_y <= topleft_y + cellsize_y * (r + 1))
+			if (mouse_pos_x >= topleft_x + cellsize_x *  c &&
+				mouse_pos_x <= topleft_x + cellsize_x * (c + 1) &&
+				mouse_pos_y >= topleft_y + cellsize_y *  r &&
+				mouse_pos_y <= topleft_y + cellsize_y * (r + 1))
 			{
 				cell = r * columns + c;
 				break;
@@ -69,7 +63,7 @@ float GametypeVote_Selection()
 		float sz;
 		sz = sbar_fontsize_y * 1.4 + tokenizebyseparator(GameTypeVote_DescriptionByID(i), "\n") * sbar_fontsize_y;
 
-		if(mv_mousepos_y >= offset && mv_mousepos_y <= offset + sz)
+		if(mouse_pos_y >= offset && mouse_pos_y <= offset + sz)
 			r = i;
 
 		offset += sz + sbar_fontsize_y;
@@ -259,11 +253,6 @@ void MapVote_Draw()
 	if(!mv_active)
 		return;
 
-	mv_mousepos = mv_mousepos + getmousepos();
-
-	mv_mousepos_x = bound(0, mv_mousepos_x, vid_conwidth);
-	mv_mousepos_y = bound(0, mv_mousepos_y, vid_conheight);
-
 	center = (vid_conwidth - 1)/2;
 	xmin = vid_conwidth*0.05; // 5% border must suffice
 	xmax = vid_conwidth - xmin;
@@ -410,8 +399,6 @@ void MapVote_Draw()
 		MapVote_DrawAbstain(pos, isize, xmax - xmin, tmp, i);
 		++mv_num_maps;
 	}
-	
-	drawpic(mv_mousepos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
 void Cmd_MapVote_MapDownload(float argc)
@@ -495,8 +482,8 @@ void MapVote_Init()
 	registercmd("-showscores");
 
 	mv_active = 1;
-	mv_mousepos = '0.5 0 0' * vid_conwidth + '0 0.5 0' * vid_conheight;
 	mv_selection = -1;
+    mouse_enabled = TRUE;
 
 	ssdir = ReadString();
     q3ssdir = "levelshots";

@@ -34,6 +34,7 @@ void W_SwitchWeapon_Force(entity e, float w)
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
+    e.w_inring_cycle = 0;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {
@@ -1030,12 +1031,39 @@ void W_AttachToShotorg(entity flash, vector offset)
 	}
 }
 
-void W_SetButtonFields(float swap) {
-    if(swap) {
-        w_button_primary = BUTTON_ATCK2;
-        w_button_secondary = BUTTON_ATCK;
-    } else {
-        w_button_primary = BUTTON_ATCK;
-        w_button_secondary = BUTTON_ATCK2;
+void W_Reload();
+
+float in_setbuttonfields;
+
+void W_SetButtonFields(entity plr, float swap) {
+    if(in_setbuttonfields)
+        return;
+
+    using(in_setbuttonfields = TRUE) {
+        if(g_weaponarena_secondary && plr.w_conv_switch) {
+            var pwep = pow(2, plr.switchweapon - 1);
+
+            if(pwep & g_weaponarena_secondary)
+                swap = if(swap) FALSE else TRUE; // XXX: qcc miscompiles !swap
+
+            if(swap) {
+                w_button_primary = w_button_null;
+                w_button_secondary = BUTTON_ATCK;
+            } else {
+                w_button_primary = BUTTON_ATCK;
+                w_button_secondary = w_button_null;
+            }
+
+            if(self.BUTTON_ATCK2)
+                W_Reload();
+        } else {
+            if(swap) {
+                w_button_primary = BUTTON_ATCK2;
+                w_button_secondary = BUTTON_ATCK;
+            } else {
+                w_button_primary = BUTTON_ATCK;
+                w_button_secondary = BUTTON_ATCK2;
+            }     
+        }
     }
 }

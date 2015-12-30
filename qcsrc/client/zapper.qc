@@ -199,7 +199,6 @@ void Zapper_Remove(void) {
 void Zapper_Read(float t) {
     float sf = ReadByte();
 
-
     if(sf & 1) {
         float vol, attn;
 
@@ -220,12 +219,14 @@ void Zapper_Read(float t) {
         }
 
         self.entremove = Zapper_Remove;
-        self.sv_entnum = ReadByte();
 
-        if(!self.sv_entnum)
+        if(sf & 32) {
+            self.sv_entnum = 0;
             self.team = ReadByte() - 1;
-        else
+        } else {
+            self.sv_entnum = ReadByte();
             self.team = GetPlayerColor(self.sv_entnum - 1);
+        }
 
         self.alpha = 1;
         self.cnt = random() * 1000;
@@ -239,12 +240,12 @@ void Zapper_Read(float t) {
         self.zapper_start_y = ReadCoord();
         self.zapper_start_z = ReadCoord();
 
-        if(self.sv_entnum) {
+        if(sf & 32) {
+            self.zapper_real_start = self.zapper_start;
+        } else {
             self.zapper_real_start_x = ReadCoord();
             self.zapper_real_start_y = ReadCoord();
             self.zapper_real_start_z = ReadCoord();
-        } else {
-            self.zapper_real_start = self.zapper_start;
         }
     }
 
@@ -259,8 +260,10 @@ void Zapper_Read(float t) {
     if(sf & 8) {
         zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
     }
-    if(sf & 16)
+
+    if(sf & 16) {
         InterpolateOrigin_Note();
+    }
 }
 
 

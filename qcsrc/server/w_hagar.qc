@@ -132,7 +132,7 @@ void spawnfunc_weapon_hagar (void)
 
 float w_hagar(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_hagar_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_hagar_swapshotmodes));
     W_Hagar_SetClipContext();
 
 	if (req == WR_AIM)

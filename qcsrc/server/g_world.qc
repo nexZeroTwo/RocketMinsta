@@ -756,6 +756,8 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
+    addstat(STAT_INNERRING_CYCLE, AS_FLOAT, w_inring_cycle);
+    addstat(STAT_INNERRING_FULLTIME, AS_FLOAT, w_inring_fulltime);
 
     W_Clip_Stats_Init();
 

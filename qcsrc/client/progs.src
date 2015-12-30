@@ -51,6 +51,7 @@ teamplay.qc
 sbar.qc
 mapvoting.qc
 nadgetselect.qc
+weaponselect.qc
 
 rubble.qc
 hook.qc

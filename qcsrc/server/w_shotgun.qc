@@ -136,7 +136,7 @@ void W_Shotgun_SetClipContext(void) {
 
 float w_shotgun(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_shotgun_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_shotgun_swapshotmodes));
     W_Shotgun_SetClipContext();
 
 	if (req == WR_AIM)

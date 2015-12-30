@@ -178,7 +178,7 @@ void W_Mortar_SetClipContext(void) {
 .float bot_secondary_grenademooth;
 float w_glauncher(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_grenadelauncher_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_grenadelauncher_swapshotmodes));
     W_Mortar_SetClipContext();
 
 	if (req == WR_AIM)

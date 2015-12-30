@@ -111,8 +111,13 @@ void W_Clip_Reload(void) {
 
     sound(self, CHAN_WEAPON2, "weapons/campingrifle_reload.wav", VOL_BASE, ATTN_NORM);
 
-    t = max(time, ATTACK_FINISHED(self)) + w_clip_context_reloadtime;
-    self.w_clip_reloadfinished = t * W_WeaponRateFactor();
+    var rate = W_WeaponRateFactor();
+    var rtime = w_clip_context_reloadtime * rate;
+
+    t = max(time, ATTACK_FINISHED(self)) + rtime;
+    self.w_clip_reloadfinished = t;
+    self.w_inring_fulltime = t;
+    self.w_inring_cycle = rtime;
 
     weapon_thinkf(WFRAME_RELOAD, w_clip_context_reloadtime, W_Clip_ReloadedAndReady);
 
@@ -175,6 +180,7 @@ void W_Clip_Reset(float dorefill) {
     if(dorefill) {
         self.w_clip_loaded = self.w_clip_limit;
         self.w_clip_reloadfinished = time;   
+        self.w_inring_cycle = 0;
     } else {
         self.w_clip_loaded = bound(0, self.w_clip_loaded, self.w_clip_limit);
     }

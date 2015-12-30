@@ -135,7 +135,7 @@ void Shownames_DrawPlayer(entity plr) {
     }
 
     if((var icons = GetPlayerStatusIconsWidth(textsz_x))) {
-        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - '2 0 0', textsz_x, a * 0.7, 1, playerslots[plr.sv_entnum].(scores[SP_NADEMODE]));
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - '2 0 0', textsz_x, a * 0.7, 1, playerslots[plr.sv_entnum].(scores[SP_STATUSICONS]));
         namepos = '0.5 0 0' * icons + '2 0 0' + namepos;
     }
 

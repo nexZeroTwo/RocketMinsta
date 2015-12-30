@@ -554,7 +554,7 @@ void Cmd_Sbar_SetFields(float argc)
         } else if(str == "nade") {
             if(!g_nadgets)
                 continue;
-            sbar_field[sbar_num_fields] = SP_NADEMODE;
+            sbar_field[sbar_num_fields] = SP_STATUSICONS;
 		} else if(str == "fps") {
             if(!sv_scoreboard_fps_column)
                 continue;
@@ -1066,7 +1066,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
             if(g_nadgets && !is_spec) {
                 var p2 = pos - tmp;
-                p2 -= DrawPlayerStatusIcons(p2, sbar_fontsize_y, aa, 1, pl.(scores[SP_NADEMODE]));
+                p2 -= DrawPlayerStatusIcons(p2, sbar_fontsize_y, aa, 1, pl.(scores[SP_STATUSICONS]));
                 tmp_x -= sbar_fontsize_x * 0.25 - p2_x;
             }
 
@@ -3882,7 +3882,7 @@ void Sbar_DrawSelectedPlayer(void) {
     var icons = GetPlayerStatusIconsWidth(fs_x);
     if(icons) {
         vector ofs = [fs_x / 9, 0];
-        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_x, a, b, plr.(scores[SP_NADEMODE]));
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_x, a, b, plr.(scores[SP_STATUSICONS]));
         namepos = '0.5 0 0' * icons + ofs + namepos;
     }
 

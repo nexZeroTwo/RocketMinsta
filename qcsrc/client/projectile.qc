@@ -405,6 +405,10 @@ void Ent_Projectile()
 		self.scale = 1;
         self.colormod = '0 0 0';
         
+        if(cvar("_ent_debug")) {
+            print("new projectile: ", ftos(self.cnt), " (", ftos(f), ")\n");
+        }
+
 		switch(self.cnt)
 		{
 			case PROJECTILE_ELECTRO:

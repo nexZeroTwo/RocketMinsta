@@ -276,6 +276,7 @@ void CSQC_Init(void)
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
+    registercvar("_secondary_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
@@ -709,9 +710,11 @@ void PostInit(void)
             localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 56:
             localcmd("seta r_font_size_snapping 1\n");
+        case 57:
+            localcmd("seta rm_convswitch 0; convswitch 0\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 57\n");
+		localcmd("seta rm_initialized 58\n");
 		RM_OUTDATED
 		break;
 	}
@@ -780,6 +783,7 @@ void PostInit(void)
     registercmd("radio");
     registercmd("nododging");
     registercmd("altcharge");
+    registercmd("convswitch");
 	// -- //
 	registercmd("hudskin");
 	
@@ -797,6 +801,7 @@ void PostInit(void)
     localcmd("cmd radio ", ftos(CVAR(rm_radio)), "\n");
     localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
     localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+    localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 	
     localcmd("alias menu_shownadeselect \"cmd picknade\"\n");
     localcmd("alias menu_shownadeselect2 \"cmd picknade\"\n");
@@ -822,6 +827,8 @@ void PostInit(void)
 	DPRM_Start();
 	RegisterMasterServers();
     InitFonts();
+
+    mouse_pos = '-1 -1';
 
 	postinit = true;
 }
@@ -946,6 +953,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
         strCmd == "altcharge"           ||
+        strCmd == "convswitch"          ||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -992,6 +1000,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
         else if(strCmd == "altcharge")
             localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+        else if(strCmd == "convswitch")
+            localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT
@@ -1402,6 +1412,9 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
     if(NS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
 
+    if(WS_InputEvent(bInputType, nPrimary, nSecondary))
+        return TRUE;
+
 	return FALSE;
 }
 
@@ -1563,13 +1576,17 @@ void Ent_ReadPlayerScore()
 	{
 		if(sf & p)
 		{
-            if(lf & p)
-                o.(scores[i]) = ReadInt24_t();
-            else
-                o.(scores[i]) = ReadChar();
-            
-            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
-                UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            if(i == SP_STATUSICONS) {
+                o.(scores[i]) = ReadShort();
+            } else {
+                if(lf & p)
+                    o.(scores[i]) = ReadInt24_t();
+                else
+                    o.(scores[i]) = ReadChar();
+
+                if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
+                    UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            }
 		}
 	}
 
@@ -1739,6 +1756,12 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 			bIsNewEntity = 1;
 		}
 #endif
+
+    if(cvar("_ent_debug")) {
+        if(t >= _ENT_START && t <= _ENT_END)
+            print("ent: ", ftos(t), " (", ftos(bIsNewEntity), ")\n");
+    }
+
 	self.enttype = t;
 	switch(t)
 	{
@@ -1916,6 +1939,8 @@ void Ent_Init()
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
+    g_weaponarena_secondary = ReadInt24_t();
+    cvar_set("_secondary_select_available", ftos(!!(g_weaponarena_secondary & (g_weaponarena_secondary - 1))));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
@@ -2243,6 +2268,11 @@ float CSQC_Parse_TempEntity()
 	float nTEID;
 	nTEID = ReadByte();
 
+    if(cvar("_ent_debug")) {
+        if(nTEID >= _TE_CSQC_START && nTEID <= _TE_CSQC_END)
+            print("temp ent: ", ftos(nTEID), "\n");
+    }
+
 	switch(nTEID)
 	{
 		case TE_CSQC_PICTURE:
@@ -2334,6 +2364,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_NADGETSELECT:
             Net_ReadNadgetSelect();
+            return TRUE;
+        case TE_CSQC_SECONDARYSELECT:
+            Net_ReadWeaponSelect();
             return TRUE;
     }
 

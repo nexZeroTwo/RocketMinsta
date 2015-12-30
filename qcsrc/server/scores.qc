@@ -223,13 +223,16 @@ float PlayerScore_SendEntity(entity to, float sendflags)
 	WriteInt24_t(MSG_ENTITY, longflags);
 #endif
 
-    for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
+    for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2) {
         if(sendflags & p) {
-            if(longflags & p)
+            if(i == SP_STATUSICONS)
+                WriteShort(MSG_ENTITY, self.scores[i]);
+            else if(longflags & p)
                 WriteInt24_t(MSG_ENTITY, self.scores[i]);
             else
                 WriteChar(MSG_ENTITY, self.scores[i]);
         }
+    }
 
     return TRUE;
 }
@@ -266,7 +269,7 @@ void Score_ClearAll()
 			continue;
 		for(i = 0; i < MAX_SCORE; ++i)
 		{
-            if(i == SP_COUNTRY || i == SP_NADEMODE)
+            if(i == SP_COUNTRY || i == SP_STATUSICONS)
                 continue;
             
 			if(sk.(scores[i]) != 0)

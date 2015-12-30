@@ -349,7 +349,7 @@ void spawnfunc_weapon_rocketlauncher (void); // defined in t_items.qc
 
 float w_rlauncher(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_rocketlauncher_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_rocketlauncher_swapshotmodes));
     W_Rocket_SetClipContext();
 
 	entity rock;

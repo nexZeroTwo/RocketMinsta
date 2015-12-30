@@ -717,10 +717,11 @@ void Draw2d_ThroughWarpZones(void) {
 }
 
 vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float pstat) {
+    var scale = [height, height];
+
     // 1st byte: nadgets
     if(g_nadgets) {
         var nadgets = HG_DecompressDualType(pstat & 0xFF);
-        var scale = [height, height];
 
         drawpic(pos, HG_TypeToIcon(nadgets_x, FALSE, FALSE), scale, HG_TypeToColor(nadgets_x) * b, a, DRAWFLAG_NORMAL);
         pos_x += scale_x;
@@ -729,6 +730,41 @@ vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float p
             drawpic(pos, HG_TypeToIcon(nadgets_y, FALSE, FALSE), scale, HG_TypeToColor(nadgets_y) * b, a, DRAWFLAG_NORMAL);
             pos_x += scale_x;
         }
+    }
+
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary & (g_weaponarena_secondary - 1)) {
+        var winfo = get_weaponinfo((pstat & 0xFF00) / 0x100);
+        var clr = winfo.w_color * b;
+
+        using(drawfont = sbar_rmbigfont)
+            drawstring_aspect(pos, winfo.message2, scale, clr, a, DRAWFLAG_NORMAL);
+
+        var f = 0.5;
+        var l = height * f;
+        var s = height * (1 - f) * 0.5;
+        var k = l + s;
+        var j = k + s;
+
+        var p1 = [s, 0] + pos;
+        var p2 = [k, 0] + pos;
+        var p3 = [j, s] + pos;
+        var p4 = [j, k] + pos;
+        var p5 = [k, j] + pos;
+        var p6 = [s, j] + pos;
+        var p7 = [0, k] + pos;
+        var p8 = [0, s] + pos;
+
+        drawline(2, p1, p2, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p2, p3, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p3, p4, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p4, p5, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p5, p6, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p6, p7, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p7, p8, clr, a, DRAWFLAG_NORMAL);
+        drawline(2, p8, p1, clr, a, DRAWFLAG_NORMAL);
+
+        pos_x += scale_x;
     }
 
     return pos;
@@ -745,5 +781,160 @@ float GetPlayerStatusIconsWidth(float height) {
             width += height;
     }
 
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary)
+        width += height;
+
     return width;
+}
+
+// Shamelessly stolen from xonotic
+void DrawCircleClippedPic(vector centre, float radius, string pic, float f, vector rgb, float a, float drawflag)
+{
+    float x, y, q, d;
+    vector ringsize, v, t;
+    ringsize = radius * '1 1 0';
+
+    x = cos(f * 2 * M_PI);
+    y = sin(f * 2 * M_PI);
+    q = fabs(x) + fabs(y);
+    x /= q;
+    y /= q;
+
+    if(f >= 1)
+    {
+        // draw full rectangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y -= 0.5 * ringsize_y;    t -= '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+
+        d = q - 1;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+    else if(f > 0.75)
+    {
+        // draw upper and first triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y -= 0.5 * ringsize_y;    t -= '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+        d = q - 0.75;
+        if(d <= 0)
+            R_EndPolygon();
+    }
+    else if(f > 0.5)
+    {
+        // draw upper triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+
+        d = q - 0.5;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+    else if(f > 0.25)
+    {
+        // draw first triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+        d = q - 0.25;
+        if(d <= 0)
+            R_EndPolygon();
+    }
+    else
+    {
+        d = q;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+
+    if(d > 0)
+    {
+            v = centre;         t = '0.5 0.5 0';
+            v_x += x * 0.5 * ringsize_x;    t += x * '0.5 0.5 0';
+            v_y += y * 0.5 * ringsize_y;    t += y * '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+    }
 }

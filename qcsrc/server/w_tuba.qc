@@ -103,7 +103,7 @@ void spawnfunc_weapon_tuba (void)
 
 float w_tuba(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_tuba_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_tuba_swapshotmodes));
 
 	if (req == WR_AIM)
 	{

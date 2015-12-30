@@ -333,7 +333,10 @@ void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
     trailparticles(nextrail_particles_own, nextrail_particles_eff, from, endpos);
 
     float eff;
-    switch(nextrail_particles_theteam) {
+
+    if(nextrail_particles_secondary)
+        eff = rm_particleeffectnum_team("RM_LIGHTNING", nextrail_particles_theteam, 2);
+    else switch(nextrail_particles_theteam) {
         case COLOR_TEAM1: eff = particleeffectnum("TE_TEI_G3RED");    break;
         case COLOR_TEAM2: eff = particleeffectnum("TE_TEI_G3BLUE");   break;
         case COLOR_TEAM3: eff = particleeffectnum("TE_TEI_G3YELLOW"); break;
@@ -358,28 +361,28 @@ void nextrail_particles_trace_callback(vector from, vector endpos, vector to)
 
 void nex_trailparticles(entity own, float eff, vector org, vector real_org, vector end)
 {
+    var r = random() * PI * 2;
 	nextrail_particles_own = own;
 	nextrail_particles_eff = eff;
-    nextrail_particles_spiraloffs1 = time;
-    nextrail_particles_spiraloffs2 = time + PI;
+    nextrail_particles_spiraloffs1 = time + r;
+    nextrail_particles_spiraloffs2 = time + r + PI;
 	WarpZone_TraceTriangle(real_org, org, end, MOVE_NOMONSTERS, world, nextrail_particles_trace_callback);
 }
 
-void Net_ReadNexgunBeamParticle()
-{
-	vector shotorg, shotorg_real, endpos;
+void Net_ReadNexgunBeamParticle(void) {
+    vector shotorg, shotorg_real, endpos;
 
-	shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
-	shotorg_real_x = ReadCoord(); shotorg_real_y = ReadCoord(); shotorg_real_z = ReadCoord();
-	endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
+    shotorg_x = ReadCoord(); shotorg_y = ReadCoord(); shotorg_z = ReadCoord();
+    shotorg_real_x = ReadCoord(); shotorg_real_y = ReadCoord(); shotorg_real_z = ReadCoord();
+    endpos_x = ReadCoord(); endpos_y = ReadCoord(); endpos_z = ReadCoord();
     nextrail_particles_theteam = ReadByte() - 1;
     nextrail_particles_secondary = ReadByte();
-	
-	//draw either the old v2.3 beam or the new beam
-	if(CVAR(cl_particles_oldnexbeam) && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
-		nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, shotorg_real, endpos);
-	else
-		nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, shotorg_real, endpos);
+    
+    //draw either the old v2.3 beam or the new beam
+    if(CVAR(cl_particles_oldnexbeam) && (getstati(STAT_ALLOW_OLDNEXBEAM) || isdemo()))
+        nex_trailparticles(world, particleeffectnum("TE_TEI_G3"), shotorg, shotorg_real, endpos);
+    else
+        nex_trailparticles(world, particleeffectnum("nex_beam"), shotorg, shotorg_real, endpos);
 
     pointparticles(particleeffectnum("nex_muzzleflash"), shotorg, normalize(endpos - shotorg) * 1000, 1);
 }

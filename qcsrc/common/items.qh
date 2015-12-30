@@ -76,6 +76,7 @@ string weaponpriority_hudselector_1;
 
 // functions:
 entity get_weaponinfo(float id);
+entity find_weaponinfo(string shortname);
 string W_FixWeaponOrder(string order, float complete);
 void RegisterWeapons();
 
@@ -88,6 +89,7 @@ void RegisterWeapons();
 .float weapons; // WEPBIT_...
 .string netname; // short name
 .string message; // human readable name
+.string message2;
 .float items; // IT_...
 .float(float) weapon_func; // w_...
 .string mdl; // modelname without g_, v_, w_
@@ -97,3 +99,4 @@ void RegisterWeapons();
 .float weapon_type; // see WEP_TYPE_* constants
 .float bot_pickupbasevalue; // bot weapon priority
 .string model2; // wpn- sprite name
+.vector w_color;

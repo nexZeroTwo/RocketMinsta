@@ -214,16 +214,17 @@ void SV_ParseClientCommand(string s) {
         OPTAVAIL_RAW("radio", ftos(sv_radio))
         OPTAVAIL    ("dodging", "g_dodging")
         OPTAVAIL_RAW("altcharge", ftos(g_nadgets))
-		
+        OPTAVAIL_RAW("convswitch", if(g_weaponarena_secondary) "1" else "0")
+
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
-		
+
 		stuffcmd(self, strcat("set _g_rocketminsta ", ftos(CVAR(g_rocketminsta)), "\n"));
-		
+
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
-		
+
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "anonspec") {
@@ -498,6 +499,9 @@ void SV_ParseClientCommand(string s) {
                 if(HG_ShowMenu(FALSE))
                     return;
                 
+                if(W_ShowMenu(FALSE))
+                    return;
+
 				self.classname = "player";
 				PlayerScore_Clear(self, FALSE);
                 
@@ -513,6 +517,7 @@ void SV_ParseClientCommand(string s) {
                 
                 if(!self.joinqueue)
                 if(!HG_ShowMenu(FALSE))
+                if(!W_ShowMenu(FALSE))
                     JoinQ_Push(self);
 			}
 		}
@@ -556,7 +561,7 @@ void SV_ParseClientCommand(string s) {
         }
 
         float isplayer = self.classname != "spectator" && self.classname != "observer";
-        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        float gamestarted = roundstate == ROUNDSTATE_GAME;
         float term = (self.term_authed && !self.term_used);
         float nr = isplayer && (gamestarted || (self.hg_nadesused && !inWarmupStage)) && !term;
         
@@ -576,7 +581,7 @@ void SV_ParseClientCommand(string s) {
 
             if(argc) for(i = 0; i < argc; ++i) {
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your ", if(g_nadgets_double) (if(hg_context_isalt) "secondary " else "primary ") else "", "nadget type ", if(nr) "will be" else "has been", " set to ^2", HG_TypeToExpandedName(t), if(nr) "^1 on the next round\n" else "\n"));
+                    sprint(self, strcat("^1Your ", if(g_nadgets_double) (if(hg_context_isalt) "secondary " else "primary ") else "", "nadget type ", if(nr) "will be" else "has been", " set to the ^2", HG_TypeToExpandedName(t), if(nr) "^1 on the next round.\n" else "^1.\n"));
                     self.(if(nr) hg_ctx_type_picked_nextround else hg_ctx_type_picked) = t;
                     
                     if(!nr) {
@@ -620,6 +625,43 @@ void SV_ParseClientCommand(string s) {
         })
 
         return;
+    } else if(cmd == "picksecondary") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        if(!g_weaponarena_secondary_selectable)
+            return;
+        
+        if(tokens < 2) {
+            W_ShowMenu(2);
+            return;
+        }
+
+        var w = find_weaponinfo(argv(1));
+
+        if(!w) {
+            sprint(self, strcat("^1", argv(1), " is not a valid weapon.\n"));
+            return;
+        }
+
+        if(!(w.weapons & g_weaponarena_secondary)) {
+            sprint(self, strcat("^1The ^2", w.message, "^1 is not allowed on this server.\n"));
+            return;   
+        }
+
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME;
+        float nr = isplayer && gamestarted;
+
+        if(nr) {
+            sprint(self, strcat("^1Your secondary weapon will be set to the ^2", w.message, "^1 on the next round.\n"));
+            self.w_secondary_nextround = w.weapon;
+        } else {
+            sprint(self, strcat("^1Your secondary weapon has been set to the ^2", w.message, "^1.\n"));
+            W_SetSecondary(self, w.weapon);
+        }
+
+        return;
     } else if(cmd == "hg_optout") {
         if not(self.flags & FL_CLIENT)
             return;
@@ -638,6 +680,11 @@ void SV_ParseClientCommand(string s) {
             return;
 
         self.hg_altcharge = stof(argv(1));
+    } else if(cmd == "convswitch") {
+        if not(self.flags & FL_CLIENT)
+            return;
+
+        self.w_conv_switch = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;

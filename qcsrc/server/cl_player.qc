@@ -577,7 +577,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     float oh = self.health;
     float oa = self.armorvalue;
 
-    if(self.frozen)
+    if(self.frozen && DEATH_ISENVIRONMENTAL(deathtype))
         attacker = world;
 
     GAMEEVENT("playerdamage", {

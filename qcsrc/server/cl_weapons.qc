@@ -1,3 +1,4 @@
+
 void W_Reload()
 {
 	if(self.switchweapon == self.weapon)
@@ -5,9 +6,35 @@ void W_Reload()
 		weapon_action(self.weapon, WR_RELOAD);
 }
 
+float W_ToggleSecondary(void) {
+    if(g_weaponarena_secondary && self.w_conv_switch) {
+        var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
+
+        var secondary = if(self.w_secondary)
+            pow(2, self.w_secondary - 1)
+        else
+            g_weaponarena_secondary;
+
+        if(w & secondary) {
+            self.weapons &~= secondary;
+            self.weapons |= g_weaponarena;
+            return TRUE;
+        } else if(w & g_weaponarena) {
+            self.weapons &~= g_weaponarena;
+            self.weapons |= secondary;
+            return TRUE;
+        }
+    }
+
+    return FALSE;
+}
+
 // switch between weapons
 void W_SwitchWeapon(float imp)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	if (self.switchweapon != imp)
 	{
 		if (client_hasweapon(self, imp, TRUE, TRUE))
@@ -91,6 +118,9 @@ float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, floa
 
 void W_CycleWeapon(string weaponorder, float dir)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	float w;
 	w = W_GetCycleWeapon(self, weaponorder, dir, -1, 1);
 	if(w > 0)
@@ -99,6 +129,9 @@ void W_CycleWeapon(string weaponorder, float dir)
 
 void W_NextWeaponOnImpulse(float imp)
 {
+    if(W_ToggleSecondary())
+        return;
+
 	float w;
 	w = W_GetCycleWeapon(self, self.cvar_cl_weaponpriority, +1, imp, 1);
 	if(w > 0)
@@ -550,16 +583,30 @@ void Nixnex_GiveCurrentWeapon()
 }
 
 void W_FixWeaponSet(void) {
-    if(g_weaponarena && g_weaponarena_secondary) {
+    if(g_weaponarena && g_weaponarena_secondary && !self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
 
-        if(self.BUTTON_ATCK && w & g_weaponarena_secondary) {
-            self.weapons &~= g_weaponarena_secondary;
+        var secondary = if(self.w_secondary)
+            pow(2, self.w_secondary - 1)
+        else
+            g_weaponarena_secondary;
+
+        if(self.BUTTON_ATCK && w & secondary) {
+            self.weapons &~= secondary;
             self.weapons |= g_weaponarena;
         } else if(self.BUTTON_ATCK2 && w & g_weaponarena) {
             self.weapons &~= g_weaponarena;
-            self.weapons |= g_weaponarena_secondary;
+            self.weapons |= secondary;
         }
+    }
+}
+
+void W_SetSecondary(entity p, float w) {
+    p.w_secondary = w;
+
+    if(p.scorekeeper) {
+        var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFF00FF;
+        PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
     }
 }
 
@@ -576,4 +623,29 @@ void W_RegisterHitForHitstreak(entity attacker, float deathtype) {
             W_Uzi_RegisterHitForHitstreak(attacker, deathtype);
             break;
     }
+}
+
+void W_WriteSecondarySelect(void) {
+    msg_entity = self;
+    WriteByte(MSG_ONE, SVC_TEMPENTITY);
+    WriteByte(MSG_ONE, TE_CSQC_SECONDARYSELECT);
+    WriteInt24_t(MSG_ONE, g_weaponarena_secondary);
+}
+
+float W_ShowMenu(float always) {
+    if(!g_weaponarena_secondary_selectable)
+        return FALSE;
+
+    if(clienttype(self) != CLIENTTYPE_REAL)
+        return FALSE;
+
+    if((self.w_secondary && self.BUTTON_CHAT) && always < 2)
+        return FALSE;
+    
+    if(always || !self.w_secondary) {
+        W_WriteSecondarySelect();
+        return TRUE;
+    }
+    
+    return FALSE;
 }

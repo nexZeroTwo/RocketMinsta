@@ -821,8 +821,16 @@ var .float origin_array[3];
 
 var .float w_button_primary;
 var .float w_button_secondary;
+.float w_button_null;
+.float w_conv_switch;
 
 .float accstat_shots;
 .float accstat_hits;
 
+.float w_secondary;
+.float w_secondary_nextround;
+
 .string netname_strzoned;
+
+.float w_inring_cycle;
+.float w_inring_fulltime;
