@@ -4552,15 +4552,17 @@ void Sbar_Draw(void)
 	
 	vector base_teamcolor;
 	
-	if(teamplay)
+    if(CVAR(rm_hud_healthcolor)) {
+        base_teamcolor = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+        base_teamcolor = healthcolor(base_teamcolor_x);
+    } else if(teamplay) {
 		base_teamcolor = GetTeamRGB(myteam);
-	else
-	{
+    } else {
 		base_teamcolor_x = CVAR(sbar_color_bg_r);
 		base_teamcolor_y = CVAR(sbar_color_bg_g);
 		base_teamcolor_z = CVAR(sbar_color_bg_b);
 	}
-	
+
 	vector sector_teamcolor = (base_teamcolor + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
 	vector border_teamcolor = (base_teamcolor + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
 

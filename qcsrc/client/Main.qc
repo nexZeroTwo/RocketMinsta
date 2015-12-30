@@ -163,6 +163,7 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("rm_fps_friendly", "0", CVAR_SAVE);
+    registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
@@ -711,10 +712,13 @@ void PostInit(void)
         case 56:
             localcmd("seta r_font_size_snapping 1\n");
         case 57:
+        case 58:
             localcmd("seta rm_convswitch 0; convswitch 0\n");
+        case 59:
+            localcmd("seta rm_hud_healthcolor 0\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 58\n");
+		localcmd("seta rm_initialized 60\n");
 		RM_OUTDATED
 		break;
 	}
