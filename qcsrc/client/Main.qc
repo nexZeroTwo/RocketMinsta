@@ -580,6 +580,11 @@ void InitFonts(void) {
     SetMadokaFont(MDKF_AUTO);
 }
 
+void ReportHUDInfo(string hskin) {
+    if(sv_showspecs_extra)
+        localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", hskin, "\n");
+}
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -800,8 +805,8 @@ void PostInit(void)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
 
-	if(sv_showspecs_extra)
-		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
+    ReportHUDInfo(CVAR_STR(rm_hudskin));
+
 	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
 	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 	localcmd("cmd hidecountry ", ftos(CVAR(rm_hidecountry)), "\n");
@@ -995,8 +1000,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			{
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
-				
-				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
+
+                ReportHUDInfo(hudskin_name);
 			}
 		}
 		else if(strCmd == "notimer")
@@ -1096,8 +1101,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
 			localcmd("menu_cmd update_rmvars\n");
-			if(sv_showspecs_extra)
-				localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", CVAR_STR(rm_hudskin), "\n");
+            ReportHUDInfo(hudskin_name);
 		}
 		else
 		{

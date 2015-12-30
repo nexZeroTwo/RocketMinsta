@@ -726,7 +726,6 @@ float HUDSkin_Load(string skin_name)
     
     print("Loaded HUD skin '", skin_name, "'\n");
     hudskin_name = strzone(skin_name);
-    localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", hudskin_name, "\n");
     
     return TRUE;
 #undef SKINIMAGE
