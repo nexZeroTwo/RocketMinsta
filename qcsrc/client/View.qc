@@ -827,9 +827,15 @@ void CSQC_UpdateView(float w, float h)
                 }
 
                 var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+                var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
+                var in_invert = FALSE;
 
-                if(in_cycle > 0) {
-                    var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
+                if(in_cycle < 0) {
+                    in_cycle *= -1;
+                    in_invert = TRUE;
+                }
+
+                if(in_fulltime > 0) {
                     crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
 
                     if(crosshair_inring_fill && crosshair_inring_fill < 1)
@@ -844,7 +850,7 @@ void CSQC_UpdateView(float w, float h)
                         wcross_origin,
                         ringsize,
                         "gfx/hud/ring_inner.tga",
-                        crosshair_inring_fill,
+                        if(in_invert) 1 - crosshair_inring_fill else crosshair_inring_fill,
                         0.5 * wcross_color + '0.5 0.5 0.5',
                         ringalpha * crosshair_inring_alpha,
                         DRAWFLAG_ADDITIVE

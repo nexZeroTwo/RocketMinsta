@@ -180,7 +180,7 @@ void W_Clip_Reset(float dorefill) {
     if(dorefill) {
         self.w_clip_loaded = self.w_clip_limit;
         self.w_clip_reloadfinished = time;   
-        self.w_inring_cycle = 0;
+        self.w_inring_fulltime = 0;
     } else {
         self.w_clip_loaded = bound(0, self.w_clip_loaded, self.w_clip_limit);
     }

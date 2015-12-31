@@ -165,14 +165,19 @@ void W_Nex_Attack2_Burst(void) {
 }
 
 void W_Nex_Attack2_Wait(void) {
+    var rate = W_WeaponRateFactor();
+    var ccnt = -1;
+
     W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
 
-    if(self.w_button_secondary && time < self.nex_charge_expiretime) {
-        return;
+    if(time >= self.nex_charge_readytime && self.w_inring_cycle > 0) {
+        self.w_inring_fulltime = self.nex_charge_expiretime;
+        self.w_inring_cycle = time - self.w_inring_fulltime;
     }
 
-    var ccnt = -1;
-    var rate = W_WeaponRateFactor();
+    if(self.w_button_secondary && time < self.nex_charge_expiretime)
+        return;
+
 
     if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
         self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
@@ -184,7 +189,7 @@ void W_Nex_Attack2_Wait(void) {
         stopsound(self, CHAN_WEAPON);
         ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
         weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
-        self.w_inring_cycle = -1;
+        self.w_inring_fulltime = -1;
     }
 
     if(self.nex_charge_effect) {
@@ -246,7 +251,7 @@ float w_nex(float req)
             }
             W_Clip_FinishWeaponAction();
 
-            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_cycle) {
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_fulltime) {
                 var af = ATTACK_FINISHED(self);
 
                 if(af > time) {
