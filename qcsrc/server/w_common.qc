@@ -217,6 +217,16 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     trace_endpos = endpoint;
     trace_ent = endent;
     trace_dphitq3surfaceflags = endq3surfaceflags;
+
+    vector end_visual = trace_endpos;
+    if(WarpZone_trace_transform) {
+        vector of = v_forward, or = v_right, ou = v_up;
+        end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, end_visual);
+        v_forward = of; v_right = or; v_up = ou;
+    }
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, end_visual);
 }
 
 .float dmg_edge;
@@ -397,6 +407,8 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     
     W_SetHitscanVisuals(self, end_visual);
     WarpZone_TrailParticles(world, eff, w_shotorg, w_shotorg_visual, end_visual);
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, end_visual);
     Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
 }
 
