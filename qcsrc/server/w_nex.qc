@@ -45,7 +45,10 @@ void W_Nex_Attack (void)
 
 	//beam and muzzle flash done on client
 	SendCSQCNexBeamParticle(self.team, FALSE);
-	
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, trace_endpos);
+
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_damage"), 0, 0, CVAR(g_balance_nex_force) * WarpZone_trace_dir, WEP_NEX, self);
@@ -77,7 +80,10 @@ void W_Nex_Attack2(void) {
 
     //beam and muzzle flash done on client
     SendCSQCNexBeamParticle(self.team, TRUE);
-    
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, trace_endpos);
+
     // flash and burn the wall
     if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
         Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_secondary_damage), 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
