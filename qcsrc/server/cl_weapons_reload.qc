@@ -175,7 +175,7 @@ void W_Clip_Reset(float dorefill) {
     if(w_clip_context_limit <= 0)
         return;
 
-    self.w_clip_limit = w_clip_context_limit * Buffs_ClipLimitMultiplier(self);
+    self.w_clip_limit = rint(w_clip_context_limit * Buffs_ClipLimitMultiplier(self));
 
     if(dorefill) {
         self.w_clip_loaded = self.w_clip_limit;
