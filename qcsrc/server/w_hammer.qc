@@ -66,6 +66,11 @@ void W_Hammer_Attack (float issecondary)
 	melee.nextthink += melee.melee_ticrate; //avoid frame with zero melee_frame
 }
 
+void spawnfunc_weapon_hammer (void)
+{
+	weapon_defaultspawnfunc(WEP_HAMMER);
+}
+
 float w_hammer(float req)
 {
     W_SetButtonFields(self, CVAR(g_balance_hammer_swapshotmodes));
