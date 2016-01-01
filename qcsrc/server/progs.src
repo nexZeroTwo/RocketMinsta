@@ -131,6 +131,7 @@ w_tuba.qc
 w_fireball.qc
 w_zapper.qc
 w_flak.qc
+w_hammer.qc
 
 t_items.qc
 cl_weapons.qc

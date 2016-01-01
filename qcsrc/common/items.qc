@@ -141,6 +141,7 @@ void RegisterWeapons()
 	register_weapon(WEP_FIREBALL,         w_fireball,     IT_ROCKETS,       9,  0, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "fireball",     "fireball",        "Fireball", "F", '1.0 1.0 0.2');
     register_weapon(WEP_ZAPPER,           w_zapper,       IT_CELLS,         5,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "zapper",       "zapper",          "Zapper", "Z", '0.1 1.0 1.0');
     register_weapon(WEP_FLAK,             w_flak,         IT_SHELLS,        8,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "flak",         "flak",            "Flak Cannon", "F", '1.0 1.0 0.0');
+    register_weapon(WEP_HAMMER,           w_hammer,       0,                1,  1, 0, WEP_TYPE_HITSCAN, 0,                      "hammer",       "hammer",          "Hammer", "Hm", '1.0 0.5 0.0');
 
 	register_weapons_done();
 }
