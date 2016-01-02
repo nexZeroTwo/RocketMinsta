@@ -1,4 +1,6 @@
 
+.float shotgun_last_refire_delay;
+
 void W_Shotgun_Attack (void)
 {
 	float	sc;
@@ -160,6 +162,20 @@ float w_shotgun(float req)
             if(W_Clip_TryAttackOrReload()) {
                 W_Shotgun_Attack2();
                 weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), shotgun_fire2_02);
+
+                var af = ATTACK_FINISHED(self);
+                self.w_inring_fulltime = af;
+                self.w_inring_cycle = self.w_inring_fulltime - time;
+                self.shotgun_last_refire_delay = self.w_inring_cycle;
+            }
+
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_fulltime) {
+                var af = ATTACK_FINISHED(self);
+
+                if(af > time) {
+                    self.w_inring_fulltime = af;
+                    self.w_inring_cycle = self.shotgun_last_refire_delay;
+                }
             }
 
             W_Clip_FinishWeaponAction();

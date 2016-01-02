@@ -3,6 +3,7 @@
 .float nex_charge_readytime;
 .float nex_charge_expiretime;
 .float nex_burst_counter;
+.float nex_last_refire_delay;
 
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	vector v;
@@ -58,6 +59,7 @@ void W_Nex_Attack (void)
 
     self.w_inring_fulltime = ATTACK_FINISHED(self);
     self.w_inring_cycle = self.w_inring_fulltime - time;
+    self.nex_last_refire_delay = self.w_inring_cycle;
 }
 
 void W_Nex_Attack2(void) {
@@ -190,6 +192,7 @@ void W_Nex_Attack2_Wait(void) {
         W_Nex_Attack2_Burst();
         self.w_inring_fulltime = ATTACK_FINISHED(self);
         self.w_inring_cycle = self.w_inring_fulltime - time;
+        self.nex_last_refire_delay = self.w_inring_cycle;
     } else {
         ccnt = -2;
         stopsound(self, CHAN_WEAPON);
@@ -262,7 +265,7 @@ float w_nex(float req)
 
                 if(af > time) {
                     self.w_inring_fulltime = af;
-                    self.w_inring_cycle = self.w_inring_fulltime - time;   
+                    self.w_inring_cycle = self.nex_last_refire_delay;
                 }
             }
         }
