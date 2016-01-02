@@ -3323,7 +3323,7 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
-        W_FixWeaponSet();
+        W_PlayerPreThinkHook();
 
         if(frametime) {
             if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))

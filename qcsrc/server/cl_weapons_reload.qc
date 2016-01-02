@@ -1,7 +1,7 @@
 
 var .float __dummy_field;
 
-void W_Clip_SetWeaponContext(float wep, float cliplimit, float reloadtime, .float ammofield, float ammo_per_unit) {
+void W_Clip_SetWeaponContext(float wep, float cliplimit, float clipregen, float reloadtime, .float ammofield, float ammo_per_unit) {
     wep -= 1;
 
     if(wep == w_clip_context)
@@ -15,6 +15,7 @@ void W_Clip_SetWeaponContext(float wep, float cliplimit, float reloadtime, .floa
     w_clip_reloadfinished = w_clip_reloadfinished_array[wep];
 
     w_clip_context_limit = cliplimit;
+    w_clip_context_regen = clipregen;
     w_clip_context_reloadtime = reloadtime;
     w_clip_context_ammofield = ammofield;
     w_clip_context_ammo_per_unit = ammo_per_unit;
@@ -29,6 +30,7 @@ void W_Clip_UnsetWeaponContext(void) {
     w_clip_reloadfinished = __dummy_field;
 
     w_clip_context_limit = 0;
+    w_clip_context_regen = 0;
     w_clip_context_reloadtime = 0;
     w_clip_context_ammofield = __dummy_field;
     w_clip_context_ammo_per_unit = 0;
@@ -44,7 +46,7 @@ void W_Clip_CurrentWeaponContext(void) {
 }
 
 void W_Clip_Stats_Init(void) {
-    addstat(STAT_CLIP_LOADED, AS_INT, w_clip_loaded_stat);
+    addstat(STAT_CLIP_LOADED, AS_FLOAT, w_clip_loaded_stat);
     addstat(STAT_CLIP_LIMIT, AS_INT, w_clip_limit_stat);
 }
 
@@ -69,7 +71,7 @@ float W_Clip_CheckFull(void) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         lim = min(lim, floor(self.w_clip_context_ammofield / w_clip_context_ammo_per_unit));
 
-    if(self.w_clip_loaded > lim || !self.w_clip_limit)
+    if(ceil(self.w_clip_loaded) > lim || !self.w_clip_limit)
         self.w_clip_loaded = lim;
 
     return (self.w_clip_loaded == lim);
@@ -127,7 +129,7 @@ void W_Clip_Reload(void) {
 
 void W_Clip_CheckReloadAndReady(void) {
     w_ready();
-    if(self.w_clip_loaded <= 0)
+    if(self.w_clip_loaded < 0 || (!self.w_clip_loaded && CVAR(g_balance_reload_automatically)))
         W_Clip_Reload();
     else
         w_ready();
@@ -155,7 +157,7 @@ float W_Clip_TryWeaponAction(void) {
 
     self.w_clip_loaded = min(self.w_clip_loaded, self.w_clip_limit);
 
-    if(self.w_clip_loaded <= 0) {
+    if(self.w_clip_loaded < 0 || (!self.w_clip_loaded && CVAR(g_balance_reload_automatically))) {
         if(self.switchweapon == self.weapon && self.weaponentity.state == WS_READY)
             W_Clip_Reload();
         return FALSE;
@@ -175,12 +177,12 @@ void W_Clip_Reset(float dorefill) {
     if(w_clip_context_limit <= 0)
         return;
 
-    self.w_clip_limit = w_clip_context_limit * Buffs_ClipLimitMultiplier(self);
+    self.w_clip_limit = rint(w_clip_context_limit * Buffs_ClipLimitMultiplier(self));
 
     if(dorefill) {
         self.w_clip_loaded = self.w_clip_limit;
         self.w_clip_reloadfinished = time;   
-        self.w_inring_cycle = 0;
+        self.w_inring_fulltime = 0;
     } else {
         self.w_clip_loaded = bound(0, self.w_clip_loaded, self.w_clip_limit);
     }
@@ -198,7 +200,12 @@ float W_Clip_Consume(float cost) {
         return TRUE;
 
     if(cost > self.w_clip_loaded) {
-        W_Clip_Reload();
+        if(cost > ceil(self.w_clip_loaded) && CVAR(g_balance_reload_automatically)) {
+            W_Clip_Reload();
+        } else {
+            spamsound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
+        }
+
         return FALSE;
     }
 
@@ -239,5 +246,12 @@ void W_Clip_WeaponRequestHook(float req) {
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/campingrifle_reload.wav");
+        precache_sound("weapons/unavailable.wav");
     }
+}
+
+void W_Clip_PlayerPreThinkHook(void) {
+    W_CLIP_LOOP_FOR_ALL_CONTEXTS(var w, if(w_clip_context_regen > 0 && self.w_clip_loaded >= 0) {
+        self.w_clip_loaded = bound(0, self.w_clip_loaded + w_clip_context_regen * frametime, self.w_clip_limit);
+    })
 }

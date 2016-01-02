@@ -740,29 +740,7 @@ vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float p
         using(drawfont = sbar_rmbigfont)
             drawstring_aspect(pos, winfo.message2, scale, clr, a, DRAWFLAG_NORMAL);
 
-        var f = 0.5;
-        var l = height * f;
-        var s = height * (1 - f) * 0.5;
-        var k = l + s;
-        var j = k + s;
-
-        var p1 = [s, 0] + pos;
-        var p2 = [k, 0] + pos;
-        var p3 = [j, s] + pos;
-        var p4 = [j, k] + pos;
-        var p5 = [k, j] + pos;
-        var p6 = [s, j] + pos;
-        var p7 = [0, k] + pos;
-        var p8 = [0, s] + pos;
-
-        drawline(2, p1, p2, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p2, p3, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p3, p4, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p4, p5, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p5, p6, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p6, p7, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p7, p8, clr, a, DRAWFLAG_NORMAL);
-        drawline(2, p8, p1, clr, a, DRAWFLAG_NORMAL);
+        drawpic(pos, "gfx/hud/weapon_icon_border.tga", scale, clr, a * 0.8, DRAWFLAG_NORMAL);
 
         pos_x += scale_x;
     }

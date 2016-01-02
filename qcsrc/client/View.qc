@@ -790,7 +790,7 @@ void CSQC_UpdateView(float w, float h)
             maxbullets = getstati(STAT_CLIP_LIMIT);
 
             if(maxbullets > 0) {
-                bullets = bound(0, getstati(STAT_CLIP_LOADED), maxbullets);
+                bullets = bound(0, getstatf(STAT_CLIP_LOADED), maxbullets);
             } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER) {
                 maxbullets = 1;
                 bullets = bound(0, (1 - getstatf(STAT_ZAPPER_HEAT)), 1);
@@ -807,44 +807,55 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill = 0;
             }
 
-            if(crosshair_ringfill) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    if(maxbullets > 1 && maxbullets < 25)
-                        strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
-                    else
-                        "gfx/hud/ring1.tga",
-                    crosshair_ringfill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.25,
-                    DRAWFLAG_ADDITIVE
-                );
-            }
+            var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
+            var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
 
-            var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+            if(ringsize > 0 && ringalpha > 0) {
+                if(crosshair_ringfill) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        if(maxbullets > 1 && maxbullets < 25)
+                            strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+                        else
+                            "gfx/hud/ring1.tga",
+                        crosshair_ringfill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
 
-            if(in_cycle > 0) {
+                var in_cycle = getstatf(STAT_INNERRING_CYCLE);
                 var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
-                crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+                var in_invert = FALSE;
 
-                if(crosshair_inring_fill && crosshair_inring_fill < 1)
-                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
-                else
+                if(in_cycle < 0) {
+                    in_cycle *= -1;
+                    in_invert = TRUE;
+                }
+
+                if(in_fulltime > 0) {
+                    crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+
+                    if(crosshair_inring_fill && crosshair_inring_fill < 1)
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
+                    else
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+                } else
                     crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
-            } else
-                crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
 
-            if(crosshair_inring_alpha) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    "gfx/hud/ring_inner.tga",
-                    crosshair_inring_fill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.15 * crosshair_inring_alpha,
-                    DRAWFLAG_ADDITIVE
-                );
+                if(crosshair_inring_alpha) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        "gfx/hud/ring_inner.tga",
+                        if(in_invert) 1 - crosshair_inring_fill else crosshair_inring_fill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha * crosshair_inring_alpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
             }
 
             if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active))) {

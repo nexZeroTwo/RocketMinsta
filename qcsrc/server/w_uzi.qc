@@ -96,6 +96,7 @@ void W_Uzi_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_UZI,
         CVAR(g_balance_uzi_magazinecapacity),
+        CVAR(g_balance_uzi_magazineregen),
         CVAR(g_balance_uzi_reloadtime),
         ammo_nails,
         1

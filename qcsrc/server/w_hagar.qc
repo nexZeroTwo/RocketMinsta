@@ -119,6 +119,7 @@ void W_Hagar_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_HAGAR,
         CVAR(g_balance_hagar_magazinecapacity),
+        CVAR(g_balance_hagar_magazineregen),
         CVAR(g_balance_hagar_reloadtime),
         ammo_rockets,
         1

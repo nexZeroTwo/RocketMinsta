@@ -85,7 +85,6 @@ float autocvar_con_chat;
 float autocvar_con_chatpos;
 float autocvar_con_chatsize;
 string autocvar_crosshair;
-float autocvar_crosshair_campingrifle_ring_size;
 float autocvar_crosshair_color_alpha;
 float autocvar_crosshair_color_blue;
 float autocvar_crosshair_color_green;
@@ -209,6 +208,9 @@ var float autocvar_cl_message_praise_show = 1;
 var float autocvar_cl_message_praise_announce = 1;
 var float autocvar_cl_warpzone_sound_transition = 500;
 var float autocvar_rm_convswitch = 0;
+var float autocvar_rm_hud_healthcolor = 0;
+var float autocvar_rm_hud_crosshair_ring_size = 2;
+var float autocvar_rm_hud_crosshair_ring_alpha = 0.25;
 float autocvar_utf8_enable;
 
 #endif

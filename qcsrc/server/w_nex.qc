@@ -3,6 +3,7 @@
 .float nex_charge_readytime;
 .float nex_charge_expiretime;
 .float nex_burst_counter;
+.float nex_last_refire_delay;
 
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
 	vector v;
@@ -45,7 +46,10 @@ void W_Nex_Attack (void)
 
 	//beam and muzzle flash done on client
 	SendCSQCNexBeamParticle(self.team, FALSE);
-	
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, trace_endpos);
+
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
 		Damage_DamageInfo(trace_endpos, cvar("g_balance_nex_damage"), 0, 0, CVAR(g_balance_nex_force) * WarpZone_trace_dir, WEP_NEX, self);
@@ -55,6 +59,7 @@ void W_Nex_Attack (void)
 
     self.w_inring_fulltime = ATTACK_FINISHED(self);
     self.w_inring_cycle = self.w_inring_fulltime - time;
+    self.nex_last_refire_delay = self.w_inring_cycle;
 }
 
 void W_Nex_Attack2(void) {
@@ -77,7 +82,10 @@ void W_Nex_Attack2(void) {
 
     //beam and muzzle flash done on client
     SendCSQCNexBeamParticle(self.team, TRUE);
-    
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, trace_endpos);
+
     // flash and burn the wall
     if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
         Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_secondary_damage), 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
@@ -165,26 +173,32 @@ void W_Nex_Attack2_Burst(void) {
 }
 
 void W_Nex_Attack2_Wait(void) {
+    var rate = W_WeaponRateFactor();
+    var ccnt = -1;
+
     W_SetButtonFields(self, CVAR(g_balance_nex_swapshotmodes));
 
-    if(self.w_button_secondary && time < self.nex_charge_expiretime) {
-        return;
+    if(time >= self.nex_charge_readytime && self.w_inring_cycle > 0) {
+        self.w_inring_fulltime = self.nex_charge_expiretime;
+        self.w_inring_cycle = time - self.w_inring_fulltime;
     }
 
-    var ccnt = -1;
-    var rate = W_WeaponRateFactor();
+    if(self.w_button_secondary && time < self.nex_charge_expiretime)
+        return;
+
 
     if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
         self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
         W_Nex_Attack2_Burst();
         self.w_inring_fulltime = ATTACK_FINISHED(self);
         self.w_inring_cycle = self.w_inring_fulltime - time;
+        self.nex_last_refire_delay = self.w_inring_cycle;
     } else {
         ccnt = -2;
         stopsound(self, CHAN_WEAPON);
         ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_cancel_refire) * rate;
         weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_nex_secondary_animtime), w_ready);
-        self.w_inring_cycle = -1;
+        self.w_inring_fulltime = -1;
     }
 
     if(self.nex_charge_effect) {
@@ -197,6 +211,7 @@ void W_Nex_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_NEX,
         CVAR(g_balance_nex_magazinecapacity),
+        CVAR(g_balance_nex_magazineregen),
         CVAR(g_balance_nex_reloadtime),
         ammo_cells,
         1
@@ -246,12 +261,12 @@ float w_nex(float req)
             }
             W_Clip_FinishWeaponAction();
 
-            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_cycle) {
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_fulltime) {
                 var af = ATTACK_FINISHED(self);
 
                 if(af > time) {
                     self.w_inring_fulltime = af;
-                    self.w_inring_cycle = self.w_inring_fulltime - time;   
+                    self.w_inring_cycle = self.nex_last_refire_delay;
                 }
             }
         }

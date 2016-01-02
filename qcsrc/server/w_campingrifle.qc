@@ -13,6 +13,7 @@ void W_CampingRifle_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_CAMPINGRIFLE,
         CVAR(g_balance_campingrifle_magazinecapacity),
+        CVAR(g_balance_campingrifle_magazineregen),
         CVAR(g_balance_campingrifle_reloadtime),
         ammo_nails,
         min(

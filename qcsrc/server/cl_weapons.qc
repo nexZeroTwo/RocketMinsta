@@ -601,7 +601,22 @@ void W_FixWeaponSet(void) {
     }
 }
 
+void W_PlayerPreThinkHook(void) {
+    W_FixWeaponSet();
+    W_Clip_PlayerPreThinkHook();
+}
+
 void W_SetSecondary(entity p, float w) {
+    if(p.w_secondary) {
+        var sflag = pow(2, p.w_secondary - 1);
+
+        if(p.weapons & sflag) {
+            p.weapons &~= sflag;
+            sflag = pow(2, w - 1);
+            p.weapons |= sflag;
+        }
+    }
+
     p.w_secondary = w;
 
     if(p.scorekeeper) {
