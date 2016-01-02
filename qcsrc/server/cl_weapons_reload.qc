@@ -129,7 +129,7 @@ void W_Clip_Reload(void) {
 
 void W_Clip_CheckReloadAndReady(void) {
     w_ready();
-    if(self.w_clip_loaded <= 0)
+    if(self.w_clip_loaded < 0 || (!self.w_clip_loaded && CVAR(g_balance_reload_automatically)))
         W_Clip_Reload();
     else
         w_ready();
@@ -157,7 +157,7 @@ float W_Clip_TryWeaponAction(void) {
 
     self.w_clip_loaded = min(self.w_clip_loaded, self.w_clip_limit);
 
-    if(self.w_clip_loaded <= 0) {
+    if(self.w_clip_loaded < 0 || (!self.w_clip_loaded && CVAR(g_balance_reload_automatically))) {
         if(self.switchweapon == self.weapon && self.weaponentity.state == WS_READY)
             W_Clip_Reload();
         return FALSE;
@@ -200,7 +200,7 @@ float W_Clip_Consume(float cost) {
         return TRUE;
 
     if(cost > self.w_clip_loaded) {
-        if(cost > ceil(self.w_clip_loaded)) {
+        if(cost > ceil(self.w_clip_loaded) && CVAR(g_balance_reload_automatically)) {
             W_Clip_Reload();
         } else {
             spamsound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
