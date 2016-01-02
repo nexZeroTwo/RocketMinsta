@@ -827,7 +827,18 @@ void PostInit(void)
 	fovlock = -1;
 	
 	registercvar("rm_loadedmenu", "");
-	if(CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM)
+
+    var force_reload = (CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM);
+
+    if(!DPRM_GetVersion() && (cvar_type("mod_alias_force_animated") & CVAR_TYPEFLAG_EXISTS) && !cvar("mod_alias_force_animated")) {
+        // workaround for broken animations on some engines
+        cvar_set("mod_alias_force_animated", "1");
+
+        // just for the r_restart
+        force_reload = TRUE;
+    }
+
+	if(force_reload)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
