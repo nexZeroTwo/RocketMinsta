@@ -571,6 +571,7 @@ void W_Crylink_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_CRYLINK,
         CVAR(g_balance_crylink_magazinecapacity),
+        CVAR(g_balance_crylink_magazineregen),
         CVAR(g_balance_crylink_reloadtime),
         ammo_cells,
         1

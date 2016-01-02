@@ -211,6 +211,7 @@ void W_Nex_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_NEX,
         CVAR(g_balance_nex_magazinecapacity),
+        CVAR(g_balance_nex_magazineregen),
         CVAR(g_balance_nex_reloadtime),
         ammo_cells,
         1

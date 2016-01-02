@@ -130,6 +130,7 @@ void W_Shotgun_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_SHOTGUN,
         CVAR(g_balance_shotgun_magazinecapacity),
+        CVAR(g_balance_shotgun_magazineregen),
         CVAR(g_balance_shotgun_reloadtime),
         ammo_shells,
         1

@@ -310,6 +310,7 @@ void W_Fireball_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_FIREBALL,
         CVAR(g_balance_fireball_magazinecapacity),
+        CVAR(g_balance_fireball_magazineregen),
         CVAR(g_balance_fireball_reloadtime),
         ammo_rockets,
         1

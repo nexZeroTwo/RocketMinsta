@@ -2897,7 +2897,7 @@ void Sbar_ShowLowammo(void) {
         if(currheat <= CVAR(cl_lowammowarnings_zapper_heat))
             showspecialwarning = 1;
     } else if((maxbullets = getstati(STAT_CLIP_LIMIT)) > 0) {
-        currbullets = getstati(STAT_CLIP_LOADED);
+        currbullets = getstatf(STAT_CLIP_LOADED);
         if(currbullets <= maxbullets * 0.4) // TODO: a cvar
             showspecialwarning = 1;
     }
@@ -5346,7 +5346,7 @@ void Sbar_Draw(void)
         float currweapon_ammo = get_weaponinfo(currweapon).items;
 
         if(getstati(STAT_CLIP_LIMIT) > 0)		
-            ammo_progress = bound(0, (1 - getstati(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
+            ammo_progress = bound(0, (1 - getstatf(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
         else
             ammo_progress = -1;
 
@@ -5363,7 +5363,7 @@ void Sbar_Draw(void)
                     ammo_progress = h;
                 } else if(ammo_progress >= 0) {
                     if(stat_items & IT_UNLIMITED_AMMO) {
-                        a = getstati(STAT_CLIP_LOADED);
+                        a = floor(getstatf(STAT_CLIP_LOADED));
                         isclip = TRUE;
                     }
                 }

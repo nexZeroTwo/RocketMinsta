@@ -443,6 +443,7 @@ void W_MinstaNex_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_MINSTANEX,
         CVAR(g_balance_minstanex_magazinecapacity),
+        CVAR(g_balance_minstanex_magazineregen),
         CVAR(g_balance_minstanex_reloadtime),
         ammo_cells,
         1
