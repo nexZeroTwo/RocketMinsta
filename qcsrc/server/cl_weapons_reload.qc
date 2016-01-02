@@ -200,8 +200,12 @@ float W_Clip_Consume(float cost) {
         return TRUE;
 
     if(cost > self.w_clip_loaded) {
-        if(cost > ceil(self.w_clip_loaded))
+        if(cost > ceil(self.w_clip_loaded)) {
             W_Clip_Reload();
+        } else {
+            spamsound(self, CHAN_WEAPON2, "weapons/unavailable.wav", VOL_BASE, ATTN_NORM);
+        }
+
         return FALSE;
     }
 
@@ -242,6 +246,7 @@ void W_Clip_WeaponRequestHook(float req) {
         }
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/campingrifle_reload.wav");
+        precache_sound("weapons/unavailable.wav");
     }
 }
 
