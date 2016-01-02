@@ -7,6 +7,11 @@
 ===========================================================================
 */
 
+#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
+#define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
+#define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
+#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
+
 float W_WeaponRateFactor()
 {
 	float t = 1.0 / g_weaponratefactor;

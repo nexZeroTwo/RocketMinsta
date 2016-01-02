@@ -1,113 +1,88 @@
-.float melee_damage;
-.float melee_force;
-.float melee_distance;
-.float melee_time;
-.float melee_lastthink;
-.float melee_startthink;
-.float melee_ticrate;
-.float melee_secondary;
 
-void W_Hammer_Attack_Think()
-{
-	float melee_frame;
-	melee_frame = min(time - self.melee_lastthink, self.melee_startthink + self.melee_time - self.melee_lastthink);
-	if (melee_frame < 0)
-	{
-		remove(self);
-		return;
-	}
-	float damage_factor = melee_frame / self.melee_time;
-	float frame_damage = self.melee_damage * damage_factor;
-	float frame_force = self.melee_force * damage_factor;
-	makevectors(self.owner.angles);
-	W_SetupShot(self.owner, FALSE, 0, "", frame_damage);
-	traceline(w_shotorg - (w_shotdir * 20), w_shotorg + w_shotdir * self.melee_distance, MOVE_NORMAL, self);
-	if (trace_fraction < 1)
-	if (trace_ent)
-	if (trace_ent.takedamage)
-	{
-		Damage (trace_ent, self.owner, self.owner, frame_damage,
-				WEP_HAMMER | (if (self.melee_secondary) HITTYPE_SECONDARY else 0), trace_endpos, w_shotdir * frame_force);
-		Damage_RecordDamage(self.owner, WEP_HAMMER, frame_damage);
-	}
-	self.melee_lastthink = time;
-	self.nextthink = time + self.melee_ticrate;
+.float hammer_attackdone;
+
+void spawnfunc_weapon_hammer(void) {
+    weapon_defaultspawnfunc(WEP_HAMMER);
 }
 
-void W_Hammer_Attack (float issecondary)
-{
-	sound (self, CHAN_WEAPON, CVAR_STR(sv_sound_hammer_attack), VOL_BASE, ATTN_NORM);
-	entity melee = spawn();
-	melee.owner = self;
-	melee.think = W_Hammer_Attack_Think;
-	melee.melee_secondary = issecondary;
-	melee.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	float rate_factor = W_WeaponRateFactorFor(self);
-	if (issecondary)
-	{
-		melee.nextthink = time + CVAR(g_balance_hammer_secondary_delay) * rate_factor;
-		melee.melee_damage = CVAR(g_balance_hammer_secondary_damage);
-		melee.melee_force = CVAR(g_balance_hammer_secondary_force);
-		melee.melee_distance = CVAR(g_balance_hammer_secondary_radius);
-		melee.melee_time = CVAR(g_balance_hammer_secondary_time) * rate_factor;
-		melee.melee_ticrate = CVAR(g_balance_hammer_secondary_ticrate) * rate_factor;
-	}
-	else
-	{
-		melee.nextthink = time + CVAR(g_balance_hammer_primary_delay) * rate_factor;
-		melee.melee_damage = CVAR(g_balance_hammer_primary_damage);
-		melee.melee_force = CVAR(g_balance_hammer_primary_force);
-		melee.melee_distance = CVAR(g_balance_hammer_primary_radius);
-		melee.melee_time = CVAR(g_balance_hammer_primary_time) * rate_factor;
-		melee.melee_ticrate = CVAR(g_balance_hammer_primary_ticrate) * rate_factor;
-	}
-	melee.melee_startthink = melee.nextthink;
-	melee.melee_lastthink = melee.nextthink;
-	melee.nextthink += melee.melee_ticrate; //avoid frame with zero melee_frame
+void W_Hammer_Attack_Real(float isprim) {
+    const boxsize = 32;
+    var fract, targ, endpos;
+
+    var damage = WEP_CVAR_BOTH(hammer, isprim, damage);
+    var theforce = WEP_CVAR_BOTH(hammer, isprim, force);
+
+    makevectors(self.v_angle);
+    W_SetupShot(self, FALSE, 0, "", 0);
+
+    traceline_antilag(self, w_shotorg - (w_shotdir * 20), w_shotorg + w_shotdir * WEP_CVAR_BOTH(hammer, isprim, range), MOVE_NORMAL, self);
+    fract = trace_fraction;
+    tracebox_antilag(self, trace_endpos, '-1 -1 -1' * boxsize, '1 1 1' * boxsize, trace_endpos, MOVE_NORMAL, self, TRUE);
+    targ = trace_ent;
+    endpos = trace_endpos;
+
+    W_Accuracy_RegisterShot(self, WEP_HAMMER);
+
+    if(targ.takedamage) {
+        W_Accuracy_RegisterHit(self, targ, WEP_HAMMER);
+        Damage(targ, self, self, damage,
+                WEP_HAMMER | (if (isprim) 0 else HITTYPE_SECONDARY), endpos, w_shotdir * theforce);
+    }
+
+    if(!targ.iscreature && fract < 1)
+        Damage_DamageInfo(endpos, damage, damage, 0, w_shotdir * theforce, WEP_HAMMER, self);
 }
 
-void spawnfunc_weapon_hammer (void)
-{
-	weapon_defaultspawnfunc(WEP_HAMMER);
+void W_Hammer_Attack(float isprim) {
+    if(!self.hammer_attackdone) {
+        self.hammer_attackdone = TRUE;
+        W_Hammer_Attack_Real(isprim);
+    }
+
+    if(time > ATTACK_FINISHED(self)) {
+        self.hammer_attackdone = FALSE;
+        weapon_thinkf(WFRAME_IDLE, WEP_CVAR_BOTH(hammer, isprim, animtime), w_ready);
+    }
 }
 
-float w_hammer(float req)
-{
+void W_Hammer_Attack1(void) {
+    W_Hammer_Attack(TRUE);
+}
+
+void W_Hammer_Attack2(void) {
+    W_Hammer_Attack(FALSE);
+}
+
+void W_Hammer_Attack_Sound(void) {
+    sound(self, CHAN_WEAPON, "weapons/swing.wav", VOL_BASE, ATTN_NORM);
+}
+
+float w_hammer(float req) {
     W_SetButtonFields(self, CVAR(g_balance_hammer_swapshotmodes));
 
-	if (req == WR_AIM)
-	{
-		self.w_button_primary = bot_aim(100000, 0, 0.01, FALSE);
-	}
-	else if (req == WR_THINK)
-	{
-		if (self.w_button_primary)
-		if (weapon_prepareattack(0, CVAR(g_balance_hammer_primary_refire)))
-		{
-			W_Hammer_Attack(FALSE);
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_hammer_primary_animtime), w_ready);
-		}
-		if (self.w_button_secondary)
-		{
-			if(CVAR(g_balance_hammer_secondary))
-			{
-				if (weapon_prepareattack(0, CVAR(g_balance_hammer_secondary_refire)))
-				{
-					W_Hammer_Attack(TRUE);
-					weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_hammer_secondary_animtime), w_ready);
-				}
-			}
-		}
-	}
-	else if (req == WR_PRECACHE)
-	{
-		precache_sound (CVAR_STR(sv_sound_hammer_attack));
-	}
-	else if (req == WR_SETUP)
-		weapon_setup(WEP_HAMMER);
-	else if (req == WR_CHECKAMMO1)
-		return TRUE;
-	else if (req == WR_CHECKAMMO2)
-		return TRUE;
-	return TRUE;
-};
+    if(req == WR_AIM) {
+        self.w_button_primary = bot_aim(100000, 0, 0.01, FALSE);
+    } else if(req == WR_THINK) {
+        if(self.w_button_primary)
+        if(weapon_prepareattack(0, CVAR(g_balance_hammer_primary_refire))) {
+            W_Hammer_Attack_Sound();
+            weapon_thinkf(WFRAME_FIRE1, WEP_CVAR_PRI(hammer, delay), W_Hammer_Attack1);
+        }
+
+        if(self.w_button_secondary && CVAR(g_balance_hammer_secondary))
+        if(weapon_prepareattack(0, CVAR(g_balance_hammer_secondary_refire))) {
+            W_Hammer_Attack_Sound();
+            weapon_thinkf(WFRAME_FIRE1, WEP_CVAR_SEC(hammer, delay), W_Hammer_Attack2);
+        }
+    }
+    else if(req == WR_PRECACHE) {
+        precache_sound("weapons/swing.wav");
+    } else if(req == WR_SETUP)
+        weapon_setup(WEP_HAMMER);
+    else if(req == WR_CHECKAMMO1)
+        return TRUE;
+    else if(req == WR_CHECKAMMO2)
+        return TRUE;
+
+    return TRUE;
+}
