@@ -1,5 +1,6 @@
 
 .float hammer_attackdone;
+.float hammer_throwed;
 
 void spawnfunc_weapon_hammer(void) {
     weapon_defaultspawnfunc(WEP_HAMMER);
@@ -48,7 +49,9 @@ void W_Hammer_Attack(float isprim) {
 void W_Hammer_Return() {
     //Return hammer to owner
     //TODO: make it fly back?
-    W_GiveWeapon (self.owner, WEP_HAMMER, "Hammer");
+    self.owner.hammer_throwed = FALSE;
+    if (!self.owner.weapon)
+        W_SwitchWeapon_Force(self.owner, WEP_HAMMER);
     remove(self);
 }
 
@@ -68,6 +71,7 @@ void W_Hammer_Touch() {
 }
 
 void W_Hammer_Throw() {
+    self.hammer_throwed = TRUE;
     entity proj = spawn();
     W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 0);
     W_Accuracy_RegisterShot(self, WEP_HAMMER);
@@ -89,8 +93,8 @@ void W_Hammer_Throw() {
     CSQCProjectile(proj, TRUE, PROJECTILE_HAMMER, TRUE);
 
     //Throw out hammer
-    self.weapons &~= W_WeaponBit(WEP_HAMMER);
-    W_SwitchWeapon_Force(self, w_getbestweapon(self));
+    self.weaponentity.state = WS_CLEAR;
+    W_SwitchWeapon_Force(self, 0);
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
 }
 
@@ -130,9 +134,15 @@ float w_hammer(float req) {
     }
     else if(req == WR_PRECACHE) {
         precache_sound("weapons/swing.wav");
-    } else if(req == WR_SETUP)
+    } else if(req == WR_SETUP) {
+        if (self.hammer_throwed)
+        {
+            self.weaponentity.state = WS_CLEAR;
+            W_SwitchWeapon_Force(self, 0);
+            return;
+        }
         weapon_setup(WEP_HAMMER);
-    else if(req == WR_CHECKAMMO1)
+    } else if(req == WR_CHECKAMMO1)
         return TRUE;
     else if(req == WR_CHECKAMMO2)
         return TRUE;
