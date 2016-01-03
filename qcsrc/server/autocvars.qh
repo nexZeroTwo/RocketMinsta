@@ -420,6 +420,7 @@ float autocvar_g_balance_hammer_secondary_throw;
 float autocvar_g_balance_hammer_secondary_animtime;
 float autocvar_g_balance_hammer_secondary_delay;
 float autocvar_g_balance_hammer_secondary_damage;
+float autocvar_g_balance_hammer_secondary_flyback;
 float autocvar_g_balance_hammer_secondary_force;
 float autocvar_g_balance_hammer_secondary_lifetime;
 float autocvar_g_balance_hammer_secondary_range;

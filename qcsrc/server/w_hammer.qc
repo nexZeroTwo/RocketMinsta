@@ -48,15 +48,43 @@ void W_Hammer_Attack(float isprim) {
 
 void W_Hammer_Return() {
     //Return hammer to owner
-    //TODO: make it fly back?
     self.owner.hammer_throwed = FALSE;
     if (!self.owner.weapon)
         W_SwitchWeapon_Force(self.owner, WEP_HAMMER);
     remove(self);
 }
 
+void W_Hammer_Flyback_Think() {
+    vector owner_path = self.owner.origin - self.origin;
+    if (vlen(owner_path) < 100) { //close enough
+        W_Hammer_Return();
+        return;
+    }
+    vector owner_dir = normalize(owner_path);
+    self.velocity = WEP_CVAR_SEC(hammer, speed) * owner_dir;
+    UpdateCSQCProjectile(self);
+    self.nextthink = time + 0.1;
+}
+
+void W_Hammer_Flyback() {
+    self.movetype = MOVETYPE_NOCLIP;
+    self.solid = SOLID_NOT;
+    self.think = W_Hammer_Flyback_Think;
+    self.nextthink = time + 0.1;
+}
+
 void W_Hammer_Touch() {
-    PROJECTILE_TOUCH;
+    PROJECTILE_SKIPNONSOLID
+#if 0
+    //What we should do when this happens?
+    if(SUB_OwnerCheck())
+        return;
+    if(SUB_NoImpactCheck())
+        return;
+#endif
+    self.use();
+    if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
+         UpdateCSQCProjectileNextFrame(self);
     if (other.takedamage == DAMAGE_AIM) {
         W_Accuracy_RegisterHit(self, other, WEP_HAMMER);
         Damage(other, self.owner, self.owner, WEP_CVAR_SEC(hammer, damage),
@@ -67,7 +95,6 @@ void W_Hammer_Touch() {
         if (IsFlying(other))
             CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
     }
-    W_Hammer_Return();
 }
 
 void W_Hammer_Throw() {
@@ -82,7 +109,7 @@ void W_Hammer_Throw() {
     proj.projectiledeathtype = WEP_HAMMER | HITTYPE_SECONDARY;
     proj.touch = W_Hammer_Touch;
     proj.velocity = WEP_CVAR_SEC(hammer, speed) * w_shotdir;
-    proj.use = W_Hammer_Return;
+    proj.use = (if (WEP_CVAR_SEC(hammer, flyback)) W_Hammer_Flyback else W_Hammer_Return);
     proj.think = adaptor_think2use;
     proj.nextthink = time + WEP_CVAR_SEC(hammer, lifetime);
     setsize(proj, '-1 -1 -1', '1 1 1');
@@ -139,7 +166,7 @@ float w_hammer(float req) {
         {
             self.weaponentity.state = WS_CLEAR;
             W_SwitchWeapon_Force(self, 0);
-            return;
+            return FALSE;
         }
         weapon_setup(WEP_HAMMER);
     } else if(req == WR_CHECKAMMO1)
