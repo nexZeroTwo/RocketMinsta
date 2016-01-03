@@ -45,11 +45,64 @@ void W_Hammer_Attack(float isprim) {
     }
 }
 
+void W_Hammer_Return() {
+    //Return hammer to owner
+    //TODO: make it fly back?
+    W_GiveWeapon (self.owner, WEP_HAMMER, "Hammer");
+    remove(self);
+}
+
+void W_Hammer_Touch() {
+    PROJECTILE_TOUCH;
+    if (other.takedamage == DAMAGE_AIM) {
+        W_Accuracy_RegisterHit(self, other, WEP_HAMMER);
+        Damage(other, self.owner, self.owner, WEP_CVAR_SEC(hammer, damage),
+                WEP_HAMMER | HITTYPE_SECONDARY, self.origin, normalize(self.velocity) * WEP_CVAR_SEC(hammer, force));
+        if (other.classname == "player")
+        if (IsDifferentTeam(self.owner, other))
+        if (other.deadflag == DEAD_NO)
+        if (IsFlying(other))
+            CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
+    }
+    W_Hammer_Return();
+}
+
+void W_Hammer_Throw() {
+    entity proj = spawn();
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 0);
+    W_Accuracy_RegisterShot(self, WEP_HAMMER);
+    proj.owner = self;
+    proj.classname = "hammer";
+    proj.movetype = MOVETYPE_FLY;
+    PROJECTILE_MAKETRIGGER(proj);
+    proj.projectiledeathtype = WEP_HAMMER | HITTYPE_SECONDARY;
+    proj.touch = W_Hammer_Touch;
+    proj.velocity = WEP_CVAR_SEC(hammer, speed) * w_shotdir;
+    proj.use = W_Hammer_Return;
+    proj.think = adaptor_think2use;
+    proj.nextthink = time + WEP_CVAR_SEC(hammer, lifetime);
+    setsize(proj, '-1 -1 -1', '1 1 1');
+    setorigin(proj, w_shotorg);
+    W_SetupProjectileVelocity(proj);
+    proj.angles = vectoangles (proj.velocity);
+    proj.flags = FL_PROJECTILE;
+    CSQCProjectile(proj, TRUE, PROJECTILE_HAMMER, TRUE);
+
+    //Throw out hammer
+    self.weapons &~= W_WeaponBit(WEP_HAMMER);
+    W_SwitchWeapon_Force(self, w_getbestweapon(self));
+    weapon_thinkf(WFRAME_IDLE, 0, w_ready);
+}
+
 void W_Hammer_Attack1(void) {
     W_Hammer_Attack(TRUE);
 }
 
 void W_Hammer_Attack2(void) {
+    if (WEP_CVAR_SEC(hammer, throw)) {
+        W_Hammer_Throw();
+        return;
+    }
     W_Hammer_Attack(FALSE);
 }
 
