@@ -1548,7 +1548,7 @@ void Ent_ReadPlayerScore()
 	lf = ReadInt24_t();
 #endif
 	float p;
-	
+
 	float oldscore = o.(scores[SP_SCORE]);
 	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)

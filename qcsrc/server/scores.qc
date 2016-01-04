@@ -253,6 +253,8 @@ void PlayerScore_Clear(entity player, float force)
 				sk.SendFlags |= pow(2, i);
 		sk.(scores[i]) = 0;
 	}
+
+    self.playtime = self.alivetime = self.jumpholdtime = self.playtimeupdate = 0;
 }
 
 void Score_ClearAll()

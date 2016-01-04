@@ -31,6 +31,7 @@ void ScoreRules_basics(float teams, float sprio, float stprio, float score_enabl
 	if(score_enabled)
 		ScoreInfo_SetLabel_PlayerScore(SP_SCORE,        "score",     sprio);
 	
+    ScoreInfo_SetLabel_PlayerScore(SP_PLAYTIME,         "time",    0);
     ScoreInfo_SetLabel_PlayerScore(SP_HOOKFRAGS,        "hfs",     0);
     ScoreInfo_SetLabel_PlayerScore(SP_NADEFRAGS,        "nfs",     0);
     ScoreInfo_SetLabel_PlayerScore(SP_DAMAGE,           "dmg",     0);
