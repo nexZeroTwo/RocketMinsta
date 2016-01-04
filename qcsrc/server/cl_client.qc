@@ -3240,7 +3240,7 @@ void PlayerPreThink (void)
         isplayer = FALSE;
         isobs = TRUE;
     }
-    
+
     if(isplayer || self.jb_specteam)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
@@ -3255,6 +3255,7 @@ void PlayerPreThink (void)
 
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
+
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
             if(sv_scoreboard_noob_column)
                 PlayerScore_Set(self, SP_NOOB, rint(255 * self.jumpholdtime / self.alivetime));
