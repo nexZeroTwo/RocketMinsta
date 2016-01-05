@@ -5,6 +5,11 @@ void DPRM_Start() {
 	
 	if not(DPRM_VersionIsSuitable())
 		print("\n====================================================================\n^1WARNING: ^7Your engine is out of date!\nPlease download and install the update from ^2" DPRM_WEBSITE_URL "^7\n====================================================================\n\n");
+
+    if(checkextension("DP_RM_REGEX"))
+        regex_match = regex_match_642;
+    else if(checkextension("DP_RM_REGEX2"))
+        regex_match = regex_match_800;
 }
 
 float DPRM_GetVersion() {
