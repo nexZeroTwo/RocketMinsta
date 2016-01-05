@@ -668,7 +668,7 @@ string apply_autoreplace(string msg) {
             float mm = reptable_matchmode[id];
 
             if(reptable_matchmode[id] == MATCHMODE_REGEX) {
-                if(!checkextension("DP_RM_REGEX"))
+                if(!regex_match)
                     continue;
 
                 if(is_escaped_caret(msg, i))
