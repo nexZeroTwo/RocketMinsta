@@ -476,7 +476,7 @@ enumflags {
     SPFLAG_MUTE,
 };
 
-#define SCORE_DONT_CLEAR(s) ((s) == SP_PLAYTIME || (s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE || (s) == SP_NOOB)
+#define SCORE_DONT_CLEAR(s) ((s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE)
 
 ///////////////////////////
 // sound constants
