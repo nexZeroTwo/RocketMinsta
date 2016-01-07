@@ -100,7 +100,7 @@ void W_Hammer_Touch() {
 void W_Hammer_Throw() {
     self.hammer_throwed = TRUE;
     entity proj = spawn();
-    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 0);
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "", 0);
     W_Accuracy_RegisterShot(self, WEP_HAMMER);
     proj.owner = self;
     proj.classname = "hammer";
