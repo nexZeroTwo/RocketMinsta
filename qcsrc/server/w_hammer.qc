@@ -63,7 +63,7 @@ void W_Hammer_Flyback_Think() {
     vector owner_dir = normalize(owner_path);
     self.velocity = WEP_CVAR_SEC(hammer, speed) * owner_dir;
     UpdateCSQCProjectile(self);
-    self.nextthink = time + 0.1;
+    self.nextthink = time;
 }
 
 void W_Hammer_Flyback() {
