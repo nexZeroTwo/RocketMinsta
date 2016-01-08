@@ -297,6 +297,7 @@ void dompointtouch()
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
     self.dom_capturingplayer = other;
+    other.buff_stealth_time = time;
 
     other.dom_captureprogress = self.dom_captureprogress;
 	if(self.dom_captureprogress < 1)
