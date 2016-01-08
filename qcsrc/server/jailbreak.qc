@@ -1270,6 +1270,7 @@ void JB_ControlPoint_Touch() {
 	self.pointupdatetime = time;
     self.jb_capturingplayer = other;
 	other.jb_unlock_progress = self.jb_unlock_progress;
+    other.buff_stealth_time = time;
 	
 	if(self.jb_unlock_progress >= 1) {
 		JB_ControlPoint_Capture(other);
