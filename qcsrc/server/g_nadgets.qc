@@ -2357,6 +2357,7 @@ void HG_Sentry_Orphaned_Think(void) {
             HG_Sentry_SetOwner(self, e);
             defer(0, HG_Sentry_Interrupt_Capture);
         }
+        self.hg_sentry_capture_player.buff_stealth_time = time;
     }
 }
 
