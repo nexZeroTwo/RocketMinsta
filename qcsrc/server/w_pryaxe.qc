@@ -63,7 +63,7 @@ void W_Pryaxe_Flyback_Think() {
     vector owner_dir = normalize(owner_path);
     self.velocity = WEP_CVAR_SEC(pryaxe, speed) * owner_dir;
     UpdateCSQCProjectile(self);
-    self.nextthink = time + 0.1;
+    self.nextthink = time;
 }
 
 void W_Pryaxe_Flyback() {
@@ -100,7 +100,7 @@ void W_Pryaxe_Touch() {
 void W_Pryaxe_Throw() {
     self.pryaxe_thrown = TRUE;
     entity proj = spawn();
-    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", 0);
+    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "", 0);
     W_Accuracy_RegisterShot(self, WEP_PRYAXE);
     proj.owner = self;
     proj.classname = "pryaxe";
