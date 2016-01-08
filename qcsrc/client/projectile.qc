@@ -473,7 +473,7 @@ void Ent_Projectile()
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
-            case PROJECTILE_HAMMER: setmodel(self, "models/weapons/g_hammer.md3"); break;
+            case PROJECTILE_PRYAXE: setmodel(self, "models/weapons/g_pryaxe.md3"); break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;

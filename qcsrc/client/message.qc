@@ -224,8 +224,8 @@ string WeaponDeathString(float deathtype) {
             else
                 return "was shredded by #'s Flak Cannon";
 
-        case WEP_HAMMER:
-            return "was smashed to death by";
+        case WEP_PRYAXE:
+            return "was torn apart by #'s Pryaxe";
 
         //
         // Nadgets

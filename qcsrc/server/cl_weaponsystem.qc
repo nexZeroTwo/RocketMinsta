@@ -920,7 +920,7 @@ void weapon_thinkf(float fr, float t, void() func)
 	if (!self.crouch) // shoot anim stands up, this looks bad
 	{
 		vector anim;
-		if (self.weapon == WEP_HAMMER)
+		if (self.weapon == WEP_PRYAXE)
 			anim = self.anim_pain1; // we dont have standart melee animation...
 		else
 			anim = self.anim_shoot;
