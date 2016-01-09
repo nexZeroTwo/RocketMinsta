@@ -40,10 +40,10 @@ void W_Pryaxe_Attack(float isprim) {
         W_Pryaxe_Attack_Real(isprim);
     }
 
-    if(time > ATTACK_FINISHED(self)) {
+    weapon_thinkf(WFRAME_DONTCHANGE, WEP_CVAR_BOTH(pryaxe, isprim, animtime), inline void(void) {
         self.pryaxe_attackdone = FALSE;
-        weapon_thinkf(WFRAME_IDLE, WEP_CVAR_BOTH(pryaxe, isprim, animtime), w_ready);
-    }
+        weapon_thinkf(WFRAME_IDLE, frametime, w_ready);
+    });
 }
 
 void W_Pryaxe_Return() {
