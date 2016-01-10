@@ -1,6 +1,8 @@
 
 .float pryaxe_attackdone;
 .float pryaxe_thrown;
+.float pryaxe_hit;
+.float pryaxe_oldsolid;
 
 void spawnfunc_weapon_pryaxe(void) {
     weapon_defaultspawnfunc(WEP_PRYAXE);
@@ -8,29 +10,46 @@ void spawnfunc_weapon_pryaxe(void) {
 
 void W_Pryaxe_Attack_Real(float isprim) {
     const boxsize = 32;
-    var fract, targ, endpos;
+    var fract, targ, endpos, hitcreature;
 
     var damage = WEP_CVAR_BOTH(pryaxe, isprim, damage);
     var theforce = WEP_CVAR_BOTH(pryaxe, isprim, force);
 
     makevectors(self.v_angle);
     W_SetupShot(self, FALSE, 0, "", 0);
+    W_Accuracy_RegisterShot(self, WEP_PRYAXE);
 
     traceline_antilag(self, w_shotorg - (w_shotdir * 20), w_shotorg + w_shotdir * WEP_CVAR_BOTH(pryaxe, isprim, range), MOVE_NORMAL, self);
     fract = trace_fraction;
-    tracebox_antilag(self, trace_endpos, '-1 -1 -1' * boxsize, '1 1 1' * boxsize, trace_endpos, MOVE_NORMAL, self, TRUE);
-    targ = trace_ent;
     endpos = trace_endpos;
 
-    W_Accuracy_RegisterShot(self, WEP_PRYAXE);
+    while(TRUE) {
+        tracebox_antilag(self, trace_endpos, '-1 -1 -1' * boxsize, '1 1 1' * boxsize, trace_endpos, MOVE_NORMAL, self, TRUE);
 
-    if(targ.takedamage) {
-        W_Accuracy_RegisterHit(self, targ, WEP_PRYAXE);
-        Damage(targ, self, self, damage,
-                WEP_PRYAXE | (if (isprim) 0 else HITTYPE_SECONDARY), endpos, w_shotdir * theforce);
+        if(!trace_ent)
+            break;
+
+        trace_ent.pryaxe_oldsolid = trace_ent.solid;
+        trace_ent.solid = SOLID_NOT;
+        trace_ent.pryaxe_hit = TRUE;
     }
 
-    if(!targ.iscreature && fract < 1)
+    while((targ = findfloat(targ, pryaxe_hit, TRUE))) {
+        targ.solid = targ.pryaxe_oldsolid;
+        targ.pryaxe_oldsolid = 0;
+        targ.pryaxe_hit = FALSE;
+
+        if(targ.takedamage) {
+            if(targ.iscreature)
+                hitcreature = TRUE;
+
+            W_Accuracy_RegisterHit(self, targ, WEP_PRYAXE);
+            Damage(targ, self, self, damage,
+                    WEP_PRYAXE | (if (isprim) 0 else HITTYPE_SECONDARY), endpos, w_shotdir * theforce);
+        }
+    }
+
+    if(!hitcreature && fract < 1)
         Damage_DamageInfo(endpos, damage, damage, 0, w_shotdir * theforce, WEP_PRYAXE, self);
 }
 
