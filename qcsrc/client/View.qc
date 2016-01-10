@@ -409,6 +409,7 @@ float crosshair_ringfill;
 
 float crosshair_inring_fill;
 float crosshair_inring_alpha;
+float crosshair_inring_expand;
 
 void HG_NadeGainSound() {
     float c1 = getstati(STAT_HGAMMO);
@@ -797,6 +798,12 @@ void CSQC_UpdateView(float w, float h)
             } else
                 bullets = 0;
 
+            if(bullets) {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 1, drawframetime * 2);
+            } else {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 0, drawframetime * 4);
+            }
+
             if(maxbullets > 0) {
                 crosshair_ringfill += (bullets / maxbullets - crosshair_ringfill) * drawframetime * 10;
                 if(crosshair_ringfill > 1)
@@ -809,6 +816,7 @@ void CSQC_UpdateView(float w, float h)
 
             var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
             var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
+            var ringexpand = 0.25; // TODO: cvar for this?
 
             if(ringsize > 0 && ringalpha > 0) {
                 if(crosshair_ringfill) {
@@ -848,7 +856,7 @@ void CSQC_UpdateView(float w, float h)
                 if(crosshair_inring_alpha) {
                     DrawCircleClippedPic(
                         wcross_origin,
-                        ringsize,
+                        ringsize * (1 + ringexpand * crosshair_inring_expand * crosshair_inring_alpha),
                         "gfx/hud/ring_inner.tga",
                         if(in_invert) 1 - crosshair_inring_fill else crosshair_inring_fill,
                         0.5 * wcross_color + '0.5 0.5 0.5',
