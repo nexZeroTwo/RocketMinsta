@@ -80,10 +80,6 @@ float W_Clip_CheckFull(void) {
 void W_Clip_ReloadedAndReady(void) {
     self.w_clip_loaded = self.w_clip_limit;
     W_Clip_CheckFull();
-
-    var t = ATTACK_FINISHED(self) - w_clip_context_reloadtime - 1;
-    ATTACK_FINISHED(self) = t;
-
     w_ready();
 }
 
@@ -116,7 +112,8 @@ void W_Clip_Reload(void) {
     var rate = W_WeaponRateFactor();
     var rtime = w_clip_context_reloadtime * rate;
 
-    t = max(time, ATTACK_FINISHED(self)) + rtime;
+    t = time + rtime;
+
     self.w_clip_reloadfinished = t;
     self.w_inring_fulltime = t;
     self.w_inring_cycle = rtime;
