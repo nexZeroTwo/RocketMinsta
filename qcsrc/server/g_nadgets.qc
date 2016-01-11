@@ -1837,7 +1837,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.hg_type = hgtype;
 	gren.spawnorigin = self.origin;
 	gren.spawntime = time;
-    
+
     if(hgtype != HG_NAPALM)
         gren.hg_adept = Buffs_Present(self, BUFF_ADEPT);
     

@@ -180,7 +180,7 @@ function buildall
 
 function tocompress
 {
-	cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
+	cat compressdirs | while read line; do find "$line" -name "*.tga" -type f -maxdepth 1; done
 }
 
 function compress-gfx
@@ -213,7 +213,7 @@ function compress-gfx
 		mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
 	
 		echo "Compressing: $line"
-		
+
 		if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
 			warning "Failed to compress $line! Restoring the uncompressed file"
 		fi
