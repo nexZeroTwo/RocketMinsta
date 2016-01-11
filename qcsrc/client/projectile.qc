@@ -246,7 +246,7 @@ void Projectile_Draw()
                 rot = '700 643 721';
                 break;
             case PROJECTILE_HG_RAZE:
-                rot = '0 0 1500';
+                rot = '0 0 -1000';
                 break;
 			default:
 				break;
@@ -459,7 +459,9 @@ void Ent_Projectile()
                 break;
             case PROJECTILE_HG_RAZE:
                 setmodel(self, "models/raze.md3");
-                self.skin = TeamColorSkin(self.team);
+                if(!teamplay)
+                    self.team = COLOR_TEAM1;
+                self.colormap = 1024 + self.team * 17;
                 break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
