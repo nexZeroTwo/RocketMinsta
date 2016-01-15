@@ -47,7 +47,14 @@ void W_SwitchWeapon(float imp)
 	{
 		W_Reload();
 	}
-};
+}
+
+void W_SwitchWeapon_Silent(float imp) {
+    if(self.switchweapon != imp) {
+        if(client_hasweapon(self, imp, TRUE, FALSE))
+            W_SwitchWeapon_Force(self, imp);
+    }
+}
 
 .float weaponcomplainindex;
 float W_GetCycleWeapon(entity pl, string weaponorder, float dir, float imp, float complain)
@@ -598,11 +605,11 @@ void W_FixWeaponSet(void) {
         if(self.BUTTON_ATCK && (w & secondary || !hasweapon)) {
             self.weapons &~= secondary;
             self.weapons |= g_weaponarena;
-            W_SwitchWeapon(log2of(g_weaponarena) + 1);
+            W_SwitchWeapon_Silent(log2of(g_weaponarena) + 1);
         } else if(self.BUTTON_ATCK2 && (w & g_weaponarena || !hasweapon)) {
             self.weapons &~= g_weaponarena;
             self.weapons |= secondary;
-            W_SwitchWeapon(log2of(secondary) + 1);
+            W_SwitchWeapon_Silent(log2of(secondary) + 1);
         }
     }
 }
