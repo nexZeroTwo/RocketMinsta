@@ -32,10 +32,11 @@ float W_WeaponRateFactorFor(entity plr) {
 
 void W_SwitchWeapon_Force(entity e, float w)
 {
-    entity o = self;
-    self = e;
-    weapon_action(self.weapon, WR_LOWER);
-    self = o;
+    if(e.weapon) {
+        using(self = e)
+            weapon_action(self.weapon, WR_LOWER);
+    } else if(w)
+        sound(e, CHAN_WEAPON2, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
@@ -713,7 +714,7 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
     weaponbit = W_WeaponBit(wpn);
     if(cl.weapons & weaponbit) {
         if(andammo) {
-            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO && wpn != WEP_PRYAXE) {
                 f = 1;
             } else {
                 oldself = self;
@@ -721,7 +722,9 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
                 f = weapon_action(wpn, WR_CHECKAMMO1);
                 f = f + weapon_action(wpn, WR_CHECKAMMO2);
                 self = oldself;
-            } if(!f) {
+            }
+
+            if(!f) {
                 if(complain)
                 if(clienttype(cl) == CLIENTTYPE_REAL) {
                     play2(cl, "weapons/unavailable.wav");

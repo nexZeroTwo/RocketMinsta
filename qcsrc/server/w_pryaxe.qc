@@ -212,9 +212,9 @@ float w_pryaxe(float req) {
         }
         weapon_setup(WEP_PRYAXE);
     } else if(req == WR_CHECKAMMO1)
-        return TRUE;
+        return !self.pryaxe_thrown;
     else if(req == WR_CHECKAMMO2)
-        return TRUE;
+        return !self.pryaxe_thrown;
 
     return TRUE;
 }

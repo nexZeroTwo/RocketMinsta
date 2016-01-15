@@ -9,19 +9,22 @@ void W_Reload()
 float W_ToggleSecondary(void) {
     if(g_weaponarena_secondary && self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
+        var hasweapon = (self.switchweapon || self.weapon);
 
         var secondary = if(self.w_secondary)
             pow(2, self.w_secondary - 1)
         else
             g_weaponarena_secondary;
 
-        if(w & secondary) {
+        if(w & secondary || !hasweapon) {
             self.weapons &~= secondary;
             self.weapons |= g_weaponarena;
+            W_SwitchWeapon_Force(self, log2of(g_weaponarena) + 1);
             return TRUE;
         } else if(w & g_weaponarena) {
             self.weapons &~= g_weaponarena;
             self.weapons |= secondary;
+            W_SwitchWeapon_Force(self, log2of(secondary) + 1);
             return TRUE;
         }
     }
@@ -585,18 +588,21 @@ void Nixnex_GiveCurrentWeapon()
 void W_FixWeaponSet(void) {
     if(g_weaponarena && g_weaponarena_secondary && !self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
+        var hasweapon = (self.switchweapon || self.weapon);
 
         var secondary = if(self.w_secondary)
             pow(2, self.w_secondary - 1)
         else
             g_weaponarena_secondary;
 
-        if(self.BUTTON_ATCK && w & secondary) {
+        if(self.BUTTON_ATCK && (w & secondary || !hasweapon)) {
             self.weapons &~= secondary;
             self.weapons |= g_weaponarena;
-        } else if(self.BUTTON_ATCK2 && w & g_weaponarena) {
+            W_SwitchWeapon(log2of(g_weaponarena) + 1);
+        } else if(self.BUTTON_ATCK2 && (w & g_weaponarena || !hasweapon)) {
             self.weapons &~= g_weaponarena;
             self.weapons |= secondary;
+            W_SwitchWeapon(log2of(secondary) + 1);
         }
     }
 }
