@@ -69,8 +69,28 @@ void W_Pryaxe_Melee(float isprim) {
 }
 
 void W_Pryaxe_Attack(float isprim) {
-    if(WEP_CVAR_BOTH(pryaxe, isprim, throw)) {
-        W_Pryaxe_Throw(isprim);
+    var throw = WEP_CVAR_BOTH(pryaxe, isprim, throw);
+
+    if(throw) {
+        if(throw & 2) {
+            var inv = if(isprim) -1 else 1;
+            if(CVAR(g_balance_pryaxe_swapshotmodes))
+                inv *= -1;
+            W_SetButtonFields(self, inv > 0);
+
+            if(self.w_button_primary) {
+                if(throw & 1)
+                    W_Pryaxe_Melee(isprim);
+                else
+                    W_Pryaxe_Throw(isprim);
+            } else {
+                if(throw & 1)
+                    W_Pryaxe_Throw(isprim);
+                else
+                    W_Pryaxe_Melee(isprim);
+            }
+        } else
+            W_Pryaxe_Throw(isprim);
     } else {
         W_Pryaxe_Melee(isprim);
     }
