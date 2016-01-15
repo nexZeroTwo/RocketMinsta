@@ -73,12 +73,8 @@ void W_Pryaxe_Attack(float isprim) {
 
     if(throw) {
         if(throw & 2) {
-            var inv = if(isprim) -1 else 1;
-            if(CVAR(g_balance_pryaxe_swapshotmodes))
-                inv *= -1;
-            W_SetButtonFields(self, inv > 0);
-
-            if(self.w_button_primary) {
+            W_SetButtonFields(self, CVAR(g_balance_pryaxe_swapshotmodes));
+            if(self.(if(isprim) w_button_primary else w_button_secondary)) {
                 if(throw & 1)
                     W_Pryaxe_Melee(isprim);
                 else
