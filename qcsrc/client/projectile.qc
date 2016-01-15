@@ -199,6 +199,10 @@ void Projectile_Draw()
 	{
 		//self.move_flags &~= FL_ONGROUND;
 		Movetype_Physics_MatchServer();
+
+        if(self.cnt == PROJECTILE_PRYAXE)
+            self.move_flags &~= FL_ONGROUND;
+
 		if(!(self.move_flags & FL_ONGROUND))
 			self.angles = vectoangles(self.velocity);
 	}
