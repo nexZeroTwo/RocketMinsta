@@ -8,7 +8,10 @@ void spawnfunc_weapon_pryaxe(void) {
     weapon_defaultspawnfunc(WEP_PRYAXE);
 }
 
-void W_Pryaxe_Attack_Real(float isprim) {
+void W_Pryaxe_Throw(float);
+void W_Pryaxe_Melee(float);
+
+void W_Pryaxe_Melee_Damage(float isprim) {
     const boxsize = 32;
     var fract, targ, endpos, hitcreature;
 
@@ -53,16 +56,24 @@ void W_Pryaxe_Attack_Real(float isprim) {
         Damage_DamageInfo(endpos, damage, damage, 0, w_shotdir * theforce, WEP_PRYAXE, self);
 }
 
-void W_Pryaxe_Attack(float isprim) {
+void W_Pryaxe_Melee(float isprim) {
     if(!self.pryaxe_attackdone) {
         self.pryaxe_attackdone = TRUE;
-        W_Pryaxe_Attack_Real(isprim);
+        W_Pryaxe_Melee_Damage(isprim);
     }
 
     weapon_thinkf(WFRAME_DONTCHANGE, WEP_CVAR_BOTH(pryaxe, isprim, animtime), inline void(void) {
         self.pryaxe_attackdone = FALSE;
         weapon_thinkf(WFRAME_IDLE, frametime, w_ready);
     });
+}
+
+void W_Pryaxe_Attack(float isprim) {
+    if(WEP_CVAR_BOTH(pryaxe, isprim, throw)) {
+        W_Pryaxe_Throw(isprim);
+    } else {
+        W_Pryaxe_Melee(isprim);
+    }
 }
 
 void W_Pryaxe_Return() {
@@ -75,13 +86,15 @@ void W_Pryaxe_Return() {
 }
 
 void W_Pryaxe_Flyback_Think() {
+    var isprim = !(self.projectiledeathtype & HITTYPE_SECONDARY);
     vector owner_path = self.owner.origin - self.origin;
+
     if (vlen(owner_path) < 100) { //close enough
         W_Pryaxe_Return();
         return;
     }
     vector owner_dir = normalize(owner_path);
-    self.velocity = WEP_CVAR_SEC(pryaxe, speed) * owner_dir;
+    self.velocity = WEP_CVAR_BOTH(pryaxe, isprim, throw_speed) * owner_dir;
     UpdateCSQCProjectile(self);
     self.nextthink = time;
 }
@@ -94,6 +107,7 @@ void W_Pryaxe_Flyback() {
 }
 
 void W_Pryaxe_Touch() {
+    var isprim = !(self.projectiledeathtype & HITTYPE_SECONDARY);
     PROJECTILE_SKIPNONSOLID
 
     if(SUB_OwnerCheck()) {
@@ -110,8 +124,9 @@ void W_Pryaxe_Touch() {
          UpdateCSQCProjectileNextFrame(self);
     if (other.takedamage) {
         W_Accuracy_RegisterHit(self.owner, other, WEP_PRYAXE);
-        Damage(other, self.owner, self.owner, WEP_CVAR_SEC(pryaxe, damage),
-                WEP_PRYAXE | HITTYPE_SECONDARY, self.origin, normalize(self.velocity) * WEP_CVAR_SEC(pryaxe, force));
+        Damage(other, self.owner, self.owner, WEP_CVAR_BOTH(pryaxe, isprim, throw_damage),
+               self.projectiledeathtype, self.origin,
+               normalize(self.velocity) * WEP_CVAR_BOTH(pryaxe, isprim, throw_force));
         if (other.classname == "player")
         if (IsDifferentTeam(self.owner, other))
         if (other.deadflag == DEAD_NO)
@@ -123,11 +138,11 @@ void W_Pryaxe_Touch() {
     if(!other.iscreature) {
         var dir = normalize(self.velocity);
         traceline(trace_endpos, trace_endpos + dir * 24, MOVE_NORMAL, self);
-        Damage_DamageInfo(trace_endpos, WEP_CVAR_SEC(pryaxe, damage), WEP_CVAR_SEC(pryaxe, damage), 0, dir * WEP_CVAR_SEC(pryaxe, force), WEP_PRYAXE, self);
+        Damage_DamageInfo(trace_endpos, WEP_CVAR_BOTH(pryaxe, isprim, throw_damage), WEP_CVAR_BOTH(pryaxe, isprim, throw_damage), 0, dir * WEP_CVAR_BOTH(pryaxe, isprim, throw_force), WEP_PRYAXE, self);
     }
 }
 
-void W_Pryaxe_Throw() {
+void W_Pryaxe_Throw(float isprim) {
     self.pryaxe_thrown = TRUE;
     entity proj = spawn();
 
@@ -139,7 +154,7 @@ void W_Pryaxe_Throw() {
     tracebox(w_shotorg, pr_min, pr_max, w_shotorg, MOVE_NOMONSTERS, self);
 
     if(trace_startsolid) {
-        W_Pryaxe_Attack(FALSE);
+        W_Pryaxe_Melee(FALSE);
         return;
     }
 
@@ -148,12 +163,12 @@ void W_Pryaxe_Throw() {
     proj.classname = "pryaxe";
     proj.movetype = MOVETYPE_FLY;
     PROJECTILE_MAKETRIGGER(proj);
-    proj.projectiledeathtype = WEP_PRYAXE | HITTYPE_SECONDARY;
+    proj.projectiledeathtype = WEP_PRYAXE | (if(isprim) 0 else HITTYPE_SECONDARY) | HITTYPE_BOUNCE;
     proj.touch = W_Pryaxe_Touch;
-    proj.velocity = WEP_CVAR_SEC(pryaxe, speed) * w_shotdir;
-    proj.use = (if (WEP_CVAR_SEC(pryaxe, flyback)) W_Pryaxe_Flyback else W_Pryaxe_Return);
+    proj.velocity = WEP_CVAR_BOTH(pryaxe, isprim, throw_speed) * w_shotdir;
+    proj.use = (if (WEP_CVAR_BOTH(pryaxe, isprim, throw_flyback)) W_Pryaxe_Flyback else W_Pryaxe_Return);
     proj.think = adaptor_think2use;
-    proj.nextthink = time + WEP_CVAR_SEC(pryaxe, lifetime);
+    proj.nextthink = time + WEP_CVAR_BOTH(pryaxe, isprim, throw_lifetime);
     setsize(proj, pr_min, pr_max);
     setorigin(proj, w_shotorg);
     W_SetupProjectileVelocity(proj);
@@ -172,10 +187,6 @@ void W_Pryaxe_Attack1(void) {
 }
 
 void W_Pryaxe_Attack2(void) {
-    if (WEP_CVAR_SEC(pryaxe, throw)) {
-        W_Pryaxe_Throw();
-        return;
-    }
     W_Pryaxe_Attack(FALSE);
 }
 

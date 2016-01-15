@@ -225,6 +225,8 @@ string WeaponDeathString(float deathtype) {
                 return "was shredded by #'s Flak Cannon";
 
         case WEP_PRYAXE:
+            if(deathtype & HITTYPE_BOUNCE)
+                return "tried to catch #'s Pryaxe";
             return "was torn apart by #'s Pryaxe";
 
         //
