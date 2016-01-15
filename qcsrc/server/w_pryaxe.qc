@@ -70,6 +70,7 @@ void W_Pryaxe_Return() {
     self.owner.pryaxe_thrown = FALSE;
     if (!self.owner.weapon)
         W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
+    sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
     remove(self);
 }
 
@@ -89,23 +90,26 @@ void W_Pryaxe_Flyback() {
     self.movetype = MOVETYPE_NOCLIP;
     self.solid = SOLID_NOT;
     self.think = W_Pryaxe_Flyback_Think;
-    self.nextthink = time + 0.1;
+    self.nextthink = time; //+ 0.1;
 }
 
 void W_Pryaxe_Touch() {
     PROJECTILE_SKIPNONSOLID
-#if 0
-    //What we should do when this happens?
-    if(SUB_OwnerCheck())
+
+    if(SUB_OwnerCheck()) {
         return;
-    if(SUB_NoImpactCheck())
+    }
+
+    if(SUB_NoImpactCheck()) {
+        self.use();
         return;
-#endif
+    }
+
     self.use();
     if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
          UpdateCSQCProjectileNextFrame(self);
-    if (other.takedamage == DAMAGE_AIM) {
-        W_Accuracy_RegisterHit(self, other, WEP_PRYAXE);
+    if (other.takedamage) {
+        W_Accuracy_RegisterHit(self.owner, other, WEP_PRYAXE);
         Damage(other, self.owner, self.owner, WEP_CVAR_SEC(pryaxe, damage),
                 WEP_PRYAXE | HITTYPE_SECONDARY, self.origin, normalize(self.velocity) * WEP_CVAR_SEC(pryaxe, force));
         if (other.classname == "player")
@@ -113,13 +117,32 @@ void W_Pryaxe_Touch() {
         if (other.deadflag == DEAD_NO)
         if (IsFlying(other))
             CSQCMessage_Praise(self.owner, CSQCMSG_PRAISEFLAG_AIRSHOT);
+
+    }
+
+    if(!other.iscreature) {
+        var dir = normalize(self.velocity);
+        traceline(trace_endpos, trace_endpos + dir * 24, MOVE_NORMAL, self);
+        Damage_DamageInfo(trace_endpos, WEP_CVAR_SEC(pryaxe, damage), WEP_CVAR_SEC(pryaxe, damage), 0, dir * WEP_CVAR_SEC(pryaxe, force), WEP_PRYAXE, self);
     }
 }
 
 void W_Pryaxe_Throw() {
     self.pryaxe_thrown = TRUE;
     entity proj = spawn();
-    W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "", 0);
+
+    const pr_min = '-24 -24 -4';
+    const pr_max = ' 24  24  4';
+
+    W_SetupShot_ProjectileSize (self, pr_min, pr_max, FALSE, 4, "", 0);
+
+    tracebox(w_shotorg, pr_min, pr_max, w_shotorg, MOVE_NOMONSTERS, self);
+
+    if(trace_startsolid) {
+        W_Pryaxe_Attack(FALSE);
+        return;
+    }
+
     W_Accuracy_RegisterShot(self, WEP_PRYAXE);
     proj.owner = self;
     proj.classname = "pryaxe";
@@ -131,7 +154,7 @@ void W_Pryaxe_Throw() {
     proj.use = (if (WEP_CVAR_SEC(pryaxe, flyback)) W_Pryaxe_Flyback else W_Pryaxe_Return);
     proj.think = adaptor_think2use;
     proj.nextthink = time + WEP_CVAR_SEC(pryaxe, lifetime);
-    setsize(proj, '-1 -1 -1', '1 1 1');
+    setsize(proj, pr_min, pr_max);
     setorigin(proj, w_shotorg);
     W_SetupProjectileVelocity(proj);
     proj.angles = vectoangles (proj.velocity);
