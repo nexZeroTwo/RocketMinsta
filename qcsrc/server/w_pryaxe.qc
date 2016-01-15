@@ -131,8 +131,8 @@ void W_Pryaxe_Throw() {
     self.pryaxe_thrown = TRUE;
     entity proj = spawn();
 
-    const pr_min = '-24 -24 -4';
-    const pr_max = ' 24  24  4';
+    const pr_min = '-16 -16 -4';
+    const pr_max = ' 16  16  4';
 
     W_SetupShot_ProjectileSize (self, pr_min, pr_max, FALSE, 4, "", 0);
 

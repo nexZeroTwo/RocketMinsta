@@ -586,8 +586,8 @@ void Ent_Projectile()
             case PROJECTILE_PRYAXE:
                 self.move_movetype = MOVETYPE_BOUNCE;
                 self.move_touch = SUB_Null;
-                self.mins = '-24 -24 -4';
-                self.maxs = ' 24  24  4';
+                self.mins = '-16 -16 -4';
+                self.maxs = ' 16  16  4';
 			default:
 				break;
 		}
