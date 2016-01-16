@@ -211,6 +211,7 @@ void W_Pryaxe_Throw(float isprim) {
     self.weaponentity.state = WS_CLEAR;
     W_SwitchWeapon_Force(self, 0);
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
+    ATTACK_FINISHED(self) = time;
 }
 
 void W_Pryaxe_Attack1(void) {
