@@ -93,11 +93,14 @@ void W_Pryaxe_Attack(float isprim) {
 }
 
 void W_Pryaxe_Return() {
-    //Return pryaxe to owner
-    self.owner.pryaxe_thrown = FALSE;
-    if (!self.owner.weapon)
-        W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
-    sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
+    if(self.owner.iscreature) {
+        //Return pryaxe to owner
+        self.owner.pryaxe_thrown = FALSE;
+        if (!self.owner.weapon)
+            W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
+        sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
+    }
+
     remove(self);
 }
 
@@ -201,6 +204,7 @@ void W_Pryaxe_Throw(float isprim) {
     W_SetupProjectileVelocity(proj);
     proj.angles = vectoangles (proj.velocity);
     proj.flags = FL_PROJECTILE;
+    proj.reset = W_Pryaxe_Return;
     CSQCProjectile(proj, TRUE, PROJECTILE_PRYAXE, TRUE);
 
     //Throw out pryaxe
@@ -242,12 +246,20 @@ float w_pryaxe(float req) {
     else if(req == WR_PRECACHE) {
         precache_sound("weapons/swing.wav");
     } else if(req == WR_SETUP) {
+        if(self.pryaxe_thrown) {
+            while((var e = find(e, classname, "pryaxe"))) if(e.owner == self) {
+                self.pryaxe_thrown = FALSE;
+                break;
+            }
+        }
+
         if (self.pryaxe_thrown)
         {
             self.weaponentity.state = WS_CLEAR;
             W_SwitchWeapon_Force(self, 0);
             return FALSE;
         }
+
         weapon_setup(WEP_PRYAXE);
     } else if(req == WR_CHECKAMMO1)
         return !self.pryaxe_thrown;
