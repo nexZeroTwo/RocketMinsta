@@ -123,7 +123,7 @@ void W_Pryaxe_Flyback() {
 }
 
 void W_Pryaxe_Touch() {
-    var isprim = !(self.projectiledeathtype & HITTYPE_SECONDARY);
+    var dir, isprim = !(self.projectiledeathtype & HITTYPE_SECONDARY);
     PROJECTILE_SKIPNONSOLID
 
     if(SUB_OwnerCheck()) {
@@ -135,14 +135,23 @@ void W_Pryaxe_Touch() {
         return;
     }
 
-    self.use();
     if(trace_ent && trace_ent.solid > SOLID_TRIGGER)
          UpdateCSQCProjectileNextFrame(self);
+
     if (other.takedamage) {
+        var hloc = NearestPointOnBox(other, trace_endpos);
         W_Accuracy_RegisterHit(self.owner, other, WEP_PRYAXE);
+
+        if(WEP_CVAR_BOTH(pryaxe, isprim, throw_pull_to_owner))
+            dir = self.owner.origin + self.owner.view_ofs - hloc;
+        else
+            dir = self.velocity;
+        dir = normalize(dir);
+
         Damage(other, self.owner, self.owner, WEP_CVAR_BOTH(pryaxe, isprim, throw_damage),
-               self.projectiledeathtype, self.origin,
-               normalize(self.velocity) * WEP_CVAR_BOTH(pryaxe, isprim, throw_force));
+               self.projectiledeathtype, hloc,
+               dir * WEP_CVAR_BOTH(pryaxe, isprim, throw_force));
+
         if (other.classname == "player")
         if (IsDifferentTeam(self.owner, other))
         if (other.deadflag == DEAD_NO)
@@ -152,10 +161,12 @@ void W_Pryaxe_Touch() {
     }
 
     if(!other.iscreature) {
-        var dir = normalize(self.velocity);
+        dir = normalize(self.velocity);
         traceline(trace_endpos, trace_endpos + dir * 24, MOVE_NORMAL, self);
         Damage_DamageInfo(trace_endpos, WEP_CVAR_BOTH(pryaxe, isprim, throw_damage), WEP_CVAR_BOTH(pryaxe, isprim, throw_damage), 0, dir * WEP_CVAR_BOTH(pryaxe, isprim, throw_force), WEP_PRYAXE, self);
     }
+
+    self.use();
 }
 
 void W_Pryaxe_Throw(float isprim) {
