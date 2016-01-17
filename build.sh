@@ -180,7 +180,7 @@ function buildall
 
 function tocompress
 {
-	cat compressdirs | while read line; do find "$line" -name "*.tga" -type f -maxdepth 1; done
+	cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
 }
 
 function compress-gfx
@@ -206,20 +206,25 @@ function compress-gfx
 		return 1
 	fi
 	
-	tocompress | while read line; do
-		dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
-		file="$(echo $line | sed -e 's@.*/@@')"
-	
-		mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
-	
-		echo "Compressing: $line"
+    tocompress | while read line; do
+        dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
+        file="$(echo $line | sed -e 's@.*/@@')"
 
-		if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
-			warning "Failed to compress $line! Restoring the uncompressed file"
-		fi
-		
-		mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
-	done
+        mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
+
+        echo "Compressing: $line"
+
+        if [ -L "$line" ]; then
+            realfile="$(readlink "$line")"
+            ln -sv "${realfile%%.tga}.jpg" "${line%%.tga}.jpg"
+        else
+            if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
+                warning "Failed to compress $line! Restoring the uncompressed file"
+            fi
+        fi
+        
+        mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
+    done
 }
 
 function compress-restore
@@ -232,7 +237,7 @@ function compress-restore
 	pkgdir="$PWD"
 	pushd "$COMPRESSGFX_TEMPDIR"
 	
-	find -type f | sed -e 's@^./@@' | while read line; do
+	find \! -type d | sed -e 's@^./@@' | while read line; do
 		mv -v "$line" "$pkgdir/$line"
 		rm -vf "$pkgdir/${line%%.tga}.jpg"
 	done
@@ -273,6 +278,7 @@ function makedata
     else
         echo "   -- Calculating md5 sums"
         find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        echo 'RM' >> _md5sums
         sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     fi
     
