@@ -131,6 +131,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     ADDMOD("combo");
                 else if(DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))
                     ADDMOD("remote");
+                else if(DEATH_ISWEAPON(dtype, WEP_PRYAXE))
+                    ADDMOD("throw");
                 else if(hgtype == HG_PLASMA)
                     ADDMOD("burst");
                 else if(hgtype == HG_SHIELD || hgtype == HG_SENTRY)
@@ -160,6 +162,7 @@ float DamageTracker_TransformDamageSource(float dtype) {
         if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER)           &&   // secondary arc
            !DEATH_ISWEAPON(dtype, WEP_ELECTRO)          &&   // combo
            !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER)  &&   // remote detonation
+           !DEATH_ISWEAPON(dtype, WEP_PRYAXE)           &&   // throw
            !(hgtype == HG_SHIELD)                       &&   // discharge arc
            !(hgtype == HG_SENTRY)                       &&   // shock arc
            !(hgtype == HG_PLASMA))                           // burst

@@ -199,6 +199,10 @@ void Projectile_Draw()
 	{
 		//self.move_flags &~= FL_ONGROUND;
 		Movetype_Physics_MatchServer();
+
+        if(self.cnt == PROJECTILE_PRYAXE)
+            self.move_flags &~= FL_ONGROUND;
+
 		if(!(self.move_flags & FL_ONGROUND))
 			self.angles = vectoangles(self.velocity);
 	}
@@ -236,6 +240,7 @@ void Projectile_Draw()
 			case PROJECTILE_HG_NAPALM:
             //case PROJECTILE_HG_REMOTE:
 			//case PROJECTILE_HG_PLASMA:
+            case PROJECTILE_PRYAXE:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
 				break;
@@ -248,6 +253,8 @@ void Projectile_Draw()
             case PROJECTILE_HG_RAZE:
                 rot = '0 0 -1000';
                 break;
+            case PROJECTILE_PRYAXE:
+                rot = '0 -1000 0'; // sideways
 			default:
 				break;
 		}
@@ -475,6 +482,12 @@ void Ent_Projectile()
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
+            case PROJECTILE_PRYAXE:
+                setmodel(self, "models/weapons/pryaxe_thrown.md3");
+                if(!teamplay)
+                    self.team = COLOR_TEAM1;
+                self.colormap = 1024 + self.team * 17;
+                break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -570,6 +583,11 @@ void Ent_Projectile()
 				self.mins = '-4 -4 -4';
 				self.maxs = '4 4 4';
 				break;
+            case PROJECTILE_PRYAXE:
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
+                self.mins = '-16 -16 -4';
+                self.maxs = ' 16  16  4';
 			default:
 				break;
 		}
@@ -616,6 +634,7 @@ void Projectile_Precache()
     precache_model("models/hg_transloc.md3");
     precache_model("models/raze.md3");
     precache_model("models/sphere/sphere.md3");
+    precache_model("models/weapons/pryaxe_thrown.md3");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");

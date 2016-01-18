@@ -287,6 +287,10 @@ void Ent_DamageInfo(float isNew)
 						WarpZone_Sound(self, CHAN_PROJECTILE, "weapons/fireball_impact2.wav", VOL_BASE, ATTN_NORM * 0.25); // long range boom
 				}
 				break;
+            case WEP_PRYAXE:
+                pointparticles(particleeffectnum("hagar_bounce"), org, backoff * 1000, 5);
+                ImpactSound(self, strcat("weapons/pryaxe_impact", ftos(floor(random() * 3) + 1), ".wav"));
+                break;
 			default:
 				dprint("Unhandled damage of weapon ", ftos(hitwep), "\n");
 				break;
@@ -316,7 +320,9 @@ void DamageInfo_Precache()
 	precache_sound("weapons/rocket_impact.wav");
 	precache_sound("weapons/fireball_impact.wav");
 	precache_sound("weapons/fireball_impact2.wav");
-    precache_sound("weapons/zapper_impact.wav");
+    precache_sound("weapons/pryaxe_impact1.wav");
+    precache_sound("weapons/pryaxe_impact2.wav");
+    precache_sound("weapons/pryaxe_impact3.wav");
 	precache_sound(RM_SOUND_LASER_PRIMARY);
 	precache_sound(RM_SOUND_LASER_SECONDARY);
 	precache_sound(RM_SOUND_MINSTA);
