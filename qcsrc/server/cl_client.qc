@@ -1417,6 +1417,7 @@ void PutClientInServer (void)
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
+        self.pryaxe_thrown = 0;
 
         self.hg_sentry_capture_progress = 0;
 

@@ -93,12 +93,15 @@ void W_Pryaxe_Attack(float isprim) {
 }
 
 void W_Pryaxe_Return() {
-    if(self.owner.iscreature) {
+    if(clienttype(self.owner) != CLIENTTYPE_NOTACLIENT) {
         //Return pryaxe to owner
         self.owner.pryaxe_thrown = FALSE;
-        if (!self.owner.weapon)
-            W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
-        sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
+
+        if(self.owner.iscreature) {
+            if (!self.owner.weapon)
+                W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
+            sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
+        }
     }
 
     remove(self);
@@ -108,10 +111,11 @@ void W_Pryaxe_Flyback_Think() {
     var isprim = !(self.projectiledeathtype & HITTYPE_SECONDARY);
     vector owner_path = self.owner.origin - self.origin;
 
-    if (vlen(owner_path) < 100) { //close enough
+    if(time > self.cnt || vlen(owner_path) < 100) { //close enough
         W_Pryaxe_Return();
         return;
     }
+
     vector owner_dir = normalize(owner_path);
     self.velocity = WEP_CVAR_BOTH(pryaxe, isprim, throw_speed) * owner_dir;
     UpdateCSQCProjectile(self);
@@ -123,6 +127,7 @@ void W_Pryaxe_Flyback() {
     self.solid = SOLID_NOT;
     self.think = W_Pryaxe_Flyback_Think;
     self.nextthink = time; //+ 0.1;
+    self.cnt = time + WEP_CVAR_BOTH(pryaxe, !(self.projectiledeathtype & HITTYPE_SECONDARY), throw_lifetime);
 }
 
 void W_Pryaxe_Touch() {
