@@ -67,7 +67,7 @@ void HG_Precache() {
     precache_model("models/mine.md3");
     precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
-    precache_model("models/turrets/tesla.md3");
+    precache_model("models/sentry.md3");
 }
 
 void HG_SetContext(float isalt) {
@@ -2428,21 +2428,19 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
 #define HG_SENTRT_MAXS ' 24.4  24.4 110.0'
 
 void HG_Sentry_SetOwner(entity sentry, entity newowner) {
-    var newskin = if(newowner)
-        TeamColorSkin(if(teams_matter) newowner.team else COLOR_TEAM3)
-    else 5;
-
     if(sentry.hg_waypoint)
         WaypointSprite_Disown(sentry.hg_waypoint, 0.5);
 
     sentry.team = if(teams_matter) newowner.team else 0;
-    sentry.skin = newskin;
+    sentry.colormap = num_for_edict(newowner);
+    sentry.aiment.colormap = sentry.colormap;
 
     if(newowner) {
+        sentry.skin = 0;
         sentry.aiment.effects &~= EF_NODRAW;
-        sentry.aiment.skin = newskin;
         sentry.aiment.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(teams_matter) sentry.team else COLOR_TEAM3);
     } else {
+        sentry.skin = 1;
         sentry.aiment.effects |= EF_NODRAW;
     }
 
@@ -2462,7 +2460,7 @@ float HG_Sentry(void) {
     vector o = self.origin;
 
     entity e = spawn();
-    setmodel(e, "models/turrets/tesla.md3");
+    setmodel(e, "models/sentry.md3");
     setsize(e, HG_SENTRY_MINS, HG_SENTRT_MAXS);
     setorigin(e, o);
 
@@ -2483,11 +2481,10 @@ float HG_Sentry(void) {
     e.hg_type = HG_SENTRY;
     e.view_ofs = '0 0 100';
     e.takedamage = DAMAGE_AIM;
-    e.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
+    e.colormap = num_for_edict(e.realowner);
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
     e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
-    e.effects |= EF_DOUBLESIDED;
 
     self.hg_detonables += 1;
 
@@ -2495,7 +2492,8 @@ float HG_Sentry(void) {
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
-    c.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
+    c.skin = 9;
+    c.colormap = e.colormap;
     c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM3);
     c.owner = self;
