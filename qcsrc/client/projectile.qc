@@ -3,6 +3,7 @@
 .float trail_oldtime;
 .float extradata;
 entity plasma_chain;
+.entity plasma_next;
 
 void SUB_Null()
 {
@@ -311,7 +312,7 @@ void loopsound(entity e, float ch, string samp, float vol, float attn)
 void Ent_RemoveProjectile()
 {
     if(self.cnt == PROJECTILE_HG_PLASMA_SHARD)
-        plasma_chain = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+        plasma_chain = findchainfloat_tofield(cnt, PROJECTILE_HG_PLASMA_SHARD, plasma_next);
 
 	if(self.snd_looping)
 		sound(self, CHAN_PROJECTILE, "misc/null.wav", VOL_BASE, ATTN_NORM);
@@ -467,7 +468,7 @@ void Ent_Projectile()
             case PROJECTILE_HG_PLASMA_SHARD:
                 setmodel(self, "models/ebomb.mdl");
                 self.skin = TeamColorSkin(self.team);
-                plasma_chain = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+                plasma_chain = findchainfloat_tofield(cnt, PROJECTILE_HG_PLASMA_SHARD, plasma_next);
                 break;
             case PROJECTILE_HG_RAZE:
                 setmodel(self, "models/raze.md3");

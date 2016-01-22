@@ -91,13 +91,13 @@ void Plasma_Draw_Trace_Callback(vector from, vector endpos, vector to) {
 .float plasma_drawn;
 
 void Plasma_Draw() {
-    entity e, n, p = plasma_chain; // findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    entity e, n, p = plasma_chain;
     string tex = "particles/zapper";
 
-    for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
+    for(e = p; e; e = e.plasma_next) if(e.extradata) if(e.plasma_drawn != time) {
         vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
-        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) {
+        for(n = p; n; n = n.plasma_next) if(n.plasma_drawn != time) {
             if(e != n && n.extradata == e.extradata) {
                 if(warpzone_chain_begin) {
                     var nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, FALSE);
