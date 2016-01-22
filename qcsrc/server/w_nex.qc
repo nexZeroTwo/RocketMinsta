@@ -149,7 +149,7 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     e.nextthink = time;
     e.scale = 0.01;
     e.enemy = e;
-    e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
+    e.pflags = PFLAGS_FULLDYNAMIC;
     e.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     W_AttachToShotorg(e, '5 0 0');
 
