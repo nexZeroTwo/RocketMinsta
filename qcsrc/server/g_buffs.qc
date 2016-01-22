@@ -491,6 +491,12 @@ void Buffs_ClientFrame(void) {
     if(self.hg_linker)
         self.buffstat |= self.hg_linker.buffs;
 
+    if(self.nobuffs) {
+        self.effective_buffs = 0;
+    } else {
+        self.effective_buffs = self.buffstat | g_buffs_baseline;
+    }
+
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
@@ -589,12 +595,6 @@ void Buffs_ClientFrame(void) {
     
     if(self.buff_endur_dmgpool < 0)
         self.buff_endur_dmgpool = 0;
-
-    if(self.nobuffs) {
-        self.effective_buffs = 0;
-    } else {
-        self.effective_buffs = self.buffstat | g_buffs_baseline;
-    }
 }
 
 #undef ON_BUFF_ADDED
