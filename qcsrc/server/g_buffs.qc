@@ -345,25 +345,6 @@ void Buffs_Init_Delayed(void) {
     }
 }
 
-float Buffs_Present(entity p, float b) {
-    if(!g_buffs)
-        return FALSE;
-    
-    if(p.nobuffs)
-        return FALSE;
-    
-    if(p.buffs & b == b)
-        return TRUE;
-
-    if(g_buffs_baseline & b == b)
-        return TRUE;
-    
-    if(p.hg_linker && (p.hg_linker.buffs & b == b))
-        return TRUE;
-    
-    return FALSE;
-}
-
 string Buffs_Description(float bfs) {
     if(bfs & (bfs - 1)) {
         string result;
@@ -519,6 +500,7 @@ void Buffs_ClientFrame(void) {
         if(self.buff_teamwp)
             Buffs_RemoveTeamWaypoint(self);
         
+        self.effective_buffs = 0;
         return;
     }
     
@@ -607,6 +589,12 @@ void Buffs_ClientFrame(void) {
     
     if(self.buff_endur_dmgpool < 0)
         self.buff_endur_dmgpool = 0;
+
+    if(self.nobuffs) {
+        self.effective_buffs = 0;
+    } else {
+        self.effective_buffs = self.buffstat | g_buffs_baseline;
+    }
 }
 
 #undef ON_BUFF_ADDED
