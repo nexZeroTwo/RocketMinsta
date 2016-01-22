@@ -91,7 +91,7 @@ void Plasma_Draw_Trace_Callback(vector from, vector endpos, vector to) {
 .float plasma_drawn;
 
 void Plasma_Draw() {
-    entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    entity e, n, p = plasma_chain; // findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
     string tex = "particles/zapper";
 
     for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
