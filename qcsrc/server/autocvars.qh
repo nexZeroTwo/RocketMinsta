@@ -1191,6 +1191,7 @@ string autocvar_g_mutatormsg;
 float autocvar_g_nadgets;
 float autocvar_g_nadgets_double;
 float autocvar_g_nadgets_ammo;
+float autocvar_g_nadgets_initial_regen;
 float autocvar_g_nadgets_drop_on_death;
 string autocvar_g_nadgets_bait_regenscale;
 string autocvar_g_nadgets_bait_stacklimit;

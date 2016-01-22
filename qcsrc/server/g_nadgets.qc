@@ -2919,14 +2919,27 @@ void HG_Trigger(void) {
 
 void HG_ResetState(entity p, float clearammo) {
     p.hg_power = 0;
-    p.hg_ammo1 = p.hg_ammo2 = if(clearammo) 0 else CVAR(g_nadgets_ammo);
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
     p.hg_shield = 0;
 
     HG_DO_IN_ALL_CONTEXTS({
+        p.hg_ctx_ammo = if(clearammo) 0 else CVAR(g_nadgets_ammo);
+
         HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
         HG_SetRegenTime(p, HG_RegenTime(p));
+
+        if(!clearammo) {
+            var mx = HG_StorageLimit(p);
+            HG_AdvanceRegen(p, CVAR(g_nadgets_initial_regen), mx);
+
+            if(!CVAR(g_nadgets_regen)) {
+                if(p.hg_ctx_regentime / p.hg_ctx_maxregentime < 0.5)
+                    HG_AdvanceRegen(p, p.hg_ctx_regentime, mx);
+                else
+                    p.hg_ctx_regentime = p.hg_ctx_maxregentime;
+            }
+        }
     })
 }
 
