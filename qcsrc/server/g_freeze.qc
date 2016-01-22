@@ -88,7 +88,7 @@ float Freeze_GameInProgress(void) {
 void Freeze_Ice_Think() {
     setorigin(self, self.owner.origin - '0 0 16');
     self.nextthink = time;
-    self.alpha = 1 - self.owner.revprogress;
+    self.alpha = (1 - self.owner.revprogress) * Freeze_CVar(frozen_iceblock_opacity);
 }
 
 float Freeze_GetPlayersAlive(float t) {
