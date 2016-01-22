@@ -19,7 +19,7 @@ CSPROGS="rocketminsta_cl.dat"
 QCC=("rmqcc" "fteqcc" "qcc" "$HOME/bin/rmqcc" "$HOME/bin/fteqcc" "$HOME/bin/qcc")
 
 # Additional flags to pass to the QuakeC compiller
-QCCFLAGS="-O3"
+QCCFLAGS="-O2"
 
 # Where QuakeC source is located
 QCSOURCE="qcsrc"
@@ -75,6 +75,13 @@ COMPRESSGFX=1
 
 # Will get passed to the -quality parameter of 'convert'
 COMPRESSGFX_QUALITY=85
+
+# Skip the pk3 building process and simply symlink the source pk3dirs instead.
+# Useful for quick development builds for local testing only.
+# Will not work correctly under cygwin.
+# This option implies COMRESSGFX=0 and PACKCSQC=0.
+# The menu package will be built either way.
+LINK_PK3DIRS=0
 
 # Release branch override. Normally empty.
 BUILDNAME=""
