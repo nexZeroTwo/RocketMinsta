@@ -33,10 +33,10 @@ function getfiledircache
     pushd "${1}/"
 
     if [ "${2}" = "reverse" ]; then
-        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ \! -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
         read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
     else
-        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ \! -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
         read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
     fi
 
@@ -259,6 +259,7 @@ function makedata
     local rmdata="$1"
     local suffix="$2"
     local desc="$3"
+    local justlink="$LINK_PK3DIRS"
 
     echo " -- Building client-side package $1"
     
@@ -268,6 +269,7 @@ function makedata
     local sum=""
     if [ "$1" = "menu" ]; then
         sum="$MENUSUM"
+        justlink=0
     elif [ "$1" = "csqc" ]; then
         sum="$CSQCSUM"
     else
@@ -275,8 +277,17 @@ function makedata
         find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
         sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     fi
-    
-    if [ $CACHEPKGS = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
+
+    if [ "$justlink" = 1 ]; then
+        echo "   -- Linking pk3dir to the destination"
+        ln -sv "$PWD" "${BUILDDIR}/$rmdata-$sum.pk3dir" || error "Failed to link package"
+        echo "   -- Done"
+        popd
+        BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
+        return
+    fi
+
+    if [ "$CACHEPKGS" = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
         
         popd
@@ -432,8 +443,12 @@ function makedata-all
 {
     local suffix="$1"
     local desc="$2"
-    
-    #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
+
+    if [ "$LINK_PK3DIRS" = 1 ]; then
+        PACKCSQC=0
+        COMPRESSGFX=0
+    fi
+
     for line in $(ls | perlgrep "\.pk3dir/?$"); do
         is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
         makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
@@ -567,6 +582,11 @@ fi
 if [ -z "$AUTOCVARS_MENU" ]; then
     warn-oldconfig "config.sh" "AUTOCVARS_MENU" "0"
     AUTOCVARS_MENU=0
+fi
+
+if [ -z "$LINK_PK3DIRS" ]; then
+    warn-oldconfig "config.sh" "LINK_PK3DIRS" "0"
+    LINK_PK3DIRS=0
 fi
 
 CACHEDIR="$(readlink -f "${CACHEDIR}/")"
