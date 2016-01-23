@@ -585,34 +585,40 @@ void SV_ParseClientCommand(string s) {
                     self.(if(nr) hg_ctx_type_picked_nextround else hg_ctx_type_picked) = t;
                     
                     if(!nr) {
-                        float o;
-                        if(term) {
-                            if(self.hg_ctx_ammo < 1)
-                                o = TRUE;
-                                
-                            if(self.hg_ctx_type != t) {
-                                self.hg_ctx_ammo = 1;
-                                o = TRUE;
-                            } else
-                                self.hg_ctx_ammo = max(1, self.hg_ctx_ammo);
-                            
-                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
-                        }
-                        
-                        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
-                        
-                        if(o || !term) {
-                            HG_SetRegenTime(self, HG_RegenTime(self));
-                            if(!term)
-                                self.hg_ctx_ammo = CVAR(g_nadgets_ammo);
-                        }
-                        
+                        var astate;
+
                         if(term) {
                             self.term_used = TRUE;
                             self.term_nextuse = time + CVAR(g_terminals_auth_cooldown);
+
+                            if(self.hg_ctx_type == t) {
+                                astate = spawn();
+                                HG_CopyAmmoState(self, astate);
+                            }
+
+                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+                        }
+
+                        HG_ResetAmmo(self, FALSE);
+
+                        if(astate) {
+                            var revert = FALSE;
+
+                            if(astate.hg_ctx_ammo > self.hg_ctx_ammo) {
+                                revert = TRUE;
+                            } else if(astate.hg_ctx_ammo == self.hg_ctx_ammo) {
+                                if(astate.hg_ctx_regentime < self.hg_ctx_regentime)
+                                    revert = TRUE;
+                            }
+
+                            if(revert)
+                                HG_CopyAmmoState(astate, self);
+
+                            remove(astate);
+                            astate = world;
                         }
                     }
-                    
+
                     success = TRUE;
                     break;
                 }

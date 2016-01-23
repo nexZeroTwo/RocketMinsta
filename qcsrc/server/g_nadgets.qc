@@ -2917,30 +2917,39 @@ void HG_Trigger(void) {
     }
 }
 
+void HG_CopyAmmoState(entity src, entity dst) {
+    dst.hg_ctx_ammo = src.hg_ctx_ammo;
+    dst.hg_ctx_regentime = src.hg_ctx_regentime;
+    dst.hg_ctx_maxregentime = src.hg_ctx_maxregentime;
+    dst.hg_ctx_regenrate = src.hg_ctx_regenrate;
+    dst.hg_ctx_regenpaused = src.hg_ctx_regenpaused;
+}
+
+void HG_ResetAmmo(entity p, float clearammo) {
+    p.hg_ctx_ammo = if(clearammo) 0 else CVAR(g_nadgets_ammo);
+
+    HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    HG_SetRegenTime(p, HG_RegenTime(p));
+
+    if(!clearammo) {
+        var mx = HG_StorageLimit(p);
+        HG_AdvanceRegen(p, CVAR(g_nadgets_initial_regen), mx);
+
+        if(!CVAR(g_nadgets_regen)) {
+            if(p.hg_ctx_regentime / p.hg_ctx_maxregentime < 0.5)
+                HG_AdvanceRegen(p, p.hg_ctx_regentime, mx);
+            else
+                p.hg_ctx_regentime = p.hg_ctx_maxregentime;
+        }
+    }
+}
+
 void HG_ResetState(entity p, float clearammo) {
     p.hg_power = 0;
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
     p.hg_shield = 0;
-
-    HG_DO_IN_ALL_CONTEXTS({
-        p.hg_ctx_ammo = if(clearammo) 0 else CVAR(g_nadgets_ammo);
-
-        HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
-        HG_SetRegenTime(p, HG_RegenTime(p));
-
-        if(!clearammo) {
-            var mx = HG_StorageLimit(p);
-            HG_AdvanceRegen(p, CVAR(g_nadgets_initial_regen), mx);
-
-            if(!CVAR(g_nadgets_regen)) {
-                if(p.hg_ctx_regentime / p.hg_ctx_maxregentime < 0.5)
-                    HG_AdvanceRegen(p, p.hg_ctx_regentime, mx);
-                else
-                    p.hg_ctx_regentime = p.hg_ctx_maxregentime;
-            }
-        }
-    })
+    HG_DO_IN_ALL_CONTEXTS(HG_ResetAmmo(p, clearammo);)
 }
 
 void HG_PlayerSpawn()

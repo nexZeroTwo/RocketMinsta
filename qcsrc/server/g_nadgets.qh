@@ -8,6 +8,8 @@ void HG_PlayerSpawn();
 void HG_PlayerSpawnEx(entity);
 void HG_PlayerJoin();
 void HG_ResetState(entity, float);
+void HG_ResetAmmo(entity, float);
+void HG_CopyAmmoState(entity src, entity dst);
 void HG_GiveBonus(entity, float, float, string, float);
 void HG_GiveRandomBonus(entity, float, string, float);
 void HG_Napalm();
