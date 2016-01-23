@@ -417,7 +417,7 @@ entity findnearest(vector point, .string field, string value, vector axismod)
         //   INSERTION SORT! YOU'VE SEEN IT! RUN!
         if (i < NUM_NEAREST_ENTITIES)
         {
-            for (j = NUM_NEAREST_ENTITIES - 1; j >= i; --j)
+            for (j = NUM_NEAREST_ENTITIES - 2; j >= i; --j)
             {
                 nearest_length[j + 1] = nearest_length[j];
                 nearest_entity[j + 1] = nearest_entity[j];
