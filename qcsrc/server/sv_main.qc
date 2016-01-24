@@ -271,6 +271,9 @@ void StartFrame (void)
 		}
 	}
 
+    if(roundstate == ROUNDSTATE_GAMEINIT)
+        roundstate = ROUNDSTATE_PREGAME;
+
     if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;
         TeamCount_RecountPlayers(TeamCount_AliveCheck_Null);

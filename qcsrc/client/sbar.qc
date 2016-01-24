@@ -4168,7 +4168,7 @@ void Sbar_Draw(void)
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
     }
     
-    if(g_nadgets) {
+    if(g_nadgets && spectatee_status != -1) {
         hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
         if(g_nadgets_double)
             hgregen2 += (getstatf(STAT_HGREGEN2) / getstatf(STAT_HGREGENMAX2) - hgregen2) * drawframetime * 20;

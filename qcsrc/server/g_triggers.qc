@@ -1522,6 +1522,52 @@ void spawnfunc_trigger_gamestart() {
 
 
 
+void spawnfunc_trigger_roundstate(void) {
+    self.classname = "trigger_roundstate";
+    self.reset2 = spawnfunc_trigger_roundstate;
+    self.use = SUB_UseTargets;
+
+    if(self.cnt == ROUNDSTATE_GAMEINIT)
+        InitializeEntity(self, gamestart_use, INITPRIO_FINDTARGET);
+}
+
+
+
+void FireRoundstateTriggers(void) {
+    while((activator = find(activator, classname, "trigger_roundstate"))) {
+        print(activator.target, " ", ftos(activator.cnt), " ", ftos(roundstate), "\n");
+
+        if(activator.cnt == roundstate)
+            using(self = activator)
+                activator.use();
+
+        if(activator.spawnflags & 1) {
+            activator = activator {
+                cnt: 0,
+                think: SUB_Remove,
+                nextthink: time
+            };
+        }
+    }
+}
+
+
+void spawnfunc_trigger_test(void) {
+    if(!CVAR(developer)) {
+        remove(self);
+        return;
+    }
+
+    self.use = inline void(void) {
+        print("^3Trigger ^1", self.targetname, "^3 just went off\n");
+
+        if(self.spawnflags & 1)
+            error(self.targetname);
+        else
+            backtrace(self.targetname);
+    };
+}
+
 
 .entity voicescript; // attached voice script
 .float voicescript_index; // index of next voice, or -1 to use the randomized ones

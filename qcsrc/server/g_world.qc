@@ -2989,6 +2989,8 @@ string GotoMap(string m)
 
 float roundstate_old;
 
+void FireRoundstateTriggers(void);
+
 void EndFrame()
 {
 	float altime;
@@ -3053,6 +3055,7 @@ void EndFrame()
 	}
 
     if(roundstate != roundstate_old) {
+        FireRoundstateTriggers();
         localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
         roundstate_old = roundstate;
     }
