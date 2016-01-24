@@ -132,7 +132,8 @@ void SUB_UseTargets_Ex(float preventReuse)
 			for(t = world; (t = find(t, targetname, s)); ) {
                 if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
-                    //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
+                    if(CVAR(developer) > 1)
+                        dprint("SUB_UseTargets: activating ", etos(t), ": ^3", t.targetname, "^7, class: ^5", t.classname, "\n");
                     self = t;
                     other = stemp;
                     activator = act;
