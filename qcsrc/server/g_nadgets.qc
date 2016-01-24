@@ -165,13 +165,14 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     o = self.owner;
     df = 1;
 
-    if(o.classname != "jailbreak_torture" && (o.classname != "player" || o.team != self.team)) {
-        remove(self);
-        return;
-    }
+    if(dtype != DEATH_HURTTRIGGER) {
+        if(o.classname != "jailbreak_torture" && (o.classname != "player" || o.team != self.team)) {
+            remove(self);
+            return;
+        }
 
-    if(dtype != DEATH_HURTTRIGGER)
         ismedic = Buffs_Present(o, BUFF_MEDIC);
+    }
 
     for(e = findradius(self.origin, dist); e; e = e.chain) if(e.takedamage == DAMAGE_AIM)
     {
