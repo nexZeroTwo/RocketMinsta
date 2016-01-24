@@ -191,7 +191,7 @@ void Item_RespawnCountdown (void)
 				case IT_JETPACK:        name = "JETPACK"; rgb = '0.5 0.5 0.5'; break;
 				case IT_HEALTH:			name = "MEGA HEALTH"; rgb = '1 0.2 0.2'; break;
 				case IT_ARMOR:			name = "MEGA ARMOR"; rgb = '0.2 1 0.2'; break;
-				case IT_NADGET:			name = "NADGET REGEN"; rgb = '1 0.5 0.2'; break;
+				case IT_NADGET:			name = "NADGET REGEN"; rgb = '0.5 0.5 1.0'; break;
 			}
 			if(name)
 			{
@@ -1021,7 +1021,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 	self.flags = FL_ITEM | itemflags;
 	self.touch = Item_Touch;
 	setmodel (self, self.mdl); // precision set below
-	self.effects |= EF_LOWPRECISION;
+	self.effects |= EF_LOWPRECISION | EF_ROTATE;
 	if((itemflags & FL_POWERUP) || self.health || self.armorvalue)
 		setsize(self, '-16 -16 0', '16 16 0' + '0 0 48' * CVAR(g_pickup_heightscale));
 	else
@@ -1950,7 +1950,7 @@ void spawnfunc_item_nadget(void) {
     if(!self.hg_bonus)
         self.hg_bonus = 1;
     
-    StartItem ("models/items/g_fuelregen.md3", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
+    StartItem ("models/items/nadget.iqm", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
 }
 
 // we no longer have the seeker

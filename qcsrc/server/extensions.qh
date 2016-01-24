@@ -193,6 +193,8 @@ float   EF_TELEPORT_BIT = 2097152;
 //to toggle this bit in QC, you can do:
 //  self.effects += (EF_TELEPORT_BIT - 2 * (self.effects & EF_TELEPORT_BIT));
 
+float   EF_ROTATE       = 134217728;
+
 //DP_ENT_ALPHA
 //idea: Nehahra
 //darkplaces implementation: LordHavoc
