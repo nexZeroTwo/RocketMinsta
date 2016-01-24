@@ -1934,7 +1934,8 @@ void func_magicwall_start_transition(float sol, void(void) done) {
 
     if(self.speed < 0) {
         self.alpha = self.MAGICWALL_ALPHAFIELD(self);
-        done();
+        if(done)
+            done();
         return;
     }
 
