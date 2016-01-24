@@ -3055,7 +3055,7 @@ void EndFrame()
 	}
 
     if(roundstate != roundstate_old) {
-        FireRoundstateTriggers();
+        defer(0, FireRoundstateTriggers);
         localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
         roundstate_old = roundstate;
     }

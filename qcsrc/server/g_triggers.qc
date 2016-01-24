@@ -1535,8 +1535,6 @@ void spawnfunc_trigger_roundstate(void) {
 
 void FireRoundstateTriggers(void) {
     while((activator = find(activator, classname, "trigger_roundstate"))) {
-        print(activator.target, " ", ftos(activator.cnt), " ", ftos(roundstate), "\n");
-
         if(activator.cnt == roundstate)
             using(self = activator)
                 activator.use();
