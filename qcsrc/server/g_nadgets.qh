@@ -12,7 +12,7 @@ void HG_ResetAmmo(entity, float);
 void HG_CopyAmmoState(entity src, entity dst);
 void HG_GiveBonus(entity, float, float, string, float);
 void HG_GiveRandomBonus(entity, float, string, float);
-void HG_Napalm();
+entity HG_Napalm();
 void HG_Detonate(entity);
 void HG_DetonateAll(entity);
 void HG_RemoveAll(entity);

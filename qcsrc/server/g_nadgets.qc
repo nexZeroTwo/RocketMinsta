@@ -170,29 +170,35 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
         return;
     }
 
-    ismedic = Buffs_Present(o, BUFF_MEDIC);
-    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
-    {
-        sameteam = !IsDifferentTeam(o, e);
+    if(dtype != DEATH_HURTTRIGGER)
+        ismedic = Buffs_Present(o, BUFF_MEDIC);
 
-        if(!ismedic) {
-            if(sameteam && o != e)
-                if(!CVAR(g_friendlyfire))
-                        continue;
-                
-            if(!Buffs_TenacityDamage(e, o, damage, dtype))
-                continue;
+    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.takedamage == DAMAGE_AIM)
+    {
+        if(dtype != DEATH_HURTTRIGGER && e.classname == "player") {
+            sameteam = !IsDifferentTeam(o, e);
+
+            if(!ismedic) {
+                if(sameteam && o != e)
+                    if(!CVAR(g_friendlyfire))
+                            continue;
+                    
+                if(!Buffs_TenacityDamage(e, o, damage, dtype))
+                    continue;
+            }
         }
-        
+
         p = e.origin;
         p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
         p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
         p_z += e.mins_z + random() * (e.maxs_z - e.mins_z);
         d = vlen(self.origin - p);
+
         if(d < dist)
         {
-            traceline(p, self.origin, MOVE_NORMAL, e);
-            if(/* trace_startsolid || */ trace_fraction != 1)
+            traceline(self.origin, p, MOVE_NOMONSTERS, self);
+
+            if(trace_fraction < 1)
                 continue;
 
             e.fireball_impactvec = p;
@@ -259,7 +265,7 @@ void HG_Napalm_Projectile_Touch()
     PROJECTILE_TOUCH;
 }
 
-void HG_Napalm()
+entity HG_Napalm()
 {
 	entity proj;
 	vector kick;
@@ -306,6 +312,8 @@ void HG_Napalm()
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
+
+    return proj;
 }
 
 void HG_Napalm_Explode() {
