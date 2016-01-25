@@ -3,6 +3,7 @@ float teamcount_playersalive[4];
 float teamcount_playerstotal[4];
 
 float teamcount_balancenext;
+float teamsort_method;
 
 float TeamCount_TotalTeams(void);
 void TeamCount_RecountPlayers(float(entity));

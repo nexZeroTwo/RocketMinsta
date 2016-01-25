@@ -86,12 +86,14 @@ entity TeamCount_PlayerPool_GetPlayer(entity pool, float idx) {
 }
 
 float TeamCount_PlayerPool_PlayerValue(entity plr) {
-    switch(CVAR(g_balance_teams_method)) {
+    bprint("teamsort method ", ftos(teamsort_method), "\n");
+    switch(teamsort_method) {
         case 1  :   return plr.scorekeeper.(scores[SP_SCORE]) / plr.playtime;
         case 2  :   return plr.scorekeeper.(scores[SP_DAMAGE]);
         case 3  :   return plr.scorekeeper.(scores[SP_DAMAGE]) / plr.playtime;
         case 4  :   return plr.scorekeeper.(scores[SP_KILLS]);
         case 5  :   return plr.scorekeeper.(scores[SP_KILLS]) / max(1, plr.scorekeeper.(scores[SP_DEATHS]));
+        case 6  :   return random();
         default :   return plr.scorekeeper.(scores[SP_SCORE]);
     }
 }

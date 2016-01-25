@@ -1271,9 +1271,10 @@ void GameCommand(string command)
     if(argv(0) == "balanceteams") {
         bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
         teamcount_balancenext = TRUE;
+        teamsort_method = stof(argv(1));
         return;
     }
-    
+        
     if(argv(0) == "firetest") {
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;
