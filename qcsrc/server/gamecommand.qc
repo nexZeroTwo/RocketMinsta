@@ -1274,7 +1274,7 @@ void GameCommand(string command)
         teamsort_method = stof(argv(1));
         return;
     }
-        
+    
     if(argv(0) == "firetest") {
         Fire_AddDamage(edict_num(stof(argv(1))), edict_num(stof(argv(2))), stof(argv(3)), stof(argv(4)), DEATH_IGNITE);
         return;

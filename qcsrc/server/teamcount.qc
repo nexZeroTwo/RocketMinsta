@@ -86,7 +86,6 @@ entity TeamCount_PlayerPool_GetPlayer(entity pool, float idx) {
 }
 
 float TeamCount_PlayerPool_PlayerValue(entity plr) {
-    bprint("teamsort method ", ftos(teamsort_method), "\n");
     switch(teamsort_method) {
         case 1  :   return plr.scorekeeper.(scores[SP_SCORE]) / plr.playtime;
         case 2  :   return plr.scorekeeper.(scores[SP_DAMAGE]);
