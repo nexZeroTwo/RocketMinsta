@@ -1040,7 +1040,7 @@ void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death) {
     p.meodp_rand2 = random() * M_PI * 2;
     p.meodp_rand3 = if(random() < 0.5) 1 else -1;
     p.meodp_rand4 = if(random() < 0.5) 1 else -1;
-    p.takedamage = DAMAGE_AIM;
+    p.takedamage = DAMAGE_NO;
     p.event_damage = Buffs_MEODP_Point_Damage;
     setmodel(p, "models/runematch/rune.mdl");
     setsize(p, '-8 -8 -8', '8 8 8');
@@ -1066,15 +1066,19 @@ entity Buffs_MEODP_Hitscan_Begin(entity plr) {
     
     entity p, pts = findchain_tofield(classname, "meodp_point", meodp_chain);
     
-    for(p = pts; p; p = p.meodp_chain)
+    for(p = pts; p; p = p.meodp_chain) {
         p.solid = SOLID_CORPSE;
+        p.takedamage = DAMAGE_AIM;
+    }
         
     return pts;
 }
 
 void Buffs_MEODP_Hitscan_End(entity pts) {
-    entity p; for(p = pts; p; p = p.meodp_chain)
+    entity p; for(p = pts; p; p = p.meodp_chain) {
         p.solid = SOLID_NOT;
+        p.takedamage = DAMAGE_NO;
+    }
 }
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
