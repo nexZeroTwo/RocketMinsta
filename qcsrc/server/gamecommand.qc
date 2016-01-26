@@ -1269,9 +1269,13 @@ void GameCommand(string command)
     }
     
     if(argv(0) == "balanceteams") {
+        if(argc < 2) {
+            teamsort_method = CVAR(g_balance_teams_method);
+        } else {
+            teamsort_method = stof(argv(1));
+        }
         bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
         teamcount_balancenext = TRUE;
-        teamsort_method = stof(argv(1));
         return;
     }
     
