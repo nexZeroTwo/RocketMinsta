@@ -1915,6 +1915,8 @@ void ClientConnect (void)
 		defer(5, ServerTopic);
 	
 	self.g_minstagib_stat = g_minstagib;
+
+    self.hidecountry = CVAR(sv_hidecountry);
 	IP2C_SetCountry(self);
 	
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && CVAR(g_rocketminsta)), "\n"));
