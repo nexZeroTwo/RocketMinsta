@@ -277,3 +277,10 @@ const RE_INVALID_METACHARACTER  = -6;
 const RE_CAPS_ARRAY_TOO_SMALL   = -7;
 const RE_TOO_MANY_BRANCHES      = -8;
 const RE_TOO_MANY_BRACKETS      = -9;
+
+/*
+ *  Operator overloads
+ */
+
+// defined per module, maps directly to the strcat builtin
+string operator+(string s1, string s2);
