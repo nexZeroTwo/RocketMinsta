@@ -3363,6 +3363,11 @@ void tdom_EndRound(float);
 
 void EndRound(float tout)
 {
+    if(roundstate != ROUNDSTATE_GAME) {
+        print("EndRound: no round in progress\n");
+        return;
+    }
+
     if(g_freezetag)
         FreezeTag_EndRound(tout);
     else if(g_totaldomination)
@@ -3374,7 +3379,7 @@ void EndRound(float tout)
     else if(g_clanarena)
         CA_EndRound(tout);
     else
-        bprint("EndRound() for an unsupported gametype!?\n");
+        print("EndRound: gametype is not supported\n");
 }
 
 float EndRound_Allowed()
