@@ -22,6 +22,8 @@ void W_Pryaxe_Melee_Damage(float isprim) {
     W_SetupShot(self, FALSE, 0, "", 0);
     W_Accuracy_RegisterShot(self, WEP_PRYAXE);
 
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
+
     traceline_antilag(self, w_shotorg - (w_shotdir * 20), w_shotorg + w_shotdir * WEP_CVAR_BOTH(pryaxe, isprim, range), MOVE_NORMAL, self);
     fract = trace_fraction;
     endpos = trace_endpos;
@@ -51,6 +53,8 @@ void W_Pryaxe_Melee_Damage(float isprim) {
                     WEP_PRYAXE | (if (isprim) 0 else HITTYPE_SECONDARY), endpos, w_shotdir * theforce);
         }
     }
+
+    Buffs_MEODP_Hitscan_End(pts);
 
     if(!hitcreature && fract < 1)
         Damage_DamageInfo(endpos, damage, damage, 0, w_shotdir * theforce, WEP_PRYAXE, self);

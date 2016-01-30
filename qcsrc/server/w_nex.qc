@@ -37,7 +37,18 @@ void W_Nex_Attack (void)
 	W_SetupShot(self, TRUE, 5, "weapons/nexfire.wav", CVAR(g_balance_nex_damage));
 
 	yoda = 0;
-	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_damage), CVAR(g_balance_nex_force), CVAR(g_balance_nex_damagefalloff_mindist), CVAR(g_balance_nex_damagefalloff_maxdist), CVAR(g_balance_nex_damagefalloff_halflife), CVAR(g_balance_nex_damagefalloff_forcehalflife), WEP_NEX);
+
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
+	FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE,
+        CVAR(g_balance_nex_damage),
+        CVAR(g_balance_nex_force),
+        CVAR(g_balance_nex_damagefalloff_mindist),
+        CVAR(g_balance_nex_damagefalloff_maxdist),
+        CVAR(g_balance_nex_damagefalloff_halflife),
+        CVAR(g_balance_nex_damagefalloff_forcehalflife),
+        WEP_NEX
+    );
+    Buffs_MEODP_Hitscan_End(pts);
 
 	if(yoda && flying)
         CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_AMAZING);
@@ -73,7 +84,18 @@ void W_Nex_Attack2(void) {
     W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", CVAR(g_balance_nex_secondary_damage));
 
     yoda = 0;
-    FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, CVAR(g_balance_nex_secondary_damage), CVAR(g_balance_nex_secondary_force), CVAR(g_balance_nex_secondary_damagefalloff_mindist), CVAR(g_balance_nex_secondary_damagefalloff_maxdist), CVAR(g_balance_nex_secondary_damagefalloff_halflife), CVAR(g_balance_nex_secondary_damagefalloff_forcehalflife), WEP_NEX | HITTYPE_SECONDARY);
+
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
+    FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE,
+        CVAR(g_balance_nex_secondary_damage),
+        CVAR(g_balance_nex_secondary_force),
+        CVAR(g_balance_nex_secondary_damagefalloff_mindist),
+        CVAR(g_balance_nex_secondary_damagefalloff_maxdist),
+        CVAR(g_balance_nex_secondary_damagefalloff_halflife),
+        CVAR(g_balance_nex_secondary_damagefalloff_forcehalflife),
+        WEP_NEX | HITTYPE_SECONDARY
+        );
+    Buffs_MEODP_Hitscan_End(pts);
 
     if(yoda && flying)
         CSQCMessage_Praise(self, CSQCMSG_PRAISEFLAG_AMAZING);

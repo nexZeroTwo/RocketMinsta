@@ -136,7 +136,7 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     vector hitloc, endpoint;
     entity ent, endent;
     float endq3surfaceflags;
-    entity pts, hitents;
+    entity hitents;
     float f;
 
     railgun_start = start;
@@ -145,8 +145,6 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     // go a little bit into the wall because we need to hit this wall later
     //end = end + dir;
 
-    pts = Buffs_MEODP_Hitscan_Begin(self);
-    
     FireRailgunBullet_trace_deathtype = deathtype;
     hitents = tracerail_antilag(self, start, end, FALSE, self, FireRailgunBullet_trace_callback);
 
@@ -211,7 +209,6 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
     }
 
-    Buffs_MEODP_Hitscan_End(pts);
     tracerail_finalize(hitents);
 
     trace_endpos = endpoint;
@@ -480,8 +477,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			FOR_EACH_PLAYER(pl)
 				antilag_takeback(pl, time - lag);
 
-        entity pts = Buffs_MEODP_Hitscan_Begin(self);
-        
 		oldself = self;
 		self = proj;
 
@@ -522,9 +517,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		}
 		frametime = savetime;
 		self = oldself;
-        
-        Buffs_MEODP_Hitscan_End(pts);
-        
+
 		if(lag)
 			FOR_EACH_PLAYER(pl)
 				antilag_restore(pl);
