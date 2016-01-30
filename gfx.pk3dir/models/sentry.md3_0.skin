@@ -1,4 +1,4 @@
 lp_base,textures/sentry
-ball_outer,pryaxe_balls_outer
-circle,pryaxe_balls_outer
+ball_outer,sentry_ball_outer
+circle,sentry_ball_outer
 beams,sentry_flow
