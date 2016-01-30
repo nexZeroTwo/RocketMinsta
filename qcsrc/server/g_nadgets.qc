@@ -497,7 +497,7 @@ void HG_Translocator_Explode() {
     }
 
     if(GRENVAR(self.hg_type, "reloadonuse") && (self.owner.weaponentity.wframe != WFRAME_RELOAD || tdeath_hit)) using(self = self.owner) {
-        weapon_action(self.weapon, WR_RESETPLAYER);
+        weapon_action(self.weapon, WR_ACTIVERELOAD);
         if(tdeath_hit)
             ATTACK_FINISHED(self) = TRUE;
     }

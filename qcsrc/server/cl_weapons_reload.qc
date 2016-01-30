@@ -219,7 +219,7 @@ void W_Clip_WeaponRequestHook(float req) {
 
     if(req == WR_RELOAD) {
         W_Clip_Reload();
-    } else if(req == WR_RESETPLAYER) {
+    } else if(req == WR_RESETPLAYER || req == WR_ACTIVERELOAD) {
         W_Clip_Reset(TRUE);
     } else if(req == WR_SETUP) {
         var full = W_Clip_CheckFull();

@@ -252,6 +252,7 @@ enum {
     WR_AIM,                  // runs bot aiming code for this weapon
     WR_PRECACHE,             // precaches models/sounds used by this weapon
     WR_RELOAD,               // reload button pressed
+    WR_ACTIVERELOAD,         // quick/instant reload requested
     WR_RESETPLAYER,          // reset any state fields used by this weapon to defaults
     WR_TT_STORE,             // save weapon-specific fields into tt_moment for time travel
     WR_TT_RESTORE,           // restore weapon-specific fields from tt_moment for time travel
