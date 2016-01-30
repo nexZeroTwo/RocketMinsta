@@ -7,7 +7,7 @@ sentry_flow
         tcMod scale 3.5 1.0
         tcMod scroll 0.5 3
         blendfunc add
-        rgbGen lightingDiffuse
+        rgbGen identityLighting
     }
 }
 
