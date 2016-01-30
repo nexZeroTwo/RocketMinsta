@@ -1,7 +1,5 @@
 ../../progs.dat // output filename
 
-
-
 ../common/rm_auto.qh
 ../common/util-pre.qh
 

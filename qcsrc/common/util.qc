@@ -1450,14 +1450,24 @@ float check_using_bug(void) {
         return 512;
 }
 
+#define ARRTEST_SIZE 2
+float arrtest_flt[ARRTEST_SIZE];
+vector arrtest_vec[ARRTEST_SIZE];
+.float arrtest_fltfld[ARRTEST_SIZE];
+.vector arrtest_vecfld[ARRTEST_SIZE];
+
+void remove(entity);
+
 void check_unacceptable_compiler_bugs()
 {
 	if(CVAR(_allow_unacceptable_compiler_bugs))
 		return;
+
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
 
+    var f;
     var v = [random(), random(), random()];
     if(v != [v.x, v.y, v.z])
         error("vectors are borked, please update rmqcc");
@@ -1466,6 +1476,43 @@ void check_unacceptable_compiler_bugs()
     check_using_bug();
     if(test_global != 9001)
         error("using is borked, please update rmqcc");
+
+    var e = spawn();
+    var broken = 0;
+
+    for(var i = 0; i < ARRTEST_SIZE; ++i) {
+        v = [random(), random(), random()];
+        f = random();
+
+        arrtest_flt[i] = f;
+        if(arrtest_flt[i] != f) {
+            print("^1float arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_fltfld[i]) = f;
+        if(e.(arrtest_fltfld[i]) != f) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+
+        arrtest_vec[i] = v;
+        if(arrtest_vec[i] != v) {
+            print("^1vector arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_vecfld[i]) = v;
+        if(e.(arrtest_vecfld[i]) != v) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+    }
+
+    remove(e);
+
+    if(broken)
+        error("array fail");
 }
 
 float compressShotOrigin(vector v)
