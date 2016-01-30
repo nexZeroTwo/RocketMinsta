@@ -3363,11 +3363,6 @@ void tdom_EndRound(float);
 
 void EndRound(float tout)
 {
-    if(roundstate != ROUNDSTATE_GAME) {
-        print("EndRound: no round in progress\n");
-        return;
-    }
-
     if(g_freezetag)
         FreezeTag_EndRound(tout);
     else if(g_totaldomination)

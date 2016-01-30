@@ -1179,7 +1179,12 @@ void GameCommand(string command)
 	}
 
     if(argv(0) == "endround")
-    {
+    {        
+        if(roundstate != ROUNDSTATE_GAME) {
+            print("EndRound: no round in progress\n");
+            return;
+        }
+
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Aborted", "", 5);
 
