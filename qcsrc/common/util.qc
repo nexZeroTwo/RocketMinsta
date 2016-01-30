@@ -2129,3 +2129,42 @@ string unobfuscate(string source, string key) {
 
     return _obfuscate(source, ikey, m, -strlen(source));
 }
+
+
+#ifdef CSQC
+string etos(entity e) {
+    return "entity #" + num_for_edict(e);
+}
+#endif
+
+
+/*
+ *  Operator overloads
+ */
+
+
+string operator+(string s, float f) {
+    return s + ftos(f);
+}
+
+string operator+(float f, string s) {
+    return ftos(f) + s;
+}
+
+
+string operator+(string s, vector v) {
+    return s + vtos(v);
+}
+
+string operator+(vector v, string s) {
+    return vtos(v) + s;
+}
+
+
+string operator+(string s, entity e) {
+    return s + etos(e);
+}
+
+string operator+(entity e, string s) {
+    return etos(e) + s;
+}
