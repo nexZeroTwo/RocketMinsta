@@ -89,7 +89,7 @@ void Buffs_Random_Spawn(void);
 float Buffs_Give(entity, float, float);
 void Buffs_Notify(entity, float, float);
 
-#define Buffs_Present(p,b) ((p).effective_buffs & (b))
+#define Buffs_Present(p,b) ((p).effective_buffs & (b) == (b))
 
 .vector meodp_point_offs;
 .entity meodp_point_ref;
