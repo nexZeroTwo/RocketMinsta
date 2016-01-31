@@ -976,9 +976,9 @@ void SV_ParseClientCommand(string s) {
 		{
 			RandomSelection_Init();
 			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			if(RandomSelection_chosen_ent)
 			{
 				remove(RandomSelection_chosen_ent.killindicator.killindicator);
@@ -997,9 +997,9 @@ void SV_ParseClientCommand(string s) {
 		{
 			RandomSelection_Init();
 			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			if(RandomSelection_chosen_ent)
 			{
 				if(substring(argv(1), 0, 1) == "*")

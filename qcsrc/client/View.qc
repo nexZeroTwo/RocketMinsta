@@ -898,7 +898,7 @@ void CSQC_UpdateView(float w, float h)
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
-		NextFrameCommand = string_null;
+		NextFrameCommand = NULL;
 	}
 
     if(mouse_enabled) {

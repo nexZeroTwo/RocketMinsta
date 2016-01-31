@@ -599,7 +599,7 @@ void tracerail_finalize(entity ents) {
         ent.tracerail_dpstartcontents = 0;
         ent.tracerail_dphitcontents = 0;
         ent.tracerail_dphitq3surfaceflags = 0;
-        ent.tracerail_dphittexturename = string_null;
+        ent.tracerail_dphittexturename = NULL;
 
         ent.tracerail_hit = FALSE;
         ent.tracerail_next = world;

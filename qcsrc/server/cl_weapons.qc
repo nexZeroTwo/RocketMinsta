@@ -258,7 +258,7 @@ string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vecto
 		weapon_defaultspawnfunc(wpn);
 		self = oldself;
 		if(startitem_failed)
-			return string_null;
+			return NULL;
 		wep.think = thrown_wep_think;
 		wep.nextthink = time + 0.5;
 		return "";
@@ -271,7 +271,7 @@ string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vecto
 		weapon_defaultspawnfunc(wpn);
 		self = oldself;
 		if(startitem_failed)
-			return string_null;
+			return NULL;
 		if(doreduce)
 		{
 			for(i = 0, j = 1; i < 24; ++i, j *= 2)
@@ -490,7 +490,7 @@ void Nixnex_ChooseNextWeapon()
 	RandomSelection_Init();
 	for(j = WEP_FIRST; j <= WEP_LAST; ++j)
 		if(NixNex_CanChooseWeapon(j))
-			RandomSelection_Add(world, j, string_null, 1, (j != nixnex_weapon));
+			RandomSelection_Add(world, j, NULL, 1, (j != nixnex_weapon));
 	nixnex_nextweapon = RandomSelection_chosen_float;
 	nixnex_nextweapon_ammo = W_AmmoItemCode(nixnex_nextweapon);
 }

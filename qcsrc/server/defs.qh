@@ -1,6 +1,8 @@
 #define SERVER_SIDE
 #define INDEPENDENT_ATTACK_FINISHED
 
+const null_t NULL;
+
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
 
 #define BUTTON_ATCK    button0
@@ -64,8 +66,6 @@ float sv_cheats;
 float sv_gentle;
 
 entity	activator;
-string	string_null;
-const var void(void)	func_null;
 
 float player_count;
 float currentbots;

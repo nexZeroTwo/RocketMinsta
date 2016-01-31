@@ -90,7 +90,7 @@ void Draw_GrapplingHook()
     Draw_GrapplingHook_trace_callback_offs = -2 * time;
     Draw_GrapplingHook_trace_callback_rgb = rgb;
     WarpZone_TraceTriangle(a, a_visual, b, MOVE_NOMONSTERS, world, Draw_GrapplingHook_trace_callback);
-    Draw_GrapplingHook_trace_callback_tex = string_null;
+    Draw_GrapplingHook_trace_callback_tex = NULL;
 }
 
 void Net_GrapplingHook()

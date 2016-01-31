@@ -1629,7 +1629,7 @@ void PrecachePlayerSounds(string f)
 
 void ClearPlayerSounds()
 {
-#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = string_null; }
+#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = NULL; }
 	ALLPLAYERSOUNDS
 	ALLVOICEMSGS
 #undef _VOICEMSG

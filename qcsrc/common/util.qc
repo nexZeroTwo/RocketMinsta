@@ -260,7 +260,7 @@ vector colormapPaletteColor(float c, float isPants)
 	}
 }
 
-// unzone the string, and return it as tempstring. Safe to be called on string_null
+// unzone the string, and return it as tempstring. Safe to be called on NULL
 string fstrunzone(string s)
 {
 	string sc;
@@ -1261,20 +1261,20 @@ string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunctio
 		{
 			getWrappedLine_remaining = substring(s, cantake, strlen(s) - cantake);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, cantake);
 		}
 		else
 		{
 			getWrappedLine_remaining = substring(s, take + 1, strlen(s) - take);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, take);
 		}
 	}
 	else
 	{
-		getWrappedLine_remaining = string_null;
+		getWrappedLine_remaining = NULL;
 		return s;
 	}
 }
@@ -1298,7 +1298,7 @@ float isGametypeInFilter(float gt, float tp, string pattern)
 	if(gt == GAME_RACE || gt == GAME_CTS)
 		subpattern3 = ",race,";
 	else
-		subpattern3 = string_null;
+		subpattern3 = NULL;
 
 	if(substring(pattern, 0, 1) == "-")
 	{
@@ -1379,7 +1379,7 @@ string shufflewords(string str)
 	n = tokenizebyseparator(str, " ");
 	shuffle(n, _shufflewords_swapfunc, world);
 	str = _shufflewords_str;
-	_shufflewords_str = string_null;
+	_shufflewords_str = NULL;
 	return str;
 }
 
@@ -1596,7 +1596,7 @@ void RandomSelection_Init()
 	RandomSelection_totalweight = 0;
 	RandomSelection_chosen_ent = world;
 	RandomSelection_chosen_float = 0;
-	RandomSelection_chosen_string = string_null;
+	RandomSelection_chosen_string = NULL;
 	RandomSelection_best_priority = -1;
 }
 void RandomSelection_Add(entity e, float f, string s, float weight, float priority)

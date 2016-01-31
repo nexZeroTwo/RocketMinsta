@@ -665,7 +665,7 @@ float GameCommand_Vote(string s, entity e) {
             if(masterpwd != "" || masterusers != "") {
                 if(e.vote_masteruser) {
                     strunzone(e.vote_masteruser);
-                    e.vote_masteruser = string_null;
+                    e.vote_masteruser = NULL;
                 }
 
                 float granted = (masterpwd == password);
@@ -689,7 +689,7 @@ float GameCommand_Vote(string s, entity e) {
                     if(e) {
                         if(e.vote_mastername) {
                             strunzone(e.vote_mastername);
-                            e.vote_mastername = string_null;
+                            e.vote_mastername = NULL;
                         }
                         e.vote_mastername = strzone(lname);
                     }
@@ -857,18 +857,18 @@ string ValidateMap(string m, entity e)
 	if(!m || !ListContains(CVAR_STR(g_maplist), m, " "))
 	{
 		print_to(e, "This map is not available on this server.");
-		return string_null;
+		return NULL;
 	}
 	if(!CVAR(sv_vote_override_mostrecent) && !e.vote_master)
 		if(Map_IsRecent(m))
 		{
 			print_to(e, "This server does not allow for recent maps to be played again. Please be patient for some rounds.");
-			return string_null;
+			return NULL;
 		}
 	if(!MapInfo_CheckMap(m, GameTypeVote_MapIDMask()))
 	{
 		print_to(e, strcat("^1Invalid mapname, \"^3", m, "^1\" does not support the current game mode."));
-		return string_null;
+		return NULL;
 	}
 	return m;
 }

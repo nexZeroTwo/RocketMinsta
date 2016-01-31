@@ -196,7 +196,7 @@ float Buffs_Randomize_Yield(void) {
     while(!found) {
         for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
             if(g_buffs_enabled & b && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
-                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
+                RandomSelection_Add(world, j, NULL, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                 ++found;
             }
         
@@ -215,7 +215,7 @@ float Buffs_Randomize_Yield(void) {
         while(!found) {
             for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
                 if(g_buffs_enabled & b && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
-                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
+                    RandomSelection_Add(world, j, NULL, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                     ++found;
                 }
             
@@ -1055,7 +1055,7 @@ void Buffs_MEODP_Point_Detach(entity e) {
     
     remove(e.meodp_point);
     e.meodp_point = world;
-    e.meodp_death = func_null;
+    e.meodp_death = NULL;
 }
 
 .entity meodp_chain;

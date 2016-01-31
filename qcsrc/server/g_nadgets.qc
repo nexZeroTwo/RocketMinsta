@@ -148,7 +148,7 @@ void HG_GiveRandomBonus(entity p, float amount, string reason, float allowOptout
         if(g_freeze || (n != HG_BAIT)) {
             float w = GRENVAR(n, "bonus_random_weight");
             if(w)
-                RandomSelection_Add(world, n, string_null, w, 1);
+                RandomSelection_Add(world, n, NULL, w, 1);
         }
     }
 
@@ -1168,7 +1168,7 @@ float HG_PlayerGrenadeType(entity e) {
         float n; for(i = 0; i < argc; ++i) {
             n = HG_NameToType(argv(i));
             if(n != HG_RANDOM && (!hg_context_isalt || n != e.hg_type1_picked))
-                RandomSelection_Add(world, n, string_null, 1, 0);
+                RandomSelection_Add(world, n, NULL, 1, 0);
         }
         picked = RandomSelection_chosen_float;
     }
@@ -1248,7 +1248,7 @@ void HG_Grenade_FadeOut(entity n) {
     n.solid = SOLID_NOT;
     n.takedamage = DAMAGE_NO;
     n.hg_detonable_updated = FALSE;
-    n.event_damage = func_null;
+    n.event_damage = NULL;
     n.use = SUB_Null;
     n.think = HG_Grenade_FadeOut_Think;
     n.nextthink = time;
@@ -2092,7 +2092,7 @@ entity HG_Bait_PickRef(void) {
 
     RandomSelection_Init();
     FOR_EACH_PLAYER(plr) if(plr.team != self.team)
-        RandomSelection_Add(plr, 0, string_null, 1, 1);
+        RandomSelection_Add(plr, 0, NULL, 1, 1);
 
     return RandomSelection_chosen_ent;
 }

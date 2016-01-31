@@ -29,7 +29,7 @@ CLASS(NexuizMapList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizMapList, origin, vector, '0 0 0')
 	ATTRIB(NexuizMapList, itemAbsSize, vector, '0 0 0')
 
-	ATTRIB(NexuizMapList, g_maplistCache, string, string_null)
+	ATTRIB(NexuizMapList, g_maplistCache, string, NULL)
 	METHOD(NexuizMapList, g_maplistCacheToggle, void(entity, float))
 	METHOD(NexuizMapList, g_maplistCacheQuery, float(entity, float))
 
@@ -37,7 +37,7 @@ CLASS(NexuizMapList) EXTENDS(NexuizListBox)
 
 	METHOD(NexuizMapList, loadCvars, void(entity))
 
-	ATTRIB(NexuizMapList, typeToSearchString, string, string_null)
+	ATTRIB(NexuizMapList, typeToSearchString, string, NULL)
 	ATTRIB(NexuizMapList, typeToSearchTime, float, 0)
 
 	METHOD(NexuizMapList, destroy, void(entity))

@@ -68,7 +68,7 @@ void JB_DelayedInit() {
     
     SUB_ForEachTarget_Init();
     FOR_EACH_JB_CONTROLPOINT(e)
-        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', string_null, e);
+        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', NULL, e);
 }
 
 float jb_doors_opened[2];
@@ -118,7 +118,7 @@ void JB_NonJBInit() {
     SUB_ForEachTarget_Init();
     FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
         if(openjails != OPENJAILS_LOCKED_FORCE)
-            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', string_null, e);
+            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', NULL, e);
         e.think = SUB_Remove;
         e.nextthink = time;
     }
@@ -368,7 +368,7 @@ jb_torture_logic JB_Torture_PickFunction() {
 	
 	RandomSelection_Init();
 	for(;(e = find(e, classname, "jailbreak_torture_logic"));)
-		RandomSelection_Add(e, 0, string_null, 1, 1);
+		RandomSelection_Add(e, 0, NULL, 1, 1);
 	return RandomSelection_chosen_ent.use;
 	*/
 	
@@ -381,12 +381,12 @@ void JB_TorturePrisoners(float theteam) {
 	//	Here we will choose two random torture logics to run at the same time
 	RandomSelection_Init();
 	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
-		RandomSelection_Add(logic, 0, string_null, 1, 1);
+		RandomSelection_Add(logic, 0, NULL, 1, 1);
 	jb_torture_logic1 = RandomSelection_chosen_ent.use;
 	RandomSelection_Init();
 	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
 		if(logic.use != jb_torture_logic1)
-			RandomSelection_Add(logic, 0, string_null, 1, 1);
+			RandomSelection_Add(logic, 0, NULL, 1, 1);
 	jb_torture_logic2 = RandomSelection_chosen_ent.use;
 	
 	for(;(spot = find(spot, classname, "info_jailbreak_torturespawn"));)
@@ -560,14 +560,14 @@ void JB_Torture_Zap() {
 
 	RandomSelection_Init();
 	FOR_EACH_PLAYER(p) if(p.team != self.team) if(p.deadflag == DEAD_NO)
-		RandomSelection_Add(p, 0, string_null, 1, 1);
+		RandomSelection_Add(p, 0, NULL, 1, 1);
 	unlucky_guy = RandomSelection_chosen_ent;
 	
 	if(!unlucky_guy) {
 		// nobody left alive? shoot the corpses / death origins
 		RandomSelection_Init();
 		FOR_EACH_PLAYER(p) if(p.team != self.team)
-			RandomSelection_Add(p, 0, string_null, 1, 1);
+			RandomSelection_Add(p, 0, NULL, 1, 1);
 		unlucky_guy = RandomSelection_chosen_ent;
 	}
 	
@@ -811,7 +811,7 @@ void JB_PrepareNextRound() {
             JB_ClearCamera(e);
         e.jb_roundlost = FALSE;
     }
-    self.endround_think2 = func_null;
+    self.endround_think2 = NULL;
 }
 
 void JB_EndRound(float t) {
@@ -829,7 +829,7 @@ entity JB_ChooseJailSpawnpoint(float theteam) {
 	
 	RandomSelection_Init();
 	for(;(spot = find(spot, classname, "info_jailbreak_jailspawn"));) if(spot.team == theteam) {
-		RandomSelection_Add(spot, 0, string_null, 1, 1);
+		RandomSelection_Add(spot, 0, NULL, 1, 1);
 	}
 	
 	spot = RandomSelection_chosen_ent;
@@ -858,7 +858,7 @@ entity JB_FindCamera(float theteam) {
 	
 	entity e;
 	for(;(e = find(e, classname, "info_jailbreak_jailcamera"));) if(e.team == theteam)
-		RandomSelection_Add(e, 0, string_null, 1, 1);
+		RandomSelection_Add(e, 0, NULL, 1, 1);
 	
 	return RandomSelection_chosen_ent;
 }

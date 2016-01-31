@@ -76,7 +76,7 @@ void W_Fireball_LaserPlay(float dt, float dist, float damage, float edgedamage, 
 			if(/* trace_startsolid || */ trace_fraction != 1)
 				continue;
 			e.fireball_impactvec = p;
-			RandomSelection_Add(e, 0, string_null, 1 / (1 + d), !Fire_IsBurning(e));
+			RandomSelection_Add(e, 0, NULL, 1 / (1 + d), !Fire_IsBurning(e));
 		}
 	}
 	if(RandomSelection_chosen_ent)

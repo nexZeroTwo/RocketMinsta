@@ -852,7 +852,7 @@ void GetCvars_handleString(string thisname, float f, .string field, string name)
 	{
 		if (self.field)
 			strunzone(self.field);
-		self.field = string_null;
+		self.field = NULL;
 	}
 	else if (f > 0)
 	{
@@ -2276,7 +2276,7 @@ void InitializeEntitiesRun()
         e = self.initialize_entity_next;
         func = self.initialize_entity;
         self.initialize_entity_order = 0;
-        self.initialize_entity = func_null;
+        self.initialize_entity = NULL;
         self.initialize_entity_next = world;
         if (self.classname == "initialize_entity")
         {
@@ -2985,7 +2985,7 @@ entity GetCommandPlayerSlotTargetFromTokenizedCommand(float tokens, float idx) /
     entity e, head;
     float n;
 
-    s = string_null;
+    s = NULL;
 
     ParseCommandPlayerSlotTarget_firsttoken = -1;
 

@@ -257,7 +257,7 @@ entity rpn_findlocal(string lname, float define) {
 string rpn_getlocal(string lname) {
     entity s = rpn_findlocal(lname, FALSE);
     if(!s)
-        return string_null;
+        return NULL;
     return s.(rpn_locals[s.cnt]);
 }
 
@@ -1278,7 +1278,7 @@ float GameCommand_Generic(string command)
                 } else if(rpncmd == "exec") {
                     localcmd(rpn_pop(), "\n");
                 } else if(rpncmd == "nullstr") {
-                    rpn_push(string_null);
+                    rpn_push(NULL);
                 } else if(rpncmd == "call") {
                     float o = rpnpos;
                     rpn_callpush(rpnpos);

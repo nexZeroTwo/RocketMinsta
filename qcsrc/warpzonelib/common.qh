@@ -1,10 +1,6 @@
 // uncomment this if your mod uses the roll angle in fixangle
 // #define KEEP_ROLL
 
-#ifdef SVQC
-const var void(void)       func_null;
-#endif
-
 .vector warpzone_shift;
 .vector warpzone_origin;
 .vector warpzone_angles;
@@ -23,7 +19,6 @@ void WarpZone_MakeAllSolid();
 void WarpZone_MakeAllOther();
 
 typedef void(vector start, vector hit, vector end) WarpZone_trace_callback_t; // called on every elementary trace
-const var WarpZone_trace_callback_t WarpZone_trace_callback_t_null;
 entity WarpZone_trace_transform; // transform accumulator during a trace
 vector WarpZone_trace_dir;
 float WarpZone_trace_warpcount;

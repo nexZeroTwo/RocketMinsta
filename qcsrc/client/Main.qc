@@ -1830,8 +1830,8 @@ void Ent_Remove()
 
 	self.enttype = 0;
 	self.classname = "";
-	self.draw = func_null;
-	self.entremove = func_null;
+	self.draw = NULL;
+	self.entremove = NULL;
 	// TODO possibly set more stuff to defaults
 }
 // CSQC_Ent_Remove : Called when the server requests a SSQC / CSQC entity to be removed.  Essentially call remove(self) as well.
@@ -2131,7 +2131,7 @@ void Net_VoteDialog(float highlight) {
 
     if(vote_statstring) {
         strunzone(vote_statstring);
-        vote_statstring = string_null;
+        vote_statstring = NULL;
     }
 
     if(vote_active)

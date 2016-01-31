@@ -1958,7 +1958,7 @@ void(float pause) setpause = #531;
 //  void IRC_Event(float handle, string event, float numeric, string src, float argc);
 //
 //  handle is the id of the IRC session that the event occured in
-//  event is the event name, or string_null if the event is a numeric IRC response
+//  event is the event name, or NULL if the event is a numeric IRC response
 //  numeric is the IRC response number, or -1 if the event is not a numeric IRC response
 //  argc is the count of additional event arguments that can be accessed with the argv() function
 //

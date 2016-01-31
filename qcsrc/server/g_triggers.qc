@@ -2028,7 +2028,7 @@ void trigger_cycle_use(void) {
 
 void trigger_cycle_init_delayed(void) {
     self.enemy = trigger_cycle_find_next_target(self);
-    self.think = func_null;
+    self.think = NULL;
 }
 
 void spawnfunc_trigger_cycle(void) {
@@ -2106,8 +2106,8 @@ void spawnfunc_trigger_relay_random(void) {
 
         SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
             e.sub_target_used = time;
-            RandomSelection_Add(e, 0, string_null, 1, 1);
-        }, FALSE, 0, '0 0 0', string_null, world);
+            RandomSelection_Add(e, 0, NULL, 1, 1);
+        }, FALSE, 0, '0 0 0', NULL, world);
 
         if(RandomSelection_chosen_ent) {
             RandomSelection_chosen_ent.sub_target_used = -1;

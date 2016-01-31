@@ -12,17 +12,17 @@ string getZonedTooltipForIdentifier(string s)
 {
 	string t;
 	if(s == "")
-		return string_null;
+		return NULL;
 	t = db_get(tooltipdb, s);
 	if(t == "-")
-		return string_null;
+		return NULL;
 	if(t != "")
 		return strzone(t);
 	t = cvar_description(s);
 	if(t != "" && t != "custom cvar")
 		return strzone(t);
 	dprint("WARNING: no tooltip set for ", s, "\n");
-	return string_null;
+	return NULL;
 }
 
 void forAllDescendants(entity root, void(entity, entity) funcPre, void(entity, entity) funcPost, entity pass)
@@ -151,8 +151,8 @@ void setDependent(entity e, string theCvarName, float theCvarMin, float theCvarM
 	e.cvar_setDependent = theCvarName;
 	e.cvarMin_setDependent = theCvarMin;
 	e.cvarMax_setDependent = theCvarMax;
-	e.cvar2_setDependent = string_null;
-	e.cvar3_setDependent = string_null;
+	e.cvar2_setDependent = NULL;
+	e.cvar3_setDependent = NULL;
 	e.draw = setDependent_Draw;
 	setDependent_Check(e);
 }
@@ -161,9 +161,9 @@ void setDependentStringNotEqual(entity e, string theCvarName, string theCvarValu
 	e.draw_setDependent = e.draw;
 	e.cvarString_setDependent = theCvarName;
 	e.cvarValue_setDependent = theCvarValue;
-	e.cvar_setDependent = string_null;
-	e.cvar2_setDependent = string_null;
-	e.cvar3_setDependent = string_null;
+	e.cvar_setDependent = NULL;
+	e.cvar2_setDependent = NULL;
+	e.cvar3_setDependent = NULL;
 	e.draw = setDependent_Draw;
 	setDependent_Check(e);
 }
@@ -176,7 +176,7 @@ void setDependentAND(entity e, string theCvarName, float theCvarMin, float theCv
 	e.cvar2_setDependent = theCvar2Name;
 	e.cvar2Min_setDependent = theCvar2Min;
 	e.cvar2Max_setDependent = theCvar2Max;
-	e.cvar3_setDependent = string_null;
+	e.cvar3_setDependent = NULL;
 	e.op_setDependent = 0;
 	e.draw = setDependent_Draw;
 	setDependent_Check(e);
@@ -190,7 +190,7 @@ void setDependentOR(entity e, string theCvarName, float theCvarMin, float theCva
 	e.cvar2_setDependent = theCvar2Name;
 	e.cvar2Min_setDependent = theCvar2Min;
 	e.cvar2Max_setDependent = theCvar2Max;
-	e.cvar3_setDependent = string_null;
+	e.cvar3_setDependent = NULL;
 	e.op_setDependent = 1;
 	e.draw = setDependent_Draw;
 	setDependent_Check(e);

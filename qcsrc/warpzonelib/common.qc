@@ -232,7 +232,7 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 
 void WarpZone_TraceBox(vector org, vector mi, vector ma, vector end, float nomonsters, entity forent)
 {
-	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, WarpZone_trace_callback_t_null);
+	WarpZone_TraceBox_ThroughZone(org, mi, ma, end, nomonsters, forent, world, NULL);
 }
 
 void WarpZone_TraceLine(vector org, vector end, float nomonsters, entity forent)
@@ -313,7 +313,7 @@ void WarpZone_TraceToss_ThroughZone(entity e, entity forent, float toss_frametim
 
 void WarpZone_TraceToss(entity e, entity forent, float toss_frametime, float toss_count)
 {
-	WarpZone_TraceToss_ThroughZone(e, forent, toss_frametime, toss_count, world, WarpZone_trace_callback_t_null);
+	WarpZone_TraceToss_ThroughZone(e, forent, toss_frametime, toss_count, world, NULL);
 }
 #endif
 
@@ -668,7 +668,7 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 		length_warped = vlen(to_warped - from);
 		if (length_warped < WarpZone_FindNearestOrigin_length) {
 			if (trace_check) {
-				WarpZone_TraceTriangle(from, from, to_warped, MOVE_NOMONSTERS, world, WarpZone_trace_callback_t_null);
+				WarpZone_TraceTriangle(from, from, to_warped, MOVE_NOMONSTERS, world, NULL);
 				if (vlen(trace_endpos - to) < 1) {
 					WarpZone_FindNearestOrigin_length = length_warped;
 					to_nearest = to_warped;

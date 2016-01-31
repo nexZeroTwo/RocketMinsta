@@ -1264,7 +1264,7 @@ void GameCommand(string command)
         for(i = 0; i < t; ++i) {
             RandomSelection_Init();
             FOR_EACH_REALCLIENT(e) if(e.ispicked != time)
-                RandomSelection_Add(e, 0, string_null, 1, 1);
+                RandomSelection_Add(e, 0, NULL, 1, 1);
             if(RandomSelection_chosen_ent) {
                 RandomSelection_chosen_ent.ispicked = time;
                 bprint("\{1}", ColoredTeamName(Team_FromIndex(i)), " ^7captain: ^3", RandomSelection_chosen_ent.netname, "\n");

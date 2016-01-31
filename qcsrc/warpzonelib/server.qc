@@ -195,16 +195,16 @@ void WarpZone_Touch (void)
 		string save1, save2;
 		activator = other;
 
-		save1 = self.target; self.target = string_null;
-		save2 = self.target3; self.target3 = string_null;
+		save1 = self.target; self.target = NULL;
+		save2 = self.target3; self.target3 = NULL;
 		SUB_UseTargets();
 		if not(self.target) self.target = save1;
 		if not(self.target3) self.target3 = save2;
 
 		oldself = self;
 		self = self.enemy;
-		save1 = self.target; self.target = string_null;
-		save2 = self.target2; self.target2 = string_null;
+		save1 = self.target; self.target = NULL;
+		save2 = self.target2; self.target2 = NULL;
 		SUB_UseTargets();
 		if not(self.target) self.target = save1;
 		if not(self.target2) self.target2 = save2;
@@ -302,7 +302,7 @@ float WarpZone_CheckProjectileImpact()
 	// not properly retain the projectile trail (but we can't retain it
 	// easily anyway without delaying the projectile by two frames, so who
 	// cares)
-	WarpZone_TraceBox_ThroughZone(self.warpzone_oldorigin, self.mins, self.maxs, self.warpzone_oldorigin + self.warpzone_oldvelocity * frametime, MOVE_NORMAL, self, wz, WarpZone_trace_callback_t_null); // this will get us through the warpzone
+	WarpZone_TraceBox_ThroughZone(self.warpzone_oldorigin, self.mins, self.maxs, self.warpzone_oldorigin + self.warpzone_oldvelocity * frametime, MOVE_NORMAL, self, wz, NULL); // this will get us through the warpzone
 	setorigin(self, trace_endpos);
 	self.angles = WarpZone_TransformAngles(WarpZone_trace_transform, self.angles);
 	self.velocity = WarpZone_TransformVelocity(WarpZone_trace_transform, self.velocity);

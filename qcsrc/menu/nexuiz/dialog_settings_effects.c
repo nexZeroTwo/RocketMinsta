@@ -125,11 +125,11 @@ void fillNexuizEffectsSettingsTab(entity me)
 		if(CVAR(developer))
 			me.TD(me, 1, 3, e = makeNexuizCheckBoxEx(3, 0, "r_showsurfaces", "Show surfaces"));
 	me.TR(me);
-		me.TD(me, 1, 3, e = makeNexuizRadioButton(1, string_null, string_null, "No dynamic lighting"));
+		me.TD(me, 1, 3, e = makeNexuizRadioButton(1, NULL, NULL, "No dynamic lighting"));
 	me.TR(me);
-		me.TD(me, 1, 3, e = makeNexuizRadioButton(1, "gl_flashblend", string_null, "Flash blend approximation"));
+		me.TD(me, 1, 3, e = makeNexuizRadioButton(1, "gl_flashblend", NULL, "Flash blend approximation"));
 	me.TR(me);
-		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "r_shadow_realtime_dlight", string_null, "Realtime dynamic lighting"));
+		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "r_shadow_realtime_dlight", NULL, "Realtime dynamic lighting"));
 		me.TD(me, 1, 1, e = makeNexuizCheckBox(0, "r_shadow_realtime_dlight_shadows", "Shadows"));
 			setDependent(e, "r_shadow_realtime_dlight", 1, 1);
 	me.TR(me);

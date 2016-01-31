@@ -116,7 +116,7 @@ void Radio_Stop(void) {
         return;
 
     radio_playing = FALSE;
-    radio_url = radio_filename = string_null;
+    radio_url = radio_filename = NULL;
     radio_playing_queue = -1;
 
     entity e; FOR_EACH_REALCLIENT(e)

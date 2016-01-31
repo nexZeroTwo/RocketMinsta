@@ -73,18 +73,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_TRIGGER;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
 	else if (mode < 0)
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -107,18 +107,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_NOT;
 		//e.colormod = '0.2 1 0.2';
 		e.alpha = g_ghost_items;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
 	else
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -167,7 +167,7 @@ void Item_RespawnCountdown (void)
 		{
 			string name;
 			vector rgb;
-			name = string_null;
+			name = NULL;
 			if(g_minstagib)
 			{
 				switch(self.items)
@@ -630,7 +630,7 @@ void Item_Touch (void)
 				if(head.flags & FL_ITEM)
 				{
 					Item_Show(head, -1);
-					RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+					RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 				}
 			}
 			e = RandomSelection_chosen_ent;
@@ -651,7 +651,7 @@ void Item_FindTeam()
 		dprint("Initializing item team ", ftos(self.team), "\n");
 		RandomSelection_Init();
 		for(head = world; (head = findfloat(head, team, self.team)); ) if(head.flags & FL_ITEM)
-			RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+			RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 		e = RandomSelection_chosen_ent;
 		e.state = 0;
 		Item_Show(e, 1);

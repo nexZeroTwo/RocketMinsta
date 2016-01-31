@@ -1,5 +1,5 @@
 
-#define FREE(s) if(s) { strunzone(s); s = string_null; }
+#define FREE(s) if(s) { strunzone(s); s = NULL; }
 
 void HUDSkin_Unload()
 {
@@ -102,7 +102,7 @@ void HUDSkin_Unload()
     if(hudskin_name)
     {
         fstrunzone(hudskin_name);
-        hudskin_name = string_null;
+        hudskin_name = NULL;
     }
 }
 

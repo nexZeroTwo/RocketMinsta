@@ -3767,7 +3767,7 @@ void Sbar_DrawBuffs(void) {
 
         if(drawbuffs_str) {
             strunzone(drawbuffs_str);
-            drawbuffs_str = string_null;
+            drawbuffs_str = NULL;
         }
 
         if(buffs) {
@@ -5894,7 +5894,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon = string_null;
+				red_icon = NULL;
 			break;
 	}
 	switch(redflag_prevstatus) {
@@ -5907,7 +5907,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon_prevstatus = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon_prevstatus = string_null;
+				red_icon_prevstatus = NULL;
 			break;
 	}
 
@@ -5922,7 +5922,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon = string_null;
+				blue_icon = NULL;
 			break;
 	}
 	switch(blueflag_prevstatus) {
@@ -5935,7 +5935,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon_prevstatus = string_null;
+				blue_icon_prevstatus = NULL;
 			break;
 	}
 
