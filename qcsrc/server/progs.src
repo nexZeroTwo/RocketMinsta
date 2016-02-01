@@ -212,10 +212,6 @@ func_breakable.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
 ip2c.qc
-monsters/defs.qc
-monsters/fight.qc
-monsters/ai.qc
-monsters/m_monsters.qc
 
 csqcprojectile.qc
 csqcmessage.qc

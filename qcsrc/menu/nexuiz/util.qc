@@ -220,7 +220,7 @@ string _Nex_ExtResponseSystem_UpdateTo;
 float _Nex_ExtResponseSystem_RetryTime;
 float _Nex_ExtResponseSystem_RetryTime_LastDelay;
 
-void() Item_Nex_ExtResponseSystem_SendQuery =
+void Item_Nex_ExtResponseSystem_SendQuery()
 {
 	dprint("Sending extended response requests...\n");
 	localcmd(strcat("packet 64.22.107.122:27950 \"getExtResponse checkUpdates nexuiz ", CVAR_STR(g_nexuizversion), "\"\n"));
@@ -229,7 +229,7 @@ void() Item_Nex_ExtResponseSystem_SendQuery =
 	_Nex_ExtResponseSystem_RetryTime = time + _Nex_ExtResponseSystem_RetryTime_LastDelay;
 }
 
-void(float argc) Item_Nex_ExtResponseSystem_Parse =
+void Item_Nex_ExtResponseSystem_Parse(float argc)
 {
 	dprint("Received extended response packet from ", argv(0), "\n");
 	if(!_Nex_ExtResponseSystem_RequestsSent)
@@ -260,7 +260,7 @@ void(float argc) Item_Nex_ExtResponseSystem_Parse =
 		dprint("  UNKNOWN RESPONSE TYPE: ", argv(1), "\n");
 }
 
-void() Item_Nex_ExtResponseSystem_CheckForResponse =
+void Item_Nex_ExtResponseSystem_CheckForResponse()
 {
 	string s;
 	float argc;
