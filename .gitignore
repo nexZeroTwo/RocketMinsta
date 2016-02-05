@@ -3,6 +3,7 @@
 *.dat
 *.lno
 *.log
+*.asm
 config.sh
 updconfig.sh
 releaseconfig.sh
