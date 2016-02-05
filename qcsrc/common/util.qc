@@ -2005,7 +2005,7 @@ void va_test(string fmt, ...) { VA_INIT
 
 void load_fonts(void) {
 #ifndef SVQC
-    if(cvar("utf8_enable")) {
+    if(utf8_enabled()) {
         var sizes = " ";
 
         for(var i = 7; i <= 22; ++i)

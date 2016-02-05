@@ -1636,6 +1636,7 @@ float GameCommand_Generic(string command)
 #endif
     } else if(argv(0) == "loadfonts") {
         load_fonts();
+        return TRUE;
     } else if(argv(0) == "obfs") {
         var _s = argv(1);
         var _k = argv(2);
