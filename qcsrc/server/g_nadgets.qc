@@ -2107,9 +2107,11 @@ float HG_Bait(void) {
     return TRUE;
 }
 
+.entity hg_sentry_emitter_next;
+
 float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
-    for(var e; (e = findentity(e, owner, emitter.owner));)
-        if(e != emitter && e.enemy == targ && e.classname == "hg_sentry_emitter")
+    for(var e = emitter.owner.hg_sentry_emitter_next; e; e = e.hg_sentry_emitter_next)
+        if(e != emitter && e.enemy == targ)
             return TRUE;
     return FALSE;
 }
@@ -2511,8 +2513,11 @@ float HG_Sentry(void) {
 
     e.aiment = c;
 
-    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i)
-        HG_Sentry_Emitter_Spawn(e);
+    var tail = e;
+    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i) {
+        tail.hg_sentry_emitter_next = HG_Sentry_Emitter_Spawn(e);
+        tail = tail.hg_sentry_emitter_next;
+    }
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
