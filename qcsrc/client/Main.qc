@@ -576,8 +576,18 @@ void RegisterMasterServers(void) {
 }
 
 void InitFonts(void) {
-    utf8_enable();
     SetMadokaFont(MDKF_AUTO);
+
+    if(!utf8_supported()) {
+        load_fonts();
+    } else spawn() {
+        think: inline void(void) {
+            if(!utf8_enabled())
+                utf8_enable();
+            self.nextthink = time + 1;
+        },
+        nextthink: time
+    };
 }
 
 void ReportHUDInfo(string hskin) {

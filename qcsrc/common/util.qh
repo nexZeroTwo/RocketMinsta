@@ -247,8 +247,13 @@ var va_parm __va_parm7;
 va_parm va_get(float pidx);
 void va_test(string fmt, ...);
 
+float autocvar_utf8_enable;
+
+float utf8_supported(void);
+float utf8_enabled(void);
 void utf8_enable(void);
 void utf8_disable(void);
+void load_fonts(void);
 
 #ifdef SVQC
 float stringwidth(string s, float handle_colors, vector text_size);

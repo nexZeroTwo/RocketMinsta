@@ -2060,8 +2060,16 @@ void utf8_report(void) {
 #endif
 }
 
+float utf8_supported(void) {
+    return (cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE) && !cvar("_rm_no_utf8");
+}
+
+float utf8_enabled(void) {
+    return CVAR(utf8_enable) && utf8_supported();
+}
+
 void utf8_enable(void) {
-    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE)) {
+    if(!utf8_supported()) {
         load_fonts();
         return;
     }
