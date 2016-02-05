@@ -254,7 +254,8 @@ void HG_Napalm_Think(void) {
         return;
     }
 
-    HG_HealEmitter(self.owner);
+    if(self.projectiledeathtype != DEATH_HURTTRIGGER)
+        HG_HealEmitter(self.owner);
 
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
 
