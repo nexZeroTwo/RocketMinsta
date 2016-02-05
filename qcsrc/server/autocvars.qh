@@ -812,6 +812,7 @@ float autocvar_g_buffs_medic_selfhealfactor;
 float autocvar_g_buffs_meodp_armorfactor;
 float autocvar_g_buffs_meodp_healthfactor;
 float autocvar_g_buffs_meodp_selfdamage;
+float autocvar_g_buffs_meodp_selfdamage_min;
 float autocvar_g_buffs_noteam;
 float autocvar_g_buffs_random_spawns;
 float autocvar_g_buffs_random_spawns_distant;

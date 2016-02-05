@@ -601,7 +601,7 @@ void HG_Grenade_Touch() {
             if(adeptRev || Buffs_Present(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
-                    Freeze_RevivePlayer(other, self.owner);
+                    Freeze_RevivePlayer(other, self.owner, TRUE);
                     self.hg_tl_revived = TRUE;
 
                     float m = CVAR(g_nadgets_transloc_medic_revive_health_multiplier);

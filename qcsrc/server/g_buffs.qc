@@ -963,15 +963,27 @@ float Buffs_MEODP_Point_Customize(void) {
 }
 
 void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
-    entity oself = self;
-    self = targ;
-    targ.meodp_point.solid = SOLID_NOT;
-    targ.meodp_point.enemy = attacker;
-    te_meodp(targ.meodp_point.origin);
-    targ.meodp_death(attacker, inflictor);
-    if(targ.meodp_point && !wasfreed(targ.meodp_point))
-        targ.meodp_point.enemy = world;
-    self = oself;
+    var oh = max(0, targ.health);
+    var oa = max(0, targ.armorvalue);
+    var point_org = targ.meodp_point.origin;
+
+    using(self = targ) {
+        targ.meodp_point.solid = SOLID_NOT;
+        targ.meodp_point.enemy = attacker;
+        te_meodp(targ.meodp_point.origin);
+        targ.meodp_death(attacker, inflictor);
+        if(targ.meodp_point && !wasfreed(targ.meodp_point))
+            targ.meodp_point.enemy = world;
+    }
+
+    var nh = bound(0, targ.health, oh);
+    var na = bound(0, targ.armorvalue, oa);
+
+    var sdmg = max(((oh - nh) + (oa - na)) * CVAR(g_buffs_meodp_selfdamage), CVAR(g_buffs_meodp_selfdamage_min));
+    if(sdmg) {
+        Damage(attacker, inflictor, attacker, sdmg, DEATH_MEODP, attacker.origin, '0 0 0');
+        trailparticles(attacker, particleeffectnum("blood"), point_org, attacker.origin + attacker.view_ofs);
+    }
 }
 
 float buffs_meodp_triggermultiple_running;
@@ -1083,12 +1095,7 @@ void Buffs_MEODP_Hitscan_End(entity pts) {
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
     float d = self.health * CVAR(g_buffs_meodp_healthfactor) + self.armorvalue * CVAR(g_buffs_meodp_armorfactor);
-    float s = d * CVAR(g_buffs_meodp_selfdamage);
-    
     Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
-    
-    if(s)
-        Damage(attacker, inflictor, attacker, s, DEATH_MEODP, attacker.origin, '0 0 0');
 }
 
 void Buffs_MEODP_Death_Remove(entity attacker, entity inflictor) {
