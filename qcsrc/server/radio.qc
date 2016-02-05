@@ -21,9 +21,6 @@ void Radio_Init(void) {
 }
 
 void Radio_SendPreload(entity e, string url) {
-    if(!e.radio_enabled)
-        return;
-
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_RADIO);
@@ -58,9 +55,6 @@ void Radio_SendPlay(entity e) {
         return;
 
     Radio_Announce(e);
-
-    if(!e.radio_enabled)
-        return;
 
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
