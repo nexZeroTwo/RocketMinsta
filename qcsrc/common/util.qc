@@ -2146,6 +2146,28 @@ string etos(entity e) {
 #endif
 
 
+string pickfile(string basepath, ...) { VA_INIT
+    string first;
+    basepath = (string)@0;
+
+    for(var i = 1; i < VA_MAXPARMS; ++i) {
+        var ext = (string)va_get(i);
+
+        if(!ext)
+            return first;
+
+        var path = basepath + "." + ext;
+        if(!first)
+            first = path;
+
+        if(fexists(path))
+            return path;
+    }
+
+    return first;
+}
+
+
 /*
  *  Operator overloads
  */

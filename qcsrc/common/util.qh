@@ -234,6 +234,7 @@ var va_parm __va_parm5;
 var va_parm __va_parm6;
 var va_parm __va_parm7;
 
+#define VA_MAXPARMS 8
 #define VA_INIT \
     __va_parm0 = @0; \
     __va_parm1 = @1; \
@@ -282,6 +283,8 @@ const RE_INVALID_METACHARACTER  = -6;
 const RE_CAPS_ARRAY_TOO_SMALL   = -7;
 const RE_TOO_MANY_BRANCHES      = -8;
 const RE_TOO_MANY_BRACKETS      = -9;
+
+string pickfile(string basepath, ...);
 
 /*
  *  Operator overloads

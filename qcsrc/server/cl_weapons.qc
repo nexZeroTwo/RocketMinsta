@@ -205,9 +205,9 @@ string weapon_modelname(string name) {
 
 void weapon_precache(float wpn) {
 	string s = get_weaponinfo(wpn).mdl;
-	precache_model(strcat("models/weapons/g_", s, ".md3"));
-	precache_model(strcat("models/weapons/v_", s, ".md3"));
-	precache_model(strcat("models/weapons/h_", s, ".dpm"));
+	precache_model(pickfile("models/weapons/g_" + s, "iqm", "md3", NULL));
+    precache_model(pickfile("models/weapons/v_" + s, "iqm", "md3", NULL));
+    precache_model(pickfile("models/weapons/h_" + s, "iqm", "dpm", NULL));
 	(get_weaponinfo(wpn)).weapon_func(WR_PRECACHE);
 };
 

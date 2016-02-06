@@ -428,11 +428,11 @@ void CL_Weaponentity_Think()
 			// if there is a child entity, hide it until we're sure we use it
 			if (self.weaponentity)
 				self.weaponentity.model = "";
-			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
+			setmodel(self, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL)); // precision set below
 			v_shot_idx = gettagindex(self, "shot"); // used later
 
-			setmodel(self, strcat("models/weapons/h_", self.owner.weaponname, ".dpm")); // precision set below
-			animfilename = strcat("models/weapons/h_", self.owner.weaponname, ".dpm.animinfo");
+			setmodel(self, pickfile("models/weapons/h_" + self.owner.weaponname, "iqm", "dpm", NULL)); // precision set below
+			animfilename = pickfile("models/weapons/h_" + self.owner.weaponname, "iqm.animinfo", "dpm.animinfo", NULL);
 			animfile = fopen(animfilename, FILE_READ);
 			// preset some defaults that work great for renamed zym files (which don't need an animinfo)
 			self.anim_fire1  = '0 1 0.01';
@@ -457,7 +457,7 @@ void CL_Weaponentity_Think()
 			{
 				if (!self.weaponentity)
 					self.weaponentity = spawn();
-				setmodel(self.weaponentity, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision does not matter
+				setmodel(self.weaponentity, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3")); // precision does not matter
 				setattachment(self.weaponentity, self, "weapon");
 			}
 			else
