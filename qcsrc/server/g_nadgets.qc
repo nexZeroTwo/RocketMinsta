@@ -801,7 +801,6 @@ void HG_Stick(void) {
     e.solid = self.solid;
     e.dphitcontentsmask = self.dphitcontentsmask;
     e.use = self.use;
-    e.movetype = if(normal * '0 0 1' > 0.8) MOVETYPE_TOSS else MOVETYPE_NONE;
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
     e.think = HG_Grenade_Think;
@@ -821,6 +820,15 @@ void HG_Stick(void) {
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     e.hg_state = TRUE;
     e.hg_adept = self.hg_adept;
+
+    if(trace_ent) {
+        e.movetype = MOVETYPE_FOLLOW;
+        e.view_ofs = self.origin - trace_ent.origin;
+        e.aiment = trace_ent;
+        e.v_angle = e.angles;
+    } else {
+        e.movetype = MOVETYPE_NONE;
+    }
 
     var sz = if(self.hg_type == HG_TRANSLOC) 8 else 5;
     var hitmins = '-1 -1 -1' * sz;
