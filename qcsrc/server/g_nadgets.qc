@@ -771,7 +771,6 @@ void HG_Stick(void) {
         e.angles = randomvec() * 360;
     else
         e.angles = vectoangles(-normal);
-    
 
     e.skin = TeamColorSkin(e.owner.team);
 
@@ -802,7 +801,7 @@ void HG_Stick(void) {
     e.solid = self.solid;
     e.dphitcontentsmask = self.dphitcontentsmask;
     e.use = self.use;
-    e.movetype = if(trace_ent) MOVETYPE_TOSS else MOVETYPE_NONE;
+    e.movetype = if(normal * '0 0 1' > 0.8) MOVETYPE_TOSS else MOVETYPE_NONE;
     e.hg_type = self.hg_type;
     e.projectiledeathtype = self.projectiledeathtype;
     e.think = HG_Grenade_Think;
