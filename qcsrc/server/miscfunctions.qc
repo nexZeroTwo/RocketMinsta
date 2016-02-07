@@ -3803,9 +3803,20 @@ string fix_legacy_encoding(string s) {
 
 void dropentities(entity platform) {
     const nudge = '1 1 1';
+    entity e;
 
-    for(var e; (e = findflags(e, flags, FL_ONGROUND));) {
+    while((e = findflags(e, flags, FL_ONGROUND))) {
         if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+
+    while((e = findentity(e, aiment, platform))) {
+        if(e.movetype == MOVETYPE_FOLLOW)
+        if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+            e.movetype = MOVETYPE_TOSS;
+            e.aiment = world;
             e.flags &~= FL_ONGROUND;
             UpdateCSQCProjectileNextFrame(e);
         }
