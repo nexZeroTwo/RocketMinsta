@@ -3822,3 +3822,12 @@ void dropentities(entity platform) {
         }
     }
 }
+
+float do_if_fexists(void(string) callback, string fpath) {
+    if(fexists(fpath)) {
+        callback(fpath);
+        return TRUE;
+    }
+
+    return FALSE;
+}

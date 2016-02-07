@@ -204,10 +204,12 @@ string weapon_modelname(string name) {
 };
 
 void weapon_precache(float wpn) {
-	string s = get_weaponinfo(wpn).mdl;
-	precache_model(pickfile("models/weapons/g_" + s, "iqm", "md3", NULL));
-    precache_model(pickfile("models/weapons/v_" + s, "iqm", "md3", NULL));
-    precache_model(pickfile("models/weapons/h_" + s, "iqm", "dpm", NULL));
+	string s = get_weaponinfo(wpn).mdl, f;
+    var cb = inline void(string s) { precache_model(s); };
+    do_if_fexists(cb, pickfile("models/weapons/g_" + s, "iqm", "md3", NULL));
+    do_if_fexists(cb, pickfile("models/weapons/v_" + s, "iqm", "md3", NULL));
+    do_if_fexists(cb, pickfile("models/weapons/o_" + s, "iqm", "md3", NULL));
+    do_if_fexists(cb, pickfile("models/weapons/h_" + s, "iqm", "dpm", NULL));
 	(get_weaponinfo(wpn)).weapon_func(WR_PRECACHE);
 };
 

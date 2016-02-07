@@ -366,12 +366,13 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
 /*
  * supported formats:
  *
- * 1. simple animated model, muzzlr flash handling on h_ model:
+ * 1. simple animated model, muzzle flash handling on h_ model:
  *    h_tuba.dpm, h_tuba.dpm.framegroups - invisible model controlling the animation
  *      tags:
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
  *        shell = casings ejection point (must be on the right hand side of the gun)
  *        weapon = attachment for v_tuba.md3
+ *    o_tuba.md3 - third person model (if present)
  *    v_tuba.md3 - first and third person model
  *    g_tuba.md3 - pickup model
  *
@@ -381,7 +382,7 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
  *        shell = casings ejection point (must be on the right hand side of the gun)
  *        handle = corresponding to the origin of v_tuba.md3 (used for muzzle flashes)
- *    v_tuba.md3 - third person model
+ *    o_tuba.md3 or v_tuba.md3 - third person model
  *    g_tuba.md3 - pickup model
  *
  * 3. fully animated model, muzzle flash handling on v_ model:
@@ -389,10 +390,13 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
  *      tags:
  *        shot = muzzle end (shot origin)
  *        shell = casings ejection point (must be on the right hand side of the gun)
- *    v_tuba.md3 - third person model
+ *    o_tuba.md3 or v_tuba.md3 - third person model
  *      tags:
  *        shot = muzzle end (for muzzle flashes)
  *    g_tuba.md3 - pickup model
+ *
+ *
+ * .iqm models can be used in place of .dpm and .md3 ones
  */
 
 void CL_Weaponentity_Think()
@@ -631,10 +635,16 @@ void CL_ExteriorWeaponentity_Think()
 		self.cnt = self.owner.weapon;
 		self.dmg = self.owner.modelindex;
 		self.deadflag = self.owner.deadflag;
-		if (self.owner.weaponname != "")
-			setmodel(self, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL)); // precision set below
-		else
+
+		if (self.owner.weaponname != "") {
+            string s = pickfile("models/weapons/o_" + self.owner.weaponname, "iqm", "md3", NULL);
+            if(!fexists(s))
+                s = pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL);
+
+			setmodel(self, s); // precision set below
+        } else {
 			self.model = "";
+        }
 
 		if((tag_found = gettagindex(self.owner, "tag_weapon")))
 		{
