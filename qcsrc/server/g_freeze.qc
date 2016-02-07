@@ -203,7 +203,8 @@ void Freeze_UnfreezePlayer(entity plr)
             plr.hg_power = 0;
         } else HG_PlayerSpawnEx(plr);
     }
-    
+
+    plr.last_dodging_time = 0;
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
     Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
