@@ -258,9 +258,7 @@ void CSQC_Init(void)
 	
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
-	
-	centerprint_init = 0;
-	
+
 	print("^1", rm_watermark, "\n");
 	
 	// hack for DSN users
@@ -269,7 +267,7 @@ void CSQC_Init(void)
 		print("^1Outdated engine detected. Some features will be unavailable.\n");
 		oldengine = 1;
 	}
-	
+
     dtrack_total = DamageTracker_CreateKeeper(world);
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
@@ -607,8 +605,6 @@ void PostInit(void)
 
 	Porto_Init();
 	TrueAim_Init();
-
-	MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
 	
     // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
 //#NO AUTOCVARS START
@@ -808,8 +804,6 @@ void PostInit(void)
     registercmd("convswitch");
 	// -- //
 	registercmd("hudskin");
-	
-	bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
 
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
@@ -854,6 +848,10 @@ void PostInit(void)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
     defer(1, Menu_ShowNagger);
+    defer(0.5, inline void(void) {
+        MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
+        bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
+    });
 
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
@@ -2172,7 +2170,6 @@ void Net_ReadMorningRescue()
 void Net_ReadClearBigPrint()
 {
     bigprint(" ", "", 0);
-    //bigprint("", "", 0);
 }
 
 void Net_ReadHudFlash(float teamcolor)

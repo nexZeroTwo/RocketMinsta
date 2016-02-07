@@ -2128,12 +2128,6 @@ float centerprint_msgnum;
 
 void centerprint(string strRealMessage)
 {
-	if(!centerprint_init)
-	{
-		centerprint_init = 1;
-		return;
-	}
-
 	float i, j, n, hcount, k, k2, exptime;
 	string s, strMessage;
 	float scrtime = CVAR(scr_centertime);
