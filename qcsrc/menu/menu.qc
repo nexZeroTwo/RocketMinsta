@@ -450,7 +450,7 @@ entity m_findtooltipitem(entity root, vector pos)
 
 	return best;
 }
-void m_tooltip(vector pos)
+void m_tooltip(vector pos, vector xySize)
 {
 	float f, i, w;
 	entity it;
@@ -491,9 +491,9 @@ void m_tooltip(vector pos)
 					getWrappedLine_remaining = it.tooltip;
 					while(getWrappedLine_remaining)
 					{
-						s = getWrappedLine(SKINWIDTH_TOOLTIP / fontsize_x, draw_TextWidth_WithoutColors);
+						s = getWrappedLine(SKINWIDTH_TOOLTIP, xySize, draw_TextWidth_WithoutColors);
 						++i;
-						f = draw_TextWidth(s, FALSE);
+						f = draw_TextWidth(s, FALSE, xySize);
 						if(f > w)
 							w = f;
 					}
@@ -553,7 +553,7 @@ void m_tooltip(vector pos)
 			getWrappedLine_remaining = menuTooltipItem.tooltip;
 			while(getWrappedLine_remaining)
 			{
-				s = getWrappedLine(SKINWIDTH_TOOLTIP / fontsize_x, draw_TextWidth_WithoutColors);
+				s = getWrappedLine(SKINWIDTH_TOOLTIP, xySize, draw_TextWidth_WithoutColors);
 				draw_Text(p, s, fontsize, '1 1 1', SKINALPHA_TOOLTIP * menuTooltipAlpha, FALSE);
 				p_y += fontsize_y;
 			}
@@ -709,7 +709,7 @@ void m_draw()
 	}
 	main.draw(main);
 
-	m_tooltip(menuMousePos);
+	m_tooltip(menuMousePos, '1 1');
 
 	draw_alpha = max(draw_alpha, SKINALPHA_CURSOR_INTRO * bound(0, menuLogoAlpha, 1));
 

@@ -119,7 +119,7 @@ void drawListBoxItemRMNadeList(entity me, float i, vector absSize, float isSelec
     if(isSelected)
         draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);
     
-    vector o = me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1) * me.realFontSize_x)) * eX;
+    vector o = me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1, me.realFontSize))) * eX;
     
     s = bufstr_get(me.nadelist_buf, i);
     

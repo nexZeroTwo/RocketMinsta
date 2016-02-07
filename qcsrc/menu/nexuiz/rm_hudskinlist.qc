@@ -124,6 +124,6 @@ void drawListBoxItemRMHudSkinList(entity me, float i, vector absSize, float isSe
 		draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED * amod);
 	
 	s = bufstr_get(me.skinlist_buf, i);
-	draw_Text(me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1) * me.realFontSize_x)) * eX, s, me.realFontSize, '1 1 1', 1 * amod, 1);
+	draw_Text(me.realUpperMargin2 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 1, me.realFontSize))) * eX, s, me.realFontSize, '1 1 1', 1 * amod, 1);
 }
 #endif

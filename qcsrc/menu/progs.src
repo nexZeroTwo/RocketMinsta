@@ -30,7 +30,6 @@ nexuiz/util.qh
 
 ../common/flag_anim.qc
 ../common/util.qc
-stringwidth_hack.qh
 
 oo/classdefs.h
 	classes.c
