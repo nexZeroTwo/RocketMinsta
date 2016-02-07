@@ -304,14 +304,12 @@ void draw_Text(vector theOrigin, string theText, vector theSize, vector theColor
 }
 void draw_CenterText(vector theOrigin, string theText, vector theSize, vector theColor, float theAlpha, float ICanHasKallerz)
 {
-	draw_Text(theOrigin - eX * 0.5 * theSize_x * draw_TextWidth(theText, ICanHasKallerz, theSize), theText, theSize, theColor, theAlpha, ICanHasKallerz);
+	draw_Text(theOrigin - eX * 0.5 * draw_TextWidth(theText, ICanHasKallerz, theSize), theText, theSize, theColor, theAlpha, ICanHasKallerz);
 }
 
 float draw_TextWidth(string theText, float ICanHasKallerz, vector theSize)
 {
-	//return strlen(theText);
-	//print("draw_TextWidth \"", theText, "\"\n");
-	return stringwidth(theText, ICanHasKallerz, theSize) / theSize_x;
+	return stringwidth(theText, ICanHasKallerz, theSize);
 }
 
 float draw_clipSet;
