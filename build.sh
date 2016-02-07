@@ -33,10 +33,10 @@ function getfiledircache
     pushd "${1}/"
 
     if [ "${2}" = "reverse" ]; then
-        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ \! -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
         read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -rn | cut -d" " -f2-)
     else
-        read -r -d '' -a filecache < <( find ./ -type f | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
+        read -r -d '' -a filecache < <( find ./ \! -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
         read -r -d '' -a dircache  < <( find ./ -type d | awk '{ print length, $0 }' | sort -n | cut -d" " -f2-)
     fi
 
@@ -206,20 +206,25 @@ function compress-gfx
 		return 1
 	fi
 	
-	tocompress | while read line; do
-		dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
-		file="$(echo $line | sed -e 's@.*/@@')"
-	
-		mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
-	
-		echo "Compressing: $line"
-		
-		if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
-			warning "Failed to compress $line! Restoring the uncompressed file"
-		fi
-		
-		mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
-	done
+    tocompress | while read line; do
+        dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
+        file="$(echo $line | sed -e 's@.*/@@')"
+
+        mkdir -pv $COMPRESSGFX_TEMPDIR/$dir
+
+        echo "Compressing: $line"
+
+        if [ -L "$line" ]; then
+            realfile="$(readlink "$line")"
+            ln -sv "${realfile%%.tga}.jpg" "${line%%.tga}.jpg"
+        else
+            if ! convert "$line" -quality $COMPRESSGFX_QUALITY "${line%%.tga}.jpg"; then
+                warning "Failed to compress $line! Restoring the uncompressed file"
+            fi
+        fi
+        
+        mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
+    done
 }
 
 function compress-restore
@@ -232,7 +237,7 @@ function compress-restore
 	pkgdir="$PWD"
 	pushd "$COMPRESSGFX_TEMPDIR"
 	
-	find -type f | sed -e 's@^./@@' | while read line; do
+	find \! -type d | sed -e 's@^./@@' | while read line; do
 		mv -v "$line" "$pkgdir/$line"
 		rm -vf "$pkgdir/${line%%.tga}.jpg"
 	done
@@ -259,6 +264,7 @@ function makedata
     local rmdata="$1"
     local suffix="$2"
     local desc="$3"
+    local justlink="$LINK_PK3DIRS"
 
     echo " -- Building client-side package $1"
     
@@ -268,15 +274,26 @@ function makedata
     local sum=""
     if [ "$1" = "menu" ]; then
         sum="$MENUSUM"
+        justlink=0
     elif [ "$1" = "csqc" ]; then
         sum="$CSQCSUM"
     else
         echo "   -- Calculating md5 sums"
         find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        echo 'RM' >> _md5sums
         sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     fi
-    
-    if [ $CACHEPKGS = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
+
+    if [ "$justlink" = 1 ]; then
+        echo "   -- Linking pk3dir to the destination"
+        ln -sv "$PWD" "${BUILDDIR}/$rmdata-$sum.pk3dir" || error "Failed to link package"
+        echo "   -- Done"
+        popd
+        BUILT_PKGNAMES="${BUILT_PKGNAMES}$1 "
+        return
+    fi
+
+    if [ "$CACHEPKGS" = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
         
         popd
@@ -432,8 +449,12 @@ function makedata-all
 {
     local suffix="$1"
     local desc="$2"
-    
-    #ls | grep -P "\.pk3dir/?$" | while read line; do   #damn subshells
+
+    if [ "$LINK_PK3DIRS" = 1 ]; then
+        PACKCSQC=0
+        COMPRESSGFX=0
+    fi
+
     for line in $(ls | perlgrep "\.pk3dir/?$"); do
         is-included "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" || continue
         makedata "$(echo $line | sed -e 's@\.pk3dir/*$@@g')" "$suffix" "$desc"
@@ -567,6 +588,11 @@ fi
 if [ -z "$AUTOCVARS_MENU" ]; then
     warn-oldconfig "config.sh" "AUTOCVARS_MENU" "0"
     AUTOCVARS_MENU=0
+fi
+
+if [ -z "$LINK_PK3DIRS" ]; then
+    warn-oldconfig "config.sh" "LINK_PK3DIRS" "0"
+    LINK_PK3DIRS=0
 fi
 
 CACHEDIR="$(readlink -f "${CACHEDIR}/")"

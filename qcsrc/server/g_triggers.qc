@@ -132,7 +132,8 @@ void SUB_UseTargets_Ex(float preventReuse)
 			for(t = world; (t = find(t, targetname, s)); ) {
                 if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
-                    //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
+                    if(CVAR(developer) > 1)
+                        dprint("SUB_UseTargets: activating ", etos(t), ": ^3", t.targetname, "^7, class: ^5", t.classname, "\n");
                     self = t;
                     other = stemp;
                     activator = act;
@@ -1522,6 +1523,50 @@ void spawnfunc_trigger_gamestart() {
 
 
 
+void spawnfunc_trigger_roundstate(void) {
+    self.classname = "trigger_roundstate";
+    self.reset2 = spawnfunc_trigger_roundstate;
+    self.use = SUB_UseTargets;
+
+    if(self.cnt == ROUNDSTATE_GAMEINIT)
+        InitializeEntity(self, gamestart_use, INITPRIO_FINDTARGET);
+}
+
+
+
+void FireRoundstateTriggers(void) {
+    while((activator = find(activator, classname, "trigger_roundstate"))) {
+        if(activator.cnt == roundstate)
+            using(self = activator)
+                activator.use();
+
+        if(activator.spawnflags & 1) {
+            activator = activator {
+                cnt: 0,
+                think: SUB_Remove,
+                nextthink: time
+            };
+        }
+    }
+}
+
+
+void spawnfunc_trigger_test(void) {
+    if(!CVAR(developer)) {
+        remove(self);
+        return;
+    }
+
+    self.use = inline void(void) {
+        print("^3Trigger ^1", self.targetname, "^3 just went off\n");
+
+        if(self.spawnflags & 1)
+            error(self.targetname);
+        else
+            backtrace(self.targetname);
+    };
+}
+
 
 .entity voicescript; // attached voice script
 .float voicescript_index; // index of next voice, or -1 to use the randomized ones
@@ -1983,7 +2028,7 @@ void trigger_cycle_use(void) {
 
 void trigger_cycle_init_delayed(void) {
     self.enemy = trigger_cycle_find_next_target(self);
-    self.think = func_null;
+    self.think = NULL;
 }
 
 void spawnfunc_trigger_cycle(void) {
@@ -2061,8 +2106,8 @@ void spawnfunc_trigger_relay_random(void) {
 
         SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
             e.sub_target_used = time;
-            RandomSelection_Add(e, 0, string_null, 1, 1);
-        }, FALSE, 0, '0 0 0', string_null, world);
+            RandomSelection_Add(e, 0, NULL, 1, 1);
+        }, FALSE, 0, '0 0 0', NULL, world);
 
         if(RandomSelection_chosen_ent) {
             RandomSelection_chosen_ent.sub_target_used = -1;

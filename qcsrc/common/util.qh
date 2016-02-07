@@ -35,7 +35,7 @@ string ftos_decimals(float number, float decimals);
 
 vector colormapPaletteColor(float c, float isPants);
 
-// unzone the string, and return it as tempstring. Safe to be called on string_null
+// unzone the string, and return it as tempstring. Safe to be called on NULL
 string fstrunzone(string s);
 
 // database (NOTE: keys are case sensitive)
@@ -234,6 +234,7 @@ var va_parm __va_parm5;
 var va_parm __va_parm6;
 var va_parm __va_parm7;
 
+#define VA_MAXPARMS 8
 #define VA_INIT \
     __va_parm0 = @0; \
     __va_parm1 = @1; \
@@ -247,8 +248,13 @@ var va_parm __va_parm7;
 va_parm va_get(float pidx);
 void va_test(string fmt, ...);
 
+float autocvar_utf8_enable;
+
+float utf8_supported(void);
+float utf8_enabled(void);
 void utf8_enable(void);
 void utf8_disable(void);
+void load_fonts(void);
 
 #ifdef SVQC
 float stringwidth(string s, float handle_colors, vector text_size);
@@ -256,3 +262,40 @@ float stringwidth(string s, float handle_colors, vector text_size);
 
 float stringwidth_colors(string s, vector theSize);
 float stringwidth_nocolors(string s, vector theSize);
+
+//DP_RM_REGEX
+//idea: Akari
+//darkplaces implementation: Akari
+
+typedef float(string regex, string input, float offset, float size, float flags) regex_match_builtin_t;
+
+regex_match_builtin_t regex_match_642 = #642;
+regex_match_builtin_t regex_match_800 = #800;
+var regex_match_builtin_t regex_match;
+
+const RE_IGNORE_CASE            =  1;
+const RE_NO_MATCH               = -1;
+const RE_UNEXPECTED_QUANTIFIER  = -2;
+const RE_UNBALANCED_BRACKETS    = -3;
+const RE_INTERNAL_ERROR         = -4;
+const RE_INVALID_CHARACTER_SET  = -5;
+const RE_INVALID_METACHARACTER  = -6;
+const RE_CAPS_ARRAY_TOO_SMALL   = -7;
+const RE_TOO_MANY_BRANCHES      = -8;
+const RE_TOO_MANY_BRACKETS      = -9;
+
+string pickfile(string basepath, ...);
+
+/*
+ *  Operator overloads
+ */
+
+// defined per module, maps directly to the strcat builtin
+string operator+(string s1, string s2);
+
+string operator+(string s, float f);
+string operator+(float f, string s);
+string operator+(string s, vector v);
+string operator+(vector v, string s);
+string operator+(string s, entity e);
+string operator+(entity e, string s);

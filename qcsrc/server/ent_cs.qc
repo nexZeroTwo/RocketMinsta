@@ -44,14 +44,14 @@ float entcs_cull(entity what, entity forwhom) {
     if(what.owner.classname != "player") if(what.owner.bait_ref.classname != "player")
         return TRUE;
 
-    if(vlen(what.owner.origin - forwhom.origin) > SHOWNAMES_MAXDISTANCE)
-        return TRUE;
-
     if(isspect)
         return FALSE;
 
     if(IsDifferentTeam(what.owner, forwhom)) {
         if(!sv_shownames || what.owner.hg_stealth || Client_CalculateAlpha(what.owner, forwhom) < 0.15)
+            return TRUE;
+
+        if(vlen(what.owner.origin - forwhom.origin) > SHOWNAMES_MAXDISTANCE)
             return TRUE;
 
         vector viewee = what.owner.origin + what.owner.view_ofs;

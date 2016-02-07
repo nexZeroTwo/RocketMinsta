@@ -230,7 +230,7 @@ void StartFrame (void)
 	{
 		RandomSelection_Init();
 		for(self = world; (self = find(self, classname, "player")); )
-			RandomSelection_Add(self, 0, string_null, 1, 0);
+			RandomSelection_Add(self, 0, NULL, 1, 0);
 		self = RandomSelection_chosen_ent;
 		SelectSpawnPoint(0);
 	}
@@ -254,7 +254,7 @@ void StartFrame (void)
 	} else if(oldfog) {
 		print("Fog disabled\n");
 		strunzone(oldfog);
-		oldfog = string_null;
+		oldfog = NULL;
 		
 		FOR_EACH_REALCLIENT(self) {
 			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
@@ -270,6 +270,9 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+
+    if(roundstate == ROUNDSTATE_GAMEINIT)
+        roundstate = ROUNDSTATE_PREGAME;
 
     if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;

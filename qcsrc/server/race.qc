@@ -669,7 +669,7 @@ void race_ClearRecords()
 		race_checkpoint_records[i] = 0;
 		if(race_checkpoint_recordholders[i])
 			strunzone(race_checkpoint_recordholders[i]);
-		race_checkpoint_recordholders[i] = string_null;
+		race_checkpoint_recordholders[i] = NULL;
 	}
 
 	FOR_EACH_CLIENT(e)

@@ -88,7 +88,7 @@ float Freeze_GameInProgress(void) {
 void Freeze_Ice_Think() {
     setorigin(self, self.owner.origin - '0 0 16');
     self.nextthink = time;
-    self.alpha = 1 - self.owner.revprogress;
+    self.alpha = (1 - self.owner.revprogress) * Freeze_CVar(frozen_iceblock_opacity);
 }
 
 float Freeze_GetPlayersAlive(float t) {
@@ -113,7 +113,7 @@ void Freeze_IceBlock_MEODP_Death(entity attacker, entity inflictor) {
     if(IsDifferentTeam(self.owner, attacker) && self.owner.classname != "bait_body")
         Freeze_UnfreezePlayer(self.owner);
     else
-        Freeze_RevivePlayer(self.owner, attacker);
+        Freeze_RevivePlayer(self.owner, attacker, FALSE);
 }
 
 entity Freeze_SpawnIceBlock(entity plr) {
@@ -351,7 +351,7 @@ void Freeze_Hook_PlayerSpawns(void) {
     }
 }
 
-void Freeze_RevivePlayer(entity plr, entity revlist) {
+void Freeze_RevivePlayer(entity plr, entity revlist, float doheal) {
     float first = TRUE;
     string names;
     entity e;
@@ -378,9 +378,12 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
         PlayerScore_Add(e, SP_SCORE, Freeze_CVar(score_revival) / pcnt);
         
-        float heal = max(max(Freeze_CVar(revive_heal) - e.health, 0), Freeze_CVar(revive_heal_min));
-        if(heal)
-            Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+        if(doheal) {
+            float heal = max(max(Freeze_CVar(revive_heal) - e.health, 0), Freeze_CVar(revive_heal_min));
+            if(heal)
+                Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+        }
+
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
@@ -401,11 +404,13 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         e.revresettime = time + frametime * 2;
     }
 
-    float minh = Freeze_CVar(revived_minhealth);
-    float mina = Freeze_CVar(revived_minarmor);
-        
-    if(minh || mina)
-        Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
+    if(doheal) {
+        float minh = Freeze_CVar(revived_minhealth);
+        float mina = Freeze_CVar(revived_minarmor);
+            
+        if(minh || mina)
+            Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');        
+    }
 
     plr.hg_plasmalock = 0;
     centerprint_spec(plr, strcat("^5You were revived by ^7", names, "\n"));
@@ -548,7 +553,7 @@ void Freeze_Hook_PlayerPreThink(void) {
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
 
         if(self.revprogress >= 1) {
-            Freeze_RevivePlayer(self, rfirst);
+            Freeze_RevivePlayer(self, rfirst, TRUE);
             return;
         } else for(other = rfirst; other; other = other.chain) {
             other.revprogress = self.revprogress;

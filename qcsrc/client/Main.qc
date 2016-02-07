@@ -163,6 +163,9 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("rm_fps_friendly", "0", CVAR_SAVE);
+    registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_size", "2", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_alpha", "0.25", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
@@ -573,8 +576,23 @@ void RegisterMasterServers(void) {
 }
 
 void InitFonts(void) {
-    utf8_enable();
     SetMadokaFont(MDKF_AUTO);
+
+    if(!utf8_supported()) {
+        load_fonts();
+    } else spawn() {
+        think: inline void(void) {
+            if(!utf8_enabled())
+                utf8_enable();
+            self.nextthink = time + 1;
+        },
+        nextthink: time
+    };
+}
+
+void ReportHUDInfo(string hskin) {
+    if(sv_showspecs_extra)
+        localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", hskin, "\n");
 }
 
 void PostInit(void)
@@ -711,10 +729,14 @@ void PostInit(void)
         case 56:
             localcmd("seta r_font_size_snapping 1\n");
         case 57:
+        case 58:
             localcmd("seta rm_convswitch 0; convswitch 0\n");
+        case 59:
+            localcmd("seta rm_hud_healthcolor 0\n");
+        case 60:
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 58\n");
+		localcmd("seta rm_initialized 61\n");
 		RM_OUTDATED
 		break;
 	}
@@ -793,8 +815,8 @@ void PostInit(void)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
 
-	if(sv_showspecs_extra)
-		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
+    ReportHUDInfo(CVAR_STR(rm_hudskin));
+
 	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
 	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 	localcmd("cmd hidecountry ", ftos(CVAR(rm_hidecountry)), "\n");
@@ -815,7 +837,18 @@ void PostInit(void)
 	fovlock = -1;
 	
 	registercvar("rm_loadedmenu", "");
-	if(CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM)
+
+    var force_reload = (CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM);
+
+    if(!DPRM_GetVersion() && (cvar_type("mod_alias_force_animated") & CVAR_TYPEFLAG_EXISTS) && !cvar("mod_alias_force_animated")) {
+        // workaround for broken animations on some engines
+        cvar_set("mod_alias_force_animated", "1");
+
+        // just for the r_restart
+        force_reload = TRUE;
+    }
+
+	if(force_reload)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
@@ -988,8 +1021,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			{
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
-				
-				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
+
+                ReportHUDInfo(hudskin_name);
 			}
 		}
 		else if(strCmd == "notimer")
@@ -1089,8 +1122,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
 			localcmd("menu_cmd update_rmvars\n");
-			if(sv_showspecs_extra)
-				localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", CVAR_STR(rm_hudskin), "\n");
+            ReportHUDInfo(hudskin_name);
 		}
 		else
 		{
@@ -1569,7 +1601,7 @@ void Ent_ReadPlayerScore()
 	lf = ReadInt24_t();
 #endif
 	float p;
-	
+
 	float oldscore = o.(scores[SP_SCORE]);
 	
 	for(i = 0, p = 1; i < MAX_SCORE; ++i, p *= 2)
@@ -1728,7 +1760,7 @@ void Ent_RandomSeed()
 void Ent_RadarLink();
 void Ent_Init();
 void Ent_ScoresInfo();
-void(float bIsNewEntity) CSQC_Ent_Update =
+void CSQC_Ent_Update(float bIsNewEntity)
 {
 	float t;
 	float savetime;
@@ -1797,7 +1829,7 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 	}
 
 	time = savetime;
-};
+}
 // Destructor, but does NOT deallocate the entity by calling remove(). Also
 // used when an entity changes its type. For an entity that someone interacts
 // with others, make sure it can no longer do so.
@@ -1808,8 +1840,8 @@ void Ent_Remove()
 
 	self.enttype = 0;
 	self.classname = "";
-	self.draw = func_null;
-	self.entremove = func_null;
+	self.draw = NULL;
+	self.entremove = NULL;
 	// TODO possibly set more stuff to defaults
 }
 // CSQC_Ent_Remove : Called when the server requests a SSQC / CSQC entity to be removed.  Essentially call remove(self) as well.
@@ -2109,7 +2141,7 @@ void Net_VoteDialog(float highlight) {
 
     if(vote_statstring) {
         strunzone(vote_statstring);
-        vote_statstring = string_null;
+        vote_statstring = NULL;
     }
 
     if(vote_active)

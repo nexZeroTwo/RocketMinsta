@@ -38,7 +38,7 @@ float Freeze_GameInProgress(void);
 void Freeze_UnfreezeAll(void);
 void Freeze_FreezePlayer(entity, entity);
 void Freeze_UnfreezePlayer(entity);
-void Freeze_RevivePlayer(entity, entity);
+void Freeze_RevivePlayer(entity, entity, float);
 
 void Freeze_Hook_PlayerSpawns(void);
 void Freeze_Hook_PlayerPhysics(void);

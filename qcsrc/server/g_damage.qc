@@ -1501,7 +1501,7 @@ void Fire_ApplyDamage(entity e)
         backtrace("Abnormal fire damage tick (negative time)");
         t = 0;
     }
-    
+
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;

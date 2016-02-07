@@ -67,7 +67,7 @@ void HG_Precache() {
     precache_model("models/mine.md3");
     precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
-    precache_model("models/turrets/tesla.md3");
+    precache_model("models/sentry.md3");
 }
 
 void HG_SetContext(float isalt) {
@@ -148,7 +148,7 @@ void HG_GiveRandomBonus(entity p, float amount, string reason, float allowOptout
         if(g_freeze || (n != HG_BAIT)) {
             float w = GRENVAR(n, "bonus_random_weight");
             if(w)
-                RandomSelection_Add(world, n, string_null, w, 1);
+                RandomSelection_Add(world, n, NULL, w, 1);
         }
     }
 
@@ -165,34 +165,41 @@ void HG_Napalm_Burn(float dt, float dist, float damage, float edgedamage, float 
     o = self.owner;
     df = 1;
 
-    if(o.classname != "jailbreak_torture" && (o.classname != "player" || o.team != self.team)) {
-        remove(self);
-        return;
+    if(dtype != DEATH_HURTTRIGGER) {
+        if(o.classname != "jailbreak_torture" && (o.classname != "player" || o.team != self.team)) {
+            remove(self);
+            return;
+        }
+
+        ismedic = Buffs_Present(o, BUFF_MEDIC);
     }
 
-    ismedic = Buffs_Present(o, BUFF_MEDIC);
-    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.classname == "player")
+    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.takedamage == DAMAGE_AIM)
     {
-        sameteam = !IsDifferentTeam(o, e);
+        if(dtype != DEATH_HURTTRIGGER && e.classname == "player") {
+            sameteam = !IsDifferentTeam(o, e);
 
-        if(!ismedic) {
-            if(sameteam && o != e)
-                if(!CVAR(g_friendlyfire))
-                        continue;
-                
-            if(!Buffs_TenacityDamage(e, o, damage, dtype))
-                continue;
+            if(!ismedic) {
+                if(sameteam && o != e)
+                    if(!CVAR(g_friendlyfire))
+                            continue;
+                    
+                if(!Buffs_TenacityDamage(e, o, damage, dtype))
+                    continue;
+            }
         }
-        
+
         p = e.origin;
         p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
         p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
         p_z += e.mins_z + random() * (e.maxs_z - e.mins_z);
         d = vlen(self.origin - p);
+
         if(d < dist)
         {
-            traceline(p, self.origin, MOVE_NORMAL, e);
-            if(/* trace_startsolid || */ trace_fraction != 1)
+            traceline(self.origin, p, MOVE_NOMONSTERS, self);
+
+            if(trace_fraction < 1)
                 continue;
 
             e.fireball_impactvec = p;
@@ -247,7 +254,8 @@ void HG_Napalm_Think(void) {
         return;
     }
 
-    HG_HealEmitter(self.owner);
+    if(self.projectiledeathtype != DEATH_HURTTRIGGER)
+        HG_HealEmitter(self.owner);
 
     HG_Napalm_Burn(GRENVAR(self.hg_type, "burndelay"), GRENVAR(self.hg_type, "burnradius"), GRENVAR(self.hg_type, "burndamage"), GRENVAR(self.hg_type, "edgeburndamage"), GRENVAR(self.hg_type, "burntime"), self.projectiledeathtype);
 
@@ -259,7 +267,7 @@ void HG_Napalm_Projectile_Touch()
     PROJECTILE_TOUCH;
 }
 
-void HG_Napalm()
+entity HG_Napalm()
 {
 	entity proj;
 	vector kick;
@@ -306,6 +314,8 @@ void HG_Napalm()
     
 	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
     proj.jb_proj_ownerstate = self.jb_proj_ownerstate;
+
+    return proj;
 }
 
 void HG_Napalm_Explode() {
@@ -488,7 +498,7 @@ void HG_Translocator_Explode() {
     }
 
     if(GRENVAR(self.hg_type, "reloadonuse") && (self.owner.weaponentity.wframe != WFRAME_RELOAD || tdeath_hit)) using(self = self.owner) {
-        weapon_action(self.weapon, WR_RESETPLAYER);
+        weapon_action(self.weapon, WR_ACTIVERELOAD);
         if(tdeath_hit)
             ATTACK_FINISHED(self) = TRUE;
     }
@@ -591,7 +601,7 @@ void HG_Grenade_Touch() {
             if(adeptRev || Buffs_Present(self.owner, BUFF_MEDIC)) {
                 if(g_freeze && other.frozen) {
                     self.owner.chain = world;
-                    Freeze_RevivePlayer(other, self.owner);
+                    Freeze_RevivePlayer(other, self.owner, TRUE);
                     self.hg_tl_revived = TRUE;
 
                     float m = CVAR(g_nadgets_transloc_medic_revive_health_multiplier);
@@ -1159,7 +1169,7 @@ float HG_PlayerGrenadeType(entity e) {
         float n; for(i = 0; i < argc; ++i) {
             n = HG_NameToType(argv(i));
             if(n != HG_RANDOM && (!hg_context_isalt || n != e.hg_type1_picked))
-                RandomSelection_Add(world, n, string_null, 1, 0);
+                RandomSelection_Add(world, n, NULL, 1, 0);
         }
         picked = RandomSelection_chosen_float;
     }
@@ -1239,7 +1249,7 @@ void HG_Grenade_FadeOut(entity n) {
     n.solid = SOLID_NOT;
     n.takedamage = DAMAGE_NO;
     n.hg_detonable_updated = FALSE;
-    n.event_damage = func_null;
+    n.event_damage = NULL;
     n.use = SUB_Null;
     n.think = HG_Grenade_FadeOut_Think;
     n.nextthink = time;
@@ -1837,7 +1847,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.hg_type = hgtype;
 	gren.spawnorigin = self.origin;
 	gren.spawntime = time;
-    
+
     if(hgtype != HG_NAPALM)
         gren.hg_adept = Buffs_Present(self, BUFF_ADEPT);
     
@@ -2083,7 +2093,7 @@ entity HG_Bait_PickRef(void) {
 
     RandomSelection_Init();
     FOR_EACH_PLAYER(plr) if(plr.team != self.team)
-        RandomSelection_Add(plr, 0, string_null, 1, 1);
+        RandomSelection_Add(plr, 0, NULL, 1, 1);
 
     return RandomSelection_chosen_ent;
 }
@@ -2098,9 +2108,11 @@ float HG_Bait(void) {
     return TRUE;
 }
 
+.entity hg_sentry_emitter_next;
+
 float HG_Sentry_TargetIsTaken(entity emitter, entity targ) {
-    for(var e; (e = findentity(e, owner, emitter.owner));)
-        if(e != emitter && e.enemy == targ && e.classname == "hg_sentry_emitter")
+    for(var e = emitter.owner.hg_sentry_emitter_next; e; e = e.hg_sentry_emitter_next)
+        if(e != emitter && e.enemy == targ)
             return TRUE;
     return FALSE;
 }
@@ -2357,6 +2369,7 @@ void HG_Sentry_Orphaned_Think(void) {
             HG_Sentry_SetOwner(self, e);
             defer(0, HG_Sentry_Interrupt_Capture);
         }
+        self.hg_sentry_capture_player.buff_stealth_time = time;
     }
 }
 
@@ -2427,21 +2440,19 @@ void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {
 #define HG_SENTRT_MAXS ' 24.4  24.4 110.0'
 
 void HG_Sentry_SetOwner(entity sentry, entity newowner) {
-    var newskin = if(newowner)
-        TeamColorSkin(if(teams_matter) newowner.team else COLOR_TEAM3)
-    else 5;
-
     if(sentry.hg_waypoint)
         WaypointSprite_Disown(sentry.hg_waypoint, 0.5);
 
     sentry.team = if(teams_matter) newowner.team else 0;
-    sentry.skin = newskin;
+    sentry.colormap = num_for_edict(newowner);
+    sentry.aiment.colormap = sentry.colormap;
 
     if(newowner) {
+        sentry.skin = 0;
         sentry.aiment.effects &~= EF_NODRAW;
-        sentry.aiment.skin = newskin;
         sentry.aiment.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(teams_matter) sentry.team else COLOR_TEAM3);
     } else {
+        sentry.skin = 1;
         sentry.aiment.effects |= EF_NODRAW;
     }
 
@@ -2461,7 +2472,7 @@ float HG_Sentry(void) {
     vector o = self.origin;
 
     entity e = spawn();
-    setmodel(e, "models/turrets/tesla.md3");
+    setmodel(e, "models/sentry.md3");
     setsize(e, HG_SENTRY_MINS, HG_SENTRT_MAXS);
     setorigin(e, o);
 
@@ -2482,11 +2493,10 @@ float HG_Sentry(void) {
     e.hg_type = HG_SENTRY;
     e.view_ofs = '0 0 100';
     e.takedamage = DAMAGE_AIM;
-    e.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
+    e.colormap = num_for_edict(e.realowner);
     e.health = CVAR(g_nadgets_sentry_health);
     e.event_damage = HG_Sentry_Damage;
     e.cnt = time + CVAR(g_nadgets_sentry_beam_initialdelay);
-    e.effects |= EF_DOUBLESIDED;
 
     self.hg_detonables += 1;
 
@@ -2494,7 +2504,8 @@ float HG_Sentry(void) {
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
-    c.skin = TeamColorSkin(if(teams_matter) self.team else COLOR_TEAM3);
+    c.skin = 9;
+    c.colormap = e.colormap;
     c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM3);
     c.owner = self;
@@ -2503,8 +2514,11 @@ float HG_Sentry(void) {
 
     e.aiment = c;
 
-    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i)
-        HG_Sentry_Emitter_Spawn(e);
+    var tail = e;
+    for(var i = 0; i < CVAR(g_nadgets_sentry_beam_amount); ++i) {
+        tail.hg_sentry_emitter_next = HG_Sentry_Emitter_Spawn(e);
+        tail = tail.hg_sentry_emitter_next;
+    }
 
     // TODO: a better sound?
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
@@ -2918,17 +2932,39 @@ void HG_Trigger(void) {
     }
 }
 
+void HG_CopyAmmoState(entity src, entity dst) {
+    dst.hg_ctx_ammo = src.hg_ctx_ammo;
+    dst.hg_ctx_regentime = src.hg_ctx_regentime;
+    dst.hg_ctx_maxregentime = src.hg_ctx_maxregentime;
+    dst.hg_ctx_regenrate = src.hg_ctx_regenrate;
+    dst.hg_ctx_regenpaused = src.hg_ctx_regenpaused;
+}
+
+void HG_ResetAmmo(entity p, float clearammo) {
+    p.hg_ctx_ammo = if(clearammo) 0 else CVAR(g_nadgets_ammo);
+
+    HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
+    HG_SetRegenTime(p, HG_RegenTime(p));
+
+    if(!clearammo) {
+        var mx = HG_StorageLimit(p);
+        HG_AdvanceRegen(p, CVAR(g_nadgets_initial_regen), mx);
+
+        if(!CVAR(g_nadgets_regen)) {
+            if(p.hg_ctx_regentime / p.hg_ctx_maxregentime < 0.5)
+                HG_AdvanceRegen(p, p.hg_ctx_regentime, mx);
+            else
+                p.hg_ctx_regentime = p.hg_ctx_maxregentime;
+        }
+    }
+}
+
 void HG_ResetState(entity p, float clearammo) {
     p.hg_power = 0;
-    p.hg_ammo1 = p.hg_ammo2 = if(clearammo) 0 else CVAR(g_nadgets_ammo);
     p.hg_bonus = 0;
     p.hg_bonustype = HG_NORMAL;
     p.hg_shield = 0;
-
-    HG_DO_IN_ALL_CONTEXTS({
-        HG_SetGrenadeType(p, HG_PlayerGrenadeType(p));
-        HG_SetRegenTime(p, HG_RegenTime(p));
-    })
+    HG_DO_IN_ALL_CONTEXTS(HG_ResetAmmo(p, clearammo);)
 }
 
 void HG_PlayerSpawn()

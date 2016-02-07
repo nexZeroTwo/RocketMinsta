@@ -7,6 +7,11 @@
 ===========================================================================
 */
 
+#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
+#define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
+#define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
+#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
+
 float W_WeaponRateFactor()
 {
 	float t = 1.0 / g_weaponratefactor;
@@ -27,14 +32,15 @@ float W_WeaponRateFactorFor(entity plr) {
 
 void W_SwitchWeapon_Force(entity e, float w)
 {
-    entity o = self;
-    self = e;
-    weapon_action(self.weapon, WR_LOWER);
-    self = o;
+    if(e.weapon) {
+        using(self = e)
+            weapon_action(self.weapon, WR_LOWER);
+    } else if(w)
+        sound(e, CHAN_WEAPON2, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
-    e.w_inring_cycle = 0;
+    e.w_inring_fulltime = 0;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {
@@ -422,11 +428,11 @@ void CL_Weaponentity_Think()
 			// if there is a child entity, hide it until we're sure we use it
 			if (self.weaponentity)
 				self.weaponentity.model = "";
-			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
+			setmodel(self, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL)); // precision set below
 			v_shot_idx = gettagindex(self, "shot"); // used later
 
-			setmodel(self, strcat("models/weapons/h_", self.owner.weaponname, ".dpm")); // precision set below
-			animfilename = strcat("models/weapons/h_", self.owner.weaponname, ".dpm.animinfo");
+			setmodel(self, pickfile("models/weapons/h_" + self.owner.weaponname, "iqm", "dpm", NULL)); // precision set below
+			animfilename = pickfile("models/weapons/h_" + self.owner.weaponname, "iqm.animinfo", "dpm.animinfo", NULL);
 			animfile = fopen(animfilename, FILE_READ);
 			// preset some defaults that work great for renamed zym files (which don't need an animinfo)
 			self.anim_fire1  = '0 1 0.01';
@@ -451,7 +457,7 @@ void CL_Weaponentity_Think()
 			{
 				if (!self.weaponentity)
 					self.weaponentity = spawn();
-				setmodel(self.weaponentity, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision does not matter
+				setmodel(self.weaponentity, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3")); // precision does not matter
 				setattachment(self.weaponentity, self, "weapon");
 			}
 			else
@@ -626,7 +632,7 @@ void CL_ExteriorWeaponentity_Think()
 		self.dmg = self.owner.modelindex;
 		self.deadflag = self.owner.deadflag;
 		if (self.owner.weaponname != "")
-			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
+			setmodel(self, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL)); // precision set below
 		else
 			self.model = "";
 
@@ -708,7 +714,7 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
     weaponbit = W_WeaponBit(wpn);
     if(cl.weapons & weaponbit) {
         if(andammo) {
-            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO && wpn != WEP_PRYAXE) {
                 f = 1;
             } else {
                 oldself = self;
@@ -716,7 +722,9 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
                 f = weapon_action(wpn, WR_CHECKAMMO1);
                 f = f + weapon_action(wpn, WR_CHECKAMMO2);
                 self = oldself;
-            } if(!f) {
+            }
+
+            if(!f) {
                 if(complain)
                 if(clienttype(cl) == CLIENTTYPE_REAL) {
                     play2(cl, "weapons/unavailable.wav");
@@ -915,7 +923,10 @@ void weapon_thinkf(float fr, float t, void() func)
 	if (!self.crouch) // shoot anim stands up, this looks bad
 	{
 		vector anim;
-		anim = self.anim_shoot;
+		if (self.weapon == WEP_PRYAXE)
+			anim = self.anim_pain1; // we dont have standart melee animation...
+		else
+			anim = self.anim_shoot;
 		anim_z = anim_y / t;
 		setanim(self, anim, FALSE, TRUE, TRUE);
 	}

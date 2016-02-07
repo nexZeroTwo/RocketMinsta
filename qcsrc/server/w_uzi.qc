@@ -66,10 +66,13 @@ float W_Uzi_Attack (float deathtype)
 	// this attack_finished just enforces a cooldown at the end of a burst
 	ATTACK_FINISHED(self) = time + CVAR(g_balance_uzi_first_refire) * W_WeaponRateFactor();
 
-	if (self.uzi_bulletcounter == 1)
+	if (self.uzi_bulletcounter == 1) {
+        var pts = Buffs_MEODP_Hitscan_Begin(self);
 		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_first_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_first_damage) + dmgbonus, 0, CVAR(g_balance_uzi_first_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
-	else
+        Buffs_MEODP_Hitscan_End(pts);
+    } else {
 		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_sustained_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_sustained_damage) + dmgbonus, 0, CVAR(g_balance_uzi_sustained_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
+    }
 	endFireBallisticBullet();
 
 	pointparticles(particleeffectnum("uzi_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
@@ -96,6 +99,7 @@ void W_Uzi_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_UZI,
         CVAR(g_balance_uzi_magazinecapacity),
+        CVAR(g_balance_uzi_magazineregen),
         CVAR(g_balance_uzi_reloadtime),
         ammo_nails,
         1

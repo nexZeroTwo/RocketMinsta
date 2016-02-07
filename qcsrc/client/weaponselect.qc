@@ -104,7 +104,7 @@ void WS_Draw(void) {
 
 void WS_ConfirmSelection(void) {
     var w = get_weaponinfo(WS_SelectedWeapon() + 1);
-    localcmd("cmd picksecondary ", w.netname, "; cmd join\n");
+    localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "; cmd picksecondary ", w.netname, "; cmd join\n");
     ws_active = FALSE;
     mouse_enabled = FALSE;
 }

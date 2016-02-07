@@ -132,18 +132,18 @@ void W_MinstaNex_Attack (void)
 	yoda = 0;
 	damage_goodhits = 0;
 	headshot = 0;
-	
-	//<akari>
-	//Executes the explosive attack
-	
+
 	if(CVAR(g_rocketminsta))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
 	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
+
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, if(CVAR(g_balance_minstanex_damage) >= 0) CVAR(g_balance_minstanex_damage) else 10000000000, CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
-    //</akari>
+    Buffs_MEODP_Hitscan_End(pts);
+
 
     float prflags;
 
@@ -443,6 +443,7 @@ void W_MinstaNex_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_MINSTANEX,
         CVAR(g_balance_minstanex_magazinecapacity),
+        CVAR(g_balance_minstanex_magazineregen),
         CVAR(g_balance_minstanex_reloadtime),
         ammo_cells,
         1

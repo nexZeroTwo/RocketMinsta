@@ -75,6 +75,7 @@ string (float fhandle)							fgets = #112;
 void (float fhandle, string s)						fputs = #113;
 float (string s)							strlen = #114;
 string (...)								strcat = #115;
+string operator+(string s1, string s2)             = #115;
 string (string s, float start, float length)				substring = #116;
 vector (string s)							stov = #117;
 string (string s)							strzone = #118;
@@ -152,6 +153,7 @@ entity (.string fld, string match)					findchain = #402;
 entity (.float fld, float match)					findchainflags = #450;
 entity (.entity fld, entity match)					findchainentity = #403;
 entity (.float fld, float match)					findchainfloat = #403;
+entity (.float fld, float match, .entity tofield)   findchainfloat_tofield = #403;
 entity (entity start, .float fld, float match)				findflags = #449;
 
 float (string pattern, float caseinsensitive, float quiet)		search_begin = #444;
@@ -350,16 +352,3 @@ string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
 
 float(float v) fix_int_return_value = #512;
-
-//DP_RM_REGEX
-float(string regex, string input, float offset, float size, float flags) regex_match = #642;
-const RE_IGNORE_CASE            =  1;
-const RE_NO_MATCH               = -1;
-const RE_UNEXPECTED_QUANTIFIER  = -2;
-const RE_UNBALANCED_BRACKETS    = -3;
-const RE_INTERNAL_ERROR         = -4;
-const RE_INVALID_CHARACTER_SET  = -5;
-const RE_INVALID_METACHARACTER  = -6;
-const RE_CAPS_ARRAY_TOO_SMALL   = -7;
-const RE_TOO_MANY_BRANCHES      = -8;
-const RE_TOO_MANY_BRACKETS      = -9;

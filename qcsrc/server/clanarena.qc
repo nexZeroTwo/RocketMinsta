@@ -41,7 +41,7 @@ float CA_AliveCheck(entity plr) {
 }
 
 void CA_EndRound(float tout) {
-    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, CA_BeginRound);
+    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, NULL, CA_BeginRound);
     CA_RecountPlayers();
 }
 

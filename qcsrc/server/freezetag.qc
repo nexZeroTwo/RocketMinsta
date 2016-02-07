@@ -5,7 +5,7 @@
 
 void FreezeTag_EndRound(float tout)
 {
-    G_EndRound(tout, CVAR(g_freezetag_warmup), Freeze_RecountPlayers, func_null, func_null);
+    G_EndRound(tout, CVAR(g_freezetag_warmup), Freeze_RecountPlayers, NULL, NULL);
     Freeze_RecountPlayers();
     defer(max(0, tout), sm_Clear);
 }

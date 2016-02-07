@@ -76,7 +76,7 @@ void W_Fireball_LaserPlay(float dt, float dist, float damage, float edgedamage, 
 			if(/* trace_startsolid || */ trace_fraction != 1)
 				continue;
 			e.fireball_impactvec = p;
-			RandomSelection_Add(e, 0, string_null, 1 / (1 + d), !Fire_IsBurning(e));
+			RandomSelection_Add(e, 0, NULL, 1 / (1 + d), !Fire_IsBurning(e));
 		}
 	}
 	if(RandomSelection_chosen_ent)
@@ -310,6 +310,7 @@ void W_Fireball_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_FIREBALL,
         CVAR(g_balance_fireball_magazinecapacity),
+        CVAR(g_balance_fireball_magazineregen),
         CVAR(g_balance_fireball_reloadtime),
         ammo_rockets,
         1

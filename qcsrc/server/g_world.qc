@@ -234,7 +234,7 @@ void cvar_changes_init()
 
 	if(cvar_changes)
 		strunzone(cvar_changes);
-	cvar_changes = string_null;
+	cvar_changes = NULL;
 
 	h = buf_create();
 	buf_cvarlist(h, "", "_"); // exclude all _ cvars as they are temporary
@@ -1067,7 +1067,7 @@ void Map_Goto()
 // return codes of map selectors:
 //   -1 = temporary failure (that is, try some method that is guaranteed to succeed)
 //   -2 = permanent failure
-float() MaplistMethod_Iterate = // usual method
+float MaplistMethod_Iterate() // usual method
 {
 	float pass, i;
 
@@ -1084,14 +1084,14 @@ float() MaplistMethod_Iterate = // usual method
 	return -1;
 }
 
-float() MaplistMethod_Repeat = // fallback method
+float MaplistMethod_Repeat() // fallback method
 {
 	if(Map_Check(Map_Current, 2))
 		return Map_Current;
 	return -2;
 }
 
-float() MaplistMethod_Random = // random map selection
+float MaplistMethod_Random() // random map selection
 {
 	float i, imax;
 
@@ -1107,7 +1107,7 @@ float() MaplistMethod_Random = // random map selection
 	return -1;
 }
 
-float(float exponent) MaplistMethod_Shuffle = // more clever shuffling
+float MaplistMethod_Shuffle(float exponent) // more clever shuffling
 // the exponent sets a bias on the map selection:
 // the higher the exponent, the less likely "shortly repeated" same maps are
 {
@@ -1285,7 +1285,7 @@ entity FindIntermissionViewport(void)
     RandomSelection_Init();
     for(spot = world; (spot = nextent(spot));) {
         if(spot.classname == "info_player_intermission" || spot.classname == "info_intermission")
-            RandomSelection_Add(spot, 0, string_null, 1, 1);
+            RandomSelection_Add(spot, 0, NULL, 1, 1);
     }
     
     if(RandomSelection_chosen_ent)
@@ -1293,14 +1293,14 @@ entity FindIntermissionViewport(void)
     
     // try to view from the jail
     for(spot = world; (spot = find(spot, classname, "info_jailbreak_jailcamera"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     if(RandomSelection_chosen_ent)
         return RandomSelection_chosen_ent;
     
     // fall back to player spawn points
     for(spot = world; (spot = find(spot, classname, "info_player_deathmatch"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     return RandomSelection_chosen_ent;
 }
@@ -2672,7 +2672,7 @@ float MapVote_CheckRules_2()
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+			RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	firstPlace = RandomSelection_chosen_float;
 	firstPlaceVotes = RandomSelection_best_priority;
@@ -2683,7 +2683,7 @@ float MapVote_CheckRules_2()
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(i != firstPlace)
 			if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-				RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+				RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	secondPlace = RandomSelection_chosen_float;
 	secondPlaceVotes = RandomSelection_best_priority;
@@ -2989,6 +2989,8 @@ string GotoMap(string m)
 
 float roundstate_old;
 
+void FireRoundstateTriggers(void);
+
 void EndFrame()
 {
 	float altime;
@@ -3053,6 +3055,7 @@ void EndFrame()
 	}
 
     if(roundstate != roundstate_old) {
+        defer(0, FireRoundstateTriggers);
         localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
         roundstate_old = roundstate;
     }

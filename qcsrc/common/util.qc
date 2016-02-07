@@ -260,7 +260,7 @@ vector colormapPaletteColor(float c, float isPants)
 	}
 }
 
-// unzone the string, and return it as tempstring. Safe to be called on string_null
+// unzone the string, and return it as tempstring. Safe to be called on NULL
 string fstrunzone(string s)
 {
 	string sc;
@@ -1261,20 +1261,20 @@ string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunctio
 		{
 			getWrappedLine_remaining = substring(s, cantake, strlen(s) - cantake);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, cantake);
 		}
 		else
 		{
 			getWrappedLine_remaining = substring(s, take + 1, strlen(s) - take);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, take);
 		}
 	}
 	else
 	{
-		getWrappedLine_remaining = string_null;
+		getWrappedLine_remaining = NULL;
 		return s;
 	}
 }
@@ -1298,7 +1298,7 @@ float isGametypeInFilter(float gt, float tp, string pattern)
 	if(gt == GAME_RACE || gt == GAME_CTS)
 		subpattern3 = ",race,";
 	else
-		subpattern3 = string_null;
+		subpattern3 = NULL;
 
 	if(substring(pattern, 0, 1) == "-")
 	{
@@ -1379,7 +1379,7 @@ string shufflewords(string str)
 	n = tokenizebyseparator(str, " ");
 	shuffle(n, _shufflewords_swapfunc, world);
 	str = _shufflewords_str;
-	_shufflewords_str = string_null;
+	_shufflewords_str = NULL;
 	return str;
 }
 
@@ -1450,14 +1450,24 @@ float check_using_bug(void) {
         return 512;
 }
 
+#define ARRTEST_SIZE 2
+float arrtest_flt[ARRTEST_SIZE];
+vector arrtest_vec[ARRTEST_SIZE];
+.float arrtest_fltfld[ARRTEST_SIZE];
+.vector arrtest_vecfld[ARRTEST_SIZE];
+
+void remove(entity);
+
 void check_unacceptable_compiler_bugs()
 {
 	if(CVAR(_allow_unacceptable_compiler_bugs))
 		return;
+
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
 
+    var f;
     var v = [random(), random(), random()];
     if(v != [v.x, v.y, v.z])
         error("vectors are borked, please update rmqcc");
@@ -1466,6 +1476,43 @@ void check_unacceptable_compiler_bugs()
     check_using_bug();
     if(test_global != 9001)
         error("using is borked, please update rmqcc");
+
+    var e = spawn();
+    var broken = 0;
+
+    for(var i = 0; i < ARRTEST_SIZE; ++i) {
+        v = [random(), random(), random()];
+        f = random();
+
+        arrtest_flt[i] = f;
+        if(arrtest_flt[i] != f) {
+            print("^1float arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_fltfld[i]) = f;
+        if(e.(arrtest_fltfld[i]) != f) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+
+        arrtest_vec[i] = v;
+        if(arrtest_vec[i] != v) {
+            print("^1vector arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_vecfld[i]) = v;
+        if(e.(arrtest_vecfld[i]) != v) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+    }
+
+    remove(e);
+
+    if(broken)
+        error("array fail");
 }
 
 float compressShotOrigin(vector v)
@@ -1549,7 +1596,7 @@ void RandomSelection_Init()
 	RandomSelection_totalweight = 0;
 	RandomSelection_chosen_ent = world;
 	RandomSelection_chosen_float = 0;
-	RandomSelection_chosen_string = string_null;
+	RandomSelection_chosen_string = NULL;
 	RandomSelection_best_priority = -1;
 }
 void RandomSelection_Add(entity e, float f, string s, float weight, float priority)
@@ -1958,7 +2005,7 @@ void va_test(string fmt, ...) { VA_INIT
 
 void load_fonts(void) {
 #ifndef SVQC
-    if(cvar("utf8_enable")) {
+    if(utf8_enabled()) {
         var sizes = " ";
 
         for(var i = 7; i <= 22; ++i)
@@ -2013,8 +2060,16 @@ void utf8_report(void) {
 #endif
 }
 
+float utf8_supported(void) {
+    return (cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE) && !cvar("_rm_no_utf8");
+}
+
+float utf8_enabled(void) {
+    return CVAR(utf8_enable) && utf8_supported();
+}
+
 void utf8_enable(void) {
-    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE)) {
+    if(!utf8_supported()) {
         load_fonts();
         return;
     }
@@ -2081,4 +2136,65 @@ string unobfuscate(string source, string key) {
     }
 
     return _obfuscate(source, ikey, m, -strlen(source));
+}
+
+
+#ifdef CSQC
+string etos(entity e) {
+    return "entity #" + num_for_edict(e);
+}
+#endif
+
+
+string pickfile(string basepath, ...) { VA_INIT
+    string first;
+    basepath = (string)@0;
+
+    for(var i = 1; i < VA_MAXPARMS; ++i) {
+        var ext = (string)va_get(i);
+
+        if(!ext)
+            return first;
+
+        var path = basepath + "." + ext;
+        if(!first)
+            first = path;
+
+        if(fexists(path))
+            return path;
+    }
+
+    return first;
+}
+
+
+/*
+ *  Operator overloads
+ */
+
+
+string operator+(string s, float f) {
+    return s + ftos(f);
+}
+
+string operator+(float f, string s) {
+    return ftos(f) + s;
+}
+
+
+string operator+(string s, vector v) {
+    return s + vtos(v);
+}
+
+string operator+(vector v, string s) {
+    return vtos(v) + s;
+}
+
+
+string operator+(string s, entity e) {
+    return s + etos(e);
+}
+
+string operator+(entity e, string s) {
+    return etos(e) + s;
 }

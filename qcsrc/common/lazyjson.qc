@@ -42,9 +42,9 @@ void json_parse_value(string token, float isquoted, float ispunctuation) {
 void json_parser_recurse(float type, float offs) {
     if(offs == json_parser_offset) {
         if(type == JSON_TYPE_OBJECT)
-            json_parse_object(json_iter_null);
+            json_parse_object(NULL);
         else if(type == JSON_TYPE_ARRAY)
-            json_parse_array(json_iter_null);
+            json_parse_array(NULL);
     }
 }
 
@@ -119,7 +119,7 @@ void json_parse_array(json_iter_t iter) {
         var offs = json_parser_offset;
         var type = json_value_type;
 
-        if(iter && iter(string_null, idx))
+        if(iter && iter(NULL, idx))
             return;
 
         json_parser_recurse(type, offs);

@@ -170,7 +170,7 @@ void fillNexuizServerCreateTab(entity me)
 			e.onClick = DialogOpenButton_Click;
 			e.onClickEntity = main.mutatorsDialog;
 			main.mutatorsDialog.refilterEntity = me.mapListBox;
-		me.TD(me, 1, 2, e0 = makeNexuizTextLabel(0, string_null));
+		me.TD(me, 1, 2, e0 = makeNexuizTextLabel(0, NULL));
 			e0.textEntity = main.mutatorsDialog;
 			e0.allowCut = 1;
 
@@ -188,7 +188,7 @@ void GameType_ConfigureSliders(entity e, entity l, entity l2, string pLabel, flo
 {
 	if(pCvar == "")
 	{
-		e.configureNexuizSlider(e, pMin, pMax, pStep, string_null);
+		e.configureNexuizSlider(e, pMin, pMax, pStep, NULL);
 		l.setText(l, pLabel);
 		e.disabled = l.disabled = l2.disabled = TRUE;
 	}

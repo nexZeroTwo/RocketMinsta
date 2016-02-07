@@ -278,6 +278,7 @@ void W_Flak_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_FLAK,
         CVAR(g_balance_flak_magazinecapacity),
+        CVAR(g_balance_flak_magazineregen),
         CVAR(g_balance_flak_reloadtime),
         ammo_shells,
         1

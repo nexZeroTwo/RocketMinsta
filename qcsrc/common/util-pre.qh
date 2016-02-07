@@ -1,0 +1,4 @@
+
+#ifdef RM_AUTOCVARS
+// #pragma target dprm
+#endif

@@ -214,6 +214,7 @@ void W_Electro_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_ELECTRO,
         CVAR(g_balance_electro_magazinecapacity),
+        CVAR(g_balance_electro_magazineregen),
         CVAR(g_balance_electro_reloadtime),
         ammo_cells,
         1

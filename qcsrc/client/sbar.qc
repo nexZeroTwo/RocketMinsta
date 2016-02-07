@@ -2897,7 +2897,7 @@ void Sbar_ShowLowammo(void) {
         if(currheat <= CVAR(cl_lowammowarnings_zapper_heat))
             showspecialwarning = 1;
     } else if((maxbullets = getstati(STAT_CLIP_LIMIT)) > 0) {
-        currbullets = getstati(STAT_CLIP_LOADED);
+        currbullets = getstatf(STAT_CLIP_LOADED);
         if(currbullets <= maxbullets * 0.4) // TODO: a cvar
             showspecialwarning = 1;
     }
@@ -3670,6 +3670,12 @@ void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vecto
     DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
+void DrawProgressRing(float rad, float progress, float alpha, vector rgb) {
+    var pos = [vid_conwidth, vid_conheight] * 0.5;
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_border.tga", 1,        rgb, alpha * 0.25, DRAWFLAG_NORMAL);
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_fill.tga",   progress, rgb, alpha,        DRAWFLAG_NORMAL);
+}
+
 float rev_visual;
 float rev_alpha;
 float rev_old;
@@ -3761,7 +3767,7 @@ void Sbar_DrawBuffs(void) {
 
         if(drawbuffs_str) {
             strunzone(drawbuffs_str);
-            drawbuffs_str = string_null;
+            drawbuffs_str = NULL;
         }
 
         if(buffs) {
@@ -3841,6 +3847,7 @@ float hg_maxcd2;
 #define RMODE_CAP 0
 #define RMODE_REV 1
 #define RMODE_AUTH 2
+#define RMODE_CAP_SENTRY 3
 
 void Sbar_DrawPlayerName(string s) {
     vector pos;
@@ -4041,7 +4048,7 @@ void Sbar_Draw(void)
             if(!rev) {
                 rev = getstatf(STAT_TERM_AUTH);
                 if(rev) revmode = RMODE_AUTH;
-            } else revmode = RMODE_CAP;
+            } else revmode = RMODE_CAP_SENTRY;
         } else revmode = RMODE_REV;
     } else revmode = RMODE_CAP;
 
@@ -4161,7 +4168,7 @@ void Sbar_Draw(void)
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
     }
     
-    if(g_nadgets) {
+    if(g_nadgets && spectatee_status != -1) {
         hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
         if(g_nadgets_double)
             hgregen2 += (getstatf(STAT_HGREGEN2) / getstatf(STAT_HGREGENMAX2) - hgregen2) * drawframetime * 20;
@@ -4172,7 +4179,7 @@ void Sbar_Draw(void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-    
+
     if(rev)
     {
         vector revpos;
@@ -4180,33 +4187,34 @@ void Sbar_Draw(void)
 
         drawfont = sbar_font;
 
-		string s2;
+        string s2;
         if(revmode == RMODE_REV)
-			s = "Revival progress: ";
+            s = "Revival progress: ";
         else if(revmode == RMODE_AUTH)
             s = "Authenticating: ";
-		else if(gametype == GAME_JAILBREAK)
-			s = "Unlocking the jail: ";
-		else
-			s = "Capture progress: ";
+        else if(revmode == RMODE_CAP_SENTRY)
+            s = "Capture progress: ";
+        else if(gametype == GAME_JAILBREAK)
+            s = "Unlocking the jail: ";
+        else
+            s = "Capture progress: ";
+
+        s2 = strcat(ftos(floor(rev * 100)), "%");
         
-		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
-		s2 = strcat(ftos(floor(rev * 100)), "%");
-		
-		if(rev <= 0.5)
-			c = '0 1 1' + '2 0 0' * rev;
-		else
-			c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
-			
-		drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth(s2, FALSE, sbar_fontsize) * 0.5);
-		drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
-		
-		revpos_y += sbar_fontsize_y + 5;
-		revpos_x = vid_conwidth/2;
-		
-		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
+        if(rev <= 0.5)
+            c = '0 1 1' + '2 0 0' * rev;
+        else
+            c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
+
+        drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth("100%", FALSE, sbar_fontsize) * 0.5);
+        drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
+
+        revpos_y += sbar_fontsize_y + 5;
+        revpos_x = vid_conwidth/2;
+
+        DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
-    
+
     float havemsg = TRUE;
     switch(getstati(STAT_JBMSG)) {
         case JBMSG_CAPPINGNEUTRAL   :   jb_str  =  "Your team is capturing a Neutral Control Point";    break;
@@ -4546,15 +4554,17 @@ void Sbar_Draw(void)
 	
 	vector base_teamcolor;
 	
-	if(teamplay)
+    if(CVAR(rm_hud_healthcolor)) {
+        base_teamcolor = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+        base_teamcolor = healthcolor(base_teamcolor_x);
+    } else if(teamplay) {
 		base_teamcolor = GetTeamRGB(myteam);
-	else
-	{
+    } else {
 		base_teamcolor_x = CVAR(sbar_color_bg_r);
 		base_teamcolor_y = CVAR(sbar_color_bg_g);
 		base_teamcolor_z = CVAR(sbar_color_bg_b);
 	}
-	
+
 	vector sector_teamcolor = (base_teamcolor + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
 	vector border_teamcolor = (base_teamcolor + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
 
@@ -5336,7 +5346,7 @@ void Sbar_Draw(void)
         float currweapon_ammo = get_weaponinfo(currweapon).items;
 
         if(getstati(STAT_CLIP_LIMIT) > 0)		
-            ammo_progress = bound(0, (1 - getstati(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
+            ammo_progress = bound(0, (1 - getstatf(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
         else
             ammo_progress = -1;
 
@@ -5353,7 +5363,7 @@ void Sbar_Draw(void)
                     ammo_progress = h;
                 } else if(ammo_progress >= 0) {
                     if(stat_items & IT_UNLIMITED_AMMO) {
-                        a = getstati(STAT_CLIP_LOADED);
+                        a = floor(getstatf(STAT_CLIP_LOADED));
                         isclip = TRUE;
                     }
                 }
@@ -5884,7 +5894,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon = string_null;
+				red_icon = NULL;
 			break;
 	}
 	switch(redflag_prevstatus) {
@@ -5897,7 +5907,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon_prevstatus = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon_prevstatus = string_null;
+				red_icon_prevstatus = NULL;
 			break;
 	}
 
@@ -5912,7 +5922,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon = string_null;
+				blue_icon = NULL;
 			break;
 	}
 	switch(blueflag_prevstatus) {
@@ -5925,7 +5935,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon_prevstatus = string_null;
+				blue_icon_prevstatus = NULL;
 			break;
 	}
 

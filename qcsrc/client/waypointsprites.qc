@@ -180,7 +180,7 @@ void Draw_WaypointSprite()
                     self.toptextmode = 1;
                     if(self.toptext) {
                         strunzone(self.toptext);
-                        self.toptext = string_null;
+                        self.toptext = NULL;
                     }
                 }
                 
@@ -193,7 +193,7 @@ void Draw_WaypointSprite()
                     self.toptextmode = 2;
                     if(self.toptext) {
                         strunzone(self.toptext);
-                        self.toptext = string_null;
+                        self.toptext = NULL;
                     }
                 }
                 
@@ -203,7 +203,7 @@ void Draw_WaypointSprite()
                 self.topalpha = approach(self.topalpha, 0, drawframetime * 2);
                 if(!self.topalpha && self.toptext) {
                     strunzone(self.toptext);
-                    self.toptext = string_null;
+                    self.toptext = NULL;
                 }
             }
 			break;

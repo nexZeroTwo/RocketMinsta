@@ -19,7 +19,7 @@ void SetClientName(entity cl, string newname, float fixencoding, float iannounce
 
     if(cl.netname_strzoned) {
         strunzone(cl.netname_strzoned);
-        cl.netname_strzoned = string_null;
+        cl.netname_strzoned = NULL;
     }
 
     newname = strzone(newname);
@@ -315,14 +315,14 @@ entity Spawn_WeightedPoint_Team(entity firstspot, float lower, float upper, floa
 	for(spot = firstspot; spot; spot = spot.chain)
 	{
 		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot && (teem < 0 || spot.team == teem))
-			RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(spot, 0, NULL, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
 		considerations += 1;
 	}
 	if(!considerations) // if we didn't like the options...
 		if(self.last_spawn_pt_1 == spot && spot.chain) // if we can, try to take 2nd opt.
-			RandomSelection_Add(firstspot.chain, 0, string_null, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(firstspot.chain, 0, NULL, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
 		else
-			RandomSelection_Add(firstspot, 0, string_null, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(firstspot, 0, NULL, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
 
 	self.last_spawn_pt_2 = self.last_spawn_pt_1;
 	self.last_spawn_pt_1 = RandomSelection_chosen_ent;
@@ -1174,7 +1174,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
-    self.touch = func_null;
+    self.touch = NULL;
 
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
@@ -1417,6 +1417,7 @@ void PutClientInServer (void)
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
+        self.pryaxe_thrown = 0;
 
         self.hg_sentry_capture_progress = 0;
 
@@ -1914,6 +1915,8 @@ void ClientConnect (void)
 		defer(5, ServerTopic);
 	
 	self.g_minstagib_stat = g_minstagib;
+
+    self.hidecountry = CVAR(sv_hidecountry);
 	IP2C_SetCountry(self);
 	
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && CVAR(g_rocketminsta)), "\n"));
@@ -1991,7 +1994,7 @@ void ClientDisconnect (void)
 
     if(self.netname_strzoned) {
         strunzone(self.netname_strzoned);
-        self.netname_strzoned = string_null;
+        self.netname_strzoned = NULL;
     }
 
 	if not(self.flags & FL_CLIENT)
@@ -3240,7 +3243,7 @@ void PlayerPreThink (void)
         isplayer = FALSE;
         isobs = TRUE;
     }
-    
+
     if(isplayer || self.jb_specteam)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
@@ -3255,6 +3258,7 @@ void PlayerPreThink (void)
 
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
+
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
             if(sv_scoreboard_noob_column)
                 PlayerScore_Set(self, SP_NOOB, rint(255 * self.jumpholdtime / self.alivetime));
@@ -3323,7 +3327,7 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
-        W_FixWeaponSet();
+        W_PlayerPreThinkHook();
 
         if(frametime) {
             if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))

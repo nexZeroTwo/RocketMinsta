@@ -339,6 +339,7 @@ void W_Rocket_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_ROCKET_LAUNCHER,
         CVAR(g_balance_rocketlauncher_magazinecapacity),
+        CVAR(g_balance_rocketlauncher_magazineregen),
         CVAR(g_balance_rocketlauncher_reloadtime),
         ammo_rockets,
         1

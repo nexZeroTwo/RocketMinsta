@@ -196,7 +196,7 @@ float Buffs_Randomize_Yield(void) {
     while(!found) {
         for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
             if(g_buffs_enabled & b && (g_buffs_used[j] < g_buffs_randomize_ulevel || g_buffs_randomize_chaos)) {
-                RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
+                RandomSelection_Add(world, j, NULL, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                 ++found;
             }
         
@@ -215,7 +215,7 @@ float Buffs_Randomize_Yield(void) {
         while(!found) {
             for(j = 0, b = 1; j < BUFF_COUNT; ++j, b *= 2)
                 if(g_buffs_enabled & b && j != choosen && (g_buffs_used_dual[j] < g_buffs_randomize_ulevel_dual || g_buffs_randomize_chaos)) {
-                    RandomSelection_Add(world, j, string_null, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
+                    RandomSelection_Add(world, j, NULL, cvar(strcat("g_buffs_", Buffs_TypeToName(b), "_randomspawn_weight")), 1);
                     ++found;
                 }
             
@@ -343,25 +343,6 @@ void Buffs_Init_Delayed(void) {
         e.think = Buffs_Randomizer_Think;
         e.nextthink = BUFFS_RANDOMIZER_NEXTTHINK;
     }
-}
-
-float Buffs_Present(entity p, float b) {
-    if(!g_buffs)
-        return FALSE;
-    
-    if(p.nobuffs)
-        return FALSE;
-    
-    if(p.buffs & b == b)
-        return TRUE;
-
-    if(g_buffs_baseline & b == b)
-        return TRUE;
-    
-    if(p.hg_linker && (p.hg_linker.buffs & b == b))
-        return TRUE;
-    
-    return FALSE;
 }
 
 string Buffs_Description(float bfs) {
@@ -510,6 +491,12 @@ void Buffs_ClientFrame(void) {
     if(self.hg_linker)
         self.buffstat |= self.hg_linker.buffs;
 
+    if(self.nobuffs) {
+        self.effective_buffs = 0;
+    } else {
+        self.effective_buffs = self.buffstat | g_buffs_baseline;
+    }
+
     if(self.classname != "player") {
         if(self.buff_model) {
             remove(self.buff_model);
@@ -519,6 +506,7 @@ void Buffs_ClientFrame(void) {
         if(self.buff_teamwp)
             Buffs_RemoveTeamWaypoint(self);
         
+        self.effective_buffs = 0;
         return;
     }
     
@@ -975,15 +963,27 @@ float Buffs_MEODP_Point_Customize(void) {
 }
 
 void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {
-    entity oself = self;
-    self = targ;
-    targ.meodp_point.solid = SOLID_NOT;
-    targ.meodp_point.enemy = attacker;
-    te_meodp(targ.meodp_point.origin);
-    targ.meodp_death(attacker, inflictor);
-    if(targ.meodp_point && !wasfreed(targ.meodp_point))
-        targ.meodp_point.enemy = world;
-    self = oself;
+    var oh = max(0, targ.health);
+    var oa = max(0, targ.armorvalue);
+    var point_org = targ.meodp_point.origin;
+
+    using(self = targ) {
+        targ.meodp_point.solid = SOLID_NOT;
+        targ.meodp_point.enemy = attacker;
+        te_meodp(targ.meodp_point.origin);
+        targ.meodp_death(attacker, inflictor);
+        if(targ.meodp_point && !wasfreed(targ.meodp_point))
+            targ.meodp_point.enemy = world;
+    }
+
+    var nh = bound(0, targ.health, oh);
+    var na = bound(0, targ.armorvalue, oa);
+
+    var sdmg = max(((oh - nh) + (oa - na)) * CVAR(g_buffs_meodp_selfdamage), CVAR(g_buffs_meodp_selfdamage_min));
+    if(sdmg) {
+        Damage(attacker, inflictor, attacker, sdmg, DEATH_MEODP, attacker.origin, '0 0 0');
+        trailparticles(attacker, particleeffectnum("blood"), point_org, attacker.origin + attacker.view_ofs);
+    }
 }
 
 float buffs_meodp_triggermultiple_running;
@@ -1052,7 +1052,7 @@ void Buffs_MEODP_Point_Attach(entity e, meodp_death_f death) {
     p.meodp_rand2 = random() * M_PI * 2;
     p.meodp_rand3 = if(random() < 0.5) 1 else -1;
     p.meodp_rand4 = if(random() < 0.5) 1 else -1;
-    p.takedamage = DAMAGE_AIM;
+    p.takedamage = DAMAGE_NO;
     p.event_damage = Buffs_MEODP_Point_Damage;
     setmodel(p, "models/runematch/rune.mdl");
     setsize(p, '-8 -8 -8', '8 8 8');
@@ -1067,7 +1067,7 @@ void Buffs_MEODP_Point_Detach(entity e) {
     
     remove(e.meodp_point);
     e.meodp_point = world;
-    e.meodp_death = func_null;
+    e.meodp_death = NULL;
 }
 
 .entity meodp_chain;
@@ -1078,25 +1078,24 @@ entity Buffs_MEODP_Hitscan_Begin(entity plr) {
     
     entity p, pts = findchain_tofield(classname, "meodp_point", meodp_chain);
     
-    for(p = pts; p; p = p.meodp_chain)
+    for(p = pts; p; p = p.meodp_chain) {
         p.solid = SOLID_CORPSE;
+        p.takedamage = DAMAGE_AIM;
+    }
         
     return pts;
 }
 
 void Buffs_MEODP_Hitscan_End(entity pts) {
-    entity p; for(p = pts; p; p = p.meodp_chain)
+    entity p; for(p = pts; p; p = p.meodp_chain) {
         p.solid = SOLID_NOT;
+        p.takedamage = DAMAGE_NO;
+    }
 }
 
 void Buffs_MEODP_Death_Player(entity attacker, entity inflictor) {
     float d = self.health * CVAR(g_buffs_meodp_healthfactor) + self.armorvalue * CVAR(g_buffs_meodp_armorfactor);
-    float s = d * CVAR(g_buffs_meodp_selfdamage);
-    
     Damage(self, inflictor, attacker, d, DEATH_MEODP, self.meodp_point.origin, '0 0 0');
-    
-    if(s)
-        Damage(attacker, inflictor, attacker, s, DEATH_MEODP, attacker.origin, '0 0 0');
 }
 
 void Buffs_MEODP_Death_Remove(entity attacker, entity inflictor) {

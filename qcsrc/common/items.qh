@@ -19,8 +19,9 @@ float WEP_CAMPINGRIFLE	    = 15; float WEPBIT_CAMPINGRIFLE     = 16384;
 float WEP_FIREBALL          = 16; float WEPBIT_FIREBALL		    = 32768;
 float WEP_ZAPPER            = 17; float WEPBIT_ZAPPER           = 65536;
 float WEP_FLAK              = 18; float WEPBIT_FLAK             = 131072;
-float WEP_LAST				= 18; float WEPBIT_ALL              = 262143;
-float WEP_COUNT             = 19;
+float WEP_PRYAXE            = 19; float WEPBIT_PRYAXE           = 262144;
+float WEP_LAST				= 19; float WEPBIT_ALL              = 524287;
+float WEP_COUNT             = 20;
 
 float BOT_PICKUP_RATING_LOW	 = 2500;
 float BOT_PICKUP_RATING_MID	 = 5000;

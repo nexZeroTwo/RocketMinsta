@@ -215,7 +215,7 @@ void fillNexuizMutatorsDialog(entity me)
 		me.TD(me, 1, 4, makeNexuizTextLabel(0, "Weapon arenas:"));
 	me.TR(me);
 		me.TDempty(me, 0.2);
-		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, string_null, string_null, "Regular (no arena)"));
+		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, NULL, NULL, "Regular (no arena)"));
 	for(i = WEP_FIRST, j = 0; i <= WEP_LAST; ++i)
 	{
 		w = get_weaponinfo(i);
@@ -247,10 +247,10 @@ void fillNexuizMutatorsDialog(entity me)
 		me.TD(me, 1, 4, makeNexuizTextLabel(0, "Special arenas:"));
 	me.TR(me);
 		me.TDempty(me, 0.2);
-		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "g_minstagib", string_null, "MinstaGib"));
+		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "g_minstagib", NULL, "MinstaGib"));
 	me.TR(me);
 		me.TDempty(me, 0.2);
-		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "g_nixnex", string_null, "NixNex"));
+		me.TD(me, 1, 2, e = makeNexuizRadioButton(1, "g_nixnex", NULL, "NixNex"));
 	me.TR(me);
 		me.TDempty(me, 0.4);
 		me.TD(me, 1, 1, e = makeNexuizCheckBox(0, "g_nixnex_with_laser", "with laser"));

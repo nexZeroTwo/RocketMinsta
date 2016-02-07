@@ -91,13 +91,13 @@ void Plasma_Draw_Trace_Callback(vector from, vector endpos, vector to) {
 .float plasma_drawn;
 
 void Plasma_Draw() {
-    entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    entity e, n, p = plasma_chain;
     string tex = "particles/zapper";
 
-    for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
+    for(e = p; e; e = e.plasma_next) if(e.extradata) if(e.plasma_drawn != time) {
         vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
-        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) {
+        for(n = p; n; n = n.plasma_next) if(n.plasma_drawn != time) {
             if(e != n && n.extradata == e.extradata) {
                 if(warpzone_chain_begin) {
                     var nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, FALSE);
@@ -409,6 +409,7 @@ float crosshair_ringfill;
 
 float crosshair_inring_fill;
 float crosshair_inring_alpha;
+float crosshair_inring_expand;
 
 void HG_NadeGainSound() {
     float c1 = getstati(STAT_HGAMMO);
@@ -790,12 +791,18 @@ void CSQC_UpdateView(float w, float h)
             maxbullets = getstati(STAT_CLIP_LIMIT);
 
             if(maxbullets > 0) {
-                bullets = bound(0, getstati(STAT_CLIP_LOADED), maxbullets);
+                bullets = bound(0, getstatf(STAT_CLIP_LOADED), maxbullets);
             } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER) {
                 maxbullets = 1;
                 bullets = bound(0, (1 - getstatf(STAT_ZAPPER_HEAT)), 1);
             } else
                 bullets = 0;
+
+            if(bullets) {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 1, drawframetime * 2);
+            } else {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 0, drawframetime * 4);
+            }
 
             if(maxbullets > 0) {
                 crosshair_ringfill += (bullets / maxbullets - crosshair_ringfill) * drawframetime * 10;
@@ -807,44 +814,56 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill = 0;
             }
 
-            if(crosshair_ringfill) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    if(maxbullets > 1 && maxbullets < 25)
-                        strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
-                    else
-                        "gfx/hud/ring1.tga",
-                    crosshair_ringfill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.25,
-                    DRAWFLAG_ADDITIVE
-                );
-            }
+            var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
+            var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
+            var ringexpand = 0.25; // TODO: cvar for this?
 
-            var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+            if(ringsize > 0 && ringalpha > 0) {
+                if(crosshair_ringfill) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        if(maxbullets > 1 && maxbullets < 25)
+                            strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+                        else
+                            "gfx/hud/ring1.tga",
+                        crosshair_ringfill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
 
-            if(in_cycle > 0) {
+                var in_cycle = getstatf(STAT_INNERRING_CYCLE);
                 var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
-                crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+                var in_invert = FALSE;
 
-                if(crosshair_inring_fill && crosshair_inring_fill < 1)
-                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
-                else
+                if(in_cycle < 0) {
+                    in_cycle *= -1;
+                    in_invert = TRUE;
+                }
+
+                if(in_fulltime > 0) {
+                    crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+
+                    if(crosshair_inring_fill && crosshair_inring_fill < 1)
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
+                    else
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+                } else
                     crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
-            } else
-                crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
 
-            if(crosshair_inring_alpha) {
-                DrawCircleClippedPic(
-                    wcross_origin,
-                    wcross_size_x * CVAR(crosshair_campingrifle_ring_size) * 1.3,
-                    "gfx/hud/ring_inner.tga",
-                    crosshair_inring_fill,
-                    0.5 * wcross_color + '0.5 0.5 0.5',
-                    wcross_alpha * 0.15 * crosshair_inring_alpha,
-                    DRAWFLAG_ADDITIVE
-                );
+                if(crosshair_inring_alpha) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize * (1 + ringexpand * crosshair_inring_expand * crosshair_inring_alpha),
+                        "gfx/hud/ring_inner.tga",
+                        if(in_invert) 1 - crosshair_inring_fill else crosshair_inring_fill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha * crosshair_inring_alpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
             }
 
             if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active))) {
@@ -879,7 +898,7 @@ void CSQC_UpdateView(float w, float h)
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
-		NextFrameCommand = string_null;
+		NextFrameCommand = NULL;
 	}
 
     if(mouse_enabled) {

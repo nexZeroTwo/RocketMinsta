@@ -417,7 +417,7 @@ entity findnearest(vector point, .string field, string value, vector axismod)
         //   INSERTION SORT! YOU'VE SEEN IT! RUN!
         if (i < NUM_NEAREST_ENTITIES)
         {
-            for (j = NUM_NEAREST_ENTITIES - 1; j >= i; --j)
+            for (j = NUM_NEAREST_ENTITIES - 2; j >= i; --j)
             {
                 nearest_length[j + 1] = nearest_length[j];
                 nearest_entity[j + 1] = nearest_entity[j];
@@ -668,7 +668,7 @@ string apply_autoreplace(string msg) {
             float mm = reptable_matchmode[id];
 
             if(reptable_matchmode[id] == MATCHMODE_REGEX) {
-                if(!checkextension("DP_RM_REGEX"))
+                if(!regex_match)
                     continue;
 
                 if(is_escaped_caret(msg, i))
@@ -852,7 +852,7 @@ void GetCvars_handleString(string thisname, float f, .string field, string name)
 	{
 		if (self.field)
 			strunzone(self.field);
-		self.field = string_null;
+		self.field = NULL;
 	}
 	else if (f > 0)
 	{
@@ -2276,7 +2276,7 @@ void InitializeEntitiesRun()
         e = self.initialize_entity_next;
         func = self.initialize_entity;
         self.initialize_entity_order = 0;
-        self.initialize_entity = func_null;
+        self.initialize_entity = NULL;
         self.initialize_entity_next = world;
         if (self.classname == "initialize_entity")
         {
@@ -2985,7 +2985,7 @@ entity GetCommandPlayerSlotTargetFromTokenizedCommand(float tokens, float idx) /
     entity e, head;
     float n;
 
-    s = string_null;
+    s = NULL;
 
     ParseCommandPlayerSlotTarget_firsttoken = -1;
 
@@ -3374,7 +3374,7 @@ void EndRound(float tout)
     else if(g_clanarena)
         CA_EndRound(tout);
     else
-        bprint("EndRound() for an unsupported gametype!?\n");
+        print("EndRound: gametype is not supported\n");
 }
 
 float EndRound_Allowed()

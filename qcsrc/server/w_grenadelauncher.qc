@@ -169,6 +169,7 @@ void W_Mortar_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_GRENADE_LAUNCHER,
         CVAR(g_balance_grenadelauncher_magazinecapacity),
+        CVAR(g_balance_grenadelauncher_magazineregen),
         CVAR(g_balance_grenadelauncher_reloadtime),
         ammo_rockets,
         1

@@ -1,7 +1,5 @@
 ../../progs.dat // output filename
 
-
-
 ../common/rm_auto.qh
 ../common/util-pre.qh
 
@@ -131,6 +129,7 @@ w_tuba.qc
 w_fireball.qc
 w_zapper.qc
 w_flak.qc
+w_pryaxe.qc
 
 t_items.qc
 cl_weapons.qc
@@ -213,10 +212,6 @@ func_breakable.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
 ip2c.qc
-monsters/defs.qc
-monsters/fight.qc
-monsters/ai.qc
-monsters/m_monsters.qc
 
 csqcprojectile.qc
 csqcmessage.qc

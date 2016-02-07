@@ -31,7 +31,7 @@ string Buffs_TypeToFullName(float buff) {
         BUFFDEFS
         #undef BUFFDEF
 
-        default: return string_null;
+        default: return NULL;
     }
 }
 

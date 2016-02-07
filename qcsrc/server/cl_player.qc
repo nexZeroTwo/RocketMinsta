@@ -685,7 +685,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		}
 	}
 	else
-		Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
+        Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
     
 	if(g_arena)
 	if(numspawned < 2)
@@ -740,6 +740,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
+
+    if(DEATH_ISWEAPON(deathtype, WEP_PRYAXE))
+        Violence_GibSplash_At(hitloc, force * -0.2, 1, 0.25, self, attacker);
 
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
@@ -1626,7 +1629,7 @@ void PrecachePlayerSounds(string f)
 
 void ClearPlayerSounds()
 {
-#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = string_null; }
+#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = NULL; }
 	ALLPLAYERSOUNDS
 	ALLVOICEMSGS
 #undef _VOICEMSG

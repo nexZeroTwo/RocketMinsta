@@ -10,7 +10,7 @@
     BUFFDEF(BUFF_TENACITY,  tenacity,  "Tenacity",                        '0.66  0.66  0.73') \
     BUFFDEF(BUFF_WRATH,     wrath,     "Wrath",                           '0.55  0.50  1.00') \
     BUFFDEF(BUFF_ADEPT,     adept,     "Adept",                           '0.57  0.00  1.00') \
-    BUFFDEF(BUFF_MEODP,     meodp,     "Mystic Eyes of Death Perception", '0.10  0.10  0.10') \
+    BUFFDEF(BUFF_MEODP,     meodp,     "Shiki",                           '0.10  0.10  0.10') \
     BUFFDEF(BUFF_FOCUS,     focus,     "Focus",                           '0.50  1.00  0.80') \
     BUFFDEF(BUFF_REAPER,    reaper,    "Reaper",                          '0.65  0.20  0.00') \
     BUFFDEF(BUFF_ENDURANCE, endurance, "Endurance",                       '0.83  1.00  0.36') \
