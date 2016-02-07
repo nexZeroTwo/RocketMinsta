@@ -166,14 +166,14 @@ void drawInputBox(entity me)
 		string ch, ch2;
 		float i, n;
 		vector theColor;
-		float theAlpha;    //float theVariableAlpha;
+		float theAlpha;
 		vector p;
 		vector theTempColor;
 		float component;
 		
 		p = me.realOrigin - eX * me.scrollPos;
 		theColor = '1 1 1';
-		theAlpha = 1;    //theVariableAlpha = 1; // changes when ^ax found
+		theAlpha = 1;
 		
 		n = strlen(me.text);
 		for(i = 0; i < n; ++i)
@@ -268,12 +268,23 @@ void drawInputBox(entity me)
 				++i;
 				continue;
 			}
-			draw_Text(p, ch, me.realFontSize, theColor, theAlpha, 0); // TODO theVariableAlpha
+			draw_Text(p, ch, me.realFontSize, theColor, theAlpha, 0);
 			p += eX * draw_TextWidth(ch, 0, me.realFontSize);
 		}
 	}
-	else
-		draw_Text(me.realOrigin - eX * me.scrollPos, me.text, me.realFontSize, '1 1 1', 1, 0);
+	else {
+        // draw_Text(me.realOrigin - eX * me.scrollPos, me.text, me.realFontSize, '1 1 1', 1, 0);
+        // FIXME: if we simply use draw_Text here, the cursor is going to be misplaced...
+
+        vector p = me.realOrigin - eX * me.scrollPos;
+        float n = strlen(me.text);
+        for(float i = 0; i < n; ++i)
+        {
+            string ch = substring(me.text, i, 1);
+            draw_Text(p, ch, me.realFontSize, '1 1 1', 1, 0);
+            p += eX * draw_TextWidth(ch, 0, me.realFontSize);
+        }
+    }
 		// skipping drawLabel(me);
 	if(!me.focused || (time - me.lastChangeTime) < floor(time - me.lastChangeTime) + 0.5)
 		draw_Text(me.realOrigin + eX * (cursorPosInWidths - me.scrollPos), CURSOR, me.realFontSize, '1 1 1', 1, 0);
