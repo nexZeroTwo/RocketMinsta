@@ -487,7 +487,7 @@ void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
     
-    self.buffstat = self.buffs;
+    self.buffstat = self.buffs & (g_buffs_enabled | g_buffs_baseline);
     if(self.hg_linker)
         self.buffstat |= self.hg_linker.buffs;
 
