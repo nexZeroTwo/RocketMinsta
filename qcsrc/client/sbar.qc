@@ -2241,10 +2241,7 @@ void Sbar_DrawCenterPrint (void)
 	if(is_tmpmadoka)
 		return;
 
-	if(vote_active)
-	if(!rm_legacyvote)
-	if(!vote_highlighted)
-	if(!oldengine)
+	if(vote_active && !rm_legacyvote && !vote_highlighted)
 		return;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
@@ -3581,9 +3578,6 @@ float ammonotifytime;
 
 void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 {
-	if(oldengine)
-		return;
-	
 	if(!rm_showrankings)
 		return;
 	
@@ -5653,7 +5647,7 @@ void Sbar_Draw(void)
         Sbar_DrawHGBonus();
     Sbar_DrawBuffs();
 
-	if(rm_legacyvote || oldengine)
+	if(rm_legacyvote)
 	{
 		if(vote_waiting)
 		{

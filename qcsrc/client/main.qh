@@ -204,7 +204,6 @@ float vote_invite;
 float is_tmpmadoka;
 float tmpmadoka_fadetime;
 
-float oldengine;
 float madoka_locked;
 float madokalockstate;
 
