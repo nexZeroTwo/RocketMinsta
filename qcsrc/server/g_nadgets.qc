@@ -2301,6 +2301,7 @@ void HG_Sentry_Interrupt_Capture(void) {
 }
 
 void HG_Sentry_Remove(void) {
+    dropentities(self);
     HG_Sentry_Interrupt_Capture();
 
     if(self.realowner.classname == "player")

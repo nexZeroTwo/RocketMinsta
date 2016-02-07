@@ -3800,3 +3800,14 @@ string fix_legacy_encoding(string s) {
 
     return newstr;
 }
+
+void dropentities(entity platform) {
+    const nudge = '1 1 1';
+
+    for(var e; (e = findflags(e, flags, FL_ONGROUND));) {
+        if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+}

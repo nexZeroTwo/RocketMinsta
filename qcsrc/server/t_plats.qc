@@ -1932,6 +1932,9 @@ void func_magicwall_think_transition(void) {
 void func_magicwall_start_transition(float sol, void(void) done) {
     self.solid = sol;
 
+    if(!sol)
+        dropentities(self);
+
     if(self.speed < 0) {
         self.alpha = self.MAGICWALL_ALPHAFIELD(self);
         if(done)
