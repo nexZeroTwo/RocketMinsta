@@ -534,7 +534,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage);
 
 float IsHeadshot(entity targ, entity attacker, vector hitloc) {
     // find height of hit on player axis
-    // if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
+    // if above view_ofs and also in the middle half of the bbox, it is head shot
 
     vector headmins, headmaxs, org;
     var w = CVAR(g_player_hitbox_head_width_factor);
@@ -542,7 +542,7 @@ float IsHeadshot(entity targ, entity attacker, vector hitloc) {
 
     org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
     headmins = org + [targ.mins_x * w, targ.mins_y * w, (1 + h) * targ.view_ofs_z - h * targ.maxs_z];
-    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z];
+    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z * 2];
     
     return trace_hits_box(railgun_start, railgun_end, headmins, headmaxs);
 }

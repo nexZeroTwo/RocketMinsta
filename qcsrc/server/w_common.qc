@@ -458,6 +458,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	if(pSpeed >= CVAR(g_antilag_bullets))
 	{
 		float eff;
+        ExactHitscan_Begin();
 
 		if(tracereffects & EF_RED)
 			eff = particleeffectnum("tr_rifle");
@@ -524,6 +525,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 
 		remove(proj);
 
+        ExactHitscan_End();
 		return;
 	}
 

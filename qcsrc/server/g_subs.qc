@@ -303,6 +303,22 @@ void main (void)
 
 // Misc
 //
+
+
+void ExactHitscan_Begin(void) {
+    if(CVAR(g_exact_hitscan)) {
+        FOR_EACH_PLAYER(var p) if(p.solid == SOLID_SLIDEBOX)
+            p.solid = SOLID_BSP;
+    }
+}
+
+void ExactHitscan_End(void) {
+    if(CVAR(g_exact_hitscan)) {
+        FOR_EACH_PLAYER(var p) if(p.solid == SOLID_BSP)
+            p.solid = SOLID_SLIDEBOX;
+    }
+}
+
 entity _pseudo_bullet;
 
 entity pseudo_bullet(entity forent) {
@@ -526,12 +542,14 @@ float tracerail_active;
 
 entity tracerail(vector start, vector end, float t, entity forent, WarpZone_trace_callback_t cb) {
     entity first, last, e;
-    
+
     if(tracerail_active) {
         backtrace("Attempted to tracerail before finalizing a previous tracerail - things will break.");
         WarpZone_TraceBox_ThroughZone(start, '0 0 0', '0 0 0', end, t, forent, world, cb);
         return trace_ent;
     }
+
+    ExactHitscan_Begin();
 
     tracerail_active = TRUE;
 
@@ -577,6 +595,8 @@ entity tracerail(vector start, vector end, float t, entity forent, WarpZone_trac
     // restore solid
     for(e = first; e; e = e.tracerail_next)
         e.solid = e.tracerail_oldsolid;
+
+    ExactHitscan_End();
 
     return first;
 }
