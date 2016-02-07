@@ -56,6 +56,9 @@ void GameCommand(string theCommand)
 
 	if(argv(0) == "directmenu") if(argc == 2)
 	{
+        if(argv(1) == "engineNagger" && !show_engine_nagger && DPRM_VersionIsSuitable())
+            return;
+
 		// switch to a menu item
 		if not(substring(CVAR_STR(g_nexuizversion), 0, strlen("2.5.1")) == "2.5.1")
 		if(!isdemo()) // don't allow this command in demos
