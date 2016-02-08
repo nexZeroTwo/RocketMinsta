@@ -504,7 +504,7 @@ void FPSReporter_Init() {
 	e.nextthink = time + 1;
 }
 
-#define TARGET_RATE 40000
+#define TARGET_RATE 70000
 
 void UpdateClRate(void) {
     float oldrate = CVAR(_cl_rate);
@@ -701,7 +701,6 @@ void PostInit(void)
         case 47:
             localcmd("seta rm_nododging 0; nododging 0\n");
         case 48:
-            UpdateClRate();
         case 49:
         case 50:
             TryBindCRAKeys();
@@ -723,9 +722,11 @@ void PostInit(void)
         case 59:
             localcmd("seta rm_hud_healthcolor 0\n");
         case 60:
+        case 61:
+            UpdateClRate();
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 61\n");
+		localcmd("seta rm_initialized 62\n");
 		RM_OUTDATED
 		break;
 	}
