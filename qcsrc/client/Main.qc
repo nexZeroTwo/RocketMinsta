@@ -1867,6 +1867,7 @@ void Gamemode_Init()
 // CSQC_Parse_StuffCmd : Provides the stuffcmd string in the first parameter that the server provided.  To execute standard behavior, simply execute localcmd with the string.
 void CSQC_Parse_StuffCmd(string strMessage)
 {
+    dprint("stuffcmd from server: " + strMessage + "\n");
 	localcmd(strMessage);
 }
 // CSQC_Parse_Print : Provides the print string in the first parameter that the server provided.  To execute standard behavior, simply execute print with the string.
