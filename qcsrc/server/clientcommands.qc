@@ -1239,6 +1239,7 @@ void SV_ParseClientCommand(string s) {
 		if(cmd != "name")
 		if(cmd != "color")
 		if(cmd != "rate")
+        if(cmd != "rate_burstsize")
 		if(cmd != "pmodel")
 		if(cmd != "playermodel")
 		if(cmd != "playerskin")
@@ -1278,7 +1279,6 @@ void SV_ParseClientCommand(string s) {
 		}
 
         clientcommand(self, s);
-
 	}
 }
 
