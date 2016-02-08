@@ -795,7 +795,7 @@ void PutObserverInServer (void)
     if(!self.justconnected) {
         kh_Key_DropAll(self, TRUE);
         Freeze_Hook_PlayerQuits();
-        HG_DetonateAll(self);
+        HG_GenericProjectile_DetonateAll(self);
         JB_RemovePlayer();
         Portal_ClearAll(self);
         Boobs_Clear();
@@ -2027,7 +2027,7 @@ void ClientDisconnect (void)
     
 	kh_Key_DropAll(self, TRUE);
     Freeze_Hook_PlayerQuits();
-    HG_DetonateAll(self);
+    HG_GenericProjectile_DetonateAll(self);
 	JB_RemovePlayer();
 	Portal_ClearAll(self);
 	Boobs_Clear();
@@ -3380,7 +3380,7 @@ void PlayerPreThink (void)
 			self.fixangle = TRUE;
 		}
         
-		HG_Frame();
+		HG_PlayerFrame();
 
 		if (self.deadflag != DEAD_NO)
 		{

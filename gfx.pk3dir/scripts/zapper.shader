@@ -9,7 +9,7 @@ textures/zapper_fx
     }
 }
 
-textures/zapper_fx.tga
+textures/zapper_fx
 {
     {
         map textures/zapper_fx_txt

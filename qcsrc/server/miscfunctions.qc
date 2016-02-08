@@ -3,6 +3,8 @@ void objerror(string s);
 void droptofloor();
 .vector dropped_origin;
 
+float crandom(void);
+
 void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
@@ -3830,4 +3832,59 @@ float do_if_fexists(void(string) callback, string fpath) {
     }
 
     return FALSE;
+}
+
+vector RandomSpreadVector(float side, float up, float up_min, float up_min_rand) {
+    return [
+        crandom() * 2 * side,
+        crandom() * 2 * side,
+        max(
+            up * random(),
+            up_min + up_min_rand * crandom() * 2
+        )
+    ];
+}
+
+vector CircleSpreadVector(float side, float up, float sangle) {
+    return  side * v_forward * cos(sangle) +
+            side * v_right   * sin(sangle) +
+            up   * v_up;
+}
+
+.entity heal_emitter;
+.float heal_emitter_radius;
+
+void HealParticleEmitter_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+
+    if(self.origin != self.oldorigin)
+        UpdateCSQCProjectile(self);
+
+    self.oldorigin = self.origin;
+    self.nextthink = time;
+}
+
+void HealParticleEmitter(entity o) {
+    if(Buffs_Present(o, BUFF_MEDIC)) {
+        if(!self.heal_emitter || wasfreed(self.heal_emitter)) {
+            entity e = spawn();
+            e.owner = self;
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = self;
+            e.think = HealParticleEmitter_Think;
+            e.nextthink = time;
+            e.csqcprojectile_extradata = self.heal_emitter_radius;
+            
+            CSQCProjectile(e, FALSE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            self.heal_emitter = e;
+        }
+    } else {
+        if(self.heal_emitter) {
+            remove(self.heal_emitter);
+            self.heal_emitter = world;
+        }
+    }
 }

@@ -664,7 +664,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_generic_projectile" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
 	{
 		// no processing
 	}

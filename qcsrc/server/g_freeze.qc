@@ -201,7 +201,7 @@ void Freeze_UnfreezePlayer(entity plr)
     if(g_nadgets) {
         if(CVAR(g_nadgets_regen)) {
             plr.hg_power = 0;
-        } else HG_PlayerSpawnEx(plr);
+        } else using(self = plr) HG_PlayerSpawn();
     }
 
     plr.last_dodging_time = 0;

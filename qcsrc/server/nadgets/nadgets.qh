@@ -1,42 +1,30 @@
 
-void HG_Init();
-void HG_Precache();
+void HG_Init(void);
+void HG_Precache(void);
 void HG_SetContext(float isalt);
-void HG_Frame();
-void HG_Attack();
-void HG_PlayerSpawn();
-void HG_PlayerSpawnEx(entity);
-void HG_PlayerJoin();
+void HG_PlayerFrame(void);
+void HG_Attack(void);
+void HG_PlayerSpawn(void);
+void HG_PlayerJoin(void);
 void HG_ResetState(entity, float);
 void HG_ResetAmmo(entity, float);
 void HG_CopyAmmoState(entity src, entity dst);
 void HG_GiveBonus(entity, float, float, string, float);
 void HG_GiveRandomBonus(entity, float, string, float);
-entity HG_Napalm();
-void HG_Detonate(entity);
-void HG_DetonateAll(entity);
 void HG_RemoveAll(entity);
 float HG_PlayerMayDetonate(entity);
 float HG_ShowMenu(float);
-void HG_Grenade_Remove(void);
-void HG_Grenade_FadeOut(entity);
-void HG_Grenade_Think();
-void HG_Stick(void);
+void HG_FadeOut(entity);
 float HG_RegenTime(entity);
 float HG_RegenLimit(entity);
 float HG_StorageLimit(entity);
 void HG_AdvanceRegen(entity, float, float);
 void HG_SetRegenTime(entity e, float t);
 void HG_Trigger(void);
-void HG_Cloak_Trigger(void);
-void HG_Shield_Trigger(void);
-void HG_Bait_Body_Boom(entity body);
-float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc);
-void HG_Shield_Adept_ExtendRenew(entity plr);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
 string HG_SelectableTypes(float issecondary);
 
-void HG_Sentry_SetOwner(entity sentry, entity newowner);
+typedef float(void) hg_attackfunc_t;
 
 .vector org_explosion;
 .float nextparticle;
@@ -66,27 +54,19 @@ void HG_Sentry_SetOwner(entity sentry, entity newowner);
 .float hg_maxregentime2;
 .float hg_regenrate2;
 .float hg_regenpaused2;
-.float hg_deathtime;
 .float hg_detonable;
 .float hg_detonatetime;
 .float hg_detonatedelay;
 .float hg_detonateready;
 .float hg_detonables;
 .float hg_detonable_updated;
-.float hg_nextsnd;
-.float hg_sndcount;
 .float hg_detonatepressed;
-.float hg_ranthink;
-.float hg_wp_nextthink;
-.float hg_wp_state;
-.float hg_sticked;
 .float hg_nadesused;
 .float hg_optout;
 .float hg_optout_nextround;
 .float hg_alwaysask;
 .float hg_altcharge;
 .float hg_adept;
-.float hg_tl_revived;
 
 var .float hg_ctx_next;
 var .float hg_ctx_type;
@@ -99,78 +79,33 @@ var .float hg_ctx_maxregentime;
 var .float hg_ctx_regenrate;
 var .float hg_ctx_regenpaused;
 
-.float hg_transloc_solidcheck;
-
-.entity hg_transloc_last;
-
-.vector hg_lastvel;
-
-.float hg_plasmalock;
-.float hg_plasmalock_nexteffect;
-.entity hg_plasmalock_owner;
-
-.float hg_shield;
-.float hg_shieldstat;
-.float hg_shieldpower;
-.float hg_shieldmax;
-.float hg_shieldhealth;
-.float hg_shield_oldmovetype;
-.float hg_shield_stored;
-.float hg_shield_stored_limit;
-.float hg_shield_damage_per_shot;
-.entity hg_shieldmodel;
-
-.float hg_stealth;
-.float hg_stealthalpha;
-.float hg_stealthtime;
-.float hg_wasstealth;
-.float hg_stealth_saved;
-.float hg_stealth_protectionexpiretime;
-
-.float hg_plasma_projrange;
-.float hg_plasma_projdps;
-.float hg_plasma_projdps_delay;
-.float hg_plasma_projdps_next;
-.float hg_plasma_projdps_last;
-.float hg_plasma_projdist;
-
-.entity hg_linker;
-.float hg_linker_range;
-.float hg_linker_factor;
-.float hg_linker_hps;
-
-.float hg_sentry_energy;
-.float hg_sentry_capture_progress;
-.entity hg_sentry_capture_player;
-
-// for hud only
 .float hg_launchspeed;
-
-.entity hg_waypoint;
 
 float g_nadgets_oldhitboxes;
 float g_nadgets_detonatelaunches;
 float g_nadgets_double;
 
-float hg_plasma_group;
-
-.entity bait_ref;
-
 float hg_context_isalt;
 float hg_context_isaltintended;
 
-.vector hg_deferredVel;
-.float hg_raze_randelayed;
-.vector hg_maxVelocity;
-.vector hg_minVelocity;
-.float hg_fireSpawnTime;
+float hg_ammo_used;
+float hg_ammo_available;
 
 #define hg_type hg_type1
-
 #define GRENVARNAME(t,v) strcat("g_nadgets_", HG_TypeToName(t), "_", (v))
 #define GRENVAR(t,v) (cvar(GRENVARNAME(t,v)))
 
-#define IF_HG_LINKER_APPLICABLE(p) if((p).takedamage && !PlayerIsDead(p))
-
 #define HG_DO_IN_ALL_CONTEXTS(block) { HG_SetContext(FALSE); block if(g_nadgets_double) { HG_SetContext(TRUE); block } }
 #define HG_LOOP_FOR_ALL_CONTEXTS(i,block) for(i = 0; i <= g_nadgets_double; ++i) { HG_SetContext(i); block }
+
+enum {
+    HG_ATTACK_OK,
+    HG_ATTACK_FAIL,
+    HG_ATTACK_FAIL_COOLDOWN,
+};
+
+#define HGDEF(id,shortname,longname,color) hg_attackfunc_t HG_Hook_Attack_##shortname;
+HGDEFS
+#undef HGDEF
+
+#define HG_HOOKFUNCTION(hgt,hook) float HG_Hook_##hook##_##hgt(void)

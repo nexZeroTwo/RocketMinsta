@@ -446,35 +446,14 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.use = logic;
 }
 
-void JB_Torture_Napalm() {
-	entity proj;
-	vector kick;
-
-	proj = spawn();
-	proj.owner = self;
-	proj.classname = "jb_torture_napalm";
-	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = HG_REMOTE | HITTYPE_BOUNCE;
-    proj.hg_type = HG_REMOTE;
-	PROJECTILE_MAKETRIGGER(proj);
-	setsize(proj, '0 0 0', '0 0 1');
-	setorigin(proj, self.origin);
-	proj.org_explosion = self.origin;
-	proj.think = HG_Napalm_Think;
-    proj.nextthink = time;
-	proj.damageforcescale = 1;
-	kick_z = self.jb_torture_suggestedforce;
-	kick_x = (random () - 0.5) * 2 * kick_z;
-	kick_y = (random () - 0.5) * 2 * kick_z;
-	proj.velocity = kick;
-	proj.pushltime = time + 3;
-    proj.team = self.team;
-	W_SetupProjectileVelocity(proj);
-
-	proj.angles = vectoangles(proj.velocity);
-	proj.flags = FL_PROJECTILE;
-
-	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
+void JB_Torture_Napalm(void) {
+    Napalm_Spawn(self, self.origin, 3, 0.15, DEATH_HURTTRIGGER, 180, 80, 20, 1.5) {
+        velocity: [
+            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
+            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
+            self.jb_torture_suggestedforce
+        ]
+    };
 }
 
 void JB_Torture_Plasma() {
@@ -540,7 +519,7 @@ void JB_Torture_Grenades() {
 	gren.nextthink = time + 3;
 	gren.think = adaptor_think2use;
 	gren.use = JB_Torture_Grenade_Explode; //HG_Grenade_Explode;
-	gren.touch = HG_Grenade_Touch;
+	gren.touch = HG_GenericProjectile_Touch;
     gren.cnt = 9001;
 	gren.takedamage = DAMAGE_YES;
 	gren.health = 1;
@@ -934,7 +913,7 @@ void JB_Jail_Touch() {
 
     if(g_nadgets)
     if(other.hg_type == HG_TRANSLOC)
-    if(other.classname == "hg_grenade") {
+    if(other.classname == "hg_generic_projectile") {
         other.jb_jail_resettime = time + frametime * 5;
         return;
     }
@@ -1385,7 +1364,7 @@ void JB_JailSpec_Proxy_CopyFields(entity to, entity from) {
 
 void JB_JailSpec_Proxy_Think() {
     player_regen();
-    HG_Frame();
+    HG_PlayerFrame();
     self.nextthink = time;
 }
 

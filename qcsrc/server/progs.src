@@ -53,7 +53,7 @@ antilag.qh
 vote.qh
 soulmates.qh
 timetravel.qh
-g_nadgets.qh
+nadgets/include.qh
 g_terminals.qh
 g_buffs.qh
 g_freeze.qh
@@ -69,6 +69,7 @@ radio.qh
 g_subs.qh
 w_zapper.qh
 g_world.qh
+napalm.qh
 
 cl_weapons_reload.qh
 
@@ -150,7 +151,7 @@ mode_onslaught.qc
 nexball.qc
 g_hook.qc
 timetravel.qc
-g_nadgets.qc
+nadgets/include.qc
 g_terminals.qc
 g_buffs.qc
 soulmates.qc
@@ -186,6 +187,7 @@ t_halflife.qc
 t_quake.qc
 
 g_laserbeam.qc
+napalm.qc
 
 race.qc
 

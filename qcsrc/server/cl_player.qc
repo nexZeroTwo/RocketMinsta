@@ -953,8 +953,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             HG_Attack();
         }
 
-        HG_DetonateAll(self);
-        
+        HG_GenericProjectile_DetonateAll(self);
+
         if(!g_freezetag && !g_jailbreak) {
             if(CVAR(g_nadgets_resetonrespawn))
                 self.hg_ammo1 = self.hg_ammo2 = 0;
