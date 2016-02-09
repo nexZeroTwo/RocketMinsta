@@ -16,10 +16,10 @@ void register_weapon_real(float id, float(float) func, float ammotype, float i, 
 	e.items = ammotype;
 	e.weapon_func = func;
 #ifdef SVQC
-	e.model = strzone(strcat("models/weapons/g_", weapon_modelname(modelname), ".md3"));
+	e.model = strzone(pickfile("models/weapons/g_" + weapon_modelname(modelname), "iqm", "md3", NULL));
 	e.mdl = strzone(weapon_modelname(modelname));
 #else
-	e.model = strzone(strcat("models/weapons/g_", modelname, ".md3"));
+	e.model = strzone(pickfile("models/weapons/g_" + modelname, "iqm", "md3", NULL));
 	e.mdl = modelname;
 #endif
 	e.spawnflags = 0;

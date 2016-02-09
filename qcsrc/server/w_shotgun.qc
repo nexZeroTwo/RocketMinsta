@@ -45,7 +45,7 @@ void W_Shotgun_Attack (void)
 	flash.think = SUB_Remove;
 	flash.nextthink = time + 0.06;
 	flash.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-	W_AttachToShotorg(flash, '5 0 0');
+	W_AttachToShotorg(flash, '12 0 0');
 
 }
 
