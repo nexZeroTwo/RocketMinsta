@@ -3815,8 +3815,7 @@ void dropentities(entity platform) {
     }
 
     while((e = findentity(e, aiment, platform))) {
-        if(e.movetype == MOVETYPE_FOLLOW)
-        if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+        if(e.movetype == MOVETYPE_FOLLOW) {
             e.movetype = MOVETYPE_TOSS;
             e.aiment = world;
             e.flags &~= FL_ONGROUND;

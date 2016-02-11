@@ -1,5 +1,5 @@
 
-void HG_GenericProjectile_Stick(void);
+void HG_GenericProjectile_Stick(entity targ);
 void HG_GenericProjectile_Think(void);
 
 float HG_GenericProjectile_CSQCProjType(float t) {
@@ -203,7 +203,7 @@ void HG_GenericProjectile_Touch(void) {
                 }
 
                 trace_plane_normal = normal;
-                HG_GenericProjectile_Stick();
+                HG_GenericProjectile_Stick(other);
 
                 return;
             } else {
@@ -278,7 +278,7 @@ void HG_GenericProjectile_Touch(void) {
     }
 }
 
-void HG_GenericProjectile_Stick(void) {
+void HG_GenericProjectile_Stick(entity targ) {
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
 
     vector normal = trace_plane_normal;
@@ -300,10 +300,10 @@ void HG_GenericProjectile_Stick(void) {
         e.hg_deathtime = time + lt_override;
     }
 
-    if(trace_ent) {
+    if(targ) {
         e.movetype = MOVETYPE_FOLLOW;
-        e.view_ofs = e.origin - trace_ent.origin;
-        e.aiment = trace_ent;
+        e.view_ofs = e.origin - targ.origin;
+        e.aiment = targ;
         e.v_angle = e.angles;
     } else {
         e.movetype = MOVETYPE_NONE;
