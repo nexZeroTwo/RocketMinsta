@@ -317,7 +317,7 @@ void HG_GenericProjectile_Stick(void) {
             setmodel(e, "models/elaser.mdl");
             break;
         default:
-            setmodel(e, "models/grenademodel.md3");
+            setmodel(e, "models/handgrenade.iqm");
             break;
     }
 
@@ -348,6 +348,7 @@ void HG_GenericProjectile_Stick(void) {
     e.jb_proj_ownerstate = self.jb_proj_ownerstate;
     e.hg_state = TRUE;
     e.hg_adept = self.hg_adept;
+    e.colormap = self.owner.colormap;
 
     if(trace_ent) {
         e.movetype = MOVETYPE_FOLLOW;

@@ -68,6 +68,7 @@ void HG_Precache(void) {
     precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
     precache_model("models/sentry.md3");
+    precache_model("models/handgrenade.iqm");
 }
 
 void HG_SetContext(float isalt) {

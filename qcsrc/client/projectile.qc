@@ -270,9 +270,13 @@ void Projectile_Draw()
 	{
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
-		case PROJECTILE_HG_GENERIC:
-        case PROJECTILE_HG_NAPALM:
             trailorigin += v_right * 1 + v_forward * -2;
+            break;
+
+        case PROJECTILE_HG_GENERIC:
+        case PROJECTILE_HG_NAPALM:
+            trailorigin += v_right * -5;
+            break;
 
         case PROJECTILE_HG_PLASMA:
         case PROJECTILE_HG_TRANSLOC:
@@ -453,8 +457,10 @@ void Ent_Projectile()
                 }
                 break;
 			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
-                setmodel(self, "models/grenademodel.md3");
-                self.skin = TeamColorSkin(self.team);
+                setmodel(self, "models/handgrenade.iqm");
+                if(!teamplay)
+                    self.team = COLOR_TEAM1;
+                self.colormap = 1024 + self.team * 17;
                 break;
             case PROJECTILE_HG_REMOTE:
                 self.alpha = 1;
