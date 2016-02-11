@@ -287,68 +287,13 @@ void HG_GenericProjectile_Stick(void) {
     if(trace_ent.classname == "misc_terminal")
         return;
 
-    entity e = spawn();
-    float d = self.owner.hg_detonables;
+    entity e = self;
+    e.hg_state = TRUE;
 
-    e.classname = self.classname;
-    e.bot_dodge = self.bot_dodge;
-    e.bot_dodgerating = self.bot_dodgerating;
-    e.owner = self.owner;
-
-    if(self.hg_type == HG_TRANSLOC)
+    if(e.hg_type == HG_TRANSLOC)
         e.angles = randomvec() * 360;
     else
         e.angles = vectoangles(-normal);
-
-    e.skin = TeamColorSkin(e.owner.team);
-
-    // FIXME: a better way to sync this with client code?
-    switch(self.hg_type) {
-        case HG_REMOTE:
-            setmodel(e, "models/mine.md3");
-            break;
-        case HG_TRANSLOC:
-            setmodel(e, "models/hg_transloc.md3");
-            e.pflags = PFLAGS_FULLDYNAMIC | PFLAGS_CORONA;
-            e.light_lev = 50;
-            e.color = TeamColor(if(self.team > 0) self.team else COLOR_TEAM4);
-            break;
-        case HG_LASER:
-            setmodel(e, "models/elaser.mdl");
-            break;
-        default:
-            setmodel(e, "models/handgrenade.iqm");
-            break;
-    }
-
-    e.damageforcescale = self.damageforcescale;
-    e.health = self.health;
-    e.max_health = self.max_health;
-    e.takedamage = self.takedamage;
-    e.event_damage = self.event_damage;
-    e.solid = self.solid;
-    e.dphitcontentsmask = self.dphitcontentsmask;
-    e.use = self.use;
-    e.hg_type = self.hg_type;
-    e.projectiledeathtype = self.projectiledeathtype;
-    e.think = HG_GenericProjectile_Think;
-    e.nextthink = self.nextthink;
-    e.flags = self.flags;
-    e.team = self.team;
-    e.hg_sticked = TRUE;
-    e.hg_deathtime = self.hg_deathtime;
-    e.hg_sndcount = self.hg_sndcount;
-    e.hg_nextsnd = self.hg_nextsnd;
-    e.hg_detonable = self.hg_detonable;
-    e.hg_detonatetime = self.hg_detonatetime;
-    e.hg_detonatedelay = self.hg_detonatedelay;
-    e.hg_detonateready = self.hg_detonateready;
-    e.hg_detonable_updated = self.hg_detonable_updated;
-    e.reset = self.reset;
-    e.jb_proj_ownerstate = self.jb_proj_ownerstate;
-    e.hg_state = TRUE;
-    e.hg_adept = self.hg_adept;
-    e.colormap = self.owner.colormap;
 
     var lt_override = GRENVAR(e.hg_type, (if(e.hg_adept) "adept_" else "") + "stick_lifetime_override");
     if(lt_override > 0) {
@@ -357,51 +302,45 @@ void HG_GenericProjectile_Stick(void) {
 
     if(trace_ent) {
         e.movetype = MOVETYPE_FOLLOW;
-        e.view_ofs = self.origin - trace_ent.origin;
+        e.view_ofs = e.origin - trace_ent.origin;
         e.aiment = trace_ent;
         e.v_angle = e.angles;
     } else {
         e.movetype = MOVETYPE_NONE;
     }
 
-    var sz = if(self.hg_type == HG_TRANSLOC) 8 else 5;
+    var sz = if(e.hg_type == HG_TRANSLOC) 8 else 5;
     var hitmins = '-1 -1 -1' * sz;
     var hitmaxs = ' 1  1  1' * sz;
 
     setsize(e, hitmins, hitmaxs);
-    setorigin(e, self.origin);
+    setorigin(e, e.origin);
 
     // For the translocator (face against the wall when teleporting)
     if(normal == '0 0 1')
-        e.hg_lastvel = self.hg_lastvel;
+        e.hg_lastvel = e.hg_lastvel;
     else
         e.hg_lastvel = normal;
 
-    e.meodp_point = self.meodp_point;
-    e.meodp_point_offs = self.meodp_point_offs + normal * sz * 2;
-    e.meodp_death = self.meodp_death;
-    if(e.meodp_point)
-        e.meodp_point.owner = e;
+    e.meodp_point_offs = e.meodp_point_offs + normal * sz * 2;
     e.meodp_point_angleoffs = '90 180 0';
 
+    e.csqcprojectile_clientanimate = FALSE;
+    UpdateCSQCProjectile(e);
+    e.SendFlags = 0xFFFFFF;
+    UpdateCSQCProjectileAngles(e);
     move_out_of_solid(e);
-
-    if(self.hg_waypoint) {
-        entity wp = self.hg_waypoint;
-        self.hg_waypoint = world;
-        wp.owner = e;
-        wp.exteriormodeltoclient = e;
-        e.hg_waypoint = wp;
-    }
-
-    HG_GenericProjectile_Remove();
-    self = e;
-
-    self.owner.hg_detonables = d;
 }
 
 void HG_GenericProjectile_Think(void) {
     #define GV(v) (GRENVAR(self.hg_type, v))
+
+    if(!self.csqcprojectile_clientanimate) {
+        if(self.origin != self.oldorigin) {
+            UpdateCSQCProjectile(self);
+            self.oldorigin = self.origin;
+        }
+    }
 
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
@@ -456,7 +395,6 @@ void HG_GenericProjectile_Think(void) {
                 }
             }
         }
-        UpdateCSQCProjectile(self);
     }
 
     HG_Waypoint();

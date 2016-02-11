@@ -1,12 +1,17 @@
 .float csqcprojectile_type;
+.float csqcprojectile_sendangles;
 
 float CSQCProjectile_SendEntity(entity to, float sf)
 {
 	// note: flag 0x20 = no trail please
 	sf = sf & 63;
 
-	if(self.csqcprojectile_clientanimate)
+	if(self.csqcprojectile_clientanimate) {
+        sf &~= 4;
 		sf |= 128; // client animated, not interpolated
+    } else if(!self.csqcprojectile_sendangles) {
+        sf &~= 4;
+    }
 
 	if(self.flags & FL_ONGROUND)
 		sf |= 64;
@@ -45,6 +50,12 @@ float CSQCProjectile_SendEntity(entity to, float sf)
             WriteByte(MSG_ENTITY, min(255, self.csqcprojectile_extradata)); 
     }
 
+    if(sf & 4) {
+        WriteCoord(MSG_ENTITY, self.angles_x);
+        WriteCoord(MSG_ENTITY, self.angles_y);
+        WriteCoord(MSG_ENTITY, self.angles_z);
+    }
+
 	return 1;
 }
 
@@ -65,7 +76,7 @@ void CSQCProjectile(entity e, float clientanimate, float type, float docull)
 							
 	Net_LinkEntity(e, docull, 0, CSQCProjectile_SendEntity);
 	e.csqcprojectile_clientanimate = clientanimate;
-	
+
 	if(e.movetype == MOVETYPE_TOSS || e.movetype == MOVETYPE_BOUNCE)
 	{
 		if(e.gravity == 0)
@@ -86,6 +97,16 @@ void UpdateCSQCProjectile(entity e)
 		// send new origin data
 		e.SendFlags |= 1;
 	}
+}
+
+void UpdateCSQCProjectileAngles(entity e)
+{
+    if(e.SendEntity == CSQCProjectile_SendEntity)
+    {
+        // send new angles data (does nothing in predictive mode)
+        e.SendFlags |= 4;
+        e.csqcprojectile_sendangles = TRUE;
+    }
 }
 
 void UpdateCSQCProjectileAfterTeleport(entity e)
