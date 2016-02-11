@@ -1,5 +1,5 @@
 
-void HG_GenericProjectile_Stick(entity targ);
+void HG_GenericProjectile_Stick(entity targ, vector normal);
 void HG_GenericProjectile_Think(void);
 
 float HG_GenericProjectile_CSQCProjType(float t) {
@@ -99,6 +99,50 @@ void HG_GenericProjectile_Explode(void) {
 
 #undef GV
 
+float HG_GenericProjectile_TryStick(entity targ, vector normal) {
+    var doStick;
+
+    if(self.hg_adept)
+        doStick = GRENVAR(self.hg_type, "adept_stick");
+    else
+        doStick = GRENVAR(self.hg_type, "stick");
+
+    if(!doStick || (targ.takedamage == DAMAGE_AIM && doStick < 2) || targ.solid == SOLID_CORPSE)
+        return FALSE;
+
+    self.velocity = '0 0 0';
+
+    if(self.hg_type == HG_TRANSLOC) {
+        // Check if it's ok to teleport in this location
+        // by assuming a player-sized bbox and trying to move out of solid.
+        // If that fails, remove and refund the translocator
+
+        if(!self.hg_transloc_solidcheck) {
+            self.hg_transloc_solidcheck = TRUE;
+
+            var omins = self.mins;
+            var omaxs = self.maxs;
+            var oorig = self.origin;
+            setsize(self, PL_MIN, PL_MAX);
+
+            if(!move_out_of_solid(self)) {
+                if(!self.hg_isbonus) HG_DO_IN_ALL_CONTEXTS(if(self.owner.hg_ctx_type == HG_TRANSLOC)
+                    self.owner.hg_ctx_ammo += 1;)
+
+                bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
+                HG_GenericProjectile_Remove();
+                return TRUE;
+            }
+
+            setsize(self, omins, omaxs);
+            setorigin(self, oorig);
+        }
+    }
+
+    HG_GenericProjectile_Stick(targ, normal);
+    return TRUE;
+}
+
 void HG_GenericProjectile_Touch(void) {
     PROJECTILE_SKIPNONSOLID
     if(SUB_OwnerCheck())
@@ -122,6 +166,14 @@ void HG_GenericProjectile_Touch(void) {
         return;
 
     if(other.takedamage == DAMAGE_AIM) {
+        if(HG_GenericProjectile_TryStick(other, ({
+            var n = normalize(self.origin - other.origin);
+            n_z = trace_plane_normal_z;
+            n;
+        }))) {
+            return;
+        }
+
         if(self.hg_type == HG_TRANSLOC && teams_matter && other.team == self.owner.team) {
             float adeptRev = (Buffs_Present(self.owner, BUFF_ADEPT) && CVAR(g_nadgets_transloc_adept_revive));
 
@@ -147,65 +199,20 @@ void HG_GenericProjectile_Touch(void) {
                     }
                 }
             } else goto troll;
-        } else if(self.hg_type == HG_REMOTE)
+        } else if(self.hg_type == HG_REMOTE) {
             goto troll;
-
-        if(self.hg_type == HG_PLASMA) {
+        } else if(self.hg_type == HG_PLASMA) {
             self.velocity = '0 0 0';
         }
 
         self.use();
     } else {
-        vector normal = trace_plane_normal;
-
         if(self.hg_type == HG_TRANSLOC && CVAR(g_nadgets_transloc_bounceresetorigin))
             self.spawnorigin = self.origin;
 
         // Check if we should stop bouncing around, then stick or explode if so.
         if(self.cnt <= 0) {
-            float isFloor = (normal == '0 0 1');
-            float doStick;
-
-            if(self.hg_adept)
-                doStick = GRENVAR(self.hg_type, "adept_stick");
-            else
-                doStick = GRENVAR(self.hg_type, "stick");
-
-            if(doStick) {
-                self.velocity = '0 0 0';
-
-                if(self.hg_type == HG_TRANSLOC) {
-                    // Check if it's ok to teleport in this location
-                    // by assuming a player-sized bbox and trying to move out of solid.
-                    // If that fails, remove and refund the translocator
-
-                    if(!self.hg_transloc_solidcheck) {
-                        self.hg_transloc_solidcheck = TRUE;
-
-                        vector omins = self.mins;
-                        vector omaxs = self.maxs;
-                        vector oorig = self.origin;
-                        setsize(self, PL_MIN, PL_MAX);
-
-                        if(!move_out_of_solid(self)) {
-                            if(!self.hg_isbonus) HG_DO_IN_ALL_CONTEXTS(if(self.owner.hg_ctx_type == HG_TRANSLOC)
-                                self.owner.hg_ctx_ammo += 1;)
-
-                            bprint("^1Couldn't move ", self.owner.netname, "^1's translocator out of solid! Teleport aborted.\n");
-                            HG_GenericProjectile_Remove();
-                            return;
-                        }
-
-                        setsize(self, omins, omaxs);
-                        setorigin(self, oorig);
-                    }
-                }
-
-                trace_plane_normal = normal;
-                HG_GenericProjectile_Stick(other);
-
-                return;
-            } else {
+            if(!HG_GenericProjectile_TryStick(other, trace_plane_normal)) {
                 if(self.hg_type == HG_PLASMA)
                     self.velocity = '0 0 0';
                 self.use();
@@ -277,10 +284,8 @@ void HG_GenericProjectile_Touch(void) {
     }
 }
 
-void HG_GenericProjectile_Stick(entity targ) {
+void HG_GenericProjectile_Stick(entity targ, vector normal) {
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
-
-    vector normal = trace_plane_normal;
 
     // TODO: A better, more general fix
     if(trace_ent.classname == "misc_terminal")
@@ -304,6 +309,9 @@ void HG_GenericProjectile_Stick(entity targ) {
         e.view_ofs = e.origin - targ.origin;
         e.aiment = targ;
         e.v_angle = e.angles;
+        e.v_angle_y -= targ.angles_y;
+        e.punchangle = -targ.angles;
+        e.punchangle_y *= -1;
     } else {
         e.movetype = MOVETYPE_NONE;
     }
@@ -328,8 +336,11 @@ void HG_GenericProjectile_Stick(entity targ) {
     UpdateCSQCProjectile(e);
     e.SendFlags = 0xFFFFFF;
     UpdateCSQCProjectileAngles(e);
+    e.effects |= EF_NODEPTHTEST; // no culling please
     move_out_of_solid(e);
 }
+
+.vector hg_oldangles;
 
 void HG_GenericProjectile_Think(void) {
     #define GV(v) (GRENVAR(self.hg_type, v))
@@ -338,6 +349,13 @@ void HG_GenericProjectile_Think(void) {
         if(self.origin != self.oldorigin) {
             UpdateCSQCProjectile(self);
             self.oldorigin = self.origin;
+        }
+
+        if(self.movetype == MOVETYPE_FOLLOW) {
+            if(self.angles != self.hg_oldangles) {
+                UpdateCSQCProjectileAngles(self);
+                self.hg_oldangles = self.angles;
+            }
         }
     }
 

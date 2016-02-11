@@ -1015,6 +1015,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
 
+        dropentities(self);
+
         if(removenadgets == 1) // was < 2
             HG_RemoveAll(self);
         
