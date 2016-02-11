@@ -1,7 +1,6 @@
 
 .float hg_spawntime;
 .float hg_ranthink;
-.float hg_sticked;
 .float hg_deathtime;
 .vector hg_lastvel;
 .vector hg_deferredVel;
