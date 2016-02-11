@@ -350,6 +350,11 @@ void HG_GenericProjectile_Stick(void) {
     e.hg_adept = self.hg_adept;
     e.colormap = self.owner.colormap;
 
+    var lt_override = GRENVAR(e.hg_type, (if(e.hg_adept) "adept_" else "") + "stick_lifetime_override");
+    if(lt_override > 0) {
+        e.hg_deathtime = time + lt_override;
+    }
+
     if(trace_ent) {
         e.movetype = MOVETYPE_FOLLOW;
         e.view_ofs = self.origin - trace_ent.origin;
