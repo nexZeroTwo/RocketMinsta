@@ -41,7 +41,7 @@ void HG_Transloc_Explode(void) {
         })
     }
 
-    if(CVAR(g_nadgets_transloc_reloadonuse) && (self.owner.weaponentity.wframe != WFRAME_RELOAD || tdeath_hit)) {
+    if(CVAR(g_nadgets_transloc_reloadonuse) && self.owner.weapon && (self.owner.weaponentity.wframe != WFRAME_RELOAD || tdeath_hit)) {
         using(self = self.owner) {
             weapon_action(self.weapon, WR_ACTIVERELOAD);
             if(tdeath_hit)
