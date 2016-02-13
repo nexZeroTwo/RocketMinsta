@@ -288,7 +288,10 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
 
     // TODO: A better, more general fix
-    if(trace_ent.classname == "misc_terminal")
+    if(targ.classname == "misc_terminal")
+        return;
+
+    if(targ.flags & FL_PROJECTILE)
         return;
 
     entity e = self;
@@ -356,6 +359,8 @@ void HG_GenericProjectile_Think(void) {
     #define GV(v) (GRENVAR(self.hg_type, v))
 
     if(!self.csqcprojectile_clientanimate) {
+        var o = self.oldorigin;
+
         if(self.origin != self.oldorigin) {
             UpdateCSQCProjectile(self);
             self.oldorigin = self.origin;
@@ -365,6 +370,13 @@ void HG_GenericProjectile_Think(void) {
             if(self.angles != self.hg_oldangles) {
                 UpdateCSQCProjectileAngles(self);
                 self.hg_oldangles = self.angles;
+            }
+
+            if(!self.aiment || wasfreed(self.aiment)) {
+                self.aiment = world;
+                self.movetype = MOVETYPE_TOSS;
+                setorigin(self, o);
+                UpdateCSQCProjectile(self);
             }
         }
     }
