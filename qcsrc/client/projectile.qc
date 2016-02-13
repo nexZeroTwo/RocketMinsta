@@ -208,8 +208,15 @@ void Projectile_Draw()
         if(self.cnt == PROJECTILE_PRYAXE)
             self.move_flags &~= FL_ONGROUND;
 
-		if(!(self.move_flags & FL_ONGROUND))
+		if(!(self.move_flags & FL_ONGROUND)) {
 			self.angles = vectoangles(self.velocity);
+
+            if(self.cnt == PROJECTILE_HG_PLASMA) {
+                self.angles_x = 0;
+                self.angles_y -= 90;
+                self.angles_z = 0;
+            }
+        }
 	}
 	else
 	{
@@ -238,12 +245,6 @@ void Projectile_Draw()
 		rot = '0 0 0';
 		switch(self.cnt)
 		{
-			/*
-			case PROJECTILE_GRENADE:
-				rot = '-2000 0 0'; // forward
-				break;
-			*/
-			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
             //case PROJECTILE_HG_REMOTE:
@@ -259,6 +260,7 @@ void Projectile_Draw()
                 rot = '700 643 721';
                 break;
             case PROJECTILE_HG_RAZE:
+            case PROJECTILE_HG_PLASMA:
                 rot = '0 0 -1000';
                 break;
             case PROJECTILE_PRYAXE:
@@ -284,7 +286,6 @@ void Projectile_Draw()
             trailorigin += v_right * -5;
             break;
 
-        case PROJECTILE_HG_PLASMA:
         case PROJECTILE_HG_TRANSLOC:
         case PROJECTILE_HG_REMOTE:
         case PROJECTILE_HG_LASER:
@@ -466,14 +467,19 @@ void Ent_Projectile()
                     self.skin = TeamColorSkin(self.team);
                 }
                 break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM:
                 setmodel(self, "models/handgrenade.iqm");
                 if(!teamplay)
                     self.team = COLOR_TEAM1;
                 self.colormap = 1024 + self.team * 17;
                 break;
+            case PROJECTILE_HG_PLASMA:
+                setmodel(self, "models/plasmabomb.iqm");
+                if(!teamplay)
+                    self.team = COLOR_TEAM2;
+                self.colormap = 1024 + self.team * 17;
+                break;
             case PROJECTILE_HG_REMOTE:
-                self.alpha = 1;
                 setmodel(self, "models/mine.md3");
                 self.skin = TeamColorSkin(self.team);
                 break;
@@ -667,6 +673,8 @@ void Projectile_Precache()
     precache_model("models/raze.md3");
     precache_model("models/sphere/sphere.md3");
     precache_model("models/weapons/pryaxe_thrown.md3");
+    precache_model("models/handgrenade.iqm");
+    precache_model("models/plasmabomb.iqm");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");

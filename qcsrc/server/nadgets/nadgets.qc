@@ -64,11 +64,8 @@ void HG_Precache(void) {
     precache_sound("kh/capture.wav");
     precache_sound(RM_SOUND_LASER_PRIMARY);
     precache_sound(RM_SOUND_LASER_SECONDARY);
-    precache_model("models/mine.md3");
-    precache_model("models/hg_transloc.md3");
     precache_model("models/ctf/shield.md3");
     precache_model("models/sentry.md3");
-    precache_model("models/handgrenade.iqm");
 }
 
 void HG_SetContext(float isalt) {

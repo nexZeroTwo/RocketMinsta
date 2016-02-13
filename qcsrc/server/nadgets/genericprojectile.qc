@@ -294,10 +294,17 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
     entity e = self;
     e.hg_state = TRUE;
 
-    if(e.hg_type == HG_TRANSLOC)
+    if(e.hg_type == HG_TRANSLOC) {
         e.angles = randomvec() * 360;
-    else
+    } else {
         e.angles = vectoangles(-normal);
+    }
+
+    if(e.hg_type == HG_PLASMA) {
+        var va = vectoangles(e.hg_lastvel);
+        e.angles_x -= 90;
+        e.angles_y = va_y - 90;
+    }
 
     var lt_override = GRENVAR(e.hg_type, (if(e.hg_adept) "adept_" else "") + "stick_lifetime_override");
     if(lt_override > 0) {
@@ -316,7 +323,12 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
         e.movetype = MOVETYPE_NONE;
     }
 
-    var sz = if(e.hg_type == HG_TRANSLOC) 8 else 5;
+    var sz = switch(e.hg_type) {
+        case HG_TRANSLOC    : 8,
+        case HG_PLASMA      : 7,
+        default             : 5
+    };
+
     var hitmins = '-1 -1 -1' * sz;
     var hitmaxs = ' 1  1  1' * sz;
 
@@ -324,9 +336,7 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
     setorigin(e, e.origin);
 
     // For the translocator (face against the wall when teleporting)
-    if(normal == '0 0 1')
-        e.hg_lastvel = e.hg_lastvel;
-    else
+    if(normal != '0 0 1')
         e.hg_lastvel = normal;
 
     e.meodp_point_offs = e.meodp_point_offs + normal * sz * 2;

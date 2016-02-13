@@ -35,7 +35,7 @@ void Ent_DamageInfo(float isNew)
 	}
 	else
 		forcemul = 1;
-	
+
 	for(self = findradius(org, rad); self; self = self.chain)
 	{
 		if(rad)
