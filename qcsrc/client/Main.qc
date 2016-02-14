@@ -575,6 +575,7 @@ void InitFonts(void) {
         think: inline void(void) {
             if(!utf8_enabled())
                 utf8_enable();
+            fix_fonts();
             self.nextthink = time + 1;
         },
         nextthink: time

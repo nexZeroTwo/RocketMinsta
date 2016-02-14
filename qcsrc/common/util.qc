@@ -2005,6 +2005,8 @@ void va_test(string fmt, ...) { VA_INIT
 
 void load_fonts(void) {
 #ifndef SVQC
+    registercvar("_rm_font_setting", "0", 0);
+
     if(utf8_enabled()) {
         var sizes = " ";
 
@@ -2036,6 +2038,8 @@ void load_fonts(void) {
         localcmd("loadfont user2    ", font_big, sizes, "\n");
         localcmd("loadfont user3    ", font_madoka, sizes, "\n");
         localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
+
+        cvar_set("_rm_font_setting", "1");
     } else {
         cvar_set("r_font_disable_freetype", "1");
 
@@ -2049,9 +2053,17 @@ void load_fonts(void) {
         localcmd("loadfont user2    gfx/vera-sans-big\n");
         localcmd("loadfont user3    gfx/madoka-rune\n");
         localcmd("loadfont user4    gfx/iceland\n");
+
+        cvar_set("_rm_font_setting", "0");
     }
+
     localcmd("sbar_columns_set default\n");
 #endif
+}
+
+void fix_fonts(void) {
+    if(CVAR(_rm_font_setting) != utf8_enabled())
+        load_fonts();
 }
 
 void utf8_report(void) {
