@@ -2,8 +2,8 @@
 .float buffs;
 .float buffstat;
 .float buff_active;
-.float light_lev;
-
+.float lightlev;
+.float lightflags;
 .vector lightcolor;
 
 string buff_modelnames[BUFF_COUNT];
@@ -33,8 +33,8 @@ void Buffs_Model_Draw(void) {
     if(self.alpha > 0)
         R_AddEntity(self);
 
-    if(self.light_lev)
-        R_AddDynamicLight(self.origin, self.light_lev, self.lightcolor);
+    if(self.lightlev)
+        R_AddDynamicLightEx(self.origin, self.lightlev, self.lightcolor, -1, NULL, self.lightflags);
 
     if(self.effects & EF_STARDUST)
         pointparticles(particleeffectnum("EF_STARDUST"), self.origin, '0 0 0', frametime);
@@ -48,7 +48,7 @@ void Buffs_Model_Multi_Think(void) {
 
     self.effects = self.owner.effects;
     self.effects &~= EF_NODRAW;
-    self.light_lev = self.owner.light_lev * 0.7;
+    self.lightlev = self.owner.lightlev * 0.7;
     self.alpha = self.owner.alpha;
     
     if(self.buffs == BUFF_MEODP) {
@@ -83,14 +83,14 @@ void Buffs_Model_Think(void) {
 
             self.alpha = 0.3;
             self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
-            self.light_lev = 0;
+            self.lightlev = 0;
         } else {
             // this is an active buff pickup model
 
             self.alpha = 1;
             self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
             
-            self.light_lev = 220 + 36 * sin(time);
+            self.lightlev = 220 + 36 * sin(time);
         }
         
         self.angles_y = time * 110.1;
@@ -232,8 +232,9 @@ void Buffs_Model_Read(void) {
         self.draw = Buffs_Model_Draw;
         self.think = Buffs_Model_Think;
         self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_NOSHADOW;
-        self.light_lev = 200;
+        self.lightlev = 200;
         self.nextthink = time;
+        self.lightflags = PFLAGS_FULLDYNAMIC;
 
         if(self.sv_entnum) {
             // this is an overhead buff model
@@ -248,6 +249,9 @@ void Buffs_Model_Read(void) {
             setsize(self, '-15 -15 -40', '15 15 40');
             self.gravity = 100;
             self.effects |= EF_STARDUST;
+
+            if(!CVAR(gl_flashblend))
+                self.lightflags |= PFLAGS_CORONA;
 
             Buffs_Model_AttachRing(self);
         }

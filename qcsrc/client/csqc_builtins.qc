@@ -87,6 +87,7 @@ void (entity e)								R_AddEntity = #302;
 float (float property, ...)						R_SetView = #303;
 void ()									R_RenderScene = #304;
 void (vector org, float radius, vector rgb)				R_AddDynamicLight = #305;
+void (vector org, float radius, vector lightcolours, float style, string cubemapname, float pflags) R_AddDynamicLightEx = #305;
 void ()									R_CalcRefDef = #306;
 
 vector (vector v)							cs_unproject = #310;

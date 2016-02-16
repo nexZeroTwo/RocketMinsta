@@ -191,3 +191,7 @@ float CAMERA_FREE = 1;
 float CAMERA_CHASE = 2;
 
 float EF_NOMODELFLAGS = 8388608;
+
+float PFLAGS_NOSHADOW = 1; // light does not cast shadows
+float PFLAGS_CORONA = 2; // light has a corona flare
+float PFLAGS_FULLDYNAMIC = 128; // light enable (without this set no light is produced!)
