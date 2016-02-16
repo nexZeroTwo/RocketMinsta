@@ -6,11 +6,11 @@ void Radio_Stopper_Think(void) {
     }
 
     float t = gettime(GETTIME_CDTRACK);
-    //print(ftos(t), "\n");
 
     if(self.cnt > t) {
         localcmd("cd reset;");
         remove(self);
+        return;
     }
 
     self.cnt = t;
