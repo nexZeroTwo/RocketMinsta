@@ -327,7 +327,7 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
     }
 
     var sz = switch(e.hg_type) {
-        case HG_TRANSLOC    : 8,
+        case HG_TRANSLOC    : 6,
         case HG_PLASMA      : 7,
         default             : 5
     };
@@ -336,7 +336,12 @@ void HG_GenericProjectile_Stick(entity targ, vector normal) {
     var hitmaxs = ' 1  1  1' * sz;
 
     setsize(e, hitmins, hitmaxs);
-    setorigin(e, e.origin);
+
+    if(!targ || targ.solid == SOLID_BSP) {
+        tracebox(e.origin, e.mins, e.maxs, e.origin - normal * 64, MOVE_NOMONSTERS, e);
+        if(!trace_startsolid)
+            setorigin(e, trace_endpos);
+    }
 
     // For the translocator (face against the wall when teleporting)
     if(normal != '0 0 1')

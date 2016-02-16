@@ -485,8 +485,11 @@ void Ent_Projectile()
                 break;
             case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
             case PROJECTILE_HG_TRANSLOC:
-                setmodel(self, "models/hg_transloc.md3");
+                setmodel(self, "models/translocator.iqm");
+                if(!teamplay)
+                    self.team = COLOR_TEAM4;
                 self.skin = TeamColorSkin(self.team);
+                self.colormap = 1024 + self.team * 17;
                 self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
@@ -669,7 +672,7 @@ void Projectile_Precache()
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
-    precache_model("models/hg_transloc.md3");
+    precache_model("models/translocator.iqm");
     precache_model("models/raze.md3");
     precache_model("models/sphere/sphere.md3");
     precache_model("models/weapons/pryaxe_thrown.md3");
