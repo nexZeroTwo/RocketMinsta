@@ -489,7 +489,7 @@ HG_HOOKFUNCTION(sentry, Attack) {
 
     entity c = spawn();
     setmodel(c, "models/ebomb.mdl");
-    c.skin = 9;
+    c.skin = 3;
     c.colormap = e.colormap;
     c.pflags = PFLAGS_FULLDYNAMIC;
     c.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM3);

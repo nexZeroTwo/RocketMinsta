@@ -163,9 +163,7 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
 
     entity e = spawn();
     setmodel(e, "models/ebomb.mdl");
-    e.skin = TeamColorSkin(self.team);
-    if(!e.skin)
-        e.skin = 2;
+    e.skin = 2;
     e.cnt = ct;
     e.think = W_Nex_ChargeEffect_Think;
     e.nextthink = time;
@@ -173,6 +171,7 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     e.enemy = e;
     e.pflags = PFLAGS_FULLDYNAMIC;
     e.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
+    e.colormap = num_for_edict(self);
     W_AttachToShotorg(e, '5 0 0');
 
     // needs to be done AFTER W_AttachToShotorg

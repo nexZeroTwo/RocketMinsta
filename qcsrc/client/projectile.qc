@@ -343,6 +343,12 @@ void Flak_Touch(void) {
 
 vector Zapper_BeamRGB(float t);
 
+void SetupProjectileColormap(float default_team) {
+    if(!teamplay)
+        self.team = default_team;
+    self.colormap = 1024 + self.team * 17;
+}
+
 void Ent_Projectile()
 {
 	float f;
@@ -442,9 +448,8 @@ void Ent_Projectile()
 		{
 			case PROJECTILE_ELECTRO:
                 setmodel(self, "models/ebomb.mdl");
-                self.skin = TeamColorSkin(self.team);
-                if(self.skin)
-                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                SetupProjectileColormap(COLOR_TEAM2);
+                self.skin = 1;
                 break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
@@ -469,15 +474,11 @@ void Ent_Projectile()
                 break;
 			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM:
                 setmodel(self, "models/handgrenade.iqm");
-                if(!teamplay)
-                    self.team = COLOR_TEAM1;
-                self.colormap = 1024 + self.team * 17;
+                SetupProjectileColormap(COLOR_TEAM1);
                 break;
             case PROJECTILE_HG_PLASMA:
                 setmodel(self, "models/plasmabomb.iqm");
-                if(!teamplay)
-                    self.team = COLOR_TEAM2;
-                self.colormap = 1024 + self.team * 17;
+                SetupProjectileColormap(COLOR_TEAM2);
                 break;
             case PROJECTILE_HG_REMOTE:
                 setmodel(self, "models/mine.md3");
@@ -486,22 +487,19 @@ void Ent_Projectile()
             case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
             case PROJECTILE_HG_TRANSLOC:
                 setmodel(self, "models/translocator.iqm");
-                if(!teamplay)
-                    self.team = COLOR_TEAM4;
                 self.skin = TeamColorSkin(self.team);
-                self.colormap = 1024 + self.team * 17;
+                SetupProjectileColormap(COLOR_TEAM4);
                 self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
                 setmodel(self, "models/ebomb.mdl");
-                self.skin = TeamColorSkin(self.team);
+                SetupProjectileColormap(COLOR_TEAM2);
+                self.skin = 2;
                 plasma_chain = findchainfloat_tofield(cnt, PROJECTILE_HG_PLASMA_SHARD, plasma_next);
                 break;
             case PROJECTILE_HG_RAZE:
                 setmodel(self, "models/raze.md3");
-                if(!teamplay)
-                    self.team = COLOR_TEAM1;
-                self.colormap = 1024 + self.team * 17;
+                SetupProjectileColormap(COLOR_TEAM1);
                 break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
@@ -517,9 +515,7 @@ void Ent_Projectile()
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
             case PROJECTILE_PRYAXE:
                 setmodel(self, "models/weapons/pryaxe_thrown.md3");
-                if(!teamplay)
-                    self.team = COLOR_TEAM1;
-                self.colormap = 1024 + self.team * 17;
+                SetupProjectileColormap(COLOR_TEAM1);
                 break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
