@@ -288,7 +288,7 @@ float w_flak(float req) {
             if(W_Clip_TryAttackOrReload()) {
                 if(WEP_CVAR_PRI(flak, charge)) {
                     weapon_thinkf(WFRAME_FIRE1, 0, inline void(void) { W_Flak_Charge(TRUE); });
-                    self.w_inring_cycle = WEP_CVAR_PRI(flak, charge);
+                    self.w_inring_cycle = WEP_CVAR_PRI(flak, charge) * W_WeaponRateFactor();
                     self.w_inring_fulltime = time + self.w_inring_cycle;
                 } else {
                     W_Flak_Attack(TRUE, 0);
@@ -304,7 +304,7 @@ float w_flak(float req) {
                     weapon_thinkf(WFRAME_FIRE2, WEP_CVAR_SEC(flak, animtime), w_ready);
                 } else if(WEP_CVAR_SEC(flak, charge)) {
                     weapon_thinkf(WFRAME_FIRE2, 0, inline void(void) { W_Flak_Charge(FALSE); });
-                    self.w_inring_cycle = WEP_CVAR_SEC(flak, charge);
+                    self.w_inring_cycle = WEP_CVAR_SEC(flak, charge) * W_WeaponRateFactor();
                     self.w_inring_fulltime = time + self.w_inring_cycle;
                 } else {
                     W_Flak_Attack(FALSE, 0);
