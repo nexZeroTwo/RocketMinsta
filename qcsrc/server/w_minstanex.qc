@@ -32,7 +32,7 @@ void W_Explosive_Attack (float attacktype)
 {
 	float SPEED;
 	SPEED = 90000000;
-	
+
 	entity gren;
 
 	float expl_damage = CVAR(g_rocketminsta_splash_damage) / 2; //I'm not even sure why is this here?
@@ -118,26 +118,32 @@ float RM_TeamLaserEffect(entity pl)
 
 void W_MinstaNex_Attack (void)
 {
-	float flying;
+	float flying, cost;
 	flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-	
+    if(g_minstagib)
+        cost = 1;
+    else
+        cost = CVAR(g_balance_minstanex_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
 	yoda = 0;
 	damage_goodhits = 0;
 	headshot = 0;
-	
-	//<akari>
-	//Executes the explosive attack
-	
+
 	if(CVAR(g_rocketminsta))
 	{
 		W_Explosive_Attack(WEP_ROCKET_LAUNCHER);
 	}
 	
 	W_SetupShot (self, TRUE, 0, RM_SOUND_MINSTA, 0);
+
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
 	FireRailgunBullet (w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, if(CVAR(g_balance_minstanex_damage) >= 0) CVAR(g_balance_minstanex_damage) else 10000000000, CVAR(g_balance_minstanex_force), 0, 0, 0, 0, WEP_MINSTANEX);
-    //</akari>
+    Buffs_MEODP_Hitscan_End(pts);
+
 
     float prflags;
 
@@ -160,51 +166,47 @@ void W_MinstaNex_Attack (void)
 
 	pointparticles(particleeffectnum("nex_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
 
+    // flash and burn the wall
+    if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
+        Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * WarpZone_trace_dir, WEP_MINSTANEX, self);
+
 	// teamcolor / hit beam effect
+    vector v = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 	if(CVAR(teamplay))
 	{
 	    switch(self.team)
 	    {
             case COLOR_TEAM1:   // Red
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3RED"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM2:   // Blue
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3BLUE"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM3:   // Yellow
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3YELLOW"), w_shotorg, w_shotorg_visual, v);
                 break;
             case COLOR_TEAM4:   // Pink
                 if(damage_goodhits)
-                    trailparticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK_HIT"), w_shotorg, w_shotorg_visual, v);
                 else
-                    trailparticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg_visual, trace_endpos);
+                    WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3PINK"), w_shotorg, w_shotorg_visual, v);
                 break;
 	    }
 	}
 	else
-        trailparticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg_visual, trace_endpos);
-
-	// flash and burn the wall
-	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-		Damage_DamageInfo(trace_endpos, 10000, 0, 0, 800 * w_shotdir, WEP_MINSTANEX, self);
+        WarpZone_TrailParticles(world, particleeffectnum("TE_TEI_G3"), w_shotorg, w_shotorg_visual, v);
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-	{
-		if (g_minstagib)
-			self.ammo_cells = self.ammo_cells - 1;
-		else
-			self.ammo_cells = self.ammo_cells - CVAR(g_balance_minstanex_ammo);
-	}
+        self.ammo_cells -= cost;
 	
 	if(damage_goodhits)
 		self.goodhits++;
@@ -437,16 +439,29 @@ void W_RM_Alt_Attack_Single()
 
 .float nextfiretime;
 
+void W_MinstaNex_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_MINSTANEX,
+        CVAR(g_balance_minstanex_magazinecapacity),
+        CVAR(g_balance_minstanex_magazineregen),
+        CVAR(g_balance_minstanex_reloadtime),
+        ammo_cells,
+        1
+    );
+}
+
 float w_minstanex(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_minstanex_swapshotmodes));
+    W_MinstaNex_SetClipContext();
 	float rapid = CVAR(g_rocketminsta_laser_rapid);
 	
 	if (req == WR_AIM)
 	{
 		if(self.ammo_cells>0 && time >= self.nextfiretime)
-			self.BUTTON_ATCK = bot_aim(1000000, 0, 1, FALSE);
+			self.w_button_primary = bot_aim(1000000, 0, 1, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(
+			self.w_button_secondary = bot_aim(
 				if(CVAR(g_rocketminsta_laser_new))
 					CVAR(g_rocketminsta_laser_speed)
                 else
@@ -459,49 +474,52 @@ float w_minstanex(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK2 || (self.BUTTON_ATCK && !self.ammo_cells && CVAR(g_rocketminsta)))
-		{
-			if(g_freeze)
-			if(self.frozen)
-				return TRUE;
-			
-			if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_laser_new))
-			{
-				if (self.jump_interval <= time && !self.held_down)
-				{
-					if(rapid)
-						self.held_down = TRUE;
-					self.jump_interval = time + CVAR(g_rocketminsta_laser_refire);
-					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_delay);
-					//self.goodhits = 0;
-					W_RM_Alt_Attack();
-				}
-				else if(rapid && self.jump_interval2 <= time && self.held_down)
-				{
-					self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_refire);
-					//self.goodhits = 0;
-					W_RM_Alt_Attack_Single();
-				}
-			}
-			else if (self.jump_interval <= time)
-			{
-				self.jump_interval = time + 0.9 * W_WeaponRateFactor();
-				//self.goodhits = 0;
-				W_Laser_Attack(FALSE);
-			}
-		}
-		else
-			self.held_down = FALSE;
-		
-		if (self.BUTTON_ATCK)
-		{
-			if (weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
-			{
-				W_MinstaNex_Attack();
-				weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_minstanex_animtime), w_ready);
-				self.nextfiretime = time + CVAR(g_balance_minstanex_refire);
-			}
-		}
+        if(W_Clip_TryWeaponAction()) {
+            // the shit I wrote 5 years ago...
+
+            if(self.w_button_secondary || (self.w_button_primary && !self.ammo_cells && CVAR(g_rocketminsta))) {
+                if(g_freeze)
+                if(self.frozen)
+                    return TRUE;
+                
+                if(CVAR(g_rocketminsta) && CVAR(g_rocketminsta_laser_new))
+                {
+                    if (self.jump_interval <= time && !self.held_down)
+                    {
+                        if(rapid)
+                            self.held_down = TRUE;
+                        self.jump_interval = time + CVAR(g_rocketminsta_laser_refire);
+                        self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_delay);
+                        //self.goodhits = 0;
+                        W_RM_Alt_Attack();
+                    }
+                    else if(rapid && self.jump_interval2 <= time && self.held_down)
+                    {
+                        self.jump_interval2 = time + CVAR(g_rocketminsta_laser_rapid_refire);
+                        //self.goodhits = 0;
+                        W_RM_Alt_Attack_Single();
+                    }
+                }
+                else if (self.jump_interval <= time)
+                {
+                    self.jump_interval = time + 0.9 * W_WeaponRateFactor();
+                    //self.goodhits = 0;
+                    W_Laser_Attack(FALSE);
+                }
+            }
+            else
+                self.held_down = FALSE;
+            
+            if(self.w_button_primary)
+            if(weapon_prepareattack(0, CVAR(g_balance_minstanex_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_MinstaNex_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_minstanex_animtime), w_ready);
+                self.nextfiretime = time + CVAR(g_balance_minstanex_refire);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -534,6 +552,8 @@ float w_minstanex(float req)
 	{
 		self.minstanex_lasthit = 0;
 	}
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };
 

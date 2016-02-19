@@ -1,0 +1,109 @@
+
+void Napalm_Touch(void) {
+    PROJECTILE_TOUCH;
+}
+
+void Napalm_Burn(void) {
+    entity e, o;
+    float d, ismedic, sameteam;
+    vector p;
+
+    var dtype = self.projectiledeathtype;
+    var damage = self.napalm_burn_damage;
+    var edgedamage = self.napalm_burn_edgedamage;
+    var dist = self.napalm_burn_radius;
+    var burntime = self.napalm_burn_time;
+
+    o = self.owner;
+
+    if(dtype != DEATH_HURTTRIGGER) {
+        if(o.classname != "player" || o.team != self.team) {
+            remove(self);
+            return;
+        }
+
+        ismedic = Buffs_Present(o, BUFF_MEDIC);
+    }
+
+    for(e = findradius(self.origin, dist); e; e = e.chain) if(e.takedamage == DAMAGE_AIM) {
+        if(dtype != DEATH_HURTTRIGGER && e.classname == "player") {
+            sameteam = !IsDifferentTeam(o, e);
+
+            if(!ismedic) {
+                if(sameteam && o != e)
+                    if(!CVAR(g_friendlyfire))
+                            continue;
+                    
+                if(!Buffs_TenacityDamage(e, o, damage, dtype))
+                    continue;
+            }
+        }
+
+        p = e.origin;
+        p_x += e.mins_x + random() * (e.maxs_x - e.mins_x);
+        p_y += e.mins_y + random() * (e.maxs_y - e.mins_y);
+        p_z += e.mins_z + random() * (e.maxs_z - e.mins_z);
+        d = vlen(self.origin - p);
+
+        if(d < dist) {
+            traceline(self.origin, p, MOVE_NOMONSTERS, self);
+
+            if(trace_fraction < 1)
+                continue;
+
+            d = damage + (edgedamage - damage) * (vlen(self.origin - p) / dist);
+            Fire_AddDamage(e, o, d * burntime, burntime, dtype);
+        }
+    }
+}
+
+void Napalm_Think(void) {
+    if(time > self.pushltime) {
+        remove(self);
+        return;
+    }
+
+    if(self.projectiledeathtype != DEATH_HURTTRIGGER)
+        HealParticleEmitter(self.owner);
+
+    Napalm_Burn();
+
+    self.nextthink = time + NAPALM_BURN_INTERVAL;
+}
+
+entity Napalm_Spawn(entity powner, vector porg, float lifetime, float lifetime_randfactor, float deathtype,
+                    float burnradius, float burndamage, float burnedgedamage, float burntime) {
+    var proj = spawn() {
+        classname: "napalm",
+        owner: powner,
+        projectiledeathtype: deathtype,
+        movetype: MOVETYPE_BOUNCE,
+        flags: FL_PROJECTILE,
+        pushltime: time + lifetime + crandom() * lifetime_randfactor,
+        team: powner.team,
+        effects: EF_NODEPTHTEST,
+        meodp_point_offs: '0 0 64',
+
+        napalm_burn_radius: burnradius,
+        napalm_burn_damage: burndamage,
+        napalm_burn_edgedamage: burnedgedamage,
+        napalm_burn_time: burntime,
+
+        csqcprojectile_extradata: burntime,
+        heal_emitter_radius: burntime,
+
+        touch: Napalm_Touch,
+        think: Napalm_Think,
+        reset: SUB_Remove,
+
+        nextthink: time,
+    };
+
+    PROJECTILE_MAKETRIGGER(proj);
+    setsize(proj, '0 0 -3', '0 0 -3');
+    setorigin(proj, porg);
+    Buffs_MEODP_Point_Attach(proj, Buffs_MEODP_Death_Remove_Multiple);
+    CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
+
+    return proj;
+}

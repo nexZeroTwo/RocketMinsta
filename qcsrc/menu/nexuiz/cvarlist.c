@@ -22,10 +22,10 @@ CLASS(NexuizCvarList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizCvarList, cvarDefaultBox, entity, NULL)
 
 	ATTRIB(NexuizCvarList, handle, float, -1)
-	ATTRIB(NexuizCvarList, cvarName, string, string_null)
-	ATTRIB(NexuizCvarList, cvarDescription, string, string_null)
-	ATTRIB(NexuizCvarList, cvarType, string, string_null)
-	ATTRIB(NexuizCvarList, cvarDefault, string, string_null)
+	ATTRIB(NexuizCvarList, cvarName, string, NULL)
+	ATTRIB(NexuizCvarList, cvarDescription, string, NULL)
+	ATTRIB(NexuizCvarList, cvarType, string, NULL)
+	ATTRIB(NexuizCvarList, cvarDefault, string, NULL)
 ENDCLASS(NexuizCvarList)
 entity makeNexuizCvarList();
 void CvarList_Filter_Change(entity box, entity me);
@@ -143,9 +143,9 @@ void drawListBoxItemNexuizCvarList(entity me, float i, vector absSize, float isS
 	else
 		theColor = SKINCOLOR_CVARLIST_CHANGED;
 
-	s = draw_TextShortenToWidth(k, me.columnNameSize / me.realFontSize_x, 0);
+	s = draw_TextShortenToWidth(k, me.columnNameSize, 0, me.realFontSize);
 	draw_Text(me.realUpperMargin * eY + me.columnNameOrigin * eX, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(v, me.columnValueSize / me.realFontSize_x, 0);
+	s = draw_TextShortenToWidth(v, me.columnValueSize, 0, me.realFontSize);
 	draw_Text(me.realUpperMargin * eY + me.columnValueOrigin * eX, s, me.realFontSize, theColor, theAlpha, 0);
 }
 

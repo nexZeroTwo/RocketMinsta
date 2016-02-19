@@ -7,15 +7,6 @@
 
 string(string format, ...) sprintf = #627;
 
-// These are pretty nifty.
-// TODO: maybe move them elsewhere and use for the rest of the weapons?
-// Also, this needs a manual update when the autocvars branch is merged.
-
-#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
-#define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
-#define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
-#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
-
 #define MAX_DAMAGEEXTRARADIUS 16
 
 void W_Crylink_CheckLinks(entity e)
@@ -334,9 +325,13 @@ void W_Crylink_Attack(void)
     vector s;
     vector forward, right, up;
     float maxdmg;
+    float cost = WEP_CVAR_PRI(crylink, ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
     if(!(self.items & IT_UNLIMITED_AMMO))
-        self.ammo_cells -= WEP_CVAR_PRI(crylink, ammo);
+        self.ammo_cells -= cost;
 
     maxdmg = WEP_CVAR_PRI(crylink, damage) * WEP_CVAR_PRI(crylink, shots);
     maxdmg *= 1 + WEP_CVAR_PRI(crylink, bouncedamagefactor) * WEP_CVAR_PRI(crylink, bounces);
@@ -444,9 +439,13 @@ void W_Crylink_Attack2(void)
     vector s;
     vector forward, right, up;
     float maxdmg;
+    float cost = WEP_CVAR_SEC(crylink, ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
     if(!(self.items & IT_UNLIMITED_AMMO))
-        self.ammo_cells -= WEP_CVAR_SEC(crylink, ammo);
+        self.ammo_cells -= cost;
 
     maxdmg = WEP_CVAR_SEC(crylink, damage) * WEP_CVAR_SEC(crylink, shots);
     maxdmg *= 1 + WEP_CVAR_SEC(crylink, bouncedamagefactor) * WEP_CVAR_SEC(crylink, bounces);
@@ -559,32 +558,50 @@ void spawnfunc_weapon_crylink (void)
 	weapon_defaultspawnfunc(WEP_CRYLINK);
 }
 
+void W_Crylink_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_CRYLINK,
+        CVAR(g_balance_crylink_magazinecapacity),
+        CVAR(g_balance_crylink_magazineregen),
+        CVAR(g_balance_crylink_reloadtime),
+        ammo_cells,
+        1
+    );
+}
+
 float w_crylink(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_crylink_swapshotmodes));
+    W_Crylink_SetClipContext();
+
 	if (req == WR_AIM)
 	{
 		if (random() > 0.15)
-			self.BUTTON_ATCK = bot_aim(CVAR(g_balance_crylink_primary_speed), 0, CVAR(g_balance_crylink_primary_middle_lifetime), FALSE);
+			self.w_button_primary = bot_aim(CVAR(g_balance_crylink_primary_speed), 0, CVAR(g_balance_crylink_primary_middle_lifetime), FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_crylink_secondary_speed), 0, CVAR(g_balance_crylink_secondary_middle_lifetime), FALSE);
+			self.w_button_secondary = bot_aim(CVAR(g_balance_crylink_secondary_speed), 0, CVAR(g_balance_crylink_secondary_middle_lifetime), FALSE);
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_crylink_primary_refire)))
-		{
-			W_Crylink_Attack();
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_crylink_primary_animtime), w_ready);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.w_button_primary)
+            if(weapon_prepareattack(0, CVAR(g_balance_crylink_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Crylink_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_crylink_primary_animtime), w_ready);
+            }
 
-		if (self.BUTTON_ATCK2)
-		if (weapon_prepareattack(1, CVAR(g_balance_crylink_secondary_refire)))
-		{
-			W_Crylink_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_crylink_secondary_animtime), w_ready);
-		}
+            if(self.w_button_secondary)
+            if(weapon_prepareattack(1, CVAR(g_balance_crylink_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Crylink_Attack2();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_crylink_secondary_animtime), w_ready);
+            }
 
-        if((self.crylink_waitrelease == 1 && !self.BUTTON_ATCK) || (self.crylink_waitrelease == 2 && !self.BUTTON_ATCK2))
+            W_Clip_FinishWeaponAction();
+        }
+
+        if((self.crylink_waitrelease == 1 && !self.w_button_primary) || (self.crylink_waitrelease == 2 && !self.w_button_secondary))
         {
             if(!self.crylink_lastgroup || time > self.crylink_lastgroup.teleport_time)
             {
@@ -630,5 +647,7 @@ float w_crylink(float req)
 		return self.ammo_cells >= CVAR(g_balance_crylink_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_cells >= CVAR(g_balance_crylink_secondary_ammo);
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };

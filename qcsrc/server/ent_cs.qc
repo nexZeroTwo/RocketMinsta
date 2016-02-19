@@ -44,9 +44,6 @@ float entcs_cull(entity what, entity forwhom) {
     if(what.owner.classname != "player") if(what.owner.bait_ref.classname != "player")
         return TRUE;
 
-    if(vlen(what.owner.origin - forwhom.origin) > SHOWNAMES_MAXDISTANCE)
-        return TRUE;
-
     if(isspect)
         return FALSE;
 
@@ -54,31 +51,25 @@ float entcs_cull(entity what, entity forwhom) {
         if(!sv_shownames || what.owner.hg_stealth || Client_CalculateAlpha(what.owner, forwhom) < 0.15)
             return TRUE;
 
-        vector v1, v2;
-        v1 = what.owner.origin + what.owner.view_ofs;
-        v2 = forwhom.origin + forwhom.view_ofs;
+        if(vlen(what.owner.origin - forwhom.origin) > SHOWNAMES_MAXDISTANCE)
+            return TRUE;
 
-        if(CVAR(sv_cullentities_pvs)) {
-            if(!checkpvs(v1, forwhom))
+        vector viewee = what.owner.origin + what.owner.view_ofs;
+        vector viewer = forwhom.origin + forwhom.view_ofs;
+
+        if(!warpzone_chain_begin && CVAR(sv_cullentities_pvs)) {
+            if(!checkpvs(viewee, forwhom))
                 return TRUE;
         }
 
         if(CVAR(sv_cullentities_trace)) {
             save_nasty_globals();
-
             makevectors(forwhom.v_angle);
-            if(normalize(v1 - v2) * v_forward < 0) {
-                restore_nasty_globals();
-                return TRUE;
-            }
-
-            traceline(forwhom.origin + forwhom.view_ofs, what.owner.origin + what.owner.view_ofs, MOVE_NOMONSTERS, forwhom);
-            if(trace_fraction < 1) {
-                restore_nasty_globals();
-                return TRUE;
-            }
-
+            var los = WarpZone_FindLineOfSight(v_forward, viewer, viewee, MOVE_NOMONSTERS, forwhom);
             restore_nasty_globals();
+
+            if(los == '0 0 0')
+                return TRUE;
         }
     }
 

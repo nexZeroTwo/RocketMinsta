@@ -257,7 +257,7 @@ entity rpn_findlocal(string lname, float define) {
 string rpn_getlocal(string lname) {
     entity s = rpn_findlocal(lname, FALSE);
     if(!s)
-        return string_null;
+        return NULL;
     return s.(rpn_locals[s.cnt]);
 }
 
@@ -1278,7 +1278,7 @@ float GameCommand_Generic(string command)
                 } else if(rpncmd == "exec") {
                     localcmd(rpn_pop(), "\n");
                 } else if(rpncmd == "nullstr") {
-                    rpn_push(string_null);
+                    rpn_push(NULL);
                 } else if(rpncmd == "call") {
                     float o = rpnpos;
                     rpn_callpush(rpnpos);
@@ -1441,6 +1441,14 @@ float GameCommand_Generic(string command)
                             rpn_pushraw(s, f);
                         }
                     }
+                } else if(rpncmd == "obfs") {
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_push(obfuscate(s2, s));
+                } else if(rpncmd == "uobfs") {
+                    s = rpn_pop();
+                    s2 = rpn_pop();
+                    rpn_push(unobfuscate(s2, s));
 				} else {
                     if(!(cvar_type(rpncmd) & CVAR_TYPEFLAG_EXISTS))
                         print("rpn: warning: '", rpncmd, "' is neither a valid command nor a defined cvar\n");
@@ -1626,6 +1634,18 @@ float GameCommand_Generic(string command)
         print("Result: ", ftos(ff), " ", ss, " ", vtos(vv), "\n");
         return TRUE;
 #endif
+    } else if(argv(0) == "loadfonts") {
+        load_fonts();
+        return TRUE;
+    } else if(argv(0) == "obfs") {
+        var _s = argv(1);
+        var _k = argv(2);
+        var _o = obfuscate(_s, _k);
+
+        print(_o, "\n");
+        print(unobfuscate(_s, _k), "\n");
+        print(unobfuscate(_o, _k), "\n");
+        return TRUE;
 	} else return IP2C_GameCommand(command);
 
 	return FALSE;

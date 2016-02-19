@@ -38,10 +38,14 @@ void W_Hagar_Touch2 (void)
 
 void W_Hagar_Attack (void)
 {
+    float cost = CVAR(g_balance_hagar_primary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
 	entity missile;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_hagar_primary_ammo);
+		self.ammo_rockets = self.ammo_rockets - cost;
 	W_SetupShot (self, FALSE, 2, "weapons/hagar_fire.wav", CVAR(g_balance_hagar_primary_damage));
 
 	pointparticles(particleeffectnum("hagar_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
@@ -72,10 +76,14 @@ void W_Hagar_Attack (void)
 
 void W_Hagar_Attack2 (void)
 {
+    float cost = CVAR(g_balance_hagar_secondary_ammo);
+    if(!W_Clip_Consume(cost))
+        return;
+
 	entity missile;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_hagar_secondary_ammo);
+		self.ammo_rockets = self.ammo_rockets - cost;
 	W_SetupShot (self, FALSE, 2, "weapons/hagar_fire.wav", CVAR(g_balance_hagar_secondary_damage));
 	//W_SetupShot (self, FALSE, 2, "weapons/hagar_fire.wav"); // TODO: move model a little to the right
 
@@ -107,6 +115,17 @@ void W_Hagar_Attack2 (void)
 	CSQCProjectile(missile, TRUE, PROJECTILE_HAGAR_BOUNCING, TRUE);
 }
 
+void W_Hagar_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_HAGAR,
+        CVAR(g_balance_hagar_magazinecapacity),
+        CVAR(g_balance_hagar_magazineregen),
+        CVAR(g_balance_hagar_reloadtime),
+        ammo_rockets,
+        1
+    );
+}
+
 void spawnfunc_weapon_hagar (void)
 {
 	weapon_defaultspawnfunc(WEP_HAGAR);
@@ -114,28 +133,36 @@ void spawnfunc_weapon_hagar (void)
 
 float w_hagar(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_hagar_swapshotmodes));
+    W_Hagar_SetClipContext();
+
 	if (req == WR_AIM)
 		if (random()>0.15)
-			self.BUTTON_ATCK = bot_aim(CVAR(g_balance_hagar_primary_speed), 0, CVAR(g_balance_hagar_primary_lifetime), FALSE);
+			self.w_button_primary = bot_aim(CVAR(g_balance_hagar_primary_speed), 0, CVAR(g_balance_hagar_primary_lifetime), FALSE);
 		else
 		{
 			// not using secondary_speed since these are only 15% and should cause some ricochets without re-aiming
-			self.BUTTON_ATCK2 = bot_aim(CVAR(g_balance_hagar_primary_speed), 0, CVAR(g_balance_hagar_primary_lifetime), FALSE);
+			self.w_button_secondary = bot_aim(CVAR(g_balance_hagar_primary_speed), 0, CVAR(g_balance_hagar_primary_lifetime), FALSE);
 		}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_hagar_primary_refire)))
-		{
-			W_Hagar_Attack();
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_hagar_primary_refire), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		if (weapon_prepareattack(1, CVAR(g_balance_hagar_secondary_refire)))
-		{
-			W_Hagar_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_hagar_secondary_refire), w_ready);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if (self.w_button_primary)
+            if (weapon_prepareattack(0, CVAR(g_balance_hagar_primary_refire)))
+            if(W_Clip_TryAttackOrReload())
+            {
+                W_Hagar_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_hagar_primary_refire), w_ready);
+            }
+            if (self.w_button_secondary)
+            if (weapon_prepareattack(1, CVAR(g_balance_hagar_secondary_refire)))
+            if(W_Clip_TryAttackOrReload())
+            {
+                W_Hagar_Attack2();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_hagar_secondary_refire), w_ready);
+            }
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -147,5 +174,7 @@ float w_hagar(float req)
 		return self.ammo_rockets >= CVAR(g_balance_hagar_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= CVAR(g_balance_hagar_secondary_ammo);
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };

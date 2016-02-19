@@ -14,6 +14,8 @@
 .float debrisfadetime;
 .float debrisdamageforcescale;
 .float debrisskin;
+.float napalm_count;
+.float napalm_color;
 
 .string mdl_dead; // or "" to hide when broken
 .string debris; // space separated list of debris models
@@ -39,7 +41,7 @@ void func_breakable_damage(entity inflictor, entity attacker, float damage, floa
 // func_breakable
 // - basically func_assault_destructible for general gameplay use
 //
-void LaunchDebris (string debrisname, vector force) =
+void LaunchDebris (string debrisname, vector force)
 {
 	entity dbr;
 
@@ -128,6 +130,7 @@ void func_breakable_behave_restore()
 	self.takedamage = DAMAGE_AIM;
 	self.event_damage = func_breakable_damage;
 	self.state = 0;
+    self.owner = world;
 	setsize(self, self.mins_save, self.maxs_save);
 	func_breakable_colormod();
     Buffs_MEODP_Point_Attach(self, func_breakable_meodp_death);
@@ -146,6 +149,28 @@ void func_breakable_restore()
 	func_breakable_behave_restore();
 }
 
+void func_breakable_launch_napalm(void) {
+    // yes, this is a lazy hack
+
+    var nc = self.napalm_count;
+
+    if(nc <= 0)
+        return;
+
+    var saveteam = self.owner.team;
+    self.hg_type = HG_REMOTE;
+    self.owner.team = Team_FromIndex(self.napalm_color);
+
+    for(var c = 0; c < nc; ++c) {
+        Napalm_Spawn(self.owner, self.origin, 3, 0.15, DEATH_HURTTRIGGER, 180, 80, 20, 1.5) {
+            velocity: RandomSpreadVector(70, 300, 300, 10)
+        };
+    }
+
+    self.hg_type = 0;
+    self.owner.team = saveteam;
+}
+
 vector debrisforce; // global, set before calling this
 void func_breakable_destroy() {
 	float n, i;
@@ -158,6 +183,7 @@ void func_breakable_destroy() {
 	for(i = 0; i < n; ++i)
 		LaunchDebris(argv(i), debrisforce);
 
+    func_breakable_launch_napalm();
 	func_breakable_destroyed();
 
 	if(self.noise)

@@ -1,26 +1,42 @@
 #ifdef USE_DPRM
 
 void DPRM_Start() {
-	dprm_version = DPRM_GetVersion();
-	
-	if not(DPRM_VersionIsSuitable())
-		print("\n====================================================================\n^1WARNING: ^7Your engine is out of date!\nPlease download and install the update from ^2" DPRM_WEBSITE_URL "^7\n====================================================================\n\n");
+    dprm_version = DPRM_GetVersion();
+
+    if(!DPRM_VersionIsSuitable()) {
+        print("\n====================================================================\n"
+              "^1WARNING: ^3Your engine is out of date!\n^3Please download and install the update from ^2" DPRM_WEBSITE_URL "^7"
+              "\n====================================================================\n\n");
+    } else if(!DPRM_VersionIsRecommended()) {
+        print("\n====================================================================\n"
+              "^3A recommended engine update is available at ^2" DPRM_WEBSITE_URL "^7"
+              "\n====================================================================\n\n");
+    }
+
+    if(checkextension("DP_RM_REGEX"))
+        regex_match = regex_match_642;
+    else if(checkextension("DP_RM_REGEX2"))
+        regex_match = regex_match_800;
 }
 
 float DPRM_GetVersion() {
     if(!(cvar_type("dprm_version") & CVAR_TYPEFLAG_ENGINE))
         return 0;
-	return CVAR(dprm_version);
+    return CVAR(dprm_version);
 }
 
 float DPRM_VersionIsSuitable() {
-	return dprm_version >= DPRM_MINVERSION;
+    return dprm_version >= DPRM_MINVERSION;
+}
+
+float DPRM_VersionIsRecommended() {
+    return dprm_version >= DPRM_MINRECOMMENDEDVERSION;
 }
 
 #else
-	#include "dprm_stub.qc"
+    #include "dprm_stub.qc"
 #endif
 
 float DPRM_IsDPRMEngine() {
-	return dprm_version;
+    return dprm_version;
 }

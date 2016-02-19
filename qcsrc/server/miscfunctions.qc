@@ -3,6 +3,8 @@ void objerror(string s);
 void droptofloor();
 .vector dropped_origin;
 
+float crandom(void);
+
 void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
@@ -417,7 +419,7 @@ entity findnearest(vector point, .string field, string value, vector axismod)
         //   INSERTION SORT! YOU'VE SEEN IT! RUN!
         if (i < NUM_NEAREST_ENTITIES)
         {
-            for (j = NUM_NEAREST_ENTITIES - 1; j >= i; --j)
+            for (j = NUM_NEAREST_ENTITIES - 2; j >= i; --j)
             {
                 nearest_length[j + 1] = nearest_length[j];
                 nearest_entity[j + 1] = nearest_entity[j];
@@ -502,11 +504,15 @@ string reptable_src[MAXREPS];
 string reptable_rep[MAXREPS];
 float reptable_srclen[MAXREPS];
 float reptable_replen[MAXREPS];
-float reptable_wordmode[MAXREPS];
+float reptable_matchmode[MAXREPS];
 float reptable_count;
 float reptable_init;
 float reptable_maxsrclen;
 float reptable_minsrclen;
+
+#define MATCHMODE_NORMAL 0
+#define MATCHMODE_WORD   1
+#define MATCHMODE_REGEX  2
 
 #define FOR_EACH_REPID(n) float n; for(n = 0; n < reptable_count; ++n)
 
@@ -535,7 +541,7 @@ void reptable_free() {
 		strunzone(reptable_rep[i]);
 		reptable_srclen[i] = 0;
 		reptable_replen[i] = 0;
-		reptable_wordmode[i] = FALSE;
+		reptable_matchmode[i] = FALSE;
 	}
 	reptable_count = 0;
 	reptable_maxsrclen = 0;
@@ -553,20 +559,26 @@ void reptable_make(string replacements) {
 	for(i = 0; i < reptable_count; ++i) {
 		string id = argv(i);
         
-        if(substring(id, 0, 1) == "%") {
+        var mm = switch(str2chr(id, 0)) {
+            case '%': MATCHMODE_WORD,
+            case '@': MATCHMODE_REGEX,
+            default : MATCHMODE_NORMAL
+        };
+
+        reptable_matchmode[i] = mm;
+
+        if(mm != MATCHMODE_NORMAL)
             id = substring(id, 1, strlen(id) - 1);
-            reptable_wordmode[i] = TRUE;
-        }
         
 		string src = strzone(getsrc(id));
 		string rep = strzone(getrep(id));
-		float srclen = strlen(src);
+		float srclen = if(mm == MATCHMODE_REGEX) 9001 else strlen(src);
 		float replen = strlen(rep);
 		
 		reptable_src[i] = src;
 		reptable_rep[i] = rep;
-		reptable_srclen[i] = strlen(src);
-		reptable_replen[i] = strlen(rep);
+		reptable_srclen[i] = srclen;
+		reptable_replen[i] = replen;
 		
 		if(srclen > reptable_maxsrclen)
 			reptable_maxsrclen = srclen;
@@ -576,6 +588,63 @@ void reptable_make(string replacements) {
 	}
 	
 	print("reptable_make: ", ftos(reptable_count), " reps, longest: ", ftos(reptable_maxsrclen), ", shortest: ", ftos(reptable_minsrclen), "\n");
+}
+
+#define IS_LOWER(c) (c >= 'a' && c <= 'z')
+#define IS_UPPER(c) (c >= 'A' && c <= 'Z')
+#define IS_ALPHA(c) (IS_LOWER(c) || IS_UPPER(c))
+#define IS_NUMERIC(c) (c >= '0' && c <= '9')
+#define IS_ALNUM(c) (IS_ALPHA(c) || IS_NUMERIC(c))
+#define IS_WORD_CHAR(c) IS_ALNUM(c)
+
+#define CHR_UPR(c) (if(c > 'Z') c + 'A' - 'a' else c)
+#define CHR_LWR(c) (if(c < 'a') c - 'A' + 'a' else c)
+
+float is_escaped_caret(string msg, float idx) {
+    var yep = TRUE;
+    for(var i = 0, var c = str2chr(msg, idx); c == '^'; c = str2chr(msg, idx + (--i)), yep = !yep);
+    if(!i)
+        return FALSE;
+    return yep;
+}
+
+string mimic_case(string match, string sub) {
+    float lower, total, i, slen, c;
+    slen = strlen(sub);
+
+    for(i = 0, c = str2chr(match, i); c; c = str2chr(match, ++i)) {
+        if(IS_LOWER(c)) {
+            ++lower;
+            ++total;
+        } else if(IS_UPPER(c)) {
+            ++total;
+        }
+    }
+
+    for(i = 0, c = str2chr(sub, i); c; c = str2chr(sub, ++i)) {
+        var n = c;
+
+        if(IS_ALPHA(c)) {
+            if(random() * total < lower)
+                n = CHR_LWR(c);
+            else
+                n = CHR_UPR(c);
+        }
+
+        if(n != c) {
+            sub = strcat(
+                substring(sub, 0, i),
+                chr2str(n),
+                substring(sub, i+1, slen)
+            );
+        }
+    }
+
+    return sub;
+}
+
+string regex_sub_autoreplace(string match, string sub) {
+    return mimic_case(match, regex_sub_expand_matches(match, sub));
 }
 
 string apply_autoreplace(string msg) {
@@ -588,10 +657,7 @@ string apply_autoreplace(string msg) {
 			return msg;
 		reptable_make(reps);
 	}
-	
-    float a = 97,  A = 65;
-    float z = 122, Z = 90;
-    
+
 	float i, len;
 	len = strlen(msg);
 	
@@ -599,46 +665,62 @@ string apply_autoreplace(string msg) {
 		return msg;		// no point
 		
 	for(i = 0; i < len; ++i) {
-		//print("apply_autoreplace: iter ", ftos(i), "/", ftos(len), "\n");
-		
 		FOR_EACH_REPID(id) {
 			float slen = reptable_srclen[id];
-			
-			if(len - i < slen)
-				continue;
-			
-			string p = strtolower(substring(msg, i, slen));
-			//print("apply_autoreplace: checking ", p, " against ", reptable_src[id], "\n");
-			
-			if(p == reptable_src[id]) {
-				//print("apply_autoreplace: success\n");
-				
-                if(reptable_wordmode[id]) {
+            float mm = reptable_matchmode[id];
+
+            if(reptable_matchmode[id] == MATCHMODE_REGEX) {
+                if(!regex_match)
+                    continue;
+
+                if(is_escaped_caret(msg, i))
+                    continue;
+
+                string p = substring(msg, i, len);
+                var ofs = regex_sub_once(reptable_src[id], p, 0, RE_IGNORE_CASE, reptable_rep[id], regex_sub_autoreplace);
+
+                if(ofs >= 0) {
+                    var head = substring(msg, 0, i);
+                    msg = strcat(head, regex_sub_string);
+                    len = strlen(msg);
+                    i += ofs - 1;
+                }
+
+                continue;
+            } else {
+                string p = strtolower(substring(msg, i, slen));
+                if(len - i < slen)
+                    continue;
+
+                if(p != reptable_src[id])
+                    continue;
+
+                if(reptable_matchmode[id] == MATCHMODE_WORD) {
                     float c;
                     
                     if(i > 0) {
                         c = str2chr(msg, i - 1);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                     
                     if(i + slen < len) {
                         c = str2chr(msg, i + slen);
-                        if((c >= a && c <= z) || (c >= A && c <= Z))
+                        if(IS_WORD_CHAR(c))
                             continue;
                     }
                 }
-                
-				string head = substring(msg, 0, i);
-				string tail = substring(msg, i + slen, len);
-				msg = strcat(head, reptable_rep[id], tail);
-				
-				float rlen = reptable_replen[id];
-				i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
-				len += rlen - slen;
-				
-				break;
-			}
+            }
+
+			string head = substring(msg, 0, i);
+			string tail = substring(msg, i + slen, len);
+			msg = strcat(head, reptable_rep[id], tail);
+
+			float rlen = reptable_replen[id];
+			i += rlen - 1; // skip over the replacement to prevent other replacements from fucking with it
+			len += rlen - slen;
+
+			break;
 		}
 	}
 	
@@ -772,7 +854,7 @@ void GetCvars_handleString(string thisname, float f, .string field, string name)
 	{
 		if (self.field)
 			strunzone(self.field);
-		self.field = string_null;
+		self.field = NULL;
 	}
 	else if (f > 0)
 	{
@@ -872,6 +954,7 @@ void GetCvars(float f)
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
     GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
+    GetCvars_handleFloat(s, f, client_utf8, "utf8_enable");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -895,23 +978,6 @@ void GetCvars(float f)
 }
 
 void GameCommand(string);
-void backtrace(string msg)
-{
-    float dev, war;
-    dev = CVAR(developer);
-    war = CVAR(prvm_backtraceforwarnings);
-    cvar_set("developer", "1");
-    cvar_set("prvm_backtraceforwarnings", "1");
-    dprint("\n");
-    dprint("--- CUT HERE ---\nWARNING: ");
-    dprint(msg);
-    dprint("\n");
-    remove(world); // isn't there any better way to cause a backtrace?
-    dprint("\n--- CUT UNTIL HERE ---\n");
-    cvar_set("developer", ftos(dev));
-    cvar_set("prvm_backtraceforwarnings", ftos(war));
-    GameCommand("time");
-}
 
 float Team_Index(float t) {
     switch(t) {
@@ -1027,11 +1093,14 @@ float g_pickup_healthmega;
 float g_pickup_healthmega_max;
 float g_weaponarena;
 float g_weaponarena_random;
+float g_weaponarena_secondary;
 string g_weaponarena_list;
 float g_weaponspeedfactor;
 float g_weaponratefactor;
 float g_weapondamagefactor;
 float g_weaponforcefactor;
+
+#define g_weaponarena_secondary_selectable (g_weaponarena_secondary & (g_weaponarena_secondary - 1))
 
 float start_weapons;
 float start_items;
@@ -1059,36 +1128,9 @@ float NixNex_CanChooseWeapon(float wpn);
 
 float g_weaponarena_limitammo;
 
-void readplayerstartcvars()
-{
-    entity e;
-    float i, j, t;
-    string s;
+void set_weaponarena(string s) {
+    var i, j, e, t;
 
-    // initialize starting values for players
-    start_weapons = 0;
-    start_items = 0;
-    start_ammo_shells = 0;
-    start_ammo_nails = 0;
-    start_ammo_rockets = 0;
-    start_ammo_cells = 0;
-    start_health = CVAR(g_balance_health_start);
-    start_armorvalue = CVAR(g_balance_armor_start);
-
-	g_weaponarena_limitammo = CVAR(g_weaponarena_limitammo);
-
-    g_weaponarena = 0;
-    
-    if(g_clanarena) {
-        s = CVAR_STR(g_clanarena_start_weapons);
-        if(s == "0")
-            s = CVAR_STR(g_weaponarena);
-        if(s == "0")
-            s = "most";
-    } else {
-        s = CVAR_STR(g_weaponarena);
-    }
-    
     if(s == "0")
     {
     }
@@ -1143,8 +1185,43 @@ void readplayerstartcvars()
                 print("The weapon mutator list contains an unknown weapon ", s, ". Skipped.\n");
             }
         }
-		g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
-	}
+        g_weaponarena_list = strzone(substring(g_weaponarena_list, 0, strlen(g_weaponarena_list) - 3));
+    }
+
+}
+
+void readplayerstartcvars()
+{
+    entity e;
+    float i, j, t;
+    string s;
+
+    // initialize starting values for players
+    start_weapons = 0;
+    start_items = 0;
+    start_ammo_shells = 0;
+    start_ammo_nails = 0;
+    start_ammo_rockets = 0;
+    start_ammo_cells = 0;
+    start_health = CVAR(g_balance_health_start);
+    start_armorvalue = CVAR(g_balance_armor_start);
+
+	g_weaponarena_limitammo = CVAR(g_weaponarena_limitammo);
+
+    g_weaponarena = 0;
+    g_weaponarena_secondary = 0;
+
+    if(g_clanarena) {
+        s = CVAR_STR(g_clanarena_start_weapons);
+        if(s == "0")
+            s = CVAR_STR(g_weaponarena);
+        if(s == "0")
+            s = "most";
+    } else {
+        s = CVAR_STR(g_weaponarena);
+    }
+    
+    set_weaponarena(s);
 
 	if(g_weaponarena) {
 		g_weaponarena_random = CVAR(g_weaponarena_random);
@@ -1152,12 +1229,26 @@ void readplayerstartcvars()
 		g_weaponarena_random = 0;
         g_weaponarena_limitammo = 0;
     }
-    
+
     if (g_clanarena) {
         start_health = CVAR(g_clanarena_start_health);
         start_armorvalue = CVAR(g_clanarena_start_armor);
     }
-    
+
+    if(g_weaponarena) {
+        s = CVAR_STR(g_weaponarena_secondary);
+
+        if(s != "" && s != "0") {
+            var saved_list = g_weaponarena_list;
+            var saved_warea = g_weaponarena;
+            g_weaponarena = 0;
+            set_weaponarena(s);
+            g_weaponarena_secondary = g_weaponarena;
+            g_weaponarena_list = saved_list;
+            g_weaponarena = saved_warea;
+        }
+    }
+
     if (g_nixnex)
     {
         start_weapons = 0;
@@ -1174,15 +1265,16 @@ void readplayerstartcvars()
         
         if(!g_weaponarena_limitammo)
         {
-			if (g_weaponarena & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
+            var weps = g_weaponarena | g_weaponarena_secondary;
+			if (weps & (WEPBIT_GRENADE_LAUNCHER | WEPBIT_HAGAR | WEPBIT_ROCKET_LAUNCHER | WEPBIT_FLAK))
 				start_ammo_rockets = 999;
-			if (g_weaponarena & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
+			if (weps & (WEPBIT_SHOTGUN | WEPBIT_FLAK))
 				start_ammo_shells = 999;
-			if (g_weaponarena & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
+			if (weps & (WEPBIT_ELECTRO | WEPBIT_CRYLINK | WEPBIT_NEX | WEPBIT_MINSTANEX | WEPBIT_HLAC | WEPBIT_HOOK | WEPBIT_ZAPPER))
 				start_ammo_cells = 999;
-			if (g_weaponarena & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
+			if (weps & (WEPBIT_UZI | WEPBIT_CAMPINGRIFLE))
 				start_ammo_nails = 999;
-			if (g_weaponarena & WEPBIT_HOOK)
+			if (weps & WEPBIT_HOOK)
 				start_ammo_fuel = 999;
 			start_items |= IT_UNLIMITED_AMMO;
 		}
@@ -1528,6 +1620,32 @@ void readlevelcvars(void)
     readplayerstartcvars();
 }
 
+string entityfieldtypestr(float fld) {
+    return switch(entityfieldtype(fld)) {
+        case FIELD_STRING   : "string",
+        case FIELD_FLOAT    : "float",
+        case FIELD_VECTOR   : "vector",
+        case FIELD_ENTITY   : "entity",
+        case FIELD_FUNCTION : "function",
+        default             : "unknown"
+    };
+}
+
+void dumpent(entity e) {
+    print("----------------------------------\n");
+    print("ENTITY DUMP: ", etos(e), "\n");
+    print("----------------------------------\n");
+
+    var n = numentityfields();
+    for(var i = 0; i < n; ++i) {
+        var val = getentityfieldstring(i, e);
+        if(val != "")
+            print("(", entityfieldtypestr(i), ") ", entityfieldname(i), ": ", val, "^7\n");
+    }
+
+    print("----------------------------------\n");
+}
+
 /*
 // TODO sound pack system
 string soundpack;
@@ -1558,17 +1676,33 @@ float precache_sound_index (string s) = #19;
 #define SND_LARGEENTITY 8
 #define SND_LARGESOUND  16
 
+.entity realowner;
+.entity WarpZone_refsys;
+
 float sound_allowed(float dest, entity e)
 {
     // sounds from world may always pass
+    float iter;
+
     for (;;)
     {
         if (e.classname == "body")
             e = e.enemy;
-        if (e.owner && e.owner != e)
+        if(e.realowner && e.realowner != e)
+            e = e.realowner;
+        else if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
             e = e.owner;
         else
             break;
+
+        if(++iter == 100) {
+            bprint("[FIXME] sound_allowed() got stuck in an ownership loop!\n");
+            backtrace("sound_allowed() ownership loop");
+            dumpent(e);
+            dumpent(e.owner);
+            dumpent(e.realowner);
+            break;
+        }
     }
     // sounds to self may always pass
     if (dest == MSG_ONE)
@@ -2144,7 +2278,7 @@ void InitializeEntitiesRun()
         e = self.initialize_entity_next;
         func = self.initialize_entity;
         self.initialize_entity_order = 0;
-        self.initialize_entity = func_null;
+        self.initialize_entity = NULL;
         self.initialize_entity_next = world;
         if (self.classname == "initialize_entity")
         {
@@ -2342,7 +2476,8 @@ float projectile_skipnonsolid()
 	}
 	return FALSE;
 }
-#define PROJECTILE_SKIPNONSOLID if (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid()) { return; }
+
+#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid())) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
@@ -2749,7 +2884,7 @@ void attach_sameorigin(entity e, entity to, string tag)
     // current forward and up directions
     if (substring(e.model, 0, 1) == "*") // bmodels have their own rules
         e.angles_x = -e.angles_x;
-    fixedmakevectors(e.angles);
+    fixedmakevectors2(e.angles);
 
     // untransform forward, up!
     e_forward_x = v_forward * t_forward;
@@ -2852,7 +2987,7 @@ entity GetCommandPlayerSlotTargetFromTokenizedCommand(float tokens, float idx) /
     entity e, head;
     float n;
 
-    s = string_null;
+    s = NULL;
 
     ParseCommandPlayerSlotTarget_firsttoken = -1;
 
@@ -3241,7 +3376,7 @@ void EndRound(float tout)
     else if(g_clanarena)
         CA_EndRound(tout);
     else
-        bprint("EndRound() for an unsupported gametype!?\n");
+        print("EndRound: gametype is not supported\n");
 }
 
 float EndRound_Allowed()
@@ -3298,6 +3433,9 @@ void UnmarkAway(entity pl)
     if(!pl.is_away)
         return;
     
+    if(time - pl.afkmarktime < 0.5)
+        return;
+
     stuffcmd(pl, "set _cl_afkstate 0\n");
     
     bprint(pl.netname, " ^4is back\n");
@@ -3651,4 +3789,101 @@ entity findfilter(entity e, float(entity) filter) {
             return e;
 
     return world;
+}
+
+string fix_legacy_encoding(string s) {
+    var c, i, newstr;
+
+    for(i = 0, c = str2chr(s, i); c; c = str2chr(s, ++i)) {
+        if(c < 32)
+            c += 0xE000;
+        newstr = strcat(newstr, chr2str(c));
+    }
+
+    return newstr;
+}
+
+void dropentities(entity platform) {
+    const nudge = '1 1 1';
+    entity e;
+
+    while((e = findflags(e, flags, FL_ONGROUND))) {
+        if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+
+    while((e = findentity(e, aiment, platform))) {
+        if(e.movetype == MOVETYPE_FOLLOW) {
+            e.movetype = MOVETYPE_TOSS;
+            e.aiment = world;
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+}
+
+float do_if_fexists(void(string) callback, string fpath) {
+    if(fexists(fpath)) {
+        callback(fpath);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+vector RandomSpreadVector(float side, float up, float up_min, float up_min_rand) {
+    return [
+        crandom() * 2 * side,
+        crandom() * 2 * side,
+        max(
+            up * random(),
+            up_min + up_min_rand * crandom() * 2
+        )
+    ];
+}
+
+vector CircleSpreadVector(float side, float up, float sangle) {
+    return  side * v_forward * cos(sangle) +
+            side * v_right   * sin(sangle) +
+            up   * v_up;
+}
+
+.entity heal_emitter;
+.float heal_emitter_radius;
+
+void HealParticleEmitter_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+
+    if(self.origin != self.oldorigin)
+        UpdateCSQCProjectile(self);
+
+    self.oldorigin = self.origin;
+    self.nextthink = time;
+}
+
+void HealParticleEmitter(entity o) {
+    if(Buffs_Present(o, BUFF_MEDIC)) {
+        if(!self.heal_emitter || wasfreed(self.heal_emitter)) {
+            entity e = spawn();
+            e.owner = self;
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = self;
+            e.think = HealParticleEmitter_Think;
+            e.nextthink = time;
+            e.csqcprojectile_extradata = self.heal_emitter_radius;
+            
+            CSQCProjectile(e, FALSE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            self.heal_emitter = e;
+        }
+    } else {
+        if(self.heal_emitter) {
+            remove(self.heal_emitter);
+            self.heal_emitter = world;
+        }
+    }
 }

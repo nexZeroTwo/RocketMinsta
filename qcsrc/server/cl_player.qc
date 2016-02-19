@@ -482,8 +482,11 @@ float VisualDamage_CheckLOS(entity viewer, entity targ, vector hitloc) {
     else
         p2 = targ.origin + targ.view_ofs;
 
-    traceline(p1, p2, MOVE_NOMONSTERS, viewer);
-    return almost_equals(trace_fraction, 1);
+    save_nasty_globals();
+    makevectors(viewer.v_angle);
+    var los = WarpZone_FindLineOfSight(v_forward, p1, p2, MOVE_NOMONSTERS, viewer);
+    restore_nasty_globals();
+    return los != '0 0 0';
 }
 
 void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float htype, vector hitloc) {
@@ -573,7 +576,10 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
     
     float oh = self.health;
     float oa = self.armorvalue;
-    
+
+    if(self.frozen && DEATH_ISENVIRONMENTAL(deathtype))
+        attacker = world;
+
     GAMEEVENT("playerdamage", {
         GAMEEVENTARG(Entity, self)
         GAMEEVENTARG(Entity, inflictor)
@@ -679,7 +685,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		}
 	}
 	else
-		Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
+        Violence_GibSplash_At(hitloc, force, 2, bound(0, damage, 200) / 16, self, attacker);
     
 	if(g_arena)
 	if(numspawned < 2)
@@ -697,7 +703,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		take = damage;
 	}
 
-    if(attacker == self)
+    if(self.frozen)
+        self.pushltime = 0;
+    else if(attacker == self)
     {
         // don't reset pushltime for self damage as it may be an attempt to
         // escape a lava pit or similar
@@ -732,6 +740,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		Violence_GibSplash_At(hitloc, force * -0.1, 3, 1, self, attacker);
 	if (take > 100)
 		Violence_GibSplash_At(hitloc, force * -0.2, 3, 1, self, attacker);
+
+    if(DEATH_ISWEAPON(deathtype, WEP_PRYAXE))
+        Violence_GibSplash_At(hitloc, force * -0.2, 1, 0.25, self, attacker);
 
 	if (time > self.spawnshieldtime || CVAR(g_spawnshieldmode))
 	{
@@ -795,6 +806,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 							setanim(self, self.anim_pain2, FALSE, TRUE, TRUE);
 					}
 
+                    if(!self.frozen)
                     if(deathtype != DEATH_ENDURANCE)
 					if(sound_allowed(MSG_BROADCAST, attacker))
 					if(attacker != self || !DEATH_ISWEAPON(deathtype, WEP_ELECTRO))
@@ -880,6 +892,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		if(valid_damage_for_weaponstats)
 			WeaponStats_LogKill(DEATH_WEAPONOF(deathtype), self.weapon);
 
+        if(!self.frozen)
 		if(sv_gentle < 1) // TODO make a "gentle" version?
 		if(sound_allowed(MSG_BROADCAST, attacker))
 		{
@@ -907,7 +920,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
         // become fully visible
         self.alpha = 1;
-            
+
 		if(!g_freeze)
 		{
 			// clear selected player display
@@ -917,7 +930,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             if(!g_jailbreak)
                 SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
 		}
-		
+
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
         if(Buffs_Present(attacker, BUFF_ADEPT)) {
@@ -930,7 +943,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         float removenadgets;
         if(g_nadgets)
             removenadgets = CVAR(g_nadgets_remove_on_death);
-        
+
         if(removenadgets > 1)
             HG_RemoveAll(self);
 
@@ -940,8 +953,8 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             HG_Attack();
         }
 
-        HG_DetonateAll(self);
-        
+        HG_GenericProjectile_DetonateAll(self);
+
         if(!g_freezetag && !g_jailbreak) {
             if(CVAR(g_nadgets_resetonrespawn))
                 self.hg_ammo1 = self.hg_ammo2 = 0;
@@ -952,9 +965,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         DropPowerups();
 
 		// print an obituary message
-		Obituary (attacker, inflictor, self, deathtype);
+
+        if(!self.frozen)
+            Obituary(attacker, inflictor, self, deathtype);
+
 		race_PreDie();
-		
+
         self.hg_bonus = 0;
         self.hg_bonustype = HG_NORMAL;
         self.hg_linker = world;
@@ -988,17 +1004,19 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// clear waypoints
 		WaypointSprite_PlayerDead();
 		// make the corpse upright (not tilted)
-		
+
 		if(!jb_roundover) {
 			self.angles_x = 0;
 			self.angles_z = 0;
 		}
-		
+
         Buffs_MEODP_Point_Detach(self);
-        
+
         if(Freeze_Hook_PlayerDies(attacker, force, deathtype))
             return;
-        
+
+        dropentities(self);
+
         if(removenadgets == 1) // was < 2
             HG_RemoveAll(self);
         
@@ -1371,12 +1389,14 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 		// to match explanation in default.cfg, a value of 3 must allow three-line bursts and not four!
 
 		// do flood control for the default line size
+
+        // TODO: move the line wrapping to CSQC somehow so that it respects the user's actual font settings.
 		getWrappedLine_remaining = msgstr;
 		msgstr = "";
 		lines = 0;
 		while(getWrappedLine_remaining && (!flood_lmax || lines <= flood_lmax))
 		{
-			msgstr = strcat(msgstr, " ", getWrappedLine(82.4289758859709, strlennocol)); // perl averagewidth.pl < gfx/vera-sans.width
+			msgstr = strcat(msgstr, " ", getWrappedLine(82.4289758859709, '1 1', stringwidth_colors)); // perl averagewidth.pl < gfx/vera-sans.width
 			++lines;
 		}
 		msgstr = substring(msgstr, 1, strlen(msgstr) - 1);
@@ -1611,7 +1631,7 @@ void PrecachePlayerSounds(string f)
 
 void ClearPlayerSounds()
 {
-#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = string_null; }
+#define _VOICEMSG(m) if(self.playersound_##m) { strunzone(self.playersound_##m); self.playersound_##m = NULL; }
 	ALLPLAYERSOUNDS
 	ALLVOICEMSGS
 #undef _VOICEMSG

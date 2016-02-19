@@ -534,7 +534,7 @@ void Damage_RecordDamage(entity attacker, float deathtype, float damage);
 
 float IsHeadshot(entity targ, entity attacker, vector hitloc) {
     // find height of hit on player axis
-    // if above view_ofs and below maxs, and also in the middle half of the bbox, it is head shot
+    // if above view_ofs and also in the middle half of the bbox, it is head shot
 
     vector headmins, headmaxs, org;
     var w = CVAR(g_player_hitbox_head_width_factor);
@@ -542,7 +542,7 @@ float IsHeadshot(entity targ, entity attacker, vector hitloc) {
 
     org = antilag_takebackorigin(targ, time - ANTILAG_LATENCY(attacker));
     headmins = org + [targ.mins_x * w, targ.mins_y * w, (1 + h) * targ.view_ofs_z - h * targ.maxs_z];
-    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z];
+    headmaxs = org + [targ.maxs_x * w, targ.maxs_y * w, targ.maxs_z * 2];
     
     return trace_hits_box(railgun_start, railgun_end, headmins, headmaxs);
 }
@@ -559,10 +559,12 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 
 	float armordamage;
 	armordamage = 0;
-    
+
 	if(gameover || targ.killcount == -666)
 		return;
-    
+
+    var original_damage = damage;
+
     if not(damage_linkmode) {
         if(targ.hg_shield && DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         if(CVAR(g_nadgets_transloc_counters_shield))
@@ -662,7 +664,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		damage = 100000;
 	}
-	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_grenade" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
+	else if(deathtype == DEATH_MIRRORDAMAGE || deathtype == DEATH_NOAMMO || targ.classname == "hg_sentry" || targ.classname == "hg_generic_projectile" || deathtype == DEATH_NOISE || deathtype == DEATH_RESOURCE_ARMOR)
 	{
 		// no processing
 	}
@@ -894,10 +896,9 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
         
 		if(g_freeze) if(targ.frozen)
 		{
-            if(deathtype == DEATH_HURTTRIGGER || (damage && Freeze_CVar(teleport_out_of_lava) && DEATH_ISENVIRONMENTAL(deathtype)))
-                Freeze_RespawnPlayer(targ);
-            
-			damage = 0;
+            if(!DEATH_ISENVIRONMENTAL(deathtype))
+                damage = 0;
+
 			force = force * Freeze_CVar(frozen_force);
 
 			if(targ.team != attacker.team || Freeze_CVar(melt_teamdamage))
@@ -1039,7 +1040,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 	if(self.event_damage) {
         self.dmg_jaildm = jaildm;
         self.event_damage(inflictor, attacker, damage, deathtype, hitloc, force);
-        W_CampingRifle_RegisterHitForHitstreak(attacker, deathtype);
+        W_RegisterHitForHitstreak(attacker, deathtype);
 
         if(t_oldhealth > self.health && deathtype != DEATH_ENDURANCE) {
             if(!teams_matter || self.team != attacker.team) {
@@ -1124,6 +1125,11 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 		force = normalize(attacker.origin + attacker.view_ofs - hitloc) * mirrorforce;
 		Damage(attacker, inflictor, attacker, mirrordamage, DEATH_MIRRORDAMAGE, attacker.origin, force);
 	}
+
+    if(deathtype == DEATH_HURTTRIGGER && targ.triggerhurttime < 0) {
+        targ.triggerhurttime = 0;
+        Damage(attacker, inflictor, attacker, original_damage, DEATH_HURTTRIGGER, hitloc, '0 0 0');
+    }
 }
 
 vector NearestPointOnBox(entity box, vector org)
@@ -1215,7 +1221,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 	stat_damagedone = 0;
 	stat_maxdamage = 0;
 
-	targ = findradius (blastorigin, rad);
+	targ = WarpZone_FindRadius(blastorigin, rad, FALSE);
 	while (targ)
 	{
 		next = targ.chain;
@@ -1228,8 +1234,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
     				// LordHavoc: measure distance to nearest point on target (not origin)
     				// (this guarentees 100% damage on a touch impact)
                     // Akari: ....... not really.
-    				nearest = NearestPointOnBox(targ, blastorigin);
-    				diff = nearest - blastorigin;
+    				nearest = targ.WarpZone_findradius_nearest;
+    				diff = targ.WarpZone_findradius_dist;
     				// round up a little on the damage to ensure full damage on impacts
     				// and turn the distance into a fraction of the radius
     				power = 1 - ((vlen (diff) - 2) / rad);
@@ -1254,7 +1260,8 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						// if it's a player, use the view origin as reference
 						if (targ.classname == "player")
 							center = targ.origin + targ.view_ofs;
-						force = normalize(center - blastorigin);
+
+						force = normalize(center - WarpZone_TransformOrigin(targ, blastorigin));
                         
                         if(CVAR(g_blast_alwaysfullforce))
                             forcescale = 1;
@@ -1283,7 +1290,7 @@ float RadiusDamage (entity inflictor, entity attacker, float coredamage, float e
 						c = 0;
 						while (c < total)
 						{
-							traceline(blastorigin, nearest, MOVE_NOMONSTERS, inflictor);
+                            WarpZone_TraceLine(blastorigin, WarpZone_UnTransformOrigin(targ, nearest), MOVE_NOMONSTERS, inflictor);
 							if (trace_fraction == 1 || trace_ent == targ)
 							{
 								hits = hits + 1;
@@ -1350,7 +1357,7 @@ void fireburner_think();
 
 float Fire_IsBurning(entity e)
 {
-	return (time < e.fire_endtime);
+	return (time < e.fire_endtime && !e.frozen);
 }
 
 .float fire_last;
@@ -1366,6 +1373,11 @@ float Fire_AddDamage(entity e, entity o, float d, float t, float dt)
 		if(e.deadflag)
 			return -1;
         
+        if(e.frozen) {
+            e.lastdamage = time;
+            return -1;
+        }
+
         if(self.jb_proj_ownerstate != JB_PROJ_OWNERSTATE_UNDEFINED)
             e.jb_proj_ownerstate = self.jb_proj_ownerstate;
 	}
@@ -1476,8 +1488,9 @@ void Fire_ApplyDamage(entity e)
 	if(e.watertype != CONTENT_LAVA)
 		e.fire_endtime = 0;
 
-    if(!e.fire_owner.iscreature && e.fire_owner.classname != "jailbreak_torture")
-        e.fire_endtime = 0;
+    // someone please remind me why I did this?
+    // if(!e.fire_owner.iscreature && e.fire_owner.classname != "jailbreak_torture")
+        // e.fire_endtime = 0;
 
 	if not(Fire_IsBurning(e))
 		return;
@@ -1488,7 +1501,7 @@ void Fire_ApplyDamage(entity e)
         backtrace("Abnormal fire damage tick (negative time)");
         t = 0;
     }
-    
+
 	d = e.fire_damagepersec * t;
 	hi = e.fire_owner.hitsound;
 	ty = e.fire_owner.typehitsound;
@@ -1548,3 +1561,84 @@ void fireburner_think()
 	self.nextthink = time;
 }
 
+void ArcEffect(vector from, vector to, float t) {
+    te_csqc_lightningarc(from, to, t, t);
+}
+
+void ArcDamage_Recurse(entity targ, entity attacker, float damage, float deathtype,
+                       vector arcoffset, float range, float mul, float force, float default_color,
+                       float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield) {
+    entity oldself = self;
+    entity plr, newtarget;
+    float dist, shortest;
+
+    if(targetFrozen)
+        damage = 1;
+    else
+        damage = damage * mul;
+
+    if(damage < 1)
+        return;
+
+    newtarget = world;
+    shortest = range;
+    targ.hitfield = TRUE;
+
+    FOR_EACH_PLAYER(plr)
+    if(plr != attacker)
+    if(plr != targ)
+    if(plr.deadflag == DEAD_NO)
+    if(!plr.hg_stealth || (targetTeamMates && plr.team == attacker.team))
+    if(!plr.jb_isprisoned)
+    if(!plr.hitfield) {
+        float sameteam = (teams_matter && plr.team == attacker.team);
+        if((!sameteam && ((!plr.frozen && targetAlive) || (plr.frozen && targetFrozen))) || (sameteam && targetTeamMates)) {
+            dist = vlen(plr.origin - targ.origin);
+            if(dist < shortest) {
+                traceline(targ.origin + arcoffset, plr.origin + arcoffset, MOVE_NORMAL, targ);
+                
+                if(trace_fraction < 1 && trace_ent == plr) {
+                    shortest = dist;
+                    newtarget = plr;
+                }
+            }
+        }
+    }
+
+    if(newtarget) {
+        ArcEffect(targ.origin + arcoffset, newtarget.origin + arcoffset,
+                  if(targetTeamMates) 0 else if(teams_matter) attacker.team else default_color);
+
+        Damage(newtarget, attacker, attacker, damage, deathtype, '0 0 0',
+               normalize(newtarget.origin - targ.origin) * force);
+
+        ArcDamage_Recurse(newtarget, attacker, damage, deathtype, arcoffset, range, mul, force,
+                          default_color, targetTeamMates, targetFrozen, targetAlive, hitfield);
+
+        if(targetTeamMates)
+            sound(newtarget, CHAN_PROJECTILE, "kh/capture.wav", 0.4, ATTN_NORM);
+        else
+            sound(newtarget, CHAN_PROJECTILE, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"),
+                  VOL_BASE, ATTN_NORM * 0.3);
+    }
+
+    self = oldself;
+}
+
+void ArcDamage(entity targ, entity attacker, float damage, float deathtype,
+               float range, float mul, float force, float default_color, .float hitfield) {
+    float targetTeamMates = (teams_matter && Buffs_Present(attacker, BUFF_MEDIC) && targ.team == attacker.team);
+
+    if(teams_matter && targ.team == attacker.team && !targetTeamMates)
+        return;
+
+    float targetFrozen = targ.frozen && !targetTeamMates;
+    float targetAlive = !targetFrozen && !targetTeamMates;
+
+    ArcDamage_Recurse(targ, attacker, damage, deathtype,
+                      attacker.maxs_z * '0 0 0.5', range, mul, force, default_color,
+                      targetTeamMates, targetFrozen, targetAlive, hitfield);
+
+    entity e; for(e = world; (e = findfloat(e, hitfield, TRUE));)
+        e.hitfield = FALSE;
+}

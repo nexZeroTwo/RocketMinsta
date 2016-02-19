@@ -107,6 +107,13 @@ void W_Plasma_Damage (entity inflictor, entity attacker, float damage, float dea
 void W_Electro_Attack()
 {
 	entity proj;
+    float cost = CVAR(g_balance_electro_primary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
+
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+        self.ammo_cells = self.ammo_cells - cost;
 
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire.wav", CVAR(g_balance_electro_primary_damage));
 
@@ -124,8 +131,6 @@ void W_Electro_Attack()
 	proj.projectiledeathtype = WEP_ELECTRO;
 	setorigin(proj, w_shotorg);
 
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - CVAR(g_balance_electro_primary_ammo);
 	proj.movetype = MOVETYPE_FLY;
 	proj.velocity = w_shotdir * CVAR(g_balance_electro_primary_speed);
 	W_SetupProjectileVelocity(proj);
@@ -143,6 +148,14 @@ void W_Electro_Attack()
 void W_Electro_Attack2()
 {
 	entity proj;
+    float cost = CVAR(g_balance_electro_secondary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
+
+    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
+        self.ammo_cells = self.ammo_cells - cost;
+
 
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 2, "weapons/electro_fire2.wav", CVAR(g_balance_electro_secondary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
@@ -161,10 +174,6 @@ void W_Electro_Attack2()
 	proj.projectiledeathtype = WEP_ELECTRO | HITTYPE_SECONDARY;
 	setorigin(proj, w_shotorg);
 
-	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_cells = self.ammo_cells - CVAR(g_balance_electro_secondary_ammo);
-	//proj.glow_size = 50;
-	//proj.glow_color = 45;
 	proj.movetype = MOVETYPE_BOUNCE;
 	proj.velocity = (w_shotdir + randomvec() * CVAR(g_balance_electro_secondary_spread)) * CVAR(g_balance_electro_secondary_speed) + v_up * CVAR(g_balance_electro_secondary_speed_up);
 	W_SetupProjectileVelocity(proj);
@@ -186,8 +195,10 @@ void spawnfunc_weapon_electro (void)
 
 void w_electro_checkattack()
 {
+    W_SetButtonFields(self, CVAR(g_balance_electro_swapshotmodes));
+
 	if(self.electro_count > 1)
-	if(self.BUTTON_ATCK2)
+	if(self.w_button_secondary)
 	if(weapon_prepareattack(1, -1))
 	{
 		W_Electro_Attack2();
@@ -199,20 +210,34 @@ void w_electro_checkattack()
 	w_ready();
 }
 
+void W_Electro_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_ELECTRO,
+        CVAR(g_balance_electro_magazinecapacity),
+        CVAR(g_balance_electro_magazineregen),
+        CVAR(g_balance_electro_reloadtime),
+        ammo_cells,
+        1
+    );
+}
+
 .float bot_secondary_electromooth;
 float w_electro(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_electro_swapshotmodes));
+    W_Electro_SetClipContext();
+
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK=FALSE;
-		self.BUTTON_ATCK2=FALSE;
+		self.w_button_primary=FALSE;
+		self.w_button_secondary=FALSE;
 		if(vlen(self.origin-self.enemy.origin) > 1000)
 			self.bot_secondary_electromooth = 0;
 		if(self.bot_secondary_electromooth == 0)
 		{
 			if(bot_aim(CVAR(g_balance_electro_primary_speed), 0, CVAR(g_balance_electro_primary_lifetime), FALSE))
 			{
-				self.BUTTON_ATCK = TRUE;
+				self.w_button_primary = TRUE;
 				if(random() < 0.01) self.bot_secondary_electromooth = 1;
 			}
 		}
@@ -220,28 +245,34 @@ float w_electro(float req)
 		{
 			if(bot_aim(CVAR(g_balance_electro_secondary_speed), CVAR(g_balance_grenadelauncher_secondary_speed_up), CVAR(g_balance_electro_secondary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 				if(random() < 0.03) self.bot_secondary_electromooth = 0;
 			}
 		}
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_electro_primary_refire)))
-		{
-			W_Electro_Attack();
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_electro_primary_animtime), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		if (time >= self.electro_secondarytime)
-		if (weapon_prepareattack(1, CVAR(g_balance_electro_secondary_refire)))
-		{
-			W_Electro_Attack2();
-			self.electro_count = CVAR(g_balance_electro_secondary_count);
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_electro_secondary_animtime), w_electro_checkattack);
-			self.electro_secondarytime = time + CVAR(g_balance_electro_secondary_refire2);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.w_button_primary)
+            if(weapon_prepareattack(0, CVAR(g_balance_electro_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Electro_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_electro_primary_animtime), w_ready);
+            }
+
+            if(self.w_button_secondary)
+            if(time >= self.electro_secondarytime)
+            if(weapon_prepareattack(1, CVAR(g_balance_electro_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Electro_Attack2();
+                self.electro_count = CVAR(g_balance_electro_secondary_count);
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_electro_secondary_animtime), w_electro_checkattack);
+                self.electro_secondarytime = time + CVAR(g_balance_electro_secondary_refire2);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
+
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -269,5 +300,7 @@ float w_electro(float req)
     {
         TimeTravel_RestoreTime(self,    tt_moment, electro_secondarytime);
     }
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };

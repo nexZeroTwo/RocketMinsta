@@ -43,7 +43,11 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/lava.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 6 * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_lava_damage) * self.waterlevel, DEATH_LAVA, self.origin, '0 0 0');
+
+                        if(CVAR(g_lava_burn_damage)) {
+                            Fire_AddDamage(self, world, CVAR(g_lava_burn_damage) * self.waterlevel, CVAR(g_lava_burn_time), DEATH_LAVA);
+                        }
 					}
 					else if (self.watertype == CONTENT_SLIME)
 					{
@@ -52,7 +56,7 @@ void CreatureFrame (void)
 							self.watersound_finished = time + 0.5;
 							sound (self, CHAN_PLAYER, "player/slime.wav", VOL_BASE, ATTN_NORM);
 						}
-						Damage (self, world, world, 2 * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
+						Damage (self, world, world, CVAR(g_slime_damage) * self.waterlevel, DEATH_SLIME, self.origin, '0 0 0');
 					}
 				}
 			}
@@ -189,6 +193,8 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
+	WarpZone_StartFrame();
+
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
@@ -224,7 +230,7 @@ void StartFrame (void)
 	{
 		RandomSelection_Init();
 		for(self = world; (self = find(self, classname, "player")); )
-			RandomSelection_Add(self, 0, string_null, 1, 0);
+			RandomSelection_Add(self, 0, NULL, 1, 0);
 		self = RandomSelection_chosen_ent;
 		SelectSpawnPoint(0);
 	}
@@ -248,7 +254,7 @@ void StartFrame (void)
 	} else if(oldfog) {
 		print("Fog disabled\n");
 		strunzone(oldfog);
-		oldfog = string_null;
+		oldfog = NULL;
 		
 		FOR_EACH_REALCLIENT(self) {
 			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
@@ -264,6 +270,9 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+
+    if(roundstate == ROUNDSTATE_GAMEINIT)
+        roundstate = ROUNDSTATE_PREGAME;
 
     if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;

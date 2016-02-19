@@ -1,4 +1,6 @@
 
+.float shotgun_last_refire_delay;
+
 void W_Shotgun_Attack (void)
 {
 	float	sc;
@@ -12,6 +14,10 @@ void W_Shotgun_Attack (void)
 	entity flash;
 
 	ammoamount = CVAR(g_balance_shotgun_primary_ammo);
+
+    if(!W_Clip_Consume(ammoamount))
+        return;
+
 	bullets = CVAR(g_balance_shotgun_primary_bullets);
 	d = CVAR(g_balance_shotgun_primary_damage);
 	f = CVAR(g_balance_shotgun_primary_force);
@@ -39,11 +45,11 @@ void W_Shotgun_Attack (void)
 	flash.think = SUB_Remove;
 	flash.nextthink = time + 0.06;
 	flash.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-	W_AttachToShotorg(flash, '5 0 0');
+	W_AttachToShotorg(flash, '12 0 0');
 
 }
 
-void W_Shotgun_Attack2 (void)
+float W_Shotgun_Attack2 (void)
 {
 	float	sc;
 	float	ammoamount;
@@ -56,6 +62,10 @@ void W_Shotgun_Attack2 (void)
 	entity flash;
 
 	ammoamount = CVAR(g_balance_shotgun_secondary_ammo);
+
+    if(!W_Clip_Consume(ammoamount))
+        return FALSE;
+
 	bullets = CVAR(g_balance_shotgun_secondary_bullets);
 	d = CVAR(g_balance_shotgun_secondary_damage);
 	f = CVAR(g_balance_shotgun_secondary_force);
@@ -84,6 +94,8 @@ void W_Shotgun_Attack2 (void)
 	flash.nextthink = time + 0.06;
 	flash.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
 	W_AttachToShotorg(flash, '5 0 0');
+
+    return TRUE;
 }
 
 // weapon frames
@@ -94,7 +106,9 @@ void shotgun_fire2_03()
         return;
     }
 
-	W_Shotgun_Attack2();
+    if(!W_Shotgun_Attack2())
+        return;
+
 	weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), w_ready);
 }
 void shotgun_fire2_02()
@@ -104,34 +118,69 @@ void shotgun_fire2_02()
         return;
     }
 
-	W_Shotgun_Attack2();
+    if(!W_Shotgun_Attack2())
+        return;
+
 	weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), shotgun_fire2_03);
 }
 
 void spawnfunc_weapon_shotgun(); // defined in t_items.qc
 
+void W_Shotgun_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_SHOTGUN,
+        CVAR(g_balance_shotgun_magazinecapacity),
+        CVAR(g_balance_shotgun_magazineregen),
+        CVAR(g_balance_shotgun_reloadtime),
+        ammo_shells,
+        1
+    );
+}
+
 float w_shotgun(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_shotgun_swapshotmodes));
+    W_Shotgun_SetClipContext();
+
 	if (req == WR_AIM)
 		if(vlen(self.origin-self.enemy.origin)>200)
-			self.BUTTON_ATCK = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_primary = bot_aim(1000000, 0, 0.001, FALSE);
 		else
-			self.BUTTON_ATCK2 = bot_aim(1000000, 0, 0.001, FALSE);
+			self.w_button_secondary = bot_aim(1000000, 0, 0.001, FALSE);
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_shotgun_primary_refire)))
-		{
-			W_Shotgun_Attack();
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_shotgun_primary_animtime), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		if (CVAR(g_balance_shotgun_secondary))
-		if (weapon_prepareattack(1, CVAR(g_balance_shotgun_secondary_refire)))
-		{
-			W_Shotgun_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), shotgun_fire2_02);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.w_button_primary)
+            if(weapon_prepareattack(0, CVAR(g_balance_shotgun_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Shotgun_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_shotgun_primary_animtime), w_ready);
+            }
+
+            if(self.w_button_secondary)
+            if(CVAR(g_balance_shotgun_secondary))
+            if(weapon_prepareattack(1, CVAR(g_balance_shotgun_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Shotgun_Attack2();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_shotgun_secondary_animtime), shotgun_fire2_02);
+
+                var af = ATTACK_FINISHED(self);
+                self.w_inring_fulltime = af;
+                self.w_inring_cycle = self.w_inring_fulltime - time;
+                self.shotgun_last_refire_delay = self.w_inring_cycle;
+            }
+
+            if(self.weaponentity.wframe == WFRAME_IDLE && !self.w_inring_fulltime) {
+                var af = ATTACK_FINISHED(self);
+
+                if(af > time) {
+                    self.w_inring_fulltime = af;
+                    self.w_inring_cycle = self.shotgun_last_refire_delay;
+                }
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -145,5 +194,7 @@ float w_shotgun(float req)
 		return self.ammo_shells >= CVAR(g_balance_shotgun_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_shells >= CVAR(g_balance_shotgun_secondary_ammo) * 3;
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };

@@ -24,6 +24,7 @@ void target_assault_roundend_reset();
 float redspawned, bluespawned, yellowspawned, pinkspawned;
 float totalspawned;
 void SetPlayerTeam(entity pl, float t, float s, float noprint);
+void W_SetSecondary(entity, float);
 
 /**
  * Resets the state of all clients, items, flags, runes, keys, weapons, waypoints, ... of the map.
@@ -112,6 +113,11 @@ void reset_map(float dorespawn)
                 self.hg_optout_nextround = -1;
             }
             
+            if(self.w_secondary_nextround) {
+                W_SetSecondary(self, self.w_secondary_nextround);
+                self.w_secondary_nextround = 0;
+            }
+
 			if(g_arena)
 			{
 				if(self.spawned)
@@ -125,7 +131,7 @@ void reset_map(float dorespawn)
 					PutClientInServer();
                     if(g_clanarena)
                         PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
-                } else if(g_clanarena && self.jb_specteam) {
+                } else if(g_clanarena && self.jb_specteam && self.scorekeeper) {
                     self.classname = "player";
                     PutClientInServer();
                     PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);

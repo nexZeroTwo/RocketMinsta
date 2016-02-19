@@ -73,18 +73,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_TRIGGER;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
 	else if (mode < 0)
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -107,18 +107,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_NOT;
 		//e.colormod = '0.2 1 0.2';
 		e.alpha = g_ghost_items;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
 	else
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -167,7 +167,7 @@ void Item_RespawnCountdown (void)
 		{
 			string name;
 			vector rgb;
-			name = string_null;
+			name = NULL;
 			if(g_minstagib)
 			{
 				switch(self.items)
@@ -191,7 +191,7 @@ void Item_RespawnCountdown (void)
 				case IT_JETPACK:        name = "JETPACK"; rgb = '0.5 0.5 0.5'; break;
 				case IT_HEALTH:			name = "MEGA HEALTH"; rgb = '1 0.2 0.2'; break;
 				case IT_ARMOR:			name = "MEGA ARMOR"; rgb = '0.2 1 0.2'; break;
-				case IT_NADGET:			name = "NADGET REGEN"; rgb = '1 0.5 0.2'; break;
+				case IT_NADGET:			name = "NADGET REGEN"; rgb = '0.5 0.5 1.0'; break;
 			}
 			if(name)
 			{
@@ -630,7 +630,7 @@ void Item_Touch (void)
 				if(head.flags & FL_ITEM)
 				{
 					Item_Show(head, -1);
-					RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+					RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 				}
 			}
 			e = RandomSelection_chosen_ent;
@@ -651,7 +651,7 @@ void Item_FindTeam()
 		dprint("Initializing item team ", ftos(self.team), "\n");
 		RandomSelection_Init();
 		for(head = world; (head = findfloat(head, team, self.team)); ) if(head.flags & FL_ITEM)
-			RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+			RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 		e = RandomSelection_chosen_ent;
 		e.state = 0;
 		Item_Show(e, 1);
@@ -1021,7 +1021,7 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 	self.flags = FL_ITEM | itemflags;
 	self.touch = Item_Touch;
 	setmodel (self, self.mdl); // precision set below
-	self.effects |= EF_LOWPRECISION;
+	self.effects |= EF_LOWPRECISION | EF_ROTATE;
 	if((itemflags & FL_POWERUP) || self.health || self.armorvalue)
 		setsize(self, '-16 -16 0', '16 16 0' + '0 0 48' * CVAR(g_pickup_heightscale));
 	else
@@ -1084,7 +1084,7 @@ void minstagib_items (float itemid)
 	if (self.classname == "droppedweapon")
 	{
 		self.ammo_cells = 25;
-		StartItem ("models/weapons/g_nex.md3",
+		StartItem (pickfile("models/weapons/g_nex", "iqm", "md3", NULL),
 			"weapons/weaponpickup.wav", 15, 0,
 			"MinstaNex", 0, WEPBIT_MINSTANEX, FL_WEAPON, generic_pickupevalfunc, 1000);
 		return;
@@ -1950,7 +1950,7 @@ void spawnfunc_item_nadget(void) {
     if(!self.hg_bonus)
         self.hg_bonus = 1;
     
-    StartItem ("models/items/g_fuelregen.md3", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
+    StartItem ("models/items/nadget.iqm", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
 }
 
 // we no longer have the seeker

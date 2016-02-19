@@ -2,6 +2,11 @@
 .vector trail_oldorigin;
 .float trail_oldtime;
 .float extradata;
+.vector server_angles;
+.float use_server_angles;
+
+entity plasma_chain;
+.entity plasma_next;
 
 void SUB_Null()
 {
@@ -112,10 +117,10 @@ void Projectile_DrawTrail(vector to)
 		case PROJECTILE_GRENADE_BOUNCING: case PROJECTILE_HG_GENERIC: case PROJECTILE_FLAK_BOMB:
 			trailparticles(self, particleeffectnum("TR_KNIGHTSPIKE"), from, to);
 			break;
-        case PROJECTILE_HG_PLASMA: case PROJECTILE_HG_RAZE:
-            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
+        case PROJECTILE_HG_PLASMA:
+            trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 2), from, to);
             break;
-        case PROJECTILE_HG_LASER:
+        case PROJECTILE_HG_LASER: case PROJECTILE_HG_RAZE:
             trailparticles(self, rm_particleeffectnum_team("RM_HG_PLASMA", self.team, 1), from, to);
             break;
         case PROJECTILE_HG_TRANSLOC:
@@ -199,15 +204,29 @@ void Projectile_Draw()
 	{
 		//self.move_flags &~= FL_ONGROUND;
 		Movetype_Physics_MatchServer();
-		if(!(self.move_flags & FL_ONGROUND))
+
+        if(self.cnt == PROJECTILE_PRYAXE)
+            self.move_flags &~= FL_ONGROUND;
+
+		if(!(self.move_flags & FL_ONGROUND)) {
 			self.angles = vectoangles(self.velocity);
+
+            if(self.cnt == PROJECTILE_HG_PLASMA) {
+                self.angles_x = 0;
+                self.angles_y -= 90;
+                self.angles_z = 0;
+            }
+        }
 	}
 	else
 	{
 		InterpolateOrigin_Do();
 
-        if(self.cnt == PROJECTILE_HG_RAZE)
+        if(self.use_server_angles) {
+            self.angles = self.server_angles;
+        } else if(self.cnt == PROJECTILE_HG_RAZE) {
             self.angles_x = -90;
+        }
 	}
 
 	if(self.count & 0x80)
@@ -221,21 +240,16 @@ void Projectile_Draw()
 		t = time;
 	}
 
-	if(!(f & FL_ONGROUND) || self.cnt == PROJECTILE_HG_RAZE)
+	if((!(f & FL_ONGROUND) || self.cnt == PROJECTILE_HG_RAZE) && !self.use_server_angles)
 	{
 		rot = '0 0 0';
 		switch(self.cnt)
 		{
-			/*
-			case PROJECTILE_GRENADE:
-				rot = '-2000 0 0'; // forward
-				break;
-			*/
-			
 			case PROJECTILE_HG_GENERIC:
 			case PROJECTILE_HG_NAPALM:
             //case PROJECTILE_HG_REMOTE:
 			//case PROJECTILE_HG_PLASMA:
+            case PROJECTILE_PRYAXE:
 			case PROJECTILE_GRENADE_BOUNCING:
 				rot = '0 -1000 0'; // sideways
 				break;
@@ -246,26 +260,32 @@ void Projectile_Draw()
                 rot = '700 643 721';
                 break;
             case PROJECTILE_HG_RAZE:
-                rot = '0 0 1500';
+            case PROJECTILE_HG_PLASMA:
+                rot = '0 0 -1000';
                 break;
+            case PROJECTILE_PRYAXE:
+                rot = '0 -1000 0'; // sideways
 			default:
 				break;
 		}
 		self.angles = AnglesTransform_Multiply(self.angles, rot * (t - self.spawntime));
 	}
 
-	fixedmakevectors(self.angles);
+	fixedmakevectors2(self.angles);
 
 	trailorigin = self.origin;
 	switch(self.cnt)
 	{
 		case PROJECTILE_GRENADE:
 		case PROJECTILE_GRENADE_BOUNCING:
-		case PROJECTILE_HG_GENERIC:
-        case PROJECTILE_HG_NAPALM:
             trailorigin += v_right * 1 + v_forward * -2;
+            break;
 
-        case PROJECTILE_HG_PLASMA:
+        case PROJECTILE_HG_GENERIC:
+        case PROJECTILE_HG_NAPALM:
+            trailorigin += v_right * -5;
+            break;
+
         case PROJECTILE_HG_TRANSLOC:
         case PROJECTILE_HG_REMOTE:
         case PROJECTILE_HG_LASER:
@@ -310,6 +330,11 @@ void Ent_RemoveProjectile()
 		tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * 0.05, MOVE_NORMAL, self);
 		Projectile_DrawTrail(trace_endpos);
 	}
+
+    if(self.cnt == PROJECTILE_HG_PLASMA_SHARD) {
+        self.cnt = 0;
+        plasma_chain = findchainfloat_tofield(cnt, PROJECTILE_HG_PLASMA_SHARD, plasma_next);
+    }
 }
 
 void Flak_Touch(void) {
@@ -317,6 +342,12 @@ void Flak_Touch(void) {
 }
 
 vector Zapper_BeamRGB(float t);
+
+void SetupProjectileColormap(float default_team) {
+    if(!teamplay)
+        self.team = default_team;
+    self.colormap = 1024 + self.team * 17;
+}
 
 void Ent_Projectile()
 {
@@ -338,7 +369,11 @@ void Ent_Projectile()
 
 	f = ReadByte();
 	self.count = (f & 0x80);
-	self.iflags = (self.iflags & IFLAG_INTERNALMASK) | IFLAG_AUTOANGLES | IFLAG_ANGLES;
+	self.iflags = (self.iflags & IFLAG_INTERNALMASK);
+
+    if(!self.use_server_angles)
+        self.iflags |= IFLAG_ANGLES | IFLAG_AUTOANGLES;
+
 	self.solid = SOLID_TRIGGER;
 	//self.effects = EF_NOMODELFLAGS;
 
@@ -405,13 +440,16 @@ void Ent_Projectile()
 		self.scale = 1;
         self.colormod = '0 0 0';
         
+        if(cvar("_ent_debug")) {
+            print("new projectile: ", ftos(self.cnt), " (", ftos(f), ")\n");
+        }
+
 		switch(self.cnt)
 		{
 			case PROJECTILE_ELECTRO:
                 setmodel(self, "models/ebomb.mdl");
-                self.skin = TeamColorSkin(self.team);
-                if(self.skin)
-                    self.skin += 4; // 1-4 range is used for plasma bomb shards
+                SetupProjectileColormap(COLOR_TEAM2);
+                self.skin = 1;
                 break;
 			case PROJECTILE_ROCKET: setmodel(self, "models/rocket.md3"); self.scale = 2; break;
 			case PROJECTILE_BULLET: setmodel(self, "models/tracer.mdl"); break;
@@ -434,28 +472,34 @@ void Ent_Projectile()
                     self.skin = TeamColorSkin(self.team);
                 }
                 break;
-			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM: case PROJECTILE_HG_PLASMA:
-                setmodel(self, "models/grenademodel.md3");
-                self.skin = TeamColorSkin(self.team);
+			case PROJECTILE_HG_GENERIC: case PROJECTILE_HG_NAPALM:
+                setmodel(self, "models/handgrenade.iqm");
+                SetupProjectileColormap(COLOR_TEAM1);
+                break;
+            case PROJECTILE_HG_PLASMA:
+                setmodel(self, "models/plasmabomb.iqm");
+                SetupProjectileColormap(COLOR_TEAM2);
                 break;
             case PROJECTILE_HG_REMOTE:
-                self.alpha = 1;
                 setmodel(self, "models/mine.md3");
                 self.skin = TeamColorSkin(self.team);
                 break;
             case PROJECTILE_HG_LASER: setmodel(self, "models/elaser.mdl"); break;
             case PROJECTILE_HG_TRANSLOC:
-                setmodel(self, "models/hg_transloc.md3");
+                setmodel(self, "models/translocator.iqm");
                 self.skin = TeamColorSkin(self.team);
+                SetupProjectileColormap(COLOR_TEAM4);
                 self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
                 break;
             case PROJECTILE_HG_PLASMA_SHARD:
                 setmodel(self, "models/ebomb.mdl");
-                self.skin = TeamColorSkin(self.team);
+                SetupProjectileColormap(COLOR_TEAM2);
+                self.skin = 2;
+                plasma_chain = findchainfloat_tofield(cnt, PROJECTILE_HG_PLASMA_SHARD, plasma_next);
                 break;
             case PROJECTILE_HG_RAZE:
                 setmodel(self, "models/raze.md3");
-                self.skin = TeamColorSkin(self.team);
+                SetupProjectileColormap(COLOR_TEAM1);
                 break;
 			case PROJECTILE_LASER: setmodel(self, "models/laser.mdl"); break;
 			case PROJECTILE_HLAC: setmodel(self, "models/hlac_bullet.md3"); break;
@@ -469,6 +513,10 @@ void Ent_Projectile()
             case PROJECTILE_HG_NAPALMSHARD: case PROJECTILE_HEAL_PARTICLE_EMITTER: self.model = ""; self.modelindex = 0; break;
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
+            case PROJECTILE_PRYAXE:
+                setmodel(self, "models/weapons/pryaxe_thrown.md3");
+                SetupProjectileColormap(COLOR_TEAM1);
+                break;
 			default:
 				error("Received invalid CSQC projectile, can't work with this!");
 				break;
@@ -564,10 +612,23 @@ void Ent_Projectile()
 				self.mins = '-4 -4 -4';
 				self.maxs = '4 4 4';
 				break;
+            case PROJECTILE_PRYAXE:
+                self.move_movetype = MOVETYPE_BOUNCE;
+                self.move_touch = SUB_Null;
+                self.mins = '-16 -16 -4';
+                self.maxs = ' 16  16  4';
 			default:
 				break;
 		}
 	}
+
+    if(f & 4) {
+        self.server_angles_x = ReadCoord();
+        self.server_angles_y = ReadCoord();
+        self.server_angles_z = ReadCoord();
+        self.iflags &~= IFLAG_ANGLES | IFLAG_AUTOANGLES;
+        self.use_server_angles = TRUE;
+    }
 
 	if(self.gravity)
 	{
@@ -584,8 +645,11 @@ void Ent_Projectile()
 			self.move_movetype = MOVETYPE_BOUNCEMISSILE;
 	}
 
-	if(!(self.count & 0x80))
+	if(!(self.count & 0x80)) {
 		InterpolateOrigin_Note();
+		if(f & 0x20)
+			InterpolateOrigin_Note(); //Call this second time to avoid bug with rocket trail and warp. How do it better?
+	}
 	
 	self.draw = Projectile_Draw;
 	self.entremove = Ent_RemoveProjectile;
@@ -604,9 +668,12 @@ void Projectile_Precache()
 	precache_model("models/plasmatrail.mdl");
 	precache_model("models/rocket.md3");
 	precache_model("models/tracer.mdl");
-    precache_model("models/hg_transloc.md3");
+    precache_model("models/translocator.iqm");
     precache_model("models/raze.md3");
     precache_model("models/sphere/sphere.md3");
+    precache_model("models/weapons/pryaxe_thrown.md3");
+    precache_model("models/handgrenade.iqm");
+    precache_model("models/plasmabomb.iqm");
 	precache_sound("weapons/electro_fly.wav");
 	precache_sound("weapons/rocket_fly.wav");
 	precache_sound("weapons/fire_burn.wav");

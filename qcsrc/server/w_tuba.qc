@@ -103,6 +103,8 @@ void spawnfunc_weapon_tuba (void)
 
 float w_tuba(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_tuba_swapshotmodes));
+
 	if (req == WR_AIM)
 	{
 		// bots cannot play the Tuba well yet
@@ -110,20 +112,20 @@ float w_tuba(float req)
 		if(vlen(self.origin - self.enemy.origin) < CVAR(g_balance_tuba_radius))
 		{
 			if(random() > 0.5)
-				self.BUTTON_ATCK = 1;
+				self.w_button_primary = 1;
 			else
-				self.BUTTON_ATCK2 = 1;
+				self.w_button_secondary = 1;
 		}
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
+		if (self.w_button_primary)
 		if (weapon_prepareattack(0, CVAR(g_balance_tuba_refire)))
 		{
 			W_Tuba_Attack(0);
 			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_tuba_animtime), w_ready);
 		}
-		if (self.BUTTON_ATCK2)
+		if (self.w_button_secondary)
 		if (weapon_prepareattack(1, CVAR(g_balance_tuba_refire)))
 		{
 			W_Tuba_Attack(HITTYPE_SECONDARY);

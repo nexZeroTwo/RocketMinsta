@@ -1,6 +1,8 @@
 #define SERVER_SIDE
 #define INDEPENDENT_ATTACK_FINISHED
 
+const null_t NULL;
+
 float require_spawnfunc_prefix; // if this float exists, only functions with spawnfunc_ name prefix qualify as spawn functions
 
 #define BUTTON_ATCK    button0
@@ -64,8 +66,6 @@ float sv_cheats;
 float sv_gentle;
 
 entity	activator;
-string	string_null;
-const var void(void)	func_null;
 
 float player_count;
 float currentbots;
@@ -232,32 +232,33 @@ void w_ready();
 .float weapon_nextthink;
 .void() weapon_think;
 
-//float	PLAYER_WEAPONSELECTION_DELAY = );
 float	PLAYER_WEAPONSELECTION_SPEED = 18;
 vector	PLAYER_WEAPONSELECTION_RANGE = '0 20 -40';
 
 // weapon states (self.weaponentity.state)
-float WS_CLEAR			= 0; // no weapon selected
-float WS_RAISE			= 1; // raise frame
-float WS_DROP			= 2; // deselecting frame
-float WS_INUSE			= 3; // fire state
-float WS_READY			= 4; // idle frame
+enum {
+    WS_CLEAR,                // no weapon selected
+    WS_RAISE,                // raise frame
+    WS_DROP,                 // deselecting frame
+    WS_INUSE,                // fire state
+    WS_READY,                // idle frame
+};
 
-// weapon requests
-float WR_SETUP		    = 1; // setup weapon data
-float WR_THINK		    = 2; // logic to run every frame
-float WR_CHECKAMMO1	    = 3; // checks ammo for weapon
-float WR_CHECKAMMO2	    = 4; // checks ammo for weapon
-float WR_AIM		    = 5; // runs bot aiming code for this weapon
-float WR_PRECACHE	    = 6; // precaches models/sounds used by this weapon
-// These are no longer used since obituaries are client-side now and we don't have client-side weapon functions
-//float WR_SUICIDEMESSAGE = 7; // sets w_deathtypestring or leaves it alone (and may inspect w_deathtype for details)
-//float WR_KILLMESSAGE    = 8; // sets w_deathtypestring or leaves it alone
-float WR_RELOAD         = 9; // does not need to do anything
-float WR_RESETPLAYER    = 10; // does not need to do anything
-float WR_TT_STORE       = 11; // save weapon-specific fields into tt_moment for time travel
-float WR_TT_RESTORE     = 12; // restore weapon-specific fields from tt_moment for time travel
-float WR_LOWER          = 13; // weapon is being switched from
+enum {
+    WR_SETUP = 1,
+    WR_THINK,                // logic to run every frame
+    WR_CHECKAMMO1,           // checks ammo for weapon (primary)
+    WR_CHECKAMMO2,           // checks ammo for weapon (secondary)
+    WR_AIM,                  // runs bot aiming code for this weapon
+    WR_PRECACHE,             // precaches models/sounds used by this weapon
+    WR_RELOAD,               // reload button pressed
+    WR_ACTIVERELOAD,         // quick/instant reload requested
+    WR_RESETPLAYER,          // reset any state fields used by this weapon to defaults
+    WR_TT_STORE,             // save weapon-specific fields into tt_moment for time travel
+    WR_TT_RESTORE,           // restore weapon-specific fields from tt_moment for time travel
+    WR_LOWER,                // weapon is being switched from
+    WR_SETCLIPCONTEXT,       // just don't touch this
+};
 
 void weapon_defaultspawnfunc(float wpn);
 
@@ -644,14 +645,12 @@ float client_cefc_accumulator;
 float client_cefc_accumulatortime;
 #endif
 
-.float campingrifle_bulletcounter;
-.float campingrifle_bulletlimit;
 .float campingrifle_hitstreak1;
 .float campingrifle_hitstreak2;
 .float campingrifle_hitstreak1_expiretime;
 .float campingrifle_hitstreak2_expiretime;
 
-void W_CampingRifle_RegisterHitForHitstreak(entity attacker, float deathtype);
+void W_RegisterHitForHitstreak(entity attacker, float deathtype);
 
 #define PROJECTILE_MAKETRIGGER(e) (e).solid = SOLID_CORPSE; (e).dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
 // when doing this, hagar can go through clones
@@ -728,7 +727,7 @@ float next_round;
 float next_round_starttime;
 
 float sv_showspecs_extra;
-float sv_showfps;
+float sv_scoreboard_fps_column;
 float sv_oldfag;
 
 .float lastdamage;
@@ -773,8 +772,9 @@ float roundstate;
 
 .float vdmg_ignorenext;
 float sv_nicehealth;
-float sv_showacc;
-float sv_shownoobstat;
+float sv_scoreboard_acc_column;
+float sv_scoreboard_noob_column;
+float sv_scoreboard_alive_column;
 
 #define HEAL_PAUSEROT_DEFAULT -1
 
@@ -785,6 +785,7 @@ float IsDifferentTeam(entity a, entity b);
 float sv_shownames;
 
 .float client_dprmversion;
+.float client_utf8;
 
 .float antilag_debug;
 
@@ -817,3 +818,19 @@ vector PL_CROUCH_MAX;
 float readyrestart_happened;
 
 var .float origin_array[3];
+
+var .float w_button_primary;
+var .float w_button_secondary;
+.float w_button_null;
+.float w_conv_switch;
+
+.float accstat_shots;
+.float accstat_hits;
+
+.float w_secondary;
+.float w_secondary_nextround;
+
+.string netname_strzoned;
+
+.float w_inring_cycle;
+.float w_inring_fulltime;

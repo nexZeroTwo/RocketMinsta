@@ -68,7 +68,7 @@ void JB_DelayedInit() {
     
     SUB_ForEachTarget_Init();
     FOR_EACH_JB_CONTROLPOINT(e)
-        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', string_null, e);
+        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', NULL, e);
 }
 
 float jb_doors_opened[2];
@@ -118,7 +118,7 @@ void JB_NonJBInit() {
     SUB_ForEachTarget_Init();
     FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
         if(openjails != OPENJAILS_LOCKED_FORCE)
-            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', string_null, e);
+            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', NULL, e);
         e.think = SUB_Remove;
         e.nextthink = time;
     }
@@ -368,7 +368,7 @@ jb_torture_logic JB_Torture_PickFunction() {
 	
 	RandomSelection_Init();
 	for(;(e = find(e, classname, "jailbreak_torture_logic"));)
-		RandomSelection_Add(e, 0, string_null, 1, 1);
+		RandomSelection_Add(e, 0, NULL, 1, 1);
 	return RandomSelection_chosen_ent.use;
 	*/
 	
@@ -381,12 +381,12 @@ void JB_TorturePrisoners(float theteam) {
 	//	Here we will choose two random torture logics to run at the same time
 	RandomSelection_Init();
 	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
-		RandomSelection_Add(logic, 0, string_null, 1, 1);
+		RandomSelection_Add(logic, 0, NULL, 1, 1);
 	jb_torture_logic1 = RandomSelection_chosen_ent.use;
 	RandomSelection_Init();
 	for(;(logic = find(logic, classname, "jailbreak_torture_logic"));)
 		if(logic.use != jb_torture_logic1)
-			RandomSelection_Add(logic, 0, string_null, 1, 1);
+			RandomSelection_Add(logic, 0, NULL, 1, 1);
 	jb_torture_logic2 = RandomSelection_chosen_ent.use;
 	
 	for(;(spot = find(spot, classname, "info_jailbreak_torturespawn"));)
@@ -446,35 +446,14 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.use = logic;
 }
 
-void JB_Torture_Napalm() {
-	entity proj;
-	vector kick;
-
-	proj = spawn();
-	proj.owner = self;
-	proj.classname = "jb_torture_napalm";
-	proj.movetype = MOVETYPE_BOUNCE;
-	proj.projectiledeathtype = HG_REMOTE | HITTYPE_BOUNCE;
-    proj.hg_type = HG_REMOTE;
-	PROJECTILE_MAKETRIGGER(proj);
-	setsize(proj, '0 0 0', '0 0 1');
-	setorigin(proj, self.origin);
-	proj.org_explosion = self.origin;
-	proj.think = HG_Napalm_Think;
-    proj.nextthink = time;
-	proj.damageforcescale = 1;
-	kick_z = self.jb_torture_suggestedforce;
-	kick_x = (random () - 0.5) * 2 * kick_z;
-	kick_y = (random () - 0.5) * 2 * kick_z;
-	proj.velocity = kick;
-	proj.pushltime = time + 3;
-    proj.team = self.team;
-	W_SetupProjectileVelocity(proj);
-
-	proj.angles = vectoangles(proj.velocity);
-	proj.flags = FL_PROJECTILE;
-
-	CSQCProjectile(proj, TRUE, PROJECTILE_HG_NAPALMSHARD, TRUE);
+void JB_Torture_Napalm(void) {
+    Napalm_Spawn(self, self.origin, 3, 0.15, DEATH_HURTTRIGGER, 180, 80, 20, 1.5) {
+        velocity: [
+            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
+            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
+            self.jb_torture_suggestedforce
+        ]
+    };
 }
 
 void JB_Torture_Plasma() {
@@ -540,7 +519,7 @@ void JB_Torture_Grenades() {
 	gren.nextthink = time + 3;
 	gren.think = adaptor_think2use;
 	gren.use = JB_Torture_Grenade_Explode; //HG_Grenade_Explode;
-	gren.touch = HG_Grenade_Touch;
+	gren.touch = HG_GenericProjectile_Touch;
     gren.cnt = 9001;
 	gren.takedamage = DAMAGE_YES;
 	gren.health = 1;
@@ -560,14 +539,14 @@ void JB_Torture_Zap() {
 
 	RandomSelection_Init();
 	FOR_EACH_PLAYER(p) if(p.team != self.team) if(p.deadflag == DEAD_NO)
-		RandomSelection_Add(p, 0, string_null, 1, 1);
+		RandomSelection_Add(p, 0, NULL, 1, 1);
 	unlucky_guy = RandomSelection_chosen_ent;
 	
 	if(!unlucky_guy) {
 		// nobody left alive? shoot the corpses / death origins
 		RandomSelection_Init();
 		FOR_EACH_PLAYER(p) if(p.team != self.team)
-			RandomSelection_Add(p, 0, string_null, 1, 1);
+			RandomSelection_Add(p, 0, NULL, 1, 1);
 		unlucky_guy = RandomSelection_chosen_ent;
 	}
 	
@@ -579,7 +558,7 @@ void JB_Torture_Zap() {
 	sound(self, CHAN_WEAPON, strcat("misc/arc", ftos(1 + (random() > 0.5)), ".wav"), VOL_BASE, ATTN_NORM);
 	
 	FireRailgunBullet(self.origin, self.origin + a * 1024, 70, 700, 0, 0, 0, 0, WEP_NEX);
-    W_Zapper_Attack2_Effect(self.team, self.origin, trace_endpos);
+    W_Zapper_Attack2_Effect(self.team, self.origin, self.origin, WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos));
 	
 	// flash and burn the wall
 	if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
@@ -811,7 +790,7 @@ void JB_PrepareNextRound() {
             JB_ClearCamera(e);
         e.jb_roundlost = FALSE;
     }
-    self.endround_think2 = func_null;
+    self.endround_think2 = NULL;
 }
 
 void JB_EndRound(float t) {
@@ -829,7 +808,7 @@ entity JB_ChooseJailSpawnpoint(float theteam) {
 	
 	RandomSelection_Init();
 	for(;(spot = find(spot, classname, "info_jailbreak_jailspawn"));) if(spot.team == theteam) {
-		RandomSelection_Add(spot, 0, string_null, 1, 1);
+		RandomSelection_Add(spot, 0, NULL, 1, 1);
 	}
 	
 	spot = RandomSelection_chosen_ent;
@@ -858,7 +837,7 @@ entity JB_FindCamera(float theteam) {
 	
 	entity e;
 	for(;(e = find(e, classname, "info_jailbreak_jailcamera"));) if(e.team == theteam)
-		RandomSelection_Add(e, 0, string_null, 1, 1);
+		RandomSelection_Add(e, 0, NULL, 1, 1);
 	
 	return RandomSelection_chosen_ent;
 }
@@ -934,7 +913,7 @@ void JB_Jail_Touch() {
 
     if(g_nadgets)
     if(other.hg_type == HG_TRANSLOC)
-    if(other.classname == "hg_grenade") {
+    if(other.classname == "hg_generic_projectile") {
         other.jb_jail_resettime = time + frametime * 5;
         return;
     }
@@ -1270,6 +1249,7 @@ void JB_ControlPoint_Touch() {
 	self.pointupdatetime = time;
     self.jb_capturingplayer = other;
 	other.jb_unlock_progress = self.jb_unlock_progress;
+    other.buff_stealth_time = time;
 	
 	if(self.jb_unlock_progress >= 1) {
 		JB_ControlPoint_Capture(other);
@@ -1384,7 +1364,7 @@ void JB_JailSpec_Proxy_CopyFields(entity to, entity from) {
 
 void JB_JailSpec_Proxy_Think() {
     player_regen();
-    HG_Frame();
+    HG_PlayerFrame();
     self.nextthink = time;
 }
 

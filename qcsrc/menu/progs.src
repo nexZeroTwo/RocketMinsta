@@ -20,12 +20,16 @@ oo/base.h
 ../common/gametype.qh
 ../common/nadgets.qh
 ../common/dprm.qh
+../common/lazyjson.qh
 
 gamecommand.qh
 menu.qh
 draw.qh
 skin.qh
 nexuiz/util.qh
+
+../common/flag_anim.qc
+../common/util.qc
 
 oo/classdefs.h
 	classes.c
@@ -35,8 +39,6 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
-../common/flag_anim.qc
-../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
 menu.qc
@@ -51,4 +53,5 @@ nexuiz/util.qc
 ../common/ip2c.qc
 ../common/gametype.qc            
 ../common/nadgets.qc
+../common/lazyjson.qc
 

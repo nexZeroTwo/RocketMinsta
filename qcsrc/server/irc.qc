@@ -322,10 +322,17 @@ void IRC_AdminCommand(float handle, string nick, string cmdline) {
                 break;
             } else goto help;
         }
+
+        case "announce": {
+            var msg = IRC_IRC2DP(substring(cmdline, argv_start_index(1), strlen(cmdline)));
+            bprint("\x01^7", msg, "\n");
+            // IRC_Announce(irc.cnt, irc.target, msg);
+            break;
+        }
         
         default: {
 :help
-            s = "Available commands: status kickban ban bans unban";
+            s = "Available commands: status kickban ban bans unban announce";
             if(CVAR(sv_ircbot_admin_allow_cmd))
                 s = strcat(s, " cmd");
             IRC_Notice(handle, nick, s);
@@ -344,6 +351,18 @@ float IRC_IsAdmin(string mask) {
         if(IRC_MaskMatches(mask, argv(i)))
             return TRUE;
     return FALSE;
+}
+
+float IRC_IsIgnored(string mask) {
+    float i, argc = tokenizebyseparator(CVAR_STR(sv_ircbot_ignore_list), " ");
+    for(i = 0; i < argc; ++i)
+        if(IRC_MaskMatches(mask, argv(i)))
+            return TRUE;
+    return FALSE;
+}
+
+float IRC_IsMyNick(float handle, string nick) {
+    return strtolower(nick) == strtolower(IRC_CurrentNick(handle));
 }
 
 void IRC_Event(float handle, string event, float numeric, string src, float argc) {
@@ -370,8 +389,13 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
     } else if(event == "CHANNEL") {
         if(CVAR(sv_ircbot_chat_irc2game))
         if(strtolower(argv(0)) == irc.target) {
-            string msg = IRC_IRC2DP(argv(1));
-            
+            string msg = argv(1);
+
+            if(IRC_IsIgnored(src))
+                return;
+
+            msg = IRC_IRC2DP(msg);
+
             if(CVAR(sv_ircbot_chat_irc2game_require_highlight)) {
                 string mynick = IRC_CurrentNick(handle);
                 float nl = strlen(mynick);
@@ -391,7 +415,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         }
     } else if(event == "PRIVMSG") {
         string cmd = argv(1);
-        if(argv(0) == IRC_CurrentNick(handle)) {
+        if(IRC_IsMyNick(handle, argv(0))) {
             if(IRC_IsAdmin(src))
                 IRC_AdminCommand(handle, nick, cmd);
             else
@@ -401,17 +425,23 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         // /me for borked libircclient
         if(CVAR(sv_ircbot_chat_irc2game))
         if(!CVAR(sv_ircbot_chat_irc2game_require_highlight))
-        if(substring(argv(0), 0, 7) == "ACTION ")
-            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(argv(0), 7, strlen(argv(0)))), "\n");
+        if(substring(argv(0), 0, 7) == "ACTION ") {
+            string msg = argv(0);
+            if(!IRC_IsIgnored(src))
+                bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(substring(msg, 7, strlen(msg))), "\n");
+        }
     } else if(event == "ACTION") {
         // /me for unborked libircclient
         if(CVAR(sv_ircbot_chat_irc2game))
         if(!CVAR(sv_ircbot_chat_irc2game_require_highlight))
-        if(strtolower(argv(0)) == irc.target)
-            bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(argv(1)), "\n");
+        if(strtolower(argv(0)) == irc.target) {
+            string msg = argv(1);
+            if(!IRC_IsIgnored(src))
+                bprint("\{1}^5IRC  ^3* ", nick, "^7 ", IRC_IRC2DP(msg), "\n");
+        }
     } else if(event == "KICK") {
         if(CVAR(sv_ircbot_channel_auto_rejoin))
-        if(argv(1) == IRC_CurrentNick(handle)) {
+        if(IRC_IsMyNick(handle, argv(1))) {
             IRC_JoinChannel(handle, argv(0), if(strtolower(argv(0)) == irc.target) irc.targetname else "");
             return;
         }
@@ -440,7 +470,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             bprint("\n");
         }
     } else if(event == "MODE") {
-        if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
+        if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(IRC_IsMyNick(irc.cnt, argv(2)))
             irc.skin = 1;
     } else if(event == "NICK") {
         if(CVAR(sv_ircbot_announce_irc_nick))
@@ -449,7 +479,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         if(strtolower(argv(0)) == irc.target) {
             cvar_set("_sv_ircbot_lasttopic", argv(1));
 
-            if(nick != IRC_CurrentNick(handle))
+            if(!IRC_IsMyNick(handle, nick))
                 IRC_UpdateTopic();
         }
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
@@ -464,7 +494,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
 }
 
 void IRC_Announce_PlayerChat(entity plr, string msg) { if(!irc) return;
-    IRC_Privmsg(irc.cnt, irc.target, strcat("<", plr.netname, "> ", msg));
+    IRC_Privmsg(irc.cnt, irc.target, strcat("<", plr.netname, "^7> ", msg));
 }
 
 void IRC_Announce_Client_Callback(string ip, string cn, entity ctx) {

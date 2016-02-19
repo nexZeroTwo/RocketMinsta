@@ -234,7 +234,7 @@ void cvar_changes_init()
 
 	if(cvar_changes)
 		strunzone(cvar_changes);
-	cvar_changes = string_null;
+	cvar_changes = NULL;
 
 	h = buf_create();
 	buf_cvarlist(h, "", "_"); // exclude all _ cvars as they are temporary
@@ -510,6 +510,7 @@ void SetPlayerHitboxGlobals(void) {
 
 void spawnfunc_worldspawn (void)
 {
+	WarpZone_Init();
 	float fd, l, i, j, n;
 	string s, col;
 
@@ -542,7 +543,7 @@ void spawnfunc_worldspawn (void)
 	cvar_set ("_sv_rm_lastvote", ftos (CVAR(_sv_rm_lastvote) - CVAR(_sv_rm_lastservertime)));
     
 	sv_showspecs_extra = CVAR(sv_showspecs_extra);
-	sv_showfps = CVAR(sv_showfps);
+	sv_scoreboard_fps_column = CVAR(sv_scoreboard_fps_column);
 	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
 	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc
@@ -754,10 +755,12 @@ void spawnfunc_worldspawn (void)
  	addstat(STAT_DAMAGE_FIRED, AS_INT, maxdamage_fired);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
-	addstat(STAT_BULLETS_LOADED, AS_INT, campingrifle_bulletcounter);
-	addstat(STAT_BULLETS_MAX, AS_INT, campingrifle_bulletlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
-    
+    addstat(STAT_INNERRING_CYCLE, AS_FLOAT, w_inring_cycle);
+    addstat(STAT_INNERRING_FULLTIME, AS_FLOAT, w_inring_fulltime);
+
+    W_Clip_Stats_Init();
+
     if(g_domination)
     {
         addstat(STAT_TOTALPOINTS, AS_INT, totalpoints_stat);
@@ -859,26 +862,28 @@ void spawnfunc_worldspawn (void)
     if(!g_jailbreak)
         InitializeEntity(world, JB_NonJBInit, INITPRIO_LAST);
     
-    if(CVAR(sv_showaccuracy)) {
-        if(g_minstagib)
-            sv_showacc = TRUE;
-        else for(i = WEP_FIRST; i < WEP_COUNT; ++i)
-            if(g_weaponarena == pow(2, i-1)) {
-                sv_showacc = TRUE;
-                break;
-            }
-    }
-    
-    sv_shownoobstat = CVAR(sv_shownoobstat);
+
+    var wa = g_weaponarena;
+    sv_scoreboard_acc_column = (CVAR(sv_scoreboard_acc_column) && (g_minstagib || !(wa & (wa - 1))));
+    sv_scoreboard_noob_column = CVAR(sv_scoreboard_noob_column);
+    sv_scoreboard_alive_column = CVAR(sv_scoreboard_alive_column);
 
     defer(0, fix_team_spawns);
-    
+
     IRC_Init();
     DPRM_Start();
     Radio_Init();
 
     dtrack_global = DamageTracker_CreateKeeper(world);
     dtrack_global.netname = "Global Damage";
+
+    if((CVAR(sv_cullentities_pvs) || CVAR(sv_cullentities_trace)) && !CVAR(sv_cullentities_nevercullbmodels))
+    InitializeEntity(self, inline void(void) {
+        if(warpzone_chain_begin)
+            cvar_settemp("sv_cullentities_nevercullbmodels", "1");
+    }, INITPRIO_FINDTARGET);
+
+    utf8_enable();
 }
 
 void spawnfunc_light (void)
@@ -1062,7 +1067,7 @@ void Map_Goto()
 // return codes of map selectors:
 //   -1 = temporary failure (that is, try some method that is guaranteed to succeed)
 //   -2 = permanent failure
-float() MaplistMethod_Iterate = // usual method
+float MaplistMethod_Iterate() // usual method
 {
 	float pass, i;
 
@@ -1079,14 +1084,14 @@ float() MaplistMethod_Iterate = // usual method
 	return -1;
 }
 
-float() MaplistMethod_Repeat = // fallback method
+float MaplistMethod_Repeat() // fallback method
 {
 	if(Map_Check(Map_Current, 2))
 		return Map_Current;
 	return -2;
 }
 
-float() MaplistMethod_Random = // random map selection
+float MaplistMethod_Random() // random map selection
 {
 	float i, imax;
 
@@ -1102,7 +1107,7 @@ float() MaplistMethod_Random = // random map selection
 	return -1;
 }
 
-float(float exponent) MaplistMethod_Shuffle = // more clever shuffling
+float MaplistMethod_Shuffle(float exponent) // more clever shuffling
 // the exponent sets a bias on the map selection:
 // the higher the exponent, the less likely "shortly repeated" same maps are
 {
@@ -1280,7 +1285,7 @@ entity FindIntermissionViewport(void)
     RandomSelection_Init();
     for(spot = world; (spot = nextent(spot));) {
         if(spot.classname == "info_player_intermission" || spot.classname == "info_intermission")
-            RandomSelection_Add(spot, 0, string_null, 1, 1);
+            RandomSelection_Add(spot, 0, NULL, 1, 1);
     }
     
     if(RandomSelection_chosen_ent)
@@ -1288,14 +1293,14 @@ entity FindIntermissionViewport(void)
     
     // try to view from the jail
     for(spot = world; (spot = find(spot, classname, "info_jailbreak_jailcamera"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     if(RandomSelection_chosen_ent)
         return RandomSelection_chosen_ent;
     
     // fall back to player spawn points
     for(spot = world; (spot = find(spot, classname, "info_player_deathmatch"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     return RandomSelection_chosen_ent;
 }
@@ -2667,7 +2672,7 @@ float MapVote_CheckRules_2()
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+			RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	firstPlace = RandomSelection_chosen_float;
 	firstPlaceVotes = RandomSelection_best_priority;
@@ -2678,7 +2683,7 @@ float MapVote_CheckRules_2()
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(i != firstPlace)
 			if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-				RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+				RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	secondPlace = RandomSelection_chosen_float;
 	secondPlaceVotes = RandomSelection_best_priority;
@@ -2984,6 +2989,8 @@ string GotoMap(string m)
 
 float roundstate_old;
 
+void FireRoundstateTriggers(void);
+
 void EndFrame()
 {
 	float altime;
@@ -3048,6 +3055,7 @@ void EndFrame()
 	}
 
     if(roundstate != roundstate_old) {
+        defer(0, FireRoundstateTriggers);
         localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
         roundstate_old = roundstate;
     }
@@ -3151,6 +3159,7 @@ void SV_Shutdown()
 	{
 		print("NOTE: crashed before even initializing the world, not saving persistent data\n");
 	}
+	WarpZone_Shutdown();
 }
 
 // Chaiomanot  : This unification was inspired by a bug that caused endmatch to not

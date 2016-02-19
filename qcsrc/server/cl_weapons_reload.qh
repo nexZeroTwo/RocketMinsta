@@ -1,0 +1,26 @@
+
+.float w_clip_loaded_array[WEP_LAST];
+.float w_clip_limit_array[WEP_LAST];
+.float w_clip_saved_array[WEP_LAST];
+.float w_clip_reloadfinished_array[WEP_LAST];
+
+float w_clip_context;
+
+float w_clip_context_limit;
+float w_clip_context_regen;
+float w_clip_context_reloadtime;
+var .float w_clip_context_ammofield;
+float w_clip_context_ammo_per_unit;
+
+var .float w_clip_loaded;
+var .float w_clip_limit;
+var .float w_clip_saved;
+var .float w_clip_reloadfinished;
+
+.float w_clip_limit_stat;
+.float w_clip_loaded_stat;
+
+void W_Clip_Stats_Init(void);
+void W_Clip_CurrentWeaponContext(void);
+
+#define W_CLIP_LOOP_FOR_ALL_CONTEXTS(i,block) for(i = WEP_FIRST; i <= WEP_LAST; ++i) { W_Clip_RequestWeaponContext(i); if(w_clip_context_limit > 0) block }

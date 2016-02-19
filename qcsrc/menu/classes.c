@@ -90,3 +90,4 @@
 #include "nexuiz/cvarlist.c"
 #include "nexuiz/dialog_settings_misc_cvars.c"
 #include "nexuiz/dialog_nagger.c"
+#include "nexuiz/dialog_nagger_minor.c"

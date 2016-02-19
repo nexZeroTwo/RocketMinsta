@@ -21,14 +21,14 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizServerList, columnPlayersOrigin, float, 0)
 	ATTRIB(NexuizServerList, columnPlayersSize, float, 0)
 
-	ATTRIB(NexuizServerList, selectedServer, string, string_null) // to restore selected server when needed
+	ATTRIB(NexuizServerList, selectedServer, string, NULL) // to restore selected server when needed
 	METHOD(NexuizServerList, setSelected, void(entity, float))
 	METHOD(NexuizServerList, setSortOrder, void(entity, float, float))
 	ATTRIB(NexuizServerList, filterShowEmpty, float, 1)
 	ATTRIB(NexuizServerList, filterShowFull, float, 1)
 	ATTRIB(NexuizServerList, filterShowOnlyRM, float, 0)
 	ATTRIB(NexuizServerList, filterShowOnlyEx, float, 0)
-	ATTRIB(NexuizServerList, filterString, string, string_null)
+	ATTRIB(NexuizServerList, filterString, string, NULL)
 	ATTRIB(NexuizServerList, controlledTextbox, entity, NULL)
 	ATTRIB(NexuizServerList, ipAddressBox, entity, NULL)
 	ATTRIB(NexuizServerList, favoriteButton, entity, NULL)
@@ -403,7 +403,7 @@ void ServerList_Filter_Change(entity box, entity me)
 	if(box.text != "")
 		me.filterString = strzone(box.text);
 	else
-		me.filterString = string_null;
+		me.filterString = NULL;
 	me.refreshServerList(me, 0);
 
 	me.ipAddressBox.setText(me.ipAddressBox, "");
@@ -460,7 +460,7 @@ void setSortOrderNexuizServerList(entity me, float field, float direction)
 	me.selectedItem = 0;
 	if(me.selectedServer)
 		strunzone(me.selectedServer);
-	me.selectedServer = string_null;
+	me.selectedServer = NULL;
 	me.refreshServerList(me, 0);
 }
 void positionSortButtonNexuizServerList(entity me, entity btn, float theOrigin, float theSize, string theTitle, void(entity, entity) theFunc)
@@ -613,8 +613,8 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		cn = "--";
 
 	s = ftos(p);
-	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0) * me.realFontSize_x) * eX, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize / me.realFontSize_x, 0);
+	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0, me.realFontSize)) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize, 0, me.realFontSize);
 	
 	vector o, v;
 	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
@@ -630,8 +630,8 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 	
 	o_x += picsize_x + me.realFontSize_x/2;
 	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize / me.realFontSize_x, 0);
-	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0, me.realFontSize)) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
 	
 	if(strstrofs(s, "_rm-", 0) >= 0)
@@ -642,10 +642,10 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		s = substring(s, 0, p);
 	else
 		s = "";
-	s = draw_TextShortenToWidth(s, me.columnMapSize / me.realFontSize_x, 0);
-	draw_Text(me.realUpperMargin * eY + (me.columnTypeOrigin + (me.columnTypeSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	s = draw_TextShortenToWidth(s, me.columnMapSize, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin * eY + (me.columnTypeOrigin + (me.columnTypeSize - draw_TextWidth(s, 0, me.realFontSize)) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = strcat(ftos(gethostcachenumber(SLIST_FIELD_NUMHUMANS, i)), "/", ftos(gethostcachenumber(SLIST_FIELD_MAXPLAYERS, i)));
-	draw_Text(me.realUpperMargin * eY + (me.columnPlayersOrigin + (me.columnPlayersSize - draw_TextWidth(s, 0) * me.realFontSize_x) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
+	draw_Text(me.realUpperMargin * eY + (me.columnPlayersOrigin + (me.columnPlayersSize - draw_TextWidth(s, 0, me.realFontSize)) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 }
 
 float keyDownNexuizServerList(entity me, float scan, float ascii, float shift)

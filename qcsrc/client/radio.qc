@@ -6,11 +6,11 @@ void Radio_Stopper_Think(void) {
     }
 
     float t = gettime(GETTIME_CDTRACK);
-    //print(ftos(t), "\n");
 
     if(self.cnt > t) {
         localcmd("cd reset;");
         remove(self);
+        return;
     }
 
     self.cnt = t;
@@ -53,7 +53,8 @@ void Net_ReadRadio(void) {
     string url = ReadString();
 
     if(preload) {
-        localcmd("curl --pak ", url, "\n");
+        if(CVAR(rm_radio))
+            localcmd("curl --pak ", url, "\n");
         return;
     }
 
@@ -63,6 +64,9 @@ void Net_ReadRadio(void) {
     
     if(!loop)
         start = ReadCoord();
+
+    if(!CVAR(rm_radio))
+        return;
 
     localcmd("curl --pak ", url, "\n");
 

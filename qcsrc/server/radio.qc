@@ -21,9 +21,6 @@ void Radio_Init(void) {
 }
 
 void Radio_SendPreload(entity e, string url) {
-    if(!e.radio_enabled)
-        return;
-
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
     WriteByte(MSG_ONE, TE_CSQC_RADIO);
@@ -58,9 +55,6 @@ void Radio_SendPlay(entity e) {
         return;
 
     Radio_Announce(e);
-
-    if(!e.radio_enabled)
-        return;
 
     msg_entity = e;
     WriteByte(MSG_ONE, SVC_TEMPENTITY);
@@ -116,7 +110,7 @@ void Radio_Stop(void) {
         return;
 
     radio_playing = FALSE;
-    radio_url = radio_filename = string_null;
+    radio_url = radio_filename = NULL;
     radio_playing_queue = -1;
 
     entity e; FOR_EACH_REALCLIENT(e)
@@ -207,12 +201,12 @@ void Radio_Queue(string url, string fname, float len, string desc) {
     else
         cvar_set("_radio_queue", strcat(q, " ", id));
 
-    cvar_set("_radio_queue_left", ftos(CVAR(_radio_queue_left) + 1));
-
     if(radio_playing_queue < 0)
         Radio_Queue_PlayFirst();
-    else if(strstrofs(q, " ", 0) < 0)
+    else if(!CVAR(_radio_queue_left))
         Radio_Preload(url);
+
+    cvar_set("_radio_queue_left", ftos(CVAR(_radio_queue_left) + 1));
 }
 
 void Radio_Queue_Advance(void) {

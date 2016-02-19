@@ -237,6 +237,12 @@ void Sbar_InitScores()
 		if(f == SFL_SORT_PRIO_SECONDARY)
 			ps_secondary = i;
 	}
+
+    if(ps_primary == -1) {
+        print("^xFB0ps_primary == -1, debug this!\n");
+        ps_primary = 0;
+    }
+
 	if(ps_secondary == -1)
 		ps_secondary = ps_primary;
 
@@ -248,6 +254,12 @@ void Sbar_InitScores()
 		if(f == SFL_SORT_PRIO_SECONDARY)
 			ts_secondary = i;
 	}
+
+    if(ts_primary == -1) {
+        print("^xFB0ts_primary == -1, debug this!\n");
+        ts_primary = 0;
+    }
+
 	if(ts_secondary == -1)
 		ts_secondary = ts_primary;
 
@@ -453,24 +465,22 @@ void Cmd_Sbar_Help(float argc)
 
 string Sbar_DefaultColumnLayout()
 {
-	return strcat( // fteqcc sucks
-		strcat("ping pl", if(sv_showfps) " fps" else "", if(CVAR(rm_notimer)) "" else " time", " cn +ctf/fc name | ", if(sv_shownoobstat) "noob kdr" else "kdr", strcat(
-        if(sv_showacc) " acc" else "", if(g_minstagib) (if(CVAR(_g_rocketminsta)) " hfs" else "") else " dmg", if(sv_scoreboard_heal_column) " heal" else "", if(g_nadgets) " nfs" else ""),
-		" +ft,jb/kills +ft,jb/dths "),
-		"-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds -race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds ", // tdm already has this in "score"
-		"+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns ",
-		"+lms/lives +lms/rank +jb/def +jb/jbs +jb/freed ",
-		"+kh/caps +kh/pckps +kh/kcks ",
-		"?+race/laps ?+race/time ?+race/fastest ",
-		"+as/objectives +nexball/faults +nexball/goals ",
-		strcat("+tdm/dths +tdm/scds ", if(g_freeze) "revs " else "", "+dom,totaldom/takes -lms,race,nexball/score"));
+	return "ping pl fps time cn +ctf/fc name | alive noob kdr acc hfs dmg dpm heal nfs"
+		   " +ft,jb/kills +ft,jb/dths "
+		   "-teams,race,lms/kills -teams,lms/dths -teams,lms,race/scds "
+           "-race,dm,tdm,ft,jb,ca/frgs +ca/kills +ca/dths +ca/scds "
+		   "+ctf/caps +ctf/pckps +ctf/fcks +ctf/rtrns "
+		   "+lms/lives +lms/rank +jb/def +jb/jbs +jb/freed "
+		   "+kh/caps +kh/pckps +kh/kcks "
+		   "?+race/laps ?+race/time ?+race/fastest "
+	       "+as/objectives +nexball/faults +nexball/goals "
+		   "+tdm/dths +tdm/scds revs +dom,totaldom/takes -lms,race,nexball/score";
 }
 
 void Cmd_Sbar_SetFields(float argc)
 {
 	float i, j, slash;
 	string str, pattern;
-	float digit;
 	float have_name, have_primary, have_secondary, have_separator;
 	float missing;
 
@@ -507,7 +517,6 @@ void Cmd_Sbar_SetFields(float argc)
 	sbar_num_fields = 0;
 
 	drawfont = sbar_font;
-	digit = stringwidth("0123456789", FALSE) / 10;
 
 	for(i = 0; i < argc - 1; ++i)
 	{
@@ -533,7 +542,7 @@ void Cmd_Sbar_SetFields(float argc)
 
 		strunzone(sbar_title[sbar_num_fields]);
 		sbar_title[sbar_num_fields] = strzone(str);
-		sbar_size[sbar_num_fields] = stringwidth(str, FALSE);
+		sbar_size[sbar_num_fields] = stringwidth(str, FALSE, sbar_fontsize);
 		str = strtolower(str);
 
         if(str == "lag") {
@@ -543,11 +552,17 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "pl") {
 			sbar_field[sbar_num_fields] = SP_PL;
         } else if(str == "nade") {
-            sbar_field[sbar_num_fields] = SP_NADEMODE;
+            if(!g_nadgets)
+                continue;
+            sbar_field[sbar_num_fields] = SP_STATUSICONS;
 		} else if(str == "fps") {
+            if(!sv_scoreboard_fps_column)
+                continue;
 			sbar_field[sbar_num_fields] = SP_FPS;
 		} else if(str == "kd" || str == "kdr" || str == "kdratio" || str == "k/d") {
 			sbar_field[sbar_num_fields] = SP_KDRATIO;
+        } else if(str == "dpm") {
+            sbar_field[sbar_num_fields] = SP_DPM;
 		} else if(str == "name" || str == "nick") {
 			sbar_field[sbar_num_fields] = SP_NAME;
 			have_name = 1;
@@ -557,24 +572,45 @@ void Cmd_Sbar_SetFields(float argc)
 		} else if(str == "cn") {
 			sbar_field[sbar_num_fields] = SP_COUNTRY;
 		} else if(str == "time") {
+            if(CVAR(rm_notimer))
+                continue;
 			sbar_field[sbar_num_fields] = SP_PLAYTIME;
         } else if(str == "dths") {
             sbar_field[sbar_num_fields] = SP_DEATHS;
         } else if(str == "scds") {
             sbar_field[sbar_num_fields] = SP_SUICIDES;
         } else if(str == "hfs") {
+            if(!(g_minstagib && CVAR(_g_rocketminsta)))
+                continue;
             sbar_field[sbar_num_fields] = SP_HOOKFRAGS;
         } else if(str == "nfs") {
+            if(!g_nadgets)
+                continue;
             sbar_field[sbar_num_fields] = SP_NADEFRAGS;
         } else if(str == "dmg") {
+            if(g_minstagib)
+                continue;
             sbar_field[sbar_num_fields] = SP_DAMAGE;
         } else if(str == "heal") {
+            if(!sv_scoreboard_heal_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_HEALING;
         } else if(str == "acc") {
+            if(!sv_scoreboard_acc_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_ACCURACY;
         } else if(str == "noob") {
+            if(!sv_scoreboard_noob_column)
+                continue;
             sbar_field[sbar_num_fields] = SP_NOOB;
+        } else if(str == "alive") {
+            if(!sv_scoreboard_alive_column)
+                continue;
+            sbar_field[sbar_num_fields] = SP_ALIVE;
         } else {
+            if(str == "revs" && !g_freeze)
+                continue;
+
 			for(j = 0; j < MAX_SCORE; ++j)
 				if(str == strtolower(scores_label[j]))
 					goto found; // sorry, but otherwise fteqcc -O3 miscompiles this and warns about "unreachable code"
@@ -636,7 +672,7 @@ void Cmd_Sbar_SetFields(float argc)
 				}
 				sbar_title[1] = strzone("|");
 				sbar_field[1] = SP_SEPARATOR;
-				sbar_size[1] = stringwidth("|", FALSE);
+				sbar_size[1] = stringwidth("|", FALSE, sbar_fontsize);
 				++sbar_num_fields;
 				print("fixed missing field '|'\n");
 			}
@@ -645,7 +681,7 @@ void Cmd_Sbar_SetFields(float argc)
 		{
 			strunzone(sbar_title[sbar_num_fields]);
 			sbar_title[sbar_num_fields] = strzone("|");
-			sbar_size[sbar_num_fields] = stringwidth("|", FALSE);
+			sbar_size[sbar_num_fields] = stringwidth("|", FALSE, sbar_fontsize);
 			sbar_field[sbar_num_fields] = SP_SEPARATOR;
 			++sbar_num_fields;
 			print("fixed missing field '|'\n");
@@ -654,7 +690,7 @@ void Cmd_Sbar_SetFields(float argc)
 		{
 			strunzone(sbar_title[sbar_num_fields]);
 			sbar_title[sbar_num_fields] = strzone(scores_label[ps_secondary]);
-			sbar_size[sbar_num_fields] = stringwidth(sbar_title[sbar_num_fields], FALSE);
+			sbar_size[sbar_num_fields] = stringwidth(sbar_title[sbar_num_fields], FALSE, sbar_fontsize);
 			sbar_field[sbar_num_fields] = ps_secondary;
 			++sbar_num_fields;
 			print("fixed missing field '", scores_label[ps_secondary], "'\n");
@@ -663,7 +699,7 @@ void Cmd_Sbar_SetFields(float argc)
 		{
 			strunzone(sbar_title[sbar_num_fields]);
 			sbar_title[sbar_num_fields] = strzone(scores_label[ps_primary]);
-			sbar_size[sbar_num_fields] = stringwidth(sbar_title[sbar_num_fields], FALSE);
+			sbar_size[sbar_num_fields] = stringwidth(sbar_title[sbar_num_fields], FALSE, sbar_fontsize);
 			sbar_field[sbar_num_fields] = ps_primary;
 			++sbar_num_fields;
 			print("fixed missing field '", scores_label[ps_primary], "'\n");
@@ -728,8 +764,14 @@ string Sbar_GetField(entity pl, float field)
             return strcat(ftos(floor(pl.(scores[field]) / 60)), "m");
 
 		case SP_PING:
-			if not(pl.gotscores)
-				return "\x8D\x8D\x8D"; // >>> sign
+			if not(pl.gotscores) {
+                 // >>> sign
+                if(CVAR(utf8_enable))
+                    return "\xEE\x82\x8D\xEE\x82\x8D\xEE\x82\x8D";
+                else
+				    return "\x8D\x8D\x8D";
+            }
+
 			str = getplayerkey(pl.sv_entnum, "ping");
 			tmp = max(0, min(220, stof(str)-80)) / 220;
 			sbar_field_rgb = '1 1 1' - '0 1 1'*tmp;
@@ -794,7 +836,10 @@ string Sbar_GetField(entity pl, float field)
         
         case SP_DAMAGE: case SP_HEALING:
             return FormatDamage(pl.(scores[field]));
-            
+
+        case SP_DPM:
+            return FormatDamage(60 * pl.(scores[SP_DAMAGE]) / pl.(scores[SP_PLAYTIME]));
+
 		case SP_KDRATIO:
 			num = pl.(scores[SP_KILLS]);
 			denom = pl.(scores[SP_DEATHS]);
@@ -832,6 +877,10 @@ string Sbar_GetField(entity pl, float field)
                 sbar_field_rgb = '0.5 0.5 0.5';
                 return "n/a";
             }
+
+            acc = rint(acc * (100 / 255));
+            if(acc < 1)
+                acc = 0; // avoid the "-0%" representation
             
             if(acc < 40)
                 sbar_field_rgb = '1 0 0' + '0 1 0' * pow(acc / 40, 2);
@@ -843,7 +892,7 @@ string Sbar_GetField(entity pl, float field)
             return strcat(ftos(acc), "%");
         
         case SP_NOOB:
-            float noob = pl.scores[SP_NOOB];
+            float noob = rint(pl.scores[SP_NOOB] * (100 / 255));
             float pro = 100 - noob;
 
             if(pro < 70)
@@ -854,6 +903,20 @@ string Sbar_GetField(entity pl, float field)
                 sbar_field_rgb = '0 1 0' + '0 0 1' * ((pro - 90) / 10);
             
             return strcat(ftos(noob), "%");
+            
+        case SP_ALIVE:
+            float alive = rint(pl.scores[SP_ALIVE] * (100 / 255));
+            
+            if(alive < 70)
+                sbar_field_rgb = '1 0 0' + '0 1 0' * pow(alive / 70, 2);
+            else if(pro < 90)
+                sbar_field_rgb = '1 1 0' - '1 0 0' * ((alive - 70) / 20);
+            else
+                sbar_field_rgb = '0 1 0' + '0 0 1' * ((alive - 90) / 10);
+
+            return strcat(ftos(alive), "%");
+        
+        
 
 		default:
 			tmp = pl.(scores[field]);
@@ -878,16 +941,6 @@ float xmin, xmax, ymin, ymax, sbwidth;
 float sbar_fixscoreboardcolumnwidth_len;
 float sbar_fixscoreboardcolumnwidth_iconlen;
 float sbar_fixscoreboardcolumnwidth_marginlen;
-
-float stringwidth_colors(string s)
-{
-	return stringwidth(s, TRUE);
-}
-
-float stringwidth_nocolors(string s)
-{
-	return stringwidth(s, FALSE);
-}
 
 string Sbar_FixScoreboardColumnWidth(float i, string str)
 {
@@ -921,33 +974,36 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 			sbar_fixscoreboardcolumnwidth_iconlen = f;
 	}
 
-	sbar_fixscoreboardcolumnwidth_iconlen *= sbar_fontsize_y / sbar_fontsize_x; // fix icon aspect
+	sbar_fixscoreboardcolumnwidth_iconlen *= sbar_fontsize_y; // fix icon aspect
 
 	if(sbar_fixscoreboardcolumnwidth_iconlen != 0)
-		sbar_fixscoreboardcolumnwidth_marginlen = stringwidth(" ", FALSE);
+		sbar_fixscoreboardcolumnwidth_marginlen = stringwidth(" ", FALSE, sbar_fontsize);
 	else
 		sbar_fixscoreboardcolumnwidth_marginlen = 0;
 
 	if(field == SP_NAME) // name gets all remaining space
 	{
 		float namesize, j;
-		namesize = sbwidth / sbar_fontsize_x;
-		for(j = 0; j < sbar_num_fields; ++j)
-			if(j != i)
-				if (sbar_field[i] != SP_SEPARATOR)
-					namesize -= sbar_size[j] + 1;
+		namesize = sbwidth;
+		for(j = 0; j < sbar_num_fields; ++j) {
+			if(j != i) {
+				if (sbar_field[j] != SP_SEPARATOR)
+					namesize -= sbar_size[j] + sbar_fontsize_x;
+            }
+        }
 		namesize += 1;
 		sbar_size[i] = namesize;
 
 		if (sbar_fixscoreboardcolumnwidth_iconlen != 0)
 			namesize -= sbar_fixscoreboardcolumnwidth_marginlen + sbar_fixscoreboardcolumnwidth_iconlen;
-		str = textShortenToWidth(str, namesize, stringwidth_colors);
-		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, TRUE);
+
+		str = textShortenToWidth(str, namesize, sbar_fontsize, stringwidth_colors);
+		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, TRUE, sbar_fontsize);
 	}
 	else if(field == SP_COUNTRY)
-		sbar_fixscoreboardcolumnwidth_len = stringwidth("XX", FALSE);
+		sbar_fixscoreboardcolumnwidth_len = stringwidth("XX", FALSE, sbar_fontsize);
 	else
-		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, FALSE);
+		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, FALSE, sbar_fontsize);
 
 	f = sbar_fixscoreboardcolumnwidth_len + sbar_fixscoreboardcolumnwidth_marginlen + sbar_fixscoreboardcolumnwidth_iconlen;
 	if(sbar_size[i] < f)
@@ -993,33 +1049,25 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			break;
 
 		if(is_spec && field != SP_NAME && field != SP_PING && field != SP_PL && field != SP_LAG && field != SP_PLAYTIME && field != SP_COUNTRY) {
-			pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+			pos_x += sbar_size[i] + sbar_fontsize_x;
 			continue;
 		}
 		str = Sbar_GetField(pl, field);
 		str = Sbar_FixScoreboardColumnWidth(i, str);
 
-		pos_x += sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+		pos_x += sbar_size[i] + sbar_fontsize_x;
 
 		if(field == SP_NAME) {
             float aa = a;
             if(flg & SPFLAG_FROZEN)
                 aa *= 0.3;
 
-			tmp_x = sbar_fontsize_x * (sbar_size[i] - sbar_fixscoreboardcolumnwidth_iconlen - sbar_fixscoreboardcolumnwidth_marginlen) + sbar_fontsize_x;
+			tmp_x = sbar_size[i] - sbar_fixscoreboardcolumnwidth_iconlen - sbar_fixscoreboardcolumnwidth_marginlen + sbar_fontsize_x;
 
             if(g_nadgets && !is_spec) {
-                vector hgt = HG_DecompressDualType(pl.(scores[SP_NADEMODE]));
-
-                drawpic(pos - tmp, HG_TypeToIcon(hgt_x, FALSE, FALSE), sbar_fontsize, HG_TypeToColor(hgt_x), aa, DRAWFLAG_NORMAL);
-                tmp_x -= sbar_fontsize_x;
-
-                if(g_nadgets_double) {
-                    drawpic(pos - tmp, HG_TypeToIcon(hgt_y, FALSE, FALSE), sbar_fontsize, HG_TypeToColor(hgt_y), aa, DRAWFLAG_NORMAL);
-                    tmp_x -= sbar_fontsize_x;
-                }
-
-                tmp_x -= sbar_fontsize_x * 0.25;
+                var p2 = pos - tmp;
+                p2 -= DrawPlayerStatusIcons(p2, sbar_fontsize_y, aa, 1, pl.(scores[SP_STATUSICONS]));
+                tmp_x -= sbar_fontsize_x * 0.25 - p2_x;
             }
 
             using(drawfont = drawfont) {
@@ -1032,24 +1080,24 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
             if(flg & SPFLAG_MUTE)
                 drawpic(pos - '1.7 0 0' * sbar_fontsize_x, "gfx/hud/mute", sbar_fontsize, '1 1 1', sbar_scoreboard_alpha_fg * 0.7, DRAWFLAG_NORMAL);
 		} else if(field == SP_COUNTRY && !rm_noflags) {
-			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
+			tmp_x = sbar_fixscoreboardcolumnwidth_len + sbar_fontsize_x;
             drawpic(pos - tmp, FlagIcon(str), '1.5 1 0' * sbar_fontsize_x, '1 1 1', sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		} else if (field == SP_CARRYING) {
-			tmp_x = sbar_fixscoreboardcolumnwidth_len * sbar_fontsize_x + sbar_fontsize_x;
+			tmp_x = sbar_fixscoreboardcolumnwidth_len + sbar_fontsize_x;
 			drawcolorcodedstring (pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 		} else {
-			tmp_x = sbar_fixscoreboardcolumnwidth_len*sbar_fontsize_x + sbar_fontsize_x;
+			tmp_x = sbar_fixscoreboardcolumnwidth_len + sbar_fontsize_x;
 			drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 		}
 
-		tmp_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+		tmp_x = sbar_size[i] + sbar_fontsize_x;
 
         if(sbar_field_icon0 != "")
-            drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
+            drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon0_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
 		if(sbar_field_icon1 != "")
-			drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
+			drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
 		if(sbar_field_icon2 != "")
-			drawpic(pos - tmp, sbar_field_icon2, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon2_rgb, sbar_field_icon2_alpha*a, DRAWFLAG_NORMAL);
+			drawpic(pos - tmp, sbar_field_icon2, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon2_rgb, sbar_field_icon2_alpha*a, DRAWFLAG_NORMAL);
 	}
 
 	if(sbar_field[i] == SP_SEPARATOR)
@@ -1062,7 +1110,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 				break;
 
 			if(is_spec && field != SP_NAME && field != SP_PING) {
-				pos_x -= sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+				pos_x -= sbar_size[i] + sbar_fontsize_x;
 				continue;
 			}
 
@@ -1070,24 +1118,24 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 			str = Sbar_FixScoreboardColumnWidth(i, str);
 
 			if(field == SP_NAME) {
-				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len; // left or right aligned? let's put it right...
+				tmp_x = sbar_fixscoreboardcolumnwidth_len; // left or right aligned? let's put it right...
 				drawcolorcodedstring(pos - tmp, str, sbar_fontsize, a, DRAWFLAG_NORMAL);
 			} else {
-				tmp_x = sbar_fontsize_x*sbar_fixscoreboardcolumnwidth_len;
-                if(field >= 0 && pl.(hasbestscore[field]))
+				tmp_x = sbar_fixscoreboardcolumnwidth_len;
+                if(field >= 0 && pl.hasbestscore & pow(2, field))
                     sbar_field_rgb = '0.3 1 0.3';
 				drawstring(pos - tmp, str, sbar_fontsize, sbar_field_rgb, a, DRAWFLAG_NORMAL);
 			}
 
-			tmp_x = sbar_fontsize_x*sbar_size[i];
+			tmp_x = sbar_size[i];
 			if(sbar_field_icon0 != "")
-				drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
+				drawpic(pos - tmp, sbar_field_icon0, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon0_alpha*a, DRAWFLAG_NORMAL);
 			if(sbar_field_icon1 != "")
-				drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
+				drawpic(pos - tmp, sbar_field_icon1, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon1_rgb, sbar_field_icon1_alpha*a, DRAWFLAG_NORMAL);
 			if(sbar_field_icon2 != "")
-				drawpic(pos - tmp, sbar_field_icon2, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fontsize_x * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon2_rgb, sbar_field_icon2_alpha*a, DRAWFLAG_NORMAL);
+				drawpic(pos - tmp, sbar_field_icon2, '0 1 0' * sbar_fontsize_y + '1 0 0' * sbar_fixscoreboardcolumnwidth_iconlen, sbar_field_icon2_rgb, sbar_field_icon2_alpha*a, DRAWFLAG_NORMAL);
 
-			pos_x -= sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+			pos_x -= sbar_size[i] + sbar_fontsize_x;
 		}
 	}
 }
@@ -1175,7 +1223,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 	{
 		if(sbar_field[i] == SP_SEPARATOR)
 			break;
-		column_dim_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+		column_dim_x = sbar_size[i] + sbar_fontsize_x;
 		if (sbar_scoreboard_highlight)
 		{
 			if (mod(i,2))
@@ -1193,22 +1241,22 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 			if(sbar_field[i] == SP_SEPARATOR)
 				break;
 
-			pos_x -= sbar_size[i]*sbar_fontsize_x;
+			pos_x -= sbar_size[i];
 
 			if (sbar_scoreboard_highlight)
 			{
 				if (!mod(i,2))
 				{
 					if (i == sbar_num_fields-1)
-						column_dim_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x / 2 + 1;
+						column_dim_x = sbar_size[i] + sbar_fontsize_x / 2 + 1;
 					else
-						column_dim_x = sbar_fontsize_x*sbar_size[i] + sbar_fontsize_x;
+						column_dim_x = sbar_size[i] + sbar_fontsize_x;
 					drawfill(pos - '0 1 0' - sbar_fontsize_x / 2 * '1 0 0', column_dim, '0 0 0', sbar_scoreboard_alpha_bg * 0.2, DRAWFLAG_NORMAL);
 				}
 			}
 
-			tmp_x = stringwidth(sbar_title[i], FALSE);
-			tmp_x = (sbar_size[i] - tmp_x) * sbar_fontsize_x;
+			tmp_x = stringwidth(sbar_title[i], FALSE, sbar_fontsize);
+			tmp_x = (sbar_size[i] - tmp_x);
 			drawstring(pos + tmp, sbar_title[i], sbar_fontsize, rgb, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 			pos_x -= sbar_fontsize_x;
 		}
@@ -1239,7 +1287,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 					++plrs;
 				}
 			}
-			
+
 			pos_y += 1.25 * sbar_fontsize_y;
 			++i;
 		}
@@ -1354,7 +1402,7 @@ void Sbar_DrawScoreboard()
 				continue;
 
 			rgb = GetTeamRGB(tm.team);
-			
+
 			Sbar_DrawXNum(pos - '6.5 0 0' * sbar_fontsize_y + '0 1 0' * sbar_fontsize_y, tm.(teamscores[ts_primary]), 4, 0, sbar_fontsize_y * 1.5, rgb, 0, 1, sbar_scoreboard_alpha_fg, DRAWFLAG_NORMAL);
 			
 			if(ts_primary != ts_secondary)
@@ -1364,11 +1412,11 @@ void Sbar_DrawScoreboard()
 				drawstringright(pos - '1 0 0' * sbar_fontsize_x, ftos(tm.avg_ping), sbar_fontsize,
 								'1 1 1' - '0 1 1' * (max(0, min(220, tm.avg_ping - 80)) / 220),
 				1, DRAWFLAG_NORMAL);
-				
+
 				if(tm.avg_ping_next < time)
 					tm.avg_ping = 0;
 			}
-				
+
 			pos = Sbar_Scoreboard_MakeTable(pos, tm, rgb, bg_size, tm);
 		}
 	}
@@ -1496,7 +1544,7 @@ void Sbar_DrawScoreboard()
 
 
 	pos_y += 1.2 * sbar_fontsize_y;
-	drawcolorcodedstring(pos + '0.5 0 0' * (sbwidth - sbar_fontsize_x * stringwidth(str, TRUE)), str, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
+	drawcolorcodedstring(pos + '0.5 0 0' * (sbwidth - stringwidth(str, TRUE, sbar_fontsize)), str, sbar_fontsize, sbar_scoreboard_alpha_fg * 0.8, DRAWFLAG_NORMAL);
 
 	scoreboard_bottom = pos_y + 2 * sbar_fontsize_y;
 	sbar_fontsize = sbar_fontsize_old;
@@ -1772,7 +1820,7 @@ void Sbar_Score(float p)
 			if(s != "" && a > 0)
 			{
 				dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-				drawcolorcodedstring(m - '0 16 0' - '8 0 0' * stringwidth(s, TRUE), s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+				drawcolorcodedstring(m - [stringwidth(s, TRUE, '8 0 0'), 16], s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 			}
 
 			if(race_penaltytime)
@@ -1782,14 +1830,14 @@ void Sbar_Score(float p)
 				{
 					s = strcat("^1PENALTY: ", ftos_decimals(race_penaltytime * 0.1, 1), " (", race_penaltyreason, ")");
 					dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-					drawcolorcodedstring(m - '0 32 0' - '8 0 0' * stringwidth(s, TRUE), s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+					drawcolorcodedstring(m - [stringwidth(s, TRUE, '8 0 0'), 32], s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 				}
 			}
 
 			if(forcetime != "")
 			{
 				a = bound(0, (time - race_checkpointtime) / 0.5, 1);
-				drawstring_expanding(m - '16 0 0' * stringwidth(forcetime, FALSE), forcetime, '32 32 0', '1 1 1', sbar_alpha_fg, 0, a);
+				drawstring_expanding(m - [stringwidth(forcetime, FALSE, '16 0 0'), 0], forcetime, '32 32 0', '1 1 1', sbar_alpha_fg, 0, a);
 			}
 			else
 				a = 1;
@@ -1797,7 +1845,7 @@ void Sbar_Score(float p)
 			if(race_laptime && race_checkpoint != 255)
 			{
 				s = TIME_ENCODED_TOSTRING(TIME_ENCODE(time + TIME_DECODE(race_penaltyaccumulator) - race_laptime));
-				drawstring(m - '16 0 0' * stringwidth(s, FALSE), s, '32 32 0', '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+				drawstring(m - [stringwidth(s, FALSE, '16 0 0'), 0], s, '32 32 0', '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 			}
 		}
 		else
@@ -1807,14 +1855,14 @@ void Sbar_Score(float p)
 				a = bound(0, 2 - (time - race_mycheckpointtime), 1);
 				s = MakeRaceString(race_mycheckpoint, TIME_DECODE(race_mycheckpointdelta), -!race_mycheckpointenemy, race_mycheckpointlapsdelta, race_mycheckpointenemy);
 				dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-				drawcolorcodedstring(m - '0 16 0' - '8 0 0' * stringwidth(s, TRUE), s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+				drawcolorcodedstring(m - [stringwidth(s, TRUE, '8 0 0'), 16, 0], s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 			}
 			if(race_othercheckpointtime && race_othercheckpointenemy != "")
 			{
 				a = bound(0, 2 - (time - race_othercheckpointtime), 1);
 				s = MakeRaceString(race_othercheckpoint, -TIME_DECODE(race_othercheckpointdelta), -!race_othercheckpointenemy, race_othercheckpointlapsdelta, race_othercheckpointenemy);
 				dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-				drawcolorcodedstring(m - '0 0 0' - '8 0 0' * stringwidth(s, TRUE), s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+				drawcolorcodedstring(m - [stringwidth(s, TRUE, '8 0 0'), 0, 0], s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 			}
 
 			if(race_penaltytime && !race_penaltyaccumulator)
@@ -1828,7 +1876,7 @@ void Sbar_Score(float p)
 					else
 						s = strcat("^2PENALTY: 0.0 (", race_penaltyreason, ")");
 					dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-					drawcolorcodedstring(m - '0 32 0' - '8 0 0' * stringwidth(s, TRUE), s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
+					drawcolorcodedstring(m - [stringwidth(s, TRUE, '8 0 0'), 32, 0], s, '16 16 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
 				}
 			}
 		}
@@ -2080,12 +2128,6 @@ float centerprint_msgnum;
 
 void centerprint(string strRealMessage)
 {
-	if(!centerprint_init)
-	{
-		centerprint_init = 1;
-		return;
-	}
-
 	float i, j, n, hcount, k, k2, exptime;
 	string s, strMessage;
 	float scrtime = CVAR(scr_centertime);
@@ -2149,13 +2191,13 @@ void centerprint(string strRealMessage)
 			getWrappedLine_remaining = argv(j);
 			while(getWrappedLine_remaining)
 			{
-				s = getWrappedLine(vid_conwidth * 0.75 / centerprint_fontsize_x, stringwidth_colors);
+				s = getWrappedLine(vid_conwidth * 0.75, centerprint_fontsize, stringwidth_colors);
 				if(centerprint_messages[i])
 						strunzone(centerprint_messages[i]);
 
 				centerprint_messages[i] = strzone(s);
 				centerprint_expires[i] = exptime; //((k == centerprint_msgnum - 1)? exptime : exptime - scrtime/2);
-				centerprint_width[i] = stringwidth(s, TRUE);
+				centerprint_width[i] = stringwidth(s, TRUE, centerprint_fontsize);
 				++i;
 
 				// half height for empty lines looks better
@@ -2199,10 +2241,7 @@ void Sbar_DrawCenterPrint (void)
 	if(is_tmpmadoka)
 		return;
 
-	if(vote_active)
-	if(!rm_legacyvote)
-	if(!vote_highlighted)
-	if(!oldengine)
+	if(vote_active && !rm_legacyvote && !vote_highlighted)
 		return;
 
 	for (i = 0; i<centerprint_num; i = i + 1)
@@ -2213,7 +2252,7 @@ void Sbar_DrawCenterPrint (void)
 		if(a <= 0)
 			continue;
 
-		pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (if(rm_simpleeffects) 1 else a)) * 0.5;
+		pos_x = (vid_conwidth - centerprint_width[i] * (if(rm_simpleeffects) 1 else a)) * 0.5;
 		ts = centerprint_messages[i];
 
 		if (ts != "")
@@ -2232,7 +2271,7 @@ void Sbar_DrawCenterPrint (void)
 				
 				float a3 = 1 + ipol_pow2In(1.0 - a2); 
 				sz = sz * a3;
-				pos_x = (vid_conwidth - centerprint_fontsize_x * centerprint_width[i] * (a3)) * 0.5;
+				pos_x = (vid_conwidth - centerprint_width[i] * (a3)) * 0.5;
 				drawcolorcodedstring(pos - centerprint_fontsize_y * '0 0.5 0' * (a3 - 1), ts, sz, a * a2, DRAWFLAG_NORMAL);
 				pos_y = oldy;
 			}
@@ -2248,7 +2287,7 @@ vector Sbar_DrawNoteLine(vector offset, string s)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 	drawcolorcodedstring(
-		offset - sbar_fontsize_x * '1 0 0' * stringwidth(s, TRUE),
+		offset - [stringwidth(s, TRUE, sbar_fontsize), 0],
 		s,
 		sbar_fontsize,
 		sbar_alpha_fg,
@@ -2261,7 +2300,7 @@ vector Sbar_DrawNoteLineA(vector offset, string s, float alpha)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 	drawcolorcodedstring(
-		offset - sbar_fontsize_x * '1 0 0' * stringwidth(s, TRUE),
+		offset - [stringwidth(s, TRUE, sbar_fontsize), 0],
 		s,
 		sbar_fontsize,
 		alpha,
@@ -2274,7 +2313,7 @@ vector Sbar_DrawCenterNoteLine(vector offset, string s)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 	drawcolorcodedstring(
-		offset - sbar_fontsize_x * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
+		offset - [stringwidth(s, TRUE, sbar_fontsize) * 0.5, 0],
 		s,
 		sbar_fontsize,
 		sbar_alpha_fg,
@@ -2287,7 +2326,7 @@ vector Sbar_DrawCenterNoteLineA(vector offset, string s, float alpha)
 {
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 	drawcolorcodedstring(
-		offset - sbar_fontsize_x * 1.5 * '1 0 0' * (stringwidth(s, TRUE) * 0.5),
+		offset - [stringwidth(s, TRUE, sbar_fontsize * 1.5) * 0.5, 0],
 		s,
 		sbar_fontsize * 1.5,
 		alpha,
@@ -2510,15 +2549,15 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
         if(l >= 0)
             str = substring(str, 0, l + 2);
         str = strcat(", ", str, "%");
-        l = stringwidth_svn(str, FALSE, tsize);
+        l = stringwidth(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
         str = FormatDamage(k.(dtrack_damage[i]));
-        l += stringwidth_svn(str, FALSE, tsize);
+        l += stringwidth(str, FALSE, tsize);
         drawstring(pos + '1 0 0' * (sz_x - l), str, tsize, '1 1 0', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
         str = strcat(ftos(i+1), ". ", DamageTracker_DamageSourceName(k.(dtrack_type[i]), TRUE));
-        str = textShortenToWidth_svn(str, sz_x - l, tsize, stringwidth_colors_svn);
+        str = textShortenToWidth(str, sz_x - l, tsize, stringwidth_colors);
         drawstring(pos, str, tsize, '1 1 1', sbar_alpha_fg * a, DRAWFLAG_NORMAL);
         
         o   = '0 1 0' * tsize_y;
@@ -2531,7 +2570,7 @@ vector Sbar_DrawDamageStats(entity k, string head, vector pos, vector sz) {
     drawfont = sbar_bigfont;
     drawstring(opos + tsize_x * '0.25 0 0', head, tsize, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
     str = FormatDamage(k.dtrack_totaldamage);
-    drawstring(opos - (tsize_x * 0.25 + stringwidth_svn(str, FALSE, tsize) - sz_x) * '1 0 0', str, tsize, '1 1 0', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    drawstring(opos - (tsize_x * 0.25 + stringwidth(str, FALSE, tsize) - sz_x) * '1 0 0', str, tsize, '1 1 0', sbar_alpha_fg, DRAWFLAG_NORMAL);
     drawfont = sbar_font;
     
     return pos;
@@ -2718,31 +2757,31 @@ void Sbar_DrawAccuracyStats()
 
 void drawstringright(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x -= 2 / 3 * strlen(text) * scale_x;
+	position_x -= stringwidth(text, FALSE, scale);
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawstringcenter(vector position, string text, vector scale, vector rgb, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x);
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE, scale));
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter(vector position, string text, vector scale, float alpha, float flag)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x);
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE, scale));
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
 void drawstringcenter_offset(vector position, string text, vector scale, vector rgb, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE) * scale_x) - offs;
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, FALSE, scale)) - offs;
 	drawstring(position, text, scale, rgb, alpha, flag);
 }
 
 void drawcolorcodedstringcenter_offset(vector position, string text, vector scale, float alpha, float flag, float offs)
 {
-	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE) * scale_x) - offs;
+	position_x = 0.5 * (vid_conwidth - stringwidth(text, TRUE, scale)) - offs;
 	drawcolorcodedstring(position, text, scale, alpha, flag);
 }
 
@@ -2821,73 +2860,65 @@ float GetLowAmmoCvar(float currweapon){
 	}
 }
 
-float GetSpecialCaseWarn(float currweapon){
-	//return any unique ammo system warning such as camping rifle clip or zapper heat
+string GetSpecialCaseWarnString(float currweapon, float currbullets) {
 	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return CVAR(cl_lowammowarnings_campingrifle_bulletsremaining);
-		case WEP_ZAPPER: return CVAR(cl_lowammowarnings_zapper_heat);
-		default: return 0;
-	}
-}
-
-string GetSpecialCaseWarnString(float currweapon, float currbullets){
-	switch(currweapon){
-		case WEP_CAMPINGRIFLE: return if(currbullets > 0) "magazine low" else "reloading";
 		case WEP_ZAPPER: return "heat high";
-		default: return "";
+		default: {
+            if(currbullets < 0)
+                return "reloading";
+            return "magazine low";
+        }
 	}
 }
 
-void Sbar_ShowLowammo(){
-	vector pos, scale;
-	float currweapon = getstati(STAT_SWITCHWEAPON);
-	float showwarning = 0;
-	float showspecialwarning = 0;
-	float currammo, currammotype, ammocode, currbullets;
-	float clipheatwarn = GetSpecialCaseWarn(currweapon);
-	float warn = GetLowAmmoCvar(currweapon);
-	scale_x = CVAR(cl_lowammowarnings_size);
-	scale_y = CVAR(cl_lowammowarnings_size);
-	pos_y = CVAR(cl_lowammowarnings_position);
-	
-	//carrying either camping rifle or zapper
-	if(clipheatwarn){
-		if(currweapon == WEP_CAMPINGRIFLE){
-			currbullets = getstati(STAT_BULLETS_LOADED);
-			if(currbullets <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-		else if(currweapon == WEP_ZAPPER){
-			float currheat = getstatf(STAT_ZAPPER_HEAT);
-			currheat = floor((1 - currheat) * 100);
-			if(currheat <= clipheatwarn){
-				showspecialwarning = 1;
-			}
-		}
-	}
-	if(warn){
-		currammotype = get_weaponinfo(currweapon).items;
-		ammocode = GetAmmoStatFromCode(currammotype);
-		if(ammocode > 0) //prevent sending <0 to getstati
-			currammo = getstati(GetAmmoStatFromCode(currammotype));
-		
-		if(currammo <= warn){
-			showwarning = 1;
-		}
-	}
-	drawfont = sbar_bigfont;
-	if(showwarning){
-		string ammoname = GetFriendlyAmmoName(currammotype);
-		drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	if(showspecialwarning){
-		string weaponname = get_weaponinfo(currweapon).message;
-		string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
-		pos_y = pos_y - scale_y;
-		drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
-	}
-	drawfont = sbar_font;
+void Sbar_ShowLowammo(void) {
+    vector pos, scale;
+    float currweapon = getstati(STAT_SWITCHWEAPON);
+    float showwarning = 0;
+    float showspecialwarning = 0;
+    float currammo, currammotype, ammocode, currbullets, maxbullets;
+    float warn = GetLowAmmoCvar(currweapon);
+    scale_x = CVAR(cl_lowammowarnings_size);
+    scale_y = CVAR(cl_lowammowarnings_size);
+    pos_y = CVAR(cl_lowammowarnings_position);
+
+    if(currweapon == WEP_ZAPPER) {
+        float currheat = getstatf(STAT_ZAPPER_HEAT);
+        currheat = floor((1 - currheat) * 100);
+        if(currheat <= CVAR(cl_lowammowarnings_zapper_heat))
+            showspecialwarning = 1;
+    } else if((maxbullets = getstati(STAT_CLIP_LIMIT)) > 0) {
+        currbullets = getstatf(STAT_CLIP_LOADED);
+        if(currbullets <= maxbullets * 0.4) // TODO: a cvar
+            showspecialwarning = 1;
+    }
+
+    if(warn) {
+        currammotype = get_weaponinfo(currweapon).items;
+        ammocode = GetAmmoStatFromCode(currammotype);
+        if(ammocode > 0) //prevent sending <0 to getstati
+            currammo = getstati(GetAmmoStatFromCode(currammotype));
+
+        if(currammo <= warn){
+            showwarning = 1;
+        }
+    }
+
+    drawfont = sbar_bigfont;
+
+    if(showwarning) {
+        string ammoname = GetFriendlyAmmoName(currammotype);
+        drawstringcenter(pos, strcat("Low ", ammoname, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    if(showspecialwarning) {
+        string weaponname = get_weaponinfo(currweapon).message;
+        string specialwarn = GetSpecialCaseWarnString(currweapon, currbullets);
+        pos_y = pos_y - scale_y;
+        drawstringcenter(pos, strcat(weaponname, " ", specialwarn, "!"), scale, '1 1 1', 1, DRAWFLAG_NORMAL);
+    }
+
+    drawfont = sbar_font;
 }
 
 void Sbar_Reset (void)
@@ -2984,7 +3015,7 @@ void Sbar_MorningRescue(void)
 			string resultstr = strcat(mycolor, mychar);
 
 			dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
-			mrpos_x += stringwidth(resultstr, TRUE) * 24;
+			mrpos_x += stringwidth(resultstr, TRUE, '24 24 0');
 			drawcolorcodedstring(mrpos + offset, resultstr, '24 24 0', mralpha * 0.8, DRAWFLAG_ADDITIVE);
 		}
 	}
@@ -3547,9 +3578,6 @@ float ammonotifytime;
 
 void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 {
-	if(oldengine)
-		return;
-	
 	if(!rm_showrankings)
 		return;
 	
@@ -3593,8 +3621,8 @@ void Sbar_DrawScore_Rankings(vector pos, vector mySize, entity me)
 			if (teamplay)
 				score_color = GetTeamRGB(pl.team) * 0.8;
 			
-			s = textShortenToWidth_svn(GetPlayerName(pl.sv_entnum), name_size, fontsize, stringwidth_colors_svn);
-			drawcolorcodedstring(pos + eX * (name_size - stringwidth_svn(s, TRUE, fontsize)), s, fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL);
+			s = textShortenToWidth(GetPlayerName(pl.sv_entnum), name_size, fontsize, stringwidth_colors);
+			drawcolorcodedstring(pos + eX * (name_size - stringwidth(s, TRUE, fontsize)), s, fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL);
 			drawstring(pos + eX * (name_size + spacing_size), ftos(pl.(scores[ps_primary])), fontsize, score_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
 			pos_y += fontsize_y;
 			++i;
@@ -3630,6 +3658,12 @@ void DrawProgress(vector cpos, vector l_size, float progress, float alpha, vecto
     DrawProgressFragmented(cpos, l_size, progress, alpha, l_color, 1);
 }
 
+void DrawProgressRing(float rad, float progress, float alpha, vector rgb) {
+    var pos = [vid_conwidth, vid_conheight] * 0.5;
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_border.tga", 1,        rgb, alpha * 0.25, DRAWFLAG_NORMAL);
+    DrawCircleClippedPic(pos, rad, "gfx/hud/ring_progress_fill.tga",   progress, rgb, alpha,        DRAWFLAG_NORMAL);
+}
+
 float rev_visual;
 float rev_alpha;
 float rev_old;
@@ -3647,7 +3681,7 @@ float vshield;
 
 float revmode;
 
-void Sbar_DrawHGShield(void) {
+void Sbar_DrawTintEffects(void) {
     float st = getstati(STAT_STEALTH);
     float s = st || getstatf(STAT_HGSHIELD);
     
@@ -3655,9 +3689,21 @@ void Sbar_DrawHGShield(void) {
         vshield = approach(vshield, 1, frametime * 3);
     else
         vshield = approach(vshield, 0, frametime * 3);
-    
-    if(vshield)
-        drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', if(st) '1 1 1' else ('0.2 0.2 1' + '0.8 0.8 -1' * getstatf(STAT_HGSHIELDPOWER)), 0.1 * vshield, DRAWFLAG_ADDITIVE);
+
+    if(vshield) {
+        if(st) {
+            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '1 1 1', 0.1 * vshield, DRAWFLAG_MODULATE);
+        } else {
+            var clr = if(getstati(STAT_BUFFS) & BUFF_ADEPT)
+                '1 0.5 1'
+            else
+                '1 1 0.5';
+
+            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', clr * vshield + '1 1 1' * (1 - vshield), 1, DRAWFLAG_MODULATE);
+            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', clr, 0.1 * vshield, DRAWFLAG_ADDITIVE);
+        }
+
+    }
 }
 
 float hg_bonusalpha;
@@ -3684,8 +3730,8 @@ void Sbar_DrawHGBonus(void) {
     
     drawfont = sbar_bigfont;
     s = strcat(HG_TypeToExpandedName(hgtype), "!", if(num > 1) strcat(" x", ftos(num)) else "");
-    sw = stringwidth(s, FALSE) + 1;
-    o_x -= (spacing + fs_x * sw) * 0.5;
+    sw = stringwidth(s, FALSE, fs) + fs_x;
+    o_x -= (spacing + sw) * 0.5;
     
     drawpic(o, HG_TypeToIcon(hgtype, TRUE, FALSE), fs, '1 1 1', a, DRAWFLAG_NORMAL);
     o_x += fs_x + spacing;
@@ -3694,26 +3740,38 @@ void Sbar_DrawHGBonus(void) {
     
 }
 
+float drawbuffs_buffval;
+float drawbuffs_updatetime;
+string drawbuffs_str;
+vector drawbuffs_pos;
+
 void Sbar_DrawBuffs(void) {
     vector pos;
-    float buffs = getstati(STAT_BUFFS), sw, b;
-    string s;
-    
+    float buffs = getstati(STAT_BUFFS), sw, a;
+
+    if(drawbuffs_buffval != buffs) {
+        drawbuffs_updatetime = time;
+        drawbuffs_buffval=  buffs;
+
+        if(drawbuffs_str) {
+            strunzone(drawbuffs_str);
+            drawbuffs_str = NULL;
+        }
+
+        if(buffs) {
+            drawbuffs_str = strzone(Buffs_TypeToExpandedName(buffs, " ", 1));
+            sw = stringwidth(drawbuffs_str, TRUE, sbar_fontsize);
+            drawbuffs_pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
+            drawbuffs_pos_x = (vid_conwidth - sw) * 0.5;
+        }
+    }
+
     if(!buffs)
         return;
-    
-    for(b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) if(buffs & b) {
-        string o = strcat(rgb_to_hexcolor(Buffs_TypeToColor(b)), Buffs_TypeToExpandedName(b));
-        if(s == "")
-            s = o;
-        else
-            s = strcat(s, " ", o);
-    }
-    
-    sw = stringwidth(s, TRUE);
-    pos_y = vid_conheight - vid_conheight/7 - sbar_fontsize_y;
-    pos_x = (vid_conwidth - sw * sbar_fontsize_x) * 0.5;
-    drawcolorcodedstring(pos, s, sbar_fontsize, 0.3, DRAWFLAG_NORMAL);
+
+    a = 1 - bound(0, time - drawbuffs_updatetime, 1);
+
+    drawcolorcodedstring(drawbuffs_pos, drawbuffs_str, sbar_fontsize, 0.3 + 0.7 * a, DRAWFLAG_NORMAL);
 }
 
 void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenmax, float regenpaused, float hgcd, float hgcdmax) {
@@ -3763,7 +3821,7 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
         }
         
         using(drawfont = sbar_bigfont) {
-            float tsize = hgsize_x / stringwidth(hgtxt, FALSE);
+            float tsize = hgsize_x / stringwidth(hgtxt, FALSE, '1 1 0');
             drawstring(pos + '0.5 0 0' * (SECWIDTH_NORMAL - hgsize_x) + '0 0.5 0' * (hgsize_y - tsize), hgtxt, '1 1 0' * tsize, '1 0 0' + '0 1 0' * (rtime >= 5) + '0 0 1' * (rtime >= 10), 1, DRAWFLAG_NORMAL);
         }
     }
@@ -3777,6 +3835,7 @@ float hg_maxcd2;
 #define RMODE_CAP 0
 #define RMODE_REV 1
 #define RMODE_AUTH 2
+#define RMODE_CAP_SENTRY 3
 
 void Sbar_DrawPlayerName(string s) {
     vector pos;
@@ -3784,7 +3843,7 @@ void Sbar_DrawPlayerName(string s) {
     drawfont = sbar_bigfont;
     
     pos_y = vid_conheight - 50 - sbar_fontsize_spec_y;
-    s = textShortenToWidth(s, vid_conwidth/2.5/sbar_fontsize_spec_x, stringwidth_colors);
+    s = textShortenToWidth(s, vid_conwidth/2.5, sbar_fontsize_spec, stringwidth_colors);
     drawcolorcodedstring(pos, s, sbar_fontsize_spec, sbar_alpha_fg, DRAWFLAG_NORMAL);
     
     drawfont = sbar_font;
@@ -3812,22 +3871,14 @@ void Sbar_DrawSelectedPlayer(void) {
     plr = playerslots[sbar_selectedplayer-1];
 
     pos = '0.5 0 0' * vid_conwidth + '0 0.7 0' * vid_conheight;
-    sw = stringwidth(sbar_selectedplayer_name, TRUE) * fs_x;
+    sw = stringwidth(sbar_selectedplayer_name, TRUE, fs);
     namepos = pos - '0.5 0 0' * sw;
 
-    if(g_nadgets) {
-        vector n = HG_DecompressDualType(plr.(scores[SP_NADEMODE]));
-        if(n) {
-            float icons = fs_x * (1 + g_nadgets_double);
-            vector offs = '1 0 0' * (fs_x / 9);
-
-            drawpic(namepos - '0.5 0 0' * icons - offs, HG_TypeToIcon(n_x, FALSE, FALSE), fs, HG_TypeToColor(n_x) * b, a, DRAWFLAG_NORMAL);
-
-            if(g_nadgets_double)
-                drawpic(namepos - offs, HG_TypeToIcon(n_y, FALSE, FALSE), fs, HG_TypeToColor(n_y) * b, a, DRAWFLAG_NORMAL);
-
-            namepos = '0.5 0 0' * icons + offs + namepos;
-        }
+    var icons = GetPlayerStatusIconsWidth(fs_x);
+    if(icons) {
+        vector ofs = [fs_x / 9, 0];
+        DrawPlayerStatusIcons(namepos - '0.5 0 0' * icons - ofs, fs_x, a, b, plr.(scores[SP_STATUSICONS]));
+        namepos = '0.5 0 0' * icons + ofs + namepos;
     }
 
     if(teamplay) {
@@ -3844,11 +3895,11 @@ void Sbar_DrawSelectedPlayer(void) {
             vector posHealth, posArmor;
 
             txtHealth = ftos(plr.healthvalue);
-            szHealth  = stringwidth(txtHealth, FALSE) * fs_x;
+            szHealth  = stringwidth(txtHealth, FALSE, fs);
 
             if(plr.armorvalue) {
                 txtArmor  = ftos(plr.armorvalue);
-                szArmor   = stringwidth(txtArmor, FALSE) * fs_x;
+                szArmor   = stringwidth(txtArmor, FALSE, fs);
                 posArmor  = pos + '2 0 0';
                 posHealth = pos - '1 0 0' * (szHealth + 2 + fs_x);
             } else {
@@ -3918,8 +3969,6 @@ void Sbar_Draw(void)
 	float stat_items, stat_weapons;
     vector c;
 
-    Sbar_DrawHGShield();
-
 	weapon_stats = getstati(STAT_DAMAGE_HITS);
  	weapon_number = weapon_stats & 63;
  	weapon_hits[weapon_number] = rint(weapon_stats / 64);
@@ -3983,11 +4032,14 @@ void Sbar_Draw(void)
     if(!rev) {
         rev = getstatf(STAT_REVIVE_PROGRESS);
         if(!rev) {
-            rev = getstatf(STAT_TERM_AUTH);
-            if(rev) revmode = RMODE_AUTH;
+            rev = getstatf(STAT_HGSENTRYCAPTURE);
+            if(!rev) {
+                rev = getstatf(STAT_TERM_AUTH);
+                if(rev) revmode = RMODE_AUTH;
+            } else revmode = RMODE_CAP_SENTRY;
         } else revmode = RMODE_REV;
     } else revmode = RMODE_CAP;
-	
+
 	if(rev) {
         rev_visual += (rev - rev_visual) * drawframetime * 10;
 		rev_alpha = approach(rev_alpha, 1, drawframetime * 5);
@@ -3998,7 +4050,7 @@ void Sbar_Draw(void)
 		if(rev_old > 0.9)
 			rev_visual = 1;	// This is _most likely_ a completed revival, so let's display it as such
 	}
-	
+
 	rev_old = rev;
 	rev = rev_visual;
 	
@@ -4104,7 +4156,7 @@ void Sbar_Draw(void)
             Sbar_DrawPlayerName(GetPlayerName(player_localentnum - 1));
     }
     
-    if(g_nadgets) {
+    if(g_nadgets && spectatee_status != -1) {
         hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
         if(g_nadgets_double)
             hgregen2 += (getstatf(STAT_HGREGEN2) / getstatf(STAT_HGREGENMAX2) - hgregen2) * drawframetime * 20;
@@ -4115,7 +4167,7 @@ void Sbar_Draw(void)
 		s = "^2Currently in ^1warmup^2 stage!";
 		o2 = Sbar_DrawCenterNoteLine(o2, s);
 	}
-    
+
     if(rev)
     {
         vector revpos;
@@ -4123,33 +4175,34 @@ void Sbar_Draw(void)
 
         drawfont = sbar_font;
 
-		string s2;
+        string s2;
         if(revmode == RMODE_REV)
-			s = "Revival progress: ";
+            s = "Revival progress: ";
         else if(revmode == RMODE_AUTH)
             s = "Authenticating: ";
-		else if(gametype == GAME_JAILBREAK)
-			s = "Unlocking the jail: ";
-		else
-			s = "Capture progress: ";
+        else if(revmode == RMODE_CAP_SENTRY)
+            s = "Capture progress: ";
+        else if(gametype == GAME_JAILBREAK)
+            s = "Unlocking the jail: ";
+        else
+            s = "Capture progress: ";
+
+        s2 = strcat(ftos(floor(rev * 100)), "%");
         
-		//drawcolorcodedstringcenter(revpos, strcat(s, ftos(floor(rev * 100)), "%"), sbar_fontsize, rev_alpha, DRAWFLAG_NORMAL);
-		s2 = strcat(ftos(floor(rev * 100)), "%");
-		
-		if(rev <= 0.5)
-			c = '0 1 1' + '2 0 0' * rev;
-		else
-			c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
-			
-		drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth_svn(s2, FALSE, sbar_fontsize) * 0.5);
-		drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth_svn(s, FALSE, sbar_fontsize) * 0.5);
-		
-		revpos_y += sbar_fontsize_y + 5;
-		revpos_x = vid_conwidth/2;
-		
-		DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
+        if(rev <= 0.5)
+            c = '0 1 1' + '2 0 0' * rev;
+        else
+            c = '1 1 1' - '0 1.5 3' * (rev - 0.5);
+
+        drawstringcenter_offset(revpos, s, sbar_fontsize, '1 1 1', rev_alpha, DRAWFLAG_NORMAL, stringwidth("100%", FALSE, sbar_fontsize) * 0.5);
+        drawstringcenter_offset(revpos, s2, sbar_fontsize, c, rev_alpha, DRAWFLAG_NORMAL, -stringwidth(s, FALSE, sbar_fontsize) * 0.5);
+
+        revpos_y += sbar_fontsize_y + 5;
+        revpos_x = vid_conwidth/2;
+
+        DrawProgress(revpos, '15 0 0' * sbar_fontsize_x + '0 5 0', rev, 0.7 * rev_alpha, c);
     }
-    
+
     float havemsg = TRUE;
     switch(getstati(STAT_JBMSG)) {
         case JBMSG_CAPPINGNEUTRAL   :   jb_str  =  "Your team is capturing a Neutral Control Point";    break;
@@ -4279,6 +4332,7 @@ void Sbar_Draw(void)
 					drawcolorcodedstringcenter(bp_pos, bigprint_string, '24 24 0', bp_alpha, DRAWFLAG_NORMAL);
 				else
 				{
+                    vector sz;
 					if(tmpmadoka_fadetime >= time)
 					{
 						string mycolor;
@@ -4312,12 +4366,13 @@ void Sbar_Draw(void)
 
 							dummyfunction(0, 0, 0, 0, 0, 0, 0, 0); // work around DP bug (set OFS_PARAM5 to 0)
 
-							bp_pos_x += stringwidth(resultstr, TRUE) * 24 * (1.0 + (1.0 - bp_alpha));
-							drawcolorcodedstring(bp_pos + offset, resultstr, '24 24 0' * (1.0 + (1.0 - bp_alpha)), bp_alpha, DRAWFLAG_NORMAL);
+                            sz = '24 24 0' * (1.0 + (1.0 - bp_alpha));
+							bp_pos_x += stringwidth(resultstr, TRUE, sz);
+							drawcolorcodedstring(bp_pos + offset, resultstr, sz, bp_alpha, DRAWFLAG_NORMAL);
 						}
 					}
 					else {
-						vector sz = '24 24 0' * (1.0 + ipol_powIn(3, 1.0 - bp_alpha));
+						sz = '24 24 0' * (1.0 + ipol_powIn(3, 1.0 - bp_alpha));
 						drawcolorcodedstringcenter(bp_pos - sz * 0.25 * (1 - bp_alpha), bigprint_string, sz, bp_alpha, DRAWFLAG_NORMAL);
 					}
 				}
@@ -4487,15 +4542,17 @@ void Sbar_Draw(void)
 	
 	vector base_teamcolor;
 	
-	if(teamplay)
+    if(CVAR(rm_hud_healthcolor)) {
+        base_teamcolor = healtharmor_maxdamage(getstati(STAT_HEALTH), getstati(STAT_ARMOR), armorblockpercent);
+        base_teamcolor = healthcolor(base_teamcolor_x);
+    } else if(teamplay) {
 		base_teamcolor = GetTeamRGB(myteam);
-	else
-	{
+    } else {
 		base_teamcolor_x = CVAR(sbar_color_bg_r);
 		base_teamcolor_y = CVAR(sbar_color_bg_g);
 		base_teamcolor_z = CVAR(sbar_color_bg_b);
 	}
-	
+
 	vector sector_teamcolor = (base_teamcolor + hudskin_sector_teamcolor_mod + HUDSkin_GetTeamColorMod_Sector(myteam)) * hudskin_sector_teamcolor_brightness;
 	vector border_teamcolor = (base_teamcolor + hudskin_border_teamcolor_mod + HUDSkin_GetTeamColorMod_Border(myteam)) * hudskin_border_teamcolor_brightness;
 
@@ -5199,14 +5256,14 @@ void Sbar_Draw(void)
                 if(incdmg) {
                     s_dmg = ftos(-incdmg);
                     dmgscale = '20 20' * (1 + 0.4 * (incdmg >= health));
-                    w_dmg = stringwidth_svn(s_dmg, FALSE, dmgscale);
+                    w_dmg = stringwidth(s_dmg, FALSE, dmgscale);
                     w_total += w_dmg;
                 }
 
                 if(incheal) {
                     s_heal = strcat("+", ftos(incheal));
                     healscale = '20 20';
-                    w_heal = stringwidth_svn(s_heal, FALSE, healscale);
+                    w_heal = stringwidth(s_heal, FALSE, healscale);
                     w_total += w_heal;
 
                     if(incdmg)
@@ -5272,29 +5329,34 @@ void Sbar_Draw(void)
 		}
 		
 		a_unused = 4 - a_unused;
-		
+
+        float currweapon = getstati(STAT_SWITCHWEAPON);
+        float currweapon_ammo = get_weaponinfo(currweapon).items;
+
+        if(getstati(STAT_CLIP_LIMIT) > 0)		
+            ammo_progress = bound(0, (1 - getstatf(STAT_CLIP_LOADED)/getstati(STAT_CLIP_LIMIT)), 1);
+        else
+            ammo_progress = -1;
+
 		for (i = 0; i < 4; ++i) {
 			float a = getstati(GetAmmoStat(i)); // how much ammo do we have of type i?
-            float isrifle;
-            
+            float isclip;
             float itemcode = GetAmmoItemCode(i);
 
-            if(activeweapon == WEP_CAMPINGRIFLE && stat_items & IT_NAILS) {
-                ammo_progress = bound(0, (1 - getstati(STAT_BULLETS_LOADED)/getstati(STAT_BULLETS_MAX)), 1);
-                if(itemcode == IT_NAILS && stat_items & IT_UNLIMITED_AMMO) {
-                    a = getstati(STAT_BULLETS_LOADED);
-                    isrifle = TRUE;
-                }
-            } else if(activeweapon == WEP_ZAPPER && stat_items & IT_CELLS) {
-                float h = getstatf(STAT_ZAPPER_HEAT);
-                if(h >= 0) {
-                    if(itemcode == IT_CELLS && stat_items & IT_UNLIMITED_AMMO)
+            if(itemcode & stat_items & currweapon_ammo) {
+                if(currweapon == WEP_ZAPPER) {
+                    var h = getstatf(STAT_ZAPPER_HEAT);
+                    if(stat_items & IT_UNLIMITED_AMMO)
                         a = floor((1 - h) * 100);
                     ammo_progress = h;
+                } else if(ammo_progress >= 0) {
+                    if(stat_items & IT_UNLIMITED_AMMO) {
+                        a = floor(getstatf(STAT_CLIP_LOADED));
+                        isclip = TRUE;
+                    }
                 }
-            } else
-                ammo_progress = 0;
-            
+            }
+
             if(a < 0 || (!a && !(stat_items & itemcode)))
                 continue;
             
@@ -5320,7 +5382,7 @@ void Sbar_Draw(void)
 						if(!a)
 							drawpic_expanding(pos + '76 3 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
 						
-						if(a < (1 + 9 * !isrifle))
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '5 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5334,7 +5396,7 @@ void Sbar_Draw(void)
 						drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 						if(!a)
 							drawpic_expanding(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL, 1 - bound(0, (ammonotifytime - time)*2, 1));
-						if(a < 10 && !isrifle)
+						if(a < 10 && !isclip)
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
 						else
 							Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5380,7 +5442,7 @@ void Sbar_Draw(void)
                         
                         drawpic(pos + '0 5 0', GetAmmoPicture(i), '24 24 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 
-                        if(a < (1 + 9 * !isrifle))
+                        if(a < 10 && !isclip)
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '0.7 0 0', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
                         else
                             Sbar_DrawXNum(pos + '26 5 0', a, 3, 0, 24, '1 1 1', 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
@@ -5398,6 +5460,11 @@ void Sbar_Draw(void)
 			}
 		}
 		
+
+        if(ammo_progress < 0)
+            ammo_progress = 0;
+
+
         // nades
         vector hgapos;
         hgapos_y = vid_conheight - vid_conheight/7;
@@ -5580,7 +5647,7 @@ void Sbar_Draw(void)
         Sbar_DrawHGBonus();
     Sbar_DrawBuffs();
 
-	if(rm_legacyvote || oldengine)
+	if(rm_legacyvote)
 	{
 		if(vote_waiting)
 		{
@@ -5669,22 +5736,22 @@ void Sbar_Draw(void)
 			drawpic(voteorigin, "gfx/hud/voteprogress_back", votesize, color, if(vote_highlighted) 0 else a * sbar_alpha_bg, DRAWFLAG_NORMAL);
 
 
-			drawcolorcodedstring(voteorigin + '0.5 0 0' * votesize_x + '0 0.125 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '6 0 0'), s, '12 12 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			drawcolorcodedstring(voteorigin + '0.5 0 0' * votesize_x + '0 0.125 0' * votesize_y - '1 0 0' * stringwidth(s, TRUE, '6 0 0'), s, '12 12 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
             if(vote_invite)
                 s = strcat("Go to server: ^1", vote_called_vote);
             else
                 s = vote_called_vote;
 
-			s = textShortenToWidth_svn(s, votesize_x * 0.96, '10 0 0', stringwidth_colors_svn);
-			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth_svn(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+			s = textShortenToWidth(s, votesize_x * 0.96, '10 0 0', stringwidth_colors);
+			drawcolorcodedstring(voteorigin + '0.52 0 0' * votesize_x + '0 0.3 0' * votesize_y - '1 0 0' * stringwidth(s, TRUE, '5 0 0'), s, '10 10 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
             if(!vote_invite) {
                 // print the yes/no counts
                 s = strcat("Yes: ", ftos(vote_yescount));
-                drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                drawstring(voteorigin + '0 0.6 0' * votesize_y + '0.02 0 0' * votesize_x, s, '12 12 0', '0 1 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
                 s = strcat("No: ", ftos(vote_nocount));
-                drawstring_svn(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth_svn(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
+                drawstring(voteorigin + '0 0.6 0' * votesize_y + '0.98 0 0' * votesize_x - '1 0 0' * stringwidth(s, FALSE, '12 0 0'), s, '12 12 0', '1 0 0', a * sbar_alpha_fg, DRAWFLAG_NORMAL);
 
                 // draw the progress bars
                 drawsetcliparea(voteorigin_x, voteorigin_y, votesize_x * 0.5 * (vote_yescount/vote_needed), votesize_y);
@@ -5815,7 +5882,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon = string_null;
+				red_icon = NULL;
 			break;
 	}
 	switch(redflag_prevstatus) {
@@ -5828,7 +5895,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM2))
 				red_icon_prevstatus = "gfx/hud/sb_flag_red_shielded";
 			else
-				red_icon_prevstatus = string_null;
+				red_icon_prevstatus = NULL;
 			break;
 	}
 
@@ -5843,7 +5910,7 @@ void CSQC_ctf_hud(vector hudpos)
 			if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon = string_null;
+				blue_icon = NULL;
 			break;
 	}
 	switch(blueflag_prevstatus) {
@@ -5856,7 +5923,7 @@ void CSQC_ctf_hud(vector hudpos)
 			else if((stat_items & IT_CTF_SHIELDED) && (myteam == COLOR_TEAM1))
 				blue_icon_prevstatus = "gfx/hud/sb_flag_blue_shielded";
 			else
-				blue_icon_prevstatus = string_null;
+				blue_icon_prevstatus = NULL;
 			break;
 	}
 

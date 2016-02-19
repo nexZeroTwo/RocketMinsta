@@ -74,3 +74,6 @@ void(entity e) setspawnparms = #78;
 void parseentitydata(entity ent, string data) = #613;
 void callfunction(...) = #605;
 float isfunction(string function_name) = #607;
+
+float(entity e, float s) getsurfacenumtriangles = #628;
+vector(entity e, float s, float n) getsurfacetriangle = #629;

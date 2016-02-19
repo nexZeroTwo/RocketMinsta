@@ -111,7 +111,8 @@ void	fputs(float fhandle, string s)  = #51;
 
 float	strlen(string s)  = #52;
 //string	strcat(string s1,string s2,...)  = #53;
-string	strcat(string s1, ...)  = #53;
+string	strcat(string s1, ...) = #53;
+string  operator+(string s1, string s2) = #53;
 string	substring(string s, float start, float length)  = #54;
 
 vector	stov(string s)  = #55;
@@ -195,7 +196,7 @@ float	drawcharacter(vector position, float character, vector scale, vector rgb, 
 
 float	drawstring(vector position, string text, vector scale, vector rgb, float alpha, float flag) = #455;
 float   drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) = #467;
-float	stringwidth(string text, float handleColors) = #468;
+float	stringwidth(string text, float handleColors, vector fontSize) = #468;
 
 float	drawpic(vector position, string pic, vector size, vector rgb, float alpha, float flag) = #456;
 float	drawsubpic(vector position, vector size, string pic, vector srcPosition, vector srcSize, vector rgb, float alpha, float flag) = #469;

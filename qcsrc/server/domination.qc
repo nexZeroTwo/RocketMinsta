@@ -40,7 +40,7 @@ void dom_recountpoints()
 
 void tdom_EndRound(float tout)
 {
-	G_EndRound(tout, CVAR(g_totaldomination_warmup), dom_recountpoints, func_null, func_null);
+	G_EndRound(tout, CVAR(g_totaldomination_warmup), dom_recountpoints, NULL, NULL);
 }
 
 void() dom_controlpoint_setup;
@@ -297,6 +297,7 @@ void dompointtouch()
 	self.pointupdatetime = time;
     other.pointupdatetime = time;
     self.dom_capturingplayer = other;
+    other.buff_stealth_time = time;
 
     other.dom_captureprogress = self.dom_captureprogress;
 	if(self.dom_captureprogress < 1)

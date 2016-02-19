@@ -37,7 +37,7 @@ void fillNexuizNetworkSettingsTab(entity me)
 			e.addValue(e, "Slow ADSL (15000 Bps)", "15000");
 			e.addValue(e, "Fast ADSL (20000 Bps)", "20000");
 			e.addValue(e, "Broadband (25000 Bps)", "25000");
-            e.addValue(e, "21st century (40000 Bps)", "40000");
+            e.addValue(e, "21st century (70000 Bps)", "70000");
 			e.configureNexuizTextSliderValues(e);
     me.TR(me);
 		me.TD(me, 1, 1, e = makeNexuizTextLabel(0, "Input packets/s:"));

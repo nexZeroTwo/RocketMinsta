@@ -1,0 +1,4 @@
+rm_shotgun,textures/rm_shotgun
+rm_shotgun_barrel,textures/rm_shotgun_barrel
+rm_shotgun_ironsight,textures/rm_shotgun_ironsight
+rm_shotgun_ironsight_dot,textures/rm_shotgun_ironsight_dot

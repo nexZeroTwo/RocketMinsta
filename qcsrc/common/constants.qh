@@ -34,7 +34,13 @@ enum {
     ENT_CLIENT_ZAPPER,
     ENT_CLIENT_BUFFMODEL,
     ENT_CLIENT_TURRET,
+    ENT_CLIENT_WARPZONE,
+    ENT_CLIENT_WARPZONE_CAMERA,
+    ENT_CLIENT_WARPZONE_TELEPORTED,
+    _ENT_END,
 };
+
+const _ENT_START = ENT_CLIENT;
 
 enum {
     TE_CSQC_PICTURE = 100,
@@ -54,6 +60,7 @@ enum {
     TE_CSQC_HUDFLASH,
     TE_CSQC_HUDFLASH_TEAMCOLOR,
     TE_CSQC_NADGETSELECT,
+    TE_CSQC_SECONDARYSELECT,
     TE_CSQC_CAMERA,
     TE_CSQC_VISUALDAMAGE,
     TE_CSQC_HEAL,
@@ -66,7 +73,10 @@ enum {
     TE_CSQC_MESSAGE,
     TE_CSQC_VOTEINVITE,
     TE_CSQC_ELEBLAST,
+    _TE_CSQC_END,
 };
+
+const _TE_CSQC_START = TE_CSQC_PICTURE;
 
 enum {
     STAT_KH_KEYS = 32,
@@ -83,8 +93,8 @@ enum {
     STAT_NB_METERSTART,
     STAT_SHOTORG,
     STAT_LEADLIMIT,
-    STAT_BULLETS_LOADED,
-    STAT_BULLETS_MAX,
+    STAT_CLIP_LOADED,
+    STAT_CLIP_LIMIT,
     STAT_ROUNDSTATE,
     STAT_QUEUE,
     STAT_ZAPPER_HEAT,
@@ -109,6 +119,8 @@ enum {
     STAT_HEALINCOMING,
     STAT_STEALTH,
     STAT_STEALTH_SAVED,
+    STAT_INNERRING_CYCLE,
+    STAT_INNERRING_FULLTIME,
 
     STAT_HGTYPE,
     STAT_HGAMMO,
@@ -137,6 +149,8 @@ enum {
     STAT_HGSHIELD,
     STAT_HGSHIELDPOWER,
     STAT_HGSHIELDDAMAGEPERSHOT,
+
+    STAT_HGSENTRYCAPTURE,
 };
 
 enum {
@@ -160,6 +174,7 @@ enum {
     PROJECTILE_FIREMINE,
     PROJECTILE_FLAK,
     PROJECTILE_FLAK_BOMB,
+    PROJECTILE_PRYAXE,
 
     PROJECTILE_RM_LASER_RED,
     PROJECTILE_RM_LASER_BLUE,
@@ -180,6 +195,7 @@ enum {
 };
 
 enum {
+    ROUNDSTATE_GAMEINIT,
     ROUNDSTATE_PREGAME,
     ROUNDSTATE_GAME,
     ROUNDSTATE_OVER,
@@ -220,11 +236,12 @@ enumflags {
     VDMG_TYPE_LETHAL,
     VDMG_TYPE_ALIEN,
 
-    _VDMG_TYPE_NOCLIENT_BEGIN,
+    //_VDMG_TYPE_NOCLIENT_BEGIN
 
-    VDMG_TYPE_FORCECHECKLOS = _VDMG_TYPE_NOCLIENT_BEGIN,
+    VDMG_TYPE_FORCECHECKLOS,
 };
 
+const _VDMG_TYPE_NOCLIENT_BEGIN = VDMG_TYPE_FORCECHECKLOS;
 const VDMG_TYPE_CLIENTMASK = _VDMG_TYPE_NOCLIENT_BEGIN - 1;
 
 enum {
@@ -423,7 +440,7 @@ enumflags {
 const SFL_SORT_PRIO_MASK = SFL_SORT_PRIO_PRIMARY | SFL_SORT_PRIO_SECONDARY;
 
 // this needs to be a precompiler constant
-#define MAX_SCORE 23
+#define MAX_SCORE 24
 
 const MAX_TEAMSCORE = 2;
 const ST_SCORE = 0;
@@ -441,13 +458,14 @@ enum {
     SP_COUNTRY,
     SP_ACCURACY,
     SP_FPS,
-    SP_NADEMODE,
+    SP_STATUSICONS,
     SP_NADEFRAGS,
     SP_REVIVALS,
     SP_DAMAGE,
     SP_HEALING,
     SP_QUEUE,
     SP_NOOB,
+    SP_ALIVE,
 
     // game mode specific indices are not in common/, but in server/scores_rules.qc!
 };
@@ -459,7 +477,7 @@ enumflags {
     SPFLAG_MUTE,
 };
 
-#define SCORE_DONT_CLEAR(s) ((s) == SP_PLAYTIME || (s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE || (s) == SP_NOOB)
+#define SCORE_DONT_CLEAR(s) ((s) == SP_COUNTRY || (s) == SP_ACCURACY || (s) == SP_FPS || (s) == SP_FLAGS || (s) == SP_QUEUE)
 
 ///////////////////////////
 // sound constants
@@ -583,6 +601,28 @@ const HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISPROJECTED(t)          ((t) == DEATH_ARC || (t) == DEATH_IGNITE || (t) == DEATH_ENDURANCE)
 #define DEATH_ISENVIRONMENTAL(t)      ((t) >= DEATH_ENV_START && (t) <= DEATH_ENV_END)
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
+
+
+///////////////////////////
+// movetypes (must much the engine defs)
+
+const   MOVETYPE_NONE               = 0;    /// never moves
+const   MOVETYPE_ANGLENOCLIP        = 1;
+const   MOVETYPE_ANGLECLIP          = 2;
+const   MOVETYPE_WALK               = 3;    /// gravity
+const   MOVETYPE_STEP               = 4;    /// gravity, special edge handling
+const   MOVETYPE_FLY                = 5;
+const   MOVETYPE_TOSS               = 6;    /// gravity
+const   MOVETYPE_PUSH               = 7;    /// no clip to world, push and crush
+const   MOVETYPE_NOCLIP             = 8;
+const   MOVETYPE_FLYMISSILE         = 9;    /// extra size to monsters (?)
+const   MOVETYPE_BOUNCE             = 10;
+const   MOVETYPE_BOUNCEMISSILE      = 11;   /// bounce w/o gravity
+const   MOVETYPE_FOLLOW             = 12;   /// track movement of aiment
+const   MOVETYPE_FAKEPUSH           = 13;   /// tenebrae's push that doesn't push
+const   MOVETYPE_PHYSICS            = 32;   /// indicates this object is physics controlled
+const   MOVETYPE_FLY_WORLDONLY      = 33;   /// like MOVETYPE_FLY, but uses MOVE_WORLDONLY for all its traces; objects of this movetype better be SOLID_NOT or SOLID_TRIGGER please, or else...
+
 
 ///////////////////////////
 // misc constants

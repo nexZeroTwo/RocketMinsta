@@ -77,9 +77,14 @@ void W_Grenade_Damage (entity inflictor, entity attacker, float damage, float de
 void W_Grenade_Attack (void)
 {
 	entity gren;
+    float cost = CVAR(g_balance_grenadelauncher_primary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_primary_ammo);
+		self.ammo_rockets = self.ammo_rockets - cost;
+
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", CVAR(g_balance_grenadelauncher_primary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
@@ -113,9 +118,14 @@ void W_Grenade_Attack (void)
 void W_Grenade_Attack2 (void)
 {
 	entity gren;
+    float cost = CVAR(g_balance_grenadelauncher_secondary_ammo);
+
+    if(!W_Clip_Consume(cost))
+        return;
 
 	if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-		self.ammo_rockets = self.ammo_rockets - CVAR(g_balance_grenadelauncher_secondary_ammo);
+		self.ammo_rockets = self.ammo_rockets - cost;
+
 	W_SetupShot_ProjectileSize (self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/grenade_fire.wav", CVAR(g_balance_grenadelauncher_secondary_damage));
 	w_shotdir = v_forward; // no TrueAim for grenades please
 
@@ -155,18 +165,32 @@ void spawnfunc_weapon_grenadelauncher (void)
 	weapon_defaultspawnfunc(WEP_GRENADE_LAUNCHER);
 }
 
+void W_Mortar_SetClipContext(void) {
+    W_Clip_SetWeaponContext(
+        WEP_GRENADE_LAUNCHER,
+        CVAR(g_balance_grenadelauncher_magazinecapacity),
+        CVAR(g_balance_grenadelauncher_magazineregen),
+        CVAR(g_balance_grenadelauncher_reloadtime),
+        ammo_rockets,
+        1
+    );
+}
+
 .float bot_secondary_grenademooth;
 float w_glauncher(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_grenadelauncher_swapshotmodes));
+    W_Mortar_SetClipContext();
+
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK = FALSE;
-		self.BUTTON_ATCK2 = FALSE;
+		self.w_button_primary = FALSE;
+		self.w_button_secondary = FALSE;
 		if (self.bot_secondary_grenademooth == 0)
 		{
 			if(bot_aim(CVAR(g_balance_grenadelauncher_primary_speed), CVAR(g_balance_grenadelauncher_primary_speed_up), CVAR(g_balance_grenadelauncher_primary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK = TRUE;
+				self.w_button_primary = TRUE;
 				if(random() < 0.01) self.bot_secondary_grenademooth = 1;
 			}
 		}
@@ -174,26 +198,31 @@ float w_glauncher(float req)
 		{
 			if(bot_aim(CVAR(g_balance_grenadelauncher_secondary_speed), CVAR(g_balance_grenadelauncher_secondary_speed_up), CVAR(g_balance_grenadelauncher_secondary_lifetime), TRUE))
 			{
-				self.BUTTON_ATCK2 = TRUE;
+				self.w_button_secondary = TRUE;
 				if(random() < 0.02) self.bot_secondary_grenademooth = 0;
 			}
 		}
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK)
-		if (weapon_prepareattack(0, CVAR(g_balance_grenadelauncher_primary_refire)))
-		{
-			W_Grenade_Attack();
-			weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_grenadelauncher_primary_animtime), w_ready);
-		}
-		if (self.BUTTON_ATCK2)
-		if (CVAR(g_balance_grenadelauncher_secondary))
-		if (weapon_prepareattack(1, CVAR(g_balance_grenadelauncher_secondary_refire)))
-		{
-			W_Grenade_Attack2();
-			weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_grenadelauncher_secondary_animtime), w_ready);
-		}
+        if(W_Clip_TryWeaponAction()) {
+            if(self.w_button_primary)
+            if(weapon_prepareattack(0, CVAR(g_balance_grenadelauncher_primary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Grenade_Attack();
+                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_grenadelauncher_primary_animtime), w_ready);
+            }
+
+            if(self.w_button_secondary)
+            if(CVAR(g_balance_grenadelauncher_secondary))
+            if(weapon_prepareattack(1, CVAR(g_balance_grenadelauncher_secondary_refire)))
+            if(W_Clip_TryAttackOrReload()) {
+                W_Grenade_Attack2();
+                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_grenadelauncher_secondary_animtime), w_ready);
+            }
+
+            W_Clip_FinishWeaponAction();
+        }
 	}
 	else if (req == WR_PRECACHE)
 	{
@@ -211,5 +240,7 @@ float w_glauncher(float req)
 		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_primary_ammo);
 	else if (req == WR_CHECKAMMO2)
 		return self.ammo_rockets >= CVAR(g_balance_grenadelauncher_secondary_ammo);
+
+    W_Clip_WeaponRequestHook(req);
 	return TRUE;
 };

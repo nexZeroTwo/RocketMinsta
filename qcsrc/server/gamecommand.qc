@@ -1179,7 +1179,12 @@ void GameCommand(string command)
 	}
 
     if(argv(0) == "endround")
-    {
+    {        
+        if(roundstate != ROUNDSTATE_GAME) {
+            print("EndRound: no round in progress\n");
+            return;
+        }
+
         FOR_EACH_PLAYER(e)
             bigprint_spec(e, "Round Aborted", "", 5);
 
@@ -1259,7 +1264,7 @@ void GameCommand(string command)
         for(i = 0; i < t; ++i) {
             RandomSelection_Init();
             FOR_EACH_REALCLIENT(e) if(e.ispicked != time)
-                RandomSelection_Add(e, 0, string_null, 1, 1);
+                RandomSelection_Add(e, 0, NULL, 1, 1);
             if(RandomSelection_chosen_ent) {
                 RandomSelection_chosen_ent.ispicked = time;
                 bprint("\{1}", ColoredTeamName(Team_FromIndex(i)), " ^7captain: ^3", RandomSelection_chosen_ent.netname, "\n");
@@ -1269,6 +1274,11 @@ void GameCommand(string command)
     }
     
     if(argv(0) == "balanceteams") {
+        if(argc < 2) {
+            teamsort_method = CVAR(g_balance_teams_method);
+        } else {
+            teamsort_method = stof(argv(1));
+        }
         bprint("\x01^3* Teams will be automatically rebalanced after this round.\n");
         teamcount_balancenext = TRUE;
         return;
@@ -1322,7 +1332,10 @@ void GameCommand(string command)
 
     if(argv(0) == "dprmstats") {
         FOR_EACH_REALCLIENT(e)
-            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "\n");
+            print("#", ftos(num_for_edict(e)), " ^3", e.netname, "^7: ", strcat(
+                    if(e.client_dprmversion >= DPRM_MINVERSION) "^2" else "^1", ftos(e.client_dprmversion), "^7, ",
+                    if(e.client_utf8) "^2UTF8 on" else "^1UTF8 off", "\n"));
+
         return;
     }
 

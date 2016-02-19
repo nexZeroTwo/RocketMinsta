@@ -6,6 +6,27 @@ void Boobs_Clear();
 
 .entity headent;
 
+void SetClientName(entity cl, string newname, float fixencoding, float iannounce) {
+    if(fixencoding)
+        newname = fix_legacy_encoding(newname);
+
+    if(cl.netname == newname)
+        iannounce = FALSE;
+
+    // FIXME: better way to detect this needed
+    if(iannounce && cl.netname != "unconnected")
+        IRC_Announce_Name(cl, newname);
+
+    if(cl.netname_strzoned) {
+        strunzone(cl.netname_strzoned);
+        cl.netname_strzoned = NULL;
+    }
+
+    newname = strzone(newname);
+    cl.netname_strzoned = newname;
+    cl.netname = newname;
+}
+
 void SpawnHeadEnt(void) {
     if(self.headent || !CVAR(r_showbboxes))
         return;
@@ -294,14 +315,14 @@ entity Spawn_WeightedPoint_Team(entity firstspot, float lower, float upper, floa
 	for(spot = firstspot; spot; spot = spot.chain)
 	{
 		if(self.last_spawn_pt_1 != spot && self.last_spawn_pt_2 != spot && (teem < 0 || spot.team == teem))
-			RandomSelection_Add(spot, 0, string_null, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(spot, 0, NULL, pow(bound(lower, spot.SPAWNPOINT_SCORE, upper), exponent) * spot.cnt, spot.SPAWNPOINT_SCORE >= lower);
 		considerations += 1;
 	}
 	if(!considerations) // if we didn't like the options...
 		if(self.last_spawn_pt_1 == spot && spot.chain) // if we can, try to take 2nd opt.
-			RandomSelection_Add(firstspot.chain, 0, string_null, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(firstspot.chain, 0, NULL, pow(bound(lower, firstspot.chain.SPAWNPOINT_SCORE, upper), exponent) * firstspot.chain.cnt, firstspot.chain.SPAWNPOINT_SCORE >= lower);
 		else
-			RandomSelection_Add(firstspot, 0, string_null, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
+			RandomSelection_Add(firstspot, 0, NULL, pow(bound(lower, firstspot.SPAWNPOINT_SCORE, upper), exponent) * firstspot.cnt, firstspot.SPAWNPOINT_SCORE >= lower);
 
 	self.last_spawn_pt_2 = self.last_spawn_pt_1;
 	self.last_spawn_pt_1 = RandomSelection_chosen_ent;
@@ -779,7 +800,7 @@ void PutObserverInServer (void)
     if(!self.justconnected) {
         kh_Key_DropAll(self, TRUE);
         Freeze_Hook_PlayerQuits();
-        HG_DetonateAll(self);
+        HG_GenericProjectile_DetonateAll(self);
         JB_RemovePlayer();
         Portal_ClearAll(self);
         Boobs_Clear();
@@ -814,6 +835,7 @@ void PutObserverInServer (void)
             self.hg_type1 = self.hg_type2 = 0;
             self.hg_nadesused = 0;
             self.hg_shield = 0;
+            self.w_secondary = 0;
         }
     }
     
@@ -1160,7 +1182,7 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
     
-    self.touch = func_null;
+    self.touch = NULL;
 
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
@@ -1392,14 +1414,20 @@ void PutClientInServer (void)
             else
                 HG_PlayerJoin();
         }
-        
+
+        W_Clip_ResetAll(TRUE);
+        W_SetSecondary(self, self.w_secondary);
         Boobs_Attach();
+
         self.wasingame = TRUE;
         self.buffs = 0;
         self.hg_stealth = 0;
         self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         self.lastdamage = 0;
+        self.pryaxe_thrown = 0;
+
+        self.hg_sentry_capture_progress = 0;
 
         if(teams_matter && CVAR(g_player_dont_block_teammates))
             self.touch = PlayerTouch_NoTeamBlock;
@@ -1457,21 +1485,23 @@ float ClientInit_SendEntity(entity to, float sf)
 		WriteString(MSG_ENTITY, "");
 	WriteByte(MSG_ENTITY, CVAR(g_balance_armor_blockpercent) * 255.0);
 	WriteByte(MSG_ENTITY, sv_showspecs_extra);
-	WriteByte(MSG_ENTITY, sv_showfps);
+	WriteByte(MSG_ENTITY, sv_scoreboard_fps_column);
 	WriteByte(MSG_ENTITY, sv_oldfag);
     WriteByte(MSG_ENTITY, if(g_nadgets) (if(g_nadgets_oldhitboxes) 2 else 1) else 0);
     if(g_nadgets) {
-        WriteByte(MSG_ENTITY, (CVAR_STR(g_nadgets_type_selectable) != ""));
+        WriteByte(MSG_ENTITY, (HG_SelectableTypes(FALSE) != ""));
         WriteByte(MSG_ENTITY, g_nadgets_double);
     }
+    WriteInt24_t(MSG_ENTITY, g_weaponarena_secondary);
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);
     WriteByte(MSG_ENTITY, sv_damagestats);
     WriteShort(MSG_ENTITY, sv_nicehealth);
-    WriteByte(MSG_ENTITY, sv_showacc);
+    WriteByte(MSG_ENTITY, sv_scoreboard_acc_column);
     WriteShort(MSG_ENTITY, g_buffs_enabled);
     WriteByte(MSG_ENTITY, CVAR(g_balance_nex_secondary));
-    WriteByte(MSG_ENTITY, sv_shownoobstat);
+    WriteByte(MSG_ENTITY, sv_scoreboard_noob_column);
+    WriteByte(MSG_ENTITY, sv_scoreboard_alive_column);
 	return TRUE;
 }
 
@@ -1893,6 +1923,8 @@ void ClientConnect (void)
 		defer(5, ServerTopic);
 	
 	self.g_minstagib_stat = g_minstagib;
+
+    self.hidecountry = CVAR(sv_hidecountry);
 	IP2C_SetCountry(self);
 	
 	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && CVAR(g_rocketminsta)), "\n"));
@@ -1943,6 +1975,15 @@ void ClientConnect (void)
     }
 
     Radio_ClientConnect();
+
+    // FIXME: this is a horrible hack
+    spawn() {
+        owner: self,
+        nextthink: time + 1,
+        think: inline void(void) {
+            stuffcmd(self.owner, "setinfo \"name\" \"$_cl_name\"\n");
+        }
+    };
 }
 
 /*
@@ -1958,7 +1999,12 @@ void ReadyCount();
 void ClientDisconnect (void)
 {
 	WriteSpectatorInfo(self.enemy);
-	
+
+    if(self.netname_strzoned) {
+        strunzone(self.netname_strzoned);
+        self.netname_strzoned = NULL;
+    }
+
 	if not(self.flags & FL_CLIENT)
 	{
 		print("Warning: ClientDisconnect without ClientConnect\n");
@@ -1989,7 +2035,7 @@ void ClientDisconnect (void)
     
 	kh_Key_DropAll(self, TRUE);
     Freeze_Hook_PlayerQuits();
-    HG_DetonateAll(self);
+    HG_GenericProjectile_DetonateAll(self);
 	JB_RemovePlayer();
 	Portal_ClearAll(self);
 	Boobs_Clear();
@@ -2081,7 +2127,7 @@ void ClientDisconnect (void)
 void ChatBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.iscreature)
+	if (!self.owner.modelindex || self.owner.chatbubbleentity != self || !self.owner.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.chatbubbleentity = world;
@@ -2123,7 +2169,7 @@ void UpdateChatBubble()
 void TeamBubbleThink()
 {
 	self.nextthink = time;
-	if (!self.owner.modelindex || self.owner.teambubbleentity != self)
+	if (!self.owner.modelindex || self.owner.teambubbleentity != self || !self.owner.iscreature)
 	{
 		if(self.owner) // but why can that ever be world?
 			self.owner.teambubbleentity = world;
@@ -2659,6 +2705,7 @@ void SpectateCopy(entity spectatee) {
     self.hg_next1 = spectatee.hg_next1;
     self.hg_next2 = spectatee.hg_next2;
     self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
+    self.hg_sentry_capture_progress = spectatee.hg_sentry_capture_progress;
     self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
     self.buff_vamp_healthpool = spectatee.buff_vamp_healthpool;
 	self.sm_canattach = spectatee.sm_canattach;
@@ -2666,10 +2713,12 @@ void SpectateCopy(entity spectatee) {
     self.jb_unlock_progress = spectatee.jb_unlock_progress;
     self.jb_message = spectatee.jb_message;
     self.dom_captureprogress = spectatee.dom_captureprogress;
-    self.campingrifle_bulletlimit = spectatee.campingrifle_bulletlimit;
-    self.campingrifle_bulletcounter = spectatee.campingrifle_bulletcounter;
+    self.w_clip_limit_stat = spectatee.w_clip_limit_stat;
+    self.w_clip_loaded_stat = spectatee.w_clip_loaded_stat;
     self.zapper_heat = spectatee.zapper_heat;
     self.buffstat = spectatee.buffstat;
+    self.w_inring_cycle = spectatee.w_inring_cycle;
+    self.w_inring_fulltime = spectatee.w_inring_fulltime;
 	setorigin(self, spectatee.origin);
     // TODO: find out if this is actually needed
     // setsize(self, spectatee.mins, spectatee.maxs);
@@ -2940,6 +2989,9 @@ void LeaveSpectatorMode()
             if(HG_ShowMenu(FALSE))
                 return;
             
+            if(W_ShowMenu(FALSE))
+                return;
+
 			self.classname = "player";
 			if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force))
 				JoinBestTeam(self, FALSE, TRUE);
@@ -2962,6 +3014,7 @@ void LeaveSpectatorMode()
         
         if(!self.joinqueue)
         if(!HG_ShowMenu(FALSE))
+        if(!W_ShowMenu(FALSE))
             JoinQ_Push(self);
 	}
 }
@@ -3170,6 +3223,7 @@ void() nexball_setstatus;
 
 .float jumpholdtime;
 .float alivetime;
+.float frozentime;
 
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
@@ -3186,8 +3240,10 @@ void PlayerPreThink (void)
         isplayer = TRUE;
     else if(self.classname == "spectator")
         isspec = TRUE;
-    else if(self.classname == "observer")
+    else if(self.classname == "observer") {
         isobs = TRUE;
+        WarpZone_HandleObserver();
+    }
     
     if(self.jb_specteam && isplayer) {
         JB_JailSpec_CreateProxy();
@@ -3195,12 +3251,12 @@ void PlayerPreThink (void)
         isplayer = FALSE;
         isobs = TRUE;
     }
-    
+
     if(isplayer || self.jb_specteam)
     if(roundstate == ROUNDSTATE_GAME) {
         self.playtime += frametime;
         
-        if(sv_shownoobstat) {
+        if(sv_scoreboard_noob_column || sv_scoreboard_alive_column) {
             if(!PlayerIsDead(self)) {
                 self.alivetime += frametime;
                 if(self.BUTTON_JUMP)
@@ -3210,9 +3266,12 @@ void PlayerPreThink (void)
 
         if(time > self.playtimeupdate) {
             self.playtimeupdate = time + 30;
+
             PlayerScore_Set(self, SP_PLAYTIME, self.playtime);
-            if(sv_shownoobstat)
-                PlayerScore_Set(self, SP_NOOB, rint(100 * self.jumpholdtime / self.alivetime));
+            if(sv_scoreboard_noob_column)
+                PlayerScore_Set(self, SP_NOOB, rint(255 * self.jumpholdtime / self.alivetime));
+            if(sv_scoreboard_alive_column)
+                PlayerScore_Set(self, SP_ALIVE, rint(255 * self.alivetime / self.playtime));
         }
     }
 
@@ -3276,6 +3335,8 @@ void PlayerPreThink (void)
         if(self.joinqueue)
             JoinQ_Remove(self);
         
+        W_PlayerPreThinkHook();
+
         if(frametime) {
             if(CVAR(sv_noplayershadows) || Buffs_Present(self, BUFF_STEALTH))
                 self.effects |= EF_NOSHADOW;
@@ -3283,15 +3344,15 @@ void PlayerPreThink (void)
                 self.effects &~= EF_NOSHADOW;
         }
 
-        if(sv_showacc)
+        if(sv_scoreboard_acc_column)
         if(time > self.acctime) {
-            float hit = self.damage_hits - self.weapon;
-            float total = self.maxdamage_fired - self.weapon;
+            float hit = self.accstat_hits;
+            float total = self.accstat_shots;
             
             if(hit < 0 || total <= 0)
                 PlayerScore_Set(self, SP_ACCURACY, -1);
             else
-                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 100);
+                PlayerScore_Set(self, SP_ACCURACY, (hit / total) * 255);
             
             self.acctime = time + 5;
         }
@@ -3327,7 +3388,7 @@ void PlayerPreThink (void)
 			self.fixangle = TRUE;
 		}
         
-		HG_Frame();
+		HG_PlayerFrame();
 
 		if (self.deadflag != DEAD_NO)
 		{
@@ -3837,6 +3898,7 @@ void PlayerPostThink (void)
 	}
 
 	if(self.classname == "player") {
+        W_Clip_Stats_Update();
 		CheckRules_Player();
 		UpdateChatBubble();
 		UpdateTeamBubble();

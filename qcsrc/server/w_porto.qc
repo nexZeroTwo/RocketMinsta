@@ -191,7 +191,7 @@ void W_Porto_Attack (void)
 	gren.portal_id = time;
 	self.porto_current = gren;
 	gren.playerid = self.playerid;
-	fixedmakevectors(vectoangles(gren.velocity));
+	fixedmakevectors2(vectoangles(gren.velocity));
 	gren.right_vector = v_right;
 
 	gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
@@ -207,21 +207,22 @@ void spawnfunc_weapon_porto (void)
 float w_nexball_weapon(float req);
 float w_porto(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_porto_swapshotmodes));
 	vector v_angle_save;
 
 	if (g_nexball) { return w_nexball_weapon(req); }
 	if (req == WR_AIM)
 	{
-		self.BUTTON_ATCK = FALSE;
-		self.BUTTON_ATCK2 = FALSE;
+		self.w_button_primary = FALSE;
+		self.w_button_secondary = FALSE;
 		if(bot_aim(CVAR(g_balance_porto_primary_speed), 0, CVAR(g_balance_grenadelauncher_primary_lifetime), FALSE))
-			self.BUTTON_ATCK = TRUE;
+			self.w_button_primary = TRUE;
 	}
 	else if (req == WR_THINK)
 	{
 		if(self.porto_v_angle_held)
 		{
-			if(!self.BUTTON_ATCK2)
+			if(!self.w_button_secondary)
 			{
 				self.porto_v_angle_held = 0;
 
@@ -230,7 +231,7 @@ float w_porto(float req)
 		}
 		else
 		{
-			if(self.BUTTON_ATCK2)
+			if(self.w_button_secondary)
 			{
 				self.porto_v_angle = self.v_angle;
 				self.porto_v_angle_held = 1;
@@ -242,7 +243,7 @@ float w_porto(float req)
 		if(self.porto_v_angle_held)
 			makevectors(self.porto_v_angle); // override the previously set angles
 
-		if (self.BUTTON_ATCK)
+		if (self.w_button_primary)
 		if (!self.porto_current)
 		if (!self.porto_forbidden)
 		if (weapon_prepareattack(0, CVAR(g_balance_porto_primary_refire)))

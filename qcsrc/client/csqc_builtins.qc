@@ -42,8 +42,13 @@ entity (entity e)							nextent = #47;
 vector (vector v)							vectoangles = #51;
 vector (vector v, vector w)							vectoangles2 = #51;
 
+void(entity ent, entity ignore) tracetoss = #64;
+
 void (string var, string val)						cvar_set = #72;
 
+float(float property, ...) setproperty = #303
+vector (float property) getpropertyvec = #303;
+float (float property) getproperty = #303;
 
 float()									ReadByte = #360;
 float()									ReadChar = #361;
@@ -70,6 +75,7 @@ string (float fhandle)							fgets = #112;
 void (float fhandle, string s)						fputs = #113;
 float (string s)							strlen = #114;
 string (...)								strcat = #115;
+string operator+(string s1, string s2)             = #115;
 string (string s, float start, float length)				substring = #116;
 vector (string s)							stov = #117;
 string (string s)							strzone = #118;
@@ -81,6 +87,7 @@ void (entity e)								R_AddEntity = #302;
 float (float property, ...)						R_SetView = #303;
 void ()									R_RenderScene = #304;
 void (vector org, float radius, vector rgb)				R_AddDynamicLight = #305;
+void (vector org, float radius, vector lightcolours, float style, string cubemapname, float pflags) R_AddDynamicLightEx = #305;
 void ()									R_CalcRefDef = #306;
 
 vector (vector v)							cs_unproject = #310;
@@ -98,7 +105,7 @@ float	drawfill(vector position, vector size, vector rgb, float alpha, float flag
 void	drawsetcliparea(float x, float y, float width, float height) = #324;
 void	drawresetcliparea(void) = #325;
 float	drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) = #326;
-float	stringwidth(string text, float handleColors) = #327;
+float	stringwidth(string text, float handleColors, vector fontSize) = #327;
 float	drawsubpic(vector position, vector size, string pic, vector srcPosition, vector srcSize, vector rgb, float alpha, float flag) = #328;
 
 
@@ -147,6 +154,7 @@ entity (.string fld, string match)					findchain = #402;
 entity (.float fld, float match)					findchainflags = #450;
 entity (.entity fld, entity match)					findchainentity = #403;
 entity (.float fld, float match)					findchainfloat = #403;
+entity (.float fld, float match, .entity tofield)   findchainfloat_tofield = #403;
 entity (entity start, .float fld, float match)				findflags = #449;
 
 float (string pattern, float caseinsensitive, float quiet)		search_begin = #444;

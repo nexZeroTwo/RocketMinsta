@@ -41,7 +41,7 @@ float CA_AliveCheck(entity plr) {
 }
 
 void CA_EndRound(float tout) {
-    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, func_null, CA_BeginRound);
+    G_EndRound(tout, CVAR(g_clanarena_warmup), CA_RecountPlayers, NULL, CA_BeginRound);
     CA_RecountPlayers();
 }
 
@@ -115,6 +115,17 @@ void CA_CheckWinner(void) {
     CA_EndRound(ENDROUND_TIMEOUT_NORMAL);
 }
 
+float CA_Assert(float f, string errmsg) {
+    if(f)
+        return FALSE;
+
+    backtrace("assertion failed");
+    bprint("^1CA BUG: ^3", errmsg, "\n");
+
+    CA_RecountPlayers();
+    return TRUE;
+}
+
 void CA_PlayerDies(entity attacker) {
     if(!g_clanarena)
         return;
@@ -123,6 +134,9 @@ void CA_PlayerDies(entity attacker) {
         return;
     
     if(attacker.classname == "player") {
+        if(CA_Assert(attacker.scorekeeper != world, "attacker has no scorekeeper"))
+            return;
+
         if(self == attacker) {
         } else if(self.team == attacker.team) {
             PlayerScore_Add(attacker, SP_SCORE, -CVAR(g_clanarena_penalty_teamkill));
@@ -130,7 +144,10 @@ void CA_PlayerDies(entity attacker) {
             PlayerScore_Add(attacker, SP_SCORE,  CVAR(g_clanarena_score_kill));
         }
     }
-    
+
+    if(CA_Assert(self.scorekeeper != world, "self has no scorekeeper"))
+        return;
+
     PlayerScore_Add(self, SP_SCORE, -CVAR(g_clanarena_penalty_death));
     PlayerScore_SetFlags(self, SPFLAG_FROZEN);
     

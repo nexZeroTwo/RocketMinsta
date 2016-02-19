@@ -104,6 +104,7 @@ void spawnfunc_weapon_hook (void)
 
 float w_hook(float req)
 {
+    W_SetButtonFields(self, CVAR(g_balance_grapplehook_swapshotmodes));
 	float hooked_time_max, hooked_fuel;
 		
 	if (req == WR_AIM)
@@ -112,7 +113,7 @@ float w_hook(float req)
 	}
 	else if (req == WR_THINK)
 	{
-		if (self.BUTTON_ATCK || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
+		if (self.w_button_primary || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
 		{
 			if(!self.hook)
 			if not(self.hook_state & HOOK_WAITING_FOR_RELEASE)
@@ -127,7 +128,7 @@ float w_hook(float req)
 			}
 		}
 
-		if (self.BUTTON_ATCK2)
+		if (self.w_button_secondary)
 		{
 			if (weapon_prepareattack(1, CVAR(g_balance_hook_secondary_refire)))
 			{
@@ -187,7 +188,7 @@ float w_hook(float req)
 		if (self.BUTTON_CROUCH)
 		{
 			self.hook_state &~= HOOK_PULLING;
-			if (self.BUTTON_ATCK || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
+			if (self.w_button_primary || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
 				self.hook_state &~= HOOK_RELEASING;
 			else
 				self.hook_state |= HOOK_RELEASING;
@@ -197,7 +198,7 @@ float w_hook(float req)
 			self.hook_state |= HOOK_PULLING;
 			self.hook_state &~= HOOK_RELEASING;
 
-			if (self.BUTTON_ATCK || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
+			if (self.w_button_primary || (!(self.items & IT_JETPACK) && self.BUTTON_HOOK))
 			{
 				// already fired
 				if(self.hook)
