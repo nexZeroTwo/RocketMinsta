@@ -602,6 +602,28 @@ const HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISENVIRONMENTAL(t)      ((t) >= DEATH_ENV_START && (t) <= DEATH_ENV_END)
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
 
+
+///////////////////////////
+// movetypes (must much the engine defs)
+
+const   MOVETYPE_NONE               = 0;    /// never moves
+const   MOVETYPE_ANGLENOCLIP        = 1;
+const   MOVETYPE_ANGLECLIP          = 2;
+const   MOVETYPE_WALK               = 3;    /// gravity
+const   MOVETYPE_STEP               = 4;    /// gravity, special edge handling
+const   MOVETYPE_FLY                = 5;
+const   MOVETYPE_TOSS               = 6;    /// gravity
+const   MOVETYPE_PUSH               = 7;    /// no clip to world, push and crush
+const   MOVETYPE_NOCLIP             = 8;
+const   MOVETYPE_FLYMISSILE         = 9;    /// extra size to monsters (?)
+const   MOVETYPE_BOUNCE             = 10;
+const   MOVETYPE_BOUNCEMISSILE      = 11;   /// bounce w/o gravity
+const   MOVETYPE_FOLLOW             = 12;   /// track movement of aiment
+const   MOVETYPE_FAKEPUSH           = 13;   /// tenebrae's push that doesn't push
+const   MOVETYPE_PHYSICS            = 32;   /// indicates this object is physics controlled
+const   MOVETYPE_FLY_WORLDONLY      = 33;   /// like MOVETYPE_FLY, but uses MOVE_WORLDONLY for all its traces; objects of this movetype better be SOLID_NOT or SOLID_TRIGGER please, or else...
+
+
 ///////////////////////////
 // misc constants
 
