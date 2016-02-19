@@ -763,11 +763,6 @@ void setmodel_lod(entity e, string modelname)
 	UpdatePlayerSounds();
 }
 
-void ObserverTouch(void) {
-    if(trace_ent)
-        print("touch ", etos(trace_ent), " ", trace_ent.classname, "\n");
-}
-
 /*
 =============
 PutObserverInServer
@@ -902,7 +897,6 @@ void PutObserverInServer (void)
 	self.punchvector = '0 0 0';
 	self.oldvelocity = self.velocity;
 	self.fire_endtime = -1;
-    self.touch = ObserverTouch;
 
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
@@ -945,8 +939,10 @@ void PutObserverInServer (void)
         MakeObserverGhost();
 #endif
 
-    setsize(self, PL_MIN, PL_MAX);
-    //setsize(self, '0 0 0', '0 0 0');
+    if(CVAR(sv_clipped_observers))
+        setsize(self, PL_MIN, PL_MAX);
+    else
+        setsize(self, '0 0 0', '0 0 0');
 }
 
 float RestrictSkin(float s)
@@ -3556,7 +3552,7 @@ void PlayerPreThink (void)
 
         W_Zapper_Cooloff();
 	} else {
-        if(self.solid && self.solid != SOLID_TRIGGER) {
+        if(self.solid) {
             bprint("BUG: spectator/observer was solid\n");
             localcmd("prvm_edict server ", ftos(num_for_edict(self)), "\n");
             self.solid = SOLID_NOT;
