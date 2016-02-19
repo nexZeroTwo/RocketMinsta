@@ -194,15 +194,6 @@ float weapon_action(float wpn, float wrequest)
 	return (get_weaponinfo(wpn)).weapon_func(wrequest);
 };
 
-string weapon_modelname(string name) {
-	string model_replacement;
-	model_replacement = cvar_string(strcat("sv_model_", name));
-	if (model_replacement == "") {
-		model_replacement = name;
-	}
-	return model_replacement;
-};
-
 void weapon_precache(float wpn) {
 	string s = get_weaponinfo(wpn).mdl, f;
     var cb = inline void(string s) { precache_model(s); };

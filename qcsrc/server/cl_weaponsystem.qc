@@ -548,12 +548,13 @@ void CL_Weaponentity_Think()
             self.shotorg_visual = shotorg_adjust(v0, FALSE, TRUE);
 			self.view_ofs = self.shotorg_visual - v0;
 		}
+
 		self.owner.stat_shotorg = compressShotOrigin(self.movedir);
 		self.movedir = decompressShotOrigin(self.owner.stat_shotorg); // make them match perfectly
 
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount
 
-		setorigin(self, self.view_ofs);
+		setorigin(self, self.view_ofs + stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset")));
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;

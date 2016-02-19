@@ -223,7 +223,6 @@ void setanim(entity e, vector anim, float looping, float override, float restart
 .float switchweapon;
 .float autoswitch;
 float weapon_action(float wpn, float wrequest);
-string weapon_modelname(string name);
 void weapon_precache(float wpn);
 float client_hasweapon(entity cl, float wpn, float andammo, float complain);
 void w_clear();
