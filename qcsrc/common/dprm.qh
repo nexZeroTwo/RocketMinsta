@@ -2,7 +2,7 @@
 #define USE_DPRM
 #define DPRM_WEBSITE_URL "http://rocketminsta.net/dprm"
 #define DPRM_MINVERSION 1
-#define DPRM_MINRECOMMENDEDVERSION 1
+#define DPRM_MINRECOMMENDEDVERSION 2
 
 float dprm_version;
 
