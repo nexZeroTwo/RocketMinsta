@@ -847,7 +847,7 @@ void PutObserverInServer (void)
 	self.health = -666;
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
-	self.movetype = MOVETYPE_NOCLIP;
+	self.movetype = if(CVAR(sv_clipped_observers)) MOVETYPE_FLY else MOVETYPE_NOCLIP;
 	self.flags = FL_CLIENT | FL_NOTARGET;
 	self.armorvalue = 666;
 	self.effects = 0;
@@ -879,7 +879,6 @@ void PutObserverInServer (void)
 
 	self.view_ofs = PL_VIEW_OFS;
 	setorigin (self, spot.origin);
-	setsize (self, '0 0 0', '0 0 0');
 	self.prevorigin = self.origin;
 	self.items = 0;
 	self.weapons = 0;
@@ -939,6 +938,11 @@ void PutObserverInServer (void)
     if(CVAR(sv_ghost_observers))
         MakeObserverGhost();
 #endif
+
+    if(CVAR(sv_clipped_observers))
+        setsize(self, PL_MIN, PL_MAX);
+    else
+        setsize(self, '0 0 0', '0 0 0');
 }
 
 float RestrictSkin(float s)
@@ -3795,6 +3799,11 @@ Called every frame for each client after the physics are run
 void PlayerPostThink (void)
 {
     self.owner = world;
+
+    for(var e; (e = findentity(e, ownerhack_curowner, self));) {
+        e.owner = e.ownerhack_oldowner;
+        e.ownerhack_curowner = world;
+    }
 
 	// Savage: Check for nameless players
 	if (strlen(self.netname) < 1) {

@@ -1641,6 +1641,7 @@ float autocvar_sv_chatdamage_team;
 float autocvar_sv_cheats;
 float autocvar_sv_clforceplayermodels;
 float autocvar_sv_clones;
+float autocvar_sv_clipped_observers;
 float autocvar_sv_cullentities_nevercullbmodels;
 float autocvar_sv_cullentities_pvs;
 float autocvar_sv_cullentities_trace;

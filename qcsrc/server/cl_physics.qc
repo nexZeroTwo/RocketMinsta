@@ -521,6 +521,28 @@ vector PlayerTouchWall(float dist)
     return normal;
 }
 
+.entity ownerhack_oldowner;
+.entity ownerhack_curowner;
+
+void SV_ObserverPhysics(void) {
+    tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * frametime, MOVE_NOMONSTERS, self);
+
+    #define IS_BRUSH_MODEL (trace_ent && str2chr(trace_ent.model, 0) == '*')
+
+    if(IS_BRUSH_MODEL) {
+        var dst = trace_endpos - self.origin;
+
+        if(vlen(dst)) {
+            do {
+                trace_ent.ownerhack_curowner = self;
+                trace_ent.ownerhack_oldowner = trace_ent.owner;
+                trace_ent.owner = self;
+                tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * frametime, MOVE_NOMONSTERS, self);
+            } while(IS_BRUSH_MODEL);
+        }
+    }
+}
+
 void SV_PlayerPhysics()
 {
 	vector wishvel, wishdir, v;
@@ -530,7 +552,7 @@ void SV_PlayerPhysics()
 	float not_allowed_to_move;
     float isplayer, isbait;
 	//string c;
-    
+
     isplayer = (self.classname == "player");
 
     if(!self.is_away) {
@@ -863,6 +885,7 @@ void SV_PlayerPhysics()
 
 	if(self.flags & FL_ONGROUND)
 	if(self.wasFlying)
+    if(self.iscreature)
 	{
 		self.wasFlying = 0;
 
@@ -1238,4 +1261,7 @@ void SV_PlayerPhysics()
 
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
+
+    if(CVAR(sv_clipped_observers) && self.classname == "observer")
+        SV_ObserverPhysics();
 };
