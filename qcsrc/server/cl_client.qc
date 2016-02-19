@@ -3804,6 +3804,11 @@ void PlayerPostThink (void)
 {
     self.owner = world;
 
+    for(var e; (e = findentity(e, ownerhack_curowner, self));) {
+        e.owner = e.ownerhack_oldowner;
+        e.ownerhack_curowner = world;
+    }
+
 	// Savage: Check for nameless players
 	if (strlen(self.netname) < 1) {
 		self.netname = "Player";

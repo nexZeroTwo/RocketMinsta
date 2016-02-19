@@ -521,24 +521,24 @@ vector PlayerTouchWall(float dist)
     return normal;
 }
 
+.entity ownerhack_oldowner;
+.entity ownerhack_curowner;
+
 void SV_ObserverPhysics(void) {
     tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * frametime, MOVE_NOMONSTERS, self);
 
-    if(trace_ent) {
+    #define IS_BRUSH_MODEL (trace_ent && str2chr(trace_ent.model, 0) == '*')
+
+    if(IS_BRUSH_MODEL) {
         var dst = trace_endpos - self.origin;
 
         if(vlen(dst)) {
-            var skipent = trace_ent;
-            print(ftos(frametime), " -- hit ent ", vtos(dst), " ", trace_ent.classname, "\n");
-
-            //var o = skipent.solid;
-            //skipent.solid = SOLID_NOT;
-            var bs = 1;
-
-            tracebox(self.origin, bs * self.mins, bs * self.maxs, self.origin + normalize(dst) * MAX_SHOT_DISTANCE, MOVE_WORLDONLY, self);
-            //skipent.solid = o;
-            tracebox(trace_endpos, bs * self.mins, bs * self.maxs, self.origin, MOVE_NOMONSTERS, self);
-            setorigin(self, trace_endpos);
+            do {
+                trace_ent.ownerhack_curowner = self;
+                trace_ent.ownerhack_oldowner = trace_ent.owner;
+                trace_ent.owner = self;
+                tracebox(self.origin, self.mins, self.maxs, self.origin + self.velocity * frametime, MOVE_NOMONSTERS, self);
+            } while(IS_BRUSH_MODEL);
         }
     }
 }
