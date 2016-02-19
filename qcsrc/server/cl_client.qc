@@ -852,7 +852,7 @@ void PutObserverInServer (void)
 	self.health = -666;
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
-	self.movetype = MOVETYPE_FLY;
+	self.movetype = if(CVAR(sv_clipped_observers)) MOVETYPE_FLY else MOVETYPE_NOCLIP;
 	self.flags = FL_CLIENT | FL_NOTARGET;
 	self.armorvalue = 666;
 	self.effects = 0;

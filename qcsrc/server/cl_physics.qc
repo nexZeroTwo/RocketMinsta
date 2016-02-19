@@ -1262,6 +1262,6 @@ void SV_PlayerPhysics()
 	self.lastflags = self.flags;
 	self.lastclassname = self.classname;
 
-    if(self.classname == "observer")
+    if(CVAR(sv_clipped_observers) && self.classname == "observer")
         SV_ObserverPhysics();
 };
