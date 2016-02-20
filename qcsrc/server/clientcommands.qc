@@ -1203,6 +1203,9 @@ void SV_ParseClientCommand(string s) {
 :wp_usage
         sprint(self, "^1Usage: waypoint (me|team|clear) (origin|crosshair) text [color] [lifetime]\n");
         return;
+    } else if(cmd == "spyteam") {
+        PlayerSpectatorToggle();
+        return;
 	} else {
 		//if(ctf_clientcommand())
 		//	return;

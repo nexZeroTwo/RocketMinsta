@@ -4,6 +4,7 @@ void Boobs_Clear();
 void PlayerSpectatorStart(void);
 void PlayerSpectatorStop(void);
 void PlayerSpectatorThink(void);
+void PlayerSpectatorToggle(void);
 
 float MaySpectate(entity);
 
@@ -3039,6 +3040,16 @@ void PlayerSpectatorStart(void) {
     self.pspec_flags &~= FL_JUMPRELEASED;
     self.pspec_oldvangle = self.v_angle;
     SpectateNext();
+}
+
+void PlayerSpectatorToggle(void) {
+    if(!teams_matter)
+        return;
+
+    if(self.clientcamera == self)
+        PlayerSpectatorStart();
+    else
+        PlayerSpectatorStop();
 }
 
 void PlayerSpectatorThink(void) {
