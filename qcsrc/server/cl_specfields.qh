@@ -1,11 +1,13 @@
 
+#define SPECFIELD(fld) SPECFIELD2(fld, fld)
+
 #define SPECFIELDS \
     SPECFIELD(ammo_cells) \
     SPECFIELD(ammo_fuel) \
     SPECFIELD(ammo_nails) \
     SPECFIELD(ammo_rockets) \
     SPECFIELD(ammo_shells) \
-    SPECFIELD(angles) \
+    SPECFIELD2(angles, v_angle) \
     SPECFIELD(armortype) \
     SPECFIELD(armorvalue) \
     SPECFIELD(buff_endur_dmgpool) \

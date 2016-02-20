@@ -2626,7 +2626,7 @@ void EnterSpectatorModeDelayed(float dlay) {
 }
 
 void SpectateCopy(entity spectatee) {
-    #define SPECFIELD(fld) self.fld = spectatee.fld;
+    #define SPECFIELD2(flddst,fldsrc) self.flddst = spectatee.fldsrc;
     SPECFIELDS
     #undef SPECFIELD
 
