@@ -5777,16 +5777,18 @@ void Sbar_Draw(void)
 			vote_highlighted = 0;
 		}
 	}
-    
-    if(getstati(STAT_QUEUE) && !intermission) {
-        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
+
+    var queue = playerslots[player_localentnum - 1].(scores[SP_QUEUE]);
+
+    if(queue && !intermission) {
+        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, queue), " ^1in the queue");
         o = Sbar_DrawNoteLine(o, s);
         s = "^1You will automatically join the game when there's a free slot";
         o = Sbar_DrawNoteLine(o, s);
         s = strcat("^1Press ^3", getcommandkey("spectate", "spec"), " ^1to leave the queue");
         o = Sbar_DrawNoteLine(o, s);
     }
-    
+
 	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)
