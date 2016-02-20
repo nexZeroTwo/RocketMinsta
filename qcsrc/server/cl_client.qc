@@ -2954,7 +2954,7 @@ void PlayerSpectatorToggle(void) {
 
     if(self.clientcamera == self)
         PlayerSpectatorStart();
-    else
+    else if(self.deadflag != DEAD_PERMANENTLY)
         PlayerSpectatorStop();
 }
 
@@ -2962,7 +2962,7 @@ void PlayerSpectatorThink(void) {
     SpectatorImpulse();
 
     if(self.pspec_flags & FL_JUMPRELEASED) {
-        if((self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK) && self.deadflag == DEAD_NO) {
+        if((self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK) && self.deadflag != DEAD_PERMANENTLY) {
             self.pspec_flags &~= FL_JUMPRELEASED;
             PlayerSpectatorStop();
         } else if(self.BUTTON_ATCK) {
