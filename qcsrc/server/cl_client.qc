@@ -2626,17 +2626,9 @@ void EnterSpectatorModeDelayed(float dlay) {
 }
 
 void SpectateCopy(entity spectatee) {
-    #define SPECFIELD2(flddst,fldsrc) self.flddst = spectatee.fldsrc;
-    SPECFIELDS
-    #undef SPECFIELD
-
     self.impulse = 0;
-    self.fixangle = TRUE;
     self.effects = self.effects & EFMASK_CHEAP;
-
-	setorigin(self, spectatee.origin);
-    // TODO: find out if this is actually needed
-    // setsize(self, spectatee.mins, spectatee.maxs);
+    setorigin(self, spectatee.origin);
 	SetZoomState(spectatee.zoomstate);
 }
 
@@ -3137,13 +3129,19 @@ void() nexball_setstatus;
 .float alivetime;
 .float frozentime;
 
+.entity clientdataent;
+
 float domination_PlayerPreThink();
 void PlayerPreThink (void)
 {
+    if(clienttype(self.clientcamera) == CLIENTTYPE_NOTACLIENT)
+        self.clientcamera = self;
+    self.clientdataent = self.clientcamera;
+
 	self.stat_game_starttime = game_starttime;
 	self.stat_allow_oldnexbeam = g_allow_oldnexbeam;
 	self.stat_leadlimit = leadlimit;
-    
+
     float isplayer, isspec, isobs;
 
     self.roundstate_stat = roundstate;

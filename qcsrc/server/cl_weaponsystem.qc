@@ -346,6 +346,9 @@ void LaserTarget_Think()
 
 float CL_Weaponentity_CustomizeEntityForClient()
 {
+    if(self.owner != self.owner.clientcamera)
+        return FALSE;
+
 	self.viewmodelforclient = self.owner;
     if(other.clientcamera == self.owner)
 		self.viewmodelforclient = other;

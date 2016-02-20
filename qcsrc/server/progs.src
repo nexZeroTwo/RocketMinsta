@@ -71,7 +71,6 @@ w_zapper.qh
 g_world.qh
 napalm.qh
 
-cl_specfields.qh
 cl_weapons_reload.qh
 
 ../common/util.qc
