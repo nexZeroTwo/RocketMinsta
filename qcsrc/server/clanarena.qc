@@ -156,8 +156,11 @@ void CA_PlayerDies(entity attacker) {
 }
 
 void CA_PlayerLeaves(void) {
-    if(g_clanarena)
+    if(g_clanarena) {
+        if(self.scorekeeper)
+            PlayerScore_UnsetFlags(self, SPFLAG_FROZEN);
         CA_RecountPlayers();
+    }
 }
 
 void CA_PlayerJoins(void) {
