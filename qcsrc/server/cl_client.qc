@@ -1,11 +1,6 @@
 
 void Boobs_Clear();
 
-void PlayerSpectatorStart(void);
-void PlayerSpectatorStop(void);
-void PlayerSpectatorThink(void);
-void PlayerSpectatorToggle(void);
-
 float MaySpectate(entity);
 
 // TODO: move this one to extensions.qh (DP_RM_CLIENTDATAENT)
@@ -2896,9 +2891,6 @@ void LeaveSpectatorMode()
 		}
 	}
 	else {
-		//player may not join because of g_maxplayers is set
-		//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
-        
         if(!self.joinqueue)
         if(!HG_ShowMenu(FALSE))
         if(!W_ShowMenu(FALSE))
@@ -3013,16 +3005,13 @@ void SpectatorImpulse(void) {
     self.impulse = 0;
 }
 
-.float pspec_flags;
-.float pspec_entertime;
-.vector pspec_oldvangle;
-
 void PlayerSpectatorStop(void) {
     if(!teams_matter || self.clientcamera == self)
         return;
 
     self.enemy = world;
     self.clientcamera = self.clientdataent = self;
+    self.pspec_leavetime = time;
 
     defer(0, inline void(void) {
         self.v_angle = self.pspec_oldvangle;

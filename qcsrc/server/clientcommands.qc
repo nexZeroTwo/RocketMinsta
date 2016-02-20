@@ -501,9 +501,6 @@ void SV_ParseClientCommand(string s) {
 					campaign_bots_may_start = 1;
 			}
 			else {
-				//player may not join because of g_maxplayers is set
-				//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
-                
                 if(!self.joinqueue)
                 if(!HG_ShowMenu(FALSE))
                 if(!W_ShowMenu(FALSE))

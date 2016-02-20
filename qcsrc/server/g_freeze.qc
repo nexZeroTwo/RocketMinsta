@@ -490,6 +490,10 @@ void Freeze_Hook_PlayerPreThink(void) {
 
     if(!bait) {
         Freeze_DangerShortcut();
+
+        if(self.BUTTON_HOOK && self.clientcamera == self && time - self.pspec_leavetime > 0.5)
+            PlayerSpectatorStart();
+
         self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
     }
     

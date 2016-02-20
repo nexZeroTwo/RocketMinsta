@@ -833,3 +833,13 @@ var .float w_button_secondary;
 
 .float w_inring_cycle;
 .float w_inring_fulltime;
+
+.float pspec_flags;
+.float pspec_entertime;
+.float pspec_leavetime;
+.vector pspec_oldvangle;
+
+void PlayerSpectatorStart(void);
+void PlayerSpectatorStop(void);
+void PlayerSpectatorThink(void);
+void PlayerSpectatorToggle(void);

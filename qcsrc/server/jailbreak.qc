@@ -734,7 +734,7 @@ void JB_PlayerPreThink() {
         return;
     }
     
-    if(self.BUTTON_HOOK && !self.BUTTON_JUMP && self.jb_isprisoned && self.clientcamera == self && time - self.pspec_entertime > 1)
+    if(self.BUTTON_HOOK && !self.BUTTON_JUMP && self.jb_isprisoned && self.clientcamera == self && time - self.pspec_leavetime > 0.5)
         if(JB_AlivePlayersOnTeam(self.team))
             if(!JB_JailIsOpen(JB_GetEnemyTeamOf(self.team)))
                 PlayerSpectatorStart();
