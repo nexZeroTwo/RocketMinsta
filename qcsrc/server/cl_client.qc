@@ -2647,6 +2647,9 @@ float MaySpectate(entity plr) {
 	if(plr.classname != "player")
 		return FALSE;
 
+    if(plr.deadflag == DEAD_PERMANENTLY)
+        return FALSE;
+
     if(self.classname == "spectator" || self.classname == "observer")
         return TRUE;
 
@@ -2684,35 +2687,33 @@ entity Spectate_Yield(entity p, float dir) {
 float SpectatePlayer(entity plr) {
     entity oldenemy = self.enemy;
 
+    if(!MaySpectate(plr))
+        return FALSE;
+
     UnmarkAway(self);
 
-    if(plr)
-        self.enemy = plr;
+    self.enemy = plr;
 
-	if(self.enemy.classname == "player") {
-        if(clienttype(self) == CLIENTTYPE_REAL)
-            self.clientcamera = self.clientdataent = self.enemy;
+    if(clienttype(self) == CLIENTTYPE_REAL)
+        self.clientcamera = self.clientdataent = self.enemy;
 
-		if(g_jailbreak)
-		if(jb_roundover)
-			JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
+    if(g_jailbreak)
+    if(jb_roundover)
+        JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
 
-        if(self.classname != "player")
-            self.movetype = MOVETYPE_NONE;
+    if(self.classname != "player")
+        self.movetype = MOVETYPE_NONE;
 
-		if(!SpectateUpdate() && self.classname == "spectator")
-			PutObserverInServer();
+    if(!SpectateUpdate() && self.classname == "spectator")
+        PutObserverInServer();
 
-        DamageTracker_Overwrite(self.enemy.dtrack_total, self, DTFLAG_DONE  | DTFLAG_SPEC);
-        DamageTracker_Overwrite(self.enemy.dtrack_taken, self, DTFLAG_TAKEN | DTFLAG_SPEC);
+    DamageTracker_Overwrite(self.enemy.dtrack_total, self, DTFLAG_DONE  | DTFLAG_SPEC);
+    DamageTracker_Overwrite(self.enemy.dtrack_taken, self, DTFLAG_TAKEN | DTFLAG_SPEC);
 
-        if(self.enemy.zapper_beam)
-            self.enemy.zapper_beam.SendFlags |= 8; // send shot origin (I know this is not really efficient)
+    if(self.enemy.zapper_beam)
+        self.enemy.zapper_beam.SendFlags |= 8; // send shot origin (I know this is not really efficient)
 
-		return TRUE;
-	}
-
-    return FALSE;
+    return TRUE;
 }
 
 float SpectateNext(void) {
@@ -3297,8 +3298,8 @@ void PlayerPreThink (void)
 						self.death_time = time + 1; // only retry once a second
 						respawn();
 					}
-				}
-				ShowRespawnCountdown();
+				} else if(self.deadflag != DEAD_PERMANENTLY)
+				    ShowRespawnCountdown();
 			}
 			return;
 		}

@@ -170,6 +170,7 @@ float CA_AttemptRespawn(void) {
         return FALSE;
     
     if(roundstate == ROUNDSTATE_GAME) {
+        self.deadflag = DEAD_PERMANENTLY;
         if(self.clientcamera == self)
             PlayerSpectatorStart();
         return TRUE;
