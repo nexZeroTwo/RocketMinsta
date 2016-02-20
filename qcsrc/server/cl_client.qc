@@ -2924,7 +2924,7 @@ void SpectatorImpulse(void) {
 }
 
 void PlayerSpectatorStop(void) {
-    if(!teams_matter || self.clientcamera == self)
+    if(!teams_matter || self.clientcamera == self || self.classname != "player")
         return;
 
     self.enemy = world;
@@ -2939,7 +2939,7 @@ void PlayerSpectatorStop(void) {
 }
 
 void PlayerSpectatorStart(void) {
-    if(!teams_matter || self.clientcamera != self)
+    if(!teams_matter || self.clientcamera != self || self.classname != "player")
         return;
 
     self.pspec_entertime = time;
