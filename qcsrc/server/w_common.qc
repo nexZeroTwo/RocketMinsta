@@ -109,9 +109,8 @@ void FireRailgunBullet_trace_callback(vector from, vector end, vector to) {
     // Find all non-hit players the beam passed close by
     if(FireRailgunBullet_trace_deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(FireRailgunBullet_trace_deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
-        if(msg_entity != self)
-        if not(msg_entity.tracerail_hit)
-        if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
+        if(msg_entity.clientcamera != self)
+        if(!msg_entity.tracerail_hit) {
             // nearest point on the beam
             beampos = from + dir * bound(0, (msg_entity.origin - from) * dir, length);
 

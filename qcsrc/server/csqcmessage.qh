@@ -1,5 +1,5 @@
 
-#define CSQCMESSAGE_SPECTATABLE(e,s) { FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == e || (msg_entity.classname == STR_SPECTATOR && msg_entity.enemy == e)) s }
+#define CSQCMESSAGE_SPECTATABLE(e,s) { FOR_EACH_REALCLIENT(msg_entity) if(msg_entity.clientcamera == e) s }
 
 void CSQCMessage_Obituary(entity targ, entity attacker, float deathtype, string custmsg, float aspree, float tspree, float aspreeshort);
 void CSQCMessage_Praise(entity plr, float praiseflags);

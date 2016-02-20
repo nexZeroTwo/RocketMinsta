@@ -18,7 +18,7 @@ void te_heal(entity e) {
     entity c;
     vector o = e.origin + e.view_ofs;
     
-    FOR_EACH_REALCLIENT(c) if(c != e) if(!(c.classname == "spectator" && c.enemy == e)) {
+    FOR_EACH_REALCLIENT(c) if(c.clientcamera != e) {
         if(c.iscreature)
         if(e.hg_stealth || Client_CalculateAlpha(e, c) < 0.15)
         if(IsDifferentTeam(c, e))

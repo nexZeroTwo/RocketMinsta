@@ -42,10 +42,8 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     if(self.sounds < 0)
         sf |= 16;
 
-    if(to.zapper_shotorgsentfor != self) {
-        if(to == self.owner || (to.enemy == self.owner && to.classname == "spectator")) {
-            sf |= 8;
-        }
+    if(to.zapper_shotorgsentfor != self && to.clientcamera == self.owner) {
+        sf |= 8;
     }
 
     float o = num_for_edict(self.owner);
@@ -561,9 +559,8 @@ void W_Zapper_Attack3(void) {
     // needs to be done AFTER W_AttachToShotorg
     e.customizeentityforclient = inline float(void) {
         self.viewmodelforclient = self.owner;
-        if(other.classname == "spectator")
-            if(other.enemy == self.owner)
-                self.viewmodelforclient = other;
+        if(other.clientcamera == self.owner)
+            self.viewmodelforclient = other;
         return self.alpha > 0;
     };
 

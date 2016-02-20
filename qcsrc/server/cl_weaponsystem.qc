@@ -347,9 +347,8 @@ void LaserTarget_Think()
 float CL_Weaponentity_CustomizeEntityForClient()
 {
 	self.viewmodelforclient = self.owner;
-	if(other.classname == "spectator")
-		if(other.enemy == self.owner)
-			self.viewmodelforclient = other;
+    if(other.clientcamera == self.owner)
+		self.viewmodelforclient = other;
 
     self.alpha = Client_CalculateAlpha(self.owner, world);
 	return (self.alpha > 0);

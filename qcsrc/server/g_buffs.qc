@@ -956,10 +956,7 @@ float Buffs_MEODP_Point_VisibleForPlayer(entity p, entity plr) {
 }
 
 float Buffs_MEODP_Point_Customize(void) {
-    if(other.classname == "spectator")
-        other = other.enemy;
-    
-    return Buffs_MEODP_Point_VisibleForPlayer(self, other);
+    return Buffs_MEODP_Point_VisibleForPlayer(self, other.clientcamera);
 }
 
 void Buffs_MEODP_TriggerDeath(entity targ, entity attacker, entity inflictor) {

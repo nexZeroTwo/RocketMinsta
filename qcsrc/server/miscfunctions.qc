@@ -2121,7 +2121,7 @@ void precache()
 }
 
 // sorry, but using \ in macros breaks line numbers
-#define WRITESPECTATABLE_MSG_ONE_VARNAME(varname,statement) entity varname; varname = msg_entity; FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == varname || (msg_entity.classname == STR_SPECTATOR && msg_entity.enemy == varname)) statement msg_entity = varname
+#define WRITESPECTATABLE_MSG_ONE_VARNAME(varname,statement) entity varname; varname = msg_entity; FOR_EACH_REALCLIENT(msg_entity) if(msg_entity.clientcamera == varname) statement msg_entity = varname
 #define WRITESPECTATABLE_MSG_ONE(statement) WRITESPECTATABLE_MSG_ONE_VARNAME(oldmsg_entity, statement)
 #define WRITESPECTATABLE(msg,statement) if(msg == MSG_ONE) { WRITESPECTATABLE_MSG_ONE(statement); } else statement float WRITESPECTATABLE_workaround = 0
 
@@ -3206,20 +3206,14 @@ void bigprint(entity e, string bigstring, string comment, float staytime)
 
 void centerprint_spec(entity pl, string msg)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            centerprint(e, msg);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        centerprint(e, msg);
 }
 
 void bigprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            bigprint(e, msg, comment, staytime);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        bigprint(e, msg, comment, staytime);
 }
 
 void bigprint_clear(entity pl)
@@ -3231,11 +3225,8 @@ void bigprint_clear(entity pl)
 
 void bigprint_clear_spec(entity pl)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
             bigprint_clear(e);
-    }
 }
 
 void madokaprint(entity e, string bigstring, string comment, float staytime)
@@ -3256,11 +3247,8 @@ void madokaprint(entity e, string bigstring, string comment, float staytime)
 
 void madokaprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            madokaprint(e, msg, comment, staytime);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        madokaprint(e, msg, comment, staytime);
 }
 
 #define HF_DEFAULT_TIME 1.5
@@ -3317,23 +3305,17 @@ void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivi
 	if not(CVAR(sv_hudflash))
 		return;
 	
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash(e, flashcolor, staytime, intensivity, alph);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        hudflash(e, flashcolor, staytime, intensivity, alph);
 }
 
 void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
 {
 	if not(CVAR(sv_hudflash))
 		return;
-	
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash_teamcolor(e, staytime, intensivity, alph);
-    }
+
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        hudflash_teamcolor(e, staytime, intensivity, alph);
 }
 
 void hudflash_default(entity e, vector flashcolor)

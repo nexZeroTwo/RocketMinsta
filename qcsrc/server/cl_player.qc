@@ -527,9 +527,7 @@ void VisualDamage(entity attacker, entity targ, float hdmg, float admg, float ht
     org = org + min(45, targ.maxs_z) * '0 0 1.5';
     
     FOR_EACH_REALCLIENT(e) {
-        entity check = e;
-        if(check.classname == "spectator")
-            check = check.enemy;
+        entity check = e.clientcamera;
         
         if(IsDifferentTeam(check, targ) && Client_CalculateAlpha(targ, e) < 0.15)
             continue;
@@ -1175,7 +1173,7 @@ void ClearSelectedPlayer() {
 }
 
 void UpdateSelectedPlayer_Send(entity to, entity p) {
-    FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == to || (msg_entity.enemy == to && msg_entity.classname == "spectator")) {
+    FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == to.clientcamera) {
         WriteByte(MSG_ONE, SVC_TEMPENTITY);
         WriteByte(MSG_ONE, TE_CSQC_UPDATESELECTEDPLAYER);
         WriteByte(MSG_ONE, num_for_edict(p));

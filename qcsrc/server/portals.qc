@@ -469,8 +469,7 @@ void Portal_Think()
 
 float Portal_Customize()
 {
-	if(other.classname == "spectator")
-		other = other.enemy;
+    other = other.clientcamera;
 	if(other == self.aiment)
 	{
 		self.modelindex = self.modelindex_lod0;

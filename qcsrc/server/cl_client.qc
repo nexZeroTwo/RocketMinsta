@@ -63,9 +63,7 @@ float ClientData_Send(entity to, float sf)
 
 	entity e;
 
-	e = to;
-	if(to.classname == "spectator")
-		e = to.enemy;
+	e = to.clientcamera;
 
 	sf = 0;
 
@@ -108,17 +106,9 @@ void ClientData_Detach()
 
 void ClientData_Touch(entity e)
 {
-	e.clientdata.SendFlags = 1;
-
-	// make it spectatable
-	entity e2;
-	FOR_EACH_REALCLIENT(e2)
-	{
-		if(e2 != e)
-			if(e2.classname == "spectator")
-				if(e2.enemy == e)
-					e2.clientdata.SendFlags = 1;
-	}
+    e.clientdata.SendFlags = 1;
+    FOR_EACH_REALCLIENT(var e2) if(e2.clientcamera == e)
+        e2.clientdata.SendFlags = 1;
 }
 
 
@@ -610,7 +600,7 @@ float Client_CalculateAlpha(entity plr, entity viewer) {
         return 1;
 
     var sa = 1 - plr.hg_stealthalpha;
-    var viewerIsPlr = (plr == viewer || (viewer.enemy == plr && viewer.classname == "spectator"));
+    var viewerIsPlr = (plr == viewer.clientcamera);
 
     if(Buffs_Present(plr, BUFF_STEALTH))
         sa *= (1 - (1 - CVAR(g_buffs_stealth_alpha)) * bound(0, (time - plr.buff_stealth_time) / CVAR(g_buffs_stealth_regaintime), 1));
@@ -786,11 +776,7 @@ void PutObserverInServer (void)
     self.buffs = 0;
     
 	if(clienttype(self) == CLIENTTYPE_REAL)
-	{
-		msg_entity = self;
-		WriteByte(MSG_ONE, SVC_SETVIEW);
-		WriteEntity(MSG_ONE, self);
-	}
+        self.clientcamera = self;
 
     if(!self.justconnected) {
         kh_Key_DropAll(self, TRUE);
@@ -1160,15 +1146,9 @@ void PutClientInServer (void)
 	WriteSpectatorInfo(self.enemy);
 	
 	if(clienttype(self) == CLIENTTYPE_BOT)
-	{
 		self.classname = "player";
-	}
 	else if(clienttype(self) == CLIENTTYPE_REAL)
-	{
-		msg_entity = self;
-		WriteByte(MSG_ONE, SVC_SETVIEW);
-		WriteEntity(MSG_ONE, self);
-	}
+        self.clientcamera = self;
 
 	// player is dead and becomes observer
 	// FIXME fix LMS scoring for new system
@@ -1763,6 +1743,7 @@ void ClientConnect (void)
 		return;
 	}
     
+    self.clientcamera = self;
     self.justconnected = TRUE;
     
 	if(Ban_MaybeEnforceBan(self))
@@ -2721,7 +2702,7 @@ void SpectateCopy(entity spectatee) {
 	SetZoomState(spectatee.zoomstate);
 }
 
-#define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((spec).classname == "spectator") if((e).enemy == p) if(!(a) || !(e).anonspec)
+#define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((e) != (p) && (e).clientcamera == (p)) if(!(a) || !(e).anonspec)
 
 void WriteSpectatorInfoOf(entity player, entity of, float lock)
 {
@@ -2868,11 +2849,8 @@ float SpectatePlayer(entity plr) {
         self.enemy = plr;
     
 	if(self.enemy.classname == "player") {
-        if(clienttype(self) == CLIENTTYPE_REAL) {
-            msg_entity = self;
-            WriteByte(MSG_ONE, SVC_SETVIEW);
-            WriteEntity(MSG_ONE, self.enemy);
-		}
+        if(clienttype(self) == CLIENTTYPE_REAL)
+            self.clientcamera = self.enemy;
         
 		if(g_jailbreak)
 		if(jb_roundover)
@@ -3574,12 +3552,12 @@ void PlayerPreThink (void)
 
 	float oldspectatee_status;
 	oldspectatee_status = self.spectatee_status;
-	if(isspec)
-		self.spectatee_status = num_for_edict(self.enemy);
-	else if(isobs)
-		self.spectatee_status = num_for_edict(self);
-	else
-		self.spectatee_status = 0;
+
+    self.spectatee_status = num_for_edict(self.clientcamera);
+
+    if(!isobs && self.spectatee_status == num_for_edict(self))
+        self.spectatee_status = 0;
+
 	if(self.spectatee_status != oldspectatee_status)
 	{
 		ClientData_Touch(self);

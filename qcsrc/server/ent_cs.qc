@@ -23,17 +23,13 @@ void entcs_init(void) {
 
 
 float entcs_cull(entity what, entity forwhom) {
-    if(what.owner == forwhom) {
+    if(what.owner == forwhom.clientcamera) {
         return TRUE;
     }
 
     float isspect;
 
     if(!forwhom.iscreature) {
-        if(what.owner == forwhom.enemy)
-        if(forwhom.classname == "spectator")
-            return TRUE;
-
         if(!forwhom.jb_specteam)
             isspect = TRUE;
     }
@@ -46,6 +42,8 @@ float entcs_cull(entity what, entity forwhom) {
 
     if(isspect)
         return FALSE;
+
+    forwhom = forwhom.clientcamera;
 
     if(IsDifferentTeam(what.owner, forwhom)) {
         if(!sv_shownames || what.owner.hg_stealth || Client_CalculateAlpha(what.owner, forwhom) < 0.15)
@@ -98,9 +96,7 @@ float entcs_send(entity to, float sf) {
 
     sf = sf & 255;
 
-    entity check = to;
-    if(check.classname == "spectator")
-        check = to.enemy;
+    entity check = to.clientcamera;
 
     if(!IsDifferentTeam(check, o) || (sv_shownames && check.hg_stealth && !o.hg_stealth) || sv_cheats) {
         sf |= 64;

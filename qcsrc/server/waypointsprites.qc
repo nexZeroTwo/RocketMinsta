@@ -232,13 +232,7 @@ float WaypointSprite_Customize()
     if(time < self.waypointsprite_appeartime)
         return FALSE;
 
-	// make spectators see what the player would see
-	entity e;
-	e = other;
-	if(e.classname == "spectator")
-		e = e.enemy;
-
-	return self.waypointsprite_visible_for_player(e);
+	return self.waypointsprite_visible_for_player(other.clientcamera);
 }
 
 void WriteColor(float msg, vector c) {

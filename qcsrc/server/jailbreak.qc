@@ -884,7 +884,7 @@ void JB_ActivateCamera(float theteam, float timeout) {
 			} else p.jb_roundlost = TRUE;
 		}
 		
-		entity s; FOR_EACH_REALCLIENT(s) if(s == p || (s.classname == "spectator" && s.enemy == p))
+		entity s; FOR_EACH_REALCLIENT(s) if(s.clientcamera == p)
 			JB_SetCamera(s, cam, timeout);
 	}
 	

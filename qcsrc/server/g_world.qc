@@ -2998,45 +2998,21 @@ void EndFrame()
 	{
 		if(sv_oldfag)
 			self.rm_nokillsound = TRUE;
-			
-		if(self.classname == "spectator")
-		{
-			if(self.enemy.typehitsound)
-				play2(self, "misc/typehit.wav");
-			else if(self.cvar_cl_hitsound)
-			{
-				if(self.enemy.killsound)
-				{
-					if(self.rm_nokillsound)
-						play2(self, "misc/hit.wav");
-					else
-						play2(self, RM_SOUND_KILL);
-				}
-                else if(self.enemy.armorhitsound)
-                    play2(self, "misc/armorhit.wav");
-				else if(self.enemy.hitsound)
-					play2(self, "misc/hit.wav");
-			}
-		}
-		else
-		{
-			if(self.typehitsound)
-				play2(self, "misc/typehit.wav");
-			else if(self.cvar_cl_hitsound)
-			{
-				if(self.killsound)
-				{
-					if(self.rm_nokillsound)
-						play2(self, "misc/hit.wav");
-					else
-						play2(self, RM_SOUND_KILL);
-				}
-                else if(self.armorhitsound)
-                    play2(self, "misc/armorhit.wav");
-				else if(self.hitsound)
-					play2(self, "misc/hit.wav");
-			}
-		}
+
+        if(self.clientcamera.typehitsound) {
+            play2(self, "misc/typehit.wav");
+        } else if(self.cvar_cl_hitsound) {
+            if(self.clientcamera.killsound) {
+                if(self.rm_nokillsound)
+                    play2(self, "misc/hit.wav");
+                else
+                    play2(self, RM_SOUND_KILL);
+            } else if(self.clientcamera.armorhitsound) {
+                play2(self, "misc/armorhit.wav");
+            } else if(self.clientcamera.hitsound) {
+                play2(self, "misc/hit.wav");
+            }
+        }
 	}
 	altime = time + frametime * (1 + CVAR(g_antilag_nudge));
 	// add 1 frametime because after this, engine SV_Physics
