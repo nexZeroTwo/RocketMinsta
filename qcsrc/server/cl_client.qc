@@ -2908,8 +2908,7 @@ void LeaveSpectatorMode()
 
 float RealPlayerCount(void) {
     var c = 0;
-    //FOR_EACH_REALPLAYER(var e)
-    FOR_EACH_PLAYER(var e)
+    FOR_EACH_REALPLAYER(var e)
         ++c;
     return c;
 }
