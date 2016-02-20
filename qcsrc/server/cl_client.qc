@@ -2626,76 +2626,14 @@ void EnterSpectatorModeDelayed(float dlay) {
 }
 
 void SpectateCopy(entity spectatee) {
-	self.kh_state = spectatee.kh_state;
-	self.armortype = spectatee.armortype;
-	self.armorvalue = spectatee.armorvalue;
-	self.ammo_cells = spectatee.ammo_cells;
-	self.ammo_shells = spectatee.ammo_shells;
-	self.ammo_nails = spectatee.ammo_nails;
-	self.ammo_rockets = spectatee.ammo_rockets;
-	self.ammo_fuel = spectatee.ammo_fuel;
-	self.effects = spectatee.effects & EFMASK_CHEAP; // eat performance
-	self.health = spectatee.health;
-	self.impulse = 0;
-	self.items = spectatee.items;
-	self.metertime = spectatee.metertime;
-	self.strength_finished = spectatee.strength_finished;
-	self.invincible_finished = spectatee.invincible_finished;
-	self.pressedkeys = spectatee.pressedkeys;
-	self.weapons = spectatee.weapons;
-	self.switchweapon = spectatee.switchweapon;
-	self.weapon = spectatee.weapon;
-	self.punchangle = spectatee.punchangle;
-	self.view_ofs = spectatee.view_ofs;
-	self.v_angle = spectatee.v_angle;
-	self.velocity = spectatee.velocity;
-	self.dmg_take = spectatee.dmg_take;
-	self.dmg_save = spectatee.dmg_save;
-	self.dmg_inflictor = spectatee.dmg_inflictor;
-	self.angles = spectatee.v_angle;
-	self.fixangle = TRUE;
-	self.frozen = spectatee.frozen;
-	self.revprogress = spectatee.revprogress;
-	self.hg_power = spectatee.hg_power;
-	self.hg_ammo1 = spectatee.hg_ammo1;
-    self.hg_ammo2 = spectatee.hg_ammo2;
-    self.hg_type1 = spectatee.hg_type1;
-    self.hg_type2 = spectatee.hg_type2;
-    self.hg_bonus = spectatee.hg_bonus;
-    self.hg_bonustype = spectatee.hg_bonustype;
-    self.hg_detonables = spectatee.hg_detonables;
-    self.hg_regentime1 = spectatee.hg_regentime1;
-    self.hg_maxregentime1 = spectatee.hg_maxregentime1;
-    self.hg_regenpaused1 = spectatee.hg_regenpaused1;
-    self.hg_regenrate1 = spectatee.hg_regenrate1;
-    self.hg_regentime2 = spectatee.hg_regentime2;
-    self.hg_maxregentime2 = spectatee.hg_maxregentime2;
-    self.hg_regenpaused2 = spectatee.hg_regenpaused2;
-    self.hg_regenrate2 = spectatee.hg_regenrate2;
-    self.hg_launchspeed = spectatee.hg_launchspeed;
-    self.hg_shieldstat = spectatee.hg_shieldstat;
-    self.hg_shieldpower = spectatee.hg_shieldpower;
-    self.hg_shield_stored = spectatee.hg_shield_stored;
-    self.hg_shield_stored_limit = spectatee.hg_shield_stored_limit;
-    self.hg_stealth = spectatee.hg_stealth;
-    self.hg_stealth_saved = spectatee.hg_stealth_saved;
-    self.hg_next1 = spectatee.hg_next1;
-    self.hg_next2 = spectatee.hg_next2;
-    self.hg_shield_damage_per_shot = spectatee.hg_shield_damage_per_shot;
-    self.hg_sentry_capture_progress = spectatee.hg_sentry_capture_progress;
-    self.buff_endur_dmgpool = spectatee.buff_endur_dmgpool;
-    self.buff_vamp_healthpool = spectatee.buff_vamp_healthpool;
-	self.sm_canattach = spectatee.sm_canattach;
-	self.jb_roundlost = spectatee.jb_roundlost;
-    self.jb_unlock_progress = spectatee.jb_unlock_progress;
-    self.jb_message = spectatee.jb_message;
-    self.dom_captureprogress = spectatee.dom_captureprogress;
-    self.w_clip_limit_stat = spectatee.w_clip_limit_stat;
-    self.w_clip_loaded_stat = spectatee.w_clip_loaded_stat;
-    self.zapper_heat = spectatee.zapper_heat;
-    self.buffstat = spectatee.buffstat;
-    self.w_inring_cycle = spectatee.w_inring_cycle;
-    self.w_inring_fulltime = spectatee.w_inring_fulltime;
+    #define SPECFIELD(fld) self.fld = spectatee.fld;
+    SPECFIELDS
+    #undef SPECFIELD
+
+    self.impulse = 0;
+    self.fixangle = TRUE;
+    self.effects = self.effects & EFMASK_CHEAP;
+
 	setorigin(self, spectatee.origin);
     // TODO: find out if this is actually needed
     // setsize(self, spectatee.mins, spectatee.maxs);
