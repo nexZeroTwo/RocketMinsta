@@ -1063,6 +1063,11 @@ void W_SetButtonFields(entity plr, float swap) {
     if(in_setbuttonfields)
         return;
 
+    if(plr.clientcamera != plr) {
+        w_button_primary = w_button_secondary = w_button_null;
+        return;
+    }
+
     using(in_setbuttonfields = TRUE) {
         if(g_weaponarena_secondary && plr.w_conv_switch) {
             var pwep = pow(2, plr.switchweapon - 1);

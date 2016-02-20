@@ -37,7 +37,7 @@ void CA_Initialize(void) {
 }
 
 float CA_AliveCheck(entity plr) {
-    return !plr.jb_specteam && plr.health > 0;
+    return plr.health > 0;
 }
 
 void CA_EndRound(float tout) {
@@ -161,17 +161,8 @@ void CA_PlayerLeaves(void) {
 }
 
 void CA_PlayerJoins(void) {
-    if(g_clanarena) {
-        // TODO: do this more efficiently
-        if(roundstate == ROUNDSTATE_GAME)
-        if(self.classname == "player")
-        if(teamcount_playerstotal[Team_Index(self.team)]) {
-            PlayerScore_SetFlags(self, SPFLAG_FROZEN);
-            JB_JailSpectate();
-        }
-
+    if(g_clanarena)
         CA_RecountPlayers();
-    }
 }
 
 float CA_AttemptRespawn(void) {
@@ -179,10 +170,11 @@ float CA_AttemptRespawn(void) {
         return FALSE;
     
     if(roundstate == ROUNDSTATE_GAME) {
-        JB_JailSpectate();
+        if(self.clientcamera == self)
+            PlayerSpectatorStart();
         return TRUE;
     }
-    
+
     if(roundstate == ROUNDSTATE_OVER)
         return TRUE;
         

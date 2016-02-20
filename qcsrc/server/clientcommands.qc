@@ -355,7 +355,7 @@ void SV_ParseClientCommand(string s) {
         }
         
         if(targetteam) FOR_EACH_CLIENT(e)
-            if(e.team == targetteam || e.jb_specteam == targetteam)
+            if(e.team == targetteam)
                 IP2C_SetCountry_Internal(e, cn);
 	} else if(cmd == "fovreport") {
 		if(!self) return;
@@ -465,19 +465,8 @@ void SV_ParseClientCommand(string s) {
 				return;
 			}
 		}
-        if(CVAR(sv_spectate) == 1) {
-            if(self.classname == "player") {
-                EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
-            } else {
-                if(self.jb_specteam) {
-                    if(self.scorekeeper)
-                        PlayerScore_Clear(self, TRUE);
-                    self.jb_specteam = 0;
-                    self.classname = "observer";
-                    PlayerScore_SetFlagsBoolean(self, SPFLAG_FROZEN, 0);
-                    PutClientInServer();
-                }
-            }
+        if(CVAR(sv_spectate) && self.classname == "player") {
+            EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
         }
 	} else if(cmd == "join") {
         if(gameover)
@@ -529,8 +518,6 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if( !teams_matter ) {
 			sprint(self, "selectteam can only be used in teamgames\n");
-        } else if(self.jb_specteam) {
-            sprint(self, "selectteam can't be used while spectating in the jail\n");
 		} else if(CVAR(g_campaign)) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
