@@ -242,6 +242,7 @@ void SV_ParseClientCommand(string s) {
 			{
 				self.anonspec = 1;
 				sprint(self, "Your spectator status is now anonymous\n");
+                SpecInfo_Update(self, SPECINFO_LIST);
 			}
 			return;
 		}
@@ -252,6 +253,7 @@ void SV_ParseClientCommand(string s) {
 			{
 				self.anonspec = 0;
 				sprint(self, "Your spectator status is now NOT anonymous\n");
+                SpecInfo_Update(self, SPECINFO_LIST);
 			}
 			return;
 		}
@@ -271,7 +273,7 @@ void SV_ParseClientCommand(string s) {
 			return;
 		
         PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 		return;
 	} else if(cmd == "nokillsound") {
 		if(!self)
@@ -304,7 +306,7 @@ void SV_ParseClientCommand(string s) {
 			fstrunzone(self.hudskin);
 		self.hudskin = strzone(argv(3));
 		
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "fakeflag") {
 		if(!self)
 			return;
@@ -360,12 +362,12 @@ void SV_ParseClientCommand(string s) {
 	} else if(cmd == "fovreport") {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "zoomreport") {
 		if(!self) return;
 		self.speczoom_speed = stof(argv(1));
 		self.speczoom_factor = stof(argv(2));
-		WriteSpectatorInfo(self); 
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "fpsreport") {
 		if not(sv_scoreboard_fps_column)
 			return;

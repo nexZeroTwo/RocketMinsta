@@ -1136,13 +1136,8 @@ Called when a client spawns in the server
 =============
 */
 
-void WriteSpectatorInfo(entity);
-void WriteSpectatorInfoOf(entity, entity, float);
 void PutClientInServer (void)
 {
-	WriteSpectatorInfo(self);
-	WriteSpectatorInfo(self.enemy);
-	
 	if(clienttype(self) == CLIENTTYPE_BOT)
 		self.classname = "player";
 	else if(clienttype(self) == CLIENTTYPE_REAL)
@@ -1951,6 +1946,8 @@ void ClientConnect (void)
             stuffcmd(self.owner, "setinfo \"name\" \"$_cl_name\"\n");
         }
     };
+
+    SpecInfo_Attach(self);
 }
 
 /*
@@ -1965,7 +1962,8 @@ Called when a client disconnects from the server
 void ReadyCount();
 void ClientDisconnect (void)
 {
-	WriteSpectatorInfo(self.enemy);
+    self.clientcamera = world;
+    SpecInfo_Update(self, SPECINFO_LIST);
 
     if(self.netname_strzoned) {
         strunzone(self.netname_strzoned);
@@ -2085,6 +2083,8 @@ void ClientDisconnect (void)
     CA_PlayerLeaves();
     HG_RemoveAll(self);
     JoinQ_Pop();
+
+    SpecInfo_Remove(self);
 }
 
 .float BUTTON_CHAT;
@@ -2623,82 +2623,6 @@ void SpectateCopy(entity spectatee) {
 	SetZoomState(spectatee.zoomstate);
 }
 
-#define FOR_EACH_SPECOF(p,e,a) FOR_EACH_REALCLIENT(e) if((e) != (p) && (e).clientcamera == (p)) if(!(a) || !(e).anonspec)
-
-void WriteSpectatorInfoOf(entity player, entity of, float lock)
-{
-	if(clienttype(player) != CLIENTTYPE_REAL)
-		return;
-	
-	float sv_showspecs = CVAR(sv_showspecs);
-	
-	if(!sv_showspecs_extra)
-		lock = FALSE;
-	
-	if(!sv_showspecs && !lock)
-		return;
-	
-	if(player == of)
-	if(player.classname == "spectator") // What the fuck?
-		return;
-	
-	entity spec;
-	float specs;
-	float a = CVAR(sv_anonspecs);
-	
-	FOR_EACH_SPECOF(of, spec, a) specs++;
-
-	msg_entity = player;
-	WriteByte(MSG_ONE, SVC_TEMPENTITY);
-	WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-	WriteByte(MSG_ONE, lock);
-	
-	if(lock) {
-		WriteByte(MSG_ONE, of.madoka);
-		WriteByte(MSG_ONE, of.hud_old);
-		WriteByte(MSG_ONE, of.hud_alt);
-		WriteString(MSG_ONE, of.hudskin);
-		WriteByte(MSG_ONE, of.clientfov);
-		WriteByte(MSG_ONE, of.speczoom_speed * 10);
-		WriteByte(MSG_ONE, of.speczoom_factor * 10);
-	}
-	
-	if(!sv_showspecs) {
-		WriteByte(MSG_ONE, 0);
-		return;
-	}
-	
-	WriteByte(MSG_ONE, specs);
-	
-	FOR_EACH_SPECOF(of, spec, a)
-		//WriteString(MSG_ONE, spec.netname);
-		WriteByte(MSG_ONE, num_for_edict(spec));
-}
-
-void ResetSpectatorInfo(entity player)
-{
-    if(clienttype(player) != CLIENTTYPE_REAL)
-		return;
-
-    msg_entity = player;
-    WriteByte(MSG_ONE, SVC_TEMPENTITY);
-    WriteByte(MSG_ONE, TE_CSQC_SPECINFO);
-    WriteByte(MSG_ONE, 0);
-    WriteByte(MSG_ONE, 0);
-}
-
-void WriteSpectatorInfo(entity player)
-{
-    if(CVAR(sv_showspecs_hidefromplayers))
-        ResetSpectatorInfo(player);
-    else
-        WriteSpectatorInfoOf(player, player, FALSE);
-    
-    entity spec;
-    FOR_EACH_SPECOF(player, spec, 0)
-        WriteSpectatorInfoOf(spec, player, TRUE);
-}
-
 float SpectateUpdate() {
     if(clienttype(self) != CLIENTTYPE_REAL)
         return FALSE;
@@ -2768,19 +2692,16 @@ float SpectatePlayer(entity plr) {
 	if(self.enemy.classname == "player") {
         if(clienttype(self) == CLIENTTYPE_REAL)
             self.clientcamera = self.clientdataent = self.enemy;
-        
+
 		if(g_jailbreak)
 		if(jb_roundover)
 			JB_SetCameraWithAngles(self, jb_activecamera, JB_TORTURE_DURATION);
-        
+
         if(self.classname != "player")
             self.movetype = MOVETYPE_NONE;
 
 		if(!SpectateUpdate() && self.classname == "spectator")
 			PutObserverInServer();
-
-		WriteSpectatorInfo(oldenemy);
-		WriteSpectatorInfo(self.enemy);
 
         DamageTracker_Overwrite(self.enemy.dtrack_total, self, DTFLAG_DONE  | DTFLAG_SPEC);
         DamageTracker_Overwrite(self.enemy.dtrack_taken, self, DTFLAG_TAKEN | DTFLAG_SPEC);
@@ -2788,10 +2709,10 @@ float SpectatePlayer(entity plr) {
         if(self.enemy.zapper_beam)
             self.enemy.zapper_beam.SendFlags |= 8; // send shot origin (I know this is not really efficient)
 
-		return 1;
-	} else {
-		return 0;
+		return TRUE;
 	}
+
+    return FALSE;
 }
 
 float SpectateNext(void) {
@@ -2981,10 +2902,6 @@ float vercmp(string v1, string v2)
 	return vercmp_recursive(v1, v2);
 }
 
-void WriteSpectatorInfoDelayed(void) {
-    WriteSpectatorInfo(self.enemy);
-}
-
 void SpectatorImpulse(void) {
     if(self.impulse >= 1 && self.impulse <= 9)
         SpectateBest(self.impulse);
@@ -3051,7 +2968,6 @@ void PlayerSpectatorThink(void) {
             self.pspec_flags &~= FL_JUMPRELEASED;
             if(!SpectateNext())
                 PlayerSpectatorStop();
-            WriteSpectatorInfo(self.enemy);
         } else {
             if(!SpectateUpdate()) if(!SpectateNext())
                 PlayerSpectatorStop();
@@ -3077,7 +2993,6 @@ void ObserverThink()
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
-                defer(0, WriteSpectatorInfoDelayed);
 			}
 		}
 	} else {
@@ -3109,7 +3024,6 @@ void SpectatorThink()
 				self.classname = "observer";
 				PutClientInServer();
 			}
-			WriteSpectatorInfo(self.enemy);
 		} else if(self.BUTTON_ATCK2) {
             self.BUTTON_ATCK2 = FALSE;
 			self.flags &~= FL_JUMPRELEASED;
@@ -3270,6 +3184,11 @@ void PlayerPreThink (void)
     if(self.spectatee_status != oldspectatee_status)
     {
         ClientData_Touch(self);
+
+        SpecInfo_Update(self, SPECINFO_LIST | SPECINFO_HUD);
+        if(oldspectatee_status > 0)
+            SpecInfo_Update(edict_num(oldspectatee_status), SPECINFO_LIST);
+
         if(g_race || g_cts)
             race_InitSpectator();
     }

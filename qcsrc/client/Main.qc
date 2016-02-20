@@ -1748,6 +1748,41 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
+void Ent_SpecInfo(void) {
+    var sf = ReadByte();
+
+    if(sf & SPECINFO_LIST) {
+        num_spectators = ReadByte();
+        for(var i = 0; i < num_spectators; ++i) {
+            var slot = ReadByte();
+            if(i < MAX_SPECTATORS)
+                spectatorlist[i] = slot - 1;
+        }
+    }
+
+    if(sf & SPECINFO_HUD) {
+        var md = ReadByte();
+
+        if(CVAR(rm_specmadoka)) {
+            madoka_locked = TRUE;
+            madokalockstate = md;
+            SetMadokaFont(madokalockstate);
+        }
+
+        hudlocked = TRUE;
+        rm_oldhud = hudlocked_old = ReadByte();
+        rm_althud = hudlocked_alt = ReadByte();
+
+        var skn = ReadString();
+        if(skn != hudskin_name)
+            HUDSkin_Load(skn);
+
+        fovlock = ReadByte();
+        speczoom_speed  = ReadByte() * 0.1;
+        speczoom_factor = ReadByte() * 0.1;
+    }
+}
+
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1816,6 +1851,7 @@ void CSQC_Ent_Update(float bIsNewEntity)
         case ENT_CLIENT_WARPZONE: WarpZone_Read(bIsNewEntity); break;
         case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
         case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
+        case ENT_CLIENT_SPECINFO: Ent_SpecInfo(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
@@ -2086,41 +2122,6 @@ void Net_ReadMadokaPrint()
 	madokaprint(ReadString(), ReadString(), ReadShort());
 }
 
-void Net_ReadSpecInfo()
-{
-	float i;
-	
-	if(ReadByte()) {
-		float md = ReadByte();
-		
-		if(CVAR(rm_specmadoka)) {
-			madoka_locked = TRUE;
-			madokalockstate = md;
-			SetMadokaFont(madokalockstate);
-		}
-		
-		hudlocked = TRUE;
-		rm_oldhud = hudlocked_old = ReadByte();
-		rm_althud = hudlocked_alt = ReadByte();
-		
-		string skn = ReadString();
-		if(skn != hudskin_name)
-			HUDSkin_Load(skn);
-		
-		fovlock = ReadByte();
-		speczoom_speed  = ReadByte() * 0.1;
-		speczoom_factor = ReadByte() * 0.1;
-	}
-	
-	num_spectators = ReadByte();
-	for(i = 0; i < num_spectators; ++i)
-	{
-		float slot = ReadByte();
-		if(i < MAX_SPECTATORS)
-			spectatorlist[i] = slot - 1;
-	}
-}
-
 void Net_VoteDialog(float highlight) {
 	if(highlight) {
 		vote_highlighted = ReadShort();
@@ -2323,9 +2324,6 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
-			return TRUE;
-		case TE_CSQC_SPECINFO:
-			Net_ReadSpecInfo();
 			return TRUE;
 		case TE_CSQC_VOTE:
 			Net_VoteDialog(ReadByte());

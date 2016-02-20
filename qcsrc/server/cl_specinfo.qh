@@ -1,0 +1,9 @@
+
+.entity specinfo;
+
+void SpecInfo_Attach(entity plr);
+void SpecInfo_Remove(entity plr);
+void SpecInfo_Update(entity plr, float uflags);
+
+#define FOR_EACH_SPECOF(p,e) FOR_EACH_REALCLIENT(e) if((e) != (p) && (e).clientcamera == (p))
+#define IS_ANONSPEC(e) (CVAR(sv_anonspecs) && e.anonspec)

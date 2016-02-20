@@ -71,6 +71,7 @@ w_zapper.qh
 g_world.qh
 napalm.qh
 
+cl_specinfo.qh
 cl_weapons_reload.qh
 
 ../common/util.qc
@@ -140,6 +141,7 @@ ent_cs.qc
 
 cl_player.qc
 cl_client.qc
+cl_specinfo.qc
 t_plats.qc
 antilag.qc
 irc.qc
