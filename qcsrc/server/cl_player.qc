@@ -746,6 +746,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
         {
+            if(save || take)
+                PlayerSpectatorStop();
+
             self.armorvalue = self.armorvalue - save;
 
             float cdmg = min(self.health, take);

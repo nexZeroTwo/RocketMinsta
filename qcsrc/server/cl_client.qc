@@ -2961,6 +2961,11 @@ void PlayerSpectatorToggle(void) {
 void PlayerSpectatorThink(void) {
     SpectatorImpulse();
 
+    if(self.movement != '0 0 0' && self.deadflag != DEAD_PERMANENTLY) {
+        PlayerSpectatorStop();
+        return;
+    }
+
     if(self.pspec_flags & FL_JUMPRELEASED) {
         if((self.BUTTON_JUMP || self.BUTTON_ATCK2 || self.BUTTON_HOOK) && self.deadflag != DEAD_PERMANENTLY) {
             self.pspec_flags &~= FL_JUMPRELEASED;
