@@ -703,7 +703,10 @@ float Client_customizeentityforclient()
 	t1 = gettime(GETTIME_HIRES); // reference
 	client_cefc_accumulator += (t1 - t0);
 #endif
-    
+
+    if(self.clientcamera != self && other != self)
+        self.angles_y = self.pspec_oldvangle_y;
+
     return TRUE;
 }
 
