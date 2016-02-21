@@ -4078,7 +4078,7 @@ void Sbar_Draw(void)
 		fcolor_z = 1 - revsaved;
 
 		revalpha = if(revfadetime) bound(0, 1 - 4 * (time - revfadetime), 0.6) else 0.6;
-		drawfill('0 0 0', bottomright, fcolor, revalpha, DRAWFLAG_ADDITIVE);
+		drawfill('0 0 0', bottomright, fcolor, revalpha * 0.5, DRAWFLAG_ADDITIVE);
 	}
 
 	if(morningrescue)
