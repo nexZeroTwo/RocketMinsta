@@ -4095,13 +4095,17 @@ void Sbar_Draw(void)
 
     float playerspec = FALSE;
     if(gametype == GAME_JAILBREAK || g_freeze) if(playerslots[player_localentnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
-        o = Sbar_DrawNoteLine(o, (if(gametype == GAME_JAILBREAK) "^1You are imprisoned" else "^1You are frozen"));
-        if(!spectatee_status)
-            o = Sbar_DrawNoteLine(o, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team"));
-        else
+        var fmsg = (if(gametype == GAME_JAILBREAK) "^1You are imprisoned" else "^1You are frozen");
+
+        if(spectatee_status) {
+            o = Sbar_DrawNoteLine(o, fmsg);
             playerspec = TRUE;
+        } else {
+            o2 = Sbar_DrawCenterNoteLine(o2, fmsg);
+            o2 = Sbar_DrawCenterNoteLine(o2, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team mates"));
+        }
     }
-    
+
 	if(spectatee_status && !intermission)
 	{
         if(spectatee_status == -1)
