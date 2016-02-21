@@ -2940,7 +2940,7 @@ void PlayerSpectatorStop(void) {
 }
 
 void PlayerSpectatorStart(void) {
-    if(!teams_matter || self.clientcamera != self || self.classname != "player")
+    if(!teams_matter || self.clientcamera != self || self.classname != "player" || time < self.pspec_block)
         return;
 
     self.pspec_entertime = time;

@@ -837,6 +837,7 @@ var .float w_button_secondary;
 .float pspec_flags;
 .float pspec_entertime;
 .float pspec_leavetime;
+.float pspec_block;
 .vector pspec_oldvangle;
 .entity pspec_last_spectatee;
 
