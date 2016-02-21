@@ -838,6 +838,7 @@ var .float w_button_secondary;
 .float pspec_entertime;
 .float pspec_leavetime;
 .vector pspec_oldvangle;
+.entity pspec_last_spectatee;
 
 void PlayerSpectatorStart(void);
 void PlayerSpectatorStop(void);

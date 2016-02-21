@@ -2927,9 +2927,10 @@ void PlayerSpectatorStop(void) {
     if(!teams_matter || self.clientcamera == self || self.classname != "player")
         return;
 
-    self.enemy = world;
+    self.pspec_last_spectatee = self.enemy;
     self.clientcamera = self.clientdataent = self;
     self.pspec_leavetime = time;
+    self.enemy = world;
 
     defer(0, inline void(void) {
         self.v_angle = self.pspec_oldvangle;
@@ -2945,7 +2946,10 @@ void PlayerSpectatorStart(void) {
     self.pspec_entertime = time;
     self.pspec_flags &~= FL_JUMPRELEASED;
     self.pspec_oldvangle = self.v_angle;
-    SpectateNext();
+
+    self.enemy = self.pspec_last_spectatee;
+    if(!SpectatePlayer(self.enemy))
+        SpectateNext();
 }
 
 void PlayerSpectatorToggle(void) {
