@@ -1965,7 +1965,6 @@ Called when a client disconnects from the server
 void ReadyCount();
 void ClientDisconnect (void)
 {
-    self.clientcamera = world;
     SpecInfo_Update(self, SPECINFO_LIST);
 
     if(self.netname_strzoned) {
