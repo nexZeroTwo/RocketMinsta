@@ -41,7 +41,7 @@ void	cvar_set(string name, string value) = #15;
 
 // conversion functions
 
-string	ftos(float f)  = #17;
+string	ftos_builtin(float f)  = #17;
 float	fabs(float f)	= #18;
 string	vtos(vector v)  = #19;
 string	etos(entity e) = #20;
