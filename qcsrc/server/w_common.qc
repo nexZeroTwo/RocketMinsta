@@ -1,5 +1,3 @@
-.float bullets_hit[WEP_COUNT]; 		//for hitscan bullets hit
-.float bullets_fired[WEP_COUNT];	//for hitscan bullets fired
 
 void W_GiveWeapon (entity e, float wep, string name)
 {
@@ -22,78 +20,6 @@ void W_GiveWeapon (entity e, float wep, string name)
 	}
 
 	self = oldself;
-}
-
-float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
-    float did_hit;
-
-    if(ent.takedamage == DAMAGE_NO)
-        return FALSE;
-
-    float sameteam = !IsDifferentTeam(ent, attacker);
-
-    if(ent.flags & FL_CLIENT) {
-        if(ent.deadflag == DEAD_NO)
-            did_hit = TRUE;
-    } else if(ent.flags & FL_PROJECTILE) {
-        if(ent.owner == attacker)
-            return TRUE;
-        did_hit = TRUE;
-    } else if(ent.classname == "meodp_point") {
-        return TRUE;
-    }
-
-    if(sameteam && !Buffs_Present(attacker, BUFF_MEDIC))
-        did_hit = FALSE;
-
-    return did_hit;
-}
-
-void W_Accuracy_RegisterShot(entity attacker, float w) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.bullets_fired[w] += 1;
-    attacker.maxdamage_fired = w + 64 * rint(attacker.bullets_fired[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_shots = attacker.bullets_fired[w];
-}
-
-void W_Accuracy_RegisterHit(entity attacker, entity targ, float w) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    if(!W_Accuracy_IsGoodHit(attacker, targ))
-        return;
-
-    attacker.bullets_hit[w] += 1;
-    attacker.damage_hits = w + 64 * rint(attacker.bullets_hit[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_hits = attacker.bullets_hit[w];
-}
-
-void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.max_damage[w] += damage;
-    attacker.maxdamage_fired = w + 64 * rint(attacker.max_damage[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_shots = attacker.max_damage[w];
-}
-
-void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.actual_damage[w] += damage;
-    attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_hits = attacker.actual_damage[w];
 }
 
 float FireRailgunBullet_trace_deathtype;

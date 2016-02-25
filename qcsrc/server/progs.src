@@ -111,6 +111,7 @@ g_models.qc
 
 cl_weaponsystem.qc
 cl_weapons_reload.qc
+w_accuracy.qc
 w_common.qc
 
 w_laser.qc

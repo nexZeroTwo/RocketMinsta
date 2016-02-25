@@ -1783,6 +1783,34 @@ void Ent_SpecInfo(void) {
     }
 }
 
+void Ent_AccStats(void) {
+    var hits, fired, wflags = ReadInt24_t();
+
+    for(var w = WEP_FIRST; w <= WEP_LAST; ++w) {
+        var i = get_weaponinfo(w);
+        if(i.weapons & wflags) {
+            switch(i.weapon_type) {
+                case WEP_TYPE_SPLASH:
+                    fired = ReadInt24_t();
+                    hits = ReadInt24_t();
+                    break;
+
+                case WEP_TYPE_HITSCAN:
+                    fired = ReadShort();
+                    hits = ReadShort();
+                    break;
+
+                default:
+                    error("Weapon " + w + " has invalid weapon_type = " + i.weapon_type);
+                    break;
+            }
+
+            weapon_hits[w] = hits;
+            weapon_fired[w] = fired;
+        }
+    }
+}
+
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
@@ -1852,6 +1880,7 @@ void CSQC_Ent_Update(float bIsNewEntity)
         case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
         case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
         case ENT_CLIENT_SPECINFO: Ent_SpecInfo(); break;
+        case ENT_CLIENT_ACCSTATS: Ent_AccStats(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;

@@ -750,8 +750,6 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_INVINCIBLE_FINISHED, AS_FLOAT, invincible_finished);
 	addstat(STAT_PRESSED_KEYS, AS_FLOAT, pressedkeys);
 	addstat(STAT_FUEL, AS_INT, ammo_fuel);
-	addstat(STAT_DAMAGE_HITS, AS_INT, damage_hits);
- 	addstat(STAT_DAMAGE_FIRED, AS_INT, maxdamage_fired);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);

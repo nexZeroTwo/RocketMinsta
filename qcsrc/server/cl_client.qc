@@ -1951,6 +1951,7 @@ void ClientConnect (void)
     };
 
     SpecInfo_Attach(self);
+    W_Accuracy_Attach(self);
 
     self.discardabledemo = TRUE;
 }
@@ -2089,6 +2090,7 @@ void ClientDisconnect (void)
     JoinQ_Pop();
 
     SpecInfo_Remove(self);
+    W_Accuracy_Remove(self);
 }
 
 .float BUTTON_CHAT;

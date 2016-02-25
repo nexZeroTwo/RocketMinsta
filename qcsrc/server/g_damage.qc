@@ -1146,9 +1146,6 @@ vector NearestPointOnBox(entity box, vector org)
 	return nearest;
 }
 
-.float actual_damage[WEP_COUNT]; //amount of damage done
-.float max_damage[WEP_COUNT]; //the maximum damage of the weapon
-
 void Damage_RecordDamage(entity attacker, float deathtype, float damage)
 {
 	float weaponid;

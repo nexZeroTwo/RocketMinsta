@@ -4,7 +4,6 @@ void drawcolorcodedstringcenter(vector, string, vector, float, float);
 
 float weapon_hits[WEP_COUNT];
 float weapon_fired[WEP_COUNT];
-float weapon_number;
 
 float last_weapon;
 float weapontime;
@@ -2648,7 +2647,6 @@ void Sbar_DrawAccuracyStats()
 		weapon_damage = weapon_fired[i];
 		self = get_weaponinfo(i);
 
-		//if ((weapon_number != 42))  // print them all :)
 		if (weapon_damage) {
 			if (self.weapon_type == WEP_TYPE_SPLASH) {
 				weapon_stats = bound(0, rint(100 * weapon_hit / weapon_damage), 100);
@@ -3964,18 +3962,9 @@ void Sbar_Draw(void)
 	}
 	
 	float i;
-	float weapon_stats;
 	float x, fade;
 	float stat_items, stat_weapons;
     vector c;
-
-	weapon_stats = getstati(STAT_DAMAGE_HITS);
- 	weapon_number = weapon_stats & 63;
- 	weapon_hits[weapon_number] = rint(weapon_stats / 64);
-
- 	weapon_stats = getstati(STAT_DAMAGE_FIRED);
- 	weapon_number = weapon_stats & 63;
- 	weapon_fired[weapon_number] = rint(weapon_stats / 64);
 
 	vector o; o = '1 0 0' * vid_conwidth;
 	vector o2; o2 = '0.5 0 0' * vid_conwidth;

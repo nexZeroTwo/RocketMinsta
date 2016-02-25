@@ -633,7 +633,6 @@ string matchid;
 .float hitplotfh;
 .string noise4;
 
-.float damage_hits, maxdamage_fired;
 .float maycheat;
 .float stat_leadlimit;
 
