@@ -4,7 +4,6 @@ void drawcolorcodedstringcenter(vector, string, vector, float, float);
 
 float weapon_hits[WEP_COUNT];
 float weapon_fired[WEP_COUNT];
-float weapon_number;
 
 float last_weapon;
 float weapontime;
@@ -2645,7 +2644,6 @@ void Sbar_DrawAccuracyStats()
 		weapon_damage = weapon_fired[i];
 		self = get_weaponinfo(i);
 
-		//if ((weapon_number != 42))  // print them all :)
 		if (weapon_damage) {
 			if (self.weapon_type == WEP_TYPE_SPLASH) {
 				weapon_stats = bound(0, rint(100 * weapon_hit / weapon_damage), 100);
@@ -3961,18 +3959,9 @@ void Sbar_Draw(void)
 	}
 	
 	float i;
-	float weapon_stats;
 	float x, fade;
 	float stat_items, stat_weapons;
     vector c;
-
-	weapon_stats = getstati(STAT_DAMAGE_HITS);
- 	weapon_number = weapon_stats & 63;
- 	weapon_hits[weapon_number] = rint(weapon_stats / 64);
-
- 	weapon_stats = getstati(STAT_DAMAGE_FIRED);
- 	weapon_number = weapon_stats & 63;
- 	weapon_fired[weapon_number] = rint(weapon_stats / 64);
 
 	vector o; o = '1 0 0' * vid_conwidth;
 	vector o2; o2 = '0.5 0 0' * vid_conwidth;
@@ -4075,7 +4064,7 @@ void Sbar_Draw(void)
 		fcolor_z = 1 - revsaved;
 
 		revalpha = if(revfadetime) bound(0, 1 - 4 * (time - revfadetime), 0.6) else 0.6;
-		drawfill('0 0 0', bottomright, fcolor, revalpha, DRAWFLAG_ADDITIVE);
+		drawfill('0 0 0', bottomright, fcolor, revalpha * 0.5, DRAWFLAG_ADDITIVE);
 	}
 
 	if(morningrescue)
@@ -4090,15 +4079,19 @@ void Sbar_Draw(void)
 		drawfont = sbar_font;
 	}
 
-    float jailspec = FALSE;
-    if(gametype == GAME_JAILBREAK) if(playerslots[player_localentnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
-        o = Sbar_DrawNoteLine(o, "^1You are imprisoned");
-        if(!spectatee_status)
-            o = Sbar_DrawNoteLine(o, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team"));
-        else
-            jailspec = TRUE;
+    float playerspec = FALSE;
+    if(gametype == GAME_JAILBREAK || g_freeze) if(playerslots[player_localentnum-1].(scores[SP_FLAGS]) & SPFLAG_FROZEN) {
+        var fmsg = (if(gametype == GAME_JAILBREAK) "^1You are imprisoned" else "^1You are frozen");
+
+        if(spectatee_status) {
+            o = Sbar_DrawNoteLine(o, fmsg);
+            playerspec = TRUE;
+        } else {
+            o2 = Sbar_DrawCenterNoteLine(o2, fmsg);
+            o2 = Sbar_DrawCenterNoteLine(o2, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team mates"));
+        }
     }
-    
+
 	if(spectatee_status && !intermission)
 	{
         if(spectatee_status == -1)
@@ -4114,7 +4107,7 @@ void Sbar_Draw(void)
 			s = strcat("^1Press ^3", getcommandkey("primary fire", "+attack"), "^1 for another player");
 		o = Sbar_DrawNoteLine(o, s);
         
-        if(!jailspec) {
+        if(!playerspec) {
             if(spectatee_status == -1)
                 s = strcat("^1Use ^3", getcommandkey("next weapon", "weapnext"), "^1 or ^3", getcommandkey("previous weapon", "weapprev"), "^1 to change the speed");
             else
@@ -4136,7 +4129,7 @@ void Sbar_Draw(void)
 				s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), "^1 to join");
 		}
 		else
-			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), if(jailspec) "^1 to leave spectator mode" else "^1 to join");
+			s = strcat("^1Press ^3", getcommandkey("jump", "+jump"), if(playerspec) "^1 to leave spectator mode" else "^1 to join");
 		o = Sbar_DrawNoteLine(o, s);
 
 		//show restart countdown:
@@ -5774,16 +5767,18 @@ void Sbar_Draw(void)
 			vote_highlighted = 0;
 		}
 	}
-    
-    if(getstati(STAT_QUEUE) && !intermission) {
-        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, getstati(STAT_QUEUE)), " ^1in the queue");
+
+    var queue = playerslots[player_localentnum - 1].(scores[SP_QUEUE]);
+
+    if(queue && !intermission) {
+        s = strcat("^1Maximum player limit exceeded, you are ^3", ScoreString(SFL_RANK, queue), " ^1in the queue");
         o = Sbar_DrawNoteLine(o, s);
         s = "^1You will automatically join the game when there's a free slot";
         o = Sbar_DrawNoteLine(o, s);
         s = strcat("^1Press ^3", getcommandkey("spectate", "spec"), " ^1to leave the queue");
         o = Sbar_DrawNoteLine(o, s);
     }
-    
+
 	Sbar_ServerInfo();
 
 	if(!rm_hidewatermark)

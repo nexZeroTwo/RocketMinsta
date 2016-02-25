@@ -23,16 +23,8 @@ void entcs_init(void) {
 
 
 float entcs_cull(entity what, entity forwhom) {
-    if(what.owner == forwhom.clientcamera) {
+    if(what.owner == forwhom.clientcamera)
         return TRUE;
-    }
-
-    float isspect;
-
-    if(!forwhom.iscreature) {
-        if(!forwhom.jb_specteam)
-            isspect = TRUE;
-    }
 
     if(what.owner.deadflag != DEAD_NO)
         return TRUE;
@@ -40,7 +32,7 @@ float entcs_cull(entity what, entity forwhom) {
     if(what.owner.classname != "player") if(what.owner.bait_ref.classname != "player")
         return TRUE;
 
-    if(isspect)
+    if(!forwhom.iscreature)
         return FALSE;
 
     forwhom = forwhom.clientcamera;

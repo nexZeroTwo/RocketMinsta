@@ -213,6 +213,9 @@ void Freeze_UnfreezePlayer(entity plr)
     for(;(e = find(e, classname, "grapplinghook"));)
         if(e.aiment == plr)
             RemoveGrapplingHook(e.owner);
+
+    using(self = plr)
+        PlayerSpectatorStop();
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -418,6 +421,47 @@ void Freeze_RevivePlayer(entity plr, entity revlist, float doheal) {
     bprint("^7", names, "^5 revived ^7", plr.netname, "\n");
 }
 
+.entity freeze_pspec_manager;
+
+void Freeze_ManagePlayerSpecMode(void) {
+    if(self.freeze_pspec_manager || self.revprogress < 0.2 || self.clientcamera == self)
+        return;
+
+    var m = spawn() {
+        owner: self,
+        use: inline void(void) {
+            if(self.owner.freeze_pspec_manager == self)
+                self.owner.freeze_pspec_manager = world;
+            remove(self);
+        },
+        think: inline void(void) {
+            var o = self.owner;
+
+            if(!o.frozen || !o.iscreature || roundstate != ROUNDSTATE_GAME) {
+                self.use();
+                return;
+            }
+
+            if(!o.revprogress) {
+                o.pspec_block = 0;
+                using(self = o)
+                    PlayerSpectatorStart();
+                self.use();
+                return;
+            }
+
+            using(self = o)
+                PlayerSpectatorStop();
+
+            o.pspec_block = time + frametime * 2;
+            self.nextthink = time;
+        },
+        nextthink: time,
+    };
+
+    self.freeze_pspec_manager = m;
+}
+
 void Freeze_Hook_PlayerPreThink(void) {
     vector revive_extra_size;
     entity rfirst, rlast, h;
@@ -490,6 +534,10 @@ void Freeze_Hook_PlayerPreThink(void) {
 
     if(!bait) {
         Freeze_DangerShortcut();
+
+        if(self.BUTTON_HOOK && self.clientcamera == self && time - self.pspec_leavetime > 0.5)
+            PlayerSpectatorStart();
+
         self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
     }
     
@@ -552,6 +600,8 @@ void Freeze_Hook_PlayerPreThink(void) {
         
         self.revfinished = 0;
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
+
+        Freeze_ManagePlayerSpecMode();
 
         if(self.revprogress >= 1) {
             Freeze_RevivePlayer(self, rfirst, TRUE);

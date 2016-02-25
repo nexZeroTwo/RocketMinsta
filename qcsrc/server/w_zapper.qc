@@ -558,9 +558,13 @@ void W_Zapper_Attack3(void) {
 
     // needs to be done AFTER W_AttachToShotorg
     e.customizeentityforclient = inline float(void) {
+        if(self.owner != self.owner.clientcamera)
+            return FALSE;
+
         self.viewmodelforclient = self.owner;
         if(other.clientcamera == self.owner)
             self.viewmodelforclient = other;
+
         return self.alpha > 0;
     };
 

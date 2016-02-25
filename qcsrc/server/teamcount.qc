@@ -33,7 +33,7 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
     if(!teams_matter)
         return;
 
-    FOR_EACH_CLIENT(e) if(e.iscreature || ((g_jailbreak || g_clanarena) && e.jb_specteam)) {
+    FOR_EACH_PLAYER(e) {
         float idx = Team_Index(e.team);
         float fteqcc_sucks;
 
@@ -205,7 +205,7 @@ void TeamCount_BalanceTeams(void) {
     
     // Create a pool of all players, sorted by score
     all = spawn();
-    FOR_EACH_CLIENT(plr) if(plr.iscreature || plr.jb_specteam)
+    FOR_EACH_PLAYER(plr)
         TeamCount_PlayerPool_Add(all, plr);
     TeamCount_PlayerPool_Sort(all);
     
@@ -282,10 +282,7 @@ void TeamCount_BalanceTeams(void) {
             
             if(plr.team != pool.team)
                 bigprint_spec(plr, strcat("You are now on the ", Team_ColorCode(pool.team), strtoupper(Team_ColorName(pool.team)), " ^7Team!"), "", 5);
-            
-            if(plr.jb_specteam)
-                plr.jb_specteam = pool.team;
-            
+
             TeamchangeFrags(plr);
             SetPlayerTeam(plr, Team_Index(pool.team)+1, Team_Index(plr.team)+1, FALSE);
             plr.scorekeeper.SendFlags |= pow(2, SP_SCORE);

@@ -346,6 +346,9 @@ void LaserTarget_Think()
 
 float CL_Weaponentity_CustomizeEntityForClient()
 {
+    if(self.owner != self.owner.clientcamera)
+        return FALSE;
+
 	self.viewmodelforclient = self.owner;
     if(other.clientcamera == self.owner)
 		self.viewmodelforclient = other;
@@ -1059,6 +1062,11 @@ float in_setbuttonfields;
 void W_SetButtonFields(entity plr, float swap) {
     if(in_setbuttonfields)
         return;
+
+    if(plr.clientcamera != plr) {
+        w_button_primary = w_button_secondary = w_button_null;
+        return;
+    }
 
     using(in_setbuttonfields = TRUE) {
         if(g_weaponarena_secondary && plr.w_conv_switch) {

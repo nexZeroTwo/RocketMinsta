@@ -573,7 +573,7 @@ void GetTeamCounts(entity ignore)
 	// FIXME: also find and memorize the lowest-scoring bot on each team (in case players must be shuffled around)
 	// also remember the lowest-scoring player
 
-	FOR_EACH_CLIENT(head) if(head.iscreature || head.jb_specteam)
+    FOR_EACH_PLAYER(head)
 	{
 		if(head != ignore)// && head.netname != "")
 		{

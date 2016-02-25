@@ -16,7 +16,7 @@ entity JoinQ_Pop(void) {
     
     entity o, s = self;
     self = s = jq_first;
-    
+
     JoinQ_Remove(self);
     LeaveSpectatorMode();
     
@@ -24,10 +24,11 @@ entity JoinQ_Pop(void) {
     return s;
 }
 
-void JoinQ_Push(entity plr) {
-    if(plr.jb_specteam)
-        return;
+void JoinQ_PopMany(void) {
+    while(JoinQ_Pop()) {}
+}
 
+void JoinQ_Push(entity plr) {
     if(plr.joinqueue)
         error("Attempted to queue an already queued player");
     

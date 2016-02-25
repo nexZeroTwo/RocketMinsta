@@ -71,7 +71,7 @@ w_zapper.qh
 g_world.qh
 napalm.qh
 
-cl_specfields.qh
+cl_specinfo.qh
 cl_weapons_reload.qh
 
 ../common/util.qc
@@ -111,6 +111,7 @@ g_models.qc
 
 cl_weaponsystem.qc
 cl_weapons_reload.qc
+w_accuracy.qc
 w_common.qc
 
 w_laser.qc
@@ -141,6 +142,7 @@ ent_cs.qc
 
 cl_player.qc
 cl_client.qc
+cl_specinfo.qc
 t_plats.qc
 antilag.qc
 irc.qc

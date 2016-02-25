@@ -746,6 +746,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 	{
 		if (!(self.flags & FL_GODMODE) && self.classname != "bait_body")
         {
+            if(save || take)
+                PlayerSpectatorStop();
+
             self.armorvalue = self.armorvalue - save;
 
             float cdmg = min(self.health, take);
@@ -1297,7 +1300,7 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 	if(msgin == "")
 		return FALSE;
 
-	if(source.classname != "player" && !source.jb_specteam)
+	if(source.classname != "player")
 		colorstr = "^0"; // black for spectators
 	else if(teams_matter)
 		colorstr = Team_ColorCode(source.team);
@@ -1440,7 +1443,7 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 	}
 
 	if(!privatesay)
-	if(source.classname != "player" && !source.jb_specteam)
+	if(source.classname != "player")
 	{
 		if(teamsay || (CVAR(g_chat_nospectators) == 1) || (CVAR(g_chat_nospectators) == 2 && !inWarmupStage))
 			teamsay = -1; // spectators
@@ -1502,7 +1505,7 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 		sprint(source, sourcemsgstr);
 		if(sourcecmsgstr != "")
 			centerprint(source, sourcecmsgstr);
-		FOR_EACH_REALCLIENT(head) if(head.classname == "player" || head.jb_specteam) if(head.team == source.team)
+		FOR_EACH_REALPLAYER(head) if(head.team == source.team)
 			if(head != source)
 			{
 				sprint(head, msgstr);
@@ -1513,7 +1516,7 @@ float Say(entity source, float teamsay, entity privatesay, string msgin, float f
 	else if(teamsay < 0)
 	{
 		sprint(source, sourcemsgstr);
-		FOR_EACH_REALCLIENT(head) if(head.classname != "player" && !head.jb_specteam)
+		FOR_EACH_REALCLIENT(head) if(head.classname != "player")
 			if(head != source)
 				sprint(head, msgstr);
 	}

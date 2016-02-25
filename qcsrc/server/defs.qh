@@ -633,7 +633,6 @@ string matchid;
 .float hitplotfh;
 .string noise4;
 
-.float damage_hits, maxdamage_fired;
 .float maycheat;
 .float stat_leadlimit;
 
@@ -833,3 +832,17 @@ var .float w_button_secondary;
 
 .float w_inring_cycle;
 .float w_inring_fulltime;
+
+.float pspec_flags;
+.float pspec_entertime;
+.float pspec_leavetime;
+.float pspec_block;
+.vector pspec_oldvangle;
+.entity pspec_last_spectatee;
+
+void PlayerSpectatorStart(void);
+void PlayerSpectatorStop(void);
+void PlayerSpectatorThink(void);
+void PlayerSpectatorToggle(void);
+
+.float discardabledemo;
