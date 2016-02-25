@@ -2180,6 +2180,13 @@ string pickfile(string basepath, ...) { VA_INIT
 }
 
 
+string ftos(float f) {
+    if(f == 0)
+        f = 0; // Make sure it's not -0, to avoid an ugly representation
+    return ftos_builtin(f);
+}
+
+
 /*
  *  Operator overloads
  */

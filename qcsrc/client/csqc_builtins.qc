@@ -21,7 +21,7 @@ string (string s)							precache_sound = #19;
 string (string s)							precache_model = #20;
 
 //void (string s)								dprint = #25;
-string (float f)							ftos = #26;
+string (float f)							ftos_builtin = #26;
 string (vector v)							vtos = #27;
 void ()									coredump = #28;
 void ()									traceon = #29;

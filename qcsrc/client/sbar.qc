@@ -862,9 +862,6 @@ string Sbar_GetField(entity pl, float field)
 					sbar_field_rgb = '0 1 0' + '0 0 1' * ((ratio - 2) * 0.125);
 				
 				str = strcat(ftos(rint(ratio * 100)), "%");
-                
-                if(substring(str, 0, 1) == "-")
-                    str = substring(str, 1, strlen(str)-1);
 			}
 			
 			return str;
