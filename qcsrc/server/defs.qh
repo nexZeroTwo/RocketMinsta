@@ -845,3 +845,5 @@ void PlayerSpectatorStart(void);
 void PlayerSpectatorStop(void);
 void PlayerSpectatorThink(void);
 void PlayerSpectatorToggle(void);
+
+.float discardabledemo;

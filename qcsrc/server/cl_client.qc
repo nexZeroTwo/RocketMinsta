@@ -1951,6 +1951,8 @@ void ClientConnect (void)
     };
 
     SpecInfo_Attach(self);
+
+    self.discardabledemo = TRUE;
 }
 
 /*
