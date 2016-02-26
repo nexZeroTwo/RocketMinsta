@@ -2186,11 +2186,12 @@ string ftos(float f) {
     return ftos_builtin(f);
 }
 
-void cvar_archive(string cvarname) {
+void cvar_archive(string cvarname, string defaultval) {
     var t = cvar_type(cvarname);
 
     if(!(t & CVAR_TYPEFLAG_EXISTS)) {
-        print("cvar_archive(): cvar ", cvarname, " does not exist!\n");
+        print("cvar_archive(): cvar ", cvarname, " does not exist, creating\n");
+        registercvar(cvarname, defaultval, CVAR_SAVE);
         return;
     }
 
