@@ -111,7 +111,7 @@ function buildall
 {
     # $1 = suffix
     # $2 = desc
-    
+
     USEQCC="$(getqcc)"
     [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
@@ -138,7 +138,7 @@ function buildall
     mv -v progs.lno "${SVPROGS%%dat}lno"
 
     buildqc client/
-    
+
     if [ "$PACKCSQC" = 1 ]; then
         rm "csqc.pk3dir"/*.{dat,lno}
         CSQCSUM="$(md5sum csprogs.dat | sed -e 's/ .*//')"
@@ -156,7 +156,7 @@ function buildall
             cp -v csprogs.dat "csqc.pk3dir/$CSALTPROGNAME"
             cp -v csprogs.lno "csqc.pk3dir/${CSALTPROGNAME%%dat}lno"
         fi
-        
+
         mv -v csprogs.dat "$CSALTPROGS"
         mv -v csprogs.lno "${CSALTPROGS%%dat}lno"
     fi
@@ -165,7 +165,7 @@ function buildall
         makedata csqc "$1" "$2"
         rm -v "csqc.pk3dir"/*.{dat,lno}
     fi
-    
+
     buildqc menu/
     rm "menu.pk3dir"/*.{dat,lno}
     mv -v menu.dat "menu.pk3dir/menu.dat"
@@ -174,7 +174,7 @@ function buildall
     rm -v "menu.pk3dir"/*.{dat,lno}
 
     rm -v "$QCSOURCE"/common/rm_auto.qh
-    
+
     mv -v --target-directory="${BUILDDIR}" *.lno *.log
 }
 
@@ -186,26 +186,26 @@ function tocompress
 function compress-gfx
 {
 	[ $COMPRESSGFX = 0 ] && return
-	
+
 	echo "   -- Compressing graphics"
-	
+
 	COMPRESSGFX_ABORT=0
-	
+
 	if [ ! -e compressdirs ]; then
 		echo "Package didn't provide a list of directories to compress"
 		COMPRESSGFX_ABORT=1
 		return 0
 	fi
-	
+
 	COMPRESSGFX_TEMPDIR="$(mktemp -d)"
 	echo "     - Temporary directory with original graphics to be compressed: $COMPRESSGFX_TEMPDIR"
-	
+
 	if [ ! -e $COMPRESSGFX_TEMPDIR ]; then
 		warning "Failed to create temporary directory! Skipping this package"
 		COMPRESSGFX_ABORT=1
 		return 1
 	fi
-	
+
     tocompress | while read line; do
         dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
         file="$(echo $line | sed -e 's@.*/@@')"
@@ -222,7 +222,7 @@ function compress-gfx
                 warning "Failed to compress $line! Restoring the uncompressed file"
             fi
         fi
-        
+
         mv -v "$line" $COMPRESSGFX_TEMPDIR/$dir
     done
 }
@@ -231,19 +231,19 @@ function compress-restore
 {
 	[ $COMPRESSGFX = 0 ] && return
 	[ $COMPRESSGFX_ABORT = 1 ] && return
-	
+
 	echo "   -- Cleaning up after compression"
-	
+
 	pkgdir="$PWD"
 	pushd "$COMPRESSGFX_TEMPDIR"
-	
+
 	find \! -type d | sed -e 's@^./@@' | while read line; do
 		mv -v "$line" "$pkgdir/$line"
 		rm -vf "$pkgdir/${line%%.tga}.jpg"
 	done
-	
+
 	popd
-	
+
 	rm -rf "$COMPRESSGFX_TEMPDIR"
 }
 
@@ -267,10 +267,10 @@ function makedata
     local justlink="$LINK_PK3DIRS"
 
     echo " -- Building client-side package $1"
-    
+
     pushd "$rmdata.pk3dir"
     rmdata="zzz-rm-$rmdata"
-    
+
     local sum=""
     if [ "$1" = "menu" ]; then
         sum="$MENUSUM"
@@ -295,7 +295,7 @@ function makedata
 
     if [ "$CACHEPKGS" = 1 ] && [ -e "${CACHEDIR}/$rmdata-$sum.pk3" ]; then
         echo "   -- A cached package with the same sum already exists, using it"
-        
+
         popd
         cp -v "${CACHEDIR}/$rmdata-$sum.pk3" "${BUILDDIR}/$rmdata-$sum.pk3"
         echo "   -- Done"
@@ -306,13 +306,13 @@ function makedata
 
         return
     fi
-    
+
     compress-gfx
-    
+
     echo "   -- Writing version info"
     echo "RocketMinsta$2 $VERSION client-side package $1 ($3)" >  _pkginfo_$sum.txt
     echo "Built at $BUILD_DATE"                                >> _pkginfo_$sum.txt
-    
+
     echo "   -- Compressing package"
     if ! rmpack "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" *; then
         compress-restore
@@ -320,10 +320,10 @@ function makedata
     fi
     echo "   -- Removing temporary files"
     rm -vf _*
-    
+
     compress-restore
     popd
-        
+
     echo "   -- Installing to ${BUILDDIR}/"
     mv -v "/tmp/$rmdata-${BUILD_DATE_PLAIN}_tmp.zip" "${BUILDDIR}/$rmdata-$sum.pk3"
 
@@ -374,14 +374,14 @@ function buildqc
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
         sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
-        
+
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
         fi
-        
+
         if [ -e "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" ]; then
             echo " -- Found a cached build of $1, using it"
-            
+
             cp -v "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" "$progname.dat" || error "Failed to copy progs??"
             return
         fi
@@ -397,7 +397,7 @@ function buildqc
     fi
 
     $USEQCC $QCCFLAGS $autocvars || error "Failed to build $qcdir"
-    
+
     local compiled="$(cat progs.src | sed -e 's@//.*@@g' | sed -e '/^$/d' | head -1 | sed -e 's/[ \t]*$//')"
     local cname="$(echo "$compiled" | sed -e 's@.*/@@g')"
     if [ "$(readlink -f "$compiled")" != "$(readlink -f "$olddir/$cname")" ]; then
@@ -407,7 +407,7 @@ function buildqc
 
     if [ $CACHEQC != 0 ]; then
         echo " -- Copying compilled progs to cache"
-        
+
         [ ! -e "${CACHEDIR}/qccache" ] && mkdir -p "${CACHEDIR}/qccache"
         cp -v "$progname.dat" "${CACHEDIR}/qccache/$progname$suffix.dat.$sum.$COMMONSUM" || error "WTF"
     fi
@@ -419,12 +419,12 @@ function is-included
     if [ $1 = "menu" ]; then
         return 1;
     fi
-    
+
     # special rule: csqc package gets built after client QC
     if [ $1 = "csqc" ]; then
         return 1;
     fi
-    
+
     if [ $1 = ${1##o_} ] && [ $1 = ${1##c_} ]; then
         # Not a prefixed package, checking if ignored
         for i in "${IGNOREPKG[@]}"; do
@@ -502,9 +502,9 @@ function configtest
 	if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
 		error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
 	fi
-	
+
 	SUPPORT_CLIENTPKGS=1
-	
+
 	if [ "$COMPRESSGFX" != 0 ] && ! hasoptional convert; then
 		warning "You have COMPRESSGFX on without ImageMagick installed. Compression will be DISABLED."
 		COMPRESSGFX=0
@@ -617,37 +617,37 @@ CSALTPROGS="$BUILDDIR/$CSALTPROGNAME"
 
 if [ "$1" = "release" ]; then
     RELEASE=1
-    
+
     if [ -n "$2" ]; then
         RELCFG="_$2"
     fi
-    
+
     [ -e "releaseconfig$RELCFG.sh" ] || error "No release configuration file found. Please run \`cp EXAMPLE_releaseconfig.sh releaseconfig$RELCFG.sh', edit releaseconfig$RELCFG.sh and try again."
     . "releaseconfig$RELCFG.sh" || error "Failed to read release configuration"
-    
+
     configtest
-    
+
     [ -n "$RELEASE_SUFFIX"     ] && RELEASE_REALSUFFIX="-$RELEASE_SUFFIX"
     [ z"$BRANCH" = z"master"   ] || RELEASE_REALSUFFIX="-$BRANCH$RELEASE_REALSUFFIX"
-    
+
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
         if [ -n "$RELEASE_REALSUFFIX" ]; then
             RELEASE_REALSUFFIX="${RELEASE_REALSUFFIX}_cfg$RELEASE_DEFAULTCFG"
         else
             RELEASE_REALSUFFIX="-cfg$RELEASE_DEFAULTCFG"
         fi
-        
+
         [ -e "modfiles/rm-custom/$RELEASE_DEFAULTCFG.cfg" ] || error "Default configuration '$RELEASE_DEFAULTCFG.cfg' does not exist in rm-custom"
     fi
-    
+
     PKGNAME="RocketMinsta${RELEASE_REALSUFFIX}"
-    
+
     if rm-hasversion; then
         RELEASE_PKGNAME="${PKGNAME}_$VERSION"
     else
         RELEASE_PKGNAME="${PKGNAME}_$BUILD_DATE_PLAIN"
     fi
-    
+
     RELEASE_PKGPATH="$(readlink -f "$RELEASE_PKGPATH")"
     mkdir "$RELEASE_PKGPATH/$RELEASE_PKGNAME" || error "Failed to create package directory"
 
@@ -659,40 +659,40 @@ if [ "$1" = "release" ]; then
     checkdir "${BUILDDIR}/"
     makedata-all "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
     buildall "$RELEASE_REALSUFFIX" "$RELEASE_DESCRIPTION"
-    finalize-install    
+    finalize-install
 
     if [ -n "$RELEASE_DEFAULTCFG" ]; then
         cat "modfiles/rm-custom/$RELEASE_DEFAULTCFG.cfg" >> "${BUILDDIR}/rocketminsta-gameplay.cfg"
         sed -i '/exec "$rm_gameplay_config"/d' "${BUILDDIR}/rocketminsta-gameplay.cfg" # Without this, a recursive include will occur
     fi
-    
+
     cp -v CHANGELOG "${BUILDDIR}/CHANGELOG.rmrelease"
     cp -v COPYING "${BUILDDIR}/COPYING.rmrelease"
     cat <<EOF > "${BUILDDIR}/README.rmrelease"
 
 This is an auto generated $PKGNAME $VERSION release package, built at $BUILD_DATE. Installation:
-    
+
     1) Extract the contents of this package into your Nexuiz data directory (typically ~/.nexuiz/data/)
     2) Edit your server config and add the following line at very top:
-        
+
         exec rocketminsta.cfg
-        
+
         If you'd like to use one of the custom configurations,
         add the following at the bottom of your config:
-        
+
             rmcustom NAME_OF_CUSTOM_CONFIG
-        
-        The following configurations were included at build time: 
+
+        The following configurations were included at build time:
 $(listcustom)
     3) MAKE SURE that the following packages can be autodownloaded by clients:
 $(for i in $BUILT_PACKAGES; do
     echo "        $i"
 done)
-        
+
         This package contains all of them
     4) Start the server and enjoy.
-    
-    
+
+
 RocketMinsta project: http://rocketminsta.net/
 
 EOF
@@ -715,7 +715,7 @@ EOF
 **************************************************
 
     Finished $PKGNAME release
-    
+
     Package path:
         $RELEASE_PKGPATH/$RELEASE_PKGNAME.tar.gz
 
@@ -738,38 +738,38 @@ cat <<EOF
 **************************************************
 
     RocketMinsta has been built successfully
-    
+
     Server QC progs:
         $SVPROGS
-    
+
     Client QC progs:
         $CSPROGS
-        
+
     CVAR defaults for server configuration:
         ${BUILDDIR}/rocketminsta.cfg
-    
+
     Optional custom configurations:
         ${BUILDDIR}/rm-custom
 $(listcustom)
 
     Please make sure all of these files are accessible by Nexuiz.
     Then add the following line at top of your server config:
-    
+
         exec rocketminsta.cfg
 
     If you'd like to use one of the custom configurations,
     add the following at the bottom of your config:
-        
+
         rmcustom NAME_OF_CUSTOM_CONFIG
-        
+
     In addition, these packages MUST be available on your download server:
 $(for i in $BUILT_PACKAGES;
     do echo "        $i";
 done)
-    
+
     All of them have been also installed into:
         ${BUILDDIR}/
-    
+
     They will be added to sv_curl_serverpackages automatically.
 
 **************************************************
