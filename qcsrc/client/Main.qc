@@ -725,9 +725,13 @@ void PostInit(void)
         case 60:
         case 61:
             UpdateClRate();
+        case 62:
+            cvar_set("gl_flashblend", "0");
+            cvar_archive("r_shadow_lightintensityscale");
+            cvar_archive("r_shadow_lightradiusscale");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 62\n");
+		localcmd("seta rm_initialized 63\n");
 		RM_OUTDATED
 		break;
 	}

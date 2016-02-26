@@ -290,6 +290,8 @@ const RE_TOO_MANY_BRACKETS      = -9;
 
 string pickfile(string basepath, ...);
 
+void cvar_archive(string cvarname);
+
 /*
  *  Operator overloads
  */

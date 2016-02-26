@@ -2186,6 +2186,22 @@ string ftos(float f) {
     return ftos_builtin(f);
 }
 
+void cvar_archive(string cvarname) {
+    var t = cvar_type(cvarname);
+
+    if(!(t & CVAR_TYPEFLAG_EXISTS)) {
+        print("cvar_archive(): cvar ", cvarname, " does not exist!\n");
+        return;
+    }
+
+    if(t & CVAR_TYPEFLAG_SAVED)
+        return;
+
+    if(cvar_altertype(cvarname, CVAR_TYPEFLAG_SAVED, 0))
+        return;
+
+    localcmd("seta ", cvarname, " \"$", cvarname, "\"\n");
+}
 
 /*
  *  Operator overloads
