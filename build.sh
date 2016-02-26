@@ -21,7 +21,7 @@ CSQCSUM=""
 
 WINDOWS=0
 if [ "$(uname -o)" = "Cygwin" ]; then
-	WINDOWS=1
+    WINDOWS=1
 fi
 
 function getfiledircache
@@ -81,11 +81,11 @@ function linkfiles
             done
 
             for i in "${filecache[@]}"; do
-				if [ "$WINDOWS" = 1 ]; then
-					cp -vf "${BUILDDIR}/${i:2}" "${j}/${i:2}"
-				else
-					ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
-				fi
+                if [ "$WINDOWS" = 1 ]; then
+                    cp -vf "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+                else
+                    ln --symbolic --force "${BUILDDIR}/${i:2}" "${j}/${i:2}"
+                fi
             done
 
         done
@@ -118,9 +118,9 @@ function buildall
     echo " -- Calculating sum of menu/..."
     MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
 
-	echo " -- Calculating sum of common/..."
-	COMMONSUM="$(find "$QCSOURCE"/{common,warpzonelib} -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
-	MENUSUM="$MENUSUM$COMMONSUM"
+    echo " -- Calculating sum of common/..."
+    COMMONSUM="$(find "$QCSOURCE"/{common,warpzonelib} -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$MENUSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_NAME \"RocketMinsta$1\""   >> "$QCSOURCE"/common/rm_auto.qh
@@ -129,9 +129,9 @@ function buildall
     echo "#define RM_BUILD_SUFFIX \"${1##-}\""        >> "$QCSOURCE"/common/rm_auto.qh
     echo "#define RM_BUILD_COMMIT \"$COMMIT\""        >> "$QCSOURCE"/common/rm_auto.qh
 
-	for i in $BUILT_PKGNAMES; do
-		echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
-	done
+    for i in $BUILT_PKGNAMES; do
+        echo "#define RM_SUPPORT_PKG_$i"              >> "$QCSOURCE"/common/rm_auto.qh
+    done
 
     buildqc server/
     mv -v progs.dat "$SVPROGS"
@@ -180,31 +180,31 @@ function buildall
 
 function tocompress
 {
-	cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
+    cat compressdirs | while read line; do find "$line" -name "*.tga" -maxdepth 1; done
 }
 
 function compress-gfx
 {
-	[ $COMPRESSGFX = 0 ] && return
+    [ $COMPRESSGFX = 0 ] && return
 
-	echo "   -- Compressing graphics"
+    echo "   -- Compressing graphics"
 
-	COMPRESSGFX_ABORT=0
+    COMPRESSGFX_ABORT=0
 
-	if [ ! -e compressdirs ]; then
-		echo "Package didn't provide a list of directories to compress"
-		COMPRESSGFX_ABORT=1
-		return 0
-	fi
+    if [ ! -e compressdirs ]; then
+        echo "Package didn't provide a list of directories to compress"
+        COMPRESSGFX_ABORT=1
+        return 0
+    fi
 
-	COMPRESSGFX_TEMPDIR="$(mktemp -d)"
-	echo "     - Temporary directory with original graphics to be compressed: $COMPRESSGFX_TEMPDIR"
+    COMPRESSGFX_TEMPDIR="$(mktemp -d)"
+    echo "     - Temporary directory with original graphics to be compressed: $COMPRESSGFX_TEMPDIR"
 
-	if [ ! -e $COMPRESSGFX_TEMPDIR ]; then
-		warning "Failed to create temporary directory! Skipping this package"
-		COMPRESSGFX_ABORT=1
-		return 1
-	fi
+    if [ ! -e $COMPRESSGFX_TEMPDIR ]; then
+        warning "Failed to create temporary directory! Skipping this package"
+        COMPRESSGFX_ABORT=1
+        return 1
+    fi
 
     tocompress | while read line; do
         dir="$(echo $line | sed -e 's@/[^/]*.tga@@')"
@@ -229,22 +229,22 @@ function compress-gfx
 
 function compress-restore
 {
-	[ $COMPRESSGFX = 0 ] && return
-	[ $COMPRESSGFX_ABORT = 1 ] && return
+    [ $COMPRESSGFX = 0 ] && return
+    [ $COMPRESSGFX_ABORT = 1 ] && return
 
-	echo "   -- Cleaning up after compression"
+    echo "   -- Cleaning up after compression"
 
-	pkgdir="$PWD"
-	pushd "$COMPRESSGFX_TEMPDIR"
+    pkgdir="$PWD"
+    pushd "$COMPRESSGFX_TEMPDIR"
 
-	find \! -type d | sed -e 's@^./@@' | while read line; do
-		mv -v "$line" "$pkgdir/$line"
-		rm -vf "$pkgdir/${line%%.tga}.jpg"
-	done
+    find \! -type d | sed -e 's@^./@@' | while read line; do
+        mv -v "$line" "$pkgdir/$line"
+        rm -vf "$pkgdir/${line%%.tga}.jpg"
+    done
 
-	popd
+    popd
 
-	rm -rf "$COMPRESSGFX_TEMPDIR"
+    rm -rf "$COMPRESSGFX_TEMPDIR"
 }
 
 function rmpack
@@ -499,16 +499,16 @@ EOF
 
 function configtest
 {
-	if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
-		error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
-	fi
+    if [ -n "$SUPPORT_CLIENTPKGS" ] && [ "$SUPPORT_CLIENTPKGS" == 0 ]; then
+        error "You have SUPPORT_CLIENTPKGS disabled, but this option is no longer supported. Please find a way to let your clients download the zzz-rm packages and remove this option from your config."
+    fi
 
-	SUPPORT_CLIENTPKGS=1
+    SUPPORT_CLIENTPKGS=1
 
-	if [ "$COMPRESSGFX" != 0 ] && ! hasoptional convert; then
-		warning "You have COMPRESSGFX on without ImageMagick installed. Compression will be DISABLED."
-		COMPRESSGFX=0
-	fi
+    if [ "$COMPRESSGFX" != 0 ] && ! hasoptional convert; then
+        warning "You have COMPRESSGFX on without ImageMagick installed. Compression will be DISABLED."
+        COMPRESSGFX=0
+    fi
 }
 
 ################################################################################
