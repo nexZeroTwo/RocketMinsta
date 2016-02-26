@@ -3107,7 +3107,7 @@ void PlayerPreThink (void)
         WarpZone_HandleObserver();
     }
 
-    if(isplayer && self.clientcamera != self)
+    if(isplayer && self.clientcamera != self && !gameover)
         PlayerSpectatorThink();
 
     if(isplayer)
