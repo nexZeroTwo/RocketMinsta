@@ -261,14 +261,21 @@ void spawnfunc_weapon_flak(void) {
 
 void W_Flak_Charge(float isprim) {
     W_SetButtonFields(self, CVAR(g_balance_flak_swapshotmodes));
+
     var held = self.(if(isprim) w_button_primary else w_button_secondary);
+    var smod = 1 - (self.w_inring_fulltime - time) / self.w_inring_cycle;
+
+    self.w_spread_indicator = fabs(
+        WEP_CVAR_BOTH(flak, isprim, charge_spreadmod_side) * smod + WEP_CVAR_BOTH(flak, isprim, spread_side)
+    );
 
     if(held && time < self.w_inring_fulltime)
         return;
 
-    W_Flak_Attack(isprim, 1 - (self.w_inring_fulltime - time) / self.w_inring_cycle);
+    W_Flak_Attack(isprim, smod);
     weapon_thinkf(WFRAME_FIRE2 - isprim, WEP_CVAR_BOTH(flak, isprim, animtime), w_ready);
 
+    self.w_spread_indicator = -1;
     self.w_inring_fulltime = -1;
 }
 

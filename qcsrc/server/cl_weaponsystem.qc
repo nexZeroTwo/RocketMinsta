@@ -41,6 +41,7 @@ void W_SwitchWeapon_Force(entity e, float w)
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
     e.w_inring_fulltime = 0;
+    e.w_spread_indicator = -1;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {
@@ -552,6 +553,7 @@ void CL_Weaponentity_Think()
 		}
 
 		self.owner.stat_shotorg = compressShotOrigin(self.movedir);
+        self.owner.stat_shotorg_visual = compressShotOrigin(self.shotorg_visual);
 		self.movedir = decompressShotOrigin(self.owner.stat_shotorg); // make them match perfectly
 
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount

@@ -451,6 +451,58 @@ void HG_NadeGainSound() {
     hg_nadecount2 = c2;
 }
 
+float glines_spread;
+float glines_alpha;
+float glines_anim;
+
+void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, float a) {
+    var angle = vectoangles(dir);
+    fixedmakevectors2(angle + [0, spread, 0]);
+    dir = v_forward;
+
+    traceline(org, org + dir * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, world);
+    var dst = trace_endpos;
+
+    Draw_CylindricLine(org, dst, 5, "particles/guideline", 0.05, glines_anim, '1 1 0.35', a, DRAWFLAG_ADDITIVE, view_origin);
+}
+
+void DrawSpreadGuideLines(void) {
+    /*
+     *  TODO:
+     *
+     *      -- Use the actual shot origin for the trace (currently g_shootfromeye 1 is assumed).
+     *      -- Maybe interpolate the spread value for low ticrates.
+     *      -- If someone wants to improve the guideline texture I'm all for it.
+     */
+
+    var org = view_origin;
+    var dir = view_forward;
+
+    var spread = getstatf(STAT_AIMSPREAD);
+
+    if(spread < 0) {
+        glines_alpha = approach(glines_alpha, 0, drawframetime * 5);
+        if(!glines_alpha)
+            return;
+    } else {
+        glines_alpha = approach(glines_alpha, 1, drawframetime * 5);
+        glines_spread = spread;
+        glines_anim -= drawframetime;
+    }
+
+    var shotorg = decompressShotOrigin(getstati(STAT_SHOTORG_VISUAL));
+
+    if(shotorg_x > 0)
+        shotorg_y = -shotorg_y;
+    else
+        shotorg = '0 0 0';
+
+    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * shotorg_z;
+
+    DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
+    DrawSpreadGuideLine(view_origin, org, dir, -glines_spread, glines_alpha);
+}
+
 void CSQC_UpdateView(float w, float h)
 {
 	fps_friendly = CVAR(rm_fps_friendly);
@@ -663,6 +715,8 @@ void CSQC_UpdateView(float w, float h)
 	self = e;
     if (!fps_friendly)
         Plasma_Draw();
+
+    DrawSpreadGuideLines();
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();

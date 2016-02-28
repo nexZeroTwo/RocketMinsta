@@ -1153,7 +1153,9 @@ void PutClientInServer (void)
 		if(PlayerScore_Add(self, SP_LMS_RANK, 0) > 0)
 			self.classname = "observer";
 	}
-    
+
+    self.w_spread_indicator = -1;
+
     self.touch = NULL;
 
     self.hg_plasmalock = 0;

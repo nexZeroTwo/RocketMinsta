@@ -628,6 +628,7 @@ void Drag_MoveDrag(entity from, entity to);
 .float floodcontrol_voiceteam;
 
 .float stat_shotorg; // networked stat for trueaim HUD
+.float stat_shotorg_visual;
 
 string matchid;
 .float hitplotfh;
@@ -832,6 +833,7 @@ var .float w_button_secondary;
 
 .float w_inring_cycle;
 .float w_inring_fulltime;
+.float w_spread_indicator;
 
 .float pspec_flags;
 .float pspec_entertime;

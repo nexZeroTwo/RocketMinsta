@@ -751,10 +751,12 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_PRESSED_KEYS, AS_FLOAT, pressedkeys);
 	addstat(STAT_FUEL, AS_INT, ammo_fuel);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
+    addstat(STAT_SHOTORG_VISUAL, AS_INT, stat_shotorg_visual);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
     addstat(STAT_INNERRING_CYCLE, AS_FLOAT, w_inring_cycle);
     addstat(STAT_INNERRING_FULLTIME, AS_FLOAT, w_inring_fulltime);
+    addstat(STAT_AIMSPREAD, AS_FLOAT, w_spread_indicator);
 
     W_Clip_Stats_Init();
 
