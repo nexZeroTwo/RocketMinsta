@@ -472,6 +472,7 @@ void DrawSpreadGuideLines(void) {
      *
      *      -- Use the actual shot origin for the trace (currently g_shootfromeye 1 is assumed).
      *      -- Maybe interpolate the spread value for low ticrates.
+     *      -- Warpzone support.
      *      -- If someone wants to improve the guideline texture I'm all for it.
      */
 
