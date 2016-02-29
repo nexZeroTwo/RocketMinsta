@@ -1947,7 +1947,9 @@ void(float pause) setpause = #531;
 //
 //Note: it is worth considering that network-related functions may be called during the pause (including customizeentityforclient for example), and it is also important to consider the continued use of the KRIMZON_SV_PARSECLIENTCOMMAND extension while paused (chatting players, etc), players may also join/leave during the pause.  In other words, the only things that are not called are think and other time-related functions.
 
+/////                               /////
 ///// BEGIN DarkPlacesRM EXTENSIONS /////
+/////                               /////
 
 //DP_RM_IRC
 //idea: Akari
@@ -1971,8 +1973,6 @@ void(float pause) setpause = #531;
 //  argc is the count of additional event arguments that can be accessed with the argv() function
 //
 //  See libircclient documentation for a list of events and their possible arguments, or play around with irc_eventlog
-
-///// END DarkPlacesRM EXTENSIONS /////
 
 //DP_RM_CALLFUNCTIONEX
 //idea: Akari
@@ -2003,3 +2003,21 @@ void(float, float) GlobalSetInt = #174;
 void(float, float) GlobalSetFloat = #175;
 string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
+
+//DP_RM_CLIENTDATAENT
+//idea: Akari
+//darkplaces implementation: Akari
+//field definitions:
+.entity clientdataent;
+
+//DP_RM_CLIPGROUP
+//idea: Akari
+//darkplaces implementation: Akari
+//field definitions:
+.float clipgroup;
+//description:
+//If two entities have this field set to the same non-zero integer value, they won't collide with each other.
+
+/////                             /////
+///// END DarkPlacesRM EXTENSIONS /////
+/////                             /////

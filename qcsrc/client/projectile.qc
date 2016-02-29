@@ -549,8 +549,8 @@ void Ent_Projectile()
 				self.maxs = '0 0 -3';
 				break;
             case PROJECTILE_FLAK:
-                self.mins = '0 0 -3';
-                self.maxs = '0 0 -3';
+                self.mins = '-4 -4 -4';
+                self.maxs = '4 4 4';
                 self.move_movetype = MOVETYPE_BOUNCE;
                 self.move_touch = Flak_Touch;
                 break;

@@ -49,7 +49,7 @@ void W_Flak_Projectile_Touch(void) {
         self.owner = other;
         if(other.iscreature)
             self.enemy = other;
-    } else if(other.solid == SOLID_BSP) {   
+    } else if(other.solid == SOLID_BSP) {
         spamsound(self, CHAN_PROJECTILE, strcat("weapons/casings", ftos(floor(random() * 3) + 1), ".wav"), VOL_BASE * 0.7, ATTN_NORM);
         //pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
         self.owner = world;
@@ -81,11 +81,12 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.bot_dodgerating = damage;
     e.movetype = MOVETYPE_BOUNCE;
     PROJECTILE_MAKETRIGGER(e);
+    e.clipgroup = CLIPGROUP_FLAK;
     e.projectiledeathtype = deathtype;
     e.gravity = grav;
     e.bouncefactor = bnc;
     setorigin(e, w_shotorg);
-    setsize(e, '0 0 -3', '0 0 -3');
+    setsize(e, '-4 -4 -4', '4 4 4');
 
     e.spawnshieldtime = time + lt;
     e.nextthink = time;
@@ -93,6 +94,7 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.touch = W_Flak_Projectile_Touch;
     e.velocity = v_forward * spd + v_up * upspd;
     W_SetupProjectileVelocity(e);
+
 
     e.angles = vectoangles(e.velocity);
     e.flags = FL_PROJECTILE;

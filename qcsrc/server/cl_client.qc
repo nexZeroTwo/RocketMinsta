@@ -3,9 +3,6 @@ void Boobs_Clear();
 
 float MaySpectate(entity);
 
-// TODO: move this one to extensions.qh (DP_RM_CLIENTDATAENT)
-.entity clientdataent;
-
 .entity specdelay_ent;
 .float justconnected;
 
