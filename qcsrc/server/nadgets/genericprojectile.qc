@@ -389,9 +389,6 @@ void HG_GenericProjectile_Think(void) {
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
 
-    if(self.solid == SOLID_NOT)
-        self.solid = SOLID_TRIGGER;
-
     if(self.hg_type == HG_TRANSLOC) {
         tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
         if(trace_startsolid && !self.hg_ranthink) {
@@ -505,7 +502,7 @@ float HG_GenericProjectile_Attack(float hgtype) {
         else for(i = 0; i < split; ++i) {
             dir_y = spread * (-0.5 + (i / (split-1)));
             HG_GenericProjectile(hgtype, dir, i) {
-                solid: SOLID_NOT
+                clipgroup: CLIPGROUP_PLAYERMASK(self) | hgtype
             };
         }
     } else {

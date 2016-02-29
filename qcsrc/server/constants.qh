@@ -138,3 +138,12 @@ enum {
     CLIPGROUP_NONE,
     CLIPGROUP_FLAK,
 };
+
+#define CLIPGROUP_MASK_TYPE     0x000FF
+#define CLIPGROUP_MASK_PLAYER   0x0FF00
+#define CLIPGROUP_MASK_TEAM     0xF0000
+
+#define CLIPGROUP_PLAYERMASK(plr) (num_for_edict(plr) * (CLIPGROUP_MASK_TYPE + 1))
+#define CLIPGROUP_TEAMIDXMASK(teamidx) (((teamidx) + 1) * (CLIPGROUP_MASK_PLAYER + 1))
+#define CLIPGROUP_TEAMMASK(teamclr) CLIPGROUP_TEAMIDXMASK(Team_Index(teamclr))
+#define CLIPGROUP_PLAYERTEAMMASK(plr) (if(teams_matter) CLIPGROUP_TEAMMASK((plr).team) else CLIPGROUP_PLAYERMASK(plr))
