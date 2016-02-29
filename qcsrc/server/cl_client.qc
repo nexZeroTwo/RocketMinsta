@@ -834,7 +834,6 @@ void PutObserverInServer (void)
 	self.health = -666;
 	self.takedamage = DAMAGE_NO;
 	self.solid = SOLID_NOT;
-	self.movetype = if(CVAR(sv_clipped_observers)) MOVETYPE_FLY else MOVETYPE_NOCLIP;
 	self.flags = FL_CLIENT | FL_NOTARGET;
 	self.armorvalue = 666;
 	self.effects = 0;
@@ -864,6 +863,14 @@ void PutObserverInServer (void)
 	self.fixangle = TRUE;
 	self.crouch = FALSE;
     self.clipgroup = CLIPGROUP_OBSERVER;
+
+    if(CVAR(sv_clipped_observers)) {
+        self.movetype = MOVETYPE_FLY;
+        self.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
+    } else {
+        self.movetype = MOVETYPE_NOCLIP;
+        self.dphitcontentsmask = 0;
+    }
 
 	self.view_ofs = PL_VIEW_OFS;
 	setorigin (self, spot.origin);
