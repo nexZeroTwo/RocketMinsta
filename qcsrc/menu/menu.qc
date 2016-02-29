@@ -44,6 +44,9 @@ void m_init()
 
     CVAR_WATCH("rm_fonts_prefer_ttf");
 
+    cvar_archive("r_shadow_lightintensityscale", "1.0");
+    cvar_archive("r_shadow_lightradiusscale", "1.0");
+
 	dprint_load();
 	check_unacceptable_compiler_bugs();
 
