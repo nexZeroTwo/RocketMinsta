@@ -295,6 +295,7 @@ void spawnfunc_func_plat()
     if(!(self.spawnflags & PLAT_NO_TRIGGER))
 	   plat_spawn_inside_trigger ();	// the "start moving" trigger
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = plat_reset;
 	plat_reset();
 };
@@ -1320,6 +1321,7 @@ void spawnfunc_func_door()
 // the sizes can be detected properly.
 	InitializeEntity(self, LinkDoors, INITPRIO_LINKDOORS);
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = door_reset;
 };
 
@@ -1441,6 +1443,7 @@ void spawnfunc_func_door_rotating()
 // the sizes can be detected properly.
 	InitializeEntity(self, LinkDoors, INITPRIO_LINKDOORS);
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = door_rotating_reset;
 };
 
@@ -2007,6 +2010,7 @@ void spawnfunc_func_magicwall(void) {
                 SUB_UseTargets();
     };
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
     self.reset();
     self.nextthink = time;
 }

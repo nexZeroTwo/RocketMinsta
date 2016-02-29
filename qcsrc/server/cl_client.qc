@@ -863,6 +863,7 @@ void PutObserverInServer (void)
 	self.angles_z = 0;
 	self.fixangle = TRUE;
 	self.crouch = FALSE;
+    self.clipgroup = CLIPGROUP_OBSERVER;
 
 	self.view_ofs = PL_VIEW_OFS;
 	setorigin (self, spot.origin);
@@ -3675,11 +3676,6 @@ Called every frame for each client after the physics are run
 void PlayerPostThink (void)
 {
     self.owner = world;
-
-    for(var e; (e = findentity(e, ownerhack_curowner, self));) {
-        e.owner = e.ownerhack_oldowner;
-        e.ownerhack_curowner = world;
-    }
 
 	// Savage: Check for nameless players
 	if (strlen(self.netname) < 1) {
