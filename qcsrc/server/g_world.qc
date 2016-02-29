@@ -508,8 +508,15 @@ void SetPlayerHitboxGlobals(void) {
     PL_CROUCH_MAX = stov(CVAR_STR(g_player_hitbox_crouch_max));
 }
 
+void require_extensions(void) {
+    require_extension("DP_SV_CLIENTCAMERA");
+    require_extension("DP_RM_CLIENTDATAENT");
+    require_extension("DP_RM_CLIPGROUP");
+}
+
 void spawnfunc_worldspawn (void)
 {
+    require_extensions();
 	WarpZone_Init();
 	float fd, l, i, j, n;
 	string s, col;

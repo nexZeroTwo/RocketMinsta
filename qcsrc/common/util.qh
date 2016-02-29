@@ -292,6 +292,10 @@ string pickfile(string basepath, ...);
 
 void cvar_archive(string cvarname, string defaultval);
 
+float autocvar_rm_ignore_missing_required_extensions;
+
+void require_extension(string ext);
+
 /*
  *  Operator overloads
  */

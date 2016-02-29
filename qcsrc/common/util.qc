@@ -2204,6 +2204,27 @@ void cvar_archive(string cvarname, string defaultval) {
     localcmd("seta ", cvarname, " \"$", cvarname, "\"\n");
 }
 
+void require_extension(string ext) {
+    if(checkextension(ext))
+        return;
+
+    var ignore = CVAR(rm_ignore_missing_required_extensions);
+
+    print("\n^1***************************************************************\n\n");
+    print("Your engine is missing a required extension, ^2", ext, "^7.\n");
+    print("It is necessary to use the latest version of DarkPlacesRM for RocketMinsta to function correctly.\n");
+    print("\n^3Get the update at ^2" DPRM_WEBSITE_URL "\n");
+
+    if(!ignore) {
+        print("\nYou can set the ^2rm_ignore_missing_required_extensions^7 cvar to 1 if you wish to ignore this warning, but then expect the game to be horribly broken at best.\n");
+    }
+
+    print("\n^1***************************************************************\n\n");
+
+    if(!ignore)
+        error("Required extension " + ext + " is missing");
+}
+
 /*
  *  Operator overloads
  */
