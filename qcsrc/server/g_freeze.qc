@@ -176,7 +176,9 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
         } else // teamkill
             PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar(penalty_teamkill));
     }
-    
+
+    SetPlayerClipGroup(plr, TRUE);
+
     PlayerScore_SetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
 }
@@ -216,6 +218,8 @@ void Freeze_UnfreezePlayer(entity plr)
 
     using(self = plr)
         PlayerSpectatorStop();
+
+    SetPlayerClipGroup(plr, FALSE);
 }
 
 void Freeze_SetGlobalWarming(float d) {

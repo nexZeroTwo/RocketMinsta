@@ -1128,6 +1128,18 @@ void Boobs_DropAllAndRespawn(vector force) {
 
 // ======================================== //
 
+void SetPlayerClipGroup(entity plr, float force_team_clip) {
+    if(!teams_matter || !CVAR(g_player_dont_block_teammates))
+        force_team_clip = TRUE;
+
+    plr.clipgroup = CLIPGROUP_PLAYER;
+
+    if(force_team_clip)
+        plr.clipgroup |= CLIPGROUP_PLAYERMASK(plr);
+    else
+        plr.clipgroup |= CLIPGROUP_TEAMMASK(plr.team);
+}
+
 /*
 =============
 PutClientInServer
@@ -1151,9 +1163,8 @@ void PutClientInServer (void)
 			self.classname = "observer";
 	}
 
+    self.clipgroup = CLIPGROUP_NONE;
     self.w_spread_indicator = -1;
-
-    self.touch = NULL;
 
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;
@@ -1347,6 +1358,8 @@ void PutClientInServer (void)
 
 		race_PostSpawn(spot);
 
+        SetPlayerClipGroup(self, FALSE);
+
 		if(CVAR(spawn_debug))
 		{
 			sprint(self, strcat("spawnpoint origin:  ", vtos(spot.origin), "\n"));
@@ -1399,9 +1412,6 @@ void PutClientInServer (void)
         self.pryaxe_thrown = 0;
 
         self.hg_sentry_capture_progress = 0;
-
-        if(teams_matter && CVAR(g_player_dont_block_teammates))
-            self.touch = PlayerTouch_NoTeamBlock;
 
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
 

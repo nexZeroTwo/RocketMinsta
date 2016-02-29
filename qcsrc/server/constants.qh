@@ -136,12 +136,13 @@ float DOOR_NOSPLASH = 256; // generic anti-splashdamage spawnflag
 
 enum {
     CLIPGROUP_NONE,
+    CLIPGROUP_PLAYER,
     CLIPGROUP_FLAK,
 };
 
-#define CLIPGROUP_MASK_TYPE     0x000FF
-#define CLIPGROUP_MASK_PLAYER   0x0FF00
-#define CLIPGROUP_MASK_TEAM     0xF0000
+const CLIPGROUP_MASK_TYPE   = 0x000FF;
+const CLIPGROUP_MASK_PLAYER = 0x0FF00;
+const CLIPGROUP_MASK_TEAM   = 0x70000;
 
 #define CLIPGROUP_PLAYERMASK(plr) (num_for_edict(plr) * (CLIPGROUP_MASK_TYPE + 1))
 #define CLIPGROUP_TEAMIDXMASK(teamidx) (((teamidx) + 1) * (CLIPGROUP_MASK_PLAYER + 1))

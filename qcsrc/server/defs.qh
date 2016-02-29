@@ -848,3 +848,5 @@ void PlayerSpectatorThink(void);
 void PlayerSpectatorToggle(void);
 
 .float discardabledemo;
+
+void SetPlayerClipGroup(entity plr, float force_team_clip);
