@@ -113,7 +113,7 @@ void W_Flak_Attack(float isprim, float spreadmod) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_shells -= cost;
 
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4,
+    W_SetupShot_ProjectileSize(self, '-4 -4 -4', '4 4 4', FALSE, 4,
         if(isprim) "weapons/flak_fire.wav" else "weapons/flak_fire2.wav",
         WEP_CVAR_BOTH(flak, isprim, damage) * pcount
     );
