@@ -338,6 +338,7 @@ void Ent_RemoveProjectile()
 }
 
 void Flak_Touch(void) {
+    // Sadly this can't work with brushmodels (doors, magicwalls, etc) - particles for those are spawned server-side.
     pointparticles(particleeffectnum("hagar_bounce"), self.move_origin, self.move_velocity, 1);
 }
 

@@ -51,7 +51,13 @@ void W_Flak_Projectile_Touch(void) {
             self.enemy = other;
     } else if(other.solid == SOLID_BSP) {
         spamsound(self, CHAN_PROJECTILE, strcat("weapons/casings", ftos(floor(random() * 3) + 1), ".wav"), VOL_BASE * 0.7, ATTN_NORM);
-        //pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
+
+        if(other) {
+            // brushmodel - client won't register this hit, so we have to spawn the particle here.
+            // For world collisions, the same is done client-side.
+            pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
+        }
+
         self.owner = world;
         self.projectiledeathtype |= HITTYPE_BOUNCE;
         self.cnt += 1;
