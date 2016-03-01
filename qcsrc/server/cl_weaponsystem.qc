@@ -558,7 +558,14 @@ void CL_Weaponentity_Think()
 
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount
 
-		setorigin(self, self.view_ofs + stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset")));
+        var ofs = stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset"));
+        ofs_y *= switch(self.owner.gunswitchmode) {
+            case 1: -1,
+            case 2:  1,
+            default: 0
+        };
+
+		setorigin(self, self.view_ofs + ofs);
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;
