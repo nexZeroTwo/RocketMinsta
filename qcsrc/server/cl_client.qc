@@ -2735,9 +2735,6 @@ float SpectatePlayer(entity plr) {
     DamageTracker_Overwrite(self.enemy.dtrack_total, self, DTFLAG_DONE  | DTFLAG_SPEC);
     DamageTracker_Overwrite(self.enemy.dtrack_taken, self, DTFLAG_TAKEN | DTFLAG_SPEC);
 
-    if(self.enemy.zapper_beam)
-        self.enemy.zapper_beam.SendFlags |= 8; // send shot origin (I know this is not really efficient)
-
     return TRUE;
 }
 

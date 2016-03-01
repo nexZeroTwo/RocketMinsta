@@ -13,8 +13,6 @@
 .float zapper_accumulate;
 .float zapper_shieldready; // for g_balance_zapper_shield 2
 
-.entity zapper_shotorgsentfor;
-
 .vector zapper_beam_start, zapper_beam_end;
 .vector zapper_beam_real_start;
 
@@ -41,10 +39,6 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 
     if(self.sounds < 0)
         sf |= 16;
-
-    if(to.zapper_shotorgsentfor != self && to.clientcamera == self.owner) {
-        sf |= 8;
-    }
 
     float o = num_for_edict(self.owner);
 
@@ -84,11 +78,6 @@ float W_Zapper_Beam_Send(entity to, float sf) {
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_x);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_y);
         WriteCoord(MSG_ENTITY, self.zapper_beam_end_z);
-    }
-
-    if(sf & 8) {
-        WriteInt24_t(MSG_ENTITY, compressShotOrigin(W_Zapper_LocalShotOrg(self.owner)));
-        to.zapper_shotorgsentfor = self;
     }
 
     return TRUE;
@@ -243,7 +232,7 @@ void W_Zapper_Attack1(void) {
 
     sound(self, CHAN_WEAPON, "weapons/zapper_fire.wav", VOL_BASE, ATTN_NORM);
 
-    entity o, e = spawn();
+    var e = spawn();
     e.classname = "zapper_beam";
     e.think = W_Zapper_Beam_Think;
     e.owner = self;
@@ -256,13 +245,9 @@ void W_Zapper_Attack1(void) {
     
     Net_LinkEntity(e, FALSE, 0, W_Zapper_Beam_Send);
 
-    self.zapper_shotorgsentfor = world;
+    using(self = e)
+        self.think();
 
-    o = self;
-    self = e;
-    self.think();
-    self = o;
-    
     self.zapper_beam = e;
 }
 

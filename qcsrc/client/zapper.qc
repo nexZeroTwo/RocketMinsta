@@ -94,6 +94,11 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
     }
 }
 
+vector Zapper_GetShotOrigin(void) {
+    var org = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+    return org - '10 0 0';
+}
+
 void Zapper_Draw(void) {
     vector start;
 
@@ -112,6 +117,7 @@ void Zapper_Draw(void) {
         end1 = self.zapper_end;
     vector real_start = self.zapper_real_start;
     if(self.sv_entnum == me) if(!CVAR(chase_active)) {
+        var zapper_shotorigin = Zapper_GetShotOrigin();
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
         if (WarpZone_FixView_lastwarp) {
@@ -141,6 +147,7 @@ void Zapper_Draw_Shield(void) {
     float me = ID_ME;
 
     if(self.sv_entnum == me && !CVAR(chase_active)) {
+        var zapper_shotorigin = Zapper_GetShotOrigin();
         self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_end = self.zapper_start + view_forward * 30;
     }
@@ -255,10 +262,6 @@ void Zapper_Read(float t) {
         self.zapper_end_z = ReadCoord();
         setorigin(self, self.zapper_end);
         InterpolateOrigin_Note();
-    }
-    
-    if(sf & 8) {
-        zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
     }
 
     if(sf & 16) {

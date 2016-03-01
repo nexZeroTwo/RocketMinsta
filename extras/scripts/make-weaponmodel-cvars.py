@@ -25,6 +25,8 @@ defaults = {
     "zapper"            :   "zapper",
     "flak"              :   "flak",
     "pryaxe"            :   "pryaxe",
+
+    "zapper_ofs"        :   "0 -0.5 3",
 }
 
 
