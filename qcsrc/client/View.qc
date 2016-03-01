@@ -342,18 +342,13 @@ float TrueAimCheck()
 			break;
 	}
 
-	vecs = decompressShotOrigin(getstati(STAT_SHOTORG));
+	vecs = ReadShotOriginStat(STAT_SHOTORG);
 
 	if(activeweapon == WEP_CAMPINGRIFLE)
 		traceline(view_origin, view_origin + view_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, trueaim_rifle);
 	else
 		traceline(view_origin, view_origin + view_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, trueaim);
 	trueaimpoint = trace_endpos;
-
-	if(vecs_x > 0)
-		vecs_y = -vecs_y;
-	else
-		vecs = '0 0 0';
 
 	dv = view_right * vecs_y + view_up * vecs_z;
 	w_shotorg = view_origin + dv;
@@ -491,13 +486,7 @@ void DrawSpreadGuideLines(void) {
         glines_anim -= drawframetime;
     }
 
-    var shotorg = decompressShotOrigin(getstati(STAT_SHOTORG_VISUAL));
-
-    if(shotorg_x > 0)
-        shotorg_y = -shotorg_y;
-    else
-        shotorg = '0 0 0';
-
+    var shotorg =  ReadShotOriginStat(STAT_SHOTORG_VISUAL);
     org += view_forward * shotorg_x + view_right * shotorg_y + view_up * shotorg_z;
 
     DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);

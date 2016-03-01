@@ -916,3 +916,14 @@ void DrawCircleClippedPic(vector centre, float radius, string pic, float f, vect
         R_EndPolygon();
     }
 }
+
+vector ReadShotOriginStat(float stat) {
+    var shotorg = decompressShotOrigin(getstati(stat));
+
+    if(shotorg_x > 0)
+        shotorg_y = -shotorg_y;
+    else
+        shotorg = '0 0 0';
+
+    return shotorg;
+}
