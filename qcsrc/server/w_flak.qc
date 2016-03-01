@@ -59,6 +59,7 @@ void W_Flak_Projectile_Touch(void) {
         }
 
         self.owner = world;
+        self.clipgroup = CLIPGROUP_FLAK;
         self.projectiledeathtype |= HITTYPE_BOUNCE;
         self.cnt += 1;
     }
@@ -87,7 +88,6 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.bot_dodgerating = damage;
     e.movetype = MOVETYPE_BOUNCE;
     PROJECTILE_MAKETRIGGER(e);
-    e.clipgroup = CLIPGROUP_FLAK;
     e.projectiledeathtype = deathtype;
     e.gravity = grav;
     e.bouncefactor = bnc;
@@ -101,6 +101,8 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.velocity = v_forward * spd + v_up * upspd;
     W_SetupProjectileVelocity(e);
 
+    if(!e.clipgroup)
+        e.clipgroup = CLIPGROUP_FLAK;
 
     e.angles = vectoangles(e.velocity);
     e.flags = FL_PROJECTILE;

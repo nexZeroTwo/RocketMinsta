@@ -501,9 +501,7 @@ float HG_GenericProjectile_Attack(float hgtype) {
             HG_GenericProjectile(hgtype, '0 0 0', FALSE);
         else for(i = 0; i < split; ++i) {
             dir_y = spread * (-0.5 + (i / (split-1)));
-            HG_GenericProjectile(hgtype, dir, i) {
-                clipgroup: CLIPGROUP_PLAYERMASK(self) | hgtype
-            };
+            HG_GenericProjectile(hgtype, dir, i);
         }
     } else {
         HG_GenericProjectile(hgtype, '0 0 0', FALSE);
@@ -715,6 +713,9 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     }
 
     W_SetupProjectileVelocity(gren);
+
+    if(!gren.clipgroup)
+        gren.clipgroup = CLIPGROUP_PLAYERMASK(self) | hgtype;
 
     gren.max_health = gren.health;
     gren.angles = vectoangles(gren.velocity);

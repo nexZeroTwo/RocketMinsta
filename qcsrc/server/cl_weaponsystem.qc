@@ -1026,10 +1026,19 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 
 void W_SetupProjectileVelocity(entity missile)
 {
-	if(missile.owner == world)
+    var o = missile.realowner;
+    if(!o)
+        o = missile.owner;
+	if(!o)
 		error("Unowned missile");
 
-	missile.velocity = W_CalculateProjectileVelocity(missile.owner.velocity, missile.velocity);
+	missile.velocity = W_CalculateProjectileVelocity(o.velocity, missile.velocity);
+
+    if(!missile.clipgroup && teams_matter)
+    if(CVAR(g_player_dont_block_teammates))
+    if(CVAR(g_player_dont_block_teammates_projectiles))
+    if(!Buffs_Present(o, BUFF_MEDIC))
+        missile.clipgroup = o.clipgroup;
 }
 
 void W_AttachToShotorg(entity flash, vector offset)
