@@ -1060,7 +1060,7 @@ void Sbar_PrintScoreboardItem(vector pos, entity pl, float is_self, float pl_num
 
 			tmp_x = sbar_size[i] - sbar_fixscoreboardcolumnwidth_iconlen - sbar_fixscoreboardcolumnwidth_marginlen + sbar_fontsize_x;
 
-            if(g_nadgets && !is_spec) {
+            if(!is_spec && GetPlayerStatusIconsWidth(sbar_fontsize_y)) {
                 var p2 = pos - tmp;
                 p2 -= DrawPlayerStatusIcons(p2, sbar_fontsize_y, aa, 1, pl.(scores[SP_STATUSICONS]));
                 tmp_x -= sbar_fontsize_x * 0.25 - p2_x;
