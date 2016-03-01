@@ -818,9 +818,10 @@ void PutObserverInServer (void)
         self.hg_type1 = self.hg_type2 = 0;
         self.hg_nadesused = 0;
         self.hg_shield = 0;
-        self.w_secondary = 0;
     }
-    
+
+    self.w_secondary = 0;
+
     self.frozenrow = 0;
     self.jb_unlock_progress = 0;
     self.jb_message = JBMSG_NONE;
