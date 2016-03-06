@@ -1077,7 +1077,6 @@ float autocvar_g_ghost_items;
 float autocvar_g_grappling_hook;
 float autocvar_g_grappling_hook_tarzan;
 float autocvar_g_hitplots;
-float autocvar_g_instagib;
 float autocvar_g_jailbreak_controlpoint_claim;
 float autocvar_g_jailbreak_controlpoint_claim_allneutral;
 float autocvar_g_jailbreak_controlpoint_claim_noneutral;

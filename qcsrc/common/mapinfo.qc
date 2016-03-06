@@ -945,8 +945,20 @@ float MapInfo_CurrentFeatures()
 {
 	float req;
 	req = 0;
-	if(!(CVAR(g_lms) || CVAR(g_instagib) || CVAR(g_minstagib) || CVAR(g_nixnex) || CVAR(g_rocketarena) || !CVAR(g_pickup_items) || CVAR(g_race) || CVAR(g_cts) || CVAR(g_nexball)))
+	if(!(
+            CVAR(g_lms) ||
+            CVAR(g_minstagib) ||
+            CVAR(g_nixnex) ||
+            CVAR(g_rocketarena) ||
+            !CVAR(g_pickup_items) ||
+            CVAR(g_race) ||
+            CVAR(g_cts) ||
+            CVAR(g_nexball) ||
+            CVAR(g_clanarena) ||
+            (CVAR_STR(g_weaponarena) != "" && CVAR_STR(g_weaponarena) != "0")
+    )) {
 		req |= MAPINFO_FEATURE_WEAPONS;
+    }
 	return req;
 }
 
