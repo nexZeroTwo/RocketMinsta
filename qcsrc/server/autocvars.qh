@@ -1720,6 +1720,7 @@ float autocvar_sv_maxidle_spectatorsareidle;
 float autocvar_sv_maxspeed;
 float autocvar_sv_nicehealth;
 float autocvar_sv_noplayershadows;
+float autocvar_sv_nowarpzones;
 float autocvar_sv_oldfag;
 float autocvar_sv_pogostick;
 float autocvar_sv_precacheplayermodels;

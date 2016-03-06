@@ -510,8 +510,21 @@ entity warpzone_first;
 entity warpzone_position_first;
 entity warpzone_camera_first;
 .entity warpzone_next;
+
+float warpzone_maybe_remove(void) {
+    if(CVAR(sv_nowarpzones)) {
+        remove(self);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 void spawnfunc_misc_warpzone_position(void)
 {
+    if(warpzone_maybe_remove())
+        return;
+
 	// "target", "angles", "origin"
 	self.warpzone_next = warpzone_position_first;
 	warpzone_position_first = self;
@@ -522,6 +535,9 @@ void spawnfunc_trigger_warpzone_position(void)
 }
 void spawnfunc_trigger_warpzone(void)
 {
+    if(warpzone_maybe_remove())
+        return;
+
 	// warp zone entities must have:
 	// "killtarget" pointing to a target_position with a direction arrow
 	//              that points AWAY from the warp zone, and that is inside
@@ -556,6 +572,9 @@ void spawnfunc_trigger_warpzone(void)
 }
 void spawnfunc_func_camera(void)
 {
+    if(warpzone_maybe_remove())
+        return;
+
 	if(!self.scale)
 		self.scale = self.modelscale;
 	if(!self.scale)
