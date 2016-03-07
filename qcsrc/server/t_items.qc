@@ -1735,8 +1735,8 @@ void target_items_use (void)
 
 	float _switchweapon;
 	_switchweapon = FALSE;
-	if (activator.autoswitch)
-		if (activator.switchweapon == w_getbestweapon(activator))
+	if (activator.autoswitch && self.weapons)
+		if (activator.switchweapon != w_getbestweapon(activator))
 			_switchweapon = TRUE;
 
 	a0 = activator.armorvalue;
