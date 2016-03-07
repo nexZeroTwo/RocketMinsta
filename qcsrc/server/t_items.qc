@@ -1753,7 +1753,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_set, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_set, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_set, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_itembitset, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_itembitset, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_bitset, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1770,7 +1770,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_min, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_min, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_min, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_itemand, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_itemand, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_and, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1787,7 +1787,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_max, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_max, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_max, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_or, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_or, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_or, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1804,7 +1804,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_min, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_min, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_min, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_andnot, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_andnot, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_andnot, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
