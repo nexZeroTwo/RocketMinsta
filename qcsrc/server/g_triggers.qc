@@ -2030,7 +2030,6 @@ void spawnfunc_trigger_gravity()
  */
 
 .string chaintarget;
-.string nexttarget;
 
 string trigger_cycle_find_next_target(string curtarget) {
     while((var e = find(e, targetname, curtarget)))
