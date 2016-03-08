@@ -160,6 +160,8 @@ void HG_Shield_PlayerFrame(void) {
     }
 }
 
+.float hg_shield_nexteffect;
+
 float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hitloc) {
     if not(g_nadgets && damage && attacker.iscreature && self.hg_shield)
         return damage;
@@ -181,8 +183,10 @@ float HG_Shield_Damage(entity attacker, float damage, float deathtype, vector hi
     self.hg_shield_stored = min(CVAR(g_nadgets_shield_damage_store_limit), self.hg_shield_stored + damage * CVAR(g_nadgets_shield_damage_store));
     damage *= takefactor;
 
-    if(self.hg_shield_stored > o)
+    if(self.hg_shield_stored > o && time > self.hg_shield_nexteffect) {
         te_eleblast(hitloc, if(teams_matter) self.team else 0);
+        self.hg_shield_nexteffect = time + 0.15;
+    }
 
     if(DEATH_HGTYPE(deathtype) == HG_TRANSLOC)
         reflect = 0;
