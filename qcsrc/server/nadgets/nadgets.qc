@@ -636,3 +636,17 @@ float HG_ShowMenu(float always) {
 
     return FALSE;
 }
+
+void spawnfunc_target_bonusnadgets(void) {
+    self.classname = "target_bonusnadgets";
+    self.hg_type1 = HG_NameToType(self.netname);
+    self.cnt = floor(max(0, self.cnt));
+
+    if(!self.message)
+        self.message = "a secret has been triggered";
+
+    self.use = inline void(void) {
+        if(!PlayerIsDead(activator))
+            HG_GiveBonus(activator, self.hg_type1, self.cnt, self.message, FALSE);
+    };
+}
