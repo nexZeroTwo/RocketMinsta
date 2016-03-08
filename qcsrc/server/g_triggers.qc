@@ -2301,7 +2301,7 @@ void spawnfunc_trigger_relay_ifstate(void) {
         if(self.spawnflags & TSTATE_NOT)
             s = !s;
 
-        if(s)
+        if(s > 0) // XXX: why is this necessary?
             SUB_UseTargets();
     };
 
