@@ -2030,42 +2030,31 @@ void spawnfunc_trigger_gravity()
  */
 
 .string chaintarget;
+.string nexttarget;
 
-entity trigger_cycle_find_next_target(entity ref) {
-    entity e;
+string trigger_cycle_find_next_target(string curtarget) {
+    while((var e = find(e, targetname, curtarget)))
+        if(e.chaintarget)
+            return e.chaintarget;
 
-    if(ref.chaintarget != "")
-        e = find(world, targetname, ref.chaintarget);
-
-    if(!e.use)
-        e = world;
-
-    return e;
+    error("trigger_cycle: broken chain");
+    return NULL;
 }
 
 void trigger_cycle_reset(void) {
-    self.target = self.chaintarget;
-    self.enemy = trigger_cycle_find_next_target(self);
+    self.target = self.netname;
 }
 
 void trigger_cycle_use(void) {
     SUB_UseTargets_PreventReuse();
-    self.enemy = trigger_cycle_find_next_target(self.enemy);
-    self.target = self.enemy.targetname;
+    self.target = trigger_cycle_find_next_target(self.target);
     SUB_UseTargets_PreventReuse();
 }
 
-void trigger_cycle_init_delayed(void) {
-    self.enemy = trigger_cycle_find_next_target(self);
-    self.think = NULL;
-}
-
 void spawnfunc_trigger_cycle(void) {
-    self.chaintarget = self.target;
+    self.netname = self.target;
     self.use = trigger_cycle_use;
     self.reset = trigger_cycle_reset;
-    self.think = trigger_cycle_init_delayed;
-    self.nextthink = time;
 }
 
 /*
