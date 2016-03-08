@@ -109,3 +109,34 @@ float Buffs_TypeToIndex(float buff) {
 
     return -1;
 }
+
+float Buffs_ParseList(string bufflist) {
+    var tokens = tokenize(bufflist);
+    var bffs = 0;
+
+    for(var i = 0; i < tokens; ++i) {
+        if(argv(i) == "all")
+            return BUFF_LAST * 2 - 1;
+
+        bffs |= Buffs_NameToType(argv(i));
+    }
+
+    return bffs;
+}
+
+string Buffs_TypeToList(float bffs) {
+    var s = "";
+
+    for(var b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) {
+        if(bffs & b) {
+            var n = Buffs_TypeToName(b);
+
+            if(s == "")
+                s = n;
+            else
+                s = s + " " + n;
+        }
+    }
+
+    return s;
+}

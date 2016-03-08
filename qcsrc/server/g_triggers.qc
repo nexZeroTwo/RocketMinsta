@@ -398,7 +398,7 @@ void spawnfunc_trigger_relay()
     self.classname = "trigger_relay";
 	self.use = SUB_UseTargets;
 	self.reset = spawnfunc_trigger_relay; // this spawnfunc resets fully
-};
+}
 
 void delay_use()
 {
@@ -418,6 +418,15 @@ void spawnfunc_trigger_delay()
 
     self.use = delay_use;
     self.reset = delay_reset;
+}
+
+void spawnfunc_trigger_relay_once(void) {
+    self.classname = "trigger_relay";
+    self.use = inline void(void) {
+        SUB_UseTargets();
+        self.use = SUB_DontUseTargets;
+    };
+    self.reset = spawnfunc_trigger_relay_once;
 }
 
 //=============================================================================

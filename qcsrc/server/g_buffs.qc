@@ -1425,3 +1425,51 @@ BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_guard,      "guard")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_scout,      "scout")
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_ammoregen,  "ammoregen")
+
+
+//
+// Some advanced entities for mappers
+//
+
+enum {
+    TBUFFS_AND,
+    TBUFFS_OR,
+    TBUFFS_NOT,
+};
+
+void spawnfunc_target_buffs(void) {
+    self.classname = "target_buffs";
+
+    if(self.netname)
+        self.buffs = Buffs_ParseList(self.netname) & g_buffs_enabled;
+    else
+        self.buffs = g_buffs_enabled;
+
+    self.cnt = floor(max(0, self.cnt));
+
+    self.use = inline void(void) {
+        if(PlayerIsDead(activator))
+            return;
+
+        var cbuffs = activator.buffs;
+        var mbuffs = self.buffs;
+
+        if(self.cnt)
+            mbuffs = randombits(mbuffs, self.cnt, FALSE);
+
+        if(self.spawnflags & TBUFFS_NOT)
+            mbuffs = ~mbuffs;
+
+        if(self.spawnflags & TBUFFS_AND) {
+            cbuffs = cbuffs & mbuffs;
+        } else if(self.spawnflags & TBUFFS_OR) {
+            cbuffs = cbuffs | mbuffs;
+        } else {
+            activator.buffs = 0;
+            cbuffs = mbuffs;
+        }
+
+        Buffs_Give(activator, cbuffs, 0);
+        activator.buffs = cbuffs;
+    };
+}

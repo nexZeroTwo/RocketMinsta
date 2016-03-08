@@ -41,3 +41,5 @@ string Buffs_NameToFullName(string);
 string Buffs_TypeToExpandedName(float, string, float);
 vector Buffs_TypeToColor(float);
 float Buffs_TypeToIndex(float);
+float Buffs_ParseList(string); // WARNING: tokenizes!
+string Buffs_TypeToList(float);
