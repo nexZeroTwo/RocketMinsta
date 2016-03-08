@@ -2136,6 +2136,22 @@ void spawnfunc_trigger_relay_random(void) {
 }
 
 /*
+ * iterators
+ */
+
+void spawnfunc_trigger_relay_foreachplayer(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        using(activator = world)
+            FOR_EACH_PLAYER(activator)
+                SUB_UseTargets();
+    };
+
+    self.reset = spawnfunc_trigger_relay_foreachplayer;
+}
+
+/*
  * state
  */
 
@@ -2153,6 +2169,7 @@ typedef float(void) statefunc_t;
 typedef float(entity, .entity) statefunc_aggr_t;
 
 .statefunc_t statefunc;
+.statefunc_t statefunc2;
 
 const STATECHAIN_STACK_MAX = 16;
 .entity statechain_stack[STATECHAIN_STACK_MAX];
@@ -2208,10 +2225,13 @@ float statefunc_aggregate_targets(statefunc_aggr_t aggr) {
     statechain_push();
     var s = aggr(SUB_LinkTargets(self, statechain_next, FALSE), statechain_next);
     statechain_pop();
+    return s;
+}
 
+float statefunc_invertible() {
+    var s = self.statefunc2();
     if(self.spawnflags & TSTATE_NOT)
         return !s;
-
     return s;
 }
 
@@ -2230,12 +2250,14 @@ float statefunc_and(void) {
 void trigger_state_init(spawnfunc_t reset_f, statefunc_t state_f) {
     self.classname = "trigger_state";
     self.reset = reset_f;
-    self.statefunc = state_f;
+    self.statefunc = statefunc_invertible;
+    self.statefunc2 = state_f;
     self.use = SUB_Null; // dummy default to ensure that ForEachTarget works on it
 }
 
 void spawnfunc_trigger_state(void) {
     trigger_state_init(spawnfunc_trigger_state, statefunc_self);
+    self.statefunc = self.statefunc2;
     self.state = (self.spawnflags & TSTATE_ENABLED);
 
     self.use = inline void(void) {
@@ -2253,6 +2275,12 @@ void spawnfunc_trigger_state_and(void) {
 
 void spawnfunc_trigger_state_or(void) {
     trigger_state_init(spawnfunc_trigger_state_or, statefunc_or);
+}
+
+void spawnfunc_trigger_state_activatoralive(void) {
+    trigger_state_init(spawnfunc_trigger_state_activatoralive, inline float(void) {
+        return !PlayerIsDead(activator);
+    });
 }
 
 void spawnfunc_trigger_relay_ifstate(void) {
