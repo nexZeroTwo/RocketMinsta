@@ -14,7 +14,8 @@ void DelayThink()
 
 float foreachtarget_callid;
 .float targethandled;
-void SUB_ForEachTarget(entity s, void(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
+
+void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
     float i;
     string targname;
     entity targ;
@@ -30,18 +31,46 @@ void SUB_ForEachTarget(entity s, void(entity, float, vector, string, entity) cba
         if(targname != "") {
             for(targ = world; (targ = find(targ, targetname, targname));)
             if(targ && targ.use && targ.targethandled != foreachtarget_callid) {
-                cback(targ, fdata, vdata, sdata, edata);
+                if(cback(targ, fdata, vdata, sdata, edata))
+                    return;
+
                 targ.targethandled = foreachtarget_callid;
                 
                 if(recursive)
-                    SUB_ForEachTarget(targ, cback, recursive, fdata, vdata, sdata, edata);
+                    SUB_ForEachTarget_Recurse(targ, cback, recursive, fdata, vdata, sdata, edata);
             }
         }
     }
 }
 
-void SUB_ForEachTarget_Init() {
+void SUB_ForEachTarget(entity s, float(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
     ++foreachtarget_callid;
+    SUB_ForEachTarget_Recurse(s, cback, recursive, fdata, vdata, sdata, edata);
+}
+
+entity linktargets_ent;
+entity linktargets_first;
+var .entity linktargets_fld;
+
+entity SUB_LinkTargets(entity ent, .entity fld, float recursive) {
+    linktargets_ent = world;
+    linktargets_first = world;
+    linktargets_fld = fld;
+
+    SUB_ForEachTarget(ent, inline float(entity targ, float _f, vector _v, string _s, entity _e) {
+        if(linktargets_ent)
+            linktargets_ent.linktargets_fld = targ;
+        else
+            linktargets_first = targ;
+
+        linktargets_ent = targ;
+        return FALSE;
+    }, recursive, NULL, NULL, NULL, NULL);
+
+    if(linktargets_ent)
+        linktargets_ent.fld = world;
+
+    return linktargets_first;
 }
 
 /*
@@ -2102,12 +2131,12 @@ void spawnfunc_trigger_relay_random(void) {
 
     self.use = inline void(void) {
         RandomSelection_Init();
-        SUB_ForEachTarget_Init();
 
-        SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
+        SUB_ForEachTarget(self, inline float(entity e, float _f, vector _v, string _s, entity _e) {
             e.sub_target_used = time;
             RandomSelection_Add(e, 0, NULL, 1, 1);
-        }, FALSE, 0, '0 0 0', NULL, world);
+            return FALSE;
+        }, FALSE, NULL, NULL, NULL, NULL);
 
         if(RandomSelection_chosen_ent) {
             RandomSelection_chosen_ent.sub_target_used = -1;
@@ -2116,4 +2145,151 @@ void spawnfunc_trigger_relay_random(void) {
     };
 
     self.reset = spawnfunc_trigger_relay_random;
+}
+
+/*
+ * state
+ */
+
+enumflags {
+    TSTATE_ENABLED,
+    TSTATE_USE_ON,
+    TSTATE_USE_OFF,
+};
+
+enumflags {
+    TSTATE_NOT,
+};
+
+typedef float(void) statefunc_t;
+typedef float(entity, .entity) statefunc_aggr_t;
+
+.statefunc_t statefunc;
+
+const STATECHAIN_STACK_MAX = 16;
+.entity statechain_stack[STATECHAIN_STACK_MAX];
+float statechain_stack_ptr;
+var .entity statechain_next;
+
+void statechain_push(void) {
+    if(statechain_stack_ptr >= STATECHAIN_STACK_MAX)
+        error("statechain stack overflow");
+
+    statechain_next = statechain_stack[statechain_stack_ptr];
+
+    ++statechain_stack_ptr;
+    dprint("PSH PTR: " + statechain_stack_ptr + "\n");
+}
+
+void statechain_pop(void) {
+    --statechain_stack_ptr;
+
+    if(statechain_stack_ptr < 0)
+        error("statechain stack underflow");
+
+    statechain_next = statechain_stack[statechain_stack_ptr];
+    dprint("POP PTR: " + statechain_stack_ptr + "\n");
+}
+
+float compute_state(entity e) {
+    using(self = e)
+        return e.statefunc();
+}
+
+float aggregate_and(entity e, .entity next) {
+    do {
+        if(e.statefunc)
+        if(!compute_state(e))
+            return FALSE;
+    } while((e = e.next));
+
+    return TRUE;
+}
+
+float aggregate_or(entity e, .entity next) {
+    do {
+        if(e.statefunc)
+        if(compute_state(e))
+            return TRUE;
+    } while((e = e.next));
+
+    return FALSE;
+}
+
+float statefunc_aggregate_targets(statefunc_aggr_t aggr) {
+    statechain_push();
+    var s = aggr(SUB_LinkTargets(self, statechain_next, FALSE), statechain_next);
+    statechain_pop();
+
+    if(self.spawnflags & TSTATE_NOT)
+        return !s;
+
+    return s;
+}
+
+float statefunc_self(void) {
+    return self.state;
+}
+
+float statefunc_or(void) {
+    return statefunc_aggregate_targets(aggregate_or);
+}
+
+float statefunc_and(void) {
+    return statefunc_aggregate_targets(aggregate_and);
+}
+
+void trigger_state_init(spawnfunc_t reset_f, statefunc_t state_f) {
+    self.classname = "trigger_state";
+    self.reset = reset_f;
+    self.statefunc = state_f;
+    self.use = SUB_Null; // dummy default to ensure that ForEachTarget works on it
+}
+
+void spawnfunc_trigger_state(void) {
+    trigger_state_init(spawnfunc_trigger_state, statefunc_self);
+    self.state = (self.spawnflags & TSTATE_ENABLED);
+
+    self.use = inline void(void) {
+        self.state = !(self.state);
+        dprint("State ", self.netname, " is now ^2", ftos(self.state), "\n");
+
+        if((self.state && self.spawnflags & TSTATE_USE_ON) || (!self.state && self.spawnflags & TSTATE_USE_OFF))
+            SUB_UseTargets();
+    };
+}
+
+void spawnfunc_trigger_state_and(void) {
+    trigger_state_init(spawnfunc_trigger_state_and, statefunc_and);
+}
+
+void spawnfunc_trigger_state_or(void) {
+    trigger_state_init(spawnfunc_trigger_state_or, statefunc_or);
+}
+
+void spawnfunc_trigger_relay_ifstate(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        var s = compute_state(self.enemy);
+
+        if(self.spawnflags & TSTATE_NOT)
+            s = !s;
+
+        if(s)
+            SUB_UseTargets();
+    };
+
+    InitializeEntity(self, inline void(void) {
+        while((var e = find(e, targetname, self.killtarget))) {
+            if(e.statefunc) {
+                self.killtarget = NULL;
+                self.enemy = e;
+                break;
+            }
+        }
+
+        if(!self.enemy)
+            objerror("trigger_relay_ifstate does not point to a valid state entity");
+    }, INITPRIO_FINDTARGET);
 }

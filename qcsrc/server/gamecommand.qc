@@ -1358,5 +1358,12 @@ void GameCommand(string command)
         return;
     }
 
+    if(argv(0) == "dumpstates") {
+        while((var e = nextent(e))) if(e.statefunc)
+            print(e + " ^3" + e.targetname + "^7: ^2" + (if(compute_state(e)) "^2on" else "^1off") + "\n");
+
+        return;
+    }
+
 	print("Invalid command. For a list of supported commands, try sv_cmd help.\n");
 }

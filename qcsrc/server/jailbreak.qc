@@ -48,10 +48,10 @@ void JB_BLog(string s) {
 	bprint(strcat("Jailbreak: ", s, "\n"));
 }
 
-void JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity cpoint) {
+float JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity cpoint) {
     if(door.classname != "door" && door.classname != "door_rotating") {
         JB_BLog(strcat("Warning: ^3", JB_ControlPoint_Name(cpoint), "^7 at ", vtos(cpoint.origin), " is linked with an entity of unhandled class (^3", door.classname, "^7)!"));
-        return;
+        return FALSE;
     }
     
     if(!JB_FIRSTDOOR(theteam))
@@ -61,23 +61,24 @@ void JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity c
         JB_NEXTDOOR(JB_LASTDOOR(theteam)) = door;
     
     JB_SETLASTDOOR(theteam, door);
+
+    return FALSE;
 }
 
 void JB_DelayedInit() {
     entity e;
-    
-    SUB_ForEachTarget_Init();
+
     FOR_EACH_JB_CONTROLPOINT(e)
         SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', NULL, e);
 }
 
 float jb_doors_opened[2];
-void JB_MaybeOpenDoor(entity door, float openjails, vector vdata, string sdata, entity cpoint) {
+float JB_MaybeOpenDoor(entity door, float openjails, vector vdata, string sdata, entity cpoint) {
     if(openjails == OPENJAILS_LOCKED && door.jaildoormode != JAILDOORMODE_OPEN)
-        return;
+        return FALSE;
     
     if(openjails == OPENJAILS_OPEN && door.jaildoormode == JAILDOORMODE_CLOSED)
-        return;
+        return FALSE;
     
     // OPENJAILS_LOCKED_FORCE is handled in JB_NonJBInit
     // For OPENJAILS_OPEN_FORCE, the below is always executed
@@ -108,14 +109,15 @@ void JB_MaybeOpenDoor(entity door, float openjails, vector vdata, string sdata, 
         float idx = Team_Index(cpoint.team);
         jb_doors_opened[idx] = jb_doors_opened[idx] + 1;
     }
+
+    return FALSE;
 }
 
 // This is called for non-jailbreak modes only, to alter jb-specific entities on the map
 void JB_NonJBInit() {
     entity e;
     float openjails = CVAR(g_jailbreak_nonjb_openjails);
-    
-    SUB_ForEachTarget_Init();
+
     FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
         if(openjails != OPENJAILS_LOCKED_FORCE)
             SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', NULL, e);
