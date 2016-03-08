@@ -2240,7 +2240,7 @@ void spawnfunc_trigger_state(void) {
 
     self.use = inline void(void) {
         self.state = !(self.state);
-        dprint("State ", self.netname, " is now ^2", ftos(self.state), "\n");
+        dprint("State ^3", self.targetname, "^7 is now ^2", ftos(self.state), "\n");
 
         if((self.state && self.spawnflags & TSTATE_USE_ON) || (!self.state && self.spawnflags & TSTATE_USE_OFF))
             SUB_UseTargets();
