@@ -205,7 +205,7 @@ void CSQC_Init(void)
     registercvar("cl_message_praise", "1", CVAR_SAVE);
     registercvar("cl_message_praise_show", "1", CVAR_SAVE);
     registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
-    registercvar("cl_warpzone_sound_transition", "500", CVAR_SAVE);
+    registercvar("cl_warpzone_sound_transition", "0", CVAR_SAVE);
 
     gametype = 0;
 
@@ -587,6 +587,8 @@ void ReportHUDInfo(string hskin) {
         localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", hskin, "\n");
 }
 
+float warpzone_sound_transition;
+
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
@@ -729,9 +731,12 @@ void PostInit(void)
             cvar_set("gl_flashblend", "0");
             cvar_archive("r_shadow_lightintensityscale", "1.0");
             cvar_archive("r_shadow_lightradiusscale", "1.0");
+        case 63:
+            cvar_set("cl_warpzone_sound_transition", "0");
+            warpzone_sound_transition = 0;
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 63\n");
+		localcmd("seta rm_initialized 64\n");
 		RM_OUTDATED
 		break;
 	}
