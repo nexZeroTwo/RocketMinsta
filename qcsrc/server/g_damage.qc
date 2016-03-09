@@ -459,10 +459,16 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         if(alimit)  alimit = min(CVAR(g_balance_armor_limit),  alimit);
         else        alimit = CVAR(g_balance_armor_limit);
 
-        if(g_clanarena) if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
-            float lim = CVAR(g_clanarena_heal_limit);
-            hlimit = min(hlimit, lim);
-            alimit = min(alimit, lim);
+        if(g_clanarena) {
+            hlimit = min(CVAR(g_clanarena_start_health), hlimit);
+            alimit = min(CVAR(g_clanarena_start_armor),  alimit);
+
+            if(healtype != DEATH_HURTTRIGGER)
+            if(!(DEATH_HGTYPE(healtype) == HG_LINKER && healtype & HITTYPE_SECONDARY)) {
+                float lim = CVAR(g_clanarena_heal_limit);
+                hlimit = min(hlimit, lim);
+                alimit = min(alimit, lim);
+            }
         }
     }
 

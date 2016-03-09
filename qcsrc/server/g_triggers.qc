@@ -601,7 +601,6 @@ void spawnfunc_trigger_heal()
 	precache_sound(self.noise);
 };
 
-
 //////////////////////////////////////////////////////////////
 //
 //
@@ -611,10 +610,33 @@ void spawnfunc_trigger_heal()
 //////////////////////////////////////////////////////////////
 
 
+void spawnfunc_target_heal(void) {
+    self.classname = "target_heal";
+
+    if(!self.health)
+        self.health = 25;
+
+    if(!self.cnt)
+        self.cnt = HEAL_PAUSEROT_DEFAULT;
+
+    self.use = inline void(void) {
+        if(activator.iscreature && activator.takedamage && activator.deadflag == DEAD_NO) {
+            Heal(activator, self, activator, self.health, self.armorvalue, self.max_health, self.max_armorvalue, DEATH_HURTTRIGGER, self.cnt, self.cnt, '0 0 0', '0 0 0');
+        }
+    };
+}
+
 
 // TODO add a way to do looped sounds with sound(); then complete this entity
 .float volume, atten;
-void target_speaker_use() {sound(self, CHAN_TRIGGER, self.noise, VOL_BASE * self.volume, self.atten);}
+
+void target_speaker_use(void) {
+    sound(self, CHAN_TRIGGER, self.noise, VOL_BASE * self.volume, self.atten);
+}
+
+void target_speaker_reset(void) {
+    stopsound(self, CHAN_TRIGGER);
+}
 
 void spawnfunc_target_speaker()
 {
@@ -629,6 +651,7 @@ void spawnfunc_target_speaker()
 		if(!self.volume)
 			self.volume = 1;
 		self.use = target_speaker_use;
+        self.reset = target_speaker_reset;
 	}
 	else
 	{
