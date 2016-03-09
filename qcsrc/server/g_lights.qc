@@ -1,13 +1,15 @@
-float LOOP = 1;
 
+float DSTARTOFF = 1;
 float DNOSHADOW = 2;
 float DFOLLOW = 4;
+float DCORONA = 8;
+
 .float light_lev;
 .float lefty;
 .vector color;
 .string dtagname;
 
-/*QUAKED dynlight (0 1 0) (-8 -8 -8) (8 8 8) START_OFF NOSHADOW FOLLOW
+/*QUAKED dynlight (0 1 0) (-8 -8 -8) (8 8 8) START_OFF NOSHADOW FOLLOW CORONA
 Dynamic spawnfunc_light.
 Can do one of these things: sit still and be just a silly spawnfunc_light, travel along a path, follow an entity around, attach to a tag on an entity.
 It can spin around it's own axis in all the above cases.
@@ -82,6 +84,14 @@ void dynlight_use()
 	else
 		self.light_lev = 0;
 };
+
+void dynlight_reset(void) {
+    if(self.spawnflags & DSTARTOFF)
+        self.light_lev = 0;
+    else
+        self.light_lev = self.lefty;
+}
+
 void spawnfunc_dynlight()
 {
 	entity	targ;
@@ -90,17 +100,23 @@ void spawnfunc_dynlight()
 		self.light_lev = 200;
 	if (!self.color)
 		self.color = '1 1 1';
+
 	self.lefty = self.light_lev;
 	self.use = dynlight_use;
 	setsize (self, '0 0 0', '0 0 0');
 	setorigin (self, self.origin);
-	//self.pflags = PFLAGS_FULLDYNAMIC;
+	self.pflags = PFLAGS_FULLDYNAMIC;
 	self.solid = SOLID_NOT;
 	//self.blocked = SUB_Null;
-	//if (self.spawnflags & DNOSHADOW)
-	//	self.pflags = self.pflags + PFLAGS_NOSHADOW;
-	//if (self.spawnflags & START_OFF)
-	//	self.light_lev = 0;
+	
+    if(self.spawnflags & DNOSHADOW)
+        self.pflags |= PFLAGS_NOSHADOW;
+	
+    if(self.spawnflags & DSTARTOFF)
+        self.light_lev = 0;
+
+    if(self.spawnflags & DCORONA)
+        self.pflags |= PFLAGS_CORONA;
 
 //tag attaching
 	if (self.dtagname)

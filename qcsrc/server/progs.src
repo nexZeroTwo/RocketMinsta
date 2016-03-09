@@ -222,6 +222,8 @@ csqcprojectile.qc
 csqcmessage.qc
 radio.qc
 
+g_lights.qc
+
 ../warpzonelib/anglestransform.qc
 ../warpzonelib/mathlib.qc
 ../warpzonelib/common.qc
