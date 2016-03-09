@@ -103,6 +103,7 @@ void spawnfunc_dynlight()
 
 	self.lefty = self.light_lev;
 	self.use = dynlight_use;
+    self.reset = dynlight_reset;
 	setsize (self, '0 0 0', '0 0 0');
 	setorigin (self, self.origin);
 	self.pflags = PFLAGS_FULLDYNAMIC;
