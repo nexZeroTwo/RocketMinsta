@@ -782,6 +782,7 @@ vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float 
     var nearest_dst = 1250; // initialize with the maximum distance
     var nearest_wz;
     var nearest_wz_vw;
+    var nearest_dir;
 
     for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
         var org = wz.origin;
@@ -792,6 +793,7 @@ vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float 
 
         if(dst < nearest_dst) {
             viewee_warped = WarpZone_UnTransformOrigin(wz, viewee);
+            dir = normalize(viewee_warped - viewer);
 
             if(fwd != '0 0 0' && dir * fwd < 0)
                 continue; // no eyes on our back
@@ -799,6 +801,7 @@ vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float 
             nearest_dst = dst;
             nearest_wz = wz;
             nearest_wz_vw = viewee_warped;
+            nearest_dir = dir;
         }
     }
 
@@ -806,7 +809,7 @@ vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float 
         WarpZone_TraceLine(viewer, nearest_wz_vw, traceflag, traceent);
         if(vlen(trace_endpos - viewee) < 1) {
             // a line of sight exists
-            return dir;
+            return nearest_dir;
         }
     }
 
