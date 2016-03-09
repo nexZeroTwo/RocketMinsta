@@ -168,8 +168,9 @@ void entcs_think(void) {
     float i; for(i = 1; i <= maxclients; ++i) {
         entity c = edict_num(i);
 
-        if(clienttype(c) == CLIENTTYPE_REAL)
+        if(clienttype(c) == CLIENTTYPE_REAL) {
             self.(entcs_culled[i-1]) = entcs_cull(self, c);
+        }
     }
 }
 

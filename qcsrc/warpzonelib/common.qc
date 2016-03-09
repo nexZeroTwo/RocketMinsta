@@ -730,6 +730,9 @@ void WarpZone_Sound(entity e, float chan, string sound_path, float vol, float at
 	}
 }
 
+
+#ifdef WZ_SLOW_FINDLOS
+
 vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float traceflag, entity traceent) {
     var wz = world;
 
@@ -755,3 +758,60 @@ vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float 
     // can't see it at all
     return '0 0 0';
 }
+
+#else
+
+vector WarpZone_FindLineOfSight(vector fwd, vector viewer, vector viewee, float traceflag, entity traceent) {
+    var dir = normalize(viewee - viewer);
+    var viewee_warped;
+
+    // try a direct trace first
+
+    if(fwd != '0 0 0' && dir * fwd < 0) {
+        // no eyes on our back
+    } else {
+        WarpZone_TraceLine(viewer, viewee, traceflag, traceent);
+        if(vlen(trace_endpos - viewee) < 1) {
+            // a line of sight exists
+            return dir;
+        }
+    }
+
+    // failed, let's try the nearest warpzone
+
+    var nearest_dst = 1250; // initialize with the maximum distance
+    var nearest_wz;
+    var nearest_wz_vw;
+
+    for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
+        var org = wz.origin;
+        if(org == '0 0 0')
+            org = 0.5 * (wz.mins + wz.maxs);
+
+        var dst = vlen(org - viewer);
+
+        if(dst < nearest_dst) {
+            viewee_warped = WarpZone_UnTransformOrigin(wz, viewee);
+
+            if(fwd != '0 0 0' && dir * fwd < 0)
+                continue; // no eyes on our back
+
+            nearest_dst = dst;
+            nearest_wz = wz;
+            nearest_wz_vw = viewee_warped;
+        }
+    }
+
+    if(nearest_wz) {
+        WarpZone_TraceLine(viewer, nearest_wz_vw, traceflag, traceent);
+        if(vlen(trace_endpos - viewee) < 1) {
+            // a line of sight exists
+            return dir;
+        }
+    }
+
+    // nope, give up
+    return '0 0 0';
+}
+
+#endif
