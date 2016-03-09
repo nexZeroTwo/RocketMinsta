@@ -631,7 +631,7 @@ void spawnfunc_target_heal(void) {
 .float volume, atten;
 
 void target_speaker_use(void) {
-    sound(self, CHAN_TRIGGER, self.noise, VOL_BASE * self.volume, self.atten);
+    sound(self, CHAN_TRIGGER, self.noise, self.volume, self.atten);
 }
 
 void target_speaker_reset(void) {
@@ -650,6 +650,8 @@ void spawnfunc_target_speaker()
 			self.atten = 0;
 		if(!self.volume)
 			self.volume = 1;
+
+        self.volume = bound(0, VOL_BASE * self.volume, 1);
 		self.use = target_speaker_use;
         self.reset = target_speaker_reset;
 	}
@@ -661,7 +663,9 @@ void spawnfunc_target_speaker()
 			self.atten = 0;
 		if(!self.volume)
 			self.volume = 1;
-		ambientsound (self.origin, self.noise, VOL_BASE * self.volume, self.atten);
+
+        self.volume = bound(0, VOL_BASE * self.volume, 1);
+		ambientsound (self.origin, self.noise, self.volume, self.atten);
 	}
 };
 
