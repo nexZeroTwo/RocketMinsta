@@ -570,6 +570,15 @@ void spawnfunc_trigger_warpzone(void)
 	warpzone_first = self;
 	WarpZone_ChainAdd(self);
 }
+
+vector WarpZone_Camera_camera_transform(vector org, vector ang)
+{
+    // a fixed camera view
+    trace_endpos = self.enemy.origin;
+    makevectors(self.enemy.velocity);
+    return trace_endpos;
+}
+
 void spawnfunc_func_camera(void)
 {
     if(warpzone_maybe_remove())
@@ -596,6 +605,7 @@ void spawnfunc_func_camera(void)
 	self.SendEntity = WarpZone_Camera_Send;
 	self.SendFlags = 0xFFFFFF;
 	self.warpzone_next = warpzone_camera_first;
+    self.camera_transform = WarpZone_Camera_camera_transform;
 	warpzone_camera_first = self;
 }
 
