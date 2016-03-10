@@ -225,6 +225,8 @@ regex_sub_callback regex_sub_default;
 float regex_sub_once(string regex, string input, float offset, float reflags, string sub, regex_sub_callback subfunc);
 float regex_sub(string regex, string input, float reflags, string sub, regex_sub_callback subfunc);
 
+#define FORCE_CAST(t) (t)(__variant)
+
 typedef __undefined va_parm;
 
 var va_parm __va_parm0;

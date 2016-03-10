@@ -19,8 +19,7 @@ void entcs_init(void) {
     print("Initializing ClientSide information entities\n");
 }
 
-.float entcs_culled[256];
-
+#define entcs_culled per_client_data
 
 float entcs_cull(entity what, entity forwhom) {
     if(what.owner == forwhom.clientcamera)

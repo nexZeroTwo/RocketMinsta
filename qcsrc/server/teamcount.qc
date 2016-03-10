@@ -82,7 +82,7 @@ float TeamCount_NextTeam(float t) {
 }
 
 entity TeamCount_PlayerPool_GetPlayer(entity pool, float idx) {
-    return pool.(teamcount_playerpool[idx]);
+    return FORCE_CAST(entity)(pool.(teamcount_playerpool[idx]));
 }
 
 float TeamCount_PlayerPool_PlayerValue(entity plr) {
@@ -113,7 +113,7 @@ void TeamCount_PlayerPool_Add(entity pool, entity plr) {
         error(strcat("TeamCount_PlayerPool_Add: maximum size of ", ftos(TC_POOL_MAX), " exceeded"));
     
     float idx = pool.teamcount_poolsize;
-    pool.(teamcount_playerpool[idx]) = plr;
+    pool.(teamcount_playerpool[idx]) = FORCE_CAST(float)plr;
     pool.teamcount_poolsize += 1;
     pool.teamcount_totalscore += TeamCount_PlayerPool_PlayerValue(plr);
 }
@@ -127,14 +127,13 @@ void TeamCount_PlayerPool_Remove(entity pool, entity plr) {
     pool.teamcount_totalscore -= TeamCount_PlayerPool_PlayerValue(plr);
     
     for(i = idx + 1; i < pool.teamcount_poolsize; ++i)
-        pool.(teamcount_playerpool[i-1]) = TeamCount_PlayerPool_GetPlayer(pool, i);
+        pool.(teamcount_playerpool[i-1]) = FORCE_CAST(float)TeamCount_PlayerPool_GetPlayer(pool, i);
     
     pool.teamcount_poolsize -= 1;
 }
 
 void TeamCount_PlayerPool_Swap(float i1, float i2, entity pool) {
-    entity tmp;
-    tmp = pool.(teamcount_playerpool[i1]);
+    var tmp = pool.(teamcount_playerpool[i1]);
     pool.(teamcount_playerpool[i1]) = pool.(teamcount_playerpool[i2]);
     pool.(teamcount_playerpool[i2]) = tmp;
 }
@@ -153,7 +152,7 @@ entity teamcount_balance_pools[4];
 entity TeamCount_BalanceTeams_SelectPool(float tc, entity plr) {
     float change = TeamCount_PlayerPool_PlayerValue(plr), i;
     entity p = teamcount_balance_pools[0];
-    
+
     if(change == 0) {
         for(i = 1; i < tc; ++i)
             if(teamcount_balance_pools[i].teamcount_poolsize < p.teamcount_poolsize)

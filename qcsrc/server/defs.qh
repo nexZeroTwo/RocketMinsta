@@ -850,3 +850,6 @@ void PlayerSpectatorToggle(void);
 .float discardabledemo;
 
 void SetPlayerClipGroup(entity plr, float force_team_clip);
+
+#define RM_MAXCLIENTS 256
+.float per_client_data[RM_MAXCLIENTS];
