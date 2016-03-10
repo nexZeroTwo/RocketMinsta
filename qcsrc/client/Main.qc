@@ -124,7 +124,7 @@ void CSQC_Init(void)
 
 	drawfont = 0;
 
-	for(i = 0; i < 255; ++i)
+	for(i = 0; i < RM_MAXCLIENTS; ++i)
 		if(getplayerkey(i, "viewentity") == "")
 			break;
 	maxclients = i;

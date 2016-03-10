@@ -568,11 +568,14 @@ void spawnfunc_worldspawn (void)
 	entity head;
 	head = nextent(world);
 	maxclients = 0;
-	while(head)
+	while(head && clienttype(head) != CLIENTTYPE_NOTACLIENT)
 	{
 		++maxclients;
 		head = nextent(head);
 	}
+
+    if(maxclients > RM_MAXCLIENTS)
+        error("^3This build of RocketMinsta supports only up to " + RM_MAXCLIENTS + " clients. Recompile with -DRM_MAXCLIENTS=" + maxclients + ", or reduce the maxplayers setting.");
 
 	// needs to be done so early as they would still spawn
 	RegisterWeapons();

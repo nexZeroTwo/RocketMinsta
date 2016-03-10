@@ -107,7 +107,7 @@ void Net_GrapplingHook()
 	start_y = ReadCoord();
 	start_z = ReadCoord();
 
-	if(i <= 0 || i >= 256) // not owned by a client
+	if(i <= 0 || i > RM_MAXCLIENTS) // not owned by a client
 		return;
 	--i;
 
