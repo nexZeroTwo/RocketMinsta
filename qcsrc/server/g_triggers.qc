@@ -191,6 +191,7 @@ void SUB_UseTargets_PreventReuse() {
 
 float	SPAWNFLAG_NOMESSAGE = 1;
 float	SPAWNFLAG_NOTOUCH = 1;
+float   SPAWNFLAG_PERPLAYER_COOLDOWN = 2;
 
 // the wait time has passed, so set back up for another activation
 void multi_wait()
@@ -209,10 +210,15 @@ void multi_wait()
 // so wait for the delay time before firing
 void multi_trigger()
 {
-	if (self.nextthink > time)
-	{
-		return;		// allready been triggered
-	}
+    var idx = -1;
+
+    if(self.spawnflags & SPAWNFLAG_PERPLAYER_COOLDOWN && self.enemy.flags & FL_CLIENT && self.enemy.iscreature) {
+        idx = num_for_edict(self.enemy) - 1;
+        if(self.(per_client_data[idx]) > time)
+            return;
+    } else if (self.nextthink > time) {
+        return;
+    }
 
 	if (self.classname == "trigger_secret")
 	{
@@ -236,10 +242,12 @@ void multi_trigger()
 	{
 		self.think = multi_wait;
 		self.nextthink = time + self.wait;
+
+        if(idx >= 0)
+            self.(per_client_data[idx]) = self.nextthink;
 	}
 	else
-	{	// we can't just remove (self) here, because this is a touch function
-		// called wheil C code is looping through area links...
+	{
 		self.touch = SUB_Null;
 	}
 };
