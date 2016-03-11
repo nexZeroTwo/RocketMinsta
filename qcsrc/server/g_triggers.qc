@@ -35,7 +35,7 @@ void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, en
                     return;
 
                 targ.targethandled = foreachtarget_callid;
-                
+
                 if(recursive)
                     SUB_ForEachTarget_Recurse(targ, cback, recursive, fdata, vdata, sdata, edata);
             }
@@ -43,8 +43,10 @@ void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, en
     }
 }
 
+#define SUB_ForEachTarget_InitShared() (++foreachtarget_callid)
+
 void SUB_ForEachTarget(entity s, float(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
-    ++foreachtarget_callid;
+    SUB_ForEachTarget_InitShared();
     SUB_ForEachTarget_Recurse(s, cback, recursive, fdata, vdata, sdata, edata);
 }
 

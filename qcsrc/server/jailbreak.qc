@@ -53,7 +53,7 @@ float JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity 
         JB_BLog(strcat("Warning: ^3", JB_ControlPoint_Name(cpoint), "^7 at ", vtos(cpoint.origin), " is linked with an entity of unhandled class (^3", door.classname, "^7)!"));
         return FALSE;
     }
-    
+
     if(!JB_FIRSTDOOR(theteam))
         JB_SETFIRSTDOOR(theteam, door);
     
@@ -68,8 +68,9 @@ float JB_AddDoor(entity door, float theteam, vector vdata, string sdata, entity 
 void JB_DelayedInit() {
     entity e;
 
+    SUB_ForEachTarget_InitShared();
     FOR_EACH_JB_CONTROLPOINT(e)
-        SUB_ForEachTarget(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', NULL, e);
+        SUB_ForEachTarget_Recurse(e, JB_AddDoor, TRUE, e.jb_team_initial, '0 0 0', NULL, e);
 }
 
 float jb_doors_opened[2];
@@ -118,9 +119,10 @@ void JB_NonJBInit() {
     entity e;
     float openjails = CVAR(g_jailbreak_nonjb_openjails);
 
+    SUB_ForEachTarget_InitShared();
     FOR_EACH_JB_CONTROLPOINT(e) if(e.team != JB_TEAM_NEUTRAL) {
         if(openjails != OPENJAILS_LOCKED_FORCE)
-            SUB_ForEachTarget(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', NULL, e);
+            SUB_ForEachTarget_Recurse(e, JB_MaybeOpenDoor, TRUE, openjails, '0 0 0', NULL, e);
         e.think = SUB_Remove;
         e.nextthink = time;
     }
