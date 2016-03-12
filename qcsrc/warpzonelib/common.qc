@@ -200,8 +200,11 @@ void WarpZone_TraceBox_ThroughZone(vector org, vector mi, vector ma, vector end,
 			sol = trace_startsolid;
 
 		frac = trace_fraction = frac + (1 - frac) * trace_fraction;
-		if(trace_fraction >= 1)
+		if(trace_fraction >= 1) {
+            if(trace_ent.classname == "trigger_warpzone")
+                trace_ent = world;
 			break;
+        }
 		if(trace_ent.classname != "trigger_warpzone")
 			break;
 		if(trace_ent == wz)

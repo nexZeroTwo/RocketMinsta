@@ -56,7 +56,7 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
         vector next_point, warp_normal = '0 0 0';
         float curve_fract, start_warp_sign;
         if (to != endpos) {
-            if (trace_fraction < 1 && trace_ent && trace_ent.classname == "trigger_warpzone") {
+            if (trace_fraction < 1 && trace_ent) {
                  warp_normal = trace_ent.warpzone_forward;
                  start_warp_sign = plane_sign(endpos, warp_normal, from);
             }
