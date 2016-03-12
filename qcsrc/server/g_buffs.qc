@@ -1128,9 +1128,9 @@ void Buffs_MEODP_Antilag(entity plr, float t) {
         return;
 
     using(time = t) using(self = plr.meodp_point) {
-        save_nasty_globals();
+        save_trace_globals();
         self.think();
-        restore_nasty_globals();
+        restore_trace_globals();
     }
 }
 

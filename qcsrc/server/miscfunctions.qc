@@ -3718,11 +3718,15 @@ vector              trace_endpos_saved;
 vector              trace_plane_normal_saved;
 float               trace_plane_dist_saved;
 entity              trace_ent_saved;
+float               trace_dpstartcontents_saved;
+float               trace_dphitcontents_saved;
+float               trace_dphitq3surfaceflags_saved;
+string              trace_dphittexturename_saved;
 vector              v_forward_saved;
 vector              v_up_saved;
 vector              v_right_saved;
 
-void save_nasty_globals(void) {
+void save_trace_globals(void) {
     trace_allsolid_saved = trace_allsolid;
     trace_startsolid_saved = trace_startsolid;
     trace_fraction_saved = trace_fraction;
@@ -3730,12 +3734,16 @@ void save_nasty_globals(void) {
     trace_plane_normal_saved = trace_plane_normal;
     trace_plane_dist_saved = trace_plane_dist;
     trace_ent_saved = trace_ent;
+    trace_dpstartcontents_saved = trace_dpstartcontents;
+    trace_dphitcontents_saved = trace_dphitcontents;
+    trace_dphitq3surfaceflags_saved = trace_dphitq3surfaceflags;
+    trace_dphittexturename_saved = trace_dphittexturename;
     v_forward_saved = v_forward;
     v_up_saved = v_up;
     v_right_saved = v_right;
 }
 
-void restore_nasty_globals(void) {
+void restore_trace_globals(void) {
     trace_allsolid = trace_allsolid_saved;
     trace_startsolid = trace_startsolid_saved;
     trace_fraction = trace_fraction_saved;
@@ -3743,6 +3751,10 @@ void restore_nasty_globals(void) {
     trace_plane_normal = trace_plane_normal_saved;
     trace_plane_dist = trace_plane_dist_saved;
     trace_ent = trace_ent_saved;
+    trace_dpstartcontents = trace_dpstartcontents_saved;
+    trace_dphitcontents = trace_dphitcontents_saved;
+    trace_dphitq3surfaceflags = trace_dphitq3surfaceflags_saved;
+    trace_dphittexturename = trace_dphittexturename_saved;
     v_forward = v_forward_saved;
     v_up = v_up_saved;
     v_right = v_right_saved;

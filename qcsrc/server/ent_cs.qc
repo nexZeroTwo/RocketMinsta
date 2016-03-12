@@ -52,10 +52,10 @@ float entcs_cull(entity what, entity forwhom) {
         }
 
         if(CVAR(sv_cullentities_trace)) {
-            save_nasty_globals();
+            save_trace_globals();
             makevectors(forwhom.v_angle);
             var los = WarpZone_FindLineOfSight(v_forward, viewer, viewee, MOVE_NOMONSTERS, forwhom);
-            restore_nasty_globals();
+            restore_trace_globals();
 
             if(los == '0 0 0')
                 return TRUE;

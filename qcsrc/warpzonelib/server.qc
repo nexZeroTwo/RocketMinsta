@@ -287,9 +287,9 @@ float WarpZone_CheckProjectileImpact()
 	float mpd, pd, dpd;
 	entity wz;
 
-    save_nasty_globals();
+    save_trace_globals();
 	wz = WarpZone_Find(self.origin + self.mins, self.origin + self.maxs);
-    restore_nasty_globals();
+    restore_trace_globals();
 
 	if(!wz)
 		return FALSE;
