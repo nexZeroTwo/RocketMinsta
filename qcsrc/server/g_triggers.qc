@@ -193,7 +193,8 @@ void SUB_UseTargets_PreventReuse() {
 
 float	SPAWNFLAG_NOMESSAGE = 1;
 float	SPAWNFLAG_NOTOUCH = 1;
-float   SPAWNFLAG_PERPLAYER_COOLDOWN = 2;
+float   SPAWNFLAG_ALLENTS = 2;
+float   SPAWNFLAG_PERPLAYER_COOLDOWN = 4;
 
 // the wait time has passed, so set back up for another activation
 void multi_wait()
@@ -263,7 +264,7 @@ void multi_use()
 
 void multi_touch()
 {
-	if not(self.spawnflags & 2)
+	if not(self.spawnflags & SPAWNFLAG_ALLENTS)
 	{
 		if not(other.iscreature)
 			return;
