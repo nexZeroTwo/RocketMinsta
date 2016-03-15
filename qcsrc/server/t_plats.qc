@@ -383,7 +383,35 @@ void spawnfunc_func_train()
 	if(self.dmg && (!self.dmgtime))
 		self.dmgtime = 0.25;
 	self.dmgtime2 = time;
-    
+
+    if(self.cnt) spawn() {
+        owner: self,
+        nextthink: time,
+        v_angle: self.angles,
+        view_ofs: self.angles,
+        think: inline void(void) {
+            var o = self.owner;
+
+            if(o.velocity != '0 0 0') {
+                self.angles = (vectoangles(o.velocity));
+                if(self.angles_y > 180)
+                    self.angles_y = -1 * (self.angles_y - 180);
+            }
+
+            if(vlen(self.angles - self.view_ofs) > vlen(self.angles - o.angles - self.v_angle))
+                self.view_ofs = o.angles - self.v_angle;
+
+            if(self.cnt > 0)
+                self.view_ofs = (self.view_ofs + (self.angles - self.view_ofs) * self.cnt * frametime);
+            else
+                self.view_ofs = self.angles;
+
+            o.angles = self.view_ofs + self.v_angle;
+
+            self.nextthink = time;
+        }
+    };
+
 	// TODO make a reset function for this one
 };
 
