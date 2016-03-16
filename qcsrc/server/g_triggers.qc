@@ -2357,3 +2357,16 @@ void spawnfunc_trigger_relay_ifstate(void) {
             objerror("trigger_relay_ifstate does not point to a valid state entity");
     }, INITPRIO_FINDTARGET);
 }
+
+/*
+ * misc
+ */
+
+void spawnfunc_func_nowalljump(void) {
+    EXACTTRIGGER_INIT;
+
+    self.touch = inline void(void) {
+        if(other.iscreature)
+            other.lastwj = time + frametime;
+    };
+}
