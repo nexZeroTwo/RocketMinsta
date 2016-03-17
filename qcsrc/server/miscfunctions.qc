@@ -2433,29 +2433,13 @@ float SUB_NoImpactCheck()
 	// mirror-impact of something hitting the projectile instead of the
 	// projectile hitting the something, or a touchareagrid one. Neither of
 	// these stop the projectile from moving, so...
-	if(trace_dphitcontents == 0)
-	{
-		dprint("A hit happened with zero hit contents... DEBUG THIS, this should never happen for projectiles! Projectile will self-destruct.\n");
+	if(trace_dphitcontents == 0) {
+		dprint("A hit happened with zero hit contents... DEBUG THIS, this should never happen for projectiles!\n");
 		checkclient();
 	}
-    if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+
+    if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
         return 1;
-    if (other == world && self.size != '0 0 0')
-    {
-        vector tic;
-        tic = self.velocity * CVAR(sys_ticrate);
-        tic = tic + normalize(tic) * vlen(self.maxs - self.mins);
-        traceline(self.origin - tic, self.origin + tic, MOVE_NORMAL, self);
-        if (trace_fraction >= 1)
-        {
-            dprint("Odd... did not hit...?\n");
-        }
-        else if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) if(self.classname == "grapplinghook")
-        {
-            dprint("Detected and prevented the sky-grapple bug.\n");
-            return 1;
-        }
-    }
 
     return 0;
 }
