@@ -3,6 +3,7 @@ float antilag_find(entity e, float t);
 vector antilag_takebackorigin(entity e, float t);
 void antilag_takeback(entity e, float t);
 void antilag_restore(entity e);
+void antilag_prepare(entity plr);
 
 .vector antilag_saved_origin;
 

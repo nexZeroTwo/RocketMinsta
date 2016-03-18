@@ -155,6 +155,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	vector trueaimpoint;
 	float _oldsolid;
 	vector vecs, dv;
+	antilag_prepare(ent);
 	_oldsolid = ent.dphitcontentsmask;
 	if(ent.weapon == WEP_CAMPINGRIFLE)
 		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
