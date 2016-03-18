@@ -526,16 +526,20 @@ void TryBindCRAKeys(void) {
     keyprio = TryBind("'+use'", keyprio);
 }
 
-void AddMasterServer(string addr) {
+void AddMasterServer(string addr, string alt) {
+    var success = FALSE;
     var i = 1;
 
     while(TRUE) {
-        var cv = strcat("sv_masterextra", ftos(i));
+        var cv = "sv_masterextra" + i;
 
-        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
             break;
 
         if(cvar_string(cv) == addr)
+            return;
+
+        if(cvar_string(cv) == alt)
             return;
 
         i += 1;
@@ -544,26 +548,83 @@ void AddMasterServer(string addr) {
     i = 1;
 
     while(TRUE) {
-        var cv = strcat("sv_master", ftos(i));
+        var cv = "sv_master" + i;
 
-        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
             break;
 
-        if(cvar_string(cv) == "") {
+        if(cvar_string(cv) == addr) {
+            success = TRUE;
+            break;
+        }
+
+        if(cvar_string(cv) == "" || cvar_string(cv) == alt) {
             cvar_set(cv, addr);
-            return;
+            success = TRUE;
+            break;
         }
 
         i += 1;
     }
 
-    print("^3WARNING: ^7couldn't register master server ^2", addr, "^7!\n");
+    if(success) {
+        i += 1;
+
+        while(TRUE) {
+            var cv = "sv_master" + i;
+
+            if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
+                break;
+
+            if(cvar_string(cv) == addr || cvar_string(cv) == alt)
+                cvar_set(cv, "");
+
+            i += 1;
+        }
+    } else {
+        print("^3WARNING: ^7couldn't register master server ^2", addr, "^7!\n");
+    }
+}
+
+void RemoveDuplicateMasterServers(void) {
+    var i = 1;
+
+    while(TRUE) {
+        var cv = "sv_master" + i;
+
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
+            break;
+
+        i += 1;
+
+        var val = cvar_string(cv);
+
+        if(val == "")
+            continue;
+
+        var j = i;
+
+        while(TRUE) {
+            var cv2 = "sv_master" + j;
+
+            if(!(cvar_type(cv2) & CVAR_TYPEFLAG_ENGINE))
+                break;
+
+            if(cvar_string(cv2) == val)
+                cvar_set(cv2, "");
+
+            j += 1;
+        }
+    }
 }
 
 void RegisterMasterServers(void) {
-    AddMasterServer("107.161.23.68"); // new dpmaster.deathmask.net IP
-    AddMasterServer("91.121.161.160"); // Nude Dudes master server
-    AddMasterServer("dpmaster.vecxis.com"); // Vecxis master server
+    RemoveDuplicateMasterServers();
+    AddMasterServer("nex.thebadasschoobs.org",  "91.121.161.160");  // Nude Dudes master server
+    AddMasterServer("dpmaster.deathmask.net",   "107.161.23.68");   // dpmaster.deathmask.net
+    AddMasterServer("dpmaster.vecxis.com",      "162.243.128.63");  // Vecxis master server
+    AddMasterServer("ghdigital.com",            "207.55.114.154");  // LordHavoc's master server
+    AddMasterServer("dpmaster.tchr.no",         "92.62.40.73");     // tChr's master server
 }
 
 void InitFonts(void) {
