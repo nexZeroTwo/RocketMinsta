@@ -401,8 +401,8 @@ void spawnfunc_func_train()
             if(vlen(self.angles - self.view_ofs) > vlen(self.angles - o.angles - self.v_angle))
                 self.view_ofs = o.angles - self.v_angle;
 
-            if(self.cnt > 0)
-                self.view_ofs = (self.view_ofs + (self.angles - self.view_ofs) * self.cnt * frametime);
+            if(o.cnt > 0)
+                self.view_ofs = (self.view_ofs + (self.angles - self.view_ofs) * o.cnt * frametime);
             else
                 self.view_ofs = self.angles;
 
