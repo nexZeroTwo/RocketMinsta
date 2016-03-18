@@ -65,6 +65,10 @@ vector antilag_takebackorigin(entity e, float t)
         return e.origin;
 
 	i0 = antilag_context_index;
+	if (CVAR(developer))
+	if (antilag_context_index != antilag_find(e, t))
+		backtrace("antilag function was used without antilag_prepare()");
+
 	if(i0 < 0)
 	{
 		i0 = e.antilag_index - 1;
