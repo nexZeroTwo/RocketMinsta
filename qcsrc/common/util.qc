@@ -2006,6 +2006,7 @@ void va_test(string fmt, ...) { VA_INIT
 void load_fonts(void) {
 #ifndef SVQC
     registercvar("_rm_font_setting", "0", 0);
+    cvar_set("r_font_diskcache", "0");
 
     if(utf8_enabled()) {
         var sizes = " ";
@@ -2026,7 +2027,6 @@ void load_fonts(void) {
         }
 
         cvar_set("r_font_disable_freetype", "0");
-        cvar_set("r_font_diskcache", "1");
 
         localcmd("loadfont default  ", font_small, "\n");
         localcmd("loadfont console  ", font_mono, "\n");
