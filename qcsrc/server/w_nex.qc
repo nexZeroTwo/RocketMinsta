@@ -172,7 +172,7 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     e.pflags = PFLAGS_FULLDYNAMIC;
     e.color = '0.3 0.3 0.3' + 0.7 * TeamColor(if(self.team > 0) self.team else COLOR_TEAM2);
     e.colormap = num_for_edict(self);
-    W_AttachToShotorg(e, '5 0 0');
+    W_AttachToShotorg(e, '0 0 1');
 
     // needs to be done AFTER W_AttachToShotorg
     e.customizeentityforclient = CL_Weaponentity_CustomizeEntityForClient;

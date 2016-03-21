@@ -127,11 +127,11 @@ void RegisterWeapons()
     // %weaponaddpoint
     register_weapon(WEP_LASER,            w_laser,        0,                1,  1, 1, WEP_TYPE_SPLASH,  0,                      "laser",           "Laser", "L", '1.0 0.5 0.0');
     register_weapon(WEP_SHOTGUN,          w_shotgun,      IT_SHELLS,        2,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_LOW,  "shotgun",         "Shotgun", "S", '0.2 1.0 0.2');
-    register_weapon(WEP_UZI,              w_uzi,          IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "uzi",             "Machine Gun", "M", '1.0 0.7 0.2');
+    register_weapon(WEP_UZI,              w_uzi,          IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "uzi",             "Machine Gun", "M", '1.0 1.0 0.0');
     register_weapon(WEP_GRENADE_LAUNCHER, w_glauncher,    IT_ROCKETS,       4,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "grenadelauncher", "Mortar", "G", '1.0 0.4 0.5');
     register_weapon(WEP_ELECTRO,          w_electro,      IT_CELLS,         5,  1, 0, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "electro",         "Electro", "E", '0.1 1.0 1.0');
     register_weapon(WEP_CRYLINK,          w_crylink,      IT_CELLS,         6,  1, 0, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "crylink",         "Crylink", "C", '1.0 0.3 0.9');
-    register_weapon(WEP_NEX,              w_nex,          IT_CELLS,         7,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "nex",             "Nex", "N", '1.0 0.3 0.3');
+    register_weapon(WEP_NEX,              w_nex,          IT_CELLS,         7,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_HIGH, "nex",             "Nex", "N", '0.7 0.4 1.0');
     register_weapon(WEP_HAGAR,            w_hagar,        IT_ROCKETS,       8,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_MID,  "hagar",           "Hagar", "H", '1.0 0.5 0.0');
     register_weapon(WEP_ROCKET_LAUNCHER,  w_rlauncher,    IT_ROCKETS,       9,  1, 1, WEP_TYPE_SPLASH , BOT_PICKUP_RATING_HIGH, "rocketlauncher",  "Rocket Launcher", "R", '1.0 0.2 0.2');
     register_weapon(WEP_PORTO,            w_porto,        0,                0,  0, 0, WEP_TYPE_OTHER,   0,                      "porto",           "Port-O-Launch", "P", '0.5 0.5 0.5');
@@ -142,7 +142,7 @@ void RegisterWeapons()
     register_weapon(WEP_CAMPINGRIFLE,     w_campingrifle, IT_NAILS,         3,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "campingrifle",    "Rifle", "Cr", '0.7 0.7 0.7');
     register_weapon(WEP_FIREBALL,         w_fireball,     IT_ROCKETS,       9,  0, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "fireball",        "Fireball", "F", '1.0 1.0 0.2');
     register_weapon(WEP_ZAPPER,           w_zapper,       IT_CELLS,         5,  1, 0, WEP_TYPE_HITSCAN, BOT_PICKUP_RATING_MID,  "zapper",          "Zapper", "Z", '0.1 1.0 1.0');
-    register_weapon(WEP_FLAK,             w_flak,         IT_SHELLS,        8,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "flak",            "Flak Cannon", "F", '1.0 1.0 0.0');
+    register_weapon(WEP_FLAK,             w_flak,         IT_SHELLS,        8,  1, 0, WEP_TYPE_SPLASH,  BOT_PICKUP_RATING_MID,  "flak",            "Flak Cannon", "F", '1.0 0.4 0.0');
     register_weapon(WEP_PRYAXE,           w_pryaxe,       0,                1,  1, 0, WEP_TYPE_HITSCAN, 0,                      "pryaxe",          "Pryaxe", "A", '0.8 0.8 0.8');
 
     register_weapons_done();

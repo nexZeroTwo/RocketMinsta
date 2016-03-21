@@ -12,11 +12,11 @@ defaults = {
     "grenadelauncher"   :   "gl",
     "electro"           :   "electro",
     "crylink"           :   "crylink",
-    "nex"               :   "nex",
+    "nex"               :   "rm_nex",
     "hagar"             :   "hagar",
     "rocketlauncher"    :   "rl",
     "porto"             :   "porto",
-    "minstanex"         :   "minstanex",
+    "minstanex"         :   "nex",
     "hook"              :   "hookgun",
     "hlac"              :   "hlac",
     "tuba"              :   "tuba",
@@ -26,6 +26,7 @@ defaults = {
     "flak"              :   "flak",
     "pryaxe"            :   "pryaxe",
 
+    "nex_ofs"           :   "0 0 -1",
     "zapper_ofs"        :   "0 -0.5 3",
 }
 
