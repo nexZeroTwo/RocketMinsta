@@ -657,7 +657,7 @@ void Damage(entity targ, entity inflictor, entity attacker, float damage, float 
 			}
 	}
     
-	if(deathtype == DEATH_KILL || deathtype == DEATH_TEAMCHANGE || deathtype == DEATH_AUTOTEAMCHANGE)
+	if(deathtype == DEATH_KILL || deathtype == DEATH_TEAMCHANGE || deathtype == DEATH_AUTOTEAMCHANGE || deathtype == DEATH_GUARANTEED)
 	{
 		// These are ALWAYS lethal
 		// No damage modification here

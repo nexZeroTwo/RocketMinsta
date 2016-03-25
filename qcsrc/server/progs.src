@@ -207,6 +207,7 @@ tturrets/include/turrets.qh
 scores.qc
 
 portals.qc
+scp173.qc
 
 target_spawn.qc
 func_breakable.qc

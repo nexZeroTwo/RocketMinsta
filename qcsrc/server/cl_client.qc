@@ -3790,7 +3790,7 @@ void PlayerPostThink (void)
 
         if(CVAR(sv_gameplayfix_outofworldboundskill) && self.deadflag == DEAD_NO) {
             if(!boxesoverlap(world.absmin, world.absmax, self.absmin, self.absmax)) {
-                Damage(self, world, world, 100000, DEATH_KILL, self.origin, '0 0 0');
+                Damage(self, world, world, 100000, DEATH_GUARANTEED, self.origin, '0 0 0');
             }
         }
 	}

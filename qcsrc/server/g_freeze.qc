@@ -295,7 +295,7 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
         return 0;
     }
 
-    if(deathtype == DEATH_LAVA || deathtype == DEATH_SLIME)
+    if(deathtype == DEATH_LAVA || deathtype == DEATH_SLIME || deathtype == DEATH_GUARANTEED)
         return 0;
 
     if(deathtype == DEATH_HURTTRIGGER || deathtype == DEATH_HOOKFRAG)

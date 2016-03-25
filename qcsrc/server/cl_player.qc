@@ -701,6 +701,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		take = damage;
 	}
 
+    if(deathtype == DEATH_GUARANTEED)
+        self.pushltime = 0;
+
     if(self.frozen)
         self.pushltime = 0;
     else if(attacker == self)
