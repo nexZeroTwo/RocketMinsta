@@ -544,6 +544,9 @@ float w_rlauncher(float req)
 	}
 	else if (req == WR_CHECKAMMO1)
 	{
+        if(!self.weapon)
+            return TRUE;
+
 		// don't switch while guiding a missile
 		if ((ATTACK_FINISHED(self) <= time || self.weapon != WEP_ROCKET_LAUNCHER)
 			&& self.ammo_rockets < CVAR(g_balance_rocketlauncher_ammo))
