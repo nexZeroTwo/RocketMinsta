@@ -1660,6 +1660,7 @@ float autocvar_sv_friction;
 float autocvar_sv_friction_on_land;
 float autocvar_sv_gameeventhooks;
 float autocvar_sv_gameplayfix_forceplatdown;
+float autocvar_sv_gameplayfix_outofworldboundskill;
 float autocvar_sv_gameplayfix_q2airaccelerate;
 float autocvar_sv_gameplayfix_shootownentities;
 float autocvar_sv_gameplayfix_useheightforplat;
