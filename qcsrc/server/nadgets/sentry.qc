@@ -460,7 +460,7 @@ HG_HOOKFUNCTION(sentry, Attack) {
     setsize(e, HG_SENTRY_MINS, HG_SENTRT_MAXS);
     setorigin(e, o);
 
-    if(!move_out_of_solid(e)) {
+    if(!move_out_of_solid(e, MOVE_NOMONSTERS)) {
         remove(e);
         bigprint_spec(self, "Can't put a sentry here!", "", 1);
         return HG_ATTACK_FAIL_COOLDOWN;

@@ -64,7 +64,7 @@ void Buffs_Random_Spawn(void) {
         setsize(self, [-1, -1, self.mins_z], [1, 1, self.maxs_z]);
         droptofloor();
         setsize(self, omins + BUFFS_MARGIN_MINS, omaxs + BUFFS_MARGIN_MAXS);
-        move_out_of_solid(self);
+        move_out_of_solid(self, MOVE_WORLDONLY);
 
         if(check_uneven_ground(self, 1))
             goto fail;
@@ -98,7 +98,7 @@ void Buffs_Random_Spawn(void) {
 
     setorigin(self, org);
     setsize(self, omins, omaxs);
-    move_out_of_solid(self);
+    move_out_of_solid(self, MOVE_WORLDONLY);
 
     self = o;
 }
@@ -1361,7 +1361,7 @@ void Buffs_BuffPickup_Setup(void) {
     
     setsize(self, '-15 -15 -40', '15 15 40');
     
-    move_out_of_solid(self);
+    move_out_of_solid(self, MOVE_WORLDONLY);
     droptofloor();
     
     Net_LinkEntity(self, FALSE, 0, Buffs_Model_Send);

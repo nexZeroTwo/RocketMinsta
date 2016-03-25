@@ -941,7 +941,7 @@ void SV_ParseClientCommand(string s) {
 			else
 			{
 				setorigin(e, self.cursor_trace_endpos + normalize(self.cursor_trace_start - self.cursor_trace_endpos));
-				move_out_of_solid(e);
+				move_out_of_solid(e, MOVE_WORLDONLY);
 			}
 
 			e.killindicator = spawn();

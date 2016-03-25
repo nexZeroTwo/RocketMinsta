@@ -35,7 +35,7 @@ void Term_Setup(void) {
     self.maxs_x = self.maxs_y;
     setsize(self, self.mins * self.scale, self.maxs * self.scale);
     self.solid = SOLID_BBOX;
-    move_out_of_solid(self);
+    move_out_of_solid(self, MOVE_WORLDONLY);
     DropToFloor_Handler();
     
     self = spawn();

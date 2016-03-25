@@ -32,7 +32,7 @@ void W_Porto_Fail (float failhard)
 	{
 		setsize (self, '-16 -16 0', '16 16 32');
 		setorigin(self, self.origin + trace_plane_normal);
-		if(move_out_of_solid(self))
+		if(move_out_of_solid(self, MOVE_WORLDONLY))
 		{
 			self.flags = FL_ITEM;
 			self.velocity = trigger_push_calculatevelocity(self.origin, self.owner, 128);

@@ -38,10 +38,10 @@ float DistributeEvenly_Get(float weight)
     return f;
 }
 
-void move_out_of_solid_expand(entity e, vector by)
+void move_out_of_solid_expand(entity e, vector by, float tracetype)
 {
     float eps = 0.0625;
-    tracebox(e.origin, e.mins - '1 1 1' * eps, e.maxs + '1 1 1' * eps, e.origin + by, MOVE_WORLDONLY, e);
+    tracebox(e.origin, e.mins - '1 1 1' * eps, e.maxs + '1 1 1' * eps, e.origin + by, tracetype, e);
     if (trace_startsolid)
         return;
     if (trace_fraction < 1)
@@ -52,16 +52,16 @@ void move_out_of_solid_expand(entity e, vector by)
     }
 }
 
-float move_out_of_solid(entity e)
+float move_out_of_solid(entity e, float tracetype)
 {
     vector o, m0, m1;
 
     o = e.origin;
-    traceline(o, o, MOVE_WORLDONLY, e);
+    traceline(o, o, tracetype, e);
     if (trace_startsolid)
         return 0;
 
-    tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
+    tracebox(o, e.mins, e.maxs, o, tracetype, e);
     if (!trace_startsolid)
         return 1;
 
@@ -69,21 +69,21 @@ float move_out_of_solid(entity e)
     m1 = e.maxs;
     e.mins = '0 0 0';
     e.maxs = '0 0 0';
-    move_out_of_solid_expand(e, '1 0 0' * m0_x);
+    move_out_of_solid_expand(e, '1 0 0' * m0_x, tracetype);
     e.mins_x = m0_x;
-    move_out_of_solid_expand(e, '1 0 0' * m1_x);
+    move_out_of_solid_expand(e, '1 0 0' * m1_x, tracetype);
     e.maxs_x = m1_x;
-    move_out_of_solid_expand(e, '0 1 0' * m0_y);
+    move_out_of_solid_expand(e, '0 1 0' * m0_y, tracetype);
     e.mins_y = m0_y;
-    move_out_of_solid_expand(e, '0 1 0' * m1_y);
+    move_out_of_solid_expand(e, '0 1 0' * m1_y, tracetype);
     e.maxs_y = m1_y;
-    move_out_of_solid_expand(e, '0 0 1' * m0_z);
+    move_out_of_solid_expand(e, '0 0 1' * m0_z, tracetype);
     e.mins_z = m0_z;
-    move_out_of_solid_expand(e, '0 0 1' * m1_z);
+    move_out_of_solid_expand(e, '0 0 1' * m1_z, tracetype);
     e.maxs_z = m1_z;
     setorigin(e, e.origin);
 
-    tracebox(e.origin, e.mins, e.maxs, e.origin, MOVE_WORLDONLY, e);
+    tracebox(e.origin, e.mins, e.maxs, e.origin, tracetype, e);
     if (trace_startsolid)
     {
         setorigin(e, o);
@@ -94,7 +94,7 @@ float move_out_of_solid(entity e)
 }
 
 void snap_to_grid(entity e, float gridsize) {
-    move_out_of_solid(e);
+    move_out_of_solid(e, MOVE_WORLDONLY);
     var o;
 
     do {
@@ -114,7 +114,7 @@ void snap_to_grid(entity e, float gridsize) {
     setorigin(e, o);
 
     if(trace_startsolid)
-        move_out_of_solid(e);
+        move_out_of_solid(e, MOVE_WORLDONLY);
 }
 
 void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
@@ -172,7 +172,7 @@ void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
     setorigin(ent, bestorigin);
 
     if(!checkpassed)
-        move_out_of_solid(ent);
+        move_out_of_solid(ent, MOVE_WORLDONLY);
 }
 
 float check_uneven_ground(entity ent, float tolerance) {
@@ -312,7 +312,7 @@ void relocate_spawnpoint()
         o = self.origin;
         self.mins = PL_MIN;
         self.maxs = PL_MAX;
-        if (!move_out_of_solid(self))
+        if (!move_out_of_solid(self, MOVE_WORLDONLY))
             objerror("could not get out of solid at all!");
         print("^1NOTE: this map needs FIXING. Spawnpoint at ", vtos(o - '0 0 1'));
         print(" needs to be moved out of solid, e.g. by '", ftos(self.origin_x - o_x));

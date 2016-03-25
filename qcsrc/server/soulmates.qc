@@ -409,7 +409,7 @@ void sm_PlaceSoulGem(entity gem) {
 	
 	setorigin(gem, spot.origin);
 	
-	if(!move_out_of_solid(gem))
+	if(!move_out_of_solid(gem, MOVE_WORLDONLY))
 		bprint("\x01^1WARNING: ^7failed to move soulgem out of solid, expect weird shit and breakages\n");
 	
 	droptofloor();

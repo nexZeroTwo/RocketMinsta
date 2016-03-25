@@ -187,7 +187,7 @@ float Portal_FindSafeOrigin(entity portal)
 	portal.maxs = PL_MAX + SAFERNUDGE;
 	fixedmakevectors2(portal.angles);
 	portal.origin += 16 * v_forward;
-	if(!move_out_of_solid(portal))
+	if(!move_out_of_solid(portal, MOVE_WORLDONLY))
 	{
 #ifdef DEBUG
 		print("NO SAFE ORIGIN\n");
