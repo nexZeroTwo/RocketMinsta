@@ -786,7 +786,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
                     PlayerScore_Add(attacker, SP_SCORE, (cdmg + save) * CVAR(g_clanarena_score_damage));
                 
                 Buffs_VampireDamage(self, attacker, cdmg, deathtype);
-                Buffs_WrathDamage(self, attacker, cdmg + take, deathtype);
+                Buffs_WrathDamage(self, attacker, cdmg + save, deathtype);
             }
             
             self.health = self.health - take;
