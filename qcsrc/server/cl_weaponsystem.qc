@@ -149,23 +149,24 @@ vector w_shotdir_visual;
 // this function calculates w_shotorg and w_shotdir based on the weapon model
 // offset, trueaim and antilag, and won't put w_shotorg inside a wall.
 // make sure you call makevectors first (FIXME?)
-void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage)
+void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage, float hitmask)
 {
 	float nudge = 1; // added to traceline target and subtracted from result
 	vector trueaimpoint;
 	float _oldsolid;
 	vector vecs, dv;
-	_oldsolid = ent.dphitcontentsmask;
-	if(ent.weapon == WEP_CAMPINGRIFLE)
-		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	else
-		ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	if(antilag)
+
+	var oldmask = ent.dphitcontentsmask;
+    ent.dphitcontentsmask = hitmask;
+
+	if(antilag) {
 		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
-	else
+    } else {
 		WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
-	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
+    }
+
+	ent.dphitcontentsmask = hitmask | DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
 
 	vector vf, vr, vu;
 	vf = v_forward;
@@ -245,7 +246,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		}
 	}
 
-	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
+	ent.dphitcontentsmask = oldmask;
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
@@ -280,9 +281,12 @@ void W_SetHitscanVisuals(entity p, vector end) {
     }
 }
 
+#define W_SetupShot_Dir_ProjectileSize(ent,s_forward,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize_HitMask(ent, s_forward, mi, ma, antilag, recoil, snd, maxdamage, DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE)
 #define W_SetupShot_ProjectileSize(ent,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage)
+#define W_SetupShot_ProjectileSize_HitMask(ent,mi,ma,antilag,recoil,snd,maxdamage,hitmask) W_SetupShot_Dir_ProjectileSize_HitMask(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage, hitmask)
 #define W_SetupShot_Dir(ent,s_forward,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, s_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
 #define W_SetupShot(ent,antilag,recoil,snd,maxdamage) W_SetupShot_ProjectileSize(ent, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
+#define W_SetupShot_HitMask(ent,antilag,recoil,snd,maxdamage,hitmask) W_SetupShot_Dir_ProjectileSize_HitMask(ent, v_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage, hitmask)
 
 void LaserTarget_Think()
 {

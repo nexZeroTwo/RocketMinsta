@@ -389,15 +389,6 @@ void HG_GenericProjectile_Think(void) {
     if(self.velocity != '0 0 0')
         self.hg_lastvel = self.velocity;
 
-    if(self.hg_type == HG_TRANSLOC) {
-        tracebox(self.origin, self.mins, self.maxs, self.origin, MOVE_WORLDONLY, self);
-        if(trace_startsolid && !self.hg_ranthink) {
-            bprint(self.owner.netname, "^1's translocator spawned in solid! ", vtos(self.origin), "\n");
-            HG_GenericProjectile_Remove();
-            return;
-        }
-    }
-
     if(self.hg_type == HG_RAZE) {
         if(time < (self.hg_spawntime + GV("movement_delay"))){
         }
@@ -584,8 +575,17 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
         hitmaxs = ' 1  1  1' * sz;
     }
 
+    var hitmask = switch(hgtype) {
+        case HG_RAZE:
+            DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE | DPCONTENTS_PLAYERCLIP, 
+        case HG_TRANSLOC:
+            DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP,
+        default:
+            DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE
+    };
+
     makevectors(self.(if(GV("noverticalvelocity")) angles else v_angle));
-    W_SetupShot_ProjectileSize(self, hitmins, hitmaxs, FALSE, 4, if(silent) "" else HG_GenericProjectile_TypeToAttackSound(hgtype), -1);
+    W_SetupShot_ProjectileSize_HitMask(self, hitmins, hitmaxs, FALSE, 4, if(silent) "" else HG_GenericProjectile_TypeToAttackSound(hgtype), -1, hitmask);
     pointparticles(particleeffectnum("grenadelauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
     vector a = vectoangles(w_shotdir);
@@ -599,6 +599,7 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.bot_dodge = TRUE;
     gren.bot_dodgerating = GV("damage") + 300;
     PROJECTILE_MAKETRIGGER(gren);
+    gren.dphitcontentsmask = hitmask;
     gren.projectiledeathtype = hgtype;
     gren.hg_type = hgtype;
     gren.spawnorigin = self.origin;
@@ -662,15 +663,11 @@ entity HG_GenericProjectile(float hgtype, vector ang, float silent) {
     gren.team = self.team;
     gren.hg_isbonus = self.hg_bonus;
 
-    if(gren.hg_type == HG_RAZE) {
-        gren.hg_fireSpawnTime = gren.hg_spawntime + GV("adept_trailblaze_delay");
-        gren.dphitcontentsmask |= DPCONTENTS_PLAYERCLIP;
-    } else if(gren.hg_type == HG_TRANSLOC) {
-        gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
-    }
-
     if(gren.hg_adept) {
         gren.health = GV("adept_health");
+
+        if(gren.hg_type == HG_RAZE)
+            gren.hg_fireSpawnTime = gren.hg_spawntime + GV("adept_trailblaze_delay");
     }
 
     if(GV("takedamage") || gren.health) {
