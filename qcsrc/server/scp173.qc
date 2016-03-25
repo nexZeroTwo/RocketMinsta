@@ -145,6 +145,9 @@ void scp173_think(void) {
 void scp173_reset(void) {
     setorigin(self, self.aiment.origin);
     self.angles = self.aiment.angles;
+    self.nextthink = time;
+    self.flags &~= FL_ONGROUND;
+    droptofloor();
 }
 
 void spawnfunc_scp173(void) {
