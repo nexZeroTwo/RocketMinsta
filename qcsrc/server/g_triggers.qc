@@ -19,6 +19,9 @@ void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, en
     float i;
     string targname;
     entity targ;
+
+    if(foreachtarget_callid < 1)
+        foreachtarget_callid = 1;
     
     for(i = 0; i < 4; ++i) {
         switch(i) {
@@ -30,7 +33,7 @@ void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, en
         
         if(targname != "") {
             for(targ = world; (targ = find(targ, targetname, targname));)
-            if(targ && targ.use && targ.targethandled != foreachtarget_callid) {
+            if(targ && targ.targethandled != foreachtarget_callid) {
                 if(cback(targ, fdata, vdata, sdata, edata))
                     return;
 
@@ -1528,48 +1531,41 @@ void spawnfunc_trigger_multivibrator()
 		multivibrator_reset();
 }
 
+void follow_set(entity dst, entity src) {
+    if(self.spawnflags & 1) {
+        // attach
+        if(self.spawnflags & 2) {
+            setattachment(dst, src, self.message);
+        } else {
+            attach_sameorigin(dst, src, self.message);
+        }
+    } else {
+        if(self.spawnflags & 2) {
+            dst.movetype = MOVETYPE_FOLLOW;
+            dst.aiment = src;
+            // dst.punchangle = '0 0 0'; // keep unchanged
+            dst.view_ofs = dst.origin;
+            dst.v_angle = dst.angles;
+        } else {
+            follow_sameorigin(dst, src);
+        }
+    }
+}
 
-void follow_init()
-{
-	entity src, dst;
-	src = find(world, targetname, self.killtarget);
-	dst = find(world, targetname, self.target);
+void follow_init(void) {
+    var src = find(world, targetname, self.killtarget);
 
-	if(!src || !dst)
-	{
-		objerror("follow: could not find target/killtarget");
-		return;
-	}
+    if(!src) {
+        objerror("follow: could not find killtarget");
+        return;
+    }
 
-	if(self.spawnflags & 1)
-	{
-		// attach
-		if(self.spawnflags & 2)
-		{
-			setattachment(dst, src, self.message);
-		}
-		else
-		{
-			attach_sameorigin(dst, src, self.message);
-		}
-	}
-	else
-	{
-		if(self.spawnflags & 2)
-		{
-			dst.movetype = MOVETYPE_FOLLOW;
-			dst.aiment = src;
-			// dst.punchangle = '0 0 0'; // keep unchanged
-			dst.view_ofs = dst.origin;
-			dst.v_angle = dst.angles;
-		}
-		else
-		{
-			follow_sameorigin(dst, src);
-		}
-	}
+    SUB_ForEachTarget(self, inline float(entity e, float _f, vector _v, string _s, entity src) {
+        follow_set(e, src);
+        return FALSE;
+    }, FALSE, NULL, NULL, NULL, src);
 
-	remove(self);
+    remove(self);
 }
 
 void spawnfunc_misc_follow()
