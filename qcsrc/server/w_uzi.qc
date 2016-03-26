@@ -57,10 +57,12 @@ float W_Uzi_Attack (float deathtype)
         self.ammo_nails -= cost;
 
 	W_SetupShot (self, CVAR(g_antilag_bullets) && CVAR(g_balance_uzi_speed) >= CVAR(g_antilag_bullets), 0, "weapons/uzi_fire.wav", CVAR(g_balance_uzi_first_damage));
+
 	if (!g_norecoil)
 	{
 		self.punchangle_x = random () - 0.5;
 		self.punchangle_y = random () - 0.5;
+        self.weaponentity.punchangle = self.punchangle;
 	}
 
 	// this attack_finished just enforces a cooldown at the end of a burst

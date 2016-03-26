@@ -64,6 +64,7 @@ float WFRAME_RELOAD = 3;
 .float wframe;
 
 .vector shotorg_visual;
+.vector w_viewmodel_offset;
 
 void(float fr, float t, void() func) weapon_thinkf;
 
@@ -250,6 +251,8 @@ void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
+
+    ent.weaponentity.punchangle_x = recoil;
 
 	if (snd != "")
 	{
@@ -569,7 +572,7 @@ void CL_Weaponentity_Think()
             default: 0
         };
 
-		setorigin(self, self.view_ofs + ofs);
+        self.w_viewmodel_offset = self.view_ofs + ofs;
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;
@@ -627,6 +630,15 @@ void CL_Weaponentity_Think()
         self.angles_y = -90 * f * f;
         self.angles_x = -90 * f * f;
 	}
+
+    if(self.owner.gunswitchmode == 1)
+        self.punchangle_y = self.punchangle_x * -0.25;
+    else if(self.owner.gunswitchmode == 2)
+        self.punchangle_y = self.punchangle_x *  0.25;
+
+    self.angles += self.punchangle;
+    self.punchangle = self.punchangle * max(0, 1 - frametime * 5);
+    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1');
 
 	// create or update the lasertarget entity
 	LaserTarget_Think();
