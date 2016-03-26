@@ -222,6 +222,8 @@ void plat_touch(void) {
 }
 
 void spawnfunc_path_corner() { };
+void spawnfunc_path_origin() { };
+
 void spawnfunc_func_plat()
 {
 	if (!self.t_length)
@@ -329,20 +331,23 @@ void train_next()
 	self.wait = targ.wait;
 	if (!self.wait)
 		self.wait = 0.1;
-	if(self.wait < 0)
-	{
-		if (targ.speed)
-			SUB_CalcMove(targ.origin - self.mins, targ.speed, train_next);
-		else
-			SUB_CalcMove(targ.origin - self.mins, self.speed, train_next);
-	}
-	else
-	{
-		if (targ.speed)
-			SUB_CalcMove(targ.origin - self.mins, targ.speed, train_wait);
-		else
-			SUB_CalcMove(targ.origin - self.mins, self.speed, train_wait);
-	}
+
+    SUB_CalcMove(
+        if(targ.classname == "path_origin")
+            targ.origin
+        else
+            targ.origin - self.mins,
+
+        if(targ.speed)
+            targ.speed
+        else
+            self.speed,
+
+        if(self.wait < 0)
+            train_next
+        else
+            train_wait
+    );
 
 	if(self.noise != "")
 		sound(self, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_IDLE);
