@@ -387,29 +387,24 @@ void spawnfunc_func_train()
     if(self.cnt) spawn() {
         owner: self,
         nextthink: time,
-        v_angle: self.angles,
-        view_ofs: self.angles,
+        angles: self.angles,
         think: inline void(void) {
             var o = self.owner;
+            self.nextthink = time;
 
             if(o.velocity != '0 0 0') {
-                self.angles = (vectoangles(o.velocity));
-                if(self.angles_y > 180)
-                    self.angles_y = -1 * (self.angles_y - 180);
+                self.movedir = normalize(o.velocity);
             }
 
-            if(vlen(self.angles - self.view_ofs) > vlen(self.angles - o.angles - self.v_angle))
-                self.view_ofs = o.angles - self.v_angle;
+            if(self.movedir != '0 0 0') {
+                if(o.cnt > 0)
+                    o.movedir = o.movedir + (self.movedir - o.movedir) * o.cnt * frametime;
+                else
+                    o.movedir = self.movedir;
 
-            if(o.cnt > 0)
-                self.view_ofs = (self.view_ofs + (self.angles - self.view_ofs) * o.cnt * frametime);
-            else
-                self.view_ofs = self.angles;
-
-            o.angles = self.view_ofs + self.v_angle;
-
-            self.nextthink = time;
-        }
+                o.angles = vectoangles(normalize(o.movedir)) + self.angles - '0 90 ';
+            }
+        },
     };
 
 	// TODO make a reset function for this one
