@@ -318,6 +318,14 @@ void train_next()
 	self.target = targ.target;
 	if (!self.target)
 		objerror("train_next: no next target");
+
+    using(self = self.enemy) {
+        activator = world;
+        SUB_UseTargets();
+    }
+
+    self.enemy = targ;
+
 	self.wait = targ.wait;
 	if (!self.wait)
 		self.wait = 0.1;
@@ -344,6 +352,7 @@ void func_train_find()
 {
 	entity targ;
 	targ = find(world, targetname, self.target);
+    self.enemy = targ;
 	self.target = targ.target;
 	if (!self.target)
 		objerror("func_train_find: no next target");
