@@ -929,7 +929,7 @@ void Buffs_MEODP_Point_Think(void) {
     else
         makevectors(ref.angles + ref.meodp_point_angleoffs);
 
-    var dst = 2.3 * max4(abs(ref.mins_x), abs(ref.mins_y), abs(ref.maxs_x), abs(ref.maxs_y));
+    var dst = vlen([ref.maxs_x, ref.maxs_y] - [ref.mins_x, ref.mins_y]);
     dst = max(20, dst);
 
     var t1 = self.meodp_rand3 * time + self.meodp_rand1;
