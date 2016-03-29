@@ -1508,6 +1508,7 @@ float autocvar_g_throughfloor_damage;
 float autocvar_g_throughfloor_force;
 float autocvar_g_totaldomination_point_leadlimit;
 float autocvar_g_totaldomination_point_limit;
+float autocvar_g_totaldomination_score_take;
 float autocvar_g_totaldomination_time_limit;
 float autocvar_g_totaldomination_warmup;
 float autocvar_g_touchexplode;

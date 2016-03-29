@@ -140,10 +140,13 @@ void dompoint_captured ()
 	centerprint_spec(self.enemy, "^5You have captured a control point!");
 	hudflash_teamcolor_default_spec(self.enemy);
 	
-	if(self.enemy.playerid == self.enemy_playerid)
+	if(self.enemy.playerid == self.enemy_playerid) {
 		PlayerScore_Add(self.enemy, SP_DOM_TAKES, 1);
-	else
+        if(g_totaldomination)
+            PlayerScore_Add(self.enemy, SP_SCORE, CVAR(g_totaldomination_score_take));
+    } else {
 		self.enemy = world;
+    }
 
 	if (head.noise != "")
 		if(self.enemy)
