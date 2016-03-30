@@ -226,7 +226,7 @@ void dompointthink()
 
 	// give points
 
-	if (gameover || self.delay > time || time < game_starttime)	// game has ended, don't keep giving points
+	if (roundstate != ROUNDSTATE_GAME || self.delay > time)	// game has ended, don't keep giving points
 		return;
 
 	waittime = CVAR(g_domination_point_rate);
@@ -262,9 +262,9 @@ void dompointtouch()
 {
 	entity head;
     
-    if(time < game_starttime)
+    if(roundstate != ROUNDSTATE_GAME)
         return;
-    
+
 	if(other.classname != "player")
 		return;
 	if(other.health < 1)
@@ -280,10 +280,6 @@ void dompointtouch()
 
     if(self.dom_capturingplayer && self.dom_capturingplayer != other)
         return;
-
-	if(g_totaldomination)
-	if(roundstate != ROUNDSTATE_GAME)
-		return;
     
 	// only valid teams can claim it
 	head = find(world, classname, "dom_team");
