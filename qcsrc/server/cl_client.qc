@@ -667,6 +667,7 @@ float Client_customizeentityforclient()
 		modelsource = other;
 #endif
 
+    other = other.clientcamera;
 	self.skin = modelsource.skinindex;
 
 	// self: me
