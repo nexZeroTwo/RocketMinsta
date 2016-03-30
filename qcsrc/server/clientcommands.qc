@@ -1136,7 +1136,7 @@ void SV_ParseClientCommand(string s) {
             return;
         }
 
-        if(action != "team" && action != "me")
+        if(action != "team" && action != "me" && action != "track")
             goto wp_usage;
 
         if(!CVAR(g_waypointsprite_allow_custom_team_waypoints) && action == "team") {
@@ -1145,22 +1145,68 @@ void SV_ParseClientCommand(string s) {
         }
 
         var loc = argv(2);
-        if(loc != "origin" && loc != "crosshair")
+        var trackplr = world;
+
+        if(str2chr(loc, 0) == '#') {
+            if(action != "track") {
+                sprint(self, "^1Player ids are only valid for tracking mode\n");
+                return;
+            }
+
+            if(loc == "#target") {
+                trackplr = self.selected_player;
+                if(!trackplr)
+                    trackplr = self.cursor_trace_ent;
+                loc = "#" + num_for_edict(trackplr);
+            } else {
+                trackplr = edict_num(stof(substring(loc, 1, strlen(loc))));
+            }
+
+            if(trackplr.classname != "player") {
+                sprint(self, "^1" + loc + " is not a player\n");
+                return;
+            }
+
+            if(IsDifferentTeam(self, trackplr) || self == trackplr) {
+                sprint(self, "^1" + loc + " is not your team mate\n");
+                return;
+            }
+        } else if(action == "track") {
+            sprint(self, "^1You must supply a player id for tracking mode\n");
+            return;
+        } else if(loc != "origin" && loc != "crosshair") {
             goto wp_usage;
+        }
 
         var text = argv(3);
-        if(!text)
+        if(!text && !trackplr)
             goto wp_usage;
 
         var clr = stov(argv(4));
         if(!clr)
             clr = '1 1 1';
 
-        var vloc = 
+        if(trackplr) {
+            var cleared = WaypointSprite_ClearTracking(trackplr);
+
+            if(!text) {
+                if(cleared)
+                    return;
+                text = strdecolorize(trackplr.netname);
+            }
+
+            var wp = WaypointSprite_DeployTracking(text, trackplr);
+            WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, clr);
+            WaypointSprite_UpdateTextColors(wp, clr, '0 0 0', '0 0 0');
+            return;
+        }
+
+        var vloc = (
             if(loc == "origin")
                 self.origin
             else
-                self.cursor_trace_endpos;
+                self.cursor_trace_endpos
+        );
 
         if(action == "team") {
             var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
@@ -1200,7 +1246,7 @@ void SV_ParseClientCommand(string s) {
         return;
 
 :wp_usage
-        sprint(self, "^1Usage: waypoint (me|team|clear) (origin|crosshair) text [color] [lifetime]\n");
+        sprint(self, "^1Usage: waypoint (me|team|track|clear) (origin|crosshair|#playernum|#target) text [color] [lifetime]\n");
         return;
     } else if(cmd == "spyteam") {
         PlayerSpectatorToggle();

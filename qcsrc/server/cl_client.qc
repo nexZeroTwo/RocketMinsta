@@ -1444,6 +1444,8 @@ void PutClientInServer (void)
 
     CA_PlayerJoins();
     JoinQ_Pop();
+
+    WaypointSprite_InvalidateTracking(self);
 }
 
 float ClientInit_SendEntity(entity to, float sf)
@@ -2006,7 +2008,7 @@ void ClientDisconnect (void)
 		fclose(self.hitplotfh);
 		self.hitplotfh = -1;
 	}
-    
+
     JoinQ_Remove(self);
 	bot_clientdisconnect();
     

@@ -430,6 +430,8 @@ void SetPlayerColors(entity pl, float _color)
 	} else {
 		setcolor(pl, shirt + pants);
 	}
+
+    WaypointSprite_InvalidateTracking(pl);
 }
 
 void SetPlayerTeam(entity pl, float t, float s, float noprint)
