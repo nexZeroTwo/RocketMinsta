@@ -628,6 +628,8 @@ void spawnfunc_worldspawn (void)
 	// 63 testing
 	lightstyle(63, "a");
 
+    aprilfools = (strftime(TRUE, "%m_%d") == "04_01");
+
 	if(CVAR(g_campaign))
 		CampaignPreInit();
 

@@ -730,16 +730,22 @@ string apply_autoreplace(string msg) {
 string apply_faggotry(string msg) {
     string result, c;
     float len, i, o;
-    
+
     msg = strdecolorize(msg);
-    
+
     len = strlen(msg);
     c = substring(msg, len-1, 1);
-    if(c != "." && c != "?" && c != "!")
-        msg = strcat(msg, ".");
-    msg = strcat(msg, " Also, I'm a huge faggot.");
+    msg = strcat(msg, switch(floor(random() * 7)) {
+        default: case 0: " ( ͡° ω ͡°)",
+                 case 1: " ( ͡° ͜ʖ ͡°)",
+                 case 2: " ( ͡° o ͡°)",
+                 case 3: " ( ͡° _ ͡°)",
+                 case 4: " ( ͡°ᨎ ͡°)",
+                 case 5: " ( ͡°‿‿ ͡°)",
+                 case 6: " ( ͡° ͟ʖ ͡°)"
+    });
     len = strlen(msg);
-    
+
     for(i = 0; i < len; ++i, ++o) {
         c = substring(msg, i, 1);
         if(c == "^") {
@@ -747,10 +753,10 @@ string apply_faggotry(string msg) {
             if(substring(msg, i+1, 1) == "^")
                 i++;
         }
-            
+
         result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(o * 0.07) + 3, 0.1, 1)), c);
     }
-    
+
     return result;
 }
 
@@ -834,7 +840,7 @@ string formatmessage(string msg)
         p = p + strlen(replacement);
     }
     
-    if(whatsgoingon)
+    if(whatsgoingon || aprilfools)
         msg = apply_faggotry(msg);
     
     return msg;

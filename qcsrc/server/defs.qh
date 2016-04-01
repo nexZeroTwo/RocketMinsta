@@ -737,6 +737,7 @@ float sv_dps;
 
 .float wasingame;
 
+float aprilfools;
 float whatsgoingon;
 
 float g_allow_oldnexbeam;
