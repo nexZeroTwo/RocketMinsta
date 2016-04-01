@@ -120,7 +120,6 @@ float g_clientmodel_genericsendentity (entity to, float sf)
 void g_model_reset(void) {
     self.velocity = self.oldvelocity;
     setorigin(self, self.spawnorigin);
-    print(self.oldorigin + "\n");
 }
 
 
