@@ -118,6 +118,12 @@ void WaypointSprite_Ping(entity e)
 
 void WaypointSprite_FadeOutIn(entity e, float t)
 {
+    if(e.classname != "sprite_waypoint") {
+        print("WaypointSprite_InvalidateTracking called for a ", e.classname, "!\n");
+        backtrace("WaypointSprite_FadeOutIn");
+        return;
+    }
+
     e.exteriormodeltoclient = world;
 
 	if(!e.fade_time)
@@ -471,6 +477,12 @@ void WaypointSprite_InvalidateTracking_Try(entity plr, entity plr2, entity e) {
 }
 
 void WaypointSprite_InvalidateTracking(entity forplr) {
+    if(!forplr) {
+        print("WaypointSprite_InvalidateTracking called for world!\n");
+        backtrace("WaypointSprite_InvalidateTracking");
+        return;
+    }
+
     for(var e = world; (e = findentity(e, wp_tracking_for, forplr));) {
         WaypointSprite_InvalidateTracking_Try(e.wp_tracking_for, e.wp_tracking_whom, e);
         WaypointSprite_InvalidateTracking_Try(e.wp_tracking_whom, e.wp_tracking_for, e);
