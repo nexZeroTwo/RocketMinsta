@@ -68,26 +68,12 @@ function rm-version-checkformat
 
 function rm-version
 {
-    if ! git describe --tags &> /dev/null; then
-        echo git
-        return 0;
-    fi
-    
-    (git describe --tags | while read line; do
-        echo $line | rm-version-checkformat && exit # Note: this is a subshell exit
-    done; echo git) | head -1
-}
-
-function rm-version-or
-{
-    local v="$(rm-version)"
-    [ "$v" = "git" ] && v="$1"
-    echo "$v"
+    git describe --tags --long --dirty
 }
 
 function rm-hasversion
 {
-    [ "$(rm-version)" != "git" ]
+    rm-version | rm-version-checkformat
 }
 
 function warning
@@ -229,5 +215,5 @@ function require
     echo "All OK, proceeding"
 }
 
-git symbolic-ref HEAD &> /dev/null || error "Can't proceed: not a git repository."
+rm-version &> /dev/null || error "Can't proceed: not a git repository."
 
