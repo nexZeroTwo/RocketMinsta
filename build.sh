@@ -242,7 +242,7 @@ function compress-restore
     pkgdir="$PWD"
     pushd "$COMPRESSGFX_TEMPDIR"
 
-    find \! -type d | sed -e 's@^./@@' | while read line; do
+    find . \! -type d | sed -e 's@^./@@' | while read line; do
         mv -v "$line" "$pkgdir/$line"
         rm -vf "$pkgdir/${line%%.tga}.jpg"
     done
@@ -284,7 +284,7 @@ function makedata
         sum="$CSQCSUM"
     else
         echo "   -- Calculating md5 sums"
-        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        find . -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
         echo 'RM' >> _md5sums
         sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
     fi
@@ -468,7 +468,7 @@ function makedata-all
 
 function listcustom
 {
-    find "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
+    find . "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
         scfg="${cfg##*/}"
         scfg="${scfg%%.cfg}"
         echo -n "            $scfg "
