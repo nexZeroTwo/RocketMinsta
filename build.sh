@@ -641,9 +641,9 @@ if [ "$1" = "release" ]; then
     PKGNAME="RocketMinsta${RELEASE_REALSUFFIX}"
 
     if rm-hasversion; then
-        RELEASE_PKGNAME="${PKGNAME}_$VERSION"
+        RELEASE_PKGNAME="${PKGNAME}_${VERSION}"
     else
-        RELEASE_PKGNAME="${PKGNAME}_$VERSION_$BUILD_DATE_PLAIN"
+        RELEASE_PKGNAME="${PKGNAME}_${VERSION}_${BUILD_DATE_PLAIN}"
     fi
 
     RELEASE_PKGPATH="$(readlink -f "$RELEASE_PKGPATH")"
