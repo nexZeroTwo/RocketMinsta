@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ -z $INCLUDE ]; then
     echo "This is not a script." >&2
