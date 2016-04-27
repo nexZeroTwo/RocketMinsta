@@ -254,7 +254,7 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
+	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_DATE;
 	
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
@@ -2314,10 +2314,10 @@ void Net_Camera() {
 
 void Net_ServerInfo() {
     sv_hostname = strzone(ReadString());
-    sv_rm_build = strzone(ReadString());
-    sv_rm_version = strzone(ReadString());
-    sv_rm_date = strzone(ReadString());
-    sv_rm_commit = strzone(ReadString());
+    var build_name = ReadString();
+    var build_version = ReadString();
+    sv_rm_build_info = strzone(build_name + " " + build_version);
+    sv_rm_build_date = strzone(ReadString());
     sv_motd = strzone(ReadString());
 }
 

@@ -279,10 +279,8 @@ float cl_fps;
 .float avg_ping_next;
 
 string sv_hostname;
-string sv_rm_build;
-string sv_rm_version;
-string sv_rm_date;
-string sv_rm_commit;
+string sv_rm_build_info;
+string sv_rm_build_date;
 string sv_motd;
 
 float sv_showspecs_extra;

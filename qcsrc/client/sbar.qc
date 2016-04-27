@@ -3041,9 +3041,9 @@ void Sbar_ServerInfo() {
 	pos_y += sz_big_y + sz_norm_y * 0.5;
 	drawfont = sbar_font;
 	
-	drawstringcenter(pos, strcat(sv_rm_build, " (", sv_rm_version, ", ", sv_rm_commit, ")"), sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
+	drawstringcenter(pos, sv_rm_build_info, sz_norm, '1 0.6 0', a, DRAWFLAG_NORMAL);
 	pos_y += sz_norm_y;
-	drawstringcenter(pos, sv_rm_date, sz_norm, '1 1 1', a, DRAWFLAG_NORMAL);
+	drawstringcenter(pos, sv_rm_build_date, sz_norm, '1 1 1', a, DRAWFLAG_NORMAL);
 	pos_y += sz_norm_y * 1.5;
 	drawcolorcodedstringcenter(pos, strcat("Playing ^5", gametype_ID_to_LongName(gametype), " ^7on ^2", shortmapname), sz_norm, a, DRAWFLAG_NORMAL);
 	
