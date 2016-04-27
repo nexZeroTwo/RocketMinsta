@@ -106,13 +106,18 @@ function perlgrep
 REQUIRED_FOUND=""
 OPTIONAL_FOUND=""
 
-function test-command
+function test-command-verbose
 {
     if [ "$1" = "grep" ]; then
         echo a | grep -Pq a
     elif [ "$1" = "readlink" ]; then
-        ! readlink -f &>/dev/null
+        ! readlink -f
     fi
+}
+
+function test-command
+{
+    test-command-verbose "$@" &>/dev/null
 }
 
 function hasoptional
