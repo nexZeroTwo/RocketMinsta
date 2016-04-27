@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 INCLUDE=1
 . extras/scripts/rmlib.sh || exit 1
-require md5sum tar 7za:zip %convert
+require readlink:greadlink md5sum:gmd5sum tar 7za:zip %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -21,6 +21,19 @@ CSQCSUM=""
 WINDOWS=0
 if [ "$(uname -o)" = "Cygwin" ]; then
     WINDOWS=1
+fi
+
+if hascommand md5sum; then
+    MD5SUM_CMD="md5sum"
+else
+    MD5SUM_CMD="gmd5sum"
+fi
+
+if ! hascommand readlink; then
+    function readlink
+    {
+        greadlink "$@"
+    }
 fi
 
 function getfiledircache
@@ -115,10 +128,10 @@ function buildall
     [ -z "$USEQCC" ] && error "Couldn't get a QC compiller"
 
     echo " -- Calculating sum of menu/..."
-    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    MENUSUM="$(find "$QCSOURCE/menu" -type f | grep -v "\.log$" | xargs ${MD5SUM_CMD} | ${MD5SUM_CMD} | sed -e 's/ .*//g')"
 
     echo " -- Calculating sum of common/..."
-    COMMONSUM="$(find "$QCSOURCE"/{common,warpzonelib} -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+    COMMONSUM="$(find "$QCSOURCE"/{common,warpzonelib} -type f | grep -v "\.log$" | grep -v "rm_auto.qh" | xargs ${MD5SUM_CMD} | ${MD5SUM_CMD} | sed -e 's/ .*//g')"
     MENUSUM="$MENUSUM$COMMONSUM"
 
     echo "#define RM_BUILD_DATE \"$BUILD_DATE ($2)\"" >  "$QCSOURCE"/common/rm_auto.qh
@@ -139,7 +152,7 @@ function buildall
 
     if [ "$PACKCSQC" = 1 ]; then
         rm "csqc.pk3dir"/*.{dat,lno}
-        CSQCSUM="$(md5sum csprogs.dat | sed -e 's/ .*//')"
+        CSQCSUM="$(${MD5SUM_CMD} csprogs.dat | sed -e 's/ .*//')"
         cp -v csprogs.dat "csqc.pk3dir/$CSPROGNAME"
         cp -v csprogs.lno "csqc.pk3dir/${CSPROGNAME%%dat}lno"
     fi
@@ -235,7 +248,7 @@ function compress-restore
     pkgdir="$PWD"
     pushd "$COMPRESSGFX_TEMPDIR"
 
-    find \! -type d | sed -e 's@^./@@' | while read line; do
+    find . \! -type d | sed -e 's@^./@@' | while read line; do
         mv -v "$line" "$pkgdir/$line"
         rm -vf "$pkgdir/${line%%.tga}.jpg"
     done
@@ -277,9 +290,9 @@ function makedata
         sum="$CSQCSUM"
     else
         echo "   -- Calculating md5 sums"
-        find -regex "^\./[^_].*" -type f -exec md5sum '{}' \; > _md5sums
+        find . -regex "^\./[^_].*" -type f -exec ${MD5SUM_CMD} '{}' \; > _md5sums
         echo 'RM' >> _md5sums
-        sum="$(md5sum "_md5sums" | sed -e 's/ .*//g')"
+        sum="$(${MD5SUM_CMD} "_md5sums" | sed -e 's/ .*//g')"
     fi
 
     if [ "$justlink" = 1 ]; then
@@ -371,7 +384,7 @@ function buildqc
     local sum=""
     if [ $CACHEQC != 0 ]; then
         echo " -- Calculating sum of $1..."
-        sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs md5sum | md5sum | sed -e 's/ .*//g')"
+        sum="$(find "$qcdir" -type f | grep -v "\.log$" | xargs ${MD5SUM_CMD} | ${MD5SUM_CMD} | sed -e 's/ .*//g')"
 
         if [ "$progname" = "csprogs" ]; then # CSQC needs to know sum of menu
             sum="$sum.$MENUSUM"
@@ -461,7 +474,7 @@ function makedata-all
 
 function listcustom
 {
-    find "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
+    find . "${BUILDDIR}/rm-custom" -maxdepth 1 -name "*.cfg" | while read cfg; do
         scfg="${cfg##*/}"
         scfg="${scfg%%.cfg}"
         echo -n "            $scfg "
