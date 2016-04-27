@@ -4,7 +4,7 @@ cd "$(dirname "$0")"
 
 INCLUDE=1
 . extras/scripts/rmlib.sh || exit 1
-require md5sum:gmd5sum tar 7za:zip %convert
+require readlink:greadlink md5sum:gmd5sum tar 7za:zip %convert
 
 RELEASE=0
 BUILD_DATE="$(date +"%F %T %Z")"
@@ -27,6 +27,13 @@ if ! hascommand md5sum; then
     function md5sum
     {
         gmd5sum "$@"
+    }
+fi
+
+if ! hascommand readlink; then
+    function readlink
+    {
+        greadlink "$@"
     }
 fi
 

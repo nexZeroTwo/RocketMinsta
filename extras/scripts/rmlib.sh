@@ -111,6 +111,10 @@ function test-command
     if [ "$1" = "grep" ]; then
         echo a | grep -Pq a
     fi
+
+    if [ "$1" = "readlink" ]; then
+        ! readlink -f &>/dev/null
+    fi
 }
 
 function hasoptional
