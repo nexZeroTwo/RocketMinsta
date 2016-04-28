@@ -607,12 +607,12 @@ void HG_PlayerJoin(void) {
 
 string HG_SelectableTypes(float issecondary) {
     if(!g_nadgets_double)
-        return CVAR(g_nadgets_type_selectable);
+        return CVAR_STR(g_nadgets_type_selectable);
 
     if(issecondary)
-        return CVAR(g_nadgets_type_selectable_secondary);
+        return CVAR_STR(g_nadgets_type_selectable_secondary);
 
-    return CVAR(g_nadgets_type_selectable_primary);
+    return CVAR_STR(g_nadgets_type_selectable_primary);
 }
 
 void HG_WriteNadgetSelect(void) {
