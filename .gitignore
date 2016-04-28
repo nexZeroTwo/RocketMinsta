@@ -4,6 +4,7 @@
 *.lno
 *.log
 *.asm
+config*.py
 config.sh
 updconfig.sh
 releaseconfig.sh
