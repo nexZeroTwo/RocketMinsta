@@ -58,7 +58,7 @@ void HG_Waypoint(void) {
         if(rng > 0) FOR_EACH_PLAYER(plr) {
             if(plr.team != self.team || !teams_matter)
             if(plr != self.owner)
-            if(!(g_freeze && plr.frozen))
+            if(!PlayerIsDead(plr))
             if(vlen(self.origin - plr.origin) < rng)
             if(checkpvs(self.origin, plr)) {
                 detected = TRUE;
