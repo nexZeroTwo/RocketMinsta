@@ -8,4 +8,10 @@ except ImportError:
     sys.stderr.write("Error: rmbuild is not installed.\nSee https://github.com/nexAkari/rmbuild for instructions.\n")
     exit(1)
 else:
-    rmbuild.main.main(sys.argv)
+    import os
+    repo = os.path.dirname(__file__)
+
+    rmbuild.main.main(sys.argv, defaults_overrides={
+        'path': repo,
+        'config': os.path.join(repo, 'config.py')
+    })
