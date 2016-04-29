@@ -289,7 +289,7 @@ void LogDeath(string mode, float deathtype, entity killer, entity killed)
 }
 
 .float pushltime;
-.float rage;
+.float multikill;
 .float lastkill;
 
 float CheckJailDM(entity attacker, entity targ) {
@@ -308,7 +308,7 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	string	s, a;
     float spawnfrag;
     float jaildm;
-	float rage_timeout = 3;
+	float multikill_timeout = CVAR(g_multikill_timeout);
     string customMessage;
 
 	if(g_jailbreak)
@@ -341,17 +341,17 @@ void Obituary (entity attacker, entity inflictor, entity targ, float deathtype)
 	if(attacker.classname == "player")
 	if(targ.classname == "player" && targ != attacker)
 	{
-		if(time - attacker.lastkill > rage_timeout)
-			attacker.rage = 0;
+		if(time - attacker.lastkill > multikill_timeout)
+			attacker.multikill = 0;
 
 		attacker.lastkill = time;
-		attacker.rage = attacker.rage + 1;
-		targ.rage = 0;
+		attacker.multikill += 1;
+		targ.multikill = 0;
 
         spawnfrag = (CVAR(g_spawnshieldmode) && ((time <= targ.spawnshieldtime) || (time <= attacker.spawnshieldtime)));
 	}
 
-    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.rage);
+    CSQCMessage_Obituary(targ, attacker, deathtype, customMessage, attacker.killcount, targ.killcount, attacker.multikill);
 
 	if(targ.classname == "player" || targ.classname == "corpse") {
 		if (targ.classname == "corpse")

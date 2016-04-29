@@ -1172,6 +1172,7 @@ float autocvar_g_minstagib_invis_alpha;
 float autocvar_g_minstagib_speed_jumpheight;
 float autocvar_g_minstagib_speed_moverate;
 float autocvar_g_mirrordamage;
+float autocvar_g_multikill_timeout;
 float autocvar_g_nadgets;
 float autocvar_g_nadgets_ammo;
 float autocvar_g_nadgets_cloak_actiondelay;
