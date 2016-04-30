@@ -276,6 +276,8 @@ void CSQC_Init(void)
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
 
     WarpZone_Init();
+
+    ext_DP_CSQC_QUERYRENDERENTITY = checkextension("DP_CSQC_QUERYRENDERENTITY");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)

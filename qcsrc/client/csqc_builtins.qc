@@ -353,3 +353,33 @@ string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
 
 float(float v) fix_int_return_value = #512;
+
+// DP_CSQC_QUERYRENDERENTITY
+// idea: VorteX
+// darkplaces implementation: VorteX
+// constant definitions:
+// render entity fields:
+float E_ACTIVE      = 0; // float 0/1
+float E_ORIGIN      = 1; // vector
+float E_FORWARD     = 2; // vector
+float E_RIGHT       = 3; // vector
+float E_UP          = 4; // vector
+float E_SCALE       = 5; // float
+float E_ORIGINANDVECTORS = 6; // returns origin, + sets v_* vectors to orientation
+float E_ALPHA       = 7; // float
+float E_COLORMOD    = 8; // vector
+float E_PANTSCOLOR  = 9; // vector
+float E_SHIRTCOLOR  = 10; // vector
+float E_SKIN        = 11; // float
+float E_MINS        = 12; // vector
+float E_MAXS        = 13; // vector
+float E_ABSMIN      = 14; // vector
+float E_ABSMAX      = 15; // vector
+float E_LIGHT       = 16; // vector - modellight
+// builtin definitions:
+float(float entitynum, float fldnum) getentity = #504;
+vector(float entitynum, float fldnum) getentityvec = #504;
+// description: allows to query parms from render entities, especially useful with attaching CSQC ents to
+// server entities networked and interpolated by engine (monsters, players), number of entity is it's SVQC number
+// you can send it via tempentity/CSQC entity message. Note that this builtin doesnt know about entity removing/reallocating
+// so it's meaning to work for short period of time, dont use it on missiles/grenades whatever will be removed next five seconds
