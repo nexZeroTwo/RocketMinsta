@@ -571,7 +571,7 @@ void Buffs_ClientFrame(void) {
         }
         
         self.buff_model.buffs = self.buffstat;
-        setorigin(self.buff_model, self.origin + '0 0 70');
+        setorigin(self.buff_model, self.origin + BUFFMODEL_OVERHEAD_OFFSET);
         Buffs_Model_Update(self.buff_model);
 
     } else if(self.buff_model) {

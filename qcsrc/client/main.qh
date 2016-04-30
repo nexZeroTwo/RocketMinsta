@@ -333,3 +333,5 @@ float fps_friendly;
 
 float mouse_enabled;
 vector mouse_pos;
+
+float ext_DP_CSQC_QUERYRENDERENTITY;

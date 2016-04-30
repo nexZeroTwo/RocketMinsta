@@ -5,6 +5,7 @@
 .float lightlev;
 .float lightflags;
 .vector lightcolor;
+.vector buff_offset;
 
 string buff_modelnames[BUFF_COUNT];
 .entity buffmdl[BUFF_COUNT];
@@ -27,17 +28,36 @@ void Buffs_LoadModels(void) {
 }
 
 void Buffs_Model_Draw(void) {
-    InterpolateOrigin_Do();
+    var org;
+    var rendermodel = FALSE;
 
     if(!(self.effects & EF_NODRAW))
     if(self.alpha > 0)
+        rendermodel = TRUE;
+
+    InterpolateOrigin_Do();
+    if(self.sv_entnum && ext_DP_CSQC_QUERYRENDERENTITY) {
+        if(getentity(self.sv_entnum, E_ACTIVE)) {
+            org = getentityvec(self.sv_entnum, E_ORIGIN) + self.buff_offset;
+        } else {
+            if(fps_friendly)
+                return;
+
+            rendermodel = FALSE;
+            org = self.origin;
+        }
+    } else {
+        org = self.origin;
+    }
+
+    if(rendermodel)
         R_AddEntity(self);
 
     if(self.lightlev)
-        R_AddDynamicLightEx(self.origin, self.lightlev, self.lightcolor, -1, NULL, self.lightflags);
+        R_AddDynamicLightEx(org, self.lightlev, self.lightcolor, -1, NULL, self.lightflags);
 
     if(self.effects & EF_STARDUST)
-        pointparticles(particleeffectnum("EF_STARDUST"), self.origin, '0 0 0', frametime);
+        pointparticles(particleeffectnum("EF_STARDUST"), org, '0 0 0', frametime);
 }
 
 void Buffs_Model_Multi_Think(void) {
@@ -59,7 +79,10 @@ void Buffs_Model_Multi_Think(void) {
     vector ang;
     ang_y = mod(time * 120 + self.cnt, 360);
     makevectors(ang);
-    setorigin(self, self.owner.origin + v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt));
+
+    var ofs = v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt);
+    setorigin(self, self.owner.origin + ofs);
+    self.buff_offset = self.owner.buff_offset + ofs;
     self.angles_y = ang_y + 90;
     
     self.nextthink = time;
@@ -239,10 +262,12 @@ void Buffs_Model_Read(void) {
         if(self.sv_entnum) {
             // this is an overhead buff model
 
+            self.buff_offset = BUFFMODEL_OVERHEAD_OFFSET;
             setsize(self, '0 0 -40', '0 0 40');
         } else {
             // this is a buff pickup model
             
+            self.buff_offset = '0 0 0';
             self.solid = SOLID_TRIGGER;
             self.movetype = MOVETYPE_TOSS;
             self.scale = 1.5;
