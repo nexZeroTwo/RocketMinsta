@@ -1,8 +1,7 @@
 ../../menu.dat
 
-config.qh
-../common/rm_auto.qh
 ../common/util-pre.qh
+config.qh
 
 autocvars.qh
 ../common/autocvars.qh

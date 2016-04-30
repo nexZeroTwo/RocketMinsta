@@ -1,6 +1,5 @@
 ../../csprogs.dat
 
-../common/rm_auto.qh
 ../common/util-pre.qh
 
 pre.qh
