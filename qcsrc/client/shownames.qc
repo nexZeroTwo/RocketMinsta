@@ -12,25 +12,45 @@ float Shownames_PreDrawPlayer(entity plr) {
     if(rm_shownames_teamonly && !plr.sameteam)
         return FALSE;
 
-    if(plr.iorigin == '0 0 0')
-        plr.iorigin = plr.origin;
-    else
-        plr.iorigin = plr.iorigin + (plr.origin - plr.iorigin) * frametime * 15;
-    
-    if(self.sn_culled) { // fade out
+    var culled, fallback = TRUE;
+
+    if(ext_DP_CSQC_QUERYRENDERENTITY) {
+        var plr_entnum = plr.sv_entnum + 1;
+
+        if(getentity(plr_entnum, E_ACTIVE)) {
+            self.iorigin = getentityvec(plr_entnum, E_ORIGIN);
+            fallback = FALSE;
+        } else if(!plr.sameteam) {
+            culled = TRUE;
+        }
+    }
+
+    if(fallback) {
+        if(plr.iorigin == '0 0 0') {
+            plr.iorigin = plr.origin;
+        } else {
+            plr.iorigin = plr.iorigin + (plr.origin - plr.iorigin) * frametime * 15;
+        }
+    }
+
+    if(self.sn_culled || culled) { // fade out
         plr.alpha = max(0, plr.alpha - 4 * frametime);
-        if(!plr.alpha)
+        if(!plr.alpha) {
             return FALSE;
+        }
     } else if(!plr.sameteam) {
         makevectors(view_angles);
         if(WarpZone_FindLineOfSight(v_forward, view_origin, plr.iorigin, MOVE_NOMONSTERS, world) == '0 0 0') { // fade out
             plr.alpha = max(0, plr.alpha - 4 * frametime);
-            if(!plr.alpha)
+            if(!plr.alpha) {
                 return FALSE;
-        } else // fade in
+            }
+        } else { // fade in
             plr.alpha = min(1, plr.alpha + 4 * frametime);
-    } else // fade in
+        }
+    } else { // fade in
         plr.alpha = min(1, plr.alpha + 4 * frametime);
+    }
 
     return TRUE;
 }
