@@ -490,32 +490,56 @@ void SpecialCommand()
 #endif
 }
 
+float walljump_ismantle;
+
 vector PlayerTouchWall(float dist)
 {
-    float max_normal, i;
-    max_normal = 0.2;
-    
+    const max_normal = 0.2;
+    var mantle_factor = CVAR(g_walljump_force_velocityscale_mantlehack);
+
+    walljump_ismantle = FALSE;
+
     if(time < self.hg_plasmalock)
         return '0 0 0';
-    
+
     vector old_forward = v_forward, old_right = v_right, old_up = v_up, normal = '0 0 0';
     makevectors(self.angles);
-    
+
     float sh  = CVAR(sv_stepheight);
     float shc = CVAR(g_walljump_stepheightcompensate);
     float pc  = CVAR(g_walljump_playerclip);
-    
-    for(i = 1; i > -2; i -= 2) {
-        WarpZone_TraceBox(self.origin, self.mins + sh * '0 0 1' * (if(shc) 1 else 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
+
+    for(var i = 1; i > -2; i -= 2) {
+        var o = self.origin;
+        var bmin = self.mins + sh * '0 0 1' * (if(shc) 1 else 0);
+        var bmax = self.maxs;
+        var tracetarg = o + v_forward * dist * i * 2;
+
+        WarpZone_TraceBox(o, bmin, bmax, tracetarg, MOVE_NOMONSTERS, self);
+
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if(!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))
         if(vlen(self.origin - trace_endpos) < dist) {
             normal = trace_plane_normal;
+
+            if(mantle_factor && i == 1) {
+                save_trace_globals();
+
+                var mofs = mantle_factor * (bmax_z - bmin_z);
+                o_z += mofs;
+                bmax_z -= mofs;
+                tracetarg = o + v_forward * dist;
+
+                WarpZone_TraceBox(o, bmin, bmax, tracetarg, MOVE_NOMONSTERS, self);
+                walljump_ismantle = !(trace_fraction < 1);
+                restore_trace_globals();
+            }
+
             break;
         }
     }
-    
+
     v_forward = old_forward;
     v_right = old_right;
     v_up = old_up;
@@ -575,7 +599,12 @@ void WallJumpPhysics(void) {
         self.wj_count += 1;
 
         var kickdir, sidev = [self.velocity_x, self.velocity_y];
-        var wj_force = max(CVAR(g_walljump_force), vlen(sidev) * CVAR(g_walljump_force_velocityscale));
+        var wj_force = max(CVAR(g_walljump_force), (
+            if(walljump_ismantle)
+                0
+            else
+                vlen(sidev) * CVAR(g_walljump_force_velocityscale)
+        ));
         var wj_z_factor = CVAR(g_walljump_velocity_z_factor);
 
         if(CVAR(g_walljump_reflect)) {
