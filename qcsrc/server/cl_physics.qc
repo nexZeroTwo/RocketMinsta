@@ -16,7 +16,9 @@
 .float shtest_accumulator;
 .float doublejump_nextjumptime;
 
-.float lastwj;
+.vector wj_last_normal;
+.float wj_count;
+.float wj_jumptime;
 
 /*
 =============
@@ -81,16 +83,15 @@ void PlayerJump (void)
 
 	self.velocity_z = self.velocity_z + mjumpheight;
 	self.oldvelocity_z = self.velocity_z;
-	if(!self.crouch){
-	self.lastwj = time - 0.8; // a clever little trick to prevent walljumping off sidewalks/stairs/etc. right after the initial jump
-	}
-	self.flags &~= (FL_ONGROUND | FL_SLICK);
-	self.flags &~= FL_JUMPRELEASED;
 
-	if (self.crouch)
+	self.flags &~= (FL_ONGROUND | FL_SLICK | FL_JUMPRELEASED);
+
+	if(self.crouch) {
 		setanim(self, self.anim_duckjump, FALSE, TRUE, TRUE);
-	else
+    } else {
 		setanim(self, self.anim_jump, FALSE, TRUE, TRUE);
+        self.wj_jumptime = time - 0.8; // a clever little trick to prevent walljumping off sidewalks/stairs/etc. right after the initial jump
+    }
 
 	if(g_jump_grunt)
 		PlayerSound(playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
@@ -489,36 +490,195 @@ void SpecialCommand()
 #endif
 }
 
+float walljump_ismantle;
+
 vector PlayerTouchWall(float dist)
 {
-    float max_normal, i;
-    max_normal = 0.2;
-    
+    const max_normal = 0.2;
+    var mantle_factor = CVAR(g_walljump_force_velocityscale_mantlehack);
+
+    walljump_ismantle = FALSE;
+
     if(time < self.hg_plasmalock)
         return '0 0 0';
-    
+
     vector old_forward = v_forward, old_right = v_right, old_up = v_up, normal = '0 0 0';
     makevectors(self.angles);
-    
+
     float sh  = CVAR(sv_stepheight);
     float shc = CVAR(g_walljump_stepheightcompensate);
     float pc  = CVAR(g_walljump_playerclip);
-    
-    for(i = 1; i > -2; i -= 2) {
-        WarpZone_TraceBox(self.origin, self.mins + sh * '0 0 1' * (if(shc) 1 else 0), self.maxs, self.origin + v_forward * dist * i * 2, TRUE, self);
+
+    for(var i = 1; i > -2; i -= 2) {
+        var o = self.origin;
+        var bmin = self.mins + sh * '0 0 1' * (if(shc) 1 else 0);
+        var bmax = self.maxs;
+        var tracetarg = o + v_forward * dist * i * 2;
+
+        WarpZone_TraceBox(o, bmin, bmax, tracetarg, MOVE_NOMONSTERS, self);
+
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
         if(!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))
         if(vlen(self.origin - trace_endpos) < dist) {
             normal = trace_plane_normal;
+
+            if(mantle_factor && i == 1) {
+                save_trace_globals();
+
+                var mofs = mantle_factor * (bmax_z - bmin_z);
+                o_z += mofs;
+                bmax_z -= mofs;
+                tracetarg = o + v_forward * dist;
+
+                WarpZone_TraceBox(o, bmin, bmax, tracetarg, MOVE_NOMONSTERS, self);
+                walljump_ismantle = !(trace_fraction < 1);
+                restore_trace_globals();
+            }
+
             break;
         }
     }
-    
+
     v_forward = old_forward;
     v_right = old_right;
     v_up = old_up;
     return normal;
+}
+
+void WallJumpPhysics(void) {
+    if(!self.iscreature)
+        return;
+
+    if(self.frozen)
+        return;
+
+    if(self.deadflag)
+        return;
+
+    if(self.flags & FL_ONGROUND) {
+        self.wj_count = 0;
+        return;
+    }
+
+    if(gameover)
+        return;
+
+    if(self.hook.state)
+        return;
+
+    if(!self.BUTTON_JUMP)
+        return;
+
+    if(self.hg_shield && !CVAR(g_walljump_shielded))
+        return;
+
+    if((g_race || g_cts) && !CVAR(g_walljump_allowed_in_race))
+        return;
+
+    if(self.wj_count >= CVAR(g_walljump_limit))
+        return;
+
+    var plane_normal = PlayerTouchWall(CVAR(g_walljump_distance));
+
+    if(plane_normal == '0 0 0')
+        return;
+
+    var pangle = RAD2DEG * acos(plane_normal * self.wj_last_normal);
+    var cooldown = (
+        if(pangle >= CVAR(g_walljump_delay_otherwall_minangle) && !self.crouch)
+            CVAR(g_walljump_delay_otherwall)
+        else
+            CVAR(g_walljump_delay)
+    );
+
+    if ((time - self.wj_jumptime) > cooldown)
+    {
+        self.wj_last_normal = plane_normal;
+        self.wj_jumptime = time;
+        self.wj_count += 1;
+
+        var kickdir, sidev = [self.velocity_x, self.velocity_y];
+        var wj_force = max(CVAR(g_walljump_force), (
+            if(walljump_ismantle)
+                0
+            else
+                vlen(sidev) * CVAR(g_walljump_force_velocityscale)
+        ));
+        var wj_z_factor = CVAR(g_walljump_velocity_z_factor);
+
+        if(CVAR(g_walljump_reflect)) {
+            kickdir = normalize(sidev);
+
+            // trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin - kickdir * wj_force, self.origin);
+
+            kickdir = kickdir - 2 * (kickdir * plane_normal) * plane_normal;
+
+            if(kickdir == '0 0 0') {
+                kickdir = plane_normal;
+            } else if(CVAR(g_walljump_reflect_minkickangle)) {
+                // XXX: This is stupid, lame, approximate and VERY inefficient.
+
+                var ma = CVAR(g_walljump_reflect_minkickangle);
+                var od = 180;
+                var i = 0;
+                var okick = kickdir;
+
+                while((var d = fabs(RAD2DEG * asin(kickdir * plane_normal) - ma)) > 0.1 && d < od) {
+                    od = d;
+                    okick = kickdir;
+                    kickdir = normalize(kickdir + plane_normal * 0.01);
+                    ++i;
+                }
+
+                kickdir = okick;
+            }
+
+            // trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin, self.origin + kickdir * wj_force);
+        } else {
+            kickdir = plane_normal;
+        }
+
+        if(CVAR(g_walljump_hardkick) == 1) {
+            self.velocity_x = kickdir_x * wj_force;
+            self.velocity_y = kickdir_y * wj_force;
+        } else {
+            var wj_xy_factor = CVAR(g_walljump_velocity_xy_factor);
+            var cap = CVAR(g_walljump_velocity_xy_cap);
+
+            if(cap)
+                cap = max(vlen(sidev) / wj_xy_factor, wj_force);
+
+            if(CVAR(g_walljump_velocity_xy_factor_initial_only)) {
+                self.velocity_x = (self.velocity_x / wj_xy_factor) + (kickdir_x * wj_force);
+                self.velocity_y = (self.velocity_y / wj_xy_factor) + (kickdir_y * wj_force);
+            } else {
+                self.velocity_x = (self.velocity_x + kickdir_x * wj_force) / wj_xy_factor;
+                self.velocity_y = (self.velocity_y + kickdir_y * wj_force) / wj_xy_factor;
+            }
+
+            if(cap) {
+                self.velocity_z = 0;
+                if(vlen(self.velocity) > cap)
+                    self.velocity = normalize(self.velocity) * cap;
+            }
+
+            if((var hk = CVAR(g_walljump_hardkick))) {
+                var ihk = 1 - hk;
+                self.velocity_x = ihk * self.velocity_x + hk * kickdir_x * wj_force;
+                self.velocity_y = ihk * self.velocity_y + hk * kickdir_y * wj_force;
+            }
+        }
+
+        self.velocity_z = CVAR(sv_jumpvelocity) * wj_z_factor;
+        if(self.crouch)
+            self.velocity_z *= -1; // thanks Synap for the idea
+
+        self.oldvelocity = self.velocity;
+
+        pointparticles(particleeffectnum("smoke_ring"), trace_endpos, plane_normal, 10);
+        PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
+    }
 }
 
 void SV_PlayerPhysics()
@@ -586,68 +746,9 @@ void SV_PlayerPhysics()
 			}
 		}
 	}
-    
-    // as far as I know, fteqcc/rmqcc still does not optimize boolean expressions by default
-	if (CVAR(g_walljump))
-    //if (!self.hg_stealth)
-	if (!(g_freeze && self.frozen) && self.health > 0)
-    if (isplayer)
-    if (!(self.flags & FL_ONGROUND))
-    if (self.BUTTON_JUMP)
-    if ((time - self.lastwj) > CVAR(g_walljump_delay))
-	if (!self.hook.state)
-    if (!gameover)
-    if (!self.hg_shield || CVAR(g_walljump_shielded))
-    if (!(g_race || g_cts) || CVAR(g_walljump_allowed_in_race))
-	{
-		vector plane_normal;
-		plane_normal = PlayerTouchWall(CVAR(g_walljump_distance));
-		if (plane_normal != '0 0 0')
-		{
-			self.lastwj = time;
-            vector kickdir, sidev = self.velocity;
-            sidev_z = 0;
-			float wj_force = max(CVAR(g_walljump_force), vlen(sidev) * CVAR(g_walljump_force_velocityscale));
-			float wj_z_factor = CVAR(g_walljump_velocity_z_factor);
-            
-            if(CVAR(g_walljump_reflect)) {
-                kickdir = normalize(sidev - 2 * (sidev * plane_normal) * plane_normal);
-                if(kickdir == '0 0 0')
-                    kickdir = plane_normal;
-            } else
-                kickdir = plane_normal;
-            
-            if(CVAR(g_walljump_hardkick)) {
-                self.velocity_x = kickdir_x * wj_force;
-                self.velocity_y = kickdir_y * wj_force;
-            } else {
-                float wj_xy_factor = CVAR(g_walljump_velocity_xy_factor);
-                float cap = CVAR(g_walljump_velocity_xy_cap);
-                if(cap)
-                    cap = max(vlen(sidev) / wj_xy_factor, wj_force);
-                
-                if(CVAR(g_walljump_velocity_xy_factor_initial_only)) {
-                    self.velocity_x = (self.velocity_x / wj_xy_factor) + (kickdir_x * wj_force);
-                    self.velocity_y = (self.velocity_y / wj_xy_factor) + (kickdir_y * wj_force);
-                } else {
-                    self.velocity_x = (self.velocity_x + kickdir_x * wj_force) / wj_xy_factor;
-                    self.velocity_y = (self.velocity_y + kickdir_y * wj_force) / wj_xy_factor;
-                }
-                
-                if(cap) {
-                    self.velocity_z = 0;
-                    if(vlen(self.velocity) > cap)
-                        self.velocity = normalize(self.velocity) * cap;
-                }
-            }
-            
-			self.velocity_z = CVAR(sv_jumpvelocity) * wj_z_factor;
-			if (self.crouch) self.velocity_z *= -1; // thanks Synap for the idea
-			self.oldvelocity = self.velocity;
-			pointparticles(particleeffectnum("smoke_ring"), trace_endpos, plane_normal, 10);
-			PlayerSound (playersound_jump, CHAN_PLAYER, VOICETYPE_PLAYERSOUND);
-		}
-	}
+
+    if(CVAR(g_walljump))
+        WallJumpPhysics();
 
 	self.race_movetime_frac += frametime;
 	f = floor(self.race_movetime_frac);
