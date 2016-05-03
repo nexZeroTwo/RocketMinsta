@@ -454,6 +454,8 @@ void HealScore(entity targ, entity healer, float heal) {
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
 
     if(targ.classname == "player") {
+        Buffs_ConduitDamage(targ, healer, heal, aheal, healtype);
+
         if(hlimit)  hlimit = min(CVAR(g_balance_health_limit), hlimit);
         else        hlimit = CVAR(g_balance_health_limit);
         if(alimit)  alimit = min(CVAR(g_balance_armor_limit),  alimit);
@@ -519,9 +521,6 @@ float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal
         targ.flags &~= FL_ONGROUND;
     }
 
-    if(targ.iscreature)
-        Buffs_FocusDamage(targ, healer, heal + aheal, healtype);
-    
     return heal + aheal;
 }
 
@@ -1565,7 +1564,7 @@ void fireburner_think()
 }
 
 void ArcEffect(vector from, vector to, float t) {
-    te_csqc_lightningarc(from, to, t, t);
+    te_csqc_lightningarc(from, to, TRUE, t);
 }
 
 void ArcDamage_Recurse(entity targ, entity attacker, float damage, float deathtype,

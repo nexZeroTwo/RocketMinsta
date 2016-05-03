@@ -664,14 +664,26 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 {
 	entity e;
 	float length_warped;
-	WarpZone_FindNearestOrigin_length = vlen(to - from);
-	vector to_warped, to_nearest = to;
+    vector to_warped, to_nearest = to;
+
+    if(trace_check > 1) {
+        WarpZone_TraceLine(from, to, MOVE_NOMONSTERS, world);
+
+        if(vlen(trace_endpos - to) < 1) {
+            WarpZone_FindNearestOrigin_length = vlen(to - from);
+        } else {
+            WarpZone_FindNearestOrigin_length = -1;
+        }
+    } else {
+        WarpZone_FindNearestOrigin_length = vlen(to - from);
+    }
+
 	for(e = warpzone_chain_begin; e; e  = e.warpzone_chain) {
 		to_warped = WarpZone_TransformOrigin(e, to);
 		length_warped = vlen(to_warped - from);
-		if (length_warped < WarpZone_FindNearestOrigin_length) {
+		if (length_warped < WarpZone_FindNearestOrigin_length || WarpZone_FindNearestOrigin_length < 0) {
 			if (trace_check) {
-				WarpZone_TraceTriangle(from, from, to_warped, MOVE_NOMONSTERS, world, NULL);
+                WarpZone_TraceLine(from, to_warped, MOVE_NOMONSTERS, world);
 				if (vlen(trace_endpos - to) < 1) {
 					WarpZone_FindNearestOrigin_length = length_warped;
 					to_nearest = to_warped;
@@ -682,6 +694,7 @@ vector WarpZone_FindNearestOrigin(vector from, vector to, float trace_check)
 			}
 		}
 	}
+
 	return to_nearest;
 }
 
