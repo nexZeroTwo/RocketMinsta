@@ -944,25 +944,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             })
         }
 
-        float removenadgets;
-        if(g_nadgets)
-            removenadgets = CVAR(g_nadgets_remove_on_death);
-
-        if(removenadgets > 1)
-            HG_RemoveAll(self);
-
-        if(g_nadgets && self.hg_power > 0 && CVAR(g_nadgets_drop_on_death)) {
-            HG_SetContext(self.hg_altstate);
-            self.hg_power = 0;
-            HG_Attack();
-        }
-
-        HG_GenericProjectile_DetonateAll(self);
-
-        if(!g_freezetag && !g_jailbreak) {
-            if(CVAR(g_nadgets_resetonrespawn))
-                self.hg_ammo1 = self.hg_ammo2 = 0;
-        }
+        HG_PlayerDeath();
 
         self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
         
@@ -1020,10 +1002,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             return;
 
         dropentities(self);
-
-        if(removenadgets == 1) // was < 2
-            HG_RemoveAll(self);
-        
+        HG_PlayerTrueDeath();
 		Boobs_DropAll(force);
 		
 		// don't spin

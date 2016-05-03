@@ -748,17 +748,14 @@ void HG_GenericProjectile_Detonate(entity nade) {
     }
 }
 
-void HG_GenericProjectile_DetonateAll(entity plr) {
+void HG_GenericProjectile_DetonateAll(entity plr, float force) {
     float c;
     entity nade, tl;
 
-    if(!plr.hg_detonables)
+    if(!plr.hg_detonables || (!force && PlayerIsDead(plr)))
         return;
 
-    if(!HG_PlayerMayDetonate(plr))
-        return;
-
-    for(nade = world; (nade = find(nade, classname, "hg_generic_projectile"));) {
+    if(!force) for(nade = world; (nade = find(nade, classname, "hg_generic_projectile"));) {
         if(nade.owner == plr && nade.hg_type == HG_TRANSLOC) {
             if(!tl || nade.hg_nadesused < tl.hg_nadesused)
                 tl = nade;
