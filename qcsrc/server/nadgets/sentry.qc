@@ -60,8 +60,8 @@ entity HG_Sentry_FindTarget(entity emitter) {
         if(HG_Sentry_TargetIsTaken(emitter, p))
             continue;
 
-        t = p.origin + p.view_ofs;
-        dist = vlen(o - t);
+        t = WarpZone_FindNearestOrigin(o, p.origin + p.view_ofs, FALSE);
+        dist = WarpZone_FindNearestOrigin_length;
 
         if(diffteam || (!diffteam && medicflag)) {
             if(dist > mindist)
@@ -69,7 +69,7 @@ entity HG_Sentry_FindTarget(entity emitter) {
         } else if(dist > range)
             continue;
 
-        traceline(o, t, MOVE_NORMAL, sentry);
+        WarpZone_TraceLine(o, t, MOVE_NORMAL, sentry);
 
         if(trace_ent != p)
             continue;
@@ -89,10 +89,11 @@ void HG_Sentry_Beam_Think(void) {
     vector end = targ.origin + targ.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
     vector start = self.owner.origin + self.owner.view_ofs;
 
-    traceline(start, end, MOVE_NORMAL, self);
+    end = WarpZone_FindNearestOrigin(start, end, TRUE);
+    WarpZone_TraceLine(start, end, MOVE_NORMAL, self);
 
     targ = trace_ent;
-    end = trace_endpos;
+    end = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 
     if(!self.origin)
         self.origin = end;
