@@ -537,7 +537,7 @@ void HG_Trigger(void) {
         HG_Sentry_Trigger();
 
         self.hg_detonatepressed = TRUE;
-        HG_GenericProjectile_DetonateAll(self);
+        HG_GenericProjectile_DetonateAll(self, FALSE);
 
         if(Buffs_Present(self, BUFF_ADEPT)) {
             float i;
@@ -603,6 +603,44 @@ void HG_PlayerJoin(void) {
 
     HG_ResetState(self, PlayerIsDead(self));
     HG_UpdateDetonables();
+}
+
+void HG_PlayerDeath(void) {
+    // Called for all deaths
+
+    if(!g_nadgets)
+        return;
+
+    if(CVAR(g_nadgets_remove_on_death) > 1)
+        HG_RemoveAll(self);
+
+    if(self.hg_power > 0 && CVAR(g_nadgets_drop_on_death)) {
+        HG_SetContext(self.hg_altstate);
+        self.hg_power = 0;
+        HG_Attack();
+    }
+
+    if(!g_freezetag && !g_jailbreak) {
+        if(CVAR(g_nadgets_resetonrespawn))
+            self.hg_ammo1 = self.hg_ammo2 = 0;
+    }
+
+    if(CVAR(g_nadgets_detonate_on_death) > 1)
+        HG_GenericProjectile_DetonateAll(self, TRUE);
+}
+
+void HG_PlayerTrueDeath(void) {
+    // Called only for "real" deaths not intercepted by gametype rules
+    // Won't be called for getting frozen, for example
+
+    if(!g_nadgets)
+        return;
+
+    if(CVAR(g_nadgets_remove_on_death) == 1)
+        HG_RemoveAll(self);
+
+    if(CVAR(g_nadgets_detonate_on_death) == 1)
+        HG_GenericProjectile_DetonateAll(self, TRUE);
 }
 
 string HG_SelectableTypes(float issecondary) {

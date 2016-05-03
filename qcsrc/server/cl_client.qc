@@ -787,7 +787,7 @@ void PutObserverInServer (void)
     if(!self.justconnected) {
         kh_Key_DropAll(self, TRUE);
         Freeze_Hook_PlayerQuits();
-        HG_GenericProjectile_DetonateAll(self);
+        HG_GenericProjectile_DetonateAll(self, TRUE);
         JB_RemovePlayer();
         Portal_ClearAll(self);
         Boobs_Clear();
@@ -2027,7 +2027,7 @@ void ClientDisconnect (void)
     
 	kh_Key_DropAll(self, TRUE);
     Freeze_Hook_PlayerQuits();
-    HG_GenericProjectile_DetonateAll(self);
+    HG_GenericProjectile_DetonateAll(self, TRUE);
 	JB_RemovePlayer();
 	Portal_ClearAll(self);
 	Boobs_Clear();
