@@ -88,11 +88,13 @@ void HG_Sentry_Beam_Think(void) {
     entity targ = self.enemy.enemy;
     vector end = targ.origin + targ.view_ofs * (0.5 + 0.5 * sin(time * 5 + num_for_edict(self)));
     vector start = self.owner.origin + self.owner.view_ofs;
+    vector end_transformed;
 
     end = WarpZone_FindNearestOrigin(start, end, TRUE);
     WarpZone_TraceLine(start, end, MOVE_NORMAL, self);
 
     targ = trace_ent;
+    end_transformed = trace_endpos;
     end = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos);
 
     if(!self.origin)
@@ -103,7 +105,7 @@ void HG_Sentry_Beam_Think(void) {
     end = self.origin;
 
     if(targ.takedamage == DAMAGE_AIM && time > self.cnt) {
-        Damage(targ, self, self.owner.realowner, CVAR(g_nadgets_sentry_beam_dps) * 0.1, HG_SENTRY, end, CVAR(g_nadgets_sentry_beam_force) * normalize(end - start));
+        Damage(targ, self, self.owner.realowner, CVAR(g_nadgets_sentry_beam_dps) * 0.1, HG_SENTRY, end, CVAR(g_nadgets_sentry_beam_force) * normalize(end_transformed - WarpZone_TransformOrigin(WarpZone_trace_transform, start)));
         self.cnt = time + 0.1; // FIXME: this is inaccurate
     }
 
