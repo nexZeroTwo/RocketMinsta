@@ -44,6 +44,10 @@ float g_buffs_count;
 .float buff_endur_dmgpool;
 .float buff_endur_nexttick;
 
+.float buff_conduit_hpool;
+.float buff_conduit_apool;
+.float buff_conduit_next;
+
 .float buff_stealth_time;
 
 .entity meodp_point;
@@ -68,7 +72,7 @@ float Buffs_MedicDamage(entity, entity, entity, float, float, vector, vector);
 float Buffs_IgniteDamage(entity, entity, entity, float, float);
 void Buffs_VampireDamage(entity, entity, float, float);
 float Buffs_TenacityDamage(entity, entity, float, float);
-void Buffs_FocusDamage(entity, entity, float, float);
+void Buffs_ConduitDamage(entity, entity, float, float, float);
 float Buffs_EnduranceDamage(entity, entity, float, float);
 void Buffs_WrathDamage(entity, entity, float, float);
 void Buffs_ReaperFrag(entity, entity);

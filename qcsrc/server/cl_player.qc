@@ -628,8 +628,6 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         force = '0 0 0';
     }
 
-    Buffs_FocusDamage(self, attacker, damage, deathtype);
-
     if(DEATH_HGTYPE(deathtype) == HG_PLASMA)
         if(self.frozen || (inflictor.hg_adept && CVAR(g_nadgets_plasma_adept_stun))) if(self != attacker && (!teams_matter || IsDifferentTeam(self, attacker))) {
             self.hg_plasmalock = time + CVAR(g_nadgets_plasma_projectile_frozenlock) * Buffs_NadgetPower(attacker);
@@ -726,6 +724,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.pushltime = 0;
 
     take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
+    Buffs_ConduitDamage(self, attacker, take, save, deathtype);
 
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{

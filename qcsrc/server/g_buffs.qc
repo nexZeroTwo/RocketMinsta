@@ -144,7 +144,7 @@ void Buffs_Init(void) {
     
     float enabled;
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) {
-        if(b == BUFF_MEDIC)
+        if(b == BUFF_MEDIC || b == BUFF_CONDUIT)
         if(!teams_matter)
             continue;
         
@@ -483,6 +483,58 @@ void Buffs_RemoveTeamWaypoint(entity plr) {
     WaypointSprite_Disown(plr.buff_teamwp, 0.5);
 }
 
+void Buffs_ApplyConduit(void) {
+    if(time < self.buff_conduit_next)
+        return;
+
+    var heal_h = self.buff_conduit_hpool;
+    var heal_a = self.buff_conduit_apool;
+
+    if(!(heal_h + heal_a))
+        return;
+
+    if(!Buffs_Present(self, BUFF_CONDUIT)) {
+        self.buff_conduit_hpool = self.buff_conduit_apool = 0;
+        return;
+    }
+
+    var buff_org = self.origin + BUFFMODEL_OVERHEAD_OFFSET;
+    var f = CVAR(g_buffs_conduit_factor);
+    var healed;
+
+    heal_h *= f;
+    heal_a *= f;
+
+    FOR_EACH_PLAYER(var plr) if(self != plr && !IsDifferentTeam(self, plr) && !PlayerIsDead(plr)) {
+        var o = WarpZone_FindNearestOrigin(buff_org, plr.origin + plr.view_ofs, 2);
+
+        if(WarpZone_FindNearestOrigin_length < 0 || WarpZone_FindNearestOrigin_length > CVAR(g_buffs_conduit_range))
+            continue;
+
+        te_csqc_lightningarc(buff_org, o, FALSE, 0);
+        Heal(plr, self, self, heal_h, heal_a, 0, 0, DEATH_CONDUIT, 0, 0, o, '0 0 0');
+        healed = TRUE;
+    }
+
+    if(healed) {
+        sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, ATTN_NORM);
+        self.buff_conduit_next = time + 0.5;
+    }
+
+    self.buff_conduit_apool = 0;
+    self.buff_conduit_hpool = 0;
+}
+
+void Buffs_ApplyVampire(void) {
+    if(self.buff_vamp_ticks > 0 && time > self.buff_vamp_nexttick) {
+        float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
+        Heal(self, world, self, heal, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
+        self.buff_vamp_healthpool -= heal;
+        self.buff_vamp_ticks -= 1;
+        self.buff_vamp_nexttick = time + 1;
+    }
+}
+
 void Buffs_ClientFrame(void) {
     if(!g_buffs)
         return;
@@ -527,10 +579,6 @@ void Buffs_ClientFrame(void) {
             W_Clip_ResetAll(FALSE);
         }
 
-        ON_BUFF_ADDED(BUFF_FOCUS) {
-            W_Clip_ResetAll(TRUE);
-        }
-
         ON_BUFF_ADDED(BUFF_GUARD) {
             if(g_clanarena)
                 self.health = max(min(CVAR(g_clanarena_heal_limit), CVAR(g_buffs_guard_pickup_health)), self.health);
@@ -556,6 +604,11 @@ void Buffs_ClientFrame(void) {
             self.buff_stealth_time = -1000;
         }
 
+        ON_BUFF_REMOVED(BUFF_COUNT) {
+            self.buff_conduit_hpool = 0;
+            self.buff_conduit_apool = 0;
+        }
+
         self.oldbuffs = self.buffs;
     }
     
@@ -578,14 +631,9 @@ void Buffs_ClientFrame(void) {
         remove(self.buff_model);
         self.buff_model = world;
     }
-    
-    if(self.buff_vamp_ticks > 0 && time > self.buff_vamp_nexttick) {
-        float heal = self.buff_vamp_healthpool / self.buff_vamp_ticks;
-        Heal(self, world, self, heal, 0, CVAR(g_buffs_vampire_limit), 0, DEATH_VAMPIRE, CVAR(g_buffs_vampire_pauserot), 0, '0 0 0', '0 0 0');
-        self.buff_vamp_healthpool -= heal;
-        self.buff_vamp_ticks -= 1;
-        self.buff_vamp_nexttick = time + 1;
-    }
+
+    Buffs_ApplyVampire();
+    Buffs_ApplyConduit();
 
     if(!self.buff_teamwp) {
         if(Buffs_Present(self, BUFF_MEDIC))
@@ -790,38 +838,18 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     );
 }
 
-void Buffs_FocusDamage(entity targ, entity attacker, float damage, float deathtype) {
-    if(!damage)
+void Buffs_ConduitDamage(entity targ, entity attacker, float hdamage, float adamage, float deathtype) {
+    if(!(hdamage + adamage))
         return;
 
-    if(!DEATH_ISWEAPON(deathtype, WEP_CAMPINGRIFLE))
+    if(!Buffs_Present(targ, BUFF_CONDUIT))
         return;
 
-    if(!Buffs_Present(attacker, BUFF_FOCUS))
+    if(deathtype == DEATH_CONDUIT || DEATH_HGTYPE(deathtype) == HG_LINKER)
         return;
 
-    var alt = (deathtype & HITTYPE_SECONDARY);
-
-    // TODO: make this work for all weapons (maybe)
-
-    W_CampingRifle_SetClipContext();
-
-    attacker.w_clip_loaded = attacker.w_clip_loaded +
-        if(damage >= targ.health + targ.armorvalue)
-            if(alt)
-                CVAR(g_buffs_focus_bonus_kill_alt)
-            else
-                CVAR(g_buffs_focus_bonus_kill)
-        else if(deathtype & HITTYPE_HEADSHOT)
-            if(alt)
-                CVAR(g_buffs_focus_bonus_headshot_alt)
-            else
-                CVAR(g_buffs_focus_bonus_headshot)
-        else
-            if(alt)
-                CVAR(g_buffs_focus_bonus_hit_alt)
-            else
-                CVAR(g_buffs_focus_bonus_hit);
+    targ.buff_conduit_hpool += hdamage;
+    targ.buff_conduit_apool += adamage;
 }
 
 entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
@@ -1419,6 +1447,7 @@ BUFF_SPAWNFUNCS(random,     BUFF_RANDOM)
 
 // older RM compatibility
 BUFF_SPAWNFUNCS(bash,       BUFF_IGNITE)
+BUFF_SPAWNFUNCS(focus,      BUFF_CONDUIT)
 
 // q3ta compatibility
 BUFF_SPAWNFUNC_Q3TA_COMPAT(item_doubler,    "doubler")
