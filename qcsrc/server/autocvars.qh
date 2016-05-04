@@ -889,6 +889,7 @@ float autocvar_g_clanarena_penalty_teamkill;
 float autocvar_g_clanarena_pickups;
 float autocvar_g_clanarena_point_leadlimit;
 float autocvar_g_clanarena_point_limit;
+float autocvar_g_clanarena_rot;
 float autocvar_g_clanarena_score_damage;
 float autocvar_g_clanarena_score_kill;
 float autocvar_g_clanarena_selfdamage;
