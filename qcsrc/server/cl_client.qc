@@ -2494,9 +2494,9 @@ void player_regen (void)
         aregen = max(CVAR(g_buffs_medic_armor_regen), aregen);
     }
 
-	if(g_lms || g_clanarena)
+	if(g_lms || (g_clanarena && !(CVAR(g_clanarena_rot))))
 		rot_mod = 0;
-        
+
     if(g_clanarena) {
         float clamp = CVAR(g_clanarena_heal_limit);
         if(clamp) {

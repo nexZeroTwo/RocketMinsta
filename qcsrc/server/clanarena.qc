@@ -3,6 +3,7 @@ float ca_recount;
 
 void CA_Frame(void) {
     self.nextthink = time;
+
     if(ca_recount) {
         TeamCount_RecountPlayers(CA_AliveCheck);
         CA_CheckWinner();
