@@ -1,12 +1,10 @@
 title RocketMinsta Default
-author Morphed (Akari's edit)
+author sev (Akari's edit)
 
-baseskin simplygray
+baseskin wickedblue
 override background
 override background_ingame
 override cursor
-override button_f
-override bigbutton_f
 
 // font sizes (used for everything)
 FONTSIZE_NORMAL                 12
@@ -25,20 +23,20 @@ WIDTH_TOOLTIP                   0.3
 AVOID_TOOLTIP                   '8 8 0'
 
 // the individual dialog background colors
-COLOR_DIALOG_MULTIPLAYER        '0.7 0.7 0.7'
-COLOR_DIALOG_SETTINGS           '0.7 0.7 0.7'
-COLOR_DIALOG_TEAMSELECT         '1 1 1'
-COLOR_DIALOG_QUIT               '1 0 0'
-COLOR_DIALOG_ADVANCED           '0.7 0.7 0.7'
-COLOR_DIALOG_MUTATORS           '0.7 0.7 0.7'
-COLOR_DIALOG_MAPINFO            '0.7 0.7 0.7'
-COLOR_DIALOG_USERBIND           '0.7 0.7 0.7'
+COLOR_DIALOG_MULTIPLAYER        '0.3 0.5 0.6'
+COLOR_DIALOG_SETTINGS           '0.3 0.5 0.6'
+COLOR_DIALOG_TEAMSELECT         '0.3 0.5 0.6'
+COLOR_DIALOG_QUIT               '1.0 0.5 0.0'
+COLOR_DIALOG_ADVANCED           '0.3 0.5 0.6'
+COLOR_DIALOG_MUTATORS           '0.3 0.5 0.6'
+COLOR_DIALOG_MAPINFO            '0.3 0.5 0.6'
+COLOR_DIALOG_USERBIND           '0.3 0.5 0.6'
 COLOR_DIALOG_SINGLEPLAYER       '0.9 0.9 0.9'
-COLOR_DIALOG_CREDITS            '0.7 0.7 0.7'
-COLOR_DIALOG_WEAPONS            '0.7 0.7 0.7'
-COLOR_DIALOG_RADAR              '0.7 0.7 0.7'
-COLOR_DIALOG_SERVERINFO         '0.7 0.7 0.7'
-COLOR_DIALOG_CVARS              '1 0 0'
+COLOR_DIALOG_CREDITS            '0.3 0.5 0.6'
+COLOR_DIALOG_WEAPONS            '0.3 0.5 0.6'
+COLOR_DIALOG_RADAR              '0.3 0.5 0.6'
+COLOR_DIALOG_SERVERINFO         '0.3 0.5 0.6'
+COLOR_DIALOG_CVARS              '0.3 0.5 0.6'
 
 // nexposee positions of windows (they are the scale transformation
 // centers, NOT the actual positions of the windows!)
@@ -69,10 +67,10 @@ ALPHA_TEXT                      0.7
 //   uses "buttongray" images
 //   uses "bigbutton" images
 //   uses "bigbuttongray" images
-COLOR_BUTTON_N                  '1 1 1'
-COLOR_BUTTON_C                  '1 1 1'
-COLOR_BUTTON_F                  '1 1 1'
-COLOR_BUTTON_D                  '1 1 1'
+COLOR_BUTTON_N                  '0.3 0.5 0.6'
+COLOR_BUTTON_C                  '0.3 0.5 0.6'
+COLOR_BUTTON_F                  '0.3 0.5 0.6'
+COLOR_BUTTON_D                  '0.3 0.5 0.6'
 
 // item: campaign
 ALPHA_CAMPAIGN_SELECTABLE       0.8
@@ -85,10 +83,10 @@ ALPHA_CAMPAIGN_DESCRIPTION      0.7
 
 // item: checkbox
 //   uses "checkbox" images
-COLOR_CHECKBOX_N                '1 1 1'
-COLOR_CHECKBOX_C                '1 1 1'
-COLOR_CHECKBOX_F                '1 1 1'
-COLOR_CHECKBOX_D                '1 1 1'
+COLOR_CHECKBOX_N                '0.3 0.5 0.6'
+COLOR_CHECKBOX_C                '1.0 0.5 0.0'
+COLOR_CHECKBOX_F                '1.0 0.5 0.0'
+COLOR_CHECKBOX_D                '0.3 0.5 0.6'
 
 // item: color picker
 //   uses "colorpicker" images
@@ -127,8 +125,8 @@ HEIGHT_DIALOGBORDER             1
 
 // item: input box
 //   uses "inputbox" images
-COLOR_INPUTBOX_N                '1 1 1'
-COLOR_INPUTBOX_F                '1 1 1'
+COLOR_INPUTBOX_N                '0.3 0.5 0.6'
+COLOR_INPUTBOX_F                '0.3 0.5 0.6'
 MARGIN_INPUTBOX_CHARS           1
 
 // item: key grabber
@@ -138,8 +136,8 @@ COLOR_KEYGRABBER_KEYS           '1 1 1'
 ALPHA_KEYGRABBER_KEYS           0.7
 
 // item: list box
-COLOR_LISTBOX_SELECTED          '0 0 1'
-ALPHA_LISTBOX_SELECTED          0.5
+COLOR_LISTBOX_SELECTED          '1 0.5 0'
+ALPHA_LISTBOX_SELECTED          0.25
 COLOR_LISTBOX_WAITING           '1 0 0'
 ALPHA_LISTBOX_WAITING           0.5
 
@@ -168,17 +166,17 @@ ALPHA_MODELTITLE                1
 
 // item: radio button
 //   uses "radiobutton" images
-COLOR_RADIOBUTTON_N             '1 1 1'
-COLOR_RADIOBUTTON_C             '1 1 1'
-COLOR_RADIOBUTTON_F             '1 1 1'
-COLOR_RADIOBUTTON_D             '1 1 1'
+COLOR_RADIOBUTTON_N             '0.3 0.5 0.6'
+COLOR_RADIOBUTTON_C             '1.0 0.5 0.0'
+COLOR_RADIOBUTTON_F             '1.0 0.5 0.0'
+COLOR_RADIOBUTTON_D             '0.3 0.5 0.6'
 
 // item: scrollbar
 //   uses "scrollbar" images
-COLOR_SCROLLBAR_N               '1 1 1'
-COLOR_SCROLLBAR_F               '1 1 1'
-COLOR_SCROLLBAR_C               '1 1 1'
-COLOR_SCROLLBAR_S               '1 1 1'
+COLOR_SCROLLBAR_N               '0.3 0.5 0.6'
+COLOR_SCROLLBAR_F               '0.3 0.5 0.6'
+COLOR_SCROLLBAR_C               '1.0 0.5 0.0'
+COLOR_SCROLLBAR_S               '0.3 0.5 0.6'
 WIDTH_SCROLLBAR                 16
 
 // item: server list
@@ -201,10 +199,10 @@ COLOR_SKINLIST_AUTHOR           '0.4 0.4 0.7'
 
 // item: slider
 //   uses "slider" images
-COLOR_SLIDER_N                  '1 1 1'
-COLOR_SLIDER_C                  '1 1 1'
-COLOR_SLIDER_F                  '1 1 1'
-COLOR_SLIDER_D                  '1 1 1'
-COLOR_SLIDER_S                  '1 1 1'
+COLOR_SLIDER_N                  '0.3 0.5 0.6'
+COLOR_SLIDER_C                  '1.0 0.5 0.0'
+COLOR_SLIDER_F                  '1.0 0.5 0.0'
+COLOR_SLIDER_D                  '0.3 0.5 0.6'
+COLOR_SLIDER_S                  '0.3 0.5 0.6'
 WIDTH_SLIDERTEXT                0.333333333333
 TOLERANCE_SLIDER                '0.2 2 0'
