@@ -1,14 +1,36 @@
 
 float ca_recount;
 
-void CA_Frame(void) {
-    self.nextthink = time;
+void CA_RecountMinMaxHealths(void) {
+    var i;
 
+    for(i = 0; i < ca_teams; ++i) {
+        g_clanarena_maxteamhealths[i] = 0;
+        g_clanarena_minteamhealths[i] = CVAR(g_clanarena_start_health) * maxclients;
+    }
+
+    FOR_EACH_PLAYER(var plr) if(!PlayerIsDead(plr)) {
+        i = Team_Index(plr.team);
+
+        if(plr.health > g_clanarena_maxteamhealths[i]){
+            g_clanarena_maxteamhealths[i] = plr.health;
+        }
+
+        if(plr.health < g_clanarena_minteamhealths[i]) {
+            g_clanarena_minteamhealths[i] = plr.health;
+        }
+    }
+}
+
+void CA_Frame(void) {
     if(ca_recount) {
         TeamCount_RecountPlayers(CA_AliveCheck);
         CA_CheckWinner();
         ca_recount = FALSE;
     }
+
+    if(CVAR(g_clanarena_rot) > 1)
+        CA_RecountMinMaxHealths();
 }
 
 void CA_Initialize(void) {
@@ -29,11 +51,7 @@ void CA_Initialize(void) {
         warmup = time;
     else
         warmup = time + CVAR(g_start_delay);
-    
-    entity ca = spawn();
-    ca.think = CA_Frame;
-    ca.nextthink = time;
-    
+
     sv_nicehealth = CVAR(g_clanarena_start_health) + CVAR(g_clanarena_start_armor);
 }
 

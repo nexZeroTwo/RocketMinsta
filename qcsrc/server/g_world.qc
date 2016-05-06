@@ -2996,6 +2996,9 @@ void FireRoundstateTriggers(void);
 
 void EndFrame()
 {
+    if(g_clanarena)
+        CA_Frame();
+
 	float altime;
 	FOR_EACH_REALCLIENT(self)
 	{
