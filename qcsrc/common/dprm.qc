@@ -17,6 +17,12 @@ void DPRM_Start() {
         regex_match = regex_match_642;
     else if(checkextension("DP_RM_REGEX2"))
         regex_match = regex_match_800;
+
+    if(cvar_string("sys_project_name") == "Vecxis") {
+        dprm_basegame = BASEGAME_VECXIS;
+    } else {
+        dprm_basegame = BASEGAME_NEXUIZ;
+    }
 }
 
 float DPRM_GetVersion() {

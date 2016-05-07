@@ -2006,6 +2006,13 @@ void va_test(string fmt, ...) { VA_INIT
 void load_fonts(void) {
 #ifndef SVQC
     registercvar("_rm_font_setting", "0", 0);
+
+    if(dprm_basegame == BASEGAME_VECXIS) {
+        // Don't try to be clever
+        cvar_set("_rm_font_setting", ftos(utf8_enabled()));
+        return;
+    }
+
     cvar_set("r_font_diskcache", "0");
 
     if(utf8_enabled()) {
@@ -2081,6 +2088,9 @@ float utf8_enabled(void) {
 }
 
 void utf8_enable(void) {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
     if(!utf8_supported()) {
         load_fonts();
         return;
@@ -2094,6 +2104,9 @@ void utf8_enable(void) {
 }
 
 void utf8_disable(void) {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
     if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
         return;
 

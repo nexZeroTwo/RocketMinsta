@@ -431,11 +431,14 @@ void TrueAim_Init();
 entity tmpmadoka;
 
 float GetBigfont() {
-	return if(rm_oldbigfont || sv_oldfag) sbar_bigfont_real else sbar_rmbigfont;
+	return if(rm_oldbigfont || sv_oldfag || dprm_basegame == BASEGAME_VECXIS) sbar_bigfont_real else sbar_rmbigfont;
 }
 
 void SetMadokaFont(float v)
 {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
 	switch(v)
 	{
 		case MDKF_SET:
@@ -634,7 +637,7 @@ void InitFonts(void) {
 
     if(!utf8_supported()) {
         load_fonts();
-    } else spawn() {
+    } else if(dprm_basegame == BASEGAME_NEXUIZ) spawn() {
         think: inline void(void) {
             if(!utf8_enabled())
                 utf8_enable();
