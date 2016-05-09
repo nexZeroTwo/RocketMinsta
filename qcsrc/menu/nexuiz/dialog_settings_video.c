@@ -19,7 +19,7 @@ entity makeNexuizVideoSettingsTab()
 }
 void fillNexuizVideoSettingsTab(entity me)
 {
-	entity e;
+	entity e, sl;
 
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNexuizTextLabel(0, "Resolution:"));
@@ -27,6 +27,10 @@ void fillNexuizVideoSettingsTab(entity me)
 	me.TR(me);
 		me.TD(me, 1, 1, e = makeNexuizTextLabel(0, "Color depth:"));
 		me.TD(me, 1, 2, e = makeNexuizSlider(16, 32, 16, "vid_bitsperpixel"));
+    me.TR(me);
+        sl = makeNexuizSlider(0.5, 1.5, 0.05, "vid_ui_scale");
+        me.TD(me, 1, 1, e = makeNexuizSliderCheckBox(0, 1, sl, "UI scale:"));
+        me.TD(me, 1, 2, sl);
 	me.TR(me);
 		me.TD(me, 1, 1.5, e = makeNexuizTextLabel(0, "Texture compression"));
 		me.TD(me, 1, 0.5, e = makeNexuizRadioButton(2, "gl_texturecompression", "0", "None"));
@@ -93,6 +97,9 @@ void fillNexuizVideoSettingsTab(entity me)
 		me.TD(me, 1, 2, e = makeNexuizSlider(0.5, 2.0, 0.05, "r_hdr_scenebrightness"));
 
 	me.gotoRC(me, me.rows - 1, 0);
-		me.TD(me, 1, me.columns, makeNexuizCommandButton("Apply immediately", '0 0 0', "vid_conwidth $menu_vid_conwidth; vid_conheight $menu_vid_conheight; vid_restart", COMMANDBUTTON_APPLY));
+        me.TD(me, 1, me.columns, e = makeNexuizButton("Apply immediately", '0 0 0'));
+            e.onClick = inline void(entity btn, entity me) {
+                apply_video_settings();
+            };
 }
 #endif
