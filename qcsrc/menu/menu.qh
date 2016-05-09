@@ -44,3 +44,7 @@ void preMenuDraw(); // this is run before the menu is drawn. You may put some st
 void postMenuDraw(); // this is run just after the menu is drawn (or not). Useful to draw something over everything else.
 
 float show_engine_nagger;
+
+vector res_to_conres(vector res, float uiscale);
+void apply_ui_scale(void);
+void apply_video_settings(void);
