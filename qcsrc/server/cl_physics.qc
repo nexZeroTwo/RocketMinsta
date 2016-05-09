@@ -841,7 +841,16 @@ void SV_PlayerPhysics()
 			self.disableclientprediction = 0;
 		}
 
-        if(self.frozen || time < self.noantilagtime)
+        var minfps = CVAR(sv_clmovement_minfps);
+
+        if(minfps > 0) {
+            var pfps = PlayerScore_Get(self, SP_FPS);
+
+            if(pfps && pfps < minfps)
+                self.disableclientpredictiontime = max(self.disableclientpredictiontime, time + 1);
+        }
+
+        if(self.frozen || time < max(self.noantilagtime, self.disableclientpredictiontime))
             self.disableclientprediction = max(1, self.disableclientprediction);
         else if(self.disableclientprediction < 2)
             self.disableclientprediction = 0;
