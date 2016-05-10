@@ -724,7 +724,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         self.pushltime = 0;
 
     take = Buffs_EnduranceDamage(self, attacker, take, deathtype);
-    Buffs_ConduitDamage(self, attacker, take, save, deathtype);
+    Buffs_ConduitDamage(self, attacker, take, save, deathtype, FALSE);
 
 	if(sound_allowed(MSG_BROADCAST, attacker))
 	{

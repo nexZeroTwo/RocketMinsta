@@ -454,7 +454,7 @@ void HealScore(entity targ, entity healer, float heal) {
 float Heal(entity targ, entity inflictor, entity healer, float heal, float aheal, float hlimit, float alimit, float healtype, float pauserot, float pausearot, vector hitloc, vector force) {
 
     if(targ.classname == "player") {
-        Buffs_ConduitDamage(targ, healer, heal, aheal, healtype);
+        Buffs_ConduitDamage(targ, healer, heal, aheal, healtype, TRUE);
 
         if(hlimit)  hlimit = min(CVAR(g_balance_health_limit), hlimit);
         else        hlimit = CVAR(g_balance_health_limit);
