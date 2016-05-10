@@ -489,40 +489,52 @@ void Buffs_ApplyConduit(void) {
 
     var heal_h = self.buff_conduit_hpool;
     var heal_a = self.buff_conduit_apool;
+    var damage = self.buff_conduit_dpool;
 
-    if(!(heal_h + heal_a))
+    var doheal = (heal_h || heal_a);
+
+    if(!doheal && !damage)
         return;
 
     if(!Buffs_Present(self, BUFF_CONDUIT)) {
-        self.buff_conduit_hpool = self.buff_conduit_apool = 0;
+        self.buff_conduit_hpool = self.buff_conduit_apool = self.buff_conduit_dpool = 0;
         return;
     }
 
     var buff_org = self.origin + BUFFMODEL_OVERHEAD_OFFSET;
-    var f = CVAR(g_buffs_conduit_factor);
-    var healed;
+    var healed, damaged;
 
-    heal_h *= f;
-    heal_a *= f;
+    FOR_EACH_PLAYER(var plr) if(self != plr && !PlayerIsDead(plr)) {
+        var sameteam = !IsDifferentTeam(self, plr);
 
-    FOR_EACH_PLAYER(var plr) if(self != plr && !IsDifferentTeam(self, plr) && !PlayerIsDead(plr)) {
+        if((sameteam && !doheal) || (!sameteam && !damage))
+            continue;
+
         var o = WarpZone_FindNearestOrigin(buff_org, plr.origin + plr.view_ofs, 2);
 
         if(WarpZone_FindNearestOrigin_length < 0 || WarpZone_FindNearestOrigin_length > CVAR(g_buffs_conduit_range))
             continue;
 
-        te_csqc_lightningarc(buff_org, o, FALSE, 0);
-        Heal(plr, self, self, heal_h, heal_a, 0, 0, DEATH_CONDUIT, 0, 0, o, '0 0 0');
-        healed = TRUE;
+        if(sameteam) {
+            te_csqc_lightningarc(buff_org, o, FALSE, 0);
+            Heal(plr, self, self, heal_h, heal_a, 0, 0, DEATH_CONDUIT, 0, 0, o, '0 0 0');
+            healed = TRUE;
+        } else {
+            te_csqc_lightningarc(buff_org, o, FALSE, self.team);
+            Damage(plr, self, self, damage, DEATH_CONDUIT, plr.origin + plr.view_ofs, '0 0 0');
+            damaged = TRUE;
+        }
     }
 
-    if(healed) {
-        sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, ATTN_NORM);
+    if(healed || damaged) {
+        if(healed)
+            sound(self, CHAN_AUTO, "kh/capture.wav", 0.4, ATTN_NORM);
+        if(damaged)
+            sound(self, CHAN_AUTO, "misc/arc1.wav", 0.4, ATTN_NORM);
         self.buff_conduit_next = time + 0.5;
     }
 
-    self.buff_conduit_apool = 0;
-    self.buff_conduit_hpool = 0;
+    self.buff_conduit_hpool = self.buff_conduit_apool = self.buff_conduit_dpool = 0;
 }
 
 void Buffs_ApplyVampire(void) {
@@ -838,7 +850,7 @@ void Buffs_ArcDamage(entity targ, entity attacker, float damage, float deathtype
     );
 }
 
-void Buffs_ConduitDamage(entity targ, entity attacker, float hdamage, float adamage, float deathtype) {
+void Buffs_ConduitDamage(entity targ, entity attacker, float hdamage, float adamage, float deathtype, float is_heal) {
     if(!(hdamage + adamage))
         return;
 
@@ -848,8 +860,23 @@ void Buffs_ConduitDamage(entity targ, entity attacker, float hdamage, float adam
     if(deathtype == DEATH_CONDUIT || DEATH_HGTYPE(deathtype) == HG_LINKER)
         return;
 
-    targ.buff_conduit_hpool += hdamage;
-    targ.buff_conduit_apool += adamage;
+    var f_heal = (
+        if(is_heal)
+            CVAR(g_buffs_conduit_factor_heal_to_heal)
+        else
+            CVAR(g_buffs_conduit_factor_damage_to_heal)
+    );
+
+    var f_dmg = (
+        if(is_heal)
+            CVAR(g_buffs_conduit_factor_heal_to_damage)
+        else
+            CVAR(g_buffs_conduit_factor_damage_to_damage)
+    );
+
+    targ.buff_conduit_hpool += hdamage * f_heal;
+    targ.buff_conduit_apool += adamage * f_heal;
+    targ.buff_conduit_dpool += (hdamage + adamage) * f_dmg;
 }
 
 entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
