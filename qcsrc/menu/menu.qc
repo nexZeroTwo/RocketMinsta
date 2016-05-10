@@ -37,12 +37,16 @@ void m_init()
 	registercvar("_menu_vote_string", "", 0);
     registercvar("menu_rpn_autoload", "", CVAR_SAVE);
     registercvar("rm_fonts_prefer_ttf", "0", CVAR_SAVE);
+    registercvar("menu_vid_width", "0", 0);
+    registercvar("menu_vid_height", "0", 0);
+    registercvar("vid_ui_scale", "1", CVAR_SAVE);
 
     if(!(cvar_type("sys_first_run") & CVAR_SAVE))
         registercvar("sys_first_run", "0", CVAR_SAVE);
     cvar_set("sys_first_run", "0");
 
     CVAR_WATCH("rm_fonts_prefer_ttf");
+    CVAR_WATCH("vid_ui_scale");
 
     cvar_archive("r_shadow_lightintensityscale", "1.0");
     cvar_archive("r_shadow_lightradiusscale", "1.0");
@@ -75,8 +79,15 @@ void m_init()
 }
 
 void CvarUpdated(string cvarname, string oldvalue) {
-    if(cvarname == "rm_fonts_prefer_ttf")
+    if(cvarname == "rm_fonts_prefer_ttf") {
         load_fonts();
+        return;
+    }
+
+    if(cvarname == "vid_ui_scale") {
+        apply_ui_scale();
+        return;
+    }
 }
 
 void UpdateConWidthHeight()
@@ -896,4 +907,45 @@ void URI_Get_Callback(float id, float status, string data)
 		IP2C_URI_Get_Callback(id, status, data);
 		return;
 	}
+}
+
+vector res_to_conres(vector res, float uiscale) {
+    vector c, ref = [800, 600];
+    float f;
+
+    if(uiscale <= 0)
+        return res;
+
+    c_x = ref_x;
+    c_y = rint(c_x * res_y / res_x);
+
+    if(c_y < ref_y) {
+        c_y = ref_y;
+        c_x = rint(c_y * res_x / res_y);
+    }
+
+    f = max(c_x / res_x, c_y / res_y);
+    if(f > 1) {
+        c_x = rint(c_x / f);
+        c_y = rint(c_y / f);
+    }
+
+    uiscale = 1 / uiscale;
+    c_x = rint(c_x * uiscale);
+    c_y = rint(c_y * uiscale);
+
+    return c;
+}
+
+void apply_ui_scale(void) {
+    var cr = res_to_conres([CVAR(vid_width), CVAR(vid_height)], CVAR(vid_ui_scale));
+    cvar_set("vid_conwidth", ftos(cr_x));
+    cvar_set("vid_conheight", ftos(cr_y));
+}
+
+void apply_video_settings(void) {
+    cvar_set("vid_width", ftos(CVAR(menu_vid_width)));
+    cvar_set("vid_height", ftos(CVAR(menu_vid_height)));
+    apply_ui_scale();
+    localcmd("vid_restart\n");
 }

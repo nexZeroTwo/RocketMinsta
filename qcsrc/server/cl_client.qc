@@ -2437,6 +2437,8 @@ float CalcRotRegen(float current, float regenstable, float regenfactor, float re
 void player_regen (void)
 {
 	float minh, mina, minf, maxh, maxa, maxf, limith, limita, limitf, max_mod, regen_mod, rot_mod, limit_mod, aregen, hregen;
+    float rot_mod_a = 1;
+    float rot_mod_h = 1;
 
     if(roundstate == ROUNDSTATE_OVER)
         return;
@@ -2494,9 +2496,23 @@ void player_regen (void)
         aregen = max(CVAR(g_buffs_medic_armor_regen), aregen);
     }
 
-	if(g_lms || g_clanarena)
-		rot_mod = 0;
-        
+    if(g_lms) {
+        rot_mod = 0;
+    } else if(g_clanarena) {
+        if(!CVAR(g_clanarena_rot)) {
+            rot_mod = 0;
+        } else if(CVAR(g_clanarena_rot) > 1) {
+            var tidx = Team_Index(self.team);
+            var camax = ceil(g_clanarena_maxteamhealths[tidx]);
+            var camin = ceil(g_clanarena_minteamhealths[tidx]);
+            var h = ceil(self.health);
+
+            if(h == camin && h < camax) {
+                rot_mod_h = 0;
+            }
+        }
+    }
+
     if(g_clanarena) {
         float clamp = CVAR(g_clanarena_heal_limit);
         if(clamp) {
@@ -2507,8 +2523,8 @@ void player_regen (void)
 
 	if (!g_minstagib && (!g_lms || CVAR(g_lms_regenerate)))
 	{
-		self.armorvalue = CalcRotRegen(self.armorvalue, mina, aregen, CVAR(g_balance_armor_regenlinear), regen_mod * frametime * (time > self.pauseregen_finished), maxa, CVAR(g_balance_armor_rot), CVAR(g_balance_armor_rotlinear), rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
-		self.health = CalcRotRegen(self.health, minh, hregen, CVAR(g_balance_health_regenlinear), regen_mod * frametime * (time > self.pauseregen_finished), maxh, CVAR(g_balance_health_rot), CVAR(g_balance_health_rotlinear), rot_mod * frametime * (time > self.pauserothealth_finished), limith);
+		self.armorvalue = CalcRotRegen(self.armorvalue, mina, aregen, CVAR(g_balance_armor_regenlinear), regen_mod * frametime * (time > self.pauseregen_finished), maxa, CVAR(g_balance_armor_rot), CVAR(g_balance_armor_rotlinear), rot_mod_a * rot_mod * frametime * (time > self.pauserotarmor_finished), limita);
+		self.health = CalcRotRegen(self.health, minh, hregen, CVAR(g_balance_health_regenlinear), regen_mod * frametime * (time > self.pauseregen_finished), maxh, CVAR(g_balance_health_rot), CVAR(g_balance_health_rotlinear), rot_mod_h * rot_mod * frametime * (time > self.pauserothealth_finished), limith);
 
 		// if player rotted to death...  die!
 		if(self.health < 1)

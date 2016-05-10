@@ -1,6 +1,8 @@
 
 float ca_teams;
 float g_clanarena_pickups;
+float g_clanarena_maxteamhealths[4];
+float g_clanarena_minteamhealths[4];
 
 void CA_Initialize(void);
 void CA_CheckWinner(void);
@@ -12,3 +14,4 @@ float CA_AttemptRespawn(void);
 void CA_PlayerJoins(void);
 void CA_PlayerLeaves(void);
 void CA_BeginRound(void);
+void CA_Frame(void);

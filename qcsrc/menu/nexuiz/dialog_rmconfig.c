@@ -156,12 +156,20 @@ void fillNexuizRMConfigDialog(entity me)
             else
                 "Prefer TTF over legacy bitmap fonts (restart required)"
         ));
+
+        if(dprm_basegame == BASEGAME_VECXIS) {
+            e.disabled = TRUE;
+        } else {
             setDependent(e, "utf8_enable", 1, 1);
+        }
     me.TR(me);
         me.TD(me, 1, 4, e = makeNexuizCheckBox(0, "r_font_size_snapping", "Try to stick to good-looking font sizes"));
             setDependent(e, "utf8_enable", 1, 1);
     me.TR(me);
         me.TD(me, 1, 4, e = makeRMCheckBox(0, "oldbigfont", "Use old-style fonts for large text"));
+        if(dprm_basegame == BASEGAME_VECXIS) {
+            e.disabled = TRUE;
+        }
 
     me.setFirstColumn(me, me.firstColumn - 0.1);
 	me.TR(me);

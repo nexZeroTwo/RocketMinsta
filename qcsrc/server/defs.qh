@@ -807,6 +807,7 @@ float Client_CalculateAlpha(entity plr, entity viewer);
 
 entity dtrack_global;
 .float noantilagtime;
+.float disableclientpredictiontime;
 
 vector PL_VIEW_OFS;
 vector PL_MIN;
