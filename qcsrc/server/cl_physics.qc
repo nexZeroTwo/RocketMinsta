@@ -495,6 +495,11 @@ float walljump_ismantle;
 vector PlayerTouchWall(float dist)
 {
     const max_normal = 0.2;
+    const badflags = Q3SURFACEFLAG_NOIMPACT;
+
+    // FIXME: for now, this prevents bouncing off the teleporters on warehouse
+    const badcomboflags = Q3SURFACEFLAG_NOMARKS | Q3SURFACEFLAG_NOLIGHTMAP | Q3SURFACEFLAG_POINTLIGHT;
+
     var mantle_factor = CVAR(g_walljump_force_velocityscale_mantlehack);
 
     walljump_ismantle = FALSE;
@@ -519,7 +524,8 @@ vector PlayerTouchWall(float dist)
 
         if(trace_fraction < 1)
         if(trace_plane_normal_z < max_normal)
-        if(!(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))
+        if(!(trace_dphitq3surfaceflags & badflags) || (pc && (trace_dphitcontents & DPCONTENTS_PLAYERCLIP)))
+        if(trace_dphitq3surfaceflags & badcomboflags != badcomboflags)
         if(vlen(self.origin - trace_endpos) < dist) {
             normal = trace_plane_normal;
 
