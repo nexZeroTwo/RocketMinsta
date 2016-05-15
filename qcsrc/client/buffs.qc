@@ -16,12 +16,7 @@ void Buffs_LoadModels(void) {
     float i, b;
 
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) if(b & g_buffs_enabled) {
-        var n = (
-            if(b == BUFF_CONDUIT)
-                "focus" // TODO: rename the model
-            else
-                Buffs_TypeToName(b)
-        );
+        var n = Buffs_TypeToName(b);
 
         string s = "models/buffs/buff_" + n + ".md3";
 
