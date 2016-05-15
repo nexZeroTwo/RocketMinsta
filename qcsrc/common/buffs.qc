@@ -19,6 +19,7 @@ float Buffs_NameToType(string name) {
 
         // compatibility
         case "bash": return BUFF_IGNITE;
+        case "focus": return BUFF_CONDUIT;
         
         default: return 0;
     }
