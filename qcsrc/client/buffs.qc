@@ -75,7 +75,7 @@ void Buffs_Model_Multi_Think(void) {
         self.lightcolor = '1 0 0';
         self.effects &~= EF_ADDITIVE;
     }
-    
+
     vector ang;
     ang_y = mod(time * 120 + self.cnt, 360);
     makevectors(ang);
@@ -92,6 +92,7 @@ void Buffs_Model_Think(void) {
     if(self.sv_entnum) {
         // this is an overhead buff model
 
+        self.effects |= EF_ADDITIVE;
         self.alpha = 1;
         float me = ID_ME;
 
@@ -213,7 +214,7 @@ void Buffs_Model_Remove(void) {
 
 void Buffs_Model_Ring_Think(void) {
     self.nextthink = time;
-    self.angles_y = time * 157.1;
+    self.angles_y = time * -110.1;
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects;
     
