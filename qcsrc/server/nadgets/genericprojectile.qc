@@ -748,12 +748,12 @@ void HG_GenericProjectile_Detonate(entity nade) {
     }
 }
 
-void HG_GenericProjectile_DetonateAll(entity plr, float force) {
+float HG_GenericProjectile_DetonateAll(entity plr, float force) {
     float c;
     entity nade, tl;
 
     if(!plr.hg_detonables || (!force && PlayerIsDead(plr)))
-        return;
+        return 0;
 
     if(!force) for(nade = world; (nade = find(nade, classname, "hg_generic_projectile"));) {
         if(nade.owner == plr && nade.hg_type == HG_TRANSLOC) {
@@ -772,4 +772,6 @@ void HG_GenericProjectile_DetonateAll(entity plr, float force) {
 
     if(c)
         sound(plr, CHAN_WEAPON2, "weapons/rocket_mode.wav", VOL_BASE, ATTN_NORM);
+
+    return c;
 }

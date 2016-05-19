@@ -471,8 +471,13 @@ void HG_PlayerFrame(void) {
         n_type = self.hg_ctx_type;
     }
 
-    if(held && held != self.hg_state && !self.hg_ctx_ammo && self.deadflag == DEAD_NO)
-        bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(n_type), "s!"), "", 1);
+    if(held && held != self.hg_state) {
+        if(self.hg_ctx_type == HG_TIMEWARP && self.hg_twarp_moment) {
+            HG_TimeWarper_Trigger();
+        } else if(!self.hg_ctx_ammo && self.deadflag == DEAD_NO) {
+            bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(n_type), "s!"), "", 1);
+        }
+    }
 
     if(charging && time >= self.hg_ctx_next && self.hg_ctx_ammo && mayfire) {
         float ls = GRENVAR(n_type, "launchspeed");
@@ -525,17 +530,21 @@ void HG_Trigger(void) {
     if(PlayerIsDead(self))
         return;
 
-    if(self.hg_twarp_moment)
-        HG_TimeWarper_Trigger();
-    else if(self.hg_stealth || self.hg_stealth_saved)
+    if(self.hg_stealth || self.hg_stealth_saved)
         HG_Cloak_Trigger();
     else if(self.hg_shield || (self.hg_shield_stored && CVAR(g_nadgets_shield_damage_store_allow_cancel_discharge)))
         HG_Shield_Trigger();
     else {
         HG_Sentry_Trigger();
 
+        if(!HG_GenericProjectile_DetonateAll(self, FALSE)) {
+            if(self.hg_twarp_moment) {
+                HG_TimeWarper_Trigger();
+                return;
+            }
+        }
+
         self.hg_detonatepressed = TRUE;
-        HG_GenericProjectile_DetonateAll(self, FALSE);
 
         if(Buffs_Present(self, BUFF_ADEPT)) {
             float i;
