@@ -56,3 +56,9 @@ HG_HOOKFUNCTION(cloak, Attack) {
     HG_Cloak();
     return HG_ATTACK_OK;
 }
+
+HG_HOOKFUNCTION(cloak, Init) {
+    addstat(STAT_STEALTH, AS_INT, hg_stealth);
+    addstat(STAT_STEALTH_SAVED, AS_INT, hg_stealth_saved);
+    return HG_INIT_OK;
+}

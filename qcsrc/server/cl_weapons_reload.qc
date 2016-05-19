@@ -244,6 +244,14 @@ void W_Clip_WeaponRequestHook(float req) {
     } else if(req == WR_PRECACHE) {
         precache_sound("weapons/campingrifle_reload.wav");
         precache_sound("weapons/unavailable.wav");
+    } else if(req == WR_TT_STORE) {
+        TimeTravel_StoreFloat(self, tt_moment, w_clip_saved);
+        TimeTravel_StoreFloat(self, tt_moment, w_clip_loaded);
+        TimeTravel_StoreTime(self, tt_moment, w_clip_reloadfinished);
+    } else if(req == WR_TT_RESTORE) {
+        TimeTravel_RestoreFloat(self, tt_moment, w_clip_saved);
+        TimeTravel_RestoreFloat(self, tt_moment, w_clip_loaded);
+        TimeTravel_RestoreTime(self, tt_moment, w_clip_reloadfinished);
     }
 }
 

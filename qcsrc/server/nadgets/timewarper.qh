@@ -1,0 +1,13 @@
+
+void HG_TimeWarper_Abort(void);
+void HG_TimeWarper_EraseMoment(void);
+void HG_TimeWarper_SaveMoment(void);
+float HG_TimeWarper_Trigger(void);
+void HG_TimeWarper_StopTimer(void);
+entity HG_TimeWarper_StartTimer(void);
+
+.entity hg_twarp_timer;
+.entity hg_twarp_moment;
+
+.float hg_twarp_expiretime;
+.float hg_twarp_warptime;

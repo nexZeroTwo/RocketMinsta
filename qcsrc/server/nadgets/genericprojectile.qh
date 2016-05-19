@@ -19,7 +19,12 @@ void HG_GenericProjectile_DetonateAll(entity plr, float force);
 void HG_GenericProjectile_ThrowNapalm(void);
 void HG_GenericProjectile_RadiusDamage(void);
 float HG_GenericProjectile_Attack(float hgtype);
-#define HG_GENERIC_ATTACKFUNC(hgtype,hgid) HG_HOOKFUNCTION(hgtype, Attack) { return HG_GenericProjectile_Attack(hgid); }
+
+
+#define HG_GENERIC_ATTACKFUNC(hgtype,hgid) \
+    HG_HOOKFUNCTION(hgtype, Attack) { return HG_GenericProjectile_Attack(hgid); } \
+    HG_EMPTY_INITFUNC(hgtype) \
+
 
 HG_GENERIC_ATTACKFUNC(normal,   HG_NORMAL)
 HG_GENERIC_ATTACKFUNC(remote,   HG_REMOTE)
