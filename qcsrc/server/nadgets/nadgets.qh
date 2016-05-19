@@ -25,7 +25,7 @@ void HG_Trigger(void);
 void HG_SetCooldown(.float cdfield, float gcd, float cd);
 string HG_SelectableTypes(float issecondary);
 
-typedef float(void) hg_attackfunc_t;
+typedef float(void) hg_hookfunc_t;
 
 .vector org_explosion;
 .float nextparticle;
@@ -105,8 +105,19 @@ enum {
     HG_ATTACK_FAIL_COOLDOWN,
 };
 
-#define HGDEF(id,shortname,longname,color) hg_attackfunc_t HG_Hook_Attack_##shortname;
+enum {
+    HG_INIT_OK,
+};
+
+
+#define HGDEF(id,shortname,longname,color) \
+    hg_hookfunc_t HG_Hook_Attack_##shortname; \
+    hg_hookfunc_t HG_Hook_Init_##shortname; \
+
+
 HGDEFS
 #undef HGDEF
 
 #define HG_HOOKFUNCTION(hgt,hook) float HG_Hook_##hook##_##hgt(void)
+
+#define HG_EMPTY_INITFUNC(hgt) HG_HOOKFUNCTION(hgt, Init) { return HG_INIT_OK; }

@@ -8,5 +8,6 @@
 #include "plasma.qh"
 #include "sentry.qh"
 #include "shield.qh"
+#include "timewarper.qh"
 #include "transloc.qh"
 #include "waypoint.qh"

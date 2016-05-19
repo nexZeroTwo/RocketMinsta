@@ -139,3 +139,5 @@ HG_HOOKFUNCTION(bait, Attack) {
     HG_Bait_Create(ref);
     return HG_ATTACK_OK;
 }
+
+HG_EMPTY_INITFUNC(bait)

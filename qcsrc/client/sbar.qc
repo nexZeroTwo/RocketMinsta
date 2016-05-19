@@ -3679,7 +3679,9 @@ float revmode;
 void Sbar_DrawTintEffects(void) {
     float st = getstati(STAT_STEALTH);
     float s = st || getstatf(STAT_HGSHIELD);
-    
+    float twarp = getstatf(STAT_HGTWARP_WARPTIME);
+    var fullscreen = [vid_conwidth, vid_conheight];
+
     if(s)
         vshield = approach(vshield, 1, frametime * 3);
     else
@@ -3687,17 +3689,27 @@ void Sbar_DrawTintEffects(void) {
 
     if(vshield) {
         if(st) {
-            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', '1 1 1', 0.1 * vshield, DRAWFLAG_MODULATE);
+            drawfill('0 0 0', fullscreen, '1 1 1', 0.1 * vshield, DRAWFLAG_MODULATE);
         } else {
             var clr = if(getstati(STAT_BUFFS) & BUFF_ADEPT)
                 '1 0.5 1'
             else
                 '1 1 0.5';
 
-            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', clr * vshield + '1 1 1' * (1 - vshield), 1, DRAWFLAG_MODULATE);
-            drawfill('0 0 0', vid_conwidth * '1 0 0' + vid_conheight * '0 1 0', clr, 0.1 * vshield, DRAWFLAG_ADDITIVE);
+            drawfill('0 0 0', fullscreen, clr * vshield + '1 1 1' * (1 - vshield), 1, DRAWFLAG_MODULATE);
+            drawfill('0 0 0', fullscreen, clr, 0.1 * vshield, DRAWFLAG_ADDITIVE);
         }
 
+    }
+
+    if(twarp) {
+        const twarp_dur = 3;
+        twarp = 1 - bound(0, (servertime - twarp) / twarp_dur, 1);
+
+        if(twarp) {
+            twarp = ipol_pow2In(twarp);
+            drawfill('0 0 0', fullscreen, '0.85 0.9 1', 0.25 * twarp, DRAWFLAG_ADDITIVE);
+        }
     }
 }
 
@@ -5485,8 +5497,13 @@ void Sbar_Draw(void)
                              getstati(STAT_HGSHIELDSTORE) / getstati(STAT_HGSHIELDSTOREMAX), 0.7, '1 0.3 0',
                              getstati(STAT_HGSHIELDSTOREMAX) / getstati(STAT_HGSHIELDDAMAGEPERSHOT));
             }
-     
-            if(getstati(STAT_STEALTH)) {
+
+            if((var warpremain = ceil(getstatf(STAT_HGTWARP_EXPIRETIME) - servertime)) > 0) {
+                drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                            "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                            " ^3to go back in time (^1" + warpremain + " ^3seconds remaining)"),
+                                            sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            } else if(getstati(STAT_STEALTH)) {
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                             "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                             " ^3to ", if(adept) "suspend" else "cancel", " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),

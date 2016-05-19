@@ -60,6 +60,9 @@ vector HG_TypeToColor(float t) {
 }
 
 string HG_NameToIcon(string n, float large, float alt) {
+    if(n == "timewarper")
+        n = "cloak";
+
     string s = strcat("gfx/nades/", n);
     
     if(large)   s = strcat(s, "_large");

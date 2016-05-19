@@ -152,3 +152,5 @@ HG_HOOKFUNCTION(linker, Attack) {
 
     return HG_ATTACK_OK;
 }
+
+HG_EMPTY_INITFUNC(linker)

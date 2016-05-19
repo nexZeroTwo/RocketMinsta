@@ -1956,6 +1956,7 @@ void CSQC_Ent_Update(float bIsNewEntity)
         case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
         case ENT_CLIENT_SPECINFO: Ent_SpecInfo(); break;
         case ENT_CLIENT_ACCSTATS: Ent_AccStats(); break;
+        case ENT_CLIENT_HGTWARP_INDICATOR: Ent_TimeWarperIndicator(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;

@@ -44,3 +44,5 @@ HG_HOOKFUNCTION(gg, Attack) {
         return HG_ATTACK_FAIL_COOLDOWN;
     }
 }
+
+HG_EMPTY_INITFUNC(gg)

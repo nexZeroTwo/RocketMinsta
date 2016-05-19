@@ -13,18 +13,10 @@ void HG_Init(void) {
     addstat(STAT_HGREGENRATE, AS_FLOAT, hg_regenrate1);
     addstat(STAT_HGDETONABLES, AS_INT, hg_detonables);
     addstat(STAT_HGLAUNCH, AS_FLOAT, hg_launchspeed);
-    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
-    addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
-    addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
-    addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
-    addstat(STAT_HGSHIELDDAMAGEPERSHOT, AS_INT, hg_shield_damage_per_shot);
     addstat(STAT_HGTYPE, AS_INT, hg_type1);
     addstat(STAT_HGBONUS, AS_INT, hg_bonus);
     addstat(STAT_HGBONUSTYPE, AS_INT, hg_bonustype);
-    addstat(STAT_STEALTH, AS_INT, hg_stealth);
-    addstat(STAT_STEALTH_SAVED, AS_INT, hg_stealth_saved);
     addstat(STAT_HGREFIRE, AS_FLOAT, hg_next1);
-    addstat(STAT_HGSENTRYCAPTURE, AS_FLOAT, hg_sentry_capture_progress);
 
     if(g_nadgets_double) {
         addstat(STAT_HGTYPE2, AS_INT, hg_type2);
@@ -38,6 +30,10 @@ void HG_Init(void) {
 
     g_nadgets_oldhitboxes = CVAR(g_nadgets_oldhitboxes);
     g_nadgets_detonatelaunches = CVAR(g_nadgets_detonatelaunches);
+
+    #define HGDEF(id,shortname,longname,color) HG_Hook_Init_##shortname();
+    HGDEFS
+    #undef HGDEF
 }
 
 void HG_Precache(void) {
@@ -529,7 +525,9 @@ void HG_Trigger(void) {
     if(PlayerIsDead(self))
         return;
 
-    if(self.hg_stealth || self.hg_stealth_saved)
+    if(self.hg_twarp_moment)
+        HG_TimeWarper_Trigger();
+    else if(self.hg_stealth || self.hg_stealth_saved)
         HG_Cloak_Trigger();
     else if(self.hg_shield || (self.hg_shield_stored && CVAR(g_nadgets_shield_damage_store_allow_cancel_discharge)))
         HG_Shield_Trigger();
@@ -590,6 +588,8 @@ void HG_PlayerSpawn(void) {
     if(self.classname != "player")
         return;
 
+    HG_TimeWarper_Abort();
+
     if(CVAR(g_nadgets_resetonrespawn))
         HG_ResetState(self, PlayerIsDead(self));
 
@@ -610,6 +610,8 @@ void HG_PlayerDeath(void) {
 
     if(!g_nadgets)
         return;
+
+    HG_TimeWarper_Abort();
 
     if(CVAR(g_nadgets_remove_on_death) > 1)
         HG_RemoveAll(self);

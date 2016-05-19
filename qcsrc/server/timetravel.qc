@@ -40,10 +40,38 @@
         TIMETRAVEL_HANDLE(buff_vamp_ticks,              Float)      \
         TIMETRAVEL_HANDLE(buff_vamp_healthpool,         Float)      \
         TIMETRAVEL_HANDLE(buff_vamp_nexttick,           Time)       \
+        TIMETRAVEL_HANDLE(hg_power,                     Float)      \
+        TIMETRAVEL_HANDLE(hg_state,                     Float)      \
+        TIMETRAVEL_HANDLE(hg_altstate,                  Float)      \
+        TIMETRAVEL_HANDLE(hg_next1,                     Time)       \
+        TIMETRAVEL_HANDLE(hg_next2,                     Time)       \
+        TIMETRAVEL_HANDLE(hg_bonus_next,                Time)       \
+        TIMETRAVEL_HANDLE(hg_ammo1,                     Float)      \
+        TIMETRAVEL_HANDLE(hg_ammo2,                     Float)      \
+        TIMETRAVEL_HANDLE(hg_bonus,                     Float)      \
+        TIMETRAVEL_HANDLE(hg_bonustype,                 Float)      \
+        TIMETRAVEL_HANDLE(hg_regentime1,                Float)      \
+        TIMETRAVEL_HANDLE(hg_maxregentime1,             Float)      \
+        TIMETRAVEL_HANDLE(hg_regentime2,                Float)      \
+        TIMETRAVEL_HANDLE(hg_maxregentime2,             Float)      \
+        TIMETRAVEL_HANDLE(buff_conduit_hpool,           Float)      \
+        TIMETRAVEL_HANDLE(buff_conduit_apool,           Float)      \
+        TIMETRAVEL_HANDLE(buff_conduit_dpool,           Float)      \
+        TIMETRAVEL_HANDLE(buff_conduit_next,            Time)       \
+        TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
+
+
+        /*
+         * TODO: handle Endurance correctly
+         *
+
         TIMETRAVEL_HANDLE(buff_endur_ticks,             Float)      \
         TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
         TIMETRAVEL_HANDLE(buff_endur_nexttick,          Time)       \
-        TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
+
+         */
+
+
 
 .float tt_weaponentity_state;
 void TimeTravel_StoreWeaponState(entity e, entity moment) {
@@ -113,7 +141,17 @@ void TimeTravel_TakeBack(entity e, entity moment) {
 #undef TIMETRAVEL_HANDLE
 
 void TimeTravel_EraseMoment(entity moment) {
-    remove(moment);
+    if(moment.classname != "tt_moment") {
+        error("TimeTravel_EraseMoment: not a moment (" + moment + ")");
+    }
+
+    if(!moment.reset) {
+        error("TimeTravel_EraseMoment: moment has no reset function (" + moment + ")");
+    }
+
+    using(self = moment) {
+        moment.reset();
+    }
 }
 
 #undef TIMETRAVEL_HANDLE_ALL
