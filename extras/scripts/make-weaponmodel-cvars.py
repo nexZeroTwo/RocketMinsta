@@ -22,12 +22,12 @@ defaults = {
     "tuba"              :   "tuba",
     "campingrifle"      :   "rm_campingrifle",
     "fireball"          :   "fireball",
-    "zapper"            :   "zapper",
+    "zapper"            :   "rtzapper",
     "flak"              :   "flak",
     "pryaxe"            :   "pryaxe",
 
     "nex_ofs"           :   "0 0 -1",
-    "zapper_ofs"        :   "0 -0.5 3",
+    "zapper_ofs"        :   "0 0 1",
 }
 
 

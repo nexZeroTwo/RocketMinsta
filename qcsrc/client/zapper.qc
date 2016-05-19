@@ -19,6 +19,7 @@ float plane_sign(vector plane_point, vector plane_norm, vector point) {
 	return (if (sign > 0) 1 else (if (sign < 0) -1 else 0));
 }
 
+float zapper_beam_width;
 vector zapper_particles_trace_callback_origin;
 float zapper_particles_trace_callback_beamoffs;
 vector zapper_curve_beam_prev_point1;
@@ -42,14 +43,17 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
 
     vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
 
-    Draw_CylindricLine(from, endpos, 12, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, self.alpha, DRAWFLAG_ADDITIVE, v);
-    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - endpos) / 12;
+    var _alpha = self.alpha;
+    rgb *= _alpha;
+
+    Draw_CylindricLine(from, endpos, zapper_beam_width, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, _alpha, DRAWFLAG_ADDITIVE, v);
+    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - endpos) / zapper_beam_width;
 
     if(self.sv_entnum && !fps_friendly) {
         zapper_curve_beam_prev_point1 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
         zapper_curve_beam_prev_point2 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
         vectorvectors(normalize(d));
-        vector rgb2 = GetTeamRGB(self.team);
+        vector rgb2 = GetTeamRGB(self.team) * _alpha;
         vector o1 = v_right *  15 * sin(t * 4.0) + v_up * 15 * cos(t * 4.2);
         vector o2 = v_right * -15 * cos(t * 4.1) + v_up * 15 * sin(t * 4.0);
 
@@ -72,8 +76,8 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
                     before_warp = 0;
                 }
             }
-            Draw_CylindricLine(zapper_curve_beam_prev_point1, next_point, 12, tex, 0.03, zapper_curve_beam_offset1, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
-            zapper_curve_beam_offset1 += 0.03 * (vlen(zapper_curve_beam_prev_point1 - next_point)) / 12;
+            Draw_CylindricLine(zapper_curve_beam_prev_point1, next_point, zapper_beam_width, tex, 0.03, zapper_curve_beam_offset1, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_offset1 += 0.03 * (vlen(zapper_curve_beam_prev_point1 - next_point)) / zapper_beam_width;
             zapper_curve_beam_prev_point1 = next_point;
         }
         for (before_warp = 1; zapper_curve_beam_point_num2 <= curve_parts && before_warp; zapper_curve_beam_point_num2++) {
@@ -85,8 +89,8 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
                     before_warp = 0;
                 }
             }
-            Draw_CylindricLine(zapper_curve_beam_prev_point2, next_point, 12, tex, 0.03, zapper_curve_beam_offset2, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
-            zapper_curve_beam_offset2 += 0.03 * (vlen(zapper_curve_beam_prev_point2 - next_point)) / 12;
+            Draw_CylindricLine(zapper_curve_beam_prev_point2, next_point, zapper_beam_width, tex, 0.03, zapper_curve_beam_offset2, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_offset2 += 0.03 * (vlen(zapper_curve_beam_prev_point2 - next_point)) / zapper_beam_width;
             zapper_curve_beam_prev_point2 = next_point;
         }
         zapper_curve_beam_prev_point1 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
@@ -96,34 +100,42 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
 
 vector Zapper_GetShotOrigin(void) {
     var org = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
-    return org - '10 0 0';
+    return org - '5 0 0';
 }
 
 void Zapper_Draw(void) {
-    vector start;
+    vector start, muzzleorg;
 
     float me = ID_ME;
     float truezapper;
+
+    var first_person = FALSE;
 
     if(!(time - WarpZone_FixView_lasttime < 0.2 && self.sv_entnum == me && !cvar("chase_active")))
         InterpolateOrigin_Do(); //do interpolation for our beam only if not in warpzone
     self.zapper_end = self.origin;
 
-    start = self.zapper_start;
+    zapper_beam_width = 12;
+    start = muzzleorg = self.zapper_start;
     vector end1;
     if(self.sv_entnum == me && (truezapper = CVAR(cl_truezapper)) > 0) {
         end1 = (view_origin + view_forward * (vlen(self.zapper_start - self.zapper_end))) * truezapper + (1 - truezapper) * self.zapper_end;
     } else
         end1 = self.zapper_end;
     vector real_start = self.zapper_real_start;
+
     if(self.sv_entnum == me) if(!CVAR(chase_active)) {
         var zapper_shotorigin = Zapper_GetShotOrigin();
         start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        muzzleorg = view_origin + view_forward * zapper_shotorigin_x + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_start = start;
         if (WarpZone_FixView_lastwarp) {
             end1 = self.zapper_end = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.origin);
             real_start = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.zapper_real_start);
         }
+
+        zapper_beam_width = 8;
+        first_person = TRUE;
     }
 
     self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
@@ -134,10 +146,24 @@ void Zapper_Draw(void) {
     zapper_curve_beam_point_num1 = zapper_curve_beam_point_num2 = 1;
     zapper_curve_beam_offset1 = time * 5;
     zapper_curve_beam_offset2 = time * 5;
+    
+    var dynlight_org = self.zapper_start;
+
+    if(first_person) using(fps_friendly = TRUE) {
+        var s = start + view_forward;
+        dynlight_org = s;
+        zapper_particles_trace_callback(view_origin + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z, s, s);
+    }
+
+    R_AddDynamicLight(dynlight_org, 50 * self.alpha, Zapper_BeamRGB(self.team));
+
+    end1 -= normalize(end1 - self.zapper_start);
 
     WarpZone_TraceTriangle(real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
-    pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), start, end1 - start, frametime * 300);
-    pointparticles(rm_particleeffectnum_team("RM_ZAPPER", self.team, 2), trace_endpos, '0 0 0', frametime * 300);
+
+    pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), muzzleorg, end1 - start, frametime * 300);
+    if(self.alpha > 0.9)
+        pointparticles(rm_particleeffectnum_team("RM_ZAPPER", self.team, 2), trace_endpos, '0 0 0', frametime * 300);
 }
 
 void Zapper_Draw_Shield(void) {

@@ -1,6 +1,7 @@
 
 .entity zapper_shield;
 .entity zapper_accumulator;
+.entity zapper_spinner;
 
 .float zapper_range;
 .float zapper_expire;
@@ -15,6 +16,63 @@
 
 .vector zapper_beam_start, zapper_beam_end;
 .vector zapper_beam_real_start;
+
+// TODO: maybe move this to common?
+vector W_Zapper_BeamRGB(float t) {
+    switch(t) {
+        case COLOR_TEAM1:            return '5.0   1.0   0.5';
+        case COLOR_TEAM2: default:   return '0.5   1.0   5.0';
+        case COLOR_TEAM3:            return '4.0   2.5   0.5';
+        case COLOR_TEAM4:            return '5.0   0.7   3.0';
+    }
+}
+
+void W_Zapper_SpawnSpinner(void) {
+    if(self.zapper_spinner)
+        return;
+
+    var s = spawn() {
+        classname: "zapper_spinner",
+        model: "models/weapons/rtzapper_hyperhonker.iqm",
+        owner: self,
+        viewmodelforclient: self,
+        colormap: self.colormap,
+        color: W_Zapper_BeamRGB(if(teams_matter) self.team else COLOR_TEAM2),
+        think: inline void(void) {
+            if(self.owner.weapon != WEP_ZAPPER) {
+                self.owner.zapper_spinner = world;
+                remove(self);
+                return;
+            }
+
+            if(self.owner.zapper_beam || self.owner.zapper_shield)
+                self.cnt = approach(self.cnt, 3, 4 * frametime);
+            else
+                self.cnt = approach(self.cnt, -0.1, 2 * frametime);
+
+            var intens = self.cnt / 3;
+
+            if(intens <= 0) {
+                self.glowmod = '-1 -1 -1';
+                self.skin = 0;
+            } else {
+                self.skin = 1;
+                self.glowmod = self.color * pow(intens, 2);
+            }
+
+            self.angles_z += frametime * self.cnt * 360;
+            self.nextthink = time;
+        },
+        nextthink: time,
+        customizeentityforclient: CL_Weaponentity_CustomizeEntityForClient,
+    };
+
+    setattachment(s, self.weaponentity, "shot");
+    setorigin(s, '-4 0 -0.5');
+    setmodel(s, s.model);
+
+    self.zapper_spinner = s;
+}
 
 float W_Zapper_Attack1_CheckAmmo(entity p) {
     return p.ammo_cells >= CVAR(g_balance_zapper_primary_ammo);
@@ -612,7 +670,7 @@ void W_Zapper_Accumulate(void) {
                || self.w_button_primary
                || time > self.zapper_accumulator.zapper_accumulate)) {
             W_Zapper_Attack2();
-            weapon_thinkf(WFRAME_FIRE2, cvar("g_balance_zapper_animtime"), w_ready);
+            weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_zapper_animtime), w_ready);
         } else
             accumulate_end = 0;
     }
@@ -633,6 +691,8 @@ float w_zapper(float req) {
         else
             self.w_button_secondary = bot_aim(1000000, 0, 0.001, FALSE);
     } else if(req == WR_THINK) {
+        W_Zapper_SpawnSpinner();
+
         if(self.w_button_primary) {
             if (self.w_button_secondary && CVAR(g_balance_zapper_secondary_shield == 2)) {
                 if(weapon_prepareattack(1, -1)) {
@@ -704,6 +764,7 @@ float w_zapper(float req) {
         }
     } else if(req == WR_PRECACHE) {
         precache_model("models/vhshield.md3");
+        precache_model("models/weapons/rtzapper_hyperhonker.iqm");
         precache_sound("weapons/zapper_fire.wav");
         precache_sound("weapons/zapper_fly.wav");
         precache_sound("weapons/fireball_fly2.wav");
@@ -714,9 +775,9 @@ float w_zapper(float req) {
             self.zapper_heat = 0;
         else
             self.zapper_heat = -1;
-    } else if(req == WR_SETUP)
+    } else if(req == WR_SETUP) {
         weapon_setup(WEP_ZAPPER);
-    else if(req == WR_CHECKAMMO1)
+    } else if(req == WR_CHECKAMMO1)
         return W_Zapper_Attack1_CheckAmmo(self);
     else if(req == WR_CHECKAMMO2)
         return W_Zapper_Attack2_CheckAmmo(self);

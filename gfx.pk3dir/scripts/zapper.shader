@@ -52,3 +52,56 @@ zapper_shield_team4
         blendfunc add
     }
 }
+
+textures/rtzapper
+{
+    // surfaceparm nomipmaps
+    dpreflectcube cubemaps/rtzapper/reflect1
+    {
+        map textures/rtzapper.tga
+        rgbGen lightingDiffuse
+    }
+}
+
+textures/rtzapper_core
+{
+    dpreflectcube cubemaps/rtzapper/reflect1
+    {
+        map textures/rtzapper_core.tga
+        rgbGen lightingDiffuse
+    }
+}
+
+textures/rtzapper_innerglow
+{
+    {
+        map textures/rtzapper_innerglow.tga
+        tcMod scale 0.2 1
+        tcMod scroll 0.5 0
+        // blendfunc add
+        rgbGen identity
+    }
+}
+
+textures/rtzapper_ringfx
+{
+    cull none
+    {
+        map textures/rtzapper_ring.tga
+        tcMod scroll 0 0.2
+        blendfunc add
+        rgbGen identity
+    }
+}
+
+textures/rtzapper_spherefx
+{
+    deformVertexes wave 1 sin 0 0.25 0 3
+    {
+        map textures/rtzapper_sphere.tga
+        tcGen environment
+        tcMod scroll 3 3
+        blendfunc add
+        rgbGen identity
+    }
+}
