@@ -16,12 +16,15 @@ void Buffs_LoadModels(void) {
     float i, b;
 
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) if(b & g_buffs_enabled) {
-        string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
+        var n = Buffs_TypeToName(b);
+
+        string s = "models/buffs/buff_" + n + ".md3";
+
         if(!fexists(s)) {
             s = "models/buffs/buff.md3";
             print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
         }
-            
+
         buff_modelnames[i] = strzone(s);
         precache_model(buff_modelnames[i]);
     }
