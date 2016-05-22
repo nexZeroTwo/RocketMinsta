@@ -69,15 +69,6 @@
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)                      \
 
 
-        /*
-         * TODO: handle Endurance correctly
-         *
-
-        TIMETRAVEL_HANDLE(buff_endur_ticks,             Float)      \
-
-         */
-
-
 
 .float tt_weaponentity_state;
 void TimeTravel_StoreWeaponState(entity e, entity moment) {
