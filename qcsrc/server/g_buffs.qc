@@ -932,11 +932,7 @@ entity Buffs_Endurance_ApplyDOT(entity targ, entity attacker, float ticks, float
 
     var dot = Buffs_Endurance_GetDOT(targ, attacker);
     dot.buff_endur_dmgpool += damage;
-
-    using(self = targ)
-    for(var d; (d = findfilter(d, inline float(entity e) {
-        return e.enemy == self && e.classname == "buff_endur_dot";
-    }));) d.buff_endur_ticks = ticks;
+    dot.buff_endur_ticks = ticks;
 
     return dot;
 }
