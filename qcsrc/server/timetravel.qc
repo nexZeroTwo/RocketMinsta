@@ -58,6 +58,8 @@
         TIMETRAVEL_HANDLE(buff_conduit_apool,           Float)      \
         TIMETRAVEL_HANDLE(buff_conduit_dpool,           Float)      \
         TIMETRAVEL_HANDLE(buff_conduit_next,            Time)       \
+        TIMETRAVEL_HANDLE(zapper_heat,                  Float)      \
+        TIMETRAVEL_HANDLE(zapper_coolofftime,           Time)       \
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
 
 
