@@ -951,7 +951,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
         HG_PlayerDeath();
 
-        self.buff_endur_ticks = self.buff_endur_dmgpool = self.buff_endur_nexttick = 0;
+        self.buff_endur_ticks = self.buff_endur_dmgpool;
         
         DropPowerups();
 

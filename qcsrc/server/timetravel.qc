@@ -64,7 +64,9 @@
         TIMETRAVEL_HANDLE(fire_endtime,                 Time)       \
         TIMETRAVEL_HANDLE(fire_deathtype,               Float)      \
         TIMETRAVEL_HANDLE(fire_owner,                   Entity)     \
-        TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
+        TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
+        TIMETRAVEL_HANDLE_SPECIAL(EnduranceState)                   \
+        TIMETRAVEL_HANDLE_SPECIAL(WeaponState)                      \
 
 
         /*
@@ -72,8 +74,6 @@
          *
 
         TIMETRAVEL_HANDLE(buff_endur_ticks,             Float)      \
-        TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
-        TIMETRAVEL_HANDLE(buff_endur_nexttick,          Time)       \
 
          */
 
@@ -115,6 +115,68 @@ void TimeTravel_RestoreWeaponState(entity e, entity moment) {
     self = oldself;
 }
 
+.entity tt_endur_snapshot_chain;
+.float tt_endur_snapshot_thinktime;
+
+void TimeTravel_StoreEnduranceState(entity plr, entity moment) {
+    // Find all Endurance DOTs ticking on the player, and create a snapshot of each
+    // Chain them and attach them to the moment, to restore the DOTs from them later
+
+    var chain_last = moment;
+
+    for(var e = world; (e = find(e, classname, "buff_endur_dot"));) if(e.enemy == plr) {
+        var s = spawn() {
+            classname: "tt_endur_dot_snapshot",
+            // Do not add a reset: SUB_Remove or similar here.
+            // TimeTravel_EraseMoment will take care of removing these snapshots.
+        };
+
+        TimeTravel_StoreEntity(e, s, owner);
+        TimeTravel_StoreEntity(e, s, enemy);
+        TimeTravel_StoreFloat(e, s, buff_endur_ticks);
+        TimeTravel_StoreFloat(e, s, buff_endur_dmgpool);
+        TimeTravel_StoreTime(e, s, nextthink);
+
+        // Don't let the engine try to run .think()
+        s.tt_endur_snapshot_thinktime = s.nextthink;
+        s.nextthink = 0;
+
+        chain_last.tt_endur_snapshot_chain = s;
+        chain_last = s;
+    }
+}
+
+void TimeTravel_RestoreEnduranceState(entity plr, entity moment) {
+    var e;
+
+    // First, remove all Endurance DOTs ticking on the player right now
+
+    for(e = world; (e = find(e, classname, "buff_endur_dot"));) if(e.enemy == plr) {
+        e.think = SUB_Remove;
+        e.nextthink = time;
+    }
+
+    // Now, turn our snapshotted DOTs into real Endurance DOTs, and start ticking!
+    // This is efficient, but only works if the moment is restored not more than once.
+    // As of now, only the Time Warper nadget uses time traveling, and it meets the above condition.
+
+    for(e = moment.tt_endur_snapshot_chain; e; e = e.tt_endur_snapshot_chain) {
+        TimeTravel_RestoreTime(e, e, tt_endur_snapshot_thinktime);
+
+        e {
+            classname: "buff_endur_dot",
+            reset: SUB_Remove,
+            think: Buffs_Endurance_DOT_Think,
+            nextthink: e.tt_endur_snapshot_thinktime,
+        };
+    }
+
+    // Detach the snapshot chain from the moment
+    // They are real DOTs now, so we don't want TimeTravel_EraseMoment to remove them
+
+    moment.tt_endur_snapshot_chain = world;
+}
+
 #define TIMETRAVEL_HANDLE(f,t) TimeTravel_Store##t(e, moment, f);
 #define TIMETRAVEL_HANDLE_SPECIAL(t) TimeTravel_Store##t(e, moment);
 entity TimeTravel_SaveMoment(entity e) {
@@ -126,7 +188,9 @@ entity TimeTravel_SaveMoment(entity e) {
     moment = spawn() {
         classname     : "tt_moment",
         tt_momenttime : time,
-        reset         : SUB_Remove
+        reset         : inline void(void) {
+            TimeTravel_EraseMoment(self);
+        }
     };
 
     TIMETRAVEL_HANDLE_ALL
@@ -151,13 +215,14 @@ void TimeTravel_EraseMoment(entity moment) {
         error("TimeTravel_EraseMoment: not a moment (" + moment + ")");
     }
 
-    if(!moment.reset) {
-        error("TimeTravel_EraseMoment: moment has no reset function (" + moment + ")");
+    // Remove any leftover Endurance DOT snapshots, if any
+    // Should happen only if the moment was never restored
+    for(e = moment.tt_endur_snapshot_chain; e; e = e.tt_endur_snapshot_chain) {
+        e.think = SUB_Remove;
+        e.nextthink = time;
     }
 
-    using(self = moment) {
-        moment.reset();
-    }
+    remove(self);
 }
 
 #undef TIMETRAVEL_HANDLE_ALL

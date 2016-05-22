@@ -894,7 +894,7 @@ entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
         owner: attacker,
         enemy: targ,
         reset: SUB_Remove,
-        think: inline void(void) {
+        think: inline void Buffs_Endurance_DOT_Think(void) {
             var ticks = self.buff_endur_ticks;
             var targ = self.enemy;
 
