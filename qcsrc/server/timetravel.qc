@@ -60,6 +60,10 @@
         TIMETRAVEL_HANDLE(buff_conduit_next,            Time)       \
         TIMETRAVEL_HANDLE(zapper_heat,                  Float)      \
         TIMETRAVEL_HANDLE(zapper_coolofftime,           Time)       \
+        TIMETRAVEL_HANDLE(fire_damagepersec,            Float)      \
+        TIMETRAVEL_HANDLE(fire_endtime,                 Time)       \
+        TIMETRAVEL_HANDLE(fire_deathtype,               Float)      \
+        TIMETRAVEL_HANDLE(fire_owner,                   Entity)     \
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)
 
 
