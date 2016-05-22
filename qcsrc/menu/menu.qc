@@ -41,6 +41,9 @@ void m_init()
     registercvar("menu_vid_height", "0", 0);
     registercvar("vid_ui_scale", "1", CVAR_SAVE);
 
+    cvar_set("menu_vid_width", ftos(CVAR(vid_width)));
+    cvar_set("menu_vid_height", ftos(CVAR(vid_height)));
+
     if(!(cvar_type("sys_first_run") & CVAR_SAVE))
         registercvar("sys_first_run", "0", CVAR_SAVE);
     cvar_set("sys_first_run", "0");
