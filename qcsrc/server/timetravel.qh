@@ -12,6 +12,7 @@ TIMETRAVEL_HANDLER(Vector,      vector, TIMETRAVEL_STORE_IDENTITY, TIMETRAVEL_RE
 TIMETRAVEL_HANDLER(Origin,      vector, TIMETRAVEL_STORE_IDENTITY, { setorigin(e, moment.fld); e.antilag_saved_origin = moment.fld; })
 TIMETRAVEL_HANDLER(Angles,      vector, TIMETRAVEL_STORE_IDENTITY, { e.fld = moment.fld; e.fixangle = TRUE; })
 TIMETRAVEL_HANDLER(VoidFunc,    void(), TIMETRAVEL_STORE_IDENTITY, TIMETRAVEL_RESTORE_IDENTITY)
+TIMETRAVEL_HANDLER(Entity,      entity, TIMETRAVEL_STORE_IDENTITY, TIMETRAVEL_RESTORE_IDENTITY)
 
 entity TimeTravel_SaveMoment(entity e);
 void TimeTravel_TakeBack(entity dst, entity state);

@@ -42,7 +42,6 @@ float g_buffs_count;
 
 .float buff_endur_ticks;
 .float buff_endur_dmgpool;
-.float buff_endur_nexttick;
 
 .float buff_conduit_hpool;
 .float buff_conduit_apool;
@@ -93,6 +92,7 @@ void Buffs_BuffPickup_SetCooldown(entity, float);
 void Buffs_Random_Spawn(void);
 float Buffs_Give(entity, float, float);
 void Buffs_Notify(entity, float, float);
+void Buffs_Endurance_DOT_Think(void);
 
 #define Buffs_Present(p,b) ((p).effective_buffs & (b) == (b))
 

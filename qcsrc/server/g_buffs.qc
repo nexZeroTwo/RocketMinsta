@@ -894,7 +894,7 @@ entity Buffs_Endurance_GetDOT(entity targ, entity attacker) {
         owner: attacker,
         enemy: targ,
         reset: SUB_Remove,
-        think: inline void(void) {
+        think: inline void Buffs_Endurance_DOT_Think(void) {
             var ticks = self.buff_endur_ticks;
             var targ = self.enemy;
 
@@ -932,11 +932,7 @@ entity Buffs_Endurance_ApplyDOT(entity targ, entity attacker, float ticks, float
 
     var dot = Buffs_Endurance_GetDOT(targ, attacker);
     dot.buff_endur_dmgpool += damage;
-
-    using(self = targ)
-    for(var d; (d = findfilter(d, inline float(entity e) {
-        return e.enemy == self && e.classname == "buff_endur_dot";
-    }));) d.buff_endur_ticks = ticks;
+    dot.buff_endur_ticks = ticks;
 
     return dot;
 }
