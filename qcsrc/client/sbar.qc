@@ -3781,11 +3781,33 @@ void Sbar_DrawBuffs(void) {
     drawcolorcodedstring(drawbuffs_pos, drawbuffs_str, sbar_fontsize, 0.3 + 0.7 * a, DRAWFLAG_NORMAL);
 }
 
+float timewarper_max_duration;
+float timewarper_remaining_duration;
+float timewarper_active;
+
+void Sbar_UpdateTimeWarperState(void) {
+    timewarper_active = getstatf(STAT_HGTWARP_EXPIRETIME);
+
+    if(timewarper_active) {
+        timewarper_remaining_duration = timewarper_active - servertime;
+        if(timewarper_remaining_duration > timewarper_max_duration)
+            timewarper_max_duration = ceil(timewarper_remaining_duration);
+    } else {
+        timewarper_max_duration = 0;
+    }
+}
+
 void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float regen, float regenrate, float regenmax, float regenpaused, float hgcd, float hgcdmax) {
     string hgicon = HG_TypeToIcon(hgtype, TRUE, (getstati(STAT_BUFFS) & BUFF_ADEPT));
     vector hgcolor = '1 1 1' - '0.3 0.8 0.8' * regenpaused;
     vector hgsize = '32 32 0';
-    
+
+    if(timewarper_active && hgtype == HG_TIMEWARP) {
+        hgcdmax = timewarper_max_duration;
+        // hgcd = timewarper_max_duration - timewarper_remaining_duration;
+        hgcd = hgcdmax;
+    }
+
     if(hgcd > 0) {
         float cdh = hgsize_y * (hgcd / hgcdmax);
         drawsetcliparea(pos_x, pos_y, hgsize_x, cdh);
@@ -3793,11 +3815,34 @@ void Sbar_DrawNadgetRegenSector(vector pos, float hgtype, float hgammo, float re
         drawsetcliparea(pos_x, pos_y + cdh, hgsize_x, hgsize_y);
         drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
         drawresetcliparea();
-    } else
+    } else {
         drawpic(pos, hgicon, hgsize, hgcolor, sbar_alpha_fg, DRAWFLAG_NORMAL);
-    
+    }
+
+    if(timewarper_active && hgtype == HG_TIMEWARP) {
+        using(drawfont = sbar_bigfont) {
+            drawstring_aspect(pos, ftos(ceil(timewarper_remaining_duration)), hgsize, '0 1 0', 1, DRAWFLAG_NORMAL);
+
+            var sz = [SECWIDTH_NORMAL - hgsize_x, hgsize_y * 0.5];
+            pos = pos + [hgsize_x, 0];
+
+            var clr = (
+                if(timewarper_remaining_duration > 1)
+                    '1 1 0'
+                else
+                    '1 0 0'
+            );
+
+            drawstring_aspect(pos, "Use again", sz, clr, 1, DRAWFLAG_NORMAL);
+            pos_y += sz_y;
+            drawstring_aspect(pos, "to WARP!", sz, clr, 1, DRAWFLAG_NORMAL);
+        }
+
+        return;
+    }
+
     Sbar_DrawXNum(pos + '26 5 0', hgammo, 3, 0, 24, '1 1 1' - '0 1 1' * (!hgammo), 0, 0, sbar_alpha_fg, DRAWFLAG_NORMAL);
-    
+
     if(rm_shownadgetregen) {
         string hgtxt;
         float rtime;
@@ -3928,6 +3973,13 @@ void Sbar_DrawSelectedPlayer(void) {
 
 float hg_nadecount_update;
 float hg_nadecount2_update;
+
+float Sbar_GetNadgetRegen(float stat_type, float stat_regen, float stat_maxregen) {
+    if(timewarper_active && getstati(stat_type) == HG_TIMEWARP)
+        return 1 - timewarper_remaining_duration / timewarper_max_duration;
+    else
+        return getstatf(stat_regen) / getstatf(stat_maxregen);
+}
 
 void Sbar_Draw(void)
 {
@@ -4159,9 +4211,9 @@ void Sbar_Draw(void)
     }
     
     if(g_nadgets && spectatee_status != -1) {
-        hgregen += (getstatf(STAT_HGREGEN) / getstatf(STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
+        hgregen += (Sbar_GetNadgetRegen(STAT_HGTYPE, STAT_HGREGEN, STAT_HGREGENMAX) - hgregen) * drawframetime * 20;
         if(g_nadgets_double)
-            hgregen2 += (getstatf(STAT_HGREGEN2) / getstatf(STAT_HGREGENMAX2) - hgregen2) * drawframetime * 20;
+            hgregen2 += (Sbar_GetNadgetRegen(STAT_HGTYPE2, STAT_HGREGEN2, STAT_HGREGENMAX2) - hgregen2) * drawframetime * 20;
     }
 
 	if(warmup_stage && !intermission)
@@ -4527,6 +4579,7 @@ void Sbar_Draw(void)
 	}
 
 	Sbar_UpdatePlayerTeams();
+    Sbar_UpdateTimeWarperState();
 	//'0.2 0.2 0.2'
 
 	float sector_alphamod;
@@ -5498,12 +5551,7 @@ void Sbar_Draw(void)
                              getstati(STAT_HGSHIELDSTOREMAX) / getstati(STAT_HGSHIELDDAMAGEPERSHOT));
             }
 
-            if((var warpremain = ceil(getstatf(STAT_HGTWARP_EXPIRETIME) - servertime)) > 0) {
-                drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
-                                            "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                            " ^3to go back in time (^1" + warpremain + " ^3seconds remaining)"),
-                                            sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-            } else if(getstati(STAT_STEALTH)) {
+            if(getstati(STAT_STEALTH)) {
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * ('0 2 0' + '0 1 0' * !!adept), strcat(
                                             "^3Shoot or press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                             " ^3to ", if(adept) "suspend" else "cancel", " stealth (^1", ftos(getstati(STAT_STEALTH)), " ^3seconds remaining)"),
@@ -5530,16 +5578,21 @@ void Sbar_Draw(void)
                 }
                 
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', smsg, sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-            } else if(hgdetons)
+            } else if(hgdetons) {
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                             "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
                                             " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
                                             if(hgdetons > 1) strcat("s (^2", ftos(hgdetons), "^3)") else ""),
                                             sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-            else if(hgtype == HG_GG && hgammo)
+            } else if(hgtype == HG_GG && hgammo) {
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat("^3Press ^1", strtoupper(getcommandkey("hook / nadget key", "+hook")), " ^3to win!"), sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
-                
-            
+            } else if(timewarper_active) {
+                drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
+                                            "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
+                                            " ^3to go back in time"),
+                                            sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
+            }
+
             if(nadesector_pos) {
                 pos_y = 33;
                 pos = bottom - pos;
