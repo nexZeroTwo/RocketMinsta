@@ -5880,9 +5880,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 2 2
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 2 2
 effect RM_ZAPPER_MUZZLEFLASH_TEAM1
 count 10
 type spark
@@ -5934,9 +5934,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 1.5 3 6
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 1.5 3 6
 effect RM_ZAPPER_MUZZLEFLASH_TEAM2
 count 10
 type spark
@@ -5988,9 +5988,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 5.5 2
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 5.5 2
 effect RM_ZAPPER_MUZZLEFLASH_TEAM3
 count 10
 type spark
@@ -6042,9 +6042,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 3 5
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 3 5
 effect RM_ZAPPER_MUZZLEFLASH_TEAM4
 count 10
 type spark
