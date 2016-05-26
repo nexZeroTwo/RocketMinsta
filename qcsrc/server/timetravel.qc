@@ -29,7 +29,7 @@
         TIMETRAVEL_HANDLE(crouch,                       Float)      \
         TIMETRAVEL_HANDLE(lastdamage,                   Time)       \
         TIMETRAVEL_HANDLE(last_dodging_time,            Time)       \
-        TIMETRAVEL_HANDLE(lastwj,                       Time)       \
+        TIMETRAVEL_HANDLE(wj_jumptime,                  Time)       \
         TIMETRAVEL_HANDLE(weapon_nextthink,             Time)       \
         TIMETRAVEL_HANDLE(weapon_think,                 VoidFunc)   \
         TIMETRAVEL_HANDLE(frozen,                       Float)      \

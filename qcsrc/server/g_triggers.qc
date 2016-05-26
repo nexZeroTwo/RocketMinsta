@@ -2363,6 +2363,6 @@ void spawnfunc_func_nowalljump(void) {
 
     self.touch = inline void(void) {
         if(other.iscreature)
-            other.lastwj = time + frametime;
+            other.wj_jumptime = time + frametime;
     };
 }
