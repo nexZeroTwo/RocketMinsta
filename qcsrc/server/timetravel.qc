@@ -208,7 +208,7 @@ void TimeTravel_EraseMoment(entity moment) {
 
     // Remove any leftover Endurance DOT snapshots, if any
     // Should happen only if the moment was never restored
-    for(e = moment.tt_endur_snapshot_chain; e; e = e.tt_endur_snapshot_chain) {
+    for(var e = moment.tt_endur_snapshot_chain; e; e = e.tt_endur_snapshot_chain) {
         e.think = SUB_Remove;
         e.nextthink = time;
     }
