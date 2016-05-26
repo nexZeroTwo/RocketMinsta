@@ -61,6 +61,12 @@ entity HG_TimeWarper_StartTimer(void) {
         reset: SUB_Remove,
     };
 
+    Buffs_MEODP_Point_Attach(e, inline void(entity attacker, entity inflictor) {
+        using(self = self.owner) {
+            HG_TimeWarper_Trigger();
+        }
+    });
+
     Net_LinkEntity(e, FALSE, 0, inline float(entity to, float sf) {
         WriteByte(MSG_ENTITY, ENT_CLIENT_HGTWARP_INDICATOR);
         WriteByte(MSG_ENTITY, if(teams_matter) self.owner.team else COLOR_TEAM2);
