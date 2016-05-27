@@ -44,15 +44,19 @@ void m_init()
     cvar_set("menu_vid_width", ftos(CVAR(vid_width)));
     cvar_set("menu_vid_height", ftos(CVAR(vid_height)));
 
-    if(!(cvar_type("sys_first_run") & CVAR_SAVE))
-        registercvar("sys_first_run", "0", CVAR_SAVE);
-    cvar_set("sys_first_run", "0");
-
     CVAR_WATCH("rm_fonts_prefer_ttf");
     CVAR_WATCH("vid_ui_scale");
 
     cvar_archive("r_shadow_lightintensityscale", "1.0");
     cvar_archive("r_shadow_lightradiusscale", "1.0");
+
+    if(!(cvar_type("sys_first_run") & CVAR_SAVE))
+        registercvar("sys_first_run", "0", CVAR_SAVE);
+
+    if(cvar("sys_first_run"))
+        apply_ui_scale();
+
+    cvar_set("sys_first_run", "0");
 
 	dprint_load();
 	check_unacceptable_compiler_bugs();
