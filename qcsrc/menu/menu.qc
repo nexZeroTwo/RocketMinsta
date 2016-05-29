@@ -49,6 +49,7 @@ void m_init()
 
     cvar_archive("r_shadow_lightintensityscale", "1.0");
     cvar_archive("r_shadow_lightradiusscale", "1.0");
+    cvar_archive("r_shadow_glossexact", "0");
 
     if(!(cvar_type("sys_first_run") & CVAR_SAVE))
         registercvar("sys_first_run", "0", CVAR_SAVE);
