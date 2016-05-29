@@ -483,7 +483,9 @@ float next_pingtime;
         _VOICEMSG(harasho) \
         _VOICEMSG(kya) \
         _VOICEMSG(seikou) \
-        _VOICEMSG(ureshii)
+        _VOICEMSG(ureshii) \
+        _VOICEMSG(volevi) \
+        _VOICEMSG(suino)
 
 #define ALLVOICEMSGS \
 		_VOICEMSG(attack) \
