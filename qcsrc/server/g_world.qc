@@ -551,7 +551,6 @@ void spawnfunc_worldspawn (void)
     
 	sv_showspecs_extra = CVAR(sv_showspecs_extra);
 	sv_scoreboard_fps_column = CVAR(sv_scoreboard_fps_column);
-	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
 	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc
 
@@ -3002,9 +3001,6 @@ void EndFrame()
 	float altime;
 	FOR_EACH_REALCLIENT(self)
 	{
-		if(sv_oldfag)
-			self.rm_nokillsound = TRUE;
-
         if(self.clientcamera.typehitsound) {
             play2(self, "misc/typehit.wav");
         } else if(self.cvar_cl_hitsound) {

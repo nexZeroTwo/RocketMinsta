@@ -729,7 +729,6 @@ float next_round_starttime;
 
 float sv_showspecs_extra;
 float sv_scoreboard_fps_column;
-float sv_oldfag;
 
 .float lastdamage;
 

@@ -127,9 +127,6 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 	float a, i, n = tokenizebyseparator(s, "\n");
 	float alpha = bound(0, 0.5 * (time - mv_starttime), 1);
 	
-	if(sv_oldfag)
-		alpha = 1;
-	
 	if(mv_avail[id] != GTV_AVAILABLE)
 		a = 0.3;
 	else
@@ -166,13 +163,6 @@ void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, strin
 	
 	if(mv_votes[id] < 0)
 		alpha2 = 1 - bound(0, time - mv_removetime[id], 1) * 0.7;
-	
-	if(sv_oldfag) {
-		alpha = 1;
-		
-		if(alpha2 != 1)
-			alpha2 = 0.3;
-	}
 	
     origsize = isize;
 	isize *= alpha + ha * 0.07;
@@ -316,9 +306,6 @@ void MapVote_Draw()
 		float rawalpha = bound(0, (time - mv_starttime), 1);
 		float alpha = ipol_swingOut(rawalpha);
 
-		if(sv_oldfag)
-			rawalpha = alpha = 1;
-
 		vector img_size;
 		vector img_fullsize;
 
@@ -357,9 +344,6 @@ void MapVote_Draw()
 			ha = bound(0, ha + frametime * ha_speed, 1);
 		else
 			ha = bound(0, ha - frametime * ha_speed, 1);
-		
-		if(sv_oldfag)
-			ha = 0;
 		
 		mv_hoveralpha[i] = ha;
 		

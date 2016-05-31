@@ -1332,17 +1332,11 @@ void Sbar_DrawScoreboard()
 
 	float scoreboard_fadeinspeed = 15;
 	float scoreboard_fadeoutspeed = 5;
-	if(sbar_woulddrawscoreboard) {
-		if not(sv_oldfag)
-			sbar_scoreboard_fade_alpha = bound (0, (time - sbar_woulddrawscoreboard_change) * scoreboard_fadeinspeed, 1);
-		else
-			sbar_scoreboard_fade_alpha = 1;
-	}
+
+	if(sbar_woulddrawscoreboard)
+		sbar_scoreboard_fade_alpha = bound (0, (time - sbar_woulddrawscoreboard_change) * scoreboard_fadeinspeed, 1);
 	else
-		if not(sv_oldfag)
-			sbar_scoreboard_fade_alpha = bound (0, (1/scoreboard_fadeoutspeed - (time - sbar_woulddrawscoreboard_change)) * scoreboard_fadeoutspeed, 1);
-		else
-			sbar_scoreboard_fade_alpha = 0;
+		sbar_scoreboard_fade_alpha = bound (0, (1/scoreboard_fadeoutspeed - (time - sbar_woulddrawscoreboard_change)) * scoreboard_fadeoutspeed, 1);
 
 	if not(sbar_scoreboard_fade_alpha)
 		return;
@@ -3948,15 +3942,6 @@ void Sbar_Draw(void)
 	sbar_scoreboard_alpha_bg = CVAR(sbar_scoreboard_alpha_bg);
 	sbar_scoreboard_highlight = CVAR(sbar_scoreboard_highlight);
 	sbar_info_pos = max(0, CVAR(sbar_info_pos));
-	
-	if(sv_oldfag) {
-		rm_oldhud = TRUE;
-		rm_showrankings = FALSE;
-		rm_visualscore = FALSE;
-		rm_hidewatermark = TRUE;
-		rm_simpleeffects = TRUE;
-		rm_nobigtext = TRUE;
-	}
 	
 	float i;
 	float x, fade;
