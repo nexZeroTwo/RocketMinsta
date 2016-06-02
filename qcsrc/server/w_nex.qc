@@ -3,6 +3,7 @@
 .float nex_charge_readytime;
 .float nex_charge_expiretime;
 .float nex_burst_counter;
+.float nex_burst_hitstreak;
 .float nex_last_refire_delay;
 
 void SendCSQCNexBeamParticle(float theteam, float secondary) {
@@ -81,13 +82,15 @@ void W_Nex_Attack2(void) {
     float flying;
     flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-    W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", CVAR(g_balance_nex_secondary_damage));
+    var damage = CVAR(g_balance_nex_secondary_damage) + CVAR(g_balance_nex_secondary_damage_burstbonus) * self.nex_burst_hitstreak;
+
+    W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", damage);
 
     yoda = 0;
 
     var pts = Buffs_MEODP_Hitscan_Begin(self);
     FireRailgunBullet(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE,
-        CVAR(g_balance_nex_secondary_damage),
+        damage,
         CVAR(g_balance_nex_secondary_force),
         CVAR(g_balance_nex_secondary_damagefalloff_mindist),
         CVAR(g_balance_nex_secondary_damagefalloff_maxdist),
@@ -95,6 +98,7 @@ void W_Nex_Attack2(void) {
         CVAR(g_balance_nex_secondary_damagefalloff_forcehalflife),
         WEP_NEX | HITTYPE_SECONDARY
         );
+
     Buffs_MEODP_Hitscan_End(pts);
 
     if(yoda && flying)
@@ -110,7 +114,7 @@ void W_Nex_Attack2(void) {
 
     // flash and burn the wall
     if (trace_ent.solid == SOLID_BSP && !(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT))
-        Damage_DamageInfo(trace_endpos, CVAR(g_balance_nex_secondary_damage), 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
+        Damage_DamageInfo(trace_endpos, damage, 0, 0, CVAR(g_balance_nex_secondary_force) * w_shotdir, WEP_NEX, self);
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - cost;
@@ -181,6 +185,11 @@ void W_Nex_ChargeEffect_Spawn(float ct) {
     self.nex_charge_effect = e;
 }
 
+void W_Nex_RegisterHitForHitstreak(entity attacker, float deathtype) {
+    if(deathtype & HITTYPE_SECONDARY)
+        attacker.nex_burst_hitstreak += 1;
+}
+
 void W_Nex_Attack2_Burst(void) {
     W_Nex_Attack2();
     ATTACK_FINISHED(self) = time + CVAR(g_balance_nex_secondary_refire) * W_WeaponRateFactor();
@@ -210,6 +219,7 @@ void W_Nex_Attack2_Wait(void) {
 
     if(PlayerMayFire(self) && time >= self.nex_charge_readytime) {
         self.nex_burst_counter = CVAR(g_balance_nex_secondary_burst_amount);
+        self.nex_burst_hitstreak = 0;
         W_Nex_Attack2_Burst();
         self.w_inring_fulltime = ATTACK_FINISHED(self);
         self.w_inring_cycle = self.w_inring_fulltime - time;

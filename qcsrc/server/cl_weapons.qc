@@ -643,6 +643,10 @@ void W_RegisterHitForHitstreak(entity attacker, float deathtype) {
         case WEP_UZI:
             W_Uzi_RegisterHitForHitstreak(attacker, deathtype);
             break;
+
+        case WEP_NEX:
+            W_Nex_RegisterHitForHitstreak(attacker, deathtype);
+            break;
     }
 }
 
