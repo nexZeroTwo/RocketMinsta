@@ -7,3 +7,4 @@ float sv_damagestats;
 void DamageTracker_RecordAndSend(entity, float, float, float);
 void DamageTracker_Overwrite(entity, entity, float);
 void DamageTracker_Print(entity, entity);
+float DamageTracker_SetSecondaryFlipped(float);
