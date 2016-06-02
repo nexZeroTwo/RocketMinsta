@@ -32,7 +32,6 @@ void configureNexuizResolutionSliderNexuizResolutionSlider(entity me)
     // and only set vid_width/vid_height when "Apply" is pressed.
 	me.configureNexuizTextSlider(me, "vid_width");
 
-	c = '0 0 0';
 	r0 = '0 0 0';
 	for(i = 0;; ++i)
 	{

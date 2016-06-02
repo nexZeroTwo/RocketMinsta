@@ -9,5 +9,6 @@
 #include "plasma.qc"
 #include "sentry.qc"
 #include "shield.qc"
+#include "timewarper.qc"
 #include "transloc.qc"
 #include "waypoint.qc"

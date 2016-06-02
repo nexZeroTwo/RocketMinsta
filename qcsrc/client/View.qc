@@ -169,6 +169,16 @@ vector GetCurrentFov(float fov)
 {
 	float zoomsensitivity, zoomspeed, zoomfactor, zoomdir;
 
+    float twarp = getstatf(STAT_HGTWARP_WARPTIME);
+
+    if(twarp) {
+        const twarp_dur = 0.75;
+        twarp = 1 - bound(0, (servertime - twarp) / twarp_dur, 1);
+
+        if(twarp)
+            fov *= (1 + twarp * 0.15);
+    }
+
 	zoomsensitivity = CVAR(cl_zoomsensitivity);
 	zoomfactor = CVAR(cl_zoomfactor);
 	zoomspeed = CVAR(cl_zoomspeed);

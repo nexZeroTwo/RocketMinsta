@@ -269,3 +269,12 @@ HG_HOOKFUNCTION(shield, Attack) {
 
     return HG_ATTACK_OK;
 }
+
+HG_HOOKFUNCTION(shield, Init) {
+    addstat(STAT_HGSHIELD, AS_FLOAT, hg_shieldstat);
+    addstat(STAT_HGSHIELDPOWER, AS_FLOAT, hg_shieldpower);
+    addstat(STAT_HGSHIELDSTORE, AS_INT, hg_shield_stored);
+    addstat(STAT_HGSHIELDSTOREMAX, AS_INT, hg_shield_stored_limit);
+    addstat(STAT_HGSHIELDDAMAGEPERSHOT, AS_INT, hg_shield_damage_per_shot);
+    return HG_INIT_OK;
+}

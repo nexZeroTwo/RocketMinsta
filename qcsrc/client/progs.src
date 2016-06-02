@@ -43,6 +43,7 @@ message.qh
 ../common/damagetracker.qh
 main.qh
 hudskin.qh
+timewarper.qh
 
 sortlist.qc
 miscfunctions.qc
@@ -69,6 +70,7 @@ radio.qc
 zapper.qc
 buffs.qc
 message.qc
+timewarper.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc

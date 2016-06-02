@@ -512,3 +512,8 @@ HG_HOOKFUNCTION(sentry, Attack) {
     spamsound(self, CHAN_PROJECTILE, "weapons/grenade_stick.wav", 1, ATTN_NORM);
     return HG_ATTACK_OK;
 }
+
+HG_HOOKFUNCTION(sentry, Init) {
+    addstat(STAT_HGSENTRYCAPTURE, AS_FLOAT, hg_sentry_capture_progress);
+    return HG_INIT_OK;
+}

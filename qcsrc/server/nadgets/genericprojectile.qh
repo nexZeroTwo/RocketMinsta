@@ -15,11 +15,16 @@ float HG_GenericProjectile_CSQCProjType(float t);
 entity HG_GenericProjectile(float hgtype, vector ang, float silent);
 void HG_GenericProjectile_Remove(void);
 void HG_GenericProjectile_Detonate(entity nade);
-void HG_GenericProjectile_DetonateAll(entity plr, float force);
+float HG_GenericProjectile_DetonateAll(entity plr, float force);
 void HG_GenericProjectile_ThrowNapalm(void);
 void HG_GenericProjectile_RadiusDamage(void);
 float HG_GenericProjectile_Attack(float hgtype);
-#define HG_GENERIC_ATTACKFUNC(hgtype,hgid) HG_HOOKFUNCTION(hgtype, Attack) { return HG_GenericProjectile_Attack(hgid); }
+
+
+#define HG_GENERIC_ATTACKFUNC(hgtype,hgid) \
+    HG_HOOKFUNCTION(hgtype, Attack) { return HG_GenericProjectile_Attack(hgid); } \
+    HG_EMPTY_INITFUNC(hgtype) \
+
 
 HG_GENERIC_ATTACKFUNC(normal,   HG_NORMAL)
 HG_GENERIC_ATTACKFUNC(remote,   HG_REMOTE)
