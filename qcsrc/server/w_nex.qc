@@ -82,7 +82,7 @@ void W_Nex_Attack2(void) {
     float flying;
     flying = IsFlying(self); // do this BEFORE to make the trace values from FireRailgunBullet last
 
-    var damage = CVAR(g_balance_nex_secondary_damage) + CVAR(g_balance_nex_secondary_damage_burstbonus) * self.nex_burst_hitstreak;
+    var damage = CVAR(g_balance_nex_secondary_damage) + CVAR(g_balance_nex_secondary_damage_burst_hitstreakbonus) * self.nex_burst_hitstreak;
 
     W_SetupShot(self, TRUE, 5, "weapons/rm_minsta.wav", damage);
 
