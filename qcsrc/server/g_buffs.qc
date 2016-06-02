@@ -573,7 +573,7 @@ void Buffs_ClientFrame(void) {
         self.effective_buffs = 0;
         return;
     }
-    
+
     if(self.buffs != self.oldbuffs) {
         ON_BUFF_ADDED(BUFF_SUPPLY) {
             W_Clip_ResetAll(TRUE);
@@ -599,15 +599,15 @@ void Buffs_ClientFrame(void) {
                 self.armorvalue = max(CVAR(g_buffs_guard_pickup_armor), self.armorvalue);
             }
         }
-        
+
         ON_BUFF_REMOVED(BUFF_VAMPIRE) {
             self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         }
-        
+
         ON_BUFF_ADDED(BUFF_VAMPIRE) {
             self.buff_vamp_ticks = self.buff_vamp_healthpool = self.buff_vamp_nexttick = 0;
         }
-        
+
         ON_BUFF_REMOVED(BUFF_ADEPT) {
             self.hg_stealth_saved = 0;
         }
@@ -616,14 +616,18 @@ void Buffs_ClientFrame(void) {
             self.buff_stealth_time = -1000;
         }
 
-        ON_BUFF_REMOVED(BUFF_COUNT) {
+        ON_BUFF_REMOVED(BUFF_CONDUIT) {
             self.buff_conduit_hpool = 0;
             self.buff_conduit_apool = 0;
         }
 
+        ON_BUFF_REMOVED(BUFF_ENDURANCE) {
+            self.buff_endur_dmgpool = 0;
+        }
+
         self.oldbuffs = self.buffs;
     }
-    
+
     if(self.buffstat) {
         if(!self.buff_model) {
             entity m = spawn();
