@@ -600,7 +600,7 @@ const HITTYPE_SECONDARY = 0x100;
 const HITTYPE_SPLASH = 0x200;
 const HITTYPE_BOUNCE = 0x400;
 const HITTYPE_HEADSHOT = 0x800;
-const HITTYPE_RESERVED = 0x1000; // unused yet
+const HITTYPE_VISUAL_FLIPSECONDARY = 0x1000;
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
@@ -655,7 +655,7 @@ const MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 #define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 #define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
+#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound")) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
 #define RM_SOUND_KILL "misc/kill.wav"
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"

@@ -431,7 +431,7 @@ void TrueAim_Init();
 entity tmpmadoka;
 
 float GetBigfont() {
-	return if(rm_oldbigfont || sv_oldfag || dprm_basegame == BASEGAME_VECXIS) sbar_bigfont_real else sbar_rmbigfont;
+	return if(rm_oldbigfont || dprm_basegame == BASEGAME_VECXIS) sbar_bigfont_real else sbar_rmbigfont;
 }
 
 void SetMadokaFont(float v)
@@ -2102,7 +2102,6 @@ void Ent_Init()
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
 	sv_scoreboard_fps_column = ReadByte();
-	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
@@ -2661,9 +2660,6 @@ void score_visual(float score)
 
 void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
-	if(sv_oldfag)
-		return;
-	
 	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

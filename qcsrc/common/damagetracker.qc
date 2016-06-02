@@ -74,6 +74,8 @@ void DamageTracker_Wipe(entity keeper) {
 string DamageTracker_DamageSourceName(float dtype, float extended) {
     string r;
 
+    dtype = DamageTracker_FlipSecondaryIfNeeded(dtype);
+
     if(dtype == DEATH_ENV_START)
         return if(extended) "Environment" else "";
 
@@ -174,5 +176,16 @@ float DamageTracker_TransformDamageSource(float dtype) {
             dtype &~= HITTYPE_HEADSHOT; // only the rifle actually uses headshots
     }
     
+    return dtype;
+}
+
+float DamageTracker_FlipSecondaryIfNeeded(float dtype) {
+    // Flip the HITTYPE_SECONDARY bit if HITTYPE_VISUAL_FLIPSECONDARY is set.
+    // Unset HITTYPE_VISUAL_FLIPSECONDARY.
+
+    if(dtype & HITTYPE_VISUAL_FLIPSECONDARY)
+        BITXOR_ASSIGN(dtype, HITTYPE_SECONDARY);
+
+    dtype &~= HITTYPE_VISUAL_FLIPSECONDARY;
     return dtype;
 }

@@ -262,8 +262,8 @@ void Draw_WaypointSprite()
     
     float maxw = vid_conwidth;
     float maxh = vid_conheight;
-    
-    if(CVAR(viewsize) < 120 || !CVAR(r_letterbox))
+
+    if(CVAR(viewsize) < 120 && !CVAR(r_letterbox))
         maxh -= 50;
 
 	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > maxw || o_y > maxh)
