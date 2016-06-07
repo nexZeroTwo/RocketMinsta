@@ -30,8 +30,6 @@
         TIMETRAVEL_HANDLE(lastdamage,                   Time)       \
         TIMETRAVEL_HANDLE(last_dodging_time,            Time)       \
         TIMETRAVEL_HANDLE(wj_jumptime,                  Time)       \
-        TIMETRAVEL_HANDLE(weapon_nextthink,             Time)       \
-        TIMETRAVEL_HANDLE(weapon_think,                 VoidFunc)   \
         TIMETRAVEL_HANDLE(frozen,                       Float)      \
         TIMETRAVEL_HANDLE(freezetime,                   Time)       \
         TIMETRAVEL_HANDLE(jb_isprisoned,                Float)      \
@@ -65,19 +63,19 @@
         TIMETRAVEL_HANDLE(fire_deathtype,               Float)      \
         TIMETRAVEL_HANDLE(fire_owner,                   Entity)     \
         TIMETRAVEL_HANDLE(buff_endur_dmgpool,           Float)      \
+        TIMETRAVEL_HANDLE(pryaxe_attackdone,            Float)      \
+        TIMETRAVEL_HANDLE(pryaxe_thrown,                Entity)     \
         TIMETRAVEL_HANDLE_SPECIAL(EnduranceState)                   \
         TIMETRAVEL_HANDLE_SPECIAL(WeaponState)                      \
 
 
 
-.float tt_weaponentity_state;
 void TimeTravel_StoreWeaponState(entity e, entity moment) {
     if(!e.weaponentity)
         return;
-    
-    moment.tt_weaponentity_state = e.weaponentity.state;
+
     moment.weapon = e.weapon;
-    
+
     entity oldself = self;
     self = e;
     tt_moment = moment;
@@ -91,11 +89,11 @@ void TimeTravel_StoreWeaponState(entity e, entity moment) {
 void TimeTravel_RestoreWeaponState(entity e, entity moment) {
     if(!e.weaponentity)
         return;
-    
-    e.weaponentity.state = moment.tt_weaponentity_state;
+
+    e.weaponentity.state = WS_READY;
     W_SwitchWeapon_Force(e, moment.weapon);
     e.w_instaswitch = TRUE;
-    
+
     entity oldself = self;
     self = e;
     tt_moment = moment;
@@ -103,6 +101,7 @@ void TimeTravel_RestoreWeaponState(entity e, entity moment) {
         weapon_action(w, WR_TT_RESTORE);
         ATTACK_FINISHED_FOR(e, w) = ATTACK_FINISHED_FOR(moment, w) + time;
     }
+    weapon_thinkf(WFRAME_IDLE, 0, w_ready);
     self = oldself;
 }
 
