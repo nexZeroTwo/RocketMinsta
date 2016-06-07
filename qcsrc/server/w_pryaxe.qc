@@ -1,8 +1,9 @@
 
 .float pryaxe_attackdone;
-.float pryaxe_thrown;
 .float pryaxe_hit;
 .float pryaxe_oldsolid;
+
+.entity pryaxe_thrown;
 
 void spawnfunc_weapon_pryaxe(void) {
     weapon_defaultspawnfunc(WEP_PRYAXE);
@@ -99,7 +100,7 @@ void W_Pryaxe_Attack(float isprim) {
 void W_Pryaxe_Return() {
     if(clienttype(self.owner) != CLIENTTYPE_NOTACLIENT) {
         //Return pryaxe to owner
-        self.owner.pryaxe_thrown = FALSE;
+        self.owner.pryaxe_thrown = world;
 
         if(self.owner.iscreature) {
             if (!self.owner.weapon)
@@ -182,7 +183,6 @@ void W_Pryaxe_Touch() {
 }
 
 void W_Pryaxe_Throw(float isprim) {
-    self.pryaxe_thrown = TRUE;
     entity proj = spawn();
 
     const pr_min = '-16 -16 -4';
@@ -217,6 +217,7 @@ void W_Pryaxe_Throw(float isprim) {
     CSQCProjectile(proj, TRUE, PROJECTILE_PRYAXE, TRUE);
 
     //Throw out pryaxe
+    self.pryaxe_thrown = proj;
     self.weaponentity.state = WS_CLEAR;
     W_SwitchWeapon_Force(self, 0);
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
@@ -233,6 +234,15 @@ void W_Pryaxe_Attack2(void) {
 
 void W_Pryaxe_Attack_Sound(void) {
     sound(self, CHAN_WEAPON, "weapons/swing.wav", VOL_BASE, ATTN_NORM);
+}
+
+float W_Pryaxe_CheckThrown() {
+    if(self.pryaxe_thrown.classname == "pryaxe" && self.pryaxe_thrown.owner == self) {
+        return TRUE;
+    }
+
+    self.pryaxe_thrown = world;
+    return FALSE;
 }
 
 float w_pryaxe(float req) {
@@ -256,15 +266,7 @@ float w_pryaxe(float req) {
     else if(req == WR_PRECACHE) {
         precache_sound("weapons/swing.wav");
     } else if(req == WR_SETUP) {
-        if(self.pryaxe_thrown) {
-            while((var e = find(e, classname, "pryaxe"))) if(e.owner == self) {
-                self.pryaxe_thrown = FALSE;
-                break;
-            }
-        }
-
-        if (self.pryaxe_thrown)
-        {
+        if(W_Pryaxe_CheckThrown()) {
             self.weaponentity.state = WS_CLEAR;
             W_SwitchWeapon_Force(self, 0);
             return FALSE;
@@ -272,9 +274,9 @@ float w_pryaxe(float req) {
 
         weapon_setup(WEP_PRYAXE);
     } else if(req == WR_CHECKAMMO1)
-        return !self.pryaxe_thrown;
+        return !W_Pryaxe_CheckThrown();
     else if(req == WR_CHECKAMMO2)
-        return !self.pryaxe_thrown;
+        return !W_Pryaxe_CheckThrown();
 
     return TRUE;
 }
