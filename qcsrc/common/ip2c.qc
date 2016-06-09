@@ -261,6 +261,7 @@ float IP2C_GameCommand(string command) {
             print("  ip2c_lookup ipaddress\n");
             print("  ip2c_status\n");
             print("  ip2c_clearcache\n");
+            print("  ip2c_putcache ip countrycode\n");
             return TRUE;
         
         case "ip2c_lookup":
@@ -273,6 +274,15 @@ float IP2C_GameCommand(string command) {
         
         case "ip2c_clearcache":
             IP2C_ClearCache();
+            return TRUE;
+
+        case "ip2c_putcache":
+            if(argc < 3) {
+                print("Usage: ip2c_putcache ip countrycode\n");
+                return TRUE;
+            }
+
+            IP2C_CacheIP(argv(1), argv(2));
             return TRUE;
     }
     
