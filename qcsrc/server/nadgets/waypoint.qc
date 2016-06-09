@@ -1,4 +1,11 @@
 
+enum {
+    WPCOLOR_NONE,
+    WPCOLOR_RED,
+    WPCOLOR_CYAN,
+    WPCOLOR_ORANGE,
+};
+
 void HG_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
         float ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
@@ -6,7 +13,7 @@ void HG_Waypoint_Update(string wpname) {
         WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
 
         if(self.hg_type == HG_SENTRY) {
-            WaypointSprite_UpdateMaxHealth(self.hg_waypoint, self.hg_wp_state);
+            WaypointSprite_UpdateMaxHealth(self.hg_waypoint, (self.hg_wp_state == WPCOLOR_RED));
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '1 0.5 0');
         } else if(self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
@@ -19,7 +26,7 @@ void HG_Waypoint_Update(string wpname) {
         WaypointSprite_UpdateSprites(self.hg_waypoint, wpname, "", "");
 
         if(self.hg_type == HG_SENTRY) {
-            if(self.hg_wp_state) {
+            if(self.hg_wp_state == WPCOLOR_RED) {
                 WaypointSprite_UpdateMaxHealth(self.hg_waypoint, 1);
                 WaypointSprite_UpdateHealth(self.hg_waypoint, self.hg_sentry_energy);
             } else
@@ -28,10 +35,23 @@ void HG_Waypoint_Update(string wpname) {
     }
 }
 
+void HG_Waypoint_SetColor(float wpcolor) {
+    if(self.hg_wp_state != wpcolor) {
+        self.hg_wp_state = wpcolor;
+        HG_Waypoint_Update(switch(wpcolor) {
+            case WPCOLOR_RED:       "pointer_red",
+            case WPCOLOR_ORANGE:    "pointer_orange",
+            case WPCOLOR_CYAN:      "pointer_cyan",
+            default:                NULL
+        });
+    }
+}
+
 void HG_Waypoint(void) {
     entity plr;
     float detected;
     float rng;
+    float warn;
 
     if(time < self.hg_wp_nextthink)
         return;
@@ -41,6 +61,7 @@ void HG_Waypoint(void) {
             WaypointSprite_UpdateHealth(self.hg_waypoint, self.hg_sentry_energy);
 
         detected = (self.hg_sentry_energy < 1);
+        warn = (self.health < CVAR(g_nadgets_sentry_health));
     } else if(self.hg_type == HG_BAIT)
         detected = self.revprogress;
     else {
@@ -67,15 +88,17 @@ void HG_Waypoint(void) {
         }
     }
 
-    if(detected) {
-        if(!self.hg_wp_state) {
-            self.hg_wp_state = TRUE;
-            HG_Waypoint_Update("pointer_red");
-        }
-    } else if(self.hg_wp_state || !self.hg_waypoint) {
-        self.hg_wp_state = FALSE;
-        HG_Waypoint_Update("pointer_cyan");
-    }
+    if(!self.hg_waypoint)
+        self.hg_wp_state = WPCOLOR_NONE;
+
+    HG_Waypoint_SetColor(
+        if(detected)
+            WPCOLOR_RED
+        else if(warn)
+            WPCOLOR_ORANGE
+        else
+            WPCOLOR_CYAN
+    );
 
     self.hg_wp_nextthink = time + 0.1;
 }
