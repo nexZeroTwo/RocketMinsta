@@ -383,3 +383,5 @@ vector(float entitynum, float fldnum) getentityvec = #504;
 // server entities networked and interpolated by engine (monsters, players), number of entity is it's SVQC number
 // you can send it via tempentity/CSQC entity message. Note that this builtin doesnt know about entity removing/reallocating
 // so it's meaning to work for short period of time, dont use it on missiles/grenades whatever will be removed next five seconds
+
+string getextresponse(void) = #624;

@@ -22,6 +22,7 @@ csqc_builtins.qc
 ../common/nadgets.qh
 ../common/buffs.qh
 ../common/lazyjson.qh
+../common/extresponse.qh
 
 ../warpzonelib/anglestransform.qh
 ../warpzonelib/mathlib.qh
@@ -98,6 +99,7 @@ bgmscript.qc
 ../common/nadgets.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
+../common/extresponse.qc
 
 ../warpzonelib/anglestransform.qc
 ../warpzonelib/mathlib.qc

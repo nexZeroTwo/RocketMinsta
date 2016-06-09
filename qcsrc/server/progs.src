@@ -36,6 +36,7 @@ campaign.qh
 ../common/nadgets.qh
 ../common/buffs.qh
 ../common/lazyjson.qh
+../common/extresponse.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
@@ -216,6 +217,7 @@ func_breakable.qc
 ../common/nadgets.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
+../common/extresponse.qc
 ip2c.qc
 
 csqcprojectile.qc

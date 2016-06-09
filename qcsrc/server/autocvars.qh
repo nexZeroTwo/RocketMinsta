@@ -1890,7 +1890,6 @@ string autocvar__sv_explosive_topic;
 string autocvar__sv_explosive_topicby;
 string autocvar_sv_gotoserver_whitelist;
 string autocvar_sv_intermission_cdtrack;
-string autocvar_sv_ip2country_server;
 string autocvar_sv_ircbot_admin_list;
 string autocvar_sv_ircbot_channel;
 string autocvar_sv_ircbot_channel_key;
