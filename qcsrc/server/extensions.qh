@@ -2026,6 +2026,14 @@ float(string, string) GlobalSet = #177;
 //description:
 //If two entities have this field set to the same non-zero integer value, they won't collide with each other.
 
+//DP_RM_QCSENDPACKET
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string addr, string data) net_sendpacket = #801;
+//description:
+//A QC builtin equivalent of the "packet" command
+
 /////                             /////
 ///// END DarkPlacesRM EXTENSIONS /////
 /////                             /////

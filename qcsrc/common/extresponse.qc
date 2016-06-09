@@ -14,7 +14,10 @@ float ER_IsUnsafeInput(string q) {
 }
 
 void ER_Query(string dst, string input) {
-    // TODO: escape input
+    if(checkextension("DP_RM_QCSENDPACKET")) {
+        net_sendpacket(dst, input);
+        return;
+    }
 
     if(ER_IsUnsafeInput(input)) {
         print("ER_Query: [for: ", dst, "] prevented a potentially dangerous string from being sent to the console: ", input, "\n");
