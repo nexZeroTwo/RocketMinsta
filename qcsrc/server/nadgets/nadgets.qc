@@ -614,6 +614,15 @@ void HG_PlayerJoin(void) {
     HG_UpdateDetonables();
 }
 
+void HG_ForceDetonateAll(void) {
+    HG_GenericProjectile_DetonateAll(self, TRUE);
+
+    for(var s = world; (s = find(s, classname, "hg_sentry"));) {
+        if(s.realowner == self)
+            HG_FadeOut(s);
+    }
+}
+
 void HG_PlayerDeath(void) {
     // Called for all deaths
 
@@ -637,7 +646,7 @@ void HG_PlayerDeath(void) {
     }
 
     if(CVAR(g_nadgets_detonate_on_death) > 1)
-        HG_GenericProjectile_DetonateAll(self, TRUE);
+        HG_ForceDetonateAll();
 }
 
 void HG_PlayerTrueDeath(void) {
@@ -651,7 +660,7 @@ void HG_PlayerTrueDeath(void) {
         HG_RemoveAll(self);
 
     if(CVAR(g_nadgets_detonate_on_death) == 1)
-        HG_GenericProjectile_DetonateAll(self, TRUE);
+        HG_ForceDetonateAll();
 }
 
 string HG_SelectableTypes(float issecondary) {
