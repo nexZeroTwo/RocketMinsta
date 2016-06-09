@@ -103,8 +103,6 @@ void IP2C_ClearCache(void) {
 }
 
 string IP2C_LookupCached(string ip) {
-    if(IP_IS_WEEABOO(ip))
-        return GRORIOUS_NIPPON;
     return db_get(IPCacheDB, ip);
 }
 
