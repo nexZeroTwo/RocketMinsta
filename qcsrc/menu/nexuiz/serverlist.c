@@ -7,6 +7,7 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	METHOD(NexuizServerList, clickListBoxItem, void(entity, float, vector))
 	METHOD(NexuizServerList, resizeNotify, void(entity, vector, vector, vector, vector))
 	METHOD(NexuizServerList, keyDown, float(entity, float, float, float))
+    METHOD(NexuizServerList, updateCustomServerInfo, void(entity))
 
 	ATTRIB(NexuizServerList, realFontSize, vector, '0 0 0')
 	ATTRIB(NexuizServerList, realUpperMargin, float, 0)
@@ -49,6 +50,8 @@ CLASS(NexuizServerList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizServerList, lastClickedServer, float, -1)
 	ATTRIB(NexuizServerList, lastClickedTime, float, 0)
 	ATTRIB(NexuizServerList, ip2c_localdb, float, -1)
+    ATTRIB(NexuizServerList, alt_hostnames_db, float, -1)
+    ATTRIB(NexuizServerList, custominfo_updatetime, float, 0)
 
 	ATTRIB(NexuizServerList, ipAddressBoxFocused, float, -1)
 ENDCLASS(NexuizServerList)
@@ -153,8 +156,18 @@ void configureNexuizServerListNexuizServerList(entity me)
 	if(me.ip2c_localdb > -1)
 		db_close(me.ip2c_localdb);
 	me.ip2c_localdb = db_create();
-	
+
+    if(me.alt_hostnames_db > -1)
+        db_close(me.alt_hostnames_db);
+    me.alt_hostnames_db = db_create();
+
 	ServerList_UpdateFieldIDs();
+
+    ER_RegisterHandler("coloredName", inline void(float argc, string response) {
+        var ip = argv(0);
+        var clrname = substring(response, argv_end_index(1) + 1, strlen(response));
+        db_put(self.alt_hostnames_db, ip, clrname);
+    }, me);
 
 	me.nItems = 0;
 }
@@ -245,8 +258,10 @@ void refreshServerListNexuizServerList(entity me, float mode)
 			o |= 1; // descending
 		sethostcachesort(me.currentSortField, o);
 		resorthostcache();
-		if(mode >= 1)
+		if(mode >= 1) {
 			refreshhostcache();
+            me.custominfo_updatetime = time + 2;
+        }
 	}
 }
 void focusEnterNexuizServerList(entity me)
@@ -259,6 +274,18 @@ void focusEnterNexuizServerList(entity me)
 	me.nextRefreshTime = time + 10;
 	me.refreshServerList(me, 1);
 }
+
+void updateCustomServerInfoNexuizServerList(entity me) {
+    if(time < me.custominfo_updatetime)
+        return;
+
+    for(var i = 0; i < me.nItems; ++i) {
+        ER_Query(gethostcachestring(SLIST_FIELD_CNAME, i), "extResponse getRMInfo");
+    }
+
+    me.custominfo_updatetime = time + 30;
+}
+
 void drawNexuizServerList(entity me)
 {
 	float i, found, owned;
@@ -281,6 +308,7 @@ void drawNexuizServerList(entity me)
 	owned = ((me.selectedServer == me.ipAddressBox.text) && (me.ipAddressBox.text != ""));
 
 	me.nItems = gethostcachevalue(SLIST_HOSTCACHEVIEWCOUNT);
+    me.updateCustomServerInfo(me);
 
 	me.connectButton.disabled = ((me.nItems == 0) && (me.ipAddressBox.text == ""));
 	me.infoButton.disabled = ((me.nItems == 0) || !owned);
@@ -532,7 +560,7 @@ void ServerList_Favorite_Click(entity btn, entity me)
 }
 void ServerList_Info_Click(entity btn, entity me)
 {
-	main.serverInfoDialog.loadServerInfo(main.serverInfoDialog, me.selectedItem);
+	main.serverInfoDialog.loadServerInfo(main.serverInfoDialog, me.selectedItem, me);
 	DialogOpenButton_Click(me, main.serverInfoDialog);
 }
 void clickListBoxItemNexuizServerList(entity me, float i, vector where)
@@ -614,8 +642,17 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 
 	s = ftos(p);
 	draw_Text(me.realUpperMargin * eY + (me.columnPingSize - draw_TextWidth(s, 0, me.realFontSize)) * eX, s, me.realFontSize, theColor, theAlpha, 0);
-	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize, 0, me.realFontSize);
-	
+
+    var color_coded_name = TRUE;
+    s = db_get(me.alt_hostnames_db, gethostcachestring(SLIST_FIELD_CNAME, i));
+
+    if(s == "") {
+        color_coded_name = FALSE;
+        s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_NAME, i), me.columnNameSize, FALSE, me.realFontSize);
+    } else {
+        s = draw_TextShortenToWidth(s, me.columnNameSize, TRUE, me.realFontSize);
+    }
+
 	vector o, v;
 	o = (me.realUpperMargin * eY + me.columnNameOrigin * eX);
 	o_x -= me.realFontSize_x / 1.5;
@@ -629,7 +666,7 @@ void drawListBoxItemNexuizServerList(entity me, float i, vector absSize, float i
 		draw_Picture_Unskinned(o, FlagIcon(strtolower(cn)), '1 1 0', '1 1 1', 1);
 	
 	o_x += picsize_x + me.realFontSize_x/2;
-	draw_Text(o, s, me.realFontSize, theColor, theAlpha, 0);
+	draw_Text(o, s, me.realFontSize, theColor, theAlpha, color_coded_name);
 	s = draw_TextShortenToWidth(gethostcachestring(SLIST_FIELD_MAP, i), me.columnMapSize, 0, me.realFontSize);
 	draw_Text(me.realUpperMargin * eY + (me.columnMapOrigin + (me.columnMapSize - draw_TextWidth(s, 0, me.realFontSize)) * 0.5) * eX, s, me.realFontSize, theColor, theAlpha, 0);
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
@@ -663,7 +700,7 @@ float keyDownNexuizServerList(entity me, float scan, float ascii, float shift)
 	}
 	else if(scan == K_MOUSE2 || scan == K_SPACE)
 	{
-		main.serverInfoDialog.loadServerInfo(main.serverInfoDialog, me.selectedItem);
+		main.serverInfoDialog.loadServerInfo(main.serverInfoDialog, me.selectedItem, me);
 		DialogOpenButton_Click_withCoords(me, main.serverInfoDialog, org, sz);
 	}
 	else if(scan == K_INS || scan == K_MOUSE3)

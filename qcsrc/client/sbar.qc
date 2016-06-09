@@ -3031,7 +3031,12 @@ void Sbar_ServerInfo() {
 	vector sz_norm = sbar_fontsize * a * 2;
 	
 	drawfont = sbar_bigfont;
-	drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+
+    if(sv_hostname_colored)
+	   drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+    else
+        drawstringcenter(pos, sv_hostname, sz_big, '1 1 1', a, DRAWFLAG_NORMAL);
+
 	pos_y += sz_big_y + sz_norm_y * 0.5;
 	drawfont = sbar_font;
 	

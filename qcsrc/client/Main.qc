@@ -2321,6 +2321,7 @@ void Net_Camera() {
 
 void Net_ServerInfo() {
     sv_hostname = strzone(ReadString());
+    sv_hostname_colored = ReadByte();
     var build_name = ReadString();
     var build_version = ReadString();
     sv_rm_build_info = strzone(build_name + " " + build_version);

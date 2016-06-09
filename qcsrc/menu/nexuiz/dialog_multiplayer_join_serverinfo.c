@@ -1,7 +1,7 @@
 #ifdef INTERFACE
 CLASS(NexuizServerInfoDialog) EXTENDS(NexuizDialog)
 	METHOD(NexuizServerInfoDialog, fill, void(entity))
-	METHOD(NexuizServerInfoDialog, loadServerInfo, void(entity, float))
+	METHOD(NexuizServerInfoDialog, loadServerInfo, void(entity, float, entity))
 	ATTRIB(NexuizServerInfoDialog, title, string, "Server Information")
 	ATTRIB(NexuizServerInfoDialog, color, vector, SKINCOLOR_DIALOG_SERVERINFO)
 	ATTRIB(NexuizServerInfoDialog, intendedWidth, float, 0.68)
@@ -47,18 +47,30 @@ void Join_Click(entity btn, entity me);
 #endif
 
 #ifdef IMPLEMENTATION
-void loadServerInfoNexuizServerInfoDialog(entity me, float i)
+void loadServerInfoNexuizServerInfoDialog(entity me, float i, entity slist)
 {
 	float m;
 	string s, typestr, versionstr, rmversion, numh, maxp;
 
-	SLIST_FIELD_NAME = gethostcacheindexforkey("name");
-	me.currentServerName = strzone(gethostcachestring(SLIST_FIELD_NAME, i));
-	me.nameLabel.setText(me.nameLabel, me.currentServerName);
+    var ip = gethostcachestring(SLIST_FIELD_CNAME, i);
 
 	SLIST_FIELD_CNAME = gethostcacheindexforkey("cname");
-	me.currentServerCName = strzone(gethostcachestring(SLIST_FIELD_CNAME, i));
+	me.currentServerCName = strzone(ip);
 	me.cnameLabel.setText(me.cnameLabel, me.currentServerCName);
+
+    SLIST_FIELD_NAME = gethostcacheindexforkey("name");
+
+    var clrname = db_get(slist.alt_hostnames_db, ip);
+
+    if(clrname == "") {
+        me.currentServerName = strzone(gethostcachestring(SLIST_FIELD_NAME, i));
+        me.nameLabel.allowColors = FALSE;
+    } else {
+        me.currentServerName = strzone(clrname);
+        me.nameLabel.allowColors = TRUE;
+    }
+
+    me.nameLabel.setText(me.nameLabel, me.currentServerName);
 
 	SLIST_FIELD_QCSTATUS = gethostcacheindexforkey("qcstatus");
 	s = gethostcachestring(SLIST_FIELD_QCSTATUS, i);
