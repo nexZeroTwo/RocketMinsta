@@ -4,6 +4,8 @@ float IPCacheDB;
 .ip2c_callback_t ip2c_callbackfunction;
 .float ip2c_requested_at;
 
+er_func_t IP2C_ER_Response_Callback;
+
 void IP2C_Log(string msg) {
     #ifdef MENUQC
         print("MENU ");
@@ -11,6 +13,62 @@ void IP2C_Log(string msg) {
     
     print("IP2C: ", msg, "\n");
 }
+
+#ifdef IP2C_CAN_RESOLVE
+
+string ip2c_url_resolved;
+string ip2c_url_last;
+
+#define IP2C_SETSTR(s,v) if(s) strunzone(s); s = strzone(v)
+
+string IP2C_GetQueryURL(void) {
+    var url = cvar_string("sv_ip2country_server");
+
+    if(url == ip2c_url_last)
+        return ip2c_url_resolved;
+
+    IP2C_SETSTR(ip2c_url_last, url);
+
+    var a_start = strstrofs(url, "://", 0) + 3;
+    var a_end = strstrofs(url, "/", a_start);
+
+    if(a_end < 0)
+        a_end = strlen(url);
+
+    var host_addr = substring(url, a_start, a_end - a_start);
+
+    // TODO: handle ipv6 addresses?
+    var port_start = strstrofs(host_addr, ":", 0);
+    var port_str = "-1";
+
+    if(port_start >= 0) {
+        port_str = substring(host_addr, port_start + 1, strlen(host_addr));
+        host_addr = substring(host_addr, 0, port_start);
+    }
+
+    var u_head = substring(url, 0, a_start);
+
+    // FIXME: currently, we can't manually set the Host header for HTTP, so give up here for now...
+    if(u_head == "http://" || u_head == "https://") {
+        IP2C_SETSTR(ip2c_url_resolved, url);
+        return ip2c_url_resolved;
+    }
+
+    var u_tail = substring(url, a_end, strlen(url));
+    var host_ip = netaddress_resolve(host_addr, stof(port_str));
+
+    if(substring(host_ip, strlen(host_ip) - 3, 3) == ":-1")
+        host_ip = substring(host_ip, 0, strlen(host_ip) - 3);
+
+    url = u_head + host_ip + u_tail;
+
+    IP2C_Log("Resolved the query URL to ^5" + url);
+    IP2C_SETSTR(ip2c_url_resolved, url);
+
+    return ip2c_url_resolved;
+}
+
+#endif
 
 void IP2C_FreeCallbackEntity(entity e) {
     if(e.ip2c_callbackip)
@@ -23,6 +81,7 @@ void IP2C_Init(void) {
     IP2C_REGISTERVARS()
     IP2C_Log("Loading cached IPs");
     IPCacheDB = db_load(IP2C_DBNAME);
+    ER_RegisterHandler("ip2cr", IP2C_ER_Response_Callback, world);
 }
 
 void IP2C_Shutdown(void) {
@@ -113,14 +172,50 @@ void IP2C_Lookup(string ip, ip2c_callback_t callback, float timeout, entity call
         IP2C_ExecCallbacks(ip, res);
         return;
     }
-    
-    if(cvar_string("sv_ip2country_server") == "") {
+
+    var url = IP2C_GetQueryURL();
+
+    if(url == "") {
         IP2C_Log(strcat("Can't lookup ip ", ip, ", sv_ip2country_server is not set"));
         return;
     }
     
     IP2C_Log(strcat("IP ", ip, " is not cached, requesting from the server"));
-    uri_get(strcat(cvar_string("sv_ip2country_server"), ip), URI_GET_IP2C);
+
+    if(substring(url, 0, strlen(IP2C_UDP_PROTOCOL_PREFIX)) == IP2C_UDP_PROTOCOL_PREFIX) {
+        ER_Query(substring(url, strlen(IP2C_UDP_PROTOCOL_PREFIX), strlen(url)), "extResponse ip2cq " + ip);
+    } else {
+        uri_get(strcat(url, ip), URI_GET_IP2C);
+    }
+}
+
+void IP2C_ER_Response_Callback(float argc, string response) {
+    var source = argv(0);
+    var ok = FALSE;
+
+    var url = IP2C_GetQueryURL();
+    if(substring(url, 0, strlen(IP2C_UDP_PROTOCOL_PREFIX)) == IP2C_UDP_PROTOCOL_PREFIX) {
+        var trusted = substring(url, strlen(IP2C_UDP_PROTOCOL_PREFIX), strlen(url));
+        if(source == trusted)
+            ok = TRUE;
+    }
+
+    if(!ok) {
+        IP2C_Log("Response packet from an untrusted origin " + source + " ignored");
+        return;
+    }
+
+    var ip = argv(2);
+    var cn = argv(3);
+
+    if(!ip || !cn || cn == "--") {
+        IP2C_Log(strcat("The remote server failed to resolve ", ip));
+        IP2C_ExecCallbacks(ip, "");
+        return;
+    }
+
+    IP2C_CacheIP(ip, cn);
+    IP2C_ExecCallbacks(ip, cn);
 }
 
 void IP2C_URI_Get_Callback(float id, float status, string data) {
@@ -128,19 +223,19 @@ void IP2C_URI_Get_Callback(float id, float status, string data) {
         IP2C_Log(strcat("IP lookup failed, status: ", ftos(status)));
         return;
     }
-    
+
     float n = tokenizebyseparator(data, " ");
     string cn, ip;
-    
+
     cn = substring(argv(0), 0, 2);
     ip = argv(1);
-    
+
     if(cn == "--") {
         IP2C_Log(strcat("The remote server failed to resolve ", ip));
         IP2C_ExecCallbacks(ip, "");
         return;
     }
-    
+
     IP2C_CacheIP(ip, cn);
     IP2C_ExecCallbacks(ip, cn);
 }

@@ -511,6 +511,10 @@ void CSQC_UpdateView(float w, float h)
 	float f, i, j;
 	vector v;
 
+    // XXX: client and menu have shared extresponses
+    // doing this here will prevent menu from processing any of them...
+    // ER_Update();
+
     HG_NadeGainSound();
 
 	dprint_load();

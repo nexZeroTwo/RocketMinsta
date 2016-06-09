@@ -152,11 +152,13 @@ entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
     entity e;
-    
+
 	remove = remove_unsafely; // not during spawning!
 	serverprevtime = servertime;
 	servertime = time;
 	serverframetime = frametime;
+
+    ER_Update();
 
 #ifdef PROFILING
 	if(time > client_cefc_accumulatortime + 1)

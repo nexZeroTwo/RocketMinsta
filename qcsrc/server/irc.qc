@@ -529,7 +529,7 @@ void IRC_Announce_Client(entity plr, float ispart) {
     
     if(CVAR(sv_ircbot_announce_joinparts_showcountry))
     if(CVAR(sv_ip2country))
-    if(CVAR_STR(sv_ip2country_server) != "") {
+    if(IP2C_GetQueryURL() != "") {
         IP2C_Lookup(plr.netaddress, IRC_Announce_Client_Callback, CVAR(sv_ircbot_announce_joinparts_showcountry_timeout), ctx);
         return;
     }

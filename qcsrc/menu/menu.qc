@@ -588,6 +588,8 @@ void m_draw()
 	float t;
 	float realFrametime;
 
+    ER_Update();
+
 	menuMouseMode = CVAR(menu_mouse_absolute);
 
 	if(main)
