@@ -385,3 +385,11 @@ vector(float entitynum, float fldnum) getentityvec = #504;
 // so it's meaning to work for short period of time, dont use it on missiles/grenades whatever will be removed next five seconds
 
 string getextresponse(void) = #624;
+
+//DP_RM_QCSENDPACKET
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string addr, string data) net_sendpacket = #801;
+//description:
+//A QC builtin equivalent of the "packet" command

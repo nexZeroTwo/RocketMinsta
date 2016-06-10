@@ -3646,7 +3646,16 @@ void SendServerInfo(entity player) {
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SERVERINFO);
-	WriteString(MSG_ONE, CVAR_STR(hostname));
+
+    var clrname = cvar_string("hostname_colored");
+    if(clrname == "") {
+        WriteString(MSG_ONE, cvar_string("hostname"));
+        WriteByte(MSG_ONE, FALSE);
+    } else {
+        WriteString(MSG_ONE, clrname);
+        WriteByte(MSG_ONE, TRUE);
+    }
+
 	WriteString(MSG_ONE, RM_BUILD_NAME);
 	WriteString(MSG_ONE, RM_BUILD_VERSION);
 	WriteString(MSG_ONE, RM_BUILD_DATE);

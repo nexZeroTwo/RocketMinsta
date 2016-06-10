@@ -310,6 +310,20 @@ void HG_Sentry_Think(void) {
         }
     }
 
+    if(self.health < CVAR(g_nadgets_sentry_health))
+        self.health = approach(self.health, 0, frametime * CVAR(g_nadgets_sentry_health_degenerate_when_damaged));
+
+    if(!self.health) {
+        HG_Sentry_Explode();
+        return;
+    }
+
+    if(self.health < CVAR(g_nadgets_sentry_health)) {
+        self.effects |= EF_FLAME;
+    } else {
+        self.effects &~= EF_FLAME;
+    }
+
     self.hg_sentry_energy = approach(self.hg_sentry_energy, 1, frametime * CVAR(g_nadgets_sentry_energy_regen));
 
     if(self.realowner)
@@ -348,10 +362,6 @@ void HG_Sentry_Damage(entity inflictor, entity attacker, float damage, float dea
 
     if(self.health <= 0)
         HG_Sentry_Explode();
-    else if(self.health < CVAR(g_nadgets_sentry_health))
-        self.effects |= EF_FLAME;
-    else
-        self.effects &~= EF_FLAME;
 }
 
 void HG_Sentry_MEODP_Death(entity attacker, entity inflictor) {

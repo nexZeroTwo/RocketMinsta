@@ -886,6 +886,10 @@ void spawnfunc_worldspawn (void)
     dtrack_global.netname = "Global Damage";
 
     utf8_enable();
+
+    ER_RegisterHandler("getRMInfo", inline void(float argc, string query) {
+        ER_Query(argv(0), "extResponse coloredName " + cvar_string("hostname_colored"));
+    }, world);
 }
 
 void spawnfunc_light (void)

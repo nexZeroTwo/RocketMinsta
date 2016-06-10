@@ -1,6 +1,30 @@
 
+float ER_IsUnsafeInput(string q) {
+    if(strstrofs(q, ";", 0) >= 0)
+        return TRUE;
+    if(strstrofs(q, "\n", 0) >= 0)
+        return TRUE;
+    if(strstrofs(q, "\r", 0) >= 0)
+        return TRUE;
+    if(strstrofs(q, "$", 0) >= 0)
+        return TRUE;
+    if(strstrofs(q, "\"", 0) >= 0)
+        return TRUE;
+    return FALSE;
+}
+
 void ER_Query(string dst, string input) {
-    // TODO: escape input
+    if(checkextension("DP_RM_QCSENDPACKET")) {
+        net_sendpacket(dst, input);
+        return;
+    }
+
+    if(ER_IsUnsafeInput(input)) {
+        print("ER_Query: [for: ", dst, "] prevented a potentially dangerous string from being sent to the console: ", input, "\n");
+        backtrace("ER_Query");
+        return;
+    }
+
     localcmd("packet " + dst + " " + " \"" + input + "\"\n");
 }
 

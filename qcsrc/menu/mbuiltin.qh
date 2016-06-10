@@ -388,3 +388,11 @@ void(float, float) GlobalSetInt = #174;
 void(float, float) GlobalSetFloat = #175;
 string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
+
+//DP_RM_QCSENDPACKET
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string addr, string data) net_sendpacket = #801;
+//description:
+//A QC builtin equivalent of the "packet" command

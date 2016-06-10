@@ -19,6 +19,18 @@ void HG_TimeWarper_SaveMoment(void) {
 
 float HG_TimeWarper_Trigger(void) {
     if(self.hg_twarp_moment) {
+        var found = FALSE;
+
+        HG_LOOP_FOR_ALL_CONTEXTS(var i, {
+            if(self.hg_ctx_type == HG_TIMEWARP) {
+                found = TRUE;
+                break;
+            }
+        })
+
+        if(found && self.hg_ctx_next > time)
+            return FALSE;
+
         if(self.flagcarried)
             DropFlag(self.flagcarried, world, world);
 

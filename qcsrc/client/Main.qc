@@ -800,9 +800,11 @@ void PostInit(void)
         case 63:
             cvar_set("cl_warpzone_sound_transition", "0");
             warpzone_sound_transition = 0;
+        case 64:
+            cvar_set("sv_ip2country_server", "udp://91.121.161.160:16886");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 64\n");
+		localcmd("seta rm_initialized 65\n");
 		RM_OUTDATED
 		break;
 	}
@@ -2319,6 +2321,7 @@ void Net_Camera() {
 
 void Net_ServerInfo() {
     sv_hostname = strzone(ReadString());
+    sv_hostname_colored = ReadByte();
     var build_name = ReadString();
     var build_version = ReadString();
     sv_rm_build_info = strzone(build_name + " " + build_version);

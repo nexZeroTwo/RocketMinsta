@@ -5,6 +5,7 @@ float IPCacheDB;
 .float ip2c_requested_at;
 
 er_func_t IP2C_ER_Response_Callback;
+er_func_t IP2C_ER_Request_Callback;
 
 void IP2C_Log(string msg) {
     #ifdef MENUQC
@@ -81,7 +82,11 @@ void IP2C_Init(void) {
     IP2C_REGISTERVARS()
     IP2C_Log("Loading cached IPs");
     IPCacheDB = db_load(IP2C_DBNAME);
+
     ER_RegisterHandler("ip2cr", IP2C_ER_Response_Callback, world);
+
+    if(cvar("sv_ip2country_proxy"))
+        ER_RegisterHandler("ip2cq", IP2C_ER_Request_Callback, world);
 }
 
 void IP2C_Shutdown(void) {
@@ -103,8 +108,6 @@ void IP2C_ClearCache(void) {
 }
 
 string IP2C_LookupCached(string ip) {
-    if(IP_IS_WEEABOO(ip))
-        return GRORIOUS_NIPPON;
     return db_get(IPCacheDB, ip);
 }
 
@@ -218,6 +221,37 @@ void IP2C_ER_Response_Callback(float argc, string response) {
     IP2C_ExecCallbacks(ip, cn);
 }
 
+void IP2C_ER_Request_Callback(float argc, string query) {
+    var source = argv(0);
+    var ip = argv(2);
+
+    if(ip == "") {
+        IP2C_Log("Malformed IP2C query ignored: " + query);
+        return;
+    } else {
+        IP2C_Log("Got query from " + source + ": " + ip);
+    }
+
+    IP2C_Lookup(ip, inline void(string ip, string cn, entity ent) {
+        if(ent.classname != "ip2cr_sourceinfo") {
+            IP2C_Log("Huh? Lost the requester's address somehow. Was going to send: " + ip + " " + cn);
+            return;
+        }
+
+        if(cn == "")
+            cn = "--";
+
+        IP2C_Log("Sending query response to " + ent.netname + ": " + ip + " " + cn);
+        ER_Query(ent.netname, "extResponse ip2cr " + ip + " " + cn);
+
+        strunzone(ent.netname);
+        remove(ent);
+    }, 0, spawn() {
+        classname: "ip2cr_sourceinfo",
+        netname: strzone(source),
+    });
+}
+
 void IP2C_URI_Get_Callback(float id, float status, string data) {
     if(status) {
         IP2C_Log(strcat("IP lookup failed, status: ", ftos(status)));
@@ -261,6 +295,7 @@ float IP2C_GameCommand(string command) {
             print("  ip2c_lookup ipaddress\n");
             print("  ip2c_status\n");
             print("  ip2c_clearcache\n");
+            print("  ip2c_putcache ip countrycode\n");
             return TRUE;
         
         case "ip2c_lookup":
@@ -273,6 +308,15 @@ float IP2C_GameCommand(string command) {
         
         case "ip2c_clearcache":
             IP2C_ClearCache();
+            return TRUE;
+
+        case "ip2c_putcache":
+            if(argc < 3) {
+                print("Usage: ip2c_putcache ip countrycode\n");
+                return TRUE;
+            }
+
+            IP2C_CacheIP(argv(1), argv(2));
             return TRUE;
     }
     

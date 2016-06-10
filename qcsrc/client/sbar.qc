@@ -740,11 +740,11 @@ string Sbar_GetField(entity pl, float field)
 			string strToDraw;
 			strToDraw = "";
 			float stuff = pl.(scores [SP_CARRYING]);
-			if (stuff & 1) strToDraw = strcat (strToDraw, "^1", chr2str (139)); // red
-			if (stuff & 2) strToDraw = strcat (strToDraw, "^4", chr2str (139)); // blue
+			if (stuff & 1) strToDraw = strcat (strToDraw, "^1", chr2str (139 | 0xE000)); // red
+			if (stuff & 2) strToDraw = strcat (strToDraw, "^4", chr2str (139 | 0xE000)); // blue
 // CTF doesn't use these, but leave them here if someone decides to make this work with KH
-//			if (stuff & 4) strToDraw = strcat (strToDraw, "^3", chr2str (139)); // yellow
-//			if (stuff & 8) strToDraw = strcat (strToDraw, "^6", chr2str (139)); // pink
+//			if (stuff & 4) strToDraw = strcat (strToDraw, "^3", chr2str (139 | 0xE000)); // yellow
+//			if (stuff & 8) strToDraw = strcat (strToDraw, "^6", chr2str (139 | 0xE000)); // pink
 			return strToDraw;
 		case SP_COUNTRY:
             float char0 = pl.(scores[SP_COUNTRY]) & 0xff;
@@ -998,6 +998,8 @@ string Sbar_FixScoreboardColumnWidth(float i, string str)
 	}
 	else if(field == SP_COUNTRY)
 		sbar_fixscoreboardcolumnwidth_len = stringwidth("XX", FALSE, sbar_fontsize);
+    else if(field == SP_CARRYING)
+        sbar_fixscoreboardcolumnwidth_len = stringwidth(str, TRUE, sbar_fontsize);
 	else
 		sbar_fixscoreboardcolumnwidth_len = stringwidth(str, FALSE, sbar_fontsize);
 
@@ -3031,7 +3033,12 @@ void Sbar_ServerInfo() {
 	vector sz_norm = sbar_fontsize * a * 2;
 	
 	drawfont = sbar_bigfont;
-	drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+
+    if(sv_hostname_colored)
+	   drawcolorcodedstringcenter(pos, sv_hostname, sz_big, a, DRAWFLAG_NORMAL);
+    else
+        drawstringcenter(pos, sv_hostname, sz_big, '1 1 1', a, DRAWFLAG_NORMAL);
+
 	pos_y += sz_big_y + sz_norm_y * 0.5;
 	drawfont = sbar_font;
 	
