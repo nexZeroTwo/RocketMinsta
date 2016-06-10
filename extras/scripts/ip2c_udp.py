@@ -11,9 +11,9 @@ class IP2C(socketserver.BaseRequestHandler):
     def handle(self):
         data = self.request[0].strip()
         socket = self.request[1]
-        ip = self.client_address[0]
+        client_ip = self.client_address[0]
 
-        logging.info("Request from %s: %r", ip, data)
+        logging.info("Request from %s: %r", client_ip, data)
 
         try:
             cmd, cmd2, ip = data.split(b' ')
@@ -26,7 +26,7 @@ class IP2C(socketserver.BaseRequestHandler):
         cn = (gi.country_code_by_addr(ip.decode('utf-8')) or '--').encode('utf-8')
         response = b'\xff\xff\xff\xffextResponse ip2cr %s %s' % (ip, cn)
 
-        logging.info("Response to %s: %r", ip, response)
+        logging.info("Response to %s: %r", client_ip, response)
         socket.sendto(response, self.client_address)
 
 
