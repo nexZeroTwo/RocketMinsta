@@ -17,19 +17,21 @@ void HG_TimeWarper_SaveMoment(void) {
     self.hg_twarp_moment = TimeTravel_SaveMoment(self);
 }
 
-float HG_TimeWarper_Trigger(void) {
+float HG_TimeWarper_Trigger(float force) {
     if(self.hg_twarp_moment) {
-        var found = FALSE;
+        if(!force) {
+            var found = FALSE;
 
-        HG_LOOP_FOR_ALL_CONTEXTS(var i, {
-            if(self.hg_ctx_type == HG_TIMEWARP) {
-                found = TRUE;
-                break;
-            }
-        })
+            HG_LOOP_FOR_ALL_CONTEXTS(var i, {
+                if(self.hg_ctx_type == HG_TIMEWARP) {
+                    found = TRUE;
+                    break;
+                }
+            })
 
-        if(found && self.hg_ctx_next > time)
-            return FALSE;
+            if(found && self.hg_ctx_next > time)
+                return FALSE;
+        }
 
         if(self.flagcarried)
             DropFlag(self.flagcarried, world, world);
@@ -67,7 +69,7 @@ entity HG_TimeWarper_StartTimer(void) {
                 if(Buffs_Present(self, BUFF_ADEPT))
                     HG_TimeWarper_Abort();
                 else
-                    HG_TimeWarper_Trigger();
+                    HG_TimeWarper_Trigger(TRUE);
             }
         },
         reset: SUB_Remove,
@@ -75,7 +77,7 @@ entity HG_TimeWarper_StartTimer(void) {
 
     Buffs_MEODP_Point_Attach(e, inline void(entity attacker, entity inflictor) {
         using(self = self.owner) {
-            HG_TimeWarper_Trigger();
+            HG_TimeWarper_Trigger(TRUE);
         }
     });
 

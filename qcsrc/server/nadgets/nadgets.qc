@@ -473,7 +473,7 @@ void HG_PlayerFrame(void) {
 
     if(held && held != self.hg_state) {
         if(self.hg_ctx_type == HG_TIMEWARP && self.hg_twarp_moment) {
-            HG_TimeWarper_Trigger();
+            HG_TimeWarper_Trigger(FALSE);
         } else if(!self.hg_ctx_ammo && self.deadflag == DEAD_NO) {
             bigprint_spec(self, strcat("Out of ", HG_TypeToExpandedName(n_type), "s!"), "", 1);
         }
@@ -539,7 +539,7 @@ void HG_Trigger(void) {
 
         if(!HG_GenericProjectile_DetonateAll(self, FALSE)) {
             if(self.hg_twarp_moment) {
-                HG_TimeWarper_Trigger();
+                HG_TimeWarper_Trigger(FALSE);
                 return;
             }
         }

@@ -2,7 +2,7 @@
 void HG_TimeWarper_Abort(void);
 void HG_TimeWarper_EraseMoment(void);
 void HG_TimeWarper_SaveMoment(void);
-float HG_TimeWarper_Trigger(void);
+float HG_TimeWarper_Trigger(float);
 void HG_TimeWarper_StopTimer(void);
 entity HG_TimeWarper_StartTimer(void);
 
