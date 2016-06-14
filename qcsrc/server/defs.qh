@@ -486,7 +486,8 @@ float next_pingtime;
         _VOICEMSG(ureshii) \
         _VOICEMSG(volevi) \
         _VOICEMSG(suino) \
-        _VOICEMSG(culo)
+        _VOICEMSG(culo) \
+        _VOICEMSG(exterminate)
 
 #define ALLVOICEMSGS \
 		_VOICEMSG(attack) \
