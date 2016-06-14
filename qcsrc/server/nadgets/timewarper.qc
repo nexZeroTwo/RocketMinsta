@@ -19,19 +19,8 @@ void HG_TimeWarper_SaveMoment(void) {
 
 float HG_TimeWarper_Trigger(float force) {
     if(self.hg_twarp_moment) {
-        if(!force) {
-            var found = FALSE;
-
-            HG_LOOP_FOR_ALL_CONTEXTS(var i, {
-                if(self.hg_ctx_type == HG_TIMEWARP) {
-                    found = TRUE;
-                    break;
-                }
-            })
-
-            if(found && self.hg_ctx_next > time)
-                return FALSE;
-        }
+        if(!force && time < self.hg_twarp_warpreadytime)
+            return FALSE;
 
         if(self.flagcarried)
             DropFlag(self.flagcarried, world, world);
@@ -100,6 +89,7 @@ HG_HOOKFUNCTION(timewarper, Attack) {
     // Do it in the next frame, so that the timewarper nadget ammo is saved as consumed
     defer(0, inline void(void) {
         HG_TimeWarper_SaveMoment();
+        self.hg_twarp_warpreadytime = time + CVAR(g_nadgets_timewarper_cooldown);
         self.hg_twarp_expiretime = time + (
             if(Buffs_Present(self, BUFF_ADEPT))
                 CVAR(g_nadgets_timewarper_adept_duration)
