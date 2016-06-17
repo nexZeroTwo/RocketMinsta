@@ -25,6 +25,9 @@ float HG_TimeWarper_Trigger(float force) {
         if(self.flagcarried)
             DropFlag(self.flagcarried, world, world);
 
+        var ha_penalty = CVAR(g_nadgets_timewarper_health_penalty);
+        var ha_prev = self.health + self.armorvalue;
+
         sound(self, CHAN_TRIGGER, "misc/teleport.wav", VOL_BASE, ATTN_NORM);
         pointparticles(particleeffectnum("teleport"), self.origin, '0 0 0', 1);
         TimeTravel_TakeBack(self, self.hg_twarp_moment);
@@ -32,6 +35,10 @@ float HG_TimeWarper_Trigger(float force) {
         sound(self, CHAN_AUTO, "misc/timewarp.wav", VOL_BASE * 0.8, ATTN_NORM);
         pointparticles(particleeffectnum("teleport"), self.origin, '0 0 0', 1);
         HG_TimeWarper_Abort();
+
+        ha_penalty *= max(0, self.health + self.armorvalue - ha_prev);
+        if(ha_penalty)
+            Damage(self, self, self, ha_penalty, HG_TIMEWARP, self.origin, '0 0 0');
 
         return TRUE;
     }
