@@ -1303,6 +1303,7 @@ float autocvar_g_nadgets_storage_limit_factor;
 float autocvar_g_nadgets_timewarper_adept_duration;
 float autocvar_g_nadgets_timewarper_cooldown;
 float autocvar_g_nadgets_timewarper_duration;
+float autocvar_g_nadgets_timewarper_health_penalty;
 float autocvar_g_nadgets_transloc_adept_revive;
 float autocvar_g_nadgets_transloc_bounceresetorigin;
 float autocvar_g_nadgets_transloc_counters_shield;
