@@ -5573,7 +5573,7 @@ void Sbar_Draw(void)
             } else if(hgdetons) {
                 drawcolorcodedstringcenter(hgapos - sbar_fontsize_y * '0 2 0', strcat(
                                             "^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                            " ^3to trigger your ", HG_TypeToExpandedName(hgtype),
+                                            " ^3to trigger your nadget",
                                             if(hgdetons > 1) strcat("s (^2", ftos(hgdetons), "^3)") else ""),
                                             sbar_fontsize, 0.6, DRAWFLAG_NORMAL);
             } else if(hgtype == HG_GG && hgammo) {
