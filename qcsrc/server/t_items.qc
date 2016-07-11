@@ -42,10 +42,19 @@ string Item_CounterFieldName(float it)
 
 .float max_armorvalue;
 
-float Item_Customize()
-{
+float Item_Customize_Active() {
+    if(self.flags & FL_WEAPON && self.classname != "droppedweapon") {
+        self.colormap = other.clientcamera.colormap;
+    }
+    return TRUE;
+}
+
+float Item_Customize_Inactive() {
+    Item_Customize_Active();
+
 	if(self.spawnshieldtime)
 		return TRUE;
+
 	if(self.weapons != (self.weapons & other.weapons))
 	{
 		self.alpha = 0.5 + 0.5 * g_ghost_items; // halfway more alpha
@@ -73,7 +82,7 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_TRIGGER;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = NULL;
+		e.customizeentityforclient = Item_Customize_Active;
 
 		e.spawnshieldtime = 1;
 	}
@@ -96,7 +105,7 @@ void Item_Show (entity e, float mode)
 		e.effects |= EF_STARDUST;
 		//e.colormod = '0.2 1 0.2';
 		//e.alpha = 0.5; // will be overridden by CEFC though...
-		e.customizeentityforclient = Item_Customize;
+		e.customizeentityforclient = Item_Customize_Inactive;
 
 		e.spawnshieldtime = 0; // field indicates whether picking it up may give you anything other than the weapon
 	}
@@ -107,7 +116,7 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_NOT;
 		//e.colormod = '0.2 1 0.2';
 		e.alpha = g_ghost_items;
-		e.customizeentityforclient = NULL;
+		e.customizeentityforclient = Item_Customize_Inactive;
 
 		e.spawnshieldtime = 1;
 	}
@@ -1028,13 +1037,6 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 		setsize(self, '-16 -16 0', '16 16 0' + '0 0 32' * CVAR(g_pickup_heightscale));
 	if(itemflags & FL_WEAPON)
 		self.modelflags |= MF_ROTATE;
-
-	if (self.classname != "droppedweapon") // if dropped, colormap is already set up nicely
-	if (itemflags & FL_WEAPON)
-	{
-		// neutral team color for pickup weapons
-		self.colormap = 1024; // color shirt=0 pants=0 grey
-	}
 
 	Item_Show(self, 1);
 	self.state = 0;
