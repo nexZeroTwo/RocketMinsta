@@ -496,8 +496,8 @@ void DrawSpreadGuideLines(void) {
         glines_anim -= drawframetime;
     }
 
-    var shotorg =  ReadShotOriginStat(STAT_SHOTORG_VISUAL);
-    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * shotorg_z;
+    var shotorg = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * (shotorg_z + 6);
 
     DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
     DrawSpreadGuideLine(view_origin, org, dir, -glines_spread, glines_alpha);
