@@ -496,8 +496,8 @@ void DrawSpreadGuideLines(void) {
         glines_anim -= drawframetime;
     }
 
-    var shotorg =  ReadShotOriginStat(STAT_SHOTORG_VISUAL);
-    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * shotorg_z;
+    var shotorg = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * (shotorg_z + 6);
 
     DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
     DrawSpreadGuideLine(view_origin, org, dir, -glines_spread, glines_alpha);
@@ -850,9 +850,9 @@ void CSQC_UpdateView(float w, float h)
 
             if(maxbullets > 0) {
                 bullets = bound(0, getstatf(STAT_CLIP_LOADED), maxbullets);
-            } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER) {
+            } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER && (var zheat = getstatf(STAT_ZAPPER_HEAT)) >= 0) {
                 maxbullets = 1;
-                bullets = bound(0, (1 - getstatf(STAT_ZAPPER_HEAT)), 1);
+                bullets = bound(0, (1 - zheat), 1);
             } else
                 bullets = 0;
 

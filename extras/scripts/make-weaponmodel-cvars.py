@@ -23,11 +23,12 @@ defaults = {
     "campingrifle"      :   "rm_campingrifle",
     "fireball"          :   "fireball",
     "zapper"            :   "rtzapper",
-    "flak"              :   "flak",
+    "flak"              :   "rtzflak",
     "pryaxe"            :   "pryaxe",
 
     "nex_ofs"           :   "0 0 -1",
     "zapper_ofs"        :   "0 0 1",
+    "flak_ofs"          :   "6.5 0 4",
 }
 
 
