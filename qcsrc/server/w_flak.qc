@@ -1,4 +1,6 @@
 
+.float flak_group_counter;
+
 void W_Flak_Projectile_Touch(void) {
     PROJECTILE_TOUCH;
 
@@ -49,12 +51,26 @@ void W_Flak_Projectile_Touch(void) {
         self.owner = other;
         if(other.iscreature)
             self.enemy = other;
-    } else if(other.solid == SOLID_BSP) {   
+    } else if(other.solid == SOLID_BSP) {
         spamsound(self, CHAN_PROJECTILE, strcat("weapons/casings", ftos(floor(random() * 3) + 1), ".wav"), VOL_BASE * 0.7, ATTN_NORM);
-        //pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
+
+        if(other) {
+            // brushmodel - client won't register this hit, so we have to spawn the particle here.
+            // For world collisions, the same is done client-side.
+            pointparticles(particleeffectnum("hagar_bounce"), self.origin, self.velocity, 1);
+        }
+
         self.owner = world;
         self.projectiledeathtype |= HITTYPE_BOUNCE;
         self.cnt += 1;
+
+        // ensure that flak projectiles from the same batch never collide with each other
+        if(self.clipgroup != CLIPGROUP_FLAK) {
+            for(var e = world; (e = findfloat(e, flak_group_counter, self.flak_group_counter));) {
+                if(e.realowner == self.realowner && e.classname == "flak_proj")
+                    e.clipgroup = CLIPGROUP_FLAK;
+            }
+        }
     }
 }
 
@@ -85,7 +101,7 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.gravity = grav;
     e.bouncefactor = bnc;
     setorigin(e, w_shotorg);
-    setsize(e, '0 0 -3', '0 0 -3');
+    setsize(e, '-4 -4 -4', '4 4 4');
 
     e.spawnshieldtime = time + lt;
     e.nextthink = time;
@@ -94,77 +110,54 @@ entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd
     e.velocity = v_forward * spd + v_up * upspd;
     W_SetupProjectileVelocity(e);
 
+    if(!e.clipgroup)
+        e.clipgroup = CLIPGROUP_FLAK;
+
     e.angles = vectoangles(e.velocity);
     e.flags = FL_PROJECTILE;
+
+    e.flak_group_counter = o.flak_group_counter;
 
     CSQCProjectile(e, TRUE, PROJECTILE_FLAK, TRUE);   
     return e;
 }
 
-void W_Flak_Attack1(void) {
-    float cost = CVAR(g_balance_flak_primary_ammo);
+void W_Flak_Attack(float isprim, float spreadmod) {
+    float cost = WEP_CVAR_BOTH(flak, isprim, ammo);
     if(!W_Clip_Consume(cost))
         return;
 
-    float pcount = CVAR(g_balance_flak_primary_projectiles), i;
+    float pcount = WEP_CVAR_BOTH(flak, isprim, projectiles), i;
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_shells -= cost;
 
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire.wav", CVAR(g_balance_flak_primary_damage) * pcount);
+    W_SetupShot_ProjectileSize(self, '-4 -4 -4', '4 4 4', FALSE, 4,
+        if(isprim) "weapons/flak_fire.wav" else "weapons/flak_fire2.wav",
+        WEP_CVAR_BOTH(flak, isprim, damage) * pcount
+    );
+
     w_shotdir = v_forward;
+
+    self.flak_group_counter += 1;
 
     for(i = 0; i < pcount; ++i) {
         vector a = vectoangles(w_shotdir);
 
-        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_primary_spread_up)
-                           + '0 1 0' * crandom() * CVAR(g_balance_flak_primary_spread_side));
+        var m_up = WEP_CVAR_BOTH(flak, isprim, charge_spreadmod_up)   * spreadmod;
+        var m_sd = WEP_CVAR_BOTH(flak, isprim, charge_spreadmod_side) * spreadmod;
+
+        fixedmakevectors2(a + '1 0 0' *  random() * (m_up + WEP_CVAR_BOTH(flak, isprim, spread_up))
+                            + '0 1 0' * crandom() * (m_sd + WEP_CVAR_BOTH(flak, isprim, spread_side)));
 
         W_Flak_Projectile(self,
-                          CVAR(g_balance_flak_primary_damage),
-                          CVAR(g_balance_flak_primary_gravity),
-                          CVAR(g_balance_flak_primary_lifetime),
-                          CVAR(g_balance_flak_primary_speed),
-                          CVAR(g_balance_flak_primary_speed_up),
-                          CVAR(g_balance_flak_primary_bouncefactor),
+                          WEP_CVAR_BOTH(flak, isprim, damage),
+                          WEP_CVAR_BOTH(flak, isprim, gravity),
+                          WEP_CVAR_BOTH(flak, isprim, lifetime),
+                          WEP_CVAR_BOTH(flak, isprim, speed),
+                          WEP_CVAR_BOTH(flak, isprim, speed_up),
+                          WEP_CVAR_BOTH(flak, isprim, bouncefactor),
                           WEP_FLAK);
-    }
-
-    entity flash = spawn();
-    setmodel(flash, "models/uziflash.md3");
-    flash.think = SUB_Remove;
-    flash.nextthink = time + 0.06;
-    flash.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_LOWPRECISION;
-    W_AttachToShotorg(flash, '5 0 0');
-}
-
-void W_Flak_Attack2(void) {
-    float cost = CVAR(g_balance_flak_secondary_ammo);
-    if(!W_Clip_Consume(cost))
-        return;
-
-    float pcount = CVAR(g_balance_flak_secondary_projectiles), i;
-
-    if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
-        self.ammo_shells -= cost;
-
-    W_SetupShot_ProjectileSize(self, '0 0 -3', '0 0 -3', FALSE, 4, "weapons/flak_fire2.wav", CVAR(g_balance_flak_secondary_damage) * pcount);
-    w_shotdir = v_forward;
-
-    for(i = 0; i < pcount; ++i) {
-        vector a = vectoangles(w_shotdir);
-
-        fixedmakevectors(a + '1 0 0' *  random() * CVAR(g_balance_flak_secondary_spread_up)
-                           + '0 1 0' * crandom() * CVAR(g_balance_flak_secondary_spread_side));
-
-        W_Flak_Projectile(self,
-                          CVAR(g_balance_flak_secondary_damage),
-                          CVAR(g_balance_flak_secondary_gravity),
-                          CVAR(g_balance_flak_secondary_lifetime),
-                          CVAR(g_balance_flak_secondary_speed),
-                          CVAR(g_balance_flak_secondary_speed_up),
-                          CVAR(g_balance_flak_secondary_bouncefactor),
-                          WEP_FLAK | HITTYPE_SECONDARY | HITTYPE_BOUNCE);
     }
 
     entity flash = spawn();
@@ -202,11 +195,13 @@ void W_Flak_Bomb_Explode(void) {
         spread_up = CVAR(g_balance_flak_secondary_spread_up);
     }
 
+    self.owner.flak_group_counter += 1;
+
     for(i = 0; i < c; ++i) {
         vector a = vectoangles(dir);
 
-        fixedmakevectors(a + '1 0 0' * crandom() * spread_up
-                           + '0 1 0' * crandom() * spread_side);
+        fixedmakevectors2(a + '1 0 0' * crandom() * spread_up
+                            + '0 1 0' * crandom() * spread_side);
 
         entity p = W_Flak_Projectile(self.owner,
                           CVAR(g_balance_flak_secondary_damage),
@@ -233,7 +228,7 @@ void W_Flak_Bomb_Damage(entity inflictor, entity attacker, float damage, float d
     W_Grenade_Damage(inflictor, attacker, damage, deathtype, hitloc, force);
 }
 
-void W_Flak_Attack3(void) {
+void W_Flak_Attack_Bomb(void) {
     float cost = CVAR(g_balance_flak_secondary_ammo);
     if(!W_Clip_Consume(cost))
         return;
@@ -278,6 +273,7 @@ void W_Flak_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_FLAK,
         CVAR(g_balance_flak_magazinecapacity),
+        CVAR(g_balance_flak_magazineregen),
         CVAR(g_balance_flak_reloadtime),
         ammo_shells,
         1
@@ -288,8 +284,28 @@ void spawnfunc_weapon_flak(void) {
     weapon_defaultspawnfunc(WEP_FLAK);
 }
 
+void W_Flak_Charge(float isprim) {
+    W_SetButtonFields(self, CVAR(g_balance_flak_swapshotmodes));
+
+    var held = self.(if(isprim) w_button_primary else w_button_secondary);
+    var smod = 1 - (self.w_inring_fulltime - time) / self.w_inring_cycle;
+
+    self.w_spread_indicator = fabs(
+        WEP_CVAR_BOTH(flak, isprim, charge_spreadmod_side) * smod + WEP_CVAR_BOTH(flak, isprim, spread_side)
+    );
+
+    if(held && time < self.w_inring_fulltime)
+        return;
+
+    W_Flak_Attack(isprim, smod);
+    weapon_thinkf(WFRAME_FIRE2 - isprim, WEP_CVAR_BOTH(flak, isprim, animtime), w_ready);
+
+    self.w_spread_indicator = -1;
+    self.w_inring_fulltime = -1;
+}
+
 float w_flak(float req) {
-    W_SetButtonFields(CVAR(g_balance_flak_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_flak_swapshotmodes));
     W_Flak_SetClipContext();
 
     if(req == WR_AIM) {
@@ -302,19 +318,32 @@ float w_flak(float req) {
             if(self.w_button_primary)
             if(weapon_prepareattack(0, CVAR(g_balance_flak_primary_refire)))
             if(W_Clip_TryAttackOrReload()) {
-                W_Flak_Attack1();
-                weapon_thinkf(WFRAME_FIRE1, CVAR(g_balance_flak_primary_animtime), w_ready);
+                if(WEP_CVAR_PRI(flak, charge)) {
+                    weapon_thinkf(WFRAME_FIRE1, 0, inline void(void) { W_Flak_Charge(TRUE); });
+                    self.w_inring_cycle = WEP_CVAR_PRI(flak, charge) * W_WeaponRateFactor();
+                    self.w_inring_fulltime = time + self.w_inring_cycle;
+                } else {
+                    W_Flak_Attack(TRUE, 0);
+                    weapon_thinkf(WFRAME_FIRE1, WEP_CVAR_PRI(flak, animtime), w_ready);
+                }
             }
 
             if(self.w_button_secondary)
             if(weapon_prepareattack(1, CVAR(g_balance_flak_secondary_refire)))
             if(W_Clip_TryAttackOrReload()) {
-                if(CVAR(g_balance_flak_secondary_bomb))
-                    W_Flak_Attack3();
-                else
-                    W_Flak_Attack2();
-                weapon_thinkf(WFRAME_FIRE2, CVAR(g_balance_flak_secondary_animtime), w_ready);
+                if(CVAR(g_balance_flak_secondary_bomb)) {
+                    W_Flak_Attack_Bomb();
+                    weapon_thinkf(WFRAME_FIRE2, WEP_CVAR_SEC(flak, animtime), w_ready);
+                } else if(WEP_CVAR_SEC(flak, charge)) {
+                    weapon_thinkf(WFRAME_FIRE2, 0, inline void(void) { W_Flak_Charge(FALSE); });
+                    self.w_inring_cycle = WEP_CVAR_SEC(flak, charge) * W_WeaponRateFactor();
+                    self.w_inring_fulltime = time + self.w_inring_cycle;
+                } else {
+                    W_Flak_Attack(FALSE, 0);
+                    weapon_thinkf(WFRAME_FIRE2, WEP_CVAR_SEC(flak, animtime), w_ready);
+                }
             }
+
             W_Clip_FinishWeaponAction();
         }
     } else if(req == WR_PRECACHE) {

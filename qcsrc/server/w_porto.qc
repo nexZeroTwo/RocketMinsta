@@ -32,7 +32,7 @@ void W_Porto_Fail (float failhard)
 	{
 		setsize (self, '-16 -16 0', '16 16 32');
 		setorigin(self, self.origin + trace_plane_normal);
-		if(move_out_of_solid(self))
+		if(move_out_of_solid(self, MOVE_WORLDONLY))
 		{
 			self.flags = FL_ITEM;
 			self.velocity = trigger_push_calculatevelocity(self.origin, self.owner, 128);
@@ -191,7 +191,7 @@ void W_Porto_Attack (void)
 	gren.portal_id = time;
 	self.porto_current = gren;
 	gren.playerid = self.playerid;
-	fixedmakevectors(vectoangles(gren.velocity));
+	fixedmakevectors2(vectoangles(gren.velocity));
 	gren.right_vector = v_right;
 
 	gren.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_PLAYERCLIP;
@@ -207,7 +207,7 @@ void spawnfunc_weapon_porto (void)
 float w_nexball_weapon(float req);
 float w_porto(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_porto_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_porto_swapshotmodes));
 	vector v_angle_save;
 
 	if (g_nexball) { return w_nexball_weapon(req); }

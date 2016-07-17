@@ -1011,7 +1011,7 @@ void walker_boss_laser_think(void) {
         p.think = adaptor_think2use;
         p.nextthink = time + 5;
         
-        CSQCProjectile(p, TRUE, HG_TypeToCSQCProjType(HG_LASER), TRUE);
+        CSQCProjectile(p, TRUE, HG_GenericProjectile_CSQCProjType(HG_LASER), TRUE);
     }
     
     if(self.cnt < 2 || random() > 0.5) {
@@ -1082,12 +1082,12 @@ float walker_boss_damagehook(entity inflictor, entity attacker, float damage, fl
         for(i = 0; i < 3; ++i) {
             entity e = spawn();
             e.hg_type = HG_NAPALM;
-            e.think = HG_Grenade_Explode;
+            e.think = HG_GenericProjectile_Explode;
             e.nextthink = time + random() * 0.3;
             e.owner = attacker;
             e.team = e.owner.team;
             setorigin(e, hitloc);
-            CSQCProjectile(e, TRUE, HG_TypeToCSQCProjType(e.hg_type), TRUE);
+            CSQCProjectile(e, TRUE, HG_GenericProjectile_CSQCProjType(e.hg_type), TRUE);
         }
         
         if(g_nadgets)

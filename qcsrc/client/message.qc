@@ -224,6 +224,11 @@ string WeaponDeathString(float deathtype) {
             else
                 return "was shredded by #'s Flak Cannon";
 
+        case WEP_PRYAXE:
+            if(deathtype & HITTYPE_BOUNCE)
+                return "tried to catch #'s Pryaxe";
+            return "was torn apart by #'s Pryaxe";
+
         //
         // Nadgets
         //
@@ -575,25 +580,37 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
     if(shortspree < 2)
         return;
 
+    var head, body, tail;
+
+    if(CVAR(utf8_enable)) {
+        head = "\xee\x80\x9d\xee\x80\x9e";
+        body = "\xee\x80\x9e\xee\x80\x9e";
+        tail = "\xee\x80\x9e\xee\x80\x9f";
+    } else {
+        head = "\x1d\x1e";
+        body = "\x1e\x1e";
+        tail = "\x1e\x1f";
+    }
+
     float doLogShort = CVAR(cl_message_obituary_log_multikills);
     float showShort = (iKilled && CVAR(cl_message_obituary_multikills));
 
-    string spreebar = "^1\x1d\x1e";
+    string spreebar = strcat("^1", head);
     float i = 2;
 
     while(i < 5) {
         if(shortspree == i)
-            spreebar = strcat(spreebar, "^0\x1e\x1e");
+            spreebar = strcat(spreebar, "^0", body);
         else
-            spreebar = strcat(spreebar, "\x1e\x1e");
+            spreebar = strcat(spreebar, body);
 
         ++i;
     }
 
     if(shortspree - 1 >= 5)
-        spreebar = strcat(spreebar, "\x1e\x1f");
+        spreebar = strcat(spreebar, tail);
     else
-        spreebar = strcat(spreebar, "^0\x1e\x1f");
+        spreebar = strcat(spreebar, "^0", tail);
 
     switch(shortspree) {
         case 2:

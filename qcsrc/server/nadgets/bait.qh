@@ -1,0 +1,4 @@
+
+.entity bait_ref;
+
+void HG_Bait_Body_Boom(entity body);

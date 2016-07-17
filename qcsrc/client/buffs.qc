@@ -2,9 +2,10 @@
 .float buffs;
 .float buffstat;
 .float buff_active;
-.float light_lev;
-
+.float lightlev;
+.float lightflags;
 .vector lightcolor;
+.vector buff_offset;
 
 string buff_modelnames[BUFF_COUNT];
 .entity buffmdl[BUFF_COUNT];
@@ -15,29 +16,51 @@ void Buffs_LoadModels(void) {
     float i, b;
 
     for(i = 0, b = 1; i < BUFF_COUNT; ++i, b *= 2) if(b & g_buffs_enabled) {
-        string s = strcat("models/buffs/buff_", Buffs_TypeToName(b), ".md3");
+        var n = Buffs_TypeToName(b);
+
+        string s = "models/buffs/buff_" + n + ".md3";
+
         if(!fexists(s)) {
             s = "models/buffs/buff.md3";
             print("No model found for the ", Buffs_TypeToName(b), " Buff! Falling back to default.\n");
         }
-            
+
         buff_modelnames[i] = strzone(s);
         precache_model(buff_modelnames[i]);
     }
 }
 
 void Buffs_Model_Draw(void) {
-    InterpolateOrigin_Do();
+    var org;
+    var rendermodel = FALSE;
 
     if(!(self.effects & EF_NODRAW))
     if(self.alpha > 0)
+        rendermodel = TRUE;
+
+    InterpolateOrigin_Do();
+    if(self.sv_entnum && ext_DP_CSQC_QUERYRENDERENTITY) {
+        if(getentity(self.sv_entnum, E_ACTIVE)) {
+            org = getentityvec(self.sv_entnum, E_ORIGIN) + self.buff_offset;
+        } else {
+            if(fps_friendly)
+                return;
+
+            rendermodel = FALSE;
+            org = self.origin;
+        }
+    } else {
+        org = self.origin;
+    }
+
+    if(rendermodel)
         R_AddEntity(self);
 
-    if(self.light_lev)
-        R_AddDynamicLight(self.origin, self.light_lev, self.lightcolor);
+    if(self.lightlev)
+        R_AddDynamicLightEx(org, self.lightlev, self.lightcolor, -1, NULL, self.lightflags);
 
     if(self.effects & EF_STARDUST)
-        pointparticles(particleeffectnum("EF_STARDUST"), self.origin, '0 0 0', frametime);
+        pointparticles(particleeffectnum("EF_STARDUST"), org, '0 0 0', frametime);
 }
 
 void Buffs_Model_Multi_Think(void) {
@@ -48,18 +71,21 @@ void Buffs_Model_Multi_Think(void) {
 
     self.effects = self.owner.effects;
     self.effects &~= EF_NODRAW;
-    self.light_lev = self.owner.light_lev * 0.7;
+    self.lightlev = self.owner.lightlev * 0.7;
     self.alpha = self.owner.alpha;
     
     if(self.buffs == BUFF_MEODP) {
         self.lightcolor = '1 0 0';
         self.effects &~= EF_ADDITIVE;
     }
-    
+
     vector ang;
     ang_y = mod(time * 120 + self.cnt, 360);
     makevectors(ang);
-    setorigin(self, self.owner.origin + v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt));
+
+    var ofs = v_forward * 10 + v_up * 3 * sin(time * 0.32 + self.cnt);
+    setorigin(self, self.owner.origin + ofs);
+    self.buff_offset = self.owner.buff_offset + ofs;
     self.angles_y = ang_y + 90;
     
     self.nextthink = time;
@@ -69,6 +95,7 @@ void Buffs_Model_Think(void) {
     if(self.sv_entnum) {
         // this is an overhead buff model
 
+        self.effects |= EF_ADDITIVE;
         self.alpha = 1;
         float me = ID_ME;
 
@@ -83,14 +110,14 @@ void Buffs_Model_Think(void) {
 
             self.alpha = 0.3;
             self.effects &~= EF_FULLBRIGHT | EF_ADDITIVE;
-            self.light_lev = 0;
+            self.lightlev = 0;
         } else {
             // this is an active buff pickup model
 
             self.alpha = 1;
             self.effects |= EF_FULLBRIGHT | EF_ADDITIVE;
             
-            self.light_lev = 220 + 36 * sin(time);
+            self.lightlev = 220 + 36 * sin(time);
         }
         
         self.angles_y = time * 110.1;
@@ -190,7 +217,7 @@ void Buffs_Model_Remove(void) {
 
 void Buffs_Model_Ring_Think(void) {
     self.nextthink = time;
-    self.angles_y = time * 157.1;
+    self.angles_y = time * -110.1;
     self.alpha = self.owner.alpha;
     self.effects = self.owner.effects;
     
@@ -232,22 +259,28 @@ void Buffs_Model_Read(void) {
         self.draw = Buffs_Model_Draw;
         self.think = Buffs_Model_Think;
         self.effects = EF_ADDITIVE | EF_FULLBRIGHT | EF_NOSHADOW;
-        self.light_lev = 200;
+        self.lightlev = 200;
         self.nextthink = time;
+        self.lightflags = PFLAGS_FULLDYNAMIC;
 
         if(self.sv_entnum) {
             // this is an overhead buff model
 
+            self.buff_offset = BUFFMODEL_OVERHEAD_OFFSET;
             setsize(self, '0 0 -40', '0 0 40');
         } else {
             // this is a buff pickup model
             
+            self.buff_offset = '0 0 0';
             self.solid = SOLID_TRIGGER;
             self.movetype = MOVETYPE_TOSS;
             self.scale = 1.5;
             setsize(self, '-15 -15 -40', '15 15 40');
             self.gravity = 100;
             self.effects |= EF_STARDUST;
+
+            if(!CVAR(gl_flashblend))
+                self.lightflags |= PFLAGS_CORONA;
 
             Buffs_Model_AttachRing(self);
         }

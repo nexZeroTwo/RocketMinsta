@@ -20,7 +20,7 @@ CLASS(NexuizDemoList) EXTENDS(NexuizListBox)
     ATTRIB(NexuizDemoList, itemAbsSize, vector, '0 0 0')
     ATTRIB(NexuizDemoList, lastClickedDemo, float, -1)
     ATTRIB(NexuizDemoList, lastClickedTime, float, 0)
-    ATTRIB(NexuizDemoList, filterString, string, string_null)    
+    ATTRIB(NexuizDemoList, filterString, string, NULL)    
 ENDCLASS(NexuizDemoList)
 
 entity makeNexuizDemoList();
@@ -99,8 +99,8 @@ void drawListBoxItemNexuizDemoList(entity me, float i, vector absSize, float isS
     	draw_Fill('0 0 0', '1 1 0', SKINCOLOR_LISTBOX_SELECTED, SKINALPHA_LISTBOX_SELECTED);
 		
     s = me.demoName(me,i);
-    s = draw_TextShortenToWidth(s, me.columnNameSize / me.realFontSize_x, 0);
-    draw_Text(me.realUpperMargin * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0) * me.realFontSize_x)) * eX, s, me.realFontSize, '1 1 1', SKINALPHA_TEXT, 0);		
+    s = draw_TextShortenToWidth(s, me.columnNameSize, 0, me.realFontSize);
+    draw_Text(me.realUpperMargin * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0, me.realFontSize))) * eX, s, me.realFontSize, '1 1 1', SKINALPHA_TEXT, 0);
 }
 
 void showNotifyNexuizDemoList(entity me)
@@ -116,7 +116,7 @@ void DemoList_Filter_Change(entity box, entity me)
     if(box.text != "")
     	me.filterString = strzone(box.text);
     else
-    	me.filterString = string_null;
+    	me.filterString = NULL;
 		
     me.getDemos(me);
 }

@@ -27,6 +27,7 @@ float g_buffs_count;
 .float buffs;
 .float oldbuffs;
 .float origbuffs;
+.float effective_buffs;
 .float buffs_arc_hit;
 .float buff_active;
 .float buff_activetime;
@@ -41,7 +42,11 @@ float g_buffs_count;
 
 .float buff_endur_ticks;
 .float buff_endur_dmgpool;
-.float buff_endur_nexttick;
+
+.float buff_conduit_hpool;
+.float buff_conduit_apool;
+.float buff_conduit_dpool;
+.float buff_conduit_next;
 
 .float buff_stealth_time;
 
@@ -67,7 +72,7 @@ float Buffs_MedicDamage(entity, entity, entity, float, float, vector, vector);
 float Buffs_IgniteDamage(entity, entity, entity, float, float);
 void Buffs_VampireDamage(entity, entity, float, float);
 float Buffs_TenacityDamage(entity, entity, float, float);
-void Buffs_FocusDamage(entity, entity, float, float);
+void Buffs_ConduitDamage(entity, entity, float, float, float, float);
 float Buffs_EnduranceDamage(entity, entity, float, float);
 void Buffs_WrathDamage(entity, entity, float, float);
 void Buffs_ReaperFrag(entity, entity);
@@ -75,7 +80,7 @@ void Buffs_BuffPickup_Remove(void);
 void Buffs_Randomize(entity, float);
 void Buffs_BuffPickup_Placeholder(void);
 void Buffs_BuffPickup_Setup(void);
-float Buffs_Present(entity, float);
+// float Buffs_Present(entity, float);
 float Buffs_NadgetPower(entity);
 float Buffs_NadgetRegen(entity);
 float Buffs_NadgetCooldown(entity);
@@ -87,6 +92,9 @@ void Buffs_BuffPickup_SetCooldown(entity, float);
 void Buffs_Random_Spawn(void);
 float Buffs_Give(entity, float, float);
 void Buffs_Notify(entity, float, float);
+void Buffs_Endurance_DOT_Think(void);
+
+#define Buffs_Present(p,b) ((p).effective_buffs & (b) == (b))
 
 .vector meodp_point_offs;
 .entity meodp_point_ref;
@@ -103,10 +111,6 @@ void Buffs_MEODP_Death_Use(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Remove_Multiple(entity attacker, entity inflictor);
 void Buffs_MEODP_Death_Use_Multiple(entity attacker, entity inflictor);
 void Buffs_MEODP_Antilag(entity plr, float t);
-
-void Buffs_ArcDamage_Proc(entity targ, entity attacker, float damage, float deathtype, float arcdeathtype,
-                          vector arcoffset, float range, float mul, float mul_hg, float force,
-                          float targetTeamMates, float targetFrozen, float targetAlive, .float hitfield);
 
 float g_buffs_meodp;
 

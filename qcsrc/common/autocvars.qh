@@ -21,7 +21,6 @@ float autocvar_g_clanarena;
 float autocvar_g_dm;
 float autocvar_g_domination;
 float autocvar_g_freezetag;
-float autocvar_g_instagib;
 float autocvar_g_jailbreak;
 float autocvar_g_lms;
 float autocvar_g_keyhunt;
@@ -40,11 +39,13 @@ float autocvar_g_race_teams;
 float autocvar_g_rocketarena;
 float autocvar_g_tdm;
 float autocvar_g_total_domination;
+string autocvar_g_weaponarena;
 #ifndef CSQC
 string autocvar_settemp_var;
 string autocvar_settemp_list;
 #endif
 float autocvar_timelimit;
+float autocvar_prvm_backtraceforwarnings;
 
 #else
 

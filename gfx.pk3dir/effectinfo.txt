@@ -5880,9 +5880,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 2 2
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 2 2
 effect RM_ZAPPER_MUZZLEFLASH_TEAM1
 count 10
 type spark
@@ -5934,9 +5934,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 1.5 3 6
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 1.5 3 6
 effect RM_ZAPPER_MUZZLEFLASH_TEAM2
 count 10
 type spark
@@ -5988,9 +5988,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 5.5 2
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 5.5 2
 effect RM_ZAPPER_MUZZLEFLASH_TEAM3
 count 10
 type spark
@@ -6042,9 +6042,9 @@ alpha 128 128 256
 originjitter 1.5 1.5 1.5
 velocityjitter 6 6 6
 velocitymultiplier 0.01
-lightradius 50
-lightradiusfade 2000
-lightcolor 6 3 5
+// lightradius 50
+// lightradiusfade 2000
+// lightcolor 6 3 5
 effect RM_ZAPPER_MUZZLEFLASH_TEAM4
 count 10
 type spark
@@ -6212,7 +6212,7 @@ tex 47 47
 size 8 8
 alpha 256 256 0
 originjitter 12 12 12
-lightradius 60
+lightradius 120
 lightradiusfade 300
 lightcolor 3.2 1 0.4
 // flare effect
@@ -6332,8 +6332,8 @@ tex 47 47
 size 8 8
 alpha 256 256 0
 originjitter 12 12 12
-lightradius 200
-lightradiusfade 800
+lightradius 120
+lightradiusfade 300
 lightcolor 0.7 0.65 4
 // flare effect
 effect RM_CRYLINK_IMPACT_TEAM2
@@ -6452,8 +6452,8 @@ tex 47 47
 size 8 8
 alpha 256 256 0
 originjitter 12 12 12
-lightradius 200
-lightradiusfade 800
+lightradius 120
+lightradiusfade 300
 lightcolor 4 3.2 0.4
 // flare effect
 effect RM_CRYLINK_IMPACT_TEAM3
@@ -6572,8 +6572,8 @@ tex 47 47
 size 8 8
 alpha 256 256 0
 originjitter 12 12 12
-lightradius 200
-lightradiusfade 800
+lightradius 120
+lightradiusfade 300
 lightcolor 3.2 0.4 4
 // flare effect
 effect RM_CRYLINK_IMPACT_TEAM4
@@ -7187,3 +7187,32 @@ size 24 24
 alpha 256 256 256
 originjitter 20 20 20
 velocityjitter 32 32 32
+
+/////// Healing trail effect
+
+// cloud of bouncing sparks
+effect RM_HEAL_TRAIL
+trailspacing 90
+type smoke
+tex 63 63
+color 0x62FF6A 0x00FF65
+size 5 10
+sizeincrease -3
+alpha 128 128 150
+bounce 2
+gravity -0.3
+airfriction 6
+originjitter 4 4 4
+//velocityjitter 512 512 512
+// inner cloud of smoke
+effect RM_HEAL_TRAIL
+trailspacing 40
+type smoke
+color 0x62FF6A 0x55FF65
+tex 0 8
+size 5 12
+sizeincrease 25
+alpha 100 150 200
+airfriction 30
+originjitter 5 5 5
+velocityjitter 320 320 320

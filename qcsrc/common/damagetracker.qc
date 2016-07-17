@@ -74,6 +74,8 @@ void DamageTracker_Wipe(entity keeper) {
 string DamageTracker_DamageSourceName(float dtype, float extended) {
     string r;
 
+    dtype = DamageTracker_FlipSecondaryIfNeeded(dtype);
+
     if(dtype == DEATH_ENV_START)
         return if(extended) "Environment" else "";
 
@@ -83,6 +85,8 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
         return "Ignite Buff";
     else if(dtype == DEATH_ENDURANCE)
         return "Endurance Buff";
+    else if(dtype == DEATH_CONDUIT)
+        return "Conduit Buff";
     else if(dtype == DEATH_MEODP)
         return "Mystic Eyes of Death Perception";
     else if(dtype == DEATH_TELEFRAG)
@@ -131,9 +135,11 @@ string DamageTracker_DamageSourceName(float dtype, float extended) {
                     ADDMOD("combo");
                 else if(DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER))
                     ADDMOD("remote");
+                else if(DEATH_ISWEAPON(dtype, WEP_PRYAXE))
+                    ADDMOD("throw");
                 else if(hgtype == HG_PLASMA)
                     ADDMOD("burst");
-                else if(hgtype == HG_SHIELD)
+                else if(hgtype == HG_SHIELD || hgtype == HG_SENTRY)
                     ADDMOD("arc");
                 else
                     ADDMOD("bounce");
@@ -160,7 +166,9 @@ float DamageTracker_TransformDamageSource(float dtype) {
         if(!DEATH_ISWEAPON(dtype, WEP_ZAPPER)           &&   // secondary arc
            !DEATH_ISWEAPON(dtype, WEP_ELECTRO)          &&   // combo
            !DEATH_ISWEAPON(dtype, WEP_ROCKET_LAUNCHER)  &&   // remote detonation
+           !DEATH_ISWEAPON(dtype, WEP_PRYAXE)           &&   // throw
            !(hgtype == HG_SHIELD)                       &&   // discharge arc
+           !(hgtype == HG_SENTRY)                       &&   // shock arc
            !(hgtype == HG_PLASMA))                           // burst
             dtype &~= HITTYPE_BOUNCE;
 
@@ -168,5 +176,16 @@ float DamageTracker_TransformDamageSource(float dtype) {
             dtype &~= HITTYPE_HEADSHOT; // only the rifle actually uses headshots
     }
     
+    return dtype;
+}
+
+float DamageTracker_FlipSecondaryIfNeeded(float dtype) {
+    // Flip the HITTYPE_SECONDARY bit if HITTYPE_VISUAL_FLIPSECONDARY is set.
+    // Unset HITTYPE_VISUAL_FLIPSECONDARY.
+
+    if(dtype & HITTYPE_VISUAL_FLIPSECONDARY)
+        BITXOR_ASSIGN(dtype, HITTYPE_SECONDARY);
+
+    dtype &~= HITTYPE_VISUAL_FLIPSECONDARY;
     return dtype;
 }

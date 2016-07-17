@@ -37,6 +37,8 @@ void g_model_dropbyspawnflags()
 		traceline(self.origin, self.origin - '0 0 4096', MOVE_NOMONSTERS, self);
 		setorigin(self, trace_endpos - '0 0 1' * self.mins_z);
 	}
+
+    self.spawnorigin = self.origin;
 }
 
 void g_clientmodel_dropbyspawnflags()
@@ -115,13 +117,22 @@ float g_clientmodel_genericsendentity (entity to, float sf)
 	return TRUE;
 }
 
+void g_model_reset(void) {
+    self.velocity = self.oldvelocity;
+    setorigin(self, self.spawnorigin);
+}
+
 
 #define G_MODEL_INIT(sol) \
 	SetBrushEntityModel(); \
 	if(!self.scale) self.scale = self.modelscale; \
 	self.use = g_model_setcolormaptoactivator; \
 	InitializeEntity(self, g_model_dropbyspawnflags, INITPRIO_DROPTOFLOOR); \
-	if(!self.solid) self.solid = (sol); else if(self.solid < 0) self.solid = SOLID_NOT;
+	if(!self.solid) self.solid = (sol); else if(self.solid < 0) self.solid = SOLID_NOT; \
+    self.spawnorigin = self.origin; \
+    self.oldvelocity = self.velocity; \
+    self.reset = g_model_reset;
+
 
 #define G_CLIENTMODEL_INIT(sol) \
 	SetBrushEntityModelNoLOD(); \

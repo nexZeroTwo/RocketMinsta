@@ -45,8 +45,10 @@ string autocvar_menu_slist_modfilter;
 float autocvar_menu_slowmo;
 float autocvar_menu_updatecheck;
 float autocvar_menu_use_default_hostname;
-string autocvar_menu_vid_conheight;
-string autocvar_menu_vid_conwidth;
+float autocvar_menu_vid_height;
+float autocvar_menu_vid_width;
+float autocvar_menu_vid_conheight;
+float autocvar_menu_vid_conwidth;
 float autocvar_menu_video_played;
 float autocvar_menu_weaponarena_with_laser;
 string autocvar_net_slist_favorites;
@@ -61,6 +63,7 @@ float autocvar_vid_conheight;
 float autocvar_vid_conwidth;
 float autocvar_vid_height;
 float autocvar_vid_width;
+float autocvar_vid_ui_scale;
 string autocvar_menu_rpn_autoload;
 
 #endif

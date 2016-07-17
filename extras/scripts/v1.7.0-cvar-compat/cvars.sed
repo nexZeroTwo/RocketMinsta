@@ -1,4 +1,4 @@
-#!/bin/sed -f
+#!/usr/bin/env /sed -f
 s/g_balance_minstanex_explosive/g_rocketminsta/g
 s/g_explosive_norecoil/g_rocketminsta_norecoil/g
 s/g_explosive_health_drain/g_rocketminsta_health_drain/g

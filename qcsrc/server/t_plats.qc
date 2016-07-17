@@ -222,6 +222,8 @@ void plat_touch(void) {
 }
 
 void spawnfunc_path_corner() { };
+void spawnfunc_path_origin() { };
+
 void spawnfunc_func_plat()
 {
 	if (!self.t_length)
@@ -295,6 +297,7 @@ void spawnfunc_func_plat()
     if(!(self.spawnflags & PLAT_NO_TRIGGER))
 	   plat_spawn_inside_trigger ();	// the "start moving" trigger
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = plat_reset;
 	plat_reset();
 };
@@ -317,23 +320,34 @@ void train_next()
 	self.target = targ.target;
 	if (!self.target)
 		objerror("train_next: no next target");
+
+    using(self = self.enemy) {
+        activator = world;
+        SUB_UseTargets();
+    }
+
+    self.enemy = targ;
+
 	self.wait = targ.wait;
 	if (!self.wait)
 		self.wait = 0.1;
-	if(self.wait < 0)
-	{
-		if (targ.speed)
-			SUB_CalcMove(targ.origin - self.mins, targ.speed, train_next);
-		else
-			SUB_CalcMove(targ.origin - self.mins, self.speed, train_next);
-	}
-	else
-	{
-		if (targ.speed)
-			SUB_CalcMove(targ.origin - self.mins, targ.speed, train_wait);
-		else
-			SUB_CalcMove(targ.origin - self.mins, self.speed, train_wait);
-	}
+
+    SUB_CalcMove(
+        if(targ.classname == "path_origin")
+            targ.origin
+        else
+            targ.origin - self.mins,
+
+        if(targ.speed)
+            targ.speed
+        else
+            self.speed,
+
+        if(self.wait < 0)
+            train_next
+        else
+            train_wait
+    );
 
 	if(self.noise != "")
 		sound(self, CHAN_TRIGGER, self.noise, VOL_BASE, ATTN_IDLE);
@@ -343,6 +357,7 @@ void func_train_find()
 {
 	entity targ;
 	targ = find(world, targetname, self.target);
+    self.enemy = targ;
 	self.target = targ.target;
 	if (!self.target)
 		objerror("func_train_find: no next target");
@@ -382,7 +397,30 @@ void spawnfunc_func_train()
 	if(self.dmg && (!self.dmgtime))
 		self.dmgtime = 0.25;
 	self.dmgtime2 = time;
-    
+
+    if(self.cnt) spawn() {
+        owner: self,
+        nextthink: time,
+        angles: self.angles,
+        think: inline void(void) {
+            var o = self.owner;
+            self.nextthink = time;
+
+            if(o.velocity != '0 0 0') {
+                self.movedir = normalize(o.velocity);
+            }
+
+            if(self.movedir != '0 0 0') {
+                if(o.cnt > 0)
+                    o.movedir = o.movedir + (self.movedir - o.movedir) * o.cnt * frametime;
+                else
+                    o.movedir = self.movedir;
+
+                o.angles = vectoangles(normalize(o.movedir)) + self.angles - '0 90 ';
+            }
+        },
+    };
+
 	// TODO make a reset function for this one
 };
 
@@ -1320,6 +1358,7 @@ void spawnfunc_func_door()
 // the sizes can be detected properly.
 	InitializeEntity(self, LinkDoors, INITPRIO_LINKDOORS);
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = door_reset;
 };
 
@@ -1441,6 +1480,7 @@ void spawnfunc_func_door_rotating()
 // the sizes can be detected properly.
 	InitializeEntity(self, LinkDoors, INITPRIO_LINKDOORS);
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
 	self.reset = door_rotating_reset;
 };
 
@@ -1932,9 +1972,13 @@ void func_magicwall_think_transition(void) {
 void func_magicwall_start_transition(float sol, void(void) done) {
     self.solid = sol;
 
+    if(!sol)
+        dropentities(self);
+
     if(self.speed < 0) {
         self.alpha = self.MAGICWALL_ALPHAFIELD(self);
-        done();
+        if(done)
+            done();
         return;
     }
 
@@ -1980,7 +2024,7 @@ void spawnfunc_func_magicwall(void) {
 
     self.use = if(self.spawnflags & SPAWNFLAG_MW_TOGGLE)
         inline void(void) {
-            func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, func_null);
+            func_magicwall_start_transition(if(self.solid == SOLID_BSP) SOLID_NOT else SOLID_BSP, NULL);
         } else inline void(void) {
             if(self.oldsolid != self.solid) {
                 if(self.think && self.think != func_magicwall_think_transition)
@@ -1992,9 +2036,9 @@ void spawnfunc_func_magicwall(void) {
                 if(self.wait >= 0) inline void(void) {
                     self.nextthink = time + self.wait;
                     self.think = inline void(void) {
-                        func_magicwall_start_transition(self.oldsolid, func_null);
+                        func_magicwall_start_transition(self.oldsolid, NULL);
                     };
-                } else func_null);
+                } else NULL);
         };
 
     self.touch = inline void(void) {
@@ -2003,6 +2047,7 @@ void spawnfunc_func_magicwall(void) {
                 SUB_UseTargets();
     };
 
+    self.clipgroup = CLIPGROUP_OBSERVER;
     self.reset();
     self.nextthink = time;
 }

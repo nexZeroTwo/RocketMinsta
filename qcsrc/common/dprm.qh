@@ -2,10 +2,18 @@
 #define USE_DPRM
 #define DPRM_WEBSITE_URL "http://rocketminsta.net/dprm"
 #define DPRM_MINVERSION 1
+#define DPRM_MINRECOMMENDEDVERSION 2
 
 float dprm_version;
+float dprm_basegame;
 
 void DPRM_Start();
 float DPRM_GetVersion();
 float DPRM_IsDPRMEngine();
 float DPRM_VersionIsSuitable();
+float DPRM_VersionIsRecommended();
+
+enum {
+    BASEGAME_NEXUIZ,
+    BASEGAME_VECXIS,
+};

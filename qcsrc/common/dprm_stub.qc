@@ -9,3 +9,11 @@ float DPRM_GetVersion() {
 float DPRM_VersionIsSuitable() {
 	return TRUE;
 }
+
+float DPRM_VersionIsRecommended() {
+    return TRUE;
+}
+
+float DPRM_IsDPRMEngine() {
+    return dprm_version;
+}

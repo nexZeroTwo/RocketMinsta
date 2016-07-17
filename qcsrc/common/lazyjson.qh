@@ -10,8 +10,6 @@ enum {
 
 typedef float(string key, float idx) json_iter_t;
 
-var json_iter_t json_iter_null;
-
 string json_parser_data;
 float json_parser_offset;
 float json_parser_numtokens;

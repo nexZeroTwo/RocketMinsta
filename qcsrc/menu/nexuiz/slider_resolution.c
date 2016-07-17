@@ -1,7 +1,7 @@
 #ifdef INTERFACE
 CLASS(NexuizResolutionSlider) EXTENDS(NexuizTextSlider)
 	METHOD(NexuizResolutionSlider, configureNexuizResolutionSlider, void(entity))
-	METHOD(NexuizResolutionSlider, addResolution, void(entity, float, float, float, float))
+	METHOD(NexuizResolutionSlider, addResolution, void(entity, float, float))
 	METHOD(NexuizResolutionSlider, loadCvars, void(entity))
 	METHOD(NexuizResolutionSlider, saveCvars, void(entity))
 ENDCLASS(NexuizResolutionSlider)
@@ -16,26 +16,22 @@ entity makeNexuizResolutionSlider()
 	me.configureNexuizResolutionSlider(me);
 	return me;
 }
-void addResolutionNexuizResolutionSlider(entity me, float w, float h, float cw, float ch)
+void addResolutionNexuizResolutionSlider(entity me, float w, float h)
 {
-	float f;
-	f = max(cw / w, ch / h);
-	if(f > 1)
-	{
-		cw = rint(cw / f);
-		ch = rint(ch / f);
-	}
-	me.addValue(me, strzone(strcat(ftos(w), "x", ftos(h))), strzone(strcat(ftos(w), " ", ftos(h), " ", ftos(cw), " ", ftos(ch))));
-	// FIXME (in case you ever want to dynamically instantiate this): THIS IS NEVER FREED
+    // FIXME (in case you ever want to dynamically instantiate this): THIS IS NEVER FREED
+    var res = strzone(strcat(ftos(w), "x", ftos(h)));
+	me.addValue(me, res, res);
 }
 void configureNexuizResolutionSliderNexuizResolutionSlider(entity me)
 {
 	float i;
-	vector r0, r, c;
+	vector r0, r;
 
+    // Note: this cvar is used here for the tooltip only.
+    // The slider will control the menu_vid_width/menu_vid_height cvars,
+    // and only set vid_width/vid_height when "Apply" is pressed.
 	me.configureNexuizTextSlider(me, "vid_width");
 
-	c = '0 0 0';
 	r0 = '0 0 0';
 	for(i = 0;; ++i)
 	{
@@ -47,33 +43,22 @@ void configureNexuizResolutionSliderNexuizResolutionSlider(entity me)
 		r0 = r;
 		if(r_x < 640 || r_y < 400)
 			continue;
-		c_x = 800;
-		c_y = rint(c_x * r_y / r_x);
-		if(c_y >= 600)
-		{
-			me.addResolution(me, r_x, r_y, c_x, c_y);
-			continue;
-		}
-		c_y = 600;
-		c_x = rint(c_y * r_x / r_y);
-		me.addResolution(me, r_x, r_y, c_x, c_y);
+		me.addResolution(me, r_x, r_y);
 	}
 
 	me.configureNexuizTextSliderValues(me);
 }
 void loadCvarsNexuizResolutionSlider(entity me)
 {
-	me.setValueFromIdentifier(me, strcat(ftos(CVAR(vid_width)), " ", ftos(CVAR(vid_height)), " ", CVAR_STR(menu_vid_conwidth), " ", CVAR_STR(menu_vid_conheight)));
+    me.setValueFromIdentifier(me, CVAR(vid_width) + "x" + CVAR(vid_height));
 }
 void saveCvarsNexuizResolutionSlider(entity me)
 {
 	if(me.value >= 0 || me.value < me.nValues)
 	{
-		tokenize_console(me.getIdentifier(me));
-		cvar_set("vid_width", argv(0));
-		cvar_set("vid_height", argv(1));
-		cvar_set("menu_vid_conwidth", argv(2));
-		cvar_set("menu_vid_conheight", argv(3));
+        tokenizebyseparator(me.getIdentifier(me), "x");
+		cvar_set("menu_vid_width", argv(0));
+		cvar_set("menu_vid_height", argv(1));
 	}
 }
 #endif

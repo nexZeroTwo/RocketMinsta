@@ -22,6 +22,27 @@ void DamageTracker_Print(entity keeper, entity to) {
     sprint(to, "------------------------------------------------------------\n\n");
 }
 
+float DamageTracker_SetSecondaryFlipped(float dtype) {
+    // Set the HITTYPE_VISUAL_FLIPSECONDARY bit if this attack is HITTYPE_SECONDARY but should be represented as if it isn't, or vise-versa.
+    // Otherwise, unset it.
+
+    dtype &~= HITTYPE_VISUAL_FLIPSECONDARY;
+
+    var wep = DEATH_WEAPONOFWEAPONDEATH(dtype);
+    if(WEP_VALID(wep)) {
+
+        if(cvar("g_balance_" + get_weaponinfo(wep).netname + "_swapshotmodes")) {
+            BITXOR_ASSIGN(dtype, HITTYPE_VISUAL_FLIPSECONDARY);
+        }
+
+        if(W_WeaponBit(wep) & g_weaponarena_secondary) {
+            BITXOR_ASSIGN(dtype, HITTYPE_VISUAL_FLIPSECONDARY);
+        }
+    }
+
+    return dtype;
+}
+
 void DamageTracker_Overwrite(entity keeper, entity client, float dtflags) {
     float ecnt, i;
     
@@ -32,7 +53,7 @@ void DamageTracker_Overwrite(entity keeper, entity client, float dtflags) {
         return;
     
     dtflags |= DTFLAG_OVERWRITE;
-    
+
     ecnt = DamageTracker_Sort(keeper);
     
     msg_entity = client;
@@ -58,33 +79,28 @@ void DamageTracker_Send(float msg, float dtype, float damage, float dtflags) {
 void DamageTracker_RecordAndSend(entity keeper, float dtype, float damage, float dtflags) {
     if(!sv_damagestats || inWarmupStage)
         return;
-    
+
     if(!keeper.owner.iscreature && !(dtflags & DTFLAG_GLOBAL))
         return;
-    
+
     if(damage <= 0)
         return;
-    
+
+    dtype = DamageTracker_SetSecondaryFlipped(dtype);
     DamageTracker_Record(keeper, dtype, damage);
-    
+
     dtflags &~= DTFLAG_OVERWRITE;
     dtflags &~= DTFLAG_SPEC;
-    
+
     if(dtflags & DTFLAG_GLOBAL) {
         DamageTracker_Send(MSG_ALL, dtype, damage, dtflags);
         return;
     }
 
-    if(clienttype(keeper.owner) == CLIENTTYPE_REAL) {
-        msg_entity = keeper.owner;
-        DamageTracker_Send(MSG_ONE, dtype, damage, dtflags);
-    }
-    
-    entity e;
-    FOR_EACH_REALCLIENT(e) {
-        if(e.enemy == keeper.owner && e.classname == "spectator") {
+    FOR_EACH_REALCLIENT(var e) {
+        if(e.clientcamera == keeper.owner) {
             msg_entity = e;
-            DamageTracker_Send(MSG_ONE, dtype, damage, dtflags | DTFLAG_SPEC);
+            DamageTracker_Send(MSG_ONE, dtype, damage, dtflags | (if(e == keeper.owner) 0 else DTFLAG_SPEC));
         }
     }
 }

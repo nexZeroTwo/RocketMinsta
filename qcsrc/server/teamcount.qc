@@ -33,7 +33,7 @@ void TeamCount_RecountPlayers(float(entity) alivecheck) {
     if(!teams_matter)
         return;
 
-    FOR_EACH_CLIENT(e) if(e.iscreature || ((g_jailbreak || g_clanarena) && e.jb_specteam)) {
+    FOR_EACH_PLAYER(e) {
         float idx = Team_Index(e.team);
         float fteqcc_sucks;
 
@@ -82,16 +82,17 @@ float TeamCount_NextTeam(float t) {
 }
 
 entity TeamCount_PlayerPool_GetPlayer(entity pool, float idx) {
-    return pool.(teamcount_playerpool[idx]);
+    return FORCE_CAST(entity)(pool.(teamcount_playerpool[idx]));
 }
 
 float TeamCount_PlayerPool_PlayerValue(entity plr) {
-    switch(CVAR(g_balance_teams_method)) {
+    switch(teamsort_method) {
         case 1  :   return plr.scorekeeper.(scores[SP_SCORE]) / plr.playtime;
         case 2  :   return plr.scorekeeper.(scores[SP_DAMAGE]);
         case 3  :   return plr.scorekeeper.(scores[SP_DAMAGE]) / plr.playtime;
         case 4  :   return plr.scorekeeper.(scores[SP_KILLS]);
         case 5  :   return plr.scorekeeper.(scores[SP_KILLS]) / max(1, plr.scorekeeper.(scores[SP_DEATHS]));
+        case 6  :   return random();
         default :   return plr.scorekeeper.(scores[SP_SCORE]);
     }
 }
@@ -112,7 +113,7 @@ void TeamCount_PlayerPool_Add(entity pool, entity plr) {
         error(strcat("TeamCount_PlayerPool_Add: maximum size of ", ftos(TC_POOL_MAX), " exceeded"));
     
     float idx = pool.teamcount_poolsize;
-    pool.(teamcount_playerpool[idx]) = plr;
+    pool.(teamcount_playerpool[idx]) = FORCE_CAST(float)plr;
     pool.teamcount_poolsize += 1;
     pool.teamcount_totalscore += TeamCount_PlayerPool_PlayerValue(plr);
 }
@@ -126,14 +127,13 @@ void TeamCount_PlayerPool_Remove(entity pool, entity plr) {
     pool.teamcount_totalscore -= TeamCount_PlayerPool_PlayerValue(plr);
     
     for(i = idx + 1; i < pool.teamcount_poolsize; ++i)
-        pool.(teamcount_playerpool[i-1]) = TeamCount_PlayerPool_GetPlayer(pool, i);
+        pool.(teamcount_playerpool[i-1]) = FORCE_CAST(float)TeamCount_PlayerPool_GetPlayer(pool, i);
     
     pool.teamcount_poolsize -= 1;
 }
 
 void TeamCount_PlayerPool_Swap(float i1, float i2, entity pool) {
-    entity tmp;
-    tmp = pool.(teamcount_playerpool[i1]);
+    var tmp = pool.(teamcount_playerpool[i1]);
     pool.(teamcount_playerpool[i1]) = pool.(teamcount_playerpool[i2]);
     pool.(teamcount_playerpool[i2]) = tmp;
 }
@@ -152,7 +152,7 @@ entity teamcount_balance_pools[4];
 entity TeamCount_BalanceTeams_SelectPool(float tc, entity plr) {
     float change = TeamCount_PlayerPool_PlayerValue(plr), i;
     entity p = teamcount_balance_pools[0];
-    
+
     if(change == 0) {
         for(i = 1; i < tc; ++i)
             if(teamcount_balance_pools[i].teamcount_poolsize < p.teamcount_poolsize)
@@ -204,7 +204,7 @@ void TeamCount_BalanceTeams(void) {
     
     // Create a pool of all players, sorted by score
     all = spawn();
-    FOR_EACH_CLIENT(plr) if(plr.iscreature || plr.jb_specteam)
+    FOR_EACH_PLAYER(plr)
         TeamCount_PlayerPool_Add(all, plr);
     TeamCount_PlayerPool_Sort(all);
     
@@ -281,10 +281,7 @@ void TeamCount_BalanceTeams(void) {
             
             if(plr.team != pool.team)
                 bigprint_spec(plr, strcat("You are now on the ", Team_ColorCode(pool.team), strtoupper(Team_ColorName(pool.team)), " ^7Team!"), "", 5);
-            
-            if(plr.jb_specteam)
-                plr.jb_specteam = pool.team;
-            
+
             TeamchangeFrags(plr);
             SetPlayerTeam(plr, Team_Index(pool.team)+1, Team_Index(plr.team)+1, FALSE);
             plr.scorekeeper.SendFlags |= pow(2, SP_SCORE);

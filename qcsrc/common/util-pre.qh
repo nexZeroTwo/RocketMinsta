@@ -1,0 +1,8 @@
+
+#ifndef RM_NO_AUTO_HEADER
+#include "rm_auto.qh"
+#endif
+
+#ifdef RM_AUTOCVARS
+#pragma target dprm
+#endif

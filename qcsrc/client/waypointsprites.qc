@@ -118,6 +118,26 @@ void drawhealthbar(vector org, float rot, float h, vector sz, vector hotspot, fl
 	drawquad(o + ri * (border + align * ((1 - h) * width)), ri * width * h, up * height, "", hrgb, ha, f);
 }
 
+float PreDraw_WaypointSprite(void) {
+    if(self.hideflags & 2)
+        return FALSE; // radar only
+
+    if(CVAR(cl_hidewaypoints) >= 2)
+        return FALSE;
+
+    if(self.hideflags & 1)
+        if(CVAR(cl_hidewaypoints))
+            return FALSE; // fixed waypoint
+
+    if(self.lifetime)
+        self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
+    else
+        self.alpha = 1;
+
+    InterpolateOrigin_Do();
+    return TRUE;
+}
+
 void Draw_WaypointSprite()
 {
 	string spriteimage;
@@ -135,22 +155,6 @@ void Draw_WaypointSprite()
     if(ws_scale <= 0)
         return;
 
-	if(self.lifetime)
-		self.alpha = pow(bound(0, (self.fadetime - time) / self.lifetime, 1), waypointsprite_timealphaexponent);
-	else
-		self.alpha = 1;
-
-	if(self.hideflags & 2)
-		return; // radar only
-
-	if(CVAR(cl_hidewaypoints) >= 2)
-		return;
-
-	if(self.hideflags & 1)
-		if(CVAR(cl_hidewaypoints))
-			return; // fixed waypoint
-
-	InterpolateOrigin_Do();
     me = ID_ME - 1;
     t = GetPlayerColor(me) + 1;
 
@@ -176,7 +180,7 @@ void Draw_WaypointSprite()
                     self.toptextmode = 1;
                     if(self.toptext) {
                         strunzone(self.toptext);
-                        self.toptext = string_null;
+                        self.toptext = NULL;
                     }
                 }
                 
@@ -189,7 +193,7 @@ void Draw_WaypointSprite()
                     self.toptextmode = 2;
                     if(self.toptext) {
                         strunzone(self.toptext);
-                        self.toptext = string_null;
+                        self.toptext = NULL;
                     }
                 }
                 
@@ -199,7 +203,7 @@ void Draw_WaypointSprite()
                 self.topalpha = approach(self.topalpha, 0, drawframetime * 2);
                 if(!self.topalpha && self.toptext) {
                     strunzone(self.toptext);
-                    self.toptext = string_null;
+                    self.toptext = NULL;
                 }
             }
 			break;
@@ -258,8 +262,8 @@ void Draw_WaypointSprite()
     
     float maxw = vid_conwidth;
     float maxh = vid_conheight;
-    
-    if(CVAR(viewsize) < 120 || !CVAR(r_letterbox))
+
+    if(CVAR(viewsize) < 120 && !CVAR(r_letterbox))
         maxh -= 50;
 
 	if(o_z < 0 || o_x < 0 || o_y < 0 || o_x > maxw || o_y > maxh)
@@ -346,7 +350,7 @@ void Draw_WaypointSprite()
     else {
         drawfont = sbar_bigfont;
         vector fs = '30 30 0' * t;
-        float sw = stringwidth_svn(spriteimage, FALSE, fs);
+        float sw = stringwidth(spriteimage, FALSE, fs);
         vector oc = o - '0.5 0 0' * sw + '0 -20 0';
         oc_x = bound(m, oc_x, vid_conwidth - sw - m);
         oc_y = bound(m, oc_y, vid_conheight - fs_y - m);
@@ -354,7 +358,7 @@ void Draw_WaypointSprite()
         drawstring(oc, spriteimage, fs, txtclr, a, DRAWFLAG_NORMAL);
         if(self.toptext) {
             fs += '1 1 0' * 2 * sin(time*3);
-            sw = stringwidth_svn(self.toptext, FALSE, fs);
+            sw = stringwidth(self.toptext, FALSE, fs);
             oc_y = bound(m + fs_y*1.5, oc_y - fs_y*1.5, vid_conheight - fs_y*3 - m);
             oc_x = bound(m, o_x - sw * 0.5, vid_conwidth - sw - m);
             drawstring(oc, self.toptext, fs, if(self.toptextmode == 1) self.clr2 else self.clr3, a * self.topalpha, DRAWFLAG_NORMAL);
@@ -440,8 +444,11 @@ void Ent_WaypointSprite()
         self.health = -1;
     }
 
-	self.draw2d = Draw_WaypointSprite;
-    
+    self.draw2d_real = Draw_WaypointSprite;
+    self.draw2d_pre = PreDraw_WaypointSprite;
+	self.draw2d = Draw2d_ThroughWarpZones;
+    self.draw2d_origin_fld = origin;
+
 	InterpolateOrigin_Undo();
     
 	if(sendflags & 0x80)

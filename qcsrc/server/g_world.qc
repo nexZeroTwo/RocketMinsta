@@ -234,7 +234,7 @@ void cvar_changes_init()
 
 	if(cvar_changes)
 		strunzone(cvar_changes);
-	cvar_changes = string_null;
+	cvar_changes = NULL;
 
 	h = buf_create();
 	buf_cvarlist(h, "", "_"); // exclude all _ cvars as they are temporary
@@ -508,8 +508,16 @@ void SetPlayerHitboxGlobals(void) {
     PL_CROUCH_MAX = stov(CVAR_STR(g_player_hitbox_crouch_max));
 }
 
+void require_extensions(void) {
+    require_extension("DP_SV_CLIENTCAMERA");
+    require_extension("DP_RM_CLIENTDATAENT");
+    require_extension("DP_RM_CLIPGROUP");
+}
+
 void spawnfunc_worldspawn (void)
 {
+    require_extensions();
+	WarpZone_Init();
 	float fd, l, i, j, n;
 	string s, col;
 
@@ -543,7 +551,6 @@ void spawnfunc_worldspawn (void)
     
 	sv_showspecs_extra = CVAR(sv_showspecs_extra);
 	sv_scoreboard_fps_column = CVAR(sv_scoreboard_fps_column);
-	sv_oldfag = CVAR(sv_oldfag);
 	sv_shownames = CVAR(sv_shownames);
 	_pseudo_bullet = if(CVAR(sv_gameplayfix_shootownentities)) spawn() else world; //Fake bullet for pseudo_bullet() function in g_subs.qc
 
@@ -560,11 +567,14 @@ void spawnfunc_worldspawn (void)
 	entity head;
 	head = nextent(world);
 	maxclients = 0;
-	while(head)
+	while(head && clienttype(head) != CLIENTTYPE_NOTACLIENT)
 	{
 		++maxclients;
 		head = nextent(head);
 	}
+
+    if(maxclients > RM_MAXCLIENTS)
+        error("^3This build of RocketMinsta supports only up to " + RM_MAXCLIENTS + " clients. Recompile with -DRM_MAXCLIENTS=" + maxclients + ", or reduce the maxplayers setting.");
 
 	// needs to be done so early as they would still spawn
 	RegisterWeapons();
@@ -617,6 +627,8 @@ void spawnfunc_worldspawn (void)
 	// 63 testing
 	lightstyle(63, "a");
 
+    aprilfools = (strftime(TRUE, "%m_%d") == "04_01");
+
 	if(CVAR(g_campaign))
 		CampaignPreInit();
 
@@ -666,8 +678,6 @@ void spawnfunc_worldspawn (void)
 			s = strcat(s, ":no_use_ammunition");
 		if(!CVAR(g_pickup_items))
 			s = strcat(s, ":no_pickup_items");
-		if(CVAR(g_instagib))
-			s = strcat(s, ":instagib");
 		if(CVAR_STR(g_weaponarena) != "0")
 			s = strcat(s, ":", CVAR_STR(g_weaponarena), " arena");
 		if(CVAR(g_nixnex))
@@ -739,7 +749,6 @@ void spawnfunc_worldspawn (void)
 	WeaponStats_Init();
 
     addstat(STAT_ROUNDSTATE, AS_INT, roundstate_stat);
-    addstat(STAT_QUEUE, AS_INT, joinqueue);
 	addstat(STAT_WEAPONS, AS_INT, weapons);
 	addstat(STAT_SWITCHWEAPON, AS_INT, switchweapon);
 	addstat(STAT_GAMESTARTTIME, AS_FLOAT, stat_game_starttime);
@@ -750,11 +759,13 @@ void spawnfunc_worldspawn (void)
 	addstat(STAT_INVINCIBLE_FINISHED, AS_FLOAT, invincible_finished);
 	addstat(STAT_PRESSED_KEYS, AS_FLOAT, pressedkeys);
 	addstat(STAT_FUEL, AS_INT, ammo_fuel);
-	addstat(STAT_DAMAGE_HITS, AS_INT, damage_hits);
- 	addstat(STAT_DAMAGE_FIRED, AS_INT, maxdamage_fired);
 	addstat(STAT_SHOTORG, AS_INT, stat_shotorg);
+    addstat(STAT_SHOTORG_VISUAL, AS_INT, stat_shotorg_visual);
 	addstat(STAT_LEADLIMIT, AS_FLOAT, stat_leadlimit);
     addstat(STAT_ZAPPER_HEAT, AS_FLOAT, zapper_heat);
+    addstat(STAT_INNERRING_CYCLE, AS_FLOAT, w_inring_cycle);
+    addstat(STAT_INNERRING_FULLTIME, AS_FLOAT, w_inring_fulltime);
+    addstat(STAT_AIMSPREAD, AS_FLOAT, w_spread_indicator);
 
     W_Clip_Stats_Init();
 
@@ -873,6 +884,12 @@ void spawnfunc_worldspawn (void)
 
     dtrack_global = DamageTracker_CreateKeeper(world);
     dtrack_global.netname = "Global Damage";
+
+    utf8_enable();
+
+    ER_RegisterHandler("getRMInfo", inline void(float argc, string query) {
+        ER_Query(argv(0), "extResponse coloredName " + cvar_string("hostname_colored"));
+    }, world);
 }
 
 void spawnfunc_light (void)
@@ -1056,7 +1073,7 @@ void Map_Goto()
 // return codes of map selectors:
 //   -1 = temporary failure (that is, try some method that is guaranteed to succeed)
 //   -2 = permanent failure
-float() MaplistMethod_Iterate = // usual method
+float MaplistMethod_Iterate() // usual method
 {
 	float pass, i;
 
@@ -1073,14 +1090,14 @@ float() MaplistMethod_Iterate = // usual method
 	return -1;
 }
 
-float() MaplistMethod_Repeat = // fallback method
+float MaplistMethod_Repeat() // fallback method
 {
 	if(Map_Check(Map_Current, 2))
 		return Map_Current;
 	return -2;
 }
 
-float() MaplistMethod_Random = // random map selection
+float MaplistMethod_Random() // random map selection
 {
 	float i, imax;
 
@@ -1096,7 +1113,7 @@ float() MaplistMethod_Random = // random map selection
 	return -1;
 }
 
-float(float exponent) MaplistMethod_Shuffle = // more clever shuffling
+float MaplistMethod_Shuffle(float exponent) // more clever shuffling
 // the exponent sets a bias on the map selection:
 // the higher the exponent, the less likely "shortly repeated" same maps are
 {
@@ -1274,7 +1291,7 @@ entity FindIntermissionViewport(void)
     RandomSelection_Init();
     for(spot = world; (spot = nextent(spot));) {
         if(spot.classname == "info_player_intermission" || spot.classname == "info_intermission")
-            RandomSelection_Add(spot, 0, string_null, 1, 1);
+            RandomSelection_Add(spot, 0, NULL, 1, 1);
     }
     
     if(RandomSelection_chosen_ent)
@@ -1282,14 +1299,14 @@ entity FindIntermissionViewport(void)
     
     // try to view from the jail
     for(spot = world; (spot = find(spot, classname, "info_jailbreak_jailcamera"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     if(RandomSelection_chosen_ent)
         return RandomSelection_chosen_ent;
     
     // fall back to player spawn points
     for(spot = world; (spot = find(spot, classname, "info_player_deathmatch"));)
-        RandomSelection_Add(spot, 0, string_null, 1, 1);
+        RandomSelection_Add(spot, 0, NULL, 1, 1);
     
     return RandomSelection_chosen_ent;
 }
@@ -2661,7 +2678,7 @@ float MapVote_CheckRules_2()
 	RandomSelection_Init();
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-			RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+			RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	firstPlace = RandomSelection_chosen_float;
 	firstPlaceVotes = RandomSelection_best_priority;
@@ -2672,7 +2689,7 @@ float MapVote_CheckRules_2()
 	for(i = 0; i < mapvote_count_real; ++i) if(mapvote_maps[i] != "")
 		if(i != firstPlace)
 			if(mapvote_maps_availability[i] == GTV_AVAILABLE)
-				RandomSelection_Add(world, i, string_null, 1, mapvote_votes[i]);
+				RandomSelection_Add(world, i, NULL, 1, mapvote_votes[i]);
 
 	secondPlace = RandomSelection_chosen_float;
 	secondPlaceVotes = RandomSelection_best_priority;
@@ -2978,52 +2995,30 @@ string GotoMap(string m)
 
 float roundstate_old;
 
+void FireRoundstateTriggers(void);
+
 void EndFrame()
 {
+    if(g_clanarena)
+        CA_Frame();
+
 	float altime;
 	FOR_EACH_REALCLIENT(self)
 	{
-		if(sv_oldfag)
-			self.rm_nokillsound = TRUE;
-			
-		if(self.classname == "spectator")
-		{
-			if(self.enemy.typehitsound)
-				play2(self, "misc/typehit.wav");
-			else if(self.cvar_cl_hitsound)
-			{
-				if(self.enemy.killsound)
-				{
-					if(self.rm_nokillsound)
-						play2(self, "misc/hit.wav");
-					else
-						play2(self, RM_SOUND_KILL);
-				}
-                else if(self.enemy.armorhitsound)
-                    play2(self, "misc/armorhit.wav");
-				else if(self.enemy.hitsound)
-					play2(self, "misc/hit.wav");
-			}
-		}
-		else
-		{
-			if(self.typehitsound)
-				play2(self, "misc/typehit.wav");
-			else if(self.cvar_cl_hitsound)
-			{
-				if(self.killsound)
-				{
-					if(self.rm_nokillsound)
-						play2(self, "misc/hit.wav");
-					else
-						play2(self, RM_SOUND_KILL);
-				}
-                else if(self.armorhitsound)
-                    play2(self, "misc/armorhit.wav");
-				else if(self.hitsound)
-					play2(self, "misc/hit.wav");
-			}
-		}
+        if(self.clientcamera.typehitsound) {
+            play2(self, "misc/typehit.wav");
+        } else if(self.cvar_cl_hitsound) {
+            if(self.clientcamera.killsound) {
+                if(self.rm_nokillsound)
+                    play2(self, "misc/hit.wav");
+                else
+                    play2(self, RM_SOUND_KILL);
+            } else if(self.clientcamera.armorhitsound) {
+                play2(self, "misc/armorhit.wav");
+            } else if(self.clientcamera.hitsound) {
+                play2(self, "misc/hit.wav");
+            }
+        }
 	}
 	altime = time + frametime * (1 + CVAR(g_antilag_nudge));
 	// add 1 frametime because after this, engine SV_Physics
@@ -3042,6 +3037,7 @@ void EndFrame()
 	}
 
     if(roundstate != roundstate_old) {
+        defer(0, FireRoundstateTriggers);
         localcmd("\nsv_hook_roundstatechanged ", ftos(roundstate), "\n");
         roundstate_old = roundstate;
     }
@@ -3145,6 +3141,7 @@ void SV_Shutdown()
 	{
 		print("NOTE: crashed before even initializing the world, not saving persistent data\n");
 	}
+	WarpZone_Shutdown();
 }
 
 // Chaiomanot  : This unification was inspired by a bug that caused endmatch to not

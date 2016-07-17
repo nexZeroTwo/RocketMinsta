@@ -1,8 +1,5 @@
 ../../progs.dat // output filename
 
-
-
-../common/rm_auto.qh
 ../common/util-pre.qh
 
 autocvars.qh
@@ -17,6 +14,12 @@ constants.qh
 ../common/constants.qh
 ../common/util.qh
 ../common/items.qh
+
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/util_server.qh
+../warpzonelib/server.qh
 
 defs.qh		// Should rename this, it has fields and globals
 
@@ -33,6 +36,7 @@ campaign.qh
 ../common/nadgets.qh
 ../common/buffs.qh
 ../common/lazyjson.qh
+../common/extresponse.qh
 ip2c.qh
 csqcprojectile.qh
 csqceffects.qh
@@ -49,7 +53,7 @@ antilag.qh
 vote.qh
 soulmates.qh
 timetravel.qh
-g_nadgets.qh
+nadgets/include.qh
 g_terminals.qh
 g_buffs.qh
 g_freeze.qh
@@ -63,8 +67,11 @@ irc.qh
 joinqueue.qh
 radio.qh
 g_subs.qh
+w_zapper.qh
 g_world.qh
+napalm.qh
 
+cl_specinfo.qh
 cl_weapons_reload.qh
 
 ../common/util.qc
@@ -104,6 +111,7 @@ g_models.qc
 
 cl_weaponsystem.qc
 cl_weapons_reload.qc
+w_accuracy.qc
 w_common.qc
 
 w_laser.qc
@@ -124,6 +132,7 @@ w_tuba.qc
 w_fireball.qc
 w_zapper.qc
 w_flak.qc
+w_pryaxe.qc
 
 t_items.qc
 cl_weapons.qc
@@ -133,6 +142,7 @@ ent_cs.qc
 
 cl_player.qc
 cl_client.qc
+cl_specinfo.qc
 t_plats.qc
 antilag.qc
 irc.qc
@@ -144,7 +154,7 @@ mode_onslaught.qc
 nexball.qc
 g_hook.qc
 timetravel.qc
-g_nadgets.qc
+nadgets/include.qc
 g_terminals.qc
 g_buffs.qc
 soulmates.qc
@@ -180,6 +190,7 @@ t_halflife.qc
 t_quake.qc
 
 g_laserbeam.qc
+napalm.qc
 
 race.qc
 
@@ -196,6 +207,7 @@ tturrets/include/turrets.qh
 scores.qc
 
 portals.qc
+scp173.qc
 
 target_spawn.qc
 func_breakable.qc
@@ -205,13 +217,17 @@ func_breakable.qc
 ../common/nadgets.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
+../common/extresponse.qc
 ip2c.qc
-monsters/defs.qc
-monsters/fight.qc
-monsters/ai.qc
-monsters/m_monsters.qc
 
 csqcprojectile.qc
 csqcmessage.qc
 radio.qc
 
+g_lights.qc
+
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/util_server.qc
+../warpzonelib/server.qc

@@ -1,12 +1,12 @@
 ../../csprogs.dat
+
+../common/util-pre.qh
+
 pre.qh
 
 Defs.qc
 
 ../common/gametype.qh
-
-../common/rm_auto.qh
-../common/util-pre.qh
 
 autocvars.qh
 ../common/autocvars.qh
@@ -22,6 +22,12 @@ csqc_builtins.qc
 ../common/nadgets.qh
 ../common/buffs.qh
 ../common/lazyjson.qh
+../common/extresponse.qh
+
+../warpzonelib/anglestransform.qh
+../warpzonelib/mathlib.qh
+../warpzonelib/common.qh
+../warpzonelib/client.qh
 
 ../common/mapinfo.qh
 interpolate.qh
@@ -38,15 +44,16 @@ message.qh
 ../common/damagetracker.qh
 main.qh
 hudskin.qh
+timewarper.qh
 
 sortlist.qc
 miscfunctions.qc
 teamplay.qc
 
-svnstuff.qc
 sbar.qc
 mapvoting.qc
 nadgetselect.qc
+weaponselect.qc
 
 rubble.qc
 hook.qc
@@ -64,6 +71,7 @@ radio.qc
 zapper.qc
 buffs.qc
 message.qc
+timewarper.qc
 
 ../common/damagetracker.qc
 ../common/gametype.qc
@@ -91,3 +99,9 @@ bgmscript.qc
 ../common/nadgets.qc
 ../common/buffs.qc
 ../common/lazyjson.qc
+../common/extresponse.qc
+
+../warpzonelib/anglestransform.qc
+../warpzonelib/mathlib.qc
+../warpzonelib/common.qc
+../warpzonelib/client.qc

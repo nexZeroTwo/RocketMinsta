@@ -40,7 +40,7 @@ void dom_recountpoints()
 
 void tdom_EndRound(float tout)
 {
-	G_EndRound(tout, CVAR(g_totaldomination_warmup), dom_recountpoints, func_null, func_null);
+	G_EndRound(tout, CVAR(g_totaldomination_warmup), dom_recountpoints, NULL, NULL);
 }
 
 void() dom_controlpoint_setup;
@@ -140,10 +140,13 @@ void dompoint_captured ()
 	centerprint_spec(self.enemy, "^5You have captured a control point!");
 	hudflash_teamcolor_default_spec(self.enemy);
 	
-	if(self.enemy.playerid == self.enemy_playerid)
+	if(self.enemy.playerid == self.enemy_playerid) {
 		PlayerScore_Add(self.enemy, SP_DOM_TAKES, 1);
-	else
+        if(g_totaldomination)
+            PlayerScore_Add(self.enemy, SP_SCORE, CVAR(g_totaldomination_score_take));
+    } else {
 		self.enemy = world;
+    }
 
 	if (head.noise != "")
 		if(self.enemy)
@@ -223,7 +226,7 @@ void dompointthink()
 
 	// give points
 
-	if (gameover || self.delay > time || time < game_starttime)	// game has ended, don't keep giving points
+	if (roundstate != ROUNDSTATE_GAME || self.delay > time)	// game has ended, don't keep giving points
 		return;
 
 	waittime = CVAR(g_domination_point_rate);
@@ -259,9 +262,9 @@ void dompointtouch()
 {
 	entity head;
     
-    if(time < game_starttime)
+    if(roundstate != ROUNDSTATE_GAME)
         return;
-    
+
 	if(other.classname != "player")
 		return;
 	if(other.health < 1)
@@ -277,10 +280,6 @@ void dompointtouch()
 
     if(self.dom_capturingplayer && self.dom_capturingplayer != other)
         return;
-
-	if(g_totaldomination)
-	if(roundstate != ROUNDSTATE_GAME)
-		return;
     
 	// only valid teams can claim it
 	head = find(world, classname, "dom_team");

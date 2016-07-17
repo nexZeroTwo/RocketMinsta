@@ -260,7 +260,7 @@ vector colormapPaletteColor(float c, float isPants)
 	}
 }
 
-// unzone the string, and return it as tempstring. Safe to be called on string_null
+// unzone the string, and return it as tempstring. Safe to be called on NULL
 string fstrunzone(string s)
 {
 	string sc;
@@ -665,13 +665,6 @@ float CheckWireframeBox(entity forent, vector v0, vector dvx, vector dvy, vector
 	traceline(v0 + dvy + dvz, v0 + dvx + dvy + dvz, TRUE, forent); if(trace_fraction < 1) return 0;
 	return 1;
 }
-
-void fixedmakevectors(vector a)
-{
-	// a makevectors that actually inverts vectoangles
-	a_x = -a_x;
-	makevectors(a);
-}
 #endif
 
 string fixPriorityList(string order, float from, float to, float subtract, float complete)
@@ -1021,6 +1014,16 @@ float log2of(float x)
 						return 0;
 }
 
+// a fake logarithm function
+float log(float x)
+{
+	if(x < 0.0001)
+		return 0;
+	if(x > 0.9 && x < 1.1)
+		return x - 1;
+	return 2 * log(sqrt(x));
+}
+
 float rgb_mi_ma_to_hue(vector rgb, float mi, float ma)
 {
 	if(mi == ma)
@@ -1171,126 +1174,76 @@ float boxesoverlap(vector m1, vector m2, vector m3, vector m4) {return m2_x >= m
 // requires the same, but is a stronger condition
 float boxinsidebox(vector smins, vector smaxs, vector bmins, vector bmaxs) {return smins_x >= bmins_x && smaxs_x <= bmaxs_x && smins_y >= bmins_y && smaxs_y <= bmaxs_y && smins_z >= bmins_z && smaxs_z <= bmaxs_z;};
 
-#ifndef MENUQC
-// angles transforms
-// angles in fixedmakevectors/fixedvectoangles space
-vector AnglesTransform_Apply(vector transform, vector v)
+float textLengthUpToWidth(string theText, float maxWidth, vector theSize, textLengthUpToWidth_widthFunction_t w)
 {
-	fixedmakevectors(transform);
-	return v_forward * v_x
-	     + v_right   * (-v_y)
-		 + v_up      * v_z;
+    float ICanHasKallerz;
+
+    // detect color codes support in the width function
+    ICanHasKallerz = (w("^7", theSize) == 0);
+
+    // STOP.
+    // The following function is SLOW.
+    // For your safety and for the protection of those around you...
+    // DO NOT CALL THIS AT HOME.
+    // No really, don't.
+    if(w(theText, theSize) <= maxWidth)
+        return strlen(theText); // yeah!
+
+    // binary search for right place to cut string
+    float ch;
+    float left, right, middle; // this always works
+    left = 0;
+    right = strlen(theText); // this always fails
+    do
+    {
+        middle = floor((left + right) / 2);
+        if(w(substring(theText, 0, middle), theSize) <= maxWidth)
+            left = middle;
+        else
+            right = middle;
+    }
+    while(left < right - 1);
+
+    if(ICanHasKallerz)
+    {
+        // NOTE: when color codes are involved, this binary search is,
+        // mathematically, BROKEN. However, it is obviously guaranteed to
+        // terminate, as the range still halves each time - but nevertheless, it is
+        // guaranteed that it finds ONE valid cutoff place (where "left" is in
+        // range, and "right" is outside).
+        
+        // terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
+        // and decrease left on the basis of the chars detected of the truncated tag
+        // Even if the ^xrgb tag is not complete/correct, left is decreased
+        // (sometimes too much but with a correct result)
+        // it fixes also ^[0-9]
+        while(left >= 1 && substring(theText, left-1, 1) == "^")
+            left-=1;
+
+        if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
+            left-=2;
+        else if (left >= 3 && substring(theText, left-3, 2) == "^x")
+            {
+                ch = str2chr(theText, left-1);
+                if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
+                    left-=3;
+            }
+        else if (left >= 4 && substring(theText, left-4, 2) == "^x")
+            {
+                ch = str2chr(theText, left-2);
+                if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
+                {
+                    ch = str2chr(theText, left-1);
+                    if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
+                        left-=4;
+                }
+            }
+    }
+    
+    return left;
 }
 
-vector AnglesTransform_Multiply(vector t1, vector t2)
-{
-	vector m_forward, m_up;
-	fixedmakevectors(t2); m_forward = v_forward; m_up = v_up;
-	m_forward = AnglesTransform_Apply(t1, m_forward); m_up = AnglesTransform_Apply(t1, m_up);
-	return fixedvectoangles2(m_forward, m_up);
-}
-
-vector AnglesTransform_Invert(vector transform)
-{
-	vector i_forward, i_up;
-	fixedmakevectors(transform);
-	// we want angles that turn v_forward into '1 0 0', v_right into '0 1 0' and v_up into '0 0 1'
-	// but these are orthogonal unit vectors!
-	// so to invert, we can simply fixedvectoangles the TRANSPOSED matrix
-	// TODO is this always -transform?
-	i_forward_x = v_forward_x;
-	i_forward_y = -v_right_x;
-	i_forward_z = v_up_x;
-	i_up_x = v_forward_z;
-	i_up_y = -v_right_z;
-	i_up_z = v_up_z;
-	return fixedvectoangles2(i_forward, i_up);
-}
-
-vector AnglesTransform_TurnDirection(vector transform)
-{
-	// turn 180 degrees around v_up
-	// changes in-direction to out-direction
-	fixedmakevectors(transform);
-	return fixedvectoangles2(-1 * v_forward, 1 * v_up);
-}
-
-vector AnglesTransform_Divide(vector to_transform, vector from_transform)
-{
-	return AnglesTransform_Multiply(to_transform, AnglesTransform_Invert(from_transform));
-}
-#endif
-
-float textLengthUpToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t w)
-{
-	float ICanHasKallerz;
-
-	// detect color codes support in the width function
-	ICanHasKallerz = (w("^7") == 0);
-
-	// STOP.
-	// The following function is SLOW.
-	// For your safety and for the protection of those around you...
-	// DO NOT CALL THIS AT HOME.
-	// No really, don't.
-	if(w(theText) <= maxWidth)
-		return strlen(theText); // yeah!
-
-	// binary search for right place to cut string
-	float ch;
-	float left, right, middle; // this always works
-	left = 0;
-	right = strlen(theText); // this always fails
-	do
-	{
-		middle = floor((left + right) / 2);
-		if(w(substring(theText, 0, middle)) <= maxWidth)
-			left = middle;
-		else
-			right = middle;
-	}
-	while(left < right - 1);
-
-	if(ICanHasKallerz)
-	{
-		// NOTE: when color codes are involved, this binary search is,
-		// mathematically, BROKEN. However, it is obviously guaranteed to
-		// terminate, as the range still halves each time - but nevertheless, it is
-		// guaranteed that it finds ONE valid cutoff place (where "left" is in
-		// range, and "right" is outside).
-
-		// terencehill: the following code detects truncated ^xrgb tags (e.g. ^x or ^x4)
-		// and decrease left on the basis of the chars detected of the truncated tag
-		// Even if the ^xrgb tag is not complete/correct, left is decreased
-		// (sometimes too much but with a correct result)
-		// it fixes also ^[0-9]
-		while(left >= 1 && substring(theText, left-1, 1) == "^")
-			left-=1;
-
-		if (left >= 2 && substring(theText, left-2, 2) == "^x") // ^x/
-			left-=2;
-		else if (left >= 3 && substring(theText, left-3, 2) == "^x")
-			{
-				ch = str2chr(theText, left-1);
-				if( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xr/
-					left-=3;
-			}
-		else if (left >= 4 && substring(theText, left-4, 2) == "^x")
-			{
-				ch = str2chr(theText, left-2);
-				if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') )
-				{
-					ch = str2chr(theText, left-1);
-					if ( (ch >= '0' && ch <= '9') || (ch >= 'a' && ch <= 'f') || (ch >= 'A' && ch <= 'F') ) // ^xrg/
-						left-=4;
-				}
-			}
-	}
-
-	return left;
-}
-
-string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
+string getWrappedLine(float w, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
 	float cantake;
 	float take;
@@ -1298,7 +1251,7 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 
 	s = getWrappedLine_remaining;
 
-	cantake = textLengthUpToWidth(s, w, tw);
+	cantake = textLengthUpToWidth(s, w, fontSize, tw);
 	if(cantake > 0 && cantake < strlen(s))
 	{
 		take = cantake - 1;
@@ -1308,30 +1261,30 @@ string getWrappedLine(float w, textLengthUpToWidth_widthFunction_t tw)
 		{
 			getWrappedLine_remaining = substring(s, cantake, strlen(s) - cantake);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, cantake);
 		}
 		else
 		{
 			getWrappedLine_remaining = substring(s, take + 1, strlen(s) - take);
 			if(getWrappedLine_remaining == "")
-				getWrappedLine_remaining = string_null;
+				getWrappedLine_remaining = NULL;
 			return substring(s, 0, take);
 		}
 	}
 	else
 	{
-		getWrappedLine_remaining = string_null;
+		getWrappedLine_remaining = NULL;
 		return s;
 	}
 }
 
-string textShortenToWidth(string theText, float maxWidth, textLengthUpToWidth_widthFunction_t tw)
+string textShortenToWidth(string theText, float maxWidth, vector fontSize, textLengthUpToWidth_widthFunction_t tw)
 {
-	if(tw(theText) <= maxWidth)
+	if(tw(theText, fontSize) <= maxWidth)
 		return theText;
 	else
-		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("..."), tw)), "...");
+		return strcat(substring(theText, 0, textLengthUpToWidth(theText, maxWidth - tw("...", fontSize), fontSize, tw)), "...");
 }
 
 float isGametypeInFilter(float gt, float tp, string pattern)
@@ -1345,7 +1298,7 @@ float isGametypeInFilter(float gt, float tp, string pattern)
 	if(gt == GAME_RACE || gt == GAME_CTS)
 		subpattern3 = ",race,";
 	else
-		subpattern3 = string_null;
+		subpattern3 = NULL;
 
 	if(substring(pattern, 0, 1) == "-")
 	{
@@ -1426,7 +1379,7 @@ string shufflewords(string str)
 	n = tokenizebyseparator(str, " ");
 	shuffle(n, _shufflewords_swapfunc, world);
 	str = _shufflewords_str;
-	_shufflewords_str = string_null;
+	_shufflewords_str = NULL;
 	return str;
 }
 
@@ -1497,14 +1450,24 @@ float check_using_bug(void) {
         return 512;
 }
 
+#define ARRTEST_SIZE 2
+float arrtest_flt[ARRTEST_SIZE];
+vector arrtest_vec[ARRTEST_SIZE];
+.float arrtest_fltfld[ARRTEST_SIZE];
+.vector arrtest_vecfld[ARRTEST_SIZE];
+
+void remove(entity);
+
 void check_unacceptable_compiler_bugs()
 {
 	if(CVAR(_allow_unacceptable_compiler_bugs))
 		return;
+
 	tokenize_console("foo bar");
 	if(strcat(argv(0), substring("foo bar", 4, 7 - argv_start_index(1))) == "barbar")
 		error("fteqcc bug introduced with revision 3178 detected. Please upgrade fteqcc to a later revision, downgrade fteqcc to revision 3177, or pester Spike until he fixes it. You can set _allow_unacceptable_compiler_bugs 1 to skip this check, but expect stuff to be horribly broken then.");
 
+    var f;
     var v = [random(), random(), random()];
     if(v != [v.x, v.y, v.z])
         error("vectors are borked, please update rmqcc");
@@ -1513,6 +1476,43 @@ void check_unacceptable_compiler_bugs()
     check_using_bug();
     if(test_global != 9001)
         error("using is borked, please update rmqcc");
+
+    var e = spawn();
+    var broken = 0;
+
+    for(var i = 0; i < ARRTEST_SIZE; ++i) {
+        v = [random(), random(), random()];
+        f = random();
+
+        arrtest_flt[i] = f;
+        if(arrtest_flt[i] != f) {
+            print("^1float arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_fltfld[i]) = f;
+        if(e.(arrtest_fltfld[i]) != f) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+
+        arrtest_vec[i] = v;
+        if(arrtest_vec[i] != v) {
+            print("^1vector arrays are broken\n");
+            ++broken;
+        }
+
+        e.(arrtest_vecfld[i]) = v;
+        if(e.(arrtest_vecfld[i]) != v) {
+            print("^1vectorfield arrays are broken\n");
+            ++broken;
+        }
+    }
+
+    remove(e);
+
+    if(broken)
+        error("array fail");
 }
 
 float compressShotOrigin(vector v)
@@ -1596,7 +1596,7 @@ void RandomSelection_Init()
 	RandomSelection_totalweight = 0;
 	RandomSelection_chosen_ent = world;
 	RandomSelection_chosen_float = 0;
-	RandomSelection_chosen_string = string_null;
+	RandomSelection_chosen_string = NULL;
 	RandomSelection_best_priority = -1;
 }
 void RandomSelection_Add(entity e, float f, string s, float weight, float priority)
@@ -1860,6 +1860,24 @@ string TeamName(float t) {
 
 #endif
 
+void backtrace(string msg)
+{
+    float dev, war;
+    dev = CVAR(developer);
+    war = CVAR(prvm_backtraceforwarnings);
+    cvar_set("developer", "1");
+    cvar_set("prvm_backtraceforwarnings", "1");
+    dprint("\n");
+    dprint("--- CUT HERE ---\nWARNING: ");
+    dprint(msg);
+    dprint("\n");
+    remove(world); // isn't there any better way to cause a backtrace?
+    dprint("\n--- CUT UNTIL HERE ---\n");
+    cvar_set("developer", ftos(dev));
+    cvar_set("prvm_backtraceforwarnings", ftos(war));
+    GameCommand("time");
+}
+
 float cvar_altertype(string varname, float setflags, float unsetflags) {
     if(!checkextension("DP_RM_CVAR_ALTERTYPE"))
         return 0;
@@ -1983,4 +2001,270 @@ void va_test(string fmt, ...) { VA_INIT
             case 'v': print("vector ", vtos((vector)v), "\n"); break;
         }
     }
+}
+
+void load_fonts(void) {
+#ifndef SVQC
+    registercvar("_rm_font_setting", "0", 0);
+
+    if(dprm_basegame == BASEGAME_VECXIS) {
+        // Don't try to be clever
+        cvar_set("_rm_font_setting", ftos(utf8_enabled()));
+        return;
+    }
+
+    cvar_set("r_font_diskcache", "0");
+
+    if(utf8_enabled()) {
+        var sizes = " ";
+
+        for(var i = 7; i <= 22; ++i)
+            sizes = strcat(sizes, ftos(i), " ");
+
+
+        var font_small  = "gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_big    = "gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_mono   = "gfx/conchars,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+
+        if(cvar("rm_fonts_prefer_ttf")) {
+            font_small  = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
+            font_big    = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
+        }
+
+        cvar_set("r_font_disable_freetype", "0");
+
+        localcmd("loadfont default  ", font_small, "\n");
+        localcmd("loadfont console  ", font_mono, "\n");
+        localcmd("loadfont chat     ", font_small, "\n");
+        localcmd("loadfont notify   ", font_small, "\n");
+        localcmd("loadfont infobar  ", font_small, "\n");
+        localcmd("loadfont user0    ", font_small, sizes, "\n");
+        localcmd("loadfont user1    ", font_small, sizes, "\n");
+        localcmd("loadfont user2    ", font_big, sizes, "\n");
+        localcmd("loadfont user3    ", font_madoka, sizes, "\n");
+        localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
+
+        cvar_set("_rm_font_setting", "1");
+    } else {
+        cvar_set("r_font_disable_freetype", "1");
+
+        localcmd("loadfont default  gfx/vera-sans\n");
+        localcmd("loadfont console  gfx/conchars\n");
+        localcmd("loadfont chat     gfx/vera-sans\n");
+        localcmd("loadfont notify   gfx/vera-sans\n");
+        localcmd("loadfont infobar  gfx/vera-sans-big\n");
+        localcmd("loadfont user0    gfx/vera-sans\n");
+        localcmd("loadfont user1    gfx/vera-sans\n");
+        localcmd("loadfont user2    gfx/vera-sans-big\n");
+        localcmd("loadfont user3    gfx/madoka-rune\n");
+        localcmd("loadfont user4    gfx/iceland\n");
+
+        cvar_set("_rm_font_setting", "0");
+    }
+
+    localcmd("sbar_columns_set default\n");
+#endif
+}
+
+void fix_fonts(void) {
+    if(CVAR(_rm_font_setting) != utf8_enabled())
+        load_fonts();
+}
+
+void utf8_report(void) {
+#ifdef CSQC
+    localcmd("sendcvar utf8_enable\n");
+#endif
+}
+
+float utf8_supported(void) {
+    return (cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE) && !cvar("_rm_no_utf8");
+}
+
+float utf8_enabled(void) {
+    return CVAR(utf8_enable) && utf8_supported();
+}
+
+void utf8_enable(void) {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
+    if(!utf8_supported()) {
+        load_fonts();
+        return;
+    }
+
+    cvar_set("utf8_enable", "1");
+    cvar_set("utf8_oldfont_for_oldchars", "0");
+
+    utf8_report();
+    load_fonts();
+}
+
+void utf8_disable(void) {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
+    if(!(cvar_type("utf8_enable") & CVAR_TYPEFLAG_ENGINE))
+        return;
+
+    cvar_set("utf8_enable", "0");
+
+    utf8_report();
+    load_fonts();
+}
+
+#ifdef SVQC
+float stringwidth(string s, float handle_colors, vector text_size) {
+    return (if(handle_colors) strlennocol else strlen)(s) * text_size_x;
+}
+#endif
+
+float stringwidth_colors(string s, vector theSize) {
+    return stringwidth(s, TRUE, theSize);
+}
+
+float stringwidth_nocolors(string s, vector theSize) {
+    return stringwidth(s, FALSE, theSize);
+}
+
+#define CRANGE_MIN 0x20
+#define CRANGE_MAX 0x7E
+
+string _obfuscate(string source, string key, float m, float n) {
+    var sidx = 0, kidx = 0, klen, c, res;
+
+    klen = strlen(key);
+
+    while((c = str2chr(source, sidx++))) {
+        ++kidx;
+        if(c >= CRANGE_MIN && c <= CRANGE_MAX)
+            c = CRANGE_MIN + mod(m - n + c - CRANGE_MIN + str2chr(key, mod(kidx * sidx, klen)), CRANGE_MAX - CRANGE_MIN + 1);
+        res = strcat(res, chr2str(c));
+    }
+
+    return res;
+}
+
+string obfuscate(string source, string key) {
+    return _obfuscate(source, key, crc16(FALSE, key), strlen(source));
+}
+
+string unobfuscate(string source, string key) {
+    var m = -crc16(FALSE, key), kidx = 0, ikey;
+
+    while((var c = str2chr(key, kidx++))) {
+        c = CRANGE_MIN + mod(c * -1 - CRANGE_MIN, CRANGE_MAX - CRANGE_MIN + 1);
+        ikey = strcat(ikey, chr2str(c));
+    }
+
+    return _obfuscate(source, ikey, m, -strlen(source));
+}
+
+
+#ifdef CSQC
+string etos(entity e) {
+    return "entity #" + num_for_edict(e);
+}
+#endif
+
+
+string pickfile(string basepath, ...) { VA_INIT
+    string first;
+    basepath = (string)@0;
+
+    for(var i = 1; i < VA_MAXPARMS; ++i) {
+        var ext = (string)va_get(i);
+
+        if(!ext)
+            return first;
+
+        var path = basepath + "." + ext;
+        if(!first)
+            first = path;
+
+        if(fexists(path))
+            return path;
+    }
+
+    return first;
+}
+
+
+string ftos(float f) {
+    if(f == 0)
+        f = 0; // Make sure it's not -0, to avoid an ugly representation
+    return ftos_builtin(f);
+}
+
+void cvar_archive(string cvarname, string defaultval) {
+    var t = cvar_type(cvarname);
+
+    if(!(t & CVAR_TYPEFLAG_EXISTS)) {
+        print("cvar_archive(): cvar ", cvarname, " does not exist, creating\n");
+        registercvar(cvarname, defaultval, CVAR_SAVE);
+        return;
+    }
+
+    if(t & CVAR_TYPEFLAG_SAVED)
+        return;
+
+    if(cvar_altertype(cvarname, CVAR_TYPEFLAG_SAVED, 0))
+        return;
+
+    localcmd("seta ", cvarname, " \"$", cvarname, "\"\n");
+}
+
+void require_extension(string ext) {
+    if(checkextension(ext))
+        return;
+
+    var ignore = CVAR(rm_ignore_missing_required_extensions);
+
+    print("\n^1***************************************************************\n\n");
+    print("Your engine is missing a required extension, ^2", ext, "^7.\n");
+    print("It is necessary to use the latest version of DarkPlacesRM for RocketMinsta to function correctly.\n");
+    print("\n^3Get the update at ^2" DPRM_WEBSITE_URL "\n");
+
+    if(!ignore) {
+        print("\nYou can set the ^2rm_ignore_missing_required_extensions^7 cvar to 1 if you wish to ignore this warning, but then expect the game to be horribly broken at best.\n");
+    }
+
+    print("\n^1***************************************************************\n\n");
+
+    if(!ignore)
+        error("Required extension " + ext + " is missing");
+}
+
+/*
+ *  Operator overloads
+ */
+
+
+string operator+(string s, float f) {
+    return s + ftos(f);
+}
+
+string operator+(float f, string s) {
+    return ftos(f) + s;
+}
+
+
+string operator+(string s, vector v) {
+    return s + vtos(v);
+}
+
+string operator+(vector v, string s) {
+    return vtos(v) + s;
+}
+
+
+string operator+(string s, entity e) {
+    return s + etos(e);
+}
+
+string operator+(entity e, string s) {
+    return etos(e) + s;
 }

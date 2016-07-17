@@ -37,9 +37,13 @@ void configureMainWindowMainWindow(entity me)
 	i = spawnNexuizTeamSelectDialog();
 	i.configureDialog(i);
 	me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
-    
-    if(!DPRM_VersionIsSuitable()) {
-        i = spawnNexuizNaggerDialog();
+
+    if(!DPRM_VersionIsRecommended()) {
+        show_engine_nagger = TRUE;
+        i = if(DPRM_VersionIsSuitable())
+            spawnNexuizMinorNaggerDialog()
+        else
+            spawnNexuizNaggerDialog();
         i.configureDialog(i);
         me.addItemCentered(me, i, i.intendedWidth * eX + i.intendedHeight * eY, SKINALPHAS_MAINMENU_z);
     }

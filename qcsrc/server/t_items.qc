@@ -42,10 +42,19 @@ string Item_CounterFieldName(float it)
 
 .float max_armorvalue;
 
-float Item_Customize()
-{
+float Item_Customize_Active() {
+    if(self.flags & FL_WEAPON && self.classname != "droppedweapon") {
+        self.colormap = other.clientcamera.colormap;
+    }
+    return TRUE;
+}
+
+float Item_Customize_Inactive() {
+    Item_Customize_Active();
+
 	if(self.spawnshieldtime)
 		return TRUE;
+
 	if(self.weapons != (self.weapons & other.weapons))
 	{
 		self.alpha = 0.5 + 0.5 * g_ghost_items; // halfway more alpha
@@ -73,18 +82,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_TRIGGER;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = Item_Customize_Active;
 
 		e.spawnshieldtime = 1;
 	}
 	else if (mode < 0)
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -96,7 +105,7 @@ void Item_Show (entity e, float mode)
 		e.effects |= EF_STARDUST;
 		//e.colormod = '0.2 1 0.2';
 		//e.alpha = 0.5; // will be overridden by CEFC though...
-		e.customizeentityforclient = Item_Customize;
+		e.customizeentityforclient = Item_Customize_Inactive;
 
 		e.spawnshieldtime = 0; // field indicates whether picking it up may give you anything other than the weapon
 	}
@@ -107,18 +116,18 @@ void Item_Show (entity e, float mode)
 		e.solid = SOLID_NOT;
 		//e.colormod = '0.2 1 0.2';
 		e.alpha = g_ghost_items;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = Item_Customize_Inactive;
 
 		e.spawnshieldtime = 1;
 	}
 	else
 	{
 		// hide the item completely
-		e.model = string_null;
+		e.model = NULL;
 		e.solid = SOLID_NOT;
 		//e.colormod = '0 0 0';
 		e.alpha = 0;
-		e.customizeentityforclient = func_null;
+		e.customizeentityforclient = NULL;
 
 		e.spawnshieldtime = 1;
 	}
@@ -167,7 +176,7 @@ void Item_RespawnCountdown (void)
 		{
 			string name;
 			vector rgb;
-			name = string_null;
+			name = NULL;
 			if(g_minstagib)
 			{
 				switch(self.items)
@@ -191,7 +200,7 @@ void Item_RespawnCountdown (void)
 				case IT_JETPACK:        name = "JETPACK"; rgb = '0.5 0.5 0.5'; break;
 				case IT_HEALTH:			name = "MEGA HEALTH"; rgb = '1 0.2 0.2'; break;
 				case IT_ARMOR:			name = "MEGA ARMOR"; rgb = '0.2 1 0.2'; break;
-				case IT_NADGET:			name = "NADGET REGEN"; rgb = '1 0.5 0.2'; break;
+				case IT_NADGET:			name = "NADGET REGEN"; rgb = '0.5 0.5 1.0'; break;
 			}
 			if(name)
 			{
@@ -630,7 +639,7 @@ void Item_Touch (void)
 				if(head.flags & FL_ITEM)
 				{
 					Item_Show(head, -1);
-					RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+					RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 				}
 			}
 			e = RandomSelection_chosen_ent;
@@ -651,7 +660,7 @@ void Item_FindTeam()
 		dprint("Initializing item team ", ftos(self.team), "\n");
 		RandomSelection_Init();
 		for(head = world; (head = findfloat(head, team, self.team)); ) if(head.flags & FL_ITEM)
-			RandomSelection_Add(head, 0, string_null, head.cnt, 0);
+			RandomSelection_Add(head, 0, NULL, head.cnt, 0);
 		e = RandomSelection_chosen_ent;
 		e.state = 0;
 		Item_Show(e, 1);
@@ -1021,20 +1030,13 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 	self.flags = FL_ITEM | itemflags;
 	self.touch = Item_Touch;
 	setmodel (self, self.mdl); // precision set below
-	self.effects |= EF_LOWPRECISION;
+	self.effects |= EF_LOWPRECISION | EF_ROTATE;
 	if((itemflags & FL_POWERUP) || self.health || self.armorvalue)
 		setsize(self, '-16 -16 0', '16 16 0' + '0 0 48' * CVAR(g_pickup_heightscale));
 	else
 		setsize(self, '-16 -16 0', '16 16 0' + '0 0 32' * CVAR(g_pickup_heightscale));
 	if(itemflags & FL_WEAPON)
 		self.modelflags |= MF_ROTATE;
-
-	if (self.classname != "droppedweapon") // if dropped, colormap is already set up nicely
-	if (itemflags & FL_WEAPON)
-	{
-		// neutral team color for pickup weapons
-		self.colormap = 1024; // color shirt=0 pants=0 grey
-	}
 
 	Item_Show(self, 1);
 	self.state = 0;
@@ -1084,7 +1086,7 @@ void minstagib_items (float itemid)
 	if (self.classname == "droppedweapon")
 	{
 		self.ammo_cells = 25;
-		StartItem ("models/weapons/g_nex.md3",
+		StartItem (pickfile("models/weapons/g_nex", "iqm", "md3", NULL),
 			"weapons/weaponpickup.wav", 15, 0,
 			"MinstaNex", 0, WEPBIT_MINSTANEX, FL_WEAPON, generic_pickupevalfunc, 1000);
 		return;
@@ -1470,7 +1472,7 @@ void spawnfunc_item_armor_large (void) {
 		self.armorvalue = g_pickup_armorlarge;
 	if(!self.max_armorvalue)
 		self.max_armorvalue = g_pickup_armorlarge_max;
-	StartItem ("models/items/g_a25.md3", "misc/armor25.wav", g_pickup_respawntime_armor_large, g_pickup_respawntimejitter_armor_large, "100 Armor", IT_ARMOR, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
+	StartItem ("models/items/g_a25.md3", "misc/armor25.wav", g_pickup_respawntime_armor_large, g_pickup_respawntimejitter_armor_large, "100 Armor", IT_ARMOR, 0, if(CVAR(g_pickup_armorlarge_is_powerup)) FL_POWERUP else 0, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
 }
 
 void spawnfunc_item_health_small (void) {
@@ -1511,7 +1513,7 @@ void spawnfunc_item_health_mega (void) {
 			self.max_health = g_pickup_healthmega_max;
 		if(!self.health)
 			self.health = g_pickup_healthmega;
-		StartItem ("models/items/g_h100.md3", "misc/megahealth.wav", g_pickup_respawntime_health_mega, g_pickup_respawntimejitter_health_mega, "100 Health", IT_HEALTH, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
+		StartItem ("models/items/g_h100.md3", "misc/megahealth.wav", g_pickup_respawntime_health_mega, g_pickup_respawntimejitter_health_mega, "100 Health", IT_HEALTH, 0, if(CVAR(g_pickup_healthmega_is_powerup)) FL_POWERUP else 0, commodity_pickupevalfunc, BOT_PICKUP_RATING_HIGH);
 	}
 }
 
@@ -1735,8 +1737,8 @@ void target_items_use (void)
 
 	float _switchweapon;
 	_switchweapon = FALSE;
-	if (activator.autoswitch)
-		if (activator.switchweapon == w_getbestweapon(activator))
+	if (activator.autoswitch && self.weapons)
+		if (activator.switchweapon != w_getbestweapon(activator))
 			_switchweapon = TRUE;
 
 	a0 = activator.armorvalue;
@@ -1753,7 +1755,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_set, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_set, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_set, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_itembitset, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_itembitset, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_bitset, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1770,7 +1772,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_min, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_min, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_min, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_itemand, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_itemand, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_and, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1787,7 +1789,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_max, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_max, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_max, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_or, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_or, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_or, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1804,7 +1806,7 @@ void target_items_use (void)
 		target_item_change(0, ammo_fuel, target_item_func_min, "misc/itempickup.wav", "");
 		target_item_change(0, health, target_item_func_min, "misc/megahealth.wav", "");
 		target_item_change(0, armorvalue, target_item_func_min, "misc/armor25.wav", "");
-		target_item_change(1, items, target_item_func_andnot, "misc/powerup.wav", "misc/poweroff.wav");
+		target_item_change(1, items, target_item_func_andnot, "misc/powerup_shield.wav", "misc/poweroff.wav");
 		target_item_change(1, weapons, target_item_func_andnot, "weapons/weaponpickup.wav", "");
 
 		if((self.items & activator.items) & IT_STRENGTH)
@@ -1950,7 +1952,7 @@ void spawnfunc_item_nadget(void) {
     if(!self.hg_bonus)
         self.hg_bonus = 1;
     
-    StartItem ("models/items/g_fuelregen.md3", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
+    StartItem ("models/items/nadget.iqm", "weapons/weaponpickup.wav", g_pickup_respawntime_powerup, g_pickup_respawntimejitter_powerup, "Extra nadget", IT_NADGET, 0, FL_POWERUP, commodity_pickupevalfunc, BOT_PICKUP_RATING_LOW);
 }
 
 // we no longer have the seeker

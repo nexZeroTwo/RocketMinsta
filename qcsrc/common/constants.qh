@@ -34,7 +34,16 @@ enum {
     ENT_CLIENT_ZAPPER,
     ENT_CLIENT_BUFFMODEL,
     ENT_CLIENT_TURRET,
+    ENT_CLIENT_WARPZONE,
+    ENT_CLIENT_WARPZONE_CAMERA,
+    ENT_CLIENT_WARPZONE_TELEPORTED,
+    ENT_CLIENT_SPECINFO,
+    ENT_CLIENT_ACCSTATS,
+    ENT_CLIENT_HGTWARP_INDICATOR,
+    _ENT_END,
 };
+
+const _ENT_START = ENT_CLIENT;
 
 enum {
     TE_CSQC_PICTURE = 100,
@@ -44,7 +53,6 @@ enum {
     TE_CSQC_NEXGUNBEAMPARTICLE,
     TE_CSQC_LIGHTNINGARC,
     TE_CSQC_BIGPRINT,
-    TE_CSQC_SPECINFO,
     TE_CSQC_VOTE,
     TE_CSQC_VOTERESET,
     TE_CSQC_MADOKAPRINT,
@@ -54,6 +62,7 @@ enum {
     TE_CSQC_HUDFLASH,
     TE_CSQC_HUDFLASH_TEAMCOLOR,
     TE_CSQC_NADGETSELECT,
+    TE_CSQC_SECONDARYSELECT,
     TE_CSQC_CAMERA,
     TE_CSQC_VISUALDAMAGE,
     TE_CSQC_HEAL,
@@ -66,6 +75,14 @@ enum {
     TE_CSQC_MESSAGE,
     TE_CSQC_VOTEINVITE,
     TE_CSQC_ELEBLAST,
+    _TE_CSQC_END,
+};
+
+const _TE_CSQC_START = TE_CSQC_PICTURE;
+
+enumflags {
+    SPECINFO_LIST,
+    SPECINFO_HUD,
 };
 
 enum {
@@ -75,18 +92,16 @@ enum {
     STAT_GAMESTARTTIME,
     STAT_STRENGTH_FINISHED,
     STAT_INVINCIBLE_FINISHED,
-    STAT_DAMAGE_HITS,
-    STAT_DAMAGE_FIRED,
     STAT_PRESSED_KEYS,
     STAT_ALLOW_OLDNEXBEAM,
     STAT_FUEL,
     STAT_NB_METERSTART,
     STAT_SHOTORG,
+    STAT_SHOTORG_VISUAL,
     STAT_LEADLIMIT,
     STAT_CLIP_LOADED,
     STAT_CLIP_LIMIT,
     STAT_ROUNDSTATE,
-    STAT_QUEUE,
     STAT_ZAPPER_HEAT,
     STAT_FROZEN,
     STAT_REVIVE_PROGRESS,
@@ -109,6 +124,9 @@ enum {
     STAT_HEALINCOMING,
     STAT_STEALTH,
     STAT_STEALTH_SAVED,
+    STAT_INNERRING_CYCLE,
+    STAT_INNERRING_FULLTIME,
+    STAT_AIMSPREAD,
 
     STAT_HGTYPE,
     STAT_HGAMMO,
@@ -139,6 +157,9 @@ enum {
     STAT_HGSHIELDDAMAGEPERSHOT,
 
     STAT_HGSENTRYCAPTURE,
+
+    STAT_HGTWARP_EXPIRETIME,
+    STAT_HGTWARP_WARPTIME,
 };
 
 enum {
@@ -162,6 +183,7 @@ enum {
     PROJECTILE_FIREMINE,
     PROJECTILE_FLAK,
     PROJECTILE_FLAK_BOMB,
+    PROJECTILE_PRYAXE,
 
     PROJECTILE_RM_LASER_RED,
     PROJECTILE_RM_LASER_BLUE,
@@ -182,6 +204,7 @@ enum {
 };
 
 enum {
+    ROUNDSTATE_GAMEINIT,
     ROUNDSTATE_PREGAME,
     ROUNDSTATE_GAME,
     ROUNDSTATE_OVER,
@@ -222,11 +245,12 @@ enumflags {
     VDMG_TYPE_LETHAL,
     VDMG_TYPE_ALIEN,
 
-    _VDMG_TYPE_NOCLIENT_BEGIN,
+    //_VDMG_TYPE_NOCLIENT_BEGIN
 
-    VDMG_TYPE_FORCECHECKLOS = _VDMG_TYPE_NOCLIENT_BEGIN,
+    VDMG_TYPE_FORCECHECKLOS,
 };
 
+const _VDMG_TYPE_NOCLIENT_BEGIN = VDMG_TYPE_FORCECHECKLOS;
 const VDMG_TYPE_CLIENTMASK = _VDMG_TYPE_NOCLIENT_BEGIN - 1;
 
 enum {
@@ -443,7 +467,7 @@ enum {
     SP_COUNTRY,
     SP_ACCURACY,
     SP_FPS,
-    SP_NADEMODE,
+    SP_STATUSICONS,
     SP_NADEFRAGS,
     SP_REVIVALS,
     SP_DAMAGE,
@@ -539,6 +563,7 @@ enum {
     DEATH_SLIME,
     DEATH_SWAMP,
     // end environmental
+    DEATH_GUARANTEED,
     DEATH_TELEFRAG,
     DEATH_KILL,
     DEATH_NOAMMO,
@@ -562,6 +587,7 @@ enum {
     DEATH_HOOKFRAG,
     DEATH_ENDURANCE,
     DEATH_RESOURCE_ARMOR,
+    DEATH_CONDUIT,
 };
 
 const DEATH_SPECIAL_START = DEATH_FALL;
@@ -574,7 +600,7 @@ const HITTYPE_SECONDARY = 0x100;
 const HITTYPE_SPLASH = 0x200;
 const HITTYPE_BOUNCE = 0x400;
 const HITTYPE_HEADSHOT = 0x800;
-const HITTYPE_RESERVED = 0x1000; // unused yet
+const HITTYPE_VISUAL_FLIPSECONDARY = 0x1000;
 
 // macros to access these
 #define DEATH_ISSPECIAL(t)            ((t) >= DEATH_SPECIAL_START)
@@ -586,6 +612,28 @@ const HITTYPE_RESERVED = 0x1000; // unused yet
 #define DEATH_ISPROJECTED(t)          ((t) == DEATH_ARC || (t) == DEATH_IGNITE || (t) == DEATH_ENDURANCE)
 #define DEATH_ISENVIRONMENTAL(t)      ((t) >= DEATH_ENV_START && (t) <= DEATH_ENV_END)
 #define WEP_VALID(w)                  ((w) >= WEP_FIRST && (w) <= WEP_LAST)
+
+
+///////////////////////////
+// movetypes (must much the engine defs)
+
+const   MOVETYPE_NONE               = 0;    /// never moves
+const   MOVETYPE_ANGLENOCLIP        = 1;
+const   MOVETYPE_ANGLECLIP          = 2;
+const   MOVETYPE_WALK               = 3;    /// gravity
+const   MOVETYPE_STEP               = 4;    /// gravity, special edge handling
+const   MOVETYPE_FLY                = 5;
+const   MOVETYPE_TOSS               = 6;    /// gravity
+const   MOVETYPE_PUSH               = 7;    /// no clip to world, push and crush
+const   MOVETYPE_NOCLIP             = 8;
+const   MOVETYPE_FLYMISSILE         = 9;    /// extra size to monsters (?)
+const   MOVETYPE_BOUNCE             = 10;
+const   MOVETYPE_BOUNCEMISSILE      = 11;   /// bounce w/o gravity
+const   MOVETYPE_FOLLOW             = 12;   /// track movement of aiment
+const   MOVETYPE_FAKEPUSH           = 13;   /// tenebrae's push that doesn't push
+const   MOVETYPE_PHYSICS            = 32;   /// indicates this object is physics controlled
+const   MOVETYPE_FLY_WORLDONLY      = 33;   /// like MOVETYPE_FLY, but uses MOVE_WORLDONLY for all its traces; objects of this movetype better be SOLID_NOT or SOLID_TRIGGER please, or else...
+
 
 ///////////////////////////
 // misc constants
@@ -607,7 +655,7 @@ const MAX_SHOT_DISTANCE = 32768;
 #define RM_SOUND_LASER_PRIMARY "weapons/rm_laser1.wav"
 #define RM_SOUND_LASER_SECONDARY "weapons/rm_laser2.wav"
 #define RM_SOUND_MORNINGRESCUE "misc/morningrescue.wav"
-#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound") || sv_oldfag) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
+#define RM_SOUND_MINSTA (if(cvar("sv_oldnexsound")) "weapons/minstanexfire.wav" else "weapons/rm_minsta.wav")
 #define RM_SOUND_KILL "misc/kill.wav"
 #define RM_SOUND_PHOENIX "misc/poweroff.wav"
 #define RM_SOUND_REBIRTH "misc/poweroff.wav"
@@ -640,3 +688,9 @@ const CVAR_TYPEFLAG_HASDESCRIPTION = 16;
 const CVAR_TYPEFLAG_READONLY = 32;
 const CVAR_TYPEFLAG_MODIFIED = 64;
 const CVAR_TYPEFLAG_WATCHED = 128;
+
+#ifndef RM_MAXCLIENTS
+#define RM_MAXCLIENTS 32
+#endif
+
+const BUFFMODEL_OVERHEAD_OFFSET = '0 0 70';

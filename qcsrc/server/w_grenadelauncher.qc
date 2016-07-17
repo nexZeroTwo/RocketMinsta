@@ -169,6 +169,7 @@ void W_Mortar_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_GRENADE_LAUNCHER,
         CVAR(g_balance_grenadelauncher_magazinecapacity),
+        CVAR(g_balance_grenadelauncher_magazineregen),
         CVAR(g_balance_grenadelauncher_reloadtime),
         ammo_rockets,
         1
@@ -178,7 +179,7 @@ void W_Mortar_SetClipContext(void) {
 .float bot_secondary_grenademooth;
 float w_glauncher(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_grenadelauncher_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_grenadelauncher_swapshotmodes));
     W_Mortar_SetClipContext();
 
 	if (req == WR_AIM)

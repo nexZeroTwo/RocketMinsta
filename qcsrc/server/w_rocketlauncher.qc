@@ -339,6 +339,7 @@ void W_Rocket_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_ROCKET_LAUNCHER,
         CVAR(g_balance_rocketlauncher_magazinecapacity),
+        CVAR(g_balance_rocketlauncher_magazineregen),
         CVAR(g_balance_rocketlauncher_reloadtime),
         ammo_rockets,
         1
@@ -349,7 +350,7 @@ void spawnfunc_weapon_rocketlauncher (void); // defined in t_items.qc
 
 float w_rlauncher(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_rocketlauncher_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_rocketlauncher_swapshotmodes));
     W_Rocket_SetClipContext();
 
 	entity rock;
@@ -543,6 +544,9 @@ float w_rlauncher(float req)
 	}
 	else if (req == WR_CHECKAMMO1)
 	{
+        if(!self.weapon)
+            return TRUE;
+
 		// don't switch while guiding a missile
 		if ((ATTACK_FINISHED(self) <= time || self.weapon != WEP_ROCKET_LAUNCHER)
 			&& self.ammo_rockets < CVAR(g_balance_rocketlauncher_ammo))

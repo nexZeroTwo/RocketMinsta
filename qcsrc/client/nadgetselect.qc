@@ -17,11 +17,11 @@ float ns_confirmed2;
 
 void NS_UpdateSelection(vector o, vector s) {
     if(g_nadgets_double)
-        ns_selected_in = (mv_mousepos_x > vid_conwidth * 0.5);
+        ns_selected_in = (mouse_pos_x > vid_conwidth * 0.5);
     else
         ns_selected_in = 0;
 
-    ns_selected = floor(ns_numoptions * ((bound(o_y, mv_mousepos_y, o_y + s_y) - o_y) / s_y));
+    ns_selected = floor(ns_numoptions * ((bound(o_y, mouse_pos_y, o_y + s_y) - o_y) / s_y));
     ns_selected = min(ns_numoptions - 1, ns_selected);
 }
 
@@ -35,10 +35,6 @@ void NS_Draw(void) {
         return;
 
     var a = ns_alpha;
-
-    mv_mousepos = mv_mousepos + getmousepos();
-    mv_mousepos = [bound(0, mv_mousepos_x, vid_conwidth),
-                   bound(0, mv_mousepos_y, vid_conheight)];
 
     drawfont = sbar_bigfont;
     drawfill('0 0', [vid_conwidth, vid_conheight], '0 0 0', 0.5 * a, DRAWFLAG_NORMAL);
@@ -63,7 +59,7 @@ void NS_Draw(void) {
 
         if(g_nadgets_double) {
             txt = if(table) "Secondary" else "Primary";
-            txtw = stringwidth_svn(txt, FALSE, sz);
+            txtw = stringwidth(txt, FALSE, sz);
             drawstring([o_x + (s_x - txtw) * 0.5, o_y - sz_y * 1.25], txt, sz, '1 1 1', a, DRAWFLAG_NORMAL);
         }
 
@@ -74,7 +70,7 @@ void NS_Draw(void) {
                 "'+nadget' '+hook' '+button6'"
         )));
 
-        txtw = stringwidth_svn(txt, TRUE, sz);
+        txtw = stringwidth(txt, TRUE, sz);
         drawcolorcodedstring([o_x + (s_x - txtw) * 0.5, o_y + s_y + NS_MARGIN * 0.5], txt, sz, a, DRAWFLAG_NORMAL);
 
         float confirmed = if(table) ns_confirmed2 else ns_confirmed1;
@@ -107,7 +103,7 @@ void NS_Draw(void) {
             p = [o_x + NS_MARGIN * 0.5, o_y + i * sz_y + NS_MARGIN * 0.5];
 
             if(t == HG_RANDOM) {
-                p_x = p_x + (sz_x - stringwidth_svn("?", FALSE, sz)) * 0.5;
+                p_x = p_x + (sz_x - stringwidth("?", FALSE, sz)) * 0.5;
                 drawstring(p, "?", sz, clr, a, DRAWFLAG_NORMAL);
             } else {
                 drawpic(p, HG_TypeToIcon(t, TRUE, FALSE), sz, '1 1 1' * (0.5 + 0.5 * a2), a, DRAWFLAG_NORMAL);
@@ -118,16 +114,13 @@ void NS_Draw(void) {
 
             if(i < 10) {
                 txt = if(i == 9) "0" else ftos(i + 1);
-                txtw = stringwidth_svn(txt, FALSE, sz * 0.5);
+                txtw = stringwidth(txt, FALSE, sz * 0.5);
                 drawstring([o_x + s_x - txtw, p_y], txt, sz * 0.5, '0.2 0.2 0.2', a, DRAWFLAG_NORMAL);     
             }
         }
     }
 
     drawfont = sbar_font;
-
-    if(ns_active)
-        drawpic(mv_mousepos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
 }
 
 void NS_ConfirmSelection(void) {
@@ -148,6 +141,7 @@ void NS_ConfirmSelection(void) {
         cmd = strcat(cmd, "; cmd join\n");
         localcmd(cmd);
         ns_active = FALSE;
+        mouse_enabled = FALSE;
     }
 }
 
@@ -164,8 +158,10 @@ float NS_InputEvent(float bInputType, float nPrimary, float nSecondary) {
                 ns_confirmed2 = -1;
             else if(ns_confirmed1 >= 0)
                 ns_confirmed1 = -1;
-            else
+            else {
                 ns_active = FALSE;
+                mouse_enabled = FALSE;
+            }
 
             return TRUE;
         }
@@ -207,7 +203,7 @@ void Net_ReadNadgetSelect(void) {
         return;
 
     if(!ns_active) {
-        mv_mousepos = [vid_conwidth, vid_conheight] * 0.5;
+        mouse_enabled = TRUE;
         ns_confirmed1 = ns_confirmed2 = -1;
     }
 
@@ -233,7 +229,7 @@ void Net_ReadNadgetSelect(void) {
             if(!valid)
                 continue;
 
-            ns_width = max(ns_width, NS_SCALE + stringwidth_svn(HG_TypeToExpandedName(ns_options[idx]), FALSE, [NS_SCALE, NS_SCALE]));
+            ns_width = max(ns_width, NS_SCALE + stringwidth(HG_TypeToExpandedName(ns_options[idx]), FALSE, [NS_SCALE, NS_SCALE]));
         }
     }
 

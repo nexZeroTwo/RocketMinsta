@@ -1,5 +1,6 @@
 
 .vector zapper_start;
+.vector zapper_real_start;
 .vector zapper_end;
 .vector zapper_offs;
 
@@ -12,82 +13,157 @@ vector Zapper_BeamRGB(float t) {
     }
 }
 
-float Draw_CylindricLine_Curved(vector start, vector end, vector end_d, float thickness, string texture, float aspect, float shift, vector rgb, float aalpha, float drawflag, float depth) {
-    vector mid;
-    mid = (start + end) * 0.5;
+float plane_sign(vector plane_point, vector plane_norm, vector point) {
+	float sign = (plane_norm_x * (point_x - plane_point_x)) +
+		(plane_norm_y * (point_y - plane_point_y)) + (plane_norm_z * (point_z - plane_point_z));
+	return (if (sign > 0) 1 else (if (sign < 0) -1 else 0));
+}
 
-    end_d *= 0.25;
-    mid += end_d;
+float zapper_beam_width;
+vector zapper_particles_trace_callback_origin;
+float zapper_particles_trace_callback_beamoffs;
+vector zapper_curve_beam_prev_point1;
+vector zapper_curve_beam_prev_point2;
+float zapper_curve_beam_point_num1;
+float zapper_curve_beam_point_num2;
+float zapper_curve_beam_offset1;
+float zapper_curve_beam_offset2;
 
-    --depth;
-    if(depth < 0 || normalize(mid - start) * normalize(end - start) > 0.999999) {
-        Draw_CylindricLine(start, end, thickness, texture, aspect, shift, rgb, aalpha, drawflag);
-        return shift + aspect * vlen(start - end) / thickness;
-    } else {
-        shift = Draw_CylindricLine_Curved(start, mid, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
-        shift = Draw_CylindricLine_Curved(mid, end, end_d, thickness, texture, aspect, shift, rgb, aalpha, drawflag, depth);
-        return shift;
+void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
+    vector o = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_particles_trace_callback_origin);
+    vector rgb = Zapper_BeamRGB(self.team);
+    vector end2 = to + self.zapper_offs * 70;
+    string tex = "particles/zapper";
+    vector d = end2 - o;
+    float maxlen = vlen(to - o);
+    float t = self.cnt + time;
+
+    if(vlen(d) > maxlen)
+        end2 = from + normalize(d) * maxlen;
+
+    vector v = WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin);
+
+    var _alpha = self.alpha;
+    rgb *= _alpha;
+
+    Draw_CylindricLine(from, endpos, zapper_beam_width, tex, 0.03, zapper_particles_trace_callback_beamoffs, rgb, _alpha, DRAWFLAG_ADDITIVE, v);
+    zapper_particles_trace_callback_beamoffs += 0.03 * vlen(from - endpos) / zapper_beam_width;
+
+    if(self.sv_entnum && !fps_friendly) {
+        zapper_curve_beam_prev_point1 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
+        zapper_curve_beam_prev_point2 = WarpZone_TransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
+        vectorvectors(normalize(d));
+        vector rgb2 = GetTeamRGB(self.team) * _alpha;
+        vector o1 = v_right *  15 * sin(t * 4.0) + v_up * 15 * cos(t * 4.2);
+        vector o2 = v_right * -15 * cos(t * 4.1) + v_up * 15 * sin(t * 4.0);
+
+        vector next_point, warp_normal = '0 0 0';
+        float curve_fract, start_warp_sign;
+        if (to != endpos) {
+            if (trace_fraction < 1 && trace_ent) {
+                 warp_normal = trace_ent.warpzone_forward;
+                 start_warp_sign = plane_sign(endpos, warp_normal, from);
+            }
+        }
+        float before_warp;
+        float curve_parts = 32;
+        for (before_warp = 1; zapper_curve_beam_point_num1 <= curve_parts && before_warp; zapper_curve_beam_point_num1++) {
+            curve_fract = (1 / curve_parts) * zapper_curve_beam_point_num1;
+            next_point = normalize(to - o) * maxlen * curve_fract + (o1 * sin(PI * curve_fract)) + o;
+            if (warp_normal != '0 0 0') {
+                if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
+                    next_point = WarpZoneLib_PlaneAndLineCross(trace_endpos, warp_normal, zapper_curve_beam_prev_point1, next_point - zapper_curve_beam_prev_point1);
+                    before_warp = 0;
+                }
+            }
+            Draw_CylindricLine(zapper_curve_beam_prev_point1, next_point, zapper_beam_width, tex, 0.03, zapper_curve_beam_offset1, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_offset1 += 0.03 * (vlen(zapper_curve_beam_prev_point1 - next_point)) / zapper_beam_width;
+            zapper_curve_beam_prev_point1 = next_point;
+        }
+        for (before_warp = 1; zapper_curve_beam_point_num2 <= curve_parts && before_warp; zapper_curve_beam_point_num2++) {
+            curve_fract = (1 / curve_parts) * zapper_curve_beam_point_num2;
+            next_point = normalize(to - o) * maxlen * curve_fract + (o2 * sin(PI * curve_fract)) + o;
+            if (warp_normal != '0 0 0') {
+                if (plane_sign(endpos, warp_normal, next_point) != start_warp_sign) {
+                    next_point = WarpZoneLib_PlaneAndLineCross(trace_endpos, warp_normal, zapper_curve_beam_prev_point2, next_point - zapper_curve_beam_prev_point2);
+                    before_warp = 0;
+                }
+            }
+            Draw_CylindricLine(zapper_curve_beam_prev_point2, next_point, zapper_beam_width, tex, 0.03, zapper_curve_beam_offset2, rgb2, self.alpha, DRAWFLAG_ADDITIVE, v);
+            zapper_curve_beam_offset2 += 0.03 * (vlen(zapper_curve_beam_prev_point2 - next_point)) / zapper_beam_width;
+            zapper_curve_beam_prev_point2 = next_point;
+        }
+        zapper_curve_beam_prev_point1 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point1);
+        zapper_curve_beam_prev_point2 = WarpZone_UnTransformOrigin(WarpZone_trace_transform, zapper_curve_beam_prev_point2);
     }
 }
 
-void Zapper_Draw(void) {
-    vector start;
+vector Zapper_GetShotOrigin(void) {
+    var org = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+    return org - '5 0 0';
+}
 
-    InterpolateOrigin_Do();
-    self.zapper_end = self.origin;
+void Zapper_Draw(void) {
+    vector start, muzzleorg;
 
     float me = ID_ME;
     float truezapper;
 
-    start = self.zapper_start;
-    if(self.sv_entnum == me) if(!CVAR(chase_active)) {
-        start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
-        self.zapper_start = start;
-    }
+    var first_person = FALSE;
 
-    self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
+    if(!(time - WarpZone_FixView_lasttime < 0.2 && self.sv_entnum == me && !cvar("chase_active")))
+        InterpolateOrigin_Do(); //do interpolation for our beam only if not in warpzone
+    self.zapper_end = self.origin;
 
+    zapper_beam_width = 12;
+    start = muzzleorg = self.zapper_start;
     vector end1;
     if(self.sv_entnum == me && (truezapper = CVAR(cl_truezapper)) > 0) {
         end1 = (view_origin + view_forward * (vlen(self.zapper_start - self.zapper_end))) * truezapper + (1 - truezapper) * self.zapper_end;
     } else
         end1 = self.zapper_end;
-    vector end2 = end1 + self.zapper_offs * 70;
-    vector d = end2 - start;
-    float maxlen = vlen(end1 - start);
+    vector real_start = self.zapper_real_start;
 
-    if(vlen(d) > maxlen)
-        end2 = start + normalize(d) * maxlen;
+    if(self.sv_entnum == me) if(!CVAR(chase_active)) {
+        var zapper_shotorigin = Zapper_GetShotOrigin();
+        start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        muzzleorg = view_origin + view_forward * zapper_shotorigin_x + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
+        self.zapper_start = start;
+        if (WarpZone_FixView_lastwarp) {
+            end1 = self.zapper_end = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.origin);
+            real_start = WarpZone_TransformOrigin(WarpZone_FixView_lastwarp, self.zapper_real_start);
+        }
 
-    string tex = "particles/zapper";
-    vector rgb = Zapper_BeamRGB(self.team);
-
-    float t = self.cnt + time;
-    
-    Draw_CylindricLine(end1, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
-
-    if(self.sv_entnum && !fps_friendly) {
-        vectorvectors(normalize(d));
-        vector rgb2 = GetTeamRGB(self.team);
-        vector o1 = v_right *  60 * sin(t * 4.0) + v_up * 60 * cos(t * 4.2);
-        vector o2 = v_right * -60 * cos(t * 4.1) + v_up * 60 * sin(t * 4.0);
-
-        Draw_CylindricLine_Curved(end2, start, o1, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
-        Draw_CylindricLine_Curved(end2, start, o2, 12, tex, 0.03, 5 * time, rgb2, self.alpha, DRAWFLAG_ADDITIVE, 4);
+        zapper_beam_width = 8;
+        first_person = TRUE;
     }
 
-    if(self.alpha < 1)
-        return;
+    self.zapper_offs += (randomvec() - self.zapper_offs) * drawframetime * 10;
 
-    float eff_zap = rm_particleeffectnum_team("RM_ZAPPER", self.team, 2);
-    float eff_muz = rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2);
-    float pcount = frametime * 300;
+    zapper_particles_trace_callback_beamoffs = -time * 5;
+    zapper_particles_trace_callback_origin = start;
+    zapper_curve_beam_prev_point1 = zapper_curve_beam_prev_point2 = self.zapper_start;
+    zapper_curve_beam_point_num1 = zapper_curve_beam_point_num2 = 1;
+    zapper_curve_beam_offset1 = time * 5;
+    zapper_curve_beam_offset2 = time * 5;
+    
+    var dynlight_org = self.zapper_start;
 
-    pointparticles(eff_zap, end1, '0 0 0', pcount);
-    pointparticles(eff_muz, start, end1 - start, pcount);
+    if(first_person) using(fps_friendly = TRUE) {
+        var s = start + view_forward;
+        dynlight_org = s;
+        zapper_particles_trace_callback(view_origin + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z, s, s);
+    }
 
-    if(self.sv_entnum)
-        pointparticles(eff_zap, end2, '0 0 0', pcount);
+    R_AddDynamicLight(dynlight_org, 50 * self.alpha, Zapper_BeamRGB(self.team));
+
+    end1 -= normalize(end1 - self.zapper_start);
+
+    WarpZone_TraceTriangle(real_start, self.zapper_start, end1, MOVE_NOMONSTERS, world, zapper_particles_trace_callback);
+
+    pointparticles(rm_particleeffectnum_team("RM_ZAPPER_MUZZLEFLASH", self.team, 2), muzzleorg, end1 - start, frametime * 300);
+    if(self.alpha > 0.9)
+        pointparticles(rm_particleeffectnum_team("RM_ZAPPER", self.team, 2), trace_endpos, '0 0 0', frametime * 300);
 }
 
 void Zapper_Draw_Shield(void) {
@@ -97,6 +173,7 @@ void Zapper_Draw_Shield(void) {
     float me = ID_ME;
 
     if(self.sv_entnum == me && !CVAR(chase_active)) {
+        var zapper_shotorigin = Zapper_GetShotOrigin();
         self.zapper_start = view_origin + view_forward * (zapper_shotorigin_x - 1) + view_right * zapper_shotorigin_y + view_up * zapper_shotorigin_z;
         self.zapper_end = self.zapper_start + view_forward * 30;
     }
@@ -107,7 +184,7 @@ void Zapper_Draw_Shield(void) {
     string tex = "particles/zapper";
     vector rgb = Zapper_BeamRGB(self.team) * 0.5;
 
-    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE);
+    Draw_CylindricLine(end, start,  12, tex, 0.03, 5 * time, rgb, self.alpha, DRAWFLAG_ADDITIVE, view_origin);
 
     if(self.alpha < 1)
         return;
@@ -137,6 +214,7 @@ void Zapper_Fader_Spawn(entity ref) {
     e.sv_entnum = ref.sv_entnum;
     e.team = ref.team;
     e.zapper_start = ref.zapper_start;
+    e.zapper_real_start = ref.zapper_real_start;
     e.zapper_end = ref.zapper_end;
     e.origin = ref.origin;
     e.cnt = ref.cnt;
@@ -153,7 +231,6 @@ void Zapper_Remove(void) {
 
 void Zapper_Read(float t) {
     float sf = ReadByte();
-
 
     if(sf & 1) {
         float vol, attn;
@@ -175,12 +252,14 @@ void Zapper_Read(float t) {
         }
 
         self.entremove = Zapper_Remove;
-        self.sv_entnum = ReadByte();
 
-        if(!self.sv_entnum)
+        if(sf & 32) {
+            self.sv_entnum = 0;
             self.team = ReadByte() - 1;
-        else
+        } else {
+            self.sv_entnum = ReadByte();
             self.team = GetPlayerColor(self.sv_entnum - 1);
+        }
 
         self.alpha = 1;
         self.cnt = random() * 1000;
@@ -193,6 +272,14 @@ void Zapper_Read(float t) {
         self.zapper_start_x = ReadCoord();
         self.zapper_start_y = ReadCoord();
         self.zapper_start_z = ReadCoord();
+
+        if(sf & 32) {
+            self.zapper_real_start = self.zapper_start;
+        } else {
+            self.zapper_real_start_x = ReadCoord();
+            self.zapper_real_start_y = ReadCoord();
+            self.zapper_real_start_z = ReadCoord();
+        }
     }
 
     if(sf & 4) {
@@ -202,27 +289,21 @@ void Zapper_Read(float t) {
         setorigin(self, self.zapper_end);
         InterpolateOrigin_Note();
     }
-    
-    if(sf & 8) {
-        zapper_shotorigin = decompressShotOrigin(ReadInt24_t());
+
+    if(sf & 16) {
+        InterpolateOrigin_Note();
     }
 }
 
-void Zapper_ReadLightning(void) {
-    float ateam;
-    vector from, to;
-    
-    ateam  = ReadByte();
-    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
-    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
 
+float zapper_lightning_ateam;
+void zapper_lightning_trace_callback(vector from, vector endpos, vector to) {
     if(!rm_teamlasers)
-        ateam = COLOR_TEAM2;
+        zapper_lightning_ateam = COLOR_TEAM2;
 
-    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", ateam, 2), to, '0 0 0', 1);
-
+    pointparticles(rm_particleeffectnum_team("RM_HG_PLASMA_SHARD_EXPLODE", zapper_lightning_ateam, 2), to, '0 0 0', 1);
     if(fps_friendly) {
-        LightingArc_Segment(from, to, ateam);
+        LightingArc_Segment(from, to, zapper_lightning_ateam);
     } else {
         float seglength, drifts, drifte, branchfactor, branchfactor_add, lcount;
 
@@ -234,8 +315,20 @@ void Zapper_ReadLightning(void) {
         lcount           = CVAR(cl_effects_lightningarc_count);
         
         for(; lcount; --lcount)
-            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, ateam);
+            LightingArc_Full(from, to, seglength, drifts, drifte, branchfactor, branchfactor_add, zapper_lightning_ateam);
     }
 
     pointparticles(particleeffectnum("electro_muzzleflash"), from, normalize(to - from) * 1000, 1);
+}
+
+void Zapper_ReadLightning(void) {
+    vector from, real_from, to;
+    
+    zapper_lightning_ateam  = ReadByte();
+    from_x = ReadCoord(); from_y = ReadCoord(); from_z = ReadCoord();
+    real_from_x = ReadCoord(); real_from_y = ReadCoord(); real_from_z = ReadCoord();
+    to_x   = ReadCoord(); to_y   = ReadCoord(); to_z   = ReadCoord();
+
+	WarpZone_TraceTriangle(real_from, from, to, MOVE_NOMONSTERS, world, zapper_lightning_trace_callback);
+
 }

@@ -57,19 +57,24 @@ float W_Uzi_Attack (float deathtype)
         self.ammo_nails -= cost;
 
 	W_SetupShot (self, CVAR(g_antilag_bullets) && CVAR(g_balance_uzi_speed) >= CVAR(g_antilag_bullets), 0, "weapons/uzi_fire.wav", CVAR(g_balance_uzi_first_damage));
+
 	if (!g_norecoil)
 	{
 		self.punchangle_x = random () - 0.5;
 		self.punchangle_y = random () - 0.5;
+        self.weaponentity.punchangle = self.punchangle;
 	}
 
 	// this attack_finished just enforces a cooldown at the end of a burst
 	ATTACK_FINISHED(self) = time + CVAR(g_balance_uzi_first_refire) * W_WeaponRateFactor();
 
-	if (self.uzi_bulletcounter == 1)
+	if (self.uzi_bulletcounter == 1) {
+        var pts = Buffs_MEODP_Hitscan_Begin(self);
 		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_first_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_first_damage) + dmgbonus, 0, CVAR(g_balance_uzi_first_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
-	else
+        Buffs_MEODP_Hitscan_End(pts);
+    } else {
 		fireBallisticBullet(w_shotorg, w_shotdir, CVAR(g_balance_uzi_sustained_spread), CVAR(g_balance_uzi_speed), 5, CVAR(g_balance_uzi_sustained_damage) + dmgbonus, 0, CVAR(g_balance_uzi_sustained_force), deathtype, 0, 1, CVAR(g_balance_uzi_bulletconstant));
+    }
 	endFireBallisticBullet();
 
 	pointparticles(particleeffectnum("uzi_muzzleflash"), w_shotorg_visual, w_shotdir_visual * 1000, 1);
@@ -96,6 +101,7 @@ void W_Uzi_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_UZI,
         CVAR(g_balance_uzi_magazinecapacity),
+        CVAR(g_balance_uzi_magazineregen),
         CVAR(g_balance_uzi_reloadtime),
         ammo_nails,
         1
@@ -111,7 +117,7 @@ void uzi_fire1_02()
 		return;
 	}
 
-    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_uzi_swapshotmodes));
 
 	if (self.w_button_primary)
 	{
@@ -134,7 +140,7 @@ void uzi_fire1_02()
 
 float w_uzi(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_uzi_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_uzi_swapshotmodes));
     W_Uzi_SetClipContext();
 
 	if (req == WR_AIM)

@@ -1,0 +1,2 @@
+.entity zapper_beam;
+void W_Zapper_Beam_Think(void);

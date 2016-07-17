@@ -152,7 +152,7 @@ void HLAC_fire1_02()
 		return;
 	}
 
-    W_SetButtonFields(CVAR(g_balance_hlac_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_hlac_swapshotmodes));
 
 	if (self.w_button_primary)
 	{
@@ -186,6 +186,7 @@ void W_HLAC_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_HLAC,
         CVAR(g_balance_hlac_magazinecapacity),
+        CVAR(g_balance_hlac_magazineregen),
         CVAR(g_balance_hlac_reloadtime),
         ammo_cells,
         1
@@ -194,7 +195,7 @@ void W_HLAC_SetClipContext(void) {
 
 float w_hlac(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_hlac_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_hlac_swapshotmodes));
     W_HLAC_SetClipContext();
 
 	if (req == WR_AIM)

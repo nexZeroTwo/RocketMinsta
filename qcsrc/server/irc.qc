@@ -361,6 +361,10 @@ float IRC_IsIgnored(string mask) {
     return FALSE;
 }
 
+float IRC_IsMyNick(float handle, string nick) {
+    return strtolower(nick) == strtolower(IRC_CurrentNick(handle));
+}
+
 void IRC_Event(float handle, string event, float numeric, string src, float argc) {
     float ijp;
     string nick, user, host;
@@ -411,7 +415,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         }
     } else if(event == "PRIVMSG") {
         string cmd = argv(1);
-        if(argv(0) == IRC_CurrentNick(handle)) {
+        if(IRC_IsMyNick(handle, argv(0))) {
             if(IRC_IsAdmin(src))
                 IRC_AdminCommand(handle, nick, cmd);
             else
@@ -437,7 +441,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         }
     } else if(event == "KICK") {
         if(CVAR(sv_ircbot_channel_auto_rejoin))
-        if(argv(1) == IRC_CurrentNick(handle)) {
+        if(IRC_IsMyNick(handle, argv(1))) {
             IRC_JoinChannel(handle, argv(0), if(strtolower(argv(0)) == irc.target) irc.targetname else "");
             return;
         }
@@ -466,7 +470,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
             bprint("\n");
         }
     } else if(event == "MODE") {
-        if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(argv(2) == IRC_CurrentNick(irc.cnt))
+        if(strtolower(argv(0)) == irc.target) if(argv(1) == "+o") if(IRC_IsMyNick(irc.cnt, argv(2)))
             irc.skin = 1;
     } else if(event == "NICK") {
         if(CVAR(sv_ircbot_announce_irc_nick))
@@ -475,7 +479,7 @@ void IRC_Event(float handle, string event, float numeric, string src, float argc
         if(strtolower(argv(0)) == irc.target) {
             cvar_set("_sv_ircbot_lasttopic", argv(1));
 
-            if(nick != IRC_CurrentNick(handle))
+            if(!IRC_IsMyNick(handle, nick))
                 IRC_UpdateTopic();
         }
     } else if(numeric == IRC_RFC_ERR_NICKNAMEINUSE) {
@@ -525,7 +529,7 @@ void IRC_Announce_Client(entity plr, float ispart) {
     
     if(CVAR(sv_ircbot_announce_joinparts_showcountry))
     if(CVAR(sv_ip2country))
-    if(CVAR_STR(sv_ip2country_server) != "") {
+    if(IP2C_GetQueryURL() != "") {
         IP2C_Lookup(plr.netaddress, IRC_Announce_Client_Callback, CVAR(sv_ircbot_announce_joinparts_showcountry_timeout), ctx);
         return;
     }

@@ -7,15 +7,6 @@
 
 string(string format, ...) sprintf = #627;
 
-// These are pretty nifty.
-// TODO: maybe move them elsewhere and use for the rest of the weapons?
-// Also, this needs a manual update when the autocvars branch is merged.
-
-#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
-#define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
-#define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
-#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
-
 #define MAX_DAMAGEEXTRARADIUS 16
 
 void W_Crylink_CheckLinks(entity e)
@@ -571,6 +562,7 @@ void W_Crylink_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_CRYLINK,
         CVAR(g_balance_crylink_magazinecapacity),
+        CVAR(g_balance_crylink_magazineregen),
         CVAR(g_balance_crylink_reloadtime),
         ammo_cells,
         1
@@ -579,7 +571,7 @@ void W_Crylink_SetClipContext(void) {
 
 float w_crylink(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_crylink_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_crylink_swapshotmodes));
     W_Crylink_SetClipContext();
 
 	if (req == WR_AIM)

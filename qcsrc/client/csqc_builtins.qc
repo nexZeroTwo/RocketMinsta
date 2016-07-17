@@ -21,7 +21,7 @@ string (string s)							precache_sound = #19;
 string (string s)							precache_model = #20;
 
 //void (string s)								dprint = #25;
-string (float f)							ftos = #26;
+string (float f)							ftos_builtin = #26;
 string (vector v)							vtos = #27;
 void ()									coredump = #28;
 void ()									traceon = #29;
@@ -42,8 +42,13 @@ entity (entity e)							nextent = #47;
 vector (vector v)							vectoangles = #51;
 vector (vector v, vector w)							vectoangles2 = #51;
 
+void(entity ent, entity ignore) tracetoss = #64;
+
 void (string var, string val)						cvar_set = #72;
 
+float(float property, ...) setproperty = #303
+vector (float property) getpropertyvec = #303;
+float (float property) getproperty = #303;
 
 float()									ReadByte = #360;
 float()									ReadChar = #361;
@@ -70,6 +75,7 @@ string (float fhandle)							fgets = #112;
 void (float fhandle, string s)						fputs = #113;
 float (string s)							strlen = #114;
 string (...)								strcat = #115;
+string operator+(string s1, string s2)             = #115;
 string (string s, float start, float length)				substring = #116;
 vector (string s)							stov = #117;
 string (string s)							strzone = #118;
@@ -81,6 +87,7 @@ void (entity e)								R_AddEntity = #302;
 float (float property, ...)						R_SetView = #303;
 void ()									R_RenderScene = #304;
 void (vector org, float radius, vector rgb)				R_AddDynamicLight = #305;
+void (vector org, float radius, vector lightcolours, float style, string cubemapname, float pflags) R_AddDynamicLightEx = #305;
 void ()									R_CalcRefDef = #306;
 
 vector (vector v)							cs_unproject = #310;
@@ -98,7 +105,7 @@ float	drawfill(vector position, vector size, vector rgb, float alpha, float flag
 void	drawsetcliparea(float x, float y, float width, float height) = #324;
 void	drawresetcliparea(void) = #325;
 float	drawcolorcodedstring(vector position, string text, vector scale, float alpha, float flag) = #326;
-float	stringwidth(string text, float handleColors) = #327;
+float	stringwidth(string text, float handleColors, vector fontSize) = #327;
 float	drawsubpic(vector position, vector size, string pic, vector srcPosition, vector srcSize, vector rgb, float alpha, float flag) = #328;
 
 
@@ -147,6 +154,7 @@ entity (.string fld, string match)					findchain = #402;
 entity (.float fld, float match)					findchainflags = #450;
 entity (.entity fld, entity match)					findchainentity = #403;
 entity (.float fld, float match)					findchainfloat = #403;
+entity (.float fld, float match, .entity tofield)   findchainfloat_tofield = #403;
 entity (entity start, .float fld, float match)				findflags = #449;
 
 float (string pattern, float caseinsensitive, float quiet)		search_begin = #444;
@@ -345,3 +353,43 @@ string(string) GlobalGet = #176;
 float(string, string) GlobalSet = #177;
 
 float(float v) fix_int_return_value = #512;
+
+// DP_CSQC_QUERYRENDERENTITY
+// idea: VorteX
+// darkplaces implementation: VorteX
+// constant definitions:
+// render entity fields:
+float E_ACTIVE      = 0; // float 0/1
+float E_ORIGIN      = 1; // vector
+float E_FORWARD     = 2; // vector
+float E_RIGHT       = 3; // vector
+float E_UP          = 4; // vector
+float E_SCALE       = 5; // float
+float E_ORIGINANDVECTORS = 6; // returns origin, + sets v_* vectors to orientation
+float E_ALPHA       = 7; // float
+float E_COLORMOD    = 8; // vector
+float E_PANTSCOLOR  = 9; // vector
+float E_SHIRTCOLOR  = 10; // vector
+float E_SKIN        = 11; // float
+float E_MINS        = 12; // vector
+float E_MAXS        = 13; // vector
+float E_ABSMIN      = 14; // vector
+float E_ABSMAX      = 15; // vector
+float E_LIGHT       = 16; // vector - modellight
+// builtin definitions:
+float(float entitynum, float fldnum) getentity = #504;
+vector(float entitynum, float fldnum) getentityvec = #504;
+// description: allows to query parms from render entities, especially useful with attaching CSQC ents to
+// server entities networked and interpolated by engine (monsters, players), number of entity is it's SVQC number
+// you can send it via tempentity/CSQC entity message. Note that this builtin doesnt know about entity removing/reallocating
+// so it's meaning to work for short period of time, dont use it on missiles/grenades whatever will be removed next five seconds
+
+string getextresponse(void) = #624;
+
+//DP_RM_QCSENDPACKET
+//idea: Akari
+//darkplaces implementation: Akari
+//builtin definitions:
+float(string addr, string data) net_sendpacket = #801;
+//description:
+//A QC builtin equivalent of the "packet" command

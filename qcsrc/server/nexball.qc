@@ -104,7 +104,7 @@ void relocate_nexball (void)
 	{
 		vector o;
 		o = self.origin;
-		if(!move_out_of_solid(self))
+		if(!move_out_of_solid(self, MOVE_WORLDONLY))
 			objerror("could not get out of solid at all!");
 		print("^1NOTE: this map needs FIXING. ", self.classname, " at ", vtos(o - '0 0 1'));
 		print(" needs to be moved out of solid, e.g. by '", ftos(self.origin_x - o_x));

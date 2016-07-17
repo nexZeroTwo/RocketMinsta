@@ -67,27 +67,49 @@ void Porto_Draw()
 			p = p - view_up * 16;
 		if(idx-1 >= portal1_idx)
 		{
-			Draw_CylindricLine(p, q, 4, "", 1, 0, '0 0 1', 0.5, DRAWFLAG_NORMAL);
+			Draw_CylindricLine(p, q, 4, "", 1, 0, '0 0 1', 0.5, DRAWFLAG_NORMAL, view_origin);
 		}
 		else
 		{
-			Draw_CylindricLine(p, q, 4, "", 1, 0, '1 0 0', 0.5, DRAWFLAG_NORMAL);
+			Draw_CylindricLine(p, q, 4, "", 1, 0, '1 0 0', 0.5, DRAWFLAG_NORMAL, view_origin);
 		}
 		--idx;
 	}
 }
 
+vector Plasma_Draw_Trace_Callback_rgb;
+float Plasma_Draw_Trace_Callback_ofs;
+
+void Plasma_Draw_Trace_Callback(vector from, vector endpos, vector to) {
+    vector ofs = normalize(endpos - from) * 3;
+
+    Draw_CylindricLine(from - ofs, endpos + ofs, 15, "particles/zapper", 0.1, Plasma_Draw_Trace_Callback_ofs, Plasma_Draw_Trace_Callback_rgb, 1, DRAWFLAG_ADDITIVE, WarpZone_TransformOrigin(WarpZone_trace_transform, view_origin));
+
+    Plasma_Draw_Trace_Callback_ofs += 0.1 * vlen(from - endpos - ofs * 2) / 15;
+}
+
 .float plasma_drawn;
+
 void Plasma_Draw() {
-    entity e, n, p = findchainfloat(cnt, PROJECTILE_HG_PLASMA_SHARD);
+    entity e, n, p = plasma_chain;
     string tex = "particles/zapper";
-    
-    for(e = p; e; e = e.chain) if(e.extradata) if(e.plasma_drawn != time) {
+
+    for(e = p; e; e = e.plasma_next) if(e.extradata) if(e.plasma_drawn != time) {
         vector rgb = Zapper_BeamRGB(if(rm_teamlasers) e.team else COLOR_TEAM2) * 0.5;
         
-        for(n = p; n; n = n.chain) if(n.plasma_drawn != time) if(e != n) if(n.extradata == e.extradata) if(vlen(n.origin - e.origin) < 200) {
-            Draw_CylindricLine(n.origin, e.origin, 15, tex, 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE);
-            //n.plasma_drawn = time;
+        for(n = p; n; n = n.plasma_next) if(n.plasma_drawn != time) {
+            if(e != n && n.extradata == e.extradata) {
+                if(warpzone_chain_begin) {
+                    var nearest_origin = WarpZone_FindNearestOrigin(n.origin, e.origin, FALSE);
+                    if(WarpZone_FindNearestOrigin_length < 200) {
+                        Plasma_Draw_Trace_Callback_rgb = rgb;
+                        Plasma_Draw_Trace_Callback_ofs = time * 5;
+                        WarpZone_TraceBox_ThroughZone(n.origin, '0 0 0', '0 0 0', nearest_origin, MOVE_NORMAL, n, world, Plasma_Draw_Trace_Callback);
+                    }
+                } else if(vlen(n.origin - e.origin) < 200) {
+                    Draw_CylindricLine(n.origin, e.origin, 15, "particles/zapper", 0.1, time * 5, rgb, 1, DRAWFLAG_ADDITIVE, view_origin);
+                }
+            }
         }
         
         e.plasma_drawn = time;
@@ -146,6 +168,16 @@ float oldzoomfactor;
 vector GetCurrentFov(float fov)
 {
 	float zoomsensitivity, zoomspeed, zoomfactor, zoomdir;
+
+    float twarp = getstatf(STAT_HGTWARP_WARPTIME);
+
+    if(twarp) {
+        const twarp_dur = 0.75;
+        twarp = 1 - bound(0, (servertime - twarp) / twarp_dur, 1);
+
+        if(twarp)
+            fov *= (1 + twarp * 0.15);
+    }
 
 	zoomsensitivity = CVAR(cl_zoomsensitivity);
 	zoomfactor = CVAR(cl_zoomfactor);
@@ -320,18 +352,13 @@ float TrueAimCheck()
 			break;
 	}
 
-	vecs = decompressShotOrigin(getstati(STAT_SHOTORG));
+	vecs = ReadShotOriginStat(STAT_SHOTORG);
 
 	if(activeweapon == WEP_CAMPINGRIFLE)
 		traceline(view_origin, view_origin + view_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, trueaim_rifle);
 	else
 		traceline(view_origin, view_origin + view_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, trueaim);
 	trueaimpoint = trace_endpos;
-
-	if(vecs_x > 0)
-		vecs_y = -vecs_y;
-	else
-		vecs = '0 0 0';
 
 	dv = view_right * vecs_y + view_up * vecs_z;
 	w_shotorg = view_origin + dv;
@@ -383,6 +410,12 @@ float hg_lastgain;
 float hg_totalgaintime;
 float hg_gaincount;
 
+float crosshair_ringfill;
+
+float crosshair_inring_fill;
+float crosshair_inring_alpha;
+float crosshair_inring_expand;
+
 void HG_NadeGainSound() {
     float c1 = getstati(STAT_HGAMMO);
     float c2 = getstati(STAT_HGAMMO2);
@@ -423,6 +456,53 @@ void HG_NadeGainSound() {
     hg_nadecount2 = c2;
 }
 
+float glines_spread;
+float glines_alpha;
+float glines_anim;
+
+void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, float a) {
+    var angle = vectoangles(dir);
+    fixedmakevectors2(angle + [0, spread, 0]);
+    dir = v_forward;
+
+    traceline(org, org + dir * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, world);
+    var dst = trace_endpos;
+
+    Draw_CylindricLine(org, dst, 5, "particles/guideline", 0.05, glines_anim, '1 1 0.35', a, DRAWFLAG_ADDITIVE, view_origin);
+}
+
+void DrawSpreadGuideLines(void) {
+    /*
+     *  TODO:
+     *
+     *      -- Use the actual shot origin for the trace (currently g_shootfromeye 1 is assumed).
+     *      -- Maybe interpolate the spread value for low ticrates.
+     *      -- Warpzone support.
+     *      -- If someone wants to improve the guideline texture I'm all for it.
+     */
+
+    var org = view_origin;
+    var dir = view_forward;
+
+    var spread = getstatf(STAT_AIMSPREAD);
+
+    if(spread < 0) {
+        glines_alpha = approach(glines_alpha, 0, drawframetime * 5);
+        if(!glines_alpha)
+            return;
+    } else {
+        glines_alpha = approach(glines_alpha, 1, drawframetime * 5);
+        glines_spread = spread;
+        glines_anim -= drawframetime;
+    }
+
+    var shotorg = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+    org += view_forward * shotorg_x + view_right * shotorg_y + view_up * (shotorg_z + 6);
+
+    DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
+    DrawSpreadGuideLine(view_origin, org, dir, -glines_spread, glines_alpha);
+}
+
 void CSQC_UpdateView(float w, float h)
 {
 	fps_friendly = CVAR(rm_fps_friendly);
@@ -430,6 +510,10 @@ void CSQC_UpdateView(float w, float h)
 	float fov;
 	float f, i, j;
 	vector v;
+
+    // XXX: client and menu have shared extresponses
+    // doing this here will prevent menu from processing any of them...
+    // ER_Update();
 
     HG_NadeGainSound();
 
@@ -443,11 +527,18 @@ void CSQC_UpdateView(float w, float h)
 
 	ticrate = getstatf(STAT_MOVEVARS_TICRATE) * getstatf(STAT_MOVEVARS_TIMESCALE);
 
+	WarpZone_FixView();
+
 	// Render the Scene
 	if(!intermission || !view_set)
 	{
-		view_origin = pmove_org + '0 0 1' * getstati(STAT_VIEWHEIGHT);
-		view_angles = input_angles;
+		if(warpzone_newstyle) {
+			view_origin = getpropertyvec(VF_ORIGIN);
+			view_angles = getpropertyvec(VF_ANGLES);
+		} else {
+			view_origin = pmove_org + '0 0 1' * getstati(STAT_VIEWHEIGHT);
+			view_angles = input_angles;
+		}
 		makevectors(view_angles);
 		view_forward = v_forward;
 		view_right = v_right;
@@ -548,6 +639,8 @@ void CSQC_UpdateView(float w, float h)
 
 	// ALWAYS Clear Current Scene First
 	R_ClearScene();
+	setproperty(VF_ORIGIN, view_origin);
+	setproperty(VF_ANGLES, view_angles);
 
 	// Assign Standard Viewflags
 	// Draw the World (and sky)
@@ -627,6 +720,8 @@ void CSQC_UpdateView(float w, float h)
     if (!fps_friendly)
         Plasma_Draw();
 
+    DrawSpreadGuideLines();
+
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();
 
@@ -645,8 +740,6 @@ void CSQC_UpdateView(float w, float h)
 		if(self.draw2d)
 			self.draw2d();
 	self = e;
-	
-    ShowNames_DrawAll();
 
 	// draw radar
     if(!tempcamera && (ons_showmap || (!scoreboard_active && CVAR(cl_teamradar) && (teamplay || CVAR(cl_teamradar) == 2))))
@@ -679,7 +772,7 @@ void CSQC_UpdateView(float w, float h)
     if(!scoreboard_active && !ons_showmap && !camera_active) {
         // TrueAim check
         float shottype;
-        float bullets, ring_scale;
+        float bullets;
         wcross_origin = project_3d_to_2d(view_origin + MAX_SHOT_DISTANCE * view_forward);
         wcross_origin_z = 0;
         if(CVAR(crosshair_hittest))
@@ -754,51 +847,90 @@ void CSQC_UpdateView(float w, float h)
 
             float bullet, maxbullets, distance = 14;
             maxbullets = getstati(STAT_CLIP_LIMIT);
+
             if(maxbullets > 0) {
-                ring_scale = CVAR(crosshair_campingrifle_ring_size) * (10 / 128);
-                bullets = bound(0, getstati(STAT_CLIP_LOADED), maxbullets);
-            }
-            else
+                bullets = bound(0, getstatf(STAT_CLIP_LOADED), maxbullets);
+            } else if(getstati(STAT_SWITCHWEAPON) == WEP_ZAPPER && (var zheat = getstatf(STAT_ZAPPER_HEAT)) >= 0) {
+                maxbullets = 1;
+                bullets = bound(0, (1 - zheat), 1);
+            } else
                 bullets = 0;
-            
-            if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active)))
-            {
+
+            if(bullets) {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 1, drawframetime * 2);
+            } else {
+                crosshair_inring_expand = approach(crosshair_inring_expand, 0, drawframetime * 4);
+            }
+
+            if(maxbullets > 0) {
+                crosshair_ringfill += (bullets / maxbullets - crosshair_ringfill) * drawframetime * 10;
+                if(crosshair_ringfill > 1)
+                    crosshair_ringfill = 1;
+            } else {
+                crosshair_ringfill -= crosshair_ringfill * drawframetime * 10;
+                if(crosshair_ringfill < 0)
+                    crosshair_ringfill = 0;
+            }
+
+            var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
+            var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
+            var ringexpand = 0.25; // TODO: cvar for this?
+
+            if(ringsize > 0 && ringalpha > 0) {
+                if(crosshair_ringfill) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize,
+                        if(maxbullets > 1 && maxbullets < 25)
+                            strcat("gfx/hud/ring", ftos(maxbullets), ".tga")
+                        else
+                            "gfx/hud/ring1.tga",
+                        crosshair_ringfill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
+
+                var in_cycle = getstatf(STAT_INNERRING_CYCLE);
+                var in_fulltime = getstatf(STAT_INNERRING_FULLTIME);
+                var in_invert = FALSE;
+
+                if(in_cycle < 0) {
+                    in_cycle *= -1;
+                    in_invert = TRUE;
+                }
+
+                if(in_fulltime > 0) {
+                    crosshair_inring_fill = 1 - bound(0, (in_fulltime - servertime) / in_cycle, 1);
+
+                    if(crosshair_inring_fill && crosshair_inring_fill < 1)
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 1, drawframetime * 14);
+                    else
+                        crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+                } else
+                    crosshair_inring_alpha = approach(crosshair_inring_alpha, 0, drawframetime * 7);
+
+                if(crosshair_inring_alpha) {
+                    DrawCircleClippedPic(
+                        wcross_origin,
+                        ringsize * (1 + ringexpand * crosshair_inring_expand * crosshair_inring_alpha),
+                        "gfx/hud/ring_inner.tga",
+                        if(in_invert) 1 - crosshair_inring_fill else crosshair_inring_fill,
+                        0.5 * wcross_color + '0.5 0.5 0.5',
+                        ringalpha * crosshair_inring_alpha,
+                        DRAWFLAG_ADDITIVE
+                    );
+                }
+            }
+
+            if(shottype == SHOTTYPE_HITTEAM || (shottype == SHOTTYPE_HITOBSTRUCTION && CVAR(crosshair_hittest_blur) && !CVAR(chase_active))) {
                 wcross_alpha *= 0.04 * 0.75;
                 for(i = -2; i <= 2; ++i)
                     for(j = -2; j <= 2; ++j)
-                    {
-                        if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
-                            float b_angle = PI*2*(bullet/maxbullets);
-                            drawpic
-                            (
-                                distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
-                                wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale + i) - '0 0.5 0' * (wcross_size_y * ring_scale + j),
-                                "gfx/hud/rifle_ring",
-                                wcross_size * ring_scale,
-                                wcross_color,
-                                wcross_alpha,
-                                DRAWFLAG_NORMAL
-                            );
-                        }
-                        drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x + i) - '0 0.5 0' * (wcross_size_y + j), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
-                    }
-            }
-            else
-            {
-                if(bullets) for(bullet = 0; bullet < bullets; ++bullet) {
-                    float b_angle = PI*2*(bullet/maxbullets);
-                    drawpic
-                    (
-                        distance * wcross_sizefloat * ('1 0 0'*cos(b_angle) + '0 1 0'*sin(b_angle)) +
-                        wcross_origin - '0.5 0 0' * (wcross_size_x * ring_scale) - '0 0.5 0' * (wcross_size_y * ring_scale),
-                        "gfx/hud/rifle_ring",
-                        wcross_size * ring_scale,
-                        wcross_color,
-                        wcross_alpha,
-                        DRAWFLAG_NORMAL
-                    );
-                }
-                drawpic(wcross_origin - '0.5 0 0' * (wcross_size_x) - '0 0.5 0' * ( wcross_size_y), wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+                        drawpic(wcross_origin - 0.5 * wcross_size, wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
+            } else {
+                drawpic(wcross_origin - 0.5 * wcross_size, wcross_name, wcross_size, wcross_color, wcross_alpha, DRAWFLAG_NORMAL);
             }
         }
     }
@@ -819,12 +951,25 @@ void CSQC_UpdateView(float w, float h)
 	}
 
     NS_Draw();
+    WS_Draw();
 	
 	if(NextFrameCommand)
 	{
 		localcmd("\n", NextFrameCommand, "\n");
-		NextFrameCommand = string_null;
+		NextFrameCommand = NULL;
 	}
+
+    if(mouse_enabled) {
+        if(mouse_pos == '-1 -1')
+            mouse_pos = [vid_conwidth, vid_conheight] * 0.5;
+        else {
+            mouse_pos = mouse_pos + getmousepos();
+            mouse_pos = [bound(0, mouse_pos_x, vid_conwidth),
+                         bound(0, mouse_pos_y, vid_conheight)];
+        }
+
+        drawpic(mouse_pos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    }
 
 	// we must do this check AFTER a frame was rendered, or it won't work
 	if(cs_project_is_b0rked == 0)

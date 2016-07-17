@@ -3,6 +3,7 @@ float teamcount_playersalive[4];
 float teamcount_playerstotal[4];
 
 float teamcount_balancenext;
+float teamsort_method;
 
 float TeamCount_TotalTeams(void);
 void TeamCount_RecountPlayers(float(entity));
@@ -10,8 +11,8 @@ float TeamCount_AliveCheck_Null(entity);
 float TeamCount_NextTeam(float);
 void TeamCount_BalanceTeams(void);
 
-#define TC_POOL_MAX 255
+#define TC_POOL_MAX RM_MAXCLIENTS
+#define teamcount_playerpool per_client_data
 
-.entity teamcount_playerpool[TC_POOL_MAX];
 .float teamcount_totalscore;
 .float teamcount_poolsize;

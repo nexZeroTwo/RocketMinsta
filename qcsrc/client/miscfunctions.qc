@@ -1,4 +1,3 @@
-var float(string text, float handleColors) stringwidth;
 
 entity players;
 entity teams;
@@ -410,18 +409,20 @@ void drawstring_expanding(vector position, string text, vector scale, vector rgb
 {
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
+    scale = scale * sz;
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, FALSE)), text, scale * sz, rgb, alpha * (1 - fadelerp), flag);
+	drawstring(position + expandingbox_resize_centered_box_offset(sz, [stringwidth(text, FALSE, scale), scale_y], 1), text, scale, rgb, alpha * (1 - fadelerp), flag);
 }
 
 void drawcolorcodedstring_expanding(vector position, string text, vector scale, float alpha, float flag, float fadelerp)
 {
 	float sz;
 	sz = expandingbox_sizefactor_from_fadelerp(fadelerp);
+    scale = scale * sz;
 
 	dummyfunction(0, 0, 0, 0, 0, 0, 0, 0);
-	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, scale, stringwidth(text, TRUE)), text, scale * sz, alpha * (1 - fadelerp), flag);
+	drawcolorcodedstring(position + expandingbox_resize_centered_box_offset(sz, [stringwidth(text, TRUE, scale), scale_y], 1), text, scale, alpha * (1 - fadelerp), flag);
 }
 
 void drawrotpic(vector org, float rot, string pic, vector sz, vector hotspot, vector rgb, float a, float f);       
@@ -454,8 +455,7 @@ void URI_Get_Callback(float id, float status, string data)
 	}
 }
 
-float stringwidth_svn(string text, float handleColors, vector fontSize);
-#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth_svn(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
+#define SET_POS_AND_SZ_Y_ASPECT(allow_colors) float textaspect, oldsz; textaspect = stringwidth(text, allow_colors, '1 1 1' * sz_y) / sz_y;	if(sz_x/sz_y > textaspect) { oldsz = sz_x; sz_x = sz_y * textaspect; pos_x += (oldsz - sz_x) * 0.5; } else { oldsz = sz_y; sz_y = sz_x / textaspect; pos_y += (oldsz - sz_y) * 0.5; }
 
 // drawstring wrapper to draw a string as large as possible with preserved aspect ratio into a box
 void drawstring_aspect(vector pos, string text, vector sz, vector color, float alpha, float drawflag) {
@@ -633,23 +633,297 @@ void announce(string v) {
     sound(self, CHAN_VOICE, v, VOL_BASEVOICE, ATTN_NONE);
 }
 
-void spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
+float spiralparticles(entity ent, float effectnum, vector start, vector end, float dist, float phase, float freq, float steplen) {
     vector diff = end - start;
     vector dir = normalize(diff);
     vector o = start;
 
     vector step = dir * steplen;
     float maxlen = vlen(diff);
-    float i;
+    float i, x;
 
     vectorvectors(dir);
 
     vector prev = o + dist * (v_up * sin(phase) + v_right * cos(phase));
 
     for(i = 0; i < maxlen; i += steplen, o += step) {
-        float x = freq * (i + steplen) + phase;
+        x = freq * (i + steplen) + phase;
         vector n = o + dist * (v_up * sin(x) + v_right * cos(x));
         trailparticles(ent, effectnum, prev, n);
         prev = n;
     }
+
+    return x;
+}
+
+void ImpactSound(entity e, string sound_path) {
+    WarpZone_Sound(e, CHAN_PROJECTILE, sound_path, VOL_BASE, ATTN_NORM);
+}
+
+typedef .vector vectorfield;
+.void(void) draw2d_real;
+.float(void) draw2d_pre;
+.vectorfield draw2d_origin_fld;
+
+float draw2d_warpstage;
+
+void Draw2d_ThroughWarpZones(void) {
+    var fwd = '0 0 0';
+    var drawn = FALSE;
+    var org_fld = self.draw2d_origin_fld;
+
+    if(self.draw2d_pre && !self.draw2d_pre())
+        return;
+
+    var o = self.org_fld;
+
+    if(!warpzone_chain_begin)
+        goto skip;
+
+    for(var wz = warpzone_chain_begin; wz; wz = wz.warpzone_chain) {
+        if(fwd == '0 0 0') {
+            makevectors(view_angles);
+            fwd = v_forward;
+        }
+
+        var wo = WarpZone_UnTransformOrigin(wz, o);
+
+        if(fwd * normalize(wo - view_origin) < 0.3) {
+            continue;
+        }
+
+        WarpZone_TraceLine(view_origin, wo, MOVE_NOMONSTERS, world);
+
+        if(vlen(trace_endpos - o) < 1) {
+            self.org_fld = wo;
+            draw2d_warpstage = TRUE;
+            self.draw2d_real();
+            drawn = TRUE;
+        }
+    }
+
+    self.org_fld = o;
+    WarpZone_TraceLine(view_origin, o, MOVE_NOMONSTERS, world);
+
+    if(WarpZone_trace_warpcount)
+        return;
+
+    if(drawn && vlen(trace_endpos - o) > 1)
+        return;
+
+:skip
+    draw2d_warpstage = FALSE;
+    self.draw2d_real();
+}
+
+vector DrawPlayerStatusIcons(vector pos, float height, float a, float b, float pstat) {
+    var scale = [height, height];
+
+    // 1st byte: nadgets
+    if(g_nadgets) {
+        var nadgets = HG_DecompressDualType(pstat & 0xFF);
+
+        drawpic(pos, HG_TypeToIcon(nadgets_x, FALSE, FALSE), scale, HG_TypeToColor(nadgets_x) * b, a, DRAWFLAG_NORMAL);
+        pos_x += scale_x;
+
+        if(g_nadgets_double) {
+            drawpic(pos, HG_TypeToIcon(nadgets_y, FALSE, FALSE), scale, HG_TypeToColor(nadgets_y) * b, a, DRAWFLAG_NORMAL);
+            pos_x += scale_x;
+        }
+    }
+
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary & (g_weaponarena_secondary - 1)) {
+        var winfo = get_weaponinfo((pstat & 0xFF00) / 0x100);
+        var clr = winfo.w_color * b;
+
+        using(drawfont = sbar_rmbigfont)
+            drawstring_aspect(pos, winfo.message2, scale, clr, a, DRAWFLAG_NORMAL);
+
+        drawpic(pos, "gfx/hud/weapon_icon_border.tga", scale, clr, a * 0.8, DRAWFLAG_NORMAL);
+
+        pos_x += scale_x;
+    }
+
+    return pos;
+}
+
+float GetPlayerStatusIconsWidth(float height) {
+    var width = 0;
+
+    // 1st byte: nadgets
+    if(g_nadgets) {
+        width += height;
+
+        if(g_nadgets_double)
+            width += height;
+    }
+
+    // 2nd byte: secondary weapon
+    if(g_weaponarena_secondary)
+        width += height;
+
+    return width;
+}
+
+// Shamelessly stolen from xonotic
+void DrawCircleClippedPic(vector centre, float radius, string pic, float f, vector rgb, float a, float drawflag)
+{
+    float x, y, q, d;
+    vector ringsize, v, t;
+    ringsize = radius * '1 1 0';
+
+    x = cos(f * 2 * M_PI);
+    y = sin(f * 2 * M_PI);
+    q = fabs(x) + fabs(y);
+    x /= q;
+    y /= q;
+
+    if(f >= 1)
+    {
+        // draw full rectangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y -= 0.5 * ringsize_y;    t -= '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+
+        d = q - 1;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+    else if(f > 0.75)
+    {
+        // draw upper and first triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y -= 0.5 * ringsize_y;    t -= '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+        d = q - 0.75;
+        if(d <= 0)
+            R_EndPolygon();
+    }
+    else if(f > 0.5)
+    {
+        // draw upper triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+
+        d = q - 0.5;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x -= 0.5 * ringsize_x;    t -= '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+    else if(f > 0.25)
+    {
+        // draw first triangle
+        R_BeginPolygon(pic, drawflag);
+            v = centre;         t = '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+            v = centre;         t = '0.5 0.5 0';
+            v_y += 0.5 * ringsize_y;    t += '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+
+        d = q - 0.25;
+        if(d <= 0)
+            R_EndPolygon();
+    }
+    else
+    {
+        d = q;
+        if(d > 0)
+        {
+            R_BeginPolygon(pic, drawflag);
+                v = centre;         t = '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+
+                v = centre;         t = '0.5 0.5 0';
+                v_x += 0.5 * ringsize_x;    t += '0.5 0.5 0';
+                R_PolygonVertex(v, t, rgb, a);
+        }
+    }
+
+    if(d > 0)
+    {
+            v = centre;         t = '0.5 0.5 0';
+            v_x += x * 0.5 * ringsize_x;    t += x * '0.5 0.5 0';
+            v_y += y * 0.5 * ringsize_y;    t += y * '0.5 -0.5 0';
+            R_PolygonVertex(v, t, rgb, a);
+        R_EndPolygon();
+    }
+}
+
+vector ReadShotOriginStat(float stat) {
+    var shotorg = decompressShotOrigin(getstati(stat));
+
+    if(shotorg_x > 0)
+        shotorg_y = -shotorg_y;
+    else
+        shotorg = '0 0 0';
+
+    return shotorg;
 }

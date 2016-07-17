@@ -30,12 +30,14 @@ entity makeNexuizCharmap(entity theTextbox)
 
 string CharMap_CellToChar(float c)
 {
+    var u = 0xE000 * CVAR(utf8_enable);
+
 	if(c == 13)
-		return chr(127);
+		return chr(127 + u);
 	else if(c < 32)
-		return chr(c);
+		return chr(c + u);
 	else
-		return chr(c + 96);
+		return chr(c + 96 + u);
 }
 
 void configureNexuizCharmapNexuizCharmap(entity me, entity theTextbox)

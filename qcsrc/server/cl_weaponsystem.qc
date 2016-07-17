@@ -7,6 +7,11 @@
 ===========================================================================
 */
 
+#define WEP_CVAR(wepname,name) CVAR(g_balance_##wepname##_##name)
+#define WEP_CVAR_PRI(wepname,name) WEP_CVAR(wepname, primary_##name)
+#define WEP_CVAR_SEC(wepname,name) WEP_CVAR(wepname, secondary_##name)
+#define WEP_CVAR_BOTH(wepname,isprimary,name) (if(isprimary) WEP_CVAR_PRI(wepname, name) else WEP_CVAR_SEC(wepname, name))
+
 float W_WeaponRateFactor()
 {
 	float t = 1.0 / g_weaponratefactor;
@@ -27,13 +32,16 @@ float W_WeaponRateFactorFor(entity plr) {
 
 void W_SwitchWeapon_Force(entity e, float w)
 {
-    entity o = self;
-    self = e;
-    weapon_action(self.weapon, WR_LOWER);
-    self = o;
+    if(e.weapon) {
+        using(self = e)
+            weapon_action(self.weapon, WR_LOWER);
+    } else if(w)
+        sound(e, CHAN_WEAPON2, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
+    e.w_inring_fulltime = 0;
+    e.w_spread_indicator = -1;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {
@@ -56,6 +64,7 @@ float WFRAME_RELOAD = 3;
 .float wframe;
 
 .vector shotorg_visual;
+.vector w_viewmodel_offset;
 
 void(float fr, float t, void() func) weapon_thinkf;
 
@@ -141,24 +150,34 @@ vector w_shotdir_visual;
 // this function calculates w_shotorg and w_shotdir based on the weapon model
 // offset, trueaim and antilag, and won't put w_shotorg inside a wall.
 // make sure you call makevectors first (FIXME?)
-void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage)
+void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage, float hitmask)
 {
 	float nudge = 1; // added to traceline target and subtracted from result
 	vector trueaimpoint;
 	float _oldsolid;
 	vector vecs, dv;
-	_oldsolid = ent.dphitcontentsmask;
-	if(ent.weapon == WEP_CAMPINGRIFLE)
-		ent.dphitcontentsmask = DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	else
-		ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	if(antilag)
+
+	var oldmask = ent.dphitcontentsmask;
+    ent.dphitcontentsmask = hitmask;
+
+	if(antilag) {
 		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 		// passing world, because we do NOT want it to touch dphitcontentsmask
-	else
-		traceline_skipnonsolid(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
-	ent.dphitcontentsmask = DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-	trueaimpoint = trace_endpos;
+    } else {
+		WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+    }
+
+	ent.dphitcontentsmask = hitmask | DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
+
+	vector vf, vr, vu;
+	vf = v_forward;
+	vr = v_right;
+	vu = v_up;
+	trueaimpoint = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos); // warpzone support
+	v_forward = vf;
+	v_right = vr;
+	v_up = vu;
+
 
     if(maxdamage > 0)
         W_Accuracy_RegisterPotentialDamage(ent, ent.weapon, maxdamage);
@@ -180,7 +199,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 
 	// now move the shotorg forward as much as requested if possible
 	if(antilag)
-		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
+		tracebox_antilag(ent, w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent, 0);
 	else
 		tracebox(w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	w_shotorg = trace_endpos - v_forward * nudge;
@@ -191,7 +210,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 	{
 		if (CVAR(g_antilag) == 1) // switch to "ghost" if not hitting original
 		{
-			traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+			WarpZone_TraceLine(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 			if (!trace_ent.takedamage)
 			{
 				traceline_antilag_force (ent, w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent, ANTILAG_LATENCY(ent));
@@ -199,7 +218,7 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 				{
 					entity e;
 					e = trace_ent;
-					traceline_skipnonsolid(w_shotorg, e.origin, MOVE_NORMAL, ent);
+					WarpZone_TraceLine(w_shotorg, e.origin, MOVE_NORMAL, ent);
 					if(trace_ent == e)
 						w_shotdir = normalize(trace_ent.origin - w_shotorg);
 				}
@@ -214,11 +233,11 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 			{
 				// verify that the shot would miss without antilag
 				// (avoids an issue where guns would always shoot at their origin)
-				traceline_skipnonsolid(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+				WarpZone_TraceLine(w_shotorg, w_shotorg + w_shotdir * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
 				if (!trace_ent.takedamage)
 				{
 					// verify that the shot would hit if altered
-					traceline_skipnonsolid(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
+					WarpZone_TraceLine(w_shotorg, ent.cursor_trace_ent.origin, MOVE_NORMAL, ent);
 					if (trace_ent == ent.cursor_trace_ent)
 						w_shotdir = normalize(ent.cursor_trace_ent.origin - w_shotorg);
 					else
@@ -228,10 +247,12 @@ void W_SetupShot_Dir_ProjectileSize(entity ent, vector s_forward, vector mi, vec
 		}
 	}
 
-	ent.dphitcontentsmask = _oldsolid; // restore solid type (generally SOLID_SLIDEBOX)
+	ent.dphitcontentsmask = oldmask;
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
+
+    ent.weaponentity.punchangle_x = recoil;
 
 	if (snd != "")
 	{
@@ -263,9 +284,12 @@ void W_SetHitscanVisuals(entity p, vector end) {
     }
 }
 
+#define W_SetupShot_Dir_ProjectileSize(ent,s_forward,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize_HitMask(ent, s_forward, mi, ma, antilag, recoil, snd, maxdamage, DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE)
 #define W_SetupShot_ProjectileSize(ent,mi,ma,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage)
+#define W_SetupShot_ProjectileSize_HitMask(ent,mi,ma,antilag,recoil,snd,maxdamage,hitmask) W_SetupShot_Dir_ProjectileSize_HitMask(ent, v_forward, mi, ma, antilag, recoil, snd, maxdamage, hitmask)
 #define W_SetupShot_Dir(ent,s_forward,antilag,recoil,snd,maxdamage) W_SetupShot_Dir_ProjectileSize(ent, s_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
 #define W_SetupShot(ent,antilag,recoil,snd,maxdamage) W_SetupShot_ProjectileSize(ent, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage)
+#define W_SetupShot_HitMask(ent,antilag,recoil,snd,maxdamage,hitmask) W_SetupShot_Dir_ProjectileSize_HitMask(ent, v_forward, '0 0 0', '0 0 0', antilag, recoil, snd, maxdamage, hitmask)
 
 void LaserTarget_Think()
 {
@@ -330,10 +354,12 @@ void LaserTarget_Think()
 
 float CL_Weaponentity_CustomizeEntityForClient()
 {
+    if(self.owner != self.owner.clientcamera)
+        return FALSE;
+
 	self.viewmodelforclient = self.owner;
-	if(other.classname == "spectator")
-		if(other.enemy == self.owner)
-			self.viewmodelforclient = other;
+    if(other.clientcamera == self.owner)
+		self.viewmodelforclient = other;
 
     self.alpha = Client_CalculateAlpha(self.owner, world);
 	return (self.alpha > 0);
@@ -350,12 +376,13 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
 /*
  * supported formats:
  *
- * 1. simple animated model, muzzlr flash handling on h_ model:
+ * 1. simple animated model, muzzle flash handling on h_ model:
  *    h_tuba.dpm, h_tuba.dpm.framegroups - invisible model controlling the animation
  *      tags:
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
  *        shell = casings ejection point (must be on the right hand side of the gun)
  *        weapon = attachment for v_tuba.md3
+ *    o_tuba.md3 - third person model (if present)
  *    v_tuba.md3 - first and third person model
  *    g_tuba.md3 - pickup model
  *
@@ -365,7 +392,7 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
  *        shot = muzzle end (shot origin, also used for muzzle flashes)
  *        shell = casings ejection point (must be on the right hand side of the gun)
  *        handle = corresponding to the origin of v_tuba.md3 (used for muzzle flashes)
- *    v_tuba.md3 - third person model
+ *    o_tuba.md3 or v_tuba.md3 - third person model
  *    g_tuba.md3 - pickup model
  *
  * 3. fully animated model, muzzle flash handling on v_ model:
@@ -373,10 +400,13 @@ float CL_ExterioirWeaponentity_CustomizeEntityForClient()
  *      tags:
  *        shot = muzzle end (shot origin)
  *        shell = casings ejection point (must be on the right hand side of the gun)
- *    v_tuba.md3 - third person model
+ *    o_tuba.md3 or v_tuba.md3 - third person model
  *      tags:
  *        shot = muzzle end (for muzzle flashes)
  *    g_tuba.md3 - pickup model
+ *
+ *
+ * .iqm models can be used in place of .dpm and .md3 ones
  */
 
 void CL_Weaponentity_Think()
@@ -412,11 +442,11 @@ void CL_Weaponentity_Think()
 			// if there is a child entity, hide it until we're sure we use it
 			if (self.weaponentity)
 				self.weaponentity.model = "";
-			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
+			setmodel(self, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL)); // precision set below
 			v_shot_idx = gettagindex(self, "shot"); // used later
 
-			setmodel(self, strcat("models/weapons/h_", self.owner.weaponname, ".dpm")); // precision set below
-			animfilename = strcat("models/weapons/h_", self.owner.weaponname, ".dpm.animinfo");
+			setmodel(self, pickfile("models/weapons/h_" + self.owner.weaponname, "iqm", "dpm", NULL)); // precision set below
+			animfilename = pickfile("models/weapons/h_" + self.owner.weaponname, "iqm.animinfo", "dpm.animinfo", NULL);
 			animfile = fopen(animfilename, FILE_READ);
 			// preset some defaults that work great for renamed zym files (which don't need an animinfo)
 			self.anim_fire1  = '0 1 0.01';
@@ -441,7 +471,7 @@ void CL_Weaponentity_Think()
 			{
 				if (!self.weaponentity)
 					self.weaponentity = spawn();
-				setmodel(self.weaponentity, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision does not matter
+				setmodel(self.weaponentity, pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3")); // precision does not matter
 				setattachment(self.weaponentity, self, "weapon");
 			}
 			else
@@ -528,12 +558,21 @@ void CL_Weaponentity_Think()
             self.shotorg_visual = shotorg_adjust(v0, FALSE, TRUE);
 			self.view_ofs = self.shotorg_visual - v0;
 		}
+
 		self.owner.stat_shotorg = compressShotOrigin(self.movedir);
+        self.owner.stat_shotorg_visual = compressShotOrigin(self.shotorg_visual);
 		self.movedir = decompressShotOrigin(self.owner.stat_shotorg); // make them match perfectly
 
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount
 
-		setorigin(self, self.view_ofs);
+        var ofs = stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset"));
+        ofs_y *= switch(self.owner.gunswitchmode) {
+            case 1: -1,
+            case 2:  1,
+            default: 0
+        };
+
+        self.w_viewmodel_offset = self.view_ofs + ofs;
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;
@@ -592,6 +631,15 @@ void CL_Weaponentity_Think()
         self.angles_x = -90 * f * f;
 	}
 
+    if(self.owner.gunswitchmode == 1)
+        self.punchangle_y = self.punchangle_x * -0.25;
+    else if(self.owner.gunswitchmode == 2)
+        self.punchangle_y = self.punchangle_x *  0.25;
+
+    self.angles += self.punchangle;
+    self.punchangle = self.punchangle * max(0, 1 - frametime * 5);
+    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1');
+
 	// create or update the lasertarget entity
 	LaserTarget_Think();
 };
@@ -615,10 +663,16 @@ void CL_ExteriorWeaponentity_Think()
 		self.cnt = self.owner.weapon;
 		self.dmg = self.owner.modelindex;
 		self.deadflag = self.owner.deadflag;
-		if (self.owner.weaponname != "")
-			setmodel(self, strcat("models/weapons/v_", self.owner.weaponname, ".md3")); // precision set below
-		else
+
+		if (self.owner.weaponname != "") {
+            string s = pickfile("models/weapons/o_" + self.owner.weaponname, "iqm", "md3", NULL);
+            if(!fexists(s))
+                s = pickfile("models/weapons/v_" + self.owner.weaponname, "iqm", "md3", NULL);
+
+			setmodel(self, s); // precision set below
+        } else {
 			self.model = "";
+        }
 
 		if((tag_found = gettagindex(self.owner, "tag_weapon")))
 		{
@@ -698,7 +752,7 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
     weaponbit = W_WeaponBit(wpn);
     if(cl.weapons & weaponbit) {
         if(andammo) {
-            if(cl.items & IT_UNLIMITED_WEAPON_AMMO) {
+            if(cl.items & IT_UNLIMITED_WEAPON_AMMO && wpn != WEP_PRYAXE) {
                 f = 1;
             } else {
                 oldself = self;
@@ -706,7 +760,9 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
                 f = weapon_action(wpn, WR_CHECKAMMO1);
                 f = f + weapon_action(wpn, WR_CHECKAMMO2);
                 self = oldself;
-            } if(!f) {
+            }
+
+            if(!f) {
                 if(complain)
                 if(clienttype(cl) == CLIENTTYPE_REAL) {
                     play2(cl, "weapons/unavailable.wav");
@@ -905,7 +961,10 @@ void weapon_thinkf(float fr, float t, void() func)
 	if (!self.crouch) // shoot anim stands up, this looks bad
 	{
 		vector anim;
-		anim = self.anim_shoot;
+		if (self.weapon == WEP_PRYAXE)
+			anim = self.anim_pain1; // we dont have standart melee animation...
+		else
+			anim = self.anim_shoot;
 		anim_z = anim_y / t;
 		setanim(self, anim, FALSE, TRUE, TRUE);
 	}
@@ -990,10 +1049,19 @@ vector W_CalculateProjectileVelocity(vector pvelocity, vector mvelocity)
 
 void W_SetupProjectileVelocity(entity missile)
 {
-	if(missile.owner == world)
+    var o = missile.realowner;
+    if(!o)
+        o = missile.owner;
+	if(!o)
 		error("Unowned missile");
 
-	missile.velocity = W_CalculateProjectileVelocity(missile.owner.velocity, missile.velocity);
+	missile.velocity = W_CalculateProjectileVelocity(o.velocity, missile.velocity);
+
+    if(!missile.clipgroup && teams_matter)
+    if(CVAR(g_player_dont_block_teammates))
+    if(CVAR(g_player_dont_block_teammates_projectiles))
+    if(!Buffs_Present(o, BUFF_MEDIC))
+        missile.clipgroup = o.clipgroup;
 }
 
 void W_AttachToShotorg(entity flash, vector offset)
@@ -1021,12 +1089,44 @@ void W_AttachToShotorg(entity flash, vector offset)
 	}
 }
 
-void W_SetButtonFields(float swap) {
-    if(swap) {
-        w_button_primary = BUTTON_ATCK2;
-        w_button_secondary = BUTTON_ATCK;
-    } else {
-        w_button_primary = BUTTON_ATCK;
-        w_button_secondary = BUTTON_ATCK2;
+void W_Reload();
+
+float in_setbuttonfields;
+
+void W_SetButtonFields(entity plr, float swap) {
+    if(in_setbuttonfields)
+        return;
+
+    if(plr.clientcamera != plr) {
+        w_button_primary = w_button_secondary = w_button_null;
+        return;
+    }
+
+    using(in_setbuttonfields = TRUE) {
+        if(g_weaponarena_secondary && plr.w_conv_switch) {
+            var pwep = pow(2, plr.switchweapon - 1);
+
+            if(pwep & g_weaponarena_secondary)
+                swap = if(swap) FALSE else TRUE; // XXX: qcc miscompiles !swap
+
+            if(swap) {
+                w_button_primary = w_button_null;
+                w_button_secondary = BUTTON_ATCK;
+            } else {
+                w_button_primary = BUTTON_ATCK;
+                w_button_secondary = w_button_null;
+            }
+
+            if(self.BUTTON_ATCK2)
+                W_Reload();
+        } else {
+            if(swap) {
+                w_button_primary = BUTTON_ATCK2;
+                w_button_secondary = BUTTON_ATCK;
+            } else {
+                w_button_primary = BUTTON_ATCK;
+                w_button_secondary = BUTTON_ATCK2;
+            }     
+        }
     }
 }

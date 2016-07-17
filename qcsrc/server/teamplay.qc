@@ -126,11 +126,11 @@ void InitGameplayMode()
 	if not(cvar_value_issafe(world.fog))
 	{
 		print("The current map contains a potentially harmful fog setting, ignored\n");
-		world.fog = string_null;
+		world.fog = NULL;
 	}
 	if(MapInfo_Map_fog != "")
 		if(MapInfo_Map_fog == "none")
-			world.fog = string_null;
+			world.fog = NULL;
 		else
 			world.fog = strzone(MapInfo_Map_fog);
 	clientstuff = strzone(MapInfo_Map_clientstuff);
@@ -430,6 +430,8 @@ void SetPlayerColors(entity pl, float _color)
 	} else {
 		setcolor(pl, shirt + pants);
 	}
+
+    WaypointSprite_InvalidateTracking(pl);
 }
 
 void SetPlayerTeam(entity pl, float t, float s, float noprint)
@@ -573,7 +575,7 @@ void GetTeamCounts(entity ignore)
 	// FIXME: also find and memorize the lowest-scoring bot on each team (in case players must be shuffled around)
 	// also remember the lowest-scoring player
 
-	FOR_EACH_CLIENT(head) if(head.iscreature || head.jb_specteam)
+    FOR_EACH_PLAYER(head)
 	{
 		if(head != ignore)// && head.netname != "")
 		{

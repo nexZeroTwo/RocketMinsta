@@ -88,7 +88,7 @@ float Freeze_GameInProgress(void) {
 void Freeze_Ice_Think() {
     setorigin(self, self.owner.origin - '0 0 16');
     self.nextthink = time;
-    self.alpha = 1 - self.owner.revprogress;
+    self.alpha = (1 - self.owner.revprogress) * Freeze_CVar(frozen_iceblock_opacity);
 }
 
 float Freeze_GetPlayersAlive(float t) {
@@ -113,7 +113,7 @@ void Freeze_IceBlock_MEODP_Death(entity attacker, entity inflictor) {
     if(IsDifferentTeam(self.owner, attacker) && self.owner.classname != "bait_body")
         Freeze_UnfreezePlayer(self.owner);
     else
-        Freeze_RevivePlayer(self.owner, attacker);
+        Freeze_RevivePlayer(self.owner, attacker, FALSE);
 }
 
 entity Freeze_SpawnIceBlock(entity plr) {
@@ -176,7 +176,9 @@ void Freeze_FreezePlayer(entity plr, entity attacker) {
         } else // teamkill
             PlayerScore_Add(attacker, SP_SCORE, -Freeze_CVar(penalty_teamkill));
     }
-    
+
+    SetPlayerClipGroup(plr, TRUE);
+
     PlayerScore_SetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
 }
@@ -201,9 +203,10 @@ void Freeze_UnfreezePlayer(entity plr)
     if(g_nadgets) {
         if(CVAR(g_nadgets_regen)) {
             plr.hg_power = 0;
-        } else HG_PlayerSpawnEx(plr);
+        } else using(self = plr) HG_PlayerSpawn();
     }
-    
+
+    plr.last_dodging_time = 0;
     PlayerScore_UnsetFlags(plr, SPFLAG_FROZEN);
     Freeze_RecountPlayers();
     Buffs_MEODP_Point_Attach(plr, Buffs_MEODP_Death_Player);
@@ -212,6 +215,11 @@ void Freeze_UnfreezePlayer(entity plr)
     for(;(e = find(e, classname, "grapplinghook"));)
         if(e.aiment == plr)
             RemoveGrapplingHook(e.owner);
+
+    using(self = plr)
+        PlayerSpectatorStop();
+
+    SetPlayerClipGroup(plr, FALSE);
 }
 
 void Freeze_SetGlobalWarming(float d) {
@@ -269,22 +277,33 @@ void Freeze_RespawnPlayer(entity p) {
         TeleportPlayer(p, p, sp.origin, sp.angles, '0 0 0', '0 0 0', '0 0 0');
 }
 
+.float triggerhurttime;
 string W_ThrowNewWeapon(entity, float, float, vector, vector);
+
 float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     if(!g_freeze)
         return 0;
-    
+
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
 
-    if(DEATH_ISENVIRONMENTAL(deathtype))
+    if(self.frozen) {
+        if(self.iceblock) {
+            remove(self.iceblock);
+            self.iceblock = world;
+        }
+        return 0;
+    }
+
+    if(deathtype == DEATH_LAVA || deathtype == DEATH_SLIME || deathtype == DEATH_GUARANTEED)
         return 0;
 
-    if(!self.frozen) {
-        Boobs_DropAllAndRespawn(frce);
-        Freeze_FreezePlayer(self, attacker);
-    }
-    
+    if(deathtype == DEATH_HURTTRIGGER || deathtype == DEATH_HOOKFRAG)
+        self.triggerhurttime = -1;
+
+    Boobs_DropAllAndRespawn(frce);
+    Freeze_FreezePlayer(self, attacker);
+
     self.health = Freeze_CVar(frozen_health);
     self.armorvalue = Freeze_CVar(frozen_armor);
     
@@ -303,9 +322,9 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
             bigprint_spec(self, "", strcat("^5You were moved to a random spawn point after dying ", ftos(self.frozenrow), " times in a row"), 5);
         self.frozenrow = 0;
     }
-    
+
     AloneWarning(self.team, Freeze_AliveCheck);
-    
+
     return 1;
 }
 
@@ -340,7 +359,7 @@ void Freeze_Hook_PlayerSpawns(void) {
     }
 }
 
-void Freeze_RevivePlayer(entity plr, entity revlist) {
+void Freeze_RevivePlayer(entity plr, entity revlist, float doheal) {
     float first = TRUE;
     string names;
     entity e;
@@ -367,9 +386,12 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         PlayerScore_Add(e, SP_REVIVALS, 1);
         PlayerScore_Add(e, SP_SCORE, Freeze_CVar(score_revival) / pcnt);
         
-        float heal = max(max(Freeze_CVar(revive_heal) - e.health, 0), Freeze_CVar(revive_heal_min));
-        if(heal)
-            Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+        if(doheal) {
+            float heal = max(max(Freeze_CVar(revive_heal) - e.health, 0), Freeze_CVar(revive_heal_min));
+            if(heal)
+                Heal(e, plr, e, heal, 0, 0, 0, 0, HEAL_PAUSEROT_DEFAULT, 0, '0 0 0', '0 0 0');
+        }
+
         centerprint_spec(e, strcat("^5You revived ^7", plr.netname, "\n"));
         
         e.revrow++;
@@ -390,15 +412,58 @@ void Freeze_RevivePlayer(entity plr, entity revlist) {
         e.revresettime = time + frametime * 2;
     }
 
-    float minh = Freeze_CVar(revived_minhealth);
-    float mina = Freeze_CVar(revived_minarmor);
-        
-    if(minh || mina)
-        Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');
+    if(doheal) {
+        float minh = Freeze_CVar(revived_minhealth);
+        float mina = Freeze_CVar(revived_minarmor);
+            
+        if(minh || mina)
+            Heal(plr, plr, plr, minh, mina, minh, mina, DEATH_ITEM, HEAL_PAUSEROT_DEFAULT, HEAL_PAUSEROT_DEFAULT, '0 0 0', '0 0 0');        
+    }
 
     plr.hg_plasmalock = 0;
     centerprint_spec(plr, strcat("^5You were revived by ^7", names, "\n"));
     bprint("^7", names, "^5 revived ^7", plr.netname, "\n");
+}
+
+.entity freeze_pspec_manager;
+
+void Freeze_ManagePlayerSpecMode(void) {
+    if(self.freeze_pspec_manager || self.revprogress < 0.2 || self.clientcamera == self)
+        return;
+
+    var m = spawn() {
+        owner: self,
+        use: inline void(void) {
+            if(self.owner.freeze_pspec_manager == self)
+                self.owner.freeze_pspec_manager = world;
+            remove(self);
+        },
+        think: inline void(void) {
+            var o = self.owner;
+
+            if(!o.frozen || !o.iscreature || roundstate != ROUNDSTATE_GAME) {
+                self.use();
+                return;
+            }
+
+            if(!o.revprogress) {
+                o.pspec_block = 0;
+                using(self = o)
+                    PlayerSpectatorStart();
+                self.use();
+                return;
+            }
+
+            using(self = o)
+                PlayerSpectatorStop();
+
+            o.pspec_block = time + frametime * 2;
+            self.nextthink = time;
+        },
+        nextthink: time,
+    };
+
+    self.freeze_pspec_manager = m;
 }
 
 void Freeze_Hook_PlayerPreThink(void) {
@@ -451,26 +516,32 @@ void Freeze_Hook_PlayerPreThink(void) {
             return;
         }
     
-        if(!self.iceblock)
-            Freeze_SpawnIceBlock(self);
-        
-        if(self.iceblock.team != self.team) {
-            if(Freeze_CVar(iceblocks_teamcolored))
-                self.iceblock.skin = TeamColorSkin(self.team);
-            self.iceblock.team = self.team;
-            WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+        if(!self.deadflag) {
+            if(!self.iceblock)
+                Freeze_SpawnIceBlock(self);
+
+            if(self.iceblock.team != self.team) {
+                if(Freeze_CVar(iceblocks_teamcolored))
+                    self.iceblock.skin = TeamColorSkin(self.team);
+                self.iceblock.team = self.team;
+                WaypointSprite_Disown(self.freeze_waypoint, 0.5);
+            }
         }
     }
-    
+
     if(!self.freeze_waypoint) {
         if(!bait)
             PlayerScore_SetFlags(self, SPFLAG_FROZEN);
         Freeze_SpawnWaypoint(self);
         Freeze_RecountPlayers();
     }
-    
+
     if(!bait) {
         Freeze_DangerShortcut();
+
+        if(self.BUTTON_HOOK && self.clientcamera == self && time - self.pspec_leavetime > 0.5)
+            PlayerSpectatorStart();
+
         self.BUTTON_ATCK = self.BUTTON_ATCK2 = FALSE;
     }
     
@@ -534,8 +605,10 @@ void Freeze_Hook_PlayerPreThink(void) {
         self.revfinished = 0;
         self.revprogress = bound(0, self.revprogress + frametime * rate, 1);
 
+        Freeze_ManagePlayerSpecMode();
+
         if(self.revprogress >= 1) {
-            Freeze_RevivePlayer(self, rfirst);
+            Freeze_RevivePlayer(self, rfirst, TRUE);
             return;
         } else for(other = rfirst; other; other = other.chain) {
             other.revprogress = self.revprogress;

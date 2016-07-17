@@ -3,6 +3,8 @@
 *.dat
 *.lno
 *.log
+*.asm
+config*.py
 config.sh
 updconfig.sh
 releaseconfig.sh
@@ -12,6 +14,7 @@ release/*
 !release/.*
 *.pk3dir/_*
 c_*.pk3dir/*
+cache/*
 pkgcache/*
 !pkgcache/.*
 build/*

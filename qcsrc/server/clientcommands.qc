@@ -214,16 +214,17 @@ void SV_ParseClientCommand(string s) {
         OPTAVAIL_RAW("radio", ftos(sv_radio))
         OPTAVAIL    ("dodging", "g_dodging")
         OPTAVAIL_RAW("altcharge", ftos(g_nadgets))
-		
+        OPTAVAIL_RAW("convswitch", if(g_weaponarena_secondary) "1" else "0")
+
 		#undef OPTAVAIL_RAW
 		#undef OPTAVAIL
 		#undef OPTAVAIL_NOT
-		
+
 		stuffcmd(self, strcat("set _g_rocketminsta ", ftos(CVAR(g_rocketminsta)), "\n"));
-		
+
 		// Update all necessary dialogs
 		stuffcmd(self, "menu_cmd update_rmvars\n");
-		
+
 		// And the scoreboard fields
 		stuffcmd(self, "cl_cmd sbar_columns_set default\n");
 	} else if(cmd == "anonspec") {
@@ -241,6 +242,7 @@ void SV_ParseClientCommand(string s) {
 			{
 				self.anonspec = 1;
 				sprint(self, "Your spectator status is now anonymous\n");
+                SpecInfo_Update(self, SPECINFO_LIST);
 			}
 			return;
 		}
@@ -251,6 +253,7 @@ void SV_ParseClientCommand(string s) {
 			{
 				self.anonspec = 0;
 				sprint(self, "Your spectator status is now NOT anonymous\n");
+                SpecInfo_Update(self, SPECINFO_LIST);
 			}
 			return;
 		}
@@ -270,7 +273,7 @@ void SV_ParseClientCommand(string s) {
 			return;
 		
         PlayerScore_SetFlagsBoolean(self, SPFLAG_MADOKA, self.madoka);
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 		return;
 	} else if(cmd == "nokillsound") {
 		if(!self)
@@ -303,7 +306,7 @@ void SV_ParseClientCommand(string s) {
 			fstrunzone(self.hudskin);
 		self.hudskin = strzone(argv(3));
 		
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "fakeflag") {
 		if(!self)
 			return;
@@ -354,17 +357,17 @@ void SV_ParseClientCommand(string s) {
         }
         
         if(targetteam) FOR_EACH_CLIENT(e)
-            if(e.team == targetteam || e.jb_specteam == targetteam)
+            if(e.team == targetteam)
                 IP2C_SetCountry_Internal(e, cn);
 	} else if(cmd == "fovreport") {
 		if(!self) return;
 		self.clientfov = stof(argv(1));
-		WriteSpectatorInfo(self);
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "zoomreport") {
 		if(!self) return;
 		self.speczoom_speed = stof(argv(1));
 		self.speczoom_factor = stof(argv(2));
-		WriteSpectatorInfo(self); 
+        SpecInfo_Update(self, SPECINFO_HUD);
 	} else if(cmd == "fpsreport") {
 		if not(sv_scoreboard_fps_column)
 			return;
@@ -411,7 +414,12 @@ void SV_ParseClientCommand(string s) {
                 self.client_dprmversion = 0;
                 return;
             }
-            
+
+            if(argv(1) == "utf8_enable") {
+                self.client_utf8 = 0;
+                return;
+            }
+
 			s = strcat(substring(s, argv_start_index(0), argv_end_index(1) - argv_start_index(0)), " \"", cvar_defstring(argv(1)), "\"");
 			tokens = tokenize_console(s);
 		}
@@ -421,6 +429,11 @@ void SV_ParseClientCommand(string s) {
 		{
             if(argv(1) == "dprm_version") {
                 self.client_dprmversion = 0;
+                return;
+            }
+
+            if(argv(1) == "utf8_enable") {
+                self.client_utf8 = 0;
                 return;
             }
 
@@ -454,19 +467,8 @@ void SV_ParseClientCommand(string s) {
 				return;
 			}
 		}
-        if(CVAR(sv_spectate) == 1) {
-            if(self.classname == "player") {
-                EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
-            } else {
-                if(self.jb_specteam) {
-                    if(self.scorekeeper)
-                        PlayerScore_Clear(self, TRUE);
-                    self.jb_specteam = 0;
-                    self.classname = "observer";
-                    PlayerScore_SetFlagsBoolean(self, SPFLAG_FROZEN, 0);
-                    PutClientInServer();
-                }
-            }
+        if(CVAR(sv_spectate) && self.classname == "player") {
+            EnterSpectatorModeDelayed(if(roundstate == ROUNDSTATE_GAME) CVAR(sv_spectate_delay) else 0);
         }
 	} else if(cmd == "join") {
         if(gameover)
@@ -488,6 +490,9 @@ void SV_ParseClientCommand(string s) {
                 if(HG_ShowMenu(FALSE))
                     return;
                 
+                if(W_ShowMenu(FALSE))
+                    return;
+
 				self.classname = "player";
 				PlayerScore_Clear(self, FALSE);
                 
@@ -498,11 +503,9 @@ void SV_ParseClientCommand(string s) {
 					campaign_bots_may_start = 1;
 			}
 			else {
-				//player may not join because of g_maxplayers is set
-				//centerprint_atprio(self, CENTERPRIO_MAPVOTE, PREVENT_JOIN_TEXT);
-                
                 if(!self.joinqueue)
                 if(!HG_ShowMenu(FALSE))
+                if(!W_ShowMenu(FALSE))
                     JoinQ_Push(self);
 			}
 		}
@@ -514,8 +517,6 @@ void SV_ParseClientCommand(string s) {
 			return;
 		if( !teams_matter ) {
 			sprint(self, "selectteam can only be used in teamgames\n");
-        } else if(self.jb_specteam) {
-            sprint(self, "selectteam can't be used while spectating in the jail\n");
 		} else if(CVAR(g_campaign)) {
 			//JoinBestTeam(self, 0);
 		} else if(lockteams) {
@@ -546,7 +547,7 @@ void SV_ParseClientCommand(string s) {
         }
 
         float isplayer = self.classname != "spectator" && self.classname != "observer";
-        float gamestarted = roundstate == ROUNDSTATE_GAME; //time > warmup && time > game_starttime;
+        float gamestarted = roundstate == ROUNDSTATE_GAME;
         float term = (self.term_authed && !self.term_used);
         float nr = isplayer && (gamestarted || (self.hg_nadesused && !inWarmupStage)) && !term;
         
@@ -566,38 +567,44 @@ void SV_ParseClientCommand(string s) {
 
             if(argc) for(i = 0; i < argc; ++i) {
                 if(t == HG_NameToType(argv(i))) {
-                    sprint(self, strcat("^1Your ", if(g_nadgets_double) (if(hg_context_isalt) "secondary " else "primary ") else "", "nadget type ", if(nr) "will be" else "has been", " set to ^2", HG_TypeToExpandedName(t), if(nr) "^1 on the next round\n" else "\n"));
+                    sprint(self, strcat("^1Your ", if(g_nadgets_double) (if(hg_context_isalt) "secondary " else "primary ") else "", "nadget type ", if(nr) "will be" else "has been", " set to the ^2", HG_TypeToExpandedName(t), if(nr) "^1 on the next round.\n" else "^1.\n"));
                     self.(if(nr) hg_ctx_type_picked_nextround else hg_ctx_type_picked) = t;
                     
                     if(!nr) {
-                        float o;
-                        if(term) {
-                            if(self.hg_ctx_ammo < 1)
-                                o = TRUE;
-                                
-                            if(self.hg_ctx_type != t) {
-                                self.hg_ctx_ammo = 1;
-                                o = TRUE;
-                            } else
-                                self.hg_ctx_ammo = max(1, self.hg_ctx_ammo);
-                            
-                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
-                        }
-                        
-                        HG_SetGrenadeType(self, HG_PlayerGrenadeType(self));
-                        
-                        if(o || !term) {
-                            HG_SetRegenTime(self, HG_RegenTime(self));
-                            if(!term)
-                                self.hg_ctx_ammo = CVAR(g_nadgets_ammo);
-                        }
-                        
+                        var astate;
+
                         if(term) {
                             self.term_used = TRUE;
                             self.term_nextuse = time + CVAR(g_terminals_auth_cooldown);
+
+                            if(self.hg_ctx_type == t) {
+                                astate = spawn();
+                                HG_CopyAmmoState(self, astate);
+                            }
+
+                            sound(self, CHAN_TRIGGER, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+                        }
+
+                        HG_ResetAmmo(self, FALSE);
+
+                        if(astate) {
+                            var revert = FALSE;
+
+                            if(astate.hg_ctx_ammo > self.hg_ctx_ammo) {
+                                revert = TRUE;
+                            } else if(astate.hg_ctx_ammo == self.hg_ctx_ammo) {
+                                if(astate.hg_ctx_regentime < self.hg_ctx_regentime)
+                                    revert = TRUE;
+                            }
+
+                            if(revert)
+                                HG_CopyAmmoState(astate, self);
+
+                            remove(astate);
+                            astate = world;
                         }
                     }
-                    
+
                     success = TRUE;
                     break;
                 }
@@ -608,6 +615,43 @@ void SV_ParseClientCommand(string s) {
                 return;
             }
         })
+
+        return;
+    } else if(cmd == "picksecondary") {
+        if not(self.flags & FL_CLIENT)
+            return;
+        
+        if(!g_weaponarena_secondary_selectable)
+            return;
+        
+        if(tokens < 2) {
+            W_ShowMenu(2);
+            return;
+        }
+
+        var w = find_weaponinfo(argv(1));
+
+        if(!w) {
+            sprint(self, strcat("^1", argv(1), " is not a valid weapon.\n"));
+            return;
+        }
+
+        if(!(w.weapons & g_weaponarena_secondary)) {
+            sprint(self, strcat("^1The ^2", w.message, "^1 is not allowed on this server.\n"));
+            return;   
+        }
+
+        float isplayer = self.classname != "spectator" && self.classname != "observer";
+        float gamestarted = roundstate == ROUNDSTATE_GAME;
+        float nr = isplayer && gamestarted;
+
+        if(nr) {
+            sprint(self, strcat("^1Your secondary weapon will be set to the ^2", w.message, "^1 on the next round.\n"));
+            self.w_secondary_nextround = w.weapon;
+        } else {
+            sprint(self, strcat("^1Your secondary weapon has been set to the ^2", w.message, "^1.\n"));
+            W_SetSecondary(self, w.weapon);
+        }
 
         return;
     } else if(cmd == "hg_optout") {
@@ -628,6 +672,11 @@ void SV_ParseClientCommand(string s) {
             return;
 
         self.hg_altcharge = stof(argv(1));
+    } else if(cmd == "convswitch") {
+        if not(self.flags & FL_CLIENT)
+            return;
+
+        self.w_conv_switch = stof(argv(1));
     } else if(cmd == "ready") {
 		if not(self.flags & FL_CLIENT)
 			return;
@@ -892,7 +941,7 @@ void SV_ParseClientCommand(string s) {
 			else
 			{
 				setorigin(e, self.cursor_trace_endpos + normalize(self.cursor_trace_start - self.cursor_trace_endpos));
-				move_out_of_solid(e);
+				move_out_of_solid(e, MOVE_WORLDONLY);
 			}
 
 			e.killindicator = spawn();
@@ -913,9 +962,9 @@ void SV_ParseClientCommand(string s) {
 		{
 			RandomSelection_Init();
 			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			if(RandomSelection_chosen_ent)
 			{
 				remove(RandomSelection_chosen_ent.killindicator.killindicator);
@@ -934,9 +983,9 @@ void SV_ParseClientCommand(string s) {
 		{
 			RandomSelection_Init();
 			for(e = world; (e = find(e, classname, "dragbox_box")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			for(e = world; (e = find(e, classname, "dragpoint")); )
-				RandomSelection_Add(e, 0, string_null, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
+				RandomSelection_Add(e, 0, NULL, 1, 1 / vlen(e.origin + (e.mins + e.maxs) * 0.5 - self.cursor_trace_endpos));
 			if(RandomSelection_chosen_ent)
 			{
 				if(substring(argv(1), 0, 1) == "*")
@@ -1087,7 +1136,7 @@ void SV_ParseClientCommand(string s) {
             return;
         }
 
-        if(action != "team" && action != "me")
+        if(action != "team" && action != "me" && action != "track")
             goto wp_usage;
 
         if(!CVAR(g_waypointsprite_allow_custom_team_waypoints) && action == "team") {
@@ -1096,22 +1145,68 @@ void SV_ParseClientCommand(string s) {
         }
 
         var loc = argv(2);
-        if(loc != "origin" && loc != "crosshair")
+        var trackplr = world;
+
+        if(str2chr(loc, 0) == '#') {
+            if(action != "track") {
+                sprint(self, "^1Player ids are only valid for tracking mode\n");
+                return;
+            }
+
+            if(loc == "#target") {
+                trackplr = self.selected_player;
+                if(!trackplr)
+                    trackplr = self.cursor_trace_ent;
+                loc = "#" + num_for_edict(trackplr);
+            } else {
+                trackplr = edict_num(stof(substring(loc, 1, strlen(loc))));
+            }
+
+            if(trackplr.classname != "player") {
+                sprint(self, "^1" + loc + " is not a player\n");
+                return;
+            }
+
+            if(IsDifferentTeam(self, trackplr) || self == trackplr) {
+                sprint(self, "^1" + loc + " is not your team mate\n");
+                return;
+            }
+        } else if(action == "track") {
+            sprint(self, "^1You must supply a player id for tracking mode\n");
+            return;
+        } else if(loc != "origin" && loc != "crosshair") {
             goto wp_usage;
+        }
 
         var text = argv(3);
-        if(!text)
+        if(!text && !trackplr)
             goto wp_usage;
 
         var clr = stov(argv(4));
         if(!clr)
             clr = '1 1 1';
 
-        var vloc = 
+        if(trackplr) {
+            var cleared = WaypointSprite_ClearTracking(trackplr);
+
+            if(!text) {
+                if(cleared)
+                    return;
+                text = strdecolorize(trackplr.netname);
+            }
+
+            var wp = WaypointSprite_DeployTracking(text, trackplr);
+            WaypointSprite_UpdateTeamRadar(wp, RADARICON_WAYPOINT, clr);
+            WaypointSprite_UpdateTextColors(wp, clr, '0 0 0', '0 0 0');
+            return;
+        }
+
+        var vloc = (
             if(loc == "origin")
                 self.origin
             else
-                self.cursor_trace_endpos;
+                self.cursor_trace_endpos
+        );
 
         if(action == "team") {
             var lim = CVAR(g_waypointsprite_custom_team_waypoint_charlimit);
@@ -1151,7 +1246,10 @@ void SV_ParseClientCommand(string s) {
         return;
 
 :wp_usage
-        sprint(self, "^1Usage: waypoint (me|team|clear) (origin|crosshair) text [color] [lifetime]\n");
+        sprint(self, "^1Usage: waypoint (me|team|track|clear) (origin|crosshair|#playernum|#target) text [color] [lifetime]\n");
+        return;
+    } else if(cmd == "spyteam") {
+        PlayerSpectatorToggle();
         return;
 	} else {
 		//if(ctf_clientcommand())
@@ -1176,6 +1274,7 @@ void SV_ParseClientCommand(string s) {
 		if(cmd != "name")
 		if(cmd != "color")
 		if(cmd != "rate")
+        if(cmd != "rate_burstsize")
 		if(cmd != "pmodel")
 		if(cmd != "playermodel")
 		if(cmd != "playerskin")
@@ -1190,28 +1289,31 @@ void SV_ParseClientCommand(string s) {
 			return;
 		}
 
-		if(self.jointime > 0 && time > self.jointime + 10 && time > self.nickspamtime) // allow any changes in the first 10 seconds since joining
 		if(cmd == "name" || cmd == "playermodel") // TODO also playerskin and color?
 		{
-			if(self.nickspamtime == 0 || time > self.nickspamtime + CVAR(g_nick_flood_timeout))
-				// good, no serious flood
-				self.nickspamcount = 1;
-			else
-				self.nickspamcount += 1;
-			self.nickspamtime = time + CVAR(g_nick_flood_penalty);
+            // allow any changes in the first 10 seconds since joining
+            if(self.jointime > 0 && time > self.jointime + 10 && time > self.nickspamtime) {
+                if(self.nickspamtime == 0 || time > self.nickspamtime + CVAR(g_nick_flood_timeout))
+                    // good, no serious flood
+                    self.nickspamcount = 1;
+                else
+                    self.nickspamcount += 1;
+                self.nickspamtime = time + CVAR(g_nick_flood_penalty);
 
-			if (timeoutStatus == 2) //when game is paused, no flood protection
-				self.nickspamcount = self.nickspamtime = 0;
-			
-			UnmarkAway(self);
+                if (timeoutStatus == 2) //when game is paused, no flood protection
+                    self.nickspamcount = self.nickspamtime = 0;
+
+                UnmarkAway(self);
+            }
+
+            if(cmd == "name") {
+                SetClientName(self, argv(1), TRUE, TRUE);
+                return;
+            }
+
 		}
 
-        if(cmd == "name" && self.netname != "unconnected") {
-            IRC_Announce_Name(self, substring(s, argv_start_index(1) + 1, strlen(s) - argv_start_index(1) - 2));
-        }
-        
         clientcommand(self, s);
-
 	}
 }
 

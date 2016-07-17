@@ -124,7 +124,7 @@ void CSQC_Init(void)
 
 	drawfont = 0;
 
-	for(i = 0; i < 255; ++i)
+	for(i = 0; i < RM_MAXCLIENTS; ++i)
 		if(getplayerkey(i, "viewentity") == "")
 			break;
 	maxclients = i;
@@ -163,6 +163,9 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
     registercvar("rm_showplayername", "1", CVAR_SAVE);
     registercvar("rm_fps_friendly", "0", CVAR_SAVE);
+    registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_size", "2", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_alpha", "0.25", CVAR_SAVE);
     registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
     registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
@@ -202,6 +205,7 @@ void CSQC_Init(void)
     registercvar("cl_message_praise", "1", CVAR_SAVE);
     registercvar("cl_message_praise_show", "1", CVAR_SAVE);
     registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
+    registercvar("cl_warpzone_sound_transition", "0", CVAR_SAVE);
 
     gametype = 0;
 
@@ -250,23 +254,13 @@ void CSQC_Init(void)
 	minimapname = strzone(minimapname);
 	
 	vote_statstring = strzone("");
-	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
-	rm_wm_width = stringwidth(rm_watermark, TRUE);
+	rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_DATE;
 	
 	bigprint_string = strzone("");
 	bigprint_comment = strzone("");
-	
-	centerprint_init = 0;
-	
+
 	print("^1", rm_watermark, "\n");
-	
-	// hack for DSN users
-	if(substring(CVAR_STR(g_nexuizversion), 0, strlen("2.5.1")) == "2.5.1")
-	{
-		print("^1Outdated engine detected. Some features will be unavailable.\n");
-		oldengine = 1;
-	}
-	
+
     dtrack_total = DamageTracker_CreateKeeper(world);
     dtrack_taken = DamageTracker_CreateKeeper(world);
     dtrack_total_spec = DamageTracker_CreateKeeper(world);
@@ -276,9 +270,14 @@ void CSQC_Init(void)
 	IP2C_Init();
     registercvar("_g_nadgets_select_available", "0", 0);
     registercvar("_g_nadgets_select_double", "0", 0);
+    registercvar("_secondary_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
 
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
+
+    WarpZone_Init();
+
+    ext_DP_CSQC_QUERYRENDERENTITY = checkextension("DP_CSQC_QUERYRENDERENTITY");
 }
 
 // CSQC_Shutdown : Called every time the CSQC code is shutdown (changing maps, quitting, etc)
@@ -290,6 +289,9 @@ void CSQC_Shutdown(void)
 		return 0;
 #pragma TARGET fte
 #endif
+
+    utf8_disable();
+    WarpZone_Shutdown();
 
 	HUDSkin_Unload();
 	IP2C_Shutdown();
@@ -429,11 +431,14 @@ void TrueAim_Init();
 entity tmpmadoka;
 
 float GetBigfont() {
-	return if(rm_oldbigfont || sv_oldfag) sbar_bigfont_real else sbar_rmbigfont;
+	return if(rm_oldbigfont || dprm_basegame == BASEGAME_VECXIS) sbar_bigfont_real else sbar_rmbigfont;
 }
 
 void SetMadokaFont(float v)
 {
+    if(dprm_basegame == BASEGAME_VECXIS)
+        return;
+
 	switch(v)
 	{
 		case MDKF_SET:
@@ -458,7 +463,7 @@ void SetMadokaFont(float v)
 }
 
 void Menu_ShowNagger(void) {
-    if(!DPRM_VersionIsSuitable())
+    if(!DPRM_VersionIsRecommended())
         localcmd("menu_cmd directmenu engineNagger\n");
 }
 
@@ -504,7 +509,7 @@ void FPSReporter_Init() {
 	e.nextthink = time + 1;
 }
 
-#define TARGET_RATE 40000
+#define TARGET_RATE 70000
 
 void UpdateClRate(void) {
     float oldrate = CVAR(_cl_rate);
@@ -526,16 +531,20 @@ void TryBindCRAKeys(void) {
     keyprio = TryBind("'+use'", keyprio);
 }
 
-void AddMasterServer(string addr) {
+void AddMasterServer(string addr, string alt) {
+    var success = FALSE;
     var i = 1;
 
     while(TRUE) {
-        var cv = strcat("sv_masterextra", ftos(i));
+        var cv = "sv_masterextra" + i;
 
-        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
             break;
 
         if(cvar_string(cv) == addr)
+            return;
+
+        if(cvar_string(cv) == alt)
             return;
 
         i += 1;
@@ -544,27 +553,107 @@ void AddMasterServer(string addr) {
     i = 1;
 
     while(TRUE) {
-        var cv = strcat("sv_master", ftos(i));
+        var cv = "sv_master" + i;
 
-        if(!(cvar_type(cv) & CVAR_TYPEFLAG_EXISTS))
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
             break;
 
-        if(cvar_string(cv) == "") {
+        if(cvar_string(cv) == addr) {
+            success = TRUE;
+            break;
+        }
+
+        if(cvar_string(cv) == "" || cvar_string(cv) == alt) {
             cvar_set(cv, addr);
-            return;
+            success = TRUE;
+            break;
         }
 
         i += 1;
     }
 
-    print("^3WARNING: ^7couldn't register master server ^2", addr, "^7!\n");
+    if(success) {
+        i += 1;
+
+        while(TRUE) {
+            var cv = "sv_master" + i;
+
+            if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
+                break;
+
+            if(cvar_string(cv) == addr || cvar_string(cv) == alt)
+                cvar_set(cv, "");
+
+            i += 1;
+        }
+    } else {
+        print("^3WARNING: ^7couldn't register master server ^2", addr, "^7!\n");
+    }
+}
+
+void RemoveDuplicateMasterServers(void) {
+    var i = 1;
+
+    while(TRUE) {
+        var cv = "sv_master" + i;
+
+        if(!(cvar_type(cv) & CVAR_TYPEFLAG_ENGINE))
+            break;
+
+        i += 1;
+
+        var val = cvar_string(cv);
+
+        if(val == "")
+            continue;
+
+        var j = i;
+
+        while(TRUE) {
+            var cv2 = "sv_master" + j;
+
+            if(!(cvar_type(cv2) & CVAR_TYPEFLAG_ENGINE))
+                break;
+
+            if(cvar_string(cv2) == val)
+                cvar_set(cv2, "");
+
+            j += 1;
+        }
+    }
 }
 
 void RegisterMasterServers(void) {
-    AddMasterServer("107.161.23.68"); // new dpmaster.deathmask.net IP
-    AddMasterServer("91.121.161.160"); // Nude Dudes master server
-    AddMasterServer("dpmaster.vecxis.com"); // Vecxis master server
+    RemoveDuplicateMasterServers();
+    AddMasterServer("nex.thebadasschoobs.org",  "91.121.161.160");  // Nude Dudes master server
+    AddMasterServer("dpmaster.deathmask.net",   "107.161.23.68");   // dpmaster.deathmask.net
+    AddMasterServer("dpmaster.vecxis.com",      "162.243.128.63");  // Vecxis master server
+    AddMasterServer("ghdigital.com",            "207.55.114.154");  // LordHavoc's master server
+    AddMasterServer("dpmaster.tchr.no",         "92.62.40.73");     // tChr's master server
 }
+
+void InitFonts(void) {
+    SetMadokaFont(MDKF_AUTO);
+
+    if(!utf8_supported()) {
+        load_fonts();
+    } else if(dprm_basegame == BASEGAME_NEXUIZ) spawn() {
+        think: inline void(void) {
+            if(!utf8_enabled())
+                utf8_enable();
+            fix_fonts();
+            self.nextthink = time + 1;
+        },
+        nextthink: time
+    };
+}
+
+void ReportHUDInfo(string hskin) {
+    if(sv_showspecs_extra)
+        localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", hskin, "\n");
+}
+
+float warpzone_sound_transition;
 
 void PostInit(void)
 {
@@ -578,8 +667,6 @@ void PostInit(void)
 
 	Porto_Init();
 	TrueAim_Init();
-
-	MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
 	
     // XXX: find a better way to deal with config conflicts introduced by Axisar's server.
 //#NO AUTOCVARS START
@@ -658,7 +745,6 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger 1; freezetag_danger 1\n");
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
-			localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 38:
             // fight evil with evil
             if(CVAR(cl_gunalign) == 3)
@@ -684,7 +770,6 @@ void PostInit(void)
         case 47:
             localcmd("seta rm_nododging 0; nododging 0\n");
         case 48:
-            UpdateClRate();
         case 49:
         case 50:
             TryBindCRAKeys();
@@ -696,9 +781,30 @@ void PostInit(void)
                 cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
         case 54:
             localcmd("seta r_equalize_entities_fullbright 1\n");
+        case 55:
+            localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
+        case 56:
+            localcmd("seta r_font_size_snapping 1\n");
+        case 57:
+        case 58:
+            localcmd("seta rm_convswitch 0; convswitch 0\n");
+        case 59:
+            localcmd("seta rm_hud_healthcolor 0\n");
+        case 60:
+        case 61:
+            UpdateClRate();
+        case 62:
+            cvar_set("gl_flashblend", "0");
+            cvar_archive("r_shadow_lightintensityscale", "1.0");
+            cvar_archive("r_shadow_lightradiusscale", "1.0");
+        case 63:
+            cvar_set("cl_warpzone_sound_transition", "0");
+            warpzone_sound_transition = 0;
+        case 64:
+            cvar_set("sv_ip2country_server", "udp://91.121.161.160:16886");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 55\n");
+		localcmd("seta rm_initialized 65\n");
 		RM_OUTDATED
 		break;
 	}
@@ -767,30 +873,23 @@ void PostInit(void)
     registercmd("radio");
     registercmd("nododging");
     registercmd("altcharge");
+    registercmd("convswitch");
 	// -- //
 	registercmd("hudskin");
-	
-	bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
 
 	if(sv_showspecs_extra)
 		localcmd("cmd madoka ", ftos(CVAR(rm_madoka)), "\n");
 	tmpmadoka = spawn();
-	
-	//loadfont("user3", "gfx/madoka-rune");
-	//For some reason, widths are all screwd up if loading through the wrapper... what the FUCK!?
-	localcmd("loadfont user3 gfx/madoka-rune\n");
-	localcmd("loadfont user4 gfx/iceland\n");		// RM bigfont
-	localcmd("loadfont infobar gfx/vera-sans-big\n");
-	SetMadokaFont(MDKF_AUTO);
-	
-	if(sv_showspecs_extra)
-		localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), "\n");
+
+    ReportHUDInfo(CVAR_STR(rm_hudskin));
+
 	localcmd("cmd anonspec ", ftos(CVAR(rm_anonspec)), "\n");
 	localcmd("cmd nokillsound ", ftos(CVAR(rm_nokillsound)), "\n");
 	localcmd("cmd hidecountry ", ftos(CVAR(rm_hidecountry)), "\n");
     localcmd("cmd radio ", ftos(CVAR(rm_radio)), "\n");
     localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
     localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+    localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 	
     localcmd("alias menu_shownadeselect \"cmd picknade\"\n");
     localcmd("alias menu_shownadeselect2 \"cmd picknade\"\n");
@@ -804,17 +903,35 @@ void PostInit(void)
 	fovlock = -1;
 	
 	registercvar("rm_loadedmenu", "");
-	if(CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM)
+
+    var force_reload = (CVAR_STR(rm_loadedmenu) != RM_BUILD_MENUSUM);
+
+    if(!DPRM_GetVersion() && (cvar_type("mod_alias_force_animated") & CVAR_TYPEFLAG_EXISTS) && !cvar("mod_alias_force_animated")) {
+        // workaround for broken animations on some engines
+        cvar_set("mod_alias_force_animated", "1");
+
+        // just for the r_restart
+        force_reload = TRUE;
+    }
+
+	if(force_reload)
 		ReloadMenu();
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
     defer(1, Menu_ShowNagger);
+    defer(0.5, inline void(void) {
+        MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
+        bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
+    });
 
 	localcmd("cmd menu_request\n"); // workaround against restarts
 	FPSReporter_Init();
 	DPRM_Start();
 	RegisterMasterServers();
+    InitFonts();
+
+    mouse_pos = '-1 -1';
 
 	postinit = true;
 }
@@ -939,6 +1056,7 @@ float CSQC_ConsoleCommand(string strMessage)
 		strCmd == "shownames_teamonly"  ||
 		strCmd == "oldbigfont"			||
         strCmd == "altcharge"           ||
+        strCmd == "convswitch"          ||
 		strCmd == "freezetag_danger"	||
 		strCmd == "freezetag_danger_silent")
 	{
@@ -973,8 +1091,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			{
 				rm_oldhud = rm_oldhud_option;
 				rm_althud = rm_althud_option;
-				
-				localcmd("cmd hudinfo ", CVAR_STR(rm_oldhud), " ", CVAR_STR(rm_althud), " ", CVAR_STR(rm_hudskin), "\n");
+
+                ReportHUDInfo(hudskin_name);
 			}
 		}
 		else if(strCmd == "notimer")
@@ -985,6 +1103,8 @@ float CSQC_ConsoleCommand(string strMessage)
 			localcmd("cmd nododging ", ftos(CVAR(rm_nododging)), "\n");
         else if(strCmd == "altcharge")
             localcmd("cmd hg_altcharge ", ftos(CVAR(rm_altcharge)), "\n");
+        else if(strCmd == "convswitch")
+            localcmd("cmd convswitch ", ftos(CVAR(rm_convswitch)), "\n");
 
 		SetMadokaFont(MDKF_AUTO);
 		RMSETTINGREPORT
@@ -1072,8 +1192,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			HUDSkin_Load(argv(1));
 			cvar_set("rm_hudskin", hudskin_name);
 			localcmd("menu_cmd update_rmvars\n");
-			if(sv_showspecs_extra)
-				localcmd("cmd hudinfo ", ftos(CVAR(rm_oldhud)), " ", ftos(CVAR(rm_althud)), " ", CVAR_STR(rm_hudskin), "\n");
+            ReportHUDInfo(hudskin_name);
 		}
 		else
 		{
@@ -1159,7 +1278,7 @@ void ShotOrg_Draw2D()
 	coord2d_topleft = project_3d_to_2d(self.origin + view_up * 4 - view_right * 4);
 	coord2d_topright = project_3d_to_2d(self.origin + view_up * 4 + view_right * 4);
 
-	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE));
+	fs = '1 1 0' * ((coord2d_topright_x - coord2d_topleft_x) / stringwidth(s, FALSE, '1 1'));
 
 	coord2d = coord2d_topleft;
 	if(fs_x < 8)
@@ -1395,6 +1514,9 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
     if(NS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
 
+    if(WS_InputEvent(bInputType, nPrimary, nSecondary))
+        return TRUE;
+
 	return FALSE;
 }
 
@@ -1413,6 +1535,7 @@ void Ent_ReadEntCS()
     if(sf & 1) {
         self.sv_entnum = ReadByte() - 1;
         self.sn_forcefrozen = ReadByte();
+        Shownames_Init(self);
     }
 
     entity plr = playerslots[self.sv_entnum];
@@ -1555,13 +1678,17 @@ void Ent_ReadPlayerScore()
 	{
 		if(sf & p)
 		{
-            if(lf & p)
-                o.(scores[i]) = ReadInt24_t();
-            else
-                o.(scores[i]) = ReadChar();
-            
-            if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
-                UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            if(i == SP_STATUSICONS) {
+                o.(scores[i]) = ReadShort();
+            } else {
+                if(lf & p)
+                    o.(scores[i]) = ReadInt24_t();
+                else
+                    o.(scores[i]) = ReadChar();
+
+                if(i != SP_PLAYTIME && i != SP_ACCURACY && i != SP_NOOB && i != SP_ALIVE)
+                    UpdateBestScore(GetPlayerColor(o.sv_entnum), i);
+            }
 		}
 	}
 
@@ -1698,12 +1825,75 @@ void Ent_RandomSeed()
 	psrandom(s);
 }
 
+void Ent_SpecInfo(void) {
+    var sf = ReadByte();
+
+    if(sf & SPECINFO_LIST) {
+        num_spectators = ReadByte();
+        for(var i = 0; i < num_spectators; ++i) {
+            var slot = ReadByte();
+            if(i < MAX_SPECTATORS)
+                spectatorlist[i] = slot - 1;
+        }
+    }
+
+    if(sf & SPECINFO_HUD) {
+        var md = ReadByte();
+
+        if(CVAR(rm_specmadoka)) {
+            madoka_locked = TRUE;
+            madokalockstate = md;
+            SetMadokaFont(madokalockstate);
+        }
+
+        hudlocked = TRUE;
+        rm_oldhud = hudlocked_old = ReadByte();
+        rm_althud = hudlocked_alt = ReadByte();
+
+        var skn = ReadString();
+        if(skn != hudskin_name)
+            HUDSkin_Load(skn);
+
+        fovlock = ReadByte();
+        speczoom_speed  = ReadByte() * 0.1;
+        speczoom_factor = ReadByte() * 0.1;
+    }
+}
+
+void Ent_AccStats(void) {
+    var hits, fired, wflags = ReadInt24_t();
+
+    for(var w = WEP_FIRST; w <= WEP_LAST; ++w) {
+        var i = get_weaponinfo(w);
+        if(i.weapons & wflags) {
+            switch(i.weapon_type) {
+                case WEP_TYPE_SPLASH:
+                    fired = ReadInt24_t();
+                    hits = ReadInt24_t();
+                    break;
+
+                case WEP_TYPE_HITSCAN:
+                    fired = ReadShort();
+                    hits = ReadShort();
+                    break;
+
+                default:
+                    error("Weapon " + w + " has invalid weapon_type = " + i.weapon_type);
+                    break;
+            }
+
+            weapon_hits[w] = hits;
+            weapon_fired[w] = fired;
+        }
+    }
+}
+
 // CSQC_Ent_Update : Called every frame that the server has indicated an update to the SSQC / CSQC entity has occured.
 // The only parameter reflects if the entity is "new" to the client, meaning it just came into the client's PVS.
 void Ent_RadarLink();
 void Ent_Init();
 void Ent_ScoresInfo();
-void(float bIsNewEntity) CSQC_Ent_Update =
+void CSQC_Ent_Update(float bIsNewEntity)
 {
 	float t;
 	float savetime;
@@ -1731,6 +1921,12 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 			bIsNewEntity = 1;
 		}
 #endif
+
+    if(cvar("_ent_debug")) {
+        if(t >= _ENT_START && t <= _ENT_END)
+            print("ent: ", ftos(t), " (", ftos(bIsNewEntity), ")\n");
+    }
+
 	self.enttype = t;
 	switch(t)
 	{
@@ -1757,13 +1953,19 @@ void(float bIsNewEntity) CSQC_Ent_Update =
 		case ENT_CLIENT_MODELEFFECT: Ent_ModelEffect(bIsNewEntity); break;
         case ENT_CLIENT_ZAPPER: case ENT_CLIENT_ZAPPER_SHIELD: Zapper_Read(t); break;
         case ENT_CLIENT_BUFFMODEL: Buffs_Model_Read(); break;
+        case ENT_CLIENT_WARPZONE: WarpZone_Read(bIsNewEntity); break;
+        case ENT_CLIENT_WARPZONE_CAMERA: WarpZone_Camera_Read(bIsNewEntity); break;
+        case ENT_CLIENT_WARPZONE_TELEPORTED: WarpZone_Teleported_Read(bIsNewEntity); break;
+        case ENT_CLIENT_SPECINFO: Ent_SpecInfo(); break;
+        case ENT_CLIENT_ACCSTATS: Ent_AccStats(); break;
+        case ENT_CLIENT_HGTWARP_INDICATOR: Ent_TimeWarperIndicator(); break;
 		default:
 			error(strcat("unknown entity type in CSQC_Ent_Update: ", ftos(self.enttype), "\n"));
 			break;
 	}
 
 	time = savetime;
-};
+}
 // Destructor, but does NOT deallocate the entity by calling remove(). Also
 // used when an entity changes its type. For an entity that someone interacts
 // with others, make sure it can no longer do so.
@@ -1774,8 +1976,8 @@ void Ent_Remove()
 
 	self.enttype = 0;
 	self.classname = "";
-	self.draw = func_null;
-	self.entremove = func_null;
+	self.draw = NULL;
+	self.entremove = NULL;
 	// TODO possibly set more stuff to defaults
 }
 // CSQC_Ent_Remove : Called when the server requests a SSQC / CSQC entity to be removed.  Essentially call remove(self) as well.
@@ -1809,6 +2011,7 @@ void Gamemode_Init()
 // CSQC_Parse_StuffCmd : Provides the stuffcmd string in the first parameter that the server provided.  To execute standard behavior, simply execute localcmd with the string.
 void CSQC_Parse_StuffCmd(string strMessage)
 {
+    dprint("stuffcmd from server: " + strMessage + "\n");
 	localcmd(strMessage);
 }
 // CSQC_Parse_Print : Provides the print string in the first parameter that the server provided.  To execute standard behavior, simply execute print with the string.
@@ -1901,10 +2104,11 @@ void Ent_Init()
 	armorblockpercent = ReadByte() / 255.0;
 	sv_showspecs_extra = ReadByte();
 	sv_scoreboard_fps_column = ReadByte();
-	sv_oldfag = ReadByte();
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
+    g_weaponarena_secondary = ReadInt24_t();
+    cvar_set("_secondary_select_available", ftos(!!(g_weaponarena_secondary & (g_weaponarena_secondary - 1))));
     g_freeze = ReadByte();
     sv_scoreboard_heal_column = ReadByte();
     sv_damagestats = ReadByte();
@@ -2024,41 +2228,6 @@ void Net_ReadMadokaPrint()
 	madokaprint(ReadString(), ReadString(), ReadShort());
 }
 
-void Net_ReadSpecInfo()
-{
-	float i;
-	
-	if(ReadByte()) {
-		float md = ReadByte();
-		
-		if(CVAR(rm_specmadoka)) {
-			madoka_locked = TRUE;
-			madokalockstate = md;
-			SetMadokaFont(madokalockstate);
-		}
-		
-		hudlocked = TRUE;
-		rm_oldhud = hudlocked_old = ReadByte();
-		rm_althud = hudlocked_alt = ReadByte();
-		
-		string skn = ReadString();
-		if(skn != hudskin_name)
-			HUDSkin_Load(skn);
-		
-		fovlock = ReadByte();
-		speczoom_speed  = ReadByte() * 0.1;
-		speczoom_factor = ReadByte() * 0.1;
-	}
-	
-	num_spectators = ReadByte();
-	for(i = 0; i < num_spectators; ++i)
-	{
-		float slot = ReadByte();
-		if(i < MAX_SPECTATORS)
-			spectatorlist[i] = slot - 1;
-	}
-}
-
 void Net_VoteDialog(float highlight) {
 	if(highlight) {
 		vote_highlighted = ReadShort();
@@ -2073,7 +2242,7 @@ void Net_VoteDialog(float highlight) {
 
     if(vote_statstring) {
         strunzone(vote_statstring);
-        vote_statstring = string_null;
+        vote_statstring = NULL;
     }
 
     if(vote_active)
@@ -2104,7 +2273,6 @@ void Net_ReadMorningRescue()
 void Net_ReadClearBigPrint()
 {
     bigprint(" ", "", 0);
-    //bigprint("", "", 0);
 }
 
 void Net_ReadHudFlash(float teamcolor)
@@ -2153,10 +2321,11 @@ void Net_Camera() {
 
 void Net_ServerInfo() {
     sv_hostname = strzone(ReadString());
-    sv_rm_build = strzone(ReadString());
-    sv_rm_version = strzone(ReadString());
-    sv_rm_date = strzone(ReadString());
-    sv_rm_commit = strzone(ReadString());
+    sv_hostname_colored = ReadByte();
+    var build_name = ReadString();
+    var build_version = ReadString();
+    sv_rm_build_info = strzone(build_name + " " + build_version);
+    sv_rm_build_date = strzone(ReadString());
     sv_motd = strzone(ReadString());
 }
 
@@ -2232,6 +2401,11 @@ float CSQC_Parse_TempEntity()
 	float nTEID;
 	nTEID = ReadByte();
 
+    if(cvar("_ent_debug")) {
+        if(nTEID >= _TE_CSQC_START && nTEID <= _TE_CSQC_END)
+            print("temp ent: ", ftos(nTEID), "\n");
+    }
+
 	switch(nTEID)
 	{
 		case TE_CSQC_PICTURE:
@@ -2257,9 +2431,6 @@ float CSQC_Parse_TempEntity()
 			return TRUE;
         case TE_CSQC_BIGPRINT:
 			Net_ReadBigPrint();
-			return TRUE;
-		case TE_CSQC_SPECINFO:
-			Net_ReadSpecInfo();
 			return TRUE;
 		case TE_CSQC_VOTE:
 			Net_VoteDialog(ReadByte());
@@ -2323,6 +2494,9 @@ float CSQC_Parse_TempEntity()
             return TRUE;
         case TE_CSQC_NADGETSELECT:
             Net_ReadNadgetSelect();
+            return TRUE;
+        case TE_CSQC_SECONDARYSELECT:
+            Net_ReadWeaponSelect();
             return TRUE;
     }
 
@@ -2489,9 +2663,6 @@ void score_visual(float score)
 
 void hudflash(vector colour, float staytime, float intensivity, float alph)
 {
-	if(sv_oldfag)
-		return;
-	
 	hudflash_color = colour;
 	hudflash_intensivity = intensivity;
 	hudflash_alpha = alph;

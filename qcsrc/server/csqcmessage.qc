@@ -12,6 +12,8 @@ void CSQCMessage_Write_Obituary(float msg, entity targ, entity attacker, float d
     if(t > maxclients) t = 0;
     if(a > maxclients) a = 0;
 
+    deathtype = DamageTracker_SetSecondaryFlipped(deathtype);
+
     if(custmsg)
         CSQCMessage_Write_Begin(msg, CSQCMSG_OBITUARY_CUSTOM);
     else

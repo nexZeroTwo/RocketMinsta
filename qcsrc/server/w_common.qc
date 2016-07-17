@@ -1,5 +1,3 @@
-.float bullets_hit[WEP_COUNT]; 		//for hitscan bullets hit
-.float bullets_fired[WEP_COUNT];	//for hitscan bullets fired
 
 void W_GiveWeapon (entity e, float wep, string name)
 {
@@ -24,115 +22,23 @@ void W_GiveWeapon (entity e, float wep, string name)
 	self = oldself;
 }
 
-float W_Accuracy_IsGoodHit(entity attacker, entity ent) {
-    float did_hit;
-
-    if(ent.takedamage == DAMAGE_NO)
-        return FALSE;
-
-    float sameteam = !IsDifferentTeam(ent, attacker);
-
-    if(ent.flags & FL_CLIENT) {
-        if(ent.deadflag == DEAD_NO)
-            did_hit = TRUE;
-    } else if(ent.flags & FL_PROJECTILE) {
-        if(ent.owner == attacker)
-            return TRUE;
-        did_hit = TRUE;
-    } else if(ent.classname == "meodp_point") {
-        return TRUE;
-    }
-
-    if(sameteam && !Buffs_Present(attacker, BUFF_MEDIC))
-        did_hit = FALSE;
-
-    return did_hit;
-}
-
-void W_Accuracy_RegisterShot(entity attacker, float w) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.bullets_fired[w] += 1;
-    attacker.maxdamage_fired = w + 64 * rint(attacker.bullets_fired[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_shots = attacker.bullets_fired[w];
-}
-
-void W_Accuracy_RegisterHit(entity attacker, entity targ, float w) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    if(!W_Accuracy_IsGoodHit(attacker, targ))
-        return;
-
-    attacker.bullets_hit[w] += 1;
-    attacker.damage_hits = w + 64 * rint(attacker.bullets_hit[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_hits = attacker.bullets_hit[w];
-}
-
-void W_Accuracy_RegisterPotentialDamage(entity attacker, float w, float damage) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.max_damage[w] += damage;
-    attacker.maxdamage_fired = w + 64 * rint(attacker.max_damage[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_shots = attacker.max_damage[w];
-}
-
-void W_Accuracy_RegisterActualDamage(entity attacker, float w, float damage) {
-    if(inWarmupStage || attacker.isbot || w < WEP_FIRST || w > WEP_LAST)
-        return;
-
-    attacker.actual_damage[w] += damage;
-    attacker.damage_hits = w + 64 * rint(attacker.actual_damage[w]);
-
-    if(!(pow(2, w-1) & g_weaponarena_secondary))
-        attacker.accstat_hits = attacker.actual_damage[w];
-}
-
-void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
-    vector hitloc, force, endpoint, dir;
-    entity ent, endent;
-    float endq3surfaceflags;
+float FireRailgunBullet_trace_deathtype;
+void FireRailgunBullet_trace_callback(vector from, vector end, vector to) {
+    vector dir;
     float length;
     vector beampos;
-    string snd;
-    entity pseudoprojectile;
-    entity pts, hitents;
     float f;
-
-    railgun_start = start;
-    railgun_end = end;
-
-    dir = normalize(end - start);
-    length = vlen(end - start);
-    force = dir * bforce;
-
-    // go a little bit into the wall because we need to hit this wall later
-    end = end + dir;
-
-    pts = Buffs_MEODP_Hitscan_Begin(self);
-    
-    hitents = tracerail_antilag(self, start, end, FALSE, self);
-
-    endpoint = trace_endpos;
-    endent = trace_ent;
-    endq3surfaceflags = trace_dphitq3surfaceflags;
-
+    string snd;
+    length = vlen(to - from);
+    dir = normalize(to - from);
+    entity pseudoprojectile;
     // Find all non-hit players the beam passed close by
-    if(deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(deathtype, WEP_NEX)) {
+    if(FireRailgunBullet_trace_deathtype == WEP_MINSTANEX || DEATH_ISWEAPON(FireRailgunBullet_trace_deathtype, WEP_NEX)) {
         FOR_EACH_REALCLIENT(msg_entity)  // we use realclient, so spectators can hear the whoosh too
-        if(msg_entity != self)
-        if not(msg_entity.tracerail_hit)
-        if not(msg_entity.classname == "spectator" && msg_entity.enemy == self) {
+        if(msg_entity.clientcamera != self)
+        if(!msg_entity.tracerail_hit) {
             // nearest point on the beam
-            beampos = start + dir * bound(0, (msg_entity.origin - start) * dir, length);
+            beampos = from + dir * bound(0, (msg_entity.origin - from) * dir, length);
 
             f = bound(0, 1 - vlen(beampos - msg_entity.origin) / 512, 1);
             if(f <= 0)
@@ -149,6 +55,28 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             remove(pseudoprojectile);
     }
 
+}
+
+void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, float mindist, float maxdist, float halflifedist, float forcehalflifedist, float deathtype) {
+    vector hitloc, endpoint;
+    entity ent, endent;
+    float endq3surfaceflags;
+    entity hitents;
+    float f;
+
+    railgun_start = start;
+    railgun_end = end;
+
+    // go a little bit into the wall because we need to hit this wall later
+    //end = end + dir;
+
+    FireRailgunBullet_trace_deathtype = deathtype;
+    hitents = tracerail_antilag(self, start, end, FALSE, self, FireRailgunBullet_trace_callback);
+
+    endpoint = trace_endpos;
+    endent = trace_ent;
+    endq3surfaceflags = trace_dphitq3surfaceflags;
+
     W_Accuracy_RegisterShot(self, self.weapon);
 
     // find all the entities the railgun hit and hurt them
@@ -158,9 +86,9 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
         hitloc = ent.tracerail_endpos;
 
         float tdamage = bdamage;
-        vector tforce = force;
+        vector tforce = bforce * ent.tracerail_dir;
 
-        float dst = (hitloc - start) * dir;
+        float dst = vlen(end - start) * ent.tracerail_fraction;
 
         tdamage = tdamage * ExponentialFalloff(mindist, maxdist, halflifedist, dst);
         tforce = tforce * ExponentialFalloff(mindist, maxdist, forcehalflifedist, dst);
@@ -206,7 +134,6 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
             Damage(ent, self, self, tdamage, deathtype, hitloc, tforce);
     }
 
-    Buffs_MEODP_Hitscan_End(pts);
     tracerail_finalize(hitents);
 
     trace_endpos = endpoint;
@@ -277,16 +204,6 @@ void W_BallisticBullet_LeaveSolid_think()
 	}
 
 	UpdateCSQCProjectile(self);
-}
-
-// a fake logarithm function
-float log(float x)
-{
-	if(x < 0.0001)
-		return 0;
-	if(x > 0.9 && x < 1.1)
-		return x - 1;
-	return 2 * log(sqrt(x));
 }
 
 float W_BallisticBullet_LeaveSolid(entity e, vector vel, float constant)
@@ -386,6 +303,12 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     FireRailgunBullet(start, end, damage, force, 0, 0, 0, 0, dtype);
     damage_headshotbonus = 0;
     end =  trace_endpos;
+    vector end_visual = end;
+    if (WarpZone_trace_transform) {
+        vector of = v_forward, or = v_right, ou = v_up;
+        end_visual = WarpZone_UnTransformOrigin(WarpZone_trace_transform, end_visual);
+        v_forward = of; v_right = or; v_up = ou;
+    }
 
     CSQCMessage_Praise2(self, headshot, yoda, 0, 0, 0);
 
@@ -393,11 +316,22 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
         eff = particleeffectnum("tr_rifle");
     else
         eff = particleeffectnum("tr_bullet");
-    
-    W_SetHitscanVisuals(self, end);
-    trailparticles(world, eff, w_shotorg_visual, end);
 
-    Damage_DamageInfo(end, damage, 0, 0, dir * max(1, force), dtype, self);
+    W_SetHitscanVisuals(self, end_visual);
+    WarpZone_TrailParticles(world, eff, w_shotorg, w_shotorg_visual, end_visual);
+
+    if(Buffs_Present(self, BUFF_MEDIC))
+        WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, end_visual);
+
+    Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
+}
+
+entity fireBallisticBullet_trace_callback_ent;
+float fireBallisticBullet_trace_callback_eff;
+void fireBallisticBullet_trace_callback(vector start, vector hit, vector end)
+{
+	if(vlen(trace_endpos - fireBallisticBullet_trace_callback_ent.origin) > 16)
+		zcurveparticles_from_tracetoss(fireBallisticBullet_trace_callback_eff, fireBallisticBullet_trace_callback_ent.origin, trace_endpos, fireBallisticBullet_trace_callback_ent.velocity);
 }
 
 void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, float lifetime, float damage, float headshotbonus, float force, float dtype, float tracereffects, float gravityfactor, float bulletconstant)
@@ -449,6 +383,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 	if(pSpeed >= CVAR(g_antilag_bullets))
 	{
 		float eff;
+        ExactHitscan_Begin();
 
 		if(tracereffects & EF_RED)
 			eff = particleeffectnum("tr_rifle");
@@ -468,8 +403,6 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			FOR_EACH_PLAYER(pl)
 				antilag_takeback(pl, time - lag);
 
-        entity pts = Buffs_MEODP_Hitscan_Begin(self);
-        
 		oldself = self;
 		self = proj;
 
@@ -478,10 +411,10 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         
 		for(;;)
 		{
-			tracetoss_skipnonsolid(self, oldself, 0.05 * 0.125, 200);
+			fireBallisticBullet_trace_callback_ent = self;
+			fireBallisticBullet_trace_callback_eff = eff;
+			WarpZone_TraceToss_ThroughZone(self, oldself, 0.125 * 0.05, 200, world, fireBallisticBullet_trace_callback);
 
-			if(vlen(trace_endpos - self.origin) > 16)
-				zcurveparticles_from_tracetoss(eff, self.origin, trace_endpos, self.velocity);
 			if(trace_fraction == 1)
 				break;
 				// won't hit anything anytime soon (DP's
@@ -491,7 +424,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 			other = trace_ent;
 			dt = vlen(trace_endpos - self.origin) / vlen(self.velocity); // this is only approximate!
 			setorigin(self, trace_endpos);
-			self.velocity_z -= CVAR(sv_gravity) * dt;
+			self.velocity = WarpZone_tracetoss_velocity;
             
 			if(!SUB_OwnerCheck())
 			{
@@ -510,15 +443,14 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		}
 		frametime = savetime;
 		self = oldself;
-        
-        Buffs_MEODP_Hitscan_End(pts);
-        
+
 		if(lag)
 			FOR_EACH_PLAYER(pl)
 				antilag_restore(pl);
 
 		remove(proj);
 
+        ExactHitscan_End();
 		return;
 	}
 

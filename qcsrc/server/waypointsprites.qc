@@ -118,6 +118,14 @@ void WaypointSprite_Ping(entity e)
 
 void WaypointSprite_FadeOutIn(entity e, float t)
 {
+    if(e.classname != "sprite_waypoint") {
+        print("WaypointSprite_InvalidateTracking called for a ", e.classname, "!\n");
+        backtrace("WaypointSprite_FadeOutIn");
+        return;
+    }
+
+    e.exteriormodeltoclient = world;
+
 	if(!e.fade_time)
 	{
 		e.fade_time = t;
@@ -232,13 +240,7 @@ float WaypointSprite_Customize()
     if(time < self.waypointsprite_appeartime)
         return FALSE;
 
-	// make spectators see what the player would see
-	entity e;
-	e = other;
-	if(e.classname == "spectator")
-		e = e.enemy;
-
-	return self.waypointsprite_visible_for_player(e);
+	return self.waypointsprite_visible_for_player(other.clientcamera);
 }
 
 void WriteColor(float msg, vector c) {
@@ -430,7 +432,7 @@ entity WaypointSprite_DeployPersonal(
     float lifetime
 )
 {
-	return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, 0, self, waypointsprite_deployed_personal, FALSE);
+	return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, self, 0, self, waypointsprite_deployed_personal, FALSE);
 }
 
 entity WaypointSprite_DeployTeam(
@@ -442,6 +444,54 @@ entity WaypointSprite_DeployTeam(
     if(!teams_matter)
         return WaypointSprite_DeployPersonal(spr, ofs, lifetime);
     return WaypointSprite_Spawn(spr, lifetime, 0, world, ofs, world, self.team, self, waypointsprite_deployed_personal, FALSE);
+}
+
+.entity wp_tracking_for;
+.entity wp_tracking_whom;
+
+float WaypointSprite_ClearTracking(entity plr) {
+    float cleared;
+
+    for(var e = world; (e = findentity(e, wp_tracking_for, self));) {
+        if(e.wp_tracking_whom == plr) {
+            WaypointSprite_FadeOutIn(e, 0.5);
+            e.wp_tracking_whom = world;
+            e.wp_tracking_for = world;
+            ++cleared;
+        }
+    }
+
+    return cleared;
+}
+
+entity WaypointSprite_DeployTracking(string spr, entity plr) {
+    return WaypointSprite_Spawn(spr, 0, 0, plr, '0 0 120', self, 0, world, NULL, FALSE) {
+        wp_tracking_for: self,
+        wp_tracking_whom: plr,
+    };
+}
+
+void WaypointSprite_InvalidateTracking_Try(entity plr, entity plr2, entity e) {
+    if(!plr.iscreature || !(plr.flags & FL_CLIENT) || IsDifferentTeam(plr, plr2))
+        WaypointSprite_FadeOutIn(e, 0.5);
+}
+
+void WaypointSprite_InvalidateTracking(entity forplr) {
+    if(!forplr) {
+        print("WaypointSprite_InvalidateTracking called for world!\n");
+        backtrace("WaypointSprite_InvalidateTracking");
+        return;
+    }
+
+    for(var e = world; (e = findentity(e, wp_tracking_for, forplr));) {
+        WaypointSprite_InvalidateTracking_Try(e.wp_tracking_for, e.wp_tracking_whom, e);
+        WaypointSprite_InvalidateTracking_Try(e.wp_tracking_whom, e.wp_tracking_for, e);
+    }
+
+    for(var e = world; (e = findentity(e, wp_tracking_whom, forplr));) {
+        WaypointSprite_InvalidateTracking_Try(e.wp_tracking_for, e.wp_tracking_whom, e);
+        WaypointSprite_InvalidateTracking_Try(e.wp_tracking_whom, e.wp_tracking_for, e);
+    }
 }
 
 .entity waypointsprite_attached;
@@ -511,4 +561,5 @@ void WaypointSprite_PlayerGone()
 	WaypointSprite_Disown(self.waypointsprite_attached, waypointsprite_deadlifetime);
     WaypointSprite_Kill(self.buff_teamwp);
 	WaypointSprite_DetachCarrier(self);
+    WaypointSprite_InvalidateTracking(self);
 }

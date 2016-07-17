@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/usr/bin/env bash
 
 autocvarize="$(dirname "$0")/autocvarize.pl"
 cd "$(dirname "$0")"/../..

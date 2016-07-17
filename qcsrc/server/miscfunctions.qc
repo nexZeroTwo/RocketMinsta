@@ -3,6 +3,8 @@ void objerror(string s);
 void droptofloor();
 .vector dropped_origin;
 
+float crandom(void);
+
 void() spawnfunc_info_player_deathmatch; // needed for the other spawnpoints
 void() spawnpoint_use;
 string ColoredTeamName(float t);
@@ -36,10 +38,10 @@ float DistributeEvenly_Get(float weight)
     return f;
 }
 
-void move_out_of_solid_expand(entity e, vector by)
+void move_out_of_solid_expand(entity e, vector by, float tracetype)
 {
     float eps = 0.0625;
-    tracebox(e.origin, e.mins - '1 1 1' * eps, e.maxs + '1 1 1' * eps, e.origin + by, MOVE_WORLDONLY, e);
+    tracebox(e.origin, e.mins - '1 1 1' * eps, e.maxs + '1 1 1' * eps, e.origin + by, tracetype, e);
     if (trace_startsolid)
         return;
     if (trace_fraction < 1)
@@ -50,16 +52,16 @@ void move_out_of_solid_expand(entity e, vector by)
     }
 }
 
-float move_out_of_solid(entity e)
+float move_out_of_solid(entity e, float tracetype)
 {
     vector o, m0, m1;
 
     o = e.origin;
-    traceline(o, o, MOVE_WORLDONLY, e);
+    traceline(o, o, tracetype, e);
     if (trace_startsolid)
         return 0;
 
-    tracebox(o, e.mins, e.maxs, o, MOVE_WORLDONLY, e);
+    tracebox(o, e.mins, e.maxs, o, tracetype, e);
     if (!trace_startsolid)
         return 1;
 
@@ -67,21 +69,21 @@ float move_out_of_solid(entity e)
     m1 = e.maxs;
     e.mins = '0 0 0';
     e.maxs = '0 0 0';
-    move_out_of_solid_expand(e, '1 0 0' * m0_x);
+    move_out_of_solid_expand(e, '1 0 0' * m0_x, tracetype);
     e.mins_x = m0_x;
-    move_out_of_solid_expand(e, '1 0 0' * m1_x);
+    move_out_of_solid_expand(e, '1 0 0' * m1_x, tracetype);
     e.maxs_x = m1_x;
-    move_out_of_solid_expand(e, '0 1 0' * m0_y);
+    move_out_of_solid_expand(e, '0 1 0' * m0_y, tracetype);
     e.mins_y = m0_y;
-    move_out_of_solid_expand(e, '0 1 0' * m1_y);
+    move_out_of_solid_expand(e, '0 1 0' * m1_y, tracetype);
     e.maxs_y = m1_y;
-    move_out_of_solid_expand(e, '0 0 1' * m0_z);
+    move_out_of_solid_expand(e, '0 0 1' * m0_z, tracetype);
     e.mins_z = m0_z;
-    move_out_of_solid_expand(e, '0 0 1' * m1_z);
+    move_out_of_solid_expand(e, '0 0 1' * m1_z, tracetype);
     e.maxs_z = m1_z;
     setorigin(e, e.origin);
 
-    tracebox(e.origin, e.mins, e.maxs, e.origin, MOVE_WORLDONLY, e);
+    tracebox(e.origin, e.mins, e.maxs, e.origin, tracetype, e);
     if (trace_startsolid)
     {
         setorigin(e, o);
@@ -92,7 +94,7 @@ float move_out_of_solid(entity e)
 }
 
 void snap_to_grid(entity e, float gridsize) {
-    move_out_of_solid(e);
+    move_out_of_solid(e, MOVE_WORLDONLY);
     var o;
 
     do {
@@ -112,7 +114,7 @@ void snap_to_grid(entity e, float gridsize) {
     setorigin(e, o);
 
     if(trace_startsolid)
-        move_out_of_solid(e);
+        move_out_of_solid(e, MOVE_WORLDONLY);
 }
 
 void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
@@ -170,7 +172,7 @@ void snap_to_entity(entity ent, float maxdist, float(entity) filter) {
     setorigin(ent, bestorigin);
 
     if(!checkpassed)
-        move_out_of_solid(ent);
+        move_out_of_solid(ent, MOVE_WORLDONLY);
 }
 
 float check_uneven_ground(entity ent, float tolerance) {
@@ -310,7 +312,7 @@ void relocate_spawnpoint()
         o = self.origin;
         self.mins = PL_MIN;
         self.maxs = PL_MAX;
-        if (!move_out_of_solid(self))
+        if (!move_out_of_solid(self, MOVE_WORLDONLY))
             objerror("could not get out of solid at all!");
         print("^1NOTE: this map needs FIXING. Spawnpoint at ", vtos(o - '0 0 1'));
         print(" needs to be moved out of solid, e.g. by '", ftos(self.origin_x - o_x));
@@ -417,7 +419,7 @@ entity findnearest(vector point, .string field, string value, vector axismod)
         //   INSERTION SORT! YOU'VE SEEN IT! RUN!
         if (i < NUM_NEAREST_ENTITIES)
         {
-            for (j = NUM_NEAREST_ENTITIES - 1; j >= i; --j)
+            for (j = NUM_NEAREST_ENTITIES - 2; j >= i; --j)
             {
                 nearest_length[j + 1] = nearest_length[j];
                 nearest_entity[j + 1] = nearest_entity[j];
@@ -728,16 +730,22 @@ string apply_autoreplace(string msg) {
 string apply_faggotry(string msg) {
     string result, c;
     float len, i, o;
-    
+
     msg = strdecolorize(msg);
-    
+
     len = strlen(msg);
     c = substring(msg, len-1, 1);
-    if(c != "." && c != "?" && c != "!")
-        msg = strcat(msg, ".");
-    msg = strcat(msg, " Also, I'm a huge faggot.");
+    msg = strcat(msg, switch(floor(random() * 7)) {
+        default: case 0: " ( ͡° ω ͡°)",
+                 case 1: " ( ͡° ͜ʖ ͡°)",
+                 case 2: " ( ͡° o ͡°)",
+                 case 3: " ( ͡° _ ͡°)",
+                 case 4: " ( ͡°ᨎ ͡°)",
+                 case 5: " ( ͡°‿‿ ͡°)",
+                 case 6: " ( ͡° ͟ʖ ͡°)"
+    });
     len = strlen(msg);
-    
+
     for(i = 0; i < len; ++i, ++o) {
         c = substring(msg, i, 1);
         if(c == "^") {
@@ -745,10 +753,10 @@ string apply_faggotry(string msg) {
             if(substring(msg, i+1, 1) == "^")
                 i++;
         }
-            
+
         result = strcat(result, rgb_to_hexcolor(hue_mi_ma_to_rgb(time + 3 * sin(o * 0.07) + 3, 0.1, 1)), c);
     }
-    
+
     return result;
 }
 
@@ -832,7 +840,7 @@ string formatmessage(string msg)
         p = p + strlen(replacement);
     }
     
-    if(whatsgoingon)
+    if(whatsgoingon || aprilfools)
         msg = apply_faggotry(msg);
     
     return msg;
@@ -852,7 +860,7 @@ void GetCvars_handleString(string thisname, float f, .string field, string name)
 	{
 		if (self.field)
 			strunzone(self.field);
-		self.field = string_null;
+		self.field = NULL;
 	}
 	else if (f > 0)
 	{
@@ -952,6 +960,7 @@ void GetCvars(float f)
 #endif
 	GetCvars_handleFloat(s, f, cvar_cl_gunalign, "cl_gunalign");
     GetCvars_handleFloat(s, f, client_dprmversion, "dprm_version");
+    GetCvars_handleFloat(s, f, client_utf8, "utf8_enable");
 
 
 	// fixup of switchweapon (needed for LMS or when spectating is disabled, as PutClientInServer comes too early)
@@ -975,23 +984,6 @@ void GetCvars(float f)
 }
 
 void GameCommand(string);
-void backtrace(string msg)
-{
-    float dev, war;
-    dev = CVAR(developer);
-    war = CVAR(prvm_backtraceforwarnings);
-    cvar_set("developer", "1");
-    cvar_set("prvm_backtraceforwarnings", "1");
-    dprint("\n");
-    dprint("--- CUT HERE ---\nWARNING: ");
-    dprint(msg);
-    dprint("\n");
-    remove(world); // isn't there any better way to cause a backtrace?
-    dprint("\n--- CUT UNTIL HERE ---\n");
-    cvar_set("developer", ftos(dev));
-    cvar_set("prvm_backtraceforwarnings", ftos(war));
-    GameCommand("time");
-}
 
 float Team_Index(float t) {
     switch(t) {
@@ -1113,6 +1105,8 @@ float g_weaponspeedfactor;
 float g_weaponratefactor;
 float g_weapondamagefactor;
 float g_weaponforcefactor;
+
+#define g_weaponarena_secondary_selectable (g_weaponarena_secondary & (g_weaponarena_secondary - 1))
 
 float start_weapons;
 float start_items;
@@ -1632,6 +1626,32 @@ void readlevelcvars(void)
     readplayerstartcvars();
 }
 
+string entityfieldtypestr(float fld) {
+    return switch(entityfieldtype(fld)) {
+        case FIELD_STRING   : "string",
+        case FIELD_FLOAT    : "float",
+        case FIELD_VECTOR   : "vector",
+        case FIELD_ENTITY   : "entity",
+        case FIELD_FUNCTION : "function",
+        default             : "unknown"
+    };
+}
+
+void dumpent(entity e) {
+    print("----------------------------------\n");
+    print("ENTITY DUMP: ", etos(e), "\n");
+    print("----------------------------------\n");
+
+    var n = numentityfields();
+    for(var i = 0; i < n; ++i) {
+        var val = getentityfieldstring(i, e);
+        if(val != "")
+            print("(", entityfieldtypestr(i), ") ", entityfieldname(i), ": ", val, "^7\n");
+    }
+
+    print("----------------------------------\n");
+}
+
 /*
 // TODO sound pack system
 string soundpack;
@@ -1662,17 +1682,33 @@ float precache_sound_index (string s) = #19;
 #define SND_LARGEENTITY 8
 #define SND_LARGESOUND  16
 
+.entity realowner;
+.entity WarpZone_refsys;
+
 float sound_allowed(float dest, entity e)
 {
     // sounds from world may always pass
+    float iter;
+
     for (;;)
     {
         if (e.classname == "body")
             e = e.enemy;
-        if (e.owner && e.owner != e)
+        if(e.realowner && e.realowner != e)
+            e = e.realowner;
+        else if (e.owner && e.owner != e && e.owner != e.WarpZone_refsys)
             e = e.owner;
         else
             break;
+
+        if(++iter == 100) {
+            bprint("[FIXME] sound_allowed() got stuck in an ownership loop!\n");
+            backtrace("sound_allowed() ownership loop");
+            dumpent(e);
+            dumpent(e.owner);
+            dumpent(e.realowner);
+            break;
+        }
     }
     // sounds to self may always pass
     if (dest == MSG_ONE)
@@ -2091,7 +2127,7 @@ void precache()
 }
 
 // sorry, but using \ in macros breaks line numbers
-#define WRITESPECTATABLE_MSG_ONE_VARNAME(varname,statement) entity varname; varname = msg_entity; FOR_EACH_REALCLIENT(msg_entity) if(msg_entity == varname || (msg_entity.classname == STR_SPECTATOR && msg_entity.enemy == varname)) statement msg_entity = varname
+#define WRITESPECTATABLE_MSG_ONE_VARNAME(varname,statement) entity varname; varname = msg_entity; FOR_EACH_REALCLIENT(msg_entity) if(msg_entity.clientcamera == varname) statement msg_entity = varname
 #define WRITESPECTATABLE_MSG_ONE(statement) WRITESPECTATABLE_MSG_ONE_VARNAME(oldmsg_entity, statement)
 #define WRITESPECTATABLE(msg,statement) if(msg == MSG_ONE) { WRITESPECTATABLE_MSG_ONE(statement); } else statement float WRITESPECTATABLE_workaround = 0
 
@@ -2248,7 +2284,7 @@ void InitializeEntitiesRun()
         e = self.initialize_entity_next;
         func = self.initialize_entity;
         self.initialize_entity_order = 0;
-        self.initialize_entity = func_null;
+        self.initialize_entity = NULL;
         self.initialize_entity_next = world;
         if (self.classname == "initialize_entity")
         {
@@ -2403,29 +2439,13 @@ float SUB_NoImpactCheck()
 	// mirror-impact of something hitting the projectile instead of the
 	// projectile hitting the something, or a touchareagrid one. Neither of
 	// these stop the projectile from moving, so...
-	if(trace_dphitcontents == 0)
-	{
-		dprint("A hit happened with zero hit contents... DEBUG THIS, this should never happen for projectiles! Projectile will self-destruct.\n");
+	if(trace_dphitcontents == 0) {
+		dprint("A hit happened with zero hit contents... DEBUG THIS, this should never happen for projectiles!\n");
 		checkclient();
 	}
-    if (trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
+
+    if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT)
         return 1;
-    if (other == world && self.size != '0 0 0')
-    {
-        vector tic;
-        tic = self.velocity * CVAR(sys_ticrate);
-        tic = tic + normalize(tic) * vlen(self.maxs - self.mins);
-        traceline(self.origin - tic, self.origin + tic, MOVE_NORMAL, self);
-        if (trace_fraction >= 1)
-        {
-            dprint("Odd... did not hit...?\n");
-        }
-        else if(trace_dphitq3surfaceflags & Q3SURFACEFLAG_NOIMPACT) if(self.classname == "grapplinghook")
-        {
-            dprint("Detected and prevented the sky-grapple bug.\n");
-            return 1;
-        }
-    }
 
     return 0;
 }
@@ -2446,7 +2466,8 @@ float projectile_skipnonsolid()
 	}
 	return FALSE;
 }
-#define PROJECTILE_SKIPNONSOLID if (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid()) { return; }
+
+#define PROJECTILE_SKIPNONSOLID if (WarpZone_Projectile_Touch() || (CVAR(sv_gameplayfix_zerohitcontents) && projectile_skipnonsolid())) { return; }
 #define PROJECTILE_TOUCH do { PROJECTILE_SKIPNONSOLID if(SUB_OwnerCheck()) return; if(SUB_NoImpactCheck()) { remove(self); return; } if(trace_ent && trace_ent.solid > SOLID_TRIGGER) UpdateCSQCProjectileNextFrame(self); } while(0)
 
 float MAX_IPBAN_URIS = 16;
@@ -2853,7 +2874,7 @@ void attach_sameorigin(entity e, entity to, string tag)
     // current forward and up directions
     if (substring(e.model, 0, 1) == "*") // bmodels have their own rules
         e.angles_x = -e.angles_x;
-    fixedmakevectors(e.angles);
+    fixedmakevectors2(e.angles);
 
     // untransform forward, up!
     e_forward_x = v_forward * t_forward;
@@ -2956,7 +2977,7 @@ entity GetCommandPlayerSlotTargetFromTokenizedCommand(float tokens, float idx) /
     entity e, head;
     float n;
 
-    s = string_null;
+    s = NULL;
 
     ParseCommandPlayerSlotTarget_firsttoken = -1;
 
@@ -3175,20 +3196,14 @@ void bigprint(entity e, string bigstring, string comment, float staytime)
 
 void centerprint_spec(entity pl, string msg)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            centerprint(e, msg);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        centerprint(e, msg);
 }
 
 void bigprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            bigprint(e, msg, comment, staytime);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        bigprint(e, msg, comment, staytime);
 }
 
 void bigprint_clear(entity pl)
@@ -3200,11 +3215,8 @@ void bigprint_clear(entity pl)
 
 void bigprint_clear_spec(entity pl)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
             bigprint_clear(e);
-    }
 }
 
 void madokaprint(entity e, string bigstring, string comment, float staytime)
@@ -3225,11 +3237,8 @@ void madokaprint(entity e, string bigstring, string comment, float staytime)
 
 void madokaprint_spec(entity pl, string msg, string comment, float staytime)
 {
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            madokaprint(e, msg, comment, staytime);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        madokaprint(e, msg, comment, staytime);
 }
 
 #define HF_DEFAULT_TIME 1.5
@@ -3286,23 +3295,17 @@ void hudflash_spec(entity pl, vector flashcolor, float staytime, float intensivi
 	if not(CVAR(sv_hudflash))
 		return;
 	
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash(e, flashcolor, staytime, intensivity, alph);
-    }
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        hudflash(e, flashcolor, staytime, intensivity, alph);
 }
 
 void hudflash_teamcolor_spec(entity pl, float staytime, float intensivity, float alph)
 {
 	if not(CVAR(sv_hudflash))
 		return;
-	
-    entity e; FOR_EACH_REALCLIENT(e)
-    {
-        if(e == pl || (e.enemy == pl && e.classname == "spectator"))
-            hudflash_teamcolor(e, staytime, intensivity, alph);
-    }
+
+    FOR_EACH_REALCLIENT(var e) if(e.clientcamera == pl)
+        hudflash_teamcolor(e, staytime, intensivity, alph);
 }
 
 void hudflash_default(entity e, vector flashcolor)
@@ -3345,7 +3348,7 @@ void EndRound(float tout)
     else if(g_clanarena)
         CA_EndRound(tout);
     else
-        bprint("EndRound() for an unsupported gametype!?\n");
+        print("EndRound: gametype is not supported\n");
 }
 
 float EndRound_Allowed()
@@ -3643,11 +3646,19 @@ void SendServerInfo(entity player) {
 	msg_entity = player;
 	WriteByte(MSG_ONE, SVC_TEMPENTITY);
 	WriteByte(MSG_ONE, TE_CSQC_SERVERINFO);
-	WriteString(MSG_ONE, CVAR_STR(hostname));
+
+    var clrname = cvar_string("hostname_colored");
+    if(clrname == "") {
+        WriteString(MSG_ONE, cvar_string("hostname"));
+        WriteByte(MSG_ONE, FALSE);
+    } else {
+        WriteString(MSG_ONE, clrname);
+        WriteByte(MSG_ONE, TRUE);
+    }
+
 	WriteString(MSG_ONE, RM_BUILD_NAME);
 	WriteString(MSG_ONE, RM_BUILD_VERSION);
 	WriteString(MSG_ONE, RM_BUILD_DATE);
-	WriteString(MSG_ONE, RM_BUILD_COMMIT);
 	WriteString(MSG_ONE, strreplace("\\n", "\n", CVAR_STR(sv_motd)));
 }
 
@@ -3705,11 +3716,15 @@ vector              trace_endpos_saved;
 vector              trace_plane_normal_saved;
 float               trace_plane_dist_saved;
 entity              trace_ent_saved;
+float               trace_dpstartcontents_saved;
+float               trace_dphitcontents_saved;
+float               trace_dphitq3surfaceflags_saved;
+string              trace_dphittexturename_saved;
 vector              v_forward_saved;
 vector              v_up_saved;
 vector              v_right_saved;
 
-void save_nasty_globals(void) {
+void save_trace_globals(void) {
     trace_allsolid_saved = trace_allsolid;
     trace_startsolid_saved = trace_startsolid;
     trace_fraction_saved = trace_fraction;
@@ -3717,12 +3732,16 @@ void save_nasty_globals(void) {
     trace_plane_normal_saved = trace_plane_normal;
     trace_plane_dist_saved = trace_plane_dist;
     trace_ent_saved = trace_ent;
+    trace_dpstartcontents_saved = trace_dpstartcontents;
+    trace_dphitcontents_saved = trace_dphitcontents;
+    trace_dphitq3surfaceflags_saved = trace_dphitq3surfaceflags;
+    trace_dphittexturename_saved = trace_dphittexturename;
     v_forward_saved = v_forward;
     v_up_saved = v_up;
     v_right_saved = v_right;
 }
 
-void restore_nasty_globals(void) {
+void restore_trace_globals(void) {
     trace_allsolid = trace_allsolid_saved;
     trace_startsolid = trace_startsolid_saved;
     trace_fraction = trace_fraction_saved;
@@ -3730,6 +3749,10 @@ void restore_nasty_globals(void) {
     trace_plane_normal = trace_plane_normal_saved;
     trace_plane_dist = trace_plane_dist_saved;
     trace_ent = trace_ent_saved;
+    trace_dpstartcontents = trace_dpstartcontents_saved;
+    trace_dphitcontents = trace_dphitcontents_saved;
+    trace_dphitq3surfaceflags = trace_dphitq3surfaceflags_saved;
+    trace_dphittexturename = trace_dphittexturename_saved;
     v_forward = v_forward_saved;
     v_up = v_up_saved;
     v_right = v_right_saved;
@@ -3758,4 +3781,101 @@ entity findfilter(entity e, float(entity) filter) {
             return e;
 
     return world;
+}
+
+string fix_legacy_encoding(string s) {
+    var c, i, newstr;
+
+    for(i = 0, c = str2chr(s, i); c; c = str2chr(s, ++i)) {
+        if(c < 32)
+            c += 0xE000;
+        newstr = strcat(newstr, chr2str(c));
+    }
+
+    return newstr;
+}
+
+void dropentities(entity platform) {
+    const nudge = '1 1 1';
+    entity e;
+
+    while((e = findflags(e, flags, FL_ONGROUND))) {
+        if(boxesoverlap(platform.absmin, platform.absmax, e.absmin - nudge, e.absmax + nudge)) {
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+
+    while((e = findentity(e, aiment, platform))) {
+        if(e.movetype == MOVETYPE_FOLLOW) {
+            e.movetype = MOVETYPE_TOSS;
+            e.aiment = world;
+            e.flags &~= FL_ONGROUND;
+            UpdateCSQCProjectileNextFrame(e);
+        }
+    }
+}
+
+float do_if_fexists(void(string) callback, string fpath) {
+    if(fexists(fpath)) {
+        callback(fpath);
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+vector RandomSpreadVector(float side, float up, float up_min, float up_min_rand) {
+    return [
+        crandom() * 2 * side,
+        crandom() * 2 * side,
+        max(
+            up * random(),
+            up_min + up_min_rand * crandom() * 2
+        )
+    ];
+}
+
+vector CircleSpreadVector(float side, float up, float sangle) {
+    return  side * v_forward * cos(sangle) +
+            side * v_right   * sin(sangle) +
+            up   * v_up;
+}
+
+.entity heal_emitter;
+.float heal_emitter_radius;
+
+void HealParticleEmitter_Think(void) {
+    if(!self.owner || wasfreed(self.owner)) {
+        remove(self);
+        return;
+    }
+
+    if(self.origin != self.oldorigin)
+        UpdateCSQCProjectile(self);
+
+    self.oldorigin = self.origin;
+    self.nextthink = time;
+}
+
+void HealParticleEmitter(entity o) {
+    if(Buffs_Present(o, BUFF_MEDIC)) {
+        if(!self.heal_emitter || wasfreed(self.heal_emitter)) {
+            entity e = spawn();
+            e.owner = self;
+            e.movetype = MOVETYPE_FOLLOW;
+            e.aiment = self;
+            e.think = HealParticleEmitter_Think;
+            e.nextthink = time;
+            e.csqcprojectile_extradata = self.heal_emitter_radius;
+            
+            CSQCProjectile(e, FALSE, PROJECTILE_HEAL_PARTICLE_EMITTER, TRUE);
+            self.heal_emitter = e;
+        }
+    } else {
+        if(self.heal_emitter) {
+            remove(self.heal_emitter);
+            self.heal_emitter = world;
+        }
+    }
 }

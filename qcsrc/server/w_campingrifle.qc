@@ -13,6 +13,7 @@ void W_CampingRifle_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_CAMPINGRIFLE,
         CVAR(g_balance_campingrifle_magazinecapacity),
+        CVAR(g_balance_campingrifle_magazineregen),
         CVAR(g_balance_campingrifle_reloadtime),
         ammo_nails,
         min(
@@ -97,9 +98,9 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 		self.ammo_nails -= pAmmo;
 
 	if(deathtype & HITTYPE_SECONDARY)
-		W_SetupShot (self, CVAR(g_antilag_bullets) && pSpeed >= CVAR(g_antilag_bullets), CVAR(g_balance_campingrifle_secondary_recoilamount), "weapons/campingrifle_fire2.wav", CVAR(g_balance_campingrifle_secondary_damage));
+		W_SetupShot_HitMask(self, CVAR(g_antilag_bullets) && pSpeed >= CVAR(g_antilag_bullets), CVAR(g_balance_campingrifle_secondary_recoilamount), "weapons/campingrifle_fire2.wav", CVAR(g_balance_campingrifle_secondary_damage), DPCONTENTS_BODY | DPCONTENTS_CORPSE);
 	else
-		W_SetupShot (self, CVAR(g_antilag_bullets) && pSpeed >= CVAR(g_antilag_bullets), CVAR(g_balance_campingrifle_primary_recoilamount), "weapons/campingrifle_fire.wav", CVAR(g_balance_campingrifle_primary_damage));
+		W_SetupShot_HitMask(self, CVAR(g_antilag_bullets) && pSpeed >= CVAR(g_antilag_bullets), CVAR(g_balance_campingrifle_primary_recoilamount), "weapons/campingrifle_fire.wav", CVAR(g_balance_campingrifle_primary_damage), DPCONTENTS_BODY | DPCONTENTS_CORPSE);
 
 	if(self.BUTTON_ZOOM) // if zoomed, shoot from the eye
 	{
@@ -118,7 +119,20 @@ void W_CampingRifle_FireBullet(float pSpread, float pDamage, float pHeadshotAdde
 
 void W_CampingRifle_Attack()
 {
-	W_CampingRifle_FireBullet(CVAR(g_balance_campingrifle_primary_spread), CVAR(g_balance_campingrifle_primary_damage), CVAR(g_balance_campingrifle_primary_headshotaddeddamage), CVAR(g_balance_campingrifle_primary_force), CVAR(g_balance_campingrifle_primary_speed), CVAR(g_balance_campingrifle_primary_lifetime), CVAR(g_balance_campingrifle_primary_ammo), WEP_CAMPINGRIFLE, CVAR(g_balance_campingrifle_primary_bulletconstant), CVAR(g_balance_campingrifle_primary_bulletcost));
+    var pts = Buffs_MEODP_Hitscan_Begin(self);
+	W_CampingRifle_FireBullet(
+        CVAR(g_balance_campingrifle_primary_spread),
+        CVAR(g_balance_campingrifle_primary_damage),
+        CVAR(g_balance_campingrifle_primary_headshotaddeddamage),
+        CVAR(g_balance_campingrifle_primary_force),
+        CVAR(g_balance_campingrifle_primary_speed),
+        CVAR(g_balance_campingrifle_primary_lifetime),
+        CVAR(g_balance_campingrifle_primary_ammo),
+        WEP_CAMPINGRIFLE,
+        CVAR(g_balance_campingrifle_primary_bulletconstant),
+        CVAR(g_balance_campingrifle_primary_bulletcost)
+    );
+    Buffs_MEODP_Hitscan_End(pts);
 }
 
 void W_CampingRifle_Attack2()
@@ -149,7 +163,7 @@ void spawnfunc_weapon_campingrifle (void)
 
 float w_campingrifle(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_campingrifle_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_campingrifle_swapshotmodes));
     W_CampingRifle_SetClipContext();
 
 	if (req == WR_AIM)

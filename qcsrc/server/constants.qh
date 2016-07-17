@@ -1,5 +1,3 @@
-string CVAR_CHECK_DEFAULT = "091f36c4fb0d7b22bbd2d2fdff8b1447";
-string CVAR_CHECK_BALANCE = "9b590c8f7c3065d917ac8e2e5e842a88";
 
 float	FALSE					= 0;
 float	TRUE					= 1;
@@ -24,31 +22,18 @@ float   FL_NO_WEAPON_STAY       = 131072;
 float   FL_SPAWNING       = 262144;
 float   FL_SLICK       = 524288;
 
-float	MOVETYPE_NONE				= 0;
-float	MOVETYPE_ANGLENOCLIP			= 1;
-float	MOVETYPE_ANGLECLIP			= 2;
-float	MOVETYPE_WALK				= 3;
-float	MOVETYPE_STEP				= 4;
-float	MOVETYPE_FLY				= 5;
-float	MOVETYPE_TOSS				= 6;
-float	MOVETYPE_PUSH				= 7;
-float	MOVETYPE_NOCLIP				= 8;
-float	MOVETYPE_FLYMISSILE			= 9;
-float	MOVETYPE_BOUNCE				= 10;
-float	MOVETYPE_BOUNCEMISSILE	= 11;	// Like bounce but doesn't lose speed on bouncing
-//float	MOVETYPE_FOLLOW				= 12;	// 'Attaches' the entity to its aim_ent
-
 float	SOLID_NOT				= 0;
 float	SOLID_TRIGGER				= 1;
 float	SOLID_BBOX				= 2;
 float	SOLID_SLIDEBOX				= 3;
 float	SOLID_BSP				= 4;
 
-float	DEAD_NO					= 0;
-float	DEAD_DYING				= 1;
-float	DEAD_DEAD				= 2;
-float	DEAD_RESPAWNABLE			= 3;
-float	DEAD_RESPAWNING			= 4;
+float   DEAD_NO                 = 0;
+float   DEAD_DYING              = 1;
+float   DEAD_DEAD               = 2;
+float   DEAD_RESPAWNABLE        = 3;
+float   DEAD_RESPAWNING         = 4;
+float   DEAD_PERMANENTLY        = 5;
 
 float	DAMAGE_NO				= 0;
 float	DAMAGE_YES				= 1;
@@ -128,22 +113,7 @@ float	MSG_ALL					= 2; // reliable
 float	MSG_INIT				= 3; // initialization
 float	MSG_ENTITY				= 5; // csqc
 
-// Sajt - added these, just as constants. Not sure how you want them actually put in the game, but I just
-// did this so at least they worked
-// NOTE: instagib IS NOT compatible with rocket-arena, so make sure to prevent selecting both in a menu
-//float	GAME_INSTAGIB				= 1;   /// everyone gets the nex gun with infinite ammo, and one shot kills
-//float	GAME_ROCKET_ARENA			= 16;  /// Everyone starts with a rocket launcher
-//float	GAME_FULLBRIGHT_PLAYERS			= 64; /// makes the players model fullbright
-//float	GAME_TEAMS				= 128; /// Teams, red/green/yellow/blue
-
 float	game;	// set to "gamecfg" on spawnfunc_worldspawn
-
-
-//float	POWERUP_STRENGTH_DAMAGE			= 2; // damage multiplier for strength powerup
-//float	POWERUP_STRENGTH_FORCE			= 4; // force multiplier for strength powerup
-
-//float	POWERUP_INVINCIBLE_TAKEDAMAGE		= 0.2; // received damage multiplier for invincible powerup
-
 
 float TE_BEAM					= 13;		// grappling hook
 
@@ -162,3 +132,20 @@ float NUM_PLAYERSKINS_TEAMPLAY = 3;
 float ASSAULT_VALUE_INACTIVE = 1000;
 
 float DOOR_NOSPLASH = 256; // generic anti-splashdamage spawnflag
+
+
+enum {
+    CLIPGROUP_NONE,
+    CLIPGROUP_PLAYER,
+    CLIPGROUP_OBSERVER,
+    CLIPGROUP_FLAK,
+};
+
+const CLIPGROUP_MASK_TYPE   = 0x000FF;
+const CLIPGROUP_MASK_PLAYER = 0x0FF00;
+const CLIPGROUP_MASK_TEAM   = 0x70000;
+
+#define CLIPGROUP_PLAYERMASK(plr) (num_for_edict(plr) * (CLIPGROUP_MASK_TYPE + 1))
+#define CLIPGROUP_TEAMIDXMASK(teamidx) (((teamidx) + 1) * (CLIPGROUP_MASK_PLAYER + 1))
+#define CLIPGROUP_TEAMMASK(teamclr) CLIPGROUP_TEAMIDXMASK(Team_Index(teamclr))
+#define CLIPGROUP_PLAYERTEAMMASK(plr) (if(teams_matter) CLIPGROUP_TEAMMASK((plr).team) else CLIPGROUP_PLAYERMASK(plr))

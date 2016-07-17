@@ -14,10 +14,14 @@ void DelayThink()
 
 float foreachtarget_callid;
 .float targethandled;
-void SUB_ForEachTarget(entity s, void(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
+
+void SUB_ForEachTarget_Recurse(entity s, float(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
     float i;
     string targname;
     entity targ;
+
+    if(foreachtarget_callid < 1)
+        foreachtarget_callid = 1;
     
     for(i = 0; i < 4; ++i) {
         switch(i) {
@@ -29,19 +33,49 @@ void SUB_ForEachTarget(entity s, void(entity, float, vector, string, entity) cba
         
         if(targname != "") {
             for(targ = world; (targ = find(targ, targetname, targname));)
-            if(targ && targ.use && targ.targethandled != foreachtarget_callid) {
-                cback(targ, fdata, vdata, sdata, edata);
+            if(targ && targ.targethandled != foreachtarget_callid) {
+                if(cback(targ, fdata, vdata, sdata, edata))
+                    return;
+
                 targ.targethandled = foreachtarget_callid;
-                
+
                 if(recursive)
-                    SUB_ForEachTarget(targ, cback, recursive, fdata, vdata, sdata, edata);
+                    SUB_ForEachTarget_Recurse(targ, cback, recursive, fdata, vdata, sdata, edata);
             }
         }
     }
 }
 
-void SUB_ForEachTarget_Init() {
-    ++foreachtarget_callid;
+#define SUB_ForEachTarget_InitShared() (++foreachtarget_callid)
+
+void SUB_ForEachTarget(entity s, float(entity, float, vector, string, entity) cback, float recursive, float fdata, vector vdata, string sdata, entity edata) {
+    SUB_ForEachTarget_InitShared();
+    SUB_ForEachTarget_Recurse(s, cback, recursive, fdata, vdata, sdata, edata);
+}
+
+entity linktargets_ent;
+entity linktargets_first;
+var .entity linktargets_fld;
+
+entity SUB_LinkTargets(entity ent, .entity fld, float recursive) {
+    linktargets_ent = world;
+    linktargets_first = world;
+    linktargets_fld = fld;
+
+    SUB_ForEachTarget(ent, inline float(entity targ, float _f, vector _v, string _s, entity _e) {
+        if(linktargets_ent)
+            linktargets_ent.linktargets_fld = targ;
+        else
+            linktargets_first = targ;
+
+        linktargets_ent = targ;
+        return FALSE;
+    }, recursive, NULL, NULL, NULL, NULL);
+
+    if(linktargets_ent)
+        linktargets_ent.fld = world;
+
+    return linktargets_first;
 }
 
 /*
@@ -132,7 +166,8 @@ void SUB_UseTargets_Ex(float preventReuse)
 			for(t = world; (t = find(t, targetname, s)); ) {
                 if(t.use && (t.sub_target_used != time || !preventReuse))
                 {
-                    //print(stemp.classname, " ", stemp.targetname, " -> ", t.classname, " ", t.targetname, "\n");
+                    if(CVAR(developer) > 1)
+                        dprint("SUB_UseTargets: activating ", etos(t), ": ^3", t.targetname, "^7, class: ^5", t.classname, "\n");
                     self = t;
                     other = stemp;
                     activator = act;
@@ -161,6 +196,8 @@ void SUB_UseTargets_PreventReuse() {
 
 float	SPAWNFLAG_NOMESSAGE = 1;
 float	SPAWNFLAG_NOTOUCH = 1;
+float   SPAWNFLAG_ALLENTS = 2;
+float   SPAWNFLAG_PERPLAYER_COOLDOWN = 4;
 
 // the wait time has passed, so set back up for another activation
 void multi_wait()
@@ -179,10 +216,15 @@ void multi_wait()
 // so wait for the delay time before firing
 void multi_trigger()
 {
-	if (self.nextthink > time)
-	{
-		return;		// allready been triggered
-	}
+    var idx = -1;
+
+    if(self.spawnflags & SPAWNFLAG_PERPLAYER_COOLDOWN && self.enemy.flags & FL_CLIENT && self.enemy.iscreature) {
+        idx = num_for_edict(self.enemy) - 1;
+        if(self.(per_client_data[idx]) > time)
+            return;
+    } else if (self.nextthink > time) {
+        return;
+    }
 
 	if (self.classname == "trigger_secret")
 	{
@@ -206,10 +248,12 @@ void multi_trigger()
 	{
 		self.think = multi_wait;
 		self.nextthink = time + self.wait;
+
+        if(idx >= 0)
+            self.(per_client_data[idx]) = self.nextthink;
 	}
 	else
-	{	// we can't just remove (self) here, because this is a touch function
-		// called wheil C code is looping through area links...
+	{
 		self.touch = SUB_Null;
 	}
 };
@@ -223,7 +267,7 @@ void multi_use()
 
 void multi_touch()
 {
-	if not(self.spawnflags & 2)
+	if not(self.spawnflags & SPAWNFLAG_ALLENTS)
 	{
 		if not(other.iscreature)
 			return;
@@ -368,7 +412,7 @@ void spawnfunc_trigger_relay()
     self.classname = "trigger_relay";
 	self.use = SUB_UseTargets;
 	self.reset = spawnfunc_trigger_relay; // this spawnfunc resets fully
-};
+}
 
 void delay_use()
 {
@@ -388,6 +432,15 @@ void spawnfunc_trigger_delay()
 
     self.use = delay_use;
     self.reset = delay_reset;
+}
+
+void spawnfunc_trigger_relay_once(void) {
+    self.classname = "trigger_relay";
+    self.use = inline void(void) {
+        SUB_UseTargets();
+        self.use = SUB_DontUseTargets;
+    };
+    self.reset = spawnfunc_trigger_relay_once;
 }
 
 //=============================================================================
@@ -562,7 +615,6 @@ void spawnfunc_trigger_heal()
 	precache_sound(self.noise);
 };
 
-
 //////////////////////////////////////////////////////////////
 //
 //
@@ -572,10 +624,33 @@ void spawnfunc_trigger_heal()
 //////////////////////////////////////////////////////////////
 
 
+void spawnfunc_target_heal(void) {
+    self.classname = "target_heal";
+
+    if(!self.health)
+        self.health = 25;
+
+    if(!self.cnt)
+        self.cnt = HEAL_PAUSEROT_DEFAULT;
+
+    self.use = inline void(void) {
+        if(activator.iscreature && activator.takedamage && activator.deadflag == DEAD_NO) {
+            Heal(activator, self, activator, self.health, self.armorvalue, self.max_health, self.max_armorvalue, DEATH_HURTTRIGGER, self.cnt, self.cnt, '0 0 0', '0 0 0');
+        }
+    };
+}
+
 
 // TODO add a way to do looped sounds with sound(); then complete this entity
 .float volume, atten;
-void target_speaker_use() {sound(self, CHAN_TRIGGER, self.noise, VOL_BASE * self.volume, self.atten);}
+
+void target_speaker_use(void) {
+    sound(self, CHAN_TRIGGER, self.noise, self.volume, self.atten);
+}
+
+void target_speaker_reset(void) {
+    stopsound(self, CHAN_TRIGGER);
+}
 
 void spawnfunc_target_speaker()
 {
@@ -589,7 +664,10 @@ void spawnfunc_target_speaker()
 			self.atten = 0;
 		if(!self.volume)
 			self.volume = 1;
+
+        self.volume = bound(0, VOL_BASE * self.volume, 1);
 		self.use = target_speaker_use;
+        self.reset = target_speaker_reset;
 	}
 	else
 	{
@@ -599,7 +677,9 @@ void spawnfunc_target_speaker()
 			self.atten = 0;
 		if(!self.volume)
 			self.volume = 1;
-		ambientsound (self.origin, self.noise, VOL_BASE * self.volume, self.atten);
+
+        self.volume = bound(0, VOL_BASE * self.volume, 1);
+		ambientsound (self.origin, self.noise, self.volume, self.atten);
 	}
 };
 
@@ -1444,54 +1524,48 @@ void spawnfunc_trigger_multivibrator()
 	self.state = 0;
 	self.use = multivibrator_toggle;
 	self.think = multivibrator_send;
+    self.reset = multivibrator_reset;
 	self.nextthink = time;
 
 	IFTARGETED
 		multivibrator_reset();
 }
 
+void follow_set(entity dst, entity src) {
+    if(self.spawnflags & 1) {
+        // attach
+        if(self.spawnflags & 2) {
+            setattachment(dst, src, self.message);
+        } else {
+            attach_sameorigin(dst, src, self.message);
+        }
+    } else {
+        if(self.spawnflags & 2) {
+            dst.movetype = MOVETYPE_FOLLOW;
+            dst.aiment = src;
+            // dst.punchangle = '0 0 0'; // keep unchanged
+            dst.view_ofs = dst.origin;
+            dst.v_angle = dst.angles;
+        } else {
+            follow_sameorigin(dst, src);
+        }
+    }
+}
 
-void follow_init()
-{
-	entity src, dst;
-	src = find(world, targetname, self.killtarget);
-	dst = find(world, targetname, self.target);
+void follow_init(void) {
+    var src = find(world, targetname, self.killtarget);
 
-	if(!src || !dst)
-	{
-		objerror("follow: could not find target/killtarget");
-		return;
-	}
+    if(!src) {
+        objerror("follow: could not find killtarget");
+        return;
+    }
 
-	if(self.spawnflags & 1)
-	{
-		// attach
-		if(self.spawnflags & 2)
-		{
-			setattachment(dst, src, self.message);
-		}
-		else
-		{
-			attach_sameorigin(dst, src, self.message);
-		}
-	}
-	else
-	{
-		if(self.spawnflags & 2)
-		{
-			dst.movetype = MOVETYPE_FOLLOW;
-			dst.aiment = src;
-			// dst.punchangle = '0 0 0'; // keep unchanged
-			dst.view_ofs = dst.origin;
-			dst.v_angle = dst.angles;
-		}
-		else
-		{
-			follow_sameorigin(dst, src);
-		}
-	}
+    SUB_ForEachTarget(self, inline float(entity e, float _f, vector _v, string _s, entity src) {
+        follow_set(e, src);
+        return FALSE;
+    }, FALSE, NULL, NULL, NULL, src);
 
-	remove(self);
+    remove(self);
 }
 
 void spawnfunc_misc_follow()
@@ -1521,6 +1595,50 @@ void spawnfunc_trigger_gamestart() {
 }
 
 
+
+void spawnfunc_trigger_roundstate(void) {
+    self.classname = "trigger_roundstate";
+    self.reset2 = spawnfunc_trigger_roundstate;
+    self.use = SUB_UseTargets;
+
+    if(self.cnt == ROUNDSTATE_GAMEINIT)
+        InitializeEntity(self, gamestart_use, INITPRIO_FINDTARGET);
+}
+
+
+
+void FireRoundstateTriggers(void) {
+    while((activator = find(activator, classname, "trigger_roundstate"))) {
+        if(activator.cnt == roundstate)
+            using(self = activator)
+                activator.use();
+
+        if(activator.spawnflags & 1) {
+            activator = activator {
+                cnt: 0,
+                think: SUB_Remove,
+                nextthink: time
+            };
+        }
+    }
+}
+
+
+void spawnfunc_trigger_test(void) {
+    if(!CVAR(developer)) {
+        remove(self);
+        return;
+    }
+
+    self.use = inline void(void) {
+        print("^3Trigger ^1", self.targetname, "^3 just went off\n");
+
+        if(self.spawnflags & 1)
+            error(self.targetname);
+        else
+            backtrace(self.targetname);
+    };
+}
 
 
 .entity voicescript; // attached voice script
@@ -1957,41 +2075,29 @@ void spawnfunc_trigger_gravity()
 
 .string chaintarget;
 
-entity trigger_cycle_find_next_target(entity ref) {
-    entity e;
+string trigger_cycle_find_next_target(string curtarget) {
+    while((var e = find(e, targetname, curtarget)))
+        if(e.chaintarget)
+            return e.chaintarget;
 
-    if(ref.chaintarget != "")
-        e = find(world, targetname, ref.chaintarget);
-
-    if(!e.use)
-        e = world;
-
-    return e;
+    error("trigger_cycle: broken chain");
+    return NULL;
 }
 
 void trigger_cycle_reset(void) {
-    self.target = self.chaintarget;
-    self.enemy = trigger_cycle_find_next_target(self);
+    self.target = self.netname;
 }
 
 void trigger_cycle_use(void) {
     SUB_UseTargets_PreventReuse();
-    self.enemy = trigger_cycle_find_next_target(self.enemy);
-    self.target = self.enemy.targetname;
+    self.target = trigger_cycle_find_next_target(self.target);
     SUB_UseTargets_PreventReuse();
 }
 
-void trigger_cycle_init_delayed(void) {
-    self.enemy = trigger_cycle_find_next_target(self);
-    self.think = func_null;
-}
-
 void spawnfunc_trigger_cycle(void) {
-    self.chaintarget = self.target;
+    self.netname = self.target;
     self.use = trigger_cycle_use;
     self.reset = trigger_cycle_reset;
-    self.think = trigger_cycle_init_delayed;
-    self.nextthink = time;
 }
 
 /*
@@ -2057,12 +2163,12 @@ void spawnfunc_trigger_relay_random(void) {
 
     self.use = inline void(void) {
         RandomSelection_Init();
-        SUB_ForEachTarget_Init();
 
-        SUB_ForEachTarget(self, inline void(entity e, float fdata, vector vdata, string sdata, entity edata) {
+        SUB_ForEachTarget(self, inline float(entity e, float _f, vector _v, string _s, entity _e) {
             e.sub_target_used = time;
-            RandomSelection_Add(e, 0, string_null, 1, 1);
-        }, FALSE, 0, '0 0 0', string_null, world);
+            RandomSelection_Add(e, 0, NULL, 1, 1);
+            return FALSE;
+        }, FALSE, NULL, NULL, NULL, NULL);
 
         if(RandomSelection_chosen_ent) {
             RandomSelection_chosen_ent.sub_target_used = -1;
@@ -2071,4 +2177,192 @@ void spawnfunc_trigger_relay_random(void) {
     };
 
     self.reset = spawnfunc_trigger_relay_random;
+}
+
+/*
+ * iterators
+ */
+
+void spawnfunc_trigger_relay_foreachplayer(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        using(activator = world)
+            FOR_EACH_PLAYER(activator)
+                SUB_UseTargets();
+    };
+
+    self.reset = spawnfunc_trigger_relay_foreachplayer;
+}
+
+/*
+ * state
+ */
+
+enumflags {
+    TSTATE_ENABLED,
+    TSTATE_USE_ON,
+    TSTATE_USE_OFF,
+};
+
+enumflags {
+    TSTATE_NOT,
+};
+
+typedef float(void) statefunc_t;
+typedef float(entity, .entity) statefunc_aggr_t;
+
+.statefunc_t statefunc;
+.statefunc_t statefunc2;
+
+const STATECHAIN_STACK_MAX = 16;
+.entity statechain_stack[STATECHAIN_STACK_MAX];
+float statechain_stack_ptr;
+var .entity statechain_next;
+
+void statechain_push(void) {
+    if(statechain_stack_ptr >= STATECHAIN_STACK_MAX)
+        error("statechain stack overflow");
+
+    statechain_next = statechain_stack[statechain_stack_ptr];
+
+    ++statechain_stack_ptr;
+    dprint("PSH PTR: " + statechain_stack_ptr + "\n");
+}
+
+void statechain_pop(void) {
+    --statechain_stack_ptr;
+
+    if(statechain_stack_ptr < 0)
+        error("statechain stack underflow");
+
+    statechain_next = statechain_stack[statechain_stack_ptr];
+    dprint("POP PTR: " + statechain_stack_ptr + "\n");
+}
+
+float compute_state(entity e) {
+    using(self = e)
+        return e.statefunc();
+}
+
+float aggregate_and(entity e, .entity next) {
+    do {
+        if(e.statefunc)
+        if(!compute_state(e))
+            return FALSE;
+    } while((e = e.next));
+
+    return TRUE;
+}
+
+float aggregate_or(entity e, .entity next) {
+    do {
+        if(e.statefunc)
+        if(compute_state(e))
+            return TRUE;
+    } while((e = e.next));
+
+    return FALSE;
+}
+
+float statefunc_aggregate_targets(statefunc_aggr_t aggr) {
+    statechain_push();
+    var s = aggr(SUB_LinkTargets(self, statechain_next, FALSE), statechain_next);
+    statechain_pop();
+    return s;
+}
+
+float statefunc_invertible() {
+    var s = self.statefunc2();
+    if(self.spawnflags & TSTATE_NOT)
+        return !s;
+    return s;
+}
+
+float statefunc_self(void) {
+    return self.state;
+}
+
+float statefunc_or(void) {
+    return statefunc_aggregate_targets(aggregate_or);
+}
+
+float statefunc_and(void) {
+    return statefunc_aggregate_targets(aggregate_and);
+}
+
+void trigger_state_init(spawnfunc_t reset_f, statefunc_t state_f) {
+    self.classname = "trigger_state";
+    self.reset = reset_f;
+    self.statefunc = statefunc_invertible;
+    self.statefunc2 = state_f;
+    self.use = SUB_Null; // dummy default to ensure that ForEachTarget works on it
+}
+
+void spawnfunc_trigger_state(void) {
+    trigger_state_init(spawnfunc_trigger_state, statefunc_self);
+    self.statefunc = self.statefunc2;
+    self.state = (self.spawnflags & TSTATE_ENABLED);
+
+    self.use = inline void(void) {
+        self.state = !(self.state);
+        dprint("State ^3", self.targetname, "^7 is now ^2", ftos(self.state), "\n");
+
+        if((self.state && self.spawnflags & TSTATE_USE_ON) || (!self.state && self.spawnflags & TSTATE_USE_OFF))
+            SUB_UseTargets();
+    };
+}
+
+void spawnfunc_trigger_state_and(void) {
+    trigger_state_init(spawnfunc_trigger_state_and, statefunc_and);
+}
+
+void spawnfunc_trigger_state_or(void) {
+    trigger_state_init(spawnfunc_trigger_state_or, statefunc_or);
+}
+
+void spawnfunc_trigger_state_activatoralive(void) {
+    trigger_state_init(spawnfunc_trigger_state_activatoralive, inline float(void) {
+        return !PlayerIsDead(activator);
+    });
+}
+
+void spawnfunc_trigger_relay_ifstate(void) {
+    self.classname = "trigger_relay";
+
+    self.use = inline void(void) {
+        var s = compute_state(self.enemy);
+
+        if(self.spawnflags & TSTATE_NOT)
+            s = !s;
+
+        if(s > 0) // XXX: why is this necessary?
+            SUB_UseTargets();
+    };
+
+    InitializeEntity(self, inline void(void) {
+        while((var e = find(e, targetname, self.killtarget))) {
+            if(e.statefunc) {
+                self.killtarget = NULL;
+                self.enemy = e;
+                break;
+            }
+        }
+
+        if(!self.enemy)
+            objerror("trigger_relay_ifstate does not point to a valid state entity");
+    }, INITPRIO_FINDTARGET);
+}
+
+/*
+ * misc
+ */
+
+void spawnfunc_func_nowalljump(void) {
+    EXACTTRIGGER_INIT;
+
+    self.touch = inline void(void) {
+        if(other.iscreature)
+            other.wj_jumptime = time + frametime;
+    };
 }

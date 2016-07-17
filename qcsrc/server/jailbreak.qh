@@ -32,9 +32,6 @@ void JB_ControlPoint_UpdateCooldownProgress(entity);
 string JB_ControlPoint_Name(entity);
 float JB_JailIsOpen(float);
 float JB_AliveCheck(entity);
-void JB_JailSpectate();
-entity JB_JailSpec_CreateProxy();
-void JB_JailSpec_Proxy_CopyFields(entity, entity);
 
 float JB_PlayerDies(entity);
 void JB_PlayerSpawn();
@@ -58,11 +55,9 @@ void JB_RemovePlayer();
 .float jb_message;
 .float jb_jaildm_aggressive;
 .float jb_had_unlimited_ammo;
-.float jb_specteam;
 
 .entity jb_waypoint;
 .entity jb_capturingplayer;
-.entity jb_jailspec_proxy;
 
 float jb_roundover;
 float jb_recount;

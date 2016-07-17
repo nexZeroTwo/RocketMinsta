@@ -119,6 +119,7 @@ void W_Hagar_SetClipContext(void) {
     W_Clip_SetWeaponContext(
         WEP_HAGAR,
         CVAR(g_balance_hagar_magazinecapacity),
+        CVAR(g_balance_hagar_magazineregen),
         CVAR(g_balance_hagar_reloadtime),
         ammo_rockets,
         1
@@ -132,7 +133,7 @@ void spawnfunc_weapon_hagar (void)
 
 float w_hagar(float req)
 {
-    W_SetButtonFields(CVAR(g_balance_hagar_swapshotmodes));
+    W_SetButtonFields(self, CVAR(g_balance_hagar_swapshotmodes));
     W_Hagar_SetClipContext();
 
 	if (req == WR_AIM)

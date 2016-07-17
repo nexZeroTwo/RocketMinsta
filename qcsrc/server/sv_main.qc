@@ -152,11 +152,13 @@ entity SelectSpawnPoint (float anypoint);
 void StartFrame (void)
 {
     entity e;
-    
+
 	remove = remove_unsafely; // not during spawning!
 	serverprevtime = servertime;
 	servertime = time;
 	serverframetime = frametime;
+
+    ER_Update();
 
 #ifdef PROFILING
 	if(time > client_cefc_accumulatortime + 1)
@@ -193,6 +195,8 @@ void StartFrame (void)
 	UncustomizeEntitiesRun();
 	InitializeEntitiesRun();
 
+	WarpZone_StartFrame();
+
 	if(timeoutStatus == 1) // just before the timeout (when timeoutStatus will be 2)
 		orig_slowmo = CVAR(slowmo); // slowmo will be restored after the timeout
 
@@ -228,7 +232,7 @@ void StartFrame (void)
 	{
 		RandomSelection_Init();
 		for(self = world; (self = find(self, classname, "player")); )
-			RandomSelection_Add(self, 0, string_null, 1, 0);
+			RandomSelection_Add(self, 0, NULL, 1, 0);
 		self = RandomSelection_chosen_ent;
 		SelectSpawnPoint(0);
 	}
@@ -252,7 +256,7 @@ void StartFrame (void)
 	} else if(oldfog) {
 		print("Fog disabled\n");
 		strunzone(oldfog);
-		oldfog = string_null;
+		oldfog = NULL;
 		
 		FOR_EACH_REALCLIENT(self) {
 			stuffcmd(self, "prvm_globalset client forcefog \"\"\n");
@@ -268,6 +272,9 @@ void StartFrame (void)
 			dropclient(v);
 		}
 	}
+
+    if(roundstate == ROUNDSTATE_GAMEINIT)
+        roundstate = ROUNDSTATE_PREGAME;
 
     if(time >= game_starttime && roundstate == ROUNDSTATE_PREGAME) {
         roundstate = ROUNDSTATE_GAME;

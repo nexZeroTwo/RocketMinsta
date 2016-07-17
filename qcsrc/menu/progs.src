@@ -1,8 +1,7 @@
 ../../menu.dat
 
-config.qh
-../common/rm_auto.qh
 ../common/util-pre.qh
+config.qh
 
 autocvars.qh
 ../common/autocvars.qh
@@ -21,12 +20,16 @@ oo/base.h
 ../common/nadgets.qh
 ../common/dprm.qh
 ../common/lazyjson.qh
+../common/extresponse.qh
 
 gamecommand.qh
 menu.qh
 draw.qh
 skin.qh
 nexuiz/util.qh
+
+../common/flag_anim.qc
+../common/util.qc
 
 oo/classdefs.h
 	classes.c
@@ -36,8 +39,6 @@ oo/constructors.h
 oo/implementation.h
 	classes.c
 
-../common/flag_anim.qc
-../common/util.qc
 ../common/gamecommand.qc
 gamecommand.qc
 menu.qc
@@ -53,4 +54,5 @@ nexuiz/util.qc
 ../common/gametype.qc            
 ../common/nadgets.qc
 ../common/lazyjson.qc
+../common/extresponse.qc
 

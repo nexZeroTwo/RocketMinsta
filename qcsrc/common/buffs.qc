@@ -19,6 +19,7 @@ float Buffs_NameToType(string name) {
 
         // compatibility
         case "bash": return BUFF_IGNITE;
+        case "focus": return BUFF_CONDUIT;
         
         default: return 0;
     }
@@ -31,7 +32,7 @@ string Buffs_TypeToFullName(float buff) {
         BUFFDEFS
         #undef BUFFDEF
 
-        default: return string_null;
+        default: return NULL;
     }
 }
 
@@ -108,4 +109,35 @@ float Buffs_TypeToIndex(float buff) {
     #undef BUFFDEF
 
     return -1;
+}
+
+float Buffs_ParseList(string bufflist) {
+    var tokens = tokenize(bufflist);
+    var bffs = 0;
+
+    for(var i = 0; i < tokens; ++i) {
+        if(argv(i) == "all")
+            return BUFF_LAST * 2 - 1;
+
+        bffs |= Buffs_NameToType(argv(i));
+    }
+
+    return bffs;
+}
+
+string Buffs_TypeToList(float bffs) {
+    var s = "";
+
+    for(var b = BUFF_FIRST; b <= BUFF_LAST; b *= 2) {
+        if(bffs & b) {
+            var n = Buffs_TypeToName(b);
+
+            if(s == "")
+                s = n;
+            else
+                s = s + " " + n;
+        }
+    }
+
+    return s;
 }

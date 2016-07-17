@@ -206,7 +206,13 @@ void bot_setnameandstuff()
 	self.playerskin = self.playerskin_freeme = strzone(bot_skin);
 
 	self.netname = self.netname_freeme = strzone(strcat(prefix, name, suffix));
-};
+
+    if(g_nadgets)
+        self.hg_type1_picked = self.hg_type2_picked = HG_RANDOM;
+
+    if(g_weaponarena_secondary)
+        self.w_secondary = log2of(randombit(g_weaponarena_secondary)) + 1;
+}
 
 void bot_custom_weapon_priority_setup()
 {
@@ -340,9 +346,9 @@ void bot_clientdisconnect()
 		strunzone(self.playermodel_freeme);
 	if(self.playerskin_freeme)
 		strunzone(self.playerskin_freeme);
-	self.netname_freeme = string_null;
-	self.playermodel_freeme = string_null;
-	self.playerskin_freeme = string_null;
+	self.netname_freeme = NULL;
+	self.playermodel_freeme = NULL;
+	self.playerskin_freeme = NULL;
 	remove(self.bot_cmd_current);
 }
 
@@ -531,7 +537,7 @@ void bot_serverframe()
 
 	FOR_EACH_REALCLIENT(head)
 	{
-		if(head.classname == "player" || g_lms || g_arena || ((g_jailbreak || g_clanarena) && head.jb_specteam))
+		if(head.classname == "player" || g_lms || g_arena)
 			++activerealplayers;
 		++realplayers;
 	}

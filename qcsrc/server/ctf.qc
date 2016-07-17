@@ -416,7 +416,7 @@ void FlagThink()
 
 	if(CVAR(g_ctf_allow_drop))
 	if(e.BUTTON_USE)
-		DropFlag(self, e, world);
+		DropFlag(self, world, world);
 };
 
 void flag_cap_ring_spawn(vector org)

@@ -29,7 +29,7 @@ CLASS(NexuizMapList) EXTENDS(NexuizListBox)
 	ATTRIB(NexuizMapList, origin, vector, '0 0 0')
 	ATTRIB(NexuizMapList, itemAbsSize, vector, '0 0 0')
 
-	ATTRIB(NexuizMapList, g_maplistCache, string, string_null)
+	ATTRIB(NexuizMapList, g_maplistCache, string, NULL)
 	METHOD(NexuizMapList, g_maplistCacheToggle, void(entity, float))
 	METHOD(NexuizMapList, g_maplistCacheQuery, float(entity, float))
 
@@ -37,7 +37,7 @@ CLASS(NexuizMapList) EXTENDS(NexuizListBox)
 
 	METHOD(NexuizMapList, loadCvars, void(entity))
 
-	ATTRIB(NexuizMapList, typeToSearchString, string, string_null)
+	ATTRIB(NexuizMapList, typeToSearchString, string, NULL)
 	ATTRIB(NexuizMapList, typeToSearchTime, float, 0)
 
 	METHOD(NexuizMapList, destroy, void(entity))
@@ -187,10 +187,10 @@ void drawListBoxItemNexuizMapList(entity me, float i, vector absSize, float isSe
 	draw_Picture(me.columnPreviewOrigin * eX, strcat("/maps/", MapInfo_Map_bspname), me.columnPreviewSize * eX + eY, '1 1 1', theAlpha);
 	if(included)
 		draw_Picture(me.checkMarkOrigin, "checkmark", me.checkMarkSize, '1 1 1', 1);
-	s = draw_TextShortenToWidth(strcat(MapInfo_Map_bspname, ": ", MapInfo_Map_title), me.columnNameSize / me.realFontSize_x, 0);
-	draw_Text(me.realUpperMargin1 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0) * me.realFontSize_x)) * eX, s, me.realFontSize, SKINCOLOR_MAPLIST_TITLE, theAlpha, 0);
-	s = draw_TextShortenToWidth(MapInfo_Map_author, me.columnNameSize / me.realFontSize_x, 0);
-	draw_Text(me.realUpperMargin2 * eY + (me.columnNameOrigin + 1.00 * (me.columnNameSize - draw_TextWidth(s, 0) * me.realFontSize_x)) * eX, s, me.realFontSize, SKINCOLOR_MAPLIST_AUTHOR, theAlpha, 0);
+	s = draw_TextShortenToWidth(strcat(MapInfo_Map_bspname, ": ", MapInfo_Map_title), me.columnNameSize, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin1 * eY + (me.columnNameOrigin + 0.00 * (me.columnNameSize - draw_TextWidth(s, 0, me.realFontSize))) * eX, s, me.realFontSize, SKINCOLOR_MAPLIST_TITLE, theAlpha, 0);
+	s = draw_TextShortenToWidth(MapInfo_Map_author, me.columnNameSize, 0, me.realFontSize);
+	draw_Text(me.realUpperMargin2 * eY + (me.columnNameOrigin + 1.00 * (me.columnNameSize - draw_TextWidth(s, 0, me.realFontSize))) * eX, s, me.realFontSize, SKINCOLOR_MAPLIST_AUTHOR, theAlpha, 0);
 
 	MapInfo_ClearTemps();
 }

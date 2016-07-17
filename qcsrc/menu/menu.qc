@@ -15,19 +15,48 @@ float prevMenuAlpha;
 float menuInitialized;
 float menuNotTheFirstFrame;
 float menuMouseMode;
+float map_crc_old;
 
 void SUB_Null() { };
 
-void() m_init =
+void update_game_status(void) {
+    gamestatus = 0;
+    if(isserver())
+        gamestatus = gamestatus | GAME_ISSERVER;
+    if(clientstate() == CS_CONNECTED)
+        gamestatus = gamestatus | GAME_CONNECTED;
+    if(CVAR(developer))
+        gamestatus = gamestatus | GAME_DEVELOPER;
+}
+
+void m_init()
 {
 	registercvar("_menu_alpha", "0", 0);
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
     registercvar("menu_rpn_autoload", "", CVAR_SAVE);
+    registercvar("rm_fonts_prefer_ttf", "0", CVAR_SAVE);
+    registercvar("menu_vid_width", "0", 0);
+    registercvar("menu_vid_height", "0", 0);
+    registercvar("vid_ui_scale", "1", CVAR_SAVE);
+
+    cvar_set("menu_vid_width", ftos(CVAR(vid_width)));
+    cvar_set("menu_vid_height", ftos(CVAR(vid_height)));
+
+    CVAR_WATCH("rm_fonts_prefer_ttf");
+    CVAR_WATCH("vid_ui_scale");
+
+    cvar_archive("r_shadow_lightintensityscale", "1.0");
+    cvar_archive("r_shadow_lightradiusscale", "1.0");
+    cvar_archive("r_shadow_glossexact", "0");
 
     if(!(cvar_type("sys_first_run") & CVAR_SAVE))
         registercvar("sys_first_run", "0", CVAR_SAVE);
+
+    if(cvar("sys_first_run"))
+        apply_ui_scale();
+
     cvar_set("sys_first_run", "0");
 
 	dprint_load();
@@ -49,6 +78,24 @@ void() m_init =
 	
 	IP2C_Init();
 	DPRM_Start();
+
+    map_crc_old = crc16(FALSE, CVAR_STR(cl_worldbasename));
+    update_game_status();
+
+    if(!(gamestatus & (GAME_ISSERVER | GAME_CONNECTED)))
+        utf8_enable();
+}
+
+void CvarUpdated(string cvarname, string oldvalue) {
+    if(cvarname == "rm_fonts_prefer_ttf") {
+        load_fonts();
+        return;
+    }
+
+    if(cvarname == "vid_ui_scale") {
+        apply_ui_scale();
+        return;
+    }
 }
 
 void UpdateConWidthHeight()
@@ -91,7 +138,7 @@ void UpdateConWidthHeight()
     }
 }
 
-void() m_init_delayed =
+void m_init_delayed()
 {
 	float fh, glob, n, i;
 	string s;
@@ -184,13 +231,13 @@ void() m_init_delayed =
 	menuShiftState = 0;
 	menuMousePos = '0.5 0.5 0';
     
-    rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_COMMIT " " RM_BUILD_DATE;
+    rm_watermark = RM_BUILD_NAME " " RM_BUILD_VERSION " " RM_BUILD_DATE;
     
 	if(Menu_Active)
 		m_display(); // delayed menu display
-};
+}
 
-void(float key, float ascii) m_keyup =
+void m_keyup(float key, float ascii)
 {
 	if(!menuInitialized)
 		return;
@@ -212,9 +259,9 @@ void(float key, float ascii) m_keyup =
 	if(key == K_ALT) menuShiftState -= (menuShiftState & S_ALT);
 	if(key == K_CTRL) menuShiftState -= (menuShiftState & S_CTRL);
 	if(key == K_SHIFT) menuShiftState -= (menuShiftState & S_SHIFT);
-};
+}
 
-void(float key, float ascii) m_keydown =
+void m_keydown(float key, float ascii)
 {
 	if(!menuInitialized)
 		return;
@@ -250,9 +297,9 @@ void(float key, float ascii) m_keydown =
 	if(key == K_ALT) menuShiftState |= S_ALT;
 	if(key == K_CTRL) menuShiftState |= S_CTRL;
 	if(key == K_SHIFT) menuShiftState |= S_SHIFT;
-};
+}
 
-void(string img, float a, float algn, float force1) drawBackground =
+void drawBackground(string img, float a, float algn, float force1)
 {
 	vector sz;
 	vector isz;
@@ -425,7 +472,7 @@ entity m_findtooltipitem(entity root, vector pos)
 
 	return best;
 }
-void m_tooltip(vector pos)
+void m_tooltip(vector pos, vector xySize)
 {
 	float f, i, w;
 	entity it;
@@ -466,9 +513,9 @@ void m_tooltip(vector pos)
 					getWrappedLine_remaining = it.tooltip;
 					while(getWrappedLine_remaining)
 					{
-						s = getWrappedLine(SKINWIDTH_TOOLTIP / fontsize_x, draw_TextWidth_WithoutColors);
+						s = getWrappedLine(SKINWIDTH_TOOLTIP, xySize, draw_TextWidth_WithoutColors);
 						++i;
-						f = draw_TextWidth(s, FALSE);
+						f = draw_TextWidth(s, FALSE, xySize);
 						if(f > w)
 							w = f;
 					}
@@ -528,7 +575,7 @@ void m_tooltip(vector pos)
 			getWrappedLine_remaining = menuTooltipItem.tooltip;
 			while(getWrappedLine_remaining)
 			{
-				s = getWrappedLine(SKINWIDTH_TOOLTIP / fontsize_x, draw_TextWidth_WithoutColors);
+				s = getWrappedLine(SKINWIDTH_TOOLTIP, xySize, draw_TextWidth_WithoutColors);
 				draw_Text(p, s, fontsize, '1 1 1', SKINALPHA_TOOLTIP * menuTooltipAlpha, FALSE);
 				p_y += fontsize_y;
 			}
@@ -536,10 +583,12 @@ void m_tooltip(vector pos)
 	}
 }
 
-void() m_draw =
+void m_draw()
 {
 	float t;
 	float realFrametime;
+
+    ER_Update();
 
 	menuMouseMode = CVAR(menu_mouse_absolute);
 
@@ -589,13 +638,7 @@ void() m_draw =
 		frametime = t / CVAR(cl_capturevideo_fps); // make capturevideo work smoothly
 
 	dprint_load();
-	gamestatus = 0;
-	if(isserver())
-		gamestatus = gamestatus | GAME_ISSERVER;
-	if(clientstate() == CS_CONNECTED)
-		gamestatus = gamestatus | GAME_CONNECTED;
-	if(CVAR(developer))
-		gamestatus = gamestatus | GAME_DEVELOPER;
+    update_game_status();
 
 	prevMenuAlpha = menuAlpha;
 	if(Menu_Active)
@@ -690,7 +733,7 @@ void() m_draw =
 	}
 	main.draw(main);
 
-	m_tooltip(menuMousePos);
+	m_tooltip(menuMousePos, '1 1');
 
 	draw_alpha = max(draw_alpha, SKINALPHA_CURSOR_INTRO * bound(0, menuLogoAlpha, 1));
 
@@ -710,9 +753,9 @@ void() m_draw =
 	IP2C_CheckTimedOut();
 
 	frametime = 0;
-};
+}
 
-void() m_display =
+void m_display()
 {
 	Menu_Active = true;
 	setkeydest(KEY_MENU);
@@ -727,9 +770,9 @@ void() m_display =
 
 	main.focusEnter(main);
 	main.showNotify(main);
-};
+}
 
-void() m_hide =
+void m_hide()
 {
 	Menu_Active = false;
 	setkeydest(KEY_GAME);
@@ -740,9 +783,9 @@ void() m_hide =
 
 	main.focusLeave(main);
 	main.hideNotify(main);
-};
+}
 
-void() m_toggle =
+void m_toggle()
 {
 	if(Menu_Active)
 		m_hide();
@@ -753,9 +796,9 @@ void() m_toggle =
 			m_activate_window(main.gameMenuDialog);
 		m_display();
 	}
-};
+}
 
-void() m_shutdown =
+void m_shutdown()
 {
 	entity e;
 
@@ -772,7 +815,7 @@ void() m_shutdown =
 		if(e.destroy)
 			e.destroy(e);
 	}
-};
+}
 
 void m_focus_item_chain(entity outermost, entity innermost)
 {
@@ -828,7 +871,7 @@ void m_setpointerfocus(entity wnd)
 	}
 }
 
-void(string itemname) m_goto =
+void m_goto(string itemname)
 {
 	entity e;
 	if(!menuInitialized)
@@ -859,7 +902,7 @@ void(string itemname) m_goto =
 	}
 }
 
-void() m_goto_skin_selector =
+void m_goto_skin_selector()
 {
 	if(!menuInitialized)
 		return;
@@ -874,4 +917,45 @@ void URI_Get_Callback(float id, float status, string data)
 		IP2C_URI_Get_Callback(id, status, data);
 		return;
 	}
+}
+
+vector res_to_conres(vector res, float uiscale) {
+    vector c, ref = [800, 600];
+    float f;
+
+    if(uiscale <= 0)
+        return res;
+
+    c_x = ref_x;
+    c_y = rint(c_x * res_y / res_x);
+
+    if(c_y < ref_y) {
+        c_y = ref_y;
+        c_x = rint(c_y * res_x / res_y);
+    }
+
+    f = max(c_x / res_x, c_y / res_y);
+    if(f > 1) {
+        c_x = rint(c_x / f);
+        c_y = rint(c_y / f);
+    }
+
+    uiscale = 1 / uiscale;
+    c_x = rint(c_x * uiscale);
+    c_y = rint(c_y * uiscale);
+
+    return c;
+}
+
+void apply_ui_scale(void) {
+    var cr = res_to_conres([CVAR(vid_width), CVAR(vid_height)], CVAR(vid_ui_scale));
+    cvar_set("vid_conwidth", ftos(cr_x));
+    cvar_set("vid_conheight", ftos(cr_y));
+}
+
+void apply_video_settings(void) {
+    cvar_set("vid_width", ftos(CVAR(menu_vid_width)));
+    cvar_set("vid_height", ftos(CVAR(menu_vid_height)));
+    apply_ui_scale();
+    localcmd("vid_restart\n");
 }
