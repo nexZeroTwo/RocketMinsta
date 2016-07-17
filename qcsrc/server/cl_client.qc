@@ -1662,18 +1662,27 @@ void ClientKill_TeamChange (float targetteam) // 0 = don't change, -1 = auto
 
 void ClientKill (void)
 {
+    if(PlayerIsDead(self))
+        return;
 	ClientKill_TeamChange(0);
 }
 
 void DoTeamChange(float destteam)
 {
 	float t, c0;
+
 	if(!teams_matter)
 	{
 		if(destteam >= 0)
 			SetPlayerColors(self, destteam);
 		return;
 	}
+
+    if(PlayerIsDead(self)) {
+        centerprint_spec(self, "You can't switch team while you're dead");
+        return;
+    }
+
 	if(self.classname == "player")
 	if(destteam == -1)
 	{
