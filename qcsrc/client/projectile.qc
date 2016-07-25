@@ -515,7 +515,7 @@ void Ent_Projectile()
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
             case PROJECTILE_PRYAXE:
-                setmodel(self, "models/weapons/pryaxe_thrown.md3");
+                setmodel(self, "models/weapons/pryaxe2_thrown.iqm");
                 SetupProjectileColormap(COLOR_TEAM1);
                 break;
 			default:
@@ -672,7 +672,7 @@ void Projectile_Precache()
     precache_model("models/translocator.iqm");
     precache_model("models/raze.md3");
     precache_model("models/sphere/sphere.md3");
-    precache_model("models/weapons/pryaxe_thrown.md3");
+    precache_model("models/weapons/pryaxe2_thrown.iqm");
     precache_model("models/handgrenade.iqm");
     precache_model("models/plasmabomb.iqm");
 	precache_sound("weapons/electro_fly.wav");
