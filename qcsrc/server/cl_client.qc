@@ -1678,7 +1678,7 @@ void DoTeamChange(float destteam)
 		return;
 	}
 
-    if(PlayerIsDead(self)) {
+    if(self.classname == "player" && PlayerIsDead(self)) {
         centerprint_spec(self, "You can't switch team while you're dead");
         return;
     }
