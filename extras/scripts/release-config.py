@@ -76,7 +76,7 @@ def hook_post_build(build_info, log, **rest):
         })
 
     aname = shutil.make_archive(
-        base_name=str(build_info.output_dir.parent / ('%s-%s' % (build_info.name, build_info.version))),
+        base_name=str(build_info.output_dir.parent / ('%s_%s' % (build_info.name, build_info.version))),
         format='gztar',
         root_dir=str(build_info.output_dir),
         logger=log,
