@@ -24,7 +24,7 @@ defaults = {
     "fireball"          :   "fireball",
     "zapper"            :   "rtzapper",
     "flak"              :   "rtzflak",
-    "pryaxe"            :   "pryaxe",
+    "pryaxe"            :   "pryaxe2",
 
     "nex_ofs"           :   "0 0 -1",
     "zapper_ofs"        :   "0 0 1",
