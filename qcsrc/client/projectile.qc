@@ -433,7 +433,12 @@ void Ent_Projectile()
         if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
            self.cnt == PROJECTILE_HG_PLASMA_SHARD ||
            self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER)
+        {
             self.extradata = ReadByte();
+            if (fps_friendly)
+            if (self.cnt == PROJECTILE_HG_NAPALMSHARD)
+                self.cnt = PROJECTILE_FIREMINE;
+        }
 
 		self.silent = (self.cnt & 0x80);
 		self.cnt = (self.cnt & 0x7F);
