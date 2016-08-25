@@ -1,7 +1,10 @@
+#define PRYAXE_SKINS_COUNT 2
 
 .float pryaxe_attackdone;
 .float pryaxe_hit;
 .float pryaxe_oldsolid;
+.float pryaxe_number;
+.float pryaxe_skin;
 
 .entity pryaxe_thrown;
 
@@ -103,9 +106,12 @@ void W_Pryaxe_Return() {
         self.owner.pryaxe_thrown = world;
 
         if(self.owner.iscreature) {
+            self.owner.pryaxe_number += 1;
             if (!self.owner.weapon)
                 W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
             sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
+            if (self.owner.weapon != WEP_PRYAXE)
+                self.owner.pryaxe_skin = self.skin;
         }
     }
 
@@ -208,20 +214,31 @@ void W_Pryaxe_Throw(float isprim) {
     proj.use = (if (WEP_CVAR_BOTH(pryaxe, isprim, throw_flyback)) W_Pryaxe_Flyback else W_Pryaxe_Return);
     proj.think = adaptor_think2use;
     proj.nextthink = time + WEP_CVAR_BOTH(pryaxe, isprim, throw_lifetime);
+    proj.colormap = self.colormap;
     setsize(proj, pr_min, pr_max);
     setorigin(proj, w_shotorg);
     W_SetupProjectileVelocity(proj);
     proj.angles = vectoangles (proj.velocity);
     proj.flags = FL_PROJECTILE;
     proj.reset = W_Pryaxe_Return;
+    if (self.weaponentity.weaponentity)
+        proj.skin = self.weaponentity.weaponentity.skin;
+
+    proj.csqcprojectile_extradata = proj.skin;
     CSQCProjectile(proj, TRUE, PROJECTILE_PRYAXE, TRUE);
 
     //Throw out pryaxe
     self.pryaxe_thrown = proj;
-    self.weaponentity.state = WS_CLEAR;
-    W_SwitchWeapon_Force(self, 0);
+    self.pryaxe_number--;
+    self.pryaxe_skin = mod(self.pryaxe_skin + 1, PRYAXE_SKINS_COUNT);
+    if (self.pryaxe_number <= 0) {
+        self.weaponentity.state = WS_CLEAR;
+        W_SwitchWeapon_Force(self, 0);
+        ATTACK_FINISHED(self) = time;
+    } else if (self.weaponentity.weaponentity)
+        self.weaponentity.weaponentity.skin = self.pryaxe_skin;
+
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
-    ATTACK_FINISHED(self) = time;
 }
 
 void W_Pryaxe_Attack1(void) {
@@ -237,7 +254,7 @@ void W_Pryaxe_Attack_Sound(void) {
 }
 
 float W_Pryaxe_CheckThrown() {
-    if(self.pryaxe_thrown.classname == "pryaxe" && self.pryaxe_thrown.owner == self) {
+    if(self.pryaxe_thrown.classname == "pryaxe" && self.pryaxe_thrown.owner == self && self.pryaxe_number <= 0) {
         return TRUE;
     }
 
@@ -251,6 +268,10 @@ float w_pryaxe(float req) {
     if(req == WR_AIM) {
         self.w_button_primary = bot_aim(100000, 0, 0.01, FALSE);
     } else if(req == WR_THINK) {
+        if (self.weaponentity.weaponentity)
+            self.weaponentity.weaponentity.skin = self.pryaxe_skin;
+        if (self.exteriorweaponentity)
+            self.exteriorweaponentity.skin = self.pryaxe_skin;
         if(self.w_button_primary)
         if(weapon_prepareattack(0, CVAR(g_balance_pryaxe_primary_refire))) {
             W_Pryaxe_Attack_Sound();
@@ -277,6 +298,8 @@ float w_pryaxe(float req) {
         return !W_Pryaxe_CheckThrown();
     else if(req == WR_CHECKAMMO2)
         return !W_Pryaxe_CheckThrown();
+    else if(req == WR_RESETPLAYER)
+        self.pryaxe_number = CVAR(g_balance_pryaxe_throw_number);
 
     return TRUE;
 }
