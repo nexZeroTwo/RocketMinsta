@@ -3,7 +3,7 @@
 .float pryaxe_attackdone;
 .float pryaxe_hit;
 .float pryaxe_oldsolid;
-.float pryaxe_number;
+.float pryaxe_count;
 .float pryaxe_skin;
 
 .entity pryaxe_thrown;
@@ -106,7 +106,7 @@ void W_Pryaxe_Return() {
         self.owner.pryaxe_thrown = world;
 
         if(self.owner.iscreature) {
-            self.owner.pryaxe_number += 1;
+            self.owner.pryaxe_count += 1;
             if (!self.owner.weapon)
                 W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
             sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
@@ -235,13 +235,13 @@ void W_Pryaxe_Throw(float isprim) {
 
     //Throw out pryaxe
     self.pryaxe_thrown = proj;
-    self.pryaxe_number--;
-    self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_number)));
+    self.pryaxe_count--;
+    self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_count)));
     self.weaponentity.state = WS_CLEAR;
     W_SwitchWeapon_Force(self, 0);
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
     ATTACK_FINISHED(self) = time;
-    if (self.pryaxe_number > 0) {
+    if (self.pryaxe_count > 0) {
         entity e = spawn();
         e.nextthink = time;
         e.owner = self;
@@ -262,7 +262,7 @@ void W_Pryaxe_Attack_Sound(void) {
 }
 
 float W_Pryaxe_CheckThrown() {
-    if(self.pryaxe_thrown.classname == "pryaxe" && self.pryaxe_thrown.owner == self && self.pryaxe_number <= 0) {
+    if(self.pryaxe_thrown.classname == "pryaxe" && self.pryaxe_thrown.owner == self && self.pryaxe_count <= 0) {
         return TRUE;
     }
 
@@ -307,7 +307,7 @@ float w_pryaxe(float req) {
     else if(req == WR_CHECKAMMO2)
         return !W_Pryaxe_CheckThrown();
     else if(req == WR_RESETPLAYER)
-        self.pryaxe_number = CVAR(g_balance_pryaxe_throw_number);
+        self.pryaxe_count = CVAR(g_balance_pryaxe_throw_count);
 
     return TRUE;
 }
