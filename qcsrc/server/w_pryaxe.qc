@@ -188,6 +188,12 @@ void W_Pryaxe_Touch() {
     self.use();
 }
 
+void W_Pryaxe_Switch_Hack() {
+    if not(self.owner.weapon)
+        W_SwitchWeapon_Force(self.owner, WEP_PRYAXE);
+    remove(self);
+}
+
 void W_Pryaxe_Throw(float isprim) {
     entity proj = spawn();
 
@@ -231,13 +237,16 @@ void W_Pryaxe_Throw(float isprim) {
     self.pryaxe_thrown = proj;
     self.pryaxe_number--;
     self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_number)));
-    if (self.pryaxe_number <= 0) {
-        self.weaponentity.state = WS_CLEAR;
-        W_SwitchWeapon_Force(self, 0);
-        ATTACK_FINISHED(self) = time;
-    }
-
+    self.weaponentity.state = WS_CLEAR;
+    W_SwitchWeapon_Force(self, 0);
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
+    ATTACK_FINISHED(self) = time;
+    if (self.pryaxe_number > 0) {
+        entity e = spawn();
+        e.nextthink = time;
+        e.owner = self;
+        e.think = W_Pryaxe_Switch_Hack;
+    }
 }
 
 void W_Pryaxe_Attack1(void) {
