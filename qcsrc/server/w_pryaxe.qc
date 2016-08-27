@@ -230,13 +230,12 @@ void W_Pryaxe_Throw(float isprim) {
     //Throw out pryaxe
     self.pryaxe_thrown = proj;
     self.pryaxe_number--;
-    self.pryaxe_skin = mod(self.pryaxe_skin + 1, PRYAXE_SKINS_COUNT);
+    self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_number)));
     if (self.pryaxe_number <= 0) {
         self.weaponentity.state = WS_CLEAR;
         W_SwitchWeapon_Force(self, 0);
         ATTACK_FINISHED(self) = time;
-    } else if (self.weaponentity.weaponentity)
-        self.weaponentity.weaponentity.skin = self.pryaxe_skin;
+    }
 
     weapon_thinkf(WFRAME_IDLE, 0, w_ready);
 }
