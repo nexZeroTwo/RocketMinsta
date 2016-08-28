@@ -1881,6 +1881,7 @@ string autocvar_quit_and_redirect;
 string autocvar__radio_queue;
 string autocvar_sessionid;
 string autocvar_sv_adminnick;
+string autocvar_sv_animation_melee;
 string autocvar_sv_chat_autoreplace_order;
 string autocvar_sv_defaultplayercolors;
 string autocvar_sv_defaultplayermodel;

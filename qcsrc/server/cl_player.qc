@@ -249,6 +249,7 @@ void player_setupanimsformodel()
 	self.anim_forwardleft = '20 1 1';
 	self.anim_backright = '21 1 1';
 	self.anim_backleft  = '22 1 1';
+	self.anim_melee  = stov(CVAR_STR(sv_animation_melee));
 	animparseerror = FALSE;
 	animfilename = strcat(self.model, ".animinfo");
 	animfile = fopen(animfilename, FILE_READ);
@@ -275,6 +276,7 @@ void player_setupanimsformodel()
 		self.anim_forwardleft  = animparseline(animfile);
 		self.anim_backright    = animparseline(animfile);
 		self.anim_backleft     = animparseline(animfile);
+		self.anim_melee        = animparseline(animfile);
 		fclose(animfile);
 
 		// derived anims

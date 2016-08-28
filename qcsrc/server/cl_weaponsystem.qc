@@ -962,7 +962,7 @@ void weapon_thinkf(float fr, float t, void() func)
 	{
 		vector anim;
 		if (self.weapon == WEP_PRYAXE)
-			anim = self.anim_pain1; // we dont have standart melee animation...
+			anim = self.anim_melee; // we dont have standart melee animation...
 		else
 			anim = self.anim_shoot;
 		anim_z = anim_y / t;
