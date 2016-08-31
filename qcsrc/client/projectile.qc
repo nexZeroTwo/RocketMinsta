@@ -432,7 +432,8 @@ void Ent_Projectile()
 
         if(self.cnt == PROJECTILE_HG_NAPALMSHARD ||
            self.cnt == PROJECTILE_HG_PLASMA_SHARD ||
-           self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER)
+           self.cnt == PROJECTILE_HEAL_PARTICLE_EMITTER ||
+           self.cnt == PROJECTILE_PRYAXE)
         {
             self.extradata = ReadByte();
             if (fps_friendly)
@@ -520,6 +521,7 @@ void Ent_Projectile()
             case PROJECTILE_FLAK: setmodel(self, "models/tracer.mdl"); break;
             case PROJECTILE_FLAK_BOMB: setmodel(self, "models/rocket.md3"); break;
             case PROJECTILE_PRYAXE:
+                self.skin = self.extradata;
                 setmodel(self, "models/weapons/pryaxe2_thrown.iqm");
                 SetupProjectileColormap(COLOR_TEAM1);
                 break;
@@ -636,6 +638,9 @@ void Ent_Projectile()
         self.use_server_angles = TRUE;
     }
 
+	if (f & 16)
+		self.colormap = ReadShort();
+
 	if(self.gravity)
 	{
 		if(self.move_movetype == MOVETYPE_FLY)
@@ -656,7 +661,7 @@ void Ent_Projectile()
 		if(f & 0x20)
 			InterpolateOrigin_Note(); //Call this second time to avoid bug with rocket trail and warp. How do it better?
 	}
-	
+
 	self.draw = Projectile_Draw;
 	self.entremove = Ent_RemoveProjectile;
 }
