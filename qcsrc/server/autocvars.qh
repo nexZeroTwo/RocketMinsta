@@ -1502,6 +1502,7 @@ float autocvar_g_start_delay;
 float autocvar_g_start_weapon_laser;
 float autocvar_g_swap_teams;
 float autocvar_g_tdm_always_available;
+float autocvar_g_tdm_fraglimit_override;
 float autocvar_g_tdm_teams;
 float autocvar_g_tdm_teams_override;
 float autocvar_g_teamdamage_resetspeed;
