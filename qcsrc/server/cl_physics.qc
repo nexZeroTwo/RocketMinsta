@@ -617,8 +617,21 @@ void WallJumpPhysics(void) {
             makevectors(self.angles);
 
             // trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin - kickdir * wj_force, self.origin);
+            if (self.movement_x >= 0) {
+				if (self.movement_y == 0)
+					kickdir = v_forward;
+				else {
+					kickdir = v_right * (if (self.movement_y > 0) 1 else -1);
+					if (self.movement_x > 0)
+						kickdir = normalize(v_forward + kickdir);
+				}
+			} else {
+				kickdir = v_forward * -1;
+				if not(self.movement_y == 0)
+					kickdir = normalize(kickdir + v_right * (if (self.movement_y > 0) 1 else -1));
+			}
 
-            kickdir = (max(0, v_forward * plane_normal)) * v_forward;
+            kickdir = (max(0, kickdir * plane_normal)) * kickdir;
 
             // trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin, self.origin + kickdir * wj_force);
         } else {
