@@ -613,32 +613,12 @@ void WallJumpPhysics(void) {
         ));
         var wj_z_factor = CVAR(g_walljump_velocity_z_factor);
 
-        if(CVAR(g_walljump_reflect)) {
-            kickdir = normalize(sidev);
+        if(CVAR(g_walljump_kick)) {
+            makevectors(self.angles);
 
             // trailparticles(world, particleeffectnum("TE_TEI_G3RED"), self.origin - kickdir * wj_force, self.origin);
 
-            kickdir = kickdir - 2 * (kickdir * plane_normal) * plane_normal;
-
-            if(kickdir == '0 0 0') {
-                kickdir = plane_normal;
-            } else if(CVAR(g_walljump_reflect_minkickangle)) {
-                // XXX: This is stupid, lame, approximate and VERY inefficient.
-
-                var ma = CVAR(g_walljump_reflect_minkickangle);
-                var od = 180;
-                var i = 0;
-                var okick = kickdir;
-
-                while((var d = fabs(RAD2DEG * asin(kickdir * plane_normal) - ma)) > 0.1 && d < od) {
-                    od = d;
-                    okick = kickdir;
-                    kickdir = normalize(kickdir + plane_normal * 0.01);
-                    ++i;
-                }
-
-                kickdir = okick;
-            }
+            kickdir = (max(0, v_forward * plane_normal)) * v_forward;
 
             // trailparticles(world, particleeffectnum("TE_TEI_G3YELLOW"), self.origin, self.origin + kickdir * wj_force);
         } else {
