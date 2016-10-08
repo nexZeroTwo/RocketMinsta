@@ -235,7 +235,7 @@ void W_Pryaxe_Throw(float isprim) {
 
     //Throw out pryaxe
     self.pryaxe_thrown = proj;
-    self.pryaxe_count--;
+    self.pryaxe_count -= 1;
     self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_count)));
     self.weaponentity.state = WS_CLEAR;
     W_SwitchWeapon_Force(self, 0);
