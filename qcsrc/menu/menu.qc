@@ -201,8 +201,8 @@ void m_init_delayed()
             }
         }
 	}
-	cvar_set("scr_loadingscreen_barcolor", strcat(ftos(SKINCOLOR_LOADING_BAR1_x), " ", ftos(SKINCOLOR_LOADING_BAR1_y), " ", ftos(SKINCOLOR_LOADING_BAR1_z)));
-	cvar_set("scr_loadingscreen_bargradientcolor", strcat(ftos(SKINCOLOR_LOADING_BAR2_x), " ", ftos(SKINCOLOR_LOADING_BAR2_y), " ", ftos(SKINCOLOR_LOADING_BAR2_z)));
+	cvar_set("scr_loadingscreen_barcolor", SKINCOLOR_LOADING_BAR1_x + " " + SKINCOLOR_LOADING_BAR1_y + " " + SKINCOLOR_LOADING_BAR1_z);
+	cvar_set("scr_loadingscreen_bargradientcolor", SKINCOLOR_LOADING_BAR2_x + " " + SKINCOLOR_LOADING_BAR2_y + " " + SKINCOLOR_LOADING_BAR2_z);
     
 	draw_currentSkin = strzone(draw_currentSkin);
 	draw_originalSkin = strzone(draw_originalSkin);
