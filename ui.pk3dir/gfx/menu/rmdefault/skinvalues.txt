@@ -206,3 +206,6 @@ COLOR_SLIDER_D                  '0.3 0.5 0.6'
 COLOR_SLIDER_S                  '0.3 0.5 0.6'
 WIDTH_SLIDERTEXT                0.333333333333
 TOLERANCE_SLIDER                '0.2 2 0'
+
+COLOR_LOADING_BAR1 '0.1 0.6 0.7'
+COLOR_LOADING_BAR2 '0.1 0.6 0.7'
