@@ -324,7 +324,7 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
     else
         eff = particleeffectnum("tr_bullet");
 
-    W_SetHitscanVisuals(self, end_visual);
+    W_SetHitscanVisuals(oldself, end_visual);
     WarpZone_TrailParticles(world, eff, w_shotorg, w_shotorg_visual, end_visual);
 
     if(Buffs_Present(self, BUFF_MEDIC))
