@@ -258,6 +258,7 @@ enum {
     WR_TT_RESTORE,           // restore weapon-specific fields from tt_moment for time travel
     WR_LOWER,                // weapon is being switched from
     WR_SETCLIPCONTEXT,       // just don't touch this
+    WR_CLEAR,                // clear resources used by this weapon
 };
 
 void weapon_defaultspawnfunc(float wpn);

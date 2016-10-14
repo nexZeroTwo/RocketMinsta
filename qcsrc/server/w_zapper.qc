@@ -87,7 +87,7 @@ float W_Zapper_Attack2_CheckAmmo(entity p) {
 vector W_Zapper_LocalShotOrg(entity p) {
     entity o = self.owner;
     self.owner = p;
-    vector v = shotorg_adjust('30 10 -18', TRUE, TRUE);
+    vector v = shotorg_adjust('30 10 -18', TRUE, TRUE, Akimbo_Active(p));
     self.owner = o;
     return v;
 }
@@ -293,7 +293,7 @@ void W_Zapper_Attack1(void) {
     var e = spawn();
     e.classname = "zapper_beam";
     e.think = W_Zapper_Beam_Think;
-    e.owner = self;
+    e.owner = Akimbo_Owner(self);
 
     e.zapper_tracespeed = CVAR(g_balance_zapper_primary_tracespeed);
     e.zapper_range = CVAR(g_balance_zapper_primary_range);
@@ -338,6 +338,9 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 }
 
 void W_Zapper_Attack2(void) {
+    entity oldself = self;
+    self = Akimbo_Owner(self);
+
     float accum_time = CVAR(g_balance_zapper_secondary_accumulate);
     float charge_time;
     if (accum_time) {
@@ -345,7 +348,7 @@ void W_Zapper_Attack2(void) {
         if (!charge_time)
             charge_time = accum_time;
     }
-	
+
     float accum  = if(accum_time) min(1, (time - self.zapper_accumulate) * W_WeaponRateFactorFor(self.owner) / charge_time) else 1;
     float damage = CVAR(g_balance_zapper_secondary_damage) * accum;
     float force  = CVAR(g_balance_zapper_secondary_force) * accum;
@@ -399,6 +402,7 @@ void W_Zapper_Attack2(void) {
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - CVAR(g_balance_zapper_secondary_ammo);
 
+    self = oldself;
 }
 
 void W_Zapper_Shield_Beam_Think(void) {
@@ -619,7 +623,7 @@ void W_Zapper_Attack3(void) {
     b.classname = "zapper_shield_beam";
     b.think = W_Zapper_Shield_Beam_Think;
     b.nextthink = time;
-    b.owner = self;
+    b.owner = Akimbo_Owner(self);
 
     Net_LinkEntity(b, FALSE, 0, W_Zapper_Beam_Send);
 
@@ -627,7 +631,7 @@ void W_Zapper_Attack3(void) {
 
     b = spawn();
     b.classname = "zapper_shield_blocker";
-    b.owner = self;
+    b.owner = Akimbo_Owner(self);
     b.think = W_Zapper_Shield_Blocker_Think;
     b.zapper_shield = e;
     b.nextthink = time;

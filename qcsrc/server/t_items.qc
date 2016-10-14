@@ -426,16 +426,19 @@ float Item_GiveTo(entity item, entity player)
 		if not(item.flags & FL_NO_WEAPON_STAY)
 		if (item.flags & FL_WEAPON)
 		{
-			if(item.classname == "droppedweapon")
-			{
-				if (player.weapons & item.weapons)	// don't let players stack ammo by tossing weapons
-					goto skip;
-			}
-			else
-			{
-				if (player.weapons & item.weapons)
-					goto skip;
-			}
+            for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+                if (W_WeaponBit(i) & item.weapons & player.weapons)
+                    if (Akimbo_GiveWeapon (player, i, item.netname))
+                    {
+                        pickedup = TRUE;
+                        sound (player, CHAN_AUTO, item.item_pickupsound, VOL_BASE, ATTN_NORM);
+                    }
+
+            if not(pickedup)
+            {
+                if (player.weapons & item.weapons)  // don't let players stack ammo by tossing weapons
+                    goto skip;
+            }
 		}
 
 		// in case the player has autoswitch enabled do the following:

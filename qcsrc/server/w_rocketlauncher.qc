@@ -288,7 +288,7 @@ void W_Rocket_Attack (void)
 	pointparticles(particleeffectnum("rocketlauncher_muzzleflash"), w_shotorg, w_shotdir * 1000, 1);
 
 	missile = spawn ();
-	missile.owner = self;
+	missile.owner = Akimbo_Owner(self);
 	self.lastrocket = missile;
 	if(CVAR(g_balance_rocketlauncher_detonatedelay) >= 0)
 		missile.spawnshieldtime = time + CVAR(g_balance_rocketlauncher_detonatedelay);
@@ -314,6 +314,8 @@ void W_Rocket_Attack (void)
 		missile.velocity = w_shotdir * CVAR(g_balance_rocketlauncher_laserguided_speedstart) * g_weaponspeedfactor;
 	else
 		missile.velocity = w_shotdir * CVAR(g_balance_rocketlauncher_speedstart) * g_weaponspeedfactor;
+    if (Akimbo_Active(self) == 2)
+        missile.velocity = missile.velocity * 1.5;
 	W_SetupProjectileVelocity(missile);
 	missile.angles = vectoangles (missile.velocity);
 

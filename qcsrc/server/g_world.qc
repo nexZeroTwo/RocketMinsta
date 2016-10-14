@@ -856,10 +856,11 @@ void spawnfunc_worldspawn (void)
 			ShuffleMaplist();
 		localcmd("\nmenu_cmd sync\n");
 	}
-	
+
+    Akimbo_Init();
     Freeze_Init();
     Buffs_Init();
-    
+
     sv_dps = CVAR(sv_dps);
     g_allow_oldnexbeam = CVAR(g_allow_oldnexbeam);
     sv_ready_restart_after_countdown = CVAR(sv_ready_restart_after_countdown);

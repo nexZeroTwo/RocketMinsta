@@ -896,6 +896,8 @@ void PutObserverInServer (void)
 	self.oldvelocity = self.velocity;
 	self.fire_endtime = -1;
 
+    Akimbo_Clear(self);
+
 	if(sv_loddistance1)
 		SetCustomizer(self, Client_customizeentityforclient, Client_uncustomizeentityforclient);
 
@@ -1188,6 +1190,8 @@ void PutClientInServer (void)
     self.hg_stealth = 0;
     self.hg_shieldstat = 0;
 
+    Akimbo_Clear(self);
+
     self.colormap = num_for_edict(self);
 
 	if(g_arena)
@@ -1460,7 +1464,7 @@ float ClientInit_SendEntity(entity to, float sf)
 	if(g_grappling_hook)
 		myhook_shotorigin = '8 -8 -12';
 	else
-		myhook_shotorigin = shotorg_adjust('26.2148 9.2059 -15.9772', TRUE, TRUE);
+		myhook_shotorigin = shotorg_adjust('26.2148 9.2059 -15.9772', TRUE, TRUE, FALSE);
 	WriteCoord(MSG_ENTITY, myhook_shotorigin_x);
 	WriteCoord(MSG_ENTITY, myhook_shotorigin_y);
 	WriteCoord(MSG_ENTITY, myhook_shotorigin_z);
@@ -2016,6 +2020,8 @@ void ClientDisconnect (void)
 		fclose(self.hitplotfh);
 		self.hitplotfh = -1;
 	}
+
+    Akimbo_Clear(self);
 
     JoinQ_Remove(self);
 	bot_clientdisconnect();
@@ -3454,6 +3460,7 @@ void PlayerPreThink (void)
 			self.items &~= self.items_added;
 
 			W_WeaponFrame();
+            Akimbo_WeaponFrame();
 
 			self.items_added = 0;
 			if(self.items & IT_JETPACK)

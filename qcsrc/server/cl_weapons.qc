@@ -4,6 +4,13 @@ void W_Reload()
 	if(self.switchweapon == self.weapon)
 	if(self.weaponentity.state == WS_READY)
 		weapon_action(self.weapon, WR_RELOAD);
+
+    entity oldself = self;
+    self = Akimbo_Ghost(self);
+    if (self)
+    if (self != oldself)
+        W_Reload();
+    self = oldself;
 }
 
 float W_ToggleSecondary(void) {
@@ -376,20 +383,30 @@ void W_WeaponFrame()
 	// Change weapon
 	if (self.weapon != self.switchweapon)
 	{
-		if (self.weaponentity.state == WS_CLEAR)
+        float r = CVAR(g_balance_weaponswitchdelay);
+        if(self.w_instaswitch) {
+            self.w_instaswitch = FALSE;
+            r = 0;
+        }
+
+        if (!r) {
+            if (Akimbo_Active(self) > 1)
+            if not(Akimbo_HaveWeapon(self, self.switchweapon))
+                return;
+            weapon_action(self.weapon, WR_CLEAR);
+            weapon_action(self.switchweapon, WR_SETUP);
+            weapon_thinkf(WFRAME_IDLE, 0, w_ready);
+            weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
+        }
+		else if (self.weaponentity.state == WS_CLEAR)
 		{
-            float r = 1;
-            if(self.w_instaswitch) {
-                self.w_instaswitch = FALSE;
-                r = 0;
-            }
-            
 			setanim(self, self.anim_draw, FALSE, TRUE, TRUE);
 			self.weaponentity.state = WS_RAISE;
+            weapon_action(self.weapon, WR_CLEAR);
 			weapon_action(self.switchweapon, WR_SETUP);
 			// VorteX: add player model weapon select frame here
 			// setcustomframe(PlayerWeaponRaise);
-			weapon_thinkf(WFRAME_IDLE, CVAR(g_balance_weaponswitchdelay) * r, w_ready);
+			weapon_thinkf(WFRAME_IDLE, r, w_ready);
 			weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
 		}
 		else if (self.weaponentity.state == WS_READY)

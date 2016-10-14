@@ -64,6 +64,9 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     entity hitents;
     float f;
 
+    entity oldself = self;
+    self = Akimbo_Owner(self);
+
     railgun_start = start;
     railgun_end = end;
 
@@ -139,6 +142,8 @@ void FireRailgunBullet(vector start, vector end, float bdamage, float bforce, fl
     trace_endpos = endpoint;
     trace_ent = endent;
     trace_dphitq3surfaceflags = endq3surfaceflags;
+
+    self = oldself;
 }
 
 .float dmg_edge;
@@ -294,7 +299,9 @@ void endFireBallisticBullet()
 void fireHitscanBullet(vector start, vector dir, float spread, float damage, float headshotbonus, float force, float dtype, float tracereffects) {
     vector end;
     float eff;
-    
+    entity oldself = self;
+    self = Akimbo_Owner(self);
+
     dir = normalize(dir + randomvec() * spread);
     end = start + dir * MAX_SHOT_DISTANCE;
     
@@ -324,6 +331,7 @@ void fireHitscanBullet(vector start, vector dir, float spread, float damage, flo
         WarpZone_TrailParticles(world, particleeffectnum("RM_HEAL_TRAIL"), w_shotorg, w_shotorg_visual, end_visual);
 
     Damage_DamageInfo(end, damage, 0, 0, WarpZone_trace_dir * max(1, force), dtype, self);
+    self = oldself;
 }
 
 entity fireBallisticBullet_trace_callback_ent;
@@ -343,6 +351,9 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
         fireHitscanBullet(start, dir, spread, damage, headshotbonus, force, dtype, tracereffects);
         return;
     }
+
+    entity oldself_akimbo = self;
+    self = Akimbo_Owner(self);
 
     // used only for muzzleflashes later
     W_SetHitscanVisuals(self, w_shotorg + dir);
@@ -451,6 +462,7 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		remove(proj);
 
         ExactHitscan_End();
+        self = oldself_akimbo;
 		return;
 	}
 
@@ -458,6 +470,8 @@ void fireBallisticBullet(vector start, vector dir, float spread, float pSpeed, f
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET_GLOWING, TRUE);
 	else
 		CSQCProjectile(proj, TRUE, PROJECTILE_BULLET, TRUE);
+
+    self = oldself_akimbo;
 }
 
 

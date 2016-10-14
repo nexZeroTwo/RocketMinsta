@@ -91,7 +91,7 @@ void W_Flak_Projectile_Think(void) {
 
 entity W_Flak_Projectile(entity o, float damage, float grav, float lt, float spd, float upspd, float bnc, float deathtype) {
     entity e = spawn();
-    e.owner = e.realowner = o;
+    e.owner = e.realowner = Akimbo_Owner(o);
     e.classname = "flak_proj";
     e.bot_dodge = TRUE;
     e.bot_dodgerating = damage;
@@ -242,7 +242,7 @@ void W_Flak_Attack_Bomb(void) {
     w_shotdir = v_forward;
 
     entity e = spawn();
-    e.owner = self;
+    e.owner = Akimbo_Owner(self);
     e.classname = "flak_bomb";
     e.bot_dodge = TRUE;
     e.bot_dodgerating = CVAR(g_balance_flak_secondary_bomb_damage);
