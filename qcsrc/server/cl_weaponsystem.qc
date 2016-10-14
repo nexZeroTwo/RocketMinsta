@@ -282,7 +282,7 @@ void W_SetHitscanVisuals(entity p, vector end) {
         vecs_y = -vecs_y;
 
         dv = v_right * vecs_y + v_up * vecs_z;
-        w_shotorg_visual = p.origin + p.view_ofs + dv;
+        w_shotorg_visual = Akimbo_Owner(p).origin + Akimbo_Owner(p).view_ofs + dv;
         w_shotdir_visual = normalize(end - w_shotorg_visual);
     }
 }
