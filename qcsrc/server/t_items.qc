@@ -490,17 +490,19 @@ float Item_GiveTo(entity item, entity player)
 			}
 		}
 
-		if (item.flags & FL_WEAPON)
-		if ((it = item.weapons - (item.weapons & player.weapons)))
-		{
-			pickedup = TRUE;
-			for(i = WEP_FIRST; i <= WEP_LAST; ++i)
-			{
-				e = get_weaponinfo(i);
-				if(it & e.weapons)
-					W_GiveWeapon (player, e.weapon, item.netname);
-			}
-		}
+		if (item.flags & FL_WEAPON) {
+            pickedup = TRUE;
+            for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+            {
+                e = get_weaponinfo(i);
+                if(item.weapons & e.weapons) {
+                    if(e.weapons & player.weapons)
+                        Akimbo_GiveWeapon(player, e.weapon, item.netname);
+                    else
+                        W_GiveWeapon(player, e.weapon, item.netname);
+                }
+            }
+        }
 
 		if((it = (item.items - (item.items & player.items)) & IT_PICKUPMASK))
 		{

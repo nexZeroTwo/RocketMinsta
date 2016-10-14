@@ -144,7 +144,7 @@ float Akimbo_GiveWeapon(entity p, float wpn, string name)
 	if (g_akimbo_weapons & wpnbit)
 	{
 		p.akimbo_weapons |= wpnbit;
-		sprint(p, "You got ^4Akimbo ^2");
+		sprint(p, "You got another ^2");
 		sprint(p, name);
 		sprint(p, "\n");
 		return TRUE;
