@@ -83,8 +83,11 @@ void Akimbo_WeaponFrame()
 
 void Akimbo_Init()
 {
+    if(!CVAR(g_akimbo))
+        return;
+
 	float i, j, n;
-	string s = cvar_string("g_akimbo_weapons");
+	string s = CVAR_STR(g_akimbo_weapons);
 	weapons_with_akimbo_support =
 			WEPBIT_LASER |
 			WEPBIT_SHOTGUN |
@@ -111,7 +114,7 @@ void Akimbo_Init()
 				}
 	}
 	g_akimbo_weapons = g_akimbo_weapons & weapons_with_akimbo_support;
-	g_powerup_strength_akimbo = cvar("g_powerup_strength_akimbo");
+	g_powerup_strength_akimbo = CVAR(g_powerup_strength_akimbo);
 }
 
 entity Akimbo_Owner(entity e)
