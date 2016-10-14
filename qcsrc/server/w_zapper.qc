@@ -35,7 +35,7 @@ void W_Zapper_SpawnSpinner(void) {
         classname: "zapper_spinner",
         model: "models/weapons/rtzapper_hyperhonker.iqm",
         owner: self,
-        viewmodelforclient: self,
+        viewmodelforclient: Akimbo_Owner(self),
         colormap: self.colormap,
         color: W_Zapper_BeamRGB(if(teams_matter) self.team else COLOR_TEAM2),
         think: inline void(void) {
@@ -64,10 +64,16 @@ void W_Zapper_SpawnSpinner(void) {
             self.nextthink = time;
         },
         nextthink: time,
-        customizeentityforclient: CL_Weaponentity_CustomizeEntityForClient,
+        customizeentityforclient: CL_Weaponentity_CustomizeEntityForClient
     };
 
     setattachment(s, self.weaponentity, "shot");
+
+    if(!s.tag_index) {
+        // Akimbo FIXME: why does this happen?
+        s.tag_index = Akimbo_Owner(self).zapper_spinner.tag_index;
+    }
+
     setorigin(s, '-4 0 -0.5');
     setmodel(s, s.model);
 
@@ -93,7 +99,7 @@ vector W_Zapper_LocalShotOrg(entity p) {
 }
 
 float W_Zapper_Beam_Send(entity to, float sf) {
-    sf &~= 8 | 16 | 32;
+    sf &~= 8 | 16 | 32 | 128;
 
     if(self.sounds < 0)
         sf |= 16;
@@ -103,8 +109,12 @@ float W_Zapper_Beam_Send(entity to, float sf) {
     if(o > maxclients)
         o = 0;
 
-    if(!o)
+    if(o) {
+        if(self.owner != self.enemy) // akimbo secondary
+            sf |= 128; // invert shotorg y
+    } else {
         sf |= 32;
+    }
 
     if(self.classname == "zapper_shield_beam")
         WriteByte(MSG_ENTITY, ENT_CLIENT_ZAPPER_SHIELD);
@@ -142,27 +152,29 @@ float W_Zapper_Beam_Send(entity to, float sf) {
 }
 
 float W_Zapper_Beam_Expired(float secondary) {
-    W_SetButtonFields(self.owner, CVAR(g_balance_zapper_swapshotmodes));
+    var o = Akimbo_Owner(self.owner);
 
-    if(time > self.zapper_expire && ((secondary && !self.owner.w_button_secondary) || (!secondary && !self.owner.w_button_primary)))
+    W_SetButtonFields(o, CVAR(g_balance_zapper_swapshotmodes));
+
+    if(time > self.zapper_expire && ((secondary && !o.w_button_secondary) || (!secondary && !o.w_button_primary)))
         return TRUE;
 
-    if(self.owner.zapper_heat >= 1)
+    if(o.zapper_heat >= 1)
         return TRUE;
 
-    if(self.owner.weapon != WEP_ZAPPER)
+    if(o.weapon != WEP_ZAPPER)
         return TRUE;
 
-    if(!PlayerMayFire(self.owner))
+    if(!PlayerMayFire(o))
         return TRUE;
 
     if(secondary) {
-        if(self.owner.ammo_cells < 1)
+        if(o.ammo_cells < 1)
             return TRUE;
     } else {
-        if(!W_Zapper_Attack1_CheckAmmo(self.owner))
+        if(!W_Zapper_Attack1_CheckAmmo(o))
             return TRUE;
-        if(self.owner.zapper_shield)
+        if(o.zapper_shield)
             return TRUE;
     }
 
@@ -171,8 +183,8 @@ float W_Zapper_Beam_Expired(float secondary) {
 
 void W_Zapper_Beam_Think(void) {
     if(W_Zapper_Beam_Expired(FALSE)) {
-        if(self.owner.zapper_beam == self)
-            self.owner.zapper_beam = world;
+        if(self.enemy.zapper_beam == self)
+            self.enemy.zapper_beam = world;
         remove(self);
         return;
     }
@@ -255,10 +267,10 @@ void W_Zapper_Beam_Think(void) {
         self.zapper_lastdmg += wantedTicrate;
     }
 
-    vector org = gettaginfo(self.owner.exteriorweaponentity, gettagindex(self.owner.exteriorweaponentity, "_"));
+    vector org = gettaginfo(self.enemy.exteriorweaponentity, gettagindex(self.enemy.exteriorweaponentity, "_"));
 
     if(org)
-        org = org + v_forward * self.owner.exteriorweaponentity.maxs_x * 0.66 + v_up * self.owner.exteriorweaponentity.maxs_z * 0.4;
+        org = org + v_forward * self.enemy.exteriorweaponentity.maxs_x * 0.66 + v_up * self.enemy.exteriorweaponentity.maxs_z * 0.4;
     else
         org = w_shotorg;
 
@@ -279,7 +291,7 @@ void W_Zapper_Beam_Think(void) {
         self.owner.zapper_coolofftime = time + frametime;
     }
 
-    ATTACK_FINISHED(self.owner) = time + CVAR(g_balance_zapper_primary_refire) * rate;
+    ATTACK_FINISHED(self.enemy) = time + CVAR(g_balance_zapper_primary_refire) * rate;
 
     self.nextthink = time;
 }
@@ -294,6 +306,7 @@ void W_Zapper_Attack1(void) {
     e.classname = "zapper_beam";
     e.think = W_Zapper_Beam_Think;
     e.owner = Akimbo_Owner(self);
+    e.enemy = self;
 
     e.zapper_tracespeed = CVAR(g_balance_zapper_primary_tracespeed);
     e.zapper_range = CVAR(g_balance_zapper_primary_range);
@@ -338,9 +351,6 @@ void W_Zapper_Attack2_Arc(entity targ, entity attacker, float damage) {
 }
 
 void W_Zapper_Attack2(void) {
-    entity oldself = self;
-    self = Akimbo_Owner(self);
-
     float accum_time = CVAR(g_balance_zapper_secondary_accumulate);
     float charge_time;
     if (accum_time) {
@@ -401,8 +411,6 @@ void W_Zapper_Attack2(void) {
 
     if not(self.items & IT_UNLIMITED_WEAPON_AMMO)
         self.ammo_cells = self.ammo_cells - CVAR(g_balance_zapper_secondary_ammo);
-
-    self = oldself;
 }
 
 void W_Zapper_Shield_Beam_Think(void) {
