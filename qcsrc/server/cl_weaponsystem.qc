@@ -42,6 +42,7 @@ void W_SwitchWeapon_Force(entity e, float w)
 	e.switchweapon = w;
     e.w_inring_fulltime = 0;
     e.w_spread_indicator = -1;
+    e.w_spread_indicator2 = -1;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {

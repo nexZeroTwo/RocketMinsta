@@ -471,7 +471,7 @@ void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, f
     Draw_CylindricLine(org, dst, 5, "particles/guideline", 0.05, glines_anim, '1 1 0.35', a, DRAWFLAG_ADDITIVE, view_origin);
 }
 
-void DrawSpreadGuideLines(void) {
+void DrawSpreadGuideLines(float statfld, float invert) {
     /*
      *  TODO:
      *
@@ -484,7 +484,7 @@ void DrawSpreadGuideLines(void) {
     var org = view_origin;
     var dir = view_forward;
 
-    var spread = getstatf(STAT_AIMSPREAD);
+    var spread = getstatf(statfld);
 
     if(spread < 0) {
         glines_alpha = approach(glines_alpha, 0, drawframetime * 5);
@@ -497,6 +497,10 @@ void DrawSpreadGuideLines(void) {
     }
 
     var shotorg = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+
+    if(invert)
+        shotorg_y = -shotorg_y;
+
     org += view_forward * shotorg_x + view_right * shotorg_y + view_up * (shotorg_z + 6);
 
     DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
@@ -720,7 +724,8 @@ void CSQC_UpdateView(float w, float h)
     if (!fps_friendly)
         Plasma_Draw();
 
-    DrawSpreadGuideLines();
+    DrawSpreadGuideLines(STAT_AIMSPREAD, FALSE);
+    DrawSpreadGuideLines(STAT_AIMSPREAD2, TRUE);
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();

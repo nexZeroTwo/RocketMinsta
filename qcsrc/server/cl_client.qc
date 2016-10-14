@@ -1178,6 +1178,7 @@ void PutClientInServer (void)
 
     self.clipgroup = CLIPGROUP_NONE;
     self.w_spread_indicator = -1;
+    self.w_spread_indicator2 = -1;
 
     self.hg_plasmalock = 0;
     self.hg_wasstealth = FALSE;

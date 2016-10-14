@@ -837,6 +837,7 @@ var .float w_button_secondary;
 .float w_inring_cycle;
 .float w_inring_fulltime;
 .float w_spread_indicator;
+.float w_spread_indicator2;
 
 .float pspec_flags;
 .float pspec_entertime;

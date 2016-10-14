@@ -9,3 +9,4 @@ float Akimbo_HaveWeapon(entity e, float wpn);
 float Akimbo_Active(entity e);
 void Akimbo_Clear(entity e);
 float Akimbo_GunPosition(entity e);
+void Akimbo_SyncSpreadIndicator(entity e);

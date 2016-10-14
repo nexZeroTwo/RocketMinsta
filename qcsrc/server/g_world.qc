@@ -766,6 +766,7 @@ void spawnfunc_worldspawn (void)
     addstat(STAT_INNERRING_CYCLE, AS_FLOAT, w_inring_cycle);
     addstat(STAT_INNERRING_FULLTIME, AS_FLOAT, w_inring_fulltime);
     addstat(STAT_AIMSPREAD, AS_FLOAT, w_spread_indicator);
+    addstat(STAT_AIMSPREAD2, AS_FLOAT, w_spread_indicator2);
 
     W_Clip_Stats_Init();
 

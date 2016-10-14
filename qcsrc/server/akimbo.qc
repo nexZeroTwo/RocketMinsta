@@ -100,7 +100,8 @@ void Akimbo_Init()
 			WEPBIT_NEX |
 			WEPBIT_HAGAR |
 			WEPBIT_ROCKET_LAUNCHER | 
-            WEPBIT_ZAPPER;
+            WEPBIT_ZAPPER |
+            WEPBIT_FLAK;
 
 	if (s == "all")
 		g_akimbo_weapons = weapons_with_akimbo_support;
@@ -204,4 +205,9 @@ float Akimbo_GunPosition(entity e) {
         case    2 : 2,
         default   : Akimbo_Owner(e).gunswitchmode
     };
+}
+
+void Akimbo_SyncSpreadIndicator(entity e) {
+    if(Akimbo_Active(e) == 2)
+        Akimbo_Owner(e).w_spread_indicator2 = e.w_spread_indicator;
 }
