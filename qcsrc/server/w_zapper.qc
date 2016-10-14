@@ -159,7 +159,7 @@ float W_Zapper_Beam_Expired(float secondary) {
     if(time > self.zapper_expire && ((secondary && !o.w_button_secondary) || (!secondary && !o.w_button_primary)))
         return TRUE;
 
-    if(o.zapper_heat >= 1)
+    if(self.owner.zapper_heat >= 1)
         return TRUE;
 
     if(o.weapon != WEP_ZAPPER)
@@ -286,9 +286,9 @@ void W_Zapper_Beam_Think(void) {
         self.zapper_beam_end = nowarp_end;
     }
 
-    if(self.owner.zapper_heat >= 0) {
-        self.owner.zapper_heat = bound(0, self.owner.zapper_heat + (CVAR(g_balance_zapper_primary_heatup) * frametime) / rate, 1);
-        self.owner.zapper_coolofftime = time + frametime;
+    if(self.enemy.zapper_heat >= 0) {
+        self.enemy.zapper_heat = bound(0, self.enemy.zapper_heat + (CVAR(g_balance_zapper_primary_heatup) * frametime) / rate, 1);
+        self.enemy.zapper_coolofftime = time + frametime;
     }
 
     ATTACK_FINISHED(self.enemy) = time + CVAR(g_balance_zapper_primary_refire) * rate;
@@ -660,6 +660,10 @@ void W_Zapper_Cooloff(void) {
         return;
 
     self.zapper_heat = bound(0, self.zapper_heat - CVAR(g_balance_zapper_primary_cooloff) * frametime * a, 1);
+
+    if(Akimbo_Active(self) == 1)
+        using(self = Akimbo_Ghost(self))
+            W_Zapper_Cooloff();
 }
 
 float W_Zapper_PrepareFirstAttack(float sec) {
