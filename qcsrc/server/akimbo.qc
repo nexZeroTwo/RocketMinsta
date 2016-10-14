@@ -193,3 +193,11 @@ float Akimbo_HaveWeapon(entity e, float wpn)
 		return TRUE;
 	return FALSE;
 }
+
+float Akimbo_GunPosition(entity e) {
+    return switch(Akimbo_Active(e)) {
+        case    1 : 1,
+        case    2 : 2,
+        default   : Akimbo_Owner(e).gunswitchmode
+    };
+}

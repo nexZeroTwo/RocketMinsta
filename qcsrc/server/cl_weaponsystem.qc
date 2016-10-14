@@ -572,7 +572,7 @@ void CL_Weaponentity_Think()
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount
 
         var ofs = stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset"));
-        ofs_y *= switch(self.owner.gunswitchmode) {
+        ofs_y *= switch(Akimbo_GunPosition(self.owner)) {
             case 1: -1,
             case 2:  1,
             default: 0
@@ -606,15 +606,18 @@ void CL_Weaponentity_Think()
 	}
 
 	self.angles = '0 0 0';
+
+    var switchmode = Akimbo_GunPosition(self.owner);
+
 	float f;
 	f = 0;
 	if (self.state == WS_RAISE && !intermission_running)
 	{
 		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 
-        if(self.owner.gunswitchmode == 1)
+        if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(self.owner.gunswitchmode == 2)
+        else if(switchmode == 2)
             self.angles_y = 90 * f * f;
         else
             self.angles_x = -90 * f * f;
@@ -623,9 +626,9 @@ void CL_Weaponentity_Think()
 	{
 		f = 1 - (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 
-        if(self.owner.gunswitchmode == 1)
+        if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(self.owner.gunswitchmode == 2)
+        else if(switchmode == 2)
             self.angles_y = 90 * f * f;
         else
             self.angles_x = -90 * f * f;
@@ -637,9 +640,9 @@ void CL_Weaponentity_Think()
         self.angles_x = -90 * f * f;
 	}
 
-    if(self.owner.gunswitchmode == 1)
+    if(switchmode == 1)
         self.punchangle_y = self.punchangle_x * -0.25;
-    else if(self.owner.gunswitchmode == 2)
+    else if(switchmode == 2)
         self.punchangle_y = self.punchangle_x *  0.25;
 
     self.angles += self.punchangle;
