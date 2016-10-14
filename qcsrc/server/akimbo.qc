@@ -78,6 +78,8 @@ void Akimbo_WeaponFrame()
 		self.akimbo_ghost.switchweapon = self.switchweapon;
 		self.akimbo_ghost.v_angle = self.v_angle;
 		self.akimbo_ghost.origin = self.origin;
+        self.akimbo_ghost.team = self.team;
+        self.akimbo_ghost.colormap = self.colormap;
 		self = self.akimbo_ghost;
 		W_WeaponFrame();
 		self = oldself;
