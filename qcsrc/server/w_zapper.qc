@@ -31,11 +31,13 @@ void W_Zapper_SpawnSpinner(void) {
     if(self.zapper_spinner)
         return;
 
+    var o = Akimbo_Owner(self);
+
     var s = spawn() {
         classname: "zapper_spinner",
         model: "models/weapons/rtzapper_hyperhonker.iqm",
         owner: self,
-        viewmodelforclient: Akimbo_Owner(self),
+        viewmodelforclient: o,
         colormap: self.colormap,
         color: W_Zapper_BeamRGB(if(teams_matter) self.team else COLOR_TEAM2),
         think: inline void(void) {
