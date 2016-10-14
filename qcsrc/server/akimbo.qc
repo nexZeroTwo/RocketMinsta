@@ -6,22 +6,21 @@ float weapons_with_akimbo_support;
 
 void Akimbo_GhostRemove(entity e)
 {
-	entity oldself = self;
-	self = self.akimbo_ghost;
-	weapon_action(self.weapon, WR_CLEAR);
-	self = oldself;
-	if (self.akimbo_ghost.weaponentity.weaponentity)
-		remove(self.akimbo_ghost.weaponentity.weaponentity);
-	remove(self.akimbo_ghost.weaponentity);
-	remove(self.akimbo_ghost.exteriorweaponentity);
+    using(self = e.akimbo_ghost)
+        weapon_action(self.weapon, WR_CLEAR);
+
+	if (e.akimbo_ghost.weaponentity.weaponentity)
+		remove(e.akimbo_ghost.weaponentity.weaponentity);
+	remove(e.akimbo_ghost.weaponentity);
+	remove(e.akimbo_ghost.exteriorweaponentity);
 	
     // remove(self.akimbo_ghost);
-    self.akimbo_ghost_persistent = self.akimbo_ghost;
+    e.akimbo_ghost_persistent = e.akimbo_ghost;
 
-	self.akimbo_ghost = world;
+	e.akimbo_ghost = world;
 	
-    if (self.weaponentity)
-		self.weaponentity.cnt = 0;
+    if (e.weaponentity)
+		e.weaponentity.cnt = 0;
 }
 
 entity Akimbo_NewGhost(void) {
@@ -198,9 +197,9 @@ void Akimbo_Clear(entity e)
 {
 	Akimbo_GhostRemove(e);
 
-    if(self.akimbo_ghost_persistent) {
-        remove(self.akimbo_ghost_persistent);
-        self.akimbo_ghost_persistent = world;
+    if(e.akimbo_ghost_persistent) {
+        remove(e.akimbo_ghost_persistent);
+        e.akimbo_ghost_persistent = world;
     }
 
 	e.akimbo_weapons = 0;
