@@ -1,5 +1,6 @@
 .float akimbo_weapons;
 .entity akimbo_ghost;
+.entity akimbo_ghost_persistent;
 float g_akimbo_weapons;
 float weapons_with_akimbo_support;
 
@@ -13,10 +14,20 @@ void Akimbo_GhostRemove(entity e)
 		remove(self.akimbo_ghost.weaponentity.weaponentity);
 	remove(self.akimbo_ghost.weaponentity);
 	remove(self.akimbo_ghost.exteriorweaponentity);
-	remove(self.akimbo_ghost);
+	
+    // remove(self.akimbo_ghost);
+    self.akimbo_ghost_persistent = self.akimbo_ghost;
+
 	self.akimbo_ghost = world;
-	if (self.weaponentity)
+	
+    if (self.weaponentity)
 		self.weaponentity.cnt = 0;
+}
+
+entity Akimbo_NewGhost(void) {
+    if(self.akimbo_ghost_persistent)
+        return self.akimbo_ghost_persistent;
+    return spawn();
 }
 
 void Akimbo_WeaponFrame()
@@ -36,7 +47,7 @@ void Akimbo_WeaponFrame()
 		entity oldself = self;
 		if not(self.akimbo_ghost)
 		{
-			self.akimbo_ghost = spawn();
+			self.akimbo_ghost = Akimbo_NewGhost();
 			self.akimbo_ghost.weapon = self.weapon;
 			self.akimbo_ghost.switchweapon = self.weapon;
 			self.akimbo_ghost.modelindex = self.modelindex;
@@ -184,6 +195,12 @@ float Akimbo_Active(entity e)
 void Akimbo_Clear(entity e)
 {
 	Akimbo_GhostRemove(e);
+
+    if(self.akimbo_ghost_persistent) {
+        remove(self.akimbo_ghost_persistent);
+        self.akimbo_ghost_persistent = world;
+    }
+
 	e.akimbo_weapons = 0;
 }
 

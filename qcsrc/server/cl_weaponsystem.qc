@@ -35,8 +35,9 @@ void W_SwitchWeapon_Force(entity e, float w)
     if(e.weapon) {
         using(self = e)
             weapon_action(self.weapon, WR_LOWER);
-    } else if(w)
+    } else if(w) {
         sound(e, CHAN_WEAPON2, "weapons/weapon_switch.wav", VOL_BASE, ATTN_NORM);
+    }
 
 	e.cnt = e.switchweapon;
 	e.switchweapon = w;
