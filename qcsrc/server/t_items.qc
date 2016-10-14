@@ -496,7 +496,7 @@ float Item_GiveTo(entity item, entity player)
             {
                 e = get_weaponinfo(i);
                 if(item.weapons & e.weapons) {
-                    if(e.weapons & player.weapons)
+                    if(e.weapons & player.weapons || player.w_secondary == e.weapon)
                         Akimbo_GiveWeapon(player, e.weapon, item.netname);
                     else
                         W_GiveWeapon(player, e.weapon, item.netname);
@@ -828,12 +828,11 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 {
 	startitem_failed = FALSE;
     
-    if(g_clanarena && !g_clanarena_pickups) {
+    if(g_clanarena && !g_clanarena_pickups && (self.classname != "droppedweapon" || !g_weaponarena_secondary || !CVAR(g_weaponarena_secondary_drop))) {
         startitem_failed = TRUE;
         remove(self);
         return;
     }
-        
 
 	// is it a dropped weapon?
 	if (self.classname == "droppedweapon")

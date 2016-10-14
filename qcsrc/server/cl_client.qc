@@ -821,8 +821,10 @@ void PutObserverInServer (void)
         self.hg_shield = 0;
     }
 
-    if(!self.joinqueue)
+    if(!self.joinqueue) {
         self.w_secondary = 0;
+        self.w_secondary_nextround = 0;
+    }
 
     self.frozenrow = 0;
     self.jb_unlock_progress = 0;

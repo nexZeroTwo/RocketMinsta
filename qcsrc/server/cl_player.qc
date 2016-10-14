@@ -932,15 +932,14 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         // become fully visible
         self.alpha = 1;
 
-		if(!g_freeze)
-		{
-			// clear selected player display
-			ClearSelectedPlayer();
-			// throw a weapon
-            
-            if(!g_jailbreak)
-                SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
-		}
+        if(!g_freeze)
+            ClearSelectedPlayer();
+
+        if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop)) {
+            W_ThrowSecondary();
+        } else if(!g_freeze && !g_jailbreak) {
+            SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
+        }
 
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))

@@ -1,4 +1,6 @@
 
+void W_ThrowSecondary();
+
 void W_GiveWeapon (entity e, float wep, string name)
 {
 	entity oldself;
@@ -6,7 +8,15 @@ void W_GiveWeapon (entity e, float wep, string name)
 	if (!wep)
 		return;
 
-	e.weapons = e.weapons | W_WeaponBit(wep);
+    var wb = W_WeaponBit(wep);
+
+    if(g_weaponarena_secondary && !(wb & g_weaponarena) && wep != e.w_secondary) {
+        using(self = e)
+            W_ThrowSecondary();
+        W_SetSecondary(e, wep);
+    } else {
+        e.weapons |= wb;
+    }
 
 	oldself = self;
 	self = e;

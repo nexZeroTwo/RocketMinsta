@@ -260,7 +260,7 @@ string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vecto
 		if(startitem_failed)
 			return NULL;
 		wep.think = thrown_wep_think;
-		wep.nextthink = time + 0.5;
+		wep.nextthink = time + CVAR(g_thrownweapon_pickupdelay);
 		return "";
 	}
 	else
@@ -288,7 +288,7 @@ string W_ThrowNewWeapon(entity own, float wpn, float doreduce, vector org, vecto
 			s = substring(s, 5, -1);
 		}
 		wep.think = thrown_wep_think;
-		wep.nextthink = time + 0.5;
+		wep.nextthink = time + CVAR(g_thrownweapon_pickupdelay);
 		return s;
 	}
 }
@@ -353,6 +353,22 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 			sprint(self, strcat("You dropped the ^2", W_Name(w), " with ", a, "\n"));
 	}
 };
+
+void W_ThrowSecondary_Once(void) {
+    var org = self.origin + (self.mins + self.maxs) * 0.5;
+    W_ThrowNewWeapon(self, self.w_secondary, FALSE, org, randomvec() * 125 + '0 0 200');
+}
+
+.float akimbo_weapons;
+
+void W_ThrowSecondary(void) {
+    W_ThrowSecondary_Once();
+
+    if(Akimbo_HaveWeapon(self, self.w_secondary)) {
+        self.akimbo_weapons &~= W_WeaponBit(self.w_secondary);
+        W_ThrowSecondary_Once();
+    }
+}
 
 .float w_instaswitch;
 // Bringed back weapon frame
@@ -681,10 +697,10 @@ float W_ShowMenu(float always) {
     if(clienttype(self) != CLIENTTYPE_REAL)
         return FALSE;
 
-    if((self.w_secondary && self.BUTTON_CHAT) && always < 2)
+    if((self.w_secondary_nextround && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
-    if(always || !self.w_secondary) {
+    if(always || !self.w_secondary_nextround) {
         W_WriteSecondarySelect();
         return TRUE;
     }
