@@ -256,7 +256,7 @@ void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
 
-    ent.weaponentity.punchangle_x = recoil;
+    ent_orig.weaponentity.punchangle_x = recoil;
 
 	if (snd != "")
 	{
