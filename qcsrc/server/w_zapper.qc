@@ -291,7 +291,8 @@ void W_Zapper_Beam_Think(void) {
         self.enemy.zapper_coolofftime = time + frametime;
     }
 
-    ATTACK_FINISHED(self.enemy) = time + CVAR(g_balance_zapper_primary_refire) * rate;
+    if(self.enemy.weapon)
+        ATTACK_FINISHED(self.enemy) = time + CVAR(g_balance_zapper_primary_refire) * rate;
 
     self.nextthink = time;
 }
