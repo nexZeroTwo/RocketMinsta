@@ -113,7 +113,6 @@ void Akimbo_Init()
 			WEPBIT_NEX |
 			WEPBIT_HAGAR |
 			WEPBIT_ROCKET_LAUNCHER | 
-            WEPBIT_ZAPPER |
             WEPBIT_FLAK;
 
 	if (s == "all")
@@ -207,9 +206,6 @@ void Akimbo_Clear(entity e)
 
 float Akimbo_HaveWeapon(entity e, float wpn)
 {
-    if(cvar("g_akimbo_test"))
-        return TRUE;
-
 	float wpnbit = W_WeaponBit(wpn);
 	if ((e.akimbo_weapons & wpnbit) ||
 			(g_powerup_strength_akimbo && e.strength_finished > time &&

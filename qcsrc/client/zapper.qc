@@ -3,7 +3,6 @@
 .vector zapper_real_start;
 .vector zapper_end;
 .vector zapper_offs;
-.float zapper_inverted_shotorg;
 
 vector Zapper_BeamRGB(float t) {
     switch(t) {
@@ -101,10 +100,6 @@ void zapper_particles_trace_callback(vector from, vector endpos, vector to) {
 
 vector Zapper_GetShotOrigin(void) {
     var org = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
-
-    if(self.zapper_inverted_shotorg)
-        org_y = -org_y;
-
     return org - '5 0 0';
 }
 
@@ -226,7 +221,6 @@ void Zapper_Fader_Spawn(entity ref) {
     e.alpha = 1;
     e.think = Zapper_Fader_Think;
     e.nextthink = time;
-    e.zapper_inverted_shotorg = ref.zapper_inverted_shotorg;
 }
 
 .float snd_looping;
@@ -272,9 +266,6 @@ void Zapper_Read(float t) {
 
         if(!rm_teamlasers || !self.team)
             self.team = COLOR_TEAM2;
-
-        if(sf & 128)
-            self.zapper_inverted_shotorg = TRUE;
     }
 
     if(sf & 2) {
