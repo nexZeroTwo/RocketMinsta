@@ -51,6 +51,7 @@ void Akimbo_WeaponFrame()
 			self = oldself;
 			self.weaponentity.cnt = 0;
 		}
+        self.akimbo_ghost.items = self.items;
 		self.akimbo_ghost.ammo_shells = self.ammo_shells;
 		self.akimbo_ghost.ammo_cells = self.ammo_cells;
 		self.akimbo_ghost.ammo_nails = self.ammo_nails;
