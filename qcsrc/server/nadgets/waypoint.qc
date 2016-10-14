@@ -7,6 +7,13 @@ enum {
 };
 
 void HG_Waypoint_Update(string wpname) {
+    var hgname = HG_TypeToName(self.hg_type);
+
+    if(fexists(pickfile("models/sprites/pointers/" + hgname + "_" + wpname, "tga", "jpg", "png", NULL)))
+        wpname = hgname + "_" + wpname;
+
+    wpname = "pointers/" + wpname;
+
     if(!self.hg_waypoint) {
         float ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
 
@@ -39,9 +46,9 @@ void HG_Waypoint_SetColor(float wpcolor) {
     if(self.hg_wp_state != wpcolor) {
         self.hg_wp_state = wpcolor;
         HG_Waypoint_Update(switch(wpcolor) {
-            case WPCOLOR_RED:       "pointer_red",
-            case WPCOLOR_ORANGE:    "pointer_orange",
-            case WPCOLOR_CYAN:      "pointer_cyan",
+            case WPCOLOR_RED:       "red",
+            case WPCOLOR_ORANGE:    "orange",
+            case WPCOLOR_CYAN:      "cyan",
             default:                NULL
         });
     }
