@@ -17,7 +17,7 @@ void HG_Waypoint_Update(string wpname) {
     if(!self.hg_waypoint) {
         float ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
 
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1.5 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
 
         if(self.hg_type == HG_SENTRY) {
             WaypointSprite_UpdateMaxHealth(self.hg_waypoint, (self.hg_wp_state == WPCOLOR_RED));
