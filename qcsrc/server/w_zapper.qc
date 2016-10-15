@@ -73,7 +73,7 @@ void W_Zapper_SpawnSpinner(void) {
 
     if(!s.tag_index) {
         // Akimbo FIXME: why does this happen?
-        s.tag_index = Akimbo_Owner(self).zapper_spinner.tag_index;
+        s.tag_index = o.zapper_spinner.tag_index;
     }
 
     setorigin(s, '-4 0 -0.5');
@@ -796,6 +796,11 @@ float w_zapper(float req) {
             self.zapper_heat = -1;
     } else if(req == WR_SETUP) {
         weapon_setup(WEP_ZAPPER);
+    } else if(req == WR_CLEAR) {
+        if(self.zapper_spinner) {
+            remove(self.zapper_spinner);
+            self.zapper_spinner = world;
+        }
     } else if(req == WR_CHECKAMMO1)
         return W_Zapper_Attack1_CheckAmmo(self);
     else if(req == WR_CHECKAMMO2)
