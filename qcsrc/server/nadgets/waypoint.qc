@@ -22,10 +22,10 @@ void HG_Waypoint_Update(string wpname) {
         if(self.hg_type == HG_SENTRY) {
             WaypointSprite_UpdateMaxHealth(self.hg_waypoint, (self.hg_wp_state == WPCOLOR_RED));
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '1 0.5 0');
-        } else if(self.hg_detonateready > time) {
+        } else if(self.hg_detonable && self.hg_detonateready > time) {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_detonateready);
-        } else if(self.hg_type == HG_TRANSLOC || self.hg_type == HG_BAIT) {
+        } else {
             WaypointSprite_UpdateTeamRadar(self.hg_waypoint, 0, '0 1 1');
             WaypointSprite_UpdateBuildFinished(self.hg_waypoint, self.hg_deathtime);
         }
@@ -83,15 +83,20 @@ void HG_Waypoint(void) {
             return;
         }
 
-        if(rng > 0) FOR_EACH_PLAYER(plr) {
-            if(plr.team != self.team || !teams_matter)
-            if(plr != self.owner)
-            if(!PlayerIsDead(plr))
-            if(vlen(self.origin - plr.origin) < rng)
-            if(checkpvs(self.origin, plr)) {
-                detected = TRUE;
-                break;
+        if(rng > 0) {
+            FOR_EACH_PLAYER(plr) {
+                if(plr.team != self.team || !teams_matter)
+                if(plr != self.owner)
+                if(!PlayerIsDead(plr))
+                if(vlen(self.origin - plr.origin) < rng)
+                if(checkpvs(self.origin, plr)) {
+                    detected = TRUE;
+                    break;
+                }
             }
+        } else {
+            warn = (time > self.hg_deathtime - 1);
+            detected = (time > self.hg_deathtime - 0.5);
         }
     }
 
