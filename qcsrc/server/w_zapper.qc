@@ -801,6 +801,11 @@ float w_zapper(float req) {
             remove(self.zapper_spinner);
             self.zapper_spinner = world;
         }
+
+        if(self.zapper_beam) {
+            remove(self.zapper_beam);
+            self.zapper_beam = world;
+        }
     } else if(req == WR_CHECKAMMO1)
         return W_Zapper_Attack1_CheckAmmo(self);
     else if(req == WR_CHECKAMMO2)
