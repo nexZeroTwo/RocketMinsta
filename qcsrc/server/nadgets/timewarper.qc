@@ -46,9 +46,14 @@ float HG_TimeWarper_Trigger(float force) {
     return FALSE;
 }
 
+void HG_TimeWarper_RemoveTimer(entity e) {
+    HG_Waypoint_Remove(e.hg_waypoint);
+    remove(e);
+}
+
 void HG_TimeWarper_StopTimer(void) {
     if(self.hg_twarp_timer) {
-        remove(self.hg_twarp_timer);
+        HG_TimeWarper_RemoveTimer(self.hg_twarp_timer);
         self.hg_twarp_timer = world;
     }
 }
@@ -59,8 +64,16 @@ entity HG_TimeWarper_StartTimer(void) {
     var e = spawn() {
         owner: self,
         origin: self.origin,
-        nextthink: self.hg_twarp_expiretime,
+        nextthink: time,
+        hg_deathtime: self.hg_twarp_expiretime,
+        hg_type: HG_TIMEWARP,
         think: inline void(void) {
+            if(time < self.hg_deathtime) {
+                HG_Waypoint();
+                self.nextthink = time;
+                return;
+            }
+
             using(self = self.owner) {
                 if(Buffs_Present(self, BUFF_ADEPT))
                     HG_TimeWarper_Abort();
@@ -68,7 +81,9 @@ entity HG_TimeWarper_StartTimer(void) {
                     HG_TimeWarper_Trigger(TRUE);
             }
         },
-        reset: SUB_Remove,
+        reset: inline void(void) {
+            HG_TimeWarper_RemoveTimer(self);
+        },
     };
 
     Buffs_MEODP_Point_Attach(e, inline void(entity attacker, entity inflictor) {
@@ -87,6 +102,7 @@ entity HG_TimeWarper_StartTimer(void) {
     });
 
     self.hg_twarp_timer = e;
+
     return e;
 }
 
