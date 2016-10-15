@@ -15,9 +15,14 @@ void HG_Waypoint_Update(string wpname) {
     wpname = "pointers/" + wpname;
 
     if(!self.hg_waypoint) {
-        float ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
+        var ownerhack = (self.hg_type == HG_BAIT || self.hg_type == HG_SENTRY);
+        var teamwp = (teams_matter && GRENVAR(self.hg_type, if(self.hg_adept) "adept_detect_enemies_teamwide" else "detect_enemies_teamwide"));
+        var o = if(ownerhack) self.realowner else self.owner;
+        var t = if(teamwp) o.team else 0;
+        o = if(teamwp) world else o;
 
-        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1.5 * (self.hg_type == HG_SENTRY)), (if(ownerhack) self.realowner else self.owner), 0, self, hg_waypoint, 1);
+        WaypointSprite_Spawn(wpname, 0, 0, self, '0 0 32' * (1 + 1 * ownerhack + 1.5 * (self.hg_type == HG_SENTRY)),
+            o, t, self, hg_waypoint, 1);
 
         if(self.hg_type == HG_SENTRY) {
             WaypointSprite_UpdateMaxHealth(self.hg_waypoint, (self.hg_wp_state == WPCOLOR_RED));
