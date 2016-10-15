@@ -225,31 +225,33 @@ void player_setupanimsformodel()
 {
 	string animfilename;
 	float animfile;
+	vector akimbo_shift;
 	// defaults for legacy .zym models without animinfo files
-	self.anim_die1 = '0 1 0.5'; // 2 seconds
-	self.anim_die2 = '1 1 0.5'; // 2 seconds
-	self.anim_draw = '2 1 3'; // TODO: analyze models and set framerate
-	self.anim_duck = '3 1 100'; // this anim seems bogus in most models, so make it play VERY briefly!
-	self.anim_duckwalk = '4 1 1';
-	self.anim_duckjump = '5 1 100'; // zym anims keep playing until changed, so this only has to start the anim, landing will end it
-	self.anim_duckidle = '6 1 1';
-	self.anim_idle = '7 1 1';
-	self.anim_jump = '8 1 100'; // zym anims keep playing until changed, so this only has to start the anim, landing will end it
-	self.anim_pain1 = '9 1 2'; // 0.5 seconds
-	self.anim_pain2 = '10 1 2'; // 0.5 seconds
-	self.anim_shoot = '11 1 5'; // TODO: analyze models and set framerate
-	self.anim_taunt = '12 1 0.33'; // FIXME?  there is no code using this anim
-	self.anim_run = '13 1 1';
-	self.anim_runbackwards = '14 1 1';
-	self.anim_strafeleft = '15 1 1';
-	self.anim_straferight = '16 1 1';
-	self.anim_dead1 = '17 1 1';
-	self.anim_dead2 = '18 1 1';
-	self.anim_forwardright = '19 1 1';
-	self.anim_forwardleft = '20 1 1';
-	self.anim_backright = '21 1 1';
-	self.anim_backleft  = '22 1 1';
-	self.anim_melee  = stov(CVAR_STR(sv_animation_melee));
+	akimbo_shift =  '1 0 0' * (if (CVAR(g_akimbo)) CVAR(g_akimbo_animation_shift) else 0);
+	self.anim_die1 = '0 1 0.5' + akimbo_shift; // 2 seconds
+	self.anim_die2 = '1 1 0.5' + akimbo_shift; // 2 seconds
+	self.anim_draw = '2 1 3' + akimbo_shift; // TODO: analyze models and set framerate
+	self.anim_duck = '3 1 100' + akimbo_shift; // this anim seems bogus in most models, so make it play VERY briefly!
+	self.anim_duckwalk = '4 1 1' + akimbo_shift;
+	self.anim_duckjump = '5 1 100' + akimbo_shift; // zym anims keep playing until changed, so this only has to start the anim, landing will end it
+	self.anim_duckidle = '6 1 1' + akimbo_shift;
+	self.anim_idle = '7 1 1' + akimbo_shift;
+	self.anim_jump = '8 1 100' + akimbo_shift; // zym anims keep playing until changed, so this only has to start the anim, landing will end it
+	self.anim_pain1 = '9 1 2' + akimbo_shift; // 0.5 seconds
+	self.anim_pain2 = '10 1 2' + akimbo_shift; // 0.5 seconds
+	self.anim_shoot = '11 1 5' + akimbo_shift; // TODO: analyze models and set framerate
+	self.anim_taunt = '12 1 0.33' + akimbo_shift;
+	self.anim_run = '13 1 1' + akimbo_shift;
+	self.anim_runbackwards = '14 1 1' + akimbo_shift;
+	self.anim_strafeleft = '15 1 1' + akimbo_shift;
+	self.anim_straferight = '16 1 1' + akimbo_shift;
+	self.anim_dead1 = '17 1 1' + akimbo_shift;
+	self.anim_dead2 = '18 1 1' + akimbo_shift;
+	self.anim_forwardright = '19 1 1' + akimbo_shift;
+	self.anim_forwardleft = '20 1 1' + akimbo_shift;
+	self.anim_backright = '21 1 1' + akimbo_shift;
+	self.anim_backleft  = '22 1 1' + akimbo_shift;
+	self.anim_melee  = stov(CVAR_STR(sv_animation_melee)) + akimbo_shift;
 	animparseerror = FALSE;
 	animfilename = strcat(self.model, ".animinfo");
 	animfile = fopen(animfilename, FILE_READ);

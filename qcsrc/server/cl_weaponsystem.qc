@@ -685,20 +685,26 @@ void CL_ExteriorWeaponentity_Think()
 			self.model = "";
         }
 
+		float akimbo_weapon = (Akimbo_Active(self.owner) == 2);
 		if((tag_found = gettagindex(Akimbo_Owner(self.owner), "tag_weapon")))
 		{
 			self.tag_index = tag_found;
 			self.tag_entity = self.owner;
 		}
-		else
+		else if (akimbo_weapon && CVAR(g_akimbo_use_left_hand)) {
+			setattachment(self, Akimbo_Owner(self.owner), "bip01 l hand");
+			if (CVAR(g_akimbo_use_left_hand_rotate))
+				self.angles = '0 0 180';
+		} else {
 			setattachment(self, Akimbo_Owner(self.owner), "bip01 r hand");
+			if (akimbo_weapon)
+				setorigin(self, '0 20 0');
+		}
 
 		// if that didn't find a tag, hide the exterior weapon model
 		if (!self.tag_index)
 			self.model = "";
 
-        if (Akimbo_Active(self.owner) == 2)
-            setorigin(self, '0 20 0');
 	}
 	self.effects = self.owner.effects | EF_LOWPRECISION;
 	self.effects = self.effects & EFMASK_CHEAP; // eat performance
