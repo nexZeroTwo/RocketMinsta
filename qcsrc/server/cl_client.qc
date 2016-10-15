@@ -1484,6 +1484,7 @@ float ClientInit_SendEntity(entity to, float sf)
         WriteByte(MSG_ENTITY, (HG_SelectableTypes(FALSE) != ""));
         WriteByte(MSG_ENTITY, g_nadgets_double);
     }
+    WriteInt24_t(MSG_ENTITY, g_weaponarena);
     WriteInt24_t(MSG_ENTITY, g_weaponarena_secondary);
     WriteByte(MSG_ENTITY, g_freeze);
     WriteByte(MSG_ENTITY, sv_scoreboard_heal_column);

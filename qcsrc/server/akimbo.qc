@@ -130,6 +130,8 @@ void Akimbo_Init()
 	}
 	g_akimbo_weapons = g_akimbo_weapons & weapons_with_akimbo_support;
 	g_powerup_strength_akimbo = CVAR(g_powerup_strength_akimbo);
+
+    addstat(STAT_AKIMBO_WEAPONS, AS_INT, akimbo_weapons);
 }
 
 entity Akimbo_Owner(entity e)

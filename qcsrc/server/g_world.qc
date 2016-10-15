@@ -780,6 +780,9 @@ void spawnfunc_worldspawn (void)
     
 	addstat(STAT_MINSTA, AS_INT, g_minstagib_stat);
 
+    if(g_weaponarena_secondary)
+        addstat(STAT_WEP_SECONDARY, AS_INT, w_secondary);
+
 	if(g_nadgets)
         HG_Init();
     Term_Init();

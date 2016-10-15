@@ -3982,6 +3982,43 @@ float Sbar_GetNadgetRegen(float stat_type, float stat_regen, float stat_maxregen
         return getstatf(stat_regen) / getstatf(stat_maxregen);
 }
 
+void Sbar_DrawArenaWeapons(vector center) {
+    const icon_w = SECWIDTH_NORMAL * 0.8;
+    const icon_h = icon_w / 2;
+    const space = icon_w * 0.1;
+
+    var p = center - [icon_w + space * 0.5, icon_h];
+    var s = [icon_w, icon_h];
+
+    var wep1 = log2of(g_weaponarena) + 1;
+    var wep2 = getstati(STAT_WEP_SECONDARY);
+
+    var icon1 = "gfx/hud/inv_weapon" + (wep1 - 1) + ".tga";
+    var icon2 = "gfx/hud/inv_weapon" + (wep2 - 1) + ".tga";
+
+    var bit2 = pow(2, wep2 - 1);
+
+    var weps = getstati(STAT_WEAPONS);
+    var active1 = (weps & g_weaponarena);
+    var active2 = (weps & bit2);
+
+    var aweps = getstati(STAT_AKIMBO_WEAPONS);
+
+    drawpic(p, icon1, s, if(active1) '1 1 1' else '0 0 0', sbar_alpha_fg * (if(active1) 1 else 0.5), DRAWFLAG_NORMAL);
+    p_x += s_x + space;
+    drawpic(p, icon2, s, if(active2) '1 1 1' else '0 0 0', sbar_alpha_fg * (if(active2) 1 else 0.5), DRAWFLAG_NORMAL);
+
+    if(aweps & bit2) {
+        var txt = "x2";
+        var sz = [icon_h / 3, icon_h / 3];
+        var sw = stringwidth(txt, false, sz);
+
+        using(drawfont = sbar_bigfont) {
+            drawstring(p + s - [sw, sz_y], txt, sz, '1 1 1', sbar_alpha_fg * (if(active2) 1 else 0.5), DRAWFLAG_NORMAL);
+        }
+    }
+}
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -5333,8 +5370,9 @@ void Sbar_Draw(void)
 
 		// weapon icons
 		
-		if(!g_minstagib)
-		{
+        if(g_weaponarena_secondary) {
+            Sbar_DrawArenaWeapons([vid_conwidth * 0.5, bottomleft_y - 32]);
+        } else if(!g_minstagib) {
             float wepcnt;
             
 			x = 1.0;
