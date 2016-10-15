@@ -98,6 +98,9 @@ void HG_Waypoint(void) {
             warn = (time > self.hg_deathtime - 1);
             detected = (time > self.hg_deathtime - 0.5);
         }
+
+        if(self.hg_detonatetime)
+            warn = TRUE;
     }
 
     if(!self.hg_waypoint)
