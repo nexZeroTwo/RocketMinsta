@@ -1409,10 +1409,12 @@ void PutClientInServer (void)
 				SUB_UseTargets();
 			activator = world;
 		self = oldself;
-		
+
+        W_SetSecondary(self, self.w_secondary_picked);
+
         Freeze_Hook_PlayerSpawns();
 		JB_PlayerSpawn();
-        
+
         if(g_nadgets) {
             if(self.wasingame)
                 HG_PlayerSpawn();
@@ -1421,7 +1423,6 @@ void PutClientInServer (void)
         }
 
         W_Clip_ResetAll(TRUE);
-        W_SetSecondary(self, self.w_secondary);
         Boobs_Attach();
 
         self.wasingame = TRUE;
@@ -1435,8 +1436,6 @@ void PutClientInServer (void)
         self.hg_sentry_capture_progress = 0;
 
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
-
-        W_SetSecondary(self, self.w_secondary_picked);
 
         SpawnHeadEnt();
 
