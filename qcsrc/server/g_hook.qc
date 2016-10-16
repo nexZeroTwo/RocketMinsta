@@ -331,7 +331,7 @@ void GrapplingHook_Damage (entity inflictor, entity attacker, float damage, floa
 }
 
 float CustomHGHookButton(entity e) {
-	if(!e.BUTTON_USE || e.soulmate || e.smhost)
+	if(!e.BUTTON_USE || e.soulmate || e.smhost || time < e.w_pickup_confirmation + 0.5)
 		return FALSE;
 	return TRUE;
 }

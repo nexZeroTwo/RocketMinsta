@@ -4019,6 +4019,25 @@ void Sbar_DrawArenaWeapons(vector center) {
     }
 }
 
+void Sbar_DrawPickupConfirmation(void) {
+    if(!(var w = getstati(STAT_WEP_PICKUP_CONFIRMATION)))
+        return;
+
+    var p = [vid_conwidth * 0.5, vid_conheight * 0.6];
+    const icon_w = SECWIDTH_NORMAL * 0.8;
+    const icon_h = icon_w / 2;
+    const icon_s = [icon_w, icon_h];
+
+    var wicon = "gfx/hud/inv_weapon" + (w - 1);
+
+    drawpic(p - icon_s * 0.5, wicon, icon_s, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    p_y += icon_h;
+    drawcolorcodedstringcenter(p,
+        "^3Press ^1" + strtoupper(getcommandkey("use", "+use")) + " ^3to pick up the ^2" + get_weaponinfo(w).message,
+        sbar_fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL
+    );
+}
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -5372,6 +5391,7 @@ void Sbar_Draw(void)
 		
         if(g_weaponarena_secondary) {
             Sbar_DrawArenaWeapons([vid_conwidth * 0.5, bottomleft_y - 32]);
+            Sbar_DrawPickupConfirmation();
         } else if(!g_minstagib) {
             float wepcnt;
             

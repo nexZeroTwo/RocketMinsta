@@ -272,6 +272,12 @@ float Item_GiveTo(entity item, entity player)
 	if(player.frozen)
 		return 0;
 
+    if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop) && player.w_secondary && item.weapons && (var w = log2of(item.weapons) + 1) != player.w_secondary && !player.BUTTON_USE) {
+        player.w_pickup_confirmation = time;
+        player.w_pickup_confirmation_stat = w;
+        return 0;
+    }
+
 	// if nothing happens to player, just return without taking the item
 	pickedup = FALSE;
 	_switchweapon = FALSE;

@@ -1196,6 +1196,8 @@ void PutClientInServer (void)
 
     Akimbo_Clear(self);
 
+    self.w_pickup_confirmation_stat = 0;
+
     self.colormap = num_for_edict(self);
 
 	if(g_arena)
@@ -3490,6 +3492,9 @@ void PlayerPreThink (void)
 		self.dmg_team = max(0, self.dmg_team - CVAR(g_teamdamage_resetspeed) * frametime);
 
         W_Zapper_Cooloff();
+
+        if(time >= self.w_pickup_confirmation + frametime * 3)
+            self.w_pickup_confirmation_stat = 0;
 	} else {
         if(self.solid) {
             bprint("BUG: spectator/observer was solid\n");
