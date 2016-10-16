@@ -276,7 +276,7 @@ float Item_GiveTo(entity item, entity player)
         var w = log2of(item.weapons) + 1;
 
         if(w == player.w_secondary) {
-            if(!CVAR(g_akimbo) || Akimbo_HaveWeapon(player, w))
+            if(!Akimbo_Possible(w) || Akimbo_HaveWeapon(player, w))
                 return 0;
         } else if(!player.BUTTON_USE) {
             player.w_pickup_confirmation = time;

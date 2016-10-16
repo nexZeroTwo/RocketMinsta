@@ -232,3 +232,9 @@ void Akimbo_SyncSpreadIndicator(entity e) {
     if(Akimbo_Active(e) == 2)
         Akimbo_Owner(e).w_spread_indicator2 = e.w_spread_indicator;
 }
+
+float Akimbo_Possible(float wpn) {
+    if(W_WeaponBit(wpn) & g_akimbo_weapons)
+        return TRUE;
+    return FALSE;
+}
