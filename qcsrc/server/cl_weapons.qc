@@ -17,11 +17,7 @@ float W_ToggleSecondary(void) {
     if(g_weaponarena_secondary && self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
         var hasweapon = (self.switchweapon || self.weapon);
-
-        var secondary = if(self.w_secondary)
-            pow(2, self.w_secondary - 1)
-        else
-            g_weaponarena_secondary;
+        var secondary = W_WeaponBit(self.w_secondary);
 
         if(w & secondary || !hasweapon) {
             self.weapons &~= secondary;
@@ -362,6 +358,9 @@ void W_ThrowSecondary_Once(void) {
 .float akimbo_weapons;
 
 void W_ThrowSecondary(void) {
+    if(!self.w_secondary)
+        return;
+
     W_ThrowSecondary_Once();
 
     if(Akimbo_HaveWeapon(self, self.w_secondary)) {
@@ -622,11 +621,7 @@ void W_FixWeaponSet(void) {
     if(g_weaponarena && g_weaponarena_secondary && !self.w_conv_switch) {
         var w = pow(2, self.switchweapon - 1) | pow(2, self.weapon - 1);
         var hasweapon = (self.switchweapon || self.weapon);
-
-        var secondary = if(self.w_secondary)
-            pow(2, self.w_secondary - 1)
-        else
-            g_weaponarena_secondary;
+        var secondary = W_WeaponBit(self.w_secondary);
 
         if(self.BUTTON_ATCK && (w & secondary || !hasweapon)) {
             self.weapons &~= secondary;

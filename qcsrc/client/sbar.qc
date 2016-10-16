@@ -3993,14 +3993,14 @@ void Sbar_DrawArenaWeapons(vector center) {
     var wep1 = log2of(g_weaponarena) + 1;
     var wep2 = getstati(STAT_WEP_SECONDARY);
 
-    var icon1 = "gfx/hud/inv_weapon" + (wep1 - 1) + ".tga";
-    var icon2 = "gfx/hud/inv_weapon" + (wep2 - 1) + ".tga";
+    var icon1 = "gfx/hud/inv_weapon" + (wep1 - 1);
+    var icon2 = if(wep2) "gfx/hud/inv_weapon" + (wep2 - 1) else "gfx/hud/noweapon";
 
     var bit2 = pow(2, wep2 - 1);
 
     var weps = getstati(STAT_WEAPONS);
     var active1 = (weps & g_weaponarena);
-    var active2 = (weps & bit2);
+    var active2 = ((weps & bit2) || !weps);
 
     var aweps = getstati(STAT_AKIMBO_WEAPONS);
 

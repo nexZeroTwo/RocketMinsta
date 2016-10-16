@@ -939,6 +939,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 
         if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop)) {
             W_ThrowSecondary();
+
+            if(g_freeze) {
+                if(self.w_secondary)
+                    self.akimbo_weapons &~= W_WeaponBit(self.w_secondary);
+                W_SetSecondary(self, 0);
+            }
         } else if(!g_freeze && !g_jailbreak) {
             SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
         }
