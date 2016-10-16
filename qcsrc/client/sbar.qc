@@ -4009,13 +4009,12 @@ void Sbar_DrawArenaWeapons(vector center) {
     drawpic(p, icon2, s, if(active2) '1 1 1' else '0 0 0', sbar_alpha_fg * (if(active2) 1 else 0.5), DRAWFLAG_NORMAL);
 
     if(aweps & bit2) {
-        var txt = "x2";
-        var sz = [icon_h / 3, icon_h / 3];
-        var sw = stringwidth(txt, false, sz);
+        icon1 = "gfx/hud/x2";
+        icon2 = "gfx/hud/x2_glow";
+        var sz = [icon_h * 0.6, icon_h * 0.6];
 
-        using(drawfont = sbar_bigfont) {
-            drawstring(p + s - [sw, sz_y], txt, sz, '1 1 1', sbar_alpha_fg * (if(active2) 1 else 0.5), DRAWFLAG_NORMAL);
-        }
+        drawpic(p + s - sz, icon2, sz, get_weaponinfo(wep2).w_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
+        drawpic(p + s - sz, icon1, sz, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
     }
 }
 
