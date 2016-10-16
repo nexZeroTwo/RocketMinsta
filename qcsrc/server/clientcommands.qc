@@ -645,11 +645,11 @@ void SV_ParseClientCommand(string s) {
         float gamestarted = roundstate == ROUNDSTATE_GAME;
         float nr = isplayer && gamestarted;
 
-        self.w_secondary_nextround = w.weapon;
-
         if(nr) {
+            self.w_secondary_nextround = w.weapon;
             sprint(self, strcat("^1Your secondary weapon will be set to the ^2", w.message, "^1 on the next round.\n"));
         } else {
+            self.w_secondary_picked = w.weapon;
             sprint(self, strcat("^1Your secondary weapon has been set to the ^2", w.message, "^1.\n"));
             W_SetSecondary(self, w.weapon);
         }

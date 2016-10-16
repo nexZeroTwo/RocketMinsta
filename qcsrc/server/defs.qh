@@ -830,6 +830,7 @@ var .float w_button_secondary;
 .float accstat_hits;
 
 .float w_secondary;
+.float w_secondary_picked;
 .float w_secondary_nextround;
 
 .string netname_strzoned;

@@ -646,6 +646,9 @@ void W_PlayerPreThinkHook(void) {
 }
 
 void W_SetSecondary(entity p, float w) {
+    if(!g_weaponarena_secondary)
+        return;
+
     if(p.w_secondary) {
         var sflag = pow(2, p.w_secondary - 1);
 
@@ -697,10 +700,10 @@ float W_ShowMenu(float always) {
     if(clienttype(self) != CLIENTTYPE_REAL)
         return FALSE;
 
-    if((self.w_secondary_nextround && self.BUTTON_CHAT) && always < 2)
+    if((self.w_secondary_picked && self.BUTTON_CHAT) && always < 2)
         return FALSE;
     
-    if(always || !self.w_secondary_nextround) {
+    if(always || !self.w_secondary_picked) {
         W_WriteSecondarySelect();
         return TRUE;
     }

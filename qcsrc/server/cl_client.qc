@@ -823,6 +823,7 @@ void PutObserverInServer (void)
 
     if(!self.joinqueue) {
         self.w_secondary = 0;
+        self.w_secondary_picked = 0;
         self.w_secondary_nextround = 0;
     }
 
@@ -1432,6 +1433,8 @@ void PutClientInServer (void)
         self.hg_sentry_capture_progress = 0;
 
         Buffs_MEODP_Point_Attach(self, Buffs_MEODP_Death_Player);
+
+        W_SetSecondary(self, self.w_secondary_picked);
 
         SpawnHeadEnt();
 
