@@ -1523,6 +1523,7 @@ float autocvar_g_terminals_auth_time;
 float autocvar_g_throughfloor_damage;
 float autocvar_g_throughfloor_force;
 float autocvar_g_thrownweapon_pickupdelay;
+float autocvar_g_thrownweapon_staytime;
 float autocvar_g_totaldomination_point_leadlimit;
 float autocvar_g_totaldomination_point_limit;
 float autocvar_g_totaldomination_score_take;

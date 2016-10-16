@@ -226,7 +226,11 @@ void thrown_wep_think()
 {
 	self.solid = SOLID_TRIGGER;
 	self.owner = world;
-	SUB_SetFade(self, time + 20, 1);
+
+    var st = CVAR(g_thrownweapon_staytime);
+
+    if(st > 0)
+	   SUB_SetFade(self, time + st, 1);
 }
 
 // returns amount of ammo used as string, or -1 for failure, or 0 for no ammo count
