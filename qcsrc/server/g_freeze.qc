@@ -291,6 +291,8 @@ float Freeze_Hook_PlayerDies(entity attacker, vector frce, float deathtype) {
     if(roundstate != ROUNDSTATE_GAME)
         return 0;
 
+    self.spawnstate_w_secondary = self.w_secondary;
+
     if(self.frozen) {
         if(self.iceblock) {
             remove(self.iceblock);
