@@ -580,6 +580,8 @@ string CheckPlayerModel(string plyermodel) {
 }
 
 float Client_CalculateAlpha(entity plr, entity viewer) {
+    plr = Akimbo_Owner(plr);
+
     if(!plr.iscreature) {
         if(plr.classname == "observer") {
             if(plr == viewer)
