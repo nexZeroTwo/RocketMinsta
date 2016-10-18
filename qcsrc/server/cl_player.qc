@@ -1103,7 +1103,9 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
             weapon_action(j, WR_RESETPLAYER);
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
-        
+
+        Akimbo_Clear(self);
+
         GAMEEVENT("playerdied", {
             GAMEEVENTARG(Entity, self)
             GAMEEVENTARG(Entity, inflictor)
