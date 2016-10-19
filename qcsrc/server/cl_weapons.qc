@@ -660,6 +660,11 @@ void W_SetSecondary(entity p, float w) {
 
     p.w_secondary = w;
 
+    if(!p.weapons) {
+        p.weapons |= W_WeaponBit(w);
+        W_SwitchWeapon_Force(p, w);
+    }
+
     if(p.scorekeeper) {
         var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFF00FF;
         PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
