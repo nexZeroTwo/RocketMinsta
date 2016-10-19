@@ -156,34 +156,11 @@ vector w_shotdir_visual;
 void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector mi, vector ma, float antilag, float recoil, string snd, float maxdamage, float hitmask)
 {
 	float nudge = 1; // added to traceline target and subtracted from result
-	vector trueaimpoint;
 	float _oldsolid;
 	vector vecs, dv;
 
     entity ent_orig = ent;
     ent = Akimbo_Owner(ent);
-
-	var oldmask = ent.dphitcontentsmask;
-    ent.dphitcontentsmask = hitmask;
-
-	if(antilag) {
-		traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
-		// passing world, because we do NOT want it to touch dphitcontentsmask
-    } else {
-		WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
-    }
-
-	ent.dphitcontentsmask = hitmask | DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
-
-	vector vf, vr, vu;
-	vf = v_forward;
-	vr = v_right;
-	vu = v_up;
-	trueaimpoint = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos); // warpzone support
-	v_forward = vf;
-	v_right = vr;
-	v_up = vu;
-
 
     if(maxdamage > 0)
         W_Accuracy_RegisterPotentialDamage(ent, ent.weapon, maxdamage);
@@ -209,8 +186,37 @@ void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector
 	else
 		tracebox(w_shotorg, mi, ma, w_shotorg + v_forward * (vecs_x + nudge), MOVE_NORMAL, ent);
 	w_shotorg = trace_endpos - v_forward * nudge;
-	// calculate the shotdir from the chosen shotorg
-	w_shotdir = normalize(trueaimpoint - w_shotorg);
+
+	if (Akimbo_Active(ent))
+		w_shotdir = s_forward;
+	else
+	{
+		vector trueaimpoint;
+		var oldmask = ent.dphitcontentsmask;
+		ent.dphitcontentsmask = hitmask;
+
+		if(antilag) {
+			traceline_antilag(world, ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NORMAL, ent);
+			// passing world, because we do NOT want it to touch dphitcontentsmask
+		} else {
+			WarpZone_TraceLine(ent.origin + ent.view_ofs, ent.origin + ent.view_ofs + s_forward * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, ent);
+		}
+
+		ent.dphitcontentsmask = hitmask | DPCONTENTS_SOLID | DPCONTENTS_BODY | DPCONTENTS_CORPSE;
+
+		//Prevent modification by warp functions
+		vector vf, vr, vu;
+		vf = v_forward;
+		vr = v_right;
+		vu = v_up;
+		trueaimpoint = WarpZone_UnTransformOrigin(WarpZone_trace_transform, trace_endpos); // warpzone support
+		v_forward = vf;
+		v_right = vr;
+		v_up = vu;
+		// calculate the shotdir from the chosen shotorg
+		w_shotdir = normalize(trueaimpoint - w_shotorg);
+		ent.dphitcontentsmask = oldmask;
+	}
 
 	if (antilag)
 	{
@@ -252,8 +258,6 @@ void W_SetupShot_Dir_ProjectileSize_HitMask(entity ent, vector s_forward, vector
 			}
 		}
 	}
-
-	ent.dphitcontentsmask = oldmask;
 
 	if (!g_norecoil)
 		ent.punchangle_x = recoil * -1;
