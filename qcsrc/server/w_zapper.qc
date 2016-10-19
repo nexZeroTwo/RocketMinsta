@@ -192,7 +192,7 @@ void W_Zapper_Beam_Think(void) {
     }
 
     makevectors(self.owner.v_angle);
-    W_SetupShot(self.owner, FALSE, 0, "", -1);
+    W_SetupShot(self.enemy, FALSE, 0, "", -1);
 
     float fract;
     entity targ;
