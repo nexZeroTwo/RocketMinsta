@@ -176,6 +176,12 @@ float maxclients;
 .vector anim_idle;
 .vector anim_reload;
 
+// weapon animation vectors (left-handed):
+.vector anim_fire1_left;
+.vector anim_fire2_left;
+.vector anim_idle_left;
+.vector anim_reload_left;
+
 void() player_setupanimsformodel;
 void setanim(entity e, vector anim, float looping, float override, float restart);
 

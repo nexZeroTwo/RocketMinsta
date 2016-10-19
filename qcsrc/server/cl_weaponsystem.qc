@@ -58,11 +58,12 @@ void W_SwitchWeapon_OutOfAmmo(entity plr) {
 }
 
 // VorteX: static frame globals
-float WFRAME_DONTCHANGE = -1;
-float WFRAME_FIRE1 = 0;
-float WFRAME_FIRE2 = 1;
-float WFRAME_IDLE = 2;
-float WFRAME_RELOAD = 3;
+const WFRAME_DONTCHANGE = -1;
+const WFRAME_FIRE1 = 0;
+const WFRAME_FIRE2 = 1;
+const WFRAME_IDLE = 2;
+const WFRAME_RELOAD = 3;
+
 .float wframe;
 
 .vector shotorg_visual;
@@ -456,17 +457,26 @@ void CL_Weaponentity_Think()
 			animfilename = pickfile("models/weapons/h_" + self.owner.weaponname, "iqm.animinfo", "dpm.animinfo", NULL);
 			animfile = fopen(animfilename, FILE_READ);
 			// preset some defaults that work great for renamed zym files (which don't need an animinfo)
-			self.anim_fire1  = '0 1 0.01';
-			self.anim_fire2  = '1 1 0.01';
-			self.anim_idle   = '2 1 0.01';
-			self.anim_reload = '3 1 0.01';
+			self.anim_fire1       = '0 1 0.01';
+			self.anim_fire2       = '1 1 0.01';
+			self.anim_idle        = '2 1 0.01';
+			self.anim_reload      = '3 1 0.01';
+            self.anim_fire1_left  = '4 1 0.01';
+            self.anim_fire2_left  = '5 1 0.01';
+            self.anim_idle_left   = '6 1 0.01';
+            self.anim_reload_left = '7 1 0.01';
+
 			if (animfile >= 0)
 			{
 				animparseerror = FALSE;
-				self.anim_fire1  = animparseline(animfile);
-				self.anim_fire2  = animparseline(animfile);
-				self.anim_idle   = animparseline(animfile);
-				self.anim_reload = animparseline(animfile);
+				self.anim_fire1       = animparseline(animfile);
+				self.anim_fire2       = animparseline(animfile);
+				self.anim_idle        = animparseline(animfile);
+				self.anim_reload      = animparseline(animfile);
+                self.anim_fire1_left  = animparseline(animfile);
+                self.anim_fire2_left  = animparseline(animfile);
+                self.anim_idle_left   = animparseline(animfile);
+                self.anim_reload_left = animparseline(animfile);
 				fclose(animfile);
 				if (animparseerror)
 					print("Parse error in ", animfilename, ", some player animations are broken\n");
@@ -938,15 +948,21 @@ void weapon_thinkf(float fr, float t, void() func)
 	{
 		self.weaponentity.wframe = fr;
 
+        var lefthand = (
+            Akimbo_GunPosition(self) == 2 &&
+            cvar("sv_weaponmodel_" + get_weaponinfo(self.weapon).netname + "_left_hand_animations")
+        );
+
 		if (fr == WFRAME_IDLE)
-			a = self.weaponentity.anim_idle;
+			a = self.weaponentity.(if(lefthand) anim_idle_left else anim_idle);
 		else if (fr == WFRAME_FIRE1)
-			a = self.weaponentity.anim_fire1;
+			a = self.weaponentity.(if(lefthand) anim_fire1_left else anim_fire1);
 		else if (fr == WFRAME_FIRE2)
-			a = self.weaponentity.anim_fire2;
+			a = self.weaponentity.(if(lefthand) anim_fire2_left else anim_fire2);
 		else if (fr == WFRAME_RELOAD) {
-			a = self.weaponentity.anim_reload;
+			a = self.weaponentity.(if(lefthand) anim_reload_left else anim_reload);
         }
+
 		a_z *= g_weaponratefactor;
 		setanim(self.weaponentity, a, restartanim == FALSE, restartanim, restartanim);
 	}
