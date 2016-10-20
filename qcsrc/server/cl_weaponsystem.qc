@@ -44,6 +44,9 @@ void W_SwitchWeapon_Force(entity e, float w)
     e.w_inring_fulltime = 0;
     e.w_spread_indicator = -1;
     e.w_spread_indicator2 = -1;
+
+    if((var g = Akimbo_Ghost(e)))
+        g.switchweapon = w;
 }
 
 void W_SwitchWeapon_OutOfAmmo(entity plr) {
@@ -587,8 +590,10 @@ void CL_Weaponentity_Think()
 
 		self.spawnorigin += self.view_ofs; // offset the casings origin by the same amount
 
+        var gunpos = Akimbo_GunPosition(self.owner);
+
         var ofs = stov(cvar_string("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_offset"));
-        ofs_y *= switch(Akimbo_GunPosition(self.owner)) {
+        ofs_y *= switch(gunpos) {
             case 1: -1,
             case 2:  1,
             default: 0
@@ -598,7 +603,7 @@ void CL_Weaponentity_Think()
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;
-		setanim(self, self.anim_idle, TRUE, FALSE, TRUE);
+		setanim(self, self.(if(gunpos == 2) anim_idle_left else anim_idle), TRUE, FALSE, TRUE);
 	}
 
 	tb = (self.effects & EF_TELEPORT_BIT);
@@ -848,6 +853,9 @@ float client_hasweapon(entity cl, float wpn, float andammo, float complain) {
 // Weapon subs
 void w_clear()
 {
+    if(Akimbo_Active(self) == 2)
+        self.weapon = -1;
+
 	if (self.weapon != -1)
 		self.weapon = 0;
 	if (self.weaponentity)

@@ -11,3 +11,4 @@ void Akimbo_Clear(entity e);
 float Akimbo_GunPosition(entity e);
 void Akimbo_SyncSpreadIndicator(entity e);
 float Akimbo_Possible(float wpn);
+void Akimbo_WeaponAction(float wpn, float req);

@@ -1403,7 +1403,7 @@ void PutClientInServer (void)
 
 		// reset fields the weapons may use
         for (j = WEP_FIRST; j <= WEP_LAST; ++j)
-            weapon_action(j, WR_RESETPLAYER);
+            Akimbo_WeaponAction(j, WR_RESETPLAYER);
 
 		oldself = self;
 		self = spot;

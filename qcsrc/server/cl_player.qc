@@ -356,7 +356,12 @@ void player_anim (void)
 
 	if (self.weaponentity)
 	if (!self.weaponentity.animstate_override)
-		setanim(self.weaponentity, self.weaponentity.anim_idle, TRUE, FALSE, FALSE);
+		setanim(self.weaponentity, self.weaponentity.(if(Akimbo_GunPosition(self) == 2) anim_idle_left else anim_idle), TRUE, FALSE, FALSE);
+
+    if((var g = Akimbo_Ghost(self))) {
+        if(g.weaponentity && !g.weaponentity.animstate_override)
+            setanim(g.weaponentity, g.weaponentity.anim_idle_left, TRUE, FALSE, FALSE);
+    }
 }
 
 void SpawnThrownWeapon (vector org, float w)
@@ -1100,7 +1105,7 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// reset fields the weapons may use just in case
         for (j = WEP_FIRST; j <= WEP_LAST; ++j)
 		{
-            weapon_action(j, WR_RESETPLAYER);
+            Akimbo_WeaponAction(j, WR_RESETPLAYER);
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
 
