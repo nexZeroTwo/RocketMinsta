@@ -31,7 +31,7 @@ defaults = {
     "zapper_ofs"        :   "0 0 1",
     "flak_ofs"          :   "6.5 0 4",
     "campingrifle_ofs"  :   "-3.5 -1 3",
-    "pryaxe_ofs"        :   "5 13 0",
+    "pryaxe_ofs"        :   "0 4 5",
 
     "flak_left"         :   "1",
     "pryaxe_left"       :   "1",
