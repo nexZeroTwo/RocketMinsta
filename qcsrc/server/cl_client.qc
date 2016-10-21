@@ -1401,6 +1401,8 @@ void PutClientInServer (void)
 
 		target_voicescript_clear(self);
 
+        Akimbo_OnPlayerSpawn(self);
+
 		// reset fields the weapons may use
         for (j = WEP_FIRST; j <= WEP_LAST; ++j)
             Akimbo_WeaponAction(j, WR_RESETPLAYER);

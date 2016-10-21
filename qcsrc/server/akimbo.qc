@@ -66,7 +66,6 @@ void Akimbo_WeaponFrame()
                 if(spawn_went)
                     CL_SpawnWeaponentity();
                 self.weaponentity.state = WS_RAISE;
-                weapon_action(self.weapon, WR_RESETPLAYER);
                 weapon_action(self.weapon, WR_SETUP);
                 weapon_thinkf(WFRAME_IDLE, CVAR(g_balance_weaponswitchdelay), w_ready);
                 weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
@@ -263,4 +262,8 @@ void Akimbo_WeaponAction(float wpn, float req) {
 
     if(ghost)  using(self = ghost)
         weapon_action(wpn, req);
+}
+
+void Akimbo_OnPlayerSpawn(entity e) {
+    e.akimbo_ghost_persistent = Akimbo_NewGhost();
 }
