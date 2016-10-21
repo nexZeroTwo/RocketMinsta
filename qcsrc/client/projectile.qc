@@ -251,7 +251,7 @@ void Projectile_Draw()
 			//case PROJECTILE_HG_PLASMA:
             case PROJECTILE_PRYAXE:
 			case PROJECTILE_GRENADE_BOUNCING:
-				rot = '0 -1000 0'; // sideways
+				rot = '0 1000 0'; // sideways
 				break;
 			case PROJECTILE_HOOKBOMB:
 				rot = '1000 0 0'; // forward
