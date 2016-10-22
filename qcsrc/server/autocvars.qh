@@ -62,7 +62,7 @@ float autocvar_developer_shtest;
 float autocvar_fraglimit_override;
 float autocvar_g_akimbo;
 float autocvar_g_akimbo_use_left_hand;
-float autocvar_g_akimbo_use_left_hand_rotate;
+vector autocvar_g_akimbo_use_left_hand_rotate;
 float autocvar_g_akimbo_animation_shift;
 float autocvar_g_allow_oldnexbeam;
 float autocvar_gameversion;
