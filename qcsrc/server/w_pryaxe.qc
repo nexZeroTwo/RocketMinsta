@@ -124,7 +124,7 @@ void W_Pryaxe_Return() {
         self.enemy.pryaxe_thrown = world;
 
         if(self.owner.iscreature) {
-            self.enemy.pryaxe_count += 1;
+            self.enemy.pryaxe_count = bound(0, self.enemy.pryaxe_count + 1, CVAR(g_balance_pryaxe_throw_count));
             if (!self.enemy.weapon)
                 W_Pryaxe_SwitchWeapon(self.enemy, WEP_PRYAXE);
             sound(self.owner, CHAN_AUTO, "weapons/weaponpickup.wav", VOL_BASE, ATTN_NORM);
@@ -258,7 +258,7 @@ void W_Pryaxe_Throw(float isprim) {
 
     //Throw out pryaxe
     self.pryaxe_thrown = proj;
-    self.pryaxe_count -= 1;
+    self.pryaxe_count = bound(0, self.enemy.pryaxe_count - 1, CVAR(g_balance_pryaxe_throw_count));
     self.pryaxe_skin = mod(self.pryaxe_skin + 1, min(PRYAXE_SKINS_COUNT, CVAR(g_balance_pryaxe_throw_count)));
     self.weaponentity.state = WS_CLEAR;
     W_Pryaxe_SwitchWeapon(self, 0);
