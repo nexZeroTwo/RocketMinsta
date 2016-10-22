@@ -359,8 +359,12 @@ void player_anim (void)
 		setanim(self.weaponentity, self.weaponentity.(if(Akimbo_GunPosition(self) == 2) anim_idle_left else anim_idle), TRUE, FALSE, FALSE);
 
     if((var g = Akimbo_Ghost(self))) {
-        if(g.weaponentity && !g.weaponentity.animstate_override)
-            setanim(g.weaponentity, g.weaponentity.anim_idle_left, TRUE, FALSE, FALSE);
+        if(g.weaponentity && !g.weaponentity.animstate_override) {
+            if(cvar("sv_weaponmodel_" + get_weaponinfo(g.weapon).netname + "_left_hand_animations"))
+                setanim(g.weaponentity, g.weaponentity.anim_idle_left, TRUE, FALSE, FALSE);
+            else
+                setanim(g.weaponentity, g.weaponentity.anim_idle, TRUE, FALSE, FALSE);
+        }
     }
 }
 

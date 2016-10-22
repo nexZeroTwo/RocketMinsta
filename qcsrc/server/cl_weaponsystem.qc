@@ -603,7 +603,9 @@ void CL_Weaponentity_Think()
 
 		// reset animstate now
 		self.wframe = WFRAME_IDLE;
-		setanim(self, self.(if(gunpos == 2) anim_idle_left else anim_idle), TRUE, FALSE, TRUE);
+		setanim(self, self.(if(gunpos == 2 &&
+				cvar("sv_weaponmodel_" + get_weaponinfo(self.owner.weapon).netname + "_left_hand_animations"))
+				anim_idle_left else anim_idle), TRUE, FALSE, TRUE);
 	}
 
 	tb = (self.effects & EF_TELEPORT_BIT);
