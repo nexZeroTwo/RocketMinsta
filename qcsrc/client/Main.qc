@@ -1075,7 +1075,13 @@ float CSQC_ConsoleCommand(string strMessage)
 		rm_visualscore = CVAR(rm_visualscore);
 		rm_oldhud_option = CVAR(rm_oldhud);
 		rm_althud_option = CVAR(rm_althud);
+
+#ifdef RM_SUPPORT_PKG_o_flagicons
 		rm_noflags = CVAR(rm_noflags);
+#else
+        rm_noflags = 0;
+#endif
+
 		rm_showrankings = CVAR(rm_showrankings);
 		rm_shownames_teamonly = CVAR(rm_shownames_teamonly);
 		rm_oldbigfont = CVAR(rm_oldbigfont);

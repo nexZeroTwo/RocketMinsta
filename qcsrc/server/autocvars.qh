@@ -1,5 +1,5 @@
 
-#ifdef RM_SUPPORT_PKG_o_ayumi
+#ifdef RM_SUPPORT_PKG_e_ayumi
 #define RM_SUPPORT_GHOST_OBSERVERS
 #endif
 
