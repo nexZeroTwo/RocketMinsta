@@ -456,11 +456,11 @@ void HG_NadeGainSound() {
     hg_nadecount2 = c2;
 }
 
-float glines_spread;
-float glines_alpha;
-float glines_anim;
+float glines_spread[2];
+float glines_alpha[2];
+float glines_anim[2];
 
-void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, float a) {
+void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, float a, float animphase) {
     var angle = vectoangles(dir);
     fixedmakevectors2(angle + [0, spread, 0]);
     dir = v_forward;
@@ -468,10 +468,10 @@ void DrawSpreadGuideLine(vector realorg, vector org, vector dir, float spread, f
     traceline(org, org + dir * MAX_SHOT_DISTANCE, MOVE_NOMONSTERS, world);
     var dst = trace_endpos;
 
-    Draw_CylindricLine(org, dst, 5, "particles/guideline", 0.05, glines_anim, '1 1 0.35', a, DRAWFLAG_ADDITIVE, view_origin);
+    Draw_CylindricLine(org, dst, 5, "particles/guideline", 0.05, animphase, '1 1 0.35', a, DRAWFLAG_ADDITIVE, view_origin);
 }
 
-void DrawSpreadGuideLines(void) {
+void DrawSpreadGuideLines(float statfld, float invert) {
     /*
      *  TODO:
      *
@@ -484,23 +484,29 @@ void DrawSpreadGuideLines(void) {
     var org = view_origin;
     var dir = view_forward;
 
-    var spread = getstatf(STAT_AIMSPREAD);
+    var spread = getstatf(statfld);
+
+    var i = invert;
 
     if(spread < 0) {
-        glines_alpha = approach(glines_alpha, 0, drawframetime * 5);
-        if(!glines_alpha)
+        glines_alpha[i] = approach(glines_alpha[i], 0, drawframetime * 5);
+        if(!glines_alpha[i])
             return;
     } else {
-        glines_alpha = approach(glines_alpha, 1, drawframetime * 5);
-        glines_spread = spread;
-        glines_anim -= drawframetime;
+        glines_alpha[i] = approach(glines_alpha[i], 1, drawframetime * 5);
+        glines_spread[i] = spread;
+        glines_anim[i] = glines_anim[i] - drawframetime;
     }
 
     var shotorg = ReadShotOriginStat(STAT_SHOTORG_VISUAL);
+
+    if(invert)
+        shotorg_y = -shotorg_y;
+
     org += view_forward * shotorg_x + view_right * shotorg_y + view_up * (shotorg_z + 6);
 
-    DrawSpreadGuideLine(view_origin, org, dir,  glines_spread, glines_alpha);
-    DrawSpreadGuideLine(view_origin, org, dir, -glines_spread, glines_alpha);
+    DrawSpreadGuideLine(view_origin, org, dir,  glines_spread[i], glines_alpha[i], glines_anim[i]);
+    DrawSpreadGuideLine(view_origin, org, dir, -glines_spread[i], glines_alpha[i], glines_anim[i]);
 }
 
 void CSQC_UpdateView(float w, float h)
@@ -720,7 +726,8 @@ void CSQC_UpdateView(float w, float h)
     if (!fps_friendly)
         Plasma_Draw();
 
-    DrawSpreadGuideLines();
+    DrawSpreadGuideLines(STAT_AIMSPREAD, FALSE);
+    DrawSpreadGuideLines(STAT_AIMSPREAD2, TRUE);
 
 	R_AddEntities(MASK_NORMAL | MASK_ENGINE | MASK_ENGINEVIEWMODELS);
 	R_RenderScene();

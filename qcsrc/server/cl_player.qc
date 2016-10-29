@@ -238,7 +238,7 @@ void player_setupanimsformodel()
 	self.anim_pain1 = '9 1 2'; // 0.5 seconds
 	self.anim_pain2 = '10 1 2'; // 0.5 seconds
 	self.anim_shoot = '11 1 5'; // TODO: analyze models and set framerate
-	self.anim_taunt = '12 1 0.33'; // FIXME?  there is no code using this anim
+	self.anim_taunt = '12 1 0.33';
 	self.anim_run = '13 1 1';
 	self.anim_runbackwards = '14 1 1';
 	self.anim_strafeleft = '15 1 1';
@@ -356,7 +356,16 @@ void player_anim (void)
 
 	if (self.weaponentity)
 	if (!self.weaponentity.animstate_override)
-		setanim(self.weaponentity, self.weaponentity.anim_idle, TRUE, FALSE, FALSE);
+		setanim(self.weaponentity, self.weaponentity.(if(Akimbo_GunPosition(self) == 2) anim_idle_left else anim_idle), TRUE, FALSE, FALSE);
+
+    if((var g = Akimbo_Ghost(self))) {
+        if(g.weaponentity && !g.weaponentity.animstate_override) {
+            if(cvar("sv_weaponmodel_" + get_weaponinfo(g.weapon).netname + "_left_hand_animations"))
+                setanim(g.weaponentity, g.weaponentity.anim_idle_left, TRUE, FALSE, FALSE);
+            else
+                setanim(g.weaponentity, g.weaponentity.anim_idle, TRUE, FALSE, FALSE);
+        }
+    }
 }
 
 void SpawnThrownWeapon (vector org, float w)
@@ -932,15 +941,20 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
         // become fully visible
         self.alpha = 1;
 
-		if(!g_freeze)
-		{
-			// clear selected player display
-			ClearSelectedPlayer();
-			// throw a weapon
-            
-            if(!g_jailbreak)
-                SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
-		}
+        if(!g_freeze)
+            ClearSelectedPlayer();
+
+        if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop)) {
+            W_ThrowSecondary();
+
+            if(g_freeze) {
+                if(self.w_secondary)
+                    self.akimbo_weapons &~= W_WeaponBit(self.w_secondary);
+                W_SetSecondary(self, 0);
+            }
+        } else if(!g_freeze && !g_jailbreak) {
+            SpawnThrownWeapon(self.origin + (self.mins + self.maxs) * 0.5, self.switchweapon);
+        }
 
         if(DEATH_HGTYPE(deathtype) == HG_BAIT)
         if(IsDifferentTeam(attacker, self))
@@ -1095,10 +1109,12 @@ void PlayerDamage(entity inflictor, entity attacker, float damage, float deathty
 		// reset fields the weapons may use just in case
         for (j = WEP_FIRST; j <= WEP_LAST; ++j)
 		{
-            weapon_action(j, WR_RESETPLAYER);
+            Akimbo_WeaponAction(j, WR_RESETPLAYER);
 			ATTACK_FINISHED_FOR(self, j) = 0;
 		}
-        
+
+        Akimbo_Clear(self);
+
         GAMEEVENT("playerdied", {
             GAMEEVENTARG(Entity, self)
             GAMEEVENTARG(Entity, inflictor)

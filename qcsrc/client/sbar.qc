@@ -3982,6 +3982,61 @@ float Sbar_GetNadgetRegen(float stat_type, float stat_regen, float stat_maxregen
         return getstatf(stat_regen) / getstatf(stat_maxregen);
 }
 
+void Sbar_DrawArenaWeapons(vector center) {
+    const icon_w = SECWIDTH_NORMAL * 0.8;
+    const icon_h = icon_w / 2;
+    const space = icon_w * 0.1;
+
+    var p = center - [icon_w + space * 0.5, icon_h];
+    var s = [icon_w, icon_h];
+
+    var wep1 = log2of(g_weaponarena) + 1;
+    var wep2 = getstati(STAT_WEP_SECONDARY);
+
+    var icon1 = "gfx/hud/inv_weapon" + (wep1 - 1);
+    var icon2 = if(wep2) "gfx/hud/inv_weapon" + (wep2 - 1) else "gfx/hud/noweapon";
+
+    var bit2 = pow(2, wep2 - 1);
+
+    var weps = getstati(STAT_WEAPONS);
+    var active1 = (weps & g_weaponarena);
+    var active2 = ((weps & bit2) || !weps);
+
+    var aweps = getstati(STAT_AKIMBO_WEAPONS);
+
+    drawpic(p, icon1, s, if(active1) '1 1 1' else '0 0 0', sbar_alpha_fg * (if(active1) 1 else 0.5), DRAWFLAG_NORMAL);
+    p_x += s_x + space;
+    drawpic(p, icon2, s, if(active2) '1 1 1' else '0 0 0', sbar_alpha_fg * (if(active2) 1 else 0.5), DRAWFLAG_NORMAL);
+
+    if(aweps & bit2) {
+        icon1 = "gfx/hud/x2";
+        icon2 = "gfx/hud/x2_glow";
+        var sz = [icon_h * 0.6, icon_h * 0.6];
+
+        drawpic(p + s - sz, icon2, sz, get_weaponinfo(wep2).w_color, sbar_alpha_fg, DRAWFLAG_NORMAL);
+        drawpic(p + s - sz, icon1, sz, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    }
+}
+
+void Sbar_DrawPickupConfirmation(void) {
+    if(!(var w = getstati(STAT_WEP_PICKUP_CONFIRMATION)))
+        return;
+
+    var p = [vid_conwidth * 0.5, vid_conheight * 0.6];
+    const icon_w = SECWIDTH_NORMAL * 0.8;
+    const icon_h = icon_w / 2;
+    const icon_s = [icon_w, icon_h];
+
+    var wicon = "gfx/hud/inv_weapon" + (w - 1);
+
+    drawpic(p - icon_s * 0.5, wicon, icon_s, '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+    p_y += icon_h;
+    drawcolorcodedstringcenter(p,
+        "^3Press ^1" + strtoupper(getcommandkey("use", "+use")) + " ^3to pick up the ^2" + get_weaponinfo(w).message,
+        sbar_fontsize, sbar_alpha_fg, DRAWFLAG_NORMAL
+    );
+}
+
 void Sbar_Draw(void)
 {
 	// vectors for top right, bottom right, bottom and bottom left corners
@@ -5333,8 +5388,10 @@ void Sbar_Draw(void)
 
 		// weapon icons
 		
-		if(!g_minstagib)
-		{
+        if(g_weaponarena_secondary) {
+            Sbar_DrawArenaWeapons([vid_conwidth * 0.5, bottomleft_y - 32]);
+            Sbar_DrawPickupConfirmation();
+        } else if(!g_minstagib) {
             float wepcnt;
             
 			x = 1.0;

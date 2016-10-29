@@ -272,6 +272,19 @@ float Item_GiveTo(entity item, entity player)
 	if(player.frozen)
 		return 0;
 
+    if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop) && player.w_secondary && item.weapons) {
+        var w = log2of(item.weapons) + 1;
+
+        if(w == player.w_secondary) {
+            if(!Akimbo_Possible(w) || Akimbo_HaveWeapon(player, w))
+                return 0;
+        } else if(!player.BUTTON_USE) {
+            player.w_pickup_confirmation = time;
+            player.w_pickup_confirmation_stat = w;
+            return 0;
+        }
+    }
+
 	// if nothing happens to player, just return without taking the item
 	pickedup = FALSE;
 	_switchweapon = FALSE;
@@ -426,16 +439,19 @@ float Item_GiveTo(entity item, entity player)
 		if not(item.flags & FL_NO_WEAPON_STAY)
 		if (item.flags & FL_WEAPON)
 		{
-			if(item.classname == "droppedweapon")
-			{
-				if (player.weapons & item.weapons)	// don't let players stack ammo by tossing weapons
-					goto skip;
-			}
-			else
-			{
-				if (player.weapons & item.weapons)
-					goto skip;
-			}
+            for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+                if (W_WeaponBit(i) & item.weapons & player.weapons)
+                    if (Akimbo_GiveWeapon (player, i, item.netname))
+                    {
+                        pickedup = TRUE;
+                        sound (player, CHAN_AUTO, item.item_pickupsound, VOL_BASE, ATTN_NORM);
+                    }
+
+            if not(pickedup)
+            {
+                if (player.weapons & item.weapons)  // don't let players stack ammo by tossing weapons
+                    goto skip;
+            }
 		}
 
 		// in case the player has autoswitch enabled do the following:
@@ -487,17 +503,19 @@ float Item_GiveTo(entity item, entity player)
 			}
 		}
 
-		if (item.flags & FL_WEAPON)
-		if ((it = item.weapons - (item.weapons & player.weapons)))
-		{
-			pickedup = TRUE;
-			for(i = WEP_FIRST; i <= WEP_LAST; ++i)
-			{
-				e = get_weaponinfo(i);
-				if(it & e.weapons)
-					W_GiveWeapon (player, e.weapon, item.netname);
-			}
-		}
+		if (item.flags & FL_WEAPON) {
+            pickedup = TRUE;
+            for(i = WEP_FIRST; i <= WEP_LAST; ++i)
+            {
+                e = get_weaponinfo(i);
+                if(item.weapons & e.weapons) {
+                    if(e.weapons & player.weapons || player.w_secondary == e.weapon)
+                        Akimbo_GiveWeapon(player, e.weapon, item.netname);
+                    else
+                        W_GiveWeapon(player, e.weapon, item.netname);
+                }
+            }
+        }
 
 		if((it = (item.items - (item.items & player.items)) & IT_PICKUPMASK))
 		{
@@ -823,12 +841,11 @@ void StartItem (string itemmodel, string pickupsound, float defaultrespawntime, 
 {
 	startitem_failed = FALSE;
     
-    if(g_clanarena && !g_clanarena_pickups) {
+    if(g_clanarena && !g_clanarena_pickups && (self.classname != "droppedweapon" || !g_weaponarena_secondary || !CVAR(g_weaponarena_secondary_drop))) {
         startitem_failed = TRUE;
         remove(self);
         return;
     }
-        
 
 	// is it a dropped weapon?
 	if (self.classname == "droppedweapon")
@@ -1339,6 +1356,20 @@ void weapon_defaultspawnfunc(float wpn)
 	StartItem(_model, _sound, self.respawntime, self.respawntimejitter, e.message, 0, e.weapons, FL_WEAPON, weapon_pickupevalfunc, e.bot_pickupbasevalue);
 	if (self.modelindex) // don't precache if self was removed
 		weapon_precache(e.weapon);
+
+    if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop)) {
+        var wp = WaypointSprite_Spawn(e.message, 0, waypointsprite_limitedrange, self, '0 0 64', world, 0, self, waypointsprite_attached, FALSE);
+        WaypointSprite_UpdateTextColors(wp, e.w_color, '0 0 0', '0 0 0');
+        wp.waypointsprite_visible_for_player = inline float(void) {
+            if(other.w_secondary)
+                return FALSE;
+
+            if(self.owner.solid != SOLID_TRIGGER)
+                return FALSE;
+
+            return TRUE;
+        };
+    }
 }
 
 void spawnfunc_weapon_shotgun (void);

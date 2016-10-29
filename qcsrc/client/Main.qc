@@ -2107,6 +2107,7 @@ void Ent_Init()
 	g_nadgets = ReadByte();
     cvar_set("_g_nadgets_select_available", ftos(if(g_nadgets) ReadByte() else 0));
     cvar_set("_g_nadgets_select_double", ftos(g_nadgets_double = if(g_nadgets) ReadByte() else 0));
+    g_weaponarena = ReadInt24_t();
     g_weaponarena_secondary = ReadInt24_t();
     cvar_set("_secondary_select_available", ftos(!!(g_weaponarena_secondary & (g_weaponarena_secondary - 1))));
     g_freeze = ReadByte();

@@ -1,9 +1,13 @@
 /*
-Generated framegroups file for out
+Generated framegroups file for h_pryaxe2
 Used by DarkPlaces to simulate frame groups in DPM models.
 */
 
-9 23 20 0 groupified_0_anim
-9 23 20 0 groupified_1_anim
-32 200 20 1 groupified_2_anim
-232 39 20 0 groupified_3_anim
+1 22 20 0 meleeattack1
+23 23 20 0 meleeattack2
+46 120 20 1 idle
+166 39 20 0 reload
+205 22 20 0 meleeattack1_akimbo
+227 23 20 0 meleeattack2
+250 121 20 1 idle_akimbo
+371 39 20 0 reload
