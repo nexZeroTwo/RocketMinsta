@@ -128,7 +128,8 @@ void Akimbo_Init()
 			WEPBIT_HAGAR |
 			WEPBIT_ROCKET_LAUNCHER | 
             WEPBIT_ZAPPER |
-            WEPBIT_FLAK;
+            WEPBIT_FLAK |
+            WEPBIT_PRYAXE;
 
 	if (s == "all")
 		g_akimbo_weapons = weapons_with_akimbo_support;
