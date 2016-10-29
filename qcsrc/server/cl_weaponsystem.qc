@@ -717,7 +717,11 @@ void CL_ExteriorWeaponentity_Think()
 		}
 		else if (akimbo_weapon && CVAR(g_akimbo_use_left_hand)) {
 			setattachment(self, Akimbo_Owner(self.owner), "bip01 l hand");
-			self.angles = CVAR_VEC(g_akimbo_use_left_hand_rotate);
+			string per_weapon_angles = cvar_string("g_akimbo_use_left_hand_rotate_" + get_weaponinfo(self.owner.weapon).netname);
+			if (per_weapon_angles == "")
+				self.angles = CVAR_VEC(g_akimbo_use_left_hand_rotate);
+			else
+				self.angles = stov(per_weapon_angles);
 		} else {
 			setattachment(self, Akimbo_Owner(self.owner), "bip01 r hand");
 			if (akimbo_weapon)
