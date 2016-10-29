@@ -634,15 +634,17 @@ void CL_Weaponentity_Think()
 
 	float f;
 	f = 0;
+	vector left_hand_correction = '0 0 0';
 	if (self.state == WS_RAISE && !intermission_running)
 	{
 		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 
         if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(switchmode == 2)
+        else if(switchmode == 2) {
+			left_hand_correction_x = -20 * f;
             self.angles_y = 90 * f * f;
-        else
+        } else
             self.angles_x = -90 * f * f;
 	}
 	else if (self.state == WS_DROP && !intermission_running)
@@ -651,9 +653,10 @@ void CL_Weaponentity_Think()
 
         if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(switchmode == 2)
+        else if(switchmode == 2) {
+			left_hand_correction_x = -20 * f;
             self.angles_y = 90 * f * f;
-        else
+        } else
             self.angles_x = -90 * f * f;
 	}
 	else if (self.state == WS_CLEAR)
@@ -670,7 +673,7 @@ void CL_Weaponentity_Think()
 
     self.angles += self.punchangle;
     self.punchangle = self.punchangle * max(0, 1 - frametime * 5);
-    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1');
+    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1' + left_hand_correction);
 
 	// create or update the lasertarget entity
 	LaserTarget_Think();
@@ -714,7 +717,11 @@ void CL_ExteriorWeaponentity_Think()
 		}
 		else if (akimbo_weapon && CVAR(g_akimbo_use_left_hand)) {
 			setattachment(self, Akimbo_Owner(self.owner), "bip01 l hand");
-			self.angles = CVAR_VEC(g_akimbo_use_left_hand_rotate);
+			string per_weapon_angles = cvar_string("g_akimbo_use_left_hand_rotate_" + get_weaponinfo(self.owner.weapon).netname);
+			if (per_weapon_angles == "")
+				self.angles = CVAR_VEC(g_akimbo_use_left_hand_rotate);
+			else
+				self.angles = stov(per_weapon_angles);
 		} else {
 			setattachment(self, Akimbo_Owner(self.owner), "bip01 r hand");
 			if (akimbo_weapon)
