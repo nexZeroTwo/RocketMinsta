@@ -634,15 +634,17 @@ void CL_Weaponentity_Think()
 
 	float f;
 	f = 0;
+	vector left_hand_correction = '0 0 0';
 	if (self.state == WS_RAISE && !intermission_running)
 	{
 		f = (self.owner.weapon_nextthink - time) * g_weaponratefactor / CVAR(g_balance_weaponswitchdelay);
 
         if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(switchmode == 2)
+        else if(switchmode == 2) {
+			left_hand_correction_x = -20 * f;
             self.angles_y = 90 * f * f;
-        else
+        } else
             self.angles_x = -90 * f * f;
 	}
 	else if (self.state == WS_DROP && !intermission_running)
@@ -651,9 +653,10 @@ void CL_Weaponentity_Think()
 
         if(switchmode == 1)
             self.angles_y = -90 * f * f;
-        else if(switchmode == 2)
+        else if(switchmode == 2) {
+			left_hand_correction_x = -20 * f;
             self.angles_y = 90 * f * f;
-        else
+        } else
             self.angles_x = -90 * f * f;
 	}
 	else if (self.state == WS_CLEAR)
@@ -670,7 +673,7 @@ void CL_Weaponentity_Think()
 
     self.angles += self.punchangle;
     self.punchangle = self.punchangle * max(0, 1 - frametime * 5);
-    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1');
+    setorigin(self, self.w_viewmodel_offset + self.punchangle_x * '-2 0 -1' + left_hand_correction);
 
 	// create or update the lasertarget entity
 	LaserTarget_Think();
