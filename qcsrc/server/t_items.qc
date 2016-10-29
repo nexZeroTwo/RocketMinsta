@@ -1356,6 +1356,20 @@ void weapon_defaultspawnfunc(float wpn)
 	StartItem(_model, _sound, self.respawntime, self.respawntimejitter, e.message, 0, e.weapons, FL_WEAPON, weapon_pickupevalfunc, e.bot_pickupbasevalue);
 	if (self.modelindex) // don't precache if self was removed
 		weapon_precache(e.weapon);
+
+    if(g_weaponarena_secondary && CVAR(g_weaponarena_secondary_drop)) {
+        var wp = WaypointSprite_Spawn(e.message, 0, waypointsprite_limitedrange, self, '0 0 64', world, 0, self, waypointsprite_attached, FALSE);
+        WaypointSprite_UpdateTextColors(wp, e.w_color, '0 0 0', '0 0 0');
+        wp.waypointsprite_visible_for_player = inline float(void) {
+            if(other.w_secondary)
+                return FALSE;
+
+            if(self.owner.solid != SOLID_TRIGGER)
+                return FALSE;
+
+            return TRUE;
+        };
+    }
 }
 
 void spawnfunc_weapon_shotgun (void);
