@@ -43,7 +43,9 @@ void Akimbo_GhostRemove(entity e)
 entity Akimbo_NewGhost(void) {
     if(self.akimbo_ghost_persistent)
         return self.akimbo_ghost_persistent;
-    return spawn();
+    return spawn() {
+        classname: "akimbo_ghost"
+    };
 }
 
 void Akimbo_WeaponFrame()

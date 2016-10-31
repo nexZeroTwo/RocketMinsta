@@ -199,7 +199,7 @@ void W_Clip_ResetAll(float dorefill) {
     var wep;
     W_CLIP_LOOP_FOR_ALL_CONTEXTS(wep, W_Clip_Reset(dorefill);)
 
-    if(Akimbo_Active(self) != 2)
+    if(self.classname != "akimbo_ghost")
         using(self = Akimbo_PGhost(self))
             if(self)
                 W_Clip_ResetAll(dorefill);
@@ -273,7 +273,7 @@ void W_Clip_PlayerPreThinkHook(void) {
         self.w_clip_loaded = bound(0, self.w_clip_loaded + w_clip_context_regen * frametime, self.w_clip_limit);
     })
 
-    if(Akimbo_Active(self) != 2)
+    if(self.classname != "akimbo_ghost")
         using(self = Akimbo_PGhost(self))
             if(self)
                 W_Clip_PlayerPreThinkHook();
