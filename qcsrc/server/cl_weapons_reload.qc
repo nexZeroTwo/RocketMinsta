@@ -200,7 +200,7 @@ void W_Clip_ResetAll(float dorefill) {
     W_CLIP_LOOP_FOR_ALL_CONTEXTS(wep, W_Clip_Reset(dorefill);)
 
     if(Akimbo_Active(self) == 1)
-        using(self = Akimbo_Ghost(self))
+        using(self = Akimbo_PGhost(self))
             W_Clip_ResetAll(dorefill);
 }
 
@@ -273,6 +273,6 @@ void W_Clip_PlayerPreThinkHook(void) {
     })
 
     if(Akimbo_Active(self) == 1)
-        using(self = Akimbo_Ghost(self))
+        using(self = Akimbo_PGhost(self))
             W_Clip_PlayerPreThinkHook();
 }

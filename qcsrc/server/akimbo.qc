@@ -187,6 +187,14 @@ entity Akimbo_Ghost(entity e)
 	return e.akimbo_ghost;
 }
 
+entity Akimbo_PGhost(entity e) {
+    if (e.owner)
+    if (e.owner.akimbo_ghost_persistent == e)
+        return e;
+
+    return e.akimbo_ghost_persistent;
+}
+
 float Akimbo_GiveWeapon(entity p, float wpn, string name)
 {
 	float wpnbit = W_WeaponBit(wpn);
