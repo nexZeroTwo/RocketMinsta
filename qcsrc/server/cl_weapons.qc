@@ -354,6 +354,21 @@ void W_ThrowWeapon(vector velo, vector delta, float doreduce)
 	}
 };
 
+void W_UpdateSecondaryWeaponStatus(entity p) {
+    if(!p.scorekeeper)
+        return;
+
+    var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFF00FF;
+    var w = p.w_secondary & 0x7F;
+
+    if(Akimbo_HaveWeapon(p, w))
+        w += 0x80;
+
+    sprint(p, w + "\n");
+
+    PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
+}
+
 void W_ThrowSecondary_Once(void) {
     var org = self.origin + (self.mins + self.maxs) * 0.5;
     W_ThrowNewWeapon(self, self.w_secondary, FALSE, org, randomvec() * 125 + '0 0 200');
@@ -369,6 +384,7 @@ void W_ThrowSecondary(void) {
 
     if(Akimbo_HaveWeapon(self, self.w_secondary)) {
         self.akimbo_weapons &~= W_WeaponBit(self.w_secondary);
+        W_UpdateSecondaryWeaponStatus(self);
         W_ThrowSecondary_Once();
     }
 }
@@ -665,10 +681,7 @@ void W_SetSecondary(entity p, float w) {
         W_SwitchWeapon_Force(p, w);
     }
 
-    if(p.scorekeeper) {
-        var s = p.scorekeeper.(scores[SP_STATUSICONS]) & 0xFFFF00FF;
-        PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
-    }
+    W_UpdateSecondaryWeaponStatus(p);
 }
 
 void W_RegisterHitForHitstreak(entity attacker, float deathtype) {
