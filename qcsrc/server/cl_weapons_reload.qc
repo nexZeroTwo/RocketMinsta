@@ -199,9 +199,10 @@ void W_Clip_ResetAll(float dorefill) {
     var wep;
     W_CLIP_LOOP_FOR_ALL_CONTEXTS(wep, W_Clip_Reset(dorefill);)
 
-    if(Akimbo_Active(self) == 1)
+    if(Akimbo_Active(self) != 2)
         using(self = Akimbo_PGhost(self))
-            W_Clip_ResetAll(dorefill);
+            if(self)
+                W_Clip_ResetAll(dorefill);
 }
 
 float W_Clip_Consume(float cost) {
@@ -272,7 +273,8 @@ void W_Clip_PlayerPreThinkHook(void) {
         self.w_clip_loaded = bound(0, self.w_clip_loaded + w_clip_context_regen * frametime, self.w_clip_limit);
     })
 
-    if(Akimbo_Active(self) == 1)
+    if(Akimbo_Active(self) != 2)
         using(self = Akimbo_PGhost(self))
-            W_Clip_PlayerPreThinkHook();
+            if(self)
+                W_Clip_PlayerPreThinkHook();
 }
