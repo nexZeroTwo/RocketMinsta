@@ -364,8 +364,6 @@ void W_UpdateSecondaryWeaponStatus(entity p) {
     if(Akimbo_HaveWeapon(p, w))
         w += 0x80;
 
-    sprint(p, w + "\n");
-
     PlayerScore_Set(p, SP_STATUSICONS, s + (w * 0x100) & 0x0000FF00);
 }
 
