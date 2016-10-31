@@ -6,21 +6,38 @@ float weapons_with_akimbo_support;
 
 void Akimbo_GhostRemove(entity e)
 {
-    using(self = e.akimbo_ghost)
+    if(!e.akimbo_ghost)
+        return;
+
+    using(self = e.akimbo_ghost) {
         weapon_action(self.weapon, WR_CLEAR);
+    }
 
-	if (e.akimbo_ghost.weaponentity.weaponentity)
-		remove(e.akimbo_ghost.weaponentity.weaponentity);
-	remove(e.akimbo_ghost.weaponentity);
-	remove(e.akimbo_ghost.exteriorweaponentity);
-	
-    // remove(self.akimbo_ghost);
+    if(e.akimbo_ghost.weaponentity.weaponentity) {
+        remove(e.akimbo_ghost.weaponentity.weaponentity);
+        e.akimbo_ghost.weaponentity.weaponentity = world;
+    }
+
+    if(e.akimbo_ghost.weaponentity) {
+       remove(e.akimbo_ghost.weaponentity);
+       e.akimbo_ghost.weaponentity = world;
+    }
+
+    if(e.akimbo_ghost.exteriorweaponentity) {
+       remove(e.akimbo_ghost.exteriorweaponentity);
+       e.akimbo_ghost.exteriorweaponentity = world;
+    }
+
+    using(self = self.akimbo_ghost) {
+        self.weapon = self.cnt = self.switchweapon = self.effects = 0;
+    }
+
     e.akimbo_ghost_persistent = e.akimbo_ghost;
+    e.akimbo_ghost = world;
 
-	e.akimbo_ghost = world;
-	
-    if (e.weaponentity)
-		e.weaponentity.cnt = 0;
+    if(e.weaponentity) {
+        e.weaponentity.cnt = 0;
+    }
 }
 
 entity Akimbo_NewGhost(void) {
@@ -33,6 +50,9 @@ void Akimbo_WeaponFrame()
 {
 	// if (self.akimbo_ghost && self.akimbo_ghost.weapon != self.weapon)
 		// Akimbo_GhostRemove(self);
+
+    if(!CVAR(g_akimbo))
+        return;
 
 	if (g_nexball)
 	if (self.ballcarried)
@@ -69,6 +89,7 @@ void Akimbo_WeaponFrame()
                 weapon_action(self.weapon, WR_SETUP);
                 weapon_thinkf(WFRAME_IDLE, CVAR(g_balance_weaponswitchdelay), w_ready);
                 weapon_boblayer1(PLAYER_WEAPONSELECTION_SPEED, '0 0 0');
+                // W_SwitchWeapon_Force(self, self.weapon);
             }
 
 			self.weaponentity.cnt = 0;
@@ -103,8 +124,7 @@ void Akimbo_WeaponFrame()
 	}
 	else
 	{
-		if (self.akimbo_ghost)
-			Akimbo_GhostRemove(self);
+		Akimbo_GhostRemove(self);
 	}
 }
 
@@ -255,6 +275,9 @@ float Akimbo_Possible(float wpn) {
 }
 
 void Akimbo_WeaponAction(float wpn, float req) {
+    var old_ghost = self.akimbo_ghost;
+    self.akimbo_ghost = self.akimbo_ghost_persistent;
+
     var player = Akimbo_Owner(self);
     var ghost  = Akimbo_Ghost(player);
 
@@ -263,6 +286,8 @@ void Akimbo_WeaponAction(float wpn, float req) {
 
     if(ghost)  using(self = ghost)
         weapon_action(wpn, req);
+
+    self.akimbo_ghost = old_ghost;
 }
 
 void Akimbo_OnPlayerSpawn(entity e) {
