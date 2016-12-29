@@ -15,3 +15,7 @@
 89: flag_anim_linear(38, 14.285, 0)
 1g: flag_anim_linear(22, 7, 0)
 1h: flag_anim_linear(5, 6, 0)
+1p: flag_anim_linear(58, 9, 0)
+1q: flag_anim_linear(16, 9, 0)
+1t: flag_anim_linear(48, 9, 0)
+1u: flag_anim_linear(34, 7, 0)
