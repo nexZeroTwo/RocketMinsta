@@ -802,9 +802,12 @@ void PostInit(void)
             warpzone_sound_transition = 0;
         case 64:
             cvar_set("sv_ip2country_server", "udp://91.121.161.160:16886");
+        case 65:
+            localcmd("seta r_transparentdepthmasking 1\n");
+            localcmd("seta scr_loadingscreen_background 1\n");
 
 		//More to come here with each update
-		localcmd("seta rm_initialized 65\n");
+		localcmd("seta rm_initialized 66\n");
 		RM_OUTDATED
 		break;
 	}

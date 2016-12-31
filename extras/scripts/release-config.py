@@ -11,8 +11,9 @@ comment = 'release build'
 qcc_flags = '-O2'
 
 
-def hook_post_build_pk3(log, pk3_path, **rest):
-    util.logged_subprocess(['leanify', str(pk3_path)], logger=log)
+if 'fast' not in argv:
+    def hook_post_build_pk3(log, pk3_path, **rest):
+        util.logged_subprocess(['leanify', str(pk3_path)], logger=log)
 
 
 
