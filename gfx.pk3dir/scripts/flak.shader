@@ -16,3 +16,16 @@ textures/rtzflak_scope_anim
         rgbgen identity
     }
 }
+
+textures/rm_nex_scope_glass
+{
+    surfaceparm trans
+    cull none
+    {
+        map textures/rm_nex_scope_glass.tga
+        blendfunc add
+        rgbgen lightingDiffuse
+        tcgen environment
+        tcmod scale 7 7
+    }
+}
