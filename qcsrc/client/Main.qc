@@ -476,10 +476,6 @@ void ReloadMenu_f()
 	{
 		if(rm_helptime)
 			localcmd("menu_cmd directmenu RMConfig\n");
-			
-        Menu_ShowNagger();
-		gui_reloading = 0;
-		remove(self);
 	}
 }
 
@@ -914,7 +910,6 @@ void PostInit(void)
 	else if(rm_helptime)
 		localcmd("menu_cmd directmenu RMConfig\n");
 	
-    defer(1, Menu_ShowNagger);
     defer(0.5, inline void(void) {
         MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
         bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);
