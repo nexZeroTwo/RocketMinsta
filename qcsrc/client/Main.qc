@@ -476,6 +476,9 @@ void ReloadMenu_f()
 	{
 		if(rm_helptime)
 			localcmd("menu_cmd directmenu RMConfig\n");
+			
+		gui_reloading = 0;
+		remove(self);
 	}
 }
 
