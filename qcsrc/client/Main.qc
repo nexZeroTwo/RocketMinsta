@@ -622,7 +622,6 @@ void RemoveDuplicateMasterServers(void) {
 void RegisterMasterServers(void) {
     RemoveDuplicateMasterServers();
     AddMasterServer("dpmaster.deathmask.net",   "107.161.23.68");   // dpmaster.deathmask.net
-    AddMasterServer("dpmaster.tchr.no",         "92.62.40.73");     // tChr's master server
 }
 
 void InitFonts(void) {
