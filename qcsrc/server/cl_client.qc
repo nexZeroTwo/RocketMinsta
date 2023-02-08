@@ -3087,6 +3087,12 @@ void ObserverThink()
         setorigin(self, self.origin + [0, 0, frametime * 5 * sin(time + num_for_edict(self))]);
 #endif
 
+	if(self.BUTTON_JUMP) {
+	LeaveSpectatorMode();
+	JoinBestTeam(self, FALSE, TRUE);
+	return;
+	}
+
     if(self.flags & FL_JUMPRELEASED) {
 		if(self.BUTTON_JUMP && !self.version_mismatch) {
 			self.flags &~= FL_JUMPRELEASED;
