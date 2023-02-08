@@ -64,7 +64,11 @@ Example: install_dirs = [util.expand('/home/zero/.nexuiz/data')]
 Make sure to also copy the "zzz" files to your ~/Nexuiz/data/ (basically where your Nexuiz 2.5.2 installation is).
 
 # IMPORTANT
-Do copy .nexuiz/data to usr/share/games (will look like this: usr/share/games/nexuiz/data
+Do copy ```Nexuiz/data/data20091001.pk3``` to: ```./nexuiz/data```
+
+Do copy ```.nexuiz/data``` to ```usr/share/games``` (will look like this: ```usr/share/games/nexuiz/data```
+
+Just make sure all 3 locations (usr, Nexuiz, .nexuiz) have all zzz-rm packages included, as well as the data20091001.pk3!
 
 Depending on your distro, you will need root privilege!
 
