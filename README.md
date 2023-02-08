@@ -45,7 +45,7 @@ After that, do: ```sudo ./setup.py install```
 It should output something like: ```Finished processing dependencies for rmbuild==0.1```
 This means, you're done!
 
-# Step 4: 
+# Step 5: 
 RocketMinsta install
 Go to your RM install folder, that you cloned.
 
@@ -72,7 +72,7 @@ Just make sure all 3 locations (usr, Nexuiz, .nexuiz) have all zzz-rm packages i
 
 Depending on your distro, you will need root privilege!
 
-# Step 5: 
+# Step 6: 
 Your Nexuiz-DPRM install:
 
 Go to your cloned folder called DarkPlacesRM.
@@ -85,7 +85,7 @@ Copy this inside your Nexuiz installation. (e.g. ./Nexuiz)
 
 -> Do ```chmod +x ./nexuiz-dprm-dedicated``` | This allows your dedicated Nexuiz file to be executed.
 
-# Step 6:
+# Step 7:
 Executing and customizing
 
 First, do ```ip address``` in terminal to find out your own address. With this, you can connect via your Rexuiz/Xonotic client to your local Nexuiz-DPRM server.
