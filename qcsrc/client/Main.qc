@@ -161,15 +161,15 @@ void CSQC_Init(void)
     registercvar("rm_visualdamage_spreadout", "1");
     registercvar("rm_visualdamage_nooverlap", "0");
     registercvar("rm_visualdamage_movespeed", "1");
-    registercvar("rm_showplayername", "1", CVAR_SAVE);
+    registercvar("rm_showplayername", "1");
     registercvar("rm_fps_friendly", "0");
-    registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
+    registercvar("rm_hud_healthcolor", "0");
     registercvar("rm_hud_crosshair_ring_size", "2");
     registercvar("rm_hud_crosshair_ring_alpha", "0.25");
     registercvar("cl_effects_lightningarc_count", "1");
     registercvar("g_waypointsprite_pointer_scale", "1");
     registercvar("g_waypointsprite_pointer_edgefadescale", "1");
-	registercvar("cl_lowammowarnings", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings", "1");
 	registercvar("cl_lowammowarnings_bullets", "20");
 	registercvar("cl_lowammowarnings_cells", "15");
 	registercvar("cl_lowammowarnings_rockets", "10");
@@ -190,8 +190,8 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_green", "0.5");
     registercvar("crosshair_flak_color_blue", "0");
     registercvar("crosshair_flak_color_alpha", "1");
-    registercvar("cl_truezapper", "0", CVAR_SAVE);
-    registercvar("cl_frozentint", "1", CVAR_SAVE);
+    registercvar("cl_truezapper", "0");
+    registercvar("cl_frozentint", "1");
     registercvar("cl_message", "1");
     registercvar("cl_message_obituary", "1");
     registercvar("cl_message_obituary_log", "1");
@@ -513,8 +513,8 @@ void UpdateClRate(void) {
         return;
 
     // save it just in case we ever have to roll back
-    localcmd("seta _rm_cl_rate_saved ", ftos(oldrate), "\n");
-    localcmd("rate ", ftos(TARGET_RATE), "\n");
+
+    
 }
 
 void TryBindCRAKeys(void) {
@@ -744,17 +744,13 @@ void PostInit(void)
         case 41:
             localcmd("seta rm_shownadgetregen 0; shownadgetregen 0\n");
         case 42:
-            localcmd("seta cl_effects_lightningarc_count 1\n");
-            localcmd("seta cl_effects_lightningarc_segmentlength 24\n");
         case 43:
             localcmd("seta rm_radio 1; radio 1\n");
         case 44:
             localcmd("seta rm_althud 0; althud 0\n");
         case 45:
         case 46:
-            localcmd("seta cl_effects_lightningarc_branchfactor_add 0\n");
-            localcmd("seta cl_effects_lightningarc_branchfactor_start 0.05\n");
-            localcmd("seta cl_effects_lightningarc_drift_start 0.3\n");
+
         case 47:
             localcmd("seta rm_nododging 0; nododging 0\n");
         case 48:
@@ -768,11 +764,11 @@ void PostInit(void)
             if(cvar_type("cl_extendfragmessages") & CVAR_TYPEFLAG_EXISTS)
                 cvar_set("cl_message_obituary_frags_extended", ftos(CVAR(cl_extendfragmessages)));
         case 54:
-            localcmd("seta r_equalize_entities_fullbright 1\n");
+
         case 55:
             localcmd("seta rm_oldbigfont 0; oldbigfont 0\n");
         case 56:
-            localcmd("seta r_font_size_snapping 1\n");
+
         case 57:
         case 58:
             localcmd("seta rm_convswitch 0; convswitch 0\n");
@@ -790,9 +786,6 @@ void PostInit(void)
             warpzone_sound_transition = 0;
         case 64:
             cvar_set("sv_ip2country_server", "udp://91.121.161.160:16886");
-        case 65:
-            localcmd("seta r_transparentdepthmasking 0\n");
-            localcmd("seta scr_loadingscreen_background 1\n");
 
 		//More to come here with each update
 		localcmd("seta rm_initialized 66\n");

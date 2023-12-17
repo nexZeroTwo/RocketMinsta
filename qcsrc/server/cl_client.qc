@@ -1963,7 +1963,7 @@ void ClientConnect (void)
     self.hidecountry = CVAR(sv_hidecountry);
 	IP2C_SetCountry(self);
 	
-	stuffcmd(self, strcat("seta _g_rocketminsta ", ftos(g_minstagib && CVAR(g_rocketminsta)), "\n"));
+
 	if (clienttype(self) == CLIENTTYPE_REAL)
 		SendServerInfo(self);
 	
