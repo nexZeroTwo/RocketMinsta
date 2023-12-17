@@ -2791,15 +2791,7 @@ vector shotorg_adjustfromclient(vector vecs, float y_is_right, float allowcenter
 	switch(self.owner.cvar_cl_gunalign)
 	{
 		case 1: // right
-			break;
-
-		case 2: // left
-			vecs_y = -vecs_y;
-			break;
-
-		default:
-		case 3:
-			if(allowcenter) // 2: allow center handedness
+            if(allowcenter) // 2: allow center handedness
 			{
 				// center
 				vecs_y = 0;
@@ -2811,8 +2803,8 @@ vector shotorg_adjustfromclient(vector vecs, float y_is_right, float allowcenter
 			}
 			break;
 
-		case 4:
-			if(allowcenter) // 2: allow center handedness
+		case 2:
+        	if(allowcenter) // 2: allow center handedness
 			{
 				// center
 				vecs_y = 0;
@@ -2824,6 +2816,16 @@ vector shotorg_adjustfromclient(vector vecs, float y_is_right, float allowcenter
 				vecs_y = -vecs_y;
 			}
 			break;
+
+		default:
+
+		case 3: //right
+            break;
+
+		case 4: //left
+            vecs_y = -vecs_y;
+			break;
+
 	}
 	return vecs;
 }

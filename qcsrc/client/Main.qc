@@ -153,59 +153,59 @@ void CSQC_Init(void)
 	}
 #endif
 
-    registercvar("cl_rpn_autoload", "", CVAR_SAVE);
+    registercvar("cl_rpn_autoload", "");
 	registercvar("sbar_usecsqc", "1");
-	registercvar("sbar_columns", "default", CVAR_SAVE);
-    registercvar("rm_visualdamage_fontsize", "20", CVAR_SAVE);
-    registercvar("rm_visualdamage_limit", "20", CVAR_SAVE);
-    registercvar("rm_visualdamage_spreadout", "1", CVAR_SAVE);
-    registercvar("rm_visualdamage_nooverlap", "0", CVAR_SAVE);
-    registercvar("rm_visualdamage_movespeed", "1", CVAR_SAVE);
+	registercvar("sbar_columns", "default");
+    registercvar("rm_visualdamage_fontsize", "20");
+    registercvar("rm_visualdamage_limit", "20");
+    registercvar("rm_visualdamage_spreadout", "1");
+    registercvar("rm_visualdamage_nooverlap", "0");
+    registercvar("rm_visualdamage_movespeed", "1");
     registercvar("rm_showplayername", "1", CVAR_SAVE);
-    registercvar("rm_fps_friendly", "0", CVAR_SAVE);
+    registercvar("rm_fps_friendly", "0");
     registercvar("rm_hud_healthcolor", "0", CVAR_SAVE);
-    registercvar("rm_hud_crosshair_ring_size", "2", CVAR_SAVE);
-    registercvar("rm_hud_crosshair_ring_alpha", "0.25", CVAR_SAVE);
-    registercvar("cl_effects_lightningarc_count", "1", CVAR_SAVE);
-    registercvar("g_waypointsprite_pointer_scale", "1", CVAR_SAVE);
-    registercvar("g_waypointsprite_pointer_edgefadescale", "1", CVAR_SAVE);
+    registercvar("rm_hud_crosshair_ring_size", "2");
+    registercvar("rm_hud_crosshair_ring_alpha", "0.25");
+    registercvar("cl_effects_lightningarc_count", "1");
+    registercvar("g_waypointsprite_pointer_scale", "1");
+    registercvar("g_waypointsprite_pointer_edgefadescale", "1");
 	registercvar("cl_lowammowarnings", "1", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_bullets", "20", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_cells", "15", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_rockets", "10", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_shells", "10", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_cells", "10", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_zapper_heat", "25", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_size", "20", CVAR_SAVE);
-	registercvar("cl_lowammowarnings_position", "30", CVAR_SAVE);
-    registercvar("crosshair_zapper", "", CVAR_SAVE);
-    registercvar("crosshair_zapper_size", "0.5", CVAR_SAVE);
-    registercvar("crosshair_zapper_color_red", "0", CVAR_SAVE);
-    registercvar("crosshair_zapper_color_green", "0.7", CVAR_SAVE);
-    registercvar("crosshair_zapper_color_blue", "1", CVAR_SAVE);
-    registercvar("crosshair_zapper_color_alpha", "1", CVAR_SAVE);
-    registercvar("crosshair_flak", "", CVAR_SAVE);
-    registercvar("crosshair_flak_size", "0.6", CVAR_SAVE);
-    registercvar("crosshair_flak_color_red", "1", CVAR_SAVE);
-    registercvar("crosshair_flak_color_green", "0.5", CVAR_SAVE);
-    registercvar("crosshair_flak_color_blue", "0", CVAR_SAVE);
-    registercvar("crosshair_flak_color_alpha", "1", CVAR_SAVE);
+	registercvar("cl_lowammowarnings_bullets", "20");
+	registercvar("cl_lowammowarnings_cells", "15");
+	registercvar("cl_lowammowarnings_rockets", "10");
+	registercvar("cl_lowammowarnings_shells", "10");
+	registercvar("cl_lowammowarnings_cells", "10");
+	registercvar("cl_lowammowarnings_zapper_heat", "25");
+	registercvar("cl_lowammowarnings_size", "20");
+	registercvar("cl_lowammowarnings_position", "30");
+    registercvar("crosshair_zapper", "");
+    registercvar("crosshair_zapper_size", "0.5");
+    registercvar("crosshair_zapper_color_red", "0");
+    registercvar("crosshair_zapper_color_green", "0.7");
+    registercvar("crosshair_zapper_color_blue", "1");
+    registercvar("crosshair_zapper_color_alpha", "1");
+    registercvar("crosshair_flak", "");
+    registercvar("crosshair_flak_size", "0.6");
+    registercvar("crosshair_flak_color_red", "1");
+    registercvar("crosshair_flak_color_green", "0.5");
+    registercvar("crosshair_flak_color_blue", "0");
+    registercvar("crosshair_flak_color_alpha", "1");
     registercvar("cl_truezapper", "0", CVAR_SAVE);
     registercvar("cl_frozentint", "1", CVAR_SAVE);
-    registercvar("cl_message", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_log", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_log_deaths", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_log_streaks", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_log_multikills", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_frags", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_frags_extended", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_streaks", "1", CVAR_SAVE);
-    registercvar("cl_message_obituary_multikills", "1", CVAR_SAVE);
-    registercvar("cl_message_praise", "1", CVAR_SAVE);
-    registercvar("cl_message_praise_show", "1", CVAR_SAVE);
-    registercvar("cl_message_praise_announce", "1", CVAR_SAVE);
-    registercvar("cl_warpzone_sound_transition", "0", CVAR_SAVE);
+    registercvar("cl_message", "1");
+    registercvar("cl_message_obituary", "1");
+    registercvar("cl_message_obituary_log", "1");
+    registercvar("cl_message_obituary_log_deaths", "1");
+    registercvar("cl_message_obituary_log_streaks", "1");
+    registercvar("cl_message_obituary_log_multikills", "1");
+    registercvar("cl_message_obituary_frags", "1");
+    registercvar("cl_message_obituary_frags_extended", "1");
+    registercvar("cl_message_obituary_streaks", "1");
+    registercvar("cl_message_obituary_multikills", "1");
+    registercvar("cl_message_praise", "1");
+    registercvar("cl_message_praise_show", "1");
+    registercvar("cl_message_praise_announce", "1");
+    registercvar("cl_warpzone_sound_transition", "0");
 
     gametype = 0;
 
@@ -290,11 +290,11 @@ void CSQC_Shutdown(void)
 #pragma TARGET fte
 #endif
 
-    utf8_disable();
     WarpZone_Shutdown();
 
 	HUDSkin_Unload();
 	IP2C_Shutdown();
+	localcmd("exec font-xolonium.cfg");
 
 	remove(teams);
 	remove(players);
@@ -737,9 +737,6 @@ void PostInit(void)
 			localcmd("seta rm_freezetag_danger_silent 1; freezetag_danger_silent 1\n");
 		case 37:
         case 38:
-            // fight evil with evil
-            if(CVAR(cl_gunalign) == 3)
-                localcmd("seta cl_gunalign 1; sendcvar cl_gunalign\n");
         case 39:
             cvar_set("_rm_hg_optout", "0");
         case 40:
@@ -810,6 +807,10 @@ void PostInit(void)
     localcmd("alias -nadget -button6\n");
     localcmd("alias +nadget2 +button9\n");
     localcmd("alias -nadget2 -button9\n");
+	localcmd("alias vyes \"cmd vote yes\"\n");
+	localcmd("alias vno \"cmd vote no\"\n");
+
+
 
 	rm_showspec   = CVAR(rm_showspec);
 	rm_showdamage = CVAR(rm_showdamage);

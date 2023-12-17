@@ -21,8 +21,8 @@ void NadeMenu_Close(entity button, entity me)
 }
 
 void NadeMenu_RegisterCvars() {
-    registercvar("_rm_hg_alwaysask", "0", CVAR_SAVE);
-    registercvar("_rm_hg_optout", "0", CVAR_SAVE);
+    registercvar("_rm_hg_alwaysask", "0");
+    registercvar("_rm_hg_optout", "0");
 }
 
 void fillNexuizNadeMenuDialog(entity me)

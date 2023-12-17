@@ -5,7 +5,7 @@ void DPRM_Start() {
 
     if(!DPRM_VersionIsSuitable()) {
         print("\n====================================================================\n"
-              "^1WARNING: ^3Your engine is out of date!\n^3Please download and install the update from ^2" DPRM_WEBSITE_URL "^7"
+              "^1WARNING: ^3You're running Xonotic or Nexuiz 2.5.2!\n^3Bugs may occur, you may have more stability with Rexuiz.^2"
               "\n====================================================================\n\n");
     } else if(!DPRM_VersionIsRecommended()) {
         print("\n====================================================================\n"

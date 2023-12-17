@@ -35,11 +35,11 @@ void m_init()
 	cvar_set("_menu_alpha", "0");
 	registercvar("menu_slist_showonlyrm", "0", 0);
 	registercvar("_menu_vote_string", "", 0);
-    registercvar("menu_rpn_autoload", "", CVAR_SAVE);
+    registercvar("menu_rpn_autoload", "");
     registercvar("rm_fonts_prefer_ttf", "0", CVAR_SAVE);
     registercvar("menu_vid_width", "0", 0);
     registercvar("menu_vid_height", "0", 0);
-    registercvar("vid_ui_scale", "1", CVAR_SAVE);
+    registercvar("vid_ui_scale", "1");
 
     cvar_set("menu_vid_width", ftos(CVAR(vid_width)));
     cvar_set("menu_vid_height", ftos(CVAR(vid_height)));
@@ -52,7 +52,7 @@ void m_init()
     cvar_archive("r_shadow_glossexact", "0");
 
     if(!(cvar_type("sys_first_run") & CVAR_SAVE))
-        registercvar("sys_first_run", "0", CVAR_SAVE);
+        registercvar("sys_first_run", "0");
 
     if(cvar("sys_first_run"))
         apply_ui_scale();
@@ -163,7 +163,7 @@ void m_init_delayed()
 	{
 		draw_currentSkin = "gfx/menu/rmdefault";
 		fh = fopen(strcat(draw_currentSkin, "/skinvalues.txt"), FILE_READ);
-        registercvar("menu_rmskin", "rmdefault", CVAR_SAVE);
+        registercvar("menu_rmskin", "rmdefault");
 	}
     if(fh < 0)
 	{

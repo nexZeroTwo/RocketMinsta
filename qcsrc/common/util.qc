@@ -2022,15 +2022,15 @@ void load_fonts(void) {
             sizes = strcat(sizes, ftos(i), " ");
 
 
-        var font_small  = "gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
-        var font_big    = "gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
-        var font_mono   = "gfx/conchars,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_small  = "fonts/xolonium-regular.otf,gfx/vera-sans,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_big    = "fonts/xolonium-regular.otf,gfx/vera-sans-big,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
+        var font_mono   = "fonts/unifont-8.0.01.ttf";
         var font_madoka = "fonts/MadokaRunes-2.0.ttf,gfx/madoka-rune,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
         var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
 
         if(cvar("rm_fonts_prefer_ttf")) {
-            font_small  = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
-            font_big    = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
+            font_small  = "fonts/xolonium-regular.otf/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
+            font_big    = "fonts/xolonium-regular.otf/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
         }
 
         cvar_set("r_font_disable_freetype", "0");
@@ -2043,27 +2043,11 @@ void load_fonts(void) {
         localcmd("loadfont user0    ", font_small, sizes, "\n");
         localcmd("loadfont user1    ", font_small, sizes, "\n");
         localcmd("loadfont user2    ", font_big, sizes, "\n");
-        localcmd("loadfont user3    ", font_madoka, sizes, "\n");
         localcmd("loadfont user4    ", font_rmbig, sizes, "\n");
+		localcmd("loadfont user5    ", font_madoka, sizes, "\n");
 
         cvar_set("_rm_font_setting", "1");
-    } else {
-        cvar_set("r_font_disable_freetype", "1");
-
-        localcmd("loadfont default  gfx/vera-sans\n");
-        localcmd("loadfont console  gfx/conchars\n");
-        localcmd("loadfont chat     gfx/vera-sans\n");
-        localcmd("loadfont notify   gfx/vera-sans\n");
-        localcmd("loadfont infobar  gfx/vera-sans-big\n");
-        localcmd("loadfont user0    gfx/vera-sans\n");
-        localcmd("loadfont user1    gfx/vera-sans\n");
-        localcmd("loadfont user2    gfx/vera-sans-big\n");
-        localcmd("loadfont user3    gfx/madoka-rune\n");
-        localcmd("loadfont user4    gfx/iceland\n");
-
-        cvar_set("_rm_font_setting", "0");
-    }
-
+    } 
     localcmd("sbar_columns_set default\n");
 #endif
 }

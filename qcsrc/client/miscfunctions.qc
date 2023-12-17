@@ -95,6 +95,11 @@ void Announcer_Precache () {
     precache_sound("announcer/robotic/1minuteremains.wav");
 	precache_sound("announcer/robotic/5minutesremain.wav");
     precache_sound("porto/fire.wav");
+    precache_sound("misc/spree1.wav");
+	precache_sound("misc/spree2.wav");
+	precache_sound("misc/spree3.wav");
+	precache_sound("misc/spree4.wav");
+	precache_sound("misc/spree5.wav");
 }
 
 void AuditLists()
@@ -221,7 +226,7 @@ void SetupFonts()
 	sbar_font = FONT_USER+1;
 	sbar_bigfont = FONT_USER+2;
 	sbar_rmbigfont = FONT_USER+4;
-	sbar_madokafont = FONT_USER+3;
+	sbar_madokafont = FONT_USER+5;
 }
 
 vector Sbar_GetFontsize(string cvarname)

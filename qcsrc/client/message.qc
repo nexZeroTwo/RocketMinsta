@@ -607,36 +607,71 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
         ++i;
     }
 
-    if(shortspree - 1 >= 5)
+    if(shortspree - 1 >= 9)
         spreebar = strcat(spreebar, tail);
     else
         spreebar = strcat(spreebar, "^0", tail);
 
-    switch(shortspree) {
+     switch(shortspree) {
         case 2:
             if(showShort) bigprint("^2Double ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^2DOUBLE ^7KILL!\n");
+            if (iKilled && shortspree == 2)
+                sound(world, CHAN_AUTO, "misc/spree1.wav", VOL_BASE, ATTN_NONE);
             break;
         case 3:
             if(showShort) bigprint("^3Triple ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^3TRIPLE ^7KILL!\n");
+            if (iKilled && shortspree == 3)
+                sound(world, CHAN_AUTO, "misc/spree2.wav", VOL_BASE, ATTN_NONE);
             break;
         case 4:
             if(showShort) bigprint("^6Quad ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^6QUAD ^7KILL!\n");
+            if (iKilled && shortspree == 4)
+                sound(world, CHAN_AUTO, "misc/spree3.wav", VOL_BASE, ATTN_NONE);
             break;
         case 5:
             if(showShort) bigprint("^5Ultra ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored an ^5ULTRA ^7KILL!\n");
+            if (iKilled && shortspree == 5)
+                sound(world, CHAN_AUTO, "misc/spree4.wav", VOL_BASE, ATTN_NONE);
             break;
-        default: case 6:
+        case 6:
             if(showShort) bigprint("^1Monster ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if (iKilled && shortspree == 6)
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
             break;
+        case 7:
+            if(showShort) bigprint("^5Unstoppable!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if (iKilled && shortspree == 6)
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            break;
+        case 8:
+            if(showShort) bigprint("^4Fury!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if (iKilled && shortspree == 6)
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            break;
+        case 9:
+            if(showShort) bigprint("^6Godlike!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if (iKilled && shortspree == 6)
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            break;        
+        default: case 10:
+            if(showShort) bigprint("^3INVINCIBLE!", spreebar, 1);
+            if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
+            if (iKilled && shortspree == 6)
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            break;
+
     }
 
     if(iKilled)
-        sound(world, CHAN_AUTO, "porto/fire.wav", VOL_BASE, ATTN_NONE);
+        sound(world, CHAN_AUTO, "", VOL_BASE, ATTN_NONE);
 }
 
 void Message_Praise(float prflags) {
@@ -649,26 +684,41 @@ void Message_Praise(float prflags) {
     if(prflags & CSQCMSG_PRAISEFLAG_HEADSHOT) {
         if(show) bigprint("^1Head ^7Shot!", "", 1);
         if(annc) announce("announcer/male/headshot.wav");
+        else {
+        announce("announcer/default/headshot.wav");
+        }
     }
 
     if(prflags & CSQCMSG_PRAISEFLAG_AWESOME) {
         if(show) bigprint("^5Awesome!", "", 1);
         if(annc) announce("announcer/male/awesome.wav");
+        else {
+        announce("announcer/default/awesome.wav");
+        }
     }
 
     if(prflags & CSQCMSG_PRAISEFLAG_IMPRESSIVE) {
         if(show) bigprint("^3Impressive!", "", 1);
         if(annc) announce("announcer/male/impressive.wav");
+        else {
+        announce("announcer/default/impressive.wav");
+        }
     }
 
     if(prflags & CSQCMSG_PRAISEFLAG_AMAZING) {
         if(show) bigprint("^5Amazing!", "", 1);
         if(annc) announce("announcer/male/amazing.wav");
+        else {
+        announce("announcer/default/amazing.wav");
+        }
     }
 
     if(prflags & CSQCMSG_PRAISEFLAG_AIRSHOT) {
         if(show) bigprint("^7Airshot!", "", 1);
         if(annc) announce("announcer/male/airshot.wav");
+        else {
+        announce("announcer/default/airshot.wav");
+        }
     }
 }
 

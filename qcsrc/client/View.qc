@@ -841,6 +841,8 @@ void CSQC_UpdateView(float w, float h)
                 }
             }
 
+
+
             wcross_name = strcat("gfx/crosshair", wcross_style);
 
             if(shottype == SHOTTYPE_HITENEMY)
