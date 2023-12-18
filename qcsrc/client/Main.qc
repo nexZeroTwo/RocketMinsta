@@ -272,7 +272,7 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_double", "0", 0);
     registercvar("_secondary_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
-
+	localcmd("exec font-xolonium.cfg");
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
 
     WarpZone_Init();
@@ -802,7 +802,9 @@ void PostInit(void)
     localcmd("alias -nadget2 -button9\n");
 	localcmd("alias vyes \"cmd vote yes\"\n");
 	localcmd("alias vno \"cmd vote no\"\n");
-
+	localcmd("alias vdo \"cmd vote do\"\n");
+	localcmd("alias vlogin \"cmd vote login $*\"\n");
+	localcmd("alias vdontcare \"cmd vote dontcare\"\n");
 
 
 	rm_showspec   = CVAR(rm_showspec);
