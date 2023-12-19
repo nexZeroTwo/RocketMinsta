@@ -617,55 +617,55 @@ void Message_KillingSpree(float attacker, float longspree, float shortspree) {
             if(showShort) bigprint("^2Double ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^2DOUBLE ^7KILL!\n");
             if (iKilled && shortspree == 2)
-                sound(world, CHAN_AUTO, "misc/spree1.wav", VOL_BASE, ATTN_NONE);
+                sound(world, CHAN_AUTO, "misc/spree1.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 3:
             if(showShort) bigprint("^3Triple ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^3TRIPLE ^7KILL!\n");
             if (iKilled && shortspree == 3)
-                sound(world, CHAN_AUTO, "misc/spree2.wav", VOL_BASE, ATTN_NONE);
+                sound(world, CHAN_AUTO, "misc/spree2.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 4:
             if(showShort) bigprint("^6Quad ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^6QUAD ^7KILL!\n");
             if (iKilled && shortspree == 4)
-                sound(world, CHAN_AUTO, "misc/spree3.wav", VOL_BASE, ATTN_NONE);
+                sound(world, CHAN_AUTO, "misc/spree3.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 5:
             if(showShort) bigprint("^5Ultra ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored an ^5ULTRA ^7KILL!\n");
             if (iKilled && shortspree == 5)
-                sound(world, CHAN_AUTO, "misc/spree4.wav", VOL_BASE, ATTN_NONE);
+                sound(world, CHAN_AUTO, "misc/spree4.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 6:
             if(showShort) bigprint("^1Monster ^7Kill!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
             if (iKilled && shortspree == 6)
-            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 7:
             if(showShort) bigprint("^5Unstoppable!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
-            if (iKilled && shortspree == 6)
-            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            if (iKilled && shortspree == 7)
+            sound(world, CHAN_AUTO, "misc/spree6.wav", VOL_BASE * 0.8, ATTN_NONE);
             break;
         case 8:
             if(showShort) bigprint("^4Fury!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
-            if (iKilled && shortspree == 6)
-            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            if (iKilled && shortspree == 8)
+            sound(world, CHAN_AUTO, "misc/spree7.wav", VOL_BASE * 0.7, ATTN_NONE);
             break;
         case 9:
             if(showShort) bigprint("^6Godlike!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
-            if (iKilled && shortspree == 6)
-            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            if (iKilled && shortspree == 9)
+            sound(world, CHAN_AUTO, "misc/spree9.wav", VOL_BASE * 0.7, ATTN_NONE);
             break;        
         default: case 10:
             if(showShort) bigprint("^3INVINCIBLE!", spreebar, 1);
             if(doLogShort) print(a, " ^7scored a ^1MONSTER ^7KILL!\n");
-            if (iKilled && shortspree == 6)
-            sound(world, CHAN_AUTO, "misc/spree5.wav", VOL_BASE, ATTN_NONE);
+            if (iKilled && shortspree >= 10)
+            sound(world, CHAN_AUTO, "misc/spree10.wav", VOL_BASE * 0.7, ATTN_NONE);
             break;
 
     }
