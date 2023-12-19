@@ -100,6 +100,11 @@ void Announcer_Precache () {
 	precache_sound("misc/spree3.wav");
 	precache_sound("misc/spree4.wav");
 	precache_sound("misc/spree5.wav");
+    precache_sound("misc/spree6.wav");
+    precache_sound("misc/spree7.wav");
+    precache_sound("misc/spree8.wav");
+    precache_sound("misc/spree9.wav");
+    precache_sound("misc/spree10.wav");
 }
 
 void AuditLists()
