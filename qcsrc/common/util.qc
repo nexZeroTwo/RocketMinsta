@@ -2029,8 +2029,8 @@ void load_fonts(void) {
         var font_rmbig  = "gfx/iceland,fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf";
 
         if(cvar("rm_fonts_prefer_ttf")) {
-            font_small  = "fonts/xolonium-regular.otf/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
-            font_big    = "fonts/xolonium-regular.otf/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
+            font_small  = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans";
+            font_big    = "fonts/DejaVuSans-Bold.ttf,fonts/unifont-8.0.01.ttf,gfx/vera-sans-big";
         }
 
         cvar_set("r_font_disable_freetype", "0");

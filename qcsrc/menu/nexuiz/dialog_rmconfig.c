@@ -97,7 +97,7 @@ void fillNexuizRMConfigDialog(entity me)
 
     me.setFirstColumn(me, me.firstColumn - 0.1);
     me.TR(me);
-		me.TD(me, 1, 4, e = makeNexuizTextLabel(0, "Note: You can access these options through Multiplayer -> Player Setup"));
+
 	me.TR(me);
 		me.TD(me, 1, me.columns, e = makeNexuizButton("Ok", '0 0 0'));
 			e.onClick = Dialog_Close;
