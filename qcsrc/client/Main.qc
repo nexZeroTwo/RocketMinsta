@@ -178,6 +178,11 @@ void CSQC_Init(void)
 	registercvar("cl_lowammowarnings_zapper_heat", "25");
 	registercvar("cl_lowammowarnings_size", "20");
 	registercvar("cl_lowammowarnings_position", "30");
+	registercvar("crosshair_uzi", "");
+    registercvar("crosshair_uzi_color_red", "0");
+    registercvar("crosshair_uzi_color_green", "0.7");
+    registercvar("crosshair_uzi_color_blue", "1");
+    registercvar("crosshair_uzi_color_alpha", "1");
     registercvar("crosshair_zapper", "");
     registercvar("crosshair_zapper_size", "0.5");
     registercvar("crosshair_zapper_color_red", "0");
@@ -190,6 +195,36 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_color_green", "0.5");
     registercvar("crosshair_flak_color_blue", "0");
     registercvar("crosshair_flak_color_alpha", "1");
+	registercvar("crosshair_shotgun", "");
+    registercvar("crosshair_shotgun_color_red", "1");
+    registercvar("crosshair_shotgun_color_green", "0.5");
+    registercvar("crosshair_shotgun_color_blue", "0");
+    registercvar("crosshair_shotgun_color_alpha", "1");
+	registercvar("crosshair_nex", "");
+	registercvar("crosshair_shotgun_size", "2");
+	registercvar("crosshair_uzi_size", "0.5");
+ 	registercvar("crosshair_nex_size", "2");
+	registercvar("crosshair_campingrifle_size", "2");
+    registercvar("crosshair_zapper_size", "2");
+    registercvar("crosshair_flak_size", "2");
+	if(cvar("g_xonoticversion"))
+	{
+	cvar_set("crosshair_shotgun_size", "2");
+	cvar_set("crosshair_uzi_size", "0.5");
+ 	cvar_set("crosshair_nex_size", "2");
+	cvar_set("crosshair_campingrifle_size", "2");
+    cvar_set("crosshair_zapper_size", "2");
+    cvar_set("crosshair_flak_size", "2");
+	}
+    registercvar("crosshair_nex_color_red", "1");
+    registercvar("crosshair_nex_color_green", "0.5");
+    registercvar("crosshair_nex_color_blue", "0");
+    registercvar("crosshair_nex_color_alpha", "1");
+	registercvar("crosshair_campingrifle", "");
+    registercvar("crosshair_campingrifle_color_red", "1");
+    registercvar("crosshair_campingrifle_color_green", "0.5");
+    registercvar("crosshair_campingrifle_color_blue", "0");
+    registercvar("crosshair_campingrifle_color_alpha", "1");
     registercvar("cl_truezapper", "0");
     registercvar("cl_frozentint", "1");
     registercvar("cl_message", "1");
