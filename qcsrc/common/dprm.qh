@@ -17,5 +17,5 @@ float DPRM_VersionIsRecommended();
 
 enum {
     BASEGAME_NEXUIZ,
-    BASEGAME_VECXIS,
+    BASEGAME_XONOTIC,
 };

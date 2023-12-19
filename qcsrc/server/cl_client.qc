@@ -2398,7 +2398,9 @@ void player_powerups (void)
 		if (time < self.strength_finished)
 		{
 			self.items = self.items | IT_STRENGTH;
-			sprint(self, "^3Strength infuses your weapons with devastating power\n");
+			
+			sprint(self, "^4Strength infuses your weapons with devastating power\n");
+			//bigprint("You have picked up ^4STRENGTH!", "^3Strength infuses your weapons with devastating power", 1);
 		}
 	}
 	if (self.items & IT_INVINCIBLE)
@@ -2417,6 +2419,7 @@ void player_powerups (void)
 		{
 			self.items = self.items | IT_INVINCIBLE;
 			sprint(self, "^3Shield surrounds you\n");
+			//bigprint("You have picked up ^5SHIELD!", "^3Shield surrounds you", 1);
 		}
 	}
 

@@ -18,8 +18,8 @@ void DPRM_Start() {
     else if(checkextension("DP_RM_REGEX2"))
         regex_match = regex_match_800;
 
-    if(cvar_string("sys_project_name") == "Vecxis") {
-        dprm_basegame = BASEGAME_VECXIS;
+    if(cvar_string("sys_project_name") == "Xonotic") {
+        dprm_basegame = BASEGAME_XONOTIC;
     } else {
         dprm_basegame = BASEGAME_NEXUIZ;
     }
