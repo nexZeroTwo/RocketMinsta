@@ -1548,7 +1548,10 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 
     if(WS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
-
+	if(nPrimary == K_ESCAPE && cvar("g_xonoticversion") && !isdemo() && cvar("_menu_gamemenu_dialog_available")) {
+    localcmd("\nmenu_showgamemenudialog\n");
+    	return TRUE;
+    }
 	return FALSE;
 }
 
