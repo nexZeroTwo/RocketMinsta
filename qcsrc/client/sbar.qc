@@ -5619,7 +5619,7 @@ void Sbar_Draw(void)
                 
                 if(getstati(STAT_HGSHIELDSTORE) > 0) {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
-                                  " ^3to discharge your ", HG_TypeToExpandedName(hgtype),
+                                  " ^3to discharge your nadget"
                                   " for ^1", ftos(getstati(STAT_HGSHIELDSTORE)), " ^3damage");
                 } else {
                     smsg = strcat("^3Press ^1", strtoupper(getcommandkey("drop weapon", "dropweapon")),
