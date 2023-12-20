@@ -111,6 +111,11 @@ void CSQC_Init(void)
 	}
 #pragma target FTE
 #endif
+
+	if (cvar("g_xonoticversion") && cvar_string("menu_progs") != "rmxonmenu.dat") {
+    cvar_set("menu_progs", "rmxonmenu.dat");
+    localcmd("menu_restart\n");
+}
 	
 	check_unacceptable_compiler_bugs();
 
@@ -215,6 +220,7 @@ void CSQC_Init(void)
 	cvar_set("crosshair_campingrifle_size", "2");
     cvar_set("crosshair_zapper_size", "2");
     cvar_set("crosshair_flak_size", "2");
+	localcmd("exec font-xolonium.cfg");
 	}
     registercvar("crosshair_nex_color_red", "1");
     registercvar("crosshair_nex_color_green", "0.5");
@@ -307,7 +313,6 @@ void CSQC_Init(void)
     registercvar("_g_nadgets_select_double", "0", 0);
     registercvar("_secondary_select_available", "0", 0);
     localcmd("cl_particles_reloadeffects\n");
-	localcmd("exec font-xolonium.cfg");
     cvar_clientsettemp("r_transparent_sortmaxdist", "0");
 
     WarpZone_Init();
