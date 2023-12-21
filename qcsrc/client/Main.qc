@@ -112,7 +112,7 @@ void CSQC_Init(void)
 #pragma target FTE
 #endif
 
-	if (cvar("g_xonoticversion") && cvar_string("menu_progs") != "rmxonmenu.dat") {
+	if(cvar_string("g_xonoticversion") && cvar_string("menu_progs") != "rmxonmenu.dat") {
     cvar_set("menu_progs", "rmxonmenu.dat");
     localcmd("menu_restart\n");
 }
@@ -1548,7 +1548,7 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
 
     if(WS_InputEvent(bInputType, nPrimary, nSecondary))
         return TRUE;
-	if((bInputType == 0 && nPrimary == K_ESCAPE) && cvar("g_xonoticversion") && !isdemo() && cvar("_menu_gamemenu_dialog_available")) {
+	if((bInputType == 0 && nPrimary == K_ESCAPE) && cvar_string("g_xonoticversion") && !isdemo() && cvar("_menu_gamemenu_dialog_available")) {
     localcmd("\nmenu_showgamemenudialog\n");
     	return TRUE;
     }
