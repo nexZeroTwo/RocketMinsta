@@ -829,7 +829,6 @@ void CSQC_UpdateView(float w, float h)
                     wcross_style = cvar_string(strcat("crosshair_", wcross_wep));
                     if(wcross_style == "")
                         wcross_style = e.netname;
-	// debug print("activeweapon\t", e.netname, wcross_wep, "\n");
                     if(!CVAR(crosshair_color_override))
                     {
                         wcross_color_x = cvar(strcat("crosshair_", wcross_wep, "_color_red"));
