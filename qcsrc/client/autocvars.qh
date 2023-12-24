@@ -213,5 +213,6 @@ var float autocvar_rm_hud_crosshair_ring_size = 2;
 var float autocvar_rm_hud_crosshair_ring_alpha = 0.25;
 float autocvar_utf8_enable;
 float autocvar_gl_flashblend;
+float autocvar_cl_low_hp_alarm = 0;
 
 #endif

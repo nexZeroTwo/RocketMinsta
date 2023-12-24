@@ -3,6 +3,8 @@ entity porto;
 vector polyline[16];
 float trace_dphitcontents;
 float trace_networkentity;
+float low_hp_alarm_wait = 0;
+float low_hp_alarm_length = 1;
 
 void Porto_Draw()
 {
@@ -511,6 +513,17 @@ void DrawSpreadGuideLines(float statfld, float invert) {
 
 void CSQC_UpdateView(float w, float h)
 {
+	if(getstati(STAT_HEALTH) > 0 && CVAR(cl_low_hp_alarm) > 0 && getstati(STAT_HEALTH) <= CVAR(cl_low_hp_alarm)) {
+        if(low_hp_alarm_wait <= time) {
+        sound (self, CHAN_AUTO, "misc/hpalarm.wav", VOL_BASE, ATTN_NORM);
+        low_hp_alarm_wait = time+low_hp_alarm_length;
+             } 
+    } else if(low_hp_alarm_wait) {
+        sound (self, CHAN_AUTO, NULL, VOL_BASE, ATTN_NORM);
+        low_hp_alarm_wait = 0;
+    }
+
+
 	fps_friendly = CVAR(rm_fps_friendly);
 	entity e;
 	float fov;

@@ -105,6 +105,7 @@ void Announcer_Precache () {
     precache_sound("misc/spree8.wav");
     precache_sound("misc/spree9.wav");
     precache_sound("misc/spree10.wav");
+    precache_sound("misc/hpalarm.wav");
 }
 
 void AuditLists()
