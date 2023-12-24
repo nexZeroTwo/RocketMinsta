@@ -513,16 +513,16 @@ void DrawSpreadGuideLines(float statfld, float invert) {
 
 void CSQC_UpdateView(float w, float h)
 {
-	if(getstati(STAT_HEALTH) > 0 && CVAR(cl_low_hp_alarm) > 0 && getstati(STAT_HEALTH) <= CVAR(cl_low_hp_alarm)) {
+	if(getstati(STAT_HEALTH) > 0 && cvar("cl_low_hp_alarm") > 0 && getstati(STAT_HEALTH) <= cvar("cl_low_hp_alarm")) {
         if(low_hp_alarm_wait <= time) {
-        sound (self, CHAN_AUTO, "misc/hpalarm.wav", VOL_BASE, ATTN_NORM);
+        sound (self, CHAN_TRIGGER, "misc/hpalarm.wav", VOL_BASE, ATTN_NONE);
+		localcmd("echo I am working!\n");
         low_hp_alarm_wait = time+low_hp_alarm_length;
              } 
     } else if(low_hp_alarm_wait) {
-        sound (self, CHAN_AUTO, NULL, VOL_BASE, ATTN_NORM);
+        sound (world, CHAN_AUTO, NULL, VOL_BASE, ATTN_NONE);
         low_hp_alarm_wait = 0;
     }
-
 
 	fps_friendly = CVAR(rm_fps_friendly);
 	entity e;
