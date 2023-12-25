@@ -215,7 +215,7 @@ void CSQC_Init(void)
 	if(cvar("g_xonoticversion"))
 	{
 	cvar_set("crosshair_shotgun_size", "2");
-	cvar_set("crosshair_uzi_size", "0.5");
+	cvar_set("crosshair_uzi_size", "2");
  	cvar_set("crosshair_nex_size", "2");
 	cvar_set("crosshair_campingrifle_size", "2");
     cvar_set("crosshair_zapper_size", "2");
@@ -1553,6 +1553,18 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
     localcmd("\nmenu_showgamemenudialog\n");
     	return TRUE;
     }
+
+	//if((bInputType == 0 && nPrimary == K_ESCAPE) && cvar_string("rexuizversion") != "" && !isdemo()) {
+
+	//	localcmd("echo You pressed ESC!\n");
+	//	if not(gui_gameMenuDialog) {
+			//GUI_Show(GUI_GAMEMENU);
+	//		localcmd("echo What?");
+	//		return TRUE;
+	//	}
+
+	//	return TRUE;
+//	}
 	return FALSE;
 }
 

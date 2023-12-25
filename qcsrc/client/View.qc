@@ -516,7 +516,6 @@ void CSQC_UpdateView(float w, float h)
 	if(getstati(STAT_HEALTH) > 0 && cvar("cl_low_hp_alarm") > 0 && getstati(STAT_HEALTH) <= cvar("cl_low_hp_alarm")) {
         if(low_hp_alarm_wait <= time) {
         sound (self, CHAN_TRIGGER, "misc/hpalarm.wav", VOL_BASE, ATTN_NONE);
-		localcmd("echo I am working!\n");
         low_hp_alarm_wait = time+low_hp_alarm_length;
              } 
     } else if(low_hp_alarm_wait) {
