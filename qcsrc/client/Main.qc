@@ -1554,17 +1554,10 @@ float CSQC_InputEvent(float bInputType, float nPrimary, float nSecondary)
     	return TRUE;
     }
 
-	//if((bInputType == 0 && nPrimary == K_ESCAPE) && cvar_string("rexuizversion") != "" && !isdemo()) {
-
-	//	localcmd("echo You pressed ESC!\n");
-	//	if not(gui_gameMenuDialog) {
-			//GUI_Show(GUI_GAMEMENU);
-	//		localcmd("echo What?");
-	//		return TRUE;
-	//	}
-
-	//	return TRUE;
-//	}
+	if((bInputType == 0 && nPrimary == K_ESCAPE) && cvar_string("rexuizversion") != "" && !isdemo()) {
+		localcmd("\nmenu_cmd directmenu GameMenu\n");
+		return TRUE;
+		}
 	return FALSE;
 }
 
