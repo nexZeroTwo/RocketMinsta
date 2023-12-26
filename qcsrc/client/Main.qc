@@ -220,7 +220,6 @@ void CSQC_Init(void)
 	cvar_set("crosshair_campingrifle_size", "2");
     cvar_set("crosshair_zapper_size", "2");
     cvar_set("crosshair_flak_size", "2");
-	localcmd("exec font-xolonium.cfg");
 	}
     registercvar("crosshair_nex_color_red", "1");
     registercvar("crosshair_nex_color_green", "0.5");
@@ -248,7 +247,6 @@ void CSQC_Init(void)
     registercvar("cl_message_praise_announce", "1");
     registercvar("cl_warpzone_sound_transition", "0");
 	registercvar("cl_low_hp_alarm", "0", CVAR_SAVE);
-
     gametype = 0;
 
 	// sbar_fields uses strunzone on the titles!
@@ -335,7 +333,9 @@ void CSQC_Shutdown(void)
 
 	HUDSkin_Unload();
 	IP2C_Shutdown();
-	localcmd("exec font-xolonium.cfg");
+	if (cvar_string("g_xonoticversion") != "") {
+		localcmd("\nexec font-xolonium.cfg\n");
+	}
 
 	remove(teams);
 	remove(players);
