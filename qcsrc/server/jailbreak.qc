@@ -628,7 +628,6 @@ void JB_Torture_Beam(void) {
 }
 
 void JB_Torture_RegisterAll() {
-	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
     JB_Torture_Register(JB_Torture_Beam);
@@ -658,7 +657,7 @@ float JB_PlayerDies(entity frag_attacker) {
                         // Rewards control point defense if fragging nearby your team's or neutral cp.
                         // In case of neutral cp, it has to be active (no defense farming in the beginning of the round)
                         if(vlen(cp.origin - self.origin) < rng) {
-                            bigprint_spec(frag_attacker, "^5Defense!", "", 2);
+                            bigprint_spec(frag_attacker, "^5Defense!", "Defended a control point", 2);
                             PlayerScore_Add(frag_attacker, SP_SCORE, CVAR(g_jailbreak_score_defense));
                             PlayerScore_Add(frag_attacker, SP_JB_DEFENSE, 1);
                             break;
