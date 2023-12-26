@@ -19,3 +19,4 @@ pkgcache/*
 build/*
 *~
 *.sublime-workspace
+*.cfg
