@@ -445,16 +445,6 @@ void JB_Torture_Register(jb_torture_logic logic) {
 	e.use = logic;
 }
 
-void JB_Torture_Napalm(void) {
-    Napalm_Spawn(self, self.origin, 3, 0.15, DEATH_HURTTRIGGER, 180, 80, 20, 1.5) {
-        velocity: [
-            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
-            (random () - 0.5) * 2 * self.jb_torture_suggestedforce,
-            self.jb_torture_suggestedforce
-        ]
-    };
-}
-
 void JB_Torture_Plasma() {
 	float i, j;
 	
@@ -638,7 +628,6 @@ void JB_Torture_Beam(void) {
 }
 
 void JB_Torture_RegisterAll() {
-    JB_Torture_Register(JB_Torture_Napalm);
 	JB_Torture_Register(JB_Torture_Plasma);
 	JB_Torture_Register(JB_Torture_Grenades);
 	JB_Torture_Register(JB_Torture_Zap);
