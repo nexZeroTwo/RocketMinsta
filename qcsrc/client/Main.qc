@@ -214,9 +214,9 @@ void CSQC_Init(void)
     registercvar("crosshair_flak_size", "2");
 	if(cvar("g_xonoticversion"))
 	{
-	cvar_set("crosshair_shotgun_size", "2");
-	cvar_set("crosshair_uzi_size", "2");
- 	cvar_set("crosshair_nex_size", "2");
+	cvar_set("crosshair_shotgun_size", "1");
+	cvar_set("crosshair_uzi_size", "0.5");
+ 	cvar_set("crosshair_nex_size", "0.65");
 	cvar_set("crosshair_campingrifle_size", "2");
     cvar_set("crosshair_zapper_size", "2");
     cvar_set("crosshair_flak_size", "2");
