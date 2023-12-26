@@ -1215,7 +1215,7 @@ float CSQC_ConsoleCommand(string strMessage)
 			search_end(hsglob);
 			
 			print("\nTo change the HUD skin, type: ^2hudskin SKINNAME\nFor example, ^2hudskin ", displayname, "\n");
-			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entriely\n");
+			print("\nYou can also use ^2althud 0^7 to disable the alternative HUD layout (will use a layout similar to Xonotic/Nexuiz default instead), or use ^2oldhud 1^7 to disable RocketMinsta HUD entirely\n");
 			
 			return true;
 		}

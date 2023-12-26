@@ -4199,7 +4199,7 @@ void Sbar_Draw(void)
             playerspec = TRUE;
         } else {
             o2 = Sbar_DrawCenterNoteLine(o2, fmsg);
-            o2 = Sbar_DrawCenterNoteLine(o2, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your team mates"));
+            o2 = Sbar_DrawCenterNoteLine(o2, strcat("^1Press ^3", getcommandkey("hook / nadget key", "+hook"), "^1 to spectate your teammates"));
         }
     }
 
