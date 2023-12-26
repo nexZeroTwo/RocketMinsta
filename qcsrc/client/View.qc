@@ -893,7 +893,12 @@ void CSQC_UpdateView(float w, float h)
                     crosshair_ringfill = 0;
             }
 
-            var ringsize = CVAR(rm_hud_crosshair_ring_size) * 24
+			var ringsize;
+			if (cvar_string("g_xonoticversion") != "") {
+    		ringsize = CVAR(rm_hud_crosshair_ring_size) * 24;
+			} else if (cvar_string("rexuizversion") != "") {
+    		ringsize = CVAR(rm_hud_crosshair_ring_size) * 24 * wcross_sizefloat;
+				}
             var ringalpha = CVAR(rm_hud_crosshair_ring_alpha) * wcross_alpha;
             var ringexpand = 0.25; // TODO: cvar for this?
 
