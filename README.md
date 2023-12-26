@@ -95,10 +95,12 @@ So, you want to include pk3s and make the menu work for both clients?
 --> Check the config.py file. Line 96 provides options to include packages, here's an example: ```extra_packages = ['c_xonpatch']```
 --> Read the config.py file, it is very clear on what you can do with it!
 
-# XonMenu:
+# XonMenu AND RexMenu:
 If you want to feed both clients with the proper menus, keep in mind that in the code, 
 1) Rexuiz uses "menu.dat" inside the zzz-rm-menu pk3.
 2) Xonotic uses "rmxonmenu.dat" inside the zzz-rm-menu pk3.
+
+# You have to make your own menus, they are NOT in the RM-Menu Code!!!
 
 Conclusion: Rename the menu file to its apropriate value.
 
