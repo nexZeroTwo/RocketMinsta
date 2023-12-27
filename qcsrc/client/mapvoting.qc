@@ -147,6 +147,8 @@ vector GameTypeVote_DrawGametypeItem(vector o, string gtype, float count, float 
 
 void MapVote_DrawMapItem(vector pos, float isize, float tsize, string map, string pic, float count, float id)
 {
+
+	if(cvar("g_"))
 	vector img_size;
 	vector rgb;
 	vector txtpos;
@@ -329,7 +331,8 @@ void MapVote_Draw()
 		o_y += img_size_y + 10;
 		o_x += img_size_x / 2 - (stringwidth_nocolors(mapvote_choosenmap, sz) / 2);
 		
-		drawstring(o, mapvote_choosenmap, sz, '1 1 1' * alpha * alpha, alpha * alpha, DRAWFLAG_NORMAL);
+		//drawstring(o, mapvote_choosenmap, sz, '1 1 1', DRAWFLAG_NORMAL);
+		//FIXME: Xonotic fails to render this properly, needs a proper fix. For now commented to avoid QuakeC errors.
 	}
 
 	o_x = max(vid_conwidth * 0.25 - (sbar_fontsize_x * gametypevote_longest) * 0.25, sbar_fontsize_x);
