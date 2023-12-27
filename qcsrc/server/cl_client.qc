@@ -910,19 +910,8 @@ void PutObserverInServer (void)
 
     self.team = -1;
 
-	if(g_arena)
-	{
-		if(self.version_mismatch)
-		{
-			Spawnqueue_Unmark(self);
-			Spawnqueue_Remove(self);
-		}
-		else
-		{
-			Spawnqueue_Insert(self);
-		}
-	}
-	else if(g_lms)
+	
+	if(g_lms)
 	{
 		// Only if the player cannot play at all
 		if(PlayerScore_Add(self, SP_LMS_RANK, 0) == 666)
@@ -3097,10 +3086,10 @@ void ObserverThink()
 	}
 
     if(self.flags & FL_JUMPRELEASED) {
-		if(self.BUTTON_JUMP && !self.version_mismatch) {
+		if(self.BUTTON_JUMP) {
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
-		} else if(self.BUTTON_ATCK && !self.version_mismatch) {
+		} else if(self.BUTTON_ATCK) {
 			self.flags &~= FL_JUMPRELEASED;
 			if(SpectateNext() == 1) {
 				self.classname = "spectator";
@@ -3124,7 +3113,7 @@ void SpectatorThink()
     SpectatorImpulse();
 
 	if (self.flags & FL_JUMPRELEASED) {
-		if (self.BUTTON_JUMP && !self.version_mismatch) {
+		if (self.BUTTON_JUMP) {
 			self.flags &~= FL_JUMPRELEASED;
 			self.flags |= FL_SPAWNING;
 		} else if(self.BUTTON_ATCK) {
