@@ -386,27 +386,6 @@ void SV_ParseClientCommand(string s) {
 			autoswitchmsg = "off";
 		}
 		sprint(self, strcat("^1autoswitch turned ", autoswitchmsg, "\n"));
-	} else if(cmd == "clientversion") {
-		if not(self.flags & FL_CLIENT)
-			return;
-		if (argv(1) == "$gameversion") {
-			//versionmsg = "^1client is too old to get versioninfo.\nUPDATE!!! (http://www.nexuiz.com)^8";
-			// either that or someone wants to be funny
-			self.version = 1;
-		} else {
-			self.version = stof(argv(1));
-		}
-		if(self.version != CVAR(gameversion))
-		{
-			self.classname = "observer";
-			self.version_mismatch = 1;
-			PutClientInServer();
-		} else if(CVAR(g_campaign) || CVAR(g_balance_teams) || CVAR(g_balance_teams_force)) {
-			//JoinBestTeam(self, FALSE, TRUE);
-		} else if(teams_matter && !CVAR(sv_spectate)) {
-			self.classname = "observer";
-			stuffcmd(self,"menu_showteamselect\n");
-		}
 	} else if(cmd == "reportcvar") { // old system
 		if(substring(argv(2), 0, 1) == "$") // undefined cvar: use the default value on the server then
 		{

@@ -407,19 +407,6 @@ void InitGameplayMode()
 	InitializeEntity(world, default_delayedinit, INITPRIO_GAMETYPE_FALLBACK);
 }
 
-string GetClientVersionMessage() {
-	string versionmsg;
-	if (self.version_mismatch) {
-		if(self.version < CVAR(gameversion)) {
-			versionmsg = "^3Your client version is outdated.\n\n\n### YOU WON'T BE ABLE TO PLAY ON THIS SERVER ###\n\n\nPlease update!!!^8";
-		} else {
-			versionmsg = "^3This server is using an outdated Nexuiz version.\n\n\n ### THIS SERVER IS INCOMPATIBLE AND THUS YOU CANNOT JOIN ###.^8";
-		}
-	} else {
-		versionmsg = "^2client version and server version are compatible.^8";
-	}
-	return versionmsg;
-}
 
 void SetPlayerColors(entity pl, float _color)
 {
