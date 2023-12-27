@@ -910,8 +910,11 @@ void PutObserverInServer (void)
 
     self.team = -1;
 
-	
-	if(g_lms)
+	if(g_arena)
+	{
+			Spawnqueue_Insert(self);
+	}
+	else if(g_lms)
 	{
 		// Only if the player cannot play at all
 		if(PlayerScore_Add(self, SP_LMS_RANK, 0) == 666)
