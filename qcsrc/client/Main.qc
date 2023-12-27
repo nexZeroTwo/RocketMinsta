@@ -1816,7 +1816,7 @@ void Net_Reset()
 
 void Ent_ClientData()
 {
-	float f;
+	int f;
 	float newspectatee_status;
 
 	f = ReadByte();
@@ -1826,8 +1826,14 @@ void Ent_ClientData()
 	if(f & 2)
 	{
 		newspectatee_status = ReadByte();
-		if(newspectatee_status == player_localentnum)
+		if(cvar_string("g_xonoticversion") != "") {
+			if(newspectatee_status == player_localnum)
 			newspectatee_status = -1; // observing
+		}
+		if(cvar_string("rexuizversion") != ""){
+			if(newspectatee_status == player_localentnum)
+			newspectatee_status = -1; // observing
+		}
 	}
 	else
 		newspectatee_status = 0;
