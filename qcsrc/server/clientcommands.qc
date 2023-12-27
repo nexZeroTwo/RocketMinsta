@@ -386,7 +386,10 @@ void SV_ParseClientCommand(string s) {
 			autoswitchmsg = "off";
 		}
 		sprint(self, strcat("^1autoswitch turned ", autoswitchmsg, "\n"));
-	} else if(cmd == "reportcvar") { // old system
+	} else if(cmd == "clientversion") {
+		if not(self.flags & FL_CLIENT)
+			return;
+		} else if(cmd == "reportcvar") { // old system
 		if(substring(argv(2), 0, 1) == "$") // undefined cvar: use the default value on the server then
 		{
             if(argv(1) == "dprm_version") {
