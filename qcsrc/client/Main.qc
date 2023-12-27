@@ -428,6 +428,14 @@ float SetTeam(entity o, float Team)
 	return FALSE;
 }
 
+void NullifySndRadius() {
+	if (spectatee_status >= -1 && !isdemo()) {
+		if(!cvar("snd_soundradius") == 2400) {
+			cvar_set("snd_soundradius", "2400");
+		}
+	}
+}
+
 void NullifyNetPacketLoss() {
 	if (spectatee_status >= -1 && !isdemo()) {
 		if (cvar("cl_netpacketloss_send") > 0) {
@@ -444,7 +452,7 @@ void ValidateNetfps() {
 		if (cvar("cl_netfps") < 60) {
 			cvar_set("cl_netfps",  "60");
 		} else if (cvar("cl_netfps") > 300) {
-			cvar_set("cl_netfps", "300");
+			cvar_set("cl_netfps", "200");
 		}
 	}
 }
@@ -482,6 +490,7 @@ void Playerchecker_Think()
 			}
 		}
 	}
+	NullifySndRadius();
 	NullifyNetPacketLoss();
 	ValidateNetfps();
 	self.nextthink = time + 0.2;
