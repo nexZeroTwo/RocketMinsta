@@ -325,14 +325,14 @@ void MapVote_Draw()
         if(mapvote_choosenmappic != "")
             drawpic(o2, mapvote_choosenmappic, img_size, '1 1 1', alpha, DRAWFLAG_NORMAL);
 
-		vector sz = sbar_fontsize * alpha;
+		vector sz = sbar_fontsize;
 		img_size = img_fullsize;
 		
 		o_y += img_size_y + 10;
 		o_x += img_size_x / 2 - (stringwidth_nocolors(mapvote_choosenmap, sz) / 2);
 		
-		//drawstring(o, mapvote_choosenmap, sz, '1 1 1', DRAWFLAG_NORMAL);
-		//FIXME: Xonotic fails to render this properly, needs a proper fix. For now commented to avoid QuakeC errors.
+		drawstring(o, mapvote_choosenmap, sz, '1 1 1' * alpha * alpha, alpha * alpha, DRAWFLAG_NORMAL);
+
 	}
 
 	o_x = max(vid_conwidth * 0.25 - (sbar_fontsize_x * gametypevote_longest) * 0.25, sbar_fontsize_x);
