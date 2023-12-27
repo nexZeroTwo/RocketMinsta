@@ -1827,7 +1827,7 @@ void Ent_ClientData()
 	{
 		newspectatee_status = ReadByte();
 		if(cvar_string("g_xonoticversion") != "") {
-			if(newspectatee_status == player_localnum)
+			if(newspectatee_status == player_localnum + 1)
 			newspectatee_status = -1; // observing
 		}
 		if(cvar_string("rexuizversion") != ""){
