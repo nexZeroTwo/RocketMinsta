@@ -1182,27 +1182,6 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 		tmp_y = body_table_height;
 		drawpic_tiled(pos, "gfx/hud/sb_scoreboard_bg", bg_size, tmp, rgb * sbar_color_bg_team, sbar_scoreboard_alpha_bg, DRAWFLAG_NORMAL, '0 0 0');
 	}
-	else // specifically for Infection mode (hacky, ik)
-	{
-		vector lpos, ltmp, l_src_pos;
-		lpos = pos;
-		ltmp_x = tmp_x;
-		ltmp_y = 1.25 * sbar_fontsize_y;
-		l_src_pos = '0 0 0';
-		for(pl = players.sort_next; pl; pl = pl.sort_next)
-		{
-			if(pl.team != tm.team && pl.team != tm2.team)
-				continue;
-			drawpic_tiled(lpos, "gfx/hud/sb_scoreboard_bg", bg_size, ltmp,
-			              GetTeamRGB(pl.team) * sbar_color_bg_team,
-			              sbar_scoreboard_alpha_bg, DRAWFLAG_NORMAL, l_src_pos);
-			lpos_y += 1.25 * sbar_fontsize_y;
-			l_src_pos_y += (1.25 * sbar_fontsize_y) / bg_size_y;
-			while(l_src_pos_y >= 1)
-				l_src_pos_y -= 1;
-		}
-	}
-
 	// go back to the top to make alternated columns highlighting and to print the strings
 	pos_y -= 1.25 * sbar_fontsize_y;
 	pos_y -= sbar_border_thickness;
