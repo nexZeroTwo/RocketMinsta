@@ -3416,7 +3416,7 @@ void MarkAway(entity pl, float force)
     if(pl.is_away)
         return;
     
-    float idlefor = floor((time - self.parm_idlesince) / 60);
+    float idlefor = floor((time - self.parm_idlesince));
     
     if(pl.classname == "player")
         stuffcmd(pl, "cmd spectate\n");
@@ -3429,8 +3429,8 @@ void MarkAway(entity pl, float force)
     }
     else
     {
-        bprint(pl.netname, " ^4is AFK (idle for ", ftos(idlefor), " minutes)\n");
-        centerprint(pl, strcat("You have been set AFK (idle for ", ftos(idlefor), " minutes)"));
+        bprint(pl.netname, " ^4is AFK (idle for ", ftos(idlefor), " seconds)\n");
+        centerprint(pl, strcat("You have been set AFK (idle for ", ftos(idlefor), " seconds)"));
     }
     
     pl.is_away = 1;
