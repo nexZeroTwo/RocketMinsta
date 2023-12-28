@@ -1269,7 +1269,7 @@ vector Sbar_Scoreboard_MakeTable(vector pos, entity tm, vector rgb,
 			++i;
 		}
 		
-		if(countping) {
+		if (countping && plrs > 0) {
 			tm.avg_ping = rint(tm.avg_ping / plrs);
 			tm.avg_ping_next = time + 1;
 		}
