@@ -129,11 +129,6 @@ void IRC_Init(void) {
     if(!CVAR(sv_ircbot))
         return;
     
-    if(!checkextension("DP_RM_IRC")) {
-        print("IRC_Init: engine doesn't implement the DP_RM_IRC extension. Install DarkPlacesRM to use IRC.\n");
-        return;
-    }
-    
     if(!CVAR(irc_initialized)) {
         print("IRC_Init: the IRC module is not initialized, make sure you have libircclient installed.\n");
         return;
