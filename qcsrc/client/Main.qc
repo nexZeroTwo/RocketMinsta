@@ -538,6 +538,7 @@ void ReloadMenu_f()
 	if(!self.cnt)
 	{
 		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
+		localcmd("menu_restart\n");
 		if (cvar_string("g_xonoticversion") != "") {
 			localcmd("\nexec font-xolonium.cfg\n");
 		}
