@@ -994,7 +994,7 @@ void CSQC_UpdateView(float w, float h)
                          bound(0, mouse_pos_y, vid_conheight)];
         }
 
-        drawpic(mouse_pos, strcat("gfx/menu/", CVAR_STR(menu_rmskin), "/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
+        drawpic(mouse_pos, strcat("gfx/cursor.tga"), '32 32 0', '1 1 1', sbar_alpha_fg, DRAWFLAG_NORMAL);
     }
 
 	// we must do this check AFTER a frame was rendered, or it won't work

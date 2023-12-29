@@ -451,8 +451,8 @@ void ValidateNetfps() {
 	if (spectatee_status >= -1 && !isdemo()) {
 		if (cvar("cl_netfps") < 60) {
 			cvar_set("cl_netfps",  "60");
-		} else if (cvar("cl_netfps") > 300) {
-			cvar_set("cl_netfps", "200");
+		} else if (cvar("cl_netfps") > 100) {
+			cvar_set("cl_netfps", "60");
 		}
 	}
 }
@@ -538,15 +538,14 @@ void ReloadMenu_f()
 	if(!self.cnt)
 	{
 		cvar_set("rm_loadedmenu", RM_BUILD_MENUSUM);
-		localcmd("menu_restart; r_restart\n");
+		if (cvar_string("g_xonoticversion") != "") {
+			localcmd("\nexec font-xolonium.cfg\n");
+		}
 		self.cnt = 1;
 		self.nextthink = time + 1;
 	}
 	else
 	{
-		if(rm_helptime)
-			localcmd("menu_cmd directmenu RMConfig\n");
-			
 		gui_reloading = 0;
 		remove(self);
 	}
@@ -855,10 +854,7 @@ void PostInit(void)
             cvar_set("cl_warpzone_sound_transition", "0");
             warpzone_sound_transition = 0;
         case 64:
-            cvar_set("sv_ip2country_server", "udp://91.121.161.160:16886");
-
-		//More to come here with each update
-		localcmd("seta rm_initialized 66\n");
+            cvar_set("sv_ip2country_server", "");
 		RM_OUTDATED
 		break;
 	}
@@ -976,9 +972,7 @@ void PostInit(void)
 
 	if(force_reload)
 		ReloadMenu();
-	else if(rm_helptime)
-		localcmd("menu_cmd directmenu RMConfig\n");
-	
+
     defer(0.5, inline void(void) {
         MapInfo_Get_ByName(shortmapname, 0, 0, FALSE);
         bigprint(strcat("^2", shortmapname), if(MapInfo_Map_title != "<TITLE>") MapInfo_Map_title else "", 2);

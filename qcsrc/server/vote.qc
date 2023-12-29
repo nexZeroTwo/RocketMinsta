@@ -388,11 +388,11 @@ float RemapVote(string vote, string cmd, entity e)
 			}
 
 			// Let's give this another shot
-			if (!MapInfo_CheckMap(if(DPRM_IsDPRMEngine()) CVAR_STR(sv_worldbasename) else mapname, gametype_Name_to_MapID(s)))
-			{
-				sprint (e, strcat ("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
+			if (!MapInfo_CheckMap(mapname, gametype_Name_to_MapID(s))) {
+				sprint(e, strcat("^1", gametype_Name_to_LongName(s), " is not allowed on the current map\n"));
 				return FALSE;
 			}
+			
 			if (! CVAR(sv_vote_gametype_call))
 			{
 				sprint (e, "^1Gametype voting is not allowed.\n");
