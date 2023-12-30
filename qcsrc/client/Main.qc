@@ -261,9 +261,6 @@ void CSQC_Init(void)
 	players = Sort_Spawn();
 
 	GetTeam(COLOR_SPECTATOR, true); // add specs first
-
-	cvar_clientsettemp("_supports_weaponpriority", "1");
-
 	RegisterWeapons();
 
 	WaypointSprite_Load();
@@ -719,6 +716,10 @@ float warpzone_sound_transition;
 void PostInit(void)
 {
 	print(strcat("PostInit\n    maxclients = ", ftos(maxclients), "\n"));
+
+	if (cvar_string("g_xonoticversion") != "") {
+	localcmd("alias sbar_columns_set \"cl_cmd sbar_columns_set $*\"\n");
+		}
 	localcmd(strcat("\nsbar_columns_set ", CVAR_STR(sbar_columns), ";\n"));
 
 	entity playerchecker;
@@ -867,12 +868,14 @@ void PostInit(void)
     localcmd("alias -nadget -button6\n");
     localcmd("alias +nadget2 +button9\n");
     localcmd("alias -nadget2 -button9\n");
+
+	if (cvar_string("g_xonoticversion") != "") {
 	localcmd("alias vyes \"cmd vote yes\"\n");
 	localcmd("alias vno \"cmd vote no\"\n");
 	localcmd("alias vdo \"cmd vote do\"\n");
 	localcmd("alias vlogin \"cmd vote login $*\"\n");
 	localcmd("alias vdontcare \"cmd vote dontcare\"\n");
-
+		}
 
 	rm_showspec   = CVAR(rm_showspec);
 	rm_showdamage = CVAR(rm_showdamage);
@@ -999,7 +1002,7 @@ void Cmd_Sbar_Help(float);
 void(float bufhandle, string pattern, string antipattern) buf_cvarlist = #517;
 
 #define VALUEREQUIRED if(argc < 2) { print(strCmd, " is ", if(cvar(strcat("rm_", strCmd))) "^2ON" else "^1OFF", "\nUsage: ^2", strCmd, " 1^7 to enable, ^2", strCmd, " 0 ^7to disable.\n"); return true; }
-#define RMSETTINGREPORT { print(strCmd, " is now ", if(cvar(strcat("rm_", strCmd))) "^2ON\n" else "^1OFF\n"); localcmd("menu_cmd update_rmvars\n"); }
+#define RMSETTINGREPORT { print(strCmd, " is now ", if(cvar(strcat("rm_", strCmd))) "^2ON\n" else "^1OFF\n"); if(cvar_string("rexuizversion") != "") { localcmd("menu_cmd update_rmvars\n"); }}
 float CSQC_ConsoleCommand(string strMessage)
 {
 	float argc;
